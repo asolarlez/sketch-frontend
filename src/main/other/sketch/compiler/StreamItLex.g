@@ -190,6 +190,7 @@ HQUAN
 NUMBER
 	:	 (DIGIT)+ (DOT (DIGIT)+ )? (('e' | 'E') ('+'|'-')? (DIGIT)+ )? ('i')?
 	;
+
 ID
 options {
 	testLiterals = true;
