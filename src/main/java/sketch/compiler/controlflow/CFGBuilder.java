@@ -16,8 +16,23 @@
 
 package streamit.frontend.controlflow;
 
-import streamit.frontend.nodes.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import streamit.frontend.nodes.FENullVisitor;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtWhile;
 
 /**
  * Helper class to build a control-flow graph from linear code.

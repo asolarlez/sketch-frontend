@@ -16,8 +16,12 @@
 
 package streamit.frontend.controlflow;
 
-import streamit.frontend.nodes.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A control-flow graph.  This has a set of nodes and a set of edges.
