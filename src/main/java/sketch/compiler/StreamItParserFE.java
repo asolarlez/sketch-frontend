@@ -2645,8 +2645,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 										sj = new SJDuplicate(getContext(tag), SJDuplicate.OR ); 
 									}else if( tag.getText().equals("and") ){
 										sj = new SJDuplicate(getContext(tag), SJDuplicate.AND ); 
+									}else{
+										assert false: tag.getText()+ " is not a valid splitter";
 									}
-									assert false: tag.getText()+ " is not a valid splitter";
+									
 									
 								
 					}
