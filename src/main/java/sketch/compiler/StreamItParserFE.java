@@ -2,26 +2,78 @@
 
 	package streamit.frontend;
 
-	import streamit.frontend.nodes.*;
-
-	import java.util.Collections;
 	import java.io.DataInputStream;
-	import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-	import java.util.ArrayList;
-
-import antlr.TokenBuffer;
-import antlr.TokenStreamException;
-import antlr.TokenStreamIOException;
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstChar;
+import streamit.frontend.nodes.ExprConstFloat;
+import streamit.frontend.nodes.ExprConstStr;
+import streamit.frontend.nodes.ExprConstant;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.SJDuplicate;
+import streamit.frontend.nodes.SJRoundRobin;
+import streamit.frontend.nodes.SJWeightedRR;
+import streamit.frontend.nodes.SplitterJoiner;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEmpty;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtSendMessage;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePortal;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
 import antlr.ParserSharedInputState;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.Token;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import antlr.collections.impl.BitSet;
 
 public class StreamItParserFE extends antlr.LLkParser       implements StreamItParserFETokenTypes
@@ -210,6 +262,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 			}
 			case TK_pipeline:
 			case TK_splitjoin:
+			case TK_sbox:
 			case TK_feedbackloop:
 			{
 				ss=struct_stream_decl(st);
@@ -343,6 +396,14 @@ public StreamItParserFE(ParserSharedInputState state) {
 				match(TK_feedbackloop);
 				if ( inputState.guessing==0 ) {
 					type = StreamSpec.STREAM_FEEDBACKLOOP;
+				}
+				break;
+			}
+			case TK_sbox:
+			{
+				match(TK_sbox);
+				if ( inputState.guessing==0 ) {
+					type = StreamSpec.STREAM_TABLE;
 				}
 				break;
 			}
@@ -2092,6 +2153,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					case TK_filter:
 					case TK_pipeline:
 					case TK_splitjoin:
+					case TK_sbox:
 					case TK_feedbackloop:
 					case TK_portal:
 					case TK_to:
@@ -2227,6 +2289,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		Token  tp = null;
 		Token  ts = null;
 		Token  tl = null;
+		Token  tt = null;
 		sc = null; StreamType st = null; List params = new ArrayList();
 		Statement body; List types = new ArrayList(); Type t; StreamSpec ss = null;
 		List p = null; int sst = 0; FEContext ctx = null;
@@ -2250,6 +2313,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 			case TK_filter:
 			case TK_pipeline:
 			case TK_splitjoin:
+			case TK_sbox:
 			case TK_feedbackloop:
 			{
 				break;
@@ -2302,6 +2366,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 			}
 			case TK_pipeline:
 			case TK_splitjoin:
+			case TK_sbox:
 			case TK_feedbackloop:
 			{
 				{
@@ -2330,6 +2395,15 @@ public StreamItParserFE(ParserSharedInputState state) {
 					match(TK_feedbackloop);
 					if ( inputState.guessing==0 ) {
 						ctx = getContext(tl); sst = StreamSpec.STREAM_FEEDBACKLOOP;
+					}
+					break;
+				}
+				case TK_sbox:
+				{
+					tt = LT(1);
+					match(TK_sbox);
+					if ( inputState.guessing==0 ) {
+						ctx = getContext(tt); sst = StreamSpec.STREAM_TABLE;
 					}
 					break;
 				}
@@ -2648,8 +2722,6 @@ public StreamItParserFE(ParserSharedInputState state) {
 									}else{
 										assert false: tag.getText()+ " is not a valid splitter";
 									}
-									
-									
 								
 					}
 					break;
@@ -4130,6 +4202,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		"\"filter\"",
 		"\"pipeline\"",
 		"\"splitjoin\"",
+		"\"sbox\"",
 		"\"feedbackloop\"",
 		"\"portal\"",
 		"\"to\"",
@@ -4226,157 +4299,157 @@ public StreamItParserFE(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 8522825984L, 536870912L, 0L, 0L};
+		long[] data = { 17045651968L, 1073741824L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { 17112760578L, 536870912L, 0L, 0L};
+		long[] data = { 34225521154L, 1073741824L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 240L, 0L};
+		long[] data = { 496L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 18014398509481984L, 0L};
+		long[] data = { 36028797018963968L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { -8016376017825875198L, 1611137024L, 0L, 0L};
+		long[] data = { 2413992038057801218L, 3222274049L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 36028805549655296L, 536870912L, 0L, 0L};
+		long[] data = { 72057611099310592L, 1073741824L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 281474976710896L, 536903680L, 0L, 0L};
+		long[] data = { 562949953421808L, 1073807360L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { 0L, 524288L, 0L, 0L};
+		long[] data = { 0L, 1048576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { 36028797018963968L, 1572864L, 0L, 0L};
+		long[] data = { 72057594037927936L, 3145728L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { -8052404892154251008L, 1611137024L, 0L, 0L};
+		long[] data = { 2341934289401049600L, 3222274049L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { -8016376017818009854L, 1611137024L, 0L, 0L};
+		long[] data = { 2413992038073531906L, 3222274049L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 207165582917763072L, 1835008L, 0L, 0L};
+		long[] data = { 414331165835526144L, 3670016L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
 	private static final long[] mk_tokenSet_13() {
-		long[] data = { 2873296562321097216L, 2096117L, 0L, 0L};
+		long[] data = { 5746593124642194432L, 4192234L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	private static final long[] mk_tokenSet_14() {
-		long[] data = { -8070450532222763008L, 536870912L, 0L, 0L};
+		long[] data = { 2305843009264025600L, 1073741825L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
 	private static final long[] mk_tokenSet_15() {
-		long[] data = { -8016376026415810304L, 1611137024L, 0L, 0L};
+		long[] data = { 2413992020877931008L, 3222274049L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
 	private static final long[] mk_tokenSet_16() {
-		long[] data = { 9007199254740992L, 524288L, 0L, 0L};
+		long[] data = { 18014398509481984L, 1048576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
 	private static final long[] mk_tokenSet_17() {
-		long[] data = { 8522826224L, 536870912L, 0L, 0L};
+		long[] data = { 17045652464L, 1073741824L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
 	private static final long[] mk_tokenSet_18() {
-		long[] data = { 81346268269379824L, 536903680L, 0L, 0L};
+		long[] data = { 162692536538759664L, 1073807360L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
 	private static final long[] mk_tokenSet_19() {
-		long[] data = { 9007199254740992L, 1572864L, 0L, 0L};
+		long[] data = { 18014398509481984L, 3145728L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_19 = new BitSet(mk_tokenSet_19());
 	private static final long[] mk_tokenSet_20() {
-		long[] data = { 9007199254740992L, 0L};
+		long[] data = { 18014398509481984L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_20 = new BitSet(mk_tokenSet_20());
 	private static final long[] mk_tokenSet_21() {
-		long[] data = { 2801238968283168768L, 2096117L, 0L, 0L};
+		long[] data = { 5602477936566337536L, 4192234L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_21 = new BitSet(mk_tokenSet_21());
 	private static final long[] mk_tokenSet_22() {
-		long[] data = { -81064793233948672L, 2097151L, 0L, 0L};
+		long[] data = { -162129586467897344L, 4194303L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_22 = new BitSet(mk_tokenSet_22());
 	private static final long[] mk_tokenSet_23() {
-		long[] data = { 207165582917763072L, 1966080L, 0L, 0L};
+		long[] data = { 414331165835526144L, 3932160L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_23 = new BitSet(mk_tokenSet_23());
 	private static final long[] mk_tokenSet_24() {
-		long[] data = { 207165582917763072L, 1966144L, 0L, 0L};
+		long[] data = { 414331165835526144L, 3932288L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_24 = new BitSet(mk_tokenSet_24());
 	private static final long[] mk_tokenSet_25() {
-		long[] data = { 207165582917763072L, 1966176L, 0L, 0L};
+		long[] data = { 414331165835526144L, 3932352L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_25 = new BitSet(mk_tokenSet_25());
 	private static final long[] mk_tokenSet_26() {
-		long[] data = { 207165582917763072L, 1967072L, 0L, 0L};
+		long[] data = { 414331165835526144L, 3934144L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_26 = new BitSet(mk_tokenSet_26());
 	private static final long[] mk_tokenSet_27() {
-		long[] data = { 207165582917763072L, 1973216L, 0L, 0L};
+		long[] data = { 414331165835526144L, 3946432L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_27 = new BitSet(mk_tokenSet_27());
 	private static final long[] mk_tokenSet_28() {
-		long[] data = { 207165582917763072L, 2096096L, 0L, 0L};
+		long[] data = { 414331165835526144L, 4192192L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_28 = new BitSet(mk_tokenSet_28());
 	private static final long[] mk_tokenSet_29() {
-		long[] data = { 2801238968283168768L, 2096096L, 0L, 0L};
+		long[] data = { 5602477936566337536L, 4192192L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_29 = new BitSet(mk_tokenSet_29());
 	private static final long[] mk_tokenSet_30() {
-		long[] data = { -5759857632777076736L, 968884224L, 0L, 0L};
+		long[] data = { 6927028808155398144L, 1937768449L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_30 = new BitSet(mk_tokenSet_30());
 	private static final long[] mk_tokenSet_31() {
-		long[] data = { 2310592899470852096L, 964689920L, 0L, 0L};
+		long[] data = { 4621185798941704192L, 1929379840L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_31 = new BitSet(mk_tokenSet_31());

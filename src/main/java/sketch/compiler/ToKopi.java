@@ -15,17 +15,31 @@
  */
 
 package streamit.frontend;
-import java.io.*;
+import java.io.Writer;
 import java.util.List;
-import java.util.Iterator;
-import streamit.frontend.nodes.*;
-import streamit.frontend.passes.*;
-import streamit.frontend.tojava.*;
-import at.dms.kjc.*;
-import at.dms.kjc.sir.*;
-import at.dms.kjc.sir.lowering.*;
-import at.dms.kjc.iterator.*;
-import at.dms.util.*;
+
+import streamit.frontend.nodes.MakeBodiesBlocks;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.passes.CreateInitFunctions;
+import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.FindFreeVariables;
+import streamit.frontend.passes.NoRefTypes;
+import streamit.frontend.passes.NoticePhasedFilters;
+import streamit.frontend.passes.RenameBitVars;
+import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.tojava.ComplexToStruct;
+import streamit.frontend.tojava.DoComplexProp;
+import streamit.frontend.tojava.InsertInitConstructors;
+import streamit.frontend.tojava.MoveStreamParameters;
+import streamit.frontend.tojava.NameAnonymousFunctions;
+import streamit.frontend.tojava.TranslateEnqueue;
+import at.dms.kjc.JInterfaceDeclaration;
+import at.dms.kjc.sir.SIRInterfaceTable;
+import at.dms.kjc.sir.SIRStream;
+import at.dms.kjc.sir.SIRStructure;
+import at.dms.kjc.sir.lowering.Flattener;
 
 /**
  * Read StreamIt programs and run them through the main compiler.

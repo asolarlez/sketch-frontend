@@ -145,6 +145,7 @@ struct_stream_decl[StreamType st] returns [StreamSpec ss]
 	:	( TK_pipeline { type = StreamSpec.STREAM_PIPELINE; }
 		| TK_splitjoin { type = StreamSpec.STREAM_SPLITJOIN; }
 		| TK_feedbackloop { type = StreamSpec.STREAM_FEEDBACKLOOP; }
+		| TK_sbox { type = StreamSpec.STREAM_TABLE; }
 		)
 		id:ID
 		(params=param_decl_list)?
@@ -237,9 +238,13 @@ portal_spec returns [List p] { p = null; Expression pn; }
 	;
 
 anonymous_stream returns [StreamCreator sc]
-{ sc = null; StreamType st = null; List params = new ArrayList();
-Statement body; List types = new ArrayList(); Type t; StreamSpec ss = null;
-List p = null; int sst = 0; FEContext ctx = null; }
+{ 	sc = null; 
+	StreamType st = null; 
+	List params = new ArrayList();
+	Statement body; List types = new ArrayList(); 
+	Type t; StreamSpec ss = null;
+	List p = null; int sst = 0; FEContext ctx = null; 
+}
 	: (st=stream_type_decl)?
 		( tf:TK_filter
 			ss=filter_body[getContext(tf), st, null, Collections.EMPTY_LIST]
@@ -251,6 +256,9 @@ List p = null; int sst = 0; FEContext ctx = null; }
 				{ ctx = getContext(ts); sst = StreamSpec.STREAM_SPLITJOIN; }
 			| tl:TK_feedbackloop
 				{ ctx = getContext(tl); sst = StreamSpec.STREAM_FEEDBACKLOOP; }
+			| tt:TK_sbox
+				{ ctx = getContext(tt); sst = StreamSpec.STREAM_TABLE; }
+
 			) body=block ((p=portal_spec)? SEMI)?
 			{ sc = new SCAnon(ctx, sst, body, p); }
 		)
@@ -296,9 +304,9 @@ splitter_or_joiner returns [SplitterJoiner sj]
 				sj = new SJDuplicate(getContext(tag), SJDuplicate.OR ); 
 			}else if( tag.getText().equals("and") ){
 				sj = new SJDuplicate(getContext(tag), SJDuplicate.AND ); 
+			}else{
+				assert false: tag.getText()+ " is not a valid splitter";
 			}
-			assert false: tag.getText()+ " is not a valid splitter";
-			
 		}
 	;
 

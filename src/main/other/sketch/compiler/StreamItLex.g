@@ -37,7 +37,7 @@ options {
 
 tokens {
 	// Stream types:
-	"filter"; "pipeline"; "splitjoin"; "feedbackloop";
+	"filter"; "pipeline"; "splitjoin";  "sbox"; "feedbackloop";
 	// Messaging:
 	"portal"; "to"; "handler";
 	// Composite streams:
