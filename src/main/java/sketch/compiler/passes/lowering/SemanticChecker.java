@@ -16,9 +16,61 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.controlflow.*;
-import streamit.frontend.nodes.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import streamit.frontend.controlflow.CFG;
+import streamit.frontend.controlflow.CFGBuilder;
+import streamit.frontend.controlflow.CFGNode;
+import streamit.frontend.controlflow.CountLattice;
+import streamit.frontend.controlflow.DataFlow;
+import streamit.frontend.controlflow.Lattice;
+import streamit.frontend.controlflow.StatementCounter;
+import streamit.frontend.controlflow.StrictTypeLattice;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.UnrecognizedVariableException;
 
 /**
  * Perform checks on the semantic correctness of a StreamIt program.
