@@ -18,10 +18,9 @@
 // it can move.  --dzm
 package streamit.frontend.nodes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import java.util.ArrayList;
 
 /**
  * A pass to propagate complex values upwards in expression trees.
