@@ -1,0 +1,145 @@
+Filter filterA;
+WORK ()
+{
+  {
+    {
+      __temp_var_0_1 = INPUT_0;
+      OUTPUT_0_0 = __temp_var_0_1;
+    }
+    {
+      __temp_var_0_3 = INPUT_1;
+      OUTPUT_1_0 = __temp_var_0_3;
+    }
+    {
+      __temp_var_0_5 = INPUT_2;
+      OUTPUT_2_0 = __temp_var_0_5;
+    }
+    ;
+  }
+  OUTPUT_0 = OUTPUT_0_0;
+  OUTPUT_1 = OUTPUT_1_0;
+  OUTPUT_2 = OUTPUT_2_0;
+}
+
+INIT ()
+{
+  input_RATE = 3;
+  ;
+  output_RATE = 3;
+  ;
+}
+
+Filter filterB;
+WORK ()
+{
+  {
+    {
+      __temp_var_3_1 = INPUT_0;
+      {
+        __temp_var_1_1 = INPUT_0;
+        t_2 = __temp_var_1_1;
+      }
+      {
+        __temp_var_2_1 = INPUT_0;
+      }
+      t_3 = (__temp_var_3_1 == 0) ? t_2 : 1;
+      __temp_var_1_2 =
+        (__temp_var_3_1 == 0) ? __temp_var_1_1 : __temp_var_1_2;
+      __temp_var_2_2 =
+        (!(__temp_var_3_1 == 0)) ? __temp_var_2_1 : __temp_var_2_2;
+
+      OUTPUT_0_0 = (t_3 || 0);
+      tm1_1 = t_3;
+    }
+    {
+      __temp_var_3_3 = INPUT_1;
+      {
+        __temp_var_1_4 = INPUT_1;
+        t_6 = __temp_var_1_4;
+      }
+      {
+        __temp_var_2_4 = INPUT_1;
+      }
+      t_7 = (__temp_var_3_3 == 0) ? t_6 : 1;
+      __temp_var_1_5 =
+        (__temp_var_3_3 == 0) ? __temp_var_1_4 : __temp_var_1_5;
+      __temp_var_2_5 =
+        (!(__temp_var_3_3 == 0)) ? __temp_var_2_4 : __temp_var_2_5;
+
+      OUTPUT_1_0 = (t_7 || (tm1_1 && 0));
+      tm2_2 = tm1_1;
+      tm1_2 = t_7;
+    }
+    {
+      __temp_var_3_5 = INPUT_2;
+      {
+        __temp_var_1_7 = INPUT_2;
+        t_10 = __temp_var_1_7;
+      }
+      {
+        __temp_var_2_7 = INPUT_2;
+      }
+      t_11 = (__temp_var_3_5 == 0) ? t_10 : 1;
+      __temp_var_1_8 =
+        (__temp_var_3_5 == 0) ? __temp_var_1_7 : __temp_var_1_8;
+      __temp_var_2_8 =
+        (!(__temp_var_3_5 == 0)) ? __temp_var_2_7 : __temp_var_2_8;
+
+      OUTPUT_2_0 = (t_11 || (tm1_2 && tm2_2));
+      tm2_3 = tm1_2;
+      tm1_3 = t_11;
+    }
+    {
+      __temp_var_3_7 = INPUT_3;
+      {
+        __temp_var_1_10 = INPUT_3;
+        t_14 = __temp_var_1_10;
+      }
+      {
+        __temp_var_2_10 = INPUT_3;
+      }
+      t_15 = (__temp_var_3_7 == 0) ? t_14 : 1;
+      __temp_var_1_11 =
+        (__temp_var_3_7 == 0) ? __temp_var_1_10 : __temp_var_1_11;
+      __temp_var_2_11 =
+        (!(__temp_var_3_7 == 0)) ? __temp_var_2_10 : __temp_var_2_11;
+
+      OUTPUT_3_0 = (t_15 || (tm1_3 && tm2_3));
+      tm2_4 = tm1_3;
+      tm1_4 = t_15;
+    }
+    {
+      __temp_var_3_9 = INPUT_4;
+      {
+        __temp_var_1_13 = INPUT_4;
+        t_18 = __temp_var_1_13;
+      }
+      {
+        __temp_var_2_13 = INPUT_4;
+      }
+      t_19 = (__temp_var_3_9 == 0) ? t_18 : 1;
+      __temp_var_1_14 =
+        (__temp_var_3_9 == 0) ? __temp_var_1_13 : __temp_var_1_14;
+      __temp_var_2_14 =
+        (!(__temp_var_3_9 == 0)) ? __temp_var_2_13 : __temp_var_2_14;
+
+      OUTPUT_4_0 = (t_19 || (tm1_4 && tm2_4));
+      tm2_5 = tm1_4;
+      tm1_5 = t_19;
+    }
+    ;
+  }
+  OUTPUT_0 = OUTPUT_0_0;
+  OUTPUT_1 = OUTPUT_1_0;
+  OUTPUT_2 = OUTPUT_2_0;
+  OUTPUT_3 = OUTPUT_3_0;
+  OUTPUT_4 = OUTPUT_4_0;
+}
+
+INIT ()
+{
+  input_RATE = 5;
+  ;
+  output_RATE = 5;
+  ;
+}

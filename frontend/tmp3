@@ -1,0 +1,125 @@
+Filter filterA;
+WORK ()
+{
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:6
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:8
+  __temp_var_0_3L0_1 = INPUT_0;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:9
+  OUTPUT_0_0 = __temp_var_0_3L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:9
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:8
+  __temp_var_0_4L0_1 = INPUT_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:9
+  OUTPUT_1_0 = __temp_var_0_4L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:9
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:8
+  __temp_var_0_5L0_1 = INPUT_2;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:9
+  OUTPUT_2_0 = __temp_var_0_5L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:9
+  // }
+  ;				// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:8
+  // }
+  OUTPUT_0 = OUTPUT_0_0;
+  OUTPUT_1 = OUTPUT_1_0;
+  OUTPUT_2 = OUTPUT_2_0;
+}
+
+INIT ()
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:3
+  input_RATE = 3;
+;				// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:6
+output_RATE = 3;
+;				// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:6
+ // }
+
+     Filter filterB;
+WORK ()
+{
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:20
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:23
+  __temp_var_3_3L1_1 = INPUT_0;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  __temp_var_1_4L0_1 = INPUT_0;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  t_3L0_2 = __temp_var_1_4L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  __temp_var_2_5L0_1 = INPUT_0;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  // }
+  t_3L0_3 = (__temp_var_3_3L1_1 == 0) ? t_3L0_2 : 1;
+  // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+  OUTPUT_0_0 = (t_3L0_3 || 0);	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:29
+  tm1_1L0_1 = t_3L0_3;		// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:31
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:23
+  __temp_var_3_6L1_1 = INPUT_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  __temp_var_1_7L0_1 = INPUT_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  t_6L0_2 = __temp_var_1_7L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  __temp_var_2_8L0_1 = INPUT_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  // }
+  t_6L0_3 = (__temp_var_3_6L1_1 == 0) ? t_6L0_2 : 1;
+  // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+  OUTPUT_1_0 = (t_6L0_3 || (tm1_1L0_1 && 0));	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:29
+  tm2_1L1_2 = tm1_1L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:30
+  tm1_1L0_2 = t_6L0_3;		// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:31
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:23
+  __temp_var_3_9L1_1 = INPUT_2;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  __temp_var_1_10L0_1 = INPUT_2;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  t_9L0_2 = __temp_var_1_10L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  __temp_var_2_11L0_1 = INPUT_2;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  // }
+  t_9L0_3 = (__temp_var_3_9L1_1 == 0) ? t_9L0_2 : 1;
+  // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+  OUTPUT_2_0 = (t_9L0_3 || (tm1_1L0_2 && tm2_1L1_2));	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:29
+  tm2_1L1_3 = tm1_1L0_2;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:30
+  tm1_1L0_3 = t_9L0_3;		// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:31
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:23
+  __temp_var_3_12L1_1 = INPUT_3;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  __temp_var_1_13L0_1 = INPUT_3;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  t_12L0_2 = __temp_var_1_13L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  __temp_var_2_14L0_1 = INPUT_3;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  // }
+  t_12L0_3 = (__temp_var_3_12L1_1 == 0) ? t_12L0_2 : 1;
+  // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+  OUTPUT_3_0 = (t_12L0_3 || (tm1_1L0_3 && tm2_1L1_3));	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:29
+  tm2_1L1_4 = tm1_1L0_3;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:30
+  tm1_1L0_4 = t_12L0_3;		// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:31
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:23
+  __temp_var_3_15L1_1 = INPUT_4;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  __temp_var_1_16L0_1 = INPUT_4;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  t_15L0_2 = __temp_var_1_16L0_1;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:26
+  // }
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  __temp_var_2_17L0_1 = INPUT_4;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:28
+  // }
+  t_15L0_3 = (__temp_var_3_15L1_1 == 0) ? t_15L0_2 : 1;
+  // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:25
+  OUTPUT_4_0 = (t_15L0_3 || (tm1_1L0_4 && tm2_1L1_4));	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:29
+  tm2_1L1_5 = tm1_1L0_4;	// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:30
+  tm1_1L0_5 = t_15L0_3;		// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:31
+  // }
+  ;				// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:23
+  // }
+  OUTPUT_0 = OUTPUT_0_0;
+  OUTPUT_1 = OUTPUT_1_0;
+  OUTPUT_2 = OUTPUT_2_0;
+  OUTPUT_3 = OUTPUT_3_0;
+  OUTPUT_4 = OUTPUT_4_0;
+}
+
+INIT ()
+// {                    // C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:17
+  input_RATE = 5;
+;				// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:20
+output_RATE = 5;
+;				// C:\Armando\Research\Bodik\StreamIt\Compiler\streamit-src-2.0\src\tmp.str:20
+ // }

@@ -1,0 +1,98 @@
+int->int filter NFilter{
+  int x, y, z;
+  work push 1 pop 1{
+    push( foo( pop() ) );
+  }
+  int foo(int t){
+    x = x+2;
+    return t+x;
+  }
+  init{
+    x = 22;
+  }
+}
+
+
+bit->bit filter filterFST{
+  work push 1 { 
+    push(1);
+  }
+}
+
+bit->bit filter IntSource {
+  boolean x;
+  init {
+    x = true; 
+  }
+  work push 2 pop 3{
+    boolean x1 = (pop()==1);
+    boolean x2 = (pop()==1);
+    bit x3 = (x1? 1:0);
+    bit x4 = (x2?1:0);
+    push(x3);
+    push(x4);
+    pop();	  	
+  }
+}
+
+
+bit->bit filter filterA {
+  init {
+
+  }
+  work push 3 pop 3{
+    int x;
+    for(int i=0; i<3; ++i){
+      push(pop());
+    }
+  }
+}
+
+
+bit->bit filter filterB {
+
+  init {
+
+  }
+  work push 5 pop 5{
+    int tm1 = 0;
+    int tm2 = 0;
+    for(int i=0; i<5; ++i){
+      int t=1;
+      if(peek(0) == 0)
+	t = pop();
+      else
+	pop();
+      push(t || tm1 && tm2);
+      tm2 = tm1;
+      tm1 = t;
+    }
+  }
+}
+
+
+bit->bit pipeline filterC{
+  add filterFST();
+  add filterA();
+  add filterB();
+  add int -> int filter {
+     work push 3 pop 3{
+    int x;
+    for(int i=0; i<3; ++i){
+      push(pop());
+    }
+     }
+  }
+}
+
+
+bit->bit splitjoin tmp{
+  int i=1;
+  split duplicate;
+  for(int j=0; j<2; ++j){
+    add filterA();
+  }
+  add filterB();
+  join roundrobin(i); 
+
+}
