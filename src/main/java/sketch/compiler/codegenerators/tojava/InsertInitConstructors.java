@@ -16,12 +16,31 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
-
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.ArrayList;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
 
 /**
  * Inserts statements in init functions to call member object constructors.

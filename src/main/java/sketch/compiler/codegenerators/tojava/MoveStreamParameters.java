@@ -16,12 +16,29 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.ArrayList;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
 
 /**
  * Move stream parameters into fields, and generate constructors and
