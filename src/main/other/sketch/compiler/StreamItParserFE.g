@@ -288,6 +288,18 @@ splitter_or_joiner returns [SplitterJoiner sj]
 		)
 	| td:TK_duplicate (LPAREN RPAREN)?
 		{ sj = new SJDuplicate(getContext(td)); }
+	| tag: ID (LPAREN RPAREN)?
+		{ 	
+			if( tag.getText().equals("xor") ){
+				sj = new SJDuplicate(getContext(tag), SJDuplicate.XOR ); 
+			}else if( tag.getText().equals("or") ){
+				sj = new SJDuplicate(getContext(tag), SJDuplicate.OR ); 
+			}else if( tag.getText().equals("and") ){
+				sj = new SJDuplicate(getContext(tag), SJDuplicate.AND ); 
+			}
+			assert false: tag.getText()+ " is not a valid splitter";
+			
+		}
 	;
 
 enqueue_statement returns [Statement s] { s = null; Expression x; }

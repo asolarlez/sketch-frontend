@@ -961,8 +961,9 @@ public class FEIRToSIR implements FEVisitor, Constants {
         return SIRSplitter.create((SIRContainer) parent,
                                   SIRSplitType.DUPLICATE, 2);
     else
-        // Not allowed.
-        return null;
+    	return SIRSplitter.create((SIRContainer) parent,
+                SIRSplitType.DUPLICATE, 2);
+        
   }
 
   public Object visitSJRoundRobin(SJRoundRobin sj) {
