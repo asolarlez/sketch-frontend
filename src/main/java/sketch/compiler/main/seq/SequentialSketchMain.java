@@ -15,12 +15,40 @@
  */
 
 package streamit.frontend;
-import java.io.*;
-import java.util.List;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Iterator;
-import streamit.frontend.nodes.*;
-import streamit.frontend.passes.*;
-import streamit.frontend.tojava.*;
+import java.util.List;
+
+import streamit.frontend.nodes.MakeBodiesBlocks;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.passes.AssembleInitializers;
+import streamit.frontend.passes.AssignLoopTypes;
+import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.FindFreeVariables;
+import streamit.frontend.passes.GenerateCopies;
+import streamit.frontend.passes.NoRefTypes;
+import streamit.frontend.passes.NoticePhasedFilters;
+import streamit.frontend.passes.RenameBitVars;
+import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.tojava.ComplexToStruct;
+import streamit.frontend.tojava.DoComplexProp;
+import streamit.frontend.tojava.EnqueueToFunction;
+import streamit.frontend.tojava.InsertIODecls;
+import streamit.frontend.tojava.InsertInitConstructors;
+import streamit.frontend.tojava.MoveStreamParameters;
+import streamit.frontend.tojava.NameAnonymousFunctions;
+import streamit.frontend.tojava.NodesToSBit;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -256,7 +284,7 @@ public class ToSBit
                 outWriter = new OutputStreamWriter(System.out);
 
             String javaOut =
-                (String)prog.accept(new NodesToSBit(null, varGen) /* NodesToJava(false, varGen)*/);
+                (String)prog.accept( new NodesToSBit(null, varGen) /*  new NodesToJava(false, varGen)*/);
             outWriter.write(javaOut);
             outWriter.flush();
         }
