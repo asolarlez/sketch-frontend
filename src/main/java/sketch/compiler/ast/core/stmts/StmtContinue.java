@@ -37,5 +37,24 @@ public class StmtContinue extends Statement
     {
         return v.visitStmtContinue(this);
     }
+
+    public boolean equals(Object other)
+    {
+        // No state; any two continue statements are equal.
+        if (other instanceof StmtContinue)
+            return true;
+        return false;
+    }
+
+    public int hashCode()
+    {
+        // No state, so...
+        return 17;
+    }
+    
+    public String toString()
+    {
+        return "continue";
+    }
 }
 
