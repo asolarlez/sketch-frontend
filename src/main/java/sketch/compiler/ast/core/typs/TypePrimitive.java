@@ -25,21 +25,55 @@ package streamit.frontend.nodes;
  */
 public class TypePrimitive extends Type
 {
+    /** Type constant for bit types. */
     public static final int TYPE_BIT = 1;
+    /** Type constant for int types. */
     public static final int TYPE_INT = 2;
+    /** Type constant for float types. */
     public static final int TYPE_FLOAT = 3;
+    /** Type constant for double types; unused in StreamIt. */
     public static final int TYPE_DOUBLE = 4;
+    /** Type constant for complex primitive types. */
     public static final int TYPE_COMPLEX = 5;
+    /** Type constant for void types. */
     public static final int TYPE_VOID = 6;
+    /** Type constant for boolean types. */
     public static final int TYPE_BOOLEAN = 7;
+
+    /** Type object for boolean types. */
+    public static final TypePrimitive booltype =
+        new TypePrimitive(TYPE_BOOLEAN);
+    /** Type object for bit types. */
+    public static final TypePrimitive bittype = new TypePrimitive(TYPE_BIT);
+    /** Type object for int types. */
+    public static final TypePrimitive inttype = new TypePrimitive(TYPE_INT);
+    /** Type object for float types. */
+    public static final TypePrimitive floattype =
+        new TypePrimitive(TYPE_FLOAT);
+    /** Type object for complex primitive types. */
+    public static final TypePrimitive cplxtype =
+        new TypePrimitive(TYPE_COMPLEX);
+    /** Type object for void types. */
+    public static final TypePrimitive voidtype =
+        new TypePrimitive(TYPE_VOID);
     
     private int type;
 
+    /**
+     * Create a new primitive type.
+     *
+     * @param type  integer type number, one of the TYPE_* constants
+     */
     public TypePrimitive(int type)
     {
         this.type = type;
     }
     
+    /**
+     * Get the type number for this type.
+     *
+     * @return  integer type number, one of the TYPE_* constants
+     */
     public int getType()
     {
         return type;
@@ -73,6 +107,47 @@ public class TypePrimitive extends Type
         }
     }
     
+    /**
+     * Check if this type can be promoted to some other type.
+     * Returns true if a value of this type can be assigned to
+     * a variable of that type.  For primitive types, promotions
+     * are ordered: boolean -> bit -> int -> float -> complex.
+     *
+     * @param that  other type to check promotion to
+     * @return      true if this can be promoted to that
+     */
+    public boolean promotesTo(Type that)
+    {
+        if (super.promotesTo(that))
+            return true;
+        if (!(that instanceof TypePrimitive))
+            return false;
+
+        int t1 = this.type;
+        int t2 = ((TypePrimitive)that).type;
+        
+        // want: "t1 < t2", more or less
+        switch(t1)
+        {
+        case TYPE_BOOLEAN:
+            return t2 == TYPE_BOOLEAN || t2 == TYPE_BIT ||
+                t2 == TYPE_INT || t2 == TYPE_FLOAT ||
+                t2 == TYPE_COMPLEX;
+        case TYPE_BIT:
+            return t2 == TYPE_BIT || t2 == TYPE_INT ||
+                t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
+        case TYPE_INT:
+            return t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
+        case TYPE_FLOAT:
+            return t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
+        case TYPE_COMPLEX:
+            return t2 == TYPE_COMPLEX;
+        default:
+            assert false : t1;
+            return false;
+        }
+    }
+
     public boolean equals(Object other)
     {
         // Two cases.  One, this is complex, and so is that:
