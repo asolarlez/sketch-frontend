@@ -6,9 +6,76 @@
  */
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
-import java.util.*;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprComplex;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstChar;
+import streamit.frontend.nodes.ExprConstFloat;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstStr;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEVisitor;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.SJDuplicate;
+import streamit.frontend.nodes.SJRoundRobin;
+import streamit.frontend.nodes.SJWeightedRR;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEmpty;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPhase;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtSendMessage;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePortal;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 
 
 class varState{
@@ -331,14 +398,17 @@ class MethodState{
 					result = "";
 				}else{
 					//In this case, we find that we need to unset this guy because it changed.
-					result = this.UTvarGetLHSName( nm ) + " = " + 
+					 result = " = " +
 						cond + "? " + ((varValue)me.getValue()).getValue() + " : " + this.UTvarValue( nm ) + "; \n";
+					 result = this.UTvarGetLHSName( nm ) + result;
 					this.UTunsetVarValue( nm );
 				}
 			}else{
 				//And ditto for this case.
-				result = this.UTvarGetLHSName( nm ) + " = " + 
+				result = " = " +
 					cond + "? " + ((varValue)me.getValue()).getValue() + " : " + this.UTvarGetRHSName( nm ) + "; \n";
+				result = this.UTvarGetLHSName( nm ) + result;
+				
 				this.UTunsetVarValue( nm );
 			}
 		}else{
@@ -350,8 +420,9 @@ class MethodState{
 			}else{
 				v1 = this.UTvarGetRHSName(nm ,  ((varValue)me.getValue()).lastLHS);
 			}
-			result = this.UTvarGetLHSName( nm ) + " = " + 
-				cond + "? " + v1 + " : " + this.UTvarGetRHSName( nm )  + "; \n";  
+			result = " = " + 
+				cond + "? " + v1 + " : " + this.UTvarGetRHSName( nm )  + "; \n";
+			result = this.UTvarGetLHSName( nm ) + result;
 			this.UTunsetVarValue((String)me.getKey());
 		}
 		return result;
@@ -453,7 +524,7 @@ class MethodState{
 		}
 		return result;
 	}
-	
+
 
 	String procChangeTrackers(ChangeStack ms1, String cond){
 		String result = ""; 
@@ -489,14 +560,15 @@ class MethodState{
 	
 	int UTvarValue(String var){
 		
-		varState i = (varState) vars.get(var);
-		Assert(i.hasVal(), "The value of " + var + " is input dependent, but it's not supposed to be.\n");
+		varState i = (varState) vars.get(var);		
 		if(changeTracker == null){			
+			Assert(i.hasVal(), "The value of " + var + " is input dependent, but it's not supposed to be.\n");
 			return i.getVal();
 		}else{
 			if( changeTracker.varHasValue(var) ){
 				return changeTracker.varValue(var);
 			}else{
+				Assert(i.hasVal(), "The value of " + var + " is input dependent, but it's not supposed to be.\n");
 				return i.getVal();
 			}						
 		}
@@ -509,7 +581,7 @@ class MethodState{
 	
 	void UTsetVarValue(String var, int v){		
 		varState tv = (varState) vars.get(var);
-		Assert(tv != null, "FLASASDFASDF   This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
+		Assert(tv != null, " This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
 		if(changeTracker != null){
 			if(tv == null){
 				//This branch will never be taken.
@@ -642,7 +714,7 @@ public class NodesToSBit implements FEVisitor{
 	        this.state = new MethodState();
 	        funsWParams = new HashMap();
 	        preFil = new Stack();
-	        nativeGenerator = new NodesToNative(ss, varGen, state);
+	        nativeGenerator = new NodesToNative(ss, varGen, state, this);
 	        
 	    }
 	    public String finalizeWork(){
@@ -726,8 +798,9 @@ public class NodesToSBit implements FEVisitor{
 	        {
 	            TypeArray array = (TypeArray)type;
 	            String len = (String)array.getLength().accept(this);
-	            assert state.popVStack() != null: "This should never happen";
-	            return convertTypeFull(array.getBase()) + "[" + len + "]";
+	            Integer i = state.popVStack();
+	            assert  i != null: "This should never happen";
+	            return convertTypeFull(array.getBase()) + "[" + i + "]";
 	        }
 	        return convertType(type);
 	    }
@@ -1443,6 +1516,7 @@ public class NodesToSBit implements FEVisitor{
 			        Function finit = sp.getFuncNamed("init");
 			        Iterator piter = finit.getParams().iterator();
 			        Iterator viter = creator.getParams().iterator();
+			        Assert(finit.getParams().size() == creator.getParams().size() , nm + " The number of formal parameters doesn't match the number of actual parameters!!");
 			        while(viter.hasNext()){
 			        	Expression paramv = (Expression)viter.next();			        	
 			        	Parameter paramp = (Parameter) piter.next();
@@ -1562,7 +1636,26 @@ public class NodesToSBit implements FEVisitor{
 	    	
 	        String op;
 	        
+	        
+
 	        this.vs.unset();
+	        
+	        Integer vrhs = null;
+	        String rhs = (String)stmt.getRHS().accept(this);
+	        vrhs = state.popVStack();	        	           			        
+	        
+	        if(vrhs != null){
+	        	rhs = vrhs.toString();
+	        }
+	        
+	        List rhsLst = null;
+	        if( this.vs.has() ){
+	        	rhsLst= this.vs.get();
+	        }
+	        
+	        
+	        
+	        
 	        this.isLHS = true;
 	        String lhs = (String)stmt.getLHS().accept(this);
 	        this.isLHS = false;
@@ -1582,19 +1675,9 @@ public class NodesToSBit implements FEVisitor{
 	        if(isArr && this.vs.has() ){	        	
 	        	lhsLst= this.vs.get();	
 	        }
-
-	        
-	        Integer vrhs = null;
-	        String rhs = (String)stmt.getRHS().accept(this);
-	        vrhs = state.popVStack();
 	        
 	        
-    		
 	        
-	        
-	        if(vrhs != null){
-	        	rhs = vrhs.toString();
-	        }
 	        
 	        boolean hv = vlhs != null && vrhs != null;
 	        
@@ -1625,9 +1708,9 @@ public class NodesToSBit implements FEVisitor{
 	        	}
 	        break;
 	        default: op = " = ";
-		        if( this.vs.has() ){
+		        if( rhsLst != null ){
 		        	assert isArr: "This should not happen, you are trying to assign an array to a non-array";
-		    		List lst= this.vs.get();
+		    		List lst= rhsLst;
 		    		Iterator it = lst.iterator();
 		    		int idx = 0;
 		    		while( it.hasNext() ){

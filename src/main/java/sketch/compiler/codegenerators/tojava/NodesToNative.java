@@ -114,6 +114,7 @@ class VarStack{
 
 public class NodesToNative extends  NodesToJava
 {    
+	private NodesToSBit nts;
     private  VarStack vstack;
     private MethodState fatherstate;
     // A string consisting of an even number of spaces.    
@@ -125,9 +126,10 @@ public class NodesToNative extends  NodesToJava
     	}
     }
     
-    public NodesToNative(StreamSpec ss, TempVarGen varGen, MethodState fatherstate)
+    public NodesToNative(StreamSpec ss, TempVarGen varGen, MethodState fatherstate, NodesToSBit nts)
     {
-    	super( true, varGen );    	
+    	super( true, varGen );    
+    	this.nts = nts;
     	this.setSs(ss);
     	this.fatherstate = fatherstate;
     	vstack = new VarStack();
@@ -496,11 +498,11 @@ public class NodesToNative extends  NodesToJava
         	result += (String)func.getBody().accept(this);
         	result += "###NATIVE_CODE_END\n";
         	if( ((FuncWork)func).getPopRate() != null)
-        		result += "input_RATE = " + ((FuncWork)func).getPopRate().accept(this) + ";\n";
+        		result += "input_RATE = " + ((FuncWork)func).getPopRate().accept(this.nts) + ";\n";
         	else
         		result += "input_RATE = 0;\n";
         	if(((FuncWork)func).getPushRate() != null)
-        		result += "output_RATE = " + ((FuncWork)func).getPushRate().accept(this) + ";\n";
+        		result += "output_RATE = " + ((FuncWork)func).getPushRate().accept(this.nts) + ";\n";
         	else
         		result += "output_RATE = 0;\n";
         	result += "}\n";        	
