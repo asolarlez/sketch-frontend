@@ -121,11 +121,11 @@ returns [StreamSpec ss]
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
 	List xs = new ArrayList(); FEContext ctx = null; }
-	:	t=data_type id:ID (ASSIGN x=right_expr)?
+	:	t=data_type id:ID (ASSIGN x=var_initializer)?
 		{ ctx = getContext(id); ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
 			{ x = null; }
-			COMMA id2:ID (ASSIGN x=right_expr)?
+			COMMA id2:ID (ASSIGN x=var_initializer)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
 		{ f = new FieldDecl(ctx, ts, ns, xs); }
@@ -210,6 +210,7 @@ statement returns [Statement s] { s = null; }
 	|	s=do_while_statement SEMI
 	|	s=for_statement
 	|	s=msg_statement SEMI
+	|   SEMI
 	;
 
 add_statement returns [Statement s] { s = null; StreamCreator sc; }
@@ -320,11 +321,11 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	List xs = new ArrayList(); FEContext ctx = null; }
 	:	t=data_type
 		id:ID { ctx = getContext(id); }
-		(ASSIGN x=right_expr)?
+		(ASSIGN x=var_initializer)?
 		{ ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
 			{ x = null; }
-			COMMA id2:ID (ASSIGN x=right_expr)?
+			COMMA id2:ID (ASSIGN x=var_initializer)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
 		{ s = new StmtVarDecl(ctx, ts, ns, xs); }
@@ -358,7 +359,7 @@ param_decl returns [Parameter p] { Type t; p = null; }
 	;
 
 block returns [Statement s] { s = null; List l = new ArrayList(); }
-	:	t:LCURLY ( s=statement { l.add(s); } )* RCURLY
+	:	t:LCURLY ( s=statement { if (s != null) l.add(s); } )* RCURLY
 		{ s = new StmtBlock(getContext(t), l); }
 	;
 
@@ -385,19 +386,22 @@ do_while_statement returns [Statement s]
 	;
 
 for_statement returns [Statement s]
-{ s = null; Expression x; Statement a, b, c; }
-	:	t:TK_for LPAREN a=for_init_statement SEMI x=right_expr SEMI
-		b=for_incr_statement RPAREN c=statement
+{ s = null; Expression x=null; Statement a, b, c; }
+	:	t:TK_for LPAREN a=for_init_statement SEMI
+		(x=right_expr | { x = new ExprConstBoolean(getContext(t), true); })
+		SEMI b=for_incr_statement RPAREN c=statement
 		{ s = new StmtFor(getContext(t), a, x, b, c); }
 	;
 
 for_init_statement returns [Statement s] { s = null; }
 	:	(variable_decl) => s=variable_decl
 	|	(expr_statement) => s=expr_statement
+	|   (SEMI) /* empty */ => { s = new StmtEmpty(null); }
 	;
 
 for_incr_statement returns [Statement s] { s = null; }
 	:	s=expr_statement
+	|   /* empty */ { s = new StmtEmpty(null); }
 	;
 
 expr_statement returns [Statement s] { s = null; Expression x; }
@@ -440,6 +444,22 @@ left_expr returns [Expression x] { x = null; }
 right_expr returns [Expression x] { x = null; }
 	:	x=ternaryExpr
 	;
+
+var_initializer returns [Expression x] { x = null; }
+	:	x=right_expr
+        | x=arr_initializer
+	;
+
+arr_initializer returns [Expression x] { ArrayList l = new ArrayList(); 
+                                         x = null;
+                                         Expression y; }
+    : lc:LCURLY
+      ( y=var_initializer { l.add(y); }
+            (COMMA y=var_initializer { l.add(y); })*
+      )?
+      RCURLY
+        { x = new ExprArrayInit(getContext(lc), l); } 
+    ;
 
 ternaryExpr returns [Expression x] { x = null; Expression b, c; }
 	:	x=logicOrExpr

@@ -256,7 +256,7 @@ public class ToSBit
                 outWriter = new OutputStreamWriter(System.out);
 
             String javaOut =
-                (String)prog.accept(new NodesToSBit(null, varGen));
+                (String)prog.accept(new NodesToSBit(null, varGen) /* NodesToJava(false, varGen)*/);
             outWriter.write(javaOut);
             outWriter.flush();
         }

@@ -45,7 +45,7 @@ public class FEIRToSIR implements FEVisitor, Constants {
     private Type getType(Expression expr)
     {
         // To think about: should we cache GetExprType objects?
-        return (Type)expr.accept(new GetExprType(symtab, null)); // streamType
+        return (Type)expr.accept(new GetExprType(symtab, null, new HashMap())); // streamType
     }
     private TokenReference contextToReference(FEContext ctx)
     {
@@ -477,6 +477,15 @@ public class FEIRToSIR implements FEVisitor, Constants {
 				      (JExpression) exp.getBase().accept(this),
 				      (JExpression) exp.getOffset().accept(this));
   }
+
+    public Object visitExprArrayInit(ExprArrayInit exp) {
+	debug("In visitExprArrayInit\n");
+	JExpression[] elems = new JExpression[exp.getElements().size()];
+	for (int i=0; i<elems.length; i++) {
+	    elems[i] = (JExpression)((Expression)exp.getElements().get(i)).accept(this);
+	}
+	return new JArrayInitializer(null, elems);
+    }
 
   public Object visitExprBinary(ExprBinary exp) {
     debug("In visitExprBinary\n");
@@ -1073,6 +1082,12 @@ public class FEIRToSIR implements FEVisitor, Constants {
 			    (JStatement) stmt.getBody().accept(this),
 			    null);
   }
+
+    public Object visitStmtEmpty(StmtEmpty stmt) 
+    {
+        debug("In visitStmtEmpty\n");
+        return new JEmptyStatement(null, null);
+    }
 
   public Object visitStmtEnqueue(StmtEnqueue stmt) {
     debug("In visitStmtEnqueue\n");
