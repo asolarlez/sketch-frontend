@@ -16,13 +16,16 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.ArrayList;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
 
 /**
  * Base class for visitors that add statements to classes' init functions.
