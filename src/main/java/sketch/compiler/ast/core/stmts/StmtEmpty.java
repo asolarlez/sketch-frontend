@@ -17,43 +17,26 @@
 package streamit.frontend.nodes;
 
 /**
- * A simple break statement.  This statement is used to exit the
- * innermost section of control flow, such as a for or while loop.
+ * An empty statement.  This does nothing; it is mostly useful as a
+ * placeholder in things like for loops.
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class StmtBreak extends Statement
+public class StmtEmpty extends Statement
 {
-    /** Creates a new break statement. */
-    public StmtBreak(FEContext context)
+    /** 
+     * Creates a new empty statement.
+     *
+     * @param context   File and line number the statement corresponds to
+     */
+    public StmtEmpty(FEContext context)
     {
         super(context);
     }
-
-    /** Accept a front-end visitor. */
+    
     public Object accept(FEVisitor v)
     {
-        return v.visitStmtBreak(this);
-    }
-
-    public boolean equals(Object other)
-    {
-        // No state; any two break statements are equal.
-        if (other instanceof StmtBreak)
-            return true;
-        return false;
-    }
-
-    public int hashCode()
-    {
-        // No state, so...
-        return 17;
-    }
-    
-    public String toString()
-    {
-        return "break";
+        return v.visitStmtEmpty(this);
     }
 }
-
