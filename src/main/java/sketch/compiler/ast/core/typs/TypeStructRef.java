@@ -39,4 +39,34 @@ public class TypeStructRef extends Type
     {
         return name;
     }
+
+    public boolean equals(Object other)
+    {
+        if (other instanceof TypeStruct)
+        {
+            TypeStruct that = (TypeStruct)other;
+            return name.equals(that.getName());
+        }
+        
+        if (other instanceof TypeStructRef)
+        {
+            TypeStructRef that = (TypeStructRef)other;
+            return this.name.equals(that.name);
+        }
+        
+        if (this.isComplex() && other instanceof Type)
+            return ((Type)other).isComplex();
+        
+        return false;
+    }
+    
+    public int hashCode()
+    {
+        return name.hashCode();
+    }
+    
+    public String toString()
+    {
+        return name;
+    }
 }
