@@ -16,12 +16,22 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
 
 /**
  * Convert anonymous streams into named streams.  Anonymous streams

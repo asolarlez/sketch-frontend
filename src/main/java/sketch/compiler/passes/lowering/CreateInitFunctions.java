@@ -16,11 +16,15 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StreamSpec;
 
 /**
  * Create init functions in filters that do not have them.  Later passes
