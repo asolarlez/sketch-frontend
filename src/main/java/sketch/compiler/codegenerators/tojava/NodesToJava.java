@@ -592,7 +592,18 @@ public class NodesToJava implements FEVisitor
 
     public Object visitSJDuplicate(SJDuplicate sj)
     {
-        return "DUPLICATE()";
+    	switch(sj.getType()){
+    		case SJDuplicate.DUP:
+    			return "DUPLICATE()";
+    		case SJDuplicate.XOR:
+    			return "XOR()";
+    		case SJDuplicate.OR:
+    			return "OR()";
+    		case SJDuplicate.AND:
+    			return "AND()";
+    		default:
+    			return "DUPLICATE()";
+    	}
     }
 
     public Object visitSJRoundRobin(SJRoundRobin sj)
