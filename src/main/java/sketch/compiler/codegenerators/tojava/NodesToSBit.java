@@ -1,0 +1,1988 @@
+/*
+ * Created on Jun 22, 2004
+ *
+ * 
+ * Window - Preferences - Java - Code Generation - Code and Comments
+ */
+package streamit.frontend.tojava;
+
+import streamit.frontend.nodes.*;
+import java.util.*;
+
+
+class varState{
+	
+	private String name;
+	boolean hasval;
+	private int value;
+	private int currentLHS;
+	private int currentRHS;
+	private Stack RHSstack;
+	
+	public varState(int v){
+		value = v;
+		currentLHS = 0;
+		currentRHS = 0;
+		RHSstack = new Stack();
+		hasval = true;
+	}
+	
+	public varState(String nm, int v){
+		this.name = nm;
+		value = v;
+		currentLHS = 0;
+		currentRHS = 0;
+		RHSstack = new Stack();
+		hasval = true;
+	}
+
+	public varState(String nm){
+		this.name = nm;
+		value = 0;
+		currentLHS = 0;
+		currentRHS = 0;
+		RHSstack = new Stack();
+		hasval = false;
+	}
+	
+	public void setVal(int v){
+		value = v;
+		hasval = true;
+	}
+	
+	public boolean hasVal(){
+		return hasval;
+	}
+	
+	public int getVal(){
+		return value;
+	}
+	
+	public String getRHSName(){
+		return name + "_" + currentRHS;
+	}
+	
+	public String getRHSName(int temporaryRHS){
+		return name + "_" + temporaryRHS;
+	}
+	
+	public int getRHS(){
+		return currentRHS;
+	}
+	
+	public String getLHSName(){
+		String rv = name + "_" + currentLHS;
+		currentRHS = currentLHS;
+		++currentLHS;
+		return rv;		
+	}
+		
+	public void pushRHS(){
+		RHSstack.push(new Integer(currentRHS));		
+	}	
+	public boolean popRHS(){
+		if(RHSstack.size() > 0){
+			currentRHS =  ((Integer)RHSstack.pop()).intValue();
+			return true;
+		}else
+			return false;
+	}		
+}
+
+
+class varValue{
+	int lastLHS;
+	private int value;
+	boolean hasValue;
+	varValue(){
+		lastLHS=0;
+		value = 0;
+		hasValue = false;
+	}
+	varValue(int val){
+		lastLHS=0;
+		value = val;
+		hasValue = true;
+	}
+	varValue(int val, int lhs){
+		lastLHS=lhs;
+		value = val;
+		hasValue = true;
+	}
+	public boolean equals(Object o){
+		varValue vv = (varValue)o;
+		return (vv.hasValue && hasValue) && value == vv.value;
+	}
+	public void setValue(int value) {
+		this.value = value;
+		this.hasValue = true;
+	}
+	public int getValue() {
+		return value;
+	}
+}
+
+
+class ChangeStack{
+	HashMap currTracker; //<String, int>
+	ChangeStack kid;
+	ChangeStack(){
+		kid = null;
+		currTracker = new HashMap();
+	}
+	boolean varHasValue(String var){
+		varValue i = (varValue)currTracker.get(var);
+		if(i != null)
+			return i.hasValue;
+		else
+			return kid != null && kid.varHasValue(var); 
+	}
+	
+	int varValue(String var){
+		varValue i = (varValue)currTracker.get(var);
+		if( i != null){
+			MethodState.Assert(i.hasValue, "This variable has been set to top at this level, and consequently doesn't have value even though it exists.");
+			return i.getValue();
+		}else{
+			return kid.varValue(var);
+		}
+	}	
+	void setVarValue(String var, int v){
+		varValue i = (varValue)currTracker.get(var);
+		if(i == null)
+			currTracker.put(var, new varValue(v) );
+		else{
+			i.setValue(v);
+		}
+	}
+	public void unsetVarValue(String var, varState vs){
+		varValue i = (varValue)currTracker.get(var);
+		if(i!= null){
+			i.hasValue = false;
+		}else{
+			i = new varValue();
+			i.lastLHS = vs.getRHS();
+			i.hasValue = false;
+			currTracker.put(var, i);
+		}
+		/*
+		if(kid != null){
+			kid.unsetVarValue(var);
+		}
+		*/
+	}
+	
+	void declVarLHS(String var, varState vs){
+		varValue i = (varValue)currTracker.get(var);		
+		if(i== null){
+			i = new varValue();
+			i.lastLHS = vs.getRHS();
+			currTracker.put(var, i);
+		}else{
+			i.lastLHS = vs.getRHS();
+		}
+	}
+}
+
+class MapStack{
+	HashMap curVT; //HashMap<String, String>
+	MapStack kid;
+	MapStack(){
+		curVT = new HashMap();
+	}
+	String transName(String nm){
+		String t = (String) curVT.get(nm);
+		if(t != null)
+			return t;
+		else
+			if(kid != null)
+				return kid.transName(nm);
+			else
+				return nm;
+	}
+}
+
+class MethodState{
+	private HashMap vars;	//<String, varState>	
+	private MapStack varTranslator;
+	private Stack vstack;
+	private ChangeStack changeTracker;
+	private int pushcount;
+	
+    public static void Assert(boolean t, String s){
+    	if(!t){
+    		System.err.println(s);    		
+    		System.exit(1);
+    	}
+    }
+    
+    void varDeclare(String var){
+    	// System.out.println("DECLARED " + var);
+		String newname = var + "_" + pushcount +"L" + varTranslator.curVT.size();
+		varTranslator.curVT.put(var, newname);
+    }
+    
+    void pushLevel(){
+    	++pushcount;
+    	MapStack tmp = varTranslator;
+    	varTranslator = new MapStack();
+    	varTranslator.kid = tmp;    	    	    	
+    }
+    
+    void popLevel(){
+    	Iterator it = varTranslator.curVT.values().iterator();
+    	while(it.hasNext()){
+    		String nm = (String) it.next();
+    		//System.out.println("Unseting " + nm);
+    		this.vars.remove(nm);
+    		if(this.changeTracker != null){
+    			changeTracker.currTracker.remove(nm);
+    		}
+    	}
+    	varTranslator = varTranslator.kid;
+    }
+    
+    String transName(String nm){       	
+    	String otpt = varTranslator.transName(nm);
+    	// System.out.println(nm + " = " +  otpt);
+    	return  otpt;
+    }
+    
+	int idx;
+	MethodState(){
+		// System.out.println("New Method State for new method.");
+		vars = new HashMap();			
+		vstack = new Stack();		
+		changeTracker = null;
+		varTranslator = new MapStack();
+	}
+	
+
+	void pushChangeTracker(){	
+		if(changeTracker == null){
+			changeTracker = new ChangeStack();
+		}else{
+			ChangeStack tmp = changeTracker;
+			changeTracker = new ChangeStack();
+			changeTracker.kid  = tmp;
+		}
+		Iterator it =vars.values().iterator();	
+		while(it.hasNext()){						
+			varState vs = (varState) it.next();
+			vs.pushRHS();
+		}
+	}
+	
+	ChangeStack popChangeTracker(){
+		ChangeStack tmp = changeTracker;
+		changeTracker = changeTracker.kid;
+		Iterator it = vars.values().iterator();
+		while(it.hasNext()){
+			varState vs = (varState) it.next();
+			if(!vs.popRHS()){
+				Assert(!vs.hasVal(), "If I am at the lowest level, it means I am new, and therefore I can't have a value. This is a BUG.");
+			}			
+		}
+		return tmp;
+	}
+	
+	private String checkAndUnset(Map.Entry me, String cond){
+		String result;
+		//This is to be called when a mapEntry changed in one branch but not
+		//in the other, or if there is no other.
+		String nm = ((String)me.getKey());
+		if( ((varValue)me.getValue()).hasValue ){					
+			if(this.UTvarHasValue( nm ) ){
+				if(this.UTvarValue( nm ) == ((varValue)me.getValue()).getValue() ){
+					//In this case, our optimism pays off and we don't have to do anything,
+					//because even though the value changed, in the end it didn't really change.
+					//result = this.varGetLHSName( nm ) + " = " +  this.varGetRHSName( nm ) + ";";
+					result = "";
+				}else{
+					//In this case, we find that we need to unset this guy because it changed.
+					result = this.UTvarGetLHSName( nm ) + " = " + 
+						cond + "? " + ((varValue)me.getValue()).getValue() + " : " + this.UTvarValue( nm ) + "; \n";
+					this.UTunsetVarValue( nm );
+				}
+			}else{
+				//And ditto for this case.
+				result = this.UTvarGetLHSName( nm ) + " = " + 
+					cond + "? " + ((varValue)me.getValue()).getValue() + " : " + this.UTvarGetRHSName( nm ) + "; \n";
+				this.UTunsetVarValue( nm );
+			}
+		}else{
+			//in this case, the value was modified in the branch, but it was modified to top,
+			//so we have to unset it, and we need to have a ? for it to select the right value at runtime.	
+			String v1 = null;
+			if(((varValue)me.getValue()).hasValue){
+				v1 = " " + ((varValue)me.getValue()).getValue();
+			}else{
+				v1 = this.UTvarGetRHSName(nm ,  ((varValue)me.getValue()).lastLHS);
+			}
+			result = this.UTvarGetLHSName( nm ) + " = " + 
+				cond + "? " + v1 + " : " + this.UTvarGetRHSName( nm )  + "; \n";  
+			this.UTunsetVarValue((String)me.getKey());
+		}
+		return result;
+	}
+	
+	public void unsetVarValue(String var){
+		var = this.transName(var);
+		UTunsetVarValue(var);
+	}
+	
+	public void UTunsetVarValue(String var){
+		
+		varState i = (varState) vars.get(var);
+		Assert(i != null , "This can't happen, if it does, i'ts a BUG");
+		if(changeTracker != null){					
+			changeTracker.unsetVarValue(var, i);						
+		}else{
+			i.hasval = false;
+		}
+		
+	}
+	
+	String procChangeTrackers(ChangeStack ms1, ChangeStack ms2, String cond){	
+		String result = "";
+		Iterator it = ms1.currTracker.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry me = (Map.Entry) it.next();	
+			String nm = (String)me.getKey();
+			if(ms2.currTracker.containsKey( nm )){
+				//This means the me.getKey() was modified on both branches.
+				if(ms2.currTracker.get( nm ).equals(me.getValue())){
+					//This means there is an intersection and the values match, and they both have values.
+					// Let's see if we can get away without this statement: result += this.varGetLHSName( nm ) + " = " +  ((varValue)me.getValue()).getValue() + "; \n";
+					this.UTsetVarValue((String)me.getKey(), ((varValue)me.getValue()).getValue());					
+				}else{
+					//This means there is an intersection but either the values don't match, or they are both top.
+					//Then we need to make that key equal to top, and we can make it top
+					//All the way through, since if it is top at this join point, it will
+					//Be top at all other subsequent join points.
+					varValue nv = (varValue) ms2.currTracker.get( nm );
+					String v1 = null, v2=null;
+					if(((varValue)me.getValue()).hasValue){
+						v1 = " " + ((varValue)me.getValue()).getValue();
+					}else{
+						v1 = this.UTvarGetRHSName(nm ,  ((varValue)me.getValue()).lastLHS);
+					}
+					if(nv.hasValue){
+						v2 = " " + nv.getValue();
+					}else{
+						v2 = this.UTvarGetRHSName(nm,  nv.lastLHS);
+					}
+					result += this.UTvarGetLHSName( nm ) + " = " + 
+						cond + "? " + v1 + " : " + v2  + "; \n";
+					this.UTunsetVarValue((String)me.getKey());
+				}
+				ms2.currTracker.remove(me.getKey());
+			}else{
+				//In this case, it means me.getKey() was in ms1 but not in ms2,
+				//So on one branch it got modified, but on the other one it didn't.
+				//If we wanted to be really conservative, we could 
+				//say "Oh, it changed on one branch and not on another, so it's top"
+				//However, we will be more precise and see if it really changed, or if it's value is still the same.
+				//If it's value is still the same, the it didn't really change.
+				result += checkAndUnset(me, cond);
+			}
+		}
+		//Now, at this point, we have removed from ms2 all the items
+		//that were also in ms1. So all the ones that are left in ms2
+		//Are the ones that are in ms2 alone. 
+		//Once again, if we wanted to be conservative, we would just
+		//unset them all, but we'll see if we can get away with being nice
+		//and only unset them if they are actually different from what they were originally.
+		//This is checked, just as before, by checkAndUnset(...);
+		Iterator it2 = ms2.currTracker.entrySet().iterator();
+		while(it2.hasNext()){
+			Map.Entry me = (Map.Entry) it2.next();
+			result += checkAndUnset(me, "(!" + cond + ")");
+		}
+		return result;
+	}
+	
+
+	String procChangeTrackers(ChangeStack ms1, String cond){
+		String result = ""; 
+		Iterator it = ms1.currTracker.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry me = (Map.Entry) it.next();
+			result += checkAndUnset(me, cond);					
+		}
+		return result;
+	}
+	
+	
+	private boolean localVarHasValue(String var){
+		return vars.containsKey(var) && ((varState)vars.get(var)).hasVal();
+	}
+	
+	private boolean UTvarHasValue(String var){
+		if( changeTracker == null )
+			return localVarHasValue(var);
+		else
+			return localVarHasValue(var) ||  changeTracker.varHasValue(var);
+	}
+	
+	boolean varHasValue(String var){
+		var = this.transName(var);
+		return UTvarHasValue(var);
+	}
+	
+	int varValue(String var){
+		var = this.transName(var);
+		return UTvarValue(var);		
+	}
+	
+	int UTvarValue(String var){
+		
+		varState i = (varState) vars.get(var);
+		Assert(i.hasVal(), "The value of " + var + " is input dependent, but it's not supposed to be.\n");
+		if(changeTracker == null){			
+			return i.getVal();
+		}else{
+			if( changeTracker.varHasValue(var) ){
+				return changeTracker.varValue(var);
+			}else{
+				return i.getVal();
+			}						
+		}
+	}
+	
+	void setVarValue(String var, int v){
+		var = this.transName(var);
+		UTsetVarValue(var,v);
+	}
+	
+	void UTsetVarValue(String var, int v){		
+		varState tv = (varState) vars.get(var);
+		Assert(tv != null, "This should never happen, because before seting the value, you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
+		if(changeTracker != null){
+			if(tv == null){
+				//This branch will never be taken.
+				vars.put(var, new varState(var));
+			}
+			changeTracker.setVarValue(var, v);
+		}else{
+			if(tv == null){
+				//This branch will never be taken.
+				vars.put(var, new varState(var, v));
+			}else{
+				tv.setVal(v);
+			}
+		}
+	}
+	
+	String varGetRHSName(String var){		
+		var = this.transName(var);
+		return UTvarGetRHSName(var);
+	}
+	
+	
+	
+	String UTvarGetRHSName(String var){				
+		if(this.UTvarHasValue(var)){
+			return "" + this.UTvarValue(var) ;
+		}else{
+			varState tv = (varState) vars.get(var);
+			Assert(tv != null, "You are using variable " + var + " before initializing it.");
+			return tv.getRHSName();
+		}
+	}
+	
+	String UTvarGetRHSName(String var, int tmprhs){		
+		varState tv = (varState) vars.get(var);
+		Assert(tv != null, "You are using variable " + var + " before initializing it.");
+		return tv.getRHSName(tmprhs);
+	}
+	
+	String varGetLHSName(String var){
+		var = this.transName(var);
+		return UTvarGetLHSName(var);
+	}
+	
+	
+	String UTvarGetLHSName(String var){		
+		varState tv = (varState) vars.get(var);
+		if(tv == null){
+			tv = new varState(var);
+			vars.put(var, tv);
+		}
+		String nm = tv.getLHSName();
+		
+		if(changeTracker != null){
+			changeTracker.declVarLHS(var, tv);
+		}
+		return nm;			
+	}
+	
+	void pushVStack(Integer val){
+		//We always push, but we push null when there is no value.
+		vstack.push(val);
+	}
+	Integer popVStack(){
+		return (Integer) vstack.pop();
+	}
+}
+
+
+
+
+
+
+/**
+ * The purpose of this class is to generate streamBit friendly input from a filter description.
+ * @author asolar
+ *
+ *  
+ * 
+ */
+public class NodesToSBit implements FEVisitor{
+	   private StreamSpec ss;
+	    // A string consisting of an even number of spaces.
+	    private String indent;
+	    private TempVarGen varGen;
+	    private MethodState state;
+	    private boolean isLHS;
+	    private NodesToNative nativeGenerator;
+	    private HashMap funsWParams;
+	    private Stack preFil;
+	    private List additInit;
+	    
+	    private void Assert(boolean t, String s){
+	    	if(!t){
+	    		System.err.println(s);
+	    		System.err.println( ss.getContext() );
+	    		System.exit(1);
+	    	}
+	    }
+	    private int boolToInt(boolean b){	    	
+	    	if(b)
+	    		return 1;
+	    	else 
+	    		return 0;
+	    }
+	    private boolean intToBool(int v){
+	    	if(v>0)
+	    		return true;
+	    	else
+	    		return false;
+	    }
+	    public NodesToSBit(StreamSpec ss, TempVarGen varGen)
+	    {
+	        this.ss = ss;
+	        this.indent = "";
+	        this.varGen = varGen;
+	        this.isLHS = false;	 
+	        this.state = new MethodState();
+	        funsWParams = new HashMap();
+	        preFil = new Stack();
+	        nativeGenerator = new NodesToNative(ss, varGen, state);
+	        
+	    }
+	    public String finalizeWork(){
+	    	String result = "";
+	    	int noutputs = state.varValue("PUSH_POS");
+	    	for(int i=0; i< noutputs; ++i){
+	    		String nm = "OUTPUT_" + i;
+	    		result += nm + " = ";	    		
+	    		result += state.varGetRHSName(nm) + "; \n";
+	    		state.unsetVarValue(nm);
+	    		
+	    	}
+	    	return result;
+	    }
+	    
+	    public void initializeWork(){	    
+	        state.varDeclare("POP_POS");
+	    	state.varDeclare("PUSH_POS");
+	    	
+	    	state.varGetLHSName("POP_POS");
+	        state.varGetLHSName("PUSH_POS");
+	    	
+	        state.setVarValue("POP_POS", 0 );
+	        state.setVarValue("PUSH_POS", 0 );
+	    }
+	    // Add two spaces to the indent.
+	    private void addIndent() 
+	    {
+	        //indent += "  ";
+	    }
+	    
+	    // Remove two spaces from the indent.
+	    private void unIndent()
+	    {
+	        //indent = indent.substring(2);
+	    }
+
+	    // Convert a Type to a String.  If visitors weren't so generally
+	    // useless for other operations involving Types, we'd use one here.
+	    public static String convertType(Type type)
+	    {
+	        // This is So Wrong in the greater scheme of things.
+	        if (type instanceof TypeArray)
+	        {
+	            TypeArray array = (TypeArray)type;
+	            String base = convertType(array.getBase());
+	            return base + "[]";
+	        }
+	        else if (type instanceof TypeStruct)
+		{
+		    return ((TypeStruct)type).getName();
+		}
+		else if (type instanceof TypeStructRef)
+	        {
+		    return ((TypeStructRef)type).getName();
+	        }
+	        else if (type instanceof TypePrimitive)
+	        {
+	            switch (((TypePrimitive)type).getType())
+	            {
+	            case TypePrimitive.TYPE_BOOLEAN: return "boolean";
+	            case TypePrimitive.TYPE_BIT: return "int";
+	            case TypePrimitive.TYPE_INT: return "int";
+	            case TypePrimitive.TYPE_FLOAT: return "float";
+	            case TypePrimitive.TYPE_DOUBLE: return "double";
+	            case TypePrimitive.TYPE_COMPLEX: return "Complex";
+	            case TypePrimitive.TYPE_VOID: return "void";
+	            }
+	        }
+	        else if (type instanceof TypePortal)
+	        {
+	            return ((TypePortal)type).getName() + "Portal";
+	        }
+	        return null;
+	    }
+
+	    // Do the same conversion, but including array dimensions.
+	    public String convertTypeFull(Type type)
+	    {
+	        if (type instanceof TypeArray)
+	        {
+	            TypeArray array = (TypeArray)type;
+	            return convertTypeFull(array.getBase()) + "[" +
+	                (String)array.getLength().accept(this) + "]";
+	        }
+	        return convertType(type);
+	    }
+
+	    // Get a constructor for some type.
+	    public String makeConstructor(Type type)
+	    {
+	        if (type instanceof TypeArray)
+	            return "new " + convertTypeFull(type);
+	        else
+	            return "new " + convertTypeFull(type) + "()";
+	    }
+
+	    // Get a Java Class object corresponding to a type.
+	    public String typeToClass(Type t)
+	    {
+	        if (t instanceof TypePrimitive)
+	        {
+	            switch (((TypePrimitive)t).getType())
+	            {
+	            case TypePrimitive.TYPE_BOOLEAN:
+	                return "Boolean.TYPE";
+	            case TypePrimitive.TYPE_BIT:
+	                return "Integer.TYPE";
+	            case TypePrimitive.TYPE_INT:
+	                return "Integer.TYPE";
+	            case TypePrimitive.TYPE_FLOAT:
+	                return "Float.TYPE";
+	            case TypePrimitive.TYPE_DOUBLE:
+	                return "Double.TYPE";
+	            case TypePrimitive.TYPE_VOID:
+	                return "Void.TYPE";
+	            case TypePrimitive.TYPE_COMPLEX:
+	                return "Complex.class";
+	            }
+	        }
+	        else if (t instanceof TypeStruct)
+	            return ((TypeStruct)t).getName() + ".class";
+	        else if (t instanceof TypeArray)
+	            return "(" + makeConstructor(t) + ").getClass()";
+	        // Errp.
+	        System.err.println("typeToClass(): I don't understand " + t);
+	        return null;
+	    }
+
+	    // Helpers to get function names for stream types.
+	    public static String pushFunction(StreamType st)
+	    {
+	        return annotatedFunction("output.push", st.getOut());
+	    }
+	    
+	    public static String popFunction(StreamType st)
+	    {
+	        return annotatedFunction("input.pop", st.getIn());
+	    }
+	    
+	    public static String peekFunction(StreamType st)
+	    {
+	        return annotatedFunction("input.peek", st.getIn());
+	    }
+	    
+	    private static String annotatedFunction(String name, Type type)
+	    {
+	        String prefix = "", suffix = "";
+	        // Check for known suffixes:
+	        if (type instanceof TypePrimitive)
+	        {
+	            switch (((TypePrimitive)type).getType())
+	            {
+	            case TypePrimitive.TYPE_BOOLEAN:
+	                suffix = "Boolean";
+	                break;
+	            case TypePrimitive.TYPE_BIT:
+	                suffix = "Int";
+	                break;
+	            case TypePrimitive.TYPE_INT:
+	                suffix = "Int";
+	                break;
+	            case TypePrimitive.TYPE_FLOAT:
+	                suffix = "Float";
+	                break;
+	            case TypePrimitive.TYPE_DOUBLE:
+	                suffix = "Double";
+	                break;
+	            case TypePrimitive.TYPE_COMPLEX:
+	                if (name.startsWith("input"))
+	                    prefix  = "(Complex)";
+	                break;
+	            }
+	        }
+	        else if (name.startsWith("input"))
+	        {
+	            prefix = "(" + convertType(type) + ")";
+	        }
+	        return prefix + name + suffix;
+	    }
+
+	    // Return a representation of a list of Parameter objects.
+	    public String doParams(List params, String prefix)
+	    {
+	        String result = "(";
+	        boolean first = true;
+	        for (Iterator iter = params.iterator(); iter.hasNext(); )
+	        {
+	            Parameter param = (Parameter)iter.next();
+	            if (!first) result += ", ";
+	            if (prefix != null) result += prefix + " ";
+	            result += convertType(param.getType());
+	            result += " ";
+	            result += param.getName();
+	            first = false;
+	        }
+	        result += ")";
+	        return result;
+	    }
+
+	    // Return a representation of lhs = rhs, with no trailing semicolon.
+	    public String doAssignment(Expression lhs, Expression rhs,
+	                               SymbolTable symtab)
+	    {	        
+	        // We can use a null stream type here since the left-hand
+	        // side shouldn't contain pushes, pops, or peeks.	        
+            // Might want to special-case structures and arrays;
+            // ignore for now.
+	    	this.isLHS = true;
+	    	String lhss = (String) lhs.accept(this);
+	    	this.isLHS = false;	    	
+	    	lhss = state.varGetLHSName(lhss);
+	    	
+	    	Integer vlhs = state.popVStack();
+	    	String rhss = (String) rhs.accept(this);
+	    	Integer vrhs =  state.popVStack();
+	    	if(vrhs != null){
+	    		state.setVarValue(lhss, vrhs.intValue());
+	    		return  lhss + " = " + vrhs;
+	    	}else{
+	    		return  lhss + " = " + rhss;
+	    	}
+	    }
+
+	    public Object visitExprArray(ExprArray exp)
+	    {
+	    	//Assert(false, "NYI");	    	
+	    	Assert(exp.getBase() instanceof ExprVar, "Currently only 1 dimensional arrays are supported. \n" + exp.getContext());
+	    	ExprVar base = (ExprVar)exp.getBase();
+	    	
+	    	boolean ilhs = this.isLHS;
+	    	this.isLHS = false;
+	    	
+	    	String vname =  base.getName();	    	
+	    	exp.getOffset().accept(this);
+	    	Integer ofst = state.popVStack();
+	    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());	    	
+	    	vname = vname + "_idx_" + ofst;
+	    	this.isLHS = ilhs;
+	    	
+	    	if( state.varHasValue( vname ) ){
+	    		state.pushVStack( new Integer(state.varValue(vname)) );	    		
+	    	}else{
+	    		state.pushVStack(null);
+	    	}
+	    	if(this.isLHS)
+	    		return vname;
+	    	else
+	    		return state.varGetRHSName( vname );	    	
+	    }
+	    
+	    public Object visitExprBinary(ExprBinary exp)
+	    {
+	        String result;
+	        String op = null;
+	        result = "(";
+	        String lhsStr =(String)exp.getLeft().accept(this); 	        
+	        Integer lhs = state.popVStack();	        
+	        String rhsStr = (String)exp.getRight().accept(this);
+	        Integer rhs = state.popVStack();
+	        boolean hasv = lhs != null && rhs != null;
+	        if( lhs != null)
+	        	lhsStr = lhs.toString();
+	        if( rhs != null)
+	        	rhsStr = rhs.toString();
+	        
+	        int newv=0;
+	        
+	        switch (exp.getOp())
+	        {
+	        case ExprBinary.BINOP_ADD: op = "+"; if(hasv) newv = lhs.intValue() + rhs.intValue(); break;
+	        case ExprBinary.BINOP_SUB: op = "-"; if(hasv) newv = lhs.intValue() - rhs.intValue(); break;
+	        case ExprBinary.BINOP_MUL: op = "*"; if(hasv) newv = lhs.intValue() * rhs.intValue(); break;
+	        case ExprBinary.BINOP_DIV: op = "/"; if(hasv) newv = lhs.intValue() / rhs.intValue(); break;
+	        case ExprBinary.BINOP_MOD: op = "%"; if(hasv) newv = lhs.intValue() % rhs.intValue(); break;
+	        case ExprBinary.BINOP_AND: op = "&&"; if(hasv) newv = boolToInt( intToBool(lhs.intValue()) && intToBool(rhs.intValue())); break;
+	        case ExprBinary.BINOP_OR:  op = "||"; if(hasv) newv = boolToInt( intToBool(lhs.intValue()) || intToBool(rhs.intValue())); break;
+	        case ExprBinary.BINOP_EQ:  op = "=="; if(hasv) newv = boolToInt(lhs.intValue() == rhs.intValue()); break;
+	        case ExprBinary.BINOP_NEQ: op = "!="; if(hasv) newv = boolToInt(lhs.intValue() != rhs.intValue()); break;
+	        case ExprBinary.BINOP_LT:  op = "<"; if(hasv) newv = boolToInt(lhs.intValue() < rhs.intValue()); break;
+	        case ExprBinary.BINOP_LE:  op = "<="; if(hasv) newv = boolToInt(lhs.intValue() <= rhs.intValue()); break;
+	        case ExprBinary.BINOP_GT:  op = ">"; if(hasv) newv = boolToInt(lhs.intValue() > rhs.intValue()); break;
+	        case ExprBinary.BINOP_GE:  op = ">="; if(hasv) newv = boolToInt(lhs.intValue() >= rhs.intValue()); break;
+	        case ExprBinary.BINOP_BAND:op = "&"; if(hasv) newv = boolToInt( intToBool(lhs.intValue()) && intToBool(rhs.intValue())); break;
+	        case ExprBinary.BINOP_BOR: op = "|"; if(hasv) newv = boolToInt( intToBool(lhs.intValue()) || intToBool(rhs.intValue()));; break;
+	        case ExprBinary.BINOP_BXOR:op = "^"; if(hasv) newv = boolToInt(lhs.intValue() != rhs.intValue()); break;
+	        }	        
+	        result += lhsStr + " " + op + " ";
+	        result += rhsStr;
+	        result += ")";
+	        if(hasv){
+	        	state.pushVStack(new Integer(newv));	
+	        	result = "" + newv;
+	        }else{
+	        	state.pushVStack(null);
+	        }	        	
+	        return result;
+	    }
+
+	    public Object visitExprComplex(ExprComplex exp)
+	    {
+	        // This should cause an assertion failure, actually.
+	    	Assert(false, "NYS");
+	        String r = "";
+	        String i = "";
+	        if (exp.getReal() != null) r = (String)exp.getReal().accept(this);
+	        if (exp.getImag() != null) i = (String)exp.getImag().accept(this);
+	        return "/* (" + r + ")+i(" + i + ") */";
+	    }
+
+	    public Object visitExprConstBoolean(ExprConstBoolean exp)
+	    {
+	        if (exp.getVal()){
+	        	state.pushVStack(new Integer(1));
+	            return "true";
+	        }else{
+	        	state.pushVStack(new Integer(0));
+	            return "false";
+	        }
+	    }
+
+	    public Object visitExprConstChar(ExprConstChar exp)
+	    {
+	    	Assert(false, "NYS");
+	        return "'" + exp.getVal() + "'";
+	    }
+
+	    public Object visitExprConstFloat(ExprConstFloat exp)
+	    {
+	    	Assert(false, "NYS");
+	        return Double.toString(exp.getVal()) + "f";
+	    }
+
+	    public Object visitExprConstInt(ExprConstInt exp)
+	    {
+	    	state.pushVStack(new Integer(exp.getVal()));
+	        return Integer.toString(exp.getVal());
+	    }
+	    
+	    public Object visitExprConstStr(ExprConstStr exp)
+	    {
+	    	Assert(false, "NYS");
+	        return exp.getVal();
+	    }
+
+	    public Object visitExprField(ExprField exp)
+	    {
+	    	Assert(false, "NYS");
+	        String result = "";
+	        result += (String)exp.getLeft().accept(this);
+	        result += ".";
+	        result += (String)exp.getName();
+	        return result;
+	    }
+
+	    public Object visitExprFunCall(ExprFunCall exp)
+	    {	    	
+	    	String result;
+	        String name = exp.getName();
+	        // Local function?
+	        if (ss.getFuncNamed(name) != null) {
+	            result = name + "(";
+	        }
+		// look for print and println statements; assume everything
+		// else is a math function
+		else if (name.equals("print")) {
+			System.err.println("The StreamBit compiler currently doesn't allow print statements in bit->bit filters.");
+		    return "";
+		} else if (name.equals("println")) {
+		    result = "System.out.println(";
+			System.err.println("The StreamBit compiler currently doesn't allow print statements in bit->bit filters.");
+		    return "";
+	        } else if (name.equals("super")) {
+	            result = "";
+	        } else if (name.equals("setDelay")) {
+	            result = "";
+	        } else if (name.startsWith("enqueue")) {	        	
+	            result = "";
+		} else {
+			Assert(false, "The streamBit compiler currently doesn't allow bit->bit filters to call other functions. You are trying to call the function" + name);
+		    // Math.sqrt will return a double, but we're only supporting
+		    // float's now, so add a cast to float.  Not sure if this is
+		    // the right thing to do for all math functions in all cases?
+		    result = "(float)Math." + name + "(";
+		}	        
+	        return result;
+	    }
+
+	    public Object visitExprPeek(ExprPeek exp)
+	    {
+	    	int poppos = state.varValue("POP_POS");
+	        String result = (String)exp.getExpr().accept(this);
+	        Integer arg = state.popVStack();
+	        state.pushVStack(null);
+	        Assert(arg != null, "I can not tell at compile time where you are peeking.");
+	        return "INPUT_" + (arg.intValue()+poppos);
+	        //return peekFunction(ss.getStreamType()) + "(" + result + ")";
+	    }
+	    
+	    public Object visitExprPop(ExprPop exp)
+	    {
+	    	int poppos = state.varValue("POP_POS");
+	    	state.pushVStack(null);
+	    	state.setVarValue("POP_POS", poppos+1);
+	    	return "INPUT_" +  poppos;
+	        //return popFunction(ss.getStreamType()) + "()";
+	    }
+
+	    public Object visitExprTernary(ExprTernary exp)
+	    {
+	        String a = (String)exp.getA().accept(this);
+	        Integer aval = state.popVStack();
+	        String b = (String)exp.getB().accept(this);
+	        Integer bval = state.popVStack();
+	        String c = (String)exp.getC().accept(this);
+	        Integer cval = state.popVStack();
+	        switch (exp.getOp())
+	        {
+	        case ExprTernary.TEROP_COND:	        	
+        		if(aval != null){
+        			if( intToBool(aval.intValue()) ){
+        				if(bval != null){
+        					state.pushVStack(new Integer(  bval.intValue() ));
+        				}else{
+        					state.pushVStack(null);
+        				}
+        			}else{
+        				if(cval != null){
+        					state.pushVStack(new Integer(  cval.intValue() ));
+        				}else{
+        					state.pushVStack(null);
+        				}
+        			}
+        		}else{
+        			state.pushVStack(null);
+        		}	        	
+	            return "(" + a + " ? " + b + " : " + c + ")";
+	        }
+			state.pushVStack(null);
+	        return null;
+	    }
+
+	    public Object visitExprTypeCast(ExprTypeCast exp)
+	    {
+	    	//Assert(false, "NYI");
+	        //return "((" + convertType(exp.getType()) + ")(" +
+	    	//For now, we don't do any casting at all. 
+	          return (String)exp.getExpr().accept(this);
+	    }
+
+	    public Object visitExprUnary(ExprUnary exp)
+	    {
+	        String child = (String)exp.getExpr().accept(this);
+	        Integer vchild = state.popVStack();
+	        boolean hv = vchild != null; 
+	        int i=0, j=0;
+	        j = (i=i+1);
+	        switch(exp.getOp())
+	        {
+	        case ExprUnary.UNOP_NOT: 
+	        	if( hv ){ 
+	        		state.pushVStack(new Integer(1-vchild.intValue()));	        		
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	        return "!" + child;
+	        
+	        case ExprUnary.UNOP_NEG: 
+	        	if( hv ){ 
+	        		state.pushVStack(new Integer(-vchild.intValue()));	        		
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	        return "-" + child;
+	        case ExprUnary.UNOP_PREINC:  
+	        	if( hv ){ 
+	        		this.isLHS = true;
+	        		String childb = (String)exp.getExpr().accept(this);
+	        		this.isLHS = false;
+	        		vchild = state.popVStack();
+	        		state.pushVStack(new Integer(vchild.intValue()+1));
+	        		state.setVarValue(childb, vchild.intValue()+1 );
+	        		return "(" + state.varGetLHSName(childb) + "=" + ( vchild.intValue()+1 ) + ")";
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	        	return "++" + child;
+	        case ExprUnary.UNOP_POSTINC:
+	        	if( hv ){ 
+	        		this.isLHS = true;
+	        		String childb = (String)exp.getExpr().accept(this);
+	        		this.isLHS = false;
+	        		vchild = state.popVStack();
+	        		state.pushVStack(new Integer(vchild.intValue()));
+	        		state.setVarValue(childb, vchild.intValue()+1 );
+	        		return "ERROR"; // "(" + state.varGetLHSName(childb) + "=" + ( vchild.intValue()+1 ) + ") - 1";
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	        	return child + "++";
+	        case ExprUnary.UNOP_PREDEC:  
+	        	if( hv ){ 
+	        		this.isLHS = true;
+	        		String childb = (String)exp.getExpr().accept(this);
+	        		this.isLHS = false;
+	        		vchild = state.popVStack();
+	        		state.pushVStack(new Integer(vchild.intValue()-1));
+	        		state.setVarValue(childb, vchild.intValue()-1 );
+	        		return "(" + state.varGetLHSName(childb) + "=" + ( vchild.intValue()-1 ) + ")";
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	         	return "--" + child;
+	        case ExprUnary.UNOP_POSTDEC: 
+	        	if( hv ){ 
+	        		this.isLHS = true;
+	        		String childb = (String)exp.getExpr().accept(this);
+	        		this.isLHS = false;
+	        		vchild = state.popVStack();
+	        		state.pushVStack(new Integer(vchild.intValue()));
+	        		state.setVarValue(childb, vchild.intValue()-1 );
+	        		return "ERROR"; // "(" + state.varGetLHSName(childb) + "=" + ( vchild.intValue()-1 ) + ") + 1";
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	        	return child + "--";
+	        }
+	        return null;
+	    }
+
+	    public Object visitExprVar(ExprVar exp)
+	    {
+	    	String vname =  exp.getName();
+	    	if( state.varHasValue( vname ) ){
+	    		state.pushVStack( new Integer(state.varValue(vname)) );	    		
+	    	}else{
+	    		state.pushVStack(null);
+	    	}
+	    	if(this.isLHS)
+	    		return exp.getName();
+	    	else
+	    		return state.varGetRHSName( exp.getName() );
+	    }
+
+	    public Object visitFieldDecl(FieldDecl field)
+	    {
+	        // Assume all of the fields have the same type.
+	    	//Assert(false, "We don't allow filters to have state! Sorry.");
+	    	//return "//We don't allow filters to have state. \n";
+	    	
+	        String result = indent + convertType(field.getType(0)) + " ";
+	        for (int i = 0; i < field.getNumFields(); ++i)
+	        {
+	            if (i > 0) result += ", ";
+	            this.isLHS = true;
+	            String lhs = field.getName(i);
+	            this.isLHS = false;	 
+	            state.varDeclare(lhs);	 
+	            String lhsn = state.varGetLHSName(lhs);	                       
+	            if (field.getInit(i) != null){	
+	            	additInit.
+					add(new StmtAssign(field.getContext(),
+							new ExprVar(field.getContext(), lhs),
+							field.getInit(i)));
+	    	        /*String rhs =(String)field.getInit(i).accept(this);	    	        
+	    	        Integer vrhs = state.popVStack();
+	    	        if( vrhs != null){
+	    	        	state.setVarValue(lhs, vrhs.intValue());
+	    	        	result += "";
+	    	        }else{
+	    	        	//result += lhs + " = " + rhs;
+	    	        } */	                
+	            }else{	            	
+	            	//Assert(false, "Vars should be initialized");
+	            }
+	        }
+	        result += ";";
+	        result = "";
+	        if (field.getContext() != null)
+	            result += " // " + field.getContext();
+	        result += "\n";
+	        return result;	        
+	    }
+
+
+	    public Object visitFunction(Function func)
+	    {
+	        String result ="";
+	        if (!func.getName().equals(ss.getName()));
+	        
+	        if(func.getCls() == Function.FUNC_INIT){
+	        	result += "INIT()";
+	        	//result += doParams(func.getParams(), "") + "\n";
+	        	result += "{\n";
+	        	this.state.pushLevel();       		        	
+	        	result += (String)func.getBody().accept(this);
+	        	this.state.popLevel();
+	        	Iterator it = this.additInit.iterator();
+	        	while(it.hasNext()){
+	        		Statement st = (Statement) it.next();
+	        		st.accept(this);
+	        	}
+	        	this.additInit.clear();
+	        	result += "}\n";	        	
+	        }
+	        
+	        if(func.getCls() == Function.FUNC_WORK){
+	        	result += "WORK()\n";
+	        	Assert( func.getParams().size() == 0 , "");	        	
+	        	result += "{\n";
+	        	this.state.pushLevel();
+	        	initializeWork();
+	        	Expression pushr = ((FuncWork)func).getPopRate();
+	        	Expression popr = ((FuncWork)func).getPushRate();
+	        	if(pushr != null){
+	        		result += "input_RATE = " + pushr.accept(this) + ";\n";
+	        		state.popVStack();
+	        	}else{
+	        		result += "input_RATE = 0;\n";
+	        	}
+	        	if(popr != null){
+	        		result += "output_RATE = " + popr.accept(this) + ";\n";
+	        		state.popVStack();
+	        	}else{
+	        		result += "output_RATE = 0;\n";	        	
+	        	}	        	
+	        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func.getContext() );
+	        	result += (String)func.getBody().accept(this);
+	        	result += finalizeWork();
+	        	this.state.popLevel();
+	        	result += "}\n";
+	        }
+	        
+	        result += "\n";
+	        return result;
+	    }
+	    
+	    public Object visitFuncWork(FuncWork func)
+	    {
+	        // Nothing special here; we get to ignore the I/O rates.
+	        return visitFunction(func);
+	    }
+
+	    public Object visitProgram(Program prog)
+	    {
+	        // Nothing special here either.  Just accumulate all of the
+	        // structures and streams.
+	        String result = "";
+	        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); ){
+	        	StreamSpec sp = (StreamSpec)iter.next();	        	
+	        	funsWParams.put(sp.getName(), sp);	        		        	
+	        }
+	        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); ){
+	        	StreamSpec sp = (StreamSpec)iter.next();
+	        	Function finit = sp.getFuncNamed("init");
+	        	if(finit == null){
+	        		String code= (String)sp.accept(this);	        		
+	        		result += code;
+	        	}else{
+		        	if(finit.getParams().size() > 0){
+		        		//funsWParams.put(sp.getName(), sp);
+		        	}else{	        		
+		        		String code= (String)sp.accept(this);	        		
+		        		result += code;
+		        		
+		        	}	
+	        	}
+	        }
+	        
+	        while( preFil.size() > 0){
+	        	String otherFil = (String) preFil.pop();
+	        	result = otherFil + result;
+	        }
+	        
+	        return result;
+	    }
+
+	    public Object visitSCAnon(SCAnon creator)
+	    {
+	        return creator.getSpec().accept(this);
+	    }
+	    
+	    public Object visitSCSimple(SCSimple creator)
+	    {
+	    	String result;
+	    	if( creator.getParams().size() == 0){
+		        result = "new " + creator.getName() + "(";
+		        boolean first = true;
+		        for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
+		        {
+		            Expression param = (Expression)iter.next();
+		            if (!first) result += ", ";
+		            result += (String)param.accept(this);
+		            first = false;
+		        }
+		        /*
+		        for (Iterator iter = creator.getTypes().iterator(); iter.hasNext(); )
+		        {
+		            Type type = (Type)iter.next();
+		            if (!first) result += ", ";
+		            result += typeToClass(type);
+		            first = false;
+		        }*/
+		        result += ")";
+	    	}else{
+	    		String nm = creator.getName();
+	    		result = "new "   ;
+	    		String fullnm = nm;
+	    		
+		        for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
+		        {
+		        	
+		            Expression param = (Expression)iter.next();
+		            fullnm += "_";
+		            fullnm += (String)param.accept(this);		            
+		        }	    				        
+		        fullnm += "___";
+		        result += fullnm + "()";
+		        if( funsWParams.get(fullnm) == null){
+			        StreamSpec sp = (StreamSpec) funsWParams.get(nm);
+			        funsWParams.put(fullnm, sp);
+			        Assert( sp != null, nm + "Is used but has not been declared!!");
+			        state.pushLevel();
+			        Function finit = sp.getFuncNamed("init");
+			        Iterator piter = finit.getParams().iterator();
+			        Iterator viter = creator.getParams().iterator();
+			        while(viter.hasNext()){
+			        	Expression paramv = (Expression)viter.next();			        	
+			        	Parameter paramp = (Parameter) piter.next();
+			        	paramv.accept(this);
+			        	Integer value = state.popVStack();
+			        	Assert(value != null, "I must be able to determine the values of the parameters at compile time.");
+			        	String pnm = paramp.getName();
+			        	state.varDeclare(pnm);
+			        	state.varGetLHSName(pnm);
+			        	state.setVarValue(pnm, value.intValue());
+			        }
+			        String tmp = (String) preFil.pop();
+			        tmp += sp.accept(this);
+			        preFil.push(tmp);
+			        state.popLevel();
+		        }
+	    	}
+	        return result;
+	    }
+
+	    public Object visitSJDuplicate(SJDuplicate sj)
+	    {
+	        return "DUPLICATE()";
+	    }
+
+	    public Object visitSJRoundRobin(SJRoundRobin sj)
+	    {
+	        return "ROUND_ROBIN(" + (String)sj.getWeight().accept(this) + ")";
+	    }
+
+	    public Object visitSJWeightedRR(SJWeightedRR sj)
+	    {
+	    	String result = "ROUND_ROBIN(";
+	        boolean first = true;
+	        for (Iterator iter = sj.getWeights().iterator(); iter.hasNext(); )
+	        {
+	            Expression weight = (Expression)iter.next();
+	            if (!first) result += ", ";
+	            result += (String)weight.accept(this);
+	            first = false;
+	        }
+	        result += ")";
+	        return result;	        
+	    }
+
+	    public Object doStreamCreator(String how, StreamCreator sc)
+	    {	    	
+	        // If the stream creator involves registering with a portal,
+	        // we need a temporary variable.
+	        List portals = sc.getPortals();
+	        if (portals.isEmpty()){	        	
+	        	if( sc instanceof SCSimple){
+	        		String nm = ((SCSimple)sc).getName();
+	        		if( nm.equals("IntToBit") || nm.equals("BitToInt")){	        			
+	        			return "";
+	        		}
+	        	} 	
+	            return how + "(" + (String)sc.accept(this) + ")";
+	        }
+	        String tempVar = varGen.nextVar();
+	        // Need run-time type of the creator.  Assert that only
+	        // named streams can be added to portals.
+	        SCSimple scsimple = (SCSimple)sc;
+	        String result = scsimple.getName() + " " + tempVar + " = " +
+	            (String)sc.accept(this);
+	        result += ";\n" + indent + how + "(" + tempVar + ")";
+	        for (Iterator iter = portals.iterator(); iter.hasNext(); )
+	        {
+	            Expression portal = (Expression)iter.next();
+	            result += ";\n" + indent + (String)portal.accept(this) +
+	                ".regReceiver(" + tempVar + ")";
+	        }
+	        return result;
+	    }
+	    
+	    public Object visitStmtAdd(StmtAdd stmt)
+	    {
+	        return doStreamCreator("add", stmt.getCreator());
+	    }
+	    
+	    public Object visitStmtAssign(StmtAssign stmt)
+	    {
+	    	
+	        String op;
+	        
+	        String rhs = (String)stmt.getRHS().accept(this);	        	        
+	        Integer vrhs = state.popVStack();
+	        
+	        this.isLHS = true;
+	        String lhs = (String)stmt.getLHS().accept(this);
+	        this.isLHS = false;
+	        String lhsnm = state.varGetLHSName(lhs);
+	        
+	        Integer vlhs = state.popVStack();
+	        String rlhs = lhs;
+	        
+	        if(vlhs != null){
+	        	rlhs = vlhs.toString();
+	        }else{
+	        	rlhs = state.varGetRHSName(rlhs);
+	        }
+	        
+	        if(vrhs != null){
+	        	rhs = vrhs.toString();
+	        }
+	        
+	        boolean hv = vlhs != null && vrhs != null;
+	        
+	        switch(stmt.getOp())
+	        {
+	        case ExprBinary.BINOP_ADD: 
+	        	op = " = " + rlhs + "+";
+	        	if(hv){
+	        		state.setVarValue(lhs, vlhs.intValue() + vrhs.intValue());
+	        	}
+	        break;
+	        case ExprBinary.BINOP_SUB: 
+	        	op = " = "+ rlhs + "-";
+		        if(hv){
+	        		state.setVarValue(lhs, vlhs.intValue() - vrhs.intValue());
+	        	}
+	        break;
+	        case ExprBinary.BINOP_MUL: 
+	        	op = " = "+ rlhs + "*";
+		        if(hv){
+	        		state.setVarValue(lhs, vlhs.intValue() * vrhs.intValue());
+	        	}
+	        break;
+	        case ExprBinary.BINOP_DIV: 
+	        	op = " = "+ rlhs + "/"; 
+		        if(hv){
+	        		state.setVarValue(lhs, vlhs.intValue() / vrhs.intValue());
+	        	}
+	        break;
+	        default: op = " = ";
+	        	if(vrhs != null){
+	        		state.setVarValue(lhs, vrhs.intValue());	
+	        		return "";
+	        	}
+	        }
+	        // Assume both sides are the right type.
+	        if(hv) return "";
+	        else
+	        	state.unsetVarValue(lhs);
+	        return lhsnm + op + rhs;
+	    }
+
+	    public Object visitStmtBlock(StmtBlock stmt)
+	    {
+	        // Put context label at the start of the block, too.
+	    	state.pushLevel();
+	        String result = "// {";
+	        if (stmt.getContext() != null)
+	            result += " \t\t\t// " + stmt.getContext();
+	        result += "\n";
+	        addIndent();
+	        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
+	        {
+	            Statement s = (Statement)iter.next();
+	            String line = indent;
+	            line += (String)s.accept(this);
+	            if(line.length() > 0){
+		            if (!(s instanceof StmtIfThen)) {
+		            	line += ";";
+		            }
+		            if (s.getContext() != null)
+		                line += " \t\t\t// " + s.getContext();
+		            line += "\n";
+	            }
+	            result += line;
+	        }
+	        unIndent();
+	        result += indent + " // }\n";
+	        state.popLevel();
+	        return result;
+	    }
+
+	    public Object visitStmtBody(StmtBody stmt)
+	    {
+	        return doStreamCreator("setBody", stmt.getCreator());
+	    }
+	    
+	    public Object visitStmtBreak(StmtBreak stmt)
+	    {
+	        return "break";
+	    }
+	    
+	    public Object visitStmtContinue(StmtContinue stmt)
+	    {
+	        return "continue";
+	    }
+
+	    public Object visitStmtDoWhile(StmtDoWhile stmt)
+	    {
+	    	Assert(false, "NYS");
+	        String result = "do ";
+	        result += (String)stmt.getBody().accept(this);
+	        result += "while (" + (String)stmt.getCond().accept(this) + ")";
+	        return result;
+	    }
+
+	    public Object visitStmtEnqueue(StmtEnqueue stmt)
+	    {
+	        // Errk: this doesn't become nice Java code.
+	        return "/* enqueue(" + (String)stmt.getValue().accept(this) +
+	            ") */";
+	    }
+	    
+	    public Object visitStmtExpr(StmtExpr stmt)
+	    {
+	        String result = (String)stmt.getExpression().accept(this);
+	        Integer tmp = state.popVStack();
+	        // Gross hack to strip out leading class casts,
+	        // since they'll illegal (JLS 14.8).
+	        if (result.charAt(0) == '(' &&
+	            Character.isUpperCase(result.charAt(1)))
+	            result = result.substring(result.indexOf(')') + 1);
+	        return result;
+	    }
+
+	    public Object visitStmtFor(StmtFor stmt)
+	    {
+	    	state.pushLevel();
+	        String init = "";
+	        String result = "";
+	        if (stmt.getInit() != null)
+	            init = (String)stmt.getInit().accept(this);	        
+	        String cond;
+	        Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
+	        cond = (String)stmt.getCond().accept(this);
+	        Integer vcond = state.popVStack();
+	        int iters = 0;
+	        while(vcond != null && vcond.intValue() > 0){
+	        	++iters;
+	        	result += (String)stmt.getBody().accept(this);
+	        	String incr;
+	        	if (stmt.getIncr() != null)
+		        	incr = (String)stmt.getIncr().accept(this);
+	        	cond = (String)stmt.getCond().accept(this);
+		        vcond = state.popVStack();
+		        Assert(iters < 300, "This is probably a bug, why would it go around so many times?");
+	        }
+	        state.popLevel();
+	        return result;
+	    }
+
+	    public Object visitStmtIfThen(StmtIfThen stmt)
+	    {
+	        // must have an if part...
+	    	
+	        String result = "";
+	        String cond = (String)stmt.getCond().accept(this);
+	        Integer vcond = state.popVStack();
+	        if(vcond != null){
+	        	if(vcond.intValue() > 0){
+	        		result = (String)stmt.getCons().accept(this);
+	        	}else{
+	        		if (stmt.getAlt() != null)
+	    	            result = (String)stmt.getAlt().accept(this);
+	        	}
+	        	return result;	        	
+	        }
+	        state.pushChangeTracker();
+	        String ipart = (String)stmt.getCons().accept(this);
+	        ChangeStack ipms = state.popChangeTracker();
+	        ChangeStack epms = null;
+	        String epart="";
+	        
+	        if (stmt.getAlt() != null){
+	        	state.pushChangeTracker();
+	            epart = (String)stmt.getAlt().accept(this);
+	            epms = state.popChangeTracker();
+	        }	        
+	        if(epms != null){
+	        	result = ipart;
+	        	result += epart;
+	        	result += state.procChangeTrackers(ipms, epms, cond);
+	        }else{
+	        	result = ipart;	        	
+	        	result += state.procChangeTrackers(ipms, cond);
+	        }
+	        return result;
+	    }
+
+	    public Object visitStmtJoin(StmtJoin stmt)
+	    {
+	        return "setJoiner(" + (String)stmt.getJoiner().accept(this) + ")";
+	    }
+	    
+	    public Object visitStmtLoop(StmtLoop stmt)
+	    {
+	        return doStreamCreator("setLoop", stmt.getCreator());
+	    }
+
+	    public Object visitStmtPhase(StmtPhase stmt)
+	    {
+	        ExprFunCall fc = stmt.getFunCall();
+	        // ASSERT: the target is always a phase function.
+	        FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
+	        StmtExpr call = new StmtExpr(stmt.getContext(), fc);
+	        String peek, pop, push;
+	        if (target.getPeekRate() == null)
+	            peek = "0";
+	        else
+	            peek = (String)target.getPeekRate().accept(this);
+	        if (target.getPopRate() == null)
+	            pop = "0";
+	        else
+	            pop = (String)target.getPopRate().accept(this);
+	        if (target.getPushRate() == null)
+	            push = "0";
+	        else
+	            push = (String)target.getPushRate().accept(this);
+	        
+	        return "phase(new WorkFunction(" + peek + "," + pop + "," + push +
+	            ") { public void work() { " + call.accept(this) + "; } })";
+	    }
+
+	    public Object visitStmtPush(StmtPush stmt)
+	    {
+	    	String val = (String)stmt.getValue().accept(this);
+	    	Integer ival = state.popVStack();
+	    	int pos = state.varValue("PUSH_POS");
+	    	state.setVarValue("PUSH_POS", pos+1);
+	    	String otpt = "OUTPUT_" + pos;	    	
+			String lhs =  state.varGetLHSName(otpt);
+	    	if(ival != null){
+	    		state.setVarValue(otpt, ival.intValue());
+	    		return "";
+	    		//return lhs + " = " + ival;
+	    	}else{
+	    		return lhs + " = " + val;
+	    	}
+	        //return pushFunction(ss.getStreamType()) + "(" +
+	        //    (String)stmt.getValue().accept(this) + ")";
+	    }
+
+	    public Object visitStmtReturn(StmtReturn stmt)
+	    {
+	        if (stmt.getValue() == null) return "return";
+	        return "return " + (String)stmt.getValue().accept(this);
+	    }
+
+	    public Object visitStmtSendMessage(StmtSendMessage stmt)
+	    {
+	        String receiver = (String)stmt.getReceiver().accept(this);
+	        String result = "";
+
+	        // Issue one of the latency-setting statements.
+	        if (stmt.getMinLatency() == null)
+	        {
+	            if (stmt.getMaxLatency() == null)
+	                result += receiver + ".setAnyLatency()";
+	            else
+	                result += receiver + ".setMaxLatency(" +
+	                    (String)stmt.getMaxLatency().accept(this) + ")";
+	        }
+	        else
+	        {
+	            // Hmm, don't have an SIRLatency for only minimum latency.
+	            // Wing it.
+	            Expression max = stmt.getMaxLatency();
+	            if (max == null)
+	                max = new ExprBinary(null, ExprBinary.BINOP_MUL,
+	                                     stmt.getMinLatency(),
+	                                     new ExprConstInt(null, 100));
+	            result += receiver + ".setLatency(" +
+	                (String)stmt.getMinLatency().accept(this) + ", " +
+	                (String)max.accept(this) + ")";
+	        }
+	        
+	        result += ";\n" + indent + receiver + "." + stmt.getName() + "(";
+	        boolean first = true;
+	        for (Iterator iter = stmt.getParams().iterator(); iter.hasNext(); )
+	        {
+	            Expression param = (Expression)iter.next();
+	            if (!first) result += ", ";
+	            first = false;
+	            result += (String)param.accept(this);
+	        }
+	        result += ")";
+	        return result;
+	    }
+
+	    public Object visitStmtSplit(StmtSplit stmt)
+	    {
+	        return "setSplitter(" + (String)stmt.getSplitter().accept(this) + ")";
+	    }
+
+	    public Object visitStmtVarDecl(StmtVarDecl stmt)
+	    {
+	        String result = "";	        
+	        // Hack: if the first variable name begins with "_final_", the
+	        // variable declaration should be final.
+	        	        
+	        for (int i = 0; i < stmt.getNumVars(); i++)
+	        {
+	            String nm = stmt.getName(i);
+	            state.varDeclare(nm);
+	            String lhsn = state.varGetLHSName(nm);
+	            Type vt = stmt.getType(i);
+	            if( vt instanceof TypeArray){
+	            	TypeArray at = (TypeArray)vt;
+	            	at.getLength().accept(this);
+	            	Integer tmp = state.popVStack();
+	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + stmt.getContext());
+	            	for(int tt=0; tt<tmp.intValue(); ++tt){
+	            		String nnm = nm + "_idx_" + tt;
+	            		state.varDeclare(nnm);
+	            		String tmplhsn = state.varGetLHSName(nnm);
+	            	}
+	            }else{
+		            
+		            if (stmt.getInit(i) != null){      	
+		                 String asgn = lhsn + " = " + (String)stmt.getInit(i).accept(this) + "; \n";
+		                Integer tmp = state.popVStack();
+		                if(tmp != null){
+		                	state.setVarValue(nm, tmp.intValue());
+		                }else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
+		                	result += asgn;	
+		                } 	                
+		            }
+	            }
+	        }
+	        return result;
+	    }
+
+	    public Object visitStmtWhile(StmtWhile stmt)
+	    {
+	        return "while (" + (String)stmt.getCond().accept(this) +
+	            ") " + (String)stmt.getBody().accept(this);
+	    }
+
+	    /**
+	     * For a non-anonymous StreamSpec, check to see if it has any
+	     * message handlers.  If it does, then generate a Java interface
+	     * containing the handlers named (StreamName)Interface, and
+	     * a portal class named (StreamName)Portal.
+	     */
+	    private String maybeGeneratePortal(StreamSpec spec)
+	    {
+	        List handlers = new java.util.ArrayList();
+	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
+	        {
+	            Function func = (Function)iter.next();
+	            if (func.getCls() == Function.FUNC_HANDLER)
+	                handlers.add(func);
+	        }
+	        if (handlers.isEmpty())
+	            return null;
+	        
+	        // Okay.  Assemble the interface:
+	        StringBuffer result = new StringBuffer();
+	        result.append(indent + "interface " + spec.getName() +
+	                      "Interface {\n");
+	        addIndent();
+	        for (Iterator iter = handlers.iterator(); iter.hasNext(); )
+	        {
+	            Function func = (Function)iter.next();
+	            result.append(indent + "public ");
+	            result.append(convertType(func.getReturnType()) + " ");
+	            result.append(func.getName());
+	            result.append(doParams(func.getParams(), null));
+	            result.append(";\n");
+	        }
+	        unIndent();
+	        result.append(indent + "}\n");
+	        
+	        // Assemble the portal:
+	        result.append(indent + "class " + spec.getName() +
+	                      "Portal extends Portal implements " + spec.getName() +
+	                      "Interface {\n");
+	        addIndent();
+	        for (Iterator iter = handlers.iterator(); iter.hasNext(); )
+	        {
+	            Function func = (Function)iter.next();
+	            result.append(indent + "public ");
+	            result.append(convertType(func.getReturnType()) + " ");
+	            result.append(func.getName());
+	            result.append(doParams(func.getParams(), null));
+	            result.append(" { }\n");
+	        }
+	        unIndent();
+	        result.append(indent + "}\n");
+
+	        return result.toString();
+	    }
+
+	    public Object visitStreamSpec(StreamSpec spec)
+	    {
+	        String result = "// " + spec.getContext() + "\n"; 
+	        
+	        // Anonymous classes look different from non-anonymous ones.
+	        // This appears in two places: (a) as a top-level (named)
+	        // stream; (b) in an anonymous stream creator (SCAnon).
+	        //StreamType st = spec.getStreamType();
+
+	        //Assert( ((TypePrimitive)st.getOut()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
+	        //Assert( ((TypePrimitive)st.getIn()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
+	        StreamType st = spec.getStreamType();
+	        
+	        if( st != null && 
+	        ( ( 
+	    (  ((TypePrimitive)st.getIn()).getType() !=
+                TypePrimitive.TYPE_BIT &&
+				((TypePrimitive)st.getIn()).getType() !=
+	                TypePrimitive.TYPE_VOID	
+	    )|| 
+				((TypePrimitive)st.getOut()).getType() !=
+	                TypePrimitive.TYPE_BIT ) &&   spec.getType() == StreamSpec.STREAM_FILTER ) ){
+	        	state.pushLevel();
+	        	result = (String) nativeGenerator.visitStreamSpec(spec);
+	        	state.popLevel();
+	        	return result;
+	        }
+	        
+	        state.pushLevel();
+	        if (spec.getName() != null)
+	        {	            
+	            // This is only public if it's the top-level stream,
+	            // meaning it has type void->void.	             
+	            if (false)
+	            {
+	                result += spec.getTypeString() + " " + spec.getName() +";\n";	                
+	            }
+	            else
+	            {	                
+	                if (spec.getType() == StreamSpec.STREAM_FILTER)
+	                {
+	                    // Need to notice now if this is a phased filter.
+	                    FuncWork work = spec.getWorkFunc();
+	                    if (work.getPushRate() == null &&
+	                        work.getPopRate() == null &&
+	                        work.getPeekRate() == null)
+	                        result += "PhasedFilter";
+	                    else
+	                        result += "Filter";
+	                }
+	                else
+	                    switch (spec.getType())
+	                    {
+	                    case StreamSpec.STREAM_PIPELINE:
+	                        result += "Pipeline";
+	                        break;
+	                    case StreamSpec.STREAM_SPLITJOIN:
+	                        result += "SplitJoin";
+	                        break;
+	                    case StreamSpec.STREAM_FEEDBACKLOOP:
+	                        result += "FeedbackLoop";
+	                        break;
+	                    }
+	                String nm = spec.getName();
+	                Function f = spec.getFuncNamed("init");
+	                Iterator it = f.getParams().iterator();
+	                while(it.hasNext()){
+	                	Parameter p = (Parameter) it.next();
+	                	int i = state.varValue(p.getName());	                	
+	                	nm += "_" + i;
+	                }
+	                if( f.getParams().size()>0)
+	                	nm += "___";
+	                result += " " + nm + "\n";
+	            }
+	        }
+	        else
+	        {
+	            // Anonymous stream:
+	            result += "new ";
+	            switch (spec.getType())
+	            {
+	            case StreamSpec.STREAM_FILTER: result += "Filter";
+	                break;
+	            case StreamSpec.STREAM_PIPELINE: result += "Pipeline";
+	                break;
+	            case StreamSpec.STREAM_SPLITJOIN: result += "SplitJoin";
+	                break;
+	            case StreamSpec.STREAM_FEEDBACKLOOP: result += "FeedbackLoop";
+	                break;
+	            }
+	            result += "() \n" + indent;
+	            addIndent();
+	        }
+	        
+	        // At this point we get to ignore wholesale the stream type, except
+	        // that we want to save it.
+	        StreamSpec oldSS = ss;
+	        ss = spec;
+	        result += "{\n"; 
+	        // Output field definitions:
+	        
+	        additInit = new LinkedList();
+	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
+	        {
+	            FieldDecl varDecl = (FieldDecl)iter.next();
+	            result += (String)varDecl.accept(this);
+	        }
+	        preFil.push("");    		
+	        // Output method definitions:
+	        Function f = spec.getFuncNamed("init");
+			if( f!= null)
+				result += (String)(f.accept(this));				        
+	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
+	        	f = (Function)iter.next();
+	        	if( ! f.getName().equals("init") ){
+	        		result += (String)(f.accept(this));
+	        	}	        	
+	        }
+	            
+	        ss = oldSS;
+	        unIndent();
+	        result += "}\n";
+	        state.popLevel();
+	        if (spec.getName() != null){
+		        while( preFil.size() > 0){
+		        	String otherFil = (String) preFil.pop();
+		        	result = otherFil + result;
+		        }
+	        }
+	        return result;
+	    }
+	    
+	    public Object visitStreamType(StreamType type)
+	    {
+	        // Nothing to do here.
+	        return "";
+	    }
+	    
+	    public Object visitOther(FENode node)
+	    {
+	        if (node instanceof ExprJavaConstructor)
+	        {
+	            ExprJavaConstructor jc = (ExprJavaConstructor)node;
+	            return makeConstructor(jc.getType());
+	        }
+	        if (node instanceof StmtIODecl)
+	        {
+	            StmtIODecl io = (StmtIODecl)node;
+	            String result = "";
+	            if (io.getRate1() != null && false){
+	            	result += io.getName() + "_RATE="+
+	                (String)io.getRate1().accept(this) + ";\n";
+	            	Integer iv = state.popVStack();
+	            	Assert( iv != null, "The compiler must be able to determine the IO rate at compile time. \n" + io.getContext() );
+	            }
+	            if (io.getRate2() != null){
+	                //result += "\n "+ io.getName() + "_RATE2=" + (String)io.getRate2().accept(this)+ ";\n";
+	            }
+	            return result;
+	        }
+	        if (node instanceof StmtAddPhase)
+	        {
+	            StmtAddPhase ap = (StmtAddPhase)node;
+	            String result;
+	            if (ap.isInit())
+	                result = "addInitPhase";
+	            else result = "addSteadyPhase";
+	            result += "(";
+	            if (ap.getPeek() == null)
+	                result += "0, ";
+	            else
+	                result += (String)ap.getPeek().accept(this) + ", ";
+	            if (ap.getPop() == null)
+	                result += "0, ";
+	            else
+	                result += (String)ap.getPop().accept(this) + ", ";
+	            if (ap.getPush() == null)
+	                result += "0, ";
+	            else
+	                result += (String)ap.getPush().accept(this) + ", ";
+	            result += "\"" + ap.getName() + "\")";
+	            return result;
+	        }
+	        if (node instanceof StmtSetTypes)
+	        {
+	            StmtSetTypes sst = (StmtSetTypes)node;
+	            return "setIOTypes(" + typeToClass(sst.getInType()) +
+	                ", " + typeToClass(sst.getOutType()) + ")";
+	        }
+	        return "";
+	    }
+}
