@@ -41,4 +41,23 @@ public class ExprPop extends Expression
     {
         return v.visitExprPop(this);
     }
+
+    public boolean equals(Object other)
+    {
+        // No state; any two pop expressions are equal.
+        if (other instanceof ExprPop)
+            return true;
+        return false;
+    }
+
+    public int hashCode()
+    {
+        // No state, so...
+        return 17;
+    }
+    
+    public String toString()
+    {
+        return "pop()";
+    }
 }

@@ -56,4 +56,24 @@ public class ExprPeek extends Expression
     {
         return v.visitExprPeek(this);
     }
+
+    public boolean equals(Object other)
+    {
+        if (!(other instanceof ExprPeek))
+            return false;
+        ExprPeek ep = (ExprPeek)other;
+        if (!(expr.equals(ep.expr)))
+            return false;
+        return true;
+    }
+
+    public int hashCode()
+    {
+        return expr.hashCode();
+    }
+    
+    public String toString()
+    {
+        return "peek(" + expr + ")";
+    }
 }
