@@ -72,5 +72,27 @@ public class ExprTypeCast extends Expression
     {
         return v.visitExprTypeCast(this);
     }
+
+    public boolean equals(Object other)
+    {
+        if (!(other instanceof ExprTypeCast))
+            return false;
+        ExprTypeCast etc = (ExprTypeCast)other;
+        if (!(type.equals(etc.type)))
+            return false;
+        if (!(expr.equals(etc.expr)))
+            return false;
+        return true;
+    }
+    
+    public int hashCode()
+    {
+        return type.hashCode() ^ expr.hashCode();
+    }
+    
+    public String toString()
+    {
+        return "((" + type + ")" + expr + ")";
+    }
 }
 
