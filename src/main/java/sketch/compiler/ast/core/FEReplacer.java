@@ -144,6 +144,21 @@ public class FEReplacer implements FEVisitor
             return new ExprArray(exp.getContext(), base, offset);
     }
     
+    public Object visitExprArrayInit(ExprArrayInit exp)
+    {
+        boolean hasChanged = false;
+        List newElements = new ArrayList();
+        for (Iterator iter = exp.getElements().iterator(); iter.hasNext(); )
+        {
+            Expression element = (Expression)iter.next();
+            Expression newElement = doExpression(element);
+            newElements.add(newElement);
+            if (element != newElement) hasChanged = true;
+        }
+        if (!hasChanged) return exp;
+        return new ExprArrayInit(exp.getContext(), newElements);
+    }
+
     public Object visitExprBinary(ExprBinary exp)
     {
         Expression left = doExpression(exp.getLeft());
@@ -367,7 +382,14 @@ public class FEReplacer implements FEVisitor
         List oldStatements = newStatements;
         newStatements = new ArrayList();
         for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
-            doStatement((Statement)iter.next());
+        {
+            Statement s = (Statement)iter.next();
+            // completely ignore null statements, causing them to
+            // be dropped in the output
+            if (s == null)
+                continue;
+            doStatement(s);
+        }
         Statement result = new StmtBlock(stmt.getContext(), newStatements);
         newStatements = oldStatements;
         return result;
@@ -393,6 +415,8 @@ public class FEReplacer implements FEVisitor
         return new StmtDoWhile(stmt.getContext(), newBody, newCond);
     }
     
+    public Object visitStmtEmpty(StmtEmpty stmt) { return stmt; }
+
     public Object visitStmtEnqueue(StmtEnqueue stmt)
     {
         Expression newValue = doExpression(stmt.getValue());
