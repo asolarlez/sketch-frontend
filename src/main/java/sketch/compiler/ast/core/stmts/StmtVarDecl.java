@@ -172,4 +172,46 @@ public class StmtVarDecl extends Statement
     {
         return v.visitStmtVarDecl(this);
     }
+
+    public boolean equals(Object other)
+    {
+        if (!(other instanceof StmtVarDecl))
+            return false;
+        StmtVarDecl svd = (StmtVarDecl)other;
+        if (svd.types.size() != types.size())
+            return false;
+        for (int i = 0; i < types.size(); i++)
+        {
+            if (!(types.get(i).equals(svd.types.get(i))))
+                return false;
+            if (!(names.get(i).equals(svd.names.get(i))))
+                return false;
+            if (inits.get(i) == null && svd.inits.get(i) != null)
+                return false;
+            if (inits.get(i) != null &&
+                !(inits.get(i).equals(svd.inits.get(i))))
+                return false;
+        }
+        return true;
+    }
+    
+    public int hashCode()
+    {
+        // just use the first type and name.
+        return types.get(0).hashCode() ^ names.get(0).hashCode();
+    }
+
+    public String toString()
+    {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < types.size(); i++)
+        {
+            if (i != 0)
+                result.append("; ");
+            result.append(types.get(i) + " " + names.get(i));
+            if (inits.get(i) != null)
+                result.append("=" + inits.get(i));
+        }
+        return result.toString();
+    }
 }
