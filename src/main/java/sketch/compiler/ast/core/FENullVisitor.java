@@ -30,6 +30,7 @@ package streamit.frontend.nodes;
 public class FENullVisitor implements FEVisitor
 {
     public Object visitExprArray(ExprArray exp) { return null; }
+    public Object visitExprArrayInit(ExprArrayInit exp) { return null; }
     public Object visitExprBinary(ExprBinary exp) { return null; }
     public Object visitExprComplex(ExprComplex exp) { return null; }
     public Object visitExprConstBoolean(ExprConstBoolean exp) { return null; }
@@ -61,6 +62,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtBreak(StmtBreak stmt) { return null; }
     public Object visitStmtContinue(StmtContinue stmt) { return null; }
     public Object visitStmtDoWhile(StmtDoWhile stmt) { return null; }
+    public Object visitStmtEmpty(StmtEmpty stmt) { return null; }
     public Object visitStmtEnqueue(StmtEnqueue stmt) { return null; }
     public Object visitStmtExpr(StmtExpr stmt) { return null; }
     public Object visitStmtFor(StmtFor stmt) { return null; }

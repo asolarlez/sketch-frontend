@@ -33,6 +33,7 @@ package streamit.frontend.nodes;
 public interface FEVisitor
 {
     public Object visitExprArray(ExprArray exp);
+    public Object visitExprArrayInit(ExprArrayInit exp);
     public Object visitExprBinary(ExprBinary exp);
     public Object visitExprComplex(ExprComplex exp);
     public Object visitExprConstBoolean(ExprConstBoolean exp);
@@ -65,6 +66,7 @@ public interface FEVisitor
     public Object visitStmtContinue(StmtContinue stmt);
     public Object visitStmtDoWhile(StmtDoWhile stmt);
     public Object visitStmtEnqueue(StmtEnqueue stmt);
+    public Object visitStmtEmpty(StmtEmpty stmt);
     public Object visitStmtExpr(StmtExpr stmt);
     public Object visitStmtFor(StmtFor stmt);
     public Object visitStmtIfThen(StmtIfThen stmt);
