@@ -16,8 +16,24 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
 import java.util.List;
+
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
 
 /**
  * Give a rigid ordering to operations such as ++, --, and pop().

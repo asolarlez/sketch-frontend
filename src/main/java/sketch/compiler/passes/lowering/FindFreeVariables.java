@@ -16,10 +16,17 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
-
 import java.util.Iterator;
 import java.util.List;
+
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.UnrecognizedVariableException;
 
 /**
  * Front-end visitor pass to find free variables in anonymous streams.
