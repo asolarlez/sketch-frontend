@@ -16,6 +16,7 @@
 
 package streamit.frontend.passes;
 
+import streamit.frontend.controlflow.*;
 import streamit.frontend.nodes.*;
 import java.util.*;
 
@@ -45,10 +46,14 @@ public class SemanticChecker
         Map streamNames = checker.checkStreamNames(prog);
         checker.checkDupFieldNames(prog, streamNames);
         checker.checkStreamCreators(prog, streamNames);
+        //checker.checkStreamTypes(prog);//I don't need this one in StreamBit
         checker.checkFunctionValidity(prog);
         checker.checkStatementPlacement(prog);
-        checker.checkIORates(prog);
         checker.checkVariableUsage(prog);
+        checker.checkBasicTyping(prog);
+        //checker.checkStreamConnectionTyping(prog);//I don't want this one in StreamBit
+        checker.checkStatementCounts(prog);
+        checker.checkIORates(prog);
         return checker.good;
     }
     
@@ -231,6 +236,53 @@ public class SemanticChecker
             });
     }
     
+    /**
+     * Check that stream type declarations are valid.  In particular,
+     * check that there is exactly one void->void declaration
+     * and that it corresponds to a named stream.
+     *
+     * @param prog  parsed program object to check
+     */
+    public void checkStreamTypes(Program prog)
+    {
+        theTopLevel = null;
+
+        // Check for duplicate top-level streams.
+        prog.accept(new FEReplacer() {
+                public Object visitStreamSpec(StreamSpec ss)
+                {
+                    StreamType st = ss.getStreamType();
+                    if (st != null &&
+                        st.getIn() instanceof TypePrimitive &&
+                        st.getOut() instanceof TypePrimitive &&
+                        ((TypePrimitive)st.getIn()).getType() ==
+                        TypePrimitive.TYPE_VOID &&
+                        ((TypePrimitive)st.getOut()).getType() ==
+                        TypePrimitive.TYPE_VOID)
+                    {
+                        // Okay, we have a void->void object.
+                        if (ss.getName() == null)
+                            report(ss, "anonymous stream cannot be top-level");
+                        else if (theTopLevel == null)
+                            theTopLevel = ss;
+                        else
+                        {
+                            report(theTopLevel,
+                                   "first declared top-level stream" +
+                                   theTopLevel.getName());
+                            report(ss, "duplicate top-level stream " +
+                                   ss.getName());
+                        }
+                    }
+                    return super.visitStreamSpec(ss);
+                }
+            });
+        if (theTopLevel == null)
+            report((FEContext)null, "no top-level stream declared");
+    }
+
+    private StreamSpec theTopLevel;
+
     /**
      * Check that functions do not exist in context they are required
      * to, and that all required functions exist.  In particular,
@@ -423,6 +475,740 @@ public class SemanticChecker
                     return super.visitStmtSplit(stmt);
                 }
             });
+    }
+
+    /**
+     * Checks that basic operations are performed on appropriate types.
+     * For example, the type of the unary ! operator can't be float
+     * or complex; there needs to be a common type for equality
+     * checking, but an arithmetic type for arithmetic operations.
+     * This also tests that the right-hand side of an assignment is
+     * assignable to the left-hand side.
+     *<p>
+     * (Does this test that peek, pop, push, and enqueue are used
+     * properly?  Initial plans were to have this as a separate
+     * function, but it does fit nicely here.)
+     *
+     * @param prog  parsed program object to check
+     */
+    public void checkBasicTyping(Program prog)
+    {
+        /* We mostly just need to walk through and check things.
+         * enqueue statements can be hard, though: if there's a
+         * feedback loop with void type, we need to find the
+         * loopback type, which is the output type of the loop
+         * stream object.  If it's kosher to have enqueue before
+         * loop, we need an extra pass over statements to find
+         * the loop type.  The AssignLoopTypes pass could be
+         * helpful here, but we want to give an error message if
+         * things fail. */
+        prog.accept(new SymbolTableVisitor(null) {
+                // Need to visit everything.  Handily, STV does things
+                // for us like save streamType when we run across
+                // streamspecs; the only potentially hard thing is
+                // the loop type of feedback loops.
+                //
+                // Otherwise, assume that the GetExprType pass can
+                // find the types of things.  This should report
+                // an error exactly when GET returns null,
+                // so we can ignore nulls (assume that they type
+                // check).
+                public Object visitExprUnary(ExprUnary expr)
+                {
+                    Type ot = getType(expr.getExpr());
+                    if (ot != null)
+                    {
+                        Type inttype =
+                            new TypePrimitive(TypePrimitive.TYPE_INT);
+                        Type bittype =
+                            new TypePrimitive(TypePrimitive.TYPE_BIT);
+                    
+                        switch(expr.getOp())
+                        {
+                        case ExprUnary.UNOP_NEG:
+			    // you can negate a bit, since 0 and 1
+			    // literals always count as bits.
+			    // However, the resulting negation will be
+			    // an int.
+                            if (!bittype.promotesTo(ot)) 
+                                report(expr, "cannot negate " + ot);
+                            break;
+                            
+                        case ExprUnary.UNOP_NOT:
+                            if (!ot.promotesTo(bittype))
+                                report(expr, "cannot take boolean not of " +
+                                       ot);
+                            break;
+                            
+                        case ExprUnary.UNOP_PREDEC:
+                        case ExprUnary.UNOP_PREINC:
+                        case ExprUnary.UNOP_POSTDEC:
+                        case ExprUnary.UNOP_POSTINC:
+			    // same as negation, regarding bits
+                            if (!bittype.promotesTo(ot))
+                                report(expr, "cannot perform ++/-- on " + ot);
+                            break;
+                        }
+                    }
+                    
+                    return super.visitExprUnary(expr);
+                }
+
+                public Object visitExprBinary(ExprBinary expr)
+                {
+                    Type lt = getType(expr.getLeft());
+                    Type rt = getType(expr.getRight());
+
+                    if (lt != null && rt != null)
+                    {                        
+                        Type ct = lt.leastCommonPromotion(rt);
+                        Type inttype =
+                            new TypePrimitive(TypePrimitive.TYPE_INT);
+                        Type bittype =
+                            new TypePrimitive(TypePrimitive.TYPE_BIT);
+                        Type cplxtype =
+                            new TypePrimitive(TypePrimitive.TYPE_COMPLEX);
+                        Type floattype =
+                            new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+                        if (ct == null)
+                        {
+                            report (expr,
+                                    "incompatible types in binary expression");
+                            return expr;
+                        }
+                        // Check whether ct is an appropriate type.
+                        switch (expr.getOp())
+                        {
+                        // Arithmetic operations:
+                        case ExprBinary.BINOP_ADD:
+                        case ExprBinary.BINOP_DIV:
+                        case ExprBinary.BINOP_MUL:
+                        case ExprBinary.BINOP_SUB:
+                            if (!ct.promotesTo(cplxtype))
+                                report(expr,
+                                       "cannot perform arithmetic on " + ct);
+                            break;
+
+                        // Bitwise and integer operations:
+                        case ExprBinary.BINOP_BAND:
+                        case ExprBinary.BINOP_BOR:
+                        case ExprBinary.BINOP_BXOR:
+                            if (!ct.promotesTo(inttype))
+                                report(expr,
+                                       "cannot perform bitwise operations on "
+                                       + ct);
+                            break;
+
+                        case ExprBinary.BINOP_MOD:
+                            if (!ct.promotesTo(inttype))
+                                report(expr, "cannot perform % on " + ct);
+                            break;
+                            
+                        // Boolean operations:
+                        case ExprBinary.BINOP_AND:
+                        case ExprBinary.BINOP_OR:
+                            if (!ct.promotesTo(bittype))
+                                report(expr,
+                                       "cannot perform boolean operations on "
+                                       + ct);
+                            break;
+
+                        // Comparison operations:
+                        case ExprBinary.BINOP_GE:
+                        case ExprBinary.BINOP_GT:
+                        case ExprBinary.BINOP_LE:
+                        case ExprBinary.BINOP_LT:
+                            if (!ct.promotesTo(floattype))
+                                report(expr,
+                                       "cannot compare non-real type " + ct);
+                            break;
+                        
+                        // Equality, can compare anything:
+                        case ExprBinary.BINOP_EQ:
+                        case ExprBinary.BINOP_NEQ:
+                            break;
+                        
+                        // And now we should have covered everything.
+                        default:
+                            report(expr,
+                                   "semantic checker missed a binop type");
+                            break;
+                        }
+                        return expr;
+                    }
+
+                    return super.visitExprBinary(expr);
+                }
+
+                public Object visitExprTernary(ExprTernary expr)
+                {
+                    Type at = getType(expr.getA());
+                    Type bt = getType(expr.getB());
+                    Type ct = getType(expr.getC());
+                    
+                    if (at != null)
+                    {
+                        if (!at.promotesTo
+                            (new TypePrimitive(TypePrimitive.TYPE_INT)))
+                            report(expr,
+                                   "first part of ternary expression "+
+                                   "must be int");
+                    }
+
+                    if (bt != null && ct != null)
+                    {                        
+                        Type xt = bt.leastCommonPromotion(ct);
+                        if (xt == null)
+                            report(expr,
+                                   "incompatible second and third types "+
+                                   "in ternary expression");
+                    }
+                    
+                    return super.visitExprTernary(expr);
+                }
+
+                public Object visitExprField(ExprField expr)
+                {
+                    Type lt = getType(expr.getLeft());
+
+                    // Either lt is complex, or it's a structure
+                    // type, or it's null, or it's an error.
+                    if (lt == null)
+                    {
+                        // pass
+                    }
+                    else if (lt.isComplex())
+                    {
+                        String rn = expr.getName();
+                        if (!rn.equals("real") &&
+                            !rn.equals("imag"))
+                            report(expr,
+                                   "complex variables have only "+
+                                   "'real' and 'imag' fields");
+                    }
+                    else if (lt instanceof TypeStruct)
+                    {
+                        TypeStruct ts = (TypeStruct)lt;
+                        String rn = expr.getName();
+                        boolean found = false;
+                        for (int i = 0; i < ts.getNumFields(); i++)
+                            if (ts.getField(i).equals(rn))
+                            {
+                                found = true;
+                                break;
+                            }
+                        
+                        if (!found)
+                            report(expr,
+                                   "structure does not have a field named "+
+                                   "'" + rn + "'");
+                    }
+                    else
+                    {
+                        report(expr,
+                               "field reference of a non-structure type");
+                    }
+
+                    return super.visitExprField(expr);
+                }
+
+                public Object visitExprArray(ExprArray expr)
+                {
+                    Type bt = getType(expr.getBase());
+                    Type ot = getType(expr.getOffset());
+                    
+                    if (bt != null)
+                    {
+                        if (!(bt instanceof TypeArray))
+                            report(expr, "array access with a non-array base");
+                    }
+
+                    if (ot != null)
+                    {
+                        if (!ot.promotesTo
+                            (new TypePrimitive(TypePrimitive.TYPE_INT)))
+                            report(expr, "array index must be an int");
+                    }
+                    
+                    return super.visitExprArray(expr);
+                }
+
+                public Object visitExprArrayInit(ExprArrayInit expr)
+                {
+		    // check for uniform length and dimensions among all children.
+		    List elems = expr.getElements();
+		    
+		    // only worry about it if we have elements
+		    if (elems.size()>0) {
+			Expression first = (Expression)elems.get(0);
+			// if one is an array, they should all be
+			// arrays of the same length and dimensions
+			if (first instanceof ExprArrayInit) {
+			    ExprArrayInit firstArr = (ExprArrayInit)first;
+			    for (int i=1; i<elems.size(); i++) {
+				ExprArrayInit other = (ExprArrayInit)elems.get(i);
+				if (firstArr.getDims() != other.getDims()) {
+				    report(expr, 
+					   "non-uniform number of array " +
+					   "dimensions in array initializer");
+				}
+				if (firstArr.getElements().size() != other.getElements().size()) {
+				    report(expr, 
+					   "two rows of a multi-dimensional " +  
+					   "array are initialized to different " + 
+					   "lengths (arrays must be rectangular)");
+				}
+			    }
+			} else {
+			    // if first element is not array, no other
+			    // element should be an array
+			    for (int i=1; i<elems.size(); i++) {
+				if (elems.get(i) instanceof ExprArrayInit) {
+				    report(expr, 
+					   "non-uniform number of array " +
+					   "dimensions in array initializer");
+				}
+			    }
+			}
+		    }
+		    
+                    return super.visitExprArrayInit(expr);
+                }
+
+                public Object visitExprPeek(ExprPeek expr)
+                {
+                    Type it = getType(expr.getExpr());
+                    
+                    if (it != null)
+                    {
+                        if (!it.promotesTo
+                            (new TypePrimitive(TypePrimitive.TYPE_INT)))
+                            report(expr, "peek index must be an int");
+                    }
+                    
+                    return super.visitExprPeek(expr);                    
+                }
+
+		public Object visitFieldDecl(FieldDecl field) {
+		    // check that array sizes match
+		    for (int i=0; i<field.getNumFields(); i++) {
+			Type type = field.getType(i);
+			Expression init = field.getInit(i);
+			if (type instanceof TypeArray && init!=null) {
+			    // check that initializer is array initializer
+			    // (I guess it could also be conditional expression?  Don't bother.)
+			    if (!(init instanceof ExprArrayInit)) {
+				report (field, "array initialized to non-array type");
+			    } else {
+				// check that lengths match
+				Expression lengthExpr = ((TypeArray)type).getLength();
+				// only check it if we have resolved it
+				if (lengthExpr instanceof ExprConstInt) {
+				    int length = ((ExprConstInt)lengthExpr).getVal();
+				    if (length != ((ExprArrayInit)init).getElements().size()) {
+					report(field, 
+					       "declared array length does not match " +
+					       "array initializer");
+				    }
+				}
+			    }
+			}
+		    }
+
+		    return super.visitFieldDecl(field);
+		}
+
+                public Object visitStmtPush(StmtPush stmt)
+                {
+                    Type xt = getType(stmt.getValue());
+                    
+                    if (xt != null && streamType != null &&
+                        streamType.getOut() != null &&
+                        !(xt.promotesTo(streamType.getOut())))
+                        report(stmt, "push expression must be of "+
+                               "output type of filter");
+                    
+                    return super.visitStmtPush(stmt);
+                }
+
+                public Object visitStmtEnqueue(StmtEnqueue stmt)
+                {
+                    Type xt = getType(stmt.getValue());
+                    
+                    // Punt if, in addition to the normal cases,
+                    // the input type is void.  (We'd have to
+                    // determine the loopback type now.)
+                    if (xt != null && streamType != null)
+                    {
+                        Type in = streamType.getIn();
+                        if (!((in instanceof TypePrimitive) &&
+                              ((TypePrimitive)in).getType() ==
+                              TypePrimitive.TYPE_VOID) &&
+                            !(xt.promotesTo(in)))
+                        report(stmt, "enqueue expression must be of "+
+                               "input type of feedback loop");
+                    }
+                    
+                    return super.visitStmtEnqueue(stmt);
+                }
+
+                public Object visitStmtAssign(StmtAssign stmt)
+                {
+                    Type lt = getType(stmt.getLHS());
+                    Type rt = getType(stmt.getRHS());
+                    
+                    if (lt != null && rt != null &&
+                        !(rt.promotesTo(lt)))
+                        report(stmt,
+                               "right-hand side of assignment must "+
+                               "be promotable to left-hand side's type");
+                    
+                    return super.visitStmtAssign(stmt);
+                }
+            });
+    }
+    
+    /**
+     * Checks that streams are connected with consistent types.
+     * In a split-join, all of the children need to have the same
+     * type, which is the same type as the parent stream; in a pipeline,
+     * the type of the output of the first child must be the same as
+     * the input of the second, and so on; feedback loops must be
+     * properly connected too.
+     *
+     * @param prog  parsed program object to check
+     */
+    public void checkStreamConnectionTyping(Program prog)
+    {
+        // Generic map of stream names:
+        final Map streams = new HashMap();
+        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
+        {
+            StreamSpec ss = (StreamSpec)iter.next();
+            streams.put(ss.getName(), ss);
+        }
+        
+        // Look for init functions in composite streams:
+        prog.accept(new FEReplacer() {
+                public Object visitStreamSpec(StreamSpec ss)
+                {
+                    if (ss.getType() == StreamSpec.STREAM_SPLITJOIN)
+                        checkSplitJoinConnectionTyping(ss, streams);
+                    else if (ss.getType() == StreamSpec.STREAM_PIPELINE)
+                        checkPipelineConnectionTyping(ss, streams);
+                    else if (ss.getType() == StreamSpec.STREAM_FEEDBACKLOOP)
+                        checkFeedbackLoopConnectionTyping(ss, streams);
+                    return super.visitStreamSpec(ss);
+                }
+            });
+    }
+
+    private void checkPipelineConnectionTyping(StreamSpec ss,
+                                               final Map streams)
+    {
+        Function init = ss.getInitFunc();
+        final CFG cfg = CFGBuilder.buildCFG(init);
+        final StreamType st = ss.getStreamType();
+        final Set reported = new HashSet();
+
+        // Use data flow to check the stream types.
+        Map inTypes = new DataFlow() {
+                public Lattice getInit()
+                {
+                    if (st == null)
+                        return new StrictTypeLattice(true); // top
+                    else
+                        return new StrictTypeLattice(st.getIn());
+                }
+                
+                public Lattice flowFunction(CFGNode node, Lattice in)
+                {
+                    if (!node.isStmt())
+                        return in;
+                    Statement stmt = node.getStmt();
+                    if (!(stmt instanceof StmtAdd))
+                        return in;
+                    StrictTypeLattice stl = (StrictTypeLattice)in;
+                    StmtAdd add = (StmtAdd)stmt;
+                    StreamCreator sc = ((StmtAdd)stmt).getCreator();
+                    StreamType st2;
+                    if (sc instanceof SCAnon)
+                        st2 = ((SCAnon)sc).getSpec().getStreamType();
+                    else
+                    {
+                        String name = ((SCSimple)sc).getName();
+                        StreamSpec spec = (StreamSpec)streams.get(name);
+                        if (spec == null)
+                            // Technically an error; keep going.
+                            return stl.getTop();
+                        st2 = spec.getStreamType();
+                    }
+                    // Report on conflicts at this node, but only
+                    // if we haven't yet.
+                    if (!reported.contains(stmt))
+                    {
+                        // Is the input bottom?
+                        if (stl.isBottom())
+                        {
+                            reported.add(stmt);
+                            report(stmt, "ambiguous prevailing stream type");
+                        }
+                        // If we have a stream type, does it disagree?
+                        else if (!stl.isTop() && st2 != null &&
+                                 !(stl.getValue().equals(st2.getIn())))
+                        {
+                            reported.add(stmt);
+                            report(stmt, "prevailing stream type " +
+                                   stl.getValue() + " disagrees with child");
+                        }
+                    }
+                    // In any case, the output type is top if our stream
+                    // type is null, or a value.
+                    if (st2 == null)
+                        return new StrictTypeLattice(true);
+                    else
+                        return new StrictTypeLattice(st2.getOut());
+                }
+        }.run(cfg);
+
+        // At this point we've reported if stream types don't match
+        // within the stream.  Check the output:
+        StrictTypeLattice stl = (StrictTypeLattice)inTypes.get(cfg.getExit());
+        if (stl.isBottom())
+            report(init, "ambiguous type at pipeline exit");
+        else if (!stl.isTop() && st != null &&
+                 !(st.getOut().equals(stl.getValue())))
+            report(init, "type at pipeline exit " + stl.getValue() +
+                   " disagrees with declared type");
+    }
+    
+    private void checkSplitJoinConnectionTyping(StreamSpec ss, Map streams)
+    {
+        checkSJFLConnections(ss, streams, true, true);
+        checkSJFLConnections(ss, streams, true, false);
+    }
+
+    private void checkFeedbackLoopConnectionTyping(StreamSpec ss, Map streams)
+    {
+        checkSJFLConnections(ss, streams, false, true);
+        checkSJFLConnections(ss, streams, false, false);
+    }
+
+    // Only do this once, it's the same basic algorithm for split-joins
+    // and feedback loops:
+    private void checkSJFLConnections(final StreamSpec ss,
+                                      final Map streams,
+                                      final boolean forSJ,
+                                      final boolean forInput)
+    {
+        // What we want to do is check that the input and/or output
+        // types of a non-pipeline composite stream match up.  That is,
+        // there should be a single type at the splitter or joiner.
+        // Using the data-flow infrastructure for this seems gratuitous,
+        // except that the StreamType type may be indeterminate
+        // (could have a null StreamType, or for a feedback loop
+        // could have a void input or output type).
+
+        Function init = ss.getInitFunc();
+        assert init != null;
+        CFG cfg = CFGBuilder.buildCFG(init);
+        Map typeMap = new DataFlow() {
+                public Lattice getInit()
+                {
+                    StreamType st = ss.getStreamType();
+                    if (st == null)
+                        return new StrictTypeLattice(true); // top
+                    Type theType = forInput ? st.getIn() : st.getOut();
+                    // For feedback loops, void input/output is
+                    // special, and equivalent to top here:
+                    if (!forSJ &&
+                        theType instanceof TypePrimitive &&
+                        ((TypePrimitive)theType).getType() ==
+                        TypePrimitive.TYPE_VOID)
+                        return new StrictTypeLattice(true);
+                    return new StrictTypeLattice(theType);
+                }
+
+                public Lattice flowFunction(CFGNode node, Lattice in)
+                {
+                    if (!node.isStmt())
+                        return in;
+                    
+                    // This is generic code for either split-joins or
+                    // feedback loops.  Don't worry about getting the
+                    // wrong statement.  sc gets set to the child
+                    // stream creator object, we'll resolve it
+                    // momentarily.  takeInput gets set if we're
+                    // interested in the input type of the stream,
+                    // false if we want the output.
+                    Statement stmt = node.getStmt();
+                    StreamCreator sc;
+                    boolean takeInput;
+                    if (stmt instanceof StmtAdd)
+                    {
+                        sc = ((StmtAdd)stmt).getCreator();
+                        takeInput = forInput;
+                    }
+                    else if (stmt instanceof StmtBody)
+                    {
+                        sc = ((StmtBody)stmt).getCreator();
+                        // child input connected to loop input
+                        takeInput = forInput;
+                    }
+                    else if (stmt instanceof StmtLoop)
+                    {
+                        sc = ((StmtLoop)stmt).getCreator();
+                        // child input connected to loop output
+                        takeInput = !forInput;
+                    }
+                    else
+                        // uninteresting statement
+                        return in;
+                    
+                    // Find the actual stream spec/type.
+                    StreamSpec ss = null;
+                    if (sc instanceof SCAnon)
+                        ss = ((SCAnon)sc).getSpec();
+                    else if (sc instanceof SCSimple)
+                    {
+                        String name = ((SCSimple)sc).getName();
+                        ss = (StreamSpec)streams.get(name);
+                    }
+
+                    if (ss == null)
+                        return in;
+                    if (ss.getStreamType() == null)
+                        return in;
+                    Type theType;
+                    if (takeInput)
+                        theType = ss.getStreamType().getIn();
+                    else
+                        theType = ss.getStreamType().getOut();
+
+                    // Split-joins get to randomly have children
+                    // with void inputs/outputs.  In particular:
+                    // float->float splitjoin Insert(float f) {
+                    //   split roundrobin(1,0);
+                    //   add Identity<float>();
+                    //   add void->float filter { ... };
+                    //   join roundrobin;
+                    // }
+                    if (forSJ &&
+                        theType instanceof TypePrimitive &&
+                        ((TypePrimitive)theType).getType() ==
+                        TypePrimitive.TYPE_VOID)
+                        return in;
+                    
+                    // What do we actually return?  Take the meet
+                    // of the input and output values, so that when
+                    // we see
+                    //   add void->float filter { ... };
+                    //   add void->int filter { ... };
+                    // we notice something's wrong.
+                    //
+                    // In principle, we could report here, but we
+                    // would get an extra error on linear code when
+                    // reporting on an error at a possible join
+                    // just before exit (make the above statements
+                    // branches of an if/then).
+                    Lattice newVal = new StrictTypeLattice(theType);
+                    return in.meet(newVal);
+                }
+            }.run(cfg);
+
+        // We again want something that can traverse a CFG and
+        // give the first place where the lattice value is bottom.
+        StrictTypeLattice exitVal =
+            (StrictTypeLattice)typeMap.get(cfg.getExit());
+        if (exitVal.isBottom())
+        {
+            if (forSJ && forInput)
+                report(ss, "types at splitjoin entry disagree");
+            else if (forSJ && !forInput)
+                report(ss, "types at splitjoin exit disagree");
+            else if (!forSJ && forInput)
+                report(ss, "types at feedbackloop entry disagree");
+            else if (!forSJ && !forInput)
+                report(ss, "types at feedbackloop exit disagree");
+        }
+    }
+
+    /**
+     * Checks that statements that must be invoked some number
+     * of times in fact are.  This includes checking that split-join
+     * and feedback loop init functions have exactly one splitter
+     * and exactly one joiner.
+     *
+     * @param prog  parsed program object to check
+     */
+    public void checkStatementCounts(Program prog)
+    {
+        // Look for init functions in split-joins and feedback loops:
+        prog.accept(new FEReplacer() {
+                public Object visitStreamSpec(StreamSpec ss)
+                {
+                    if (ss.getType() == StreamSpec.STREAM_SPLITJOIN ||
+                        ss.getType() == StreamSpec.STREAM_FEEDBACKLOOP)
+                    {
+                        exactlyOneStatement
+                            (ss, "split",
+                             new StatementCounter() {
+                                 public boolean
+                                     statementQualifies(Statement stmt)
+                                 { return stmt instanceof StmtSplit; }
+                             });
+                        exactlyOneStatement
+                            (ss, "join",
+                             new StatementCounter() {
+                                 public boolean
+                                     statementQualifies(Statement stmt)
+                                 { return stmt instanceof StmtJoin; }
+                             });
+                    }
+
+                    if (ss.getType() == StreamSpec.STREAM_FEEDBACKLOOP)
+                    {
+                        exactlyOneStatement
+                            (ss, "body",
+                             new StatementCounter() {
+                                 public boolean
+                                     statementQualifies(Statement stmt)
+                                 { return stmt instanceof StmtBody; }
+                             });
+                        exactlyOneStatement
+                            (ss, "loop",
+                             new StatementCounter() {
+                                 public boolean
+                                     statementQualifies(Statement stmt)
+                                 { return stmt instanceof StmtLoop; }
+                             });
+                    }
+                    return super.visitStreamSpec(ss);
+                }
+            });
+    }
+
+    private void exactlyOneStatement(StreamSpec ss, String stype,
+                                     StatementCounter sc)
+    {
+        Function init = ss.getInitFunc();
+        assert init != null;
+        CFG cfg = CFGBuilder.buildCFG(init);
+        Map splitCounts = sc.run(cfg);
+        // TODO: modularize this analysis; report the first place
+        // where there's a second split/join, and/or the first place
+        // where there's ambiguity (bottom).  This would be easier if
+        // Java had lambdas.
+        CountLattice exitVal = (CountLattice)splitCounts.get(cfg.getExit());
+        if (exitVal.isTop())
+            report(init, "weird failure: " + stype + " exit value is top");
+        else if (exitVal.isBottom())
+            report(init, "couldn't determine number of " + stype +
+                   " statements");
+        else if (exitVal.getValue() == 0)
+            report(init, "no " + stype + " statements");
+        else if (exitVal.getValue() > 1)
+            report(init, "more than one " + stype + " statement");
     }
 
     /**

@@ -16,7 +16,9 @@
 
 package streamit.frontend.tojava;
 
+import streamit.frontend.StreamItLex;
 import streamit.frontend.nodes.*;
+
 import java.util.Iterator;
 import java.util.*;
 
@@ -77,7 +79,8 @@ public class NodesToNative extends  NodesToJava
     
     public NodesToNative(StreamSpec ss, TempVarGen varGen, MethodState fatherstate)
     {
-    	super( ss, varGen ); 
+    	super( true, varGen );    	
+    	this.setSs(ss);
     	this.fatherstate = fatherstate;
     	vstack = new VarStack();
     }
@@ -92,7 +95,7 @@ public class NodesToNative extends  NodesToJava
         {
             TypeArray array = (TypeArray)type;
             String base = convertType(array.getBase());
-            return base + "[]";
+            return base + "* ";
         }
         else if (type instanceof TypeStruct)
 	{
@@ -260,6 +263,27 @@ public class NodesToNative extends  NodesToJava
     	return null;
     }
     
+    public Object visitExprArrayInit(ExprArrayInit exp)
+    {
+	StringBuffer sb = new StringBuffer();
+	sb.append("{");
+
+	List elems = exp.getElements();
+	for (int i=0; i<elems.size(); i++) {
+	    sb.append((String)((Expression)elems.get(i)).accept(this));
+	    if (i!=elems.size()-1) {
+		sb.append(",");
+	    }
+	    // leave blank line for multi-dim arrays
+	    if (exp.getDims()>1) {
+		sb.append("\n");
+	    }
+	}
+	
+	sb.append("}");
+
+        return sb.toString();
+    }
 
     public Object visitExprComplex(ExprComplex exp)
     {
@@ -289,7 +313,7 @@ public class NodesToNative extends  NodesToJava
 	String result;
         String name = exp.getName();
         // Local function?
-        if (ss.getFuncNamed(name) != null) {
+        if (getSs().getFuncNamed(name) != null) {
             result = name + "(";
         }
 	// look for print and println statements; assume everything
@@ -437,7 +461,7 @@ public class NodesToNative extends  NodesToJava
         
         result += "NATIVE_METHOD " + func.getName() + ";\n";
     	result += "###NATIVE_CODE_BEGIN\n";
-        if (!func.getName().equals(ss.getName()))
+        if (!func.getName().equals(getSs().getName()))
             result += convertType(func.getReturnType()) + " ";                	
         result += func.getName();
         String prefix = null;
@@ -464,7 +488,7 @@ public class NodesToNative extends  NodesToJava
         for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
         {
             TypeStruct struct = (TypeStruct)iter.next();
-            result += indent + "class " + struct.getName() +
+            result +=  indent + "class " + struct.getName() +
                 " extends Structure {\n";
             addIndent();
             for (int i = 0; i < struct.getNumFields(); i++)
@@ -609,7 +633,7 @@ public class NodesToNative extends  NodesToJava
     	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
         ExprFunCall fc = stmt.getFunCall();
         // ASSERT: the target is always a phase function.
-        FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
+        FuncWork target = (FuncWork)getSs().getFuncNamed(fc.getName());
         StmtExpr call = new StmtExpr(stmt.getContext(), fc);
         String peek, pop, push;
         if (target.getPeekRate() == null)
@@ -731,8 +755,8 @@ public class NodesToNative extends  NodesToJava
         
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
-        StreamSpec oldSS = ss;
-        ss = spec;
+        StreamSpec oldSS = getSs();
+        setSs(spec);
         result += "{\n"; 
         // Output field definitions:
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -745,7 +769,7 @@ public class NodesToNative extends  NodesToJava
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
             result += (String)(((Function)iter.next()).accept(this));
 
-        ss = oldSS;        
+        setSs(oldSS);        
         result += "}\n";
         return result;
     }

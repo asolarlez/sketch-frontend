@@ -212,7 +212,8 @@ public class InsertInitConstructors extends InitMunger
             {
                 FEContext ctx = decl.getContext();
                 Expression lhs = new ExprVar(ctx, decl.getName(i));
-                addStatements(stmtsForConstructor(ctx, lhs, type, true));
+                if( decl.getInit(i)== null)
+                	addStatements(stmtsForConstructor(ctx, lhs, type, true));
             }
         }
 

@@ -40,6 +40,11 @@ public class NoRefTypes extends FEReplacer
 
     private Type remapType(Type type)
     {
+	if (type instanceof TypeArray) {
+	    TypeArray ta = (TypeArray)type;
+	    Type newBase = remapType(ta.getBase());
+	    type = new TypeArray(newBase, ta.getLength());
+	}
         if (type instanceof TypeStructRef)
         {
             TypeStructRef tsr = (TypeStructRef)type;

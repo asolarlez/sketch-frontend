@@ -7,6 +7,7 @@
 package streamit.frontend.tojava;
 
 import streamit.frontend.nodes.*;
+
 import java.util.*;
 
 
@@ -544,6 +545,17 @@ public class NodesToSBit implements FEVisitor{
 	    private String indent;
 	    private TempVarGen varGen;
 	    private MethodState state;
+	    private class VectorState{
+	    	private List vectorState;	    	
+	    	public VectorState(){ vectorState = null; }
+	    	public List get(){ assert vectorState != null: "This is not legal";
+	    				List vs = vectorState;
+	    				vectorState = null;
+	    				return vs; }
+	    	public void set(List vs){ vectorState = vs; }
+	    	public boolean has() { return vectorState != null; }
+	    }
+	    private VectorState vs = new VectorState();
 	    private boolean isLHS;
 	    private NodesToNative nativeGenerator;
 	    private HashMap funsWParams;
@@ -661,8 +673,9 @@ public class NodesToSBit implements FEVisitor{
 	        if (type instanceof TypeArray)
 	        {
 	            TypeArray array = (TypeArray)type;
-	            return convertTypeFull(array.getBase()) + "[" +
-	                (String)array.getLength().accept(this) + "]";
+	            String len = (String)array.getLength().accept(this);
+	            assert state.popVStack() != null: "This should never happen";
+	            return convertTypeFull(array.getBase()) + "[" + len + "]";
 	        }
 	        return convertType(type);
 	    }
@@ -782,7 +795,7 @@ public class NodesToSBit implements FEVisitor{
 	    // Return a representation of lhs = rhs, with no trailing semicolon.
 	    public String doAssignment(Expression lhs, Expression rhs,
 	                               SymbolTable symtab)
-	    {	        
+	    {
 	        // We can use a null stream type here since the left-hand
 	        // side shouldn't contain pushes, pops, or peeks.	        
             // Might want to special-case structures and arrays;
@@ -794,15 +807,44 @@ public class NodesToSBit implements FEVisitor{
 	    	
 	    	Integer vlhs = state.popVStack();
 	    	String rhss = (String) rhs.accept(this);
-	    	Integer vrhs =  state.popVStack();
-	    	if(vrhs != null){
-	    		state.setVarValue(lhss, vrhs.intValue());
-	    		return  lhss + " = " + vrhs;
+	    	if( this.vs.has() ){
+	    		List lst= this.vs.get();
+	    		Iterator it = lst.iterator();
+	    		int idx = 0;
+	    		while( it.hasNext() ){
+	    			Integer i = (Integer) it.next();
+	    			state.setVarValue(lhss + "_idx_" + idx, i.intValue());
+	    			++idx;
+	    		}
+	    		return "";
 	    	}else{
-	    		return  lhss + " = " + rhss;
+		    	Integer vrhs =  state.popVStack();
+		    	if(vrhs != null){
+		    		state.setVarValue(lhss, vrhs.intValue());
+		    		return  lhss + " = " + vrhs;
+		    	}else{
+		    		return  lhss + " = " + rhss;
+		    	}
 	    	}
 	    }
-
+	    
+	    
+	    public Object visitExprArrayInit(ExprArrayInit exp)
+	    {
+			List intelems = new LinkedList();
+			List elems = exp.getElements();
+			for (int i=0; i<elems.size(); i++) {
+				((Expression)elems.get(i)).accept(this);
+				Integer vrhs =  state.popVStack();
+		    	assert vrhs != null; 
+		    	intelems.add(vrhs);			 	
+			}
+			
+			this.vs.set(intelems);
+			return null;
+	    }
+	    
+	    
 	    public Object visitExprArray(ExprArray exp)
 	    {
 	    	//Assert(false, "NYI");	    	
@@ -1379,6 +1421,10 @@ public class NodesToSBit implements FEVisitor{
 	        }
 	        return result;
 	    }
+	    public Object visitStmtEmpty(StmtEmpty stmt)
+	    {
+	        return "";
+	    }
 	    
 	    public Object visitStmtAdd(StmtAdd stmt)
 	    {
@@ -1440,7 +1486,17 @@ public class NodesToSBit implements FEVisitor{
 	        	}
 	        break;
 	        default: op = " = ";
-	        	if(vrhs != null){
+		        if( this.vs.has() ){
+		    		List lst= this.vs.get();
+		    		Iterator it = lst.iterator();
+		    		int idx = 0;
+		    		while( it.hasNext() ){
+		    			Integer i = (Integer) it.next();
+		    			state.setVarValue(lhs + "_idx_" + idx, i.intValue());
+		    			++idx;
+		    		}
+		    		return "";
+		    	}else if(vrhs != null){
 	        		state.setVarValue(lhs, vrhs.intValue());	
 	        		return "";
 	        	}
@@ -1711,11 +1767,27 @@ public class NodesToSBit implements FEVisitor{
 	            	at.getLength().accept(this);
 	            	Integer tmp = state.popVStack();
 	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + stmt.getContext());
-	            	for(int tt=0; tt<tmp.intValue(); ++tt){
-	            		String nnm = nm + "_idx_" + tt;
-	            		state.varDeclare(nnm);
-	            		String tmplhsn = state.varGetLHSName(nnm);
-	            	}
+	            	stmt.getInit(i).accept(this);
+	            	if( this.vs.has() ){
+			    		List lst= this.vs.get();
+			    		Iterator it = lst.iterator();
+			    		int tt = 0;
+			    		while( it.hasNext() ){
+			    			Integer ival = (Integer) it.next();
+			    			String nnm = nm + "_idx_" + tt;
+			    			state.varDeclare(nnm);
+		            		String tmplhsn = state.varGetLHSName(nnm);
+			    			state.setVarValue(nnm, ival.intValue());
+			    			++tt;
+			    		}
+			    		return "";
+			    	}else{
+		            	for(int tt=0; tt<tmp.intValue(); ++tt){
+		            		String nnm = nm + "_idx_" + tt;
+		            		state.varDeclare(nnm);
+		            		String tmplhsn = state.varGetLHSName(nnm);
+		            	}
+			    	}
 	            }else{
 		            
 		            if (stmt.getInit(i) != null){      	

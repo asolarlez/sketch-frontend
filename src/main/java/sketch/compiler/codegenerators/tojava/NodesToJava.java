@@ -17,6 +17,7 @@
 package streamit.frontend.tojava;
 
 import streamit.frontend.nodes.*;
+import streamit.frontend.ToJava;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,15 +32,30 @@ import java.util.List;
  */
 public class NodesToJava implements FEVisitor
 {
-    protected StreamSpec ss;
+    private StreamSpec ss;
+    /**
+	 * @param ss The ss to set.
+	 */
+	public void setSs(StreamSpec ss) {
+		this.ss = ss;
+	}
+	/**
+	 * @return Returns the ss.
+	 */
+	public StreamSpec getSs() {
+		return ss;
+	}
+
     // A string consisting of an even number of spaces.
     protected String indent;
+    private boolean libraryFormat;
     private TempVarGen varGen;
     
-    public NodesToJava(StreamSpec ss, TempVarGen varGen)
+    public NodesToJava(boolean libraryFormat, TempVarGen varGen)
     {
-        this.ss = ss;
+        this.ss = null;
         this.indent = "";
+        this.libraryFormat = libraryFormat;
         this.varGen = varGen;
     }
 
@@ -85,13 +101,18 @@ public class NodesToJava implements FEVisitor
             case TypePrimitive.TYPE_DOUBLE: return "double";
             case TypePrimitive.TYPE_COMPLEX: return "Complex";
             case TypePrimitive.TYPE_VOID: return "void";
+            default: assert false : type; return null;
             }
         }
         else if (type instanceof TypePortal)
         {
             return ((TypePortal)type).getName() + "Portal";
         }
-        return null;
+        else
+        {
+            assert false : type;
+            return null;
+        }
     }
 
     // Do the same conversion, but including array dimensions.
@@ -136,15 +157,20 @@ public class NodesToJava implements FEVisitor
                 return "Void.TYPE";
             case TypePrimitive.TYPE_COMPLEX:
                 return "Complex.class";
+            default:
+                assert false : t;
+                return null;
             }
         }
         else if (t instanceof TypeStruct)
             return ((TypeStruct)t).getName() + ".class";
         else if (t instanceof TypeArray)
             return "(" + makeConstructor(t) + ").getClass()";
-        // Errp.
-        System.err.println("typeToClass(): I don't understand " + t);
-        return null;
+        else
+        {
+            assert false : t;
+            return null;
+        }
     }
 
     // Helpers to get function names for stream types.
@@ -190,6 +216,8 @@ public class NodesToJava implements FEVisitor
                 if (name.startsWith("input"))
                     prefix  = "(Complex)";
                 break;
+            default:
+                assert false : type;
             }
         }
         else if (name.startsWith("input"))
@@ -226,7 +254,8 @@ public class NodesToJava implements FEVisitor
         // properly decompose the right-hand side.
         // We can use a null stream type here since the left-hand
         // side shouldn't contain pushes, pops, or peeks.
-        GetExprType eType = new GetExprType(symtab, ss.getStreamType());
+        GetExprType eType = new GetExprType(symtab, ss.getStreamType(),
+                                            new java.util.HashMap());
         Type lhsType = (Type)lhs.accept(eType);
         if (lhsType.isComplex())
         {
@@ -266,6 +295,28 @@ public class NodesToJava implements FEVisitor
         return result;
     }
     
+    public Object visitExprArrayInit(ExprArrayInit exp)
+    {
+	StringBuffer sb = new StringBuffer();
+	sb.append("{");
+
+	List elems = exp.getElements();
+	for (int i=0; i<elems.size(); i++) {
+	    sb.append((String)((Expression)elems.get(i)).accept(this));
+	    if (i!=elems.size()-1) {
+		sb.append(",");
+	    }
+	    // leave blank line for multi-dim arrays
+	    if (exp.getDims()>1) {
+		sb.append("\n");
+	    }
+	}
+	
+	sb.append("}");
+
+        return sb.toString();
+    }
+    
     public Object visitExprBinary(ExprBinary exp)
     {
         String result;
@@ -290,6 +341,7 @@ public class NodesToJava implements FEVisitor
         case ExprBinary.BINOP_BAND:op = "&"; break;
         case ExprBinary.BINOP_BOR: op = "|"; break;
         case ExprBinary.BINOP_BXOR:op = "^"; break;
+        default: assert false : exp; break;
         }
         result += " " + op + " ";
         result += (String)exp.getRight().accept(this);
@@ -299,7 +351,9 @@ public class NodesToJava implements FEVisitor
 
     public Object visitExprComplex(ExprComplex exp)
     {
-        // This should cause an assertion failure, actually.
+        // We should never see one of these at this point.
+        assert false : exp;
+        // If we do, print something vaguely intelligent:
         String r = "";
         String i = "";
         if (exp.getReal() != null) r = (String)exp.getReal().accept(this);
@@ -381,6 +435,7 @@ public class NodesToJava implements FEVisitor
         result += ")";
         return result;
     }
+
     public Object visitExprPeek(ExprPeek exp)
     {
         String result = (String)exp.getExpr().accept(this);
@@ -390,7 +445,7 @@ public class NodesToJava implements FEVisitor
     public Object visitExprPop(ExprPop exp)
     {
         return popFunction(ss.getStreamType()) + "()";
-    }    
+    }
 
     public Object visitExprTernary(ExprTernary exp)
     {
@@ -401,9 +456,10 @@ public class NodesToJava implements FEVisitor
         {
         case ExprTernary.TEROP_COND:
             return "(" + a + " ? " + b + " : " + c + ")";
+        default:
+            assert false : exp;
+            return null;
         }
-        
-        return null;
     }
 
     public Object visitExprTypeCast(ExprTypeCast exp)
@@ -423,9 +479,8 @@ public class NodesToJava implements FEVisitor
         case ExprUnary.UNOP_POSTINC: return child + "++";
         case ExprUnary.UNOP_PREDEC: return "--" + child;
         case ExprUnary.UNOP_POSTDEC: return child + "--";
+        default: assert false : exp; return null;
         }
-
-        return null;
     }
 
     public Object visitExprVar(ExprVar exp)
@@ -503,7 +558,19 @@ public class NodesToJava implements FEVisitor
     
     public Object visitSCSimple(SCSimple creator)
     {
-        String result = "new " + creator.getName() + "(";
+        String result;
+        if (libraryFormat)
+        {
+            // Magic for builtins.
+            if (creator.getName().equals("Identity") ||
+                creator.getName().equals("FileReader") ||
+                creator.getName().equals("FileWriter"))
+                result = "new " + creator.getName() + "(";
+            else
+                result = creator.getName() + ".__construct(";
+        }
+        else
+            result = "new " + creator.getName() + "(";
         boolean first = true;
         for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
         {
@@ -585,7 +652,8 @@ public class NodesToJava implements FEVisitor
         case ExprBinary.BINOP_SUB: op = " -= "; break;
         case ExprBinary.BINOP_MUL: op = " *= "; break;
         case ExprBinary.BINOP_DIV: op = " /= "; break;
-        default: op = " = ";
+        case 0: op = " = "; break;
+        default: assert false: stmt; op = " = "; break;
         }
         // Assume both sides are the right type.
         return (String)stmt.getLHS().accept(this) + op +
@@ -641,6 +709,11 @@ public class NodesToJava implements FEVisitor
         return result;
     }
 
+    public Object visitStmtEmpty(StmtEmpty stmt)
+    {
+        return "";
+    }
+
     public Object visitStmtEnqueue(StmtEnqueue stmt)
     {
         // Errk: this doesn't become nice Java code.
@@ -678,6 +751,7 @@ public class NodesToJava implements FEVisitor
     public Object visitStmtIfThen(StmtIfThen stmt)
     {
         // must have an if part...
+        assert stmt.getCond() != null;
         String result = "if (" + (String)stmt.getCond().accept(this) + ") ";
         result += (String)stmt.getCons().accept(this);
         if (stmt.getAlt() != null)
@@ -687,11 +761,13 @@ public class NodesToJava implements FEVisitor
 
     public Object visitStmtJoin(StmtJoin stmt)
     {
+        assert stmt.getJoiner() != null;
         return "setJoiner(" + (String)stmt.getJoiner().accept(this) + ")";
     }
     
     public Object visitStmtLoop(StmtLoop stmt)
     {
+        assert stmt.getCreator() != null;
         return doStreamCreator("setLoop", stmt.getCreator());
     }
 
@@ -774,6 +850,7 @@ public class NodesToJava implements FEVisitor
 
     public Object visitStmtSplit(StmtSplit stmt)
     {
+        assert stmt.getSplitter() != null;
         return "setSplitter(" + (String)stmt.getSplitter().accept(this) + ")";
     }
 
@@ -798,6 +875,8 @@ public class NodesToJava implements FEVisitor
 
     public Object visitStmtWhile(StmtWhile stmt)
     {
+        assert stmt.getCond() != null;
+        assert stmt.getBody() != null;
         return "while (" + (String)stmt.getCond().accept(this) +
             ") " + (String)stmt.getBody().accept(this);
     }
@@ -851,9 +930,107 @@ public class NodesToJava implements FEVisitor
             result.append(doParams(func.getParams(), null));
             result.append(" { }\n");
         }
-        unIndent();
+	if(libraryFormat) {
+	    //implement fireMessage
+	    result.append(indent+"protected void fireMessage(int message,Object[] args) {\n");
+	    addIndent();
+	    result.append(indent+"System.out.println(\"Firing Message: \"+message);\n");
+	    unIndent();
+	    result.append(indent+"}\n");
+	}
+	unIndent();
         result.append(indent + "}\n");
 
+        return result.toString();
+    }
+
+    /**
+     * For a non-anonymous StreamSpec in the library path, generate
+     * extra functions we need to construct the object.  In the
+     * compiler path, generate an empty constructor.
+     */
+    private String maybeGenerateConstruct(StreamSpec spec)
+    {
+        StringBuffer result = new StringBuffer();
+        
+        // The StreamSpec at this point has no parameters; we need to
+        // find the parameters of the init function.
+        Function init = spec.getInitFunc();
+        // (ASSERT: init != null)
+        List params = init.getParams();
+        
+        // In the library path, generate the __construct() mechanism:
+        if (libraryFormat)
+        {
+            // Generate fields for each of the parameters.
+            for (Iterator iter = params.iterator(); iter.hasNext(); )
+            {
+                Parameter param = (Parameter)iter.next();
+                result.append(indent + "private " +
+                              convertType(param.getType()) +
+                              " __param_" + param.getName() + ";\n");
+            }
+
+            // Generate a __construct() method that saves these.
+            result.append(indent + "public static " + spec.getName() +
+                          " __construct(");
+            boolean first = true;
+            for (Iterator iter = params.iterator(); iter.hasNext(); )
+            {
+                Parameter param = (Parameter)iter.next();
+                if (!first) result.append(", ");
+                first = false;
+                result.append(convertType(param.getType()) + " " +
+                              param.getName());
+            }
+            result.append(")\n" + indent + "{\n");
+            addIndent();
+            result.append(indent + spec.getName() + " __obj = new " +
+                          spec.getName() + "();\n");
+            for (Iterator iter = params.iterator(); iter.hasNext(); )
+            {
+                Parameter param = (Parameter)iter.next();
+                String name = param.getName();
+                result.append(indent + "__obj.__param_" + name + " = " +
+                              name + ";\n");
+            }
+            result.append(indent + "return __obj;\n");
+            unIndent();
+            result.append(indent + "}\n");
+            
+            // Generate a callInit() method.
+            result.append(indent + "protected void callInit()\n" +
+                          indent + "{\n");
+            addIndent();
+            result.append(indent + "init(");
+            first = true;
+            for (Iterator iter = params.iterator(); iter.hasNext(); )
+            {
+                Parameter param = (Parameter)iter.next();
+                if (!first) result.append(", ");
+                first = false;
+                result.append("__param_" + param.getName());
+            }
+            result.append(");\n");
+            unIndent();
+            result.append(indent + "}\n");
+        }
+        // In the compiler path, generate an empty constructor.
+        else // (!libraryFormat)
+        {
+            result.append(indent + "public " + spec.getName() + "(");
+            boolean first = true;
+            for (Iterator iter = params.iterator(); iter.hasNext(); )
+            {
+                Parameter param = (Parameter)iter.next();
+                if (!first) result.append(", ");
+                first = false;
+                result.append(convertType(param.getType()) + " " +
+                              param.getName());
+            }
+            result.append(")\n" + indent + "{\n" + indent + "}\n");
+        }
+        
         return result.toString();
     }
 
@@ -887,7 +1064,8 @@ public class NodesToJava implements FEVisitor
                 TypePrimitive.TYPE_VOID)
             {
                 result += "public class " + spec.getName() +
-                    " extends StreamIt" + spec.getTypeString() + ifaces + "\n";
+                    " extends StreamIt" + spec.getTypeString() + ifaces +
+                    " // " + spec.getContext() + "\n";
                 result += indent + "{\n";
                 addIndent();
                 result += indent + "public static void main(String[] args) {\n";
@@ -925,8 +1103,12 @@ public class NodesToJava implements FEVisitor
                         result += "FeedbackLoop";
                         break;
                     }
-                result += ifaces + "\n" + indent + "{\n";
+                result += ifaces + " // " + spec.getContext() + "\n" +
+                    indent + "{\n";
                 addIndent();
+                // If we're in the library backend, we need a construct()
+                // method too; in the compiler backend, a constructor.
+                result += maybeGenerateConstruct(spec);
             }
         }
         else
@@ -1023,6 +1205,10 @@ public class NodesToJava implements FEVisitor
             return "setIOTypes(" + typeToClass(sst.getInType()) +
                 ", " + typeToClass(sst.getOutType()) + ")";
         }
-        return "";
+        else
+        {
+            assert false : node;
+            return "";
+        }
     }
 }

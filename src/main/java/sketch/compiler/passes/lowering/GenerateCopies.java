@@ -69,7 +69,14 @@ public class GenerateCopies extends SymbolTableVisitor
      */
     private boolean needsCopy(Expression expr)
     {
-        return needsCopy(getType(expr));
+	// don't generate copies for array initializers, since we
+	// currently assume that they specify every literal in the
+	// array (they don't contain variable references).
+	if (expr instanceof ExprArrayInit) {
+	    return false;
+	} else {
+	    return needsCopy(getType(expr));
+	}
     }
 
     /**
