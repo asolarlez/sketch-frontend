@@ -16,7 +16,17 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstChar;
+import streamit.frontend.nodes.ExprConstFloat;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstStr;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.StmtExpr;
 
 /**
  * Remove expression statements with no side effects.  In particular,
