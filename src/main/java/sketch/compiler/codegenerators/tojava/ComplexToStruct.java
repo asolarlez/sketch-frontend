@@ -16,10 +16,20 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypeStruct;
 
 /**
  * Replace primitive complex types with the <code>Complex</code>

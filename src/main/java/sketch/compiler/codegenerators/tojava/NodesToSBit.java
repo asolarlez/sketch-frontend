@@ -15,6 +15,8 @@ class varState{
 	
 	private String name;
 	boolean hasval;
+	private boolean isarray=false;
+	private int arsize =-1;
 	private int value;
 	private int currentLHS;
 	private int currentRHS;
@@ -87,6 +89,27 @@ class varState{
 			return true;
 		}else
 			return false;
+	}
+
+	/**
+	 * @param isarray The isarray to set.
+	 */
+	public void setIsarray(boolean isarray, int size) {
+		this.arsize = size;
+		this.isarray = isarray;
+	}
+	
+	
+	public int getArrSize(){
+		return arsize;
+	}
+
+	/**
+	 * @return Returns the isarray.
+	 * 
+	 */
+	public boolean isarray() {
+		return isarray;
 	}		
 }
 
@@ -217,6 +240,13 @@ class MethodState{
     	}
     }
     
+    /**
+     * 
+     * WARNING: You need to call varGetLHSName after calling varDeclare
+     * in order to complete the var declaration process, and
+     * if the variable is an array, also call makeArray.
+     * 
+     */
     void varDeclare(String var){
     	// System.out.println("DECLARED " + var);
 		String newname = var + "_" + pushcount +"L" + varTranslator.curVT.size();
@@ -325,6 +355,27 @@ class MethodState{
 			this.UTunsetVarValue((String)me.getKey());
 		}
 		return result;
+	}
+	
+	public void makeArray(String var, int size){
+		var = this.transName(var);
+		UTmakeArray(var, size);
+	}
+	public void UTmakeArray(String var, int size){
+		varState i = (varState) vars.get(var);
+		i.setIsarray(true, size);
+	}
+	
+	public int checkArray(String var){
+		var = this.transName(var);
+		return UTcheckArray(var);
+	}
+	public int UTcheckArray(String var){
+		varState i = (varState) vars.get(var);
+		if( i.isarray())
+			return i.getArrSize();
+		else
+			return -1;
 	}
 	
 	public void unsetVarValue(String var){
@@ -458,7 +509,7 @@ class MethodState{
 	
 	void UTsetVarValue(String var, int v){		
 		varState tv = (varState) vars.get(var);
-		Assert(tv != null, "This should never happen, because before seting the value, you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
+		Assert(tv != null, "FLASASDFASDF   This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
 		if(changeTracker != null){
 			if(tv == null){
 				//This branch will never be taken.
@@ -552,6 +603,7 @@ public class NodesToSBit implements FEVisitor{
 	    				List vs = vectorState;
 	    				vectorState = null;
 	    				return vs; }
+	    	public void unset(){ vectorState = null; }
 	    	public void set(List vs){ vectorState = vs; }
 	    	public boolean has() { return vectorState != null; }
 	    }
@@ -806,6 +858,8 @@ public class NodesToSBit implements FEVisitor{
 	    	lhss = state.varGetLHSName(lhss);
 	    	
 	    	Integer vlhs = state.popVStack();
+	    	
+	    	this.vs.unset();
 	    	String rhss = (String) rhs.accept(this);
 	    	if( this.vs.has() ){
 	    		List lst= this.vs.get();
@@ -838,9 +892,9 @@ public class NodesToSBit implements FEVisitor{
 				Integer vrhs =  state.popVStack();
 		    	assert vrhs != null; 
 		    	intelems.add(vrhs);			 	
-			}
-			
+			}			
 			this.vs.set(intelems);
+			state.pushVStack(null);
 			return null;
 	    }
 	    
@@ -1159,6 +1213,19 @@ public class NodesToSBit implements FEVisitor{
 	    	}else{
 	    		state.pushVStack(null);
 	    	}
+	    	int sz = state.checkArray(vname);
+	    	if( sz >= 0 ){
+	    		List nlist = new LinkedList();
+ 	    		for(int i=0; i<sz; ++i){
+ 	    			String lnm = vname + "_idx_" + i;
+ 	    			if( state.varHasValue( lnm ) ){
+ 	    				nlist.add(new Integer( state.varValue( lnm )));
+ 	    			}else{
+ 	    				nlist.add(null);
+ 	    			}
+ 	    		}
+	    		this.vs.set( nlist );
+	    	}
 	    	if(this.isLHS)
 	    		return exp.getName();
 	    	else
@@ -1179,7 +1246,20 @@ public class NodesToSBit implements FEVisitor{
 	            String lhs = field.getName(i);
 	            this.isLHS = false;	 
 	            state.varDeclare(lhs);	 
-	            String lhsn = state.varGetLHSName(lhs);	                       
+	            String lhsn = state.varGetLHSName(lhs);
+	            if( field.getType(i) instanceof TypeArray ){
+	            	TypeArray ta = (TypeArray) field.getType(i);
+	            	ta.getLength().accept(this);
+	            	Integer tmp = state.popVStack();
+	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + field.getContext());
+	            	state.makeArray(lhs, tmp.intValue());
+	            	for(int tt=0; tt<tmp.intValue(); ++tt){
+	            		String nnm = lhs + "_idx_" + tt;
+	            		state.varDeclare(nnm);
+	            		String tmplhsn = state.varGetLHSName(nnm);
+	            	}
+	            }
+	         
 	            if (field.getInit(i) != null){	
 	            	additInit.
 					add(new StmtAssign(field.getContext(),
@@ -1335,7 +1415,23 @@ public class NodesToSBit implements FEVisitor{
 		        	
 		            Expression param = (Expression)iter.next();
 		            fullnm += "_";
-		            fullnm += (String)param.accept(this);		            
+		            this.vs.unset();
+		            param.accept(this);
+		            Integer pv = state.popVStack();           	
+                	if(this.vs.has()){
+                		List l = this.vs.get();
+                		int xx=0;
+                		int xpon=1;                		                		
+                		for(Iterator it = l.iterator(); it.hasNext(); ){
+                			Integer i = (Integer)it.next();
+                			xx += xpon *  i.intValue();
+                			xpon = xpon * 3;
+                		}
+                		fullnm +=  xx;
+                	}else{
+                		assert pv != null: "This is not supposed to happen";
+                		fullnm += pv;
+                	}
 		        }	    				        
 		        fullnm += "___";
 		        result += fullnm + "()";
@@ -1350,13 +1446,32 @@ public class NodesToSBit implements FEVisitor{
 			        while(viter.hasNext()){
 			        	Expression paramv = (Expression)viter.next();			        	
 			        	Parameter paramp = (Parameter) piter.next();
+			        	
+			        	this.vs.unset();
+			        	
 			        	paramv.accept(this);
 			        	Integer value = state.popVStack();
-			        	Assert(value != null, "I must be able to determine the values of the parameters at compile time.");
 			        	String pnm = paramp.getName();
 			        	state.varDeclare(pnm);
-			        	state.varGetLHSName(pnm);
-			        	state.setVarValue(pnm, value.intValue());
+			    		state.varGetLHSName(pnm);
+			    		
+			        	if( this.vs.has() ){				        
+				    		List lst= this.vs.get();
+				    		Iterator it = lst.iterator();
+				    		int idx = 0;
+				    		state.makeArray(pnm, lst.size());
+				    		while( it.hasNext() ){
+				    			Integer i = (Integer) it.next();
+				    			String lpnm = pnm + "_idx_" + idx;
+				    			state.varDeclare(lpnm);
+					    		state.varGetLHSName(lpnm);
+				    			state.setVarValue(lpnm, i.intValue());
+				    			++idx;
+				    		}
+				    	}else{
+				    		Assert(value != null, "I must be able to determine the values of the parameters at compile time.");				    						    		
+				    		state.setVarValue(pnm, value.intValue());
+				    	}
 			        }
 			        String tmp = (String) preFil.pop();
 			        tmp += sp.accept(this);
@@ -1447,22 +1562,35 @@ public class NodesToSBit implements FEVisitor{
 	    	
 	        String op;
 	        
-	        String rhs = (String)stmt.getRHS().accept(this);	        	        
-	        Integer vrhs = state.popVStack();
-	        
+	        this.vs.unset();
 	        this.isLHS = true;
 	        String lhs = (String)stmt.getLHS().accept(this);
 	        this.isLHS = false;
 	        String lhsnm = state.varGetLHSName(lhs);
 	        
+	        int arrSize = state.checkArray(lhs);
+	        boolean isArr = arrSize > 0;
 	        Integer vlhs = state.popVStack();
-	        String rlhs = lhs;
-	        
+	        String rlhs = lhs;  
 	        if(vlhs != null){
 	        	rlhs = vlhs.toString();
 	        }else{
 	        	rlhs = state.varGetRHSName(rlhs);
 	        }
+
+	        List lhsLst=null;
+	        if(isArr && this.vs.has() ){	        	
+	        	lhsLst= this.vs.get();	
+	        }
+
+	        
+	        Integer vrhs = null;
+	        String rhs = (String)stmt.getRHS().accept(this);
+	        vrhs = state.popVStack();
+	        
+	        
+    		
+	        
 	        
 	        if(vrhs != null){
 	        	rhs = vrhs.toString();
@@ -1498,6 +1626,7 @@ public class NodesToSBit implements FEVisitor{
 	        break;
 	        default: op = " = ";
 		        if( this.vs.has() ){
+		        	assert isArr: "This should not happen, you are trying to assign an array to a non-array";
 		    		List lst= this.vs.get();
 		    		Iterator it = lst.iterator();
 		    		int idx = 0;
@@ -1778,7 +1907,10 @@ public class NodesToSBit implements FEVisitor{
 	            	at.getLength().accept(this);
 	            	Integer tmp = state.popVStack();
 	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + stmt.getContext());
+	            	state.makeArray(nm, tmp.intValue());
+	            	this.vs.unset();
 	            	stmt.getInit(i).accept(this);
+	            	Integer val = state.popVStack();
 	            	if( this.vs.has() ){
 			    		List lst= this.vs.get();
 			    		Iterator it = lst.iterator();
@@ -1797,6 +1929,9 @@ public class NodesToSBit implements FEVisitor{
 		            		String nnm = nm + "_idx_" + tt;
 		            		state.varDeclare(nnm);
 		            		String tmplhsn = state.varGetLHSName(nnm);
+		            		if(val != null){
+		            			state.setVarValue(tmplhsn, val.intValue());
+		            		}
 		            	}
 			    	}
 	            }else{
@@ -1938,14 +2073,32 @@ public class NodesToSBit implements FEVisitor{
 	                    case StreamSpec.STREAM_FEEDBACKLOOP:
 	                        result += "FeedbackLoop";
 	                        break;
+	                    case StreamSpec.STREAM_TABLE:
+	                        result += "Table";
+	                        break;
 	                    }
 	                String nm = spec.getName();
 	                Function f = spec.getFuncNamed("init");
 	                Iterator it = f.getParams().iterator();
 	                while(it.hasNext()){
 	                	Parameter p = (Parameter) it.next();
-	                	int i = state.varValue(p.getName());	                	
-	                	nm += "_" + i;
+	                	
+	                	int sz = state.checkArray(p.getName());
+	                	if(sz > 0){
+	                	//if( p.getType() instanceof TypeArray){
+	                	//	((TypeArray)p.getType()).getLength().accept(this);	                		
+	                	//	int sz = state.popVStack().intValue(); 
+	                		int xx=0;
+	                		int xpon=1;
+	                		for(int i=0; i<sz; ++i){
+	                			xx += xpon *  state.varValue(p.getName()+ "_idx_" + i);
+	                			xpon = xpon * 3;
+	                		}
+	                		nm += "_" + xx;
+	                	}else{
+	                		int i = state.varValue(p.getName());	                	
+	                		nm += "_" + i;
+	                	}
 	                }
 	                if( f.getParams().size()>0)
 	                	nm += "___";
@@ -1966,19 +2119,39 @@ public class NodesToSBit implements FEVisitor{
 	                break;
 	            case StreamSpec.STREAM_FEEDBACKLOOP: result += "FeedbackLoop";
 	                break;
+	            case StreamSpec.STREAM_TABLE: result += "Table";
+                	break;
 	            }
 	            result += "() \n" + indent;
 	            addIndent();
 	        }
+	        	        	        
 	        
+	        
+	        
+	        if(spec.getType() == StreamSpec.STREAM_TABLE){
+	        	/**
+	        	 * TODO: Implement Tables properly. This is a kludge, but it will
+	        	 * allow me to implement AES.
+	        	 */	        	
+	        	
+	        	//NodesToTable ntt = new NodesToTable(spec, this.varGen);
+	        	Function f = spec.getFuncNamed("init");
+	        	result += f.getBody().accept(this.nativeGenerator);
+	        	return result;
+	        }
+
 	        // At this point we get to ignore wholesale the stream type, except
 	        // that we want to save it.
+	        
 	        StreamSpec oldSS = ss;
 	        ss = spec;
 	        result += "{\n"; 
 	        // Output field definitions:
 	        
+	        
 	        additInit = new LinkedList();
+	        
 	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
 	        {
 	            FieldDecl varDecl = (FieldDecl)iter.next();
@@ -1988,14 +2161,17 @@ public class NodesToSBit implements FEVisitor{
 	        // Output method definitions:
 	        Function f = spec.getFuncNamed("init");
 			if( f!= null)
-				result += (String)(f.accept(this));				        
+				result += (String)(f.accept(this));
+			
 	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
 	        	f = (Function)iter.next();
 	        	if( ! f.getName().equals("init") ){
 	        		result += (String)(f.accept(this));
 	        	}	        	
 	        }
-	            
+//	  TODO: DOTHIS      if( spec.getType() == StreamSpec.STREAM_TABLE ){
+//	        	outputTable=;
+//	        }
 	        ss = oldSS;
 	        unIndent();
 	        result += "}\n";
@@ -2020,6 +2196,7 @@ public class NodesToSBit implements FEVisitor{
 	        if (node instanceof ExprJavaConstructor)
 	        {
 	            ExprJavaConstructor jc = (ExprJavaConstructor)node;
+	            state.pushVStack(null);
 	            return makeConstructor(jc.getType());
 	        }
 	        if (node instanceof StmtIODecl)

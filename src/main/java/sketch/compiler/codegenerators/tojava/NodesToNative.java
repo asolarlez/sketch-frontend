@@ -16,11 +16,59 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.StreamItLex;
-import streamit.frontend.nodes.*;
-
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.*;
+import java.util.List;
+
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprComplex;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SJDuplicate;
+import streamit.frontend.nodes.SJRoundRobin;
+import streamit.frontend.nodes.SJWeightedRR;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPhase;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtSendMessage;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePortal;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link

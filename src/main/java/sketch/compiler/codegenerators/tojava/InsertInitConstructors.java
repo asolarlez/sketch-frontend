@@ -158,7 +158,8 @@ public class InsertInitConstructors extends InitMunger
             for (int i = 0; i < field.getNumFields(); i++)
             {
                 Type type = field.getType(i);
-                if (needsConstructor(type))
+                Object ob = field.getInit(i);
+                if (needsConstructor(type) && ob == null)
                 {
                     FEContext ctx = field.getContext();
                     Expression lhs = new ExprVar(ctx, field.getName(i));
