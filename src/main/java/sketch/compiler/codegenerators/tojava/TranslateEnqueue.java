@@ -16,13 +16,36 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.ArrayList;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstChar;
+import streamit.frontend.nodes.ExprConstFloat;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstStr;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.InvalidControlFlowException;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtWhile;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypePrimitive;
 
 /**
  * Translates enqueue statements to old syntax.  enqueue statements

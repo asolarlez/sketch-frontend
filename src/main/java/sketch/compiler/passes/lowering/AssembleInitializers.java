@@ -16,9 +16,16 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
 import java.util.List;
 import java.util.ListIterator;
+
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtVarDecl;
 
 /**
  * Pair up variable declarations and adjacent assignments.  Some of the

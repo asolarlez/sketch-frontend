@@ -16,8 +16,30 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
 import java.util.Collections;
+
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 
 /**
  * Generate code to copy structures and arrays elementwise.  In StreamIt,

@@ -15,8 +15,22 @@
  */
 
 package streamit.frontend.passes;
-import streamit.frontend.nodes.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypePrimitive;
 
 /**
  * Pass to assign loop types to feedback loops with void input types.
