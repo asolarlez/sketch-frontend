@@ -16,10 +16,27 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
-
 import java.util.Iterator;
 import java.util.Map;
+
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.GetExprType;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 
 /**
  * Front-end visitor pass that maintains a symbol table.  Other
