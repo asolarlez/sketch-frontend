@@ -16,12 +16,16 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.*;
-
-import java.util.Iterator;
-import java.util.List;
-
 import java.util.ArrayList;
+
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtPhase;
+import streamit.frontend.nodes.StreamSpec;
 
 /**
  * Convert filters to phased filters where appropriate.  This pass
