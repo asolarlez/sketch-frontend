@@ -16,11 +16,10 @@
 
 package streamit.frontend.nodes;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import java.util.HashMap;
 
 /**
  * A symbol table for StreamIt programs.  This keeps a mapping from a

@@ -16,8 +16,8 @@
 
 package streamit.frontend.nodes;
 
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Declaration of a set of fields in a filter or structure.  This

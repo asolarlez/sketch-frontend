@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.ArrayList;
-
 /**
  * Container class containing all of the state for a StreamIt stream
  * type.  A StreamSpec may or may not have a name; if there is no
@@ -53,6 +51,8 @@ public class StreamSpec extends FENode
     public static final int STREAM_SPLITJOIN = 3;
     /** Stream type constant for a feedback loop. */
     public static final int STREAM_FEEDBACKLOOP = 4;
+    /** Stream type constant for a table loop. */
+    public static final int STREAM_TABLE = 5;
     
     /**
      * Creates a new stream specification given its name, a list of
