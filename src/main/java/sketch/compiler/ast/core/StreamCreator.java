@@ -28,7 +28,8 @@ import java.util.List;
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
- * @see     streamit.frontend.nodes.SCAnon, streamit.frontend.nodes.SCSimple
+ * @see     streamit.frontend.nodes.SCAnon
+ * @see     streamit.frontend.nodes.SCSimple
  */
 public abstract class StreamCreator extends FENode
 {
