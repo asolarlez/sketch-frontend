@@ -16,7 +16,10 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEVisitor;
+import streamit.frontend.nodes.Type;
 
 /**
  * An old-syntax I/O rate declaration.  This has a name, a type, and one

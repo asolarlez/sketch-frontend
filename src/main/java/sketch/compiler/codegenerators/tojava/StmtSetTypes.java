@@ -16,7 +16,11 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEVisitor;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.Type;
 
 /**
  * A new-old-syntax <code>setIOTypes</code> statement.  This statement

@@ -16,7 +16,11 @@
 
 package streamit.frontend.tojava;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEVisitor;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Statement;
 
 /**
  * A new-old-syntax statement to add an initialization or steady-state
