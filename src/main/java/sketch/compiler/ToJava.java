@@ -48,7 +48,7 @@ import streamit.frontend.tojava.InsertIODecls;
 import streamit.frontend.tojava.InsertInitConstructors;
 import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
-import streamit.frontend.tojava.NodesToSBit;
+import streamit.frontend.tosbit.NodesToSBit;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
