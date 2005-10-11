@@ -31,7 +31,7 @@ import streamit.frontend.nodes.Type;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-class ExprJavaConstructor extends Expression
+public class ExprJavaConstructor extends Expression
 {
     private Type type;
     
