@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package streamit.frontend.tosbit;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +69,11 @@ import streamit.frontend.nodes.TypePortal;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.tojava.ExprJavaConstructor;
+import streamit.frontend.tojava.NodesToJava;
+import streamit.frontend.tojava.StmtAddPhase;
+import streamit.frontend.tojava.StmtIODecl;
+import streamit.frontend.tojava.StmtSetTypes;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link
