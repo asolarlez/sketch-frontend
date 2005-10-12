@@ -20,7 +20,7 @@ class ChangeStack{
 	int varValue(String var){
 		varValue i = (varValue)currTracker.get(var);
 		if( i != null){
-			MethodState.Assert(i.hasValue, "This variable has been set to top at this level, and consequently doesn't have value even though it exists.");
+			assert(i.hasValue) : ("This variable has been set to top at this level, and consequently doesn't have value even though it exists.");
 			return i.getValue();
 		}else{
 			return kid.varValue(var);

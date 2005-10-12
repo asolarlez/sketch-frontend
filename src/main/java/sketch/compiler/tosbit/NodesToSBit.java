@@ -95,18 +95,6 @@ public class NodesToSBit implements FEVisitor{
 	    private String indent;
 	    private TempVarGen varGen;
 	    private MethodState state;
-	    private class VectorState{
-	    	private List vectorState;	    	
-	    	public VectorState(){ vectorState = null; }
-	    	public List get(){ assert vectorState != null: "This is not legal";
-	    				List vs = vectorState;
-	    				vectorState = null;
-	    				return vs; }
-	    	public void unset(){ vectorState = null; }
-	    	public void set(List vs){ vectorState = vs; }
-	    	public boolean has() { return vectorState != null; }
-	    }
-	    private VectorState vs = new VectorState();
 	    private boolean isLHS;
 	    private NodesToNative nativeGenerator;
 	    private HashMap funsWParams;
@@ -359,10 +347,10 @@ public class NodesToSBit implements FEVisitor{
 	    	
 	    	Integer vlhs = state.popVStack();
 	    	
-	    	this.vs.unset();
+	    	state.markVectorStack();
 	    	String rhss = (String) rhs.accept(this);
-	    	if( this.vs.has() ){
-	    		List lst= this.vs.get();
+	    	if( state.vectorGrewFromMark() ){
+	    		List lst= this.state.vectorPopVStack();
 	    		Iterator it = lst.iterator();
 	    		int idx = 0;
 	    		while( it.hasNext() ){
@@ -393,7 +381,7 @@ public class NodesToSBit implements FEVisitor{
 		    	assert vrhs != null; 
 		    	intelems.add(vrhs);			 	
 			}			
-			this.vs.set(intelems);
+			state.vectorPushVStack(intelems);
 			state.pushVStack(null);
 			return null;
 	    }
@@ -724,7 +712,7 @@ public class NodesToSBit implements FEVisitor{
  	    				nlist.add(null);
  	    			}
  	    		}
-	    		this.vs.set( nlist );
+	    		state.vectorPushVStack( nlist );
 	    	}
 	    	if(this.isLHS)
 	    		return exp.getName();
@@ -915,11 +903,11 @@ public class NodesToSBit implements FEVisitor{
 		        	
 		            Expression param = (Expression)iter.next();
 		            fullnm += "_";
-		            this.vs.unset();
+		            this.state.markVectorStack();
 		            param.accept(this);
 		            Integer pv = state.popVStack();           	
-                	if(this.vs.has()){
-                		List l = this.vs.get();
+                	if(this.state.vectorGrewFromMark()){
+                		List l = state.vectorPopVStack();
                 		int xx=0;
                 		int xpon=1;                		                		
                 		for(Iterator it = l.iterator(); it.hasNext(); ){
@@ -941,29 +929,29 @@ public class NodesToSBit implements FEVisitor{
 			        Assert( sp != null, nm + "Is used but has not been declared!!");
 			        state.pushLevel();
 			        Function finit = sp.getFuncNamed("init");
-			        Iterator piter = finit.getParams().iterator();
-			        Iterator viter = creator.getParams().iterator();
+			        Iterator formalParamIterator = finit.getParams().iterator();
+			        Iterator actualParamIterator = creator.getParams().iterator();
 			        Assert(finit.getParams().size() == creator.getParams().size() , nm + " The number of formal parameters doesn't match the number of actual parameters!!");
-			        while(viter.hasNext()){
-			        	Expression paramv = (Expression)viter.next();			        	
-			        	Parameter paramp = (Parameter) piter.next();
+			        while(actualParamIterator.hasNext()){
+			        	Expression actualParam = (Expression)actualParamIterator.next();			        	
+			        	Parameter formalParam = (Parameter) formalParamIterator.next();
 			        	
-			        	this.vs.unset();
+			        	this.state.markVectorStack();
 			        	
-			        	paramv.accept(this);
+			        	actualParam.accept(this);
 			        	Integer value = state.popVStack();
-			        	String pnm = paramp.getName();
-			        	state.varDeclare(pnm);
-			    		state.varGetLHSName(pnm);
+			        	String formalParamName = formalParam.getName();
+			        	state.varDeclare(formalParamName);
+			    		state.varGetLHSName(formalParamName);
 			    		
-			        	if( this.vs.has() ){				        
-				    		List lst= this.vs.get();
+			        	if( this.state.vectorGrewFromMark() ){				        
+				    		List lst= state.vectorPopVStack();
 				    		Iterator it = lst.iterator();
 				    		int idx = 0;
-				    		state.makeArray(pnm, lst.size());
+				    		state.makeArray(formalParamName, lst.size());
 				    		while( it.hasNext() ){
 				    			Integer i = (Integer) it.next();
-				    			String lpnm = pnm + "_idx_" + idx;
+				    			String lpnm = formalParamName + "_idx_" + idx;
 				    			state.varDeclare(lpnm);
 					    		state.varGetLHSName(lpnm);
 				    			state.setVarValue(lpnm, i.intValue());
@@ -971,7 +959,7 @@ public class NodesToSBit implements FEVisitor{
 				    		}
 				    	}else{
 				    		Assert(value != null, "I must be able to determine the values of the parameters at compile time.");				    						    		
-				    		state.setVarValue(pnm, value.intValue());
+				    		state.setVarValue(formalParamName, value.intValue());
 				    	}
 			        }
 			        String tmp = (String) preFil.pop();
@@ -1065,7 +1053,7 @@ public class NodesToSBit implements FEVisitor{
 	        
 	        
 
-	        this.vs.unset();
+	        this.state.markVectorStack();
 	        
 	        Integer vrhs = null;
 	        String rhs = (String)stmt.getRHS().accept(this);
@@ -1076,8 +1064,8 @@ public class NodesToSBit implements FEVisitor{
 	        }
 	        
 	        List rhsLst = null;
-	        if( this.vs.has() ){
-	        	rhsLst= this.vs.get();
+	        if( this.state.vectorGrewFromMark() ){
+	        	rhsLst= state.vectorPopVStack();
 	        }
 	        
 	        
@@ -1099,8 +1087,8 @@ public class NodesToSBit implements FEVisitor{
 	        }
 
 	        List lhsLst=null;
-	        if(isArr && this.vs.has() ){	        	
-	        	lhsLst= this.vs.get();	
+	        if(isArr && this.state.vectorGrewFromMark() ){	        	
+	        	lhsLst= state.vectorPopVStack();	
 	        }
 	        
 	        
@@ -1418,11 +1406,11 @@ public class NodesToSBit implements FEVisitor{
 	            	Integer tmp = state.popVStack();
 	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + stmt.getContext());
 	            	state.makeArray(nm, tmp.intValue());
-	            	this.vs.unset();
+	            	this.state.markVectorStack();
 	            	stmt.getInit(i).accept(this);
 	            	Integer val = state.popVStack();
-	            	if( this.vs.has() ){
-			    		List lst= this.vs.get();
+	            	if( this.state.vectorGrewFromMark() ){
+			    		List lst= state.vectorPopVStack();
 			    		Iterator it = lst.iterator();
 			    		int tt = 0;
 			    		while( it.hasNext() ){

@@ -124,12 +124,6 @@ public class NodesToNative extends  NodesToJava
     private MethodState fatherstate;
     // A string consisting of an even number of spaces.    
     
-    public static void Assert(boolean t, String s){
-    	if(!t){
-    		System.err.println(s);
-    		System.exit(1);
-    	}
-    }
     
     public NodesToNative(StreamSpec ss, TempVarGen varGen, MethodState fatherstate, NodesToSBit nts)
     {
@@ -314,7 +308,7 @@ public class NodesToNative extends  NodesToJava
     public String doAssignment(Expression lhs, Expression rhs,
                                SymbolTable symtab)
     {
-    	Assert(false, "Don't know what this method does.");
+    	assert(false) : ( "Don't know what this method does.");
     	return null;
     }
     
@@ -342,7 +336,7 @@ public class NodesToNative extends  NodesToJava
 
     public Object visitExprComplex(ExprComplex exp)
     {
-    	Assert(false, "NYI");
+    	assert(false) : ( "NYI");
     	return null;
     }
 
@@ -482,7 +476,7 @@ public class NodesToNative extends  NodesToJava
         
         if(func.getCls() == Function.FUNC_INIT){
         	result += "INIT()\n";
-        	Assert( func.getParams().size() == 0 , "Parameters supported only for bit->bit filters and for pipelines and splitjoins. "); 
+        	assert( func.getParams().size() == 0 ) : ( "Parameters supported only for bit->bit filters and for pipelines and splitjoins. "); 
         	//result += "INIT";
         	//result += doParams(func.getParams(), "") + "\n";
         	result += "###NATIVE_CODE_BEGIN\n";
@@ -496,10 +490,10 @@ public class NodesToNative extends  NodesToJava
         if(func.getCls() == Function.FUNC_WORK){
         	result += "WORK()\n";
         	result += "// " + func.getContext() + "\n";
-        	Assert( func.getParams().size() == 0 , "");        	
+        	assert( func.getParams().size() == 0 ) : ( "");        	
         	result += "{\n";        	
         	result += "###NATIVE_CODE_BEGIN\n";
-        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions! \n" + func.getContext());
+        	assert(((StmtBlock)func.getBody()).getStmts().size()>0) : ( "You can not have empty functions! \n" + func.getContext());
         	result += (String)func.getBody().accept(this);
         	result += "###NATIVE_CODE_END\n";
         	if( ((FuncWork)func).getPopRate() != null)
@@ -563,25 +557,25 @@ public class NodesToNative extends  NodesToJava
 
     public Object visitSJDuplicate(SJDuplicate sj)
     {
-        Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+        assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;
     }
 
     public Object visitSJRoundRobin(SJRoundRobin sj)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;        
     }
 
     public Object visitSJWeightedRR(SJWeightedRR sj)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;        
     }
 
     public Object doStreamCreator(String how, StreamCreator sc)
     {
-    	Assert(false, "NOT SUPPORTED.");
+    	assert(false) : ( "NOT SUPPORTED.");
     	return null;
     }
     
@@ -652,8 +646,7 @@ public class NodesToNative extends  NodesToJava
 
     public Object visitStmtEnqueue(StmtEnqueue stmt)
     {
-    	Assert(false, "NOT SUPPORTED");
-        
+    	assert(false) : ( "NOT SUPPORTED");        
     	return null;
     }
     
@@ -673,19 +666,19 @@ public class NodesToNative extends  NodesToJava
 
     public Object visitStmtJoin(StmtJoin stmt)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;        
     }
     
     public Object visitStmtLoop(StmtLoop stmt)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;        
     }
 
     public Object visitStmtPhase(StmtPhase stmt)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         ExprFunCall fc = stmt.getFunCall();
         // ASSERT: the target is always a phase function.
         FuncWork target = (FuncWork)getSs().getFuncNamed(fc.getName());
@@ -722,13 +715,13 @@ public class NodesToNative extends  NodesToJava
 
     public Object visitStmtSendMessage(StmtSendMessage stmt)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;
     }
     
     public Object visitStmtSplit(StmtSplit stmt)
     {
-    	Assert(false, "Native filters can only be regular filters, NOT splitjoins or pipelines");
+    	assert(false) : ( "Native filters can only be regular filters, NOT splitjoins or pipelines");
         return null;
     }
 
@@ -778,13 +771,13 @@ public class NodesToNative extends  NodesToJava
                     if (work.getPushRate() == null &&
                         work.getPopRate() == null &&
                         work.getPeekRate() == null){
-                    	Assert(spec.getName().equals("IntToBit") || spec.getName().equals("BitToInt"), "NYI");
+                    	assert(spec.getName().equals("IntToBit") || spec.getName().equals("BitToInt")) : ( "NYI");
                     	return "";
                     }else
                         result += "NativeFilter";
                 }
                 else
-                    Assert(false, "Only Filters can be native.");
+                	assert(false) : ( "Only Filters can be native.");
                 
                 result += " " + spec.getName() + "\n";
             }
@@ -797,11 +790,11 @@ public class NodesToNative extends  NodesToJava
             {
             case StreamSpec.STREAM_FILTER: result += "NativeFilter";
                 break;
-            case StreamSpec.STREAM_PIPELINE: Assert(false, "Only Filters can be native.");
+            case StreamSpec.STREAM_PIPELINE: assert(false) : ( "Only Filters can be native.");
                 break;
-            case StreamSpec.STREAM_SPLITJOIN: Assert(false, "Only Filters can be native.");
+            case StreamSpec.STREAM_SPLITJOIN: assert(false) : ( "Only Filters can be native.");
                 break;
-            case StreamSpec.STREAM_FEEDBACKLOOP: Assert(false, "Only Filters can be native.");
+            case StreamSpec.STREAM_FEEDBACKLOOP: assert(false) : ( "Only Filters can be native.");
                 break;
             }
             result += "() \n" + indent;

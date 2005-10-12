@@ -2,6 +2,7 @@ package streamit.frontend.tosbit;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -12,12 +13,6 @@ class MethodState{
 	private ChangeStack changeTracker;
 	private int pushcount;
 	
-    public static void Assert(boolean t, String s){
-    	if(!t){
-    		System.err.println(s);    		
-    		System.exit(1);
-    	}
-    }
     
     /**
      * 
@@ -26,20 +21,20 @@ class MethodState{
      * if the variable is an array, also call makeArray.
      * 
      */
-    void varDeclare(String var){
+    public void varDeclare(String var){
     	// System.out.println("DECLARED " + var);
 		String newname = var + "_" + pushcount +"L" + varTranslator.curVT.size();
 		varTranslator.curVT.put(var, newname);
     }
     
-    void pushLevel(){
+    public void pushLevel(){
     	++pushcount;
     	MapStack tmp = varTranslator;
     	varTranslator = new MapStack();
     	varTranslator.kid = tmp;    	    	    	
     }
     
-    void popLevel(){
+    public void popLevel(){
     	Iterator it = varTranslator.curVT.values().iterator();
     	while(it.hasNext()){
     		String nm = (String) it.next();
@@ -52,7 +47,7 @@ class MethodState{
     	varTranslator = varTranslator.kid;
     }
     
-    String transName(String nm){       	
+    private String transName(String nm){       	
     	String otpt = varTranslator.transName(nm);
     	// System.out.println(nm + " = " +  otpt);
     	return  otpt;
@@ -90,7 +85,7 @@ class MethodState{
 		while(it.hasNext()){
 			varState vs = (varState) it.next();
 			if(!vs.popRHS()){
-				Assert(!vs.hasVal(), "If I am at the lowest level, it means I am new, and therefore I can't have a value. This is a BUG.");
+				assert !vs.hasVal() : "If I am at the lowest level, it means I am new, and therefore I can't have a value. This is a BUG.";
 			}			
 		}
 		return tmp;
@@ -144,7 +139,8 @@ class MethodState{
 		var = this.transName(var);
 		UTmakeArray(var, size);
 	}
-	public void UTmakeArray(String var, int size){
+	
+	private void UTmakeArray(String var, int size){
 		varState i = (varState) vars.get(var);
 		i.setIsarray(true, size);
 	}
@@ -153,7 +149,8 @@ class MethodState{
 		var = this.transName(var);
 		return UTcheckArray(var);
 	}
-	public int UTcheckArray(String var){
+	
+	private int UTcheckArray(String var){
 		varState i = (varState) vars.get(var);
 		if( i.isarray())
 			return i.getArrSize();
@@ -166,10 +163,10 @@ class MethodState{
 		UTunsetVarValue(var);
 	}
 	
-	public void UTunsetVarValue(String var){
+	private void UTunsetVarValue(String var){
 		
 		varState i = (varState) vars.get(var);
-		Assert(i != null , "This can't happen, if it does, i'ts a BUG");
+		assert(i != null) : "This can't happen, if it does, i'ts a BUG";
 		if(changeTracker != null){					
 			changeTracker.unsetVarValue(var, i);						
 		}else{
@@ -178,7 +175,7 @@ class MethodState{
 		
 	}
 	
-	String procChangeTrackers(ChangeStack ms1, ChangeStack ms2, String cond){	
+	public String procChangeTrackers(ChangeStack ms1, ChangeStack ms2, String cond){	
 		String result = "";
 		Iterator it = ms1.currTracker.entrySet().iterator();
 		while(it.hasNext()){
@@ -238,7 +235,7 @@ class MethodState{
 	}
 
 
-	String procChangeTrackers(ChangeStack ms1, String cond){
+	public String procChangeTrackers(ChangeStack ms1, String cond){
 		String result = ""; 
 		Iterator it = ms1.currTracker.entrySet().iterator();
 		while(it.hasNext()){
@@ -260,40 +257,40 @@ class MethodState{
 			return localVarHasValue(var) ||  changeTracker.varHasValue(var);
 	}
 	
-	boolean varHasValue(String var){
+	public boolean varHasValue(String var){
 		var = this.transName(var);
 		return UTvarHasValue(var);
 	}
 	
-	int varValue(String var){
+	public int varValue(String var){
 		var = this.transName(var);
 		return UTvarValue(var);		
 	}
 	
-	int UTvarValue(String var){
+	private int UTvarValue(String var){
 		
 		varState i = (varState) vars.get(var);		
 		if(changeTracker == null){			
-			Assert(i.hasVal(), "The value of " + var + " is input dependent, but it's not supposed to be.\n");
+			assert(i.hasVal()) : ( "The value of " + var + " is input dependent, but it's not supposed to be.\n");
 			return i.getVal();
 		}else{
 			if( changeTracker.varHasValue(var) ){
 				return changeTracker.varValue(var);
 			}else{
-				Assert(i.hasVal(), "The value of " + var + " is input dependent, but it's not supposed to be.\n");
+				assert(i.hasVal()) : ( "The value of " + var + " is input dependent, but it's not supposed to be.\n");
 				return i.getVal();
 			}						
 		}
 	}
 	
-	void setVarValue(String var, int v){
+	public void setVarValue(String var, int v){
 		var = this.transName(var);
 		UTsetVarValue(var,v);
 	}
 	
-	void UTsetVarValue(String var, int v){		
+	private void UTsetVarValue(String var, int v){		
 		varState tv = (varState) vars.get(var);
-		Assert(tv != null, " This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
+		assert(tv != null) : ( " This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
 		if(changeTracker != null){
 			if(tv == null){
 				//This branch will never be taken.
@@ -310,36 +307,36 @@ class MethodState{
 		}
 	}
 	
-	String varGetRHSName(String var){		
+	public String varGetRHSName(String var){		
 		var = this.transName(var);
 		return UTvarGetRHSName(var);
 	}
 	
 	
 	
-	String UTvarGetRHSName(String var){				
+	private String UTvarGetRHSName(String var){				
 		if(this.UTvarHasValue(var)){
 			return "" + this.UTvarValue(var) ;
 		}else{
 			varState tv = (varState) vars.get(var);
-			Assert(tv != null, "You are using variable " + var + " before initializing it.");
+			assert(tv != null) : ( "You are using variable " + var + " before initializing it.");
 			return tv.getRHSName();
 		}
 	}
 	
-	String UTvarGetRHSName(String var, int tmprhs){		
+	private String UTvarGetRHSName(String var, int tmprhs){		
 		varState tv = (varState) vars.get(var);
-		Assert(tv != null, "You are using variable " + var + " before initializing it.");
+		assert(tv != null) : ( "You are using variable " + var + " before initializing it.");
 		return tv.getRHSName(tmprhs);
 	}
 	
-	String varGetLHSName(String var){
+	public String varGetLHSName(String var){
 		var = this.transName(var);
 		return UTvarGetLHSName(var);
 	}
 	
 	
-	String UTvarGetLHSName(String var){		
+	public String UTvarGetLHSName(String var){		
 		varState tv = (varState) vars.get(var);
 		if(tv == null){
 			tv = new varState(var);
@@ -353,11 +350,42 @@ class MethodState{
 		return nm;			
 	}
 	
-	void pushVStack(Integer val){
+	public void pushVStack(Integer val){
 		//We always push, but we push null when there is no value.
 		vstack.push(val);
 	}
-	Integer popVStack(){
+	
+	public Integer popVStack(){
 		return (Integer) vstack.pop();
 	}
+    private class VectorState{
+    	private List vectorState;	    	
+    	public VectorState(){ vectorState = null; }
+    	public List get(){ assert vectorState != null: "This is not legal";
+    				List vs = vectorState;
+    				vectorState = null;
+    				return vs; }
+    	public void unset(){ vectorState = null; }
+    	public void set(List vs){ vectorState = vs; }
+    	public boolean has() { return vectorState != null; }
+    }
+    private VectorState vs = new VectorState();
+    
+	public void vectorPushVStack(List v){
+		vs.set(v);
+	}
+	
+	public List vectorPopVStack(){
+		List l = vs.get();
+		vs.unset();
+		return l;
+	}
+	
+	public void markVectorStack(){
+		vs.unset();
+	}
+	public boolean vectorGrewFromMark(){
+		return vs.has();
+	}
+	
 }
