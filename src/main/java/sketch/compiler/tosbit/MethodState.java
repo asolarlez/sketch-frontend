@@ -7,11 +7,36 @@ import java.util.Map;
 import java.util.Stack;
 
 class MethodState{
-	private HashMap vars;	//<String, varState>	
+	
+	/**
+	 * Maps the unique name of a variable (the one returned by the varTranslator)
+	 * into a varState.
+	 * 
+	 * Varstates are created when you call varGetLHSName for the first time.
+	 */
+	private HashMap vars;	//<String, varState>
+	
+	/**
+	 * Translates the name of a variable from it's program name
+	 * to a unique name that takes scope into account.
+	 */
 	private MapStack varTranslator;
-	private Stack vstack;
+	/**
+	 * Value stack used when parsing expressions.
+	 * Can hold either integers (for scalar expressions) or lists (for vector expressions).
+	 * 
+	 */
+	private Stack vstack; //<union{Integer, List<Integer>}>
+	
+	
+	/**
+	 * Used for handling if statements. 
+	 * Keeps track of what variables are changed, so that at the
+	 * join point you can merge the values for any variables that 
+	 * changed on either branch.
+	 */
 	private ChangeStack changeTracker;
-	private int pushcount;
+	
 	
     
     /**
@@ -23,28 +48,16 @@ class MethodState{
      */
     public void varDeclare(String var){
     	// System.out.println("DECLARED " + var);
-		String newname = var + "_" + pushcount +"L" + varTranslator.curVT.size();
-		varTranslator.curVT.put(var, newname);
+		
+		varTranslator.varDeclare(var);
     }
     
-    public void pushLevel(){
-    	++pushcount;
-    	MapStack tmp = varTranslator;
-    	varTranslator = new MapStack();
-    	varTranslator.kid = tmp;    	    	    	
+    public void pushLevel(){    	
+    	varTranslator = varTranslator.pushLevel();    	    	    	
     }
     
     public void popLevel(){
-    	Iterator it = varTranslator.curVT.values().iterator();
-    	while(it.hasNext()){
-    		String nm = (String) it.next();
-    		//System.out.println("Unseting " + nm);
-    		this.vars.remove(nm);
-    		if(this.changeTracker != null){
-    			changeTracker.currTracker.remove(nm);
-    		}
-    	}
-    	varTranslator = varTranslator.kid;
+    	varTranslator = varTranslator.popLevel(vars, changeTracker);
     }
     
     private String transName(String nm){       	
@@ -314,7 +327,7 @@ class MethodState{
 	
 	
 	
-	private String UTvarGetRHSName(String var){				
+	private String UTvarGetRHSName(String var){
 		if(this.UTvarHasValue(var)){
 			return "" + this.UTvarValue(var) ;
 		}else{
@@ -358,34 +371,18 @@ class MethodState{
 	public Integer popVStack(){
 		return (Integer) vstack.pop();
 	}
-    private class VectorState{
-    	private List vectorState;	    	
-    	public VectorState(){ vectorState = null; }
-    	public List get(){ assert vectorState != null: "This is not legal";
-    				List vs = vectorState;
-    				vectorState = null;
-    				return vs; }
-    	public void unset(){ vectorState = null; }
-    	public void set(List vs){ vectorState = vs; }
-    	public boolean has() { return vectorState != null; }
-    }
-    private VectorState vs = new VectorState();
-    
+   
+	    
 	public void vectorPushVStack(List v){
-		vs.set(v);
+		vstack.push(v);
 	}
 	
 	public List vectorPopVStack(){
-		List l = vs.get();
-		vs.unset();
-		return l;
+		return (List) vstack.pop();
 	}
 	
-	public void markVectorStack(){
-		vs.unset();
-	}
-	public boolean vectorGrewFromMark(){
-		return vs.has();
+	public boolean topOfStackIsVector(){		
+		return (vstack.peek() instanceof List);
 	}
 	
 }

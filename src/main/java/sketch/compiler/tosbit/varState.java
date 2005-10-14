@@ -1,6 +1,16 @@
 package streamit.frontend.tosbit;
 import java.util.Stack;
 
+/**
+ * 
+ * This class defines the state of a variable. 
+ * In particular, it says whether it is a regular variable or an entry
+ * in an array, and it also keeps track of the read and write pointers (as in CF).
+ * 
+ * @author asolar
+ *
+ */
+
 
 class varState{
 	
@@ -9,8 +19,26 @@ class varState{
 	private boolean isarray=false;
 	private int arsize =-1;
 	private int value;
+	/** 
+	 * 
+	 *This variable has the idx to use next time this variable
+	 *is written to. It's like the write pointer in CF.
+	 *@invariant currentLHS = { currentRHS | currentRHS+1}
+	 */
 	private int currentLHS;
 	private int currentRHS;
+	
+	/**
+	 * The RHSstack is used to keep track of what the value of the RHS
+	 * was the last time a RHS was pushed. 
+	 * 
+	 * This is usefull when handling IFs, because then you push the RHS before
+	 * goint into the THEN part, pop, then push again to go into the ELSE part,
+	 * and this way the else part can start with the same rhs count as the then part.
+	 * 
+	 *  We don't need a stack for the values because those are handled by the changeTracker.
+	 * 
+	 */
 	private Stack RHSstack;
 	
 	public varState(int v){

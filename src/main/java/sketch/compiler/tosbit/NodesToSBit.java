@@ -133,15 +133,14 @@ public class NodesToSBit implements FEVisitor{
 	        
 	    }
 	    public String finalizeWork(){
-	    	String result = "";
+	    	String result = "";	    	
 	    	int noutputs = state.varValue("PUSH_POS");
 	    	for(int i=0; i< noutputs; ++i){
 	    		String nm = "OUTPUT_" + i;
 	    		result += nm + " = ";	    		
 	    		result += state.varGetRHSName(nm) + "; \n";
 	    		state.unsetVarValue(nm);
-	    		
-	    	}
+	    	}	    	
 	    	return result;
 	    }
 	    
@@ -347,9 +346,9 @@ public class NodesToSBit implements FEVisitor{
 	    	
 	    	Integer vlhs = state.popVStack();
 	    	
-	    	state.markVectorStack();
+	    	//state.markVectorStack();
 	    	String rhss = (String) rhs.accept(this);
-	    	if( state.vectorGrewFromMark() ){
+	    	if( state.topOfStackIsVector() ){
 	    		List lst= this.state.vectorPopVStack();
 	    		Iterator it = lst.iterator();
 	    		int idx = 0;
@@ -382,7 +381,7 @@ public class NodesToSBit implements FEVisitor{
 		    	intelems.add(vrhs);			 	
 			}			
 			state.vectorPushVStack(intelems);
-			state.pushVStack(null);
+			//state.pushVStack(null);
 			return null;
 	    }
 	    
@@ -397,21 +396,31 @@ public class NodesToSBit implements FEVisitor{
 	    	this.isLHS = false;
 	    	
 	    	String vname =  base.getName();	    	
-	    	exp.getOffset().accept(this);
+	    	String ofstStr = (String) exp.getOffset().accept(this);
 	    	Integer ofst = state.popVStack();
-	    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());	    	
-	    	vname = vname + "_idx_" + ofst;
-	    	this.isLHS = ilhs;
-	    	
-	    	if( state.varHasValue( vname ) ){
-	    		state.pushVStack( new Integer(state.varValue(vname)) );	    		
+	    	if( ofst != null){
+		    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());	    	
+		    	vname = vname + "_idx_" + ofst;
+		    	this.isLHS = ilhs;
+		    	
+		    	if( state.varHasValue( vname ) ){
+		    		state.pushVStack( new Integer(state.varValue(vname)) );	    		
+		    	}else{
+		    		state.pushVStack(null);
+		    	}
+		    	if(this.isLHS)
+		    		return vname;
+		    	else
+		    		return state.varGetRHSName( vname );
 	    	}else{
+	    		Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
+	    		vname = vname + "[" + ofstStr + "]";
 	    		state.pushVStack(null);
+	    		if(this.isLHS)
+		    		return vname;
+		    	else
+		    		return state.varGetRHSName( vname );
 	    	}
-	    	if(this.isLHS)
-	    		return vname;
-	    	else
-	    		return state.varGetRHSName( vname );	    	
 	    }
 	    
 	    public Object visitExprBinary(ExprBinary exp)
@@ -557,7 +566,7 @@ public class NodesToSBit implements FEVisitor{
 	        String result = (String)exp.getExpr().accept(this);
 	        Integer arg = state.popVStack();
 	        state.pushVStack(null);
-	        Assert(arg != null, "I can not tell at compile time where you are peeking.");
+	        Assert(arg != null, "I can not tell at compile time where you are peeking. " + result);
 	        return "INPUT_" + (arg.intValue()+poppos);
 	        //return peekFunction(ss.getStreamType()) + "(" + result + ")";
 	    }
@@ -696,10 +705,11 @@ public class NodesToSBit implements FEVisitor{
 	    public Object visitExprVar(ExprVar exp)
 	    {
 	    	String vname =  exp.getName();
+	    	Integer intValue;
 	    	if( state.varHasValue( vname ) ){
-	    		state.pushVStack( new Integer(state.varValue(vname)) );	    		
+	    		intValue = new Integer(state.varValue(vname)) ;	    		
 	    	}else{
-	    		state.pushVStack(null);
+	    		intValue = null;
 	    	}
 	    	int sz = state.checkArray(vname);
 	    	if( sz >= 0 ){
@@ -713,6 +723,8 @@ public class NodesToSBit implements FEVisitor{
  	    			}
  	    		}
 	    		state.vectorPushVStack( nlist );
+	    	}else{
+	    		state.pushVStack(intValue);	    		
 	    	}
 	    	if(this.isLHS)
 	    		return exp.getName();
@@ -903,10 +915,9 @@ public class NodesToSBit implements FEVisitor{
 		        	
 		            Expression param = (Expression)iter.next();
 		            fullnm += "_";
-		            this.state.markVectorStack();
-		            param.accept(this);
-		            Integer pv = state.popVStack();           	
-                	if(this.state.vectorGrewFromMark()){
+		            //this.state.markVectorStack();
+		            param.accept(this);		                       	
+                	if(this.state.topOfStackIsVector()){
                 		List l = state.vectorPopVStack();
                 		int xx=0;
                 		int xpon=1;                		                		
@@ -917,6 +928,7 @@ public class NodesToSBit implements FEVisitor{
                 		}
                 		fullnm +=  xx;
                 	}else{
+                		Integer pv = state.popVStack();
                 		assert pv != null: "This is not supposed to happen";
                 		fullnm += pv;
                 	}
@@ -936,15 +948,15 @@ public class NodesToSBit implements FEVisitor{
 			        	Expression actualParam = (Expression)actualParamIterator.next();			        	
 			        	Parameter formalParam = (Parameter) formalParamIterator.next();
 			        	
-			        	this.state.markVectorStack();
+			        	//this.state.markVectorStack();
 			        	
 			        	actualParam.accept(this);
-			        	Integer value = state.popVStack();
+			        	
 			        	String formalParamName = formalParam.getName();
 			        	state.varDeclare(formalParamName);
 			    		state.varGetLHSName(formalParamName);
 			    		
-			        	if( this.state.vectorGrewFromMark() ){				        
+			        	if( this.state.topOfStackIsVector() ){				        
 				    		List lst= state.vectorPopVStack();
 				    		Iterator it = lst.iterator();
 				    		int idx = 0;
@@ -958,6 +970,7 @@ public class NodesToSBit implements FEVisitor{
 				    			++idx;
 				    		}
 				    	}else{
+				    		Integer value = state.popVStack();
 				    		Assert(value != null, "I must be able to determine the values of the parameters at compile time.");				    						    		
 				    		state.setVarValue(formalParamName, value.intValue());
 				    	}
@@ -1053,19 +1066,19 @@ public class NodesToSBit implements FEVisitor{
 	        
 	        
 
-	        this.state.markVectorStack();
+	        //this.state.markVectorStack();
 	        
 	        Integer vrhs = null;
 	        String rhs = (String)stmt.getRHS().accept(this);
-	        vrhs = state.popVStack();	        	           			        
-	        
-	        if(vrhs != null){
-	        	rhs = vrhs.toString();
-	        }
-	        
+	        	        
 	        List rhsLst = null;
-	        if( this.state.vectorGrewFromMark() ){
+	        if( this.state.topOfStackIsVector() ){
 	        	rhsLst= state.vectorPopVStack();
+	        }else{
+	        	vrhs = state.popVStack();		        
+		        if(vrhs != null){
+		        	rhs = vrhs.toString();
+		        }		        	
 	        }
 	        
 	        
@@ -1078,17 +1091,22 @@ public class NodesToSBit implements FEVisitor{
 	        
 	        int arrSize = state.checkArray(lhs);
 	        boolean isArr = arrSize > 0;
-	        Integer vlhs = state.popVStack();
-	        String rlhs = lhs;  
-	        if(vlhs != null){
-	        	rlhs = vlhs.toString();
-	        }else{
-	        	rlhs = state.varGetRHSName(rlhs);
-	        }
+	        
+	        Integer vlhs = null;
+	        String rlhs = null;  	        
 
-	        List lhsLst=null;
-	        if(isArr && this.state.vectorGrewFromMark() ){	        	
-	        	lhsLst= state.vectorPopVStack();	
+	        
+	        if(isArr && this.state.topOfStackIsVector() ){	        	
+	        	state.vectorPopVStack();	
+	        }else{
+	        	assert isArr == this.state.topOfStackIsVector();
+	        	vlhs = state.popVStack();
+		        rlhs = lhs;  
+		        if(vlhs != null){
+		        	rlhs = vlhs.toString();
+		        }else{
+		        	rlhs = state.varGetRHSName(rlhs);
+		        }	        	
 	        }
 	        
 	        
@@ -1098,26 +1116,30 @@ public class NodesToSBit implements FEVisitor{
 	        
 	        switch(stmt.getOp())
 	        {
-	        case ExprBinary.BINOP_ADD: 
+	        case ExprBinary.BINOP_ADD: 	        	
 	        	op = " = " + rlhs + "+";
+	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 	        	if(hv){
 	        		state.setVarValue(lhs, vlhs.intValue() + vrhs.intValue());
 	        	}
 	        break;
 	        case ExprBinary.BINOP_SUB: 
 	        	op = " = "+ rlhs + "-";
+	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
 	        		state.setVarValue(lhs, vlhs.intValue() - vrhs.intValue());
 	        	}
 	        break;
 	        case ExprBinary.BINOP_MUL: 
 	        	op = " = "+ rlhs + "*";
+	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
 	        		state.setVarValue(lhs, vlhs.intValue() * vrhs.intValue());
 	        	}
 	        break;
 	        case ExprBinary.BINOP_DIV: 
 	        	op = " = "+ rlhs + "/"; 
+	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
 	        		state.setVarValue(lhs, vlhs.intValue() / vrhs.intValue());
 	        	}
@@ -1321,6 +1343,7 @@ public class NodesToSBit implements FEVisitor{
 	    {
 	    	String val = (String)stmt.getValue().accept(this);
 	    	Integer ival = state.popVStack();
+	    	 
 	    	int pos = state.varValue("PUSH_POS");
 	    	state.setVarValue("PUSH_POS", pos+1);
 	    	String otpt = "OUTPUT_" + pos;	    	
@@ -1331,7 +1354,7 @@ public class NodesToSBit implements FEVisitor{
 	    		//return lhs + " = " + ival;
 	    	}else{
 	    		return lhs + " = " + val;
-	    	}
+	    	}	    	
 	        //return pushFunction(ss.getStreamType()) + "(" +
 	        //    (String)stmt.getValue().accept(this) + ")";
 	    }
@@ -1406,10 +1429,9 @@ public class NodesToSBit implements FEVisitor{
 	            	Integer tmp = state.popVStack();
 	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + stmt.getContext());
 	            	state.makeArray(nm, tmp.intValue());
-	            	this.state.markVectorStack();
-	            	stmt.getInit(i).accept(this);
-	            	Integer val = state.popVStack();
-	            	if( this.state.vectorGrewFromMark() ){
+	            	//this.state.markVectorStack();
+	            	stmt.getInit(i).accept(this);	            	
+	            	if( this.state.topOfStackIsVector() ){
 			    		List lst= state.vectorPopVStack();
 			    		Iterator it = lst.iterator();
 			    		int tt = 0;
@@ -1423,6 +1445,7 @@ public class NodesToSBit implements FEVisitor{
 			    		}
 			    		return "";
 			    	}else{
+			    		Integer val = state.popVStack();
 		            	for(int tt=0; tt<tmp.intValue(); ++tt){
 		            		String nnm = nm + "_idx_" + tt;
 		            		state.varDeclare(nnm);
