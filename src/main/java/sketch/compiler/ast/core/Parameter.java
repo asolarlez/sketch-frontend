@@ -27,12 +27,25 @@ public class Parameter
 {
     private Type type;
     private String name;
+    private boolean isOutput;
     
     /** Creates a new Parameter with the specified type and name. */
     public Parameter(Type type, String name)
     {
         this.type = type;
         this.name = name;
+        isOutput = false;
+    }
+    
+    public Parameter(Type type, String name, boolean isOutput)
+    {
+        this.type = type;
+        this.name = name;
+        this.isOutput = isOutput;
+    }
+    
+    public boolean isParameterOutput(){
+    	return isOutput;
     }
     
     /** Returns the type of this. */
