@@ -22,7 +22,9 @@ class MapStack{
 	MapStack(){
 		curVT = new HashMap();
 	}
-	
+	/**
+	 * Creates the new unique name for this variable.
+	 */
 	public void varDeclare(String var){
 		String newname = var + "_" + pushcount +"L" + curVT.size();
 		curVT.put(var, newname);

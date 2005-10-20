@@ -52,6 +52,7 @@ class MethodState{
 		varTranslator.varDeclare(var);
     }
     
+    
     public void pushLevel(){    	
     	varTranslator = varTranslator.pushLevel();    	    	    	
     }
@@ -275,10 +276,13 @@ class MethodState{
 		return UTvarHasValue(var);
 	}
 	
+	
 	public int varValue(String var){
 		var = this.transName(var);
 		return UTvarValue(var);		
 	}
+	
+	
 	
 	private int UTvarValue(String var){
 		
@@ -300,6 +304,7 @@ class MethodState{
 		var = this.transName(var);
 		UTsetVarValue(var,v);
 	}
+	
 	
 	private void UTsetVarValue(String var, int v){		
 		varState tv = (varState) vars.get(var);
@@ -324,8 +329,6 @@ class MethodState{
 		var = this.transName(var);
 		return UTvarGetRHSName(var);
 	}
-	
-	
 	
 	private String UTvarGetRHSName(String var){
 		if(this.UTvarHasValue(var)){

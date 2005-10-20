@@ -168,14 +168,17 @@ public class NodesToSBit implements FEVisitor{
 
 	    // Convert a Type to a String.  If visitors weren't so generally
 	    // useless for other operations involving Types, we'd use one here.
-	    public static String convertType(Type type)
+	    public String convertType(Type type)
 	    {
 	        // This is So Wrong in the greater scheme of things.
 	        if (type instanceof TypeArray)
 	        {
 	            TypeArray array = (TypeArray)type;
 	            String base = convertType(array.getBase());
-	            return base + "[]";
+	            String len = (String) array.getLength().accept(this);
+	            Integer i = state.popVStack();
+	            assert i != null : "Array length in a type must be static. " + len;
+	            return base + "[" + i + "]";
 	        }
 	        else if (type instanceof TypeStruct)
 		{
@@ -190,7 +193,7 @@ public class NodesToSBit implements FEVisitor{
 	            switch (((TypePrimitive)type).getType())
 	            {
 	            case TypePrimitive.TYPE_BOOLEAN: return "boolean";
-	            case TypePrimitive.TYPE_BIT: return "int";
+	            case TypePrimitive.TYPE_BIT: return "bit";
 	            case TypePrimitive.TYPE_INT: return "int";
 	            case TypePrimitive.TYPE_FLOAT: return "float";
 	            case TypePrimitive.TYPE_DOUBLE: return "double";
@@ -261,22 +264,22 @@ public class NodesToSBit implements FEVisitor{
 	    }
 
 	    // Helpers to get function names for stream types.
-	    public static String pushFunction(StreamType st)
+	    public  String pushFunction(StreamType st)
 	    {
 	        return annotatedFunction("output.push", st.getOut());
 	    }
 	    
-	    public static String popFunction(StreamType st)
+	    public  String popFunction(StreamType st)
 	    {
 	        return annotatedFunction("input.pop", st.getIn());
 	    }
 	    
-	    public static String peekFunction(StreamType st)
+	    public  String peekFunction(StreamType st)
 	    {
 	        return annotatedFunction("input.peek", st.getIn());
 	    }
 	    
-	    private static String annotatedFunction(String name, Type type)
+	    private  String annotatedFunction(String name, Type type)
 	    {
 	        String prefix = "", suffix = "";
 	        // Check for known suffixes:
@@ -321,10 +324,31 @@ public class NodesToSBit implements FEVisitor{
 	        {
 	            Parameter param = (Parameter)iter.next();
 	            if (!first) result += ", ";
+	            
+	            
 	            if (prefix != null) result += prefix + " ";
 	            result += convertType(param.getType());
 	            result += " ";
-	            result += param.getName();
+	            
+	            String lhs = param.getName();
+	            state.varDeclare(lhs);
+	            String lhsn = state.varGetLHSName(lhs);	            
+	            if( param.getType() instanceof TypeArray ){
+	            	TypeArray ta = (TypeArray) param.getType();
+	            	ta.getLength().accept(this);
+	            	Integer tmp = state.popVStack();
+	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" );
+	            	state.makeArray(lhs, tmp.intValue());
+	            	for(int tt=0; tt<tmp.intValue(); ++tt){
+	            		String nnm = lhs + "_idx_" + tt;
+	            		state.varDeclare(nnm);
+	            		String tmplhsn = state.varGetLHSName(nnm);
+	            		result += tmplhsn + "  ";
+	            	}
+	            }else{	            	
+		            result += param.getName();
+	            	
+	            }
 	            first = false;
 	        }
 	        result += ")";
@@ -345,8 +369,7 @@ public class NodesToSBit implements FEVisitor{
 	    	lhss = state.varGetLHSName(lhss);
 	    	
 	    	Integer vlhs = state.popVStack();
-	    	
-	    	//state.markVectorStack();
+
 	    	String rhss = (String) rhs.accept(this);
 	    	if( state.topOfStackIsVector() ){
 	    		List lst= this.state.vectorPopVStack();
@@ -403,7 +426,7 @@ public class NodesToSBit implements FEVisitor{
 		    	vname = vname + "_idx_" + ofst;
 		    	this.isLHS = ilhs;
 		    	
-		    	if( state.varHasValue( vname ) ){
+		    	if( state.varHasValue( vname) ){
 		    		state.pushVStack( new Integer(state.varValue(vname)) );	    		
 		    	}else{
 		    		state.pushVStack(null);
@@ -411,7 +434,7 @@ public class NodesToSBit implements FEVisitor{
 		    	if(this.isLHS)
 		    		return vname;
 		    	else
-		    		return state.varGetRHSName( vname );
+		    		return state.varGetRHSName( vname  );
 	    	}else{
 	    		Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
 	    		vname = vname + "[" + ofstStr + "]";
@@ -529,11 +552,26 @@ public class NodesToSBit implements FEVisitor{
 
 	    public Object visitExprFunCall(ExprFunCall exp)
 	    {	    	
-	    	String result;
+	    	String result = " ";
 	        String name = exp.getName();
 	        // Local function?
 	        if (ss.getFuncNamed(name) != null) {
-	            result = name + "(";
+	        	
+	        	state.pushLevel();
+	        	
+	        	Function fun = ss.getFuncNamed(name);	 
+	        	{
+		        	Iterator actualParams = exp.getParams().iterator();	        		        	       	
+		        	Iterator formalParams = fun.getParams().iterator();
+		        	result += inParameterSetter(formalParams, actualParams, false);
+	        	}
+	            result += (String) fun.getBody().accept(this);
+	            {
+	            	Iterator actualParams = exp.getParams().iterator();	        		        	       	
+		        	Iterator formalParams = fun.getParams().iterator();
+		        	result += outParameterSetter(formalParams, actualParams, false);
+	            }
+	            state.popLevel();
 	        }
 		// look for print and println statements; assume everything
 		// else is a math function
@@ -556,7 +594,8 @@ public class NodesToSBit implements FEVisitor{
 		    // float's now, so add a cast to float.  Not sure if this is
 		    // the right thing to do for all math functions in all cases?
 		    result = "(float)Math." + name + "(";
-		}	        
+		}	      
+	        state.pushVStack(null);
 	        return result;
 	    }
 
@@ -716,8 +755,8 @@ public class NodesToSBit implements FEVisitor{
 	    		List nlist = new LinkedList();
  	    		for(int i=0; i<sz; ++i){
  	    			String lnm = vname + "_idx_" + i;
- 	    			if( state.varHasValue( lnm ) ){
- 	    				nlist.add(new Integer( state.varValue( lnm )));
+ 	    			if( state.varHasValue( lnm) ){
+ 	    				nlist.add(new Integer( state.varValue(lnm )));
  	    			}else{
  	    				nlist.add(null);
  	    			}
@@ -728,8 +767,13 @@ public class NodesToSBit implements FEVisitor{
 	    	}
 	    	if(this.isLHS)
 	    		return exp.getName();
-	    	else
-	    		return state.varGetRHSName( exp.getName() );
+	    	else{
+	    		if(sz >=0){
+	    			return exp.getName();	
+	    		}else{
+	    			return state.varGetRHSName( exp.getName() );
+	    		}
+	    	}
 	    }
 
 	    public Object visitFieldDecl(FieldDecl field)
@@ -805,9 +849,7 @@ public class NodesToSBit implements FEVisitor{
 	        	}
 	        	this.additInit.clear();
 	        	result += "}\n";	        	
-	        }
-	        
-	        if(func.getCls() == Function.FUNC_WORK){
+	        }else if(func.getCls() == Function.FUNC_WORK){
 	        	result += "WORK()\n";
 	        	Assert( func.getParams().size() == 0 , "");	        	
 	        	result += "{\n";
@@ -832,6 +874,21 @@ public class NodesToSBit implements FEVisitor{
 	        	result += finalizeWork();
 	        	this.state.popLevel();
 	        	result += "}\n";
+	        }else{
+	        	result += func.getName();	
+	        	result += doParams(func.getParams(), "") + "\n";
+	        	result += "{\n";
+	        	this.state.pushLevel();       		        	
+	        	result += (String)func.getBody().accept(this);
+	        	this.state.popLevel();
+	        	Iterator it = this.additInit.iterator();
+	        	while(it.hasNext()){
+	        		Statement st = (Statement) it.next();
+	        		st.accept(this);
+	        	}
+	        	this.additInit.clear();
+	        	result += "}\n";	
+	        	state.pushVStack(null);
 	        }
 	        
 	        result += "\n";
@@ -936,6 +993,9 @@ public class NodesToSBit implements FEVisitor{
 		        fullnm += "___";
 		        result += fullnm + "()";
 		        if( funsWParams.get(fullnm) == null){
+		        	
+		        	
+		        	
 			        StreamSpec sp = (StreamSpec) funsWParams.get(nm);
 			        funsWParams.put(fullnm, sp);
 			        Assert( sp != null, nm + "Is used but has not been declared!!");
@@ -944,37 +1004,10 @@ public class NodesToSBit implements FEVisitor{
 			        Iterator formalParamIterator = finit.getParams().iterator();
 			        Iterator actualParamIterator = creator.getParams().iterator();
 			        Assert(finit.getParams().size() == creator.getParams().size() , nm + " The number of formal parameters doesn't match the number of actual parameters!!");
-			        while(actualParamIterator.hasNext()){
-			        	Expression actualParam = (Expression)actualParamIterator.next();			        	
-			        	Parameter formalParam = (Parameter) formalParamIterator.next();
-			        	
-			        	//this.state.markVectorStack();
-			        	
-			        	actualParam.accept(this);
-			        	
-			        	String formalParamName = formalParam.getName();
-			        	state.varDeclare(formalParamName);
-			    		state.varGetLHSName(formalParamName);
-			    		
-			        	if( this.state.topOfStackIsVector() ){				        
-				    		List lst= state.vectorPopVStack();
-				    		Iterator it = lst.iterator();
-				    		int idx = 0;
-				    		state.makeArray(formalParamName, lst.size());
-				    		while( it.hasNext() ){
-				    			Integer i = (Integer) it.next();
-				    			String lpnm = formalParamName + "_idx_" + idx;
-				    			state.varDeclare(lpnm);
-					    		state.varGetLHSName(lpnm);
-				    			state.setVarValue(lpnm, i.intValue());
-				    			++idx;
-				    		}
-				    	}else{
-				    		Integer value = state.popVStack();
-				    		Assert(value != null, "I must be able to determine the values of the parameters at compile time.");				    						    		
-				    		state.setVarValue(formalParamName, value.intValue());
-				    	}
-			        }
+			        
+			        
+			        inParameterSetter(formalParamIterator,actualParamIterator, true);
+			        
 			        String tmp = (String) preFil.pop();
 			        tmp += sp.accept(this);
 			        preFil.push(tmp);
@@ -984,6 +1017,103 @@ public class NodesToSBit implements FEVisitor{
 	        return result;
 	    }
 
+        String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
+        	String result = "";
+	        while(actualParamIterator.hasNext()){	        	
+	        	Expression actualParam = (Expression)actualParamIterator.next();			        	
+	        	Parameter formalParam = (Parameter) formalParamIterator.next();
+	        	
+	        	//this.state.markVectorStack();
+	        	
+	        	String apnm = (String) actualParam.accept(this);
+	        	
+	        	String formalParamName = formalParam.getName();
+	        	state.varDeclare(formalParamName);
+	    		String lhsname = state.varGetLHSName(formalParamName);
+	    		
+	        	if( this.state.topOfStackIsVector() ){				        
+		    		List lst= state.vectorPopVStack();
+		    		Iterator it = lst.iterator();
+		    		int idx = 0;
+		    		state.makeArray(formalParamName, lst.size());
+		    		while( it.hasNext() ){
+		    			Integer i = (Integer) it.next();
+		    			String lpnm = formalParamName + "_idx_" + idx;
+		    			state.varDeclare(lpnm);
+			    		lhsname = state.varGetLHSName(lpnm);
+			    		if( !formalParam.isParameterOutput() ){
+				    		if(i == null){
+				    			result += lhsname + " = " + state.varGetRHSName(apnm + "_idx_" + idx) + ";\n";
+				    		}else{
+				    			state.setVarValue(lpnm, i.intValue());
+				    		}
+			    		}
+		    			++idx;
+		    		}
+		    	}else{	
+		    		
+		    		Integer value = state.popVStack();
+		    		Assert(value != null || !checkError, "I must be able to determine the values of the parameters at compile time.");
+		    		if( !formalParam.isParameterOutput() ){
+			    		if(value == null){
+			    			result += lhsname + " = " + apnm + ";\n";
+			    		}else{
+			    			state.setVarValue(formalParamName, value.intValue());
+			    		}
+		    		}
+		    	}
+	        }
+	        return result;
+        }
+        
+        
+        String outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
+        	String result = "";
+	        while(actualParamIterator.hasNext()){	        	
+	        	Expression actualParam = (Expression)actualParamIterator.next();			        	
+	        	Parameter formalParam = (Parameter) formalParamIterator.next();
+	        	
+	        	//this.state.markVectorStack();
+	        	this.isLHS = true;
+	        	String apnm = (String) actualParam.accept(this);
+	        	this.isLHS = false;
+	        	
+	        	String formalParamName = formalParam.getName();	        	
+	    		
+	        	if( this.state.topOfStackIsVector() ){				        
+		    		List lst= state.vectorPopVStack();
+		    		Iterator it = lst.iterator();
+		    		int idx = 0;		    		
+		    		while( it.hasNext() ){
+		    			Integer i = (Integer) it.next();
+		    			String formalName = formalParamName + "_idx_" + idx;		    						    		
+			    		if( formalParam.isParameterOutput() ){
+			    			String rhsname = state.varGetRHSName(formalName);
+				    		if(i == null){
+				    			result += state.varGetLHSName(apnm+"_idx_"+idx) + " = " + rhsname + ";\n";
+				    		}else{
+				    			state.setVarValue(formalName, i.intValue());
+				    		}
+			    		}
+		    			++idx;
+		    		}
+		    	}else{
+		    		String lhsname = state.varGetLHSName(apnm);
+		    		Integer value = state.popVStack();
+		    		Assert(value != null || !checkError, "I must be able to determine the values of the parameters at compile time.");
+		    		if( formalParam.isParameterOutput() ){
+			    		if(value == null){
+			    			result += lhsname + " = " + state.varGetLHSName(formalParamName) + ";\n";
+			    		}else{
+			    			state.setVarValue(formalParamName, value.intValue());
+			    		}
+		    		}
+		    	}
+	        }
+	        return result;
+        }
+        
+        
 	    public Object visitSJDuplicate(SJDuplicate sj)
 	    {
 	    	switch(sj.getType()){
@@ -1235,8 +1365,8 @@ public class NodesToSBit implements FEVisitor{
 	        Integer tmp = state.popVStack();
 	        // Gross hack to strip out leading class casts,
 	        // since they'll illegal (JLS 14.8).
-	        if (result.charAt(0) == '(' &&
-	            Character.isUpperCase(result.charAt(1)))
+	        if (result.length() > 0 && (result.charAt(0) == '(' &&
+	            Character.isUpperCase(result.charAt(1))))
 	            result = result.substring(result.indexOf(')') + 1);
 	        return result;
 	    }

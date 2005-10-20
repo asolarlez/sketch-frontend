@@ -34,7 +34,7 @@ public class Parameter
     {
         this.type = type;
         this.name = name;
-        isOutput = false;
+        isOutput = true;
     }
     
     public Parameter(Type type, String name, boolean isOutput)
