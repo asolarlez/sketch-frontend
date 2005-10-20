@@ -1,0 +1,77 @@
+// DropThird
+//
+// This version has these properties:
+// - uses loop( {*} ), not loop ( {[0:log(W)]} )
+// - logShifter() argument types are bit[W] not bit[*]
+// - the specification is unrolled (word-aligned) manually, 
+//   as we do not support streaming
+// - the loop in the word-aligned is loop(W) rather than loop({*})
+
+// The specification
+
+bit[2] dropThird(bit[3] in) {
+	return in[0:1];
+}
+
+// We do not support streaming in this version of the language
+// so we have to align dropThird by hand.  dropThirdAligned will
+// then act as our specification.
+//
+// W is predefined keyword denoting the word size
+
+bit[W*2] dropThirdWordAligned(bit[3*W] in) {
+
+	bit[2*W] out;
+	int i = 0;
+	int j = 0;
+	
+	// INTERESTING NOTE: I would really like to specify the loop with "loop(*)", 
+	// which should resolve to loop(W) given the constraints on the return type.
+	
+	loop(W) {  // ideally, say "loop(*)"
+		out[j:j+1] = in[i:i+1];
+		i += 3;
+		j += 2;
+	}
+	return out;
+}
+
+
+// ----------------------------------------------------------------------------
+// The sketch
+// ----------------------------------------------------------------------------
+
+bit[2*W] dropThirdImplementation(bit[3*W]) sketches dropThirdAligned 
+{
+	bit[W]   i1, i2, i3;
+	bit[2*W] t1, t2, t3;
+
+	[i1,i2,i3] = in;      // bit vector distribution, 
+						  // Liviu, is it easy to
+support this operator?
+
+	t1 = logshift(i1);    // note the implicit conversion from bit[W] to
+bit[2*W]
+	t2 = logshift(i2);
+	t3 = logshift(i3);
+
+	return t1<<{*} {select} t2<<{*} {select} t3<<{*};
+}
+
+bit[W] logShifter(bit[W] in) {   
+	int disp=1;
+	loop( {*} ) {
+		in = in {select} in<<disp;
+		disp *= 2;
+	}
+	return in;
+}
+
+// the predefined {select} operator, formerly the smiley operator
+// we don't need to spell it out in the source code; it's here for
+// illustration.
+//
+//  bit[*] {select}(bit[*] op1, bit[*] op2) {
+//	  bit[*] mask = *;
+//	  return (op1 & mask) || (op2 & ~mask);
+//  }
