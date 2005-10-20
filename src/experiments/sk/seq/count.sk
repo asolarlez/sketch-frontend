@@ -1,0 +1,35 @@
+// This counts the number of 1's in a word
+
+int W=32;
+
+bit[W] countBits(bit[W] in)
+{
+	bit[W] ret=0;
+	for(int i=0;i<W;i++)
+		if(in[i])
+			ret=ret+1;
+	return ret;
+}
+
+bit[W] countSketch(bit[W] in) implements countBits
+{
+	bit[W] tmp=in;
+	loop({*})
+	{
+		bit[W] t1=tmp {|} 0;
+		bit[W] t2=(tmp>>{*}) {|} 0;
+		tmp=t1+t2;
+	}
+	return tmp;
+}
+
+bit[W] countSketch2(bit[W] in) implements countBits
+{
+	bit[W] tmp=in;
+	loop({*})
+	{
+		bit[W] m={*};
+		tmp=(tmp & m) + (tmp>>{*} & m);
+	}
+	return tmp;
+}
