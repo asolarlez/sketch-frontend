@@ -1,0 +1,30 @@
+// David's sketch; not yet translated
+
+filter Reverse {
+
+bit[32] reverse (bit[32] in) {
+
+        bit [32] out;
+         for (int i = 0; i < 32; i++) {
+               out[i] = in[31 - i];
+         }
+         return out;
+}
+
+
+bit[32] reverseSketch(bit[32] in) sketches reverse {
+   
+   bit[32]  t = in;
+
+    t = (t >> 1) { | } (t << 1);
+    t = (t >> 2) { | } (t << 2);
+    t = (t >> 4) { | } (t << 4);
+    t = (t >> 8) { | } (t << 8);
+    t = (t >> 16) { | } (t << 16);
+
+   return t;
+
+
+}
+
+}
