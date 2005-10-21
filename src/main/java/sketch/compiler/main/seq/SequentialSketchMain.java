@@ -266,7 +266,7 @@ public class ToSBit
             System.exit(1);
         }
 
-        prog = (Program)prog.accept(new RenameBitVars());
+        // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         if (!SemanticChecker.check(prog))
             System.exit(1);
         prog = (Program)prog.accept(new AssignLoopTypes());
