@@ -253,6 +253,34 @@ public class NodesToSBit implements FEVisitor{
 	        return prefix + name + suffix;
 	    }
 
+	    
+	    public String postDoParams(List params){
+	    	String result = "";	        
+	        for (Iterator iter = params.iterator(); iter.hasNext(); )
+	        {
+	            Parameter param = (Parameter)iter.next();
+	            if(param.isParameterOutput()){
+		            if( param.getType() instanceof TypeArray ){
+		            	String lhs = param.getName();
+		            	TypeArray ta = (TypeArray) param.getType();
+		            	ta.getLength().accept(this);
+		            	Integer tmp = state.popVStack();
+		            	Assert(tmp != null, "The array size must be a compile time constant !! \n" );		            	
+		            	for(int tt=0; tt<tmp.intValue(); ++tt){
+		            		String nnm = lhs + "_idx_" + tt;		            		
+			            	result += state.varGetRHSName("_p_"+nnm) + " = " + state.varGetRHSName(nnm) + ";\n";
+			            	//NOTE: This is not a bug. I call getRHSName for _p_nnm even though it is in the LHS
+			            	//because we need to get the same value that we got when we declared it.
+		            	}
+		            }else{
+		            	String lhs = param.getName();
+		            	result += state.varGetRHSName("_p_"+lhs) + " = " + state.varGetRHSName(lhs) + ";\n";
+		            }
+	            }
+	        }
+	        return result;
+	    }
+	    
 	    // Return a representation of a list of Parameter objects.
 	    public String doParams(List params, String prefix)
 	    {
@@ -281,11 +309,22 @@ public class NodesToSBit implements FEVisitor{
 	            		String nnm = lhs + "_idx_" + tt;
 	            		state.varDeclare(nnm);
 	            		String tmplhsn = state.varGetLHSName(nnm);
-	            		result += tmplhsn + "  ";
+	            		if(param.isParameterOutput()){
+	            			state.varDeclare("_p_"+nnm);
+		            		String tmplhsn2 = state.varGetLHSName("_p_"+nnm);
+		            		result += tmplhsn2 + "  ";
+	            		}else{
+	            			result += tmplhsn + "  ";
+	            		}
 	            	}
-	            }else{	            	
-		            result += param.getName();
-	            	
+	            }else{
+	            	if(param.isParameterOutput()){
+	            		state.varDeclare("_p_"+lhs);
+	            		String tmplhsn2 = state.varGetLHSName("_p_"+lhs);
+	            		result += tmplhsn2;
+	            	}else{
+	            		result += lhsn;
+	            	}
 	            }
 	            first = false;
 	        }
@@ -819,6 +858,7 @@ public class NodesToSBit implements FEVisitor{
 	        	this.state.pushLevel();       		        	
 	        	result += (String)func.getBody().accept(this);
 	        	this.state.popLevel();
+	        	result += postDoParams(func.getParams());
 	        	Iterator it = this.additInit.iterator();
 	        	while(it.hasNext()){
 	        		Statement st = (Statement) it.next();
@@ -988,8 +1028,7 @@ public class NodesToSBit implements FEVisitor{
 			    		}
 		    			++idx;
 		    		}
-		    	}else{	
-		    		
+		    	}else{
 		    		Integer value = state.popVStack();
 		    		Assert(value != null || !checkError, "I must be able to determine the values of the parameters at compile time.");
 		    		if( !formalParam.isParameterOutput() ){
@@ -1837,5 +1876,5 @@ public class NodesToSBit implements FEVisitor{
 		public Object visitExprStar(ExprStar star) {
 			// TODO Auto-generated method stub
 			return null;
-		}
+}
 }
