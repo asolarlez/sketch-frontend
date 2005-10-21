@@ -588,4 +588,9 @@ public class FEReplacer implements FEVisitor
     
     public Object visitStreamType(StreamType type) { return type; }
     public Object visitOther(FENode node) { return node; }
+
+	public Object visitExprStar(ExprStar star) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

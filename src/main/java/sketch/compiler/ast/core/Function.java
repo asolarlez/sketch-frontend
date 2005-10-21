@@ -47,6 +47,8 @@ public class Function extends FENode
     private List params;
     private Statement body;
     
+    private String fImplements=null;
+    
     /** Internal constructor to create a new Function from all parts.
      * This is public so that visitors that want to create new objects
      * can, but you probably want one of the other creator functions. */
@@ -88,6 +90,17 @@ public class Function extends FENode
                             params, body);
     }
 
+    /** Create a new helper function given its parts. */
+    public static Function newHelper(FEContext context, String name,
+                                     Type returnType, List params,
+                                     String impl, Statement body)
+    {
+        Function f=new Function(context, FUNC_HELPER, name, returnType,
+                            params, body);
+        f.fImplements=impl;
+        return f;
+    }
+
     /** Returns the class of this function as an integer. */
     public int getCls() 
     {
@@ -118,6 +131,15 @@ public class Function extends FENode
     public Statement getBody()
     {
         return body;
+    }
+    
+    /**
+     * Returns the specification for this function. May be null, meaning this is
+     * a spec or an unbound sketch.
+     */
+    public String getSpecification()
+    {
+    	return fImplements;
     }
     
     /** Accepts a front-end visitor. */

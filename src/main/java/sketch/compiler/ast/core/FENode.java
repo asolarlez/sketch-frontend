@@ -27,6 +27,7 @@ package streamit.frontend.nodes;
 public abstract class FENode
 {
     private FEContext context;
+    public boolean isNonDet=false;
     
     /**
      * Create a new node with the specified context.

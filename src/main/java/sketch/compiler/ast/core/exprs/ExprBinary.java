@@ -45,6 +45,10 @@ public class ExprBinary extends Expression
     public static final int BINOP_BOR = 15;
     public static final int BINOP_BXOR = 16;
     
+    public static final int BINOP_LSHIFT = 17;
+    public static final int BINOP_RSHIFT = 18;
+    public static final int BINOP_SELECT = 19;
+    
     private int op;
     private Expression left, right;
     

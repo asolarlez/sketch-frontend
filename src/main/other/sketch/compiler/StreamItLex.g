@@ -58,8 +58,10 @@ tokens {
 	// Control flow:
 	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break";
 	"continue"; "return";
-	// Intrinsic values:
+// Intrinsic values:
 	"pi"; "true"; "false";
+	//sketching stuff
+	"implements"; "overrides";
 }
 
 ARROW :	"->" ;
@@ -136,6 +138,10 @@ SEMI: ';';
 COMMA: ',';
 DOT: '.';
 BANG: '!';
+LSHIFT: "<<";
+RSHIFT: ">>";
+NDVAL: "{*}";
+SELECT: "{|}";
 
 CHAR_LITERAL
 	:	'\'' (ESC|~'\'') '\''

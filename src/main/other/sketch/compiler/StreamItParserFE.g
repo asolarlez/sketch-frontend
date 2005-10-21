@@ -76,15 +76,19 @@ options {
 	}
 }
 
-program	returns [Program p]
+program	 returns [Program p]
 { p = null; List structs = new ArrayList(); List streams = new ArrayList();
-	TypeStruct ts; StreamSpec ss; }
-	:	( ts=struct_decl { structs.add(ts); }
-		| ss=stream_decl { streams.add(ss); }
-		)*
+	List funcs=new ArrayList(); Function f;
+}
+	:	( f=function_decl { funcs.add(f); }
+)*
 		EOF
 		// Can get away with no context here.
-		{ if (!hasError) p = new Program(null, streams, structs); }
+		{
+			 StreamSpec ss=new StreamSpec(null, StreamSpec.STREAM_FILTER,
+ 				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN", 
+ 				Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs);
+				 if (!hasError) p = new Program(null, streams, structs); }
 	;
 
 stream_decl returns [StreamSpec ss] { ss = null; StreamType st; }
@@ -355,9 +359,10 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	;
 
 function_decl returns [Function f] { Type t; List l; Statement s; f = null;
-int cls = Function.FUNC_HELPER; }
-	:	t=data_type id:ID l=param_decl_list s=block
-		{ f = new Function(getContext(id), cls, id.getText(), t, l, s); }
+}
+	:	t=data_type id:ID l=param_decl_list (TK_implements impl:ID)? s=block
+		{ f = Function.newHelper(getContext(id), id.getText(), t, l, 
+			impl==null?null:impl.getText(), s); }
 	;
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
@@ -540,6 +545,7 @@ addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	:	x=multExpr
 		(	( PLUS  { o = ExprBinary.BINOP_ADD; }
 			| MINUS { o = ExprBinary.BINOP_SUB; }
+			| SELECT { o = ExprBinary.BINOP_SELECT; }
 			)
 			r=multExpr
 			{ x = new ExprBinary(x.getContext(), o, x, r); }
@@ -561,8 +567,16 @@ castExpr returns [Expression x] { x = null; Type t=null; }
 	:	(LPAREN primitive_type) =>
 		  (l:LPAREN t=primitive_type RPAREN) x=inc_dec_expr
 		{ x = new ExprTypeCast(getContext(l), t, x); }
-	|	x=inc_dec_expr
+	|	x=shiftExpr
 	;
+
+shiftExpr returns [Expression x] { x=null; Expression amt; Type t=null; }
+: (left_expr RSHIFT) => x=left_expr RSHIFT amt=value_expr
+{ x=new ExprBinary(x.getContext(), ExprBinary.BINOP_RSHIFT, x, amt); }
+| (left_expr LSHIFT) => x=left_expr LSHIFT amt=value_expr
+{ x=new ExprBinary(x.getContext(), ExprBinary.BINOP_LSHIFT, x, amt); }
+| x=inc_dec_expr
+;
 
 inc_dec_expr returns [Expression x] { x = null; }
 	:	(incOrDec) => x=incOrDec
@@ -585,9 +599,12 @@ incOrDec returns [Expression x] { x = null; }
 	;
 
 value_expr returns [Expression x] { x = null; boolean neg = false; }
-	:	(m:MINUS { neg = true; })?
+	:	
+(NDVAL) => 	t:NDVAL {x=new ExprStar(getContext(t));} 
+|	(	(m:MINUS { neg = true; })?
 		(x=minic_value_expr | x=streamit_value_expr)
 		{ if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x); }
+		)
 	;
 
 streamit_value_expr returns [Expression x] { x = null; }

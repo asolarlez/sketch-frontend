@@ -1,26 +1,30 @@
-// $ANTLR 2.7.4: "StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR : "StreamItLex.g" -> "StreamItLex.java"$
 
 	package streamit.frontend;
 
 import java.io.InputStream;
-import java.io.Reader;
-import java.util.Hashtable;
-
-import antlr.ANTLRHashString;
-import antlr.ByteBuffer;
-import antlr.CharBuffer;
-import antlr.CharStreamException;
-import antlr.CharStreamIOException;
-import antlr.InputBuffer;
-import antlr.LexerSharedInputState;
-import antlr.NoViableAltForCharException;
-import antlr.RecognitionException;
-import antlr.Token;
-import antlr.TokenStream;
 import antlr.TokenStreamException;
 import antlr.TokenStreamIOException;
 import antlr.TokenStreamRecognitionException;
+import antlr.CharStreamException;
+import antlr.CharStreamIOException;
+import antlr.ANTLRException;
+import java.io.Reader;
+import java.util.Hashtable;
+import antlr.CharScanner;
+import antlr.InputBuffer;
+import antlr.ByteBuffer;
+import antlr.CharBuffer;
+import antlr.Token;
+import antlr.CommonToken;
+import antlr.RecognitionException;
+import antlr.NoViableAltForCharException;
+import antlr.MismatchedCharException;
+import antlr.TokenStream;
+import antlr.ANTLRHashString;
+import antlr.LexerSharedInputState;
 import antlr.collections.impl.BitSet;
+import antlr.SemanticException;
 
 public class StreamItLex extends antlr.CharScanner implements StreamItLexTokenTypes, TokenStream
  {
@@ -61,6 +65,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("boolean", this), new Integer(27));
 	literals.put(new ANTLRHashString("enqueue", this), new Integer(19));
 	literals.put(new ANTLRHashString("handler", this), new Integer(11));
+	literals.put(new ANTLRHashString("implements", this), new Integer(49));
 	literals.put(new ANTLRHashString("template", this), new Integer(35));
 	literals.put(new ANTLRHashString("continue", this), new Integer(44));
 	literals.put(new ANTLRHashString("add", this), new Integer(12));
@@ -73,6 +78,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("body", this), new Integer(17));
 	literals.put(new ANTLRHashString("return", this), new Integer(45));
 	literals.put(new ANTLRHashString("filter", this), new Integer(4));
+	literals.put(new ANTLRHashString("overrides", this), new Integer(50));
 	literals.put(new ANTLRHashString("bit", this), new Integer(29));
 	literals.put(new ANTLRHashString("if", this), new Integer(36));
 	literals.put(new ANTLRHashString("int", this), new Integer(30));
@@ -110,12 +116,6 @@ tryAgain:
 				case ')':
 				{
 					mRPAREN(true);
-					theRetToken=_returnToken;
-					break;
-				}
-				case '{':
-				{
-					mLCURLY(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -271,8 +271,28 @@ tryAgain:
 						mMORE_EQUAL(true);
 						theRetToken=_returnToken;
 					}
+					else if ((LA(1)=='<') && (LA(2)=='<')) {
+						mLSHIFT(true);
+						theRetToken=_returnToken;
+					}
+					else if ((LA(1)=='>') && (LA(2)=='>')) {
+						mRSHIFT(true);
+						theRetToken=_returnToken;
+					}
+					else if ((LA(1)=='{') && (LA(2)=='*')) {
+						mNDVAL(true);
+						theRetToken=_returnToken;
+					}
+					else if ((LA(1)=='{') && (LA(2)=='|')) {
+						mSELECT(true);
+						theRetToken=_returnToken;
+					}
 					else if ((LA(1)=='0') && (LA(2)=='x')) {
 						mHQUAN(true);
+						theRetToken=_returnToken;
+					}
+					else if ((LA(1)=='{') && (true)) {
+						mLCURLY(true);
 						theRetToken=_returnToken;
 					}
 					else if ((LA(1)=='+') && (true)) {
@@ -407,13 +427,13 @@ tryAgain:
 		
 		match("//");
 		{
-		_loop6:
+		_loop2802:
 		do {
 			if ((_tokenSet_0.member(LA(1)))) {
 				matchNot('\n');
 			}
 			else {
-				break _loop6;
+				break _loop2802;
 			}
 			
 		} while (true);
@@ -434,7 +454,7 @@ tryAgain:
 		
 		match("/*");
 		{
-		_loop10:
+		_loop2806:
 		do {
 			if (((LA(1)=='*') && ((LA(2) >= '\u0003' && LA(2) <= '\u00ff')) && ((LA(3) >= '\u0003' && LA(3) <= '\u00ff')))&&( LA(2)!='/' )) {
 				match('*');
@@ -449,7 +469,7 @@ tryAgain:
 				}
 			}
 			else {
-				break _loop10;
+				break _loop2806;
 			}
 			
 		} while (true);
@@ -918,6 +938,58 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
+	public final void mLSHIFT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = LSHIFT;
+		int _saveIndex;
+		
+		match("<<");
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mRSHIFT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = RSHIFT;
+		int _saveIndex;
+		
+		match(">>");
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mNDVAL(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = NDVAL;
+		int _saveIndex;
+		
+		match("{*}");
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mSELECT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = SELECT;
+		int _saveIndex;
+		
+		match("{|}");
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
 	public final void mCHAR_LITERAL(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = CHAR_LITERAL;
@@ -1055,7 +1127,7 @@ tryAgain:
 		
 		match('"');
 		{
-		_loop50:
+		_loop2850:
 		do {
 			if ((LA(1)=='\\')) {
 				mESC(false);
@@ -1064,7 +1136,7 @@ tryAgain:
 				matchNot('"');
 			}
 			else {
-				break _loop50;
+				break _loop2850;
 			}
 			
 		} while (true);
@@ -1097,8 +1169,8 @@ tryAgain:
 		
 		match("0x");
 		{
-		int _cnt60=0;
-		_loop60:
+		int _cnt2860=0;
+		_loop2860:
 		do {
 			switch ( LA(1)) {
 			case '0':  case '1':  case '2':  case '3':
@@ -1172,10 +1244,10 @@ tryAgain:
 			}
 			default:
 			{
-				if ( _cnt60>=1 ) { break _loop60; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt2860>=1 ) { break _loop2860; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt60++;
+			_cnt2860++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -1191,34 +1263,34 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt63=0;
-		_loop63:
+		int _cnt2863=0;
+		_loop2863:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt63>=1 ) { break _loop63; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt2863>=1 ) { break _loop2863; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt63++;
+			_cnt2863++;
 		} while (true);
 		}
 		{
 		if ((LA(1)=='.')) {
 			mDOT(false);
 			{
-			int _cnt66=0;
-			_loop66:
+			int _cnt2866=0;
+			_loop2866:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt66>=1 ) { break _loop66; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt2866>=1 ) { break _loop2866; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt66++;
+				_cnt2866++;
 			} while (true);
 			}
 		}
@@ -1271,17 +1343,17 @@ tryAgain:
 			}
 			}
 			{
-			int _cnt71=0;
-			_loop71:
+			int _cnt2871=0;
+			_loop2871:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt71>=1 ) { break _loop71; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt2871>=1 ) { break _loop2871; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt71++;
+				_cnt2871++;
 			} while (true);
 			}
 		}
@@ -1345,7 +1417,7 @@ tryAgain:
 		}
 		}
 		{
-		_loop76:
+		_loop2876:
 		do {
 			switch ( LA(1)) {
 			case 'a':  case 'b':  case 'c':  case 'd':
@@ -1384,7 +1456,7 @@ tryAgain:
 			}
 			default:
 			{
-				break _loop76;
+				break _loop2876;
 			}
 			}
 		} while (true);
