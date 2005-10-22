@@ -379,9 +379,6 @@ rs=return_statement SEMI
 	RCURLY
 		{ for(int i=0;i<r.count();i++) {
   String name=r.getName(i); Type t=r.getType(i);
- 						 Statement declareRet=new StmtVarDecl(getContext(tok), Collections.singletonList(t),
- 						  Collections.singletonList(name), Collections.singletonList(null));
-  						l.add(0,declareRet);
   			Statement assignRet=new StmtAssign(rs.getContext(), new ExprVar(rs.getContext(), name), rs.getValue(), 0);
   			l.add(assignRet);
 		  }
