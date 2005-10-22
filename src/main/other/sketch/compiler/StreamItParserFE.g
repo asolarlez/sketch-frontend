@@ -88,6 +88,7 @@ program	 returns [Program p]
 			 StreamSpec ss=new StreamSpec(null, StreamSpec.STREAM_FILTER,
  				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN", 
  				Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs);
+ 				streams.add(ss);
 				 if (!hasError) p = new Program(null, streams, structs); }
 	;
 
