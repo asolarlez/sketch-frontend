@@ -32,9 +32,7 @@ public class Parameter
     /** Creates a new Parameter with the specified type and name. */
     public Parameter(Type type, String name)
     {
-        this.type = type;
-        this.name = name;
-        isOutput = true;
+    	this(type,name,false);
     }
     
     public Parameter(Type type, String name, boolean isOutput)

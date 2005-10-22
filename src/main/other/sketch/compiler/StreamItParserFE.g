@@ -77,19 +77,20 @@ options {
 }
 
 program	 returns [Program p]
-{ p = null; List structs = new ArrayList(); List streams = new ArrayList();
-	List funcs=new ArrayList(); Function f;
+{ p = null; List vars = new ArrayList();  List streams = new ArrayList();
+	List funcs=new ArrayList(); Function f; FieldDecl fd;
 }
-	:	( f=function_decl { funcs.add(f); }
+	:	( f=function_decl { funcs.add(f); } |
+	   fd=field_decl { vars.add(fd); }
 )*
 		EOF
 		// Can get away with no context here.
 		{
 			 StreamSpec ss=new StreamSpec(null, StreamSpec.STREAM_FILTER,
  				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN", 
- 				Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs);
+ 				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
-				 if (!hasError) p = new Program(null, streams, structs); }
+				 if (!hasError) p = new Program(null, streams, Collections.EMPTY_LIST /*structs*/); }
 	;
 
 stream_decl returns [StreamSpec ss] { ss = null; StreamType st; }
@@ -210,8 +211,7 @@ statement returns [Statement s] { s = null; }
 	|	(expr_statement) => s=expr_statement SEMI!
 	|	tb:TK_break SEMI { s = new StmtBreak(getContext(tb)); }
 	|	tc:TK_continue SEMI { s = new StmtContinue(getContext(tc)); }
-	|	s=return_statement SEMI
-	|	s=if_else_statement
+|	s=if_else_statement
 	|	s=while_statement
 	|	s=do_while_statement SEMI
 	|	s=for_statement
@@ -359,11 +359,34 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		// We explicitly use the context of the first identifier.
 	;
 
-function_decl returns [Function f] { Type t; List l; Statement s; f = null;
+function_decl returns [Function f] { ReturnAssembly r; List l; StmtBlock s; f = null;
 }
-	:	t=data_type id:ID l=param_decl_list (TK_implements impl:ID)? s=block
-		{ f = Function.newHelper(getContext(id), id.getText(), t, l, 
+	:	r=return_assembly id:ID l=param_decl_list (TK_implements impl:ID)? s=function_block[r]
+		{ for(int i=0;i<r.count();i++) l.add(new Parameter(r.getType(i),r.getName(i),true));
+			f = Function.newHelper(getContext(id), id.getText(), TypePrimitive.voidtype, l, 
 			impl==null?null:impl.getText(), s); }
+	;
+
+return_assembly returns [ReturnAssembly r] { r=null; Type t;}
+: 	t=data_type
+{ r=new ReturnAssembly(Collections.singletonList(t)); }
+;
+
+function_block[ReturnAssembly r] returns [StmtBlock sb] { sb=null; Statement s; 
+	  StmtReturn rs; List l = new ArrayList(); }
+	: 		tok:LCURLY ( s=statement { if (s != null) l.add(s); } )* 
+rs=return_statement SEMI
+	RCURLY
+		{ for(int i=0;i<r.count();i++) {
+  String name=r.getName(i); Type t=r.getType(i);
+ 						 Statement declareRet=new StmtVarDecl(getContext(tok), Collections.singletonList(t),
+ 						  Collections.singletonList(name), Collections.singletonList(null));
+  						l.add(0,declareRet);
+  			Statement assignRet=new StmtAssign(rs.getContext(), new ExprVar(rs.getContext(), name), rs.getValue(), 0);
+  			l.add(assignRet);
+		  }
+		  			sb = new StmtBlock(getContext(tok), l); 
+}
 	;
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
@@ -384,12 +407,12 @@ param_decl returns [Parameter p] { Type t; p = null; }
 	:	t=data_type id:ID { p = new Parameter(t, id.getText()); }
 	;
 
-block returns [Statement s] { s = null; List l = new ArrayList(); }
+block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
 	:	t:LCURLY ( s=statement { if (s != null) l.add(s); } )* RCURLY
-		{ s = new StmtBlock(getContext(t), l); }
+		{ sb = new StmtBlock(getContext(t), l); }
 	;
 
-return_statement returns [Statement s] { s = null; Expression x = null; }
+return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	:	t:TK_return (x=right_expr)? { s = new StmtReturn(getContext(t), x); }
 	;
 
