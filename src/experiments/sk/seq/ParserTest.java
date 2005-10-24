@@ -1,27 +1,46 @@
 package test;
 
 import java.io.*;
+import java.util.Iterator;
 
 import antlr.*;
 
 import junit.framework.TestCase;
 import streamit.frontend.*;
-import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.*;
 
 public class ParserTest extends TestCase 
 {
-	public void testIt()
+	public void testRev()
 	{
-		try {
-			InputStream str = new FileInputStream("test/reverse.sk");
-			doTest(str);
-		} catch (FileNotFoundException e) {
-			fail();
+		doTest("test/reverse.sk");
+	}
+	
+	public void testParams()
+	{
+		Program p=doTest("test/debug.sk");
+		StreamSpec ss=(StreamSpec) p.getStreams().get(0);
+		assertNotNull(ss);
+		for(Iterator i=ss.getFuncs().iterator();i.hasNext();) {
+			Function f=(Function) i.next();
+			boolean hasOutputPar=false;
+			for(Iterator ip=f.getParams().iterator();ip.hasNext();) {
+				Parameter par=(Parameter) ip.next();
+				if(par.isParameterOutput())
+					hasOutputPar=true;
+			}
+			assertTrue(hasOutputPar);
 		}
 	}
 	
-	private void doTest(InputStream str)
+	private Program doTest(String name)
 	{
+		InputStream str=null;
+		try {
+			str = new FileInputStream(name);
+		} catch (FileNotFoundException e) {
+			fail();
+		}
 		assertNotNull(str);
 		StreamItParserFE parser=new StreamItParserFE(new StreamItLex(str));
 		Program p=null;
@@ -33,5 +52,6 @@ public class ParserTest extends TestCase
 			fail();
 		}
 		assertNotNull(p);
+		return p;
 	}
 }
