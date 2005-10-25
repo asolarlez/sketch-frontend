@@ -93,7 +93,7 @@ public class SemanticChecker
      * @returns     <code>true</code> if no errors are detected
      */
     public static boolean check(Program prog)
-    {
+    {    	
         SemanticChecker checker = new SemanticChecker();
         Map streamNames = checker.checkStreamNames(prog);
         checker.checkDupFieldNames(prog, streamNames);
@@ -657,21 +657,21 @@ public class SemanticChecker
                         case ExprBinary.BINOP_BAND:
                         case ExprBinary.BINOP_BOR:
                         case ExprBinary.BINOP_BXOR:
-                            if (!ct.promotesTo(inttype))
+                            if (!ct.promotesTo(TypePrimitive.ndinttype))
                                 report(expr,
                                        "cannot perform bitwise operations on "
                                        + ct);
                             break;
 
                         case ExprBinary.BINOP_MOD:
-                            if (!ct.promotesTo(inttype))
+                            if (!ct.promotesTo(TypePrimitive.ndinttype))
                                 report(expr, "cannot perform % on " + ct);
                             break;
                             
                         // Boolean operations:
                         case ExprBinary.BINOP_AND:
                         case ExprBinary.BINOP_OR:
-                            if (!ct.promotesTo(bittype))
+                            if (!ct.promotesTo(TypePrimitive.ndbittype))
                                 report(expr,
                                        "cannot perform boolean operations on "
                                        + ct);
@@ -682,7 +682,7 @@ public class SemanticChecker
                         case ExprBinary.BINOP_GT:
                         case ExprBinary.BINOP_LE:
                         case ExprBinary.BINOP_LT:
-                            if (!ct.promotesTo(floattype))
+                            if (!ct.promotesTo(floattype) && !ct.promotesTo(TypePrimitive.ndinttype))
                                 report(expr,
                                        "cannot compare non-real type " + ct);
                             break;
@@ -925,19 +925,58 @@ public class SemanticChecker
                     return super.visitStmtEnqueue(stmt);
                 }
 
+                public void matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
+                	if( lt != null && rt != null && lhsn != null){
+                		if(!lt.isNonDet() && rt.isNonDet()){
+                			/*
+                			 * In this case, the lhs of the assignment is a deterministic
+                			 * type, but the rhs is not. In this case, we promote the
+                			 * type of the var on the lhs.
+                			 */
+                			symtab.upgradeVar(lhsn, lt.makeNonDet());
+                			lt = symtab.lookupVar(lhsn);
+                		}
+                	}
+                	
+                	
+                	if (lt != null && rt != null &&
+                            !(rt.promotesTo(lt)))
+                            report(stmt,
+                                   "right-hand side of assignment must "+
+                                   "be promotable to left-hand side's type");
+                        if( lt == null || rt == null)
+                        	report(stmt,
+                                    "This assignments involves a bad type");
+                }
                 public Object visitStmtAssign(StmtAssign stmt)
                 {
                     Type lt = getType(stmt.getLHS());
                     Type rt = getType(stmt.getRHS());
-                    
-                    if (lt != null && rt != null &&
-                        !(rt.promotesTo(lt)))
-                        report(stmt,
-                               "right-hand side of assignment must "+
-                               "be promotable to left-hand side's type");
-                    
+                    String lhsn = null;
+                    Expression lhsExp = stmt.getLHS();
+                    if(lhsExp instanceof ExprArray){
+                    	lhsExp = ((ExprArray)stmt.getLHS()).getBase();
+                    }
+                    if(lhsExp instanceof ExprVar){
+                    	lhsn = ( (ExprVar) lhsExp).getName();
+                    }                    
+                    matchTypes(stmt, lhsn, lt, rt);
                     return super.visitStmtAssign(stmt);
                 }
+                
+                public Object visitStmtVarDecl(StmtVarDecl stmt)
+                {
+                	Object result = super.visitStmtVarDecl(stmt); 
+                    for (int i = 0; i < stmt.getNumVars(); i++){
+                    	Expression ie = stmt.getInit(i);
+                    	if(ie != null){
+                    		Type rt = getType(ie);
+                    		
+                    		matchTypes(stmt, stmt.getName(i), actualType(stmt.getType(i)), rt);
+                    	}                        
+                    }
+                    return result;
+                }                
             });
     }
     

@@ -70,4 +70,11 @@ public class TypeArray extends Type
     {
         return base.hashCode() ^ length.hashCode();
     }
+    public Type makeNonDet()
+    {
+        return new TypeArray(base.makeNonDet() , length);
+    }
+    public boolean isNonDet(){
+    	return base.isNonDet();
+    }
 }

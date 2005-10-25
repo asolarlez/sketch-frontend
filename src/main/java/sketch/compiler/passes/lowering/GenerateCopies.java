@@ -25,8 +25,11 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprPeek;
 import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -52,6 +55,58 @@ import streamit.frontend.nodes.TypeStructRef;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
+
+class Indexify extends FEReplacer{
+	private final Expression index;
+	private final SymbolTableVisitor stv;
+	Indexify(Expression index, SymbolTableVisitor stv){
+		this.index = index;
+		this.stv = stv;
+	}
+	public Object visitExprVar(ExprVar exp) {
+		if ( stv.getType(exp) instanceof TypeArray)
+			return new ExprArray(exp.getContext(), exp, index);
+		else
+			return exp;
+	}
+	public Object visitExprBinary(ExprBinary exp)
+    {
+		Type rType = stv.getType(exp.getRight());
+		Type lType = stv.getType(exp.getLeft());
+		FEContext context = exp.getContext();
+		if(exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT){
+			if(rType.isNonDet()){
+				//This means that the shift ammount is non-deterministic.
+			}else{
+				Expression newIdx = null;
+				int op;
+				Expression newConst = null;
+				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, exp.getRight());
+					op = ExprBinary.BINOP_LT;
+					TypeArray ta = (TypeArray) lType;					
+					newConst = ta.getLength();
+				}else{
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, exp.getRight());
+					op = ExprBinary.BINOP_GE;
+					newConst = new ExprConstInt(context, 0);					
+				}				
+				Indexify indexify = new Indexify(newIdx, stv );
+				Expression newVal = (Expression) exp.getLeft().accept(indexify);
+				Expression result = new ExprTernary(context,
+						ExprTernary.TEROP_COND, 
+						new ExprBinary(context, op, newIdx, newConst ),
+						newVal,
+						new ExprConstInt(context, 0)
+				);
+				
+				return 	result;
+			}			
+		}
+		return super.visitExprBinary(exp);		        
+    }
+}
+
 public class GenerateCopies extends SymbolTableVisitor
 {
     private TempVarGen varGen;
@@ -163,8 +218,8 @@ public class GenerateCopies extends SymbolTableVisitor
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Expression fel = new ExprArray(null, from, index);
-        Expression tel = new ExprArray(null, to, index);
+        Expression fel = (Expression) from.accept(new Indexify(index, this));         	
+        Expression tel = (Expression) to.accept(new Indexify(index, this)); 
         Statement body =
             new StmtBlock(null,
                           Collections.singletonList(new StmtAssign(null,
@@ -215,8 +270,60 @@ public class GenerateCopies extends SymbolTableVisitor
         return result;
     }
 
+    
+    
+    
+    private void matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
+    	if( lt != null && rt != null && lhsn != null){
+    		if(!lt.isNonDet() && rt.isNonDet()){
+    			/*
+    			 * In this case, the lhs of the assignment is a deterministic
+    			 * type, but the rhs is not. In this case, we promote the
+    			 * type of the var on the lhs.
+    			 */
+    			symtab.upgradeVar(lhsn, lt.makeNonDet());
+    			lt = symtab.lookupVar(lhsn);
+    		}
+    	}
+    	assert !(lt != null && rt != null &&
+                !(rt.promotesTo(lt))) : (stmt.getContext() +
+                       "BUG, this should never happen");
+    	
+        assert !( lt == null || rt == null):(stmt.getContext() +
+            "BUG, this should never happen");
+    }
+    
+    
+    public Object visitStmtVarDecl(StmtVarDecl stmt)
+    {
+    	Object result = super.visitStmtVarDecl(stmt); 
+        for (int i = 0; i < stmt.getNumVars(); i++){
+        	Expression ie = stmt.getInit(i);
+        	if(ie != null){
+        		Type rt = getType(ie);        		
+        		matchTypes(stmt, stmt.getName(i), actualType(stmt.getType(i)), rt);
+        	}                        
+        }
+        return result;
+    }
+    
+    
+    
+    
     public Object visitStmtAssign(StmtAssign stmt)
     {
+    	
+	   Type lt = getType(stmt.getLHS());
+       Type rt = getType(stmt.getRHS());
+       String lhsn = null;
+       Expression lhsExp = stmt.getLHS();
+       if(lhsExp instanceof ExprArray){
+       	lhsExp = ((ExprArray)stmt.getLHS()).getBase();
+       }
+       if(lhsExp instanceof ExprVar){
+       	lhsn = ( (ExprVar) lhsExp).getName();
+       }                    
+       matchTypes(stmt, lhsn, lt, rt);    	
         // recurse:
         Statement result = (Statement)super.visitStmtAssign(stmt);
         if (result instanceof StmtAssign) // it probably is:
@@ -243,4 +350,5 @@ public class GenerateCopies extends SymbolTableVisitor
             value = assignToTemp(value, true);
         return new StmtPush(expr.getContext(), value);
     }
+    
 }

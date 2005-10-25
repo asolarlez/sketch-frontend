@@ -195,7 +195,7 @@ public class ToSBit
      *        to run under the StreamIt Java library
      * @param varGen  object to generate unique temporary variable names
      * @returns the converted IR tree
-     */
+     */        
     public static Program lowerIRToJava(Program prog, boolean libraryFormat,
                                         TempVarGen varGen)
     {
@@ -265,7 +265,7 @@ public class ToSBit
             System.err.println("Compilation didn't generate a parse tree.");
             System.exit(1);
         }
-
+        
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         if (!SemanticChecker.check(prog))
             System.exit(1);

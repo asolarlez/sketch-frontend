@@ -626,32 +626,40 @@ public class NodesToSBit implements FEVisitor{
 	    public Object visitExprTernary(ExprTernary exp)
 	    {
 	        String a = (String)exp.getA().accept(this);
-	        Integer aval = state.popVStack();
-	        String b = (String)exp.getB().accept(this);
-	        Integer bval = state.popVStack();
-	        String c = (String)exp.getC().accept(this);
-	        Integer cval = state.popVStack();
+	        Integer aval = state.popVStack();	        
 	        switch (exp.getOp())
 	        {
 	        case ExprTernary.TEROP_COND:	        	
         		if(aval != null){
         			if( intToBool(aval.intValue()) ){
+        				String b = (String)exp.getB().accept(this);
+        		        Integer bval = state.popVStack();        		        
         				if(bval != null){
         					state.pushVStack(new Integer(  bval.intValue() ));
+        					return bval.toString();
         				}else{
         					state.pushVStack(null);
+        					return b;
         				}
         			}else{
+        				String c = (String)exp.getC().accept(this);
+        		        Integer cval = state.popVStack();
         				if(cval != null){
         					state.pushVStack(new Integer(  cval.intValue() ));
+        					return cval.toString();
         				}else{
         					state.pushVStack(null);
+        					return c;
         				}
         			}
         		}else{
+        			String b = (String)exp.getB().accept(this);
+    		        Integer bval = state.popVStack();
+    		        String c = (String)exp.getC().accept(this);
+    		        Integer cval = state.popVStack();
         			state.pushVStack(null);
-        		}	        	
-	            return "(" + a + " ? " + b + " : " + c + ")";
+        			return "(" + a + " ? " + b + " : " + c + ")";
+        		}
 	        }
 			state.pushVStack(null);
 	        return null;

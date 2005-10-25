@@ -39,7 +39,13 @@ public class TypePrimitive extends Type
     public static final int TYPE_VOID = 6;
     /** Type constant for boolean types. */
     public static final int TYPE_BOOLEAN = 7;
-
+    /** Type constant for random boolean types. */
+    public static final int TYPE_NDBOOLEAN = 8;
+    /** Type constant for random int types. */
+    public static final int TYPE_NDINT = 9;
+    /** Type constant for random bit types. */
+    public static final int TYPE_NDBIT = 10;
+    
     /** Type object for boolean types. */
     public static final TypePrimitive booltype =
         new TypePrimitive(TYPE_BOOLEAN);
@@ -56,6 +62,14 @@ public class TypePrimitive extends Type
     /** Type object for void types. */
     public static final TypePrimitive voidtype =
         new TypePrimitive(TYPE_VOID);
+    
+    /** Type object for bit types. */
+    public static final TypePrimitive ndbittype = new TypePrimitive(TYPE_NDBIT);
+    /** Type object for int types. */
+    public static final TypePrimitive ndinttype = new TypePrimitive(TYPE_NDINT);
+    /** Type object for boolean types. */
+    public static final TypePrimitive ndbooltype =
+        new TypePrimitive(TYPE_NDBOOLEAN);
     
     private int type;
 
@@ -102,6 +116,12 @@ public class TypePrimitive extends Type
             return "void";
         case TYPE_BOOLEAN:
             return "boolean";
+        case TYPE_NDBIT:
+            return "ndbit";
+        case TYPE_NDINT:
+            return "ndint";
+        case TYPE_NDBOOLEAN:
+            return "ndboolean";    
         default:
             return "<primitive type " + type + ">";
         }
@@ -120,8 +140,14 @@ public class TypePrimitive extends Type
     {
         if (super.promotesTo(that))
             return true;
-        if (!(that instanceof TypePrimitive))
-            return false;
+        if (!(that instanceof TypePrimitive)){
+        	if(that instanceof TypeArray){
+        		return this.promotesTo(((TypeArray)that).getBase());
+        	}else{
+        		return false;
+        	}
+        }
+            
 
         int t1 = this.type;
         int t2 = ((TypePrimitive)that).type;
@@ -132,16 +158,23 @@ public class TypePrimitive extends Type
         case TYPE_BOOLEAN:
             return t2 == TYPE_BOOLEAN || t2 == TYPE_BIT ||
                 t2 == TYPE_INT || t2 == TYPE_FLOAT ||
-                t2 == TYPE_COMPLEX;
+                t2 == TYPE_COMPLEX || t2 == TYPE_NDBOOLEAN || 
+                t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
         case TYPE_BIT:
             return t2 == TYPE_BIT || t2 == TYPE_INT ||
-                t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
+                t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDBIT || t2 == TYPE_NDINT;            
         case TYPE_INT:
-            return t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
+            return t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
         case TYPE_FLOAT:
             return t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
         case TYPE_COMPLEX:
             return t2 == TYPE_COMPLEX;
+        case TYPE_NDBOOLEAN:
+        	return t2 == TYPE_NDBOOLEAN || t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
+        case TYPE_NDBIT:
+        	return t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
+        case TYPE_NDINT:
+            return t2 == TYPE_NDINT;
         default:
             assert false : t1;
             return false;
@@ -169,5 +202,26 @@ public class TypePrimitive extends Type
     public int hashCode()
     {
         return new Integer(type).hashCode();
+    }
+    public Type makeNonDet()
+    {
+    	switch (type)
+        {
+        case TYPE_BIT:
+            return TypePrimitive.ndbittype;
+        case TYPE_INT:
+            return TypePrimitive.ndinttype;
+        case TYPE_BOOLEAN:
+            return TypePrimitive.ndbooltype;
+        case TYPE_NDBIT:
+        case TYPE_NDINT:
+        case TYPE_NDBOOLEAN:
+        	return this;    
+        default:
+            return null;
+        }     
+    }
+    public boolean isNonDet(){
+    	return type == TYPE_NDBIT || type == TYPE_NDBOOLEAN || type == TYPE_NDINT;
     }
 }

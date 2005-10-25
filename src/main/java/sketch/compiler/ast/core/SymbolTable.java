@@ -76,7 +76,20 @@ public class SymbolTable
         this.parent = parent;
         this.includedFns = null;
     }
-
+    
+    /**
+     * This function will upgrade the type of a variable to a new 
+     * @param name
+     * @param newType
+     */
+    public void upgradeVar(String name, Type newType){
+    	Type oldType = lookupVar(name);
+    	Type lcpType = oldType.leastCommonPromotion(newType); 
+    	System.out.println("Upgrading " + name + 
+    			" from " + oldType + " to " + lcpType);
+    	registerVar(name, lcpType);
+    }
+    
     /** Registers a new symbol in the symbol table, using default
      * origin and kind. */
     public void registerVar(String name, Type type)
