@@ -46,7 +46,7 @@ public class NameAnonymousFunctions extends FEReplacer
         }
         return new Function(func.getContext(), func.getCls(),
                             name, func.getReturnType(),
-                            func.getParams(), func.getBody());
+                            func.getParams(), func.getSpecification(), func.getBody());
     }
     
     public Object visitFuncWork(FuncWork func)

@@ -173,7 +173,7 @@ public class TranslateEnqueue extends FEReplacer
             body = new StmtBlock(body.getContext(), stmts);
             fnNew = new Function(fnNew.getContext(), fnNew.getCls(),
                                  fnNew.getName(), fnNew.getReturnType(),
-                                 fnNew.getParams(), body);
+                                 fnNew.getParams(),  fnNew.getSpecification(),body);
         }
         return fnNew;
     }

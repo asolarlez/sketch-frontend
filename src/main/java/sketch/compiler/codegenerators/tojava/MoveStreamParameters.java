@@ -103,13 +103,13 @@ public class MoveStreamParameters extends InitMunger
             Expression lhs = new ExprVar(context, param.getName());
             Expression rhs = new ExprVar(context, pName);
             Type type = param.getType();
-            param = new Parameter(type, pName);
+            param = new Parameter(type, pName, param.isParameterOutput());
             while (type instanceof TypeArray)
                 type = ((TypeArray)type).getBase();
             if (type instanceof TypeStruct)
             {
                 rhs = new ExprTypeCast(context, param.getType(), rhs);
-                param = new Parameter(objectType, pName);
+                param = new Parameter(objectType, pName, param.isParameterOutput());
             }
             Statement stmt = new StmtAssign(context, lhs, rhs);
             body.add(stmt);
@@ -121,7 +121,7 @@ public class MoveStreamParameters extends InitMunger
         
         // Too many parts here, don't use Function.newInit().
         return new Function(context, init.getCls(), init.getName(),
-                            init.getReturnType(), newParams, newBody);
+                            init.getReturnType(), newParams, init.getSpecification(), newBody);
     }
 
     // Return a function just like init, but with params as its
@@ -151,7 +151,7 @@ public class MoveStreamParameters extends InitMunger
                     new ExprTypeCast(context, param.getType(), rhs);
                 body.add(new StmtVarDecl(context, param.getType(),
                                          param.getName(), cast));
-                param = new Parameter(objectType, newName);
+                param = new Parameter(objectType, newName, param.isParameterOutput());
             }
             newParams.add(param);
         }
@@ -160,7 +160,7 @@ public class MoveStreamParameters extends InitMunger
         Statement newBody = new StmtBlock(oldBody.getContext(), body);
         
         return new Function(context, init.getCls(), init.getName(),
-                            init.getReturnType(), newParams, newBody);
+                            init.getReturnType(), newParams, init.getSpecification(), newBody);
     }
 
     public Object visitStreamSpec(StreamSpec spec)
