@@ -99,7 +99,7 @@ public class SemanticChecker
         checker.checkDupFieldNames(prog, streamNames);
         checker.checkStreamCreators(prog, streamNames);
         //checker.checkStreamTypes(prog);//I don't need this one in StreamBit
-        checker.checkFunctionValidity(prog);
+        //checker.checkFunctionValidity(prog);
         checker.checkStatementPlacement(prog);
         checker.checkVariableUsage(prog);
         checker.checkBasicTyping(prog);
@@ -608,12 +608,24 @@ public class SemanticChecker
 
                 public Object visitExprBinary(ExprBinary expr)
                 {
+                	boolean isLeftArr = false;
+                	boolean isRightArr = false;
                     Type lt = getType(expr.getLeft());
                     Type rt = getType(expr.getRight());
-
+                    if(lt instanceof TypeArray){
+                    	lt = ((TypeArray)lt).getBase();
+                    	isLeftArr = true;
+                    }
+                    if(rt instanceof TypeArray){
+                    	rt = ((TypeArray)rt).getBase();
+                    	isRightArr=true;
+                    }
                     if (lt != null && rt != null)
                     {                        
                         Type ct = lt.leastCommonPromotion(rt);
+                        if(expr.getOp() == ExprBinary.BINOP_LSHIFT || expr.getOp() == ExprBinary.BINOP_RSHIFT){
+                        	ct = lt;
+                        }
                         Type inttype =
                             new TypePrimitive(TypePrimitive.TYPE_INT);
                         Type bittype =
@@ -679,7 +691,16 @@ public class SemanticChecker
                         case ExprBinary.BINOP_EQ:
                         case ExprBinary.BINOP_NEQ:
                             break;
-                        
+                        // TODO: Make correct rule for SELECT.
+                        case ExprBinary.BINOP_SELECT:
+                        	break;
+                            
+                        case ExprBinary.BINOP_LSHIFT:
+                        case ExprBinary.BINOP_RSHIFT:
+                        	if (!isLeftArr)
+                                report(expr,
+                                       "Can only shift array types for now. " + ct);
+                        	break;
                         // And now we should have covered everything.
                         default:
                             report(expr,
