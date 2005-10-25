@@ -88,6 +88,14 @@ public class GetExprType extends FENullVisitor
             return new TypePrimitive(TypePrimitive.TYPE_BOOLEAN);
         }
         
+        switch(exp.getOp()){
+        case ExprBinary.BINOP_RSHIFT:
+        case ExprBinary.BINOP_LSHIFT:
+        	Type tl = (Type)exp.getLeft().accept(this);
+        	Type tr = (Type)exp.getRight().accept(this);
+        	assert (tl instanceof TypeArray) && tr != null : "You can only do shift on an array for now.";
+        	return tl;
+        }        
         // The type of the expression is some type that both sides
         // promote to, otherwise.
         Type tl = (Type)exp.getLeft().accept(this);
@@ -103,6 +111,10 @@ public class GetExprType extends FENullVisitor
     public Object visitExprConstBoolean(ExprConstBoolean exp)
     {
         return new TypePrimitive(TypePrimitive.TYPE_BOOLEAN);
+    }
+    
+    public Object visitExprStar(ExprStar exp){
+    	return new TypePrimitive(TypePrimitive.TYPE_BIT);
     }
 
     public Object visitExprConstChar(ExprConstChar exp)

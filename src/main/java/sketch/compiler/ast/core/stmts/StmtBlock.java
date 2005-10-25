@@ -17,6 +17,7 @@
 package streamit.frontend.nodes;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,5 +51,13 @@ public class StmtBlock extends Statement
     public Object accept(FEVisitor v)
     {
         return v.visitStmtBlock(this);
+    }
+    public String toString(){
+    	String result = "";
+    	Iterator it = stmts.iterator();
+    	while(it.hasNext()){
+    		result += it.next().toString() + "\n";
+    	}
+    	return result;
     }
 }

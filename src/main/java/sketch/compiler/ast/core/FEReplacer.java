@@ -272,7 +272,7 @@ public class FEReplacer implements FEVisitor
         if (newBody == func.getBody()) return func;
         return new Function(func.getContext(), func.getCls(),
                             func.getName(), func.getReturnType(),
-                            func.getParams(), newBody);
+                            func.getParams(), func.getSpecification(), newBody);
     }
     
     public Object visitFuncWork(FuncWork func)
@@ -290,6 +290,8 @@ public class FEReplacer implements FEVisitor
         return new FuncWork(func.getContext(), func.getCls(), func.getName(),
                             newBody, newPeek, newPop, newPush);
     }
+    
+  
     
     public Object visitProgram(Program prog)
     {
@@ -591,6 +593,6 @@ public class FEReplacer implements FEVisitor
 
 	public Object visitExprStar(ExprStar star) {
 		// TODO Auto-generated method stub
-		return null;
+		return star;
 	}
 }

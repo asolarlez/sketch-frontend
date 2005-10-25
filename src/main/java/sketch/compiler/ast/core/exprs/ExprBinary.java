@@ -137,6 +137,9 @@ public class ExprBinary extends Expression
         case ExprBinary.BINOP_BAND: theOp = "&"; break;
         case ExprBinary.BINOP_BOR: theOp = "|"; break;
         case ExprBinary.BINOP_BXOR: theOp = "^"; break;
+        case ExprBinary.BINOP_LSHIFT: theOp = "<<"; break;
+        case ExprBinary.BINOP_RSHIFT: theOp = ">>"; break;
+        case ExprBinary.BINOP_SELECT: theOp = "{|}"; break;
         default: theOp = "? (" + op + ")"; break;
         }
         return "(" + left.toString() + ")" + theOp +

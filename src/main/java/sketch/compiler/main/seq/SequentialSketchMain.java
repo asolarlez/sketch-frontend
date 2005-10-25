@@ -274,7 +274,7 @@ public class ToSBit
             System.exit(1);
 
         TempVarGen varGen = new TempVarGen();
-        prog = lowerIRToJava(prog, libraryFormat, varGen);
+        prog = lowerIRToJava(prog, !libraryFormat, varGen);
 
         try
         {

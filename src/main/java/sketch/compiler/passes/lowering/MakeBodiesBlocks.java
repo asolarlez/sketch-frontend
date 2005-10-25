@@ -44,7 +44,7 @@ public class MakeBodiesBlocks extends FEReplacer
         if (newBody == func.getBody()) return func;
         return new Function(func.getContext(), func.getCls(),
                             func.getName(), func.getReturnType(),
-                            func.getParams(), newBody);
+                            func.getParams(),  func.getSpecification(),newBody);
     }
     
     public Object visitFuncWork(FuncWork func)

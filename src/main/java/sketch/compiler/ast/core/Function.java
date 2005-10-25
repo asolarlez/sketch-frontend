@@ -63,6 +63,18 @@ public class Function extends FENode
         this.body = body;
     }
     
+    public Function(FEContext context, int cls, String name,
+            Type returnType, List params, String fImplements, Statement body)
+	{
+		super(context);
+		this.cls = cls;
+		this.name = name;
+		this.returnType = returnType;
+		this.params = params;
+		this.body = body;
+		this.fImplements = fImplements;
+	}
+    
     /** Create a new init function given its body. */
     public static Function newInit(FEContext context, Statement body)
     {
