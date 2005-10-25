@@ -28,8 +28,6 @@ bit[3] debug(bit[3] in) implements swap {
 
 
 
-
-
 bit[3] swap(bit[3] in) {
 	bit [3] t;
 	t[0] = in[0];
