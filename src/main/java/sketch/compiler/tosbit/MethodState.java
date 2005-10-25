@@ -52,6 +52,11 @@ class MethodState{
 		varTranslator.varDeclare(var);
     }
     
+    public String varDeclare(){
+    	// System.out.println("DECLARED " + var);				
+		return varTranslator.varDeclareFresh();
+		
+    }
     
     public void pushLevel(){    	
     	varTranslator = varTranslator.pushLevel();    	    	    	

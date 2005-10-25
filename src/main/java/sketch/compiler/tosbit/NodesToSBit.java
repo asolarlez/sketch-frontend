@@ -291,6 +291,7 @@ public class NodesToSBit implements FEVisitor{
 	            Parameter param = (Parameter)iter.next();
 	            if (!first) result += ", ";
 	            
+	            if(param.isParameterOutput()) result += "! ";
 	            
 	            if (prefix != null) result += prefix + " ";
 	            result += convertType(param.getType());
@@ -458,6 +459,32 @@ public class NodesToSBit implements FEVisitor{
 	        case ExprBinary.BINOP_BAND:op = "&"; if(hasv) newv = boolToInt( intToBool(lhs.intValue()) && intToBool(rhs.intValue())); break;
 	        case ExprBinary.BINOP_BOR: op = "|"; if(hasv) newv = boolToInt( intToBool(lhs.intValue()) || intToBool(rhs.intValue()));; break;
 	        case ExprBinary.BINOP_BXOR:op = "^"; if(hasv) newv = boolToInt(lhs.intValue() != rhs.intValue()); break;
+	        case ExprBinary.BINOP_SELECT:{
+	        	op = "{|}";
+	        	if(hasv && lhs.intValue() == rhs.intValue()){
+	        		newv = lhs.intValue();
+	        	}else{
+	        		hasv = false;
+	        		state.pushVStack(null);
+	        		if(lhs != null && rhs != null){
+	        		
+	        			return "<" + state.varDeclare() + ">";
+	        		}
+	        		if(rhs == null && lhs == null){
+	        			String var = state.varDeclare();
+	        			return "( <" + var +"> ? " + lhsStr + " : " + rhsStr + ")";  
+	        		}
+	        		if(rhs == null && lhs != null){
+	        			String var = state.varDeclare();
+	        			return "( <" + var +"> ? " + lhs + " : " + rhsStr + ")";  
+	        		}
+	        		if(rhs != null && lhs == null){
+	        			String var = state.varDeclare();
+	        			return "( <" + var +"> ? " + lhsStr + " : " + rhs + ")";  
+	        		}
+	        	}
+	        }
+	        	
 	        }	        
 	        result += lhsStr + " " + op + " ";
 	        result += rhsStr;
@@ -852,7 +879,10 @@ public class NodesToSBit implements FEVisitor{
 	        	this.state.popLevel();
 	        	result += "}\n";
 	        }else{
-	        	result += func.getName();	
+	        	result += func.getName();
+	        	if( func.getSpecification() != null ){
+	        		result += " SKETCHES " + func.getSpecification(); 
+	        	}
 	        	result += doParams(func.getParams(), "") + "\n";
 	        	result += "{\n";
 	        	this.state.pushLevel();       		        	
@@ -1537,31 +1567,39 @@ public class NodesToSBit implements FEVisitor{
 	            	Assert(tmp != null, "The array size must be a compile time constant !! \n" + stmt.getContext());
 	            	state.makeArray(nm, tmp.intValue());
 	            	//this.state.markVectorStack();
-	            	stmt.getInit(i).accept(this);	            	
-	            	if( this.state.topOfStackIsVector() ){
-			    		List lst= state.vectorPopVStack();
-			    		Iterator it = lst.iterator();
-			    		int tt = 0;
-			    		while( it.hasNext() ){
-			    			Integer ival = (Integer) it.next();
-			    			String nnm = nm + "_idx_" + tt;
-			    			state.varDeclare(nnm);
-		            		String tmplhsn = state.varGetLHSName(nnm);
-			    			state.setVarValue(nnm, ival.intValue());
-			    			++tt;
-			    		}
-			    		return "";
-			    	}else{
-			    		Integer val = state.popVStack();
-		            	for(int tt=0; tt<tmp.intValue(); ++tt){
+	            	if( stmt.getInit(i) != null){
+		            	stmt.getInit(i).accept(this);	            	
+		            	if( this.state.topOfStackIsVector() ){
+				    		List lst= state.vectorPopVStack();
+				    		Iterator it = lst.iterator();
+				    		int tt = 0;
+				    		while( it.hasNext() ){
+				    			Integer ival = (Integer) it.next();
+				    			String nnm = nm + "_idx_" + tt;
+				    			state.varDeclare(nnm);
+			            		String tmplhsn = state.varGetLHSName(nnm);
+				    			state.setVarValue(nnm, ival.intValue());
+				    			++tt;
+				    		}
+				    		return "";
+				    	}else{
+				    		Integer val = state.popVStack();
+			            	for(int tt=0; tt<tmp.intValue(); ++tt){
+			            		String nnm = nm + "_idx_" + tt;
+			            		state.varDeclare(nnm);
+			            		String tmplhsn = state.varGetLHSName(nnm);
+			            		if(val != null){
+			            			state.setVarValue(tmplhsn, val.intValue());
+			            		}
+			            	}
+				    	}
+	            	}else{
+	            		for(int tt=0; tt<tmp.intValue(); ++tt){
 		            		String nnm = nm + "_idx_" + tt;
 		            		state.varDeclare(nnm);
-		            		String tmplhsn = state.varGetLHSName(nnm);
-		            		if(val != null){
-		            			state.setVarValue(tmplhsn, val.intValue());
-		            		}
+		            		String tmplhsn = state.varGetLHSName(nnm);		            		
 		            	}
-			    	}
+	            	}
 	            }else{
 		            
 		            if (stmt.getInit(i) != null){      	
@@ -1682,9 +1720,9 @@ public class NodesToSBit implements FEVisitor{
 	                {
 	                    // Need to notice now if this is a phased filter.
 	                    FuncWork work = spec.getWorkFunc();
-	                    if (work.getPushRate() == null &&
+	                    if (work!=null && (work.getPushRate() == null &&
 	                        work.getPopRate() == null &&
-	                        work.getPeekRate() == null)
+	                        work.getPeekRate() == null) )
 	                        result += "PhasedFilter";
 	                    else
 	                        result += "Filter";
@@ -1874,7 +1912,7 @@ public class NodesToSBit implements FEVisitor{
 	        return "";
 	    }
 		public Object visitExprStar(ExprStar star) {
-			// TODO Auto-generated method stub
-			return null;
-}
+			state.pushVStack(null);
+			return "<" + state.varDeclare() + ">";
+		}
 }

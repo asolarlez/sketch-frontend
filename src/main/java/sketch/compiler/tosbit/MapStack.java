@@ -29,6 +29,11 @@ class MapStack{
 		String newname = var + "_" + pushcount +"L" + curVT.size();
 		curVT.put(var, newname);
 	}
+	public String varDeclareFresh(){		
+		String newname = "_" + pushcount +"L" + curVT.size();
+		curVT.put(newname, newname);
+		return newname;
+	}
 	
 	public MapStack pushLevel(){
 		++pushcount;    	
