@@ -169,6 +169,8 @@ public class ToSBit
                 prog = new Program(null, newStreams, newStructs);
             }
         }
+        //invoke post-parse passes
+        prog = (Program)prog.accept(new FunctionParamExtension());
         return prog;
     }
 
@@ -197,7 +199,6 @@ public class ToSBit
          * Java front-end can handle.  OTOH,
          * MoveStreamParameters introduces references to
          * "this", which doesn't exist. */
-        prog = (Program)prog.accept(new FunctionParamExtension());
         prog = (Program)prog.accept(new MakeBodiesBlocks());
         prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
