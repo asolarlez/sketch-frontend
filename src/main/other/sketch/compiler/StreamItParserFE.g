@@ -15,7 +15,7 @@
  */
 
 /*
- * StreamItParserFE.g: StreamIt parser producing front-end tree
+ * StreamItParserFE.g: Sketch parser producing front-end tree
  * $Id$
  */
 
@@ -69,7 +69,7 @@ options {
 		super.reportError(ex);
 	}
 
-	public void  reportError(String s)
+	public void reportError(String s)
 	{
 		hasError = true;
 		super.reportError(s);
@@ -80,7 +80,7 @@ program	 returns [Program p]
 { p = null; List vars = new ArrayList();  List streams = new ArrayList();
 	List funcs=new ArrayList(); Function f; FieldDecl fd;
 }
-	:	( f=function_decl { funcs.add(f); } |
+	:	( (return_types ID LPAREN) => f=function_decl { funcs.add(f); } |
 	   fd=field_decl { vars.add(fd); }
 )*
 		EOF
@@ -189,19 +189,8 @@ push_statement returns [Statement s] { s = null; Expression x; }
 		{ s = new StmtPush(getContext(t), x); }
 	;
 
-msg_statement returns [Statement s] { s = null; List l;
-  Expression minl = null, maxl = null; }
-	:	p:ID DOT m:ID l=func_call_params
-		(LSQUARE (minl=right_expr)? COLON (maxl=right_expr)? RSQUARE)?
-		{ s = new StmtSendMessage(getContext(p),
-				new ExprVar(getContext(p), p.getText()),
-				m.getText(), l, minl, maxl); }
-	;
-
 statement returns [Statement s] { s = null; }
-	:	s=add_statement
-	|	s=body_statement
-	| 	s=loop_statement
+	:	s=loop_statement
 	|	s=split_statement SEMI
 	|	s=join_statement SEMI
 	|	s=enqueue_statement SEMI
@@ -211,72 +200,17 @@ statement returns [Statement s] { s = null; }
 	|	(expr_statement) => s=expr_statement SEMI!
 	|	tb:TK_break SEMI { s = new StmtBreak(getContext(tb)); }
 	|	tc:TK_continue SEMI { s = new StmtContinue(getContext(tc)); }
-|	s=if_else_statement
+	|	s=if_else_statement
 	|	s=while_statement
 	|	s=do_while_statement SEMI
 	|	s=for_statement
-	|	s=msg_statement SEMI
-	|   SEMI
+	|s=return_statement SEMI
+	|t:SEMI {s=new StmtEmpty(getContext(t));}
 	;
 
-add_statement returns [Statement s] { s = null; StreamCreator sc; }
-	: t:TK_add sc=stream_creator { s = new StmtAdd(getContext(t), sc); }
-	;
-
-body_statement returns [Statement s] { s = null; StreamCreator sc; }
-	: t:TK_body sc=stream_creator { s = new StmtBody(getContext(t), sc); }
-	;
-
-loop_statement returns [Statement s] { s = null; StreamCreator sc; }
-	: t:TK_loop sc=stream_creator { s = new StmtLoop(getContext(t), sc); }
-	;
-
-stream_creator returns [StreamCreator sc] { sc = null; }
-	: (ID ARROW | ~ID) => sc=anonymous_stream
-	| sc=named_stream SEMI
-	;
-
-portal_spec returns [List p] { p = null; Expression pn; }
-	:	TK_to id:ID
-			{ pn = new ExprVar(getContext(id), id.getText());
-			  p = Collections.singletonList(pn); }
-	;
-
-anonymous_stream returns [StreamCreator sc]
-{ 	sc = null; 
-	StreamType st = null; 
-	List params = new ArrayList();
-	Statement body; List types = new ArrayList(); 
-	Type t; StreamSpec ss = null;
-	List p = null; int sst = 0; FEContext ctx = null; 
-}
-	: (st=stream_type_decl)?
-		( tf:TK_filter
-			ss=filter_body[getContext(tf), st, null, Collections.EMPTY_LIST]
-			((p=portal_spec)? SEMI)?
-			{ sc = new SCAnon(getContext(tf), ss, p); }
-		|	( tp:TK_pipeline
-				{ ctx = getContext(tp); sst = StreamSpec.STREAM_PIPELINE; }
-			| ts:TK_splitjoin
-				{ ctx = getContext(ts); sst = StreamSpec.STREAM_SPLITJOIN; }
-			| tl:TK_feedbackloop
-				{ ctx = getContext(tl); sst = StreamSpec.STREAM_FEEDBACKLOOP; }
-			| tt:TK_sbox
-				{ ctx = getContext(tt); sst = StreamSpec.STREAM_TABLE; }
-
-			) body=block ((p=portal_spec)? SEMI)?
-			{ sc = new SCAnon(ctx, sst, body, p); }
-		)
-	;
-
-named_stream returns [StreamCreator sc]
-{ sc = null; List params = new ArrayList(); List types = new ArrayList();
-Type t; List p = null; }
-	: id:ID
-		(LESS_THAN t=data_type MORE_THAN { types.add(t); })?
-		(params=func_call_params)?
-		(p=portal_spec)?
-		{ sc = new SCSimple(getContext(id), id.getText(), types, params, p); }
+loop_statement returns [Statement s] { s = null; Expression exp; StmtBlock b;}
+	: t:TK_loop LPAREN exp=right_expr RPAREN b=block
+	{ s = new StmtLoop(getContext(t), exp, b); }
 	;
 
 split_statement returns [Statement s] { s = null; SplitterJoiner sj; }
@@ -359,31 +293,21 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		// We explicitly use the context of the first identifier.
 	;
 
-function_decl returns [Function f] { ReturnAssembly r; List l; StmtBlock s; f = null;
-}
-	:	r=return_assembly id:ID l=param_decl_list (TK_implements impl:ID)? s=function_block[r]
-		{ for(int i=0;i<r.count();i++) l.add(new Parameter(r.getType(i),r.getName(i),true));
-			f = Function.newHelper(getContext(id), id.getText(), TypePrimitive.voidtype, l, 
-			impl==null?null:impl.getText(), s); }
+function_decl returns [Function f] { List rt; List l; StmtBlock s; f = null; }
+	:	rt=return_types
+	id:ID 
+	l=param_decl_list 
+	(TK_implements impl:ID)? 
+	s=block
+	{
+			f = Function.newHelper(getContext(id), id.getText(), new TypeCompound(rt), l, 
+				impl==null?null:impl.getText(), s); 
+	}
 	;
 
-return_assembly returns [ReturnAssembly r] { r=null; Type t;}
-: 	t=data_type
-{ r=new ReturnAssembly(Collections.singletonList(t)); }
-;
-
-function_block[ReturnAssembly r] returns [StmtBlock sb] { sb=null; Statement s; 
-	  StmtReturn rs; List l = new ArrayList(); }
-	: 		tok:LCURLY ( s=statement { if (s != null) l.add(s); } )* 
-rs=return_statement SEMI
-	RCURLY
-		{ for(int i=0;i<r.count();i++) {
-  String name=r.getName(i); Type t=r.getType(i);
-  			Statement assignRet=new StmtAssign(rs.getContext(), new ExprVar(rs.getContext(), name), rs.getValue(), 0);
-  			l.add(assignRet);
-		  }
-		  			sb = new StmtBlock(getContext(tok), l); 
-}
+return_types returns [List l] { l=new ArrayList(); Type t;}
+	: 	t=data_type
+	{ l=Collections.singletonList(t); }
 	;
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
@@ -405,8 +329,13 @@ param_decl returns [Parameter p] { Type t; p = null; }
 	;
 
 block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
-	:	t:LCURLY ( s=statement { if (s != null) l.add(s); } )* RCURLY
+	:	t:LCURLY ( s=statement { l.add(s); } )* RCURLY
 		{ sb = new StmtBlock(getContext(t), l); }
+	;
+
+pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
+	:	 s=statement { l.add(s); } 
+		{ sb = new StmtBlock(s.getContext(), l); }
 	;
 
 return_statement returns [StmtReturn s] { s = null; Expression x = null; }
@@ -415,19 +344,19 @@ return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 
 if_else_statement returns [Statement s]
 { s = null; Expression x; Statement t, f = null; }
-	:	u:TK_if LPAREN x=right_expr RPAREN t=statement
-		((TK_else) => (TK_else f=statement))?
+	:	u:TK_if LPAREN x=right_expr RPAREN t=pseudo_block
+		((TK_else) => (TK_else f=pseudo_block))?
 		{ s = new StmtIfThen(getContext(u), x, t, f); }
 	;
 
 while_statement returns [Statement s] { s = null; Expression x; Statement b; }
-	:	t:TK_while LPAREN x=right_expr RPAREN b=statement
+	:	t:TK_while LPAREN x=right_expr RPAREN b=pseudo_block
 		{ s = new StmtWhile(getContext(t), x, b); }
 	;
 
 do_while_statement returns [Statement s]
 { s = null; Expression x; Statement b; }
-	:	t:TK_do b=statement TK_while LPAREN x=right_expr RPAREN
+	:	t:TK_do b=pseudo_block TK_while LPAREN x=right_expr RPAREN
 		{ s = new StmtDoWhile(getContext(t), b, x); }
 	;
 
@@ -435,7 +364,7 @@ for_statement returns [Statement s]
 { s = null; Expression x=null; Statement a, b, c; }
 	:	t:TK_for LPAREN a=for_init_statement SEMI
 		(x=right_expr | { x = new ExprConstBoolean(getContext(t), true); })
-		SEMI b=for_incr_statement RPAREN c=statement
+		SEMI b=for_incr_statement RPAREN c=pseudo_block
 		{ s = new StmtFor(getContext(t), a, x, b, c); }
 	;
 
@@ -452,8 +381,7 @@ for_incr_statement returns [Statement s] { s = null; }
 
 expr_statement returns [Statement s] { s = null; Expression x; }
 	:	(incOrDec) => x=incOrDec { s = new StmtExpr(x); }
-	|   (left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS |
-				DIV_EQUALS)) => s=assign_expr
+	|	(left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS | 				DIV_EQUALS)) => s=assign_expr
 	|	(ID LPAREN) => x=func_call { s = new StmtExpr(x); }
 	|	x=streamit_value_expr { s = new StmtExpr(x); }
 	;
@@ -462,7 +390,7 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 	:	l=left_expr
 		(	ASSIGN { o = 0; }
 		|	PLUS_EQUALS { o = ExprBinary.BINOP_ADD; }
-		| 	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
+		|	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
 		|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
 		|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
 		)
@@ -592,9 +520,9 @@ castExpr returns [Expression x] { x = null; Type t=null; }
 	;
 
 shiftExpr returns [Expression x] { x=null; Expression amt; Type t=null; }
-: (left_expr RSHIFT) => x=left_expr RSHIFT amt=value_expr
+: (minic_value_expr RSHIFT) => x=minic_value_expr RSHIFT amt=value_expr
 { x=new ExprBinary(x.getContext(), ExprBinary.BINOP_RSHIFT, x, amt); }
-| (left_expr LSHIFT) => x=left_expr LSHIFT amt=value_expr
+| (minic_value_expr LSHIFT) => x=minic_value_expr LSHIFT amt=value_expr
 { x=new ExprBinary(x.getContext(), ExprBinary.BINOP_LSHIFT, x, amt); }
 | x=inc_dec_expr
 ;
