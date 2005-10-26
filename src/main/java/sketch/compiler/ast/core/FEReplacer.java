@@ -468,12 +468,11 @@ public class FEReplacer implements FEVisitor
         
     public Object visitStmtLoop(StmtLoop stmt)
     {
-    	//FIXME
-    	throw new UnsupportedOperationException();
-//        StreamCreator newCreator =
-//            (StreamCreator)stmt.getCreator().accept(this);
-//        if (newCreator == stmt.getCreator()) return stmt;
-//        return new StmtLoop(stmt.getContext(), newCreator);
+        Expression newIter = doExpression(stmt.getIter());
+        Statement newBody = (Statement)stmt.getBody().accept(this);
+        if (newIter == stmt.getIter() && newBody == stmt.getBody())
+            return stmt;
+        return new StmtLoop(stmt.getContext(), newIter, newBody);
     }
 
     public Object visitStmtPhase(StmtPhase stmt)
