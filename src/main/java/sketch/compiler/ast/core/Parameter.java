@@ -57,4 +57,9 @@ public class Parameter
     {
         return name;
     }
+    
+    public String toString()
+    {
+    	return type.toString()+" "+name;
+    }
 }

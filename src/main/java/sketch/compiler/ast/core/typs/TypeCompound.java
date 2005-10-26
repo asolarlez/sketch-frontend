@@ -18,4 +18,16 @@ public class TypeCompound extends Type {
 	public List getTypes() {
 		return fTypes;
 	}
+	
+	public String toString() {
+		if(fTypes.size()==1) return fTypes.get(0).toString();
+		StringBuffer ret=new StringBuffer();
+		ret.append('['); ret.append(fTypes.get(0));
+		for(int i=0;i<fTypes.size();i++) {
+			ret.append(',');
+			ret.append(fTypes.get(i));
+		}
+		ret.append(']');
+		return ret.toString();
+	}
 }

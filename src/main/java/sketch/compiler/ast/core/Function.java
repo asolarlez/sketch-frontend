@@ -159,4 +159,9 @@ public class Function extends FENode
     {
         return v.visitFunction(this);
     }
+    
+    public String toString()
+    {
+    	return returnType+" "+name+"("+params+")"+(fImplements!=null? " implements "+fImplements:"");
+    }
 }

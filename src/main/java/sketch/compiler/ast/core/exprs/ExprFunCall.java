@@ -16,9 +16,7 @@
 
 package streamit.frontend.nodes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A call to a particular named function.  This contains the name of
@@ -31,8 +29,8 @@ import java.util.List;
  */
 public class ExprFunCall extends Expression
 {
-    private String name;
-    private List params;
+    private final String name;
+    private final List params;
     
     /** Creates a new function call with the specified name and
      * parameter list. */
@@ -49,9 +47,8 @@ public class ExprFunCall extends Expression
     {
         super(context);
         this.name = name;
-        this.params = new ArrayList();
-        this.params.add(param);
-        this.params = Collections.unmodifiableList(this.params);
+        List tmp = Collections.singletonList(param);
+        this.params = Collections.unmodifiableList(tmp);
     }
 
     /** Creates a new function call with the specified name and
@@ -61,10 +58,8 @@ public class ExprFunCall extends Expression
     {
         super(context);
         this.name = name;
-        this.params = new ArrayList();
-        this.params.add(p1);
-        this.params.add(p2);
-        this.params = Collections.unmodifiableList(this.params);
+        List tmp = Arrays.asList(new Object[] {p1,p2});
+        this.params = Collections.unmodifiableList(tmp);
     }
 
     /** Returns the name of the function being called. */
@@ -84,5 +79,10 @@ public class ExprFunCall extends Expression
     public Object accept(FEVisitor v)
     {
         return v.visitExprFunCall(this);
+    }
+    
+    public String toString()
+    {
+    	return name+"("+params+")";
     }
 }
