@@ -468,10 +468,12 @@ public class FEReplacer implements FEVisitor
         
     public Object visitStmtLoop(StmtLoop stmt)
     {
-        StreamCreator newCreator =
-            (StreamCreator)stmt.getCreator().accept(this);
-        if (newCreator == stmt.getCreator()) return stmt;
-        return new StmtLoop(stmt.getContext(), newCreator);
+    	//FIXME
+    	throw new UnsupportedOperationException();
+//        StreamCreator newCreator =
+//            (StreamCreator)stmt.getCreator().accept(this);
+//        if (newCreator == stmt.getCreator()) return stmt;
+//        return new StmtLoop(stmt.getContext(), newCreator);
     }
 
     public Object visitStmtPhase(StmtPhase stmt)

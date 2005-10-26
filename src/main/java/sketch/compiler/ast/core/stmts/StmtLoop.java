@@ -17,31 +17,34 @@
 package streamit.frontend.nodes;
 
 /**
- * Add the loop stream to a feedback loop.  This statement has a
- * single {@link streamit.frontend.nodes.StreamCreator} object that
- * specifies what child is being added.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
- * @version $Id$
+ * A loop that executes its body a specified number of times. 
  */
 public class StmtLoop extends Statement
 {
-    private StreamCreator sc;
+    private Expression iter;
+    private Statement body;
     
-    /** Creates a new loop statement for a specified child. */
-    public StmtLoop(FEContext context, StreamCreator sc)
+    /** Creates a new loop. */
+    public StmtLoop(FEContext context, Expression iter, Statement body)
     {
         super(context);
-        this.sc = sc;
+        this.iter = iter;
+        this.body = body;
     }
     
-    /** Returns the child stream creator. */
-    public StreamCreator getCreator()
+    /** Return the number of iterations. */
+    public Expression getIter()
     {
-        return sc;
+        return iter;
     }
     
-    /** Accepts a front-end visitor. */
+    /** Return the loop body of this. */
+    public Statement getBody()
+    {
+        return body;
+    }
+    
+    /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
         return v.visitStmtLoop(this);
