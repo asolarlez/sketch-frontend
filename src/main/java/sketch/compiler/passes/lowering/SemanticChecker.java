@@ -470,16 +470,6 @@ public class SemanticChecker
                     return super.visitStmtJoin(stmt);
                 }
 
-                public Object visitStmtLoop(StmtLoop stmt)
-                {
-                    if (func.getCls() != Function.FUNC_INIT ||
-                        spec.getType() != StreamSpec.STREAM_FEEDBACKLOOP)
-                        report(stmt,
-                               "loop statement only allowed " +
-                               "in feedbackloop");
-                    return super.visitStmtLoop(stmt);
-                }
-
                 public Object visitExprPeek(ExprPeek expr)
                 {
                     if ((func.getCls() != Function.FUNC_PHASE &&
