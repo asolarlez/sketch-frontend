@@ -30,17 +30,7 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.AssignLoopTypes;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.FindFreeVariables;
-import streamit.frontend.passes.GenerateCopies;
-import streamit.frontend.passes.NoRefTypes;
-import streamit.frontend.passes.NoticePhasedFilters;
-import streamit.frontend.passes.RenameBitVars;
-import streamit.frontend.passes.SemanticChecker;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.passes.*;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
@@ -207,6 +197,7 @@ public class ToSBit
          * Java front-end can handle.  OTOH,
          * MoveStreamParameters introduces references to
          * "this", which doesn't exist. */
+        prog = (Program)prog.accept(new FunctionParamExtension());
         prog = (Program)prog.accept(new MakeBodiesBlocks());
         prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
