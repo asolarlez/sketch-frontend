@@ -115,7 +115,7 @@ public class AssignLoopTypes extends FEReplacer
                 }
                 public Object visitStmtLoop(StmtLoop stmt)
                 {
-                    noticeChildStream(stmt.getCreator(), true);
+                    //noticeChildStream(stmt.getCreator(), true);
                     return stmt; // not recursing
                 }
             });
