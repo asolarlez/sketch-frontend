@@ -778,8 +778,9 @@ public class NodesToJava implements FEVisitor
     
     public Object visitStmtLoop(StmtLoop stmt)
     {
-        assert stmt.getCreator() != null;
-        return doStreamCreator("setLoop", stmt.getCreator());
+    	throw new UnsupportedOperationException();
+//        assert stmt.getCreator() != null;
+//        return doStreamCreator("setLoop", stmt.getCreator());
     }
 
     public Object visitStmtPhase(StmtPhase stmt)

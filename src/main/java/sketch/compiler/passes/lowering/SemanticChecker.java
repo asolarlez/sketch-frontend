@@ -1169,9 +1169,10 @@ public class SemanticChecker
                     }
                     else if (stmt instanceof StmtLoop)
                     {
-                        sc = ((StmtLoop)stmt).getCreator();
-                        // child input connected to loop output
-                        takeInput = !forInput;
+                    	//FIXME
+//                        sc = ((StmtLoop)stmt).getCreator();
+//                        // child input connected to loop output
+//                        takeInput = !forInput;
                     }
                     else
                         // uninteresting statement

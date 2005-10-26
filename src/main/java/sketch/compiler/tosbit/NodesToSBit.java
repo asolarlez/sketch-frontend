@@ -1457,7 +1457,9 @@ public class NodesToSBit implements FEVisitor{
 	    
 	    public Object visitStmtLoop(StmtLoop stmt)
 	    {
-	        return doStreamCreator("setLoop", stmt.getCreator());
+	        //FIXME
+	        throw new UnsupportedOperationException();
+//	        return doStreamCreator("setLoop", stmt.getCreator());
 	    }
 
 	    public Object visitStmtPhase(StmtPhase stmt)

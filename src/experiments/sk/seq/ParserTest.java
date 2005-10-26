@@ -8,6 +8,7 @@ import antlr.*;
 import junit.framework.TestCase;
 import streamit.frontend.*;
 import streamit.frontend.nodes.*;
+import streamit.frontend.passes.FunctionParamExtension;
 
 public class ParserTest extends TestCase 
 {
@@ -33,6 +34,11 @@ public class ParserTest extends TestCase
 		}
 	}
 	
+	public void testToSbit()
+	{
+		//new ToSBit().run(new String[]{"--output","test/outfile","test/debug.sk"});
+	}
+	
 	private Program doTest(String name)
 	{
 		InputStream str=null;
@@ -52,6 +58,7 @@ public class ParserTest extends TestCase
 			fail();
 		}
 		assertNotNull(p);
+		p=(Program) p.accept(new FunctionParamExtension());
 		return p;
 	}
 }
