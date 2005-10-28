@@ -439,6 +439,11 @@ public class NodesToSBit implements FEVisitor{
 		    	*/
 	    	}
 	    }
+
+		public Object visitExprArrayRange(ExprArrayRange exp) {
+			//FIXME Armando: need to handle this instead of ExprArray
+			return null;
+		}
 	    
 	    public Object visitExprBinary(ExprBinary exp)
 	    {

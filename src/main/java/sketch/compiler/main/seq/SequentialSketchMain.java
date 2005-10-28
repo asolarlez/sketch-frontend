@@ -250,7 +250,7 @@ public class ToSBit
         
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         if (!SemanticChecker.check(prog))
-            throw new IllegalStateException();
+            throw new IllegalStateException("Semantic check failed");
         prog = (Program)prog.accept(new AssignLoopTypes());
         if (prog == null)
             throw new IllegalStateException();

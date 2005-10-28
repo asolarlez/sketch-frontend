@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.nodes.ExprArrayRange.Range;
+
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
  * replacing passes, which implements <code>FEVisitor</code>.  On its
@@ -593,7 +595,24 @@ public class FEReplacer implements FEVisitor
     public Object visitOther(FENode node) { return node; }
 
 	public Object visitExprStar(ExprStar star) {
-		// TODO Auto-generated method stub
 		return star;
+	}
+
+	public Object visitExprArrayRange(ExprArrayRange exp) {
+		boolean change=false;
+		Expression newBase=doExpression(exp.getBase());
+		if(newBase!=exp.getBase()) change=true;
+		List l=exp.getMembers();
+		List newList=new ArrayList();
+		for(int i=0;i<l.size();i++) {
+			ExprArrayRange.Range range=(Range) l.get(i);
+			Expression newStart=doExpression(range.start);
+			Expression newEnd=doExpression(range.end);
+			newList.add(new ExprArrayRange.Range(newStart,newEnd));
+			if(newStart!=range.start) change=true;
+			else if(newEnd!=range.end) change=true;
+		}
+		if(!change) return exp;
+		return new ExprArrayRange(newBase,newList);
 	}
 }

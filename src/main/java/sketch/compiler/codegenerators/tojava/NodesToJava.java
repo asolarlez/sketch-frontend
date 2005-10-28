@@ -1227,4 +1227,8 @@ public class NodesToJava implements FEVisitor
 		// TODO Auto-generated method stub
 		return null;
 	}
+	public Object visitExprArrayRange(ExprArrayRange exp) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

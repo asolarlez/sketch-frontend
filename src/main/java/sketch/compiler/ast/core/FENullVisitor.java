@@ -80,4 +80,5 @@ public class FENullVisitor implements FEVisitor
     public Object visitStreamType(StreamType type) { return null; }
     public Object visitOther(FENode node) { return null; }
 	public Object visitExprStar(ExprStar star) { return null; }
+	public Object visitExprArrayRange(ExprArrayRange exp) { return null; }
 }

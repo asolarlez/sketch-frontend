@@ -34,6 +34,7 @@ public interface FEVisitor
 {
     public Object visitExprArray(ExprArray exp);
     public Object visitExprArrayInit(ExprArrayInit exp);
+    public Object visitExprArrayRange(ExprArrayRange exp);
     public Object visitExprBinary(ExprBinary exp);
     public Object visitExprComplex(ExprComplex exp);
     public Object visitExprConstBoolean(ExprConstBoolean exp);

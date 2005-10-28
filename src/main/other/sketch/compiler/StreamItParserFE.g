@@ -570,19 +570,27 @@ minic_value_expr returns [Expression x] { x = null; }
 	|	x=constantExpr
 	;
 
-value returns [Expression x] { x = null; Expression array; }
+value returns [Expression x] { x = null; List rlist; }
 	:	name:ID { x = new ExprVar(getContext(name), name.getText()); }
-		(	DOT field:ID
-			{ x = new ExprField(x.getContext(), x, field.getText()); }
-		|	l:LSQUARE
-
-			(array=right_expr { x = new ExprArray(x.getContext(), x, array); }
-			| { throw new SemanticException("missing array index",
-						getFilename(), l.getLine()); }
-			)
+		(	DOT field:ID 			{ x = new ExprField(x.getContext(), x, field.getText()); }
+		|	l:LSQUARE 
+					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
 			RSQUARE
-		)*
+		)?
 	;
+
+array_range_list returns [List l] { l=new ArrayList(); ExprArrayRange.Range r;}
+:r=array_range {l.add(r);}
+(COMMA r=array_range {l.add(r);} )*
+;
+
+array_range returns [ExprArrayRange.Range x] { x=null; Expression start,end,len; }
+:start=right_expr {x=new ExprArrayRange.Range(start);}
+(COLON 
+(end=right_expr {x=new ExprArrayRange.Range(start,end);}
+|COLON len=right_expr {x=ExprArrayRange.Range.makeRange(start,len);}
+))? 
+;
 
 constantExpr returns [Expression x] { x = null; }
 	:	h:HQUAN
