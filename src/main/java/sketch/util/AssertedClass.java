@@ -159,7 +159,7 @@ public class AssertedClass
     {
         System.err.println("An error has occured: " + e.toString());
         e.printStackTrace(System.err);
-        System.exit(0);
+        throw new RuntimeException(e);
     }
 
     public static void SERROR(String error)
