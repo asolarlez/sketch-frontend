@@ -1,0 +1,24 @@
+bit[3] debug(bit[3] in) implements swap {
+	int shamt = {*};
+	bit [3] tmp1;
+	tmp1 = in>>shamt;
+	bit[3] tmp2 = tmp1 ^ in;
+	bit[3] tmp3 = tmp2 & {*};
+	bit [3] tmp4;
+	tmp4 = tmp3<<shamt;
+	bit[3] t = tmp4 ^ tmp3 ^ in;
+	return t;
+}
+
+
+
+
+
+bit[3] swap(bit[3] in) {
+	bit [3] t;
+	t[0] = in[0];
+	t[1] = in[2];
+	t[2] = in[1];	
+	return t;
+}
+
