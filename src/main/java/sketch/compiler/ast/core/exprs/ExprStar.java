@@ -25,11 +25,13 @@ package streamit.frontend.nodes;
  * @version $Id$
  */
 public class ExprStar extends Expression
-{
+{		
+	private int size;
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FEContext context)
     {
         super(context);
+        size = 1;
     }
 
     /** Accept a front-end visitor. */
@@ -49,4 +51,18 @@ public class ExprStar extends Expression
     {
         return "*";
     }
+
+	/**
+	 * @param size The size to set.
+	 */
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	/**
+	 * @return Returns the size.
+	 */
+	public int getSize() {
+		return size;
+	}
 }
