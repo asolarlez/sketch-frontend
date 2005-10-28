@@ -579,16 +579,16 @@ value returns [Expression x] { x = null; List rlist; }
 		)?
 	;
 
-array_range_list returns [List l] { l=new ArrayList(); ExprArrayRange.Range r;}
+array_range_list returns [List l] { l=new ArrayList(); Object r;}
 :r=array_range {l.add(r);}
 (COMMA r=array_range {l.add(r);} )*
 ;
 
-array_range returns [ExprArrayRange.Range x] { x=null; Expression start,end,len; }
-:start=right_expr {x=new ExprArrayRange.Range(start);}
+array_range returns [Object x] { x=null; Expression start,end; }
+:start=right_expr {x=new ExprArrayRange.RangeLen(start);}
 (COLON 
 (end=right_expr {x=new ExprArrayRange.Range(start,end);}
-|COLON len=right_expr {x=ExprArrayRange.Range.makeRange(start,len);}
+|COLON len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
 ))? 
 ;
 

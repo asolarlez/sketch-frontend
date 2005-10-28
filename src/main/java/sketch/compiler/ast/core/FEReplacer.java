@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayRange.Range;
+import streamit.frontend.nodes.ExprArrayRange.*;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -605,12 +605,21 @@ public class FEReplacer implements FEVisitor
 		List l=exp.getMembers();
 		List newList=new ArrayList();
 		for(int i=0;i<l.size();i++) {
-			ExprArrayRange.Range range=(Range) l.get(i);
-			Expression newStart=doExpression(range.start);
-			Expression newEnd=doExpression(range.end);
-			newList.add(new ExprArrayRange.Range(newStart,newEnd));
-			if(newStart!=range.start) change=true;
-			else if(newEnd!=range.end) change=true;
+			Object obj=l.get(i);
+			if(obj instanceof Range) {
+				Range range=(Range) obj;
+				Expression newStart=doExpression(range.start);
+				Expression newEnd=doExpression(range.end);
+				newList.add(new Range(newStart,newEnd));
+				if(newStart!=range.start) change=true;
+				else if(newEnd!=range.end) change=true;
+			}
+			else if(obj instanceof RangeLen) {
+				RangeLen range=(RangeLen) obj;
+				Expression newStart=doExpression(range.start);
+				newList.add(new RangeLen(newStart,range.len));
+				if(newStart!=range.start) change=true;
+			}
 		}
 		if(!change) return exp;
 		return new ExprArrayRange(newBase,newList);
