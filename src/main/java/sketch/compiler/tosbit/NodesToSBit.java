@@ -43,7 +43,7 @@ public class NodesToSBit implements FEVisitor{
 	    	if(!t){
 	    		System.err.println(s);
 	    		System.err.println( ss.getContext() );
-	    		System.exit(1);
+	    		throw new RuntimeException(s);
 	    	}
 	    }
 	    private int boolToInt(boolean b){	    	

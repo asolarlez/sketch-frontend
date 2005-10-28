@@ -236,34 +236,24 @@ public class ToSBit
         {
             prog = parseFiles(inputFiles);
         }
-        catch (java.io.IOException e)
+        catch (Exception e)
         {
             e.printStackTrace(System.err);
-            System.exit(1);
-        }
-        catch (antlr.RecognitionException e)
-        {
-            e.printStackTrace(System.err);
-            System.exit(1);
-        }
-        catch (antlr.TokenStreamException e)
-        {
-            e.printStackTrace(System.err);
-            System.exit(1);
+            throw new RuntimeException(e);
         }
 
         if (prog == null)
         {
             System.err.println("Compilation didn't generate a parse tree.");
-            System.exit(1);
+            throw new IllegalStateException();
         }
         
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         if (!SemanticChecker.check(prog))
-            System.exit(1);
+            throw new IllegalStateException();
         prog = (Program)prog.accept(new AssignLoopTypes());
         if (prog == null)
-            System.exit(1);
+            throw new IllegalStateException();
 
         TempVarGen varGen = new TempVarGen();
         prog = lowerIRToJava(prog, !libraryFormat, varGen);
@@ -283,7 +273,7 @@ public class ToSBit
         catch (java.io.IOException e)
         {
             e.printStackTrace(System.err);
-            System.exit(1);
+            throw new RuntimeException(e);
         }
     }
     
