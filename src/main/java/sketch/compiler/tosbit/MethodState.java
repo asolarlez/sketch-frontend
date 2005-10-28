@@ -66,7 +66,7 @@ class MethodState{
     	varTranslator = varTranslator.popLevel(vars, changeTracker);
     }
     
-    private String transName(String nm){       	
+    public String transName(String nm){       	
     	String otpt = varTranslator.transName(nm);
     	// System.out.println(nm + " = " +  otpt);
     	return  otpt;
