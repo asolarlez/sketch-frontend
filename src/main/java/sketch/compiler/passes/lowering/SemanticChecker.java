@@ -789,7 +789,7 @@ public class SemanticChecker
                     if (ot != null)
                     {
                         if (!ot.promotesTo
-                            (new TypePrimitive(TypePrimitive.TYPE_INT)))
+                            (new TypePrimitive(TypePrimitive.TYPE_NDINT)))
                             report(expr, "array index must be an int");
                     }
                     
