@@ -25,6 +25,7 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprPeek;
 import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
@@ -56,6 +57,65 @@ import streamit.frontend.nodes.TypeStructRef;
  * @version $Id$
  */
 
+
+class UpgradeStarToInt extends FEReplacer{
+	private final SymbolTableVisitor stv;
+	boolean upToInt;
+	UpgradeStarToInt(SymbolTableVisitor stv, boolean upToInt){		
+		this.stv = stv;
+		this.upToInt = upToInt;
+	}
+	
+	public Object visitExprStar(ExprStar star) {
+		if(upToInt){
+			star.setSize(5);
+		}else{
+			star.setSize(1);
+		}
+		return star;
+	}
+	
+    public Object visitExprTernary(ExprTernary exp)
+    {
+    	boolean oldBit = upToInt;
+    	upToInt = false;
+        Expression a = doExpression(exp.getA());
+        upToInt = oldBit;
+        Expression b = doExpression(exp.getB());
+        Expression c = doExpression(exp.getC());
+        if (a == exp.getA() && b == exp.getB() && c == exp.getC())
+            return exp;
+        else
+            return new ExprTernary(exp.getContext(), exp.getOp(), a, b, c);
+    }
+    public Object visitExprBinary(ExprBinary exp)
+    {		
+		switch(exp.getOp()){
+        case ExprBinary.BINOP_GE:
+        case ExprBinary.BINOP_GT:
+        case ExprBinary.BINOP_LE:
+        case ExprBinary.BINOP_LT:{
+        	boolean oldBit = upToInt;
+        	upToInt = true;
+        	Expression left = doExpression(exp.getLeft());
+            Expression right = doExpression(exp.getRight());
+            upToInt = oldBit;
+            if (left == exp.getLeft() && right == exp.getRight())
+                return exp;
+            else
+                return new ExprBinary(exp.getContext(), exp.getOp(), left, right);
+        }
+        default:
+        	return super.visitExprBinary(exp);
+		}		
+    }
+}
+
+
+
+
+
+
 class Indexify extends FEReplacer{
 	private final Expression index;
 	private final SymbolTableVisitor stv;
@@ -75,9 +135,10 @@ class Indexify extends FEReplacer{
 		Type lType = stv.getType(exp.getLeft());
 		FEContext context = exp.getContext();
 		if(exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT){
-			if(rType.isNonDet()){
+			//if(rType.isNonDet()){
 				//This means that the shift ammount is non-deterministic.
-			}else{
+			//}else
+			{
 				Expression newIdx = null;
 				int op;
 				Expression newConst = null;
@@ -273,7 +334,7 @@ public class GenerateCopies extends SymbolTableVisitor
     
     
     
-    private void matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
+    private Type matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
     	if( lt != null && rt != null && lhsn != null){
     		if(!lt.isNonDet() && rt.isNonDet()){
     			/*
@@ -291,6 +352,7 @@ public class GenerateCopies extends SymbolTableVisitor
     	
         assert !( lt == null || rt == null):(stmt.getContext() +
             "BUG, this should never happen");
+        return lt;
     }
     
     
@@ -301,14 +363,26 @@ public class GenerateCopies extends SymbolTableVisitor
         	Expression ie = stmt.getInit(i);
         	if(ie != null){
         		Type rt = getType(ie);        		
-        		matchTypes(stmt, stmt.getName(i), actualType(stmt.getType(i)), rt);
-        	}                        
+        		Type ftype = matchTypes(stmt, stmt.getName(i), actualType(stmt.getType(i)), rt);
+        		upgradeStarToInt(ie, ftype);
+        	}
         }
         return result;
     }
-    
-    
-    
+
+    public void upgradeStarToInt(Expression exp, Type ftype){
+    	if(ftype.isNonDet()){
+     	   Type base = ftype;
+     	   if(ftype instanceof TypeArray){
+     		   base = ((TypeArray)ftype).getBase();
+     	   }
+     	   if(base.equals(TypePrimitive.ndinttype)){
+     		  exp.accept(new UpgradeStarToInt(this, true) );
+     	   }else{
+     		  exp.accept(new UpgradeStarToInt(this, false) );
+     	   }
+        }
+    }
     
     public Object visitStmtAssign(StmtAssign stmt)
     {
@@ -323,7 +397,8 @@ public class GenerateCopies extends SymbolTableVisitor
        if(lhsExp instanceof ExprVar){
        	lhsn = ( (ExprVar) lhsExp).getName();
        }                    
-       matchTypes(stmt, lhsn, lt, rt);    	
+       Type ftype = matchTypes(stmt, lhsn, lt, rt);
+       upgradeStarToInt(stmt.getRHS(), ftype);
         // recurse:
         Statement result = (Statement)super.visitStmtAssign(stmt);
         if (result instanceof StmtAssign) // it probably is:
