@@ -414,13 +414,29 @@ public class NodesToSBit implements FEVisitor{
 		    	else
 		    		return state.varGetRHSName( vname  );
 	    	}else{
-	    		Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
-	    		vname = vname + "[" + ofstStr + "]";
+	    		//Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
+	    		Assert( !this.isLHS, "Array indexing of non-deterministic value is only allowed in the RHS of an assignment; sorrry." );
+	    		int arrSize = state.checkArray(vname);
+	    		String baseName = vname;
+	    		vname = "$ ";
+	    		for(int i=0; i< arrSize; ++i ){
+	    			if( i!= 0) vname += " ";
+	    			String tmpname = baseName + "_idx_" + i;
+	    			if(state.varHasValue(tmpname)){
+	    				tmpname =  " " + state.varValue(vname);
+	    			}else{
+	    				tmpname = state.varGetRHSName(tmpname);
+	    			}
+	    			vname = vname + tmpname;
+	    		}
+	    		vname = vname + "$" +  "[" + ofstStr + "]";	    		
 	    		state.pushVStack(null);
-	    		if(this.isLHS)
+	    		return vname;
+	    		/*if(this.isLHS)
 		    		return vname;
 		    	else
 		    		return state.varGetRHSName( vname );
+		    	*/
 	    	}
 	    }
 	    
@@ -1922,6 +1938,9 @@ public class NodesToSBit implements FEVisitor{
 	    }
 		public Object visitExprStar(ExprStar star) {
 			state.pushVStack(null);
-			return "<" + state.varDeclare() + ">";
+			if(star.getSize() > 1)
+				return "<" + state.varDeclare() + "  " + star.getSize() + ">";
+			else
+				return "<" + state.varDeclare() + ">";
 		}
 }
