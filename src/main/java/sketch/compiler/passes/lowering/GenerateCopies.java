@@ -35,6 +35,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.SymbolTable;
@@ -78,7 +79,7 @@ class UpgradeStarToInt extends FEReplacer{
     public Object visitExprTernary(ExprTernary exp)
     {
     	boolean oldBit = upToInt;
-    	upToInt = false;
+    	upToInt = true;
         Expression a = doExpression(exp.getA());
         upToInt = oldBit;
         Expression b = doExpression(exp.getB());
@@ -108,6 +109,17 @@ class UpgradeStarToInt extends FEReplacer{
         default:
         	return super.visitExprBinary(exp);
 		}		
+    }
+    public Object visitStmtLoop(StmtLoop stmt)
+    {
+    	boolean oldBit = upToInt;
+    	upToInt = false;
+        Expression newIter = doExpression(stmt.getIter());
+        upToInt = oldBit;        
+        Statement newBody = (Statement)stmt.getBody().accept(this);
+        if (newIter == stmt.getIter() && newBody == stmt.getBody())
+            return stmt;
+        return new StmtLoop(stmt.getContext(), newIter, newBody);
     }
 }
 
@@ -370,6 +382,14 @@ public class GenerateCopies extends SymbolTableVisitor
         return result;
     }
 
+    public Object visitStmtLoop(StmtLoop stmt){    	
+    	Expression ie = stmt.getIter();
+    	ie.accept(new UpgradeStarToInt(this, true) );    	
+    	return super.visitStmtLoop(stmt);    	
+    }
+    
+    
+    
     public void upgradeStarToInt(Expression exp, Type ftype){
     	if(ftype.isNonDet()){
      	   Type base = ftype;
