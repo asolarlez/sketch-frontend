@@ -1,0 +1,24 @@
+bit[32] reverseSketch(bit[32] in) implements reverse {
+
+	bit[32]  t = in;
+	int i=1; 
+	loop(5){
+		bit[32] tmp1 = (t >> i);
+		bit[32] tmp2 = (t << i);
+		for(int i=0; i<32; ++i){
+			t[i] = tmp1[i] {|} tmp2[i];
+		}
+		i = i*2;
+	}
+
+	return t;
+}
+
+
+bit[32] reverse (bit[32] in) {
+	bit [32] out;
+	for (int i = 0; i < 32; i++) {
+		out[i] = in[31 - i];
+	}
+	return out;
+}
