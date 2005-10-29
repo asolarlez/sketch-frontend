@@ -212,7 +212,7 @@ public class ToSBit
         prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program)prog.accept(new EnqueueToFunction());
         prog = (Program)prog.accept(new InsertIODecls(libraryFormat));
-        prog = (Program)prog.accept(new InsertInitConstructors(varGen));
+//        prog = (Program)prog.accept(new InsertInitConstructors(varGen));
         prog = (Program)prog.accept(new MoveStreamParameters());
         prog = (Program)prog.accept(new NameAnonymousFunctions());
         prog = (Program)prog.accept(new AssembleInitializers());
