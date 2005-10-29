@@ -439,7 +439,7 @@ public class NodesToSBit implements FEVisitor{
 		    	*/
 	    	}
 	    }
-
+	    
 		public Object visitExprArrayRange(ExprArrayRange exp) {
 			//FIXME Armando: need to handle this instead of ExprArray
 			return null;
@@ -1478,8 +1478,33 @@ public class NodesToSBit implements FEVisitor{
 	    
 	    public Object visitStmtLoop(StmtLoop stmt)
 	    {
-	        //FIXME Armando
-	    	return "";
+
+	    	String result = "";
+	    	String iter =  (String) stmt.getIter().accept(this);
+	    	Integer vcond = state.popVStack();
+	    	if(vcond == null){	    
+	    		String nvar = state.varDeclare(); 
+	    		result += nvar + " = " + "(" + iter + ");\n"; 
+	    		int LUNROLL=8;
+	    		for(int i=0; i<LUNROLL; ++i){			        		        
+			        state.pushChangeTracker();
+			        String ipart = (String)stmt.getBody().accept(this);			        	        
+			        result += ipart;
+	    		}
+	    		
+	    		for(int i=LUNROLL-1; i>=0; --i){
+	    			String cond = "(" + nvar + ")>" + i;
+	    			ChangeStack ipms = state.popChangeTracker();	
+	    			result += state.procChangeTrackers(ipms, cond);
+	    		}
+		        return result;
+	    	}else{
+	    		for(int i=0; i<vcond.intValue(); ++i){
+	    			result += (String)stmt.getBody().accept(this);
+	    		}
+	    		
+	    	}	    	
+	    	return result;
 	    }
 
 	    public Object visitStmtPhase(StmtPhase stmt)
