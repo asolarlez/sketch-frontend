@@ -84,9 +84,7 @@ public class SymbolTable
      */
     public void upgradeVar(String name, Type newType){
     	Type oldType = lookupVar(name);
-    	Type lcpType = oldType.leastCommonPromotion(newType); 
-    	System.out.println("Upgrading " + name + 
-    			" from " + oldType + " to " + lcpType);
+    	Type lcpType = oldType.leastCommonPromotion(newType);     	
     	registerVar(name, lcpType);
     }
     
