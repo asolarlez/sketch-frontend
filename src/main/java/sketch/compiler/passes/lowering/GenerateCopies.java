@@ -16,10 +16,13 @@
 
 package streamit.frontend.passes;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
@@ -45,6 +48,8 @@ import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.nodes.ExprArrayRange.Range;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 /**
  * Generate code to copy structures and arrays elementwise.  In StreamIt,
@@ -388,7 +393,14 @@ public class GenerateCopies extends SymbolTableVisitor
     	return super.visitStmtLoop(stmt);    	
     }
     
-    
+    public Object visitExprArrayRange(ExprArrayRange exp){
+    	assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";    	    	
+		Expression newBase=doExpression(exp.getBase());
+		RangeLen rl = (RangeLen)exp.getMembers().get(0);
+		assert rl.len == 1 : "Complex indexing not yet implemented.";
+		Expression newIndex = doExpression(rl.start);
+		return new ExprArray(exp.getContext(), newBase, newIndex);
+    }
     
     public void upgradeStarToInt(Expression exp, Type ftype){
     	if(ftype.isNonDet()){
