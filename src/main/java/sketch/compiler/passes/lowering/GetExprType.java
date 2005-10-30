@@ -47,6 +47,12 @@ public class GetExprType extends FENullVisitor
         // ASSERT: base is a TypeArray.
         return ((TypeArray)base).getBase();
     }
+    
+    public Object visitExprArrayRange(ExprArrayRange exp) { 
+    	Type base = (Type)exp.getBase().accept(this);
+        // ASSERT: base is a TypeArray.
+        return ((TypeArray)base).getBase();
+    }
 
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
