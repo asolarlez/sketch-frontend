@@ -15,10 +15,15 @@
  */
 
 package streamit.frontend;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Iterator;
@@ -30,15 +35,27 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.*;
+import streamit.frontend.passes.AssembleInitializers;
+import streamit.frontend.passes.AssignLoopTypes;
+import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.FindFreeVariables;
+import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.passes.GenerateCopies;
+import streamit.frontend.passes.NoRefTypes;
+import streamit.frontend.passes.NoticePhasedFilters;
+import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
 import streamit.frontend.tojava.InsertIODecls;
-import streamit.frontend.tojava.InsertInitConstructors;
 import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
+import streamit.frontend.tosbit.EliminateIndeterminacy;
+import streamit.frontend.tosbit.NodesToC;
 import streamit.frontend.tosbit.NodesToSBit;
+import streamit.frontend.tosbit.ValueOracle;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -257,6 +274,7 @@ public class ToSBit
 
         TempVarGen varGen = new TempVarGen();
         prog = lowerIRToJava(prog, !libraryFormat, varGen);
+        ValueOracle oracle = new ValueOracle();
 
         try
         {
@@ -266,7 +284,7 @@ public class ToSBit
                 outWriter = new OutputStreamWriter(System.out);
 
             String javaOut =
-                (String)prog.accept( new NodesToSBit(null, varGen) /*  new NodesToJava(false, varGen)*/);
+                (String)prog.accept( new NodesToSBit(null, varGen, oracle) /*  new NodesToJava(false, varGen)*/);
             outWriter.write(javaOut);
             outWriter.flush();
         }
@@ -275,6 +293,58 @@ public class ToSBit
             e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
+        
+                
+        System.out.println("OFILE = " + outputFile);
+        Runtime rt = Runtime.getRuntime();
+        try
+        {
+        String[] tmp  = {"SBitII.exe",  outputFile, outputFile + ".tmp"};        
+        Process proc = rt.exec(tmp);   
+        InputStream stderr = proc.getInputStream();
+        InputStreamReader isr = new InputStreamReader(stderr);
+        BufferedReader br = new BufferedReader(isr);
+        String line = null;
+        while ( (line = br.readLine()) != null)
+            System.out.println(line);        
+        int exitVal = proc.waitFor();
+        System.out.println("Process exitValue: " + exitVal);
+        
+        int ev = proc.waitFor();
+        proc.getOutputStream().flush();
+        System.out.println(ev);
+        }
+        catch (java.io.IOException e)
+        {
+            e.printStackTrace(System.err);
+            //throw new RuntimeException(e);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace(System.err);
+            //throw new RuntimeException(e);
+        }
+        
+        try{
+        	String fname = outputFile + ".tmp";
+        	File f = new File(fname);
+            FileInputStream fis = new FileInputStream(f); 
+            BufferedInputStream bis = new BufferedInputStream(fis);  
+            LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
+        	oracle.loadFromStream(lir);        	
+        }
+        catch (java.io.IOException e)
+        {
+            e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
+        
+        Program noindet = (Program)prog.accept(new EliminateIndeterminacy(oracle, varGen));
+        System.out.println(noindet.accept(new NodesToC(false, varGen) ));
+       
+        
+        
+        
     }
     
     public static void main(String[] args)

@@ -49,6 +49,7 @@ import streamit.frontend.tojava.InsertInitConstructors;
 import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
 import streamit.frontend.tosbit.NodesToSBit;
+import streamit.frontend.tosbit.ValueOracle;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -284,7 +285,7 @@ public class ToJava
                 outWriter = new OutputStreamWriter(System.out);
 
             String javaOut =
-                (String)prog.accept(new NodesToSBit(null, varGen));
+                (String)prog.accept(new NodesToSBit(null, varGen, new ValueOracle()));
             outWriter.write(javaOut);
             outWriter.flush();
         }
