@@ -3,8 +3,8 @@ bit debug(bit[4] in) implements loopTest {
 	int i=0;
 	loop({*}){
 	i++;
-	}
 	t = in[i];	
+	}
 	return t;
 }
 
