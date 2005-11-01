@@ -32,7 +32,7 @@ import streamit.frontend.nodes.*;
  */
 public class NodesToJava implements FEVisitor
 {
-    private StreamSpec ss;
+    protected StreamSpec ss;
     /**
 	 * @param ss The ss to set.
 	 */
@@ -109,9 +109,8 @@ public class NodesToJava implements FEVisitor
             return ((TypePortal)type).getName() + "Portal";
         }
         else
-        {
-            assert false : type;
-            return null;
+        {            
+            return type.toString();
         }
     }
 
