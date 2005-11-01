@@ -9,6 +9,15 @@ class ChangeStack{
 		kid = null;
 		currTracker = new HashMap();
 	}
+	
+	boolean knowsAbout(String var){
+		varValue i = (varValue)currTracker.get(var);
+		if(i != null)
+			return true;
+		else
+			return kid != null && kid.knowsAbout(var); 
+	}
+	
 	boolean varHasValue(String var){
 		varValue i = (varValue)currTracker.get(var);
 		if(i != null)

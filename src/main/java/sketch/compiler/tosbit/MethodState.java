@@ -273,7 +273,7 @@ class MethodState{
 		if( changeTracker == null )
 			return localVarHasValue(var);
 		else
-			return localVarHasValue(var) ||  changeTracker.varHasValue(var);
+			return (localVarHasValue(var)&& !changeTracker.knowsAbout(var)) ||  changeTracker.varHasValue(var);
 	}
 	
 	public boolean varHasValue(String var){
@@ -299,6 +299,7 @@ class MethodState{
 			if( changeTracker.varHasValue(var) ){
 				return changeTracker.varValue(var);
 			}else{
+				assert !changeTracker.knowsAbout(var) : "You are asking for the value of " + var + " even though the change tracker knows that is has no value";
 				assert(i.hasVal()) : ( "The value of " + var + " is input dependent, but it's not supposed to be.\n");
 				return i.getVal();
 			}						
