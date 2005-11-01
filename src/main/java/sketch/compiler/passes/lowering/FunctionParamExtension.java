@@ -53,12 +53,14 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 	}
 
 	public Object visitFunction(Function func) {
-		final Object ret;
+		final Function ret;
 		currentFunction=func;
 			tempCounter=0;
-			ret=super.visitFunction(func);
+			ret=(Function) super.visitFunction(func);
 		currentFunction=null;
-		return ret;
+		return new Function(ret.getContext(),ret.getCls(),ret.getName(),
+				new TypePrimitive(TypePrimitive.TYPE_VOID), ret.getParams(),
+				ret.getSpecification(), ret.getBody());
 	}
 
 	public Object visitExprFunCall(ExprFunCall exp) {
