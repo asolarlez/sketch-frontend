@@ -86,6 +86,7 @@ public class ToSBit
     private boolean printHelp = false;
     private boolean libraryFormat = false;
     private String outputFile = null;
+    private String sbitPath = null;
     private List inputFiles = new java.util.ArrayList();
 
     public void doOptions(String[] args)
@@ -106,6 +107,8 @@ public class ToSBit
                 outputFile = args[++i];
             else if (args[i].equals("--library"))
                 libraryFormat = true;
+            else if (args[i].equals("--sbitpath"))
+                sbitPath = args[++i];
             else
                 // Maybe check for unrecognized options.
                 inputFiles.add(args[i]);
@@ -297,9 +300,10 @@ public class ToSBit
                 
         System.out.println("OFILE = " + outputFile);
         Runtime rt = Runtime.getRuntime();
+        String command = (sbitPath!=null? sbitPath + "\\" : "") + "SBitII.exe";
         try
         {
-        String[] tmp  = {"SBitII.exe",  outputFile, outputFile + ".tmp"};        
+        String[] tmp  = {command ,  outputFile, outputFile + ".tmp"};        
         Process proc = rt.exec(tmp);   
         InputStream stderr = proc.getInputStream();
         InputStreamReader isr = new InputStreamReader(stderr);
@@ -309,10 +313,9 @@ public class ToSBit
             System.out.println(line);        
         int exitVal = proc.waitFor();
         System.out.println("Process exitValue: " + exitVal);
-        
-        int ev = proc.waitFor();
-        proc.getOutputStream().flush();
-        System.out.println(ev);
+        if(exitVal != 0){
+        	throw new RuntimeException("The sketch can not be resolved");
+        }
         }
         catch (java.io.IOException e)
         {
