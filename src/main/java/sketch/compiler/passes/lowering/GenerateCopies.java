@@ -426,6 +426,9 @@ public class GenerateCopies extends SymbolTableVisitor
        if(lhsExp instanceof ExprArray){
        	lhsExp = ((ExprArray)stmt.getLHS()).getBase();
        }
+       if(lhsExp instanceof ExprArrayRange){
+          	lhsExp = ((ExprArrayRange)stmt.getLHS()).getBase();
+          }
        if(lhsExp instanceof ExprVar){
        	lhsn = ( (ExprVar) lhsExp).getName();
        }                    

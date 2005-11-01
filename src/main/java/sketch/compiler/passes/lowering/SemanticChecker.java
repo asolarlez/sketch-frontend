@@ -33,6 +33,7 @@ import streamit.frontend.controlflow.StatementCounter;
 import streamit.frontend.controlflow.StrictTypeLattice;
 import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
@@ -946,6 +947,9 @@ public class SemanticChecker
                     Expression lhsExp = stmt.getLHS();
                     if(lhsExp instanceof ExprArray){
                     	lhsExp = ((ExprArray)stmt.getLHS()).getBase();
+                    }
+                    if(lhsExp instanceof ExprArrayRange){
+                    	lhsExp = ((ExprArrayRange)stmt.getLHS()).getBase();
                     }
                     if(lhsExp instanceof ExprVar){
                     	lhsn = ( (ExprVar) lhsExp).getName();
