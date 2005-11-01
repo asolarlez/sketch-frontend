@@ -1,44 +1,15 @@
 bit[32] reverseSketch(bit[32] in) implements reverse {
 
-	bit[32]  t = in;
-
-	{
-		bit[32] tmp1 = (t >> 1);
-		bit[32] tmp2 = (t << 1);
-		for(int i=0; i<32; ++i){
-			t[i] = tmp1[i] {|} tmp2[i];
-		}
-	}
-	{
-		bit[32] tmp1 = (t >> 2);
-		bit[32] tmp2 = (t << 2);
-		for(int i=0; i<32; ++i){
-			t[i] = tmp1[i] {|} tmp2[i];
-		}
-	}
-	{
-		bit[32] tmp1 = (t >> 4);
-		bit[32] tmp2 = (t << 4);
-		for(int i=0; i<32; ++i){
-			t[i] = tmp1[i] {|} tmp2[i];
-		}
+	bit[32]  t = in;	
+	int s = 1;
+	loop({*}){
+		bit[32] tmp1 = (t >> s);
+		bit[32] tmp2 = (t << s);
+		t = tmp1 {|} tmp2;
+		s = s*2;
+		
 	}
 
-	{
-		bit[32] tmp1 = (t >> 8);
-		bit[32] tmp2 = (t << 8);
-		for(int i=0; i<32; ++i){
-			t[i] = tmp1[i] {|} tmp2[i];
-		}
-	}
-
-	{
-		bit[32] tmp1 = (t >> 16);
-		bit[32] tmp2 = (t << 16);
-		for(int i=0; i<32; ++i){
-			t[i] = tmp1[i] {|} tmp2[i];
-		}
-	}
 	return t;
 }
 

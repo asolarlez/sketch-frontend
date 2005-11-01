@@ -18,7 +18,7 @@ public class NodesToTable extends NodesToSBit {
 	 * @param varGen
 	 */
 	public NodesToTable(StreamSpec ss, TempVarGen varGen) {
-		super(ss, varGen);
+		super(ss, varGen, null);
 		// TODO Auto-generated constructor stub
 	}
 

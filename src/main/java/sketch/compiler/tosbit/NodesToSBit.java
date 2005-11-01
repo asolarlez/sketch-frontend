@@ -38,6 +38,7 @@ public class NodesToSBit implements FEVisitor{
 	    private HashMap funsWParams;
 	    private Stack preFil;
 	    private List additInit;
+	    private ValueOracle oracle;
 	    
 	    private void Assert(boolean t, String s){
 	    	if(!t){
@@ -58,17 +59,17 @@ public class NodesToSBit implements FEVisitor{
 	    	else
 	    		return false;
 	    }
-	    public NodesToSBit(StreamSpec ss, TempVarGen varGen)
+	    public NodesToSBit(StreamSpec ss, TempVarGen varGen, ValueOracle oracle)
 	    {
 	        this.ss = ss;
 	        this.indent = "";
 	        this.varGen = varGen;
 	        this.isLHS = false;	 
 	        this.state = new MethodState();
+	        this.oracle = oracle;
 	        funsWParams = new HashMap();
 	        preFil = new Stack();
 	        nativeGenerator = new NodesToNative(ss, varGen, state, this);
-	        
 	    }
 	    public String finalizeWork(){
 	    	String result = "";	    	
@@ -409,10 +410,13 @@ public class NodesToSBit implements FEVisitor{
 		    	}else{
 		    		state.pushVStack(null);
 		    	}
+		    	String rval = null;
 		    	if(this.isLHS)
-		    		return vname;
-		    	else
-		    		return state.varGetRHSName( vname  );
+		    		rval = vname;
+		    	else{		    		
+		    		rval =  state.varGetRHSName( vname  );		    		
+		    	}
+		    	return rval;
 	    	}else{
 	    		//Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
 	    		Assert( !this.isLHS, "Array indexing of non-deterministic value is only allowed in the RHS of an assignment; sorrry." );
@@ -441,7 +445,7 @@ public class NodesToSBit implements FEVisitor{
 	    }
 	    
 		public Object visitExprArrayRange(ExprArrayRange exp) {
-			//FIXME Armando: need to handle this instead of ExprArray
+			assert false : "At this stage, there shouldn't be any ArrayRange expressions";
 			return null;
 		}
 	    
@@ -487,21 +491,23 @@ public class NodesToSBit implements FEVisitor{
 	        	}else{
 	        		hasv = false;
 	        		state.pushVStack(null);
+	        		String cvar = state.varDeclare();
+	        		oracle.addBinding(exp, cvar);
 	        		if(lhs != null && rhs != null){
-	        		
-	        			return "<" + state.varDeclare() + ">";
+	        			if(lhs.intValue() == 1){
+	        				return "<" + cvar + ">";
+	        			}else{
+	        				return "! <" + cvar + ">";
+	        			}
 	        		}
-	        		if(rhs == null && lhs == null){
-	        			String var = state.varDeclare();
-	        			return "( <" + var +"> ? " + lhsStr + " : " + rhsStr + ")";  
+	        		if(rhs == null && lhs == null){	        			
+	        			return "( <" + cvar +"> ? " + lhsStr + " : " + rhsStr + ")";  
 	        		}
 	        		if(rhs == null && lhs != null){
-	        			String var = state.varDeclare();
-	        			return "( <" + var +"> ? " + lhs + " : " + rhsStr + ")";  
+	        			return "( <" + cvar +"> ? " + lhs + " : " + rhsStr + ")";  
 	        		}
 	        		if(rhs != null && lhs == null){
-	        			String var = state.varDeclare();
-	        			return "( <" + var +"> ? " + lhsStr + " : " + rhs + ")";  
+	        			return "( <" + cvar +"> ? " + lhsStr + " : " + rhs + ")";  
 	        		}
 	        	}
 	        }
@@ -1280,6 +1286,9 @@ public class NodesToSBit implements FEVisitor{
 	        
 	        boolean hv = vlhs != null && vrhs != null;
 	        
+	        	
+	        
+	        
 	        switch(stmt.getOp())
 	        {
 	        case ExprBinary.BINOP_ADD: 	        	
@@ -1328,7 +1337,8 @@ public class NodesToSBit implements FEVisitor{
 	        	}
 	        }
 	        // Assume both sides are the right type.
-	        if(hv) return "";
+	        if(hv) 
+	        	return "";
 	        else
 	        	state.unsetVarValue(lhs);
 	        return lhsnm + op + rhs;
@@ -1482,17 +1492,26 @@ public class NodesToSBit implements FEVisitor{
 	    	String result = "";
 	    	String iter =  (String) stmt.getIter().accept(this);
 	    	Integer vcond = state.popVStack();
-	    	if(vcond == null){	    
+	    	if(vcond == null){
+	    		
 	    		String nvar = state.varDeclare(); 
 	    		result += nvar + " = " + "(" + iter + ");\n"; 
 	    		int LUNROLL=8;
-	    		for(int i=0; i<LUNROLL; ++i){			        		        
+	    		int iters;
+	    		for(iters=0; iters<LUNROLL; ++iters){			        		        
 			        state.pushChangeTracker();
-			        String ipart = (String)stmt.getBody().accept(this);			        	        
+			        String ipart = "";
+			        try{
+			        	
+			        	ipart = (String)stmt.getBody().accept(this);
+			        }catch(java.lang.AssertionError er){			        	
+			        	state.popChangeTracker();
+			        	break;
+		    		}
 			        result += ipart;
 	    		}
 	    		
-	    		for(int i=LUNROLL-1; i>=0; --i){
+	    		for(int i=iters-1; i>=0; --i){
 	    			String cond = "(" + nvar + ")>" + i;
 	    			ChangeStack ipms = state.popChangeTracker();	
 	    			result += state.procChangeTrackers(ipms, cond);
@@ -1968,9 +1987,11 @@ public class NodesToSBit implements FEVisitor{
 	    }
 		public Object visitExprStar(ExprStar star) {
 			state.pushVStack(null);
+			String cvar = state.varDeclare();
+			oracle.addBinding(star, cvar);
 			if(star.getSize() > 1)
-				return "<" + state.varDeclare() + "  " + star.getSize() + ">";
+				return "<" + cvar + "  " + star.getSize() + ">";
 			else
-				return "<" + state.varDeclare() + ">";
+				return "<" + cvar + ">";
 		}
 }
