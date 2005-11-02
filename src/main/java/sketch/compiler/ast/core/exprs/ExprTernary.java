@@ -45,6 +45,15 @@ public class ExprTernary extends Expression
         this.c = c;
     }
 
+    Integer getIValue(){
+    	if(op == TEROP_COND && a.getIValue()!= null && b.getIValue()!= null && c.getIValue() != null){
+    		int av = a.getIValue().intValue();
+    		int bv = b.getIValue().intValue();
+    		int cv = c.getIValue().intValue();
+    		return new Integer((av==1)?bv:cv);
+    	}
+    	return null;
+    }
     /** Returns the operation of this. */
     public int getOp() { return op; }
 

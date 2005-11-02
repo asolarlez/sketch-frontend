@@ -43,4 +43,17 @@ abstract public class Expression extends FENode
     {
         return false;
     }
+    Integer getIValue(){
+    	return null;
+    }
+    public boolean equals(Object o){
+    	if(! (o instanceof Expression) ){
+    		return false;
+    	}
+    	Expression other = (Expression) o;
+    	if(getIValue() != null && other.getIValue() != null){
+    		return other.getIValue().equals(getIValue());
+    	}
+    	return super.equals(o);
+    }
 }

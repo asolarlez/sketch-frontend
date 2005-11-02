@@ -16,8 +16,12 @@
 
 package streamit.frontend.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import streamit.frontend.nodes.ExprArrayRange.Range;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -44,14 +48,42 @@ public class GetExprType extends FENullVisitor
     public Object visitExprArray(ExprArray exp)
     {
         Type base = (Type)exp.getBase().accept(this);
+        Type offset = (Type) exp.getOffset().accept(this);
         // ASSERT: base is a TypeArray.
-        return ((TypeArray)base).getBase();
-    }
-    
-    public Object visitExprArrayRange(ExprArrayRange exp) { 
+        if(!(base instanceof TypeArray)) return null;
+        if(offset.isNonDet()){
+        	return ((TypeArray)base).getBase().makeNonDet();
+        }else{
+        	return ((TypeArray)base).getBase();
+        }
+    }    
+    public Object visitExprArrayRange(ExprArrayRange exp) {
+    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented.";
     	Type base = (Type)exp.getBase().accept(this);
+    	boolean isNonDet=false;				
+		List l=exp.getMembers();		
+		for(int i=0;i<l.size();i++) {
+			Object obj=l.get(i);
+			if(obj instanceof Range) {
+				Type start = (Type)((Range) obj).start.accept(this);
+				Type end = (Type)((Range) obj).end.accept(this);
+				isNonDet = isNonDet || start.isNonDet();
+				isNonDet = isNonDet || end.isNonDet();
+				
+			}
+			else if(obj instanceof RangeLen) {
+				RangeLen range=(RangeLen) obj;
+				Type start = (Type)range.start.accept(this);
+				isNonDet = isNonDet || start.isNonDet();				
+			}
+		}
+		if(!(base instanceof TypeArray)) return null;
         // ASSERT: base is a TypeArray.
-        return ((TypeArray)base).getBase();
+		if(isNonDet){
+        	return ((TypeArray)base).getBase().makeNonDet();
+        }else{
+        	return ((TypeArray)base).getBase();
+        }
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp)

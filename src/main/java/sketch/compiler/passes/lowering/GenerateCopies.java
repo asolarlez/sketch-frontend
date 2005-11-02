@@ -84,7 +84,7 @@ class UpgradeStarToInt extends FEReplacer{
     public Object visitExprTernary(ExprTernary exp)
     {
     	boolean oldBit = upToInt;
-    	upToInt = true;
+    	upToInt = false;
         Expression a = doExpression(exp.getA());
         upToInt = oldBit;
         Expression b = doExpression(exp.getB());
@@ -118,13 +118,69 @@ class UpgradeStarToInt extends FEReplacer{
     public Object visitStmtLoop(StmtLoop stmt)
     {
     	boolean oldBit = upToInt;
-    	upToInt = false;
+    	upToInt = true;
         Expression newIter = doExpression(stmt.getIter());
         upToInt = oldBit;        
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newIter == stmt.getIter() && newBody == stmt.getBody())
             return stmt;
         return new StmtLoop(stmt.getContext(), newIter, newBody);
+    }
+    
+    public Object visitExprArray(ExprArray exp){
+    	boolean oldBit = upToInt;
+    	upToInt = true;
+    	Expression offset = doExpression(exp.getOffset());
+        upToInt = oldBit;    	    	
+    	Expression base = doExpression(exp.getBase());        
+        if (base == exp.getBase() && offset == exp.getOffset())
+            return exp;
+        else
+            return new ExprArray(exp.getContext(), base, offset);
+    }
+    public Object visitExprArrayRange(ExprArrayRange exp){
+    	boolean change=false;
+		Expression newBase=doExpression(exp.getBase());
+		if(newBase!=exp.getBase()) change=true;
+		List l=exp.getMembers();
+		List newList=new ArrayList();
+		for(int i=0;i<l.size();i++) {
+			Object obj=l.get(i);
+			if(obj instanceof Range) {
+				Expression newStart = null;
+				Expression newEnd = null;
+				Range range=(Range) obj;
+				{				
+					boolean oldBit = upToInt;
+			    	upToInt = true;
+					newStart=doExpression(range.start);
+					upToInt = oldBit;
+				}
+				{					
+					boolean oldBit = upToInt;
+			    	upToInt = true;
+			    	newEnd=doExpression(range.end);
+			    	upToInt = oldBit;
+				}
+				newList.add(new Range(newStart,newEnd));
+				if(newStart!=range.start) change=true;
+				else if(newEnd!=range.end) change=true;
+			}
+			else if(obj instanceof RangeLen) {
+				RangeLen range=(RangeLen) obj;
+				Expression newStart = null;
+				{				
+					boolean oldBit = upToInt;
+			    	upToInt = true;
+			    	newStart=doExpression(range.start);
+			    	upToInt = oldBit;
+				}
+				newList.add(new RangeLen(newStart,range.len));
+				if(newStart!=range.start) change=true;
+			}
+		}
+		if(!change) return exp;
+		return new ExprArrayRange(newBase,newList);
     }
 }
 
@@ -146,6 +202,27 @@ class Indexify extends FEReplacer{
 		else
 			return exp;
 	}
+	
+	public Object visitExprArray(ExprArray exp){
+		//Since arrays are all one dimensional, 
+		//This will be of type int, but just in case
+		//as a precausion.
+		if ( stv.getType(exp) instanceof TypeArray)
+			return new ExprArray(exp.getContext(), exp, index);
+		else
+			return exp;
+    }
+	
+	public Object visitExprArrayRange(ExprArrayRange exp){
+		//Since arrays are all one dimensional, 
+		//This will be of type int, but just in case
+		//as a precausion.
+		if ( stv.getType(exp) instanceof TypeArray)
+			return new ExprArray(exp.getContext(), exp, index);
+		else
+			return exp;
+    }
+	
 	public Object visitExprBinary(ExprBinary exp)
     {
 		Type rType = stv.getType(exp.getRight());
@@ -264,7 +341,7 @@ public class GenerateCopies extends SymbolTableVisitor
     private void makeCopy(Expression from, Expression to)
     {
         // Assume that from and to have the same type.  What are we copying?
-        Type type = getType(from);
+        Type type = getType(to);
         if (type instanceof TypeArray)
             makeCopyArray(from, to, (TypeArray)type);
         else if (type instanceof TypeStruct)
@@ -439,7 +516,7 @@ public class GenerateCopies extends SymbolTableVisitor
         if (result instanceof StmtAssign) // it probably is:
         {
             stmt = (StmtAssign)result;
-            if (needsCopy(stmt.getRHS()))
+            if (needsCopy(stmt.getRHS()) || needsCopy(stmt.getLHS()))
             {
                 // drops op!  If there are compound assignments
                 // like "a += b" here, we lose.  There shouldn't be,

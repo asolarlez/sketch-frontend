@@ -51,6 +51,9 @@ public class ExprConstInt extends Expression
     /** Returns the value of this. */
     public int getVal() { return val; }
 
+    Integer getIValue(){
+    	return new Integer(val);
+    }
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {

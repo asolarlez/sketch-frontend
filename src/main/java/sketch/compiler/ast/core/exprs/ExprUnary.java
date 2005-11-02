@@ -36,6 +36,23 @@ public class ExprUnary extends Expression
     private int op;
     private Expression expr;
     
+    Integer getIValue(){
+    	if(expr != null){
+    		int v = expr.getIValue();
+    		switch(op){
+    		case UNOP_NOT: return new Integer(1-v);
+    		case UNOP_NEG: return new Integer(-v);
+    		case UNOP_PREINC:
+    		case UNOP_POSTINC:
+    		case UNOP_PREDEC:
+    		case UNOP_POSTDEC:
+    			return null;
+    		}
+    	}
+    	return null;
+    	
+    }
+    
     /** Creates a new ExprUnary applying the specified operator to the
      * specified expression. */
     public ExprUnary(FEContext context, int op, Expression expr)

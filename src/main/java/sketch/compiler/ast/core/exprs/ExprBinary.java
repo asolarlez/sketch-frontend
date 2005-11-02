@@ -117,6 +117,34 @@ public class ExprBinary extends Expression
         return left.hashCode() ^ right.hashCode() ^ new Integer(op).hashCode();
     }
 
+    Integer getIValue(){    	
+    	if( getLeft().getIValue()!= null && getRight().getIValue()!= null){
+    		int lv = getLeft().getIValue().intValue();
+    		int rv = getRight().getIValue().intValue();
+    		switch (op)
+            {
+            case ExprBinary.BINOP_ADD: return new Integer(lv + rv);
+            case ExprBinary.BINOP_SUB: return new Integer(lv - rv);
+            case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
+            case ExprBinary.BINOP_DIV: return new Integer(lv / rv);
+            case ExprBinary.BINOP_AND: return new Integer((lv==1 && rv==1)?1:0);
+            case ExprBinary.BINOP_OR: return new Integer((lv==1 || rv==1)?1:0);
+            case ExprBinary.BINOP_EQ: return new Integer((lv== rv)?1:0);
+            case ExprBinary.BINOP_NEQ: return new Integer((lv!= rv)?1:0);
+            case ExprBinary.BINOP_LT: return new Integer((lv< rv)?1:0);
+            case ExprBinary.BINOP_LE: return new Integer((lv<= rv)?1:0);
+            case ExprBinary.BINOP_GT: return new Integer((lv> rv)?1:0);
+            case ExprBinary.BINOP_GE: return new Integer((lv >= rv)?1:0);
+            case ExprBinary.BINOP_BAND: return new Integer((lv & rv));
+            case ExprBinary.BINOP_BOR: return new Integer((lv | rv));
+            case ExprBinary.BINOP_BXOR: return new Integer((lv ^ rv));
+            case ExprBinary.BINOP_LSHIFT: return new Integer((lv << rv));
+            case ExprBinary.BINOP_RSHIFT: return new Integer((lv >> rv));            
+            }    	
+    	}
+    	return null;
+    }
+    
     public String toString()
     {
         String theOp;

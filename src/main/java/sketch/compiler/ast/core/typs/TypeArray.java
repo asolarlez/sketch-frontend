@@ -61,7 +61,12 @@ public class TypeArray extends Type
         TypeArray that = (TypeArray)other;
         if (!(this.getBase().equals(that.getBase())))
             return false;
-        if (!(this.getLength().equals(that.getLength())))
+        Expression thisLen = this.getLength();
+        Expression thatLen = that.getLength();
+        if(thisLen.getIValue() != null && thatLen.getIValue() != null){
+        	return thisLen.getIValue().equals(thatLen.getIValue());
+        }
+        if (!(thisLen.equals(thatLen)))
             return false;
         return true;
     }
