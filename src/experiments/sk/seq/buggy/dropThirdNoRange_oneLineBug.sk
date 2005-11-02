@@ -1,0 +1,60 @@
+bit[16*2] dropThirdWordAligned(bit[3*16] in) {
+	bit[2*16] out;
+	int i = 0;
+	int j = 0;
+	
+	loop(16) { 
+		out[j] = in[i];
+		out[j+1] = in[i+1];
+		i += 3;
+		j += 2;
+	}
+	return out;
+}
+
+
+// ----------------------------------------------------------------------------
+// The sketch
+// ----------------------------------------------------------------------------
+
+bit[2*16] dropThirdImplementation(bit[3*16] in) implements dropThirdWordAligned 
+{
+	bit[16]   i1, i2, i3;
+	bit[16] tt1, tt2, tt3;
+	bit[2*16] t1, t2, t3;
+
+	for(int i=0; i<16; ++i){
+		i1[i] = in[i];
+		i2[i] = in[i+16];
+		i3[i] = in[i+2*16];
+	}
+
+	tt1 = logShifter(i1);   
+	tt2 = logShifter(i2);
+	tt3 = logShifter(i3);
+
+	for(int i=0; i<16; ++i){
+		t1[i] = tt1[i];
+		t2[i] = tt2[i];
+		t3[i] = tt3[i];
+	}
+	
+	for(int i=0; i<16; ++i){
+		t1[i+16] = 0;
+		t2[i+16] = 0;
+		t3[i+16] = 0;
+	}
+	
+	//There is a one line bug in this line:
+	return t1<<{*} {|} t2<<{*} {|} t3<<{*};
+}
+
+bit[16] logShifter(bit[16] in) {   
+	int disp=1;
+	loop( {*} ) {
+		in = in {|} in<<disp;
+		disp *= 2;
+	}
+	return in;
+}
+
