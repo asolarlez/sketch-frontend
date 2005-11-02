@@ -191,10 +191,11 @@ class UpgradeStarToInt extends FEReplacer{
 
 class Indexify extends FEReplacer{
 	private final Expression index;
-	private final SymbolTableVisitor stv;
-	Indexify(Expression index, SymbolTableVisitor stv){
+	private final GenerateCopies stv;
+	
+	Indexify(Expression index, GenerateCopies stv){
 		this.index = index;
-		this.stv = stv;
+		this.stv = stv;		
 	}
 	public Object visitExprVar(ExprVar exp) {
 		if ( stv.getType(exp) instanceof TypeArray)
@@ -233,16 +234,18 @@ class Indexify extends FEReplacer{
 				//This means that the shift ammount is non-deterministic.
 			//}else
 			{
+				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
+				ExprVar oldRHS = new ExprVar(context, newVarName);
 				Expression newIdx = null;
 				int op;
 				Expression newConst = null;
 				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, exp.getRight());
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );
 					op = ExprBinary.BINOP_LT;
 					TypeArray ta = (TypeArray) lType;					
 					newConst = ta.getLength();
 				}else{
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, exp.getRight());
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
 					op = ExprBinary.BINOP_GE;
 					newConst = new ExprConstInt(context, 0);					
 				}				
@@ -266,6 +269,15 @@ public class GenerateCopies extends SymbolTableVisitor
 {
     private TempVarGen varGen;
    
+    
+    public String addNewDeclaration(Type type,  Expression exp){
+    	String newVarName = varGen.nextVar();
+		StmtVarDecl rhsDecl = new StmtVarDecl(exp.getContext(),type, newVarName, exp );
+		symtab.registerVar(newVarName, type, null, SymbolTable.KIND_LOCAL);
+		this.doStatement(rhsDecl);	
+		return newVarName;
+    }
+    
     /**
      * Create a new copy generator.
      *

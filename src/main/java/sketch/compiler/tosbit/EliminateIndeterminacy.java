@@ -18,6 +18,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
@@ -25,6 +26,8 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -113,13 +116,52 @@ public class EliminateIndeterminacy extends FEReplacer {
 		 
 	 }
 	
-	
+	    public Object visitStreamSpec(StreamSpec spec)
+	    {
+	        // Oof, there's a lot here.  At least half of it doesn't get
+	        // visited...
+	        StreamType newST = null;
+	        if (spec.getStreamType() != null)
+	            newST = (StreamType)spec.getStreamType().accept(this);
+	        List newVars = new ArrayList();
+	        List newFuncs = new ArrayList();
+	        boolean changed = false;
+	        
+	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
+	        {
+	            FieldDecl oldVar = (FieldDecl)iter.next();
+	            FieldDecl newVar = (FieldDecl)oldVar.accept(this);
+	            if (oldVar != newVar) changed = true;
+	            newVars.add(newVar);
+	        }
+	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
+	        {
+	            Function oldFunc = (Function)iter.next();
+	            Function newFunc = (Function)oldFunc.accept(this);
+	            if (oldFunc != newFunc) changed = true;
+	            if(newFunc != null){
+	            	newFuncs.add(newFunc);
+	            }
+	        }
+
+	        if (!changed && newST == spec.getStreamType()) return spec;
+	        return new StreamSpec(spec.getContext(), spec.getType(),
+	                              newST, spec.getName(), spec.getParams(),
+	                              newVars, newFuncs);
+	        
+	    }
+	 
+	 
+	 
 	public Object visitFunction(Function func)
     {
 		Statement fBody = func.getBody();
 		nodeFinder =new FindIndetNodes(); 
 		fBody.accept(nodeFinder);
-				
+		if(func.getSpecification() == null && nodeFinder.nodes.size() != 0){
+			System.out.println("This is an unbound sketch");
+			return null;
+		}
         List<Statement> stmts = new ArrayList<Statement>();
         addOracleVars(stmts);
         stmts.add(fBody);

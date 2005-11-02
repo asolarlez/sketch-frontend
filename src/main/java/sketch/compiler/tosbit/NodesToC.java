@@ -23,7 +23,7 @@ public class NodesToC extends NodesToJava {
 		ss = spec;
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
-            Function oldFunc = (Function)iter.next();
+            Function oldFunc = (Function)iter.next();            
             result += (String)oldFunc.accept(this);            
         }
         return result;
