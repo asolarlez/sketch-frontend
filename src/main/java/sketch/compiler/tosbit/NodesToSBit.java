@@ -427,7 +427,7 @@ public class NodesToSBit implements FEVisitor{
 	    			if( i!= 0) vname += " ";
 	    			String tmpname = baseName + "_idx_" + i;
 	    			if(state.varHasValue(tmpname)){
-	    				tmpname =  " " + state.varValue(vname);
+	    				tmpname =  " " + state.varValue(tmpname);
 	    			}else{
 	    				tmpname = state.varGetRHSName(tmpname);
 	    			}
