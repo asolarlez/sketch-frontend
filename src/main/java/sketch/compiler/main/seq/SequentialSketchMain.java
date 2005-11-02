@@ -303,19 +303,24 @@ public class ToSBit
         String command = (sbitPath!=null? sbitPath + "\\" : "") + "SBitII.exe";
         try
         {
-        String[] tmp  = {command ,  outputFile, outputFile + ".tmp"};        
-        Process proc = rt.exec(tmp);   
-        InputStream stderr = proc.getInputStream();
-        InputStreamReader isr = new InputStreamReader(stderr);
-        BufferedReader br = new BufferedReader(isr);
-        String line = null;
-        while ( (line = br.readLine()) != null)
-            System.out.println(line);        
-        int exitVal = proc.waitFor();
-        System.out.println("Process exitValue: " + exitVal);
-        if(exitVal != 0){
-        	throw new RuntimeException("The sketch can not be resolved");
-        }
+	        String[] tmp  = {command ,  outputFile, outputFile + ".tmp"};        
+	        Process proc = rt.exec(tmp);   
+	        InputStream output = proc.getInputStream();
+	        InputStream stdErr = proc.getErrorStream();
+	        InputStreamReader isr = new InputStreamReader(output);
+	        InputStreamReader errStr = new InputStreamReader(stdErr);
+	        BufferedReader br = new BufferedReader(isr);
+	        BufferedReader errBr = new BufferedReader(errStr);
+	        String line = null;
+	        while ( (line = br.readLine()) != null)
+	            System.out.println(line);       
+	        while ( (line = errBr.readLine()) != null)
+	            System.err.println(line);       
+	        int exitVal = proc.waitFor();
+	        System.out.println("Process exitValue: " + exitVal);
+	        if(exitVal != 0){
+	        	throw new RuntimeException("The sketch can not be resolved");
+	        }
         }
         catch (java.io.IOException e)
         {
