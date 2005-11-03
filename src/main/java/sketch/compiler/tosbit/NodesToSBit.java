@@ -28,16 +28,16 @@ import streamit.frontend.tojava.StmtSetTypes;
  * 
  */
 public class NodesToSBit implements FEVisitor{
-	   private StreamSpec ss;
+	    protected StreamSpec ss;
 	    // A string consisting of an even number of spaces.
 	    private String indent;
 	    private TempVarGen varGen;
-	    private MethodState state;
+	    protected MethodState state;
 	    private boolean isLHS;
 	    private NodesToNative nativeGenerator;
 	    private HashMap funsWParams;
-	    private Stack preFil;
-	    private List additInit;
+	    protected Stack preFil;
+	    protected List additInit;
 	    private ValueOracle oracle;
 	    
 	    private void Assert(boolean t, String s){

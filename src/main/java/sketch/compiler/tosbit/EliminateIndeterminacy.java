@@ -11,6 +11,7 @@ import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
@@ -59,6 +60,13 @@ public class EliminateIndeterminacy extends FEReplacer {
 	private TempVarGen varGen;
 	private ValueOracle oracle;
 	private FindIndetNodes nodeFinder;
+	private List<Function> newFuncs;
+	private StreamSpec curSpec;
+	
+	private void addFunction(Function fun){
+		newFuncs.add(fun);		
+	}
+	
 	public EliminateIndeterminacy(ValueOracle oracle, TempVarGen varGen) {
 		super();
 		this.oracle = oracle;
@@ -116,17 +124,39 @@ public class EliminateIndeterminacy extends FEReplacer {
 		 
 	 }
 	
+	 public Object visitExprFunCall(ExprFunCall exp)
+	    {	        
+	        List<Expression> newParams = new ArrayList<Expression>();
+	        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+	        {
+	            Expression param = (Expression)iter.next();
+	            Expression newParam = doExpression(param);
+	            newParams.add(newParam);	            
+	        }
+	        
+	        String oldName = exp.getName();
+	        String newName = oldName + varGen.nextVar();
+	        
+	        Function oldF = curSpec.getFuncNamed(oldName);
+	        assert oldF != null : "function " + oldName + "is undefined!!";
+	        Function newF = (Function)oldF.accept(this);	        
+	        newF = new Function(newF.getContext(), newF.getCls(), newName, newF.getReturnType(), newF.getParams(),newF.getSpecification(), newF.getBody() );
+	        addFunction(newF);
+	        return new ExprFunCall(exp.getContext(), newName, newParams);
+	    }
+	  
+	 
 	    public Object visitStreamSpec(StreamSpec spec)
-	    {
-	        // Oof, there's a lot here.  At least half of it doesn't get
-	        // visited...
+	    {	        
+	    	StreamSpec oldCspec = curSpec;
+	    	curSpec = spec;
 	        StreamType newST = null;
 	        if (spec.getStreamType() != null)
 	            newST = (StreamType)spec.getStreamType().accept(this);
-	        List newVars = new ArrayList();
-	        List newFuncs = new ArrayList();
+	        List<FieldDecl> newVars = new ArrayList<FieldDecl>();
+	        List<Function> oldFuncs = newFuncs;
+	        newFuncs = new ArrayList<Function>();
 	        boolean changed = false;
-	        
 	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
 	        {
 	            FieldDecl oldVar = (FieldDecl)iter.next();
@@ -134,20 +164,30 @@ public class EliminateIndeterminacy extends FEReplacer {
 	            if (oldVar != newVar) changed = true;
 	            newVars.add(newVar);
 	        }
-	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
+	        
+	        SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
+	        List<Function> funcs = funSelector.selectFunctions(spec);
+	        
+	        for (Iterator<Function>  iter = funcs.iterator(); iter.hasNext(); )
 	        {
-	            Function oldFunc = (Function)iter.next();
+	            Function oldFunc = iter.next();
 	            Function newFunc = (Function)oldFunc.accept(this);
 	            if (oldFunc != newFunc) changed = true;
-	            if(newFunc != null){
-	            	newFuncs.add(newFunc);
-	            }
+	            newFuncs.add(newFunc);
+	            
 	        }
-
-	        if (!changed && newST == spec.getStreamType()) return spec;
-	        return new StreamSpec(spec.getContext(), spec.getType(),
+	        StreamSpec result;
+	        if (!changed && newST == spec.getStreamType()){
+	        	result = spec;
+	        }else{
+	        	result = new StreamSpec(spec.getContext(), spec.getType(),
 	                              newST, spec.getName(), spec.getParams(),
 	                              newVars, newFuncs);
+	        }
+	        
+	        newFuncs = oldFuncs;
+	        curSpec = oldCspec;
+	        return result;
 	        
 	    }
 	 
@@ -158,10 +198,6 @@ public class EliminateIndeterminacy extends FEReplacer {
 		Statement fBody = func.getBody();
 		nodeFinder =new FindIndetNodes(); 
 		fBody.accept(nodeFinder);
-		if(func.getSpecification() == null && nodeFinder.nodes.size() != 0){
-			System.out.println("This is an unbound sketch");
-			return null;
-		}
         List<Statement> stmts = new ArrayList<Statement>();
         addOracleVars(stmts);
         stmts.add(fBody);

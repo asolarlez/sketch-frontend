@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.StreamSpec;
@@ -28,5 +30,24 @@ public class NodesToC extends NodesToJava {
         }
         return result;
 	}
+	
+	public Object visitExprFunCall(ExprFunCall exp)
+    {
+		String result = "";
+        String name = exp.getName();        
+        result = name + "(";         
+        boolean first = true;
+        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+        {
+            Expression param = (Expression)iter.next();
+            if (!first) result += ", ";
+            first = false;
+            result += (String)param.accept(this);
+        }
+        result += ")";
+        return result;        
+    }
+	
+	
 
 }

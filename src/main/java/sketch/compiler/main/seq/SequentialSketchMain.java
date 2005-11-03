@@ -54,7 +54,7 @@ import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
 import streamit.frontend.tosbit.EliminateIndeterminacy;
 import streamit.frontend.tosbit.NodesToC;
-import streamit.frontend.tosbit.NodesToSBit;
+import streamit.frontend.tosbit.ProduceBooleanFunctions;
 import streamit.frontend.tosbit.ValueOracle;
 
 /**
@@ -287,7 +287,7 @@ public class ToSBit
                 outWriter = new OutputStreamWriter(System.out);
 
             String javaOut =
-                (String)prog.accept( new NodesToSBit(null, varGen, oracle) /*  new NodesToJava(false, varGen)*/);
+                (String)prog.accept( new ProduceBooleanFunctions(null, varGen, oracle));
             outWriter.write(javaOut);
             outWriter.flush();
         }
