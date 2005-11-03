@@ -34,6 +34,26 @@ public class ParserTest extends TestCase
 		}
 	}
 	
+	public void testRetFnCall() //test a function call within a return
+	{
+		Program p=doTest("test/debug-lt.sk");
+		StreamSpec ss=(StreamSpec) p.getStreams().get(0);
+		assertNotNull(ss);
+		for(Iterator i=ss.getFuncs().iterator();i.hasNext();) {
+			Function f=(Function) i.next();
+			for(Iterator st=((StmtBlock)f.getBody()).getStmts().iterator();st.hasNext();) {
+				Object o=st.next();
+				if (o instanceof StmtAssign) {
+					StmtAssign stexpr = (StmtAssign) o;
+					if(stexpr.getRHS() instanceof ExprFunCall) {
+						ExprFunCall fcall=(ExprFunCall) stexpr.getRHS();
+						assertFalse(fcall.getParams().size()<=1);
+					}
+				}
+			}
+		}
+	}
+	
 	public void testToSbit()
 	{
 		//new ToSBit().run(new String[]{"--output","test/outfile","test/debug.sk"});

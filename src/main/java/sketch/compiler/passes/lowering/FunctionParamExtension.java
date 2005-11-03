@@ -97,6 +97,7 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 	}
 
 	public Object visitStmtReturn(StmtReturn stmt) {
+		stmt=(StmtReturn) super.visitStmtReturn(stmt);
 		List params=getOutputParams(currentFunction);
 		for(int i=0;i<params.size();i++) {
 			Parameter param=(Parameter) params.get(i);
