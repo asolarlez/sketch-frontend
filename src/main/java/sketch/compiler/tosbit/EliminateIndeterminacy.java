@@ -21,6 +21,7 @@ import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -29,17 +30,17 @@ import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.passes.SymbolTableVisitor;
 
 class FindIndetNodes extends FEReplacer{
 	public final Map<FENode, String> nodes;
-	public FindIndetNodes(){
+	private final StreamSpec curSpec;
+	public FindIndetNodes(StreamSpec curSpec){
 		nodes = new HashMap<FENode, String>();
+		this.curSpec = curSpec;
 	}
 	public Object visitExprStar(ExprStar star) {
 		nodes.put(star, "_oracle_" + nodes.size());
@@ -51,6 +52,14 @@ class FindIndetNodes extends FEReplacer{
 			nodes.put(exp, "_oracle_" + nodes.size());
 		}
 		return super.visitExprBinary(exp);
+    }
+	public Object visitExprFunCall(ExprFunCall exp)
+    {	
+		Function fun = curSpec.getFuncNamed(exp.getName());
+		assert fun != null : "Calling undefined function!!";
+		Object obj = super.visitExprFunCall(exp);
+		fun.accept(this);
+		return obj;
     }
 }
 
@@ -89,6 +98,19 @@ public class EliminateIndeterminacy extends FEReplacer {
 		}
 	}
 	
+	public void addOracleParams(List<Parameter> stmts){
+		Iterator<Entry<FENode, String>> names = nodeFinder.nodes.entrySet().iterator();		
+		while(names.hasNext()){
+			Entry<FENode, String> current = names.next();
+			FEContext context = current.getKey().getContext();
+			List<ExprConstInt> values = this.oracle.getVarsForNode(current.getKey());
+			Type t = new TypeArray(TypePrimitive.inttype, new ExprConstInt(context, values.size()));
+			Parameter param = new Parameter(t, current.getValue());			
+			stmts.add(param);
+			param = new Parameter(TypePrimitive.inttype, current.getValue()+"_i");			
+			stmts.add(param);
+		}
+	}
 	
 	 public Object visitStmtLoop(StmtLoop loop)
 	 {		 
@@ -126,6 +148,7 @@ public class EliminateIndeterminacy extends FEReplacer {
 	
 	 public Object visitExprFunCall(ExprFunCall exp)
 	    {	        
+		 	FEContext context = exp.getContext();
 	        List<Expression> newParams = new ArrayList<Expression>();
 	        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
 	        {
@@ -134,19 +157,34 @@ public class EliminateIndeterminacy extends FEReplacer {
 	            newParams.add(newParam);	            
 	        }
 	        
-	        String oldName = exp.getName();
-	        String newName = oldName + varGen.nextVar();
 	        
-	        Function oldF = curSpec.getFuncNamed(oldName);
+	        String oldName = exp.getName();
+	        String newName = oldName + varGen.nextVar();	        
+	        Function oldF = curSpec.getFuncNamed(oldName);	        	        
 	        assert oldF != null : "function " + oldName + "is undefined!!";
-	        Function newF = (Function)oldF.accept(this);	        
-	        newF = new Function(newF.getContext(), newF.getCls(), newName, newF.getReturnType(), newF.getParams(),newF.getSpecification(), newF.getBody() );
+	        
+	        FindIndetNodes findNdet =new FindIndetNodes(curSpec); 
+	        oldF.accept(findNdet);
+	        Iterator<Entry<FENode, String>> names = findNdet.nodes.entrySet().iterator();		
+			while(names.hasNext()){				
+				Entry<FENode, String> current = names.next();
+				{
+					Expression newParam = new ExprVar(context, current.getValue());
+	            	newParams.add(newParam);
+				}
+				{
+					Expression newParam = new ExprVar(context, current.getValue()+"_i");
+	            	newParams.add(newParam);
+				}	            
+			}
+	        Function newF = new Function(oldF.getContext(), oldF.getCls(), newName, oldF.getReturnType(), oldF.getParams(),oldF.getSpecification(), oldF.getBody() );	        
+	        newF = (Function)newF.accept(this);
 	        addFunction(newF);
 	        return new ExprFunCall(exp.getContext(), newName, newParams);
 	    }
 	  
 	 
-	    public Object visitStreamSpec(StreamSpec spec)
+	 public Object visitStreamSpec(StreamSpec spec)
 	    {	        
 	    	StreamSpec oldCspec = curSpec;
 	    	curSpec = spec;
@@ -195,18 +233,31 @@ public class EliminateIndeterminacy extends FEReplacer {
 	 
 	public Object visitFunction(Function func)
     {
-		Statement fBody = func.getBody();
-		nodeFinder =new FindIndetNodes(); 
-		fBody.accept(nodeFinder);
-        List<Statement> stmts = new ArrayList<Statement>();
-        addOracleVars(stmts);
-        stmts.add(fBody);
-        Statement result = new StmtBlock(func.getContext(), stmts);        
-        Statement newBody = (Statement)result.accept(this);
-        
-        return new Function(func.getContext(), func.getCls(),
-                            func.getName(), func.getReturnType(),
-                            func.getParams(), func.getSpecification(), newBody);
+		if(func.getSpecification() != null){
+			Statement fBody = func.getBody();
+			nodeFinder =new FindIndetNodes(curSpec); 
+			fBody.accept(nodeFinder);			
+	        List<Statement> stmts = new ArrayList<Statement>();
+	        addOracleVars(stmts);
+	        stmts.add(fBody);	        
+	        Statement result = new StmtBlock(func.getContext(), stmts);        
+	        Statement newBody = (Statement)result.accept(this);
+	        
+	        return new Function(func.getContext(), func.getCls(),
+	                            func.getName(), func.getReturnType(),
+	                            func.getParams(), func.getSpecification(), newBody);
+		}else{
+			Statement fBody = func.getBody();
+			nodeFinder =new FindIndetNodes(curSpec); 
+			fBody.accept(nodeFinder);			
+	        List<Parameter> params = new ArrayList<Parameter>();
+	        params.addAll(func.getParams());
+	        addOracleParams(params);
+	        Statement newBody = (Statement)fBody.accept(this);
+	        return new Function(func.getContext(), func.getCls(),
+	                            func.getName(), func.getReturnType(),
+	                            params, func.getSpecification(), newBody);
+		}
     }
 	
 	public Object visitExprStar(ExprStar star) {
