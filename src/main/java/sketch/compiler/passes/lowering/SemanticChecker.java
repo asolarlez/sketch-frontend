@@ -639,7 +639,7 @@ public class SemanticChecker
                         case ExprBinary.BINOP_DIV:
                         case ExprBinary.BINOP_MUL:
                         case ExprBinary.BINOP_SUB:
-                            if (!ct.promotesTo(cplxtype))
+                            if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.ndinttype)))
                                 report(expr,
                                        "cannot perform arithmetic on " + ct);
                             break;

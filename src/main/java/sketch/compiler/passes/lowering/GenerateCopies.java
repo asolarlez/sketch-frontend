@@ -143,7 +143,7 @@ class UpgradeStarToInt extends FEReplacer{
 		Expression newBase=doExpression(exp.getBase());
 		if(newBase!=exp.getBase()) change=true;
 		List l=exp.getMembers();
-		List newList=new ArrayList();
+		List<Object> newList=new ArrayList<Object>();
 		for(int i=0;i<l.size();i++) {
 			Object obj=l.get(i);
 			if(obj instanceof Range) {
@@ -192,10 +192,14 @@ class UpgradeStarToInt extends FEReplacer{
 class Indexify extends FEReplacer{
 	private final Expression index;
 	private final GenerateCopies stv;
+	public final List<Statement> postStmts;
+	public final List<Statement> preStmts;
 	
 	Indexify(Expression index, GenerateCopies stv){
 		this.index = index;
 		this.stv = stv;		
+		this.postStmts = new ArrayList<Statement>();
+		this.preStmts = new ArrayList<Statement>();
 	}
 	public Object visitExprVar(ExprVar exp) {
 		if ( stv.getType(exp) instanceof TypeArray)
@@ -224,43 +228,83 @@ class Indexify extends FEReplacer{
 			return exp;
     }
 	
+	public Expression handleBitShift(ExprBinary exp){
+		{
+			assert exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT : "This should never happen!!";
+			Type lType = stv.getType(exp.getLeft());
+			FEContext context = exp.getContext();
+			String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
+			ExprVar oldRHS = new ExprVar(context, newVarName);
+			Expression newIdx = null;
+			int op;
+			Expression newConst = null;
+			if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
+				newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );
+				op = ExprBinary.BINOP_LT;
+				TypeArray ta = (TypeArray) lType;					
+				newConst = ta.getLength();
+			}else{
+				newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
+				op = ExprBinary.BINOP_GE;
+				newConst = new ExprConstInt(context, 0);					
+			}
+			Indexify indexify = new Indexify(newIdx, stv );
+			Expression newVal = (Expression) exp.getLeft().accept(indexify);
+			this.preStmts.addAll(indexify.preStmts);
+			this.postStmts.addAll(indexify.postStmts);			
+			Expression result = new ExprTernary(context,
+					ExprTernary.TEROP_COND, 
+					new ExprBinary(context, op, newIdx, newConst ),
+					newVal,
+					new ExprConstInt(context, 0)
+			);
+			
+			return 	result;
+		}			
+	}
+    
+    
+	
 	public Object visitExprBinary(ExprBinary exp)
     {
-		Type rType = stv.getType(exp.getRight());
-		Type lType = stv.getType(exp.getLeft());
-		FEContext context = exp.getContext();
-		if(exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT){
-			//if(rType.isNonDet()){
-				//This means that the shift ammount is non-deterministic.
-			//}else
-			{
-				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
-				ExprVar oldRHS = new ExprVar(context, newVarName);
-				Expression newIdx = null;
-				int op;
-				Expression newConst = null;
-				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );
-					op = ExprBinary.BINOP_LT;
-					TypeArray ta = (TypeArray) lType;					
-					newConst = ta.getLength();
-				}else{
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
-					op = ExprBinary.BINOP_GE;
-					newConst = new ExprConstInt(context, 0);					
-				}				
-				Indexify indexify = new Indexify(newIdx, stv );
-				Expression newVal = (Expression) exp.getLeft().accept(indexify);
-				Expression result = new ExprTernary(context,
-						ExprTernary.TEROP_COND, 
-						new ExprBinary(context, op, newIdx, newConst ),
-						newVal,
-						new ExprConstInt(context, 0)
-				);
-				
-				return 	result;
-			}			
+		if(exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT){			
+			return this.handleBitShift(exp);
 		}
+		if(exp.getOp() == ExprBinary.BINOP_ADD){
+			FEContext context = exp.getContext();
+			Type lType = stv.getType(exp.getLeft());
+			if(lType instanceof TypeArray ){
+				lType = ((TypeArray)lType).getBase();
+			}
+			Type rType = stv.getType(exp.getRight());
+			if(rType instanceof TypeArray ){
+				rType = ((TypeArray)rType).getBase();
+			}
+			
+			String carry = stv.addNewDeclaration(lType, new ExprConstInt(context, 0));
+			String ldecl = stv.addNewDeclaration(lType, new ExprConstInt(context, 0));
+			String rdecl = stv.addNewDeclaration(rType, new ExprConstInt(context, 0));
+			
+			Expression left = doExpression(exp.getLeft());
+			Expression right = doExpression(exp.getRight());
+			StmtAssign lassign = new StmtAssign(context,new ExprVar(context, ldecl), left );
+			StmtAssign rassign = new StmtAssign(context,new ExprVar(context, rdecl), right );
+			this.preStmts.add(rassign);
+			this.preStmts.add(lassign);
+			left = new ExprVar(context, ldecl);
+			right = new ExprVar(context, rdecl);
+			
+			Expression newExp = new ExprBinary(context, ExprBinary.BINOP_BXOR, left, right);
+			newExp = new ExprBinary(context, ExprBinary.BINOP_BXOR, newExp, new ExprVar(context, carry));
+			Expression newCarry1 = new ExprBinary(context, ExprBinary.BINOP_BAND, left , new ExprVar(context, carry));
+			Expression newCarry2 = new ExprBinary(context, ExprBinary.BINOP_BOR, left , new ExprVar(context, carry));
+			Expression newCarry3 = new ExprBinary(context, ExprBinary.BINOP_BAND, right , newCarry2);
+			Expression newCarry4 = new ExprBinary(context, ExprBinary.BINOP_BOR, newCarry3 , newCarry1);
+			Statement newStmt = new StmtAssign(context,new ExprVar(context, carry), newCarry4);
+			postStmts.add(newStmt);
+			return newExp;			
+		}
+		
 		return super.visitExprBinary(exp);		        
     }
 }
@@ -385,13 +429,20 @@ public class GenerateCopies extends SymbolTableVisitor
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Expression fel = (Expression) from.accept(new Indexify(index, this));         	
-        Expression tel = (Expression) to.accept(new Indexify(index, this)); 
+        Indexify indexifier = new Indexify(index, this);
+        Expression fel = (Expression) from.accept(indexifier);
+        Indexify indexifier2 = new Indexify(index, this);
+        Expression tel = (Expression) to.accept(indexifier2); 
+        List<Statement> bodyLst = new ArrayList<Statement>();
+        bodyLst.addAll(indexifier.preStmts);
+        bodyLst.addAll(indexifier2.preStmts);
+        bodyLst.add(new StmtAssign(null,
+                tel,
+                fel));
+        bodyLst.addAll(indexifier.postStmts);
+        bodyLst.addAll(indexifier2.postStmts);
         Statement body =
-            new StmtBlock(null,
-                          Collections.singletonList(new StmtAssign(null,
-                                                                   tel,
-                                                                   fel)));
+            new StmtBlock(null,    bodyLst);
         body = (Statement)body.accept(this);
 
         // Now generate the loop, we have all the parts.

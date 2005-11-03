@@ -94,8 +94,11 @@ public class NodesToJava implements FEVisitor
         {
             switch (((TypePrimitive)type).getType())
             {
+            case TypePrimitive.TYPE_NDBOOLEAN:
             case TypePrimitive.TYPE_BOOLEAN: return "boolean";
+            case TypePrimitive.TYPE_NDBIT:
             case TypePrimitive.TYPE_BIT: return "int";
+            case TypePrimitive.TYPE_NDINT:
             case TypePrimitive.TYPE_INT: return "int";
             case TypePrimitive.TYPE_FLOAT: return "float";
             case TypePrimitive.TYPE_DOUBLE: return "double";
