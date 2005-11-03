@@ -3,10 +3,10 @@ bit foo(bit[4] in){
 }
 
 bit reverseSketch(bit[4] in) implements reverse {	
-	bit x = foo(in);
-	return x;
+
+	return 	foo(in) ^ foo(in);
 }
 
 bit reverse (bit[4] in) {
-	return in[2];
+	return in[2] ^ in[3];
 }
