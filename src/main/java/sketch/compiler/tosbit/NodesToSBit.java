@@ -1070,13 +1070,23 @@ public class NodesToSBit implements FEVisitor{
 	        	
 	        	String apnm = (String) actualParam.accept(this);
 	        	
-	        	String formalParamName = formalParam.getName();
-	        	state.varDeclare(formalParamName);
-	    		String lhsname = state.varGetLHSName(formalParamName);
+	        	
 	    		
-	        	if( this.state.topOfStackIsVector() ){				        
-		    		List lst= state.vectorPopVStack();
+	        	if( this.state.topOfStackIsVector() ){	
+	        		List lst= state.vectorPopVStack();
+	        		
+	        		List<String> rhsNames = new LinkedList<String>();
+	        		for(int i=0; i<lst.size(); ++i){
+	        			rhsNames.add(state.varGetRHSName(apnm + "_idx_" + i));
+	        		}
+	        		
+	        		String formalParamName = formalParam.getName();
+		        	state.varDeclare(formalParamName);
+		    		String lhsname = state.varGetLHSName(formalParamName);
+		    		
+		    		
 		    		Iterator it = lst.iterator();
+		    		Iterator<String> rhsNamesIter = rhsNames.iterator();
 		    		int idx = 0;
 		    		state.makeArray(formalParamName, lst.size());
 		    		while( it.hasNext() ){
@@ -1086,7 +1096,7 @@ public class NodesToSBit implements FEVisitor{
 			    		lhsname = state.varGetLHSName(lpnm);
 			    		if( !formalParam.isParameterOutput() ){
 				    		if(i == null){
-				    			result += lhsname + " = " + state.varGetRHSName(apnm + "_idx_" + idx) + ";\n";
+				    			result += lhsname + " = " + rhsNamesIter.next() + ";\n";
 				    		}else{
 				    			state.setVarValue(lpnm, i.intValue());
 				    		}
@@ -1094,6 +1104,9 @@ public class NodesToSBit implements FEVisitor{
 		    			++idx;
 		    		}
 		    	}else{
+		    		String formalParamName = formalParam.getName();
+		        	state.varDeclare(formalParamName);
+		    		String lhsname = state.varGetLHSName(formalParamName);
 		    		Integer value = state.popVStack();
 		    		Assert(value != null || !checkError, "I must be able to determine the values of the parameters at compile time.");
 		    		if( !formalParam.isParameterOutput() ){
@@ -1145,7 +1158,7 @@ public class NodesToSBit implements FEVisitor{
 		    		Assert(value != null || !checkError, "I must be able to determine the values of the parameters at compile time.");
 		    		if( formalParam.isParameterOutput() ){
 			    		if(value == null){
-			    			result += lhsname + " = " + state.varGetLHSName(formalParamName) + ";\n";
+			    			result += lhsname + " = " + state.varGetRHSName(formalParamName) + ";\n";
 			    		}else{
 			    			state.setVarValue(formalParamName, value.intValue());
 			    		}
