@@ -1,0 +1,39 @@
+bit[16] firstZeroSk(bit[16] in){	
+	bit[16] ret;
+	ret = (!in) & (in + {*});
+	return ret;
+}
+
+bit[16] countBitsSk(bit[16] in) implements countBits
+{
+	bit[16] ret=0;
+	bit[16] ONE = 0; ONE[0] = 1;
+	bit[16] tmp = 0;
+	
+	for(int i=0; i<16 ; ++i){
+		tmp = firstZeroSk(in);
+		bit[16] x = tmp != 0;
+		bit cond=0;
+		for(int i=0; i<16; ++i){
+			cond = cond || tmp[i];
+		}
+		if(cond){
+			ret = ret + ONE;
+		}
+		in = tmp | in;
+	}
+	return ret;
+}
+
+
+bit[16] countBits(bit[16] in)
+{
+	bit[16] ret=0;
+	bit[16] tmp = 0;
+	tmp[0] = 1;
+	for(int i=0;i<16;i++){
+		if(!in[i])
+			ret=ret+tmp;
+	}
+	return ret;
+}
