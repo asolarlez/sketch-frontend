@@ -38,6 +38,7 @@ import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AssignLoopTypes;
 import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.FindFreeVariables;
 import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.GenerateCopies;
@@ -220,13 +221,14 @@ public class ToSBit
          * MoveStreamParameters introduces references to
          * "this", which doesn't exist. */
         prog = (Program)prog.accept(new MakeBodiesBlocks());
+        prog = (Program)prog.accept(new ExtractRightShifts(varGen));
         prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
         prog = (Program)prog.accept(new NoRefTypes());
         prog = (Program)prog.accept(new FindFreeVariables());
         if (!libraryFormat)
             prog = (Program)prog.accept(new NoticePhasedFilters());
-        prog = (Program)prog.accept(new DoComplexProp(varGen));
+        prog = (Program)prog.accept(new DoComplexProp(varGen));        
         prog = (Program)prog.accept(new GenerateCopies(varGen));
         prog = (Program)prog.accept(new ComplexToStruct());
         prog = (Program)prog.accept(new SeparateInitializers());
@@ -300,7 +302,7 @@ public class ToSBit
                 
         System.out.println("OFILE = " + outputFile);
         Runtime rt = Runtime.getRuntime();
-        String command = (sbitPath!=null? sbitPath + "\\" : "") + "SBitII";
+        String command = (sbitPath!=null? sbitPath : "") + "SBitII";
         try
         {
 	        String[] tmp  = {command ,  outputFile, outputFile + ".tmp"};        

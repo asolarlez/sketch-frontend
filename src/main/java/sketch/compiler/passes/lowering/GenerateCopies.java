@@ -226,7 +226,8 @@ class Indexify extends FEReplacer{
 			return new ExprArray(exp.getContext(), exp, index);
 		else
 			return exp;
-    }
+    }	
+	
 	
 	public Expression handleBitShift(ExprBinary exp){
 		{

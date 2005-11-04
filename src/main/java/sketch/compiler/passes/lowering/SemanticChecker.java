@@ -713,7 +713,7 @@ public class SemanticChecker
                     if (at != null)
                     {
                         if (!at.promotesTo
-                            (new TypePrimitive(TypePrimitive.TYPE_INT)))
+                            (TypePrimitive.ndinttype))
                             report(expr,
                                    "first part of ternary expression "+
                                    "must be int");
