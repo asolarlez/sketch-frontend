@@ -9,36 +9,38 @@ bit[64] DES_IP(bit[64] in) {
 		61, 53, 45, 37, 29, 21, 13, 5,
 		63, 55, 47, 39, 31, 23, 15, 7
 	};
-	bit [64] out;
-	
+	bit [64] out;	
 	for (int i = 0; i < 64; ++i)
-		out[i]=in[p[i]];
+		out[i]=in[p[i]-1];
 	
 	return out;
 }
 
-bit[32] doPermute(bit[32] in)
-{
-	return {perm} in;
-}
 
-bit[64] DES_IPopt(bit[64] in) implements DES_IP
-{
-	bit[64] tmp=in;
-	loop({1:32})
-	{
-		int s={*};
-		tmp=in {|} tmp<<s {|} tmp>>s;
+bit [64] DES_IPopt(bit[64] in) implements DES_IP{
+	bit[32] l = 0;
+	bit[32] r = 0;
+	bit[32] tmp = 0;
+	int tint = 0;
+	for(int i=0; i<32; ++i){
+		l[i] = in[i];
+		r[i] = in[i+32];
 	}
-	bit[32] l,r;
-	[l,r]=tmp;
-	function p2=doPermute;
-	return [p2(l),p2(r)];
-}
-
-bit[32] permuteOpt(bit[32] in) overrides doPermute
-{
-	//this is the optimized sketch of the 2nd permutation step
-	//right now it doesn't have any optimizations, but it could
-	return {perm} in;
+	
+	loop({*}){
+		tint = {*};
+		tmp =  (l >> tint) ^ r & {*};
+		r = r ^ tmp;
+		l = l ^ (tmp << tint);
+		tmp = r;
+		r = l;
+		l = tmp;
+	}
+	bit[64] res = 0;
+	bit m = {*};
+	for(int i=0; i<32; ++i){
+		res[i] = m? l[i] : r[i];
+		res[i+32] = m ? r[i] : l[i];
+	}
+	return res;
 }
