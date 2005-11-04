@@ -7,7 +7,6 @@ bit[32] reverseSketch(bit[32] in) implements reverse {
 		bit[32] tmp2 = (t << s);
 		t = tmp1 {|} tmp2;
 		s = s*2;
-		
 	}
 
 	return t;
