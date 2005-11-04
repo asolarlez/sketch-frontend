@@ -1,0 +1,25 @@
+bit[16] countBits(bit[16] in)
+{
+	bit[16] ret=0;
+	bit[16] tmp = 0;
+	tmp[0] = 1;
+	for(int i=0;i<16;i++){
+		if(in[i])
+			ret=ret+tmp;
+	}
+	return ret;
+}
+
+
+
+bit[16] countSketch2(bit[16] in) implements countBits
+{
+	bit[16] tmp=in;
+	loop({*})
+	{
+		bit[16] m={*};
+		tmp=(tmp & m) + (tmp<<{*} & m);
+	}
+	return tmp;
+}
+

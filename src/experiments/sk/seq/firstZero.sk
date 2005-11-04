@@ -1,0 +1,18 @@
+bit[32] firstZeroSk(bit[32] in) implements firstZero {	
+	bit[32] ret;
+	ret = (!in + {*}) & (in + {*});
+	return ret;
+}
+
+bit[32] firstZero (bit[32] in) {
+	bit[32] ret=0;
+	bit flag = 1;
+	for(int i=0; i<32 ; ++i){
+		if(!in[i] && flag == 1){			
+			ret[i] = 1;
+			flag = 0;
+		}
+	}
+	return ret;
+}
+
