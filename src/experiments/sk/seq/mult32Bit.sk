@@ -1,0 +1,25 @@
+int W = 32;
+bit [32] mult(bit[32] in1, bit[32] in2){
+	bit [32] result = 0;
+	for(int i=0; i<W; ++i){
+		if(in2[i]==1){
+			result = result + in1;
+		}
+		in1 = in1 >> 1;
+	}
+	return result;
+}
+
+bit[32] reverseSketch(bit[32] in) implements reverse {
+	bit [32] tmp;
+	tmp = {*};
+	return 	mult(in , tmp);
+}
+
+bit[32] reverse (bit[32] in) {
+	bit [32] tmp = 0;
+	loop(7){
+		tmp = tmp + in;
+	}
+	return tmp;
+}
