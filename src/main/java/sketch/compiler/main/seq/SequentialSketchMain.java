@@ -300,7 +300,7 @@ public class ToSBit
                 
         System.out.println("OFILE = " + outputFile);
         Runtime rt = Runtime.getRuntime();
-        String command = (sbitPath!=null? sbitPath + "\\" : "") + "SBitII.exe";
+        String command = (sbitPath!=null? sbitPath + "\\" : "") + "SBitII";
         try
         {
 	        String[] tmp  = {command ,  outputFile, outputFile + ".tmp"};        
