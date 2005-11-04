@@ -81,7 +81,7 @@ program	 returns [Program p]
 	List funcs=new ArrayList(); Function f; FieldDecl fd;
 }
 	:	( (return_types ID LPAREN) => f=function_decl { funcs.add(f); } |
-	   fd=field_decl { vars.add(fd); }
+	   fd=field_decl SEMI { vars.add(fd); }
 )*
 		EOF
 		// Can get away with no context here.
