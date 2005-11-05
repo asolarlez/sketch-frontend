@@ -94,12 +94,13 @@ public interface StreamItLexTokenTypes {
 	int LSHIFT = 90;
 	int RSHIFT = 91;
 	int NDVAL = 92;
-	int SELECT = 93;
-	int CHAR_LITERAL = 94;
-	int STRING_LITERAL = 95;
-	int ESC = 96;
-	int DIGIT = 97;
-	int HQUAN = 98;
-	int NUMBER = 99;
-	int ID = 100;
+	int NDVAL2 = 93;
+	int SELECT = 94;
+	int CHAR_LITERAL = 95;
+	int STRING_LITERAL = 96;
+	int ESC = 97;
+	int DIGIT = 98;
+	int HQUAN = 99;
+	int NUMBER = 100;
+	int ID = 101;
 }

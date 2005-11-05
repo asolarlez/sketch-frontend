@@ -141,6 +141,7 @@ BANG: '!';
 LSHIFT: "<<";
 RSHIFT: ">>";
 NDVAL: "{*}";
+NDVAL2: "??";
 SELECT: "{|}";
 
 CHAR_LITERAL

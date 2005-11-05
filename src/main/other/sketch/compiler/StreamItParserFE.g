@@ -549,12 +549,18 @@ incOrDec returns [Expression x] { x = null; }
 
 value_expr returns [Expression x] { x = null; boolean neg = false; }
 	:	
-(NDVAL) => 	t:NDVAL {x=new ExprStar(getContext(t));} 
+x=ndvalue {}
 |	(	(m:MINUS { neg = true; })?
 		(x=minic_value_expr | x=streamit_value_expr)
 		{ if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x); }
 		)
 	;
+
+ndvalue returns [Expression x] { x=null; }
+:
+	t:NDVAL {x=new ExprStar(getContext(t));} 
+| 	t2:NDVAL2 {x=new ExprStar(getContext(t2));} 
+;
 
 streamit_value_expr returns [Expression x] { x = null; }
 	:	t:TK_pop LPAREN RPAREN
