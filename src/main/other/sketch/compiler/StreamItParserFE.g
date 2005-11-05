@@ -93,37 +93,6 @@ program	 returns [Program p]
 				 if (!hasError) p = new Program(null, streams, Collections.EMPTY_LIST /*structs*/); }
 	;
 
-stream_decl returns [StreamSpec ss] { ss = null; StreamType st; }
-	:	st=stream_type_decl
-		(ss=filter_decl[st] | ss=struct_stream_decl[st])
-	;
-
-filter_decl[StreamType st] returns [StreamSpec ss]
-{ ss = null; List params = Collections.EMPTY_LIST; FEContext context = null; }
-	:	tf:TK_filter
-		{ if (st != null) context = st.getContext();
-			else context = getContext(tf); }
-		id:ID
-		(params=param_decl_list)?
-		ss=filter_body[context, st, id.getText(), params]
-	;
-
-filter_body[FEContext context, StreamType st, String name, List params]
-returns [StreamSpec ss]
-{ ss = null; List vars = new ArrayList(); List funcs = new ArrayList();
-	Function fn; FieldDecl decl; }
-	:	LCURLY
-		( fn=init_decl { funcs.add(fn); }
-		| fn=work_decl { funcs.add(fn); }
-		| (data_type ID LPAREN) => fn=function_decl { funcs.add(fn); }
-		| fn=handler_decl { funcs.add(fn); }
-		| decl=field_decl SEMI { vars.add(decl); }
-		)*
-		RCURLY
-		{ ss = new StreamSpec(context, StreamSpec.STREAM_FILTER,
-				st, name, params, vars, funcs); }
-	;
-
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
 	List xs = new ArrayList(); FEContext ctx = null; }
