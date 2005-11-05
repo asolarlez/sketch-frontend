@@ -1,0 +1,31 @@
+bit[8] reverseSketch(bit[8] in) implements reverse {	
+ 	bit [8] t1 = in << 1;
+ 	
+ 	bit [8] m1 = (in<<{*}) & {*};
+	bit [8] m2 = (m1>>1) | m1;
+	bit [8] m3 = (m2>>{*}) | m2;	
+	return t1 ^ m3;
+}
+
+bit[8] reverse (bit[8] in) {
+  bit[9] tin= 0;
+    for(int i=0; i<8; ++i)
+      tin[i+1] = in[i];
+    //Note that multiplication times p(x) is just shift by one.
+    //But now comes the fun part, we have to reduce.
+    // by x^8+x^4+x^3+x+1
+    //But since the new poly is only of degree
+    // 8, we simply subtract it.
+    bit[9] modpoly = {1,1,0,1,1,0,0,0,1};
+    for(int k=0; k<8; ++k){
+      if( tin[8] == 1 ){
+      tin[k] = ( tin[k] ^ modpoly[k] );
+      }
+    }
+    bit [8] out;
+    for(int k=0; k<8; ++k)
+      out[k] = tin[k];
+    return out;
+}
+
+
