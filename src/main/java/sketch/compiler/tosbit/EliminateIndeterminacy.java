@@ -235,6 +235,7 @@ public class EliminateIndeterminacy extends FEReplacer {
     {
 		if(func.getSpecification() != null){
 			Statement fBody = func.getBody();
+			FindIndetNodes oldNodeFinder = nodeFinder;
 			nodeFinder =new FindIndetNodes(curSpec); 
 			fBody.accept(nodeFinder);			
 	        List<Statement> stmts = new ArrayList<Statement>();
@@ -243,17 +244,20 @@ public class EliminateIndeterminacy extends FEReplacer {
 	        Statement result = new StmtBlock(func.getContext(), stmts);        
 	        Statement newBody = (Statement)result.accept(this);
 	        
+	        nodeFinder = oldNodeFinder;
 	        return new Function(func.getContext(), func.getCls(),
 	                            func.getName(), func.getReturnType(),
 	                            func.getParams(), func.getSpecification(), newBody);
 		}else{
 			Statement fBody = func.getBody();
+			FindIndetNodes oldNodeFinder = nodeFinder;
 			nodeFinder =new FindIndetNodes(curSpec); 
 			fBody.accept(nodeFinder);			
 	        List<Parameter> params = new ArrayList<Parameter>();
 	        params.addAll(func.getParams());
 	        addOracleParams(params);
-	        Statement newBody = (Statement)fBody.accept(this);
+	        Statement newBody = (Statement)fBody.accept(this);	        
+	        nodeFinder = oldNodeFinder;
 	        return new Function(func.getContext(), func.getCls(),
 	                            func.getName(), func.getReturnType(),
 	                            params, func.getSpecification(), newBody);
@@ -264,6 +268,7 @@ public class EliminateIndeterminacy extends FEReplacer {
 		//assert star.getSize() == 1 : "Int not yet implemented for this stage";
 		FEContext context = star.getContext();
 		String varName = nodeFinder.nodes.get(star);
+		assert varName != null : "This can't happen!!!";
 		ExprUnary index = new ExprUnary(context, ExprUnary.UNOP_POSTINC, new ExprVar(context, varName + "_i"));
 		ExprArray ea = new ExprArray(context, new ExprVar(context, varName), index);
 		return ea;

@@ -422,7 +422,7 @@ public class NodesToSBit implements FEVisitor{
 	    		Assert( !this.isLHS, "Array indexing of non-deterministic value is only allowed in the RHS of an assignment; sorrry." );
 	    		int arrSize = state.checkArray(vname);
 	    		String baseName = vname;
-	    		vname = "$ ";
+	    		vname = "($ ";
 	    		for(int i=0; i< arrSize; ++i ){
 	    			if( i!= 0) vname += " ";
 	    			String tmpname = baseName + "_idx_" + i;
@@ -433,7 +433,7 @@ public class NodesToSBit implements FEVisitor{
 	    			}
 	    			vname = vname + tmpname;
 	    		}
-	    		vname = vname + "$" +  "[" + ofstStr + "]";	    		
+	    		vname = vname + "$" +  "[" + ofstStr + "])";	    		
 	    		state.pushVStack(null);
 	    		return vname;
 	    		/*if(this.isLHS)
