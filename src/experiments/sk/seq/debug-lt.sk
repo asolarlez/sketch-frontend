@@ -1,13 +1,16 @@
 // Debug sketch file, to be modified by Liviu only
 
-bit foo(bit[4] in){
+int S=2;
+int P=S+S;
+
+bit foo(bit[P] in){
    return in[{*}];
 }
 
-bit revsk(bit[4] in) implements reverse {           
+bit revsk(bit[P] in) implements reverse {           
    return foo(in);
 }
 
-bit reverse (bit[4] in) {
-   return in[2];
+bit reverse (bit[P] in) {
+   return in[S];
 }
