@@ -3,9 +3,9 @@
 //galois field of polynomials in {0,1},  mod P.
 
 bit[8] GFMul02sk(bit[8] in) implements GFMul02 {
- 	bit [8] t1 = in >> 1; 	
+ 	bit [8] t1 = in >> {*}; 	
  	bit [8] m1 = (in<<{*}) & {*};
-	bit [8] m2 = (m1>>1) | m1;
+	bit [8] m2 = (m1>>{*}) | m1;
 	bit [8] m3 = (m2>>{*}) | m2;	
 	return t1 ^ m3;
 }
