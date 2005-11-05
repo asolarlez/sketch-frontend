@@ -65,16 +65,16 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 
 	public Object visitExprFunCall(ExprFunCall exp) {
 		// first let the superclass process the parameters (which may be function calls)
-		ExprFunCall fcall=(ExprFunCall) super.visitExprFunCall(exp);
+		exp=(ExprFunCall) super.visitExprFunCall(exp);
 
 		// resolve the function being called
-		Function fun=symtab.lookupFn(fcall.getName());
+		Function fun=symtab.lookupFn(exp.getName());
 		
 		// now we create a temp (or several?) to store the result
-		List params=getOutputParams(fun);
-		String tempNames[]=new String[params.size()];
-		for(int i=0;i<params.size();i++) {
-			Parameter param=(Parameter) params.get(i);
+		List outParams=getOutputParams(fun);
+		String tempNames[]=new String[outParams.size()];
+		for(int i=0;i<outParams.size();i++) {
+			Parameter param=(Parameter) outParams.get(i);
 			tempNames[i]=getNewTempID();
 			Statement decl=new StmtVarDecl(exp.getContext(),
 					Collections.singletonList(param.getType()),
@@ -84,10 +84,27 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 			addStatement(decl);
 		}
 		// modify the function call and re-issue it as a statement
-		List args=new ArrayList(fcall.getParams());
-		for(int i=0;i<params.size();i++)
-			args.add(new ExprVar(fcall.getContext(),tempNames[i]));
-		ExprFunCall newcall=new ExprFunCall(fcall.getContext(),fcall.getName(),args);
+		List args=new ArrayList(fun.getParams().size());
+		List existingArgs=exp.getParams();
+		for(int i=0;i<existingArgs.size();i++) {
+			Expression oldArg=(Expression) existingArgs.get(i);
+			if(oldArg instanceof ExprVar)
+				args.add(oldArg);
+			else {
+				Parameter param=(Parameter) fun.getParams().get(i);
+				String tempVar=getNewTempID();
+				Statement decl=new StmtVarDecl(exp.getContext(),
+						Collections.singletonList(param.getType()),
+						Collections.singletonList(tempVar),
+						Collections.singletonList(oldArg)
+					);
+				addStatement(decl);
+				args.add(new ExprVar(exp.getContext(),tempVar));
+			}
+		}
+		for(int i=0;i<outParams.size();i++)
+			args.add(new ExprVar(exp.getContext(),tempNames[i]));
+		ExprFunCall newcall=new ExprFunCall(exp.getContext(),exp.getName(),args);
 		addStatement(new StmtExpr(newcall));
 		
 		// replace the original function call with an instance of the temp variable
