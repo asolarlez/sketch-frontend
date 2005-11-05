@@ -1,0 +1,30 @@
+
+bit[8] slog2(bit[8] in) 
+{
+	int i;
+	bit[8] ret=0; 
+	bit[8] ONE=0; ONE[0]=1;
+	bit done=0;
+	for(i=7;i>0;i--)
+		if(!done && in[i]==0) {}
+		else {
+			done=1;
+			ret=ret+ONE;
+		}
+	return ret;
+}
+
+bit[8] sklog2(bit[8] in) implements slog2 
+{
+	int i;
+	bit[8] ret=0; 
+	bit[8] ONE=0; ONE[0]=1;
+	bit done=0;
+	for(i=7;i>0;i--)
+		if(!done && in[i]==0) {}
+		else {
+			done=1;
+			ret=ret+ONE;
+		}
+	return ret;
+}
