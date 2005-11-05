@@ -574,14 +574,14 @@ public class FEReplacer implements FEVisitor
             FieldDecl oldVar = (FieldDecl)iter.next();
             FieldDecl newVar = (FieldDecl)oldVar.accept(this);
             if (oldVar != newVar) changed = true;
-            newVars.add(newVar);
+            if(newVar!=null) newVars.add(newVar);
         }
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
             Function oldFunc = (Function)iter.next();
             Function newFunc = (Function)oldFunc.accept(this);
             if (oldFunc != newFunc) changed = true;
-            newFuncs.add(newFunc);
+            if(newFunc!=null) newFuncs.add(newFunc);
         }
 
         if (!changed && newST == spec.getStreamType()) return spec;
