@@ -8,7 +8,7 @@ import antlr.*;
 import junit.framework.TestCase;
 import streamit.frontend.*;
 import streamit.frontend.nodes.*;
-import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.passes.*;
 
 public class ParserTest extends TestCase 
 {
@@ -79,6 +79,7 @@ public class ParserTest extends TestCase
 		}
 		assertNotNull(p);
 		p=(Program) p.accept(new FunctionParamExtension());
+		p=(Program) p.accept(new ConstantReplacer());
 		return p;
 	}
 }
