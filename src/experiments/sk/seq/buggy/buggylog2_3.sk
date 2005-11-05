@@ -1,0 +1,43 @@
+
+bit[8] slog2(bit[8] in) 
+{
+	bit[8] ret=0; 
+	bit[8] ONE=0; ONE[0]=1;
+	bit done=0;
+	for(int i=7;i>0;i--)
+		if(!done && in[i]==0) {}
+		else {
+			done=1;
+			ret=ret+ONE;
+		}
+	return ret;
+}
+
+bit iszero(bit[8] in)
+{
+	bit res=1;
+	for(int i=0;i<8;i++)
+		res=res & !in[i];
+	return res;
+}
+
+bit[8] sklog2(bit[8] in) implements slog2 
+{
+	bit[8] ret=0; 
+//	bit[8] ONE=0; ONE[0]=1;
+//	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
+//	const unsigned int S[] = {1, 2, 4, 8, 16};
+
+	int sh=1;
+	loop(3)
+	{
+		bit[8] temp=in & {*};
+		if (!iszero(temp))
+		{
+			in = in << sh;
+			sh=sh*2;
+			ret = ret | {*};
+		} 
+	}
+	return ret;
+}
