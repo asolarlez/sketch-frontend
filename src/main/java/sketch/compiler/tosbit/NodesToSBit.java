@@ -596,7 +596,9 @@ public class NodesToSBit implements FEVisitor{
 		        	Iterator formalParams = fun.getParams().iterator();
 		        	result += inParameterSetter(formalParams, actualParams, false);
 	        	}
+	        	result += "// BEGIN CALL " + fun.getName() + "\n";
 	            result += (String) fun.getBody().accept(this);
+	            result += "// END CALL " + fun.getName() + "\n";
 	            {
 	            	Iterator actualParams = exp.getParams().iterator();	        		        	       	
 		        	Iterator formalParams = fun.getParams().iterator();
