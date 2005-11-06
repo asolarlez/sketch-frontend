@@ -1,0 +1,52 @@
+// Bug: a strange syntax error at the next line, disappears when 0 changed to 1
+int W = 0;
+
+bit[W] firstZero (bit[W] in) {
+	bit[W] ret=0;
+	bit flag = 1;
+	for(int i=0; i<W ; ++i){
+		if(!in[i] && flag == 1){			
+			ret[i] = 1;
+			flag = 0;
+		}
+	}
+	return ret;
+}
+
+bit[W] isolateSketch (bit[W] in) implements firstZero { 
+    return !(in + ??) & (in + ??);
+}
+
+bit[W] countBitsSk(bit[W] in) implements countBits
+{
+	bit[W] ret=0;
+	bit[W] ONE = 0; ONE[0] = 1;
+	bit[W] tmp = 0;
+	
+	for(int i=0; i<W ; ++i){
+		tmp = isolateSketch(in);
+		bit[W] x = tmp != 0;
+		bit cond=0;
+		for(int i=0; i<W; ++i){
+			cond = cond || tmp[i];
+		}
+		if(cond){
+			ret = ret + ONE;
+		}
+		in = tmp | in;
+	}
+	return ret;
+}
+
+
+bit[W] countBits(bit[W] in)
+{
+	bit[W] ret=0;
+	bit[W] tmp = 0;
+	tmp[0] = 1;
+	for(int i=0;i<W;i++){
+		if(!in[i])
+			ret=ret+tmp;
+	}
+	return ret;
+}
