@@ -1,0 +1,50 @@
+// FirstZero
+//
+// This is a sketch that resolves to different values 
+// depending on the choices in the SAT solver.  Not all 
+// choices are equally good, since some lead to elimination
+// of the multiplication and some don't.  
+//
+// A simple solution 
+// maybe to follow with Denali, which may be able to rewrite 
+// to a simpler version.  
+// 
+// Another solution is that we run the solver several
+// times and select the best solution.
+// 
+// Yet another solution is that we try to force 
+// some cotrols, before syntehsis,
+// to suitable values (like 0 when that 0 is an operand for 
+// a multiplcation) and try to synthesize remaining controls
+
+int W = 3;
+
+bit[3] firstZeroSk(bit[3] in) implements firstZero {	
+	bit[3] ret;
+	ret = !(mult(in,{*}) + {*}) & (mult(in,{*}) + {*});
+	return ret;
+}
+
+// See page 11 in HD
+bit[3] firstZero (bit[3] in) {
+	bit[3] ret=0;
+	bit flag = 1;
+	for(int i=0; i<W ; ++i){
+		if(!in[i] && flag == 1){			
+			ret[i] = 1;
+			flag = 0;
+		}
+	}
+	return ret;
+}
+
+bit [3] mult(bit[3] in1, bit[3] in2){
+	bit [3] result = 0;
+	for(int i=0; i<W; ++i){
+		if(in2[i]==1){
+			result = result + in1;
+		}
+		in1 = in1 >> 1;
+	}
+	return result;
+}
