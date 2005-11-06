@@ -1,0 +1,54 @@
+int W = 8;
+
+bit[W] firstZero (bit[W] in) {
+	bit[W] ret=0;
+	bit flag = 1;
+	for(int i=0; i<W ; ++i){
+		if(!in[i] && flag == 1){			
+			ret[i] = 1;
+			flag = 0;
+		}
+	}
+	return ret;
+}
+
+bit[W] isolateSketch (bit[W] in, bit[W] c1, bit[W] c2) 
+{ 
+    return !(in + c1) & 
+    (in + c2);
+}
+
+bit[W] countBitsSk(bit[W] in) implements countBits
+{
+	bit[W] ret=0;
+	bit[W] ONE = 0; ONE[0] = 1;
+	bit[W] tmp = 0;
+	
+	bit[W] c1 = ??;
+	bit[W] c2 = ??;
+	
+	for(int i=0; i<W ; ++i){
+		// BUG? when I change the line below to !tmp & in, it all works
+		tmp = !isolateSketch(in, c1, c2);
+		in = tmp & in;
+		
+		// if (tmp != 0) ret++;
+		bit cond=0;
+		for(int i=0; i<W; ++i){ cond = cond || tmp[i]; }
+		if(cond) { ret = ret + ONE; }		
+	}
+	return ret;
+}
+
+
+bit[W] countBits(bit[W] in)
+{
+	bit[W] ret=0;
+	bit[W] tmp = 0;
+	tmp[0] = 1;
+	for(int i=0;i<W;i++){
+		if(in[i])
+			ret=ret+tmp;
+	}
+	return ret;
+}
