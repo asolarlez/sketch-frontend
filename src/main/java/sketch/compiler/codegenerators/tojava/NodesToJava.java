@@ -247,7 +247,6 @@ public class NodesToJava implements FEVisitor
         result += ")";
         return result;
     }
-
     // Return a representation of lhs = rhs, with no trailing semicolon.
     public String doAssignment(Expression lhs, Expression rhs,
                                SymbolTable symtab)
