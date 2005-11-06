@@ -2,9 +2,11 @@ package streamit.frontend.tosbit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import streamit.frontend.nodes.ExprArray;
@@ -38,9 +40,11 @@ import streamit.frontend.nodes.TypePrimitive;
 class FindIndetNodes extends FEReplacer{
 	public final Map<FENode, String> nodes;
 	private final StreamSpec curSpec;
+	private Set<Function> visitedFunctions;
 	public FindIndetNodes(StreamSpec curSpec){
 		nodes = new HashMap<FENode, String>();
 		this.curSpec = curSpec;
+		visitedFunctions = new HashSet<Function>();
 	}
 	public Object visitExprStar(ExprStar star) {
 		nodes.put(star, "_oracle_" + nodes.size());
@@ -58,7 +62,10 @@ class FindIndetNodes extends FEReplacer{
 		Function fun = curSpec.getFuncNamed(exp.getName());
 		assert fun != null : "Calling undefined function!!";
 		Object obj = super.visitExprFunCall(exp);
-		fun.accept(this);
+		if(!visitedFunctions.contains(fun)){
+			visitedFunctions.add(fun);
+			fun.accept(this);			
+		}
 		return obj;
     }
 }
@@ -71,6 +78,7 @@ public class EliminateIndeterminacy extends FEReplacer {
 	private FindIndetNodes nodeFinder;
 	private List<Function> newFuncs;
 	private StreamSpec curSpec;
+	private final Map<String, Function> visitedFunctions;
 	
 	private void addFunction(Function fun){
 		newFuncs.add(fun);		
@@ -80,6 +88,7 @@ public class EliminateIndeterminacy extends FEReplacer {
 		super();
 		this.oracle = oracle;
 		this.varGen = varGen;
+		visitedFunctions = new HashMap<String, Function>();
 	}
 	
 	public void addOracleVars(List<Statement> stmts){
@@ -159,8 +168,9 @@ public class EliminateIndeterminacy extends FEReplacer {
 	        
 	        
 	        String oldName = exp.getName();
-	        String newName = oldName + varGen.nextVar();	        
-	        Function oldF = curSpec.getFuncNamed(oldName);	        	        
+	        String newName = oldName; 	        
+	        Function oldF = curSpec.getFuncNamed(oldName);	 	        	        
+	        
 	        assert oldF != null : "function " + oldName + "is undefined!!";
 	        
 	        FindIndetNodes findNdet =new FindIndetNodes(curSpec); 
@@ -177,9 +187,13 @@ public class EliminateIndeterminacy extends FEReplacer {
 	            	newParams.add(newParam);
 				}	            
 			}
-	        Function newF = new Function(oldF.getContext(), oldF.getCls(), newName, oldF.getReturnType(), oldF.getParams(),oldF.getSpecification(), oldF.getBody() );	        
-	        newF = (Function)newF.accept(this);
-	        addFunction(newF);
+			if(!visitedFunctions.containsKey(newName)){
+				visitedFunctions.put(newName, null);
+				Function newF = new Function(oldF.getContext(), oldF.getCls(), newName, oldF.getReturnType(), oldF.getParams(),oldF.getSpecification(), oldF.getBody() );	        
+		        newF = (Function)newF.accept(this);
+		        addFunction(newF);	
+		        visitedFunctions.put(newName, newF);
+	        }	        
 	        return new ExprFunCall(exp.getContext(), newName, newParams);
 	    }
 	  
