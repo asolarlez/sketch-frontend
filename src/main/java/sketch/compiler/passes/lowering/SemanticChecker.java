@@ -16,6 +16,7 @@
 
 package streamit.frontend.passes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprPeek;
 import streamit.frontend.nodes.ExprPop;
 import streamit.frontend.nodes.ExprTernary;
@@ -595,6 +597,28 @@ public class SemanticChecker
                     }
                     
                     return super.visitExprUnary(expr);
+                }
+                
+                public Object visitExprFunCall(ExprFunCall exp)
+                {                    
+                    Function fun = this.symtab.lookupFn(exp.getName());
+                    List formals = fun.getParams();
+                    Iterator form = formals.iterator();
+                    if(formals.size() != exp.getParams().size()){
+                        report(exp, "Wrong number of parameters");
+                        return super.visitExprFunCall(exp);
+                    }
+                    for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+                    {
+                        Expression param = (Expression)iter.next();
+                        Parameter formal = (Parameter) form.next();
+                        Type lt = getType(param);
+                        if(! lt.promotesTo(formal.getType())){
+                        	report(exp, "Bad parameter type " + formal + "  " + fun);
+                        }
+                    }
+                    
+                    return super.visitExprFunCall(exp);
                 }
 
                 public Object visitExprBinary(ExprBinary expr)
