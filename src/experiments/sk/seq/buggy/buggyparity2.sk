@@ -1,0 +1,32 @@
+int W=8;
+
+bit [W] mult(bit[W] in1, bit[W] in2){
+	bit [W] result = 0;
+	for(int i=0; i<W; ++i){
+		if(in2[i]==1){
+			result = result + in1;
+		}
+		in1 = in1 >> 1;
+	}
+	return result;
+}
+
+bit parity(bit[W] in)
+{
+	bit ret=0;
+	for(int i=0;i<W;i++)
+		ret=ret^in[i];
+	return ret;
+}
+
+bit fasterparity(bit[W] in) implements parity
+{
+	bit[W] x=in;
+	bit[W] y;
+	bit[W] z=??;
+	x=x^(x<<1);
+	x=x^(x<<2);
+	x=x & z;
+	y=mult(x,z);
+	return y[??];
+}
