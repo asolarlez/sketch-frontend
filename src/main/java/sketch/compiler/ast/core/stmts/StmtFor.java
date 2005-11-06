@@ -73,5 +73,11 @@ public class StmtFor extends Statement
     {
         return v.visitStmtFor(this);
     }
+    
+    public String toString(){
+    		String result = "for(...){\n";
+    		result += this.body + "}\n";
+    		return result;
+    }
 }
 
