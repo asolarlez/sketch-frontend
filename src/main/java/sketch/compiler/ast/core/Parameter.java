@@ -60,6 +60,7 @@ public class Parameter
     
     public String toString()
     {
-    	return type.toString()+" "+name;
+    	
+    	return (isOutput? "!":"") +  type.toString()+" "+name;
     }
 }
