@@ -94,15 +94,15 @@ public class StmtVarDecl extends Statement
     }
 
     /**
-     * Get an immutable list of the types of all of the variables
+     * Get a list of the types of all of the variables
      * declared by this.
      *
-     * @return  Unmodifiable list of <code>Type</code> of the
+     * @return  list of <code>Type</code> of the
      *          variables in this
      */
     public List getTypes()
     {
-        return Collections.unmodifiableList(types);
+        return types;
     }
     
     /**
