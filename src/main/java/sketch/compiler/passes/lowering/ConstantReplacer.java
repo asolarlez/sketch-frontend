@@ -100,4 +100,20 @@ public class ConstantReplacer extends FEReplacer {
 		return super.visitFunction(func);
 	}
 
+	public Object visitStmtVarDecl(StmtVarDecl stmt) {
+		List<Type> types=stmt.getTypes();
+		for(int i=0;i<types.size();i++) {
+			Type t=types.get(i);
+			if(t instanceof TypeArray) {
+				TypeArray arr=(TypeArray) t;
+				Expression len=arr.getLength();
+				Expression newlen=(Expression) len.accept(this);
+				if(newlen!=len) {
+					types.set(i,new TypeArray(arr.getBase(),newlen));
+				}
+			}
+		}
+		return super.visitStmtVarDecl(stmt);
+	}
+
 }
