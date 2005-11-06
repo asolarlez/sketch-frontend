@@ -67,4 +67,13 @@ public class StmtIfThen extends Statement
     {
         return v.visitStmtIfThen(this);
     }
+    
+    public String toString(){
+    	String result = "if(" + this.cond + "){\n";
+    	result += this.cons;
+    	result += "}else{\n";
+    	result += this.alt + "}\n";
+    	return result;    	
+    }
+    
 }
