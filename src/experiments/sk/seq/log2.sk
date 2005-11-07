@@ -1,4 +1,4 @@
-int W=8;
+int W=16;
 
 bit[W] slog2(bit[W] in) 
 {
@@ -29,7 +29,7 @@ bit[W] sklog2(bit[W] in) implements slog2
 //	const unsigned int b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
 //	const unsigned int S[] = {1, 2, 4, 8, 16};
 
-	loop(3)
+	loop(4)
 	{
 		if (!iszero(in & {*}))
 		{
