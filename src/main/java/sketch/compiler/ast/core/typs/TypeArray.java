@@ -54,6 +54,26 @@ public class TypeArray extends Type
         return base + "[" + length + "]";
     }
     
+    public boolean promotesTo(Type other)
+    {
+        if (super.promotesTo(other))
+            return true;
+        if (!(other instanceof TypeArray))
+            return false;
+        TypeArray that = (TypeArray)other;
+        if (!(this.getBase().promotesTo(that.getBase())))
+            return false;
+        Expression thisLen = this.getLength();
+        Expression thatLen = that.getLength();
+        if(thisLen.getIValue() != null && thatLen.getIValue() != null){
+        	return thisLen.getIValue().equals(thatLen.getIValue());
+        }
+        if (!(thisLen.equals(thatLen)))
+            return false;
+        return true;
+    }
+    
+    
     public boolean equals(Object other)
     {
         if (!(other instanceof TypeArray))
@@ -82,19 +102,4 @@ public class TypeArray extends Type
     public boolean isNonDet(){
     	return base.isNonDet();
     }
-
-	public boolean promotesTo(Type that)
-	{
-		if(this==that) return true;
-		if(that instanceof TypeArray)
-		{
-			TypeArray other=(TypeArray) that;
-			if(length.equals(other.getLength()) && base.promotesTo(other.getBase()))
-				return true;
-			else
-				return false;
-		}
-		else return false;
-	}
-    
 }
