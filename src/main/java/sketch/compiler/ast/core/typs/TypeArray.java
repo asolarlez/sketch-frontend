@@ -82,4 +82,19 @@ public class TypeArray extends Type
     public boolean isNonDet(){
     	return base.isNonDet();
     }
+
+	public boolean promotesTo(Type that)
+	{
+		if(this==that) return true;
+		if(that instanceof TypeArray)
+		{
+			TypeArray other=(TypeArray) that;
+			if(length.equals(other.getLength()) && base.promotesTo(other.getBase()))
+				return true;
+			else
+				return false;
+		}
+		else return false;
+	}
+    
 }
