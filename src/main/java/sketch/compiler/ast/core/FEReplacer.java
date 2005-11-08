@@ -142,7 +142,7 @@ public class FEReplacer implements FEVisitor
         if (base == exp.getBase() && offset == exp.getOffset())
             return exp;
         else
-            return new ExprArray(exp.getContext(), base, offset);
+            return new ExprArray(exp.getContext(), base, offset, exp.isUnchecked());
     }
     
     public Object visitExprArrayInit(ExprArrayInit exp)

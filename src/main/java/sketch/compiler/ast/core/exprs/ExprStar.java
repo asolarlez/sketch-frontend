@@ -27,11 +27,20 @@ package streamit.frontend.nodes;
 public class ExprStar extends Expression
 {		
 	private int size;
+	private boolean isFixed;
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FEContext context)
     {
         super(context);
         size = 1;
+        isFixed = false;
+    }
+    
+    public ExprStar(FEContext context, int size)
+    {
+        super(context);
+        this.size = size;
+        isFixed = true;
     }
 
     /** Accept a front-end visitor. */
@@ -64,5 +73,19 @@ public class ExprStar extends Expression
 	 */
 	public int getSize() {
 		return size;
+	}
+
+	/**
+	 * @param isFixed The isFixed to set.
+	 */
+	public void setFixed(boolean isFixed) {
+		this.isFixed = isFixed;
+	}
+
+	/**
+	 * @return Returns the isFixed.
+	 */
+	public boolean isFixed() {
+		return isFixed;
 	}
 }

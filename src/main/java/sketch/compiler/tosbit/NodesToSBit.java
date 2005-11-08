@@ -401,7 +401,18 @@ public class NodesToSBit implements FEVisitor{
 	    	String ofstStr = (String) exp.getOffset().accept(this);
 	    	Integer ofst = state.popVStack();
 	    	if( ofst != null){
-		    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());	    	
+		    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
+		    	int size = state.checkArray(vname);
+		    	if(ofst >= size || ofst < 0){
+		    		if(this.isLHS){
+		    			Assert(false, "ARRAY OUT OF BOUNDS !(0<=" + ofst + " < " + size);
+		    			return null;
+		    		}else{
+		    			Assert(exp.isUnchecked(), "ARRAY OUT OF BOUNDS !(0<=" + ofst + " < " + size);
+	    				state.pushVStack( new Integer(0) );
+	    				return "0";		    			
+		    		}
+		    	}
 		    	vname = vname + "_idx_" + ofst;
 		    	this.isLHS = ilhs;
 		    	

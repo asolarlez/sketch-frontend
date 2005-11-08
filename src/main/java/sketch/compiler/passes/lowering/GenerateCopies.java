@@ -72,10 +72,12 @@ class UpgradeStarToInt extends FEReplacer{
 	}
 	
 	public Object visitExprStar(ExprStar star) {
-		if(upToInt){
-			star.setSize(5);
-		}else{
-			star.setSize(1);
+		if(!star.isFixed()){
+			if(upToInt){
+				star.setSize(5);
+			}else{
+				star.setSize(1);
+			}
 		}
 		return star;
 	}
@@ -135,7 +137,7 @@ class UpgradeStarToInt extends FEReplacer{
         if (base == exp.getBase() && offset == exp.getOffset())
             return exp;
         else
-            return new ExprArray(exp.getContext(), base, offset);
+            return new ExprArray(exp.getContext(), base, offset, exp.isUnchecked());
     }
     public Object visitExprArrayRange(ExprArrayRange exp){
     	boolean change=false;
@@ -202,7 +204,7 @@ class Indexify extends FEReplacer{
 	}
 	public Object visitExprVar(ExprVar exp) {
 		if ( stv.getType(exp) instanceof TypeArray)
-			return new ExprArray(exp.getContext(), exp, index);
+			return new ExprArray(exp.getContext(), exp, index, true);
 		else
 			return exp;
 	}
@@ -232,9 +234,9 @@ class Indexify extends FEReplacer{
 		{
 			assert exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT : "This should never happen!!";
 			Type lType = stv.getType(exp.getLeft());
-			Type rType = stv.getType(exp.getRight());
+			//Type rType = stv.getType(exp.getRight());
 			Expression result;
-			if(rType.isNonDet()){
+			if(true){
 				FEContext context = exp.getContext();
 				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
 				ExprVar oldRHS = new ExprVar(context, newVarName);

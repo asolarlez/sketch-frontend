@@ -27,15 +27,22 @@ package streamit.frontend.nodes;
 public class ExprArray extends Expression
 {
     private Expression base, offset;
-    
+    private boolean unchecked;
     /** Creates a new ExprArray with the specified base and offset. */
     public ExprArray(FEContext context, Expression base, Expression offset)
     {
         super(context);
         this.base = base;
         this.offset = offset;
+        this.unchecked = false;
     }
-    
+    public ExprArray(FEContext context, Expression base, Expression offset, boolean unchecked)
+    {
+        super(context);
+        this.base = base;
+        this.offset = offset;
+        this.unchecked = unchecked;
+    }
     /** Returns the base expression of this. */
     public Expression getBase() { return base; }
 
@@ -76,4 +83,18 @@ public class ExprArray extends Expression
         ExprArray ao = (ExprArray)o;
         return (ao.base.equals(base) && ao.offset.equals(offset));
     }
+
+	/**
+	 * @param unchecked The unchecked to set.
+	 */
+	public void setUnchecked(boolean unchecked) {
+		this.unchecked = unchecked;
+	}
+
+	/**
+	 * @return Returns the unchecked.
+	 */
+	public boolean isUnchecked() {
+		return unchecked;
+	}
 }
