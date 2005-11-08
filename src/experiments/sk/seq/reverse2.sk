@@ -1,0 +1,24 @@
+int W = 32;
+
+bit[W] reverseSketch(bit[W] in) implements reverse {
+
+	bit[W]  t = in;	
+	int s = 1;
+	int r = {*};
+	loop({*}){
+		bit[W] tmp1 = (t >> s);
+		bit[W] tmp2 = (t << s);
+		t = tmp1 {|} tmp2;
+		s = s*r;
+	}
+	return t;
+}
+
+
+bit[W] reverse (bit[W] in) {
+	bit [W] out;
+	for (int i = 0; i < W; i++) {
+		out[i] = in[W-1 - i];
+	}
+	return out;
+}
