@@ -172,7 +172,7 @@ public class TypePrimitive extends Type
         case TYPE_NDBOOLEAN:
         	return t2 == TYPE_NDBOOLEAN || t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
         case TYPE_NDBIT:
-        	return t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
+        	return t2 == TYPE_NDBIT || t2 == TYPE_NDINT || t2 == TYPE_BIT;
         case TYPE_NDINT:
             return t2 == TYPE_NDINT;
         default:
