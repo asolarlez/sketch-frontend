@@ -17,7 +17,6 @@
 package streamit.frontend.passes;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import streamit.frontend.nodes.ExprArray;
@@ -233,33 +232,51 @@ class Indexify extends FEReplacer{
 		{
 			assert exp.getOp() == ExprBinary.BINOP_LSHIFT || exp.getOp() == ExprBinary.BINOP_RSHIFT : "This should never happen!!";
 			Type lType = stv.getType(exp.getLeft());
-			FEContext context = exp.getContext();
-			String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
-			ExprVar oldRHS = new ExprVar(context, newVarName);
-			Expression newIdx = null;
-			int op;
-			Expression newConst = null;
-			if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
-				newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );
-				op = ExprBinary.BINOP_LT;
-				TypeArray ta = (TypeArray) lType;					
-				newConst = ta.getLength();
+			Type rType = stv.getType(exp.getRight());
+			Expression result;
+			if(rType.isNonDet()){
+				FEContext context = exp.getContext();
+				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
+				ExprVar oldRHS = new ExprVar(context, newVarName);
+				Expression newIdx = null;
+				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );					
+				}else{
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
+				}
+				Indexify indexify = new Indexify(newIdx, stv );
+				Expression newVal = (Expression) exp.getLeft().accept(indexify);
+				this.preStmts.addAll(indexify.preStmts);
+				this.postStmts.addAll(indexify.postStmts);			
+				result = newVal;								
 			}else{
-				newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
-				op = ExprBinary.BINOP_GE;
-				newConst = new ExprConstInt(context, 0);					
+				FEContext context = exp.getContext();
+				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
+				ExprVar oldRHS = new ExprVar(context, newVarName);
+				Expression newIdx = null;
+				int op;
+				Expression newConst = null;
+				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );
+					op = ExprBinary.BINOP_LT;
+					TypeArray ta = (TypeArray) lType;					
+					newConst = ta.getLength();
+				}else{
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
+					op = ExprBinary.BINOP_GE;
+					newConst = new ExprConstInt(context, 0);					
+				}
+				Indexify indexify = new Indexify(newIdx, stv );
+				Expression newVal = (Expression) exp.getLeft().accept(indexify);
+				this.preStmts.addAll(indexify.preStmts);
+				this.postStmts.addAll(indexify.postStmts);			
+				result = new ExprTernary(context,
+						ExprTernary.TEROP_COND, 
+						new ExprBinary(context, op, newIdx, newConst ),
+						newVal,
+						new ExprConstInt(context, 0)
+				);
 			}
-			Indexify indexify = new Indexify(newIdx, stv );
-			Expression newVal = (Expression) exp.getLeft().accept(indexify);
-			this.preStmts.addAll(indexify.preStmts);
-			this.postStmts.addAll(indexify.postStmts);			
-			Expression result = new ExprTernary(context,
-					ExprTernary.TEROP_COND, 
-					new ExprBinary(context, op, newIdx, newConst ),
-					newVal,
-					new ExprConstInt(context, 0)
-			);
-			
 			return 	result;
 		}			
 	}
