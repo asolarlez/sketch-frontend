@@ -167,17 +167,15 @@ public class ToSBit
             StreamItParserFE parser = new StreamItParserFE(lexer);
             parser.setFilename(fileName);
             Program pprog = parser.program();
-            if (pprog != null)
-            {
-                List newStreams, newStructs;
-                newStreams = new java.util.ArrayList();
-                newStreams.addAll(prog.getStreams());
-                newStreams.addAll(pprog.getStreams());
-                newStructs = new java.util.ArrayList();
-                newStructs.addAll(prog.getStructs());
-                newStructs.addAll(pprog.getStructs());
-                prog = new Program(null, newStreams, newStructs);
-            }
+            if(pprog==null) return null;
+            List newStreams, newStructs;
+            newStreams = new java.util.ArrayList();
+            newStreams.addAll(prog.getStreams());
+            newStreams.addAll(pprog.getStreams());
+            newStructs = new java.util.ArrayList();
+            newStructs.addAll(prog.getStructs());
+            newStructs.addAll(pprog.getStructs());
+            prog = new Program(null, newStreams, newStructs);
         }
         //invoke post-parse passes
         prog = (Program)prog.accept(new FunctionParamExtension());
