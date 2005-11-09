@@ -16,7 +16,6 @@
 
 package streamit.frontend.passes;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,6 +73,8 @@ import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.UnrecognizedVariableException;
+import streamit.frontend.nodes.ExprArrayRange.Range;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 /**
  * Perform checks on the semantic correctness of a StreamIt program.
@@ -601,7 +602,13 @@ public class SemanticChecker
                 public Object visitFunction(Function func)
                 {
                 	if(func.getSpecification() != null){
-                		Function parent = this.symtab.lookupFn(func.getSpecification());
+                		Function parent = null;
+                		try{
+                			parent = this.symtab.lookupFn(func.getSpecification());
+                		}catch(UnrecognizedVariableException e){
+                			report(func, "Spec of "+ func.getName() + "not found");
+                			return super.visitFunction(func);
+                		}
                 		Iterator formals1 = func.getParams().iterator();
                 		Iterator formals2 = parent.getParams().iterator();
                 		if(func.getParams().size() != parent.getParams().size() ){
@@ -819,6 +826,42 @@ public class SemanticChecker
                     }
 
                     return super.visitExprField(expr);
+                }
+                
+                public Object visitExprArrayRange(ExprArrayRange expr){
+                	Type bt = getType(expr.getBase());
+                	if (bt != null)
+                    {
+                        if (!(bt instanceof TypeArray))
+                            report(expr, "array access with a non-array base");
+                    }else{
+                        report(expr, "array access with a non-array base");
+                    }
+                	List l=expr.getMembers();
+                	if(l.size() != 1){
+                		report(expr, "Ranges are not yet supported");
+                		return super.visitExprArrayRange(expr);
+                	}
+                	Object idx = l.get(0);
+                	if(!(idx instanceof RangeLen)){
+                		report(expr, "Ranges are not yet supported");
+                		return super.visitExprArrayRange(expr);
+                	}
+                	RangeLen rl = (RangeLen)idx;
+                	if(rl.len != 1){
+                		report(expr, "Ranges are not yet supported");
+                		return super.visitExprArrayRange(expr);
+                	}
+                	Type ot = getType(rl.start);
+                	if (ot != null)
+                    {
+                        if (!ot.promotesTo
+                            (new TypePrimitive(TypePrimitive.TYPE_NDINT)))
+                            report(expr, "array index must be an int");
+                    }else{
+                    	report(expr, "array index must be an int");
+                    }
+                	return super.visitExprArrayRange(expr);
                 }
 
                 public Object visitExprArray(ExprArray expr)
