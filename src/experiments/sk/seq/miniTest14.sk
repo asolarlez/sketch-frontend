@@ -10,5 +10,5 @@ bit reverseSketch(bit[4] in) implements reverse {
 
 
 bit reverse (bit[4] in) {
-	return in[3];
+	return in[2];
 }
