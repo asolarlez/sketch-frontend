@@ -598,6 +598,27 @@ public class SemanticChecker
                     
                     return super.visitExprUnary(expr);
                 }
+                public Object visitFunction(Function func)
+                {
+                	if(func.getSpecification() != null){
+                		Function parent = this.symtab.lookupFn(func.getSpecification());
+                		Iterator formals1 = func.getParams().iterator();
+                		Iterator formals2 = parent.getParams().iterator();
+                		if(func.getParams().size() != parent.getParams().size() ){
+                			report(func, "Parameters of spec and sketch don't match " + parent + " vs.  " + func);
+                			return super.visitFunction(func);
+                		}
+                		while(formals1.hasNext()){
+                			Parameter f1 = (Parameter) formals1.next();
+                			Parameter f2 = (Parameter) formals2.next();
+                			if(! f1.getType().equals(f2.getType())){
+                				report(func, "Parameters of spec and sketch don't match " + f1 + " vs. " + f2);
+                			}
+                		}
+                	}
+                	return super.visitFunction(func);
+                }
+                
                 
                 public Object visitExprFunCall(ExprFunCall exp)
                 {                    
