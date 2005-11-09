@@ -11,7 +11,7 @@
 // to discover in order to resolve the sketch
 
 int WW = 8;
-int W = WW;
+int W = 4;
 
 bit[WW] multiplyFull (bit[WW] x, bit[WW] y) {
 	bit[WW] result = 0;
@@ -50,10 +50,10 @@ bit[WW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 	tmp12 = multiplyHalf(x1, y2);
 	tmp22 = multiplyHalf(x2, y2);
 	
-	res = tmp11 
-		+ tmp12
-		+ tmp21
-		+ tmp22;
+	res = tmp11 << ?? 
+		+ tmp12 << ??
+		+ tmp21 << ??
+		+ tmp22 << ??; 
 
 	return res;
 }
