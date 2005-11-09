@@ -145,6 +145,8 @@ public class FEReplacer implements FEVisitor
             return new ExprArray(exp.getContext(), base, offset, exp.isUnchecked());
     }
     
+    
+    
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
         boolean hasChanged = false;
