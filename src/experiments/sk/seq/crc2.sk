@@ -29,16 +29,17 @@ bit[W] remainderOpt(bit[X*W] in) implements remainder
 	bit[W] poly=0;
 	poly[W-1]=1; poly[W-2]=1; poly[W-3]=1; //CRC-8
 	bit[W] ret=0;
-	bit[N]tmp;
+	bit[N] c1={0,1}; bit[N] c2={1,0}; bit[N] c3={1,1};
+	bit[W] t1,t2,t3;
+	t1=??; t2=??; t3=??;
 	for(int i=0;i<X*W/N;i++) {
 		//ret=(ret<<N)^table[in[i*N::N]^ret[0::N]]; // what I really want to write here but can't
+		bit[N] tmp;
 		for(int j=0;j<N;j++)tmp[j]=in[i*N+j]^ret[j];
 		ret=ret<<N;
-		loop(TSIZE) {
-			if(iszero(tmp^??)) {
-				ret=ret^??;
-			}
-		}
+		if(iszero(tmp^c1)) ret=ret^t1;
+		else if(iszero(tmp^c2)) ret=ret^t2;
+		else if(iszero(tmp^c3)) ret=ret^t3;
 	}
 	return ret;
 }
