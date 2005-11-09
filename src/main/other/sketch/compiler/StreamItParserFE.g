@@ -389,8 +389,8 @@ right_expr returns [Expression x] { x = null; }
 	;
 
 var_initializer returns [Expression x] { x = null; }
-	:	x=right_expr
-        | x=arr_initializer
+: (arr_initializer) => x=arr_initializer
+| 	x=right_expr
 	;
 
 arr_initializer returns [Expression x] { ArrayList l = new ArrayList(); 
@@ -529,6 +529,7 @@ ndvalue returns [Expression x] { x=null; }
 :
 	t:NDVAL {x=new ExprStar(getContext(t));} 
 | 	t2:NDVAL2 {x=new ExprStar(getContext(t2));} 
+| 	t3:LCURLY STAR n:NUMBER RCURLY {x=new ExprStar(getContext(t3),Integer.parseInt(n.getText()));}
 ;
 
 streamit_value_expr returns [Expression x] { x = null; }
