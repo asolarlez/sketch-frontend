@@ -1,0 +1,164 @@
+bit[8] rowFilSK(bit[32] in){ 	
+	bit [32] t1 = ((in >> 1 ) &{*}) ^ ((in) &{*});
+	bit [32] m1 = (in<<{*}) & {*};
+	bit [32] m2 = (m1>>{*}) | m1;
+	bit [32] m3 = (m2>>1) | m2;
+	bit [32] rval = t1 ^ m3;
+	int t1 = 0;
+	int t2 = 8;
+	int t3 = 16;
+	int t4 = 24;
+	bit [8] out;
+	for(int i=0; i<8; ++i){
+		out[i] = rval[i+t1] ^ rval[i +t2] ^ rval[i+t3] ^ rval[i+t4];
+	}
+	return out;
+}
+
+bit[8] row2FilSK(bit[32] in)  implements row2Fil{
+	return rowFilSK(in);
+}
+
+bit[8] row1FilSK(bit[32] in)  implements row1Fil{
+	return rowFilSK(in);
+}
+
+
+bit[8] GFM01(bit[8] in){
+	return in;
+}
+
+bit[8] GFM03(bit[8] input){
+
+    bit[9] in={0,0,0,0,0,0,0,0,0};
+
+    for(int i=0; i<8; ++i)
+      in[i+1] = input[i];
+
+    for(int i=0; i<8; ++i)
+      in[i] = in[i] ^ input[i];
+
+    //Note that multiplication times 02 is just shift by one.
+
+    //But now comes the fun part, we have to reduce.
+    // by x^8+x^4+x^3+x+1
+    //But since the new poly is only of degree
+    // 8, we simply subtract it, but only
+    // if in[8] is equal to one.
+
+    bit[9] modpoly = {1,1,0,1,1,0,0,0,1};
+
+    if( in[8] == 1 ){
+      for(int k=0; k<8; ++k)
+        in[k] = ( in[k] ^ modpoly[k] );
+    }
+    bit [8] out;
+	for(int i=0; i<8; ++i){
+		out[i] = in[i];
+	}
+	return out;
+}
+
+bit[8] GFM02(bit[8] input){
+    bit[9] in={0,0,0,0,0,0,0,0,0};
+    for(int i=0; i<8; ++i)
+      in[i+1] = input[i];
+    //Note that multiplication times 02 is just shift by one.
+
+    //But now comes the fun part, we have to reduce.
+    // by x^8+x^4+x^3+x+1
+    //But since the new poly is only of degree
+    // 8, we simply subtract it.
+
+
+    bit[9] modpoly = {1,1,0,1,1,0,0,0,1};
+
+
+    for(int k=0; k<8; ++k){
+      if( in[8] == 1 ){
+        in[k] = ( in[k] ^ modpoly[k] );
+      }
+    }
+    bit [8] out;
+	for(int i=0; i<8; ++i){
+		out[i] = in[i];
+	}
+	return out;
+}
+
+bit[8] row1Fil(bit[32] input){
+  bit[8] in1;
+  bit[8] in2;
+  bit[8] in3;
+  bit[8] in4;
+  for(int i=0; i<8; ++i){
+  	in1[i] = input[i];
+  	in2[i] = input[i+8];
+  	in3[i] = input[i+16];
+  	in4[i] = input[i+24];
+  }
+  in1 = GFM02(in1);
+  in2 = GFM03(in2);
+  in3 = GFM01(in3);
+  in4 = GFM01(in4);
+  return in1 ^ in2 ^ in3 ^ in4;
+}
+
+bit[8] row2Fil(bit[32] input){
+  bit[8] in1;
+  bit[8] in2;
+  bit[8] in3;
+  bit[8] in4;
+  for(int i=0; i<8; ++i){
+  	in1[i] = input[i];
+  	in2[i] = input[i+8];
+  	in3[i] = input[i+16];
+  	in4[i] = input[i+24];
+  }
+  in1 = GFM01(in1);
+  in2 = GFM02(in2);
+  in3 = GFM03(in3);
+  in4 = GFM01(in4);
+  return in1 ^ in2 ^ in3 ^ in4;
+}
+
+
+
+bit[8] row3Fil(bit[32] input){
+  bit[8] in1;
+  bit[8] in2;
+  bit[8] in3;
+  bit[8] in4;
+  for(int i=0; i<8; ++i){
+  	in1[i] = input[i];
+  	in2[i] = input[i+8];
+  	in3[i] = input[i+16];
+  	in4[i] = input[i+24];
+  }
+  in1 = GFM01(in1);
+  in2 = GFM01(in2);
+  in3 = GFM02(in3);
+  in4 = GFM03(in4);
+  return in1 ^ in2 ^ in3 ^ in4;
+}
+
+
+bit[8] row4Fil(bit[32] input){
+  bit[8] in1;
+  bit[8] in2;
+  bit[8] in3;
+  bit[8] in4;
+  for(int i=0; i<8; ++i){
+  	in1[i] = input[i];
+  	in2[i] = input[i+8];
+  	in3[i] = input[i+16];
+  	in4[i] = input[i+24];
+  }
+  in1 = GFM03(in1);
+  in2 = GFM01(in2);
+  in3 = GFM01(in3);
+  in4 = GFM02(in4);
+  return in1 ^ in2 ^ in3 ^ in4;
+}
+
+
