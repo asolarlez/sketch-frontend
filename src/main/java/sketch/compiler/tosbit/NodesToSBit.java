@@ -707,10 +707,48 @@ public class NodesToSBit implements FEVisitor{
 
 	    public Object visitExprTypeCast(ExprTypeCast exp)
 	    {
-	    	//Assert(false, "NYI");
-	        //return "((" + convertType(exp.getType()) + ")(" +
-	    	//For now, we don't do any casting at all. 
-	          return (String)exp.getExpr().accept(this);
+	    	Assert(exp.getType().equals(TypePrimitive.inttype), "We only allow casts to integers");	    		    	
+	    	String arrName = (String)exp.getExpr().accept(this);	    	
+	    	
+	    	if( state.topOfStackIsVector() ){
+	    		String result = "( $$";
+	    		List rhsLst;
+	        	rhsLst= state.vectorPopVStack();
+	        	int size = state.checkArray(arrName);
+	        	Assert(size == rhsLst.size(), "I don't exist");
+	        	Iterator it = rhsLst.iterator();
+	        	int i = 0;
+	        	int val=0;
+	        	boolean hasValue=true;
+	        	while(it.hasNext()){
+	        		Object o = it.next();
+	        		if(o == null){
+	        			String lnm = arrName + "_idx_" + i;
+	        			result += " " + state.varGetRHSName(lnm);
+	        			hasValue = false;
+	        		}else{
+	        			Integer iv = (Integer) o;
+	        			int curv = iv.intValue();
+	        			result += " " + o;
+	        			Assert(curv == 1 || curv == 0, "Only boolean arrays please!!");
+	        			val = val*2;
+	        			val = val + curv;
+	        		}
+	        		++i;
+	        	}
+	        	result += " $$ )";
+	        	if(hasValue){
+	        		state.pushVStack(new Integer(val));
+	        		result = " " + val;
+	        	}else{
+	        		state.pushVStack(null);
+	        	}
+	        	return result;
+	        }else{
+	        	state.popVStack();
+	        	Assert(false, "We only allow casting of array expressions");
+	        }
+	        return null;
 	    }
 
 	    public Object visitExprUnary(ExprUnary exp)
