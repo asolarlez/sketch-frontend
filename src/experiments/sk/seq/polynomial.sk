@@ -1,4 +1,4 @@
-int W = 16;
+int W = 13;
 
 bit [W] mult(bit[W] in1, bit[W] in2){
 	bit [W] result = 0;
