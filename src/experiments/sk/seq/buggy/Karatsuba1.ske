@@ -1,0 +1,54 @@
+// x = x1*b + x0
+// y = y1*b + y0
+//
+// x*y = (b*b)*x1*y1 + b*(x1*y0 + x0*y1) + x0*y0
+//
+// x*y = p(b)*x1*y1 + p(b)*a(x1, x0, y1, y0) * a(x1, x0, y1, y0) + p(b)*x0*y0
+//
+// x*y = (b*b +b)*x1*y1 + b*(x1 - x0)*(y1 - y0) + (b+1)*x0*y0
+//
+// p1, p2, a2, p3 are polynomials which the system has 
+// to discover in order to resolve the sketch
+
+int WW = 8;
+int W = 4;
+
+bit[WW] multiplyFull (bit[WW] x, bit[WW] y) {
+	bit[WW] result = 0;
+	for(int i=0; i<WW; ++i){
+		if(y[i]==1){ result = result + x; }
+		y = y >> 1;
+	}
+	return result;
+}
+
+bit[W] multiplyHalf (bit[W] x, bit[W] y) implements multiplyFull {
+	bit[W] result = 0;
+	for(int i=0; i<W; ++i){
+		if(y[i]==1){ result = result + x; }
+		y = y >> 1;
+	}
+	return result;
+}
+
+//bit[W] k (bit[W] x, bit[W] y, bit[W] baseInBits) {  
+//	bit[W] one = 0; one[0] = 1;
+//
+//	bit[W/2] x1, x2, y1, y2;
+
+//	for (int i = 0; i < W/2; i++) {
+//		x1[i] = x[i];
+//		x2[i] = x[i+(baseInBits/2)];
+//	}
+	
+//	
+//	bit[W] B = one>>(baseInBits << 1);   // 2^(baseInBits/2)
+//	
+//	if (baseInBits<=4) return multiply(x,y);
+//	else return 1;
+	
+//	return poly(b) * k(x1, y1, n/2) 
+//	     + poly(b) * k(x2, y2, n/2) 
+//	     + poly(b) * poly(x1, x2, y1, y2);
+//}
+
