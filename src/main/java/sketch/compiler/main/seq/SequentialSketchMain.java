@@ -248,7 +248,7 @@ public class ToSBit
         }
         catch (Exception e)
         {
-            e.printStackTrace(System.err);
+            //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
 
@@ -283,7 +283,7 @@ public class ToSBit
         }
         catch (java.io.IOException e)
         {
-            e.printStackTrace(System.err);
+            //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
         
@@ -309,18 +309,19 @@ public class ToSBit
 	        int exitVal = proc.waitFor();
 	        System.out.println("Process exitValue: " + exitVal);
 	        if(exitVal != 0){
-	        	throw new RuntimeException("The sketch can not be resolved");
+	        	System.out.println("The sketch can not be resolved");
+	        	return;
 	        }
         }
         catch (java.io.IOException e)
         {
-            e.printStackTrace(System.err);
-            //throw new RuntimeException(e);
+            //e.printStackTrace(System.err);
+            throw new RuntimeException(e);
         }
         catch (InterruptedException e)
         {
-            e.printStackTrace(System.err);
-            //throw new RuntimeException(e);
+            //e.printStackTrace(System.err);
+            throw new RuntimeException(e);
         }
         
         try{
@@ -333,7 +334,7 @@ public class ToSBit
         }
         catch (java.io.IOException e)
         {
-            e.printStackTrace(System.err);
+            //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
         
