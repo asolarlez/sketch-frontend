@@ -407,8 +407,8 @@ public class NodesToSBit implements FEVisitor{
 		    		if(this.isLHS){
 		    			Assert(false, "ARRAY OUT OF BOUNDS !(0<=" + ofst + " < " + size);
 		    			return null;
-		    		}else{
-		    			Assert(exp.isUnchecked(), "ARRAY OUT OF BOUNDS !(0<=" + ofst + " < " + size);
+		    		}else{		    			
+		    			if(!exp.isUnchecked())throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst + " < " + size);
 	    				state.pushVStack( new Integer(0) );
 	    				return "0";		    			
 		    		}
@@ -1530,7 +1530,7 @@ public class NodesToSBit implements FEVisitor{
 			        try{
 			        	
 			        	ipart = (String)stmt.getBody().accept(this);
-			        }catch(java.lang.AssertionError er){			        	
+			        }catch(ArrayIndexOutOfBoundsException er){			        	
 			        	state.popChangeTracker();
 			        	break;
 		    		}
