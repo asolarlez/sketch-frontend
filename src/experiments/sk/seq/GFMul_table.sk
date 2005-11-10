@@ -1,0 +1,45 @@
+//This benchmark comes from a little piece of AES. 
+//It is a multiplication of (in * 02) mod P in the field
+//galois field of polynomials in {0,1},  mod P.
+
+int W=8;
+int TSIZE=1<<W;
+
+bit[W] GFMul02 (bit[W] in) {
+	bit[W+1] tin= 0;
+    for(int i=0; i<W; ++i)
+      tin[i+1] = in[i];
+    //Note that multiplication times p(x) is just shift by one.
+    //But now comes the fun part, we have to reduce.
+    // by x^W+x^4+x^3+x+1
+    //But since the new poly is only of degree
+    // W, we simply subtract it.
+    bit[W+1] modpoly = {1,1,0,1,1,0,0,0,1};
+    for(int k=0; k<W; ++k){
+      if( tin[W] == 1 ){
+      tin[k] = ( tin[k] ^ modpoly[k] );
+      }
+    }
+    bit [W] out;
+    for(int k=0; k<W; ++k)
+      out[k] = tin[k];
+    return out;
+}
+
+bit[W] GFMul02sk(bit[W] in) implements GFMul02 {
+	bit[TSIZE*W] table=??;
+	int base=(int)in;
+	base=base*W;
+	bit[W] ret;
+	for(int i=0;i<W;i++)
+		ret[i]=table[base+i];
+	return ret;
+}
+
+/* with syntactic sugar:
+
+bit[W] GFMul02sk(bit[W] in) implements GFMul02 {
+	bit[TSIZE*W] table=??;
+	return table[W*(int)in::W];
+}
+*/
