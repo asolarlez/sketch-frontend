@@ -11,7 +11,7 @@
 // to discover in order to resolve the sketch
 
 
-int WW = 4;
+int WW = 6;
 int W = WW/2;
 int WWWW =  WW+WW;
 
