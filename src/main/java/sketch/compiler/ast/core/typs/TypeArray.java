@@ -66,7 +66,9 @@ public class TypeArray extends Type
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
         if(thisLen.getIValue() != null && thatLen.getIValue() != null){
-        	return thisLen.getIValue().equals(thatLen.getIValue());
+        	int ithis = thisLen.getIValue();
+        	int ithat = thatLen.getIValue();
+        	return ithis <= ithat;
         }
         if (!(thisLen.equals(thatLen)))
             return false;

@@ -174,7 +174,7 @@ public class TypePrimitive extends Type
         case TYPE_NDBIT:
         	return t2 == TYPE_NDBIT || t2 == TYPE_NDINT || t2 == TYPE_BIT;
         case TYPE_NDINT:
-            return t2 == TYPE_NDINT;
+            return t2 == TYPE_NDINT || t2 == TYPE_INT;
         default:
             assert false : t1;
             return false;

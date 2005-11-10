@@ -29,6 +29,7 @@ import streamit.frontend.nodes.ExprPeek;
 import streamit.frontend.nodes.ExprPop;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
@@ -217,6 +218,15 @@ class Indexify extends FEReplacer{
 			return new ExprArray(exp.getContext(), exp, index);
 		else
 			return exp;
+    }
+	
+	public Object visitExprTypeCast(ExprTypeCast exp)
+    {
+		if(exp.getType() instanceof TypePrimitive){
+			return exp;
+		}else{
+			return doExpression(exp.getExpr());
+		}        
     }
 	
 	public Object visitExprArrayRange(ExprArrayRange exp){

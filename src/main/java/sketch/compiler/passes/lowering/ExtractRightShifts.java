@@ -1,6 +1,7 @@
 package streamit.frontend.passes;
 
 import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
