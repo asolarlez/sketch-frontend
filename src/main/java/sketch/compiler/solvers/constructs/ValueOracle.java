@@ -16,6 +16,11 @@ import streamit.frontend.nodes.FENode;
 public class ValueOracle {
 	private Map<FENode, List<String>> store;	
 	private Map<String, Boolean> valMap;
+	private int starSizesCaped = -1;
+	
+	public void capStarSizes(int size){
+		starSizesCaped = size;
+	}
 	
 	public ValueOracle() {
 		super();
@@ -49,7 +54,11 @@ public class ValueOracle {
 				}else{
 					int v = 0;
 					int p = 1;
-					for(int i=0; i<star.getSize(); ++i){
+					int size=star.getSize();
+					if(starSizesCaped>0 && !star.isFixed()){
+						size = starSizesCaped;
+					}
+					for(int i=0; i<size; ++i){
 						boolean val = valMap.get(var + "_" + i).booleanValue();
 						v += p*(val?1:0);
 						p = p*2;

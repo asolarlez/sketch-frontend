@@ -78,6 +78,10 @@ public class ToSBit
     private String sbitPath = null;
     private List inputFiles = new java.util.ArrayList();
     private Map defines=new HashMap();
+    private int unrollAmt = 8;
+    private boolean incremental = false;
+    private int incermentalAmt = 0;
+
     
     public void doOptions(String[] args)
     {
@@ -103,6 +107,13 @@ public class ToSBit
                 String word = args[++i];
                 Integer value = new Integer(args[++i]);
                 defines.put(word,value);
+            } else if (args[i].equals("--unrollamnt")) {                
+                Integer value = new Integer(args[++i]);
+                unrollAmt = value.intValue(); 
+            }else if (args[i].equals("--incremental")) {               
+                Integer value = new Integer(args[++i]);
+                incremental = true;
+                incermentalAmt = value.intValue();
             }
             else
                 // Maybe check for unrecognized options.
@@ -280,9 +291,11 @@ public class ToSBit
                 outWriter = new FileWriter(outputFile);
             else
                 outWriter = new OutputStreamWriter(System.out);
-
+            ProduceBooleanFunctions partialEval = new ProduceBooleanFunctions(null, varGen, oracle);
+            partialEval.LUNROLL = this.unrollAmt;
+            System.out.println("MAX LOOP UNROLLING = " + unrollAmt);
             String javaOut =
-                (String)prog.accept( new ProduceBooleanFunctions(null, varGen, oracle));
+                (String)prog.accept( partialEval );
             outWriter.write(javaOut);
             outWriter.flush();
         }
@@ -294,39 +307,36 @@ public class ToSBit
         
                 
         System.out.println("OFILE = " + outputFile);
-        Runtime rt = Runtime.getRuntime();
         String command = (sbitPath!=null? sbitPath : "") + "SBitII";
-        try
-        {
-	        String[] tmp  = {command ,  outputFile, outputFile + ".tmp"};        
-	        Process proc = rt.exec(tmp);   
-	        InputStream output = proc.getInputStream();
-	        InputStream stdErr = proc.getErrorStream();
-	        InputStreamReader isr = new InputStreamReader(output);
-	        InputStreamReader errStr = new InputStreamReader(stdErr);
-	        BufferedReader br = new BufferedReader(isr);
-	        BufferedReader errBr = new BufferedReader(errStr);
-	        String line = null;
-	        while ( (line = br.readLine()) != null)
-	            System.out.println(line);       
-	        while ( (line = errBr.readLine()) != null)
-	            System.err.println(line);       
-	        int exitVal = proc.waitFor();
-	        System.out.println("Process exitValue: " + exitVal);
-	        if(exitVal != 0){
+        if(this.incremental){
+        	boolean isSolved = false;
+        	int bits=0;
+        	for(bits=1; bits<=this.incermentalAmt; ++bits){
+        		System.out.println("TRYING SIZE " + bits);
+        		String[] commandLine  = {command , "-overrideCtrls", "" + bits  ,outputFile, outputFile + ".tmp"};
+    	        boolean ret = runSolver(commandLine);
+    	        if(ret){
+    	        	isSolved = true;
+    	        	break;
+    	        }else{
+    	        	System.out.println("Size " + bits + " is not enough");
+    	        }
+        	}
+        	if(!isSolved){
 	        	System.out.println("The sketch can not be resolved");
 	        	return;
 	        }
-        }
-        catch (java.io.IOException e)
-        {
-            //e.printStackTrace(System.err);
-            throw new RuntimeException(e);
-        }
-        catch (InterruptedException e)
-        {
-            //e.printStackTrace(System.err);
-            throw new RuntimeException(e);
+	        System.out.println("Succeded with " + bits + " bits for integers");
+	        
+        	oracle.capStarSizes(bits);
+        	
+        }else{
+	        String[] commandLine  = {command ,  outputFile, outputFile + ".tmp"};
+	        boolean ret = runSolver(commandLine);
+	        if(!ret){
+	        	System.out.println("The sketch can not be resolved");
+	        	return;
+	        }
         }
         
         try{
@@ -344,11 +354,44 @@ public class ToSBit
         }
         
         Program noindet = (Program)prog.accept(new EliminateIndeterminacy(oracle, varGen));
-        System.out.println(noindet.accept(new NodesToC(false, varGen) ));
-       
+        System.out.println(noindet.accept(new NodesToC(false, varGen) ));                       
         
-        
-        
+    }
+    
+    
+    public boolean runSolver(String[] commandLine){
+        Runtime rt = Runtime.getRuntime();        
+        try
+        {	                
+	        Process proc = rt.exec(commandLine);   
+	        InputStream output = proc.getInputStream();
+	        InputStream stdErr = proc.getErrorStream();
+	        InputStreamReader isr = new InputStreamReader(output);
+	        InputStreamReader errStr = new InputStreamReader(stdErr);
+	        BufferedReader br = new BufferedReader(isr);
+	        BufferedReader errBr = new BufferedReader(errStr);
+	        String line = null;
+	        while ( (line = br.readLine()) != null)
+	            System.out.println(line);       
+	        while ( (line = errBr.readLine()) != null)
+	            System.err.println(line);       
+	        int exitVal = proc.waitFor();
+	        System.out.println("Process exitValue: " + exitVal);
+	        if(exitVal != 0){	        	
+	        	return false;
+	        }
+        }
+        catch (java.io.IOException e)
+        {
+            //e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
+        catch (InterruptedException e)
+        {
+            //e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
+        return true;
     }
     
     public static void main(String[] args)

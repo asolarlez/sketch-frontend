@@ -103,6 +103,7 @@ public class NodesToSBit implements FEVisitor{
 	    protected Stack preFil;
 	    protected List additInit;
 	    private ValueOracle oracle;
+	    public int LUNROLL=8;
 	    
 	    private void Assert(boolean t, String s){
 	    	if(!t){
@@ -1624,8 +1625,7 @@ public class NodesToSBit implements FEVisitor{
 	    	if(vcond == null){
 	    		
 	    		String nvar = state.varDeclare(); 
-	    		result += nvar + " = " + "(" + iter + ");\n"; 
-	    		int LUNROLL=8;
+	    		result += nvar + " = " + "(" + iter + ");\n"; 	    		
 	    		int iters;
 	    		for(iters=0; iters<LUNROLL; ++iters){			        		        
 			        state.pushChangeTracker();
@@ -2118,9 +2118,10 @@ public class NodesToSBit implements FEVisitor{
 			state.pushVStack(null);
 			String cvar = state.varDeclare();
 			oracle.addBinding(star, cvar);
+			String isFixed = star.isFixed()? " *" : "";
 			if(star.getSize() > 1)
-				return "<" + cvar + "  " + star.getSize() + ">";
+				return "<" + cvar + "  " + star.getSize() + isFixed+ ">";
 			else
-				return "<" + cvar + ">";
+				return "<" + cvar +  ">";
 		}
 }
