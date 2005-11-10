@@ -481,9 +481,11 @@ multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 		)*
 	;
 
-castExpr returns [Expression x] { x = null; Type t=null; }
+castExpr returns [Expression x] { x = null; Expression bound; Type t=null; }
 	:	(LPAREN primitive_type) =>
-		  (l:LPAREN t=primitive_type RPAREN) x=inc_dec_expr
+		  (l:LPAREN t=primitive_type 
+		  		(sq:LSQUARE bound=right_expr { t = new TypeArray(t, bound); } 			RSQUARE		)*
+		  RPAREN) x=inc_dec_expr
 		{ x = new ExprTypeCast(getContext(l), t, x); }
 	|	x=shiftExpr
 	;
