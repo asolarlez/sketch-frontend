@@ -6,14 +6,78 @@
  */
 package streamit.frontend.tosbit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprArrayRange;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprComplex;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstChar;
+import streamit.frontend.nodes.ExprConstFloat;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstStr;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEVisitor;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.SJDuplicate;
+import streamit.frontend.nodes.SJRoundRobin;
+import streamit.frontend.nodes.SJWeightedRR;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEmpty;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPhase;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtSendMessage;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePortal;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 import streamit.frontend.tojava.ExprJavaConstructor;
 import streamit.frontend.tojava.StmtAddPhase;
 import streamit.frontend.tojava.StmtIODecl;
@@ -1126,7 +1190,7 @@ public class NodesToSBit implements FEVisitor{
 	        	if( this.state.topOfStackIsVector() ){	
 	        		List lst= state.vectorPopVStack();
 	        		
-	        		List<String> rhsNames = new LinkedList<String>();
+	        		List<String> rhsNames = new ArrayList<String>();
 	        		for(int i=0; i<lst.size(); ++i){
 	        			rhsNames.add(state.varGetRHSName(apnm + "_idx_" + i));
 	        		}
@@ -1145,9 +1209,10 @@ public class NodesToSBit implements FEVisitor{
 		    			String lpnm = formalParamName + "_idx_" + idx;
 		    			state.varDeclare(lpnm);
 			    		lhsname = state.varGetLHSName(lpnm);
+			    		String rhsName = rhsNamesIter.next();
 			    		if( !formalParam.isParameterOutput() ){
 				    		if(i == null){
-				    			result += lhsname + " = " + rhsNamesIter.next() + ";\n";
+				    			result += lhsname + " = " + rhsName + ";\n";
 				    		}else{
 				    			state.setVarValue(lpnm, i.intValue());
 				    		}
