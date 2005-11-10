@@ -26,8 +26,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
@@ -78,7 +77,8 @@ public class ToSBit
     private String outputFile = null;
     private String sbitPath = null;
     private List inputFiles = new java.util.ArrayList();
-
+    private Map defines=new HashMap();
+    
     public void doOptions(String[] args)
     {
         for (int i = 0; i < args.length; i++)
@@ -99,6 +99,11 @@ public class ToSBit
                 libraryFormat = true;
             else if (args[i].equals("--sbitpath"))
                 sbitPath = args[++i];
+            else if (args[i].equals("-D")) {
+                String word = args[++i];
+                Integer value = new Integer(args[++i]);
+                defines.put(word,value);
+            }
             else
                 // Maybe check for unrecognized options.
                 inputFiles.add(args[i]);
@@ -152,7 +157,7 @@ public class ToSBit
      * @throws antlr.TokenStreamException if an error occurs producing
      *         the input token stream
      */
-    public static Program parseFiles(List inputFiles)
+    public Program parseFiles(List inputFiles)
         throws java.io.IOException,
                antlr.RecognitionException, 
                antlr.TokenStreamException
@@ -179,7 +184,7 @@ public class ToSBit
         }
         //invoke post-parse passes
         prog = (Program)prog.accept(new FunctionParamExtension());
-        prog = (Program)prog.accept(new ConstantReplacer());
+        prog = (Program)prog.accept(new ConstantReplacer(defines));
         return prog;
     }
 

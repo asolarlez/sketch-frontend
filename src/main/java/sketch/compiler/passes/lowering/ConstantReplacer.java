@@ -16,14 +16,16 @@ public class ConstantReplacer extends FEReplacer {
 
 	private HashMap<String,Integer> constants;
 	
-	public ConstantReplacer() {
+	public ConstantReplacer(Map subs) {
 		constants=new HashMap<String,Integer>();
+		constants.putAll(subs);
 	}
 
 	private boolean addConstant(Type type, String name, Expression init) {
 		if(init==null) return false;
 		init=(Expression) init.accept(this);
 		if(init instanceof ExprConstInt) {
+			if(constants.get(name)!=null) return false;
 			constants.put(name,((ExprConstInt)init).getVal());
 			return true;
 		}
