@@ -1,0 +1,59 @@
+int N=2; //#DCT points
+
+int IWS=8; //input "word" size
+int OWS=IWS; //output word size
+
+int SH=3;
+int CWS=IWS+SH; //computation word size
+
+int MP=CWS; //multiplication template parameter
+bit [MP] mult(bit[MP] in1, bit[MP] in2){
+	bit [MP] result = 0;
+	for(int i=0; i<MP; ++i){
+		if(in2[i]==1){
+			result = result + in1;
+		}
+		in1 = in1 >> 1;
+	}
+	return result;
+}
+
+bit[N*OWS] DCT(bit[N*IWS] in) 
+{
+	bit[CWS] a0=0; // this is 1/(2*sqrt(2) * 2^SH as an integer
+		a0[0]=1; a0[1]=1;
+	bit[CWS] c0=0;
+	bit[CWS] c1=0;
+	bit[CWS] d0=0;
+	bit[CWS] d1=0;
+	bit[N*OWS] ret;
+	for(int j=0;j<IWS;j++) c0[j]=in[j];
+	for(int j=0;j<IWS;j++) c1[j]=in[IWS+j];
+	bit[CWS] tmp;
+	tmp=c0+c1;
+	d0=mult(a0,tmp);
+	tmp=c0-c1;
+	d1=mult(a0,tmp);
+	for(int j=0;j<OWS;j++) ret[j]=d0[SH+j];
+	for(int j=0;j<OWS;j++) ret[OWS+j]=d1[SH+j];
+	return ret;
+}
+
+bit[N*OWS] DCTsk(bit[N*IWS] in) implements DCT
+{
+	bit[CWS] a0=??;
+	bit[CWS] c0=0;
+	bit[CWS] c1=0;
+	bit[CWS] c2=0;
+	bit[N*OWS] ret;
+	for(int j=0;j<IWS;j++) c0[j]=in[j];
+	for(int j=0;j<IWS;j++) c1[j]=in[IWS+j];
+	c2=c1+c0;
+	c2=mult(c2,a0);
+	c0=c0-c1;
+	c0=mult(c0,a0);
+	for(int j=0;j<OWS;j++) ret[j]=c2[SH+j];
+	for(int j=0;j<OWS;j++) ret[OWS+j]=c0[SH+j];
+	return ret;
+}
+
