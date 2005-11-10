@@ -1501,7 +1501,7 @@ public class NodesToSBit implements FEVisitor{
 		        	incr = (String)stmt.getIncr().accept(this);
 	        	cond = (String)stmt.getCond().accept(this);
 		        vcond = state.popVStack();
-		        Assert(iters < 300, "This is probably a bug, why would it go around so many times?");
+		        Assert(iters <= 1024, "This is probably a bug, why would it go around so many times? ");
 	        }
 	        state.popLevel();
 	        return result;
