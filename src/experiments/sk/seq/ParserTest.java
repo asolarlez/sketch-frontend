@@ -1,7 +1,7 @@
 package test;
 
 import java.io.*;
-import java.util.Iterator;
+import java.util.*;
 
 import antlr.*;
 
@@ -79,7 +79,7 @@ public class ParserTest extends TestCase
 		}
 		assertNotNull(p);
 		p=(Program) p.accept(new FunctionParamExtension());
-		p=(Program) p.accept(new ConstantReplacer());
+		p=(Program) p.accept(new ConstantReplacer(Collections.EMPTY_MAP));
 		return p;
 	}
 }
