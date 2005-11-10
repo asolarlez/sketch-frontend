@@ -28,7 +28,7 @@ public class ExtractVectorsInCasts extends SymbolTableVisitor {
     public Object visitExprTypeCast(ExprTypeCast exp)
     {
     	if(!(exp.getExpr() instanceof ExprVar)){
-    		Type t = this.getType(exp);
+    		Type t = this.getType(exp.getExpr());
 			FEContext context = exp.getContext();
 			String tmpName = varGen.nextVar();
 			Expression lexp = this.doExpression(exp.getExpr());
