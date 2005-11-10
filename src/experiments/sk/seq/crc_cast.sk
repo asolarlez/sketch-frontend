@@ -29,7 +29,7 @@ bit[W] remainderOpt(bit[X*W] in, bit[W] poly) implements remainder
 		bit[N] sel;
 		for(int j=0;j<N;j++) sel[j]=in[i*N+j]^ret[j];
 		int base=(int)sel;
-		base=base*TSIZE;
+		base=base*W;
 		
 		ret=ret<<N;
 		for(int k=0;k<W;k++) {
