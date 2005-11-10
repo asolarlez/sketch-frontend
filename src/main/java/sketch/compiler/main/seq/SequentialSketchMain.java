@@ -226,6 +226,7 @@ public class ToSBit
          * "this", which doesn't exist. */
         prog = (Program)prog.accept(new MakeBodiesBlocks());
         prog = (Program)prog.accept(new ExtractRightShifts(varGen));
+        prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
         prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
         prog = (Program)prog.accept(new NoRefTypes());
