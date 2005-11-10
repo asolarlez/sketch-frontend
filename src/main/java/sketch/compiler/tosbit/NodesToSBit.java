@@ -772,10 +772,14 @@ public class NodesToSBit implements FEVisitor{
 
 	    public Object visitExprTypeCast(ExprTypeCast exp)
 	    {
-	    	Assert(exp.getType().equals(TypePrimitive.inttype), "We only allow casts to integers");	    		    	
-	    	String arrName = (String)exp.getExpr().accept(this);	    	
+	    		    		    	
+	    	if(! exp.getType().equals(TypePrimitive.inttype) ){
+	    		Assert( exp.getType() instanceof TypeArray, "WHAT ARE YOU TRYING TO DO!!!");
+	    		return (String)exp.getExpr().accept(this);
+	    	}
 	    	
-	    	if( state.topOfStackIsVector() ){
+	    	String arrName = (String)exp.getExpr().accept(this);	    	
+	    	if( state.topOfStackIsVector()){
 	    		String result = "( $$";
 	    		List rhsLst;
 	        	rhsLst= state.vectorPopVStack();
