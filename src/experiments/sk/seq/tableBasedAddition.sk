@@ -1,8 +1,7 @@
 int W = 4;
 
 bit[W] reverseSketch(bit[W] in1, bit[W] in2) implements reverse {
-	int exp = 1;
-	loop(W*2){ exp = exp*2; }
+	int exp = 1<<(W*2);
 	bit [W*exp] tmp={*};
 	bit[W] output;
 	bit[2*W] input;
