@@ -56,7 +56,7 @@ int makeTest(int n) {
 		fprintf(fout," -D %s %d",pname[i],pval[i][sel[i]]);
 	fprintf(fout," %s %s ",gflags,lflags);
 	fprintf(fout," %s &> %s\n",skname,rname);
-	fprintf(fout,"bash postproc.sh %s %s.report.txt\n",rname,curname);
+//	fprintf(fout,"bash postproc.sh %s %s.report.txt\n",rname,curname);
 }
 
 int parseTest()
