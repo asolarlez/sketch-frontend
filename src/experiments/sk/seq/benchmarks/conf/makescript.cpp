@@ -30,6 +30,9 @@ int pval[5][20];
 char pname[5][100];
 int sel[5];
 char rname[200];
+char skname[200];
+char gflags[500];
+char lflags[500];
 char *curname;
 
 int makeTest(int n) {
@@ -51,13 +54,15 @@ int makeTest(int n) {
 	fprintf(fout,"bash preproc.sh");
 	for(int i=0;i<pnum;i++)
 		fprintf(fout," -D %s %d",pname[i],pval[i][sel[i]]);
-	fprintf(fout," %s.sk &> %s\n",curname,rname);
+	fprintf(fout," %s %s ",gflags,lflags);
+	fprintf(fout," %s &> %s\n",skname,rname);
 	fprintf(fout,"bash postproc.sh %s %s.report.txt\n",rname,curname);
 }
 
 int parseTest()
 {
 	pnum=0;
+	lflags[0]=0;
 	char *line;
 //printf("doing test %s\n",curname);
 	while(line=getLine()) {
@@ -80,6 +85,13 @@ int parseTest()
 				pval[pnum][pvn[pnum]++]=v;
 			}
 			pnum++;
+		}
+		else if(!strcmp(word,"file")) {
+			sscanf(line,"%s %s",word,skname);
+		}
+		else if(!strcmp(word,"flags")) {
+			assert(line[5]!=0);
+			strcpy(lflags,line+6);
 		}
 		else bail();
 	}
@@ -112,10 +124,16 @@ int parseFile()
 		else if(!strcmp(word,"reportname")) {
 			if(sscanf(line,"%s %s %s %s",word,reportName[0],reportName[1],reportName[2])!=4) bail();
 		}
+		else if(!strcmp(word,"flags")) {
+			assert(line[5]!=0);
+			strcpy(gflags,line+6);
+		}
 		else if(!strcmp(word,"test")) {
-			char testname[100];
-			if(sscanf(line,"%s %s",word,testname)!=2) bail();
-			curname=testname;
+			char name[100];
+			if(sscanf(line,"%s %s",word,name)!=2) bail();
+			curname=name;
+			strcpy(skname,name);
+			strcat(skname,".sk");
 			nt++;
 			if(parseTest()) return 1;
 		}
@@ -128,6 +146,7 @@ int main(int argc, char **argv)
 {
 	outputFile[0]=0;
 	reportName[0][0]=0;
+	gflags[0]=0;
 	if(argc<2) {printf("usage %s <config file>\n",argv[0]); return 0;}
 	fin=fopen(argv[1],"rt");
 	if(!fin) {printf("can't open file %s\n",argv[1]); return 1;}
