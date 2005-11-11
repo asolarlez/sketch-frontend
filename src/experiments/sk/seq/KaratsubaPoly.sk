@@ -11,7 +11,7 @@
 // to discover in order to resolve the sketch
 
 
-int WW = 6;
+int WW = 4;
 int W = WW/2;
 int WWWW =  WW+WW;
 
@@ -112,7 +112,7 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 	
 	res = 0;
 	loop(5){
-		bit[WWWW] t = sel(sel(tmp11, tmp22), tmp12) >> ??;
+		bit[WWWW] t = sel(sel(tmp11, tmp22), tmp12) >> (W*??);
 		res = res + sel(t, minus(t));
 	}
 	return res;
