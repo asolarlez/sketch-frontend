@@ -315,7 +315,7 @@ public class ToSBit
         	for(bits=1; bits<=this.incermentalAmt; ++bits){
         		System.out.println("TRYING SIZE " + bits);
         		String[] commandLine  = {command , "-overrideCtrls", "" + bits  ,outputFile, outputFile + ".tmp"};
-    	        boolean ret = runSolver(commandLine);
+    	        boolean ret = runSolver(commandLine, bits);
     	        if(ret){
     	        	isSolved = true;
     	        	break;
@@ -333,7 +333,7 @@ public class ToSBit
         	
         }else{
 	        String[] commandLine  = {command ,  outputFile, outputFile + ".tmp"};
-	        boolean ret = runSolver(commandLine);
+	        boolean ret = runSolver(commandLine, 0);
 	        if(!ret){
 	        	System.out.println("The sketch can not be resolved");
 	        	return;
@@ -360,7 +360,7 @@ public class ToSBit
     }
     
     
-    public boolean runSolver(String[] commandLine){
+    public boolean runSolver(String[] commandLine, int i){
         Runtime rt = Runtime.getRuntime();        
         try
         {	                
@@ -373,7 +373,7 @@ public class ToSBit
 	        BufferedReader errBr = new BufferedReader(errStr);
 	        String line = null;
 	        while ( (line = br.readLine()) != null)
-	            System.out.println(line);       
+	            System.out.println(i + "  " + line);       
 	        while ( (line = errBr.readLine()) != null)
 	            System.err.println(line);       
 	        int exitVal = proc.waitFor();
