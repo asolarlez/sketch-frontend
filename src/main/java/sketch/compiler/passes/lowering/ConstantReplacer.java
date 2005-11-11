@@ -83,6 +83,25 @@ public class ConstantReplacer extends FEReplacer {
 		}
 		return exp;
 	}
+	
+	 public Object visitExprTypeCast(ExprTypeCast exp)
+    {		 
+		 
+		Expression expr = doExpression(exp.getExpr());
+		Type newType = exp.getType();
+        if(exp.getType()instanceof TypeArray){
+        	TypeArray arr=(TypeArray) exp.getType();
+        	Expression len=arr.getLength();
+        	Expression newlen=(Expression) len.accept(this);
+        	if(newlen!=len) {
+        		newType = new TypeArray(arr.getBase(),newlen);
+        	}
+        }
+        if (expr == exp.getExpr() && newType == exp.getType())
+            return exp;
+        else
+            return new ExprTypeCast(exp.getContext(), newType, expr);
+    }
 
 	public Object visitFunction(Function func) {
 		//before visiting the body, we check to see if we need to
