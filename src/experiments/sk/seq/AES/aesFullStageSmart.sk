@@ -1,4 +1,16 @@
 int W = 32;
+
+bit[W] Drot(bit[W] in, int r){
+	bit[W] tmp = in>>r;
+	bit[W] tmp2 = in<<(W-r);
+	bit[W] out=0;
+	int i =0;
+	for(i=0; i<W; ++i){
+		out[i] = (i<r)?tmp2[i]: tmp[i];
+	}
+	return out;
+}
+
 bit[W] rot(bit[W] in, int r){
 	bit[W] tmp = in>>r;
 	bit[W] tmp2 = in<<(W-r);
@@ -20,7 +32,7 @@ bit[32] rowFilSK(bit[32] in){
 	return rval;
 }
 
-bit[32] rowRow2(bit[32] in){
+bit[32] rowRow2(bit[32] input){
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -45,7 +57,7 @@ bit[32] rowRow2(bit[32] in){
   return output;
 }
 
-bit[32] rowRow1(bit[32] in){
+bit[32] rowRow1(bit[32] input){
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -70,7 +82,7 @@ bit[32] rowRow1(bit[32] in){
   return output;
 }
 
-bit[32] rowRow3(bit[32] in){
+bit[32] rowRow3(bit[32] input){
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -96,9 +108,9 @@ bit[32] rowRow3(bit[32] in){
 }
 
 bit[32] MixColumnsSK(bit[32] input) implements MixColumns{
-	bit [32] o1 = rowFilSK(input);
-	bit [32] o2 = rowFilSK(input);
-	bit [32] o3 = rowFilSK(input);	
+	bit [32] o1 = rowRow2(input);
+	bit [32] o2 = rowRow3(input);
+	bit [32] o3 = rowRow1(input);
 	return o1 ^ rot(o2, {*}*8) ^ rot(o3, {*}*8)^rot(o3, {*}*8) ;
 }
 
