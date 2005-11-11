@@ -1,0 +1,38 @@
+int W=16;
+
+bit[W] slog2(bit[W] in) 
+{
+	bit[W] ret=0; 
+	bit[W] ONE=0; ONE[0]=1;
+	bit done=0;
+	for(int i=W-1;i>0;i--)
+		if(!done && in[i]==0) {}
+		else {
+			done=1;
+			ret=ret+ONE;
+		}
+	return ret;
+}
+
+bit iszero(bit[W] in)
+{
+	bit res=1;
+	for(int i=0;i<W;i++)
+		res=res & !in[i];
+	return res;
+}
+
+bit[W] sklog2(bit[W] in) implements slog2 
+{
+	bit[W] ret=0; 
+
+	loop(??)
+	{
+		if (!iszero(in & {*}))
+		{
+			in = in << {*};
+			ret = ret | {*};
+		} 
+	}
+	return ret;
+}
