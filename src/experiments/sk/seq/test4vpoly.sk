@@ -51,8 +51,25 @@ return   multiplyHalf(x0,(bit[W+1]) poly(n-1,x0,x1,x2,x3)) +
 }
 }
 
+
+bit [WWWW] sel(bit[WWWW] in1, bit[WWWW] in2){
+	bit c = {*};
+	return (in1 & c) | (in2 & !c);
+}
+
+bit[WW+1] poly2(int n, bit[W+1] x0,bit[W+1] x1,bit[W+1] x2,bit[W+1] x3) {
+if (n<=0){
+ return {*};
+}else{
+return  multiplyHalf( ((bit[W+1])(  sel(sel(x0,  minus(x0)), 0) 
+		+ sel(sel(x1,  minus(x1)), 0)
+		+ sel(sel(x2,  minus(x2)), 0)
+		+ sel(sel(x3,  minus(x3)), 0))), (bit[W+1])poly(n-1, x0,x1, x2, x3));
+}
+}
+
 bit[WW+1] sketch(bit[W] x0,bit[W] x1,bit[W] x2,bit[W] x3) implements spec{
-	return poly(2, x0, x1, x2, x3);
+	return poly2(2, x0, x1, x2, x3);
 }
 
 
