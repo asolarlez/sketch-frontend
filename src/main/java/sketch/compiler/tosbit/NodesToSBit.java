@@ -1194,10 +1194,25 @@ public class NodesToSBit implements FEVisitor{
 	    		
 	        	if( this.state.topOfStackIsVector() ){	
 	        		List lst= state.vectorPopVStack();
+	        		assert formalParam.getType() instanceof TypeArray : "This should never happen!!";
+	        		((TypeArray)formalParam.getType()).getLength().accept(this);
+	        		Integer sizeInt = state.popVStack();
+	        		Assert(sizeInt != null, "I must know array bounds for parameters at compile time");
+	        		int size = sizeInt.intValue();
+	        		
+	        		
 	        		
 	        		List<String> rhsNames = new ArrayList<String>();
 	        		for(int i=0; i<lst.size(); ++i){
 	        			rhsNames.add(state.varGetRHSName(apnm + "_idx_" + i));
+	        		}
+	        		
+	        		if(lst.size()<size){
+	        			for(int i=0; i<(size-lst.size()); ++i){
+	        				lst.add(new Integer(0));
+	        				rhsNames.add("0");
+	        			}
+	        			assert lst.size() == size :"Just to make sure";
 	        		}
 	        		
 	        		String formalParamName = formalParam.getName();
