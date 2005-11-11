@@ -361,7 +361,25 @@ public class ToSBit
     
     
     public boolean runSolver(String[] commandLine, int i){
-        Runtime rt = Runtime.getRuntime();        
+        Runtime rt = Runtime.getRuntime();
+        final List done=new ArrayList();
+        new Thread() {
+
+			@Override
+			public void run()
+			{
+				try {
+					sleep(35*60*1000);
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				if(!done.isEmpty()) return;
+				System.out.println("Time limit exceeded!");
+				System.exit(1);
+			}
+        	
+        }.start();
         try
         {	                
 	        Process proc = rt.exec(commandLine);   
@@ -377,6 +395,7 @@ public class ToSBit
 	        while ( (line = errBr.readLine()) != null)
 	            System.err.println(line);       
 	        int exitVal = proc.waitFor();
+	        done.add(Boolean.TRUE);
 	        System.out.println("Process exitValue: " + exitVal);
 	        if(exitVal != 0){	        	
 	        	return false;
