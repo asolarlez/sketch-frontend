@@ -108,10 +108,10 @@ bit[32] rowRow3(bit[32] input){
 }
 
 bit[32] MixColumnsSK(bit[32] input) implements MixColumns{
-	bit [32] o1 = rowRow2(input);
-	bit [32] o2 = rowRow3(input);
-	bit [32] o3 = rowRow1(input);
-	return o1 ^ rot(o2, {*}*8) ^ rot(o3, {*}*8)^rot(o3, {*}*8) ;
+	bit [32] o1 = rowFilSK(input);
+	bit [32] o2 = rowFilSK(input);
+	bit [32] o3 = rowFilSK(input);
+	return o1 ^ Drot(o2, {*}*8) ^ Drot(o3, {*}*8)^Drot(o3, {*}*8) ;
 }
 
 

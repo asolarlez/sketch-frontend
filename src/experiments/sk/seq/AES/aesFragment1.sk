@@ -7,7 +7,7 @@ bit[8] rowFilSK(bit[32] in){
 	int t1 = 0;
 	int t2 = 8;
 	int t3 = 16;
-	int t4 = 24;
+	int t4 = {*};
 	bit [8] out;
 	for(int i=0; i<8; ++i){
 		out[i] = rval[i+t1] ^ rval[i +t2] ^ rval[i+t3] ^ rval[i+t4];
