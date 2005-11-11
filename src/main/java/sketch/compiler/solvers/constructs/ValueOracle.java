@@ -41,6 +41,7 @@ public class ValueOracle {
 	public List<ExprConstInt> getVarsForNode(FENode node){
 		List<ExprConstInt> result= new LinkedList<ExprConstInt>();
 		List<String> varsForNode = store.get(node);
+		if(varsForNode == null) return result;
 		Iterator<String> it = varsForNode.iterator();
 		while(it.hasNext()){
 			String var = it.next();

@@ -1207,8 +1207,8 @@ public class NodesToSBit implements FEVisitor{
 	        			rhsNames.add(state.varGetRHSName(apnm + "_idx_" + i));
 	        		}
 	        		
-	        		if(lst.size()<size){
-	        			for(int i=0; i<(size-lst.size()); ++i){
+	        		if(lst.size()<size){	        			
+	        			while(lst.size()<size){
 	        				lst.add(new Integer(0));
 	        				rhsNames.add("0");
 	        			}
