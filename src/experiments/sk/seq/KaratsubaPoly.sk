@@ -16,18 +16,17 @@ int W = WW/2;
 int WWWW =  WW+WW;
 
 
+
 bit[WW+1] poly(int n, bit[W+1] x0,bit[W+1] x1,bit[W+1] x2,bit[W+1] x3) {
 if (n<=0){
  return {*};
 }else{
-return   multiplyHalf(x0,(bit[W+1]) poly(n-1,x0,x1,x2,x3)) + 
-		multiplyHalf(x1, (bit[W+1])poly(n-1,x0,x1,x2,x3)) + 
-       multiplyHalf(x2, (bit[W+1])poly(n-1,x0,x1,x2,x3)) + 
-       multiplyHalf(x3, (bit[W+1])poly(n-1,x0,x1,x2,x3)) + 
-	{*};
+return  multiplyHalf( ((bit[W+1])(  sel(sel(x0,  minus(x0)), 0) 
+		+ sel(sel(x1,  minus(x1)), 0)
+		+ sel(sel(x2,  minus(x2)), 0)
+		+ sel(sel(x3,  minus(x3)), 0))), (bit[W+1])poly(n-1, x0,x1, x2, x3));
 }
 }
-
 
 
 
@@ -103,7 +102,7 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 	}
 	
 	tmp11 = multiplyHalf(x1, y1);	
-	tmp12 = poly(2, x1, x2, y1, y2); //multiplyHalf(sub(x2,x1), sub(y2,y1));
+	tmp12 = poly(2, x1, x2, y1, y2);
 	tmp22 = multiplyHalf(x2, y2);
 	
 	for(int i=WW+1; i<WWWW; ++i){

@@ -93,6 +93,7 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 	for(int i=WW+1; i<WWWW; ++i){
 		tmp12[i] = tmp12[WW];
 	}
+	
 	res = 0;
 	loop(5){
 		bit[WWWW] t = sel(sel(tmp11, tmp22), tmp12) >> ??;
