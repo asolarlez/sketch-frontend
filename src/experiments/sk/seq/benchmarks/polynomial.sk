@@ -1,0 +1,40 @@
+int W = 13;
+
+bit [W] mult(bit[W] in1, bit[W] in2){
+	bit [W] result = 0;
+	for(int i=0; i<W; ++i){
+		if(in2[i]==1){
+			result = result + in1;
+		}
+		in1 = in1 >> 1;
+	}
+	return result;
+}
+
+
+bit[W] poly(bit[W] n, bit[W] x) {
+	bit[W] minusone = 1;
+		
+	if (!n[0]&!n[1]&!n[2]&!n[3]&!n[4]) return ??; 
+	else return mult(x, poly(n+minusone, x)) + ??;
+}
+
+
+bit[W] spec (bit[W] x) {
+	bit[W] one = 0; one[0] = 1;
+	bit[W] two = 0; two[1] = 1;
+
+	return mult(mult(x+two,x+one),mult(x,x+one+two));
+}
+
+
+bit[W] p1Sk (bit[W] x) implements spec {
+	bit[W] one = 0; one[0] = 1;
+	bit[W] two = 0; two[1] = 1;
+	bit[W] three = one+two;
+	bit[W] four = two+two;
+	bit[W] five = four+one;
+
+	return poly(five,x);
+}
+
