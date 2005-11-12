@@ -17,6 +17,11 @@ bit[64] DES_IP(bit[64] in) {
 	return out;
 }
 
+int pow(int in){
+	bit[6] one=0; one[0]=1;
+	return (int) (one>>in);
+}
+
 
 bit [64] DES_IPopt(bit[64] in) implements DES_IP{
 	bit[32] l = 0;
@@ -27,11 +32,12 @@ bit [64] DES_IPopt(bit[64] in) implements DES_IP{
 		l[i] = in[i];
 		r[i] = in[i+32];
 	}
-	int[5] shamt = {0, 0, 0, 0, 1};
-	shamt[0] = {*};
-	shamt[1] = {*};
-	shamt[2] = {*};
-	shamt[3] = {*};	
+	int[5] shamt = {0, 16, 0, 8, 1};
+	shamt[0] = pow({*});
+	shamt[1] = pow({*});
+	shamt[2] = pow({*});
+	shamt[3] = pow({*});
+	shamt[4] = pow({*});
 	int i=0;
 	loop(5){
 		tint = shamt[i];
