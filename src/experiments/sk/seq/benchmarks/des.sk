@@ -1,0 +1,54 @@
+bit[64] DES_IP(bit[64] in) {
+	int [64] p = { 
+		62, 54, 46, 38, 30, 22, 14,  6,
+		60, 52, 44, 36, 28, 20, 12,  4,
+		58, 50, 42, 34, 26, 18, 10,  2,
+		56, 48, 40, 32, 24, 16,  8,  0,
+
+		63, 55, 47, 39, 31, 23, 15,  7,
+		61, 53, 45, 37, 29, 21, 13,  5,
+		59, 51, 43, 35, 27, 19, 11,  3,
+		57, 49, 41, 33, 25, 17,  9,  1
+	};
+	bit [64] out;	
+	for (int i = 0; i < 64; ++i)
+		out[i]=in[p[i]];
+	
+	return out;
+}
+
+
+bit [64] DES_IPopt(bit[64] in) implements DES_IP{
+	bit[32] l = 0;
+	bit[32] r = 0;
+	bit[32] tmp = 0;
+	int tint = 0;
+	for(int i=0; i<32; ++i){
+		l[i] = in[i];
+		r[i] = in[i+32];
+	}
+	int[5] shamt = {0, 0, 0, 0, 1};
+	shamt[0] = {*};
+	shamt[1] = {*};
+	shamt[2] = {*};
+	shamt[3] = {*};	
+	int i=0;
+	loop(5){
+		tint = shamt[i];
+		tmp =  (l >> tint) ^ r & {*};
+		r = r ^ tmp;
+		l = l ^ (tmp << tint);
+		tmp = r;
+		r = l;
+		l = tmp;
+		i = i+1;
+	}
+
+	bit[64] res = 0;
+	bit m = {*};
+	for(int i=0; i<32; ++i){
+		res[i] = m? l[i] : r[i];
+		res[i+32] = m ? r[i] : l[i];
+	}
+	return res;
+}
