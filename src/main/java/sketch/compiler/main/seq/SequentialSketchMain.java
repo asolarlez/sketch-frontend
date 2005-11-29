@@ -81,7 +81,9 @@ public class ToSBit
     private int unrollAmt = 8;
     private boolean incremental = false;
     private int incermentalAmt = 0;
-
+    private boolean hasTimeout = false;
+    private int timeout = 30;
+    private int seed = -1;
     
     public void doOptions(String[] args)
     {
@@ -114,6 +116,13 @@ public class ToSBit
                 Integer value = new Integer(args[++i]);
                 incremental = true;
                 incermentalAmt = value.intValue();
+            }else if (args[i].equals("--timeout")) {               
+                Integer value = new Integer(args[++i]);
+                hasTimeout = true;
+                timeout = value.intValue();
+            }else if (args[i].equals("--seed")) {               
+                Integer value = new Integer(args[++i]);
+                seed = value.intValue();
             }
             else
                 // Maybe check for unrecognized options.
@@ -305,39 +314,11 @@ public class ToSBit
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
+
         
-                
-        System.out.println("OFILE = " + outputFile);
-        String command = (sbitPath!=null? sbitPath : "") + "SBitII";
-        if(this.incremental){
-        	boolean isSolved = false;
-        	int bits=0;
-        	for(bits=1; bits<=this.incermentalAmt; ++bits){
-        		System.out.println("TRYING SIZE " + bits);
-        		String[] commandLine  = {command , "-overrideCtrls", "" + bits  ,outputFile, outputFile + ".tmp"};
-    	        boolean ret = runSolver(commandLine, bits);
-    	        if(ret){
-    	        	isSolved = true;
-    	        	break;
-    	        }else{
-    	        	System.out.println("Size " + bits + " is not enough");
-    	        }
-        	}
-        	if(!isSolved){
-	        	System.out.println("The sketch can not be resolved");
-	        	return;
-	        }
-	        System.out.println("Succeded with " + bits + " bits for integers");
-	        
-        	oracle.capStarSizes(bits);
-        	
-        }else{
-	        String[] commandLine  = {command ,  outputFile, outputFile + ".tmp"};
-	        boolean ret = runSolver(commandLine, 0);
-	        if(!ret){
-	        	System.out.println("The sketch can not be resolved");
-	        	return;
-	        }
+        boolean worked = solve(oracle);
+        if(!worked){
+        	throw new RuntimeException("The sketch could not be resolved.");
         }
         
         try{
@@ -356,30 +337,72 @@ public class ToSBit
         
         Program noindet = (Program)prog.accept(new EliminateIndeterminacy(oracle, varGen));
         System.out.println(noindet.accept(new NodesToC(false, varGen) ));                       
+        System.exit(0);
+    }
+    
+    private boolean solve(ValueOracle oracle){
+        final List<Boolean> done=new ArrayList<Boolean>();
         
+        Thread stopper=null;        
+        if(hasTimeout){
+	        stopper = new Thread() {
+				@Override
+				public void run()
+				{
+					try {
+						sleep(timeout*60*1000);
+					}
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if(!done.isEmpty()) return;
+					System.out.println("Time limit exceeded!");
+					System.exit(1);
+				}
+	        	
+	        };
+	        stopper.start();
+        }
+        System.out.println("OFILE = " + outputFile);
+        String command = (sbitPath!=null? sbitPath : "") + "SBitII";
+        if(this.incremental){
+        	boolean isSolved = false;
+        	int bits=0;
+        	for(bits=1; bits<=this.incermentalAmt; ++bits){
+        		System.out.println("TRYING SIZE " + bits);
+        		String[] commandLine  = {command , "-overrideCtrls", "" + bits  ,outputFile, outputFile + ".tmp"};
+    	        boolean ret = runSolver(commandLine, bits);
+    	        if(ret){
+    	        	isSolved = true;
+    	        	break;
+    	        }else{
+    	        	System.out.println("Size " + bits + " is not enough");
+    	        }
+        	}
+        	if(!isSolved){
+	        	System.out.println("The sketch can not be resolved");
+	        	return false;
+	        }
+	        System.out.println("Succeded with " + bits + " bits for integers");	        
+        	oracle.capStarSizes(bits);
+        }else{
+	        String[] commandLine  = {command ,  outputFile, outputFile + ".tmp"};
+	        boolean ret = runSolver(commandLine, 0);
+	        if(!ret){
+	        	System.out.println("The sketch can not be resolved");
+	        	return false;
+	        }
+        }
+        done.add(Boolean.TRUE);
+        if(hasTimeout){
+        	stopper.interrupt();	
+        }
+        return true;
     }
     
     
-    public boolean runSolver(String[] commandLine, int i){
-        Runtime rt = Runtime.getRuntime();
-        final List done=new ArrayList();
-        new Thread() {
-
-			@Override
-			public void run()
-			{
-				try {
-					sleep(35*60*1000);
-				}
-				catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				if(!done.isEmpty()) return;
-				System.out.println("Time limit exceeded!");
-				System.exit(1);
-			}
-        	
-        }.start();
+    private boolean runSolver(String[] commandLine, int i){
+        Runtime rt = Runtime.getRuntime();        
         try
         {	                
 	        Process proc = rt.exec(commandLine);   
@@ -394,8 +417,7 @@ public class ToSBit
 	            System.out.println(i + "  " + line);       
 	        while ( (line = errBr.readLine()) != null)
 	            System.err.println(line);       
-	        int exitVal = proc.waitFor();
-	        done.add(Boolean.TRUE);
+	        int exitVal = proc.waitFor();	        
 	        System.out.println("Process exitValue: " + exitVal);
 	        if(exitVal != 0){	        	
 	        	return false;
