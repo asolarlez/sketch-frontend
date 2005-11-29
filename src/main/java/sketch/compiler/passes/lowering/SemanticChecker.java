@@ -1013,7 +1013,7 @@ public class SemanticChecker
                 			 * type of the var on the lhs.
                 			 */
                 			symtab.upgradeVar(lhsn, lt.makeNonDet());
-                			lt = symtab.lookupVar(lhsn);
+                			lt = lt.makeNonDet(); //symtab.lookupVar(lhsn);
                 		}
                 	}
                 	
