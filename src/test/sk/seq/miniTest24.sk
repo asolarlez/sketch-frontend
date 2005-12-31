@@ -1,0 +1,14 @@
+bit testSK(bit[4] in) implements test {	
+	int x = ??;
+	int y = ??;
+	if( x > 2){
+		return in[3];
+	}else{
+		return in[y*2];
+	}
+}
+
+
+bit test (bit[4] in) {
+	return in[3];
+}

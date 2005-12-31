@@ -3,7 +3,7 @@ do
 
 echo "RUNNING $x  $d";
 rm ${x}.output;
-bash preproc.sh  --seed 10 ${x} &> ${x}.output ;
+bash preproc.sh  --incremental 6 --seed 10 ${x} &> ${x}.output ;
 grep oracle.*\[[0-9]+\] ${x}.output ;
 done;
 
