@@ -39,13 +39,13 @@ class varState{
 	 *  We don't need a stack for the values because those are handled by the changeTracker.
 	 * 
 	 */
-	private Stack RHSstack;
+	private Stack<Integer> RHSstack;
 	
 	public varState(int v){
 		value = v;
 		currentLHS = 0;
 		currentRHS = 0;
-		RHSstack = new Stack();
+		RHSstack = new Stack<Integer>();
 		hasval = true;
 	}
 	
@@ -54,7 +54,7 @@ class varState{
 		value = v;
 		currentLHS = 0;
 		currentRHS = 0;
-		RHSstack = new Stack();
+		RHSstack = new Stack<Integer>();
 		hasval = true;
 	}
 
@@ -63,7 +63,7 @@ class varState{
 		value = 0;
 		currentLHS = 0;
 		currentRHS = 0;
-		RHSstack = new Stack();
+		RHSstack = new Stack<Integer>();
 		hasval = false;
 	}
 	
