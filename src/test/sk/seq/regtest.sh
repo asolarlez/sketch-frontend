@@ -9,7 +9,7 @@ done;
 
 rm *.tmp;
 
-grep 'int.*oracle.*\[[0-9]*\]' *.output > current.output;
+grep 'int.*oracle.*\[[0-9]*\]' *.output | sort > current.output;
 
 diff current.output reference;
 
