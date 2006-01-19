@@ -87,7 +87,7 @@ class MethodState{
 	 * 
 	 * Varstates are created when you call varGetLHSName for the first time.
 	 */
-	private HashMap vars;	//<String, varState>
+	private HashMap<String, varState> vars;	//<String, varState>
 	
 	/**
 	 * Translates the name of a variable from it's program name
@@ -148,8 +148,8 @@ class MethodState{
 	int idx;
 	MethodState(){
 		// System.out.println("New Method State for new method.");
-		vars = new HashMap();			
-		vstack = new Stack();		
+		vars = new HashMap<String, varState>();			
+		vstack = new Stack<valueClass>();
 		changeTracker = null;
 		varTranslator = new MapStack();
 	}
@@ -363,7 +363,6 @@ class MethodState{
 	
 	
 	private int UTvarValue(String var){
-		
 		varState i = (varState) vars.get(var);		
 		if(changeTracker == null){			
 			assert(i.hasVal()) : ( "The value of " + var + " is input dependent, but it's not supposed to be.\n");

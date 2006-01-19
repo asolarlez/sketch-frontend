@@ -6,36 +6,19 @@
  */
 package streamit.frontend.tosbit;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprComplex;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstChar;
-import streamit.frontend.nodes.ExprConstFloat;
 import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstStr;
-import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
 import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FENullVisitor;
-import streamit.frontend.nodes.FEVisitor;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.FuncWork;
 import streamit.frontend.nodes.Function;
@@ -92,110 +75,30 @@ import streamit.frontend.tojava.StmtSetTypes;
  *  
  * 
  */
-public class NodesToSBit implements FEVisitor{
-	    protected StreamSpec ss;
-	    // A string consisting of an even number of spaces.
-	    private String indent;
-	    private TempVarGen varGen;
-	    protected MethodState state;
-	    //private boolean isLHS;
-	    private NodesToNative nativeGenerator;
-	    private HashMap funsWParams;
-	    protected Stack preFil;
-	    protected List additInit;
-	    private ValueOracle oracle;
-	    public int LUNROLL=8;
+
+public class NodesToSBit extends PartialEvaluator{
+    // A string consisting of an even number of spaces.
+    private String indent;
+    private TempVarGen varGen;
+    //private boolean isLHS;
+    private NodesToNative nativeGenerator;
+    private HashMap<String, StreamSpec> funsWParams;
+    protected Stack<String> preFil;
+    protected List<Statement> additInit;
+    private ValueOracle oracle;
+    public int LUNROLL=8;	    
 	    
-	    public class LHSvisitor extends FENullVisitor{
-	    	public Object visitExprArray(ExprArray exp)
-	 	    {
-	 	    	Assert(exp.getBase() instanceof ExprVar, "Currently only 1 dimensional arrays are supported. \n" + exp.getContext());
-	 	    	ExprVar base = (ExprVar)exp.getBase();	 	    		 	    	 	    		 	    	
-	 	    	String vname =  base.getName();
-	 	    	exp.getOffset().accept(NodesToSBit.this);
-	 	    	valueClass ofst = state.popVStack();
-	 	    	if( ofst.hasValue()){
-	 		    	int ofstV = ofst.getIntValue();
-	 		    	int size = state.checkArray(vname);
-	 		    	if(ofstV >= size || ofstV < 0){	 		    		
-	 		    		Assert(false, "ARRAY OUT OF BOUNDS !(0<=" + ofstV + " < " + size);
-	 		    		return null;
-	 		    	}
-	 		    	vname = vname + "_idx_" + ofstV;
-	 		    	if( state.varHasValue(vname) ){
-	 		    		state.pushVStack( new valueClass(state.varValue(vname)) );	    		
-	 		    	}else{
-	 		    		state.pushVStack( new valueClass(vname) );
-	 		    	}
-	 		    	String rval = vname;	 		    	
-	 		    	return rval;
-	 	    	}else{
-	 	    		Assert( false, "Array indexing of non-deterministic value is only allowed in the RHS of an assignment; sorrry." );	 	    	
-	 	    	}
-	 	    	return null;
-	 	    }	
-		    public Object visitExprVar(ExprVar exp)
-		    {
-		    	String vname =  exp.getName();
-		    	valueClass intValue;
-		    	if( state.varHasValue( vname ) ){
-		    		intValue = new valueClass(state.varValue(vname)) ;	    		
-		    	}else{
-		    		intValue = new valueClass(vname);
-		    	}
-		    	int sz = state.checkArray(vname);
-		    	if( sz >= 0 ){
-		    		List<valueClass> nlist = new LinkedList<valueClass>();
-	 	    		for(int i=0; i<sz; ++i){
-	 	    			String lnm = vname + "_idx_" + i;
-	 	    			if( state.varHasValue( lnm) ){
-	 	    				nlist.add(new valueClass( state.varValue(lnm )));
-	 	    			}else{
-	 	    				nlist.add(new valueClass(lnm));
-	 	    			}
-	 	    		}
-		    		state.pushVStack( new valueClass(nlist) );
-		    	}else{
-		    		state.pushVStack(intValue);
-		    	}
-		    	return exp.getName();		    	
-		    }	    	
-	    }
-	    
-	    
-	    
-	    
-	    
-	    
-	    private void Assert(boolean t, String s){
-	    	if(!t){
-	    		System.err.println(s);
-	    		System.err.println( ss.getContext() );
-	    		throw new RuntimeException(s);
-	    	}
-	    }
-	    private int boolToInt(boolean b){	    	
-	    	if(b)
-	    		return 1;
-	    	else 
-	    		return 0;
-	    }
-	    private boolean intToBool(int v){
-	    	if(v>0)
-	    		return true;
-	    	else
-	    		return false;
-	    }
 	    public NodesToSBit(StreamSpec ss, TempVarGen varGen, ValueOracle oracle)
 	    {
+	    	super(false);
 	        this.ss = ss;
 	        this.indent = "";
 	        this.varGen = varGen;	         
 	        this.state = new MethodState();
 	        this.oracle = oracle;
-	        funsWParams = new HashMap();
-	        preFil = new Stack();
-	        nativeGenerator = new NodesToNative(ss, varGen, state, this);
+	        funsWParams = new HashMap<String, StreamSpec>();
+	        preFil = new Stack<String>();
+	        nativeGenerator = new NodesToNative(ss, varGen, state, this);	        
 	    }
 	    public String finalizeWork(){
 	    	String result = "";	    	
@@ -240,7 +143,7 @@ public class NodesToSBit implements FEVisitor{
 	        {
 	            TypeArray array = (TypeArray)type;
 	            String base = convertType(array.getBase());
-	            String len = (String) array.getLength().accept(this);
+	            array.getLength().accept(this);
 	            int i = state.popVStack().getIntValue();	            
 	            return base + "[" + i + "]";
 	        }
@@ -467,12 +370,10 @@ public class NodesToSBit implements FEVisitor{
             // Might want to special-case structures and arrays;
             // ignore for now.
 	    	
-	    	String lhss = (String) lhs.accept(new LHSvisitor());
-	    		    	
+	    	String lhss = (String) lhs.accept(new LHSvisitor());	    	
 	    	lhss = state.varGetLHSName(lhss);
-	    	valueClass vlhs = state.popVStack();
-
-	    	String rhss = (String) rhs.accept(this);
+	    	
+	    	rhs.accept(this);
 	    	valueClass rhsVal = state.popVStack();
 	    	if( rhsVal.isVect() ){
 	    		List<valueClass> lst= rhsVal.getVectValue();
@@ -488,122 +389,31 @@ public class NodesToSBit implements FEVisitor{
 	    		valueClass vrhs =  rhsVal;
 		    	if(vrhs.hasValue()){
 		    		state.setVarValue(lhss, vrhs.getIntValue());
-		    		return  lhss + " = " + vrhs;
-		    	}else{
-		    		return  lhss + " = " + rhss;
 		    	}
+		    	return  lhss + " = " + vrhs;
 	    	}
 	    }
 	    
-	    
-	    public Object visitExprArrayInit(ExprArrayInit exp)
-	    {
-			List<valueClass> intelems = new LinkedList<valueClass>();
-			List elems = exp.getElements();
-			for (int i=0; i<elems.size(); i++) {
-				((Expression)elems.get(i)).accept(this);
-				valueClass vrhs =  state.popVStack();
-		    	assert vrhs.hasValue(); 
-		    	intelems.add(vrhs);
-			}			
-			state.pushVStack(new valueClass(intelems));
-			//state.pushVStack(null);
-			return null;
-	    }
-	    
-	    
-	    public Object visitExprArray(ExprArray exp)
-	    {
-	    	//Assert(false, "NYI");	    	
-	    	Assert(exp.getBase() instanceof ExprVar, "Currently only 1 dimensional arrays are supported. \n" + exp.getContext());
-	    	ExprVar base = (ExprVar)exp.getBase();	    		    		    	
-	    	
-	    	String vname =  base.getName();	    	
-	    	String ofstStr = (String) exp.getOffset().accept(this);
-	    	valueClass ofst = state.popVStack();
-	    	if( ofst.hasValue()){
-		    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
-		    	int ofstV = ofst.getIntValue();
-		    	int size = state.checkArray(vname);
-		    	if(ofstV >= size || ofstV < 0){		    		
-		    		if(!exp.isUnchecked())throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
-	    			state.pushVStack( new valueClass(0) );
-	    			return "0";
-		    	}
-		    	vname = vname + "_idx_" + ofstV;		    	
-		    	String rval = state.varGetRHSName( vname  );
-		    	
-		    	if( state.varHasValue( vname) ){
-		    		state.pushVStack( new valueClass(state.varValue(vname)) );	    		
-		    	}else{
-		    		state.pushVStack( new valueClass(rval) );
-		    	}
-		    			    	
-		    	return rval;
-	    	}else{
-	    		int arrSize = state.checkArray(vname);
-	    		String baseName = vname;
-	    		vname = "($ ";
-	    		for(int i=0; i< arrSize; ++i ){
-	    			if( i!= 0) vname += " ";
-	    			String tmpname = baseName + "_idx_" + i;
-	    			if(state.varHasValue(tmpname)){
-	    				tmpname =  " " + state.varValue(tmpname);
-	    			}else{
-	    				tmpname = state.varGetRHSName(tmpname);
-	    			}
-	    			vname = vname + tmpname;
-	    		}
-	    		vname = vname + "$" +  "[" + ofstStr + "])";	    		
-	    		state.pushVStack( new valueClass(vname));
-	    		return vname;
-	    	}
-	    }
-	    
-		public Object visitExprArrayRange(ExprArrayRange exp) {
-			assert false : "At this stage, there shouldn't be any ArrayRange expressions";
-			return null;
-		}
 	    
 	    public Object visitExprBinary(ExprBinary exp)
 	    {
-	        String result;
-	        String op = null;
-	        result = "(";
-	        String lhsStr =(String)exp.getLeft().accept(this); 	        
-	        valueClass lhs = state.popVStack();	        
-	        String rhsStr = (String)exp.getRight().accept(this);
-	        valueClass rhs = state.popVStack();
-	        boolean hasv = lhs.hasValue() && rhs.hasValue();
-	        if( lhs.hasValue())
-	        	lhsStr = ""+ lhs.getIntValue();
-	        if( rhs.hasValue())
-	        	rhsStr = ""+ rhs.getIntValue();
-	        
-	        int newv=0;
-	        
-	        switch (exp.getOp())
-	        {
-	        case ExprBinary.BINOP_ADD: op = "+"; if(hasv) newv = lhs.getIntValue() + rhs.getIntValue(); break;
-	        case ExprBinary.BINOP_SUB: op = "-"; if(hasv) newv = lhs.getIntValue() - rhs.getIntValue(); break;
-	        case ExprBinary.BINOP_MUL: op = "*"; if(hasv) newv = lhs.getIntValue() * rhs.getIntValue(); break;
-	        case ExprBinary.BINOP_DIV: op = "/"; if(hasv) newv = lhs.getIntValue() / rhs.getIntValue(); break;
-	        case ExprBinary.BINOP_MOD: op = "%"; if(hasv) newv = lhs.getIntValue() % rhs.getIntValue(); break;
-	        case ExprBinary.BINOP_AND: op = "&&"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
-	        case ExprBinary.BINOP_OR:  op = "||"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue())); break;
-	        case ExprBinary.BINOP_EQ:  op = "=="; if(hasv) newv = boolToInt(lhs.getIntValue() == rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_NEQ: op = "!="; if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_LT:  op = "<"; if(hasv) newv = boolToInt(lhs.getIntValue() < rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_LE:  op = "<="; if(hasv) newv = boolToInt(lhs.getIntValue() <= rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_GT:  op = ">"; if(hasv) newv = boolToInt(lhs.getIntValue() > rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_GE:  op = ">="; if(hasv) newv = boolToInt(lhs.getIntValue() >= rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_BAND:op = "&"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
-	        case ExprBinary.BINOP_BOR: op = "|"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()));; break;
-	        case ExprBinary.BINOP_BXOR:op = "^"; if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
-	        case ExprBinary.BINOP_SELECT:{
-	        	op = "{|}";
+	    	if(exp.getOp() == ExprBinary.BINOP_SELECT ){	
+	    		Expression rvalE = exp;
+		        Expression left = (Expression)exp.getLeft().accept(this);
+		        valueClass lhs = state.popVStack();	        
+		        
+		        Expression right = (Expression) exp.getRight().accept(this);
+		        valueClass rhs = state.popVStack();
+		        
+		        boolean hasv = lhs.hasValue() && rhs.hasValue();		        
 	        	if(hasv && lhs.getIntValue() == rhs.getIntValue()){
+	        		int newv=0;	        		
 	        		newv = lhs.getIntValue();
+		        	state.pushVStack(new valueClass(newv));			        	
+		        	if( this.isReplacer ){
+		        		rvalE = new ExprConstInt(newv);
+		        	}
+			        return rvalE;
 	        	}else{
 	        		hasv = false;
 	        		String rval = null;
@@ -615,89 +425,21 @@ public class NodesToSBit implements FEVisitor{
 	        			}else{
 	        				rval =  "! <" + cvar + ">";
 	        			}
+	        		}else{
+	        			rval =  "( <" + cvar +"> ? " + lhs + " : " + rhs + ")";
 	        		}
-	        		if(!rhs.hasValue() && !lhs.hasValue()){	        			
-	        			rval =  "( <" + cvar +"> ? " + lhsStr + " : " + rhsStr + ")";  
-	        		}
-	        		if(!rhs.hasValue() && lhs.hasValue()){
-	        			rval =  "( <" + cvar +"> ? " + lhs + " : " + rhsStr + ")";  
-	        		}
-	        		if(rhs.hasValue() && !lhs.hasValue()){
-	        			rval =  "( <" + cvar +"> ? " + lhsStr + " : " + rhs + ")";  
-	        		}
-	        		state.pushVStack(new valueClass(rval));
-	        		return rval;
+	        		state.pushVStack(new valueClass(rval));	        		
+	        		if(this.isReplacer && (left != exp.getLeft() || right != exp.getRight())){
+	        			rvalE = new ExprBinary(exp.getContext(), exp.getOp(), left, right);
+	        		}  	        		
+	        		return rvalE;
 	        	}
-	        }
-
-	        }	        
-	        result += lhsStr + " " + op + " ";
-	        result += rhsStr;
-	        result += ")";
-	        if(hasv){
-	        	state.pushVStack(new valueClass(newv));	
-	        	result = "" + newv;
-	        }else{
-	        	state.pushVStack(new valueClass(result));
-	        }
-	        return result;
+	    	}else{
+	    		return super.visitExprBinary(exp);
+	    	}	        
 	    }
 
-	    public Object visitExprComplex(ExprComplex exp)
-	    {
-	        // This should cause an assertion failure, actually.
-	    	Assert(false, "NYS");
-	        String r = "";
-	        String i = "";
-	        if (exp.getReal() != null) r = (String)exp.getReal().accept(this);
-	        if (exp.getImag() != null) i = (String)exp.getImag().accept(this);
-	        return "/* (" + r + ")+i(" + i + ") */";
-	    }
-
-	    public Object visitExprConstBoolean(ExprConstBoolean exp)
-	    {
-	        if (exp.getVal()){
-	        	state.pushVStack(new valueClass(1));
-	            return "true";
-	        }else{
-	        	state.pushVStack(new valueClass(0));
-	            return "false";
-	        }
-	    }
-
-	    public Object visitExprConstChar(ExprConstChar exp)
-	    {
-	    	Assert(false, "NYS");
-	        return "'" + exp.getVal() + "'";
-	    }
-
-	    public Object visitExprConstFloat(ExprConstFloat exp)
-	    {
-	    	Assert(false, "NYS");
-	        return Double.toString(exp.getVal()) + "f";
-	    }
-
-	    public Object visitExprConstInt(ExprConstInt exp)
-	    {
-	    	state.pushVStack(new valueClass(exp.getVal()));
-	        return Integer.toString(exp.getVal());
-	    }
 	    
-	    public Object visitExprConstStr(ExprConstStr exp)
-	    {
-	    	Assert(false, "NYS");
-	        return exp.getVal();
-	    }
-
-	    public Object visitExprField(ExprField exp)
-	    {
-	    	Assert(false, "NYS");
-	        String result = "";
-	        result += (String)exp.getLeft().accept(this);
-	        result += ".";
-	        result += (String)exp.getName();
-	        return result;
-	    }
 
 	    public Object visitExprFunCall(ExprFunCall exp)
 	    {	    	
@@ -750,223 +492,6 @@ public class NodesToSBit implements FEVisitor{
 	        return result;
 	    }
 
-	    public Object visitExprPeek(ExprPeek exp)
-	    {
-	    	int poppos = state.varValue("POP_POS");
-	        String result = (String)exp.getExpr().accept(this);
-	        valueClass arg = state.popVStack();	        
-	        Assert(arg.hasValue(), "I can not tell at compile time where you are peeking. " + result);
-	        result = "INPUT_" + (arg.getIntValue()+poppos);
-	        state.pushVStack(new valueClass(result));
-	        return result;
-	        //return peekFunction(ss.getStreamType()) + "(" + result + ")";
-	    }
-	    
-	    public Object visitExprPop(ExprPop exp)
-	    {
-	    	int poppos = state.varValue("POP_POS");
-	    	String result = "INPUT_" +  poppos; 
-	    	state.setVarValue("POP_POS", poppos+1);
-	    	state.pushVStack(new valueClass(result));
-	    	return result;
-	        //return popFunction(ss.getStreamType()) + "()";
-	    }
-
-	    public Object visitExprTernary(ExprTernary exp)
-	    {
-	        String a = (String)exp.getA().accept(this);
-	        valueClass aval = state.popVStack();	        
-	        switch (exp.getOp())
-	        {
-	        case ExprTernary.TEROP_COND:	        	
-        		if(aval.hasValue()){
-        			if( intToBool(aval.getIntValue()) ){
-        				String b = (String)exp.getB().accept(this);
-        				valueClass bval = state.popVStack();        		        
-        				if(bval.hasValue()){
-        					state.pushVStack(new valueClass(  bval.getIntValue() ));
-        					return bval.toString();
-        				}else{
-        					state.pushVStack(new valueClass(b));
-        					return b;
-        				}
-        			}else{
-        				String c = (String)exp.getC().accept(this);
-        				valueClass cval = state.popVStack();
-        				if(cval.hasValue()){
-        					state.pushVStack(new valueClass(  cval.getIntValue() ));
-        					return cval.toString();
-        				}else{
-        					state.pushVStack( new valueClass(c) );
-        					return c;
-        				}
-        			}
-        		}else{
-        			String b = (String)exp.getB().accept(this);
-    		        valueClass bval = state.popVStack();
-    		        String c = (String)exp.getC().accept(this);
-    		        valueClass cval = state.popVStack();        			
-        			String rval = "(" + a + " ? " + b + " : " + c + ")";
-        			state.pushVStack( new valueClass(rval) );
-        			return rval;
-        		}
-	        }
-			state.pushVStack(new valueClass((String)null));
-	        return null;
-	    }
-
-	    public Object visitExprTypeCast(ExprTypeCast exp)
-	    {
-	    		    		    	
-	    	if(! exp.getType().equals(TypePrimitive.inttype) ){
-	    		Assert( exp.getType() instanceof TypeArray, "WHAT ARE YOU TRYING TO DO!!!");
-	    		return (String)exp.getExpr().accept(this);
-	    	}
-	    	
-	    	String arrName = (String)exp.getExpr().accept(this);
-	    	valueClass rhsVal = state.popVStack();
-	    	if( rhsVal.isVect() ){
-	    		String result = "( $$";
-	    		List<valueClass> rhsLst;
-	        	rhsLst= rhsVal.getVectValue();
-	        	int size = state.checkArray(arrName);
-	        	Assert(size == rhsLst.size(), "I don't exist");
-	        	Iterator<valueClass> it = rhsLst.iterator();
-	        	int i = 0;
-	        	int val=0;
-	        	boolean hasValue=true;
-	        	while(it.hasNext()){
-	        		valueClass o = it.next();
-	        		if(!o.hasValue()){
-	        			String lnm = arrName + "_idx_" + i;
-	        			result += " " + state.varGetRHSName(lnm);
-	        			hasValue = false;
-	        		}else{	        			
-	        			int curv =  o.getIntValue();
-	        			result += " " + o.getIntValue();
-	        			Assert(curv == 1 || curv == 0, "Only boolean arrays please!!");
-	        			val = val*2;
-	        			val = val + curv;
-	        		}
-	        		++i;
-	        	}
-	        	result += " $$ )";
-	        	if(hasValue){
-	        		state.pushVStack(new valueClass(val));
-	        		result = " " + val;
-	        	}else{
-	        		state.pushVStack(new valueClass(result));
-	        	}
-	        	return result;
-	        }else{	        	
-	        	Assert(false, "We only allow casting of array expressions");
-	        }
-	        return null;
-	    }
-
-	    public Object visitExprUnary(ExprUnary exp)
-	    {
-	        String child = (String)exp.getExpr().accept(this);
-	        valueClass vchild = state.popVStack();
-	        boolean hv = vchild.hasValue(); 
-	        int i=0, j=0;
-	        j = (i=i+1);
-	        switch(exp.getOp())
-	        {
-	        case ExprUnary.UNOP_NOT: 
-	        	if( hv ){ 
-	        		state.pushVStack(new valueClass(1-vchild.getIntValue()));	        		
-	        	}else{
-	        		state.pushVStack( new valueClass("!" + child) );
-	        	}
-	        return "!" + child;
-	        
-	        case ExprUnary.UNOP_NEG: 
-	        	if( hv ){ 
-	        		state.pushVStack(new valueClass(-vchild.getIntValue()));	        		
-	        	}else{
-	        		state.pushVStack(new valueClass("-" + child));
-	        	}
-	        return "-" + child;
-	        case ExprUnary.UNOP_PREINC:  
-	        	if( hv ){ 	        		
-	        		String childb = (String)exp.getExpr().accept( new LHSvisitor());	        		
-	        		vchild = state.popVStack();
-	        		state.pushVStack(new valueClass(vchild.getIntValue()+1));
-	        		state.setVarValue(childb, vchild.getIntValue()+1 );
-	        		return "(" + state.varGetLHSName(childb) + "=" + ( vchild.getIntValue()+1 ) + ")";
-	        	}else{
-	        		state.pushVStack(new valueClass("++" + child));
-	        	}
-	        	return "++" + child;
-	        case ExprUnary.UNOP_POSTINC:
-	        	if( hv ){ 	        		
-	        		String childb = (String)exp.getExpr().accept( new LHSvisitor());	        		
-	        		vchild = state.popVStack();
-	        		state.pushVStack(new valueClass(vchild.getIntValue()));
-	        		state.setVarValue(childb, vchild.getIntValue()+1 );
-	        		return "ERROR"; // "(" + state.varGetLHSName(childb) + "=" + ( vchild.intValue()+1 ) + ") - 1";
-	        	}else{
-	        		state.pushVStack(new valueClass(child + "++"));
-	        	}
-	        	return child + "++";
-	        case ExprUnary.UNOP_PREDEC:  
-	        	if( hv ){
-	        		String childb = (String)exp.getExpr().accept( new LHSvisitor());
-	        		vchild = state.popVStack();
-	        		state.pushVStack(new valueClass(vchild.getIntValue()-1));
-	        		state.setVarValue(childb, vchild.getIntValue()-1 );
-	        		return "(" + state.varGetLHSName(childb) + "=" + ( vchild.getIntValue()-1 ) + ")";
-	        	}else{
-	        		state.pushVStack( new valueClass("--" + child) );
-	        	}
-	         	return "--" + child;
-	        case ExprUnary.UNOP_POSTDEC: 
-	        	if( hv ){ 
-	        		String childb = (String)exp.getExpr().accept( new LHSvisitor() );
-	        		vchild = state.popVStack();
-	        		state.pushVStack(new valueClass(vchild.getIntValue()));
-	        		state.setVarValue(childb, vchild.getIntValue()-1 );
-	        		return "ERROR"; // "(" + state.varGetLHSName(childb) + "=" + ( vchild.intValue()-1 ) + ") + 1";
-	        	}else{
-	        		state.pushVStack(new valueClass(child + "--"));
-	        	}
-	        	return child + "--";
-	        }
-	        return null;
-	    }
-
-	    public Object visitExprVar(ExprVar exp)
-	    {
-	    	String vname =  exp.getName();
-	    	valueClass intValue;
-	    	if( state.varHasValue( vname ) ){
-	    		intValue = new valueClass(state.varValue(vname)) ;	    		
-	    	}else{
-	    		intValue = new valueClass(state.varGetRHSName( exp.getName() ));
-	    	}
-	    	int sz = state.checkArray(vname);
-	    	if( sz >= 0 ){
-	    		List<valueClass> nlist = new LinkedList<valueClass>();
- 	    		for(int i=0; i<sz; ++i){
- 	    			String lnm = vname + "_idx_" + i;
- 	    			if( state.varHasValue( lnm) ){
- 	    				nlist.add(new valueClass( state.varValue(lnm )));
- 	    			}else{
- 	    				nlist.add(new valueClass(state.varGetRHSName(lnm)));
- 	    			}
- 	    		}
-	    		state.pushVStack( new valueClass(nlist) );
-	    	}else{
-	    		state.pushVStack(intValue);	    		
-	    	}
-    		if(sz >=0){
-    			return exp.getName();	
-    		}else{
-    			return state.varGetRHSName( exp.getName() );
-    		}	    	
-	    }
-
 	    public Object visitFieldDecl(FieldDecl field)
 	    {
 	        // Assume all of the fields have the same type.
@@ -979,9 +504,8 @@ public class NodesToSBit implements FEVisitor{
 	            if (i > 0) result += ", ";
 	            
 	            String lhs = field.getName(i);
-	            	 
-	            state.varDeclare(lhs);	 
-	            String lhsn = state.varGetLHSName(lhs);
+	            state.varDeclare(lhs);
+	            state.varGetLHSName(lhs);
 	            if( field.getType(i) instanceof TypeArray ){
 	            	TypeArray ta = (TypeArray) field.getType(i);
 	            	ta.getLength().accept(this);
@@ -991,7 +515,7 @@ public class NodesToSBit implements FEVisitor{
 	            	for(int tt=0; tt<tmp.getIntValue(); ++tt){
 	            		String nnm = lhs + "_idx_" + tt;
 	            		state.varDeclare(nnm);
-	            		String tmplhsn = state.varGetLHSName(nnm);
+	            		state.varGetLHSName(nnm);
 	            	}
 	            }
 	         
@@ -999,15 +523,7 @@ public class NodesToSBit implements FEVisitor{
 	            	additInit.
 					add(new StmtAssign(field.getContext(),
 							new ExprVar(field.getContext(), lhs),
-							field.getInit(i)));
-	    	        /*String rhs =(String)field.getInit(i).accept(this);	    	        
-	    	        Integer vrhs = state.popVStack();
-	    	        if( vrhs != null){
-	    	        	state.setVarValue(lhs, vrhs.intValue());
-	    	        	result += "";
-	    	        }else{
-	    	        	//result += lhs + " = " + rhs;
-	    	        } */	                
+							field.getInit(i)));   
 	            }else{	            	
 	            	//Assert(false, "Vars should be initialized");
 	            }
@@ -1049,14 +565,14 @@ public class NodesToSBit implements FEVisitor{
 	        	Expression pushr = ((FuncWork)func).getPopRate();
 	        	Expression popr = ((FuncWork)func).getPushRate();
 	        	if(pushr != null){
-	        		result += "input_RATE = " + pushr.accept(this) + ";\n";
-	        		state.popVStack();
+	        		pushr.accept(this);
+	        		result += "input_RATE = " + state.popVStack() + ";\n";
 	        	}else{
 	        		result += "input_RATE = 0;\n";
 	        	}
 	        	if(popr != null){
-	        		result += "output_RATE = " + popr.accept(this) + ";\n";
-	        		state.popVStack();
+	        		popr.accept(this);
+	        		result += "output_RATE = " + state.popVStack() + ";\n";
 	        	}else{
 	        		result += "output_RATE = 0;\n";	        	
 	        	}	        	
@@ -1218,29 +734,20 @@ public class NodesToSBit implements FEVisitor{
 	        	Expression actualParam = (Expression)actualParamIterator.next();			        	
 	        	Parameter formalParam = (Parameter) formalParamIterator.next();
 	        	
-	        	//this.state.markVectorStack();
-	        	
-	        	String apnm = (String) actualParam.accept(this);
-	        	
-	        	valueClass apnmVal = state.popVStack();
+	        	actualParam.accept(this);
+	        	valueClass actualParamValue = state.popVStack();
 	    		
-	        	if( apnmVal.isVect() ){	
-	        		List<valueClass> lst= apnmVal.getVectValue();
+	        	if( actualParamValue.isVect() ){	
+	        		List<valueClass> lst= actualParamValue.getVectValue();
 	        		assert formalParam.getType() instanceof TypeArray : "This should never happen!!";
 	        		((TypeArray)formalParam.getType()).getLength().accept(this);
 	        		valueClass sizeInt = state.popVStack();
 	        		Assert(sizeInt.hasValue(), "I must know array bounds for parameters at compile time");
-	        		int size = sizeInt.getIntValue();	        		
+	        		int size = sizeInt.getIntValue();	        			        		
 	        		
-	        		List<String> rhsNames = new ArrayList<String>();
-	        		for(int i=0; i<lst.size(); ++i){
-	        			rhsNames.add(state.varGetRHSName(apnm + "_idx_" + i));
-	        		}
-	        		
-	        		if(lst.size()<size){	        			
+	        		if(lst.size()<size){
 	        			while(lst.size()<size){
-	        				lst.add(new valueClass(0));
-	        				rhsNames.add("0");
+	        				lst.add(new valueClass(0));	        				
 	        			}
 	        			assert lst.size() == size :"Just to make sure";
 	        		}
@@ -1250,21 +757,19 @@ public class NodesToSBit implements FEVisitor{
 		    		String lhsname = state.varGetLHSName(formalParamName);
 		    		
 		    		
-		    		Iterator<valueClass> it = lst.iterator();
-		    		Iterator<String> rhsNamesIter = rhsNames.iterator();
+		    		Iterator<valueClass> actualParamValueIt = lst.iterator();		    		
 		    		int idx = 0;
 		    		state.makeArray(formalParamName, lst.size());
-		    		while( it.hasNext() ){
-		    			valueClass i =  it.next();
-		    			String lpnm = formalParamName + "_idx_" + idx;
-		    			state.varDeclare(lpnm);
-			    		lhsname = state.varGetLHSName(lpnm);
-			    		String rhsName = rhsNamesIter.next();
+		    		while( actualParamValueIt.hasNext() ){
+		    			valueClass currentVal =  actualParamValueIt.next();
+		    			String currentName = formalParamName + "_idx_" + idx;
+		    			state.varDeclare(currentName);
+			    		lhsname = state.varGetLHSName(currentName);			    		
 			    		if( !formalParam.isParameterOutput() ){
-				    		if(!i.hasValue()){
-				    			result += lhsname + " = " + rhsName + ";\n";
+				    		if(!currentVal.hasValue()){
+				    			result += lhsname + " = " + currentVal + ";\n";
 				    		}else{
-				    			state.setVarValue(lpnm, i.getIntValue());
+				    			state.setVarValue(currentName, currentVal.getIntValue());
 				    		}
 			    		}
 		    			++idx;
@@ -1273,12 +778,12 @@ public class NodesToSBit implements FEVisitor{
 		    		String formalParamName = formalParam.getName();
 		        	state.varDeclare(formalParamName);
 		    		String lhsname = state.varGetLHSName(formalParamName);		    		
-		    		Assert(apnmVal.hasValue() || !checkError, "I must be able to determine the values of the parameters at compile time.");
+		    		Assert(actualParamValue.hasValue() || !checkError, "I must be able to determine the values of the parameters at compile time.");
 		    		if( !formalParam.isParameterOutput() ){
-			    		if(!apnmVal.hasValue()){
-			    			result += lhsname + " = " + apnm + ";\n";
+			    		if(!actualParamValue.hasValue()){
+			    			result += lhsname + " = " + actualParamValue + ";\n";
 			    		}else{
-			    			int value = apnmVal.getIntValue();
+			    			int value = actualParamValue.getIntValue();
 			    			state.setVarValue(formalParamName, value);
 			    		}
 		    		}
@@ -1295,38 +800,28 @@ public class NodesToSBit implements FEVisitor{
 	        	Parameter formalParam = (Parameter) formalParamIterator.next();
 	        	
 	        	String apnm = (String) actualParam.accept( new LHSvisitor());	        	
-	        	
-	        	String formalParamName = formalParam.getName();	        	
-	    		valueClass formalParamVal = state.popVStack();
-	        	if( formalParamVal.isVect() ){				        
-		    		List<valueClass> lst= formalParamVal.getVectValue();
-		    		Iterator<valueClass> it = lst.iterator();
-		    		int idx = 0;		    		
-		    		while( it.hasNext() ){
-		    			valueClass i =  it.next();
-		    			String formalName = formalParamName + "_idx_" + idx;		    						    		
-			    		if( formalParam.isParameterOutput() ){
-			    			String rhsname = state.varGetRHSName(formalName);
-				    		if(!i.hasValue()){
-				    			result += state.varGetLHSName(apnm+"_idx_"+idx) + " = " + rhsname + ";\n";
-				    		}else{
-				    			state.setVarValue(formalName, i.getIntValue());
-				    		}
-			    		}
-		    			++idx;
-		    		}
-		    	}else{
-		    		String lhsname = state.varGetLHSName(apnm);
-		    		Assert(formalParamVal.hasValue() || !checkError, "I must be able to determine the values of the parameters at compile time.");		    				    		
-		    		if( formalParam.isParameterOutput() ){
-			    		if(!formalParamVal.hasValue()){
-			    			result += lhsname + " = " + state.varGetRHSName(formalParamName) + ";\n";
-			    		}else{
-			    			Integer value = formalParamVal.getIntValue();
-			    			state.setVarValue(formalParamName, value);
-			    		}
-		    		}
-		    	}
+	        	if( formalParam.isParameterOutput() ){
+	        		String formalParamName = formalParam.getName();
+		        	int sz = state.checkArray(formalParamName);
+		        	if( sz > 0 ){
+		        		for(int i=0; i<sz; ++i){
+		        			String formalName = formalParamName + "_idx_" + i;		        			
+	        				if(state.varHasValue(formalName)){
+	        					state.setVarValue(apnm+"_idx_"+i, state.varValue(formalName));
+	        				}else{
+	        					String rhsname = state.varGetRHSName(formalName);
+				    			result += state.varGetLHSName(apnm+"_idx_"+i) + " = " + rhsname + ";\n";
+	        				}				    		
+		        		}	        		
+			    	}else{
+		    			if(state.varHasValue(formalParamName)){
+        					state.setVarValue(apnm, state.varValue(formalParamName));
+        				}else{
+        					String rhsname = state.varGetRHSName(formalParamName);
+			    			result += state.varGetLHSName(apnm) + " = " + rhsname + ";\n";
+        				}
+			    	}
+	        	}
 	        }
 	        return result;
         }
@@ -1411,88 +906,54 @@ public class NodesToSBit implements FEVisitor{
 	    {
 	    	
 	        String op;
-	        //this.state.markVectorStack();
-	        Integer vrhs = null;
-	        String rhs = (String)stmt.getRHS().accept(this);	        	        
+	        //this.state.markVectorStack();	        
+	        stmt.getRHS().accept(this);
+	        valueClass vrhsVal = state.popVStack();
 	        List<valueClass> rhsLst = null;
-	        valueClass vrhsVal = state.popVStack();	
+	        	
 	        if( vrhsVal.isVect() ){
 	        	rhsLst= vrhsVal.getVectValue();
-	        }else{
-	        	if(vrhsVal.hasValue()){
-	        		vrhs = new Integer(vrhsVal.getIntValue());
-	        	}else{
-	        		vrhs = null;
-	        	}
-		        if(vrhs != null){
-		        	rhs = vrhs.toString();
-		        }		        	
 	        }
 	        
 	        String lhs = (String)stmt.getLHS().accept( new LHSvisitor() );
+	        stmt.getLHS().accept(this);
+	        valueClass vlhsVal = state.popVStack();
 	        
 	        String lhsnm = state.varGetLHSName(lhs);
 	        
 	        int arrSize = state.checkArray(lhs);
-	        boolean isArr = arrSize > 0;
+	        boolean isArr = arrSize > 0;	        
 	        
-	        Integer vlhs = null;
-	        String rlhs = null;  	        
-	        
-	        valueClass vlhsVal = state.popVStack();
-	        
-	        if(isArr && vlhsVal.isVect() ){	        	
-	        		
-	        }else{
-	        	assert isArr == vlhsVal.isVect();
-	        	if(vlhsVal.hasValue())
-	        		vlhs = vlhsVal.getIntValue();
-	        	else
-	        		vlhs = null;
-		        rlhs = lhs;  
-		        if(vlhs != null){
-		        	rlhs = vlhs.toString();
-		        }else{
-		        	rlhs = state.varGetRHSName(rlhs);
-		        }	        	
-	        }
-	        
-	        
-	        
-	        
-	        boolean hv = vlhs != null && vrhs != null;
-	        
-	        	
-	        
+	        boolean hv = vlhsVal.hasValue() && vrhsVal.hasValue();
 	        
 	        switch(stmt.getOp())
 	        {
 	        case ExprBinary.BINOP_ADD: 	        	
-	        	op = " = " + rlhs + "+";
+	        	op = " = " + vlhsVal + "+";
 	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 	        	if(hv){
-	        		state.setVarValue(lhs, vlhs.intValue() + vrhs.intValue());
+	        		state.setVarValue(lhs, vlhsVal.getIntValue() + vrhsVal.getIntValue());
 	        	}
 	        break;
 	        case ExprBinary.BINOP_SUB: 
-	        	op = " = "+ rlhs + "-";
+	        	op = " = "+ vlhsVal + "-";
 	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
-	        		state.setVarValue(lhs, vlhs.intValue() - vrhs.intValue());
+	        		state.setVarValue(lhs, vlhsVal.getIntValue() - vrhsVal.getIntValue());
 	        	}
 	        break;
-	        case ExprBinary.BINOP_MUL: 
-	        	op = " = "+ rlhs + "*";
+	        case ExprBinary.BINOP_MUL:
+	        	op = " = "+ vlhsVal + "*";
 	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
-	        		state.setVarValue(lhs, vlhs.intValue() * vrhs.intValue());
+	        		state.setVarValue(lhs, vlhsVal.getIntValue() * vrhsVal.getIntValue());
 	        	}
 	        break;
-	        case ExprBinary.BINOP_DIV: 
-	        	op = " = "+ rlhs + "/"; 
+	        case ExprBinary.BINOP_DIV:
+	        	op = " = "+ vlhsVal + "/";
 	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
-	        		state.setVarValue(lhs, vlhs.intValue() / vrhs.intValue());
+	        		state.setVarValue(lhs, vlhsVal.getIntValue() / vrhsVal.getIntValue());
 	        	}
 	        break;
 	        default: op = " = ";
@@ -1507,8 +968,8 @@ public class NodesToSBit implements FEVisitor{
 		    			++idx;
 		    		}
 		    		return "";
-		    	}else if(vrhs != null){
-	        		state.setVarValue(lhs, vrhs.intValue());	
+		    	}else if(vrhsVal.hasValue()){
+	        		state.setVarValue(lhs, vrhsVal.getIntValue());	
 	        		return "";
 	        	}
 	        }
@@ -1517,7 +978,7 @@ public class NodesToSBit implements FEVisitor{
 	        	return "";
 	        else
 	        	state.unsetVarValue(lhs);
-	        return lhsnm + op + rhs;
+	        return lhsnm + op + vrhsVal;
 	    }
 
 	    public Object visitStmtBlock(StmtBlock stmt)
@@ -1583,35 +1044,36 @@ public class NodesToSBit implements FEVisitor{
 	    
 	    public Object visitStmtExpr(StmtExpr stmt)
 	    {
-	        String result = (String)stmt.getExpression().accept(this);
-	        valueClass tmp = state.popVStack();
-	        // Gross hack to strip out leading class casts,
-	        // since they'll illegal (JLS 14.8).
-	        if (result.length() > 0 && (result.charAt(0) == '(' &&
-	            Character.isUpperCase(result.charAt(1))))
-	            result = result.substring(result.indexOf(')') + 1);
-	        return result;
+	    	Expression exp = stmt.getExpression();
+	    	if(exp instanceof ExprFunCall){
+	    		//ExprFunCall is the only expression that returns a string.
+	    		String result = (String)exp.accept(this);
+		        state.popVStack();
+		        return result;
+	    	}else{
+	    		exp.accept(this);
+	    		return state.popVStack().toString();
+	    	}
 	    }
 
 	    public Object visitStmtFor(StmtFor stmt)
 	    {
 	    	state.pushLevel();
-	        String init = "";
+	        
 	        String result = "";
 	        if (stmt.getInit() != null)
-	            init = (String)stmt.getInit().accept(this);	        
-	        String cond;
+	            stmt.getInit().accept(this);
+	        
 	        Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
-	        cond = (String)stmt.getCond().accept(this);
+	        stmt.getCond().accept(this);
 	        valueClass vcond = state.popVStack();
 	        int iters = 0;
 	        while(vcond.hasValue() && vcond.getIntValue() > 0){
 	        	++iters;
-	        	result += (String)stmt.getBody().accept(this);
-	        	String incr;
+	        	result += (String)stmt.getBody().accept(this);	        	
 	        	if (stmt.getIncr() != null)
-		        	incr = (String)stmt.getIncr().accept(this);
-	        	cond = (String)stmt.getCond().accept(this);
+		        	stmt.getIncr().accept(this);
+	        	stmt.getCond().accept(this);
 		        vcond = state.popVStack();
 		        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
 	        }
@@ -1624,7 +1086,7 @@ public class NodesToSBit implements FEVisitor{
 	        // must have an if part...
 	    	
 	        String result = "";
-	        String cond = (String)stmt.getCond().accept(this);
+	        stmt.getCond().accept(this);
 	        valueClass vcond = state.popVStack();
 	        if(vcond.hasValue()){
 	        	if(vcond.getIntValue() > 0){
@@ -1649,10 +1111,10 @@ public class NodesToSBit implements FEVisitor{
 	        if(epms != null){
 	        	result = ipart;
 	        	result += epart;
-	        	result += state.procChangeTrackers(ipms, epms, cond);
+	        	result += state.procChangeTrackers(ipms, epms, vcond.toString());
 	        }else{
-	        	result = ipart;	        	
-	        	result += state.procChangeTrackers(ipms, cond);
+	        	result = ipart;
+	        	result += state.procChangeTrackers(ipms, vcond.toString());
 	        }
 	        return result;
 	    }
@@ -1666,11 +1128,11 @@ public class NodesToSBit implements FEVisitor{
 	    {
 
 	    	String result = "";
-	    	String iter =  (String) stmt.getIter().accept(this);
+	    	stmt.getIter().accept(this);
 	    	valueClass vcond = state.popVStack();
 	    	if(!vcond.hasValue()){
-	    		String nvar = state.varDeclare(); 
-	    		result += nvar + " = " + "(" + iter + ");\n"; 	    		
+	    		String nvar = state.varDeclare();
+	    		result += nvar + " = " + "(" + vcond + ");\n"; 	    		
 	    		int iters;
 	    		for(iters=0; iters<LUNROLL; ++iters){			        		        
 			        state.pushChangeTracker();
@@ -1825,7 +1287,7 @@ public class NodesToSBit implements FEVisitor{
 				    			valueClass ival =  it.next();
 				    			String nnm = nm + "_idx_" + tt;
 				    			state.varDeclare(nnm);
-			            		String tmplhsn = state.varGetLHSName(nnm);
+			            		state.varGetLHSName(nnm);
 				    			state.setVarValue(nnm, ival.getIntValue());
 				    			++tt;
 				    		}
@@ -1847,14 +1309,15 @@ public class NodesToSBit implements FEVisitor{
 	            		for(int tt=0; tt<tmp.getIntValue(); ++tt){
 		            		String nnm = nm + "_idx_" + tt;
 		            		state.varDeclare(nnm);
-		            		String tmplhsn = state.varGetLHSName(nnm);		            		
+		            		state.varGetLHSName(nnm);		            		
 		            	}
 	            	}
 	            }else{
 		            
-		            if (stmt.getInit(i) != null){      	
-		                 String asgn = lhsn + " = " + (String)stmt.getInit(i).accept(this) + "; \n";
-		                valueClass tmp = state.popVStack();
+		            if (stmt.getInit(i) != null){     
+		            	stmt.getInit(i).accept(this);
+		            	valueClass tmp = state.popVStack();
+		                String asgn = lhsn + " = " + tmp + "; \n";		                
 		                if(tmp.hasValue()){
 		                	state.setVarValue(nm, tmp.getIntValue());
 		                }else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
@@ -1872,60 +1335,7 @@ public class NodesToSBit implements FEVisitor{
 	            ") " + (String)stmt.getBody().accept(this);
 	    }
 
-	    /**
-	     * For a non-anonymous StreamSpec, check to see if it has any
-	     * message handlers.  If it does, then generate a Java interface
-	     * containing the handlers named (StreamName)Interface, and
-	     * a portal class named (StreamName)Portal.
-	     */
-	    private String maybeGeneratePortal(StreamSpec spec)
-	    {
-	        List handlers = new java.util.ArrayList();
-	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
-	        {
-	            Function func = (Function)iter.next();
-	            if (func.getCls() == Function.FUNC_HANDLER)
-	                handlers.add(func);
-	        }
-	        if (handlers.isEmpty())
-	            return null;
-	        
-	        // Okay.  Assemble the interface:
-	        StringBuffer result = new StringBuffer();
-	        result.append(indent + "interface " + spec.getName() +
-	                      "Interface {\n");
-	        addIndent();
-	        for (Iterator iter = handlers.iterator(); iter.hasNext(); )
-	        {
-	            Function func = (Function)iter.next();
-	            result.append(indent + "public ");
-	            result.append(convertType(func.getReturnType()) + " ");
-	            result.append(func.getName());
-	            result.append(doParams(func.getParams(), null));
-	            result.append(";\n");
-	        }
-	        unIndent();
-	        result.append(indent + "}\n");
-	        
-	        // Assemble the portal:
-	        result.append(indent + "class " + spec.getName() +
-	                      "Portal extends Portal implements " + spec.getName() +
-	                      "Interface {\n");
-	        addIndent();
-	        for (Iterator iter = handlers.iterator(); iter.hasNext(); )
-	        {
-	            Function func = (Function)iter.next();
-	            result.append(indent + "public ");
-	            result.append(convertType(func.getReturnType()) + " ");
-	            result.append(func.getName());
-	            result.append(doParams(func.getParams(), null));
-	            result.append(" { }\n");
-	        }
-	        unIndent();
-	        result.append(indent + "}\n");
-
-	        return result.toString();
-	    }
+	    
 
 	    public Object visitStreamSpec(StreamSpec spec)
 	    {
@@ -2066,7 +1476,7 @@ public class NodesToSBit implements FEVisitor{
 	        // Output field definitions:
 	        
 	        
-	        additInit = new LinkedList();
+	        additInit = new LinkedList<Statement>();
 	        
 	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
 	        {
@@ -2172,6 +1582,6 @@ public class NodesToSBit implements FEVisitor{
 			else
 				rval =  "<" + cvar +  ">";
 			state.pushVStack(new valueClass(rval));
-			return rval;
+			return star;
 		}
 }
