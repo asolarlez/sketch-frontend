@@ -303,11 +303,11 @@ public class EliminateIndeterminacy extends FEReplacer {
 		                            ea);
 			addStatement(iterDecl);			
 			Expression left = doExpression(exp.getLeft());
-			Expression newLeft = new ExprBinary(context, ExprBinary.BINOP_BAND, left, new ExprVar(context, iterName));
+			Expression newLeft = new ExprBinary(context, ExprBinary.BINOP_BAND, left, new ExprVar(context, iterName), exp.getAlias());
 	        Expression right = doExpression(exp.getRight());
 	        Expression newRight = new ExprBinary(context, ExprBinary.BINOP_BAND, right, 
-	        		new ExprUnary(context, ExprUnary.UNOP_NEG, new ExprVar(context, iterName)));
-	        Expression result = new ExprBinary(context, ExprBinary.BINOP_BOR, newLeft, newRight);
+	        		new ExprUnary(context, ExprUnary.UNOP_NEG, new ExprVar(context, iterName)), exp.getAlias());
+	        Expression result = new ExprBinary(context, ExprBinary.BINOP_BOR, newLeft, newRight, exp.getAlias());
 	        return result;
 		}else{
 			return super.visitExprBinary(exp);
