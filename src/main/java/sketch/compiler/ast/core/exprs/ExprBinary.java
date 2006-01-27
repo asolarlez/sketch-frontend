@@ -51,7 +51,7 @@ public class ExprBinary extends Expression
     
     private int op;
     private Expression left, right;
-    
+    private ExprBinary alias;
     /**
      * Create a new binary expression given the operation and the
      * left and right child nodes.  Requires that op is a valid
@@ -69,8 +69,21 @@ public class ExprBinary extends Expression
         this.op = op;
         this.left = left;
         this.right = right;
+        alias = this;
     }
 
+    public ExprBinary(FEContext context,
+    		int op, Expression left, Expression right, ExprBinary alias)
+    {
+    	super(context);
+    	this.op = op;
+    	this.left = left;
+    	this.right = right;
+    	this.alias = alias;
+    }
+    
+    public ExprBinary getAlias(){ return alias; }
+    
     /**
      * Returns the operator of this.
      *
@@ -145,10 +158,9 @@ public class ExprBinary extends Expression
     	return null;
     }
     
-    public String toString()
-    {
-        String theOp;
-        switch (op)
+    public String getOpString(){
+    	String theOp;
+    	switch (op)
         {
         case ExprBinary.BINOP_ADD: theOp = "+"; break;
         case ExprBinary.BINOP_SUB: theOp = "-"; break;
@@ -170,6 +182,12 @@ public class ExprBinary extends Expression
         case ExprBinary.BINOP_SELECT: theOp = "{|}"; break;
         default: theOp = "? (" + op + ")"; break;
         }
+    	return theOp;
+    }
+    
+    public String toString()
+    {
+        String theOp = getOpString();        
         return "(" + left.toString() + ")" + theOp +
             "(" + right.toString() + ")";
     }

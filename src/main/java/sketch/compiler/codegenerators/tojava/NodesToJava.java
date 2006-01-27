@@ -342,6 +342,8 @@ public class NodesToJava implements FEVisitor
         case ExprBinary.BINOP_BAND:op = "&"; break;
         case ExprBinary.BINOP_BOR: op = "|"; break;
         case ExprBinary.BINOP_BXOR:op = "^"; break;
+        case ExprBinary.BINOP_RSHIFT: op = ">>"; break;
+        case ExprBinary.BINOP_LSHIFT: op = "<<"; break;
         default: assert false : exp; break;
         }
         result += " " + op + " ";

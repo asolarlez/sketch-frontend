@@ -26,7 +26,11 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
@@ -34,14 +38,28 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.*;
+import streamit.frontend.passes.AssembleInitializers;
+import streamit.frontend.passes.AssignLoopTypes;
+import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateArrayRange;
+import streamit.frontend.passes.ExtractRightShifts;
+import streamit.frontend.passes.ExtractVectorsInCasts;
+import streamit.frontend.passes.FindFreeVariables;
+import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.passes.GenerateCopies;
+import streamit.frontend.passes.NoRefTypes;
+import streamit.frontend.passes.NoticePhasedFilters;
+import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
 import streamit.frontend.tojava.InsertIODecls;
 import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
-import streamit.frontend.tosbit.EliminateIndeterminacy;
+import streamit.frontend.tosbit.EliminateStar;
 import streamit.frontend.tosbit.NodesToC;
 import streamit.frontend.tosbit.ProduceBooleanFunctions;
 import streamit.frontend.tosbit.ValueOracle;
@@ -76,14 +94,16 @@ public class ToSBit
     private boolean libraryFormat = false;
     private String outputFile = null;
     private String sbitPath = null;
-    private List inputFiles = new java.util.ArrayList();
-    private Map defines=new HashMap();
+    private List<String> inputFiles = new java.util.ArrayList<String>();
+    private Map<String, Integer> defines=new HashMap<String, Integer>();
     private int unrollAmt = 8;
     private boolean incremental = false;
     private int incermentalAmt = 0;
     private boolean hasTimeout = false;
     private int timeout = 30;
     private int seed = -1;
+    private String resultFile = null;
+    private Program beforeUnvectorizing=null;
     
     public void doOptions(String[] args)
     {
@@ -101,6 +121,8 @@ public class ToSBit
             }
             else if (args[i].equals("--output"))
                 outputFile = args[++i];
+            else if (args[i].equals("--ccode"))
+            	resultFile = args[++i];
             else if (args[i].equals("--library"))
                 libraryFormat = true;
             else if (args[i].equals("--sbitpath"))
@@ -139,11 +161,11 @@ public class ToSBit
     public static Program emptyProgram()
     {
         List streams = new java.util.ArrayList();
-        List structs = new java.util.ArrayList();
+        List<TypeStruct> structs = new java.util.ArrayList<TypeStruct>();
         
         // Complex structure type:
-        List fields = new java.util.ArrayList();
-        List ftypes = new java.util.ArrayList();
+        List<String> fields = new java.util.ArrayList<String>();
+        List<Type> ftypes = new java.util.ArrayList<Type>();
         Type floattype = new TypePrimitive(TypePrimitive.TYPE_FLOAT);
         fields.add("real");
         ftypes.add(floattype);
@@ -222,7 +244,7 @@ public class ToSBit
      * @param varGen  object to generate unique temporary variable names
      * @returns the converted IR tree
      */        
-    public static Program lowerIRToJava(Program prog, boolean libraryFormat,
+    public Program lowerIRToJava(Program prog, boolean libraryFormat,
                                         TempVarGen varGen)
     {
         /* What's the right order for these?  Clearly generic
@@ -242,7 +264,9 @@ public class ToSBit
         prog = (Program)prog.accept(new FindFreeVariables());
         if (!libraryFormat)
             prog = (Program)prog.accept(new NoticePhasedFilters());
-        prog = (Program)prog.accept(new DoComplexProp(varGen));        
+        prog = (Program)prog.accept(new DoComplexProp(varGen));
+        prog = (Program)prog.accept(new EliminateArrayRange());
+        beforeUnvectorizing = prog;
         prog = (Program)prog.accept(new GenerateCopies(varGen));
         prog = (Program)prog.accept(new ComplexToStruct());
         prog = (Program)prog.accept(new SeparateInitializers());
@@ -333,17 +357,29 @@ public class ToSBit
         {
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
+        }        
+        Program noindet = (Program)beforeUnvectorizing.accept(new EliminateStar(oracle, this.unrollAmt));
+        String ccode = (String)noindet.accept(new NodesToC(false, varGen) );
+        if(resultFile == null){
+        	System.out.println(ccode);  
+        }else{
+        	try{
+        		outWriter = new FileWriter(resultFile);
+            	outWriter.write(ccode);
+                outWriter.flush();
+            }
+            catch (java.io.IOException e){
+                throw new RuntimeException(e);
+            }
         }
-        
-        Program noindet = (Program)prog.accept(new EliminateIndeterminacy(oracle, varGen));
-        System.out.println(noindet.accept(new NodesToC(false, varGen) ));                       
+                             
         System.exit(0);
     }
     
     private boolean solve(ValueOracle oracle){
         final List<Boolean> done=new ArrayList<Boolean>();
         
-        Thread stopper=null;        
+        Thread stopper=null;
         if(hasTimeout){
 	        stopper = new Thread() {
 				@Override
@@ -370,7 +406,7 @@ public class ToSBit
         	int bits=0;
         	for(bits=1; bits<=this.incermentalAmt; ++bits){
         		System.out.println("TRYING SIZE " + bits);
-        		String[] commandLine  = {command , "-overrideCtrls", "" + bits  ,outputFile, outputFile + ".tmp"};
+        		String[] commandLine  = {command , "-overrideCtrls", "" + bits, "-seed", "" + seed  ,outputFile, outputFile + ".tmp"};
     	        boolean ret = runSolver(commandLine, bits);
     	        if(ret){
     	        	isSolved = true;

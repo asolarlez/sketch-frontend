@@ -27,6 +27,7 @@ package streamit.frontend.nodes;
 public class ExprStar extends Expression
 {		
 	private int size;
+	public Expression vectorSize;
 	private boolean isFixed;
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FEContext context)

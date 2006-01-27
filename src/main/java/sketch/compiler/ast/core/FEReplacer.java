@@ -67,7 +67,7 @@ public class FEReplacer implements FEVisitor
      * return a <code>Statement</code> object from a statement visitor
      * function.
      */
-    protected List newStatements;
+    protected List<Statement> newStatements;
 
     /**
      * Adds a statement to the list of statements that replace the
@@ -98,7 +98,7 @@ public class FEReplacer implements FEVisitor
      * 
      * @param stmt The statement to add
      */ 
-    protected void addStatements(Collection stmts)
+    protected void addStatements(Collection<Statement> stmts)
     {
         newStatements.addAll(stmts);
     }
@@ -150,7 +150,7 @@ public class FEReplacer implements FEVisitor
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
         boolean hasChanged = false;
-        List newElements = new ArrayList();
+        List<Expression> newElements = new ArrayList<Expression>();
         for (Iterator iter = exp.getElements().iterator(); iter.hasNext(); )
         {
             Expression element = (Expression)iter.next();
@@ -169,7 +169,7 @@ public class FEReplacer implements FEVisitor
         if (left == exp.getLeft() && right == exp.getRight())
             return exp;
         else
-            return new ExprBinary(exp.getContext(), exp.getOp(), left, right);
+            return new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
     }
     
     public Object visitExprComplex(ExprComplex exp)
@@ -202,7 +202,7 @@ public class FEReplacer implements FEVisitor
     public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;
-        List newParams = new ArrayList();
+        List<Expression> newParams = new ArrayList<Expression>();
         for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
         {
             Expression param = (Expression)iter.next();
@@ -258,7 +258,7 @@ public class FEReplacer implements FEVisitor
 
     public Object visitFieldDecl(FieldDecl field)
     {
-        List newInits = new ArrayList();
+        List<Expression> newInits = new ArrayList<Expression>();
         for (int i = 0; i < field.getNumFields(); i++)
         {
             Expression init = field.getInit(i);
@@ -317,8 +317,8 @@ public class FEReplacer implements FEVisitor
     
     public Object visitSCSimple(SCSimple creator)
     {
-        List newParams = new ArrayList();
-        List newPortals = new ArrayList();
+        List<Expression> newParams = new ArrayList<Expression>();
+        List<Expression> newPortals = new ArrayList<Expression>();
         boolean hasChanged = false;
         for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
         {
@@ -352,7 +352,7 @@ public class FEReplacer implements FEVisitor
     public Object visitSJWeightedRR(SJWeightedRR sj)
     {
         boolean changed = false;
-        List newWeights = new ArrayList();
+        List<Expression> newWeights = new ArrayList<Expression>();
         for (Iterator iter = sj.getWeights().iterator(); iter.hasNext(); )
         {
             Expression oldWeight = (Expression)iter.next();
@@ -384,8 +384,8 @@ public class FEReplacer implements FEVisitor
     
     public Object visitStmtBlock(StmtBlock stmt)
     {
-        List oldStatements = newStatements;
-        newStatements = new ArrayList();
+        List<Statement> oldStatements = newStatements;
+        newStatements = new ArrayList<Statement>();
         for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
         {
             Statement s = (Statement)iter.next();
@@ -510,7 +510,7 @@ public class FEReplacer implements FEVisitor
         boolean hasChanged = false;
         Expression newReceiver = (Expression)stmt.getReceiver().accept(this);
         if (newReceiver != stmt.getReceiver()) hasChanged = true;
-        List newParams = new ArrayList();
+        List<Expression> newParams = new ArrayList<Expression>();
         for (Iterator iter = stmt.getParams().iterator(); iter.hasNext(); )
         {
             Expression param = (Expression)iter.next();
@@ -539,7 +539,7 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-        List newInits = new ArrayList();
+        List<Expression> newInits = new ArrayList<Expression>();
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             Expression init = stmt.getInit(i);

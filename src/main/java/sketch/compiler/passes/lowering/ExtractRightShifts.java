@@ -34,7 +34,7 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 			Expression rexp = this.doExpression(exp.getRight());
 			ExprBinary nexp = exp;
 			if(lexp != exp.getLeft() || rexp != exp.getRight()){
-				nexp = new ExprBinary(context, exp.getOp(), lexp, rexp);
+				nexp = new ExprBinary(context, exp.getOp(), lexp, rexp, exp.getAlias());
 			}
 			StmtVarDecl decl = new StmtVarDecl(context, t, tmpName, nexp);
 			this.addStatement(decl);

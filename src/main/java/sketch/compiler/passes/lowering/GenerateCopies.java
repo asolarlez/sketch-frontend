@@ -111,7 +111,7 @@ class UpgradeStarToInt extends FEReplacer{
             if (left == exp.getLeft() && right == exp.getRight())
                 return exp;
             else
-                return new ExprBinary(exp.getContext(), exp.getOp(), left, right);
+                return new ExprBinary(exp.getContext(), exp.getOp(), left, right,  exp.getAlias());
         }
         default:
         	return super.visitExprBinary(exp);
@@ -252,9 +252,9 @@ class Indexify extends FEReplacer{
 				ExprVar oldRHS = new ExprVar(context, newVarName);
 				Expression newIdx = null;
 				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );					
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS , exp.getAlias());					
 				}else{
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS, exp.getAlias());
 				}
 				Indexify indexify = new Indexify(newIdx, stv );
 				Expression newVal = (Expression) exp.getLeft().accept(indexify);
@@ -269,12 +269,12 @@ class Indexify extends FEReplacer{
 				int op;
 				Expression newConst = null;
 				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS );
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS, exp.getAlias() );
 					op = ExprBinary.BINOP_LT;
 					TypeArray ta = (TypeArray) lType;					
 					newConst = ta.getLength();
 				}else{
-					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS);
+					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS, exp.getAlias());
 					op = ExprBinary.BINOP_GE;
 					newConst = new ExprConstInt(context, 0);					
 				}
@@ -324,12 +324,12 @@ class Indexify extends FEReplacer{
 			left = new ExprVar(context, ldecl);
 			right = new ExprVar(context, rdecl);
 			
-			Expression newExp = new ExprBinary(context, ExprBinary.BINOP_BXOR, left, right);
-			newExp = new ExprBinary(context, ExprBinary.BINOP_BXOR, newExp, new ExprVar(context, carry));
-			Expression newCarry1 = new ExprBinary(context, ExprBinary.BINOP_BAND, left , new ExprVar(context, carry));
-			Expression newCarry2 = new ExprBinary(context, ExprBinary.BINOP_BOR, left , new ExprVar(context, carry));
-			Expression newCarry3 = new ExprBinary(context, ExprBinary.BINOP_BAND, right , newCarry2);
-			Expression newCarry4 = new ExprBinary(context, ExprBinary.BINOP_BOR, newCarry3 , newCarry1);
+			Expression newExp = new ExprBinary(context, ExprBinary.BINOP_BXOR, left, right, exp.getAlias());
+			newExp = new ExprBinary(context, ExprBinary.BINOP_BXOR, newExp, new ExprVar(context, carry), exp.getAlias());
+			Expression newCarry1 = new ExprBinary(context, ExprBinary.BINOP_BAND, left , new ExprVar(context, carry), exp.getAlias());
+			Expression newCarry2 = new ExprBinary(context, ExprBinary.BINOP_BOR, left , new ExprVar(context, carry), exp.getAlias());
+			Expression newCarry3 = new ExprBinary(context, ExprBinary.BINOP_BAND, right , newCarry2, exp.getAlias());
+			Expression newCarry4 = new ExprBinary(context, ExprBinary.BINOP_BOR, newCarry3 , newCarry1, exp.getAlias());
 			Statement newStmt = new StmtAssign(context,new ExprVar(context, carry), newCarry4);
 			postStmts.add(newStmt);
 			return newExp;			
@@ -564,6 +564,7 @@ public class GenerateCopies extends SymbolTableVisitor
     }
     
     public Object visitExprArrayRange(ExprArrayRange exp){
+    	assert false : "There should be no array ranges at this point";
     	assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";    	    	
 		Expression newBase=doExpression(exp.getBase());
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
@@ -587,8 +588,7 @@ public class GenerateCopies extends SymbolTableVisitor
     }
     
     public Object visitStmtAssign(StmtAssign stmt)
-    {
-    	
+    {    	
 	   Type lt = getType(stmt.getLHS());
        Type rt = getType(stmt.getRHS());
        String lhsn = null;
