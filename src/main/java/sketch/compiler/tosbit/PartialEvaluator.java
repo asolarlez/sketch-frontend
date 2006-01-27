@@ -16,6 +16,7 @@ import streamit.frontend.nodes.ExprConstFloat;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstStr;
 import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprPeek;
 import streamit.frontend.nodes.ExprPop;
 import streamit.frontend.nodes.ExprStar;
@@ -24,25 +25,54 @@ import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FENullVisitor;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePortal;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 
 public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
 	protected MethodState state;
 	public final boolean isReplacer;
 
+	public class CheckSize extends FENullVisitor{
+		int size = -1;
+		 public Object visitExprVar(ExprVar exp) { 
+			 size = state.checkArray(exp.getName());
+			 return exp.getName();
+		 }
+		 public Object visitExprArray(ExprArray exp)
+ 	    {	 	    	
+ 	    	String vname =  (String) exp.getBase().accept(this);	 	    	
+ 		    vname = vname + "_idx_" + 0;
+ 		    size = state.checkArray(vname);
+ 		    return vname;
+ 	    }
+		public int checkSize(FENode node){
+			size = -1;
+			node.accept(this);
+			return size;
+		}
+	}
+	
     public class LHSvisitor extends FENullVisitor{
+    	public Expression lhsExp=null;
+    	
     	public Object visitExprArray(ExprArray exp)
- 	    {
- 	    	Assert(exp.getBase() instanceof ExprVar, "Currently only 1 dimensional arrays are supported. \n" + exp.getContext());
- 	    	ExprVar base = (ExprVar)exp.getBase();
- 	    	String vname =  base.getName();
- 	    	exp.getOffset().accept(PartialEvaluator.this);
+ 	    { 	    	
+ 	    	String vname =  (String) exp.getBase().accept(this); 
+ 	    	Expression offsetE = (Expression) exp.getOffset().accept(PartialEvaluator.this);
  	    	valueClass ofst = state.popVStack();
  	    	if( ofst.hasValue()){
  		    	int ofstV = ofst.getIntValue();
@@ -52,7 +82,16 @@ public class PartialEvaluator extends FEReplacer {
  		    		return null;
  		    	}
  		    	vname = vname + "_idx_" + ofstV;
- 		    	String rval = vname;	 		    	
+ 		    	String rval = vname;
+ 		    	if(isReplacer){
+ 		    		if(offsetE != exp.getOffset()){
+ 		    			lhsExp = new ExprArray(exp.getContext(), lhsExp, offsetE);
+ 		    		}else{
+ 		    			lhsExp = exp;
+ 		    		}
+ 		    	}else{
+ 		    		lhsExp = exp;
+ 		    	}
  		    	return rval;
  	    	}else{
  	    		Assert( false, "Array indexing of non-deterministic value is only allowed in the RHS of an assignment; sorrry." );	 	    	
@@ -61,6 +100,7 @@ public class PartialEvaluator extends FEReplacer {
  	    }
 	    public Object visitExprVar(ExprVar exp)
 	    {		    	
+	    	lhsExp = exp;
 	    	return exp.getName();		    	
 	    }	    	
     }
@@ -138,7 +178,7 @@ public class PartialEvaluator extends FEReplacer {
 	    	if(ofstV >= size || ofstV < 0){
 	    		if(!exp.isUnchecked())throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
 				state.pushVStack( new valueClass(0) );
-				return "0";
+				return new ExprConstInt(0);
 	    	}
 	    	valueClass rval = lst.get(ofstV);
 	    	state.pushVStack(rval);
@@ -335,17 +375,26 @@ public class PartialEvaluator extends FEReplacer {
 		}
 		int sz = state.checkArray(vname);
 		if( sz >= 0 ){
-			List<valueClass> nlist = new LinkedList<valueClass>();
+			List<valueClass> nlist = new ArrayList<valueClass>(sz);
+			boolean isAllValues=true;
+			List<ExprConstInt> olist = new ArrayList<ExprConstInt>(sz);
 			for(int i=0; i<sz; ++i){
 				String lnm = vname + "_idx_" + i;
 				if( state.varHasValue( lnm) ){
-					nlist.add(new valueClass( state.varValue(lnm )));
+					int v = state.varValue(lnm );
+					olist.add( new ExprConstInt(v));
+					nlist.add(new valueClass(v));
 				}else{
+					isAllValues = false;
 					nlist.add(new valueClass(state.varGetRHSName(lnm)));
 				}
 			}
 			state.pushVStack( new valueClass(nlist) );
-			return exp;
+			if(this.isReplacer && isAllValues){
+				return new ExprArrayInit(exp.getContext(), olist);
+			}else{
+				return exp;
+			}
 		}else{
 			state.pushVStack(intValue);
 			if(this.isReplacer && intValue.hasValue()){
@@ -396,7 +445,7 @@ public class PartialEvaluator extends FEReplacer {
 	    		state.pushVStack(new valueClass(vchild.getIntValue()+1));
 	    		state.setVarValue(childb, vchild.getIntValue()+1 );	    		
 	    		if(this.isReplacer){
-	    			this.addStatement(new StmtExpr(exp.getContext(), exp));
+	    			//this.addStatement(new StmtExpr(exp.getContext(), exp));
 	    			returnVal = new ExprConstInt(vchild.getIntValue()+1);
 	    		}
 	    		return returnVal;
@@ -425,7 +474,7 @@ public class PartialEvaluator extends FEReplacer {
 	    		state.pushVStack(new valueClass(vchild.getIntValue()-1));
 	    		state.setVarValue(childb, vchild.getIntValue()-1 );	    		
 	    		if(this.isReplacer){
-	    			this.addStatement(new StmtExpr(exp.getContext(), exp));
+	    			//this.addStatement(new StmtExpr(exp.getContext(), exp));
 	    			returnVal = new ExprConstInt(vchild.getIntValue()-1);
 	    		}
 	    		return returnVal;
@@ -453,47 +502,253 @@ public class PartialEvaluator extends FEReplacer {
 	    return null;
 	}
 	
-    public Object visitExprBinary(ExprBinary exp)
-    {
-        String result;
+	protected valueClass doOps(ExprBinary exp, valueClass lhs,valueClass rhs){
+		valueClass newv=null;
+		boolean hasv = lhs.hasValue() && rhs.hasValue();
+		switch (exp.getOp())
+        {                
+        case ExprBinary.BINOP_AND:  if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue()))); break;
+        case ExprBinary.BINOP_OR:   if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()))); break;
+        case ExprBinary.BINOP_EQ:   if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() == rhs.getIntValue())); break;
+        case ExprBinary.BINOP_NEQ:  if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() != rhs.getIntValue())); break;
+        case ExprBinary.BINOP_BAND: if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue()))); break;
+        case ExprBinary.BINOP_BOR:  if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()))); break;
+        case ExprBinary.BINOP_BXOR:  if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() != rhs.getIntValue())); break;        
+        default: assert false : exp; break;
+        }
+		if(newv == null){
+			newv = new valueClass(lhs.toString() + " " + exp.getOpString() + " " + rhs.toString());
+		}
+		return newv;
+	}
+	
+	
+	protected Object ExprVectorBinaryHelper(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
+		List<valueClass> lhsList=null;
+		List<valueClass> rhsList=null;
+		if(lhs.isVect()){
+			lhsList = lhs.getVectValue();
+		}else{
+			int N = rhs.getVectValue().size();
+			lhsList = new ArrayList<valueClass>(N);			
+			for(int i=0; i<N; ++i){
+				lhsList.add(lhs);
+			}
+		}
+		if(rhs.isVect()){
+			rhsList = rhs.getVectValue();	
+		}else{
+			int N = lhsList.size();
+			rhsList = new ArrayList<valueClass>(N);			
+			for(int i=0; i<N; ++i){
+				rhsList.add(rhs);
+			}
+		}		
+		assert rhsList.size() == lhsList.size() : "NYI : List sizes " + rhsList.size() + " and " + lhsList.size();
+		
+		List<valueClass> result = new ArrayList<valueClass>(lhsList.size());	;
+		
+		switch (exp.getOp())
+        {        
+        case ExprBinary.BINOP_AND: 
+        case ExprBinary.BINOP_OR:          
+        case ExprBinary.BINOP_BAND: 
+        case ExprBinary.BINOP_BOR:  
+        case ExprBinary.BINOP_BXOR:{
+        	Iterator<valueClass> rhsIt = rhsList.iterator();
+        	Iterator<valueClass> lhsIt = lhsList.iterator();
+        	for(int i=0; rhsIt.hasNext(); ++i){
+        		result.add(this.doOps(exp, lhsIt.next(), rhsIt.next()));
+        	}      
+        } break;
+        
+        case ExprBinary.BINOP_LSHIFT:{
+        	Iterator<valueClass> lhsIt = lhsList.iterator();
+        	int N = lhsList.size();
+        	if(rhs.hasValue()){
+        		int shamt = rhs.getIntValue();        		
+        		int i;
+        		for(i=0; i<shamt; ++i){
+        			lhsIt.next();
+        		}
+        		for( ; lhsIt.hasNext(); ++i){
+        			result.add(lhsIt.next());
+        		}
+        		for(; i<N; ++i){
+        			result.add( new valueClass(0));
+        		}
+        	}else{
+        		for(int i=0; i<N; ++i){
+        			result.add(new valueClass());
+        		}
+        	}
+        } break;
+        
+        case ExprBinary.BINOP_RSHIFT:{
+        	Iterator<valueClass> lhsIt = lhsList.iterator();
+        	int N = lhsList.size();
+        	if(rhs.hasValue()){
+        		int shamt = rhs.getIntValue();        		
+        		int i;
+        		for(i=0; i<shamt; ++i){
+        			result.add( new valueClass(0));
+        		}
+        		for( ; i<N; ++i){
+        			result.add(lhsIt.next());
+        		}        		
+        	}else{
+        		for(int i=0; i<N; ++i){
+        			result.add(new valueClass());
+        		}
+        	}
+        } break;
+        
+        case ExprBinary.BINOP_ADD:{
+        	Iterator<valueClass> rhsIt = rhsList.iterator();
+        	Iterator<valueClass> lhsIt = lhsList.iterator();
+        	valueClass carry = new valueClass(0);
+        	for(int i=0; rhsIt.hasNext(); ++i){
+        		valueClass op1 = rhsIt.next();
+        		valueClass op2 = lhsIt.next();
+        		if(op1.hasValue() && op2.hasValue() && carry.hasValue()){
+        			int op1v = op1.getIntValue();
+        			int op2v = op2.getIntValue();
+        			int c = carry.getIntValue();
+        			result.add(new valueClass((op1v + op2v +c ) % 2));
+        			carry = new valueClass( (op1v + op2v +c ) >1 ? 1 : 0  );
+        		}else{
+        			carry = new valueClass();
+        			result.add(carry);        			
+        		}
+        	}
+        }break;
+        case ExprBinary.BINOP_SELECT:{
+        	return this.handleVectorBinarySelect(exp, left, lhsList, right, rhsList);
+        }
+        case ExprBinary.BINOP_EQ: 
+        case ExprBinary.BINOP_NEQ:
+        case ExprBinary.BINOP_LT: 
+        case ExprBinary.BINOP_LE: 
+        case ExprBinary.BINOP_GT: 
+        case ExprBinary.BINOP_GE: 
+        case ExprBinary.BINOP_SUB:
+        case ExprBinary.BINOP_MUL:
+        case ExprBinary.BINOP_DIV:
+        case ExprBinary.BINOP_MOD:
+        default: assert false : exp; break;
+        }
+		state.pushVStack(new valueClass(result));
+		if (left == exp.getLeft() && right == exp.getRight())
+            return exp;
+        else
+            return new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());		
+	}
+	
+	protected Object handleVectorBinarySelect(ExprBinary exp, Expression left, List<valueClass> lhsVect, Expression right, List<valueClass> rhsVect){
+		Iterator<valueClass> lhsIt = lhsVect.iterator();
+		Iterator<valueClass> rhsIt = rhsVect.iterator();
+		
         Expression rval = exp;
-        String op = null;
+        
+        boolean globalHasV = true;
+        List<valueClass> results = new ArrayList<valueClass>();
+        List<ExprConstInt> vals =   new ArrayList<ExprConstInt>();
+        for( ; lhsIt.hasNext(); ){
+        	valueClass lhs = lhsIt.next();
+        	valueClass rhs = rhsIt.next();
+        	boolean hasv = lhs.hasValue() && rhs.hasValue();                    
+    		if(hasv && lhs.getIntValue() == rhs.getIntValue()){
+        		results.add( lhs );
+        		if( this.isReplacer ){
+        			vals.add(new ExprConstInt(lhs.getIntValue()));
+        		}
+        	}else{
+        		hasv = false;
+        		globalHasV = false;
+        	}
+        }    
+		if(globalHasV){
+        	state.pushVStack(new valueClass(results));
+        	if( this.isReplacer ){
+        		rval = new ExprArrayInit(exp.getContext(), vals);
+        	}
+        }else{
+        	state.pushVStack(new valueClass(""));
+        	assert false : "NOT IMPLEMENTED";
+        }
+        return rval;		
+	}
+	
+	protected Object handleBinarySelect(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
+		String result;
+        Expression rval = exp;
+        String op = exp.getOpString();
         result = "(";
-        Expression left = (Expression) exp.getLeft().accept(this); 	        
-        valueClass lhs = state.popVStack();	        
-        Expression right = (Expression) exp.getRight().accept(this);
-        valueClass rhs = state.popVStack();
+        boolean hasv = lhs.hasValue() && rhs.hasValue();        
+        int newv=0;
+		if(hasv && lhs.getIntValue() == rhs.getIntValue()){
+    		newv = lhs.getIntValue();
+    	}else{
+    		hasv = false;
+    	}
+		if(hasv){
+        	state.pushVStack(new valueClass(newv));
+        	if( this.isReplacer ){
+        		rval = new ExprConstInt(newv);
+        	}
+        }else{
+        	result += lhs + " " + op + " ";
+            result += rhs + ")";
+        	state.pushVStack(new valueClass(result));
+        	if( this.isReplacer ){
+        		if(left != exp.getLeft() || right != exp.getRight()){
+        			rval = new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
+        		}        		
+        	}
+        }
+        return rval;
+	}
+	
+	
+	protected Object ExprBinaryHelper(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
+		String result;
+        Expression rval = exp;
+        String op = exp.getOpString();
+        result = "(";
+	        
+        if(lhs.isVect() || rhs.isVect()){
+        	return ExprVectorBinaryHelper(exp, left, lhs, right, rhs);
+        }
+        
         boolean hasv = lhs.hasValue() && rhs.hasValue();	        
         
         int newv=0;
+               
         
         switch (exp.getOp())
         {
-        case ExprBinary.BINOP_ADD: op = "+"; if(hasv) newv = lhs.getIntValue() + rhs.getIntValue(); break;
-        case ExprBinary.BINOP_SUB: op = "-"; if(hasv) newv = lhs.getIntValue() - rhs.getIntValue(); break;
-        case ExprBinary.BINOP_MUL: op = "*"; if(hasv) newv = lhs.getIntValue() * rhs.getIntValue(); break;
-        case ExprBinary.BINOP_DIV: op = "/"; if(hasv) newv = lhs.getIntValue() / rhs.getIntValue(); break;
-        case ExprBinary.BINOP_MOD: op = "%"; if(hasv) newv = lhs.getIntValue() % rhs.getIntValue(); break;
-        case ExprBinary.BINOP_AND: op = "&&"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
-        case ExprBinary.BINOP_OR:  op = "||"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue())); break;
-        case ExprBinary.BINOP_EQ:  op = "=="; if(hasv) newv = boolToInt(lhs.getIntValue() == rhs.getIntValue()); break;
-        case ExprBinary.BINOP_NEQ: op = "!="; if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
-        case ExprBinary.BINOP_LT:  op = "<"; if(hasv) newv = boolToInt(lhs.getIntValue() < rhs.getIntValue()); break;
-        case ExprBinary.BINOP_LE:  op = "<="; if(hasv) newv = boolToInt(lhs.getIntValue() <= rhs.getIntValue()); break;
-        case ExprBinary.BINOP_GT:  op = ">"; if(hasv) newv = boolToInt(lhs.getIntValue() > rhs.getIntValue()); break;
-        case ExprBinary.BINOP_GE:  op = ">="; if(hasv) newv = boolToInt(lhs.getIntValue() >= rhs.getIntValue()); break;
-        case ExprBinary.BINOP_BAND:op = "&"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
-        case ExprBinary.BINOP_BOR: op = "|"; if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()));; break;
-        case ExprBinary.BINOP_BXOR:op = "^"; if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
-        case ExprBinary.BINOP_SELECT:{
-        	op = "{|}";
-        	if(hasv && lhs.getIntValue() == rhs.getIntValue()){
-        		newv = lhs.getIntValue();
-        	}else{
-        		hasv = false;
-        	}
+        case ExprBinary.BINOP_ADD:  if(hasv) newv = lhs.getIntValue() + rhs.getIntValue(); break;
+        case ExprBinary.BINOP_SUB:  if(hasv) newv = lhs.getIntValue() - rhs.getIntValue(); break;
+        case ExprBinary.BINOP_MUL:  if(hasv) newv = lhs.getIntValue() * rhs.getIntValue(); break;
+        case ExprBinary.BINOP_DIV:  if(hasv) newv = lhs.getIntValue() / rhs.getIntValue(); break;
+        case ExprBinary.BINOP_MOD:  if(hasv) newv = lhs.getIntValue() % rhs.getIntValue(); break;
+        
+        case ExprBinary.BINOP_AND:  if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
+        case ExprBinary.BINOP_OR:   if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue())); break;
+        case ExprBinary.BINOP_EQ:   if(hasv) newv = boolToInt(lhs.getIntValue() == rhs.getIntValue()); break;
+        case ExprBinary.BINOP_NEQ:  if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
+        case ExprBinary.BINOP_LT:   if(hasv) newv = boolToInt(lhs.getIntValue() < rhs.getIntValue()); break;
+        case ExprBinary.BINOP_LE:   if(hasv) newv = boolToInt(lhs.getIntValue() <= rhs.getIntValue()); break;
+        case ExprBinary.BINOP_GT:   if(hasv) newv = boolToInt(lhs.getIntValue() > rhs.getIntValue()); break;
+        case ExprBinary.BINOP_GE:   if(hasv) newv = boolToInt(lhs.getIntValue() >= rhs.getIntValue()); break;
+        case ExprBinary.BINOP_BAND: if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
+        case ExprBinary.BINOP_BOR:  if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()));; break;
+        case ExprBinary.BINOP_BXOR: if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
+        case ExprBinary.BINOP_SELECT:{        	
+        	
         }
-        }	                
+        default: assert false : exp; break;
+        }               
         if(hasv){
         	state.pushVStack(new valueClass(newv));
         	if( this.isReplacer ){
@@ -505,14 +760,298 @@ public class PartialEvaluator extends FEReplacer {
         	state.pushVStack(new valueClass(result));
         	if( this.isReplacer ){
         		if(left != exp.getLeft() || right != exp.getRight()){
-        			rval = new ExprBinary(exp.getContext(), exp.getOp(), left, right);
+        			rval = new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
         		}        		
         	}
         }
         return rval;
+	}
+	
+	
+    public Object visitExprBinary(ExprBinary exp)
+    {
+       
+        Expression left = (Expression) exp.getLeft().accept(this); 	        
+        valueClass lhs = state.popVStack();	       
+        
+        Expression right = (Expression) exp.getRight().accept(this);
+        valueClass rhs = state.popVStack();
+        return this.ExprBinaryHelper(exp, left, lhs, right, rhs);
+        
     }
     public Object visitExprStar(ExprStar star) {    	
 		state.pushVStack(new valueClass());
 		return star;
 	}
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
+    	String result = "";
+        while(actualParamIterator.hasNext()){	        	
+        	Expression actualParam = (Expression)actualParamIterator.next();			        	
+        	Parameter formalParam = (Parameter) formalParamIterator.next();
+        	
+        	actualParam.accept(this);
+        	valueClass actualParamValue = state.popVStack();
+    		
+        	if( actualParamValue.isVect() ){	
+        		List<valueClass> lst= actualParamValue.getVectValue();
+        		assert formalParam.getType() instanceof TypeArray : "This should never happen!!";
+        		((TypeArray)formalParam.getType()).getLength().accept(this);
+        		valueClass sizeInt = state.popVStack();
+        		Assert(sizeInt.hasValue(), "I must know array bounds for parameters at compile time");
+        		int size = sizeInt.getIntValue();	        			        		
+        		
+        		if(lst.size()<size){
+        			while(lst.size()<size){
+        				lst.add(new valueClass(0));	        				
+        			}
+        			assert lst.size() == size :"Just to make sure";
+        		}
+        		
+        		String formalParamName = formalParam.getName();
+	        	state.varDeclare(formalParamName);
+	    		String lhsname = state.varGetLHSName(formalParamName);
+	    		
+	    		
+	    		Iterator<valueClass> actualParamValueIt = lst.iterator();		    		
+	    		int idx = 0;
+	    		state.makeArray(formalParamName, lst.size());
+	    		while( actualParamValueIt.hasNext() ){
+	    			valueClass currentVal =  actualParamValueIt.next();
+	    			String currentName = formalParamName + "_idx_" + idx;
+	    			state.varDeclare(currentName);
+		    		lhsname = state.varGetLHSName(currentName);			    		
+		    		if( !formalParam.isParameterOutput() ){
+			    		if(!currentVal.hasValue()){
+			    			result += lhsname + " = " + currentVal + ";\n";
+			    		}else{
+			    			state.setVarValue(currentName, currentVal.getIntValue());
+			    		}
+		    		}
+	    			++idx;
+	    		}
+	    		if(this.isReplacer && !formalParam.isParameterOutput()){
+		    		addStatement( new StmtVarDecl(actualParam.getContext(), formalParam.getType(),
+	                        formalParam.getName(), actualParam) );
+	    		}
+	    	}else{
+	    		String formalParamName = formalParam.getName();
+	        	state.varDeclare(formalParamName);
+	    		String lhsname = state.varGetLHSName(formalParamName);		    		
+	    		Assert(actualParamValue.hasValue() || !checkError, "I must be able to determine the values of the parameters at compile time.");
+	    		if( !formalParam.isParameterOutput() ){
+		    		if(!actualParamValue.hasValue()){
+		    			result += lhsname + " = " + actualParamValue + ";\n";
+		    			if(isReplacer){
+			    			addStatement( new StmtVarDecl(actualParam.getContext(), formalParam.getType(),
+			                        formalParam.getName(), actualParam) );
+		    			}
+		    		}else{
+		    			int value = actualParamValue.getIntValue();
+		    			state.setVarValue(formalParamName, value);
+		    			if(isReplacer){
+			    			addStatement( new StmtVarDecl(actualParam.getContext(), formalParam.getType(),
+			                        formalParam.getName(), new ExprConstInt(value)) );
+		    			}
+		    		}
+	    		}
+	    	}
+        }
+        return result;
+    }
+    
+    
+    String outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
+    	String result = "";
+        while(actualParamIterator.hasNext()){	        	
+        	Expression actualParam = (Expression)actualParamIterator.next();			        	
+        	Parameter formalParam = (Parameter) formalParamIterator.next();
+        	
+        	String apnm = (String) actualParam.accept( new LHSvisitor());	        	
+        	if( formalParam.isParameterOutput() ){
+        		String formalParamName = formalParam.getName();
+	        	int sz = state.checkArray(formalParamName);
+	        	if( sz > 0 ){
+	        		for(int i=0; i<sz; ++i){
+	        			String formalName = formalParamName + "_idx_" + i;		        			
+        				if(state.varHasValue(formalName)){
+        					state.setVarValue(apnm+"_idx_"+i, state.varValue(formalName));
+        				}else{
+        					String rhsname = state.varGetRHSName(formalName);
+			    			result += state.varGetLHSName(apnm+"_idx_"+i) + " = " + rhsname + ";\n";
+        				}				    		
+	        		}
+	        		if(this.isReplacer){
+	        			addStatement(new StmtAssign(actualParam.getContext(), actualParam, new ExprVar(actualParam.getContext(), formalParam.getName()) ));
+	        		}
+		    	}else{
+	    			if(state.varHasValue(formalParamName)){
+	    				int val = state.varValue(formalParamName);
+    					state.setVarValue(apnm, val);
+    					if(this.isReplacer){
+    	        			addStatement(new StmtAssign(actualParam.getContext(), actualParam, new ExprConstInt(actualParam.getContext(), val) ));
+    	        		}
+    				}else{
+    					String rhsname = state.varGetRHSName(formalParamName);
+		    			result += state.varGetLHSName(apnm) + " = " + rhsname + ";\n";
+		    			if(this.isReplacer){
+		        			addStatement(new StmtAssign(actualParam.getContext(), actualParam, new ExprVar(actualParam.getContext(), formalParam.getName()) ));
+		        		}
+    				}
+		    	}
+        	}
+        }
+        return result;
+    }
+    
+    
+    
+    public Object visitExprFunCall(ExprFunCall exp)
+    {	    	
+    	String result = " ";
+    	String name = exp.getName();
+    	// Local function?
+    	if (ss.getFuncNamed(name) != null) {        	
+    		state.pushLevel();        	
+    		Function fun = ss.getFuncNamed(name);	 
+    		{
+    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+    			Iterator formalParams = fun.getParams().iterator();
+    			result += inParameterSetter(formalParams, actualParams, false);
+    		}
+    		result += "// BEGIN CALL " + fun.getName() + "\n";
+    		Object obj = fun.getBody().accept(this);
+    		if(obj instanceof String)
+    			result += (String) obj; 
+    		result += "// END CALL " + fun.getName() + "\n";
+    		{
+    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+    			Iterator formalParams = fun.getParams().iterator();
+    			result += outParameterSetter(formalParams, actualParams, false);
+    		}
+    		state.popLevel();
+    	}else{ 
+    		// look for print and println statements; assume everything
+    		// else is a math function
+    		if (name.equals("print")) {
+    			System.err.println("The StreamBit compiler currently doesn't allow print statements in bit->bit filters.");
+    			return "";
+    		} else if (name.equals("println")) {
+    			result = "System.out.println(";
+    			System.err.println("The StreamBit compiler currently doesn't allow print statements in bit->bit filters.");
+    			return "";
+    		} else if (name.equals("super")) {
+    			result = "";
+    		} else if (name.equals("setDelay")) {
+    			result = "";
+    		} else if (name.startsWith("enqueue")) {	        	
+    			result = "";
+    		} else {
+    			Assert(false, "The streamBit compiler currently doesn't allow bit->bit filters to call other functions. You are trying to call the function" + name);
+    			// Math.sqrt will return a double, but we're only supporting
+    			// float's now, so add a cast to float.  Not sure if this is
+    			// the right thing to do for all math functions in all cases?
+    			result = "(float)Math." + name + "(";
+    		}
+    	}
+    	state.pushVStack( new valueClass(result) );
+    	return exp;    	
+    }
+
+	public String convertType(Type type) {
+	    // This is So Wrong in the greater scheme of things.
+	    if (type instanceof TypeArray)
+	    {
+	        TypeArray array = (TypeArray)type;
+	        String base = convertType(array.getBase());
+	        array.getLength().accept(this);
+	        int i = state.popVStack().getIntValue();	            
+	        return base + "[" + i + "]";
+	    }
+	    else if (type instanceof TypeStruct)
+	{
+	    return ((TypeStruct)type).getName();
+	}
+	else if (type instanceof TypeStructRef)
+	    {
+	    return ((TypeStructRef)type).getName();
+	    }
+	    else if (type instanceof TypePrimitive)
+	    {
+	        switch (((TypePrimitive)type).getType())
+	        {
+	        case TypePrimitive.TYPE_BOOLEAN: return "boolean";
+	        case TypePrimitive.TYPE_BIT: return "bit";
+	        case TypePrimitive.TYPE_INT: return "int";
+	        case TypePrimitive.TYPE_FLOAT: return "float";
+	        case TypePrimitive.TYPE_DOUBLE: return "double";
+	        case TypePrimitive.TYPE_COMPLEX: return "Complex";
+	        case TypePrimitive.TYPE_VOID: return "void";
+	        }
+	    }
+	    else if (type instanceof TypePortal)
+	    {
+	        return ((TypePortal)type).getName() + "Portal";
+	    }
+	    return null;
+	}
+
+	public String doParams(List params, String prefix) {
+	    String result = "(";
+	    boolean first = true;
+	    for (Iterator iter = params.iterator(); iter.hasNext(); )
+	    {
+	        Parameter param = (Parameter)iter.next();
+	        if (!first) result += ", ";
+	        
+	        if(param.isParameterOutput()) result += "! ";
+	        
+	        if (prefix != null) result += prefix + " ";
+	        result += convertType(param.getType());
+	        result += " ";
+	
+	        String lhs = param.getName();
+	        state.varDeclare(lhs);
+	        String lhsn = state.varGetLHSName(lhs);	            
+	        if( param.getType() instanceof TypeArray ){
+	        	TypeArray ta = (TypeArray) param.getType();
+	        	ta.getLength().accept(this);
+	        	valueClass tmp = state.popVStack();
+	        	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" );
+	        	state.makeArray(lhs, tmp.getIntValue());
+	        	for(int tt=0; tt<tmp.getIntValue(); ++tt){
+	        		String nnm = lhs + "_idx_" + tt;
+	        		state.varDeclare(nnm);
+	        		String tmplhsn = state.varGetLHSName(nnm);
+	        		if(param.isParameterOutput()){
+	        			state.varDeclare("_p_"+nnm);
+	            		String tmplhsn2 = state.varGetLHSName("_p_"+nnm);
+	            		result += tmplhsn2 + "  ";
+	        		}else{
+	        			result += tmplhsn + "  ";
+	        		}
+	        	}
+	        }else{
+	        	if(param.isParameterOutput()){
+	        		state.varDeclare("_p_"+lhs);
+	        		String tmplhsn2 = state.varGetLHSName("_p_"+lhs);
+	        		result += tmplhsn2;
+	        	}else{
+	        		result += lhsn;
+	        	}
+	        }
+	        first = false;
+	    }
+	    result += ")";
+	    return result;
+	}
+	
+	public Object visitStreamSpec(StreamSpec spec)
+    {
+		ss = spec;
+		return super.visitStreamSpec(spec);
+    }
+    
 }
