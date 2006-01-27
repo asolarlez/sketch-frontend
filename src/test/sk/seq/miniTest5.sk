@@ -1,9 +1,8 @@
-bit foo(bit[4] in){
-	return in[{*}];
+bit foo(bit[4] ina){
+	return ina[{*}];
 }
 
-bit reverseSketch(bit[4] in) implements reverse {	
-
+bit reverseSketch(bit[4] in) implements reverse {
 	return 	foo(in) ^ foo(in);
 }
 
