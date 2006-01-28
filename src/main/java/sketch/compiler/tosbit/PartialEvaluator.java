@@ -544,6 +544,15 @@ public class PartialEvaluator extends FEReplacer {
 				rhsList.add(rhs);
 			}
 		}		
+		
+		while(rhsList.size() < lhsList.size()){
+			rhsList.add(new valueClass(0));
+		}
+		
+		while(lhsList.size() < rhsList.size()){
+			lhsList.add(new valueClass(0));
+		}
+		
 		assert rhsList.size() == lhsList.size() : "NYI : List sizes " + rhsList.size() + " and " + lhsList.size();
 		
 		List<valueClass> result = new ArrayList<valueClass>(lhsList.size());	;
