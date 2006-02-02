@@ -295,7 +295,7 @@ public class EliminateStar extends PartialEvaluator {
 			newStatements = oldStatements;  
 			return;
 		}
-        if(i>0)
+        if((i-1)>0)
         	loopHelper(stmt, i-1, cond);
         state.popChangeTracker();
         Statement result = new StmtBlock(stmt.getContext(), newStatements);
@@ -339,7 +339,7 @@ public class EliminateStar extends PartialEvaluator {
 	
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
-		String result = "";	        
+		String result = "";
 		for (int i = 0; i < stmt.getNumVars(); i++)
 		{
 			String nm = stmt.getName(i);
@@ -365,7 +365,9 @@ public class EliminateStar extends PartialEvaluator {
 							String nnm = nm + "_idx_" + tt;
 							state.varDeclare(nnm);
 							state.varGetLHSName(nnm);
-							state.setVarValue(nnm, ival.getIntValue());
+							if(ival.hasValue()){
+								state.setVarValue(nnm, ival.getIntValue());
+							}
 							++tt;
 						}
 						continue;
