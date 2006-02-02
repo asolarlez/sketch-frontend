@@ -382,6 +382,20 @@ miniTest3.sk.cc:14: i1 = x;
 miniTest3.sk.cc:15: _out_0 = i1;
 miniTest3.sk.cc:17:void simpler(int[] in, int[] _out_0) {
 miniTest3.sk.cc:18: _out_0 = !in[0];
+miniTest30.sk.cc:5:void foo(int& i, int& j, int& _out_0) {
+miniTest30.sk.cc:6: _out_0 = ((i * 2) + j);
+miniTest30.sk.cc:8:void miniTest(int[] in, int& _out_0) {
+miniTest30.sk.cc:9: int i;
+miniTest30.sk.cc:10: i = 0;
+miniTest30.sk.cc:11: int j;
+miniTest30.sk.cc:12: j = 1;
+miniTest30.sk.cc:13: int _frv_0;
+miniTest30.sk.cc:14: foo(j, i, _frv_0);
+miniTest30.sk.cc:15: _out_0 = in[_frv_0];
+miniTest30.sk.cc:17:void miniTestSK(int[] in, int& _out_0) {
+miniTest30.sk.cc:18: {
+miniTest30.sk.cc:19: _out_0 = in[2];
+miniTest30.sk.cc:20: };
 miniTest4.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
 miniTest4.sk.cc:6: {
 miniTest4.sk.cc:7: int tmp[4];
