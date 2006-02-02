@@ -797,12 +797,24 @@ public class PartialEvaluator extends FEReplacer {
     /////////////////////////////////////////////////////
     String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
     	String result = "";
-        while(actualParamIterator.hasNext()){	        	
-        	Expression actualParam = (Expression)actualParamIterator.next();			        	
-        	Parameter formalParam = (Parameter) formalParamIterator.next();
-        	
-        	actualParam.accept(this);
+    	List<Expression> actualsList = new ArrayList<Expression>();
+    	List<valueClass> actualsValList = new ArrayList<valueClass>();
+    	while(actualParamIterator.hasNext()){
+    		Expression actualParam = (Expression)actualParamIterator.next();
+    		actualParam.accept(this);
         	valueClass actualParamValue = state.popVStack();
+        	actualsList.add(actualParam);
+        	actualsValList.add(actualParamValue);
+    	}
+    	
+    	Iterator<Expression> actualIterator = actualsList.iterator();
+    	Iterator<valueClass> actualValIterator = actualsValList.iterator();
+    	
+        while(actualIterator.hasNext()){	        	
+        	Expression actualParam = (Expression)actualIterator.next();			        	
+        	Parameter formalParam = (Parameter) formalParamIterator.next();
+        	        	
+        	valueClass actualParamValue = actualValIterator.next();
     		
         	if( actualParamValue.isVect() ){	
         		List<valueClass> lst= actualParamValue.getVectValue();
