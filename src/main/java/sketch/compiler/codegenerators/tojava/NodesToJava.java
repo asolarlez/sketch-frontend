@@ -49,7 +49,7 @@ public class NodesToJava implements FEVisitor
     // A string consisting of an even number of spaces.
     protected String indent;
     private boolean libraryFormat;
-    private TempVarGen varGen;
+    protected TempVarGen varGen;
     
     public NodesToJava(boolean libraryFormat, TempVarGen varGen)
     {
