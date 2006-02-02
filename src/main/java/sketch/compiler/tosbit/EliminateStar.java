@@ -6,12 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
@@ -163,15 +163,14 @@ public class EliminateStar extends PartialEvaluator {
 				++idx;
 			}			
 		}else if(vrhsVal.hasValue()){
-			state.setVarValue(lhs, vrhsVal.getIntValue());	
-			return null;
+			assert hv : "Just making sure";
+			state.setVarValue(lhs, vrhsVal.getIntValue());				
 		}
 		}
 		// Assume both sides are the right type.
-		if(hv) 
-			return null;
-		else
+		if(!hv){
 			state.unsetVarValue(lhs);
+		}
 		if (left == stmt.getLHS() && right == stmt.getRHS()){
             return stmt;
 		}
@@ -297,7 +296,8 @@ public class EliminateStar extends PartialEvaluator {
 		}
         if((i-1)>0)
         	loopHelper(stmt, i-1, cond);
-        state.popChangeTracker();
+        ChangeStack ms1 = state.popChangeTracker();
+        state.procChangeTrackers(ms1, " ");
         Statement result = new StmtBlock(stmt.getContext(), newStatements);
         ifStmt = new StmtIfThen(stmt.getContext(), 
         		new ExprBinary(stmt.getContext(), ExprBinary.BINOP_GT, cond, new ExprConstInt(LUNROLL - i) ), result, null);
@@ -317,8 +317,7 @@ public class EliminateStar extends PartialEvaluator {
 			String nvar = state.varDeclare();
 			state.varGetLHSName(nvar);
 	        this.addStatement( new StmtVarDecl(stmt.getContext(),TypePrimitive.inttype, nvar, newIter));	        
-			loopHelper(stmt, LUNROLL, new ExprVar(stmt.getContext(), nvar) );
-			return null;
+			loopHelper(stmt, LUNROLL, new ExprVar(stmt.getContext(), nvar) );			
 		}else{			
 			for(int i=0; i<vcond.getIntValue(); ++i){
 				doStatement( (Statement)stmt.getBody().accept(this) );				
@@ -370,7 +369,7 @@ public class EliminateStar extends PartialEvaluator {
 							}
 							++tt;
 						}
-						continue;
+						//continue;
 					}else{
 						Integer val = null;
 						if(vclass.hasValue())
@@ -383,7 +382,7 @@ public class EliminateStar extends PartialEvaluator {
 								state.setVarValue(tmplhsn, val.intValue());
 							}
 						}	
-						if(val != null) continue;
+						//if(val != null) continue;
 					}
 					addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
 							nm, init) );
@@ -403,6 +402,7 @@ public class EliminateStar extends PartialEvaluator {
 					String asgn = lhsn + " = " + tmp + "; \n";		                
 					if(tmp.hasValue()){
 						state.setVarValue(nm, tmp.getIntValue());
+						addStatement( new StmtVarDecl(stmt.getContext(), vt, nm, new ExprConstInt(tmp.getIntValue())) );
 					}else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
 						result += asgn;
 						addStatement( new StmtVarDecl(stmt.getContext(), vt, nm, init) );

@@ -7,6 +7,7 @@ import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
@@ -119,5 +120,20 @@ public class NodesToC extends NodesToJava {
     }
 	
 	
+    public Object visitStmtLoop(StmtLoop stmt)
+    {
+    	
+    	String result ;
+    	String itNum = this.varGen.nextVar();
+    	String var = this.varGen.nextVar();
+    	result = itNum + " = " + stmt.getIter().accept(this) + "; \n";
+    	result += indent + "for (int " + var + " = 0; ";
+    	result += var + " < " +  itNum + "; ++" + var;         
+        result += ") ";
+        result += (String)stmt.getBody().accept(this);
+        return result;
+    }
 
+	
+	
 }
