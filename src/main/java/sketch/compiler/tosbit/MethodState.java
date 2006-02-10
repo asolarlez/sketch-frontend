@@ -49,7 +49,7 @@ public class MethodState{
      */
     public void varDeclare(String var){
     	// System.out.println("DECLARED " + var);
-		
+		assert var != null : "NOO!!";
 		varTranslator.varDeclare(var);
     }
     
@@ -179,6 +179,7 @@ public class MethodState{
 	}
 	
 	public void unsetVarValue(String var){
+		assert var != null : "NOO!!";
 		var = this.transName(var);
 		UTunsetVarValue(var);
 	}
@@ -284,6 +285,7 @@ public class MethodState{
 	
 	
 	public int varValue(String var){
+		assert var != null : "NOO!!";
 		var = this.transName(var);
 		return UTvarValue(var);		
 	}
@@ -353,6 +355,7 @@ public class MethodState{
 	}
 	
 	public String varGetLHSName(String var){
+		assert var != null : "NOO!!";
 		var = this.transName(var);
 		return UTvarGetLHSName(var);
 	}
