@@ -1,0 +1,14 @@
+bit miniTest(bit[4] in) {
+	return in[!in[0]];
+}
+
+
+bit miniTestSK (bit[4] in) implements miniTest{
+	bit x;
+	if(in[0]){
+		x = in[??] {|}  ??;
+	}else{
+		x = in[??] {|} ??;
+	}
+    return in[x];
+}

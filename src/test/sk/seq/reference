@@ -396,6 +396,88 @@ miniTest30.sk.cc:17:void miniTestSK(int[] in, int& _out_0) {
 miniTest30.sk.cc:18: {
 miniTest30.sk.cc:19: _out_0 = in[2];
 miniTest30.sk.cc:20: };
+miniTest31.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest31.sk.cc:6: int x;
+miniTest31.sk.cc:7: if (!in[0]) {
+miniTest31.sk.cc:8: {
+miniTest31.sk.cc:9: x = 1;
+miniTest31.sk.cc:10: };
+miniTest31.sk.cc:11: } else {
+miniTest31.sk.cc:12: {
+miniTest31.sk.cc:13: x = in[2];
+miniTest31.sk.cc:14: };
+miniTest31.sk.cc:15: }
+miniTest31.sk.cc:16: _out_0 = in[x];
+miniTest31.sk.cc:18:void miniTestSK(int[] in, int& _out_0) {
+miniTest31.sk.cc:19: {
+miniTest31.sk.cc:20: int x;
+miniTest31.sk.cc:21: if (in[0]) {
+miniTest31.sk.cc:22: {
+miniTest31.sk.cc:23: x = in[2];
+miniTest31.sk.cc:24: };
+miniTest31.sk.cc:25: } else {
+miniTest31.sk.cc:26: {
+miniTest31.sk.cc:27: x = 1;
+miniTest31.sk.cc:28: };
+miniTest31.sk.cc:29: }
+miniTest31.sk.cc:30: _out_0 = in[x];
+miniTest31.sk.cc:31: };
+miniTest32.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest32.sk.cc:6: _out_0 = in[!in[0]];
+miniTest32.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest32.sk.cc:9: {
+miniTest32.sk.cc:10: int x;
+miniTest32.sk.cc:11: if (in[0]) {
+miniTest32.sk.cc:12: {
+miniTest32.sk.cc:13: x = in[1];
+miniTest32.sk.cc:14: };
+miniTest32.sk.cc:15: } else {
+miniTest32.sk.cc:16: {
+miniTest32.sk.cc:17: x = 1;
+miniTest32.sk.cc:18: };
+miniTest32.sk.cc:19: }
+miniTest32.sk.cc:20: _out_0 = in[x];
+miniTest32.sk.cc:21: };
+miniTest33.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest33.sk.cc:6: in[2] = 1;
+miniTest33.sk.cc:7: _out_0 = in;
+miniTest33.sk.cc:9:void miniTestSK(int[] in, int[] _out_0) {
+miniTest33.sk.cc:10: {
+miniTest33.sk.cc:11: in[2] = 1;
+miniTest33.sk.cc:12: _out_0 = in;
+miniTest33.sk.cc:13: };
+miniTest34.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest34.sk.cc:6: _out_0 = in[2];
+miniTest34.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest34.sk.cc:9: {
+miniTest34.sk.cc:10: int fu[3] = {0,1,3};
+miniTest34.sk.cc:11: fu[2] = 2;
+miniTest34.sk.cc:12: _out_0 = in[fu[2]];
+miniTest34.sk.cc:13: };
+miniTest35.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest35.sk.cc:6: _out_0 = in[2];
+miniTest35.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest35.sk.cc:9: {
+miniTest35.sk.cc:10: int fu[3] = {0,1,3};
+miniTest35.sk.cc:11: fu[2] = 2;
+miniTest35.sk.cc:12: _out_0 = in[fu[2]];
+miniTest35.sk.cc:13: };
+miniTest36.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest36.sk.cc:6: _out_0 = in[2];
+miniTest36.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest36.sk.cc:9: {
+miniTest36.sk.cc:10: int fu[3] = {0,1,3};
+miniTest36.sk.cc:11: fu[2] = 2;
+miniTest36.sk.cc:12: _out_0 = in[fu[2]];
+miniTest36.sk.cc:13: };
+miniTest37.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest37.sk.cc:6: _out_0 = in[2];
+miniTest37.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest37.sk.cc:9: {
+miniTest37.sk.cc:10: int fu[2] = {0,1};
+miniTest37.sk.cc:11: fu[0] = 2;
+miniTest37.sk.cc:12: _out_0 = in[fu[0]];
+miniTest37.sk.cc:13: };
 miniTest4.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
 miniTest4.sk.cc:6: {
 miniTest4.sk.cc:7: int tmp[4];
