@@ -1,0 +1,10 @@
+bit miniTest(bit[4] in) {
+	return in[2];
+}
+
+
+bit miniTestSK (bit[4] in) implements miniTest{
+	int[3] fu = {0, 1, 3};
+	fu[??] = ??;
+    return in[fu[2]];
+}
