@@ -105,13 +105,19 @@ public class EliminateStar extends PartialEvaluator {
 		LHSvisitor lhsvisit = new LHSvisitor();
 		String lhs = (String)stmt.getLHS().accept( lhsvisit);
 		Expression lvalue = lhsvisit.lhsExp;
-		state.varGetLHSName(lhs);
+		
+		
+		int arrSize = -1;
+		boolean isArr = false;		
+		if(! lhsvisit.isNDArracc()){
+			state.varGetLHSName(lhs);
+			arrSize = state.checkArray(lhs);
+			isArr = arrSize > 0;
+		}
 		
 		
 		currentSize = null;
 		
-		int arrSize = state.checkArray(lhs);
-		boolean isArr = arrSize > 0;	        
 		
 		boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue() && !lhsvisit.isNDArracc();
 		

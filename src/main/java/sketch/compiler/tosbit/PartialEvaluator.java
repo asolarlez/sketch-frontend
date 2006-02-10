@@ -108,10 +108,11 @@ public class PartialEvaluator extends FEReplacer {
  	    	if( ofst.hasValue()){
  		    	int ofstV = ofst.getIntValue();
  		    	int size = state.checkArray(vname);
- 		    	if(ofstV >= size || ofstV < 0){	 		    		
- 		    		Assert(false, "ARRAY OUT OF BOUNDS !(0<=" + ofstV + " < " + size);
- 		    		return null;
- 		    	}
+ 		    	if(ofstV >= size || ofstV < 0){
+ 		    		if(!exp.isUnchecked())throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
+ 					state.pushVStack( new valueClass(0) );
+ 					return null;
+ 		    	} 		    	
  		    	vname = vname + "_idx_" + ofstV;
  		    	String rval = vname;
  		    	if(isReplacer){

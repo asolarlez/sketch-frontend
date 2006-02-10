@@ -637,12 +637,18 @@ public class NodesToSBit extends PartialEvaluator{
 				stmt.getLHS().accept(this);
 				vlhsVal = state.popVStack();
 			}
-				        
 	        
-	        String lhsnm = state.varGetLHSName(lhs);
+	        String lhsnm = null;
 	        
-	        int arrSize = state.checkArray(lhs);
-	        boolean isArr = arrSize > 0;	        
+	        
+	        boolean isArr = false;
+	        int arrSize = -1;
+	        if(! lhsvisitor.isNDArracc()){
+	        	lhsnm = state.varGetLHSName(lhs);
+	        	arrSize = state.checkArray(lhs);
+		        isArr = arrSize > 0;	
+	        }
+	                
 	        
 	        boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue() && !lhsvisitor.isNDArracc();
 	        
