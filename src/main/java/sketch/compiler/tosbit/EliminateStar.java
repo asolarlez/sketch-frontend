@@ -98,8 +98,8 @@ public class EliminateStar extends PartialEvaluator {
 		Expression left = stmt.getLHS(); 
 		valueClass vlhsVal = null;
 		if(stmt.getOp() != 0){
-		left =(Expression)stmt.getLHS().accept(this);
-		vlhsVal = state.popVStack();
+			left =(Expression)stmt.getLHS().accept(this);
+			vlhsVal = state.popVStack();
 		}
 		
 		LHSvisitor lhsvisit = new LHSvisitor();
@@ -113,7 +113,7 @@ public class EliminateStar extends PartialEvaluator {
 		int arrSize = state.checkArray(lhs);
 		boolean isArr = arrSize > 0;	        
 		
-		boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue();
+		boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue() && !lhsvisit.isNDArracc();
 		
 		switch(stmt.getOp())
 		{
@@ -162,16 +162,19 @@ public class EliminateStar extends PartialEvaluator {
 				}
 				++idx;
 			}			
-		}else if(vrhsVal.hasValue()){
-			assert hv : "Just making sure";
-			state.setVarValue(lhs, vrhsVal.getIntValue());				
+		}else if(hv){			
+			state.setVarValue(lhs, vrhsVal.getIntValue());
 		}
 		}
 		// Assume both sides are the right type.
 		if(!hv){
-			state.unsetVarValue(lhs);
+			if(lhsvisit.isNDArracc()){
+				lhsvisit.unset();
+			}else{
+				state.unsetVarValue(lhs);
+			}
 		}
-		if (left == stmt.getLHS() && right == stmt.getRHS()){
+		if (right == stmt.getRHS() && left == stmt.getLHS() && lvalue == stmt.getLHS()){
             return stmt;
 		}
 		if(stmt.getOp() == 0){
@@ -246,7 +249,7 @@ public class EliminateStar extends PartialEvaluator {
 		Expression newCond = (Expression) stmt.getCond().accept(this);
 		valueClass vcond = state.popVStack();
 		if(vcond.hasValue()){
-			if(vcond.getIntValue() > 0){
+			if(vcond.getIntValue() != 0){
 				Statement cons = (Statement)stmt.getCons().accept(this);
 				if(cons != null)
 					addStatement(cons);	        		

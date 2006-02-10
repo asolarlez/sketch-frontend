@@ -628,7 +628,8 @@ public class NodesToSBit extends PartialEvaluator{
 	        	rhsLst= vrhsVal.getVectValue();
 	        }
 	        
-	        String lhs = (String)stmt.getLHS().accept( new LHSvisitor() );
+	        LHSvisitor lhsvisitor = new LHSvisitor();
+	        String lhs = (String)stmt.getLHS().accept( lhsvisitor );
 	        
 	        stmt.getLHS(); 
 			valueClass vlhsVal = null;
@@ -643,7 +644,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        int arrSize = state.checkArray(lhs);
 	        boolean isArr = arrSize > 0;	        
 	        
-	        boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue();
+	        boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue() && !lhsvisitor.isNDArracc();
 	        
 	        switch(stmt.getOp())
 	        {
@@ -687,7 +688,7 @@ public class NodesToSBit extends PartialEvaluator{
 		    			++idx;
 		    		}
 		    		return "";
-		    	}else if(vrhsVal.hasValue()){
+		    	}else if(hv){
 	        		state.setVarValue(lhs, vrhsVal.getIntValue());	
 	        		return "";
 	        	}
@@ -695,8 +696,14 @@ public class NodesToSBit extends PartialEvaluator{
 	        // Assume both sides are the right type.
 	        if(hv) 
 	        	return "";
-	        else
-	        	state.unsetVarValue(lhs);
+	        else{
+	        	if(lhsvisitor.isNDArracc()){
+	        		lhsnm = lhsvisitor.getLHSString();
+	        		lhsvisitor.unset();
+	        	}else{
+	        		state.unsetVarValue(lhs);
+	        	}
+	        }
 	        return lhsnm + op + vrhsVal;
 	    }
 

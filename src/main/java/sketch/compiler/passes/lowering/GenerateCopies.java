@@ -598,12 +598,13 @@ public class GenerateCopies extends SymbolTableVisitor
        }
        if(lhsExp instanceof ExprArrayRange){
           	lhsExp = ((ExprArrayRange)stmt.getLHS()).getBase();
-          }
+       }
        if(lhsExp instanceof ExprVar){
        	lhsn = ( (ExprVar) lhsExp).getName();
-       }                    
+       }
        Type ftype = matchTypes(stmt, lhsn, lt, rt);
        upgradeStarToInt(stmt.getRHS(), ftype);
+       upgradeStarToInt(stmt.getLHS(), ftype);
         // recurse:
         Statement result = (Statement)super.visitStmtAssign(stmt);
         if (result instanceof StmtAssign) // it probably is:

@@ -44,7 +44,7 @@ import streamit.frontend.nodes.TypeStructRef;
 public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
 	protected MethodState state;
-	public final boolean isReplacer;
+	public final boolean isReplacer;	
 
 	public class CheckSize extends FENullVisitor{
 		int size = -1;
@@ -68,12 +68,43 @@ public class PartialEvaluator extends FEReplacer {
 	
     public class LHSvisitor extends FENullVisitor{
     	public Expression lhsExp=null;
+    	private List<String> lhsVals=null;
+    	private List<String> oldVals=null;
+    	private List<String> names=null;
+    	public String offset = null;
+    	public String base = null;
+    	private boolean NDArracc=false;
+    	
+    	public boolean isNDArracc(){
+    		return NDArracc;
+    	}
+    	
+    	public void unset(){
+    		for(Iterator<String> it = names.iterator(); it.hasNext(); ){
+    		    state.unsetVarValue(it.next());
+    		}
+    	}
+    	
+    	public String getLHSString(){
+    		assert NDArracc;
+    		String rval = "$";    		
+    		for(Iterator<String> it = lhsVals.iterator(); it.hasNext(); ){
+    			rval += " " + it.next();    			
+    		}
+    		rval += "$$";
+    		for(Iterator<String> it = oldVals.iterator(); it.hasNext(); ){
+    			rval += " " + it.next();    			
+    		}
+    		rval += "$[" + offset + "]";    		
+    		return rval;    		
+    	}
     	
     	public Object visitExprArray(ExprArray exp)
  	    { 	    	
  	    	String vname =  (String) exp.getBase().accept(this); 
  	    	Expression offsetE = (Expression) exp.getOffset().accept(PartialEvaluator.this);
  	    	valueClass ofst = state.popVStack();
+ 	    	offset = ofst.toString();
  	    	if( ofst.hasValue()){
  		    	int ofstV = ofst.getIntValue();
  		    	int size = state.checkArray(vname);
@@ -93,8 +124,27 @@ public class PartialEvaluator extends FEReplacer {
  		    		lhsExp = exp;
  		    	}
  		    	return rval;
- 	    	}else{
- 	    		Assert( false, "Array indexing of non-deterministic value is only allowed in the RHS of an assignment; sorrry." );	 	    	
+ 	    	}else{ 	    		
+ 	    		int size = state.checkArray(vname);
+ 	    		lhsVals = new ArrayList<String>(size);
+ 	    		oldVals = new ArrayList<String>(size);
+ 	    		names = new ArrayList<String>(size);
+ 	    		for(int i=0; i<size; ++i){
+ 	    			String nm = vname + "_idx_" + i;
+ 	    			oldVals.add(state.varGetRHSName(nm));
+ 	    			lhsVals.add(state.varGetLHSName(nm));
+ 	    			names.add(nm);
+ 	    		}
+ 	    		NDArracc = true;
+ 	    		if(isReplacer){
+ 		    		if(offsetE != exp.getOffset()){
+ 		    			lhsExp = new ExprArray(exp.getContext(), lhsExp, offsetE);
+ 		    		}else{
+ 		    			lhsExp = exp;
+ 		    		}
+ 		    	}else{
+ 		    		lhsExp = exp;
+ 		    	}
  	    	}
  	    	return null;
  	    }
@@ -754,7 +804,7 @@ public class PartialEvaluator extends FEReplacer {
         case ExprBinary.BINOP_BOR:  if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()));; break;
         case ExprBinary.BINOP_BXOR: if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
         case ExprBinary.BINOP_SELECT:{        	
-        	
+        	return handleBinarySelect(exp, left, lhs, right, rhs);
         }
         default: assert false : exp; break;
         }               
