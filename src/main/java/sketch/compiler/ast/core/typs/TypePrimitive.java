@@ -28,23 +28,27 @@ public class TypePrimitive extends Type
     /** Type constant for bit types. */
     public static final int TYPE_BIT = 1;
     /** Type constant for int types. */
-    public static final int TYPE_INT = 2;
+    public static final int TYPE_INT8 = 2;
+    public static final int TYPE_INT16 = 3;
+    public static final int TYPE_INT32 = 4;
+    public static final int TYPE_INT64 = 5;
+    public static final int TYPE_INT = TYPE_INT32;
     /** Type constant for float types. */
-    public static final int TYPE_FLOAT = 3;
+    public static final int TYPE_FLOAT = 6;
     /** Type constant for double types; unused in StreamIt. */
-    public static final int TYPE_DOUBLE = 4;
+    public static final int TYPE_DOUBLE = 7;
     /** Type constant for complex primitive types. */
-    public static final int TYPE_COMPLEX = 5;
+    public static final int TYPE_COMPLEX = 8;
     /** Type constant for void types. */
-    public static final int TYPE_VOID = 6;
+    public static final int TYPE_VOID = 9;
     /** Type constant for boolean types. */
-    public static final int TYPE_BOOLEAN = 7;
+    public static final int TYPE_BOOLEAN = 10;
     /** Type constant for random boolean types. */
-    public static final int TYPE_NDBOOLEAN = 8;
+    public static final int TYPE_NDBOOLEAN = 11;
     /** Type constant for random int types. */
-    public static final int TYPE_NDINT = 9;
+    public static final int TYPE_NDINT = 12;
     /** Type constant for random bit types. */
-    public static final int TYPE_NDBIT = 10;
+    public static final int TYPE_NDBIT = 13;
     
     /** Type object for boolean types. */
     public static final TypePrimitive booltype =
@@ -53,6 +57,10 @@ public class TypePrimitive extends Type
     public static final TypePrimitive bittype = new TypePrimitive(TYPE_BIT);
     /** Type object for int types. */
     public static final TypePrimitive inttype = new TypePrimitive(TYPE_INT);
+    public static final TypePrimitive int8type = new TypePrimitive(TYPE_INT8);
+    public static final TypePrimitive int16type = new TypePrimitive(TYPE_INT16);
+    public static final TypePrimitive int32type = new TypePrimitive(TYPE_INT32);
+    public static final TypePrimitive int64type = new TypePrimitive(TYPE_INT64);
     /** Type object for float types. */
     public static final TypePrimitive floattype =
         new TypePrimitive(TYPE_FLOAT);
