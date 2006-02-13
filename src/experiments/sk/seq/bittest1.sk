@@ -1,0 +1,7 @@
+int W=32;
+
+bit[W] plusOne(bit[W] in) {
+	in[W-1]=0;
+	bit[W] one=0; one[0]=1;
+	return in;//+one;
+}
