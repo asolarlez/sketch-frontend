@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArrayRange.*;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link
@@ -73,13 +74,13 @@ public class NodesToJava implements FEVisitor
 
     // Convert a Type to a String.  If visitors weren't so generally
     // useless for other operations involving Types, we'd use one here.
-    public static String convertType(Type type)
+    protected static String _convertType(Type type)
     {
         // This is So Wrong in the greater scheme of things.
         if (type instanceof TypeArray)
         {
             TypeArray array = (TypeArray)type;
-            String base = convertType(array.getBase());
+            String base = _convertType(array.getBase());
             return base + "[]";
         }
         else if (type instanceof TypeStruct)
@@ -117,6 +118,10 @@ public class NodesToJava implements FEVisitor
         }
     }
 
+    public String convertType(Type type) {
+    	return _convertType(type);
+    }
+    
     // Do the same conversion, but including array dimensions.
     public String convertTypeFull(Type type)
     {
@@ -224,7 +229,7 @@ public class NodesToJava implements FEVisitor
         }
         else if (name.startsWith("input"))
         {
-            prefix = "(" + convertType(type) + ")";
+            prefix = "(" + _convertType(type) + ")";
         }
         return prefix + name + suffix;
     }
@@ -1226,12 +1231,25 @@ public class NodesToJava implements FEVisitor
             return "";
         }
     }
+    
 	public Object visitExprStar(ExprStar star) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
+	
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		// TODO Auto-generated method stub
-		return null;
+		Expression base=exp.getBase();
+		List ranges=exp.getMembers();
+		if(ranges.size()==0) throw new IllegalStateException();
+		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
+		Object o=ranges.get(0);
+		if(o instanceof RangeLen) 
+		{
+			RangeLen range=(RangeLen) o;
+			if(range.len==1) {
+				return base.accept(this)+"["+range.start.accept(this)+"]"; 
+			}
+		}
+		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
 	}
+	
 }

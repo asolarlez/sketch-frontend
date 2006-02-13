@@ -137,7 +137,7 @@ public class NodesToNative extends  NodesToJava
 
     // Convert a Type to a String.  If visitors weren't so generally
     // useless for other operations involving Types, we'd use one here.
-    public static String convertType(Type type)
+    public String convertType(Type type)
     {
         // This is So Wrong in the greater scheme of things.
         if (type instanceof TypeArray)
@@ -274,7 +274,7 @@ public class NodesToNative extends  NodesToJava
         }
         else if (name.startsWith("input"))
         {
-            prefix = "(" + convertType(type) + ")";
+            prefix = "(" + _convertType(type) + ")";
         }
         return prefix + name + suffix;
     }
