@@ -357,9 +357,12 @@ public class NodesToSBit extends PartialEvaluator{
 	        	result += "INIT()";
 	        	//result += doParams(func.getParams(), "") + "\n";
 	        	result += "{\n";
-	        	this.state.pushLevel();       		        	
-	        	result += (String)func.getBody().accept(this);
-	        	this.state.popLevel();
+	        	this.state.pushLevel();  
+	        	try{
+	        		result += (String)func.getBody().accept(this);
+	        	}finally{
+	        		this.state.popLevel();
+	        	}
 	        	Iterator it = this.additInit.iterator();
 	        	while(it.hasNext()){
 	        		Statement st = (Statement) it.next();
@@ -372,25 +375,28 @@ public class NodesToSBit extends PartialEvaluator{
 	        	Assert( func.getParams().size() == 0 , "");	        	
 	        	result += "{\n";
 	        	this.state.pushLevel();
-	        	initializeWork();
-	        	Expression pushr = ((FuncWork)func).getPopRate();
-	        	Expression popr = ((FuncWork)func).getPushRate();
-	        	if(pushr != null){
-	        		pushr.accept(this);
-	        		result += "input_RATE = " + state.popVStack() + ";\n";
-	        	}else{
-	        		result += "input_RATE = 0;\n";
+	        	try{
+		        	initializeWork();
+		        	Expression pushr = ((FuncWork)func).getPopRate();
+		        	Expression popr = ((FuncWork)func).getPushRate();
+		        	if(pushr != null){
+		        		pushr.accept(this);
+		        		result += "input_RATE = " + state.popVStack() + ";\n";
+		        	}else{
+		        		result += "input_RATE = 0;\n";
+		        	}
+		        	if(popr != null){
+		        		popr.accept(this);
+		        		result += "output_RATE = " + state.popVStack() + ";\n";
+		        	}else{
+		        		result += "output_RATE = 0;\n";	        	
+		        	}	        	
+		        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func.getContext() );
+		        	result += (String)func.getBody().accept(this);
+		        	result += finalizeWork();
+	        	}finally{
+	        		this.state.popLevel();
 	        	}
-	        	if(popr != null){
-	        		popr.accept(this);
-	        		result += "output_RATE = " + state.popVStack() + ";\n";
-	        	}else{
-	        		result += "output_RATE = 0;\n";	        	
-	        	}	        	
-	        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func.getContext() );
-	        	result += (String)func.getBody().accept(this);
-	        	result += finalizeWork();
-	        	this.state.popLevel();
 	        	result += "}\n";
 	        }else{
 	        	result += func.getName();
@@ -399,9 +405,12 @@ public class NodesToSBit extends PartialEvaluator{
 	        	}
 	        	result += doParams(func.getParams(), "") + "\n";
 	        	result += "{\n";
-	        	this.state.pushLevel();       		        	
-	        	result += (String)func.getBody().accept(this);
-	        	this.state.popLevel();
+	        	this.state.pushLevel();  
+	        	try{
+	        		result += (String)func.getBody().accept(this);
+	        	}finally{
+	        		this.state.popLevel();
+	        	}
 	        	result += postDoParams(func.getParams());
 	        	Iterator it = this.additInit.iterator();
 	        	while(it.hasNext()){
@@ -522,18 +531,21 @@ public class NodesToSBit extends PartialEvaluator{
 			        funsWParams.put(fullnm, sp);
 			        Assert( sp != null, nm + "Is used but has not been declared!!");
 			        state.pushLevel();
-			        Function finit = sp.getFuncNamed("init");
-			        Iterator formalParamIterator = finit.getParams().iterator();
-			        Iterator actualParamIterator = creator.getParams().iterator();
-			        Assert(finit.getParams().size() == creator.getParams().size() , nm + " The number of formal parameters doesn't match the number of actual parameters!!");
-			        
-			        
-			        inParameterSetter(formalParamIterator,actualParamIterator, true);
-			        
-			        String tmp = (String) preFil.pop();
-			        tmp += sp.accept(this);
-			        preFil.push(tmp);
-			        state.popLevel();
+			        try{
+				        Function finit = sp.getFuncNamed("init");
+				        Iterator formalParamIterator = finit.getParams().iterator();
+				        Iterator actualParamIterator = creator.getParams().iterator();
+				        Assert(finit.getParams().size() == creator.getParams().size() , nm + " The number of formal parameters doesn't match the number of actual parameters!!");
+				        
+				        
+				        inParameterSetter(formalParamIterator,actualParamIterator, true);
+				        
+				        String tmp = (String) preFil.pop();
+				        tmp += sp.accept(this);
+				        preFil.push(tmp);
+			        }finally{
+			        	state.popLevel();
+			        }
 		        }
 	    	}
 	        return result;
@@ -717,27 +729,31 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        // Put context label at the start of the block, too.
 	    	state.pushLevel();
-	        String result = "// {";
-	        if (stmt.getContext() != null)
-	            result += " \t\t\t// " + stmt.getContext();
-	        result += "\n";
-	        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
-	        {
-	            Statement s = (Statement)iter.next();
-	            String line = " ";
-	            line += (String)s.accept(this);
-	            if(line.length() > 0){
-		            if (!(s instanceof StmtIfThen)) {
-		            	line += ";";
+	    	String result = null;
+	    	try{
+		        result = "// {";
+		        if (stmt.getContext() != null)
+		            result += " \t\t\t// " + stmt.getContext();
+		        result += "\n";
+		        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
+		        {
+		            Statement s = (Statement)iter.next();
+		            String line = " ";
+		            line += (String)s.accept(this);
+		            if(line.length() > 0){
+			            if (!(s instanceof StmtIfThen)) {
+			            	line += ";";
+			            }
+			            if (s.getContext() != null)
+			                line += " \t\t\t// " + s.getContext();
+			            line += "\n";
 		            }
-		            if (s.getContext() != null)
-		                line += " \t\t\t// " + s.getContext();
-		            line += "\n";
-	            }
-	            result += line;
-	        }
-	        result += " // }\n";
-	        state.popLevel();
+		            result += line;
+		        }
+		        result += " // }\n";
+	    	}finally{
+	    		state.popLevel();
+	    	}
 	        return result;
 	    }
 
@@ -783,28 +799,31 @@ public class NodesToSBit extends PartialEvaluator{
 	    public Object visitStmtFor(StmtFor stmt)
 	    {
 	    	state.pushLevel();
-	        loopmap.pushLoop(0);
-	        String result = "";
-	        if (stmt.getInit() != null)
-	            stmt.getInit().accept(this);
-	        
-	        Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
-	        stmt.getCond().accept(this);
-	        valueClass vcond = state.popVStack();
-	        int iters = 0;
-	        while(vcond.hasValue() && vcond.getIntValue() > 0){
-	        	++iters;
-	        	result += (String)stmt.getBody().accept(this);	 
-	        	loopmap.nextIter();
-	        	if (stmt.getIncr() != null)
-		        	stmt.getIncr().accept(this);
-	        	stmt.getCond().accept(this);
-		        vcond = state.popVStack();
-		        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
-	        }
-	        loopmap.popLoop();
-	        state.popLevel();
-	        return result;
+	    	String result = "";
+	    	try{
+		        loopmap.pushLoop(0);		        
+		        if (stmt.getInit() != null)
+		            stmt.getInit().accept(this);
+		        
+		        Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
+		        stmt.getCond().accept(this);
+		        valueClass vcond = state.popVStack();
+		        int iters = 0;
+		        while(vcond.hasValue() && vcond.getIntValue() > 0){
+		        	++iters;
+		        	result += (String)stmt.getBody().accept(this);	 
+		        	loopmap.nextIter();
+		        	if (stmt.getIncr() != null)
+			        	stmt.getIncr().accept(this);
+		        	stmt.getCond().accept(this);
+			        vcond = state.popVStack();
+			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
+		        }
+		        loopmap.popLoop();
+	    	}finally{
+	    		state.popLevel();	        	
+	    	}
+	    	return result;
 	    }
 
 	    public Object visitStmtIfThen(StmtIfThen stmt)
@@ -824,14 +843,25 @@ public class NodesToSBit extends PartialEvaluator{
 	        	return result;   	
 	        }
 	        state.pushChangeTracker();
-	        String ipart = (String)stmt.getCons().accept(this);
+	        String ipart = null;
+	        try{
+	        	ipart = (String)stmt.getCons().accept(this);
+	        }catch(RuntimeException e){
+	        	state.popChangeTracker();
+	        	throw e;
+	        }
 	        ChangeStack ipms = state.popChangeTracker();
 	        ChangeStack epms = null;
 	        String epart="";
 	        
 	        if (stmt.getAlt() != null){
 	        	state.pushChangeTracker();
-	            epart = (String)stmt.getAlt().accept(this);
+	        	try{
+	        		epart = (String)stmt.getAlt().accept(this);
+	        	}catch(RuntimeException e){
+		        	state.popChangeTracker();
+		        	throw e;
+		        }
 	            epms = state.popChangeTracker();
 	        }	        
 	        if(epms != null){
@@ -1080,174 +1110,180 @@ public class NodesToSBit extends PartialEvaluator{
 
 	    public Object visitStreamSpec(StreamSpec spec)
 	    {
-	        String result = "// " + spec.getContext() + "\n"; 
-	        
-	        // Anonymous classes look different from non-anonymous ones.
-	        // This appears in two places: (a) as a top-level (named)
-	        // stream; (b) in an anonymous stream creator (SCAnon).
-	        //StreamType st = spec.getStreamType();
-
-	        //Assert( ((TypePrimitive)st.getOut()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
-	        //Assert( ((TypePrimitive)st.getIn()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
-	        StreamType st = spec.getStreamType();
-	        
-	        if( st != null && 
-	        ( ( 
-	    (  ((TypePrimitive)st.getIn()).getType() !=
-                TypePrimitive.TYPE_BIT &&
-				((TypePrimitive)st.getIn()).getType() !=
-	                TypePrimitive.TYPE_VOID	
-	    )|| 
-				((TypePrimitive)st.getOut()).getType() !=
-	                TypePrimitive.TYPE_BIT ) &&   spec.getType() == StreamSpec.STREAM_FILTER ) ){
-	        	state.pushLevel();
-	        	result = (String) nativeGenerator.visitStreamSpec(spec);
-	        	state.popLevel();
-	        	return result;
-	        }
-	        
-	        state.pushLevel();
-	        if (spec.getName() != null)
-	        {	            
-	            // This is only public if it's the top-level stream,
-	            // meaning it has type void->void.	             
-	            if (false)
-	            {
-	                result += spec.getTypeString() + " " + spec.getName() +";\n";	                
-	            }
-	            else
-	            {	                
-	                if (spec.getType() == StreamSpec.STREAM_FILTER)
-	                {
-	                    // Need to notice now if this is a phased filter.
-	                    FuncWork work = spec.getWorkFunc();
-	                    if (work!=null && (work.getPushRate() == null &&
-	                        work.getPopRate() == null &&
-	                        work.getPeekRate() == null) )
-	                        result += "PhasedFilter";
-	                    else
-	                        result += "Filter";
-	                }
-	                else
-	                    switch (spec.getType())
-	                    {
-	                    case StreamSpec.STREAM_PIPELINE:
-	                        result += "Pipeline";
-	                        break;
-	                    case StreamSpec.STREAM_SPLITJOIN:
-	                        result += "SplitJoin";
-	                        break;
-	                    case StreamSpec.STREAM_FEEDBACKLOOP:
-	                        result += "FeedbackLoop";
-	                        break;
-	                    case StreamSpec.STREAM_TABLE:
-	                        result += "Table";
-	                        break;
-	                    }
-	                String nm = spec.getName();
-	                Function f = spec.getFuncNamed("init");
-	                Iterator it = f.getParams().iterator();
-	                while(it.hasNext()){
-	                	Parameter p = (Parameter) it.next();
-	                	
-	                	int sz = state.checkArray(p.getName());
-	                	if(sz > 0){
-	                	//if( p.getType() instanceof TypeArray){
-	                	//	((TypeArray)p.getType()).getLength().accept(this);	                		
-	                	//	int sz = state.popVStack().intValue(); 
-	                		int xx=0;
-	                		int xpon=1;
-	                		for(int i=0; i<sz; ++i){
-	                			xx += xpon *  state.varValue(p.getName()+ "_idx_" + i);
-	                			xpon = xpon * 3;
-	                		}
-	                		nm += "_" + xx;
-	                	}else{
-	                		int i = state.varValue(p.getName());	                	
-	                		nm += "_" + i;
-	                	}
-	                }
-	                if( f.getParams().size()>0)
-	                	nm += "___";
-	                result += " " + nm + "\n";
-	            }
-	        }
-	        else
-	        {
-	            // Anonymous stream:
-	            result += "new ";
-	            switch (spec.getType())
-	            {
-	            case StreamSpec.STREAM_FILTER: result += "Filter";
-	                break;
-	            case StreamSpec.STREAM_PIPELINE: result += "Pipeline";
-	                break;
-	            case StreamSpec.STREAM_SPLITJOIN: result += "SplitJoin";
-	                break;
-	            case StreamSpec.STREAM_FEEDBACKLOOP: result += "FeedbackLoop";
-	                break;
-	            case StreamSpec.STREAM_TABLE: result += "Table";
-                	break;
-	            }
-	            result += "() \n" ;
-	        }
-	        	        	        
-	        
-	        
-	        
-	        if(spec.getType() == StreamSpec.STREAM_TABLE){
-	        	/**
-	        	 * TODO: Implement Tables properly. This is a kludge, but it will
-	        	 * allow me to implement AES.
-	        	 */	        	
-	        	
-	        	//NodesToTable ntt = new NodesToTable(spec, this.varGen);
-	        	Function f = spec.getFuncNamed("init");
-	        	result += f.getBody().accept(this.nativeGenerator);
-	        	return result;
-	        }
-
-	        // At this point we get to ignore wholesale the stream type, except
-	        // that we want to save it.
-	        
-	        StreamSpec oldSS = ss;
-	        ss = spec;
-	        result += "{\n"; 
-	        // Output field definitions:
-	        
-	        
-	        additInit = new LinkedList<Statement>();
-	        
-	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
-	        {
-	            FieldDecl varDecl = (FieldDecl)iter.next();
-	            result += (String)varDecl.accept(this);
-	        }
-	        preFil.push("");    		
-	        // Output method definitions:
-	        Function f = spec.getFuncNamed("init");
-			if( f!= null)
-				result += (String)(f.accept(this));
-			
-	        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
-	        	f = (Function)iter.next();
-	        	if( ! f.getName().equals("init") ){
-	        		result += (String)(f.accept(this));
-	        	}	        	
-	        }
-//	  TODO: DOTHIS      if( spec.getType() == StreamSpec.STREAM_TABLE ){
-//	        	outputTable=;
-//	        }
-	        ss = oldSS;
-	        result += "}\n";
-	        state.popLevel();
-	        if (spec.getName() != null){
-		        while( preFil.size() > 0){
-		        	String otherFil = (String) preFil.pop();
-		        	result = otherFil + result;
-		        }
-	        }
-	        return result;
+	    	String result = "// " + spec.getContext() + "\n"; 
+	    	
+	    	// Anonymous classes look different from non-anonymous ones.
+	    	// This appears in two places: (a) as a top-level (named)
+	    	// stream; (b) in an anonymous stream creator (SCAnon).
+	    	//StreamType st = spec.getStreamType();
+	    	
+	    	//Assert( ((TypePrimitive)st.getOut()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
+	    	//Assert( ((TypePrimitive)st.getIn()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
+	    	StreamType st = spec.getStreamType();
+	    	
+	    	if( st != null && 
+	    			( ( 
+	    					(  ((TypePrimitive)st.getIn()).getType() !=
+	    						TypePrimitive.TYPE_BIT &&
+	    						((TypePrimitive)st.getIn()).getType() !=
+	    							TypePrimitive.TYPE_VOID	
+	    					)|| 
+	    					((TypePrimitive)st.getOut()).getType() !=
+	    						TypePrimitive.TYPE_BIT ) &&   spec.getType() == StreamSpec.STREAM_FILTER ) ){
+	    		state.pushLevel();
+	    		try{
+	    			result = (String) nativeGenerator.visitStreamSpec(spec);
+	    		}finally{
+	    			state.popLevel();
+	    		}
+	    		return result;
+	    	}
+	    	
+	    	state.pushLevel();
+	    	try{
+	    		if (spec.getName() != null)
+	    		{	            
+	    			// This is only public if it's the top-level stream,
+	    			// meaning it has type void->void.	             
+	    			if (false)
+	    			{
+	    				result += spec.getTypeString() + " " + spec.getName() +";\n";	                
+	    			}
+	    			else
+	    			{	                
+	    				if (spec.getType() == StreamSpec.STREAM_FILTER)
+	    				{
+	    					// Need to notice now if this is a phased filter.
+	    					FuncWork work = spec.getWorkFunc();
+	    					if (work!=null && (work.getPushRate() == null &&
+	    							work.getPopRate() == null &&
+	    							work.getPeekRate() == null) )
+	    						result += "PhasedFilter";
+	    					else
+	    						result += "Filter";
+	    				}
+	    				else
+	    					switch (spec.getType())
+	    					{
+	    					case StreamSpec.STREAM_PIPELINE:
+	    						result += "Pipeline";
+	    						break;
+	    					case StreamSpec.STREAM_SPLITJOIN:
+	    						result += "SplitJoin";
+	    						break;
+	    					case StreamSpec.STREAM_FEEDBACKLOOP:
+	    						result += "FeedbackLoop";
+	    						break;
+	    					case StreamSpec.STREAM_TABLE:
+	    						result += "Table";
+	    						break;
+	    					}
+	    				String nm = spec.getName();
+	    				Function f = spec.getFuncNamed("init");
+	    				Iterator it = f.getParams().iterator();
+	    				while(it.hasNext()){
+	    					Parameter p = (Parameter) it.next();
+	    					
+	    					int sz = state.checkArray(p.getName());
+	    					if(sz > 0){
+	    						//if( p.getType() instanceof TypeArray){
+	    						//	((TypeArray)p.getType()).getLength().accept(this);	                		
+	    						//	int sz = state.popVStack().intValue(); 
+	    						int xx=0;
+	    						int xpon=1;
+	    						for(int i=0; i<sz; ++i){
+	    							xx += xpon *  state.varValue(p.getName()+ "_idx_" + i);
+	    							xpon = xpon * 3;
+	    						}
+	    						nm += "_" + xx;
+	    					}else{
+	    						int i = state.varValue(p.getName());	                	
+	    						nm += "_" + i;
+	    					}
+	    				}
+	    				if( f.getParams().size()>0)
+	    					nm += "___";
+	    				result += " " + nm + "\n";
+	    			}
+	    		}
+	    		else
+	    		{
+	    			// Anonymous stream:
+	    			result += "new ";
+	    			switch (spec.getType())
+	    			{
+	    			case StreamSpec.STREAM_FILTER: result += "Filter";
+	    			break;
+	    			case StreamSpec.STREAM_PIPELINE: result += "Pipeline";
+	    			break;
+	    			case StreamSpec.STREAM_SPLITJOIN: result += "SplitJoin";
+	    			break;
+	    			case StreamSpec.STREAM_FEEDBACKLOOP: result += "FeedbackLoop";
+	    			break;
+	    			case StreamSpec.STREAM_TABLE: result += "Table";
+	    			break;
+	    			}
+	    			result += "() \n" ;
+	    		}
+	    		
+	    		
+	    		
+	    		
+	    		if(spec.getType() == StreamSpec.STREAM_TABLE){
+	    			/**
+	    			 * TODO: Implement Tables properly. This is a kludge, but it will
+	    			 * allow me to implement AES.
+	    			 */	        	
+	    			
+	    			//NodesToTable ntt = new NodesToTable(spec, this.varGen);
+	    			Function f = spec.getFuncNamed("init");
+	    			result += f.getBody().accept(this.nativeGenerator);
+	    			return result;
+	    		}
+	    		
+	    		// At this point we get to ignore wholesale the stream type, except
+	    		// that we want to save it.
+	    		
+	    		StreamSpec oldSS = ss;
+	    		ss = spec;
+	    		result += "{\n"; 
+	    		// Output field definitions:
+	    		
+	    		
+	    		additInit = new LinkedList<Statement>();
+	    		
+	    		for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
+	    		{
+	    			FieldDecl varDecl = (FieldDecl)iter.next();
+	    			result += (String)varDecl.accept(this);
+	    		}
+	    		preFil.push("");    		
+	    		// Output method definitions:
+	    		Function f = spec.getFuncNamed("init");
+	    		if( f!= null)
+	    			result += (String)(f.accept(this));
+	    		
+	    		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
+	    			f = (Function)iter.next();
+	    			if( ! f.getName().equals("init") ){
+	    				result += (String)(f.accept(this));
+	    			}	        	
+	    		}
+//	    		TODO: DOTHIS      if( spec.getType() == StreamSpec.STREAM_TABLE ){
+//	    		outputTable=;
+//	    		}
+	    		ss = oldSS;
+	    		result += "}\n";
+	    	}finally{
+	    		state.popLevel();
+	    	}
+	    	if (spec.getName() != null){
+	    		while( preFil.size() > 0){
+	    			String otherFil = (String) preFil.pop();
+	    			result = otherFil + result;
+	    		}
+	    	}
+	    	return result;
 	    }
 	    
 	    public Object visitStreamType(StreamType type)

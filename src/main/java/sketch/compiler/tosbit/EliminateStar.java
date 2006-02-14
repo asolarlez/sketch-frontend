@@ -195,9 +195,13 @@ public class EliminateStar extends PartialEvaluator {
 	public Object visitStmtBlock(StmtBlock stmt)
 	{
 		// Put context label at the start of the block, too.
+		Object rval = null;
 		state.pushLevel();
-		Object rval = super.visitStmtBlock(stmt);
-		state.popLevel();
+		try{
+			rval = super.visitStmtBlock(stmt);
+		}finally{
+			state.popLevel();
+		}
 		return rval;
 	}
 	
@@ -221,24 +225,26 @@ public class EliminateStar extends PartialEvaluator {
 		newStatements = new ArrayList<Statement> ();
 		
 		state.pushLevel();
-				
-		if (stmt.getInit() != null)
-			stmt.getInit().accept(this);		
-		Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
-		stmt.getCond().accept(this);
-		valueClass vcond = state.popVStack();
-		int iters = 0;
-		while(vcond.hasValue() && vcond.getIntValue() > 0){
-			++iters;
-			Statement body = (Statement) stmt.getBody().accept(this);
-			addStatement(body);			
-			if (stmt.getIncr() != null)
-				stmt.getIncr().accept(this);
+		try{
+			if (stmt.getInit() != null)
+				stmt.getInit().accept(this);		
+			Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
 			stmt.getCond().accept(this);
-			vcond = state.popVStack();
-			Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
+			valueClass vcond = state.popVStack();
+			int iters = 0;
+			while(vcond.hasValue() && vcond.getIntValue() > 0){
+				++iters;
+				Statement body = (Statement) stmt.getBody().accept(this);
+				addStatement(body);			
+				if (stmt.getIncr() != null)
+					stmt.getIncr().accept(this);
+				stmt.getCond().accept(this);
+				vcond = state.popVStack();
+				Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
+			}
+		}finally{
+			state.popLevel();
 		}
-		state.popLevel();	
 		if(!starCheck.testNode(stmt)){
 			newStatements = oldNewStatements;
 			return stmt;
@@ -269,13 +275,24 @@ public class EliminateStar extends PartialEvaluator {
 			return null;
 		}
 		state.pushChangeTracker();
-		Statement newCons =  (Statement) stmt.getCons().accept(this);		
+		Statement newCons = null;
+		try{
+			newCons =  (Statement) stmt.getCons().accept(this);
+		}catch(RuntimeException e){
+        	state.popChangeTracker();
+        	throw e;
+        }
 		ChangeStack ipms = state.popChangeTracker();
 		Statement newAlt = null;
 		ChangeStack epms = null;				
 		if (stmt.getAlt() != null){
 			state.pushChangeTracker();
-			newAlt = (Statement) stmt.getAlt().accept(this);
+			try{
+				newAlt = (Statement) stmt.getAlt().accept(this);
+			}catch(RuntimeException e){
+	        	state.popChangeTracker();
+	        	throw e;
+	        }
 			epms = state.popChangeTracker();
 		}	        
 		if(epms != null){		
@@ -296,7 +313,7 @@ public class EliminateStar extends PartialEvaluator {
 		StmtIfThen ifStmt;			
         newStatements = new ArrayList<Statement> ();        
         state.pushChangeTracker();
-        try{		
+        try{
         	addStatement((Statement)stmt.getBody().accept(this));
 		}catch(ArrayIndexOutOfBoundsException er){			        	
 			state.popChangeTracker();
@@ -329,7 +346,7 @@ public class EliminateStar extends PartialEvaluator {
 			loopHelper(stmt, LUNROLL, new ExprVar(stmt.getContext(), nvar) );			
 		}else{			
 			for(int i=0; i<vcond.getIntValue(); ++i){
-				doStatement( (Statement)stmt.getBody().accept(this) );				
+				addStatement( (Statement)stmt.getBody().accept(this) );				
 			}
 		}
 		if(!starCheck.testNode(stmt.getBody())){
@@ -531,27 +548,30 @@ public class EliminateStar extends PartialEvaluator {
     		Function fun = ss.getFuncNamed(name);
     		if(!this.starCheck.testNode(fun)){    			
     			return super.visitExprFunCall(exp);
-    		}    		    		
-    		state.pushLevel();
+    		}   
     		List<Statement>  oldNewStatements = newStatements;
     		newStatements = new ArrayList<Statement> ();
-    		{
-    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-    			Iterator formalParams = fun.getParams().iterator();
-    			inParameterSetter(formalParams, actualParams, false);
+    		Statement result = null;
+    		state.pushLevel();
+    		try{	    		
+	    		{
+	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+	    			Iterator formalParams = fun.getParams().iterator();
+	    			inParameterSetter(formalParams, actualParams, false);
+	    		}
+	    		
+	    		Statement body = (Statement) fun.getBody().accept(this);
+	    		addStatement(body);
+	    		{
+	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+	    			Iterator formalParams = fun.getParams().iterator();
+	    			outParameterSetter(formalParams, actualParams, false);
+	    		}
+	    		result = new StmtBlock(exp.getContext(), newStatements);
+    		}finally{    			
+    			state.popLevel();
+    			newStatements = oldNewStatements;
     		}
-    		
-    		Statement body = (Statement) fun.getBody().accept(this);
-    		addStatement(body);
-    		{
-    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-    			Iterator formalParams = fun.getParams().iterator();
-    			outParameterSetter(formalParams, actualParams, false);
-    		}
-    		state.popLevel();
-    		
-    		Statement result = new StmtBlock(exp.getContext(), newStatements);
-            newStatements = oldNewStatements;	
             addStatement(result);
     		
     		state.pushVStack( new valueClass(exp.toString()) );
@@ -602,9 +622,13 @@ public class EliminateStar extends PartialEvaluator {
         if(starCheck.testNode(func)){
 	        if(func.getCls() != Function.FUNC_INIT && func.getCls() != Function.FUNC_WORK && func.getSpecification() != null ){
 	        	doParams(func.getParams(), "");
-	        	this.state.pushLevel();       		        	
-	        	Statement body = (Statement)func.getBody().accept(this);
-	        	this.state.popLevel();
+	        	Statement body = null;
+	        	this.state.pushLevel();   
+	        	try{
+	        		body = (Statement)func.getBody().accept(this);
+	        	}finally{
+	        		this.state.popLevel();
+	        	}
 	        	List<Statement> theList = new ArrayList<Statement>(func.getParams().size() + 1);
 	        	theList.add(body);
 	        	//postDoParams(func.getParams(), theList);

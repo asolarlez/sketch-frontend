@@ -518,6 +518,84 @@ miniTest4.sk.cc:9: _out_0 = tmp[0];
 miniTest4.sk.cc:10: };
 miniTest4.sk.cc:12:void reverse(int[] in, int& _out_0) {
 miniTest4.sk.cc:13: _out_0 = in[2];
+miniTest40.sk.cc:5:void transpose(int[] input, int[] _out_0) {
+miniTest40.sk.cc:6: int output[4];
+miniTest40.sk.cc:7: output = 0;
+miniTest40.sk.cc:8: for (int i = 0; (i < 4); ++i) {
+miniTest40.sk.cc:9: {
+miniTest40.sk.cc:10: output[i] = input[i];
+miniTest40.sk.cc:11: };
+miniTest40.sk.cc:12: };
+miniTest40.sk.cc:13: _out_0 = output;
+miniTest40.sk.cc:15:void tiledTranspose(int[] input, int[] _out_0) {
+miniTest40.sk.cc:16: {
+miniTest40.sk.cc:17: int output[4];
+miniTest40.sk.cc:18: output = 0;
+miniTest40.sk.cc:19: int i;
+miniTest40.sk.cc:20: i = 0;
+miniTest40.sk.cc:21: int _2L6 = 2;
+miniTest40.sk.cc:22: if ((_2L6 > 0)) {
+miniTest40.sk.cc:23: {
+miniTest40.sk.cc:24: int j;
+miniTest40.sk.cc:25: j = 0;
+miniTest40.sk.cc:26: if (1) {
+miniTest40.sk.cc:27: {
+miniTest40.sk.cc:28: output[0] = input[0];
+miniTest40.sk.cc:29: j = 1;
+miniTest40.sk.cc:30: output[1] = input[1];
+miniTest40.sk.cc:31: j = 2;
+miniTest40.sk.cc:32: };
+miniTest40.sk.cc:33: }
+miniTest40.sk.cc:34: i = 2;
+miniTest40.sk.cc:35: };
+miniTest40.sk.cc:36: if ((_2L6 > 1)) {
+miniTest40.sk.cc:37: {
+miniTest40.sk.cc:38: int j;
+miniTest40.sk.cc:39: j = 0;
+miniTest40.sk.cc:40: if (1) {
+miniTest40.sk.cc:41: {
+miniTest40.sk.cc:42: output[2] = input[2];
+miniTest40.sk.cc:43: j = 1;
+miniTest40.sk.cc:44: output[3] = input[3];
+miniTest40.sk.cc:45: j = 2;
+miniTest40.sk.cc:46: };
+miniTest40.sk.cc:47: }
+miniTest40.sk.cc:48: i = 4;
+miniTest40.sk.cc:49: };
+miniTest40.sk.cc:50: }
+miniTest40.sk.cc:51: }
+miniTest40.sk.cc:52: _out_0 = output;
+miniTest40.sk.cc:53: };
+miniTest41.sk.cc:5:void transpose(int[] input, int[] _out_0) {
+miniTest41.sk.cc:6: int output[4];
+miniTest41.sk.cc:7: output = 0;
+miniTest41.sk.cc:8: for (int i = 0; (i < 4); ++i) {
+miniTest41.sk.cc:9: {
+miniTest41.sk.cc:10: output[i] = input[i];
+miniTest41.sk.cc:11: };
+miniTest41.sk.cc:12: };
+miniTest41.sk.cc:13: _out_0 = output;
+miniTest41.sk.cc:15:void tiledTranspose(int[] input, int[] _out_0) {
+miniTest41.sk.cc:16: {
+miniTest41.sk.cc:17: int output[4];
+miniTest41.sk.cc:18: output = 0;
+miniTest41.sk.cc:19: int i;
+miniTest41.sk.cc:20: i = 0;
+miniTest41.sk.cc:21: int it;
+miniTest41.sk.cc:22: it = 3;
+miniTest41.sk.cc:23: __sa4 = 2;
+miniTest41.sk.cc:24: for (int __sa5 = 0; __sa5 < __sa4; ++__sa5) {
+miniTest41.sk.cc:25: int j;
+miniTest41.sk.cc:26: j = 0;
+miniTest41.sk.cc:27: __sa6 = it;
+miniTest41.sk.cc:28: for (int __sa7 = 0; __sa7 < __sa6; ++__sa7) {
+miniTest41.sk.cc:29: output[(i + j)] = input[(i + j)];
+miniTest41.sk.cc:30: j = (j + 1);
+miniTest41.sk.cc:31: };
+miniTest41.sk.cc:32: i = (i + 2);
+miniTest41.sk.cc:33: };
+miniTest41.sk.cc:34: _out_0 = output;
+miniTest41.sk.cc:35: };
 miniTest5.sk.cc:5:void foo(int[] ina, int& _out_0) {
 miniTest5.sk.cc:6: _out_0 = ina[null];
 miniTest5.sk.cc:8:void reverseSketch(int[] in, int& _out_0) {
