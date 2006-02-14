@@ -1,0 +1,26 @@
+int N = 4;
+
+bit[N] transpose(bit[N] input){
+	bit[N] output=0;
+	for(int i=0; i<N; ++i){
+		output[i] = input[i];
+	}
+	return output;
+}
+
+
+bit[N] tiledTranspose(bit[N] input)implements transpose{
+	bit[N] output=0;
+	int i=0;
+	loop(??){
+		int j=0;
+		if(??){
+			output[i+j] = input[i+j];
+			j=j+1;
+			output[i+j] = input[i+j];
+			j=j+1;
+		}
+		i = i+2;
+	}
+	return output;
+}
