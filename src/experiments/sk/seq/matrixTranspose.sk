@@ -1,0 +1,66 @@
+int N = 15;
+
+int index(int i, int j){
+	return i*N + j;
+}
+
+bit[N*N] transpose(bit[N*N] input){
+	bit[N*N] output=0;
+	for(int i=0; i<N; ++i){
+		for(int j=0; j<N; ++j){
+			output[index(i,j)] = input[index(j,i)];
+		}
+	}
+	return output;
+}
+
+bit[N*N] tiledTranspose(bit[N*N] input)implements transpose{
+	bit[N*N] output=0;
+	
+	int N2in = 4; 
+	int N1in = 4; 	
+		
+	int N1 = ??; //??;
+	int N1inc = N1in; //??;
+	int N2 = ??; //??;
+	int N2inc = N2in; //??;
+	int exp1 = ??; 	// N-??;
+	int exp2 = ??;	// N-??;
+	
+	int i=0;
+	loop(N1){
+		int j=0;
+		loop(N2){
+			int ip = i;
+			loop(N1in){
+				int jp = j;
+				loop(N2in){
+					output[index(ip,jp)] = input[index(jp,ip)];
+					jp = jp + 1;
+				}
+				ip = ip + 1;
+			}
+			j = j+N2inc;
+		}
+
+		loop(exp2){
+			int ip = i;
+			loop(N1in){
+				output[index(ip,j)] = input[index(j,ip)];
+				ip = ip + 1;
+			}
+			j = j+1;
+		}
+		i = i+N1inc;
+	}
+	loop(exp1){
+		int j=0;
+		loop(N){
+			output[index(i,j)] = input[index(j,i)];
+			j = j+1;
+		}
+		i = i+1;
+	}
+	
+	return output;
+}
