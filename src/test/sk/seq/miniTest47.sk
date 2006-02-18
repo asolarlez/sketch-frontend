@@ -1,0 +1,20 @@
+int N = 4;
+
+// x <= y
+bit leq(bit x, bit y){
+	return !x || y;
+}
+bit sort(bit[N] input){
+	bit k = 1;
+	if( input[0] ) k = 0;
+	k = k & input[0];
+	int x = 3;
+	if( k) x = 2;
+	return input[k];
+}
+
+
+bit MergeSort(bit[N] input)implements sort{
+	return input[3];
+}
+
