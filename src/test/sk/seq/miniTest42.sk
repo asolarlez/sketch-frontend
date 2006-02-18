@@ -1,0 +1,21 @@
+int N = 3;
+
+bit[N] sort(bit[N] input){
+if(input[0]){
+		input[2] = 1;
+	}else{
+		input[1] = 1;		
+	}
+	return input;
+}
+
+
+bit[N] mergeSort(bit[N] input)implements sort{
+	int k=0;
+	if(input[0]){
+		k = k+1;
+	}
+	k = k+1;
+	input[k] = 1;
+	return input;
+}

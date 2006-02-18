@@ -596,6 +596,291 @@ miniTest41.sk.cc:32: i = (i + 2);
 miniTest41.sk.cc:33: };
 miniTest41.sk.cc:34: _out_0 = output;
 miniTest41.sk.cc:35: };
+miniTest42.sk.cc:5:void sort(int[] input, int[] _out_0) {
+miniTest42.sk.cc:6: if (input[0]) {
+miniTest42.sk.cc:7: {
+miniTest42.sk.cc:8: input[2] = 1;
+miniTest42.sk.cc:9: };
+miniTest42.sk.cc:10: } else {
+miniTest42.sk.cc:11: {
+miniTest42.sk.cc:12: input[1] = 1;
+miniTest42.sk.cc:13: };
+miniTest42.sk.cc:14: }
+miniTest42.sk.cc:15: _out_0 = input;
+miniTest42.sk.cc:17:void mergeSort(int[] input, int[] _out_0) {
+miniTest42.sk.cc:18: int k;
+miniTest42.sk.cc:19: k = 0;
+miniTest42.sk.cc:20: if (input[0]) {
+miniTest42.sk.cc:21: {
+miniTest42.sk.cc:22: k = (k + 1);
+miniTest42.sk.cc:23: };
+miniTest42.sk.cc:24: }
+miniTest42.sk.cc:25: k = (k + 1);
+miniTest42.sk.cc:26: input[k] = 1;
+miniTest42.sk.cc:27: _out_0 = input;
+miniTest43.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
+miniTest43.sk.cc:6: _out_0 = (!x || y);
+miniTest43.sk.cc:8:void sort(int[] input, int[] _out_0) {
+miniTest43.sk.cc:9: int output[2];
+miniTest43.sk.cc:10: output = 0;
+miniTest43.sk.cc:11: int done[2];
+miniTest43.sk.cc:12: done = 0;
+miniTest43.sk.cc:13: int k;
+miniTest43.sk.cc:14: k = 0;
+miniTest43.sk.cc:15: for (int i = 0; (i < 2); ++i) {
+miniTest43.sk.cc:16: {
+miniTest43.sk.cc:17: int cur;
+miniTest43.sk.cc:18: cur = 1;
+miniTest43.sk.cc:19: for (int j = 0; (j < 2); ++j) {
+miniTest43.sk.cc:20: {
+miniTest43.sk.cc:21: int _frv_0;
+miniTest43.sk.cc:22: int _frv_1;
+miniTest43.sk.cc:23: _frv_1 = input[j];
+miniTest43.sk.cc:24: leq(_frv_1, cur, _frv_0);
+miniTest43.sk.cc:25: if ((_frv_0 && !done[j])) {
+miniTest43.sk.cc:26: {
+miniTest43.sk.cc:27: k = j;
+miniTest43.sk.cc:28: cur = input[j];
+miniTest43.sk.cc:29: };
+miniTest43.sk.cc:30: }
+miniTest43.sk.cc:31: };
+miniTest43.sk.cc:32: };
+miniTest43.sk.cc:33: output[i] = cur;
+miniTest43.sk.cc:34: done[k] = 1;
+miniTest43.sk.cc:35: };
+miniTest43.sk.cc:36: };
+miniTest43.sk.cc:37: _out_0 = output;
+miniTest43.sk.cc:39:void mergeSort(int[] input, int[] _out_0) {
+miniTest43.sk.cc:40: int output[2];
+miniTest43.sk.cc:41: output = 1;
+miniTest43.sk.cc:42: if ((input[0] && input[1])) {
+miniTest43.sk.cc:43: {
+miniTest43.sk.cc:44: output[0] = 1;
+miniTest43.sk.cc:45: output[1] = 1;
+miniTest43.sk.cc:46: };
+miniTest43.sk.cc:47: }
+miniTest43.sk.cc:48: ;
+miniTest43.sk.cc:49: if ((!input[0] && input[1])) {
+miniTest43.sk.cc:50: {
+miniTest43.sk.cc:51: output[0] = 0;
+miniTest43.sk.cc:52: output[1] = 1;
+miniTest43.sk.cc:53: };
+miniTest43.sk.cc:54: }
+miniTest43.sk.cc:55: ;
+miniTest43.sk.cc:56: if ((input[0] && !input[1])) {
+miniTest43.sk.cc:57: {
+miniTest43.sk.cc:58: output[0] = 0;
+miniTest43.sk.cc:59: output[1] = 1;
+miniTest43.sk.cc:60: };
+miniTest43.sk.cc:61: }
+miniTest43.sk.cc:62: ;
+miniTest43.sk.cc:63: if ((!input[0] && !input[1])) {
+miniTest43.sk.cc:64: {
+miniTest43.sk.cc:65: output[0] = 0;
+miniTest43.sk.cc:66: output[1] = 0;
+miniTest43.sk.cc:67: };
+miniTest43.sk.cc:68: }
+miniTest43.sk.cc:69: ;
+miniTest43.sk.cc:70: _out_0 = output;
+miniTest44.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
+miniTest44.sk.cc:6: _out_0 = (!x || y);
+miniTest44.sk.cc:8:void sort(int[] input, int[] _out_0) {
+miniTest44.sk.cc:9: int output[2];
+miniTest44.sk.cc:10: output = 1;
+miniTest44.sk.cc:11: if ((input[0] && input[1])) {
+miniTest44.sk.cc:12: {
+miniTest44.sk.cc:13: output[0] = 1;
+miniTest44.sk.cc:14: output[1] = 1;
+miniTest44.sk.cc:15: };
+miniTest44.sk.cc:16: }
+miniTest44.sk.cc:17: ;
+miniTest44.sk.cc:18: if ((!input[0] && input[1])) {
+miniTest44.sk.cc:19: {
+miniTest44.sk.cc:20: output[0] = 0;
+miniTest44.sk.cc:21: output[1] = 1;
+miniTest44.sk.cc:22: };
+miniTest44.sk.cc:23: }
+miniTest44.sk.cc:24: ;
+miniTest44.sk.cc:25: if ((input[0] && !input[1])) {
+miniTest44.sk.cc:26: {
+miniTest44.sk.cc:27: output[0] = 0;
+miniTest44.sk.cc:28: output[1] = 1;
+miniTest44.sk.cc:29: };
+miniTest44.sk.cc:30: }
+miniTest44.sk.cc:31: ;
+miniTest44.sk.cc:32: if ((!input[0] && !input[1])) {
+miniTest44.sk.cc:33: {
+miniTest44.sk.cc:34: output[0] = 0;
+miniTest44.sk.cc:35: output[1] = 0;
+miniTest44.sk.cc:36: };
+miniTest44.sk.cc:37: }
+miniTest44.sk.cc:38: ;
+miniTest44.sk.cc:39: _out_0 = output;
+miniTest44.sk.cc:41:void mergeSort(int[] input, int[] _out_0) {
+miniTest44.sk.cc:42: int output[2];
+miniTest44.sk.cc:43: output = 1;
+miniTest44.sk.cc:44: int k;
+miniTest44.sk.cc:45: k = 0;
+miniTest44.sk.cc:46: for (int i = 0; (i < 2); ++i) {
+miniTest44.sk.cc:47: {
+miniTest44.sk.cc:48: if (!input[i]) {
+miniTest44.sk.cc:49: {
+miniTest44.sk.cc:50: output[k] = 0;
+miniTest44.sk.cc:51: k = (k + 1);
+miniTest44.sk.cc:52: };
+miniTest44.sk.cc:53: }
+miniTest44.sk.cc:54: };
+miniTest44.sk.cc:55: };
+miniTest44.sk.cc:56: _out_0 = output;
+miniTest45.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
+miniTest45.sk.cc:6: _out_0 = (!x || y);
+miniTest45.sk.cc:8:void mergeSort(int[] input, int& _out_0) {
+miniTest45.sk.cc:9: int output;
+miniTest45.sk.cc:10: output = 1;
+miniTest45.sk.cc:11: int done[3];
+miniTest45.sk.cc:12: done = 0;
+miniTest45.sk.cc:13: int k;
+miniTest45.sk.cc:14: k = 0;
+miniTest45.sk.cc:15: if (!input[2]) {
+miniTest45.sk.cc:16: {
+miniTest45.sk.cc:17: k = 2;
+miniTest45.sk.cc:18: };
+miniTest45.sk.cc:19: } else {
+miniTest45.sk.cc:20: {
+miniTest45.sk.cc:21: if (!input[1]) {
+miniTest45.sk.cc:22: {
+miniTest45.sk.cc:23: k = 1;
+miniTest45.sk.cc:24: };
+miniTest45.sk.cc:25: } else {
+miniTest45.sk.cc:26: {
+miniTest45.sk.cc:27: if (!input[0]) {
+miniTest45.sk.cc:28: {
+miniTest45.sk.cc:29: k = 0;
+miniTest45.sk.cc:30: };
+miniTest45.sk.cc:31: } else {
+miniTest45.sk.cc:32: {
+miniTest45.sk.cc:33: k = 2;
+miniTest45.sk.cc:34: };
+miniTest45.sk.cc:35: }
+miniTest45.sk.cc:36: };
+miniTest45.sk.cc:37: }
+miniTest45.sk.cc:38: };
+miniTest45.sk.cc:39: }
+miniTest45.sk.cc:40: done[k] = 1;
+miniTest45.sk.cc:41: {
+miniTest45.sk.cc:42: int cur;
+miniTest45.sk.cc:43: cur = 1;
+miniTest45.sk.cc:44: for (int j = 0; (j < 3); ++j) {
+miniTest45.sk.cc:45: {
+miniTest45.sk.cc:46: int _frv_0;
+miniTest45.sk.cc:47: int _frv_1;
+miniTest45.sk.cc:48: _frv_1 = input[j];
+miniTest45.sk.cc:49: leq(_frv_1, cur, _frv_0);
+miniTest45.sk.cc:50: if ((_frv_0 && !done[j])) {
+miniTest45.sk.cc:51: {
+miniTest45.sk.cc:52: cur = input[j];
+miniTest45.sk.cc:53: };
+miniTest45.sk.cc:54: }
+miniTest45.sk.cc:55: };
+miniTest45.sk.cc:56: };
+miniTest45.sk.cc:57: output = cur;
+miniTest45.sk.cc:58: };
+miniTest45.sk.cc:59: _out_0 = output;
+miniTest45.sk.cc:61:void sort(int[] input, int& _out_0) {
+miniTest45.sk.cc:62: int output;
+miniTest45.sk.cc:63: output = 1;
+miniTest45.sk.cc:64: if (((input[0] && input[1]) && input[2])) {
+miniTest45.sk.cc:65: {
+miniTest45.sk.cc:66: output = 1;
+miniTest45.sk.cc:67: };
+miniTest45.sk.cc:68: }
+miniTest45.sk.cc:69: ;
+miniTest45.sk.cc:70: if (((((!input[0] && input[1]) && input[2]) || ((input[0] && !input[1]) && input[2])) || ((input[0] && input[1]) && !input[2]))) {
+miniTest45.sk.cc:71: {
+miniTest45.sk.cc:72: output = 1;
+miniTest45.sk.cc:73: };
+miniTest45.sk.cc:74: }
+miniTest45.sk.cc:75: ;
+miniTest45.sk.cc:76: if (((((input[0] && !input[1]) && !input[2]) || ((!input[0] && input[1]) && !input[2])) || ((!input[0] && !input[1]) && input[2]))) {
+miniTest45.sk.cc:77: {
+miniTest45.sk.cc:78: output = 0;
+miniTest45.sk.cc:79: };
+miniTest45.sk.cc:80: }
+miniTest45.sk.cc:81: ;
+miniTest45.sk.cc:82: if (((!input[0] && !input[1]) && !input[2])) {
+miniTest45.sk.cc:83: {
+miniTest45.sk.cc:84: output = 0;
+miniTest45.sk.cc:85: };
+miniTest45.sk.cc:86: }
+miniTest45.sk.cc:87: ;
+miniTest45.sk.cc:88: _out_0 = output;
+miniTest46.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
+miniTest46.sk.cc:6: _out_0 = (!x || y);
+miniTest46.sk.cc:8:void mergeSort(int[] input, int& _out_0) {
+miniTest46.sk.cc:9: int output;
+miniTest46.sk.cc:10: output = 1;
+miniTest46.sk.cc:11: int k;
+miniTest46.sk.cc:12: k = 0;
+miniTest46.sk.cc:13: {
+miniTest46.sk.cc:14: if (!input[0]) {
+miniTest46.sk.cc:15: {
+miniTest46.sk.cc:16: k = (k + 1);
+miniTest46.sk.cc:17: };
+miniTest46.sk.cc:18: }
+miniTest46.sk.cc:19: };
+miniTest46.sk.cc:20: {
+miniTest46.sk.cc:21: if (!input[1]) {
+miniTest46.sk.cc:22: {
+miniTest46.sk.cc:23: if ((k > 0)) {
+miniTest46.sk.cc:24: {
+miniTest46.sk.cc:25: output = 0;
+miniTest46.sk.cc:26: };
+miniTest46.sk.cc:27: }
+miniTest46.sk.cc:28: k = (k + 1);
+miniTest46.sk.cc:29: };
+miniTest46.sk.cc:30: }
+miniTest46.sk.cc:31: };
+miniTest46.sk.cc:32: {
+miniTest46.sk.cc:33: if (!input[2]) {
+miniTest46.sk.cc:34: {
+miniTest46.sk.cc:35: if (((k > 0) && (k < 2))) {
+miniTest46.sk.cc:36: {
+miniTest46.sk.cc:37: output = 0;
+miniTest46.sk.cc:38: };
+miniTest46.sk.cc:39: }
+miniTest46.sk.cc:40: k = (k + 1);
+miniTest46.sk.cc:41: };
+miniTest46.sk.cc:42: }
+miniTest46.sk.cc:43: };
+miniTest46.sk.cc:44: _out_0 = output;
+miniTest46.sk.cc:46:void sort(int[] input, int& _out_0) {
+miniTest46.sk.cc:47: int output;
+miniTest46.sk.cc:48: output = 1;
+miniTest46.sk.cc:49: if (((input[0] && input[1]) && input[2])) {
+miniTest46.sk.cc:50: {
+miniTest46.sk.cc:51: output = 1;
+miniTest46.sk.cc:52: };
+miniTest46.sk.cc:53: }
+miniTest46.sk.cc:54: ;
+miniTest46.sk.cc:55: if (((((!input[0] && input[1]) && input[2]) || ((input[0] && !input[1]) && input[2])) || ((input[0] && input[1]) && !input[2]))) {
+miniTest46.sk.cc:56: {
+miniTest46.sk.cc:57: output = 1;
+miniTest46.sk.cc:58: };
+miniTest46.sk.cc:59: }
+miniTest46.sk.cc:60: ;
+miniTest46.sk.cc:61: if (((((input[0] && !input[1]) && !input[2]) || ((!input[0] && input[1]) && !input[2])) || ((!input[0] && !input[1]) && input[2]))) {
+miniTest46.sk.cc:62: {
+miniTest46.sk.cc:63: output = 0;
+miniTest46.sk.cc:64: };
+miniTest46.sk.cc:65: }
+miniTest46.sk.cc:66: ;
+miniTest46.sk.cc:67: if (((!input[0] && !input[1]) && !input[2])) {
+miniTest46.sk.cc:68: {
+miniTest46.sk.cc:69: output = 0;
+miniTest46.sk.cc:70: };
+miniTest46.sk.cc:71: }
+miniTest46.sk.cc:72: ;
+miniTest46.sk.cc:73: _out_0 = output;
 miniTest5.sk.cc:5:void foo(int[] ina, int& _out_0) {
 miniTest5.sk.cc:6: _out_0 = ina[null];
 miniTest5.sk.cc:8:void reverseSketch(int[] in, int& _out_0) {
