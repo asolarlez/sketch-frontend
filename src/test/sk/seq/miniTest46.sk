@@ -1,0 +1,49 @@
+
+int N = 3;
+// x <= y
+bit leq(bit x, bit y){
+	return !x || y;
+}
+
+
+bit mergeSort(bit[N] input)implements sort{
+	bit output=1;
+	int k=0;
+	{
+		if(!input[0]){
+			k = k+1;
+		}
+	}
+	{
+		if(!input[1]){
+			if(k>0){
+				output = 0;
+			}
+			k = k+1;
+		}
+	}
+	{
+		if(!input[2]){
+			if(k>0 && k<2){
+				output = 0;
+			}
+			k = k+1;
+		}
+	}
+	return output;
+}
+
+
+bit sort(bit[N] input){
+	bit output=1;
+	if( input[0] && input[1] && input[2] ){  output = 1;  };
+	if(!input[0] && input[1] && input[2] 
+	||  input[0] && !input[1] && input[2] 
+	||	input[0] && input[1] && !input[2] ){ output = 1;  };
+	if( input[0] && !input[1] && !input[2] 
+	||  !input[0] && input[1] && !input[2] 
+	||	!input[0] && !input[1] && input[2]){  output = 0;  };
+	if( !input[0] && !input[1] && !input[2] ){output = 0;  };
+
+	return output;
+}
