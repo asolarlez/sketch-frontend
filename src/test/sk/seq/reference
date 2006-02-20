@@ -881,6 +881,67 @@ miniTest46.sk.cc:70: };
 miniTest46.sk.cc:71: }
 miniTest46.sk.cc:72: ;
 miniTest46.sk.cc:73: _out_0 = output;
+miniTest47.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
+miniTest47.sk.cc:6: _out_0 = (!x || y);
+miniTest47.sk.cc:8:void sort(int[] input, int& _out_0) {
+miniTest47.sk.cc:9: int k;
+miniTest47.sk.cc:10: k = 1;
+miniTest47.sk.cc:11: if (input[0]) {
+miniTest47.sk.cc:12: k = 0;
+miniTest47.sk.cc:13: }
+miniTest47.sk.cc:14: k = (k & input[0]);
+miniTest47.sk.cc:15: int x;
+miniTest47.sk.cc:16: x = 3;
+miniTest47.sk.cc:17: if (k) {
+miniTest47.sk.cc:18: x = 2;
+miniTest47.sk.cc:19: }
+miniTest47.sk.cc:20: _out_0 = input[k];
+miniTest47.sk.cc:22:void MergeSort(int[] input, int& _out_0) {
+miniTest47.sk.cc:23: _out_0 = input[3];
+miniTest48.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
+miniTest48.sk.cc:6: _out_0 = (!x || y);
+miniTest48.sk.cc:8:void sort(int[] input, int[] _out_0) {
+miniTest48.sk.cc:9: int output[4];
+miniTest48.sk.cc:10: output = 0;
+miniTest48.sk.cc:11: int done[4];
+miniTest48.sk.cc:12: done = 0;
+miniTest48.sk.cc:13: int k;
+miniTest48.sk.cc:14: k = 0;
+miniTest48.sk.cc:15: for (int i = 0; (i < 4); ++i) {
+miniTest48.sk.cc:16: {
+miniTest48.sk.cc:17: int cur;
+miniTest48.sk.cc:18: cur = 1;
+miniTest48.sk.cc:19: for (int j = 0; (j < 4); ++j) {
+miniTest48.sk.cc:20: {
+miniTest48.sk.cc:21: int _frv_0;
+miniTest48.sk.cc:22: int _frv_1;
+miniTest48.sk.cc:23: _frv_1 = input[j];
+miniTest48.sk.cc:24: leq(_frv_1, cur, _frv_0);
+miniTest48.sk.cc:25: if ((_frv_0 && !done[j])) {
+miniTest48.sk.cc:26: {
+miniTest48.sk.cc:27: k = j;
+miniTest48.sk.cc:28: cur = input[j];
+miniTest48.sk.cc:29: };
+miniTest48.sk.cc:30: }
+miniTest48.sk.cc:31: };
+miniTest48.sk.cc:32: };
+miniTest48.sk.cc:33: output[i] = cur;
+miniTest48.sk.cc:34: done[k] = 1;
+miniTest48.sk.cc:35: };
+miniTest48.sk.cc:36: };
+miniTest48.sk.cc:37: _out_0 = output;
+miniTest48.sk.cc:39:void MergeSort(int[] input, int[] _out_0) {
+miniTest48.sk.cc:40: {
+miniTest48.sk.cc:41: int output[4];
+miniTest48.sk.cc:42: int __sa0[4];
+miniTest48.sk.cc:43: __sa0 = (input >> 0);
+miniTest48.sk.cc:44: output = ((__sa0 && {1,1,1,0}) | ((input << 0) && !{1,1,1,0}));
+miniTest48.sk.cc:45: int _frv_0[4];
+miniTest48.sk.cc:46: int input[4] = output;
+miniTest48.sk.cc:47: _frv_0 = _out_0;
+miniTest48.sk.cc:48: sort(output, _frv_0);
+miniTest48.sk.cc:49: _out_0 = _frv_0;
+miniTest48.sk.cc:50: };
 miniTest5.sk.cc:5:void foo(int[] ina, int& _out_0) {
 miniTest5.sk.cc:6: _out_0 = ina[null];
 miniTest5.sk.cc:8:void reverseSketch(int[] in, int& _out_0) {
