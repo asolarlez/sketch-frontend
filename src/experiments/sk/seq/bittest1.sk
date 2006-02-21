@@ -1,7 +1,10 @@
-int W=32;
+int W=128;
 
 bit[W] plusOne(bit[W] in) {
 	in[W-1]=0;
 	bit[W] one=0; one[0]=1;
+	int y=1;
+	one[y:4]=13;
+	in[1:W-5]=one;
 	return in;//+one;
 }
