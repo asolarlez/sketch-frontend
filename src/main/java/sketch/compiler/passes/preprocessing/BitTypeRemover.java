@@ -18,9 +18,14 @@ public class BitTypeRemover extends SymbolTableVisitor {
 	 * Symbol table that stores the type of a variable prior to substitution.
 	 */
     protected SymbolTable preSymtab;
-
-    public BitTypeRemover() {
-		super(null);	
+    /**
+     * Unique temporary variable generator
+     */
+    protected TempVarGen varGen;
+    
+    public BitTypeRemover(TempVarGen varGen) {
+		super(null);
+		this.varGen=varGen;
 	}
 
     private static boolean isBitType(Type t)
@@ -33,6 +38,40 @@ public class BitTypeRemover extends SymbolTableVisitor {
     	return t instanceof TypeArray && isBitType(((TypeArray)t).getBase());
     }
 
+    private static boolean isArray(Type t)
+    {
+    	return t instanceof TypeArray;
+    }
+    
+    private static int getWordsize(Type type)
+    {
+    	if(type instanceof TypePrimitive) {
+    		switch(((TypePrimitive)type).getType()) {
+    			case TypePrimitive.TYPE_BIT:
+    				return 1;
+    			case TypePrimitive.TYPE_INT8:
+    				return 8;
+    			case TypePrimitive.TYPE_INT16:
+    				return 16;
+    			case TypePrimitive.TYPE_INT32:
+    				return 32;
+    			case TypePrimitive.TYPE_INT64:
+    				return 64;
+    		}
+    	}
+    	return 0;
+    }
+    
+    private static int getArrayWordsize(Type t)
+    {
+    	if(!(t instanceof TypeArray)) return 0;
+    	final Type baseType=((TypeArray)t).getBase();
+    	if(baseType instanceof TypePrimitive)
+    		return getWordsize(baseType);
+    	else
+    		return getArrayWordsize(baseType);
+    }
+    
 	private Type convertType(Type type)
 	{
 		if(type instanceof TypeArray) {
@@ -68,6 +107,35 @@ public class BitTypeRemover extends SymbolTableVisitor {
 		return type;
 	}
 
+    private Type getVarType(Expression e)
+    {
+    	if(e instanceof ExprVar) {
+    		return symtab.lookupVar(((ExprVar)e).getName());
+    	}
+    	else if(e instanceof ExprArrayRange) {
+    		return getVarType(((ExprArrayRange)e).getBase());
+    	}
+    	return null;
+    }
+    
+    private Type getVarPType(Expression e)
+    {
+    	if(e instanceof ExprVar) {
+    		return preSymtab.lookupVar(((ExprVar)e).getName());
+    	}
+    	else if(e instanceof ExprArrayRange) {
+    		return getVarPType(((ExprArrayRange)e).getBase());
+    	}
+    	return null;
+    }
+    
+    private static Integer staticEvaluation(Expression e)
+    {
+    	if(e instanceof ExprConstInt)
+    		return ((ExprConstInt)e).getVal();
+    	return null;
+    }
+    
 	@Override
 	public Object visitFunction(Function func)
 	{
@@ -162,6 +230,127 @@ public class BitTypeRemover extends SymbolTableVisitor {
 			return convertArrayRange(exp,range.start,len);
 		}
 		//throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
+	}
+
+	private Statement translateSingleWordAssignment(StmtAssign stmt, ExprArrayRange lhs, Type lhsType, int ws, Expression index, int len)
+	{
+		return translateSingleWordAssignment(stmt, lhs, lhsType, ws, index, len, null);
+	}
+	
+	private Statement translateSingleWordAssignment(StmtAssign stmt, ExprArrayRange lhs, Type lhsType, int ws, Expression index, int len, Expression end)
+	{
+		final boolean isArray=lhsType instanceof TypeArray; //true if we're dealing with an array of integers (big integer); false if a single integer
+		
+		//first compute the "new" lhs expression (the word that will be modified)
+		final Expression newLhs;
+		if(isArray) {
+			Expression wsExp=new ExprConstInt(index.getContext(),ws);
+			newLhs=new ExprArrayRange(lhs.getBase(),Collections.singletonList(new RangeLen(
+				new ExprBinary(index.getContext(),ExprBinary.BINOP_DIV,index,wsExp)
+			)));
+		}
+		else {
+			//lhs is an array that fits into a single word
+			newLhs=lhs.getBase();
+		}
+		//then the new rhs
+		final Expression newRhs=(Expression) stmt.getRHS().accept(this);
+		
+		if(len==1)
+		{
+			final Expression bitSelector;
+			if(isArray) {
+				Expression wsExp=new ExprConstInt(index.getContext(),ws);
+				bitSelector=new ExprBinary(index.getContext(),ExprBinary.BINOP_MOD,index,wsExp);
+			}
+			else {
+				bitSelector=index;
+			}
+			return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_BITASSIGN",Arrays.asList(new Expression[] {
+				newLhs,bitSelector,newRhs
+			})));
+		}
+		
+		if(isArray) {
+			Expression wsExp=new ExprConstInt(index.getContext(),ws);
+			index=new ExprBinary(index.getContext(),ExprBinary.BINOP_MOD,index,wsExp);
+		}
+		
+		final Expression bitMask;
+		if(len<=0) {
+			bitMask=new ExprFunCall(stmt.getContext(),"SK_ONES_SE",Arrays.asList(new Expression[] {
+					index,end
+				}));
+		}
+		else {
+			bitMask=new ExprFunCall(stmt.getContext(),"SK_ONES_SL",Arrays.asList(new Expression[] {
+				index,new ExprConstInt(index.getContext(),len)
+			}));
+		}
+		final String tempName=varGen.nextVar();
+		addStatement(new StmtVarDecl(stmt.getContext(),lhsType,tempName,bitMask));
+		
+		return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_COPYBITS",Arrays.asList(new Expression[] {
+			newLhs,new ExprVar(index.getContext(),tempName),newRhs
+		})));
+	}
+	
+	@Override
+	public Object visitStmtAssign(StmtAssign stmt)
+	{
+		final Expression lhs=stmt.getLHS(); //either a variable or an [indexed] array
+		{
+			final Type lhsPType=getVarPType(lhs);
+			assert lhsPType!=null;
+			if(!isBitArrayType(lhsPType)) return super.visitStmtAssign(stmt);
+		}
+			
+		final Type lhsType=getVarType(lhs);
+		assert lhsType!=null;
+		int ws=(lhsType instanceof TypeArray)?getArrayWordsize(lhsType):getWordsize(lhsType);
+		assert ws>1;
+		
+		//assume RHS contains no arithmetic/bitwise operations when LHS is an array range
+		if(lhs instanceof ExprArrayRange) {
+			final ExprArrayRange expArray=(ExprArrayRange) lhs;
+			if(expArray.hasSingleIndex()) {
+				// special case: a[i]=x --> always affects a single word; no loops
+				Expression index=expArray.getSingleIndex();
+				return translateSingleWordAssignment(stmt,expArray,lhsType,ws,index,1);
+			}
+			else {
+				// general case: a[i:j]=x
+				Object ro=expArray.getMembers().get(0);
+				if(ro instanceof Range) //a[s:e]
+				{
+					Range range=(Range) ro;
+					if(!((lhsType instanceof TypeArray)))
+						return translateSingleWordAssignment(stmt,expArray,lhsType,ws,range.start,0,range.end);
+					if(staticEvaluation(range.start)!=null && staticEvaluation(range.end)!=null) {
+						int start=staticEvaluation(range.start);
+						int end=staticEvaluation(range.end);
+						if(start/ws==end/ws) //special case: the entire range is contained within a word
+							return translateSingleWordAssignment(stmt,expArray,lhsType,ws,range.start,end-start+1);
+					}
+				}
+				else if(ro instanceof RangeLen) //a[s::l]
+				{
+					RangeLen range=(RangeLen) ro;
+					if(!((lhsType instanceof TypeArray)))
+						return translateSingleWordAssignment(stmt,expArray,lhsType,ws,range.start,range.len);
+					if(staticEvaluation(range.start)!=null) {
+						int start=staticEvaluation(range.start);
+						int end=start+range.len-1;
+						if(start/ws==end/ws) //special case: the entire range is contained within a word
+							return translateSingleWordAssignment(stmt,expArray,lhsType,ws,range.start,range.len);
+					}
+				}
+				else throw new IllegalStateException(); //must be either Range or RangeLen
+			}
+			
+		}
+		
+		return super.visitStmtAssign(stmt);
 	}
 	
 }

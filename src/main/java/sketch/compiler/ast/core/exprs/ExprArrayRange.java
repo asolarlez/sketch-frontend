@@ -96,4 +96,18 @@ public class ExprArrayRange extends Expression
 	public Expression getBase() {
 		return base;
 	}
+	
+	public Expression getSingleIndex() {
+		if(members.size()!=1) return null;
+		Object o=members.get(0);
+		if(!(o instanceof RangeLen)) return null;
+		RangeLen r=(RangeLen) o;
+		if(r.len!=1) return null;
+		return r.start;
+	}
+	
+	public boolean hasSingleIndex() {
+		return getSingleIndex()!=null;
+	}
+	
 }

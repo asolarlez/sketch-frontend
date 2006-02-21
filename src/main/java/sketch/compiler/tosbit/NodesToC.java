@@ -1,28 +1,51 @@
 package streamit.frontend.tosbit;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.*;
 import streamit.frontend.tojava.NodesToJava;
 
 public class NodesToC extends NodesToJava {
 
+	private ArrayList<String> usedMacros=new ArrayList<String>();
+	private static HashMap<String,String> macroDefinitions=null;
+	
 	public NodesToC(boolean libraryFormat, TempVarGen varGen) {
 		super(libraryFormat, varGen);
-		// TODO Auto-generated constructor stub
+		if(macroDefinitions==null) {
+			macroDefinitions=new HashMap<String,String>();
+			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(1<<(i))))|((x)&(1<<(i)))");
+			macroDefinitions.put("SK_ONES","#define SK_ONES(n) (1<<((n)+1)-1)");
+			macroDefinitions.put("SK_ONES_SL","#define SK_ONES_SL(s,l) (SK_ONES(l)<<(s))");
+			macroDefinitions.put("SK_ONES_SE","#define SK_ONES_SE(s,e) (SK_ONES(e)^SK_ONES((s)-1))");
+			macroDefinitions.put("SK_COPYBITS","#define SK_COPYBITS(l,m,r) l=((l)&~(m))|((r)&(m))");
+		}
 	}
 	
+	private void requireMacro(String m) {
+		if(usedMacros.contains(m)) return;
+		if(m.startsWith("SK_ONES_")) requireMacro("SK_ONES");
+		assert macroDefinitions.containsKey(m);
+		usedMacros.add(m);
+	}
+	
+	@Override
+	public Object visitProgram(Program prog)
+	{
+		String ret=(String)super.visitProgram(prog);
+		StringBuffer preamble=new StringBuffer();
+		for(Iterator<String> it=usedMacros.iterator();it.hasNext();) {
+			preamble.append(macroDefinitions.get(it.next()));
+			preamble.append("\n");
+		}
+		if(preamble.length()==0)
+			return ret;
+		else {
+			preamble.append(ret);
+			return preamble.toString();
+		}
+	}
+
 	public Object visitStreamSpec(StreamSpec spec){
 		String result = "";
 		ss = spec;
@@ -80,10 +103,6 @@ public class NodesToC extends NodesToJava {
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         String result = "";
-        // Hack: if the first variable name begins with "_final_", the
-        // variable declaration should be final.
-        if (stmt.getName(0).startsWith("_final_"))
-            result += "final ";
         Type type = stmt.getType(0);
         String postFix = "";
         if(type instanceof TypeArray){
@@ -105,7 +124,10 @@ public class NodesToC extends NodesToJava {
 	public Object visitExprFunCall(ExprFunCall exp)
     {
 		String result = "";
-        String name = exp.getName();        
+        String name = exp.getName();
+        if(macroDefinitions.containsKey(name)) {
+        	requireMacro(name);
+        }
         result = name + "(";         
         boolean first = true;
         for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
@@ -134,6 +156,18 @@ public class NodesToC extends NodesToJava {
         return result;
     }
 
-	
-	
+	@Override
+	public String convertType(Type type)
+	{
+		if(type instanceof TypePrimitive) {
+			switch(((TypePrimitive)type).getType()) {
+				case TypePrimitive.TYPE_INT8:  return "char";
+				case TypePrimitive.TYPE_INT16: return "short int";
+				case TypePrimitive.TYPE_INT32: return "int";
+				case TypePrimitive.TYPE_INT64: return "long long";
+			}
+		}
+		return super.convertType(type);
+	}
+
 }

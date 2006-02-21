@@ -43,7 +43,7 @@ public class BitTest extends TestCase
 		TempVarGen varGen = new TempVarGen();
 		p=(Program) p.accept(new FunctionParamExtension());
 		p=(Program) p.accept(new ConstantReplacer(Collections.EMPTY_MAP));
-		p=(Program) p.accept(new BitTypeRemover());
+		p=(Program) p.accept(new BitTypeRemover(new TempVarGen()));
         //p=(Program) p.accept(new DoComplexProp(varGen));
 		//p.accept(new ProduceBooleanFunctions(null, varGen, new ValueOracle()));
         String ccode = (String)p.accept(new NodesToC(false,varGen));
