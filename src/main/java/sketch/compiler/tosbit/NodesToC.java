@@ -15,16 +15,25 @@ public class NodesToC extends NodesToJava {
 		if(macroDefinitions==null) {
 			macroDefinitions=new HashMap<String,String>();
 			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(1<<(i))))|((x)&(1<<(i)))");
-			macroDefinitions.put("SK_ONES","#define SK_ONES(n) (1<<((n)+1)-1)");
+			macroDefinitions.put("SK_ONES","#define SK_ONES(n) ((1<<(n))-1)");
 			macroDefinitions.put("SK_ONES_SL","#define SK_ONES_SL(s,l) (SK_ONES(l)<<(s))");
-			macroDefinitions.put("SK_ONES_SE","#define SK_ONES_SE(s,e) (SK_ONES(e)^SK_ONES((s)-1))");
+			macroDefinitions.put("SK_ONES_SE","#define SK_ONES_SE(s,e) (SK_ONES((e)+1)^SK_ONES(s))");
+			macroDefinitions.put("SK_ONES_S","#define SK_ONES_S(s) (~SK_ONES(s))");
+			macroDefinitions.put("SK_ONES_E","#define SK_ONES_E(e) (SK_ONES((e)+1))");
 			macroDefinitions.put("SK_COPYBITS","#define SK_COPYBITS(l,m,r) l=((l)&~(m))|((r)&(m))");
+			macroDefinitions.put("SK_bitArrayCopy","void SK_bitArrayCopy(int* lhs, int s, int e, int* x, int ws)\n{\n}\n");
 		}
 	}
 	
 	private void requireMacro(String m) {
 		if(usedMacros.contains(m)) return;
 		if(m.startsWith("SK_ONES_")) requireMacro("SK_ONES");
+		else if(m.equals("SK_bitArrayCopy")) {
+			requireMacro("SK_COPYBITS");
+			requireMacro("SK_ONES_SE");
+			requireMacro("SK_ONES_S");
+			requireMacro("SK_ONES_E");
+		}
 		assert macroDefinitions.containsKey(m);
 		usedMacros.add(m);
 	}

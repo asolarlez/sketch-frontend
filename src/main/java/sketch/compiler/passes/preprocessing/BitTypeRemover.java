@@ -291,7 +291,8 @@ public class BitTypeRemover extends SymbolTableVisitor {
 		addStatement(new StmtVarDecl(stmt.getContext(),lhsType,tempName,bitMask));
 		
 		return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_COPYBITS",Arrays.asList(new Expression[] {
-			newLhs,new ExprVar(index.getContext(),tempName),newRhs
+			newLhs,new ExprVar(index.getContext(),tempName),
+			new ExprBinary(index.getContext(),ExprBinary.BINOP_LSHIFT,newRhs,index)
 		})));
 	}
 	
@@ -332,6 +333,50 @@ public class BitTypeRemover extends SymbolTableVisitor {
 						if(start/ws==end/ws) //special case: the entire range is contained within a word
 							return translateSingleWordAssignment(stmt,expArray,lhsType,ws,range.start,end-start+1);
 					}
+					return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_bitArrayCopy",Arrays.asList(new Expression[] {
+						expArray.getBase(),range.start,range.end,stmt.getRHS(),new ExprConstInt(stmt.getContext(),ws)
+					})));
+
+//void SK_bitArrayCopy(int* lhs, int s, int e, int* x, int ws)
+//{
+//	int aw=s/ws;
+//	if(aw==e/ws) {
+//		int mask=SK_ONES_SE(s%ws,e%ws);
+//		SK_COPYBITS(lhs[aw],mask,x<<(s%ws));
+//	}
+//	else {
+//		int k=s%ws;
+//		int l=e-s+1;
+//		int nfw=(l+1)/ws;
+//		if(k==0) {
+//			for(xw=0;xw<nfw;xw++) {
+//				lhs[aw++]=x[xw];
+//			}
+//			int mask=SK_ONES_E(e%ws);
+//			SK_COPYBITS(lhs[aw],mask,x[xw]);
+//		}
+//		else {
+//			int kc=ws-k;
+//			int mask1=SK_ONES_S(s);
+//			int mask2=~mask1;
+//			for(xw=0;xw<nfw;xw++) {
+//				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);
+//				aw++;
+//				SK_COPYBITS(lhs[aw],mask2,x[xw]>>kc);
+//			}
+//			if(l%ws>k) {
+//				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);
+//				aw++;
+//				int mask=SK_ONES_E(e%ws);
+//				SK_COPYBITS(lhs[aw],mask,x[xw]>>kc);
+//			}
+//			else {
+//				int mask=SK_ONES_S(l%ws);
+//				SK_COPYBITS(lhs[aw],mask,x[xw]<<(e%ws-kc));
+//			}
+//		}
+//	}
+//}
 				}
 				else if(ro instanceof RangeLen) //a[s::l]
 				{
@@ -344,10 +389,44 @@ public class BitTypeRemover extends SymbolTableVisitor {
 						if(start/ws==end/ws) //special case: the entire range is contained within a word
 							return translateSingleWordAssignment(stmt,expArray,lhsType,ws,range.start,range.len);
 					}
+					return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_bitArrayCopy",Arrays.asList(new Expression[] {
+							expArray.getBase(),range.start,
+							new ExprBinary(stmt.getContext(),ExprBinary.BINOP_ADD,range.start,new ExprConstInt(stmt.getContext(),range.len-1)),
+							stmt.getRHS(),new ExprConstInt(stmt.getContext(),ws)
+						})));
 				}
 				else throw new IllegalStateException(); //must be either Range or RangeLen
 			}
-			
+		}
+		else if(stmt.getRHS() instanceof ExprArrayRange)
+		{
+			final ExprArrayRange expArray=(ExprArrayRange) stmt.getRHS();
+			if(expArray.hasSingleIndex()) {
+				return super.visitStmtAssign(stmt);
+			}
+			else {
+				Object ro=expArray.getMembers().get(0);
+				if(ro instanceof Range) //a[s:e]
+				{
+					Range range=(Range) ro;
+					return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_bitArrayCopyInv",Arrays.asList(new Expression[] {
+						stmt.getLHS(),range.start,range.end,expArray.getBase(),new ExprConstInt(stmt.getContext(),ws)
+					})));
+				}
+				else if(ro instanceof RangeLen) //a[s::l]
+				{
+					RangeLen range=(RangeLen) ro;
+//					if(range.len<=ws) {
+//						
+//					}
+					return new StmtExpr(new ExprFunCall(stmt.getContext(),"SK_bitArrayCopyInv",Arrays.asList(new Expression[] {
+						stmt.getLHS(),range.start,
+						new ExprBinary(stmt.getContext(),ExprBinary.BINOP_ADD,range.start,new ExprConstInt(stmt.getContext(),range.len-1)),
+						expArray.getBase(),new ExprConstInt(stmt.getContext(),ws)
+					})));
+				}
+				else throw new IllegalStateException(); //must be either Range or RangeLen
+			}
 		}
 		
 		return super.visitStmtAssign(stmt);
