@@ -17,7 +17,7 @@ public class BitTest extends TestCase
 {
 	public void test1()
 	{
-		doTest("test/bittest1.sk");
+		doTest("test/bittest2.sk");
 	}
 	
 	
