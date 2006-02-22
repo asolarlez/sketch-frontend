@@ -91,7 +91,7 @@ public class NodesToC extends NodesToJava {
             Type type = param.getType();
             String postFix = "";
             if(type instanceof TypeArray){
-            	postFix = "[]";
+            	postFix = "*";
             	type = ((TypeArray)type).getBase();
             }
             
