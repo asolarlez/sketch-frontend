@@ -189,21 +189,31 @@ public class BitTypeRemover extends SymbolTableVisitor {
 		if(!isBitArrayType(pseudotype)) return oldExpr;
 
 		Type type=symtab.lookupVar((ExprVar)base);
-		if(type instanceof TypeArray) {
-			throw new UnsupportedOperationException("Cannot deal with big integers at this time.");
+		final boolean isArray=type instanceof TypeArray;
+		int ws=(isArray)?getArrayWordsize(type):getWordsize(type);
+		if(isArray) {
+			base=new ExprArrayRange(base,Collections.singletonList(
+				new RangeLen(new ExprBinary(oldExpr.getContext(),ExprBinary.BINOP_DIV,
+					start, new ExprConstInt(oldExpr.getContext(),ws)))
+			));
+				
 		}
 		assert type instanceof TypePrimitive;
 		if(len>1) {
-			throw new UnsupportedOperationException("Cannot deal with array ranges at this time.");
+			throw new UnsupportedOperationException("Cannot deal with array ranges at this point in the code. It should have been handled earlier.");
 		}
 		else {
-			Expression sel=new ExprBinary(oldExpr.getContext(),ExprBinary.BINOP_BAND,
-					new ExprBinary(oldExpr.getContext(),ExprBinary.BINOP_RSHIFT,
-						oldExpr.getBase(),
-						start
-					),
-					new ExprConstInt(oldExpr.getContext(),1)
+			Expression index=start;
+			if(isArray) {
+				index=new ExprBinary(oldExpr.getContext(),ExprBinary.BINOP_MOD,
+						start, new ExprConstInt(oldExpr.getContext(),ws)
 				);
+			}
+			Expression sel=new ExprBinary(oldExpr.getContext(),ExprBinary.BINOP_BAND,
+				new ExprBinary(oldExpr.getContext(),ExprBinary.BINOP_RSHIFT,
+					base,index),
+				new ExprConstInt(oldExpr.getContext(),1)
+			);
 			return sel;
 		}
 	}
@@ -342,12 +352,13 @@ public class BitTypeRemover extends SymbolTableVisitor {
 //	int aw=s/ws;
 //	if(aw==e/ws) {
 //		int mask=SK_ONES_SE(s%ws,e%ws);
-//		SK_COPYBITS(lhs[aw],mask,x<<(s%ws));
+//		SK_COPYBITS(lhs[aw],mask,x[0]<<(s%ws));
 //	}
 //	else {
 //		int k=s%ws;
 //		int l=e-s+1;
 //		int nfw=(l+1)/ws;
+//		int xw;
 //		if(k==0) {
 //			for(xw=0;xw<nfw;xw++) {
 //				lhs[aw++]=x[xw];
