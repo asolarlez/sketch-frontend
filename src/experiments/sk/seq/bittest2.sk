@@ -13,6 +13,7 @@ bit[W] copy2(bit[W] in) {
 	bit[W] ret;
 	ret=0;
 	for(int i=S;i<=E;i++)
-		ret[i]=in[i-(S+1)];
+		ret[i]=in[i-S];
 	return ret;
 }
+
