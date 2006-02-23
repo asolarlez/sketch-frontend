@@ -306,6 +306,24 @@ public class BitTypeRemover extends SymbolTableVisitor {
 		})));
 	}
 	
+	private Statement makeForLoop(String var,Expression ubound, Statement body)
+	{
+		return makeForLoop(var,new ExprConstInt(body.getContext(),0),ubound,body);
+	}
+	
+	private Statement makeForLoop(String var,Expression lbound, Expression ubound, Statement body)
+	{
+		Statement init=new StmtVarDecl(body.getContext(),
+			Collections.singletonList(TypePrimitive.inttype),
+			Collections.singletonList(var),
+			Collections.singletonList(lbound));
+		Statement incr=new StmtExpr(new ExprUnary(body.getContext(),ExprUnary.UNOP_POSTINC,
+			new ExprVar(body.getContext(),var)));
+		Expression cond=new ExprBinary(body.getContext(),ExprBinary.BINOP_LT,
+			new ExprVar(body.getContext(),var),ubound);
+		return new StmtFor(body.getContext(),init,cond,incr,body);
+	}
+	
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
@@ -439,7 +457,37 @@ public class BitTypeRemover extends SymbolTableVisitor {
 				else throw new IllegalStateException(); //must be either Range or RangeLen
 			}
 		}
-		
+		else if(lhs instanceof ExprVar && stmt.getRHS() instanceof ExprVar)
+		{
+			if(lhsType instanceof TypeArray)
+			{
+				Expression length=((TypeArray)lhsType).getLength();
+				String var=varGen.nextVar();
+				Statement body=new StmtAssign(stmt.getContext(),
+					new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var)))),
+					new ExprArrayRange(stmt.getRHS(),Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))))
+				);
+				return makeForLoop(var,length,body);
+			}
+		}
+		else if(lhs instanceof ExprVar && stmt.getRHS() instanceof ExprConstInt)
+		{
+			Expression length=((TypeArray)lhsType).getLength();
+			int value=((ExprConstInt)stmt.getRHS()).getVal();
+			String var=varGen.nextVar();
+			Expression arrayElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))));
+			Expression zero=new ExprConstInt(stmt.getContext(),0);
+			Statement body=new StmtAssign(stmt.getContext(),arrayElem,zero);
+			if(value==0) {
+				return makeForLoop(var,length,body);
+			}
+			else {
+				Expression one=new ExprConstInt(stmt.getContext(),1);
+				Expression firstElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprConstInt(stmt.getContext(),0))));
+				addStatement(new StmtAssign(stmt.getContext(),firstElem,stmt.getRHS()));
+				return makeForLoop(var,one,length,body);
+			}
+		}
 		return super.visitStmtAssign(stmt);
 	}
 	
