@@ -393,19 +393,20 @@ public class BitTypeRemover extends SymbolTableVisitor {
 //				aw++;
 //				SK_COPYBITS(lhs[aw],mask2,x[xw]>>kc);
 //			}
-//			if(l%ws>k) {
+//			if(l%ws>kc) {
 //				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);
 //				aw++;
 //				int mask=SK_ONES_E(e%ws);
 //				SK_COPYBITS(lhs[aw],mask,x[xw]>>kc);
 //			}
 //			else {
-//				int mask=SK_ONES_S(l%ws);
-//				SK_COPYBITS(lhs[aw],mask,x[xw]<<(e%ws-kc));
+//				int mask=SK_ONES_SE(k,e%ws);
+//				SK_COPYBITS(lhs[aw],mask,x[xw]<<k);
 //			}
 //		}
 //	}
 //}
+
 				}
 				else if(ro instanceof RangeLen) //a[s::l]
 				{
