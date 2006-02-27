@@ -14,7 +14,7 @@ public class NodesToC extends NodesToJava {
 		super(libraryFormat, varGen);
 		if(macroDefinitions==null) {
 			macroDefinitions=new HashMap<String,String>();
-			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(1<<(i))))|((x)&(1<<(i)))");
+			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(1<<(i))))|(((x)&1)<<(i))");
 			macroDefinitions.put("SK_ONES","#define SK_ONES(n) ((1<<(n))-1)");
 			macroDefinitions.put("SK_ONES_SL","#define SK_ONES_SL(s,l) (SK_ONES(l)<<(s))");
 			macroDefinitions.put("SK_ONES_SE","#define SK_ONES_SE(s,e) (SK_ONES((e)+1)^SK_ONES(s))");
