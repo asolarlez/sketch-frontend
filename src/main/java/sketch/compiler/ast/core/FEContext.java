@@ -28,6 +28,7 @@ public class FEContext
 {
     private String fileName;
     private int lineNumber, columnNumber;
+    private String file;
     
     /** Create a new context object with no location information. */
     public FEContext()
@@ -68,6 +69,20 @@ public class FEContext
         this.fileName = fileName;
         lineNumber = line;
         columnNumber = col;
+        
+        String lfile = fileName;
+        if (lfile == null){
+        	lfile = "<unknown>";
+        }else{
+        	if(lfile.length() > 15){
+        		lfile = lfile.substring(0, 7) + "..." + lfile.substring(lfile.length()-7);
+        	}
+        }
+        if (line >= 0){
+        	file =  lfile + ":" + line;
+        }else{
+        	file = lfile;
+        }
     }
     
     /** Get the name of the file this node appears in, or null if it is
@@ -95,11 +110,7 @@ public class FEContext
      * "filename.str:line".  Omits the line number if it is unavailable,
      * and uses a default filename it that is unavilable. */
     public String getLocation()
-    {
-        String file = getFileName();
-        if (file == null) file = "<unknown>";
-        int line = getLineNumber();
-        if (line >= 0) return file + ":" + line;
+    {    	
         return file;
     }
 

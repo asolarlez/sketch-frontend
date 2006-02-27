@@ -140,6 +140,7 @@ public class ExprBinary extends Expression
             case ExprBinary.BINOP_SUB: return new Integer(lv - rv);
             case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
             case ExprBinary.BINOP_DIV: return new Integer(lv / rv);
+            case ExprBinary.BINOP_MOD: return new Integer(lv % rv);
             case ExprBinary.BINOP_AND: return new Integer((lv==1 && rv==1)?1:0);
             case ExprBinary.BINOP_OR: return new Integer((lv==1 || rv==1)?1:0);
             case ExprBinary.BINOP_EQ: return new Integer((lv== rv)?1:0);
@@ -166,6 +167,7 @@ public class ExprBinary extends Expression
         case ExprBinary.BINOP_SUB: theOp = "-"; break;
         case ExprBinary.BINOP_MUL: theOp = "*"; break;
         case ExprBinary.BINOP_DIV: theOp = "/"; break;
+        case ExprBinary.BINOP_MOD: theOp = "%"; break;
         case ExprBinary.BINOP_AND: theOp = "&&"; break;
         case ExprBinary.BINOP_OR: theOp = "||"; break;
         case ExprBinary.BINOP_EQ: theOp = "=="; break;
