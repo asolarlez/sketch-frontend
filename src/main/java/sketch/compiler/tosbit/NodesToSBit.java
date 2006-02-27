@@ -729,32 +729,33 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        // Put context label at the start of the block, too.
 	    	state.pushLevel();
-	    	String result = null;
+	    	StringBuffer result = new StringBuffer();
 	    	try{
-		        result = "// {";
-		        if (stmt.getContext() != null)
-		            result += " \t\t\t// " + stmt.getContext();
-		        result += "\n";
+//		        result.append("// {");
+//		        if (stmt.getContext() != null)
+//		            result.append(" \t\t\t// " + stmt.getContext());
+//		        result.append("\n");
 		        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
 		        {
 		            Statement s = (Statement)iter.next();
-		            String line = " ";
-		            line += (String)s.accept(this);
-		            if(line.length() > 0){
+		            result.append(" ");
+		            int sz1 = result.length();
+		            result.append((String)s.accept(this));
+		            int sz2 = result.length();
+		            if(sz2-sz1 > 0){
 			            if (!(s instanceof StmtIfThen)) {
-			            	line += ";";
+			            	result.append(";");
 			            }
 			            if (s.getContext() != null)
-			                line += " \t\t\t// " + s.getContext();
-			            line += "\n";
+			            	result.append(" \t\t\t// " + s.getContext());
+			            result.append("\n");
 		            }
-		            result += line;
 		        }
-		        result += " // }\n";
+//		        result.append(" // }\n");
 	    	}finally{
 	    		state.popLevel();
 	    	}
-	        return result;
+	        return result.toString();
 	    }
 
 	    public Object visitStmtBody(StmtBody stmt)
@@ -799,7 +800,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    public Object visitStmtFor(StmtFor stmt)
 	    {
 	    	state.pushLevel();
-	    	String result = "";
+	    	StringBuffer result = new StringBuffer();
 	    	try{
 		        loopmap.pushLoop(0);		        
 		        if (stmt.getInit() != null)
@@ -809,9 +810,13 @@ public class NodesToSBit extends PartialEvaluator{
 		        stmt.getCond().accept(this);
 		        valueClass vcond = state.popVStack();
 		        int iters = 0;
+		        List<String> lst = new LinkedList<String>();
+		        int bodySize = 0;
 		        while(vcond.hasValue() && vcond.getIntValue() > 0){
 		        	++iters;
-		        	result += (String)stmt.getBody().accept(this);	 
+		        	String strtmp = (String)stmt.getBody().accept(this);
+		        	lst.add(strtmp);
+		        	bodySize += strtmp.length();
 		        	loopmap.nextIter();
 		        	if (stmt.getIncr() != null)
 			        	stmt.getIncr().accept(this);
@@ -819,11 +824,15 @@ public class NodesToSBit extends PartialEvaluator{
 			        vcond = state.popVStack();
 			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
 		        }
+		        result.ensureCapacity(bodySize);
+		        for(Iterator<String> it = lst.iterator(); it.hasNext() ; ){
+		        	result.append(it.next());
+		        }
 		        loopmap.popLoop();
 	    	}finally{
 	    		state.popLevel();	        	
 	    	}
-	    	return result;
+	    	return result.toString();
 	    }
 
 	    public Object visitStmtIfThen(StmtIfThen stmt)

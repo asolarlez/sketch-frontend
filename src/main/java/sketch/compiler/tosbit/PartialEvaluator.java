@@ -244,13 +244,14 @@ public class PartialEvaluator extends FEReplacer {
 			List<valueClass> lst = baseVal.getVectValue();
 			int arrSize = lst.size();
 			Iterator<valueClass> iter = lst.iterator();
-			String vname = "($ ";
+			StringBuffer vname = new StringBuffer();
+			vname.append("($ ");
 			for(int i=0; i< arrSize; ++i ){
-				if( i!= 0) vname += " ";
-				vname += iter.next().toString();
+				if( i!= 0) vname.append(" ");
+				vname.append(iter.next().toString());
 			}
-			vname = vname + "$" +  "[" + ofst + "])";
-			state.pushVStack( new valueClass(vname));			
+			vname.append("$").append("[").append(ofst).append("])");
+			state.pushVStack( new valueClass(vname.toString()));			
 		}
 		if ((nbase == exp.getBase() && offset == exp.getOffset() ) || !isReplacer)
             return exp;
@@ -815,8 +816,7 @@ public class PartialEvaluator extends FEReplacer {
         		rval = new ExprConstInt(newv);
         	}
         }else{
-        	result += lhs + " " + op + " ";
-            result += rhs + ")";
+        	result += lhs + " " + op + " " + rhs + ")";            
         	state.pushVStack(new valueClass(result));
         	if( this.isReplacer ){
         		if(left != exp.getLeft() || right != exp.getRight()){
