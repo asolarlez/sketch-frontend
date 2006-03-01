@@ -75,7 +75,15 @@ public class FEContext
         	lfile = "<unknown>";
         }else{
         	if(lfile.length() > 15){
-        		lfile = lfile.substring(0, 7) + "..." + lfile.substring(lfile.length()-7);
+        		int ls=lfile.lastIndexOf("/");
+        		{
+	        		int lb=lfile.lastIndexOf("\\");
+	        		if(ls<0 || lb>ls) ls=lb;
+        		}
+        		if(ls>=0) lfile = lfile.substring(ls+1);
+            	if(lfile.length() > 15){
+            		lfile = lfile.substring(0, 7) + ".." + lfile.substring(lfile.length()-7);
+            	}
         	}
         }
         if (line >= 0){
