@@ -12,7 +12,8 @@ import streamit.frontend.nodes.ExprArrayRange.*;
  * 
  * @author liviu
  */
-public class BitTypeRemover extends SymbolTableVisitor {
+public class BitTypeRemover extends SymbolTableVisitor 
+{
 
 	/**
 	 * Symbol table that stores the type of a variable prior to substitution.
@@ -218,7 +219,8 @@ public class BitTypeRemover extends SymbolTableVisitor {
 		}
 	}
 	
-	public Object visitExprArrayRange(ExprArrayRange exp) {
+	public Object visitExprArrayRange(ExprArrayRange exp) 
+	{
 		List ranges=exp.getMembers();
 		if(ranges.size()==0) throw new IllegalStateException();
 		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
@@ -340,7 +342,8 @@ public class BitTypeRemover extends SymbolTableVisitor {
 		assert ws>1;
 		
 		//assume RHS contains no arithmetic/bitwise operations when LHS is an array range
-		if(lhs instanceof ExprArrayRange) {
+		if(lhs instanceof ExprArrayRange) 
+		{
 			final ExprArrayRange expArray=(ExprArrayRange) lhs;
 			if(expArray.hasSingleIndex()) {
 				// special case: a[i]=x --> always affects a single word; no loops
@@ -458,38 +461,77 @@ public class BitTypeRemover extends SymbolTableVisitor {
 				else throw new IllegalStateException(); //must be either Range or RangeLen
 			}
 		}
-		else if(lhs instanceof ExprVar && stmt.getRHS() instanceof ExprVar)
+		else if(lhs instanceof ExprVar)
 		{
-			if(lhsType instanceof TypeArray)
+			if(stmt.getRHS() instanceof ExprVar)
+			{
+				if(lhsType instanceof TypeArray)
+				{
+					Expression length=((TypeArray)lhsType).getLength();
+					String var=varGen.nextVar();
+					Statement body=new StmtAssign(stmt.getContext(),
+						new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var)))),
+						new ExprArrayRange(stmt.getRHS(),Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))))
+					);
+					return makeForLoop(var,length,body);
+				}
+			}
+			else if(stmt.getRHS() instanceof ExprConstInt)
 			{
 				Expression length=((TypeArray)lhsType).getLength();
+				int value=((ExprConstInt)stmt.getRHS()).getVal();
 				String var=varGen.nextVar();
-				Statement body=new StmtAssign(stmt.getContext(),
-					new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var)))),
-					new ExprArrayRange(stmt.getRHS(),Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))))
-				);
-				return makeForLoop(var,length,body);
+				Expression arrayElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))));
+				Expression zero=new ExprConstInt(stmt.getContext(),0);
+				Statement body=new StmtAssign(stmt.getContext(),arrayElem,zero);
+				if(value==0) {
+					return makeForLoop(var,length,body);
+				}
+				else {
+					Expression one=new ExprConstInt(stmt.getContext(),1);
+					Expression firstElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprConstInt(stmt.getContext(),0))));
+					addStatement(new StmtAssign(stmt.getContext(),firstElem,stmt.getRHS()));
+					return makeForLoop(var,one,length,body);
+				}
+			}
+			else if(stmt.getRHS() instanceof ExprArrayInit)
+			{
+				ExprArrayInit exp=(ExprArrayInit) stmt.getRHS();
+				if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
+				int nb=exp.getElements().size();
+				if(nb<=ws) {
+					return new StmtAssign(stmt.getContext(),lhs,(Expression)exp.accept(this));
+				}
+				else {
+					String name=((ExprVar)lhs).getName();
+					List<ExprConstInt> bits=exp.getElements();
+					for(int k=0;k<nb/ws;k++) {
+						Expression elem=new ExprArrayRange(new ExprVar(lhs.getContext(),name),Collections.singletonList(new RangeLen(new ExprConstInt(lhs.getContext(),k))));
+						long mask=0;
+						long p=1;
+						for(int i=0;i<bits.size();i++,p*=2)
+							mask=mask+bits.get(i).getVal()*p;
+						Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+						addStatement(new StmtAssign(stmt.getContext(),elem,val));
+					}
+				}
 			}
 		}
-		else if(lhs instanceof ExprVar && stmt.getRHS() instanceof ExprConstInt)
-		{
-			Expression length=((TypeArray)lhsType).getLength();
-			int value=((ExprConstInt)stmt.getRHS()).getVal();
-			String var=varGen.nextVar();
-			Expression arrayElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))));
-			Expression zero=new ExprConstInt(stmt.getContext(),0);
-			Statement body=new StmtAssign(stmt.getContext(),arrayElem,zero);
-			if(value==0) {
-				return makeForLoop(var,length,body);
-			}
-			else {
-				Expression one=new ExprConstInt(stmt.getContext(),1);
-				Expression firstElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprConstInt(stmt.getContext(),0))));
-				addStatement(new StmtAssign(stmt.getContext(),firstElem,stmt.getRHS()));
-				return makeForLoop(var,one,length,body);
-			}
-		}
+		
 		return super.visitStmtAssign(stmt);
 	}
-	
+
+	@Override
+	public Object visitExprArrayInit(ExprArrayInit exp)
+	{
+		if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
+		List<ExprConstInt> bits=exp.getElements();
+		if(bits.size()>32) throw new UnsupportedOperationException("Cannot handle array initializers in excess of 32 bits, unless used in a direct assignment");
+		long mask=0;
+		long p=1;
+		for(int i=0;i<bits.size();i++,p*=2)
+			mask=mask+bits.get(i).getVal()*p;
+		return new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+	}
+
 }

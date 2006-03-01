@@ -42,6 +42,7 @@ public interface FEVisitor
     public Object visitExprConstFloat(ExprConstFloat exp);
     public Object visitExprConstInt(ExprConstInt exp);
     public Object visitExprConstStr(ExprConstStr exp);
+    public Object visitExprLiteral(ExprLiteral exp);
     public Object visitExprField(ExprField exp);
     public Object visitExprFunCall(ExprFunCall exp);
     public Object visitExprPeek(ExprPeek exp);

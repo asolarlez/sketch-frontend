@@ -397,6 +397,11 @@ public class NodesToJava implements FEVisitor
         return exp.getVal();
     }
 
+    public Object visitExprLiteral(ExprLiteral exp)
+    {
+        return exp.getValue();
+    }
+
     public Object visitExprField(ExprField exp)
     {
         String result = "";
@@ -539,21 +544,21 @@ public class NodesToJava implements FEVisitor
         // Nothing special here either.  Just accumulate all of the
         // structures and streams.
         String result = "";
-        for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-        {
-            TypeStruct struct = (TypeStruct)iter.next();
-            result += indent + "class " + struct.getName() +
-                " extends Structure {\n";
-            addIndent();
-            for (int i = 0; i < struct.getNumFields(); i++)
-            {
-                String name = struct.getField(i);
-                Type type = struct.getType(name);
-                result += indent + convertType(type) + " " + name + ";\n";
-            }
-            unIndent();
-            result += indent + "}\n";
-        }
+//        for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
+//        {
+//            TypeStruct struct = (TypeStruct)iter.next();
+//            result += indent + "class " + struct.getName() +
+//                " extends Structure {\n";
+//            addIndent();
+//            for (int i = 0; i < struct.getNumFields(); i++)
+//            {
+//                String name = struct.getField(i);
+//                Type type = struct.getType(name);
+//                result += indent + convertType(type) + " " + name + ";\n";
+//            }
+//            unIndent();
+//            result += indent + "}\n";
+//        }
         for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
             result += (String)((StreamSpec)iter.next()).accept(this);
         return result;

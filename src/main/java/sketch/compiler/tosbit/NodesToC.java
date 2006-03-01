@@ -174,6 +174,7 @@ public class NodesToC extends NodesToJava {
 				case TypePrimitive.TYPE_INT16: return "short int";
 				case TypePrimitive.TYPE_INT32: return "int";
 				case TypePrimitive.TYPE_INT64: return "long long";
+				case TypePrimitive.TYPE_BIT:   return "int";
 			}
 		}
 		return super.convertType(type);

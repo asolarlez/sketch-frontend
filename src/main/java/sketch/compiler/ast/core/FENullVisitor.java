@@ -37,6 +37,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprConstChar(ExprConstChar exp) { return null; }
     public Object visitExprConstFloat(ExprConstFloat exp) { return null; }
     public Object visitExprConstInt(ExprConstInt exp) { return null; }
+    public Object visitExprLiteral(ExprLiteral exp) { return null; }
     public Object visitExprConstStr(ExprConstStr exp) { return null; }
     public Object visitExprField(ExprField exp) { return null; }
     public Object visitExprFunCall(ExprFunCall exp) { return null; }

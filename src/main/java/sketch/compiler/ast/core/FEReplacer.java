@@ -189,6 +189,7 @@ public class FEReplacer implements FEVisitor
     public Object visitExprConstFloat(ExprConstFloat exp) { return exp; }
     public Object visitExprConstInt(ExprConstInt exp) { return exp; }
     public Object visitExprConstStr(ExprConstStr exp) { return exp; }
+    public Object visitExprLiteral(ExprLiteral exp) { return exp; }
 
     public Object visitExprField(ExprField exp)
     {
