@@ -8,6 +8,13 @@ bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   bit [32*256] T1;
   bit [32*256] T2;
   bit [32*256] T3;
+  int SZ = 32*256;
+  for(int i=0; i< SZ; ++i){
+  	T0[i] = ??;
+  	T1[i] = ??;
+  	T2[i] = ??;
+  	T3[i] = ??;
+  }
   bit[W] output;
   for(int i=0; i<4; ++i){
   	bit[8] inv0;
