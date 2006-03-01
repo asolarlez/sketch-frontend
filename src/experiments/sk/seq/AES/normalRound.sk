@@ -15,6 +15,9 @@ bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   	T2[i] = ??;
   	T3[i] = ??;
   }
+  
+  in = ShiftRows(in);
+  
   bit[W] output;
   for(int i=0; i<4; ++i){
   	bit[8] inv0;
