@@ -38,31 +38,14 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.AssignLoopTypes;
-import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateArrayRange;
-import streamit.frontend.passes.ExtractRightShifts;
-import streamit.frontend.passes.ExtractVectorsInCasts;
-import streamit.frontend.passes.FindFreeVariables;
-import streamit.frontend.passes.FunctionParamExtension;
-import streamit.frontend.passes.GenerateCopies;
-import streamit.frontend.passes.NoRefTypes;
-import streamit.frontend.passes.NoticePhasedFilters;
-import streamit.frontend.passes.SemanticChecker;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.passes.*;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
 import streamit.frontend.tojava.InsertIODecls;
 import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
-import streamit.frontend.tosbit.EliminateStar;
-import streamit.frontend.tosbit.NodesToC;
-import streamit.frontend.tosbit.ProduceBooleanFunctions;
-import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.*;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -104,13 +87,18 @@ public class ToSBit
     private int seed = -1;
     private String resultFile = null;
     private Program beforeUnvectorizing=null;
+    private boolean doVectorization=false;
+    private boolean outputCFiles=false;
+    private String outputCDir="./";
+    private boolean outputScript=false;
+    private boolean outputTest=false;
     
     public void doOptions(String[] args)
     {
         for (int i = 0; i < args.length; i++)
         {
             if (args[i].equals("--full"))
-                ; // Accept but ignore for compatibility
+                ; // Accept but ignore for compatibil5ity
             else if (args[i].equals("--help"))
                 printHelp = true;
             else if (args[i].equals("--"))
@@ -131,20 +119,32 @@ public class ToSBit
                 String word = args[++i];
                 Integer value = new Integer(args[++i]);
                 defines.put(word,value);
-            } else if (args[i].equals("--unrollamnt")) {                
+            } else if (args[i].equals("--unrollamnt")) {
                 Integer value = new Integer(args[++i]);
                 unrollAmt = value.intValue(); 
-            }else if (args[i].equals("--incremental")) {               
+            }else if (args[i].equals("--incremental")) {
                 Integer value = new Integer(args[++i]);
                 incremental = true;
                 incermentalAmt = value.intValue();
-            }else if (args[i].equals("--timeout")) {               
+            }else if (args[i].equals("--timeout")) {
                 Integer value = new Integer(args[++i]);
                 hasTimeout = true;
                 timeout = value.intValue();
-            }else if (args[i].equals("--seed")) {               
+            }else if (args[i].equals("--seed")) {
                 Integer value = new Integer(args[++i]);
                 seed = value.intValue();
+            }else if (args[i].equals("--dovectorization")) {
+            	doVectorization=true;
+            }else if (args[i].equals("--outputcfiles")) {
+            	outputCFiles=true;
+            }else if (args[i].equals("--outputdir")) {
+                outputCDir = args[++i];
+                if(!outputCDir.endsWith("/"))
+                	outputCDir=outputCDir+"/";
+            }else if (args[i].equals("--outputscript")) {
+            	outputScript=true;
+            }else if (args[i].equals("--outputtest")) {
+            	outputTest=true;
             }
             else
                 // Maybe check for unrecognized options.
@@ -357,16 +357,56 @@ public class ToSBit
         {
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
-        }        
+        }
         Program noindet = (Program)beforeUnvectorizing.accept(new EliminateStar(oracle, this.unrollAmt));
-        String ccode = (String)noindet.accept(new NodesToC(false, varGen) );
-        if(resultFile == null){
-        	System.out.println(ccode);  
+        if(doVectorization) {
+        	noindet=(Program) noindet.accept(new BitVectorPreprocessor(new TempVarGen()));
+        	noindet=(Program) noindet.accept(new BitTypeRemover(varGen));
+        }
+        
+    	if(resultFile==null) {
+    		resultFile=inputFiles.get(0);
+    	}
+		if(resultFile.lastIndexOf("/")>=0)
+			resultFile=resultFile.substring(resultFile.lastIndexOf("/")+1);
+		if(resultFile.lastIndexOf("\\")>=0)
+			resultFile=resultFile.substring(resultFile.lastIndexOf("\\")+1);
+		if(resultFile.lastIndexOf(".")>=0)
+			resultFile=resultFile.substring(0,resultFile.lastIndexOf("."));
+        
+		String hcode = (String)noindet.accept(new NodesToH(resultFile));
+        String ccode = (String)noindet.accept(new NodesToC(varGen,resultFile));
+        if(!outputCFiles){
+        	System.out.println(hcode);
+        	System.out.println(ccode);
         }else{
         	try{
-        		outWriter = new FileWriter(resultFile);
+        		outWriter = new FileWriter(outputCDir+resultFile+".h");
+            	outWriter.write(hcode);
+                outWriter.flush();
+                outWriter.close();
+        		outWriter = new FileWriter(outputCDir+resultFile+".c");
             	outWriter.write(ccode);
                 outWriter.flush();
+                outWriter.close();
+                if(outputTest) {
+                	String testcode=(String)noindet.accept(new NodesToCTest(resultFile));
+            		outWriter = new FileWriter(outputCDir+resultFile+"_test.c");
+            		outWriter.write(testcode);
+                    outWriter.flush();
+                    outWriter.close();
+                }
+                if(outputScript) {
+            		outWriter = new FileWriter(outputCDir+"script");
+            		outWriter.write("#!/bin/sh\n");
+            		if(outputTest)
+            			outWriter.write("g++ -o "+resultFile+" "+resultFile+".c "+resultFile+"_test.c\n");
+            		else
+            			outWriter.write("g++ -c "+resultFile+".c\n");
+            		outWriter.write("./"+resultFile+"\n");
+            		outWriter.flush();
+                    outWriter.close();
+                }
             }
             catch (java.io.IOException e){
                 throw new RuntimeException(e);

@@ -7,11 +7,13 @@ import streamit.frontend.tojava.NodesToJava;
 
 public class NodesToC extends NodesToJava {
 
+	private String filename; 
 	private ArrayList<String> usedMacros=new ArrayList<String>();
 	private static HashMap<String,String> macroDefinitions=null;
 	
-	public NodesToC(boolean libraryFormat, TempVarGen varGen) {
-		super(libraryFormat, varGen);
+	public NodesToC(TempVarGen varGen, String filename) {
+		super(false, varGen);
+		this.filename=filename;
 		if(macroDefinitions==null) {
 			macroDefinitions=new HashMap<String,String>();
 			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(1<<(i))))|(((x)&1)<<(i))");
@@ -43,16 +45,15 @@ public class NodesToC extends NodesToJava {
 	{
 		String ret=(String)super.visitProgram(prog);
 		StringBuffer preamble=new StringBuffer();
+		preamble.append("#include \"");
+		preamble.append(filename);
+		preamble.append(".h\"\n");
 		for(Iterator<String> it=usedMacros.iterator();it.hasNext();) {
 			preamble.append(macroDefinitions.get(it.next()));
 			preamble.append("\n");
 		}
-		if(preamble.length()==0)
-			return ret;
-		else {
-			preamble.append(ret);
-			return preamble.toString();
-		}
+		preamble.append(ret);
+		return preamble.toString();
 	}
 
 	public Object visitStreamSpec(StreamSpec spec){
@@ -73,7 +74,6 @@ public class NodesToC extends NodesToJava {
             result += convertType(func.getReturnType()) + " ";
         result += func.getName();
         String prefix = null;
-        if (func.getCls() == Function.FUNC_INIT) prefix = "final";
         result += doParams(func.getParams(), prefix) + " ";
         result += (String)func.getBody().accept(this);
         result += "\n";
@@ -170,11 +170,12 @@ public class NodesToC extends NodesToJava {
 	{
 		if(type instanceof TypePrimitive) {
 			switch(((TypePrimitive)type).getType()) {
-				case TypePrimitive.TYPE_INT8:  return "char";
-				case TypePrimitive.TYPE_INT16: return "short int";
-				case TypePrimitive.TYPE_INT32: return "int";
-				case TypePrimitive.TYPE_INT64: return "long long";
-				case TypePrimitive.TYPE_BIT:   return "int";
+				case TypePrimitive.TYPE_INT8:  return "unsigned char";
+				case TypePrimitive.TYPE_INT16: return "unsigned short int";
+				case TypePrimitive.TYPE_INT32: return "unsigned int";
+				case TypePrimitive.TYPE_INT64: return "unsigned long long";
+	            case TypePrimitive.TYPE_BOOLEAN:
+				case TypePrimitive.TYPE_BIT:   return "unsigned char";
 			}
 		}
 		return super.convertType(type);
