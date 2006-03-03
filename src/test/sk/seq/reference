@@ -2,15 +2,15 @@
 # 1 "<built-in>"
 # 1 "<command line>"
 # 1 "<stdin>"
-miniTest1.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest1.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest1.sk.cc:6: {
 miniTest1.sk.cc:7: _out_0 = ((in[1] & 0) | (in[3] & 1));
 miniTest1.sk.cc:8: };
-miniTest1.sk.cc:10:void reverse(int[] in, int& _out_0) {
+miniTest1.sk.cc:10:void reverse(int* in, int& _out_0) {
 miniTest1.sk.cc:11: _out_0 = in[3];
-miniTest10.sk.cc:5:void foo(int[] in, int& _out_0) {
+miniTest10.sk.cc:5:void foo(int* in, int& _out_0) {
 miniTest10.sk.cc:6: _out_0 = in[null];
-miniTest10.sk.cc:8:void reverseSketch(int[] in, int& _out_0) {
+miniTest10.sk.cc:8:void reverseSketch(int* in, int& _out_0) {
 miniTest10.sk.cc:9: {
 miniTest10.sk.cc:10: int _frv_0;
 miniTest10.sk.cc:11: {
@@ -22,27 +22,27 @@ miniTest10.sk.cc:16: _frv_0 = _out_0;
 miniTest10.sk.cc:17: };
 miniTest10.sk.cc:18: _out_0 = (_frv_0 ^ in[2]);
 miniTest10.sk.cc:19: };
-miniTest10.sk.cc:21:void reverse(int[] in, int& _out_0) {
+miniTest10.sk.cc:21:void reverse(int* in, int& _out_0) {
 miniTest10.sk.cc:22: _out_0 = (in[2] ^ in[3]);
-miniTest11.sk.cc:5:void moo(int[] in, int[] _out_0) {
+miniTest11.sk.cc:5:void moo(int* in, int* _out_0) {
 miniTest11.sk.cc:6: int tmp[2];
 miniTest11.sk.cc:7: tmp[0] = in[0];
 miniTest11.sk.cc:8: tmp[1] = in[2];
 miniTest11.sk.cc:9: _out_0 = tmp;
-miniTest11.sk.cc:11:void foo(int[] in, int& _out_0) {
+miniTest11.sk.cc:11:void foo(int* in, int& _out_0) {
 miniTest11.sk.cc:12: int _frv_0[2];
 miniTest11.sk.cc:13: moo(in, _frv_0);
 miniTest11.sk.cc:14: int tmp[2];
 miniTest11.sk.cc:15: tmp = _frv_0;
 miniTest11.sk.cc:16: _out_0 = tmp[1];
 miniTest11.sk.cc:17: ;
-miniTest11.sk.cc:19:void reverseSketch(int[] in, int& _out_0) {
+miniTest11.sk.cc:19:void reverseSketch(int* in, int& _out_0) {
 miniTest11.sk.cc:20: int _frv_0;
 miniTest11.sk.cc:21: foo(in, _frv_0);
 miniTest11.sk.cc:22: _out_0 = _frv_0;
-miniTest11.sk.cc:24:void reverse(int[] in, int& _out_0) {
+miniTest11.sk.cc:24:void reverse(int* in, int& _out_0) {
 miniTest11.sk.cc:25: _out_0 = in[2];
-miniTest12.sk.cc:5:void foo(int[] in, int& k, int& _out_0) {
+miniTest12.sk.cc:5:void foo(int* in, int& k, int& _out_0) {
 miniTest12.sk.cc:6: if ((k > 0)) {
 miniTest12.sk.cc:7: {
 miniTest12.sk.cc:8: int _frv_0;
@@ -57,15 +57,15 @@ miniTest12.sk.cc:16: _out_0 = in[2];
 miniTest12.sk.cc:17: ;
 miniTest12.sk.cc:18: };
 miniTest12.sk.cc:19: }
-miniTest12.sk.cc:21:void reverseSketch(int[] in, int& _out_0) {
+miniTest12.sk.cc:21:void reverseSketch(int* in, int& _out_0) {
 miniTest12.sk.cc:22: int _frv_0;
 miniTest12.sk.cc:23: int _frv_1;
 miniTest12.sk.cc:24: _frv_1 = 4;
 miniTest12.sk.cc:25: foo(in, _frv_1, _frv_0);
 miniTest12.sk.cc:26: _out_0 = _frv_0;
-miniTest12.sk.cc:28:void reverse(int[] in, int& _out_0) {
+miniTest12.sk.cc:28:void reverse(int* in, int& _out_0) {
 miniTest12.sk.cc:29: _out_0 = in[2];
-miniTest13.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest13.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest13.sk.cc:6: {
 miniTest13.sk.cc:7: int i1;
 miniTest13.sk.cc:8: i1 = 2;
@@ -73,9 +73,9 @@ miniTest13.sk.cc:9: int i2;
 miniTest13.sk.cc:10: i2 = 2;
 miniTest13.sk.cc:11: _out_0 = (in[(i1 * i2)] ^ in[i1]);
 miniTest13.sk.cc:12: };
-miniTest13.sk.cc:14:void reverse(int[] in, int& _out_0) {
+miniTest13.sk.cc:14:void reverse(int* in, int& _out_0) {
 miniTest13.sk.cc:15: _out_0 = (in[4] ^ in[2]);
-miniTest14.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest14.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest14.sk.cc:6: {
 miniTest14.sk.cc:7: int t;
 miniTest14.sk.cc:8: t = 0;
@@ -88,9 +88,9 @@ miniTest14.sk.cc:14: i = (i + 1);
 miniTest14.sk.cc:15: };
 miniTest14.sk.cc:16: _out_0 = t;
 miniTest14.sk.cc:17: };
-miniTest14.sk.cc:19:void reverse(int[] in, int& _out_0) {
+miniTest14.sk.cc:19:void reverse(int* in, int& _out_0) {
 miniTest14.sk.cc:20: _out_0 = in[2];
-miniTest15.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest15.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest15.sk.cc:6: {
 miniTest15.sk.cc:7: int tmp[2];
 miniTest15.sk.cc:8: tmp = 0;
@@ -98,25 +98,25 @@ miniTest15.sk.cc:9: tmp[0] = 1;
 miniTest15.sk.cc:10: tmp[1] = 1;
 miniTest15.sk.cc:11: _out_0 = in[((int)(tmp))];
 miniTest15.sk.cc:12: };
-miniTest15.sk.cc:14:void reverse(int[] in, int& _out_0) {
+miniTest15.sk.cc:14:void reverse(int* in, int& _out_0) {
 miniTest15.sk.cc:15: _out_0 = in[3];
-miniTest16.sk.cc:5:void foo(int[] in, int[] _out_0) {
+miniTest16.sk.cc:5:void foo(int* in, int* _out_0) {
 miniTest16.sk.cc:6: _out_0 = in;
-miniTest16.sk.cc:8:void reverseSketch(int[] in, int[] _out_0) {
+miniTest16.sk.cc:8:void reverseSketch(int* in, int* _out_0) {
 miniTest16.sk.cc:9: in[0] = 0;
 miniTest16.sk.cc:10: int _frv_0[4];
 miniTest16.sk.cc:11: foo(in, _frv_0);
 miniTest16.sk.cc:12: _out_0 = _frv_0;
-miniTest16.sk.cc:14:void reverse(int[] in, int[] _out_0) {
+miniTest16.sk.cc:14:void reverse(int* in, int* _out_0) {
 miniTest16.sk.cc:15: in[0] = 0;
 miniTest16.sk.cc:16: _out_0 = in;
-miniTest17.sk.cc:5:void foo(int[] in, int[] _out_0) {
+miniTest17.sk.cc:5:void foo(int* in, int* _out_0) {
 miniTest17.sk.cc:6: _out_0 = in;
-miniTest17.sk.cc:8:void reverseSketch(int[] in, int[] _out_0) {
+miniTest17.sk.cc:8:void reverseSketch(int* in, int* _out_0) {
 miniTest17.sk.cc:9: int _frv_0[10];
 miniTest17.sk.cc:10: foo(in, _frv_0);
 miniTest17.sk.cc:11: _out_0 = ((int[])(_frv_0));
-miniTest17.sk.cc:13:void reverse(int[] in, int[] _out_0) {
+miniTest17.sk.cc:13:void reverse(int* in, int* _out_0) {
 miniTest17.sk.cc:14: int tmp[5];
 miniTest17.sk.cc:15: tmp = 0;
 miniTest17.sk.cc:16: for (int i = 0; (i < 4); ++i) {
@@ -125,7 +125,7 @@ miniTest17.sk.cc:18: tmp[i] = in[i];
 miniTest17.sk.cc:19: };
 miniTest17.sk.cc:20: };
 miniTest17.sk.cc:21: _out_0 = tmp;
-miniTest18.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest18.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest18.sk.cc:6: {
 miniTest18.sk.cc:7: int tmp[5];
 miniTest18.sk.cc:8: tmp = {0,1,0,0,0};
@@ -135,19 +135,19 @@ miniTest18.sk.cc:11: int __sa0[5];
 miniTest18.sk.cc:12: __sa0 = (tmp << ((int)(tmp2)));
 miniTest18.sk.cc:13: _out_0 = in[((int)(__sa0))];
 miniTest18.sk.cc:14: };
-miniTest18.sk.cc:16:void reverse(int[] in, int& _out_0) {
+miniTest18.sk.cc:16:void reverse(int* in, int& _out_0) {
 miniTest18.sk.cc:17: _out_0 = in[2];
-miniTest19.sk.cc:5:void foo(int[] in, int[] _out_0) {
+miniTest19.sk.cc:5:void foo(int* in, int* _out_0) {
 miniTest19.sk.cc:6: _out_0 = in;
-miniTest19.sk.cc:8:void reverseSketch(int[] in, int[] _out_0) {
+miniTest19.sk.cc:8:void reverseSketch(int* in, int* _out_0) {
 miniTest19.sk.cc:9: int _frv_0[4];
 miniTest19.sk.cc:10: int _frv_1[4];
 miniTest19.sk.cc:11: _frv_1 = 1;
 miniTest19.sk.cc:12: foo(_frv_1, _frv_0);
 miniTest19.sk.cc:13: _out_0 = (in ^ _frv_0);
-miniTest19.sk.cc:15:void reverse(int[] in, int[] _out_0) {
+miniTest19.sk.cc:15:void reverse(int* in, int* _out_0) {
 miniTest19.sk.cc:16: _out_0 = (in ^ 1);
-miniTest2.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest2.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest2.sk.cc:6: {
 miniTest2.sk.cc:7: int tmp[4];
 miniTest2.sk.cc:8: tmp = in;
@@ -155,9 +155,9 @@ miniTest2.sk.cc:9: tmp[2] = 1;
 miniTest2.sk.cc:10: tmp[3] = 0;
 miniTest2.sk.cc:11: _out_0 = tmp[1];
 miniTest2.sk.cc:12: };
-miniTest2.sk.cc:14:void reverse(int[] in, int& _out_0) {
+miniTest2.sk.cc:14:void reverse(int* in, int& _out_0) {
 miniTest2.sk.cc:15: _out_0 = in[1];
-miniTest20.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest20.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest20.sk.cc:6: {
 miniTest20.sk.cc:7: int fu[4] = {2,3,4,0};
 miniTest20.sk.cc:8: int idx1;
@@ -166,9 +166,9 @@ miniTest20.sk.cc:10: int idx;
 miniTest20.sk.cc:11: idx = {2,3,4,0}[idx1];
 miniTest20.sk.cc:12: _out_0 = in[idx];
 miniTest20.sk.cc:13: };
-miniTest20.sk.cc:15:void reverse(int[] in, int& _out_0) {
+miniTest20.sk.cc:15:void reverse(int* in, int& _out_0) {
 miniTest20.sk.cc:16: _out_0 = in[4];
-miniTest21.sk.cc:5:void reverseSketch(int[] in, int[] in2, int& _out_0) {
+miniTest21.sk.cc:5:void reverseSketch(int* in, int* in2, int& _out_0) {
 miniTest21.sk.cc:6: {
 miniTest21.sk.cc:7: int fu[8];
 miniTest21.sk.cc:8: int i = 0;
@@ -218,14 +218,14 @@ miniTest21.sk.cc:51: int idx;
 miniTest21.sk.cc:52: idx = fu[idx1];
 miniTest21.sk.cc:53: _out_0 = in2[idx];
 miniTest21.sk.cc:54: };
-miniTest21.sk.cc:56:void reverse(int[] in, int[] in2, int& _out_0) {
+miniTest21.sk.cc:56:void reverse(int* in, int* in2, int& _out_0) {
 miniTest21.sk.cc:57: int fu[8] = {2,1,1,0,1,2,2,0};
 miniTest21.sk.cc:58: int idx1;
 miniTest21.sk.cc:59: idx1 = ((int)(in));
 miniTest21.sk.cc:60: int idx;
 miniTest21.sk.cc:61: idx = fu[idx1];
 miniTest21.sk.cc:62: _out_0 = in2[idx];
-miniTest22.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest22.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest22.sk.cc:6: {
 miniTest22.sk.cc:7: int x;
 miniTest22.sk.cc:8: if (1) {
@@ -239,16 +239,16 @@ miniTest22.sk.cc:15: };
 miniTest22.sk.cc:16: }
 miniTest22.sk.cc:17: _out_0 = in[x];
 miniTest22.sk.cc:18: };
-miniTest22.sk.cc:20:void reverse(int[] in, int& _out_0) {
+miniTest22.sk.cc:20:void reverse(int* in, int& _out_0) {
 miniTest22.sk.cc:21: _out_0 = in[2];
-miniTest23.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest23.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest23.sk.cc:6: int p[3] = {2,1,3};
 miniTest23.sk.cc:7: int out[3];
 miniTest23.sk.cc:8: for (int i = 0; (i < 3); ++i) {
 miniTest23.sk.cc:9: out[i] = in[(p[i] - 1)];
 miniTest23.sk.cc:10: };
 miniTest23.sk.cc:11: _out_0 = out;
-miniTest23.sk.cc:13:void miniTestSK(int[] x, int[] _out_0) {
+miniTest23.sk.cc:13:void miniTestSK(int* x, int* _out_0) {
 miniTest23.sk.cc:14: {
 miniTest23.sk.cc:15: int tt;
 miniTest23.sk.cc:16: tt = 1;
@@ -260,7 +260,7 @@ miniTest23.sk.cc:21: int tmp[3];
 miniTest23.sk.cc:22: tmp = ((tmp2 && {1,1,0}) | (x && !{1,1,0}));
 miniTest23.sk.cc:23: _out_0 = tmp;
 miniTest23.sk.cc:24: };
-miniTest24.sk.cc:5:void testSK(int[] in, int& _out_0) {
+miniTest24.sk.cc:5:void testSK(int* in, int& _out_0) {
 miniTest24.sk.cc:6: {
 miniTest24.sk.cc:7: int x;
 miniTest24.sk.cc:8: x = 3;
@@ -276,34 +276,34 @@ miniTest24.sk.cc:17: _out_0 = in[(y * 2)];
 miniTest24.sk.cc:18: };
 miniTest24.sk.cc:19: }
 miniTest24.sk.cc:20: };
-miniTest24.sk.cc:22:void test(int[] in, int& _out_0) {
+miniTest24.sk.cc:22:void test(int* in, int& _out_0) {
 miniTest24.sk.cc:23: _out_0 = in[3];
-miniTest25.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest25.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest25.sk.cc:6: in[0] = 1;
 miniTest25.sk.cc:7: _out_0 = (in ^ (in << 1));
-miniTest25.sk.cc:9:void fu(int[] x, int[] _out_0) {
+miniTest25.sk.cc:9:void fu(int* x, int* _out_0) {
 miniTest25.sk.cc:10: x[0] = 1;
 miniTest25.sk.cc:11: _out_0 = x;
-miniTest25.sk.cc:13:void miniTestSK(int[] x, int[] _out_0) {
+miniTest25.sk.cc:13:void miniTestSK(int* x, int* _out_0) {
 miniTest25.sk.cc:14: int _frv_0[3];
 miniTest25.sk.cc:15: fu(x, _frv_0);
 miniTest25.sk.cc:16: x = _frv_0;
 miniTest25.sk.cc:17: _out_0 = (x ^ (x << 1));
-miniTest26.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest26.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest26.sk.cc:6: int one[2] = {0,0};
 miniTest26.sk.cc:7: one[0] = 1;
 miniTest26.sk.cc:8: _out_0 = (in ^ one);
-miniTest26.sk.cc:10:void miniTestSK(int[] in, int[] _out_0) {
+miniTest26.sk.cc:10:void miniTestSK(int* in, int* _out_0) {
 miniTest26.sk.cc:11: {
 miniTest26.sk.cc:12: int one[2] = {0,0};
 miniTest26.sk.cc:13: one[0] = 1;
 miniTest26.sk.cc:14: _out_0 = (in ^ one);
 miniTest26.sk.cc:15: };
-miniTest28.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest28.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest28.sk.cc:6: int one[2] = {0,0};
 miniTest28.sk.cc:7: one[0] = 1;
 miniTest28.sk.cc:8: _out_0 = (in ^ one);
-miniTest28.sk.cc:10:void miniTestSK(int[] in, int[] _out_0) {
+miniTest28.sk.cc:10:void miniTestSK(int* in, int* _out_0) {
 miniTest28.sk.cc:11: {
 miniTest28.sk.cc:12: int tmp[2] = {0,0};
 miniTest28.sk.cc:13: tmp[1] = 1;
@@ -313,13 +313,13 @@ miniTest28.sk.cc:16: one[1] = 0;
 miniTest28.sk.cc:17: one[0] = 1;
 miniTest28.sk.cc:18: _out_0 = (in ^ one);
 miniTest28.sk.cc:19: };
-miniTest29.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest29.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest29.sk.cc:6: int one[2] = {0,0};
 miniTest29.sk.cc:7: one[0] = 1;
 miniTest29.sk.cc:8: int __sa0[3];
 miniTest29.sk.cc:9: __sa0 = (in >> 1);
 miniTest29.sk.cc:10: _out_0 = (__sa0 ^ one);
-miniTest29.sk.cc:12:void miniTestSK(int[] in, int[] _out_0) {
+miniTest29.sk.cc:12:void miniTestSK(int* in, int* _out_0) {
 miniTest29.sk.cc:13: {
 miniTest29.sk.cc:14: int __sa1[3];
 miniTest29.sk.cc:15: __sa1 = (in >> 1);
@@ -369,7 +369,7 @@ miniTest29.sk.cc:58: }
 miniTest29.sk.cc:59: }
 miniTest29.sk.cc:60: _out_0 = (tmp ^ one);
 miniTest29.sk.cc:61: };
-miniTest3.sk.cc:5:void simple(int[] in, int[] _out_0) {
+miniTest3.sk.cc:5:void simple(int* in, int* _out_0) {
 miniTest3.sk.cc:6: int i1[4];
 miniTest3.sk.cc:7: int x;
 miniTest3.sk.cc:8: x = 1;
@@ -380,11 +380,11 @@ miniTest3.sk.cc:12: };
 miniTest3.sk.cc:13: }
 miniTest3.sk.cc:14: i1 = x;
 miniTest3.sk.cc:15: _out_0 = i1;
-miniTest3.sk.cc:17:void simpler(int[] in, int[] _out_0) {
+miniTest3.sk.cc:17:void simpler(int* in, int* _out_0) {
 miniTest3.sk.cc:18: _out_0 = !in[0];
 miniTest30.sk.cc:5:void foo(int& i, int& j, int& _out_0) {
 miniTest30.sk.cc:6: _out_0 = ((i * 2) + j);
-miniTest30.sk.cc:8:void miniTest(int[] in, int& _out_0) {
+miniTest30.sk.cc:8:void miniTest(int* in, int& _out_0) {
 miniTest30.sk.cc:9: int i;
 miniTest30.sk.cc:10: i = 0;
 miniTest30.sk.cc:11: int j;
@@ -392,11 +392,11 @@ miniTest30.sk.cc:12: j = 1;
 miniTest30.sk.cc:13: int _frv_0;
 miniTest30.sk.cc:14: foo(j, i, _frv_0);
 miniTest30.sk.cc:15: _out_0 = in[_frv_0];
-miniTest30.sk.cc:17:void miniTestSK(int[] in, int& _out_0) {
+miniTest30.sk.cc:17:void miniTestSK(int* in, int& _out_0) {
 miniTest30.sk.cc:18: {
 miniTest30.sk.cc:19: _out_0 = in[2];
 miniTest30.sk.cc:20: };
-miniTest31.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest31.sk.cc:5:void miniTest(int* in, int& _out_0) {
 miniTest31.sk.cc:6: int x;
 miniTest31.sk.cc:7: if (!in[0]) {
 miniTest31.sk.cc:8: {
@@ -408,7 +408,7 @@ miniTest31.sk.cc:13: x = in[2];
 miniTest31.sk.cc:14: };
 miniTest31.sk.cc:15: }
 miniTest31.sk.cc:16: _out_0 = in[x];
-miniTest31.sk.cc:18:void miniTestSK(int[] in, int& _out_0) {
+miniTest31.sk.cc:18:void miniTestSK(int* in, int& _out_0) {
 miniTest31.sk.cc:19: {
 miniTest31.sk.cc:20: int x;
 miniTest31.sk.cc:21: if (in[0]) {
@@ -422,9 +422,9 @@ miniTest31.sk.cc:28: };
 miniTest31.sk.cc:29: }
 miniTest31.sk.cc:30: _out_0 = in[x];
 miniTest31.sk.cc:31: };
-miniTest32.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest32.sk.cc:5:void miniTest(int* in, int& _out_0) {
 miniTest32.sk.cc:6: _out_0 = in[!in[0]];
-miniTest32.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest32.sk.cc:8:void miniTestSK(int* in, int& _out_0) {
 miniTest32.sk.cc:9: {
 miniTest32.sk.cc:10: int x;
 miniTest32.sk.cc:11: if (in[0]) {
@@ -438,62 +438,62 @@ miniTest32.sk.cc:18: };
 miniTest32.sk.cc:19: }
 miniTest32.sk.cc:20: _out_0 = in[x];
 miniTest32.sk.cc:21: };
-miniTest33.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest33.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest33.sk.cc:6: in[2] = 1;
 miniTest33.sk.cc:7: _out_0 = in;
-miniTest33.sk.cc:9:void miniTestSK(int[] in, int[] _out_0) {
+miniTest33.sk.cc:9:void miniTestSK(int* in, int* _out_0) {
 miniTest33.sk.cc:10: {
 miniTest33.sk.cc:11: in[2] = 1;
 miniTest33.sk.cc:12: _out_0 = in;
 miniTest33.sk.cc:13: };
-miniTest34.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest34.sk.cc:5:void miniTest(int* in, int& _out_0) {
 miniTest34.sk.cc:6: _out_0 = in[2];
-miniTest34.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest34.sk.cc:8:void miniTestSK(int* in, int& _out_0) {
 miniTest34.sk.cc:9: {
 miniTest34.sk.cc:10: int fu[3] = {0,1,3};
 miniTest34.sk.cc:11: fu[2] = 2;
 miniTest34.sk.cc:12: _out_0 = in[fu[2]];
 miniTest34.sk.cc:13: };
-miniTest35.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest35.sk.cc:5:void miniTest(int* in, int& _out_0) {
 miniTest35.sk.cc:6: _out_0 = in[2];
-miniTest35.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest35.sk.cc:8:void miniTestSK(int* in, int& _out_0) {
 miniTest35.sk.cc:9: {
 miniTest35.sk.cc:10: int fu[3] = {0,1,3};
 miniTest35.sk.cc:11: fu[2] = 2;
 miniTest35.sk.cc:12: _out_0 = in[fu[2]];
 miniTest35.sk.cc:13: };
-miniTest36.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest36.sk.cc:5:void miniTest(int* in, int& _out_0) {
 miniTest36.sk.cc:6: _out_0 = in[2];
-miniTest36.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest36.sk.cc:8:void miniTestSK(int* in, int& _out_0) {
 miniTest36.sk.cc:9: {
 miniTest36.sk.cc:10: int fu[3] = {0,1,3};
 miniTest36.sk.cc:11: fu[2] = 2;
 miniTest36.sk.cc:12: _out_0 = in[fu[2]];
 miniTest36.sk.cc:13: };
-miniTest37.sk.cc:5:void miniTest(int[] in, int& _out_0) {
+miniTest37.sk.cc:5:void miniTest(int* in, int& _out_0) {
 miniTest37.sk.cc:6: _out_0 = in[2];
-miniTest37.sk.cc:8:void miniTestSK(int[] in, int& _out_0) {
+miniTest37.sk.cc:8:void miniTestSK(int* in, int& _out_0) {
 miniTest37.sk.cc:9: {
 miniTest37.sk.cc:10: int fu[2] = {0,1};
 miniTest37.sk.cc:11: fu[0] = 2;
 miniTest37.sk.cc:12: _out_0 = in[fu[0]];
 miniTest37.sk.cc:13: };
-miniTest38.sk.cc:5:void miniTest(int[] in, int[] in2, int[] _out_0) {
+miniTest38.sk.cc:5:void miniTest(int* in, int* in2, int* _out_0) {
 miniTest38.sk.cc:6: int i;
 miniTest38.sk.cc:7: i = ((int)(in2));
 miniTest38.sk.cc:8: in[i] = 1;
 miniTest38.sk.cc:9: _out_0 = in;
-miniTest38.sk.cc:11:void miniTestSK(int[] in, int[] in2, int[] _out_0) {
+miniTest38.sk.cc:11:void miniTestSK(int* in, int* in2, int* _out_0) {
 miniTest38.sk.cc:12: {
 miniTest38.sk.cc:13: int i;
 miniTest38.sk.cc:14: i = ((int)(in2));
 miniTest38.sk.cc:15: in[i] = 1;
 miniTest38.sk.cc:16: _out_0 = in;
 miniTest38.sk.cc:17: };
-miniTest39.sk.cc:5:void miniTest(int[] in, int[] _out_0) {
+miniTest39.sk.cc:5:void miniTest(int* in, int* _out_0) {
 miniTest39.sk.cc:6: int mu[4] = {1,1,0,0};
 miniTest39.sk.cc:7: _out_0 = (in ^ mu);
-miniTest39.sk.cc:9:void miniTestSK(int[] in, int[] _out_0) {
+miniTest39.sk.cc:9:void miniTestSK(int* in, int* _out_0) {
 miniTest39.sk.cc:10: {
 miniTest39.sk.cc:11: int mu[4] = {0,0,0,1};
 miniTest39.sk.cc:12: int i;
@@ -510,15 +510,15 @@ miniTest39.sk.cc:22: i = (i + 1);
 miniTest39.sk.cc:23: };
 miniTest39.sk.cc:24: _out_0 = (in ^ mu);
 miniTest39.sk.cc:25: };
-miniTest4.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest4.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest4.sk.cc:6: {
 miniTest4.sk.cc:7: int tmp[4];
 miniTest4.sk.cc:8: tmp = (in << 2);
 miniTest4.sk.cc:9: _out_0 = tmp[0];
 miniTest4.sk.cc:10: };
-miniTest4.sk.cc:12:void reverse(int[] in, int& _out_0) {
+miniTest4.sk.cc:12:void reverse(int* in, int& _out_0) {
 miniTest4.sk.cc:13: _out_0 = in[2];
-miniTest40.sk.cc:5:void transpose(int[] input, int[] _out_0) {
+miniTest40.sk.cc:5:void transpose(int* input, int* _out_0) {
 miniTest40.sk.cc:6: int output[4];
 miniTest40.sk.cc:7: output = 0;
 miniTest40.sk.cc:8: for (int i = 0; (i < 4); ++i) {
@@ -527,7 +527,7 @@ miniTest40.sk.cc:10: output[i] = input[i];
 miniTest40.sk.cc:11: };
 miniTest40.sk.cc:12: };
 miniTest40.sk.cc:13: _out_0 = output;
-miniTest40.sk.cc:15:void tiledTranspose(int[] input, int[] _out_0) {
+miniTest40.sk.cc:15:void tiledTranspose(int* input, int* _out_0) {
 miniTest40.sk.cc:16: {
 miniTest40.sk.cc:17: int output[4];
 miniTest40.sk.cc:18: output = 0;
@@ -566,7 +566,7 @@ miniTest40.sk.cc:50: }
 miniTest40.sk.cc:51: }
 miniTest40.sk.cc:52: _out_0 = output;
 miniTest40.sk.cc:53: };
-miniTest41.sk.cc:5:void transpose(int[] input, int[] _out_0) {
+miniTest41.sk.cc:5:void transpose(int* input, int* _out_0) {
 miniTest41.sk.cc:6: int output[4];
 miniTest41.sk.cc:7: output = 0;
 miniTest41.sk.cc:8: for (int i = 0; (i < 4); ++i) {
@@ -575,7 +575,7 @@ miniTest41.sk.cc:10: output[i] = input[i];
 miniTest41.sk.cc:11: };
 miniTest41.sk.cc:12: };
 miniTest41.sk.cc:13: _out_0 = output;
-miniTest41.sk.cc:15:void tiledTranspose(int[] input, int[] _out_0) {
+miniTest41.sk.cc:15:void tiledTranspose(int* input, int* _out_0) {
 miniTest41.sk.cc:16: {
 miniTest41.sk.cc:17: int output[4];
 miniTest41.sk.cc:18: output = 0;
@@ -596,7 +596,7 @@ miniTest41.sk.cc:32: i = (i + 2);
 miniTest41.sk.cc:33: };
 miniTest41.sk.cc:34: _out_0 = output;
 miniTest41.sk.cc:35: };
-miniTest42.sk.cc:5:void sort(int[] input, int[] _out_0) {
+miniTest42.sk.cc:5:void sort(int* input, int* _out_0) {
 miniTest42.sk.cc:6: if (input[0]) {
 miniTest42.sk.cc:7: {
 miniTest42.sk.cc:8: input[2] = 1;
@@ -607,7 +607,7 @@ miniTest42.sk.cc:12: input[1] = 1;
 miniTest42.sk.cc:13: };
 miniTest42.sk.cc:14: }
 miniTest42.sk.cc:15: _out_0 = input;
-miniTest42.sk.cc:17:void mergeSort(int[] input, int[] _out_0) {
+miniTest42.sk.cc:17:void mergeSort(int* input, int* _out_0) {
 miniTest42.sk.cc:18: int k;
 miniTest42.sk.cc:19: k = 0;
 miniTest42.sk.cc:20: if (input[0]) {
@@ -620,7 +620,7 @@ miniTest42.sk.cc:26: input[k] = 1;
 miniTest42.sk.cc:27: _out_0 = input;
 miniTest43.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
 miniTest43.sk.cc:6: _out_0 = (!x || y);
-miniTest43.sk.cc:8:void sort(int[] input, int[] _out_0) {
+miniTest43.sk.cc:8:void sort(int* input, int* _out_0) {
 miniTest43.sk.cc:9: int output[2];
 miniTest43.sk.cc:10: output = 0;
 miniTest43.sk.cc:11: int done[2];
@@ -650,7 +650,7 @@ miniTest43.sk.cc:34: done[k] = 1;
 miniTest43.sk.cc:35: };
 miniTest43.sk.cc:36: };
 miniTest43.sk.cc:37: _out_0 = output;
-miniTest43.sk.cc:39:void mergeSort(int[] input, int[] _out_0) {
+miniTest43.sk.cc:39:void mergeSort(int* input, int* _out_0) {
 miniTest43.sk.cc:40: int output[2];
 miniTest43.sk.cc:41: output = 1;
 miniTest43.sk.cc:42: if ((input[0] && input[1])) {
@@ -684,7 +684,7 @@ miniTest43.sk.cc:69: ;
 miniTest43.sk.cc:70: _out_0 = output;
 miniTest44.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
 miniTest44.sk.cc:6: _out_0 = (!x || y);
-miniTest44.sk.cc:8:void sort(int[] input, int[] _out_0) {
+miniTest44.sk.cc:8:void sort(int* input, int* _out_0) {
 miniTest44.sk.cc:9: int output[2];
 miniTest44.sk.cc:10: output = 1;
 miniTest44.sk.cc:11: if ((input[0] && input[1])) {
@@ -716,7 +716,7 @@ miniTest44.sk.cc:36: };
 miniTest44.sk.cc:37: }
 miniTest44.sk.cc:38: ;
 miniTest44.sk.cc:39: _out_0 = output;
-miniTest44.sk.cc:41:void mergeSort(int[] input, int[] _out_0) {
+miniTest44.sk.cc:41:void mergeSort(int* input, int* _out_0) {
 miniTest44.sk.cc:42: int output[2];
 miniTest44.sk.cc:43: output = 1;
 miniTest44.sk.cc:44: int k;
@@ -734,7 +734,7 @@ miniTest44.sk.cc:55: };
 miniTest44.sk.cc:56: _out_0 = output;
 miniTest45.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
 miniTest45.sk.cc:6: _out_0 = (!x || y);
-miniTest45.sk.cc:8:void mergeSort(int[] input, int& _out_0) {
+miniTest45.sk.cc:8:void mergeSort(int* input, int& _out_0) {
 miniTest45.sk.cc:9: int output;
 miniTest45.sk.cc:10: output = 1;
 miniTest45.sk.cc:11: int done[3];
@@ -786,7 +786,7 @@ miniTest45.sk.cc:56: };
 miniTest45.sk.cc:57: output = cur;
 miniTest45.sk.cc:58: };
 miniTest45.sk.cc:59: _out_0 = output;
-miniTest45.sk.cc:61:void sort(int[] input, int& _out_0) {
+miniTest45.sk.cc:61:void sort(int* input, int& _out_0) {
 miniTest45.sk.cc:62: int output;
 miniTest45.sk.cc:63: output = 1;
 miniTest45.sk.cc:64: if (((input[0] && input[1]) && input[2])) {
@@ -816,7 +816,7 @@ miniTest45.sk.cc:87: ;
 miniTest45.sk.cc:88: _out_0 = output;
 miniTest46.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
 miniTest46.sk.cc:6: _out_0 = (!x || y);
-miniTest46.sk.cc:8:void mergeSort(int[] input, int& _out_0) {
+miniTest46.sk.cc:8:void mergeSort(int* input, int& _out_0) {
 miniTest46.sk.cc:9: int output;
 miniTest46.sk.cc:10: output = 1;
 miniTest46.sk.cc:11: int k;
@@ -853,7 +853,7 @@ miniTest46.sk.cc:41: };
 miniTest46.sk.cc:42: }
 miniTest46.sk.cc:43: };
 miniTest46.sk.cc:44: _out_0 = output;
-miniTest46.sk.cc:46:void sort(int[] input, int& _out_0) {
+miniTest46.sk.cc:46:void sort(int* input, int& _out_0) {
 miniTest46.sk.cc:47: int output;
 miniTest46.sk.cc:48: output = 1;
 miniTest46.sk.cc:49: if (((input[0] && input[1]) && input[2])) {
@@ -883,7 +883,7 @@ miniTest46.sk.cc:72: ;
 miniTest46.sk.cc:73: _out_0 = output;
 miniTest47.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
 miniTest47.sk.cc:6: _out_0 = (!x || y);
-miniTest47.sk.cc:8:void sort(int[] input, int& _out_0) {
+miniTest47.sk.cc:8:void sort(int* input, int& _out_0) {
 miniTest47.sk.cc:9: int k;
 miniTest47.sk.cc:10: k = 1;
 miniTest47.sk.cc:11: if (input[0]) {
@@ -896,11 +896,11 @@ miniTest47.sk.cc:17: if (k) {
 miniTest47.sk.cc:18: x = 2;
 miniTest47.sk.cc:19: }
 miniTest47.sk.cc:20: _out_0 = input[k];
-miniTest47.sk.cc:22:void MergeSort(int[] input, int& _out_0) {
+miniTest47.sk.cc:22:void MergeSort(int* input, int& _out_0) {
 miniTest47.sk.cc:23: _out_0 = input[3];
 miniTest48.sk.cc:5:void leq(int& x, int& y, int& _out_0) {
 miniTest48.sk.cc:6: _out_0 = (!x || y);
-miniTest48.sk.cc:8:void sort(int[] input, int[] _out_0) {
+miniTest48.sk.cc:8:void sort(int* input, int* _out_0) {
 miniTest48.sk.cc:9: int output[4];
 miniTest48.sk.cc:10: output = 0;
 miniTest48.sk.cc:11: int done[4];
@@ -930,7 +930,7 @@ miniTest48.sk.cc:34: done[k] = 1;
 miniTest48.sk.cc:35: };
 miniTest48.sk.cc:36: };
 miniTest48.sk.cc:37: _out_0 = output;
-miniTest48.sk.cc:39:void MergeSort(int[] input, int[] _out_0) {
+miniTest48.sk.cc:39:void MergeSort(int* input, int* _out_0) {
 miniTest48.sk.cc:40: {
 miniTest48.sk.cc:41: int output[4];
 miniTest48.sk.cc:42: int __sa0[4];
@@ -942,9 +942,31 @@ miniTest48.sk.cc:47: _frv_0 = _out_0;
 miniTest48.sk.cc:48: sort(output, _frv_0);
 miniTest48.sk.cc:49: _out_0 = _frv_0;
 miniTest48.sk.cc:50: };
-miniTest5.sk.cc:5:void foo(int[] ina, int& _out_0) {
+miniTest49.sk.cc:5:void intToBit(int& v, int* _out_0) {
+miniTest49.sk.cc:6: int output[4];
+miniTest49.sk.cc:7: for (int i = 0; (i < 4); ++i) {
+miniTest49.sk.cc:8: {
+miniTest49.sk.cc:9: output[i] = ((v % 2) > 0);
+miniTest49.sk.cc:10: v = (v / 2);
+miniTest49.sk.cc:11: };
+miniTest49.sk.cc:12: };
+miniTest49.sk.cc:13: _out_0 = output;
+miniTest49.sk.cc:15:void reverseSketch(int* in, int* _out_0) {
+miniTest49.sk.cc:16: {
+miniTest49.sk.cc:17: int tmp[4];
+miniTest49.sk.cc:18: tmp = {1,1,0,0};
+miniTest49.sk.cc:19: _out_0 = (in + tmp);
+miniTest49.sk.cc:20: };
+miniTest49.sk.cc:22:void reverse(int* in, int* _out_0) {
+miniTest49.sk.cc:23: int tmp[16] = {3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2};
+miniTest49.sk.cc:24: int _frv_0[4];
+miniTest49.sk.cc:25: int _frv_1;
+miniTest49.sk.cc:26: _frv_1 = tmp[((int)(in))];
+miniTest49.sk.cc:27: intToBit(_frv_1, _frv_0);
+miniTest49.sk.cc:28: _out_0 = _frv_0;
+miniTest5.sk.cc:5:void foo(int* ina, int& _out_0) {
 miniTest5.sk.cc:6: _out_0 = ina[null];
-miniTest5.sk.cc:8:void reverseSketch(int[] in, int& _out_0) {
+miniTest5.sk.cc:8:void reverseSketch(int* in, int& _out_0) {
 miniTest5.sk.cc:9: {
 miniTest5.sk.cc:10: int _frv_0;
 miniTest5.sk.cc:11: {
@@ -964,34 +986,123 @@ miniTest5.sk.cc:24: _frv_1 = _out_0;
 miniTest5.sk.cc:25: };
 miniTest5.sk.cc:26: _out_0 = (_frv_0 ^ _frv_1);
 miniTest5.sk.cc:27: };
-miniTest5.sk.cc:29:void reverse(int[] in, int& _out_0) {
+miniTest5.sk.cc:29:void reverse(int* in, int& _out_0) {
 miniTest5.sk.cc:30: _out_0 = (in[2] ^ in[3]);
-miniTest6.sk.cc:5:void reverseSketch(int[] in, int[] _out_0) {
+miniTest50.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
+miniTest50.sk.cc:6: {
+miniTest50.sk.cc:7: int t;
+miniTest50.sk.cc:8: t = 0;
+miniTest50.sk.cc:9: if (in[0]) {
+miniTest50.sk.cc:10: {
+miniTest50.sk.cc:11: t = 7;
+miniTest50.sk.cc:12: };
+miniTest50.sk.cc:13: } else {
+miniTest50.sk.cc:14: {
+miniTest50.sk.cc:15: t = 6;
+miniTest50.sk.cc:16: };
+miniTest50.sk.cc:17: }
+miniTest50.sk.cc:18: _out_0 = in[(t % 5)];
+miniTest50.sk.cc:19: };
+miniTest50.sk.cc:21:void reverse(int* in, int& _out_0) {
+miniTest50.sk.cc:22: int t;
+miniTest50.sk.cc:23: t = 0;
+miniTest50.sk.cc:24: if (in[0]) {
+miniTest50.sk.cc:25: {
+miniTest50.sk.cc:26: t = 5;
+miniTest50.sk.cc:27: };
+miniTest50.sk.cc:28: } else {
+miniTest50.sk.cc:29: {
+miniTest50.sk.cc:30: t = 4;
+miniTest50.sk.cc:31: };
+miniTest50.sk.cc:32: }
+miniTest50.sk.cc:33: _out_0 = in[(t % 3)];
+miniTest51.sk.cc:5:void reverseSketch(int* in, int* in2, int& _out_0) {
+miniTest51.sk.cc:6: {
+miniTest51.sk.cc:7: int fu[8];
+miniTest51.sk.cc:8: int i = 0;
+miniTest51.sk.cc:9: {
+miniTest51.sk.cc:10: {
+miniTest51.sk.cc:11: fu[0] = 0;
+miniTest51.sk.cc:12: };
+miniTest51.sk.cc:13: };
+miniTest51.sk.cc:14: {
+miniTest51.sk.cc:15: {
+miniTest51.sk.cc:16: fu[1] = 1;
+miniTest51.sk.cc:17: };
+miniTest51.sk.cc:18: };
+miniTest51.sk.cc:19: {
+miniTest51.sk.cc:20: {
+miniTest51.sk.cc:21: fu[2] = 2;
+miniTest51.sk.cc:22: };
+miniTest51.sk.cc:23: };
+miniTest51.sk.cc:24: {
+miniTest51.sk.cc:25: {
+miniTest51.sk.cc:26: fu[3] = 2;
+miniTest51.sk.cc:27: };
+miniTest51.sk.cc:28: };
+miniTest51.sk.cc:29: {
+miniTest51.sk.cc:30: {
+miniTest51.sk.cc:31: fu[4] = 2;
+miniTest51.sk.cc:32: };
+miniTest51.sk.cc:33: };
+miniTest51.sk.cc:34: {
+miniTest51.sk.cc:35: {
+miniTest51.sk.cc:36: fu[5] = 2;
+miniTest51.sk.cc:37: };
+miniTest51.sk.cc:38: };
+miniTest51.sk.cc:39: {
+miniTest51.sk.cc:40: {
+miniTest51.sk.cc:41: fu[6] = 2;
+miniTest51.sk.cc:42: };
+miniTest51.sk.cc:43: };
+miniTest51.sk.cc:44: {
+miniTest51.sk.cc:45: {
+miniTest51.sk.cc:46: fu[7] = 2;
+miniTest51.sk.cc:47: };
+miniTest51.sk.cc:48: };
+miniTest51.sk.cc:49: int idx1;
+miniTest51.sk.cc:50: idx1 = ((int)(in));
+miniTest51.sk.cc:51: int idx;
+miniTest51.sk.cc:52: idx = fu[idx1];
+miniTest51.sk.cc:53: _out_0 = in2[idx];
+miniTest51.sk.cc:54: };
+miniTest51.sk.cc:56:void reverse(int* in, int* in2, int& _out_0) {
+miniTest51.sk.cc:57: int idx1;
+miniTest51.sk.cc:58: idx1 = ((int)(in));
+miniTest51.sk.cc:59: int idx;
+miniTest51.sk.cc:60: idx = idx1;
+miniTest51.sk.cc:61: if ((idx1 > 2)) {
+miniTest51.sk.cc:62: {
+miniTest51.sk.cc:63: idx = 2;
+miniTest51.sk.cc:64: };
+miniTest51.sk.cc:65: }
+miniTest51.sk.cc:66: _out_0 = in2[idx];
+miniTest6.sk.cc:5:void reverseSketch(int* in, int* _out_0) {
 miniTest6.sk.cc:6: {
 miniTest6.sk.cc:7: _out_0 = ((in + {0,1,0,0}) + in);
 miniTest6.sk.cc:8: };
-miniTest6.sk.cc:10:void reverse(int[] in, int[] _out_0) {
+miniTest6.sk.cc:10:void reverse(int* in, int* _out_0) {
 miniTest6.sk.cc:11: int tmp[4] = {0,1,0,0};
 miniTest6.sk.cc:12: _out_0 = ((in + tmp) + in);
-miniTest7.sk.cc:5:void reverseSketch(int[] in, int[] _out_0) {
+miniTest7.sk.cc:5:void reverseSketch(int* in, int* _out_0) {
 miniTest7.sk.cc:6: {
 miniTest7.sk.cc:7: int tmp1[4] = {0,0,1,0};
 miniTest7.sk.cc:8: _out_0 = ((in + {1,0,1,0}) + {0,0,1,0});
 miniTest7.sk.cc:9: };
-miniTest7.sk.cc:11:void reverse(int[] in, int[] _out_0) {
+miniTest7.sk.cc:11:void reverse(int* in, int* _out_0) {
 miniTest7.sk.cc:12: int tmp1[4] = {0,1,1,0};
 miniTest7.sk.cc:13: int tmp2[4] = {1,1,0,0};
 miniTest7.sk.cc:14: _out_0 = ((in + tmp1) + tmp2);
-miniTest7small.sk.cc:5:void reverseSketch(int[] in, int[] _out_0) {
+miniTest7small.sk.cc:5:void reverseSketch(int* in, int* _out_0) {
 miniTest7small.sk.cc:6: {
 miniTest7small.sk.cc:7: int tmp1[2] = {1,0};
 miniTest7small.sk.cc:8: _out_0 = (in + ({1,1} ^ {1,0}));
 miniTest7small.sk.cc:9: };
-miniTest7small.sk.cc:11:void reverse(int[] in, int[] _out_0) {
+miniTest7small.sk.cc:11:void reverse(int* in, int* _out_0) {
 miniTest7small.sk.cc:12: int tmp1[2] = {1,0};
 miniTest7small.sk.cc:13: int tmp2[2] = {1,1};
 miniTest7small.sk.cc:14: _out_0 = (in + (tmp1 ^ tmp2));
-miniTest8.sk.cc:5:void mult(int[] in1, int[] in2, int[] _out_0) {
+miniTest8.sk.cc:5:void mult(int* in1, int* in2, int* _out_0) {
 miniTest8.sk.cc:6: int result[4];
 miniTest8.sk.cc:7: result = 0;
 miniTest8.sk.cc:8: for (int i = 0; (i < 4); ++i) {
@@ -1007,7 +1118,7 @@ miniTest8.sk.cc:17: in1 = __sa0;
 miniTest8.sk.cc:18: };
 miniTest8.sk.cc:19: };
 miniTest8.sk.cc:20: _out_0 = result;
-miniTest8.sk.cc:22:void reverseSketch(int[] in, int[] _out_0) {
+miniTest8.sk.cc:22:void reverseSketch(int* in, int* _out_0) {
 miniTest8.sk.cc:23: {
 miniTest8.sk.cc:24: int tmp[4];
 miniTest8.sk.cc:25: tmp = {1,1,0,0};
@@ -1018,9 +1129,9 @@ miniTest8.sk.cc:29: _frv_0 = _out_0;
 miniTest8.sk.cc:30: mult(in, tmp, _frv_0);
 miniTest8.sk.cc:31: _out_0 = _frv_0;
 miniTest8.sk.cc:32: };
-miniTest8.sk.cc:34:void reverse(int[] in, int[] _out_0) {
+miniTest8.sk.cc:34:void reverse(int* in, int* _out_0) {
 miniTest8.sk.cc:35: _out_0 = ((in + in) + in);
-miniTest9.sk.cc:5:void reverseSketch(int[] in, int& _out_0) {
+miniTest9.sk.cc:5:void reverseSketch(int* in, int& _out_0) {
 miniTest9.sk.cc:6: {
 miniTest9.sk.cc:7: int __sa0[4];
 miniTest9.sk.cc:8: __sa0 = (in >> 1);
@@ -1031,5 +1142,5 @@ miniTest9.sk.cc:12: __sa1 = (in >> 1);
 miniTest9.sk.cc:13: in = __sa1;
 miniTest9.sk.cc:14: _out_0 = in[3];
 miniTest9.sk.cc:15: };
-miniTest9.sk.cc:17:void reverse(int[] in, int& _out_0) {
+miniTest9.sk.cc:17:void reverse(int* in, int& _out_0) {
 miniTest9.sk.cc:18: _out_0 = in[2];
