@@ -15,17 +15,7 @@
  */
 
 package streamit.frontend;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -92,6 +82,14 @@ public class ToSBit
     private String outputCDir="./";
     private boolean outputScript=false;
     private boolean outputTest=false;
+    private boolean fakeSolver=false;
+    
+    private static class NullWriter extends Writer 
+    {
+		public void write(char[] arg0, int arg1, int arg2) throws IOException {}
+		public void flush() throws IOException {}
+		public void close() throws IOException {}
+    }
     
     public void doOptions(String[] args)
     {
@@ -145,6 +143,8 @@ public class ToSBit
             	outputScript=true;
             }else if (args[i].equals("--outputtest")) {
             	outputTest=true;
+            }else if (args[i].equals("--fakesolver")) {
+            	fakeSolver=true;
             }
             else
                 // Maybe check for unrecognized options.
@@ -321,15 +321,16 @@ public class ToSBit
 
         try
         {
-            if (outputFile != null)
+        	if(fakeSolver)
+        		outWriter = new NullWriter();
+        	else if(outputFile != null)
                 outWriter = new FileWriter(outputFile);
             else
                 outWriter = new OutputStreamWriter(System.out);
             ProduceBooleanFunctions partialEval = new ProduceBooleanFunctions(null, varGen, oracle);
             partialEval.LUNROLL = this.unrollAmt;
             System.out.println("MAX LOOP UNROLLING = " + unrollAmt);
-            String javaOut =
-                (String)prog.accept( partialEval );
+            String javaOut = (String)prog.accept( partialEval );
             outWriter.write(javaOut);
             outWriter.flush();
         }
@@ -340,7 +341,7 @@ public class ToSBit
         }
 
         
-        boolean worked = solve(oracle);
+        boolean worked = fakeSolver || solve(oracle);
         if(!worked){
         	throw new RuntimeException("The sketch could not be resolved.");
         }
@@ -412,7 +413,7 @@ public class ToSBit
                 throw new RuntimeException(e);
             }
         }
-                             
+
         System.exit(0);
     }
     
@@ -471,7 +472,7 @@ public class ToSBit
         }
         done.add(Boolean.TRUE);
         if(hasTimeout){
-        	stopper.interrupt();	
+        	stopper.interrupt();
         }
         return true;
     }
@@ -480,7 +481,7 @@ public class ToSBit
     private boolean runSolver(String[] commandLine, int i){
         Runtime rt = Runtime.getRuntime();        
         try
-        {	                
+        {
 	        Process proc = rt.exec(commandLine);   
 	        InputStream output = proc.getInputStream();
 	        InputStream stdErr = proc.getErrorStream();
@@ -490,12 +491,12 @@ public class ToSBit
 	        BufferedReader errBr = new BufferedReader(errStr);
 	        String line = null;
 	        while ( (line = br.readLine()) != null)
-	            System.out.println(i + "  " + line);       
+	            System.out.println(i + "  " + line);
 	        while ( (line = errBr.readLine()) != null)
-	            System.err.println(line);       
-	        int exitVal = proc.waitFor();	        
+	            System.err.println(line);
+	        int exitVal = proc.waitFor();
 	        System.out.println("Process exitValue: " + exitVal);
-	        if(exitVal != 0){	        	
+	        if(exitVal != 0) {
 	        	return false;
 	        }
         }
