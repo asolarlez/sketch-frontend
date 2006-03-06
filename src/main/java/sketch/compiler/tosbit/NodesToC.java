@@ -157,7 +157,7 @@ public class NodesToC extends NodesToJava {
     	String result ;
     	String itNum = this.varGen.nextVar();
     	String var = this.varGen.nextVar();
-    	result = itNum + " = " + stmt.getIter().accept(this) + "; \n";
+    	result = "int "+itNum + " = " + stmt.getIter().accept(this) + "; \n";
     	result += indent + "for (int " + var + " = 0; ";
     	result += var + " < " +  itNum + "; ++" + var;         
         result += ") ";
