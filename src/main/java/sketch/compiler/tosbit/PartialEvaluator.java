@@ -40,6 +40,7 @@ import streamit.frontend.nodes.TypePortal;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
@@ -149,6 +150,44 @@ public class PartialEvaluator extends FEReplacer {
  	    	}
  	    	return null;
  	    }
+    	
+    	public Object visitExprArrayRange(ExprArrayRange exp) {
+    		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
+    		RangeLen rl = (RangeLen)exp.getMembers().get(0);
+    		Expression newStart = (Expression) rl.start.accept(PartialEvaluator.this);
+    		valueClass startVal = state.popVStack();    		
+    		String vname = (String) exp.getBase().accept(this);    			
+    		assert startVal.hasValue() : "For now, we require all array range expressions to have a computable start index.";		
+    		if(startVal.hasValue()){
+    			lhsVals = new ArrayList<String>(rl.len);
+ 	    		oldVals = new ArrayList<String>(rl.len);
+ 	    		names = new ArrayList<String>(rl.len);
+ 	    		int start = startVal.getIntValue(); 	    		
+ 	    		for(int i=0; i<rl.len; ++i){
+ 	    			int ofst = start + i;
+ 	    			String nm = vname + "_idx_" + ofst;
+ 	    			oldVals.add(state.varGetRHSName(nm));
+ 	    			lhsVals.add(state.varGetLHSName(nm));
+ 	    			names.add(nm);
+ 	    		}
+ 	    		NDArracc = true;
+ 	    		if(isReplacer){
+ 		    		if(rl.start != newStart){
+ 		    			List nlst = new ArrayList();
+ 						nlst.add( new RangeLen(newStart, rl.len) );
+ 						lhsExp = new ExprArrayRange(lhsExp, nlst);
+ 		    		}else{
+ 		    			lhsExp = exp;
+ 		    		}
+ 		    	}else{
+ 		    		lhsExp = exp;
+ 		    	}
+    		}else{
+    			throw new RuntimeException("AAAARGH!!!");
+    		}
+    		return null;
+    	}
+    	
 	    public Object visitExprVar(ExprVar exp)
 	    {		    	
 	    	lhsExp = exp;
@@ -259,9 +298,31 @@ public class PartialEvaluator extends FEReplacer {
             return new ExprArray(exp.getContext(), nbase, offset, exp.isUnchecked());
 	}
 
+	
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		assert false : "At this stage, there shouldn't be any ArrayRange expressions";
-		return null;
+		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
+		RangeLen rl = (RangeLen)exp.getMembers().get(0);
+		Expression newStart = (Expression) rl.start.accept(this);
+		valueClass startVal = state.popVStack();
+		
+		Expression newBase = (Expression) exp.getBase().accept(this);
+		valueClass baseVal = state.popVStack();		
+		assert startVal.hasValue() : "For now, we require all array range expressions to have a computable start index.";		
+		if(startVal.hasValue()){
+			assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
+			List<valueClass> lst = baseVal.getVectValue();
+			List<valueClass> newLst = lst.subList(startVal.getIntValue(), lst.size());
+			state.pushVStack( new valueClass(newLst));
+			if(this.isReplacer && (rl.start != newStart || exp.getBase() != newBase )){
+				List nlst = new ArrayList();
+				nlst.add( new RangeLen(newStart, rl.len) );
+				return new ExprArrayRange(newBase, nlst);				
+			}else{
+				return exp;
+			}
+		}else{
+			throw new RuntimeException("AAAARGH!!!");
+		}
 	}
 
 	public Object visitExprComplex(ExprComplex exp) {
@@ -986,7 +1047,7 @@ public class PartialEvaluator extends FEReplacer {
     	String name = exp.getName();
     	// Local function?
     	if (ss.getFuncNamed(name) != null) {        	
-    		state.pushLevel();        	
+    		state.pushLevel();
     		Function fun = ss.getFuncNamed(name);	 
     		{
     			Iterator actualParams = exp.getParams().iterator();	        		        	       	
