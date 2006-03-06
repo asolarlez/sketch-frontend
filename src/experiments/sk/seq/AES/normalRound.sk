@@ -4,17 +4,10 @@ int ROUNDS = 10;
 
 
 bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
-  bit [32*256] T0;
-  bit [32*256] T1;
-  bit [32*256] T2;
-  bit [32*256] T3;
-  int SZ = 32*256;
-  for(int i=0; i< SZ; ++i){
-  	T0[i] = ??;
-  	T1[i] = ??;
-  	T2[i] = ??;
-  	T3[i] = ??;
-  }
+  bit [32*256] T0 = ??;
+  bit [32*256] T1 = ??;
+  bit [32*256] T2 = ??;
+  bit [32*256] T3 = ??;
   
   in = ShiftRows(in);
   
@@ -35,7 +28,7 @@ bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   	int i2 = (int) inv2;
   	int i3 = (int) inv3;
   	for(int j=0; j<32; ++j){
-  		bit tmp  = T0[i0+j] ^ T1[i1+j]^ T2[i2+j]^ T3[i3+j];		
+  		bit tmp  = T0[i0*32+j] ^ T1[i1*32+j]^ T2[i2*32+j]^ T3[i3*32+j];		
 		output[i*32+ j] = tmp ^ rkey[i*32+j];
 	}
   }
