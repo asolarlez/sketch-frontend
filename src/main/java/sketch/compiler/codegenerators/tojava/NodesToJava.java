@@ -1238,7 +1238,8 @@ public class NodesToJava implements FEVisitor
     }
     
 	public Object visitExprStar(ExprStar star) {
-		throw new UnsupportedOperationException();
+		//throw new UnsupportedOperationException();
+		return null;
 	}
 	
 	public Object visitExprArrayRange(ExprArrayRange exp) {
