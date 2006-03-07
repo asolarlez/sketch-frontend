@@ -49,6 +49,11 @@ public class StmtLoop extends Statement
     {
         return v.visitStmtLoop(this);
     }
+    
+    public String toString()
+    {
+    	return "loop("+iter+")";
+    }
 }
 
     
