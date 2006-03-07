@@ -112,8 +112,9 @@ public class NodesToCTest extends NodesToJava {
     private void declareVar(String name, Type t) {
     	int len=typeLen(t);
     	String line=_converter.convertType(baseType(t));
-    	if(len>1) line+="*";
-    	line+=" "+name+";";
+    	line+=" "+name;
+    	if(len>1) line+="["+len+"]";
+    	line+=";";
     	writeLine(line);
     }
 
@@ -129,7 +130,7 @@ public class NodesToCTest extends NodesToJava {
     	if(random) {
 	    	line+="=rand()";
 	    	for(int s=16;s<ws;s+=16) {
-	    		line+="+rand()<<"+s;
+	    		line+="+(rand()<<"+s+")";
 	    	}
     	}
     	else
@@ -142,7 +143,27 @@ public class NodesToCTest extends NodesToJava {
     	}
     }
 
-    private void doCompare(String name1, String name2, Type t, String fname) {
+    private void outputVar(String name, Type t) 
+    {
+    	int len=typeLen(t);
+    	int ws=typeWS(t);
+    	writeLine("printf(\"%5s=\",\""+name+"\");");
+    	if(len>1) {
+    		writeLine("for(int z=0;z<"+len+";z++) {");
+    		addIndent();
+    	}
+    	String line="printf(\"%"+(ws/4)+"x\","+name;
+    	if(len>1) line+="[z]";
+   		line+=");";
+    	writeLine(line);
+    	if(len>1) {
+    		unIndent();
+    		writeLine("}");
+    	}
+    	writeLine("printf(\"\\n\");");
+    }
+    
+    private void doCompare(String name1, String name2, Type t, String fname, List<Parameter> inPars,Parameter outPar) {
     	int len=typeLen(t);
     	if(len>1) {
     		writeLine("for(int i=0;i<"+len+";i++) {");
@@ -156,7 +177,10 @@ public class NodesToCTest extends NodesToJava {
     	writeLine(line);
     	addIndent();
     		writeLine("printf(\"Automated testing failed in "+fname+"\\n\");");
-writeLine("printf(\"%x %x %x\\n\",in,outsk,outsp);");
+    		for(int i=0;i<inPars.size();i++)
+    			outputVar(IN+i,inPars.get(i).getType());
+			outputVar(OUTSK,outPar.getType());
+			outputVar(OUTSP,outPar.getType());
     		writeLine("exit(1);");
     	unIndent();
     	writeLine("}");
@@ -174,24 +198,35 @@ writeLine("printf(\"%x %x %x\\n\",in,outsk,outsp);");
 		Function spec=fMap.get(func.getSpecification());
 		writeLine("void "+fname+"() {");
 		addIndent();
-		List params=func.getParams();
-		if(params.size()==2) {
-			Type inType=((Parameter) params.get(0)).getType();
-			Type outType=((Parameter) params.get(1)).getType();
-			declareVar(IN,inType);
-			declareVar(OUTSK,outType);
-			declareVar(OUTSP,outType);
-			writeLine("for(int test=0;test<"+NTESTS+";test++) {");
-			addIndent();
-			initVar(IN,inType,true);
-			initVar(OUTSK,outType,false);
-			initVar(OUTSP,outType,false);
-			writeLine(func.getName()+"("+IN+","+OUTSK+");");
-			writeLine(func.getSpecification()+"("+IN+","+OUTSP+");");
-			doCompare(OUTSK,OUTSP,outType,fname);
-			unIndent();
-			writeLine("}");
+		List<Parameter> paramsList=func.getParams();
+		List<Parameter> inPars=new ArrayList<Parameter>();
+		Parameter outPar=paramsList.get(paramsList.size()-1);
+		for(int i=0;i<paramsList.size()-1;i++)
+			inPars.add(paramsList.get(i));
+		
+		for(int i=0;i<inPars.size();i++) {
+			Type inType=inPars.get(0).getType();
+			declareVar(IN+i,inType);
 		}
+		Type outType=outPar.getType();
+		declareVar(OUTSK,outType);
+		declareVar(OUTSP,outType);
+		writeLine("for(int test=0;test<"+NTESTS+";test++) {");
+		addIndent();
+		for(int i=0;i<inPars.size();i++) {
+			Type inType=inPars.get(0).getType();
+			initVar(IN+i,inType,true);
+		}
+		initVar(OUTSK,outType,false);
+		initVar(OUTSP,outType,false);
+		String strInputs="";
+		for(int i=0;i<inPars.size();i++) strInputs+=IN+i+",";
+		writeLine(func.getName()+"("+strInputs+OUTSK+");");
+		writeLine(func.getSpecification()+"("+strInputs+OUTSP+");");
+		doCompare(OUTSK,OUTSP,outType,fname,inPars,outPar);
+		unIndent();
+		writeLine("}");
+
 		unIndent();
 		writeLine("}\n");
 		return null;
