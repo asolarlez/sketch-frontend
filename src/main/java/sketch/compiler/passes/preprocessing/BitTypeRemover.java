@@ -86,6 +86,12 @@ public class BitTypeRemover extends SymbolTableVisitor
     		return getArrayWordsize(baseType);
     }
     
+    private static int getBitlength(TypeArray t)
+    {
+    	assert(isBitType(t.getBase()));
+    	return ((ExprConstInt)t.getLength()).getVal();
+    }
+    
 	private Type convertType(Type type)
 	{
 		if(type instanceof TypeArray) {
@@ -378,13 +384,11 @@ public class BitTypeRemover extends SymbolTableVisitor
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
 		final Expression lhs=stmt.getLHS(); //either a variable or an [indexed] array
-		{
-			final Type lhsPType=getVarPType(lhs);
-			assert lhsPType!=null;
-			if(!isBitArrayType(lhsPType)) {
+		final Type lhsPType=getVarPType(lhs);
+		assert lhsPType!=null;
+		if(!isBitArrayType(lhsPType)) {
 //				if(stmt.getRHS() instanceof ExprArrayInit) return stmt;
-				return super.visitStmtAssign(stmt);
-			}
+			return super.visitStmtAssign(stmt);
 		}
 			
 		final Type lhsType=getVarType(lhs);
@@ -591,10 +595,10 @@ public class BitTypeRemover extends SymbolTableVisitor
 			}
 			else if(stmt.getRHS() instanceof ExprBinary)
 			{
+				final ExprBinary binExp=(ExprBinary)stmt.getRHS();
 				if(lhsType instanceof TypeArray)
 				{
 					//it's something like a=b+c where a,b,c are arrays
-					ExprBinary binExp=(ExprBinary)stmt.getRHS();
 					Expression length=((TypeArray)lhsType).getLength();
 					String var=varGen.nextVar();
 					switch(binExp.getOp()) {
@@ -610,6 +614,22 @@ public class BitTypeRemover extends SymbolTableVisitor
 								)
 							);
 							return makeForLoop(var,length,body);
+						}
+					}
+				}
+				else
+				{
+					int pad=ws-getBitlength((TypeArray) lhsPType);
+					if(pad>0) {
+						switch(binExp.getOp()) {
+							case ExprBinary.BINOP_ADD:
+							case ExprBinary.BINOP_SUB:
+							case ExprBinary.BINOP_MUL:
+							case ExprBinary.BINOP_LSHIFT:
+							{
+								addStatement(stmt);
+								return new StmtAssign(stmt.getContext(),lhs,new ExprLiteral(stmt.getContext(),"0x"+Long.toHexString((1<<(ws-pad))-1)),ExprBinary.BINOP_BAND);
+							}
 						}
 					}
 				}

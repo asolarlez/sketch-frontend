@@ -166,6 +166,27 @@ public class NodesToC extends NodesToJava {
     }
 
 	@Override
+	public Object visitStmtAssign(StmtAssign stmt)
+	{
+        String op;
+        switch(stmt.getOp())
+        {
+	        case 0: op = " = "; break;
+	        case ExprBinary.BINOP_ADD: op = " += "; break;
+	        case ExprBinary.BINOP_SUB: op = " -= "; break;
+	        case ExprBinary.BINOP_MUL: op = " *= "; break;
+	        case ExprBinary.BINOP_DIV: op = " /= "; break;
+	        case ExprBinary.BINOP_BOR: op = " |= "; break;
+	        case ExprBinary.BINOP_BAND: op = " &= "; break;
+	        case ExprBinary.BINOP_BXOR: op = " ^= "; break;
+	        default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
+        }
+        // Assume both sides are the right type.
+        return (String)stmt.getLHS().accept(this) + op +
+            (String)stmt.getRHS().accept(this);
+	}
+
+	@Override
 	public String convertType(Type type)
 	{
 		if(type instanceof TypePrimitive) {
