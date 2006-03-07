@@ -185,7 +185,7 @@ public class PartialEvaluator extends FEReplacer {
     		}else{
     			throw new RuntimeException("AAAARGH!!!");
     		}
-    		return null;
+    		return vname;
     	}
     	
 	    public Object visitExprVar(ExprVar exp)
@@ -306,8 +306,7 @@ public class PartialEvaluator extends FEReplacer {
 		valueClass startVal = state.popVStack();
 		
 		Expression newBase = (Expression) exp.getBase().accept(this);
-		valueClass baseVal = state.popVStack();		
-		assert startVal.hasValue() : "For now, we require all array range expressions to have a computable start index.";		
+		valueClass baseVal = state.popVStack();				
 		if(startVal.hasValue()){
 			assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
 			List<valueClass> lst = baseVal.getVectValue();
@@ -321,7 +320,14 @@ public class PartialEvaluator extends FEReplacer {
 				return exp;
 			}
 		}else{
-			throw new RuntimeException("AAAARGH!!!");
+			state.pushVStack(new valueClass(exp.toString()));
+			if(this.isReplacer && (rl.start != newStart || exp.getBase() != newBase )){
+				List nlst = new ArrayList();
+				nlst.add( new RangeLen(newStart, rl.len) );
+				return new ExprArrayRange(newBase, nlst);			
+			}else{
+				return exp;
+			}	
 		}
 	}
 

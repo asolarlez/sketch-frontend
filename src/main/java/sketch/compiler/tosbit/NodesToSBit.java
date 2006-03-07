@@ -1137,8 +1137,12 @@ public class NodesToSBit extends PartialEvaluator{
 				    			valueClass ival =  it.next();
 				    			String nnm = nm + "_idx_" + tt;
 				    			state.varDeclare(nnm);
-			            		state.varGetLHSName(nnm);
-				    			state.setVarValue(nnm, ival.getIntValue());
+			            		String loclhsn = state.varGetLHSName(nnm);
+			            		if( ival.hasValue()){
+			            			state.setVarValue(nnm, ival.getIntValue());
+			            		}else{
+			            			out.println(loclhsn + " = " + ival + ";");
+			            		}
 				    			++tt;
 				    		}
 				    		return null;
