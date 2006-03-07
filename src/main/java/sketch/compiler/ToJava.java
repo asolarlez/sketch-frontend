@@ -285,7 +285,7 @@ public class ToJava
                 outWriter = new OutputStreamWriter(System.out);
 
             String javaOut =
-                (String)prog.accept(new NodesToSBit(null, varGen, new ValueOracle()));
+                (String)prog.accept(new NodesToSBit(null, varGen, new ValueOracle(),null));
             outWriter.write(javaOut);
             outWriter.flush();
         }
