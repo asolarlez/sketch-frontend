@@ -310,7 +310,8 @@ public class PartialEvaluator extends FEReplacer {
 		if(startVal.hasValue()){
 			assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
 			List<valueClass> lst = baseVal.getVectValue();
-			List<valueClass> newLst = lst.subList(startVal.getIntValue(), lst.size());
+			int sval = startVal.getIntValue();
+			List<valueClass> newLst = lst.subList(sval, sval + rl.len);
 			state.pushVStack( new valueClass(newLst));
 			if(this.isReplacer && (rl.start != newStart || exp.getBase() != newBase )){
 				List nlst = new ArrayList();
