@@ -381,23 +381,25 @@ public class ToSBit
         	System.out.println(ccode);
         }else{
         	try{
-        		Writer outWriter = new FileWriter(outputCDir+resultFile+".h");
-            	outWriter.write(hcode);
-                outWriter.flush();
-                outWriter.close();
-        		outWriter = new FileWriter(outputCDir+resultFile+".c");
-            	outWriter.write(ccode);
-                outWriter.flush();
-                outWriter.close();
+        		{
+	        		Writer outWriter = new FileWriter(outputCDir+resultFile+".h");
+	            	outWriter.write(hcode);
+	                outWriter.flush();
+	                outWriter.close();
+	        		outWriter = new FileWriter(outputCDir+resultFile+".c");
+	            	outWriter.write(ccode);
+	                outWriter.flush();
+	                outWriter.close();
+        		}
                 if(outputTest) {
-                	String testcode=(String)noindet.accept(new NodesToCTest(resultFile));
-            		outWriter = new FileWriter(outputCDir+resultFile+"_test.c");
+                	String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
+                	Writer outWriter = new FileWriter(outputCDir+resultFile+"_test.c");
             		outWriter.write(testcode);
                     outWriter.flush();
                     outWriter.close();
                 }
                 if(outputScript) {
-            		outWriter = new FileWriter(outputCDir+"script");
+            		Writer outWriter = new FileWriter(outputCDir+"script");
             		outWriter.write("#!/bin/sh\n");
             		if(outputTest)
             			outWriter.write("g++ -o "+resultFile+" "+resultFile+".c "+resultFile+"_test.c\n");

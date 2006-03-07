@@ -85,10 +85,29 @@ public class NodesToCTest extends NodesToJava {
     	return 0;
     }
     
+    private static boolean isBitType(Type t)
+    {
+    	return t instanceof TypePrimitive && ((TypePrimitive)t).getType()==TypePrimitive.TYPE_BIT;
+    }
+
+    private int getBitLength(TypeArray a) 
+    {
+		Type base=a.getBase();
+		assert(isBitType(base));
+		Expression lenExp=a.getLength();
+		return ((ExprConstInt)lenExp).getVal();
+    }
+    
     private int typeLen(Type t) {
 		if(t instanceof TypeArray) {
 			TypeArray array=(TypeArray)t;
-			return ((ExprConstInt)array.getLength()).getVal();
+			if(isBitType(array.getBase())) {
+				int len=getBitLength(array);
+				if(len<=64) return 1;
+				else return (len-1)/32+1;
+			}
+			else
+				return ((ExprConstInt)array.getLength()).getVal();
 		}
 		else {
 			return 1;
@@ -96,10 +115,34 @@ public class NodesToCTest extends NodesToJava {
     }
     
     private int typeWS(Type t) {
-		if(t instanceof TypeArray)
-			return typeWS(((TypeArray)t).getBase());
+		if(t instanceof TypeArray) {
+			TypeArray array=(TypeArray)t;
+			if(isBitType(array.getBase())) {
+				int len=getBitLength(array);
+				if(len<=8)
+					return 8;
+				else if(len<=16)
+					return 16;
+				else if(len<=32)
+					return 32;
+				else if(len<=64)
+					return 64;
+				else
+					return 32;
+			}
+			else
+				return typeWS(array.getBase());
+		}
 		else
 			return getWordsize(t);
+    }
+    
+    private int paddingBits(Type t) {
+    	if(!(t instanceof TypeArray)) return 0;
+		TypeArray array=(TypeArray)t;
+    	if(!isBitType(array.getBase())) return 0;
+		int len=getBitLength(array);
+    	return typeLen(t)*typeWS(t)-len;
     }
     
     private Type baseType(Type t) {
@@ -109,9 +152,20 @@ public class NodesToCTest extends NodesToJava {
     		return t;
     }
     
+    private String translateType(Type t) {
+    	int ws=typeWS(t);
+    	String ret="unsigned ";
+    	switch(ws) {
+    		case 64: return ret+"long long";
+    		case 32: return ret+"int";
+    		case 16: return ret+"short";
+    		default: return ret+"char";
+    	}
+    }
+    
     private void declareVar(String name, Type t) {
     	int len=typeLen(t);
-    	String line=_converter.convertType(baseType(t));
+    	String line=translateType(t);
     	line+=" "+name;
     	if(len>1) line+="["+len+"]";
     	line+=";";
@@ -140,6 +194,13 @@ public class NodesToCTest extends NodesToJava {
     	if(len>1) {
     		unIndent();
     		writeLine("}");
+    	}
+    	int pad=paddingBits(t);
+    	if(pad>0) {
+    		line=name;
+    		if(len>1) line+="["+(len-1)+"]";
+    		line+="&=((1<<"+(ws-pad)+")-1);";
+    		writeLine(line);
     	}
     }
 
