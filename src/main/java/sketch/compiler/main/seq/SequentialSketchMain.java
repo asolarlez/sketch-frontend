@@ -265,7 +265,7 @@ public class ToSBit
         if (!libraryFormat)
             prog = (Program)prog.accept(new NoticePhasedFilters());
         prog = (Program)prog.accept(new DoComplexProp(varGen));
-        prog = (Program)prog.accept(new EliminateArrayRange());
+        prog = (Program)prog.accept(new EliminateArrayRange(varGen));
         beforeUnvectorizing = prog;
         prog = (Program)prog.accept(new GenerateCopies(varGen));
         prog = (Program)prog.accept(new ComplexToStruct());
