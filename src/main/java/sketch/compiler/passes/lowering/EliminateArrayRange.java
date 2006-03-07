@@ -51,8 +51,10 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 					arng = new ExprArrayRange(newBase, lst);
 				}
 				String newName = varGen.nextVar();
-				StmtVarDecl decl = new StmtVarDecl(arng.getContext(), type, newName, newRHS);
-				this.addStatement(decl);				
+				StmtVarDecl decl = new StmtVarDecl(arng.getContext(), type, newName, null);
+				addStatement(decl);	
+				Statement assign = new StmtAssign(arng.getContext(), new ExprVar(arng.getContext(), newName), newRHS);
+				addStatement(assign);
 				return new StmtAssign(stmt.getContext(), arng, new ExprVar(stmt.getContext(), newName), stmt.getOp());				
 			}else{
 				newLHS = doExpression(stmt.getLHS());
