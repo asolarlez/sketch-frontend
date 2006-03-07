@@ -24,6 +24,19 @@ public class BitTypeRemover extends SymbolTableVisitor
      */
     protected TempVarGen varGen;
     
+    private static class LinearRange {
+    	public LinearRange(int multi, Expression cnt, int offset, int length) {
+    		multiplier=multi;
+    		count=cnt;
+    		startOffset=offset;
+    		len=length;
+    	}
+    	public int multiplier;
+    	public Expression count;
+    	public int startOffset;
+    	public int len;
+    }
+    
     public BitTypeRemover(TempVarGen varGen) {
 		super(null);
 		this.varGen=varGen;
@@ -134,6 +147,41 @@ public class BitTypeRemover extends SymbolTableVisitor
     {
     	if(e instanceof ExprConstInt)
     		return ((ExprConstInt)e).getVal();
+    	return null;
+    }
+    
+    private LinearRange analyzeRange(RangeLen range) {
+    	Expression start=range.start;
+    	if(start instanceof ExprBinary) {
+    		ExprBinary binExp=(ExprBinary) start;
+    		if(binExp.getOp()==ExprBinary.BINOP_ADD) {
+    			if(binExp.getLeft() instanceof ExprBinary && ((ExprBinary)binExp.getLeft()).getOp()==ExprBinary.BINOP_MUL) {
+    				LinearRange subrange=analyzeRange(new RangeLen(binExp.getLeft(),range.len));
+    				if(subrange!=null && binExp.getRight() instanceof ExprConstInt) {
+    					subrange.startOffset+=((ExprConstInt)binExp.getRight()).getVal();
+    					return subrange;
+    				}
+    			}
+    			else if(binExp.getRight() instanceof ExprBinary && ((ExprBinary)binExp.getRight()).getOp()==ExprBinary.BINOP_MUL) {
+    				LinearRange subrange=analyzeRange(new RangeLen(binExp.getRight(),range.len));
+    				if(subrange!=null && binExp.getLeft() instanceof ExprConstInt) {
+    					subrange.startOffset+=((ExprConstInt)binExp.getLeft()).getVal();
+    					return subrange;
+    				}
+    			}
+    		}
+    		else if(binExp.getOp()==ExprBinary.BINOP_MUL) {
+				if(binExp.getLeft() instanceof ExprConstInt && binExp.getRight() instanceof ExprConstInt) {
+					return new LinearRange(0,null,((ExprConstInt)binExp.getLeft()).getVal()*((ExprConstInt)binExp.getRight()).getVal(),range.len);
+				}
+				else if(binExp.getLeft() instanceof ExprConstInt) {
+					return new LinearRange(((ExprConstInt)binExp.getLeft()).getVal(),binExp.getRight(),0,range.len);
+				}
+				else if(binExp.getRight() instanceof ExprConstInt) {
+					return new LinearRange(((ExprConstInt)binExp.getRight()).getVal(),binExp.getLeft(),0,range.len);
+				}
+    		}
+    	}
     	return null;
     }
     
@@ -452,6 +500,18 @@ public class BitTypeRemover extends SymbolTableVisitor
 				else if(ro instanceof RangeLen) //a[s::l]
 				{
 					RangeLen range=(RangeLen) ro;
+					LinearRange lr=analyzeRange(range);
+					if(lr!=null && lr.multiplier==ws) 
+					{
+						if(lr.startOffset+lr.len<=ws) 
+						{
+							if(lr.startOffset==0 && lr.len==ws) {
+								return new StmtAssign(stmt.getContext(),lhs,new ExprArrayRange(
+									expArray.getBase(),Collections.singletonList(new RangeLen(lr.count))
+								));
+							}
+						}
+					}
 //					if(range.len<=ws) {
 //						
 //					}
@@ -481,20 +541,23 @@ public class BitTypeRemover extends SymbolTableVisitor
 			}
 			else if(stmt.getRHS() instanceof ExprConstInt)
 			{
-				Expression length=((TypeArray)lhsType).getLength();
-				int value=((ExprConstInt)stmt.getRHS()).getVal();
-				String var=varGen.nextVar();
-				Expression arrayElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))));
-				Expression zero=new ExprConstInt(stmt.getContext(),0);
-				Statement body=new StmtAssign(stmt.getContext(),arrayElem,zero);
-				if(value==0) {
-					return makeForLoop(var,length,body);
-				}
-				else {
-					Expression one=new ExprConstInt(stmt.getContext(),1);
-					Expression firstElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprConstInt(stmt.getContext(),0))));
-					addStatement(new StmtAssign(stmt.getContext(),firstElem,stmt.getRHS()));
-					return makeForLoop(var,one,length,body);
+				if(lhsType instanceof TypeArray) 
+				{
+					Expression length=((TypeArray)lhsType).getLength();
+					int value=((ExprConstInt)stmt.getRHS()).getVal();
+					String var=varGen.nextVar();
+					Expression arrayElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))));
+					Expression zero=new ExprConstInt(stmt.getContext(),0);
+					Statement body=new StmtAssign(stmt.getContext(),arrayElem,zero);
+					if(value==0) {
+						return makeForLoop(var,length,body);
+					}
+					else {
+						Expression one=new ExprConstInt(stmt.getContext(),1);
+						Expression firstElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprConstInt(stmt.getContext(),0))));
+						addStatement(new StmtAssign(stmt.getContext(),firstElem,stmt.getRHS()));
+						return makeForLoop(var,one,length,body);
+					}
 				}
 			}
 			else if(stmt.getRHS() instanceof ExprArrayInit)
