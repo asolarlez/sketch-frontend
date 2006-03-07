@@ -1,0 +1,26 @@
+int W = 32;
+
+bit isIT(bit[W] in) {
+  bit ret=1;
+  for(int i=0;i<W;i++)
+    ret=ret & (!in[i]);
+  return ret;
+}
+
+bit[W] normalRoundsk(bit[W] in) implements normalRound
+{
+  bit[W] output=0;  
+  if(isIT(in)) {
+  	output = ??;
+  }
+  return output;
+}
+
+bit[W] normalRound(bit[W] in)
+{
+  bit[W] output=0;  
+  if(isIT(in)) {
+  	output = 1;
+  }
+  return output;
+}
