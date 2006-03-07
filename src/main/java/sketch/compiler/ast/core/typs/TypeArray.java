@@ -70,8 +70,8 @@ public class TypeArray extends Type
         	int ithat = thatLen.getIValue();
         	return ithis <= ithat;
         }
-        if (!(thisLen.equals(thatLen)))
-            return false;
+//        if (!(thisLen.equals(thatLen)))
+//            return false;
         return true;
     }
     
