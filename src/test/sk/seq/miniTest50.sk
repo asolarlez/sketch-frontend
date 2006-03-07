@@ -1,0 +1,20 @@
+bit reverseSketch(bit[4] in) implements reverse {		
+	int t = 0;
+	if(in[0]){
+		t = 7;
+	}else{
+		t = 6;
+	}
+	return in[t % ??];
+}
+
+bit reverse (bit[4] in) {
+	int t = 0;
+	if(in[0]){
+		t = 5;
+	}else{
+		t = 4;
+	}
+	return in[t % 3];
+}
+ 
