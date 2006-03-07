@@ -1,0 +1,18 @@
+int W = 32;
+int K = 2;
+
+bit[32] tableSum(bit[K] in1, bit[K] in2) implements sum {
+	int exp = 1<<(K*2);
+	bit [32*exp] tmp = ??;
+	bit[32] output;
+	bit[2*K] input;
+	input[0::2] = in1;
+	input[K::2] = in2;
+	int idx = (int) input;
+	output = tmp[idx*32::32];
+	return output;
+}
+
+bit[32] sum (bit[K] in1, bit[K] in2) {	
+	return in1 + in2;
+}
