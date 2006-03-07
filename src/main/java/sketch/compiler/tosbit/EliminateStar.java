@@ -545,8 +545,12 @@ public class EliminateStar extends PartialEvaluator {
     	// Local function?
     	if (ss.getFuncNamed(name) != null) {     
     		Function fun = ss.getFuncNamed(name);
-    		if(!this.starCheck.testNode(fun)){    			
-    			return super.visitExprFunCall(exp);
+    		if(!this.starCheck.testNode(fun)){ 
+    			List<Statement>  oldNewStatements = newStatements;
+        		newStatements = new ArrayList<Statement> ();
+        		super.visitExprFunCall(exp);
+        		newStatements = oldNewStatements;
+    			return exp;
     		}   
     		List<Statement>  oldNewStatements = newStatements;
     		newStatements = new ArrayList<Statement> ();
