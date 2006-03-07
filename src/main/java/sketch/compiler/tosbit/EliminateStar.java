@@ -152,8 +152,7 @@ public class EliminateStar extends PartialEvaluator {
 			}
 			break;
 		default: op = " = ";
-		if( rhsLst != null ){
-			assert isArr: "This should not happen, you are trying to assign an array to a non-array";
+		if( rhsLst != null ){			
 			List<valueClass> lst= rhsLst;
 			Iterator<valueClass>  it = lst.iterator();
 			int idx = 0;

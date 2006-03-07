@@ -847,11 +847,7 @@ public class SemanticChecker
                 		report(expr, "Ranges are not yet supported");
                 		return super.visitExprArrayRange(expr);
                 	}
-                	RangeLen rl = (RangeLen)idx;
-                	if(rl.len != 1){
-                		report(expr, "Ranges are not yet supported");
-                		return super.visitExprArrayRange(expr);
-                	}
+                	RangeLen rl = (RangeLen)idx;                	
                 	Type ot = getType(rl.start);
                 	if (ot != null)
                     {

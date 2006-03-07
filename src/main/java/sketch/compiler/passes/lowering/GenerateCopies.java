@@ -230,13 +230,10 @@ class Indexify extends FEReplacer{
     }
 	
 	public Object visitExprArrayRange(ExprArrayRange exp){
-		//Since arrays are all one dimensional, 
-		//This will be of type int, but just in case
-		//as a precausion.
-		if ( stv.getType(exp) instanceof TypeArray)
-			return new ExprArray(exp.getContext(), exp, index);
-		else
-			return exp;
+		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
+		RangeLen rl = (RangeLen)exp.getMembers().get(0);		
+		Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, doExpression(rl.start));
+		return new ExprArray(exp.getContext(), exp.getBase(), compIndex);		
     }	
 	
 	
@@ -563,7 +560,7 @@ public class GenerateCopies extends SymbolTableVisitor
     	return super.visitStmtLoop(stmt);    	
     }
     
-    public Object visitExprArrayRange(ExprArrayRange exp){
+    /*public Object visitExprArrayRange(ExprArrayRange exp){
     	assert false : "There should be no array ranges at this point";
     	assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";    	    	
 		Expression newBase=doExpression(exp.getBase());
@@ -571,7 +568,7 @@ public class GenerateCopies extends SymbolTableVisitor
 		assert rl.len == 1 : "Complex indexing not yet implemented.";
 		Expression newIndex = doExpression(rl.start);
 		return new ExprArray(exp.getContext(), newBase, newIndex);
-    }
+    }*/
     
     public void upgradeStarToInt(Expression exp, Type ftype){
     	if(ftype.isNonDet()){
