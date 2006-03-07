@@ -70,11 +70,14 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 				}
 				left=(Expression) left.accept(this);
 				right=(Expression) right.accept(this);
-				if(left!=rhs.getLeft() || right!=rhs.getRight())
-					return new StmtAssign(stmt.getContext(),stmt.getLHS(),
-						new ExprBinary(rhs.getContext(),rhs.getOp(),left,right));
-				else
-					return stmt;
+				
+				if(left!=rhs.getLeft() || right!=rhs.getRight()) {
+					Expression newExpr=new ExprBinary(rhs.getContext(),rhs.getOp(),left,right);
+					newExpr=(Expression) newExpr.accept(this);
+					return new StmtAssign(stmt.getContext(),stmt.getLHS(),newExpr);
+				}
+//				else
+//					return stmt;
 			}
 		}
 		return super.visitStmtAssign(stmt);
@@ -85,6 +88,16 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 		return new ExprArrayRange(exp.getBase(),Collections.singletonList(
 			new RangeLen(exp.getOffset())));
     }
+
+	@Override
+	public Object visitExprBinary(ExprBinary exp)
+	{
+		if(exp.getOp()==ExprBinary.BINOP_LSHIFT)
+			exp=new ExprBinary(exp.getContext(),ExprBinary.BINOP_RSHIFT,exp.getLeft(),exp.getRight());
+		else if(exp.getOp()==ExprBinary.BINOP_RSHIFT)
+			exp=new ExprBinary(exp.getContext(),ExprBinary.BINOP_LSHIFT,exp.getLeft(),exp.getRight());
+		return super.visitExprBinary(exp);
+	}
 
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl stmt)

@@ -380,6 +380,21 @@ public class BitTypeRemover extends SymbolTableVisitor
 		return new StmtFor(body.getContext(),init,cond,incr,body);
 	}
 	
+	private Expression makeHexString(ExprArrayInit exp, int word, int ws) 
+	{
+		List<ExprConstInt> bits=exp.getElements();
+		int nb=bits.size();
+		long mask=0;
+		long p=1;
+		for(int i=word*ws;i<nb && i<(word+1)*ws;i++,p*=2) {
+			long bit=bits.get(i).getVal();
+			assert(bit==0 || bit==1);
+			mask=mask+bit*p;
+		}
+		Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask)+(ws==64?"ll":""));
+		return val;
+	}
+
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
@@ -570,24 +585,14 @@ public class BitTypeRemover extends SymbolTableVisitor
 				if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
 				int nb=exp.getElements().size();
 				if(nb<=ws) {
-					List<ExprConstInt> bits=exp.getElements();
-					long mask=0;
-					long p=1;
-					for(int i=0;i<nb;i++,p*=2)
-						mask=mask+bits.get(i).getVal()*p;
-					Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+					Expression val=makeHexString(exp,0,ws);
 					return new StmtAssign(stmt.getContext(),lhs,val);
 				}
 				else {
 					String name=((ExprVar)lhs).getName();
-					List<ExprConstInt> bits=exp.getElements();
 					for(int k=0;k<nb/ws;k++) {
 						Expression elem=new ExprArrayRange(new ExprVar(lhs.getContext(),name),Collections.singletonList(new RangeLen(new ExprConstInt(lhs.getContext(),k))));
-						long mask=0;
-						long p=1;
-						for(int i=k*ws;i<nb && i<(k+1)*ws;i++,p*=2)
-							mask=mask+bits.get(i).getVal()*p;
-						Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+						Expression val=makeHexString(exp,k,ws);
 						addStatement(new StmtAssign(stmt.getContext(),elem,val));
 					}
 					return null;
