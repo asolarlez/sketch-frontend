@@ -199,7 +199,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 			));
 				
 		}
-		assert type instanceof TypePrimitive;
+		//assert type instanceof TypePrimitive;
 		if(len>1) {
 			throw new UnsupportedOperationException("Cannot deal with array ranges at this point in the code. It should have been handled earlier.");
 		}
@@ -333,7 +333,10 @@ public class BitTypeRemover extends SymbolTableVisitor
 		{
 			final Type lhsPType=getVarPType(lhs);
 			assert lhsPType!=null;
-			if(!isBitArrayType(lhsPType)) return super.visitStmtAssign(stmt);
+			if(!isBitArrayType(lhsPType)) {
+//				if(stmt.getRHS() instanceof ExprArrayInit) return stmt;
+				return super.visitStmtAssign(stmt);
+			}
 		}
 			
 		final Type lhsType=getVarType(lhs);
@@ -500,7 +503,13 @@ public class BitTypeRemover extends SymbolTableVisitor
 				if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
 				int nb=exp.getElements().size();
 				if(nb<=ws) {
-					return new StmtAssign(stmt.getContext(),lhs,(Expression)exp.accept(this));
+					List<ExprConstInt> bits=exp.getElements();
+					long mask=0;
+					long p=1;
+					for(int i=0;i<nb;i++,p*=2)
+						mask=mask+bits.get(i).getVal()*p;
+					Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+					return new StmtAssign(stmt.getContext(),lhs,val);
 				}
 				else {
 					String name=((ExprVar)lhs).getName();
@@ -509,10 +518,36 @@ public class BitTypeRemover extends SymbolTableVisitor
 						Expression elem=new ExprArrayRange(new ExprVar(lhs.getContext(),name),Collections.singletonList(new RangeLen(new ExprConstInt(lhs.getContext(),k))));
 						long mask=0;
 						long p=1;
-						for(int i=0;i<bits.size();i++,p*=2)
+						for(int i=k*ws;i<nb && i<(k+1)*ws;i++,p*=2)
 							mask=mask+bits.get(i).getVal()*p;
 						Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
 						addStatement(new StmtAssign(stmt.getContext(),elem,val));
+					}
+					return null;
+				}
+			}
+			else if(stmt.getRHS() instanceof ExprBinary)
+			{
+				if(lhsType instanceof TypeArray)
+				{
+					//it's something like a=b+c where a,b,c are arrays
+					ExprBinary binExp=(ExprBinary)stmt.getRHS();
+					Expression length=((TypeArray)lhsType).getLength();
+					String var=varGen.nextVar();
+					switch(binExp.getOp()) {
+						case ExprBinary.BINOP_BAND:
+						case ExprBinary.BINOP_BOR:
+						case ExprBinary.BINOP_BXOR:
+						{
+							Statement body=new StmtAssign(stmt.getContext(),
+								new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var)))),
+								new ExprBinary(stmt.getContext(),binExp.getOp(),
+									new ExprArrayRange(binExp.getLeft(),Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var)))),
+									new ExprArrayRange(binExp.getRight(),Collections.singletonList(new RangeLen(new ExprVar(stmt.getContext(),var))))
+								)
+							);
+							return makeForLoop(var,length,body);
+						}
 					}
 				}
 			}
@@ -524,14 +559,15 @@ public class BitTypeRemover extends SymbolTableVisitor
 	@Override
 	public Object visitExprArrayInit(ExprArrayInit exp)
 	{
-		if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
-		List<ExprConstInt> bits=exp.getElements();
-		if(bits.size()>32) throw new UnsupportedOperationException("Cannot handle array initializers in excess of 32 bits, unless used in a direct assignment");
-		long mask=0;
-		long p=1;
-		for(int i=0;i<bits.size();i++,p*=2)
-			mask=mask+bits.get(i).getVal()*p;
-		return new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+		return exp;
+//		if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
+//		List<ExprConstInt> bits=exp.getElements();
+//		if(bits.size()>32) throw new UnsupportedOperationException("Cannot handle array initializers in excess of 32 bits, unless used in a direct assignment");
+//		long mask=0;
+//		long p=1;
+//		for(int i=0;i<bits.size();i++,p*=2)
+//			mask=mask+bits.get(i).getVal()*p;
+//		return new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
 	}
 
 }

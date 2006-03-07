@@ -19,6 +19,11 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
     	return t instanceof TypePrimitive && ((TypePrimitive)t).getType()==TypePrimitive.TYPE_BIT;
     }
 
+    private static boolean isBitArrayType(Type t)
+    {
+    	return t instanceof TypeArray && isBitType(((TypeArray)t).getBase());
+    }
+
     private boolean isLongVector(Type t) {
 		if(t instanceof TypeArray) {
 			TypeArray array=(TypeArray) t;
@@ -87,7 +92,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 		//convert all array initializations to separate assignments
 		int n=stmt.getNumVars();
 		int na=0;
-		for(int i=0;i<n;i++) if(stmt.getType(i) instanceof TypeArray) na++;
+		for(int i=0;i<n;i++) if(isBitArrayType(stmt.getType(i))) na++;
 		if(na==0) return super.visitStmtVarDecl(stmt);
 		
 		List types=new ArrayList(3);
@@ -95,7 +100,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 		List inits=new ArrayList(3);
 		List<Statement> statements=new ArrayList<Statement>();
 		for(int i=0;i<n;i++) {
-			if(stmt.getType(i) instanceof TypeArray) {
+			if(isBitArrayType(stmt.getType(i))) {
 				String name=stmt.getName(i);
 				StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,null);
 				decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
