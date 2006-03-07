@@ -84,11 +84,11 @@ public class ToSBit
     private boolean outputTest=false;
     private boolean fakeSolver=false;
     
-    private static class NullWriter extends Writer 
+    private static class NullStream extends OutputStream 
     {
-		public void write(char[] arg0, int arg1, int arg2) throws IOException {}
 		public void flush() throws IOException {}
 		public void close() throws IOException {}
+		public void write(int arg0) throws IOException {}
     }
     
     public void doOptions(String[] args)
@@ -290,7 +290,6 @@ public class ToSBit
         }
         
         Program prog = null;
-        Writer outWriter;
 
         try
         {
@@ -321,18 +320,18 @@ public class ToSBit
 
         try
         {
+            OutputStream outStream;
         	if(fakeSolver)
-        		outWriter = new NullWriter();
+        		outStream = new NullStream();
         	else if(outputFile != null)
-                outWriter = new FileWriter(outputFile);
+                outStream = new FileOutputStream(outputFile);
             else
-                outWriter = new OutputStreamWriter(System.out);
-            ProduceBooleanFunctions partialEval = new ProduceBooleanFunctions(null, varGen, oracle);
+                outStream = System.out;
+            ProduceBooleanFunctions partialEval = new ProduceBooleanFunctions(null, varGen, oracle, new PrintStream(outStream));
             partialEval.LUNROLL = this.unrollAmt;
             System.out.println("MAX LOOP UNROLLING = " + unrollAmt);
-            String javaOut = (String)prog.accept( partialEval );
-            outWriter.write(javaOut);
-            outWriter.flush();
+            prog.accept( partialEval );
+            outStream.flush();
         }
         catch (java.io.IOException e)
         {
@@ -382,7 +381,7 @@ public class ToSBit
         	System.out.println(ccode);
         }else{
         	try{
-        		outWriter = new FileWriter(outputCDir+resultFile+".h");
+        		Writer outWriter = new FileWriter(outputCDir+resultFile+".h");
             	outWriter.write(hcode);
                 outWriter.flush();
                 outWriter.close();
