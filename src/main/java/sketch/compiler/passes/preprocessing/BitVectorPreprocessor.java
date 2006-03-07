@@ -105,8 +105,11 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 				StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,null);
 				decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
 				statements.add(decl);
-				if(stmt.getInit(i)!=null) {
-					StmtAssign let=new StmtAssign(stmt.getContext(),new ExprVar(stmt.getContext(),name),stmt.getInit(i));
+				Expression initExpr=stmt.getInit(i);
+				if(initExpr==null && !name.startsWith("__"))
+					initExpr=new ExprConstInt(stmt.getContext(),0);
+				if(initExpr!=null) { 
+					StmtAssign let=new StmtAssign(stmt.getContext(),new ExprVar(stmt.getContext(),name),initExpr);
 					statements.add((Statement)let.accept(this));
 				}
 			}
