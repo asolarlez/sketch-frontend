@@ -213,7 +213,7 @@ public class NodesToCTest extends NodesToJava {
     		writeLine("for(int z=0;z<"+len+";z++) {");
     		addIndent();
     	}
-    	String line="printf(\"%"+(ws/4)+"x\","+name;
+    	String line="printf(\"%0"+(ws/4)+"x\","+name;
     	if(len>1) line+="[z]";
    		line+=");";
     	writeLine(line);
