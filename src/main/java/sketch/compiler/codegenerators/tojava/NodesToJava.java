@@ -1253,6 +1253,8 @@ public class NodesToJava implements FEVisitor
 			RangeLen range=(RangeLen) o;
 			if(range.len==1) {
 				return base.accept(this)+"["+range.start.accept(this)+"]"; 
+			}else{
+				return base.accept(this)+"["+range.start.accept(this)+"::" + range.len + "]";
 			}
 		}
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
