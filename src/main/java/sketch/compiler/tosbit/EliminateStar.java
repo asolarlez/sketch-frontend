@@ -1,44 +1,21 @@
 package streamit.frontend.tosbit;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.*;
 
 public class EliminateStar extends PartialEvaluator {
 	private ValueOracle oracle;	
-	private HasStars starCheck = new HasStars();
+	private HasStars starCheck;
 	private int LUNROLL;
 	private Integer currentSize = null;
 	
-	public class HasStars extends FEReplacer{
-		boolean hasUnknown=false;		
+	public static class HasStars extends FEReplacer{
+		private StreamSpec ss;
+		boolean hasUnknown=false;
+		public HasStars(StreamSpec ss) {
+			this.ss=ss;
+		}
 		private Set<Function> visitedFunctions = new HashSet<Function>();;		
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {	
@@ -514,8 +491,8 @@ public class EliminateStar extends PartialEvaluator {
         	return new ExprArrayInit(exp.getContext(), vals);
         }else{
         	ExprArrayInit oracExp = new ExprArrayInit(exp.getContext(), orac);
-        	ExprBinary lres = new ExprBinary(exp.getContext(), ExprBinary.BINOP_AND, left, oracExp, exp.getAlias());
-        	ExprBinary rres = new ExprBinary(exp.getContext(), ExprBinary.BINOP_AND, right, new ExprUnary(exp.getContext(), ExprUnary.UNOP_NOT, oracExp), exp.getAlias());
+        	ExprBinary lres = new ExprBinary(exp.getContext(), ExprBinary.BINOP_BAND, left, oracExp, exp.getAlias());
+        	ExprBinary rres = new ExprBinary(exp.getContext(), ExprBinary.BINOP_BAND, right, new ExprUnary(exp.getContext(), ExprUnary.UNOP_BNOT, oracExp), exp.getAlias());
         	return new ExprBinary(exp.getContext(), ExprBinary.BINOP_BOR, lres, rres, exp.getAlias());
         }		
 	}
@@ -643,5 +620,12 @@ public class EliminateStar extends PartialEvaluator {
         }
         return func;
     }
+
+	@Override
+	public Object visitStreamSpec(StreamSpec spec)
+	{
+		starCheck=new HasStars(spec);
+		return super.visitStreamSpec(spec);
+	}
 	
 }
