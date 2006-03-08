@@ -56,7 +56,6 @@ bit[W] ByteSub(bit[W] in){
 
 bit[W] ShiftRows(bit[W] in){
 
-bit[W] ShiftRows(bit[W] in){
     int [4] shift = {0,1,2,3};
     bit[W] Sin;
     bit[W] Sout;
@@ -75,7 +74,6 @@ bit[W] ShiftRows(bit[W] in){
       }
     }
     return Sout;
-}
 }
 
 bit[8] intToBit8(int v){
