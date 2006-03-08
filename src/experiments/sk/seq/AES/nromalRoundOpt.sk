@@ -8,20 +8,20 @@ bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   bit [32*256] T1 = ??;
   bit [32*256] T2 = ??;
   bit [32*256] T3 = ??;
-  bit[W] output;
+  bit[W] output = 0;
   int s1 = ??;
   int s2 = ??;
   int s3 = ??;
   int s4 = ??;
-  for(int i=0; i<4; ++i){
-  	int ts1 = ( s1 + i ) % 4;
-  	int ts2 = ( s2 + i ) % 4;
-  	int ts3 = ( s3 + i ) % 4;
-  	int ts4 = ( s4 + i ) % 4;
-  	bit[8] inv0 = in[ts1*32::8]; 
-  	bit[8] inv1 = in[ts2*32+8::8];
-  	bit[8] inv2 = in[ts3*32+2*8::8];
-  	bit[8] inv3 = in[ts4*32+3*8::8];
+  for(int i=0; i<4; ++i){  
+    int ts1 = ( s1 + i ) % 4;
+    int ts2 = ( s2 + i ) % 4;
+    int ts3 = ( s3 + i ) % 4;
+    int ts4 = ( s4 + i ) % 4;  
+  	bit[8] inv0 = in[i*32::8]; 
+  	bit[8] inv1 = in[i*32+8::8];
+  	bit[8] inv2 = in[i*32+2*8::8];
+  	bit[8] inv3 = in[i*32+3*8::8];
   	int i0 = (int) inv0;
   	int i1 = (int) inv1;
   	int i2 = (int) inv2;
@@ -30,8 +30,11 @@ bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   	bit[32] tt1 =  T1[i1*32::32];
   	bit[32] tt2 =  T2[i2*32::32];
   	bit[32] tt3 =  T0[i3*32::32];
-  	bit[32] ttt = tt0 ^ tt1 ^ tt2 ^ tt3;
-  	output[i*32::32] = ttt ^ rkey[i*32::32];
+  	output[ts1*32::32] = output[ts1*32::32] ^ tt0;
+  	output[ts2*32::32] = output[ts2*32::32] ^ tt1;
+  	output[ts3*32::32] = output[ts3*32::32] ^ tt2;
+  	output[ts4*32::32] = output[ts4*32::32] ^ tt3;
+  	output[i*32::32] = output[i*32::32] ^ rkey[i*32::32];
   }    
   return output;
 }
@@ -61,8 +64,6 @@ bit[W] ByteSub(bit[W] in){
 }
 
 bit[W] ShiftRows(bit[W] in){
-
-bit[W] ShiftRows(bit[W] in){
     int [4] shift = {0,1,2,3};
     bit[W] Sin;
     bit[W] Sout;
@@ -81,7 +82,6 @@ bit[W] ShiftRows(bit[W] in){
       }
     }
     return Sout;
-}
 }
 
 bit[8] intToBit8(int v){
