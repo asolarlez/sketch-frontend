@@ -3,14 +3,13 @@ int W = Nb*Nb*8;
 int ROUNDS = 10;
 
 
-bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
+bit[W] normalRoundsk(bit[W] in_p, bit[W] rkey) implements normalRound{
   bit [32*256] T0 = ??;
   bit [32*256] T1 = ??;
   bit [32*256] T2 = ??;
   bit [32*256] T3 = ??;
-  
-  in = ShiftRows(in);
-  
+  bit[W] in;  
+  in = ShiftRows(in_p);  
   bit[W] output;
   for(int i=0; i<4; ++i){
   	bit[8] inv0 = in[i*32::8]; 
@@ -27,7 +26,7 @@ bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   	bit[32] tt3 =  T0[i3*32::32];
   	bit[32] ttt = tt0 ^ tt1 ^ tt2 ^ tt3;
   	output[i*32::32] = ttt ^ rkey[i*32::32];
-  }
+  }    
   return output;
 }
 
@@ -60,17 +59,11 @@ bit[W] ShiftRows(bit[W] in){
     bit[W] Sin;
     bit[W] Sout;
     int k=0;
-    for(int c=0; c<Nb; ++c){
-      for(int r=0; r<Nb; ++r){      
-		for(int i=0; i<8; ++i){
-			Sin[ i+8*(r+ Nb*c) ] = in[k]; k=k+1;
-		}
-      }
-    }
+    Sin = in;
     for(int c=0; c<Nb; ++c){
       for(int r=0; r<Nb; ++r){      
 		int newc = (c+shift[r]) % Nb;
-		for(int i=0; i<8; ++i) Sout[i+8*(r+ Nb*c)]=Sin[ i+8*(r + Nb*newc) ];
+		Sout[8*(r+ Nb*c)::8]=Sin[8*(r + Nb*newc)::8];
       }
     }
     return Sout;
