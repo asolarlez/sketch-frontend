@@ -26,12 +26,20 @@ package streamit.frontend.nodes;
 public class ExprUnary extends Expression
 {
     // Operators:
-    public static final int UNOP_NOT = 1;
-    public static final int UNOP_NEG = 2;
-    public static final int UNOP_PREINC = 3;
-    public static final int UNOP_POSTINC = 4;
-    public static final int UNOP_PREDEC = 5;
-    public static final int UNOP_POSTDEC = 6;
+	/**	negation (!x) */
+    public static final int UNOP_NOT = 1;  
+	/**	bitwise negation (~x) */
+    public static final int UNOP_BNOT = 2;
+	/**	arithmetic negation (-x) */
+    public static final int UNOP_NEG = 3;
+	/**	++x */
+    public static final int UNOP_PREINC = 4;
+	/**	x++ */
+    public static final int UNOP_POSTINC = 5;
+	/**	--x */
+    public static final int UNOP_PREDEC = 6;
+	/**	x-- */
+    public static final int UNOP_POSTDEC = 7; 
     
     private int op;
     private Expression expr;
