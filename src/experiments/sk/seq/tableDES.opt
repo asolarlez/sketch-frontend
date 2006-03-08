@@ -1,0 +1,36 @@
+bit[64] DES_IP(bit[64] in) {
+    int [64] p = { 58, 50, 42, 34, 26, 18, 10, 2,
+                   60, 52, 44, 36, 28, 20, 12, 4,
+                   62, 54, 46, 38, 30, 22, 14, 6,
+                   64, 56, 48, 40, 32, 24, 16, 8,
+                   57, 49, 41, 33, 25, 17, 9, 1,
+                   59, 51, 43, 35, 27, 19, 11, 3,
+                   61, 53, 45, 37, 29, 21, 13, 5,
+                   63, 55, 47, 39, 31, 23, 15, 7
+    };
+	bit [64] out;	
+	for (int i = 0; i < 64; ++i)
+		out[i]=in[p[i]-1];
+	
+	return out;
+}
+
+
+bit[64] IP (bit[64] x) implements DES_IP{
+   bit[64] result=0;
+   bit[32*8*16] table = ??;
+   x = (x>>??) {|} (x<<??) {|} x;
+   for (int i=0; i<8; ++i) {
+  	  bit[4] tmp1; for(int t = 0; t < 4; ++t){ tmp1[t] = x[i*4+t]; }
+  	  bit[4] tmp2; for(int t = 0; t < 4; ++t){ tmp2[t] = x[32+i*4+t]; }
+  	  int t1 = (int) tmp1;
+   	  int t2 = (int) tmp2;
+   	  int ip1 = i*16*32 + t1*32;
+   	  int ip2 = i*16*32 + t2*32;
+   	  for(int j=0; j<32; ++j){
+        result[j] = result[j] | table[ip1 + j];
+        result[32+j]= result[32+j] | table[ip2 + j];
+   	  }
+   }
+   return result;
+}
