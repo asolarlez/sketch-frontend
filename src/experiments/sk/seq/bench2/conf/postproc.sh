@@ -1,0 +1,1 @@
+./conf/analyzelog $1

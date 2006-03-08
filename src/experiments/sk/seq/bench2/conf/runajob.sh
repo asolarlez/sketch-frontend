@@ -1,0 +1,1 @@
+./runjob `hostname`
