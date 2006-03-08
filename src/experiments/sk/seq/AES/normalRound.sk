@@ -8,7 +8,7 @@ bit[W] normalRoundsk(bit[W] in_p, bit[W] rkey) implements normalRound{
   bit [32*256] T1 = ??;
   bit [32*256] T2 = ??;
   bit [32*256] T3 = ??;
-  
+  bit[W] in;
   in = ShiftRows(in_p);
   
   bit[W] output;
