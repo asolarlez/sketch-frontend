@@ -1,4 +1,4 @@
-int N = 15;
+int N = 20;
 
 int index(int i, int j){
 	return i*N + j;
