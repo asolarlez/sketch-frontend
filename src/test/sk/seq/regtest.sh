@@ -2,15 +2,19 @@ for x in `ls *.sk`
 do 
 
 echo "RUNNING $x  $d";
-rm ${x}.output;
-rm ${x}.cc;
-bash preproc.sh  --ccode ${x}.cc --incremental 6 --seed 10 ${x} &> ${x}.output ;
+
+bname=`echo  miniTest34.sk | sed 's/\.sk//'`
+
+rm -f ${bname}.c
+rm -f ${bname}.h
+
+bash preproc.sh --outputcfiles --incremental 6 --seed 10 ${x} &> ${x}.output ;
 grep oracle.*\[[0-9]+\] ${x}.output ;
 done;
 
 rm *.tmp;
 
-grep -n '[0-9]' *.cc | cpp > current.output;
+grep -n '[0-9]' *.c | cpp | sed 's/:[0-9]*:/::/' > current.output;
 
 diff current.output reference;
 
