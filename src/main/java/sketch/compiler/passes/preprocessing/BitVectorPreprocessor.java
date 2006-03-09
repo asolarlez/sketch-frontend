@@ -4,10 +4,12 @@ import java.util.*;
 
 import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.tosbit.EliminateStar.HasStars;
 
 public class BitVectorPreprocessor extends SymbolTableVisitor {
 
 	private TempVarGen varGen;
+	private HasStars starCheck;
 	
 	public BitVectorPreprocessor(TempVarGen varGen) {
 		super(null);
@@ -139,6 +141,21 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 		}
 		addStatements(statements);
 		return null;
+	}
+	
+	@Override
+	public Object visitStreamSpec(StreamSpec spec)
+	{
+		starCheck=new HasStars(spec);
+		return super.visitStreamSpec(spec);
+	}
+
+	@Override
+	public Object visitFunction(Function func)
+	{
+		if(func.getSpecification()==null && starCheck.testNode(func))
+			return null;
+		return super.visitFunction(func);
 	}
 	
 }

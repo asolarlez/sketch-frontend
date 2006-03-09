@@ -23,6 +23,10 @@ public class BitTypeRemover extends SymbolTableVisitor
      * Unique temporary variable generator
      */
     protected TempVarGen varGen;
+    /**
+     * True if processing syntactic children of a variable declaration.
+     */
+    private boolean processingDeclaration=false;
     
     private static class LinearRange {
     	public LinearRange(int multi, Expression cnt, int offset, int length) {
@@ -221,7 +225,8 @@ public class BitTypeRemover extends SymbolTableVisitor
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
-		boolean change=false; 
+		processingDeclaration=true;
+		boolean change=false;
 		int n=stmt.getNumVars();
 		List types=new ArrayList(n+1);
 		for(int i=0;i<n;i++) {
@@ -233,7 +238,9 @@ public class BitTypeRemover extends SymbolTableVisitor
 		}
 		if(change)
 			stmt=new StmtVarDecl(stmt.getContext(),types,stmt.getNames(),stmt.getInits());
-		return super.visitStmtVarDecl(stmt);
+		stmt=(StmtVarDecl) super.visitStmtVarDecl(stmt);
+		processingDeclaration=false;
+		return stmt;
 	}	
 
 	private Expression convertArrayRange(ExprArrayRange oldExpr, Expression start, int len)
@@ -380,7 +387,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 		return new StmtFor(body.getContext(),init,cond,incr,body);
 	}
 	
-	private Expression makeHexString(ExprArrayInit exp, int word, int ws) 
+	private long computeMask(ExprArrayInit exp, int word, int ws)
 	{
 		List<ExprConstInt> bits=exp.getElements();
 		int nb=bits.size();
@@ -391,7 +398,14 @@ public class BitTypeRemover extends SymbolTableVisitor
 			assert(bit==0 || bit==1);
 			mask=mask+bit*p;
 		}
-		Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask)+(ws==64?"ll":""));
+		return mask;
+	}
+	
+	private Expression makeHexString(ExprArrayInit exp, int word, int ws) 
+	{
+		long mask=computeMask(exp,word,ws);
+		if(mask<=32) return new ExprConstInt(exp.getContext(),(int)mask);
+		Expression val=new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask)+(ws==64?"ull":"u"));
 		return val;
 	}
 
@@ -647,15 +661,12 @@ public class BitTypeRemover extends SymbolTableVisitor
 	@Override
 	public Object visitExprArrayInit(ExprArrayInit exp)
 	{
-		return exp;
-//		if(exp.getDims()!=1) throw new UnsupportedOperationException("Cannot handle multidimensional array initializers");
-//		List<ExprConstInt> bits=exp.getElements();
-//		if(bits.size()>32) throw new UnsupportedOperationException("Cannot handle array initializers in excess of 32 bits, unless used in a direct assignment");
-//		long mask=0;
-//		long p=1;
-//		for(int i=0;i<bits.size();i++,p*=2)
-//			mask=mask+bits.get(i).getVal()*p;
-//		return new ExprLiteral(exp.getContext(),"0x"+Long.toHexString(mask));
+		if(processingDeclaration)
+			return exp;
+		else { //it's "??" that stands for an integer constant; compute it
+			assert(exp.getElements().size()<=64);
+			return makeHexString(exp,0,64);
+		}
 	}
 
 }
