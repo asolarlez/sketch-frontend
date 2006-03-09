@@ -41,6 +41,14 @@ public class NodesToC extends NodesToJava {
 	}
 	
 	@Override
+	public Object visitExprUnary(ExprUnary exp)
+	{
+        if(exp.getOp()==ExprUnary.UNOP_BNOT)
+        	return "~"+exp.getExpr().accept(this);
+		return super.visitExprUnary(exp);
+	}
+
+	@Override
 	public Object visitProgram(Program prog)
 	{
 		String ret=(String)super.visitProgram(prog);
