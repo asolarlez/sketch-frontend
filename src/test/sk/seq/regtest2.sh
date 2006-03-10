@@ -1,7 +1,7 @@
 for x in `ls *.sk`
 do 
 
-bname=`echo  miniTest34.sk | sed 's/\.sk//'`
+bname=`echo  $x | sed 's/\.sk//'`
 
 rm -f ${bname}*.c
 rm -f ${bname}

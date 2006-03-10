@@ -3,7 +3,7 @@ do
 
 echo "RUNNING $x  $d";
 
-bname=`echo  miniTest34.sk | sed 's/\.sk//'`
+bname=`echo  $x | sed 's/\.sk//'`
 
 rm -f ${bname}.c
 rm -f ${bname}.h
