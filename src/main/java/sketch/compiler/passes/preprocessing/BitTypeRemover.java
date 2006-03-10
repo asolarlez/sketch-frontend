@@ -646,7 +646,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 							case ExprBinary.BINOP_MUL:
 							case ExprBinary.BINOP_LSHIFT:
 							{
-								addStatement(stmt);
+								addStatement((Statement)super.visitStmtAssign(stmt));
 								return new StmtAssign(stmt.getContext(),lhs,new ExprLiteral(stmt.getContext(),"0x"+Long.toHexString((1<<(ws-pad))-1)),ExprBinary.BINOP_BAND);
 							}
 						}

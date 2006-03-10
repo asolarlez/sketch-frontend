@@ -272,7 +272,7 @@ public class NodesToCTest extends NodesToJava {
 		Type outType=outPar.getType();
 		declareVar(OUTSK,outType);
 		declareVar(OUTSP,outType);
-		writeLine("for(int test=0;test<"+NTESTS+";test++) {");
+		writeLine("for(int _test_=0;_test_<"+NTESTS+";_test_++) {");
 		addIndent();
 		for(int i=0;i<inPars.size();i++) {
 			Type inType=inPars.get(0).getType();
