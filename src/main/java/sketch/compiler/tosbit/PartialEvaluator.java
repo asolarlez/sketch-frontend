@@ -1,45 +1,8 @@
 package streamit.frontend.tosbit;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprComplex;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstChar;
-import streamit.frontend.nodes.ExprConstFloat;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstStr;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FENullVisitor;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePortal;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 public class PartialEvaluator extends FEReplacer {
@@ -911,6 +874,15 @@ public class PartialEvaluator extends FEReplacer {
 		state.pushVStack(new valueClass());
 		return star;
 	}
+    
+    private void addParamCopyDecl(Parameter param, Expression expr)
+    {
+		if(expr instanceof ExprVar && param.getName().equals(((ExprVar)expr).getName()))
+			return;
+    	Statement varDecl=new StmtVarDecl(expr.getContext(),param.getType(),param.getName(),expr);
+    	addStatement(varDecl);
+    }
+    
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
@@ -972,9 +944,8 @@ public class PartialEvaluator extends FEReplacer {
 		    		}
 	    			++idx;
 	    		}
-	    		if(this.isReplacer && !formalParam.isParameterOutput()){
-		    		addStatement( new StmtVarDecl(actualParam.getContext(), formalParam.getType(),
-	                        formalParam.getName(), actualParam) );
+	    		if(this.isReplacer && !formalParam.isParameterOutput()) {
+	    			addParamCopyDecl(formalParam,actualParam);
 	    		}
 	    	}else{
 	    		String formalParamName = formalParam.getName();
@@ -985,15 +956,13 @@ public class PartialEvaluator extends FEReplacer {
 		    		if(!actualParamValue.hasValue()){
 		    			result += lhsname + " = " + actualParamValue + ";\n";
 		    			if(isReplacer){
-			    			addStatement( new StmtVarDecl(actualParam.getContext(), formalParam.getType(),
-			                        formalParam.getName(), actualParam) );
+		    				addParamCopyDecl(formalParam,actualParam);
 		    			}
 		    		}else{
 		    			int value = actualParamValue.getIntValue();
 		    			state.setVarValue(formalParamName, value);
 		    			if(isReplacer){
-			    			addStatement( new StmtVarDecl(actualParam.getContext(), formalParam.getType(),
-			                        formalParam.getName(), new ExprConstInt(value)) );
+		    				addParamCopyDecl(formalParam,new ExprConstInt(actualParam.getContext(),value));
 		    			}
 		    		}
 	    		}

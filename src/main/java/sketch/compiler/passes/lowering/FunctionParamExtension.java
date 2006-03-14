@@ -10,10 +10,76 @@ import streamit.frontend.nodes.*;
  *  
  * @author liviu
  */
-public class FunctionParamExtension extends SymbolTableVisitor {
+public class FunctionParamExtension extends SymbolTableVisitor 
+{
 
-	private int tempCounter;
+	private class ParameterCopyResolver extends SymbolTableVisitor 
+	{
+		private HashMap<String,Parameter> unmodifiedParams;
+
+		public ParameterCopyResolver()
+		{
+			super(null);
+		}
+		
+		private Function addVarCopy(Function func, Parameter param, String newName)
+		{
+			StmtBlock body=(StmtBlock) func.getBody();
+			StmtVarDecl decl=new StmtVarDecl(func.getContext(),param.getType(),param.getName(),
+					new ExprVar(func.getContext(),newName));
+			List stmts=new ArrayList(body.getStmts().size()+2);
+			stmts.add(decl);
+			stmts.addAll(body.getStmts());
+			return new Function(func.getContext(),func.getCls(),func.getName(),func.getReturnType(),
+				func.getParams(),func.getSpecification(),
+				new StmtBlock(body.getContext(),stmts));
+		}
+		@Override
+		public Object visitFunction(Function func)
+		{
+			unmodifiedParams=new HashMap<String,Parameter>();
+			for(Iterator<Parameter> iter=func.getParams().iterator();iter.hasNext();) {
+				Parameter param=iter.next();
+				if(param.isParameterOutput()) continue;
+				unmodifiedParams.put(param.getName(),param);
+			}
+			Function ret=(Function) super.visitFunction(func);
+			List<Parameter> parameters=func.getParams(); //assume it's mutable; for the current Function implementation that is true
+			for(int i=0;i<parameters.size();i++) {
+				Parameter param=parameters.get(i);
+				if(param.isParameterOutput()) continue;
+				if(!unmodifiedParams.containsValue(param)) {
+					String newName=getNewInCpID(param.getName());
+					Parameter newPar=new Parameter(param.getType(),newName,param.isParameterOutput());
+					parameters.set(i,newPar);
+					ret=addVarCopy(ret,param,newName);
+				}
+			}
+			return ret;
+		}
+		public Object visitStmtAssign(StmtAssign stmt)
+		{
+			Expression lhs=(Expression) stmt.getLHS().accept(this);
+			while (lhs instanceof ExprArrayRange) lhs=((ExprArrayRange)lhs).getBase();
+			assert lhs instanceof ExprVar;
+			String lhsName=((ExprVar)lhs).getName();
+			unmodifiedParams.remove(lhsName);
+			return super.visitStmtAssign(stmt);
+		}
+		public Object visitStmtVarDecl(StmtVarDecl stmt)
+		{
+			int n=stmt.getNumVars();
+			for(int i=0;i<n;i++) {
+				unmodifiedParams.remove(stmt.getName(i));
+			}
+			return super.visitStmtVarDecl(stmt);
+		}
+	}
+	
+	private int inCpCounter;
+	private int outCounter;
 	private Function currentFunction;
+	private ParameterCopyResolver paramCopyRes;
 	
 	public FunctionParamExtension() {
 		this(null);
@@ -21,16 +87,21 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 
 	public FunctionParamExtension(SymbolTable symtab) {
 		super(symtab);
+		paramCopyRes=new ParameterCopyResolver();
 	}
 
 	private String getParamName(int x) { 
 		return "_out_"+x; 
 	}
 	
-	private String getNewTempID() { 
-		return "_frv_"+(tempCounter++); 
+	private String getNewOutID() {
+		return "_ret_"+(outCounter++); 
 	}
-	
+
+	private String getNewInCpID(String oldName) {
+		return oldName+"_"+(inCpCounter++); 
+	}
+
 	private List getOutputParams(Function f) {
 		List params=f.getParams();
 		for(int i=0;i<params.size();i++)
@@ -53,14 +124,16 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 	}
 
 	public Object visitFunction(Function func) {
-		final Function ret;
 		currentFunction=func;
-			tempCounter=0;
-			ret=(Function) super.visitFunction(func);
+			outCounter=0;
+			inCpCounter=0;
+			func=(Function) super.visitFunction(func);
 		currentFunction=null;
-		return new Function(ret.getContext(),ret.getCls(),ret.getName(),
-				new TypePrimitive(TypePrimitive.TYPE_VOID), ret.getParams(),
-				ret.getSpecification(), ret.getBody());
+		func=(Function)func.accept(paramCopyRes);
+		func=new Function(func.getContext(),func.getCls(),func.getName(),
+				new TypePrimitive(TypePrimitive.TYPE_VOID), func.getParams(),
+				func.getSpecification(), func.getBody());
+		return func;
 	}
 
 	public Object visitExprFunCall(ExprFunCall exp) {
@@ -75,7 +148,7 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 		String tempNames[]=new String[outParams.size()];
 		for(int i=0;i<outParams.size();i++) {
 			Parameter param=(Parameter) outParams.get(i);
-			tempNames[i]=getNewTempID();
+			tempNames[i]=getNewOutID();
 			Statement decl=new StmtVarDecl(exp.getContext(),
 					Collections.singletonList(param.getType()),
 					Collections.singletonList(tempNames[i]),
@@ -92,7 +165,7 @@ public class FunctionParamExtension extends SymbolTableVisitor {
 				args.add(oldArg);
 			else {
 				Parameter param=(Parameter) fun.getParams().get(i);
-				String tempVar=getNewTempID();
+				String tempVar=getNewOutID();
 				Statement decl=new StmtVarDecl(exp.getContext(),
 						Collections.singletonList(param.getType()),
 						Collections.singletonList(tempVar),

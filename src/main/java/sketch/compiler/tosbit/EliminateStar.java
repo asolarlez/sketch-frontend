@@ -520,20 +520,22 @@ public class EliminateStar extends PartialEvaluator {
 	{    	
     	String name = exp.getName();
     	// Local function?
-    	if (ss.getFuncNamed(name) != null) {     
-    		Function fun = ss.getFuncNamed(name);
-    		if(!this.starCheck.testNode(fun)){ 
+		Function fun = ss.getFuncNamed(name);
+    	if (fun != null) {     
+    		if(!this.starCheck.testNode(fun)){
+    			//if the called function contains no stars, keep the call but run the partial evaluator
     			List<Statement>  oldNewStatements = newStatements;
         		newStatements = new ArrayList<Statement> ();
         		super.visitExprFunCall(exp);
         		newStatements = oldNewStatements;
     			return exp;
-    		}   
-    		List<Statement>  oldNewStatements = newStatements;
-    		newStatements = new ArrayList<Statement> ();
-    		Statement result = null;
-    		state.pushLevel();
-    		try{	    		
+    		}
+			//....else inline the called function
+			List<Statement>  oldNewStatements = newStatements;
+			newStatements = new ArrayList<Statement> ();
+			Statement result = null;
+			state.pushLevel();
+			try{
 	    		{
 	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
 	    			Iterator formalParams = fun.getParams().iterator();
@@ -548,7 +550,7 @@ public class EliminateStar extends PartialEvaluator {
 	    			outParameterSetter(formalParams, actualParams, false);
 	    		}
 	    		result = new StmtBlock(exp.getContext(), newStatements);
-    		}finally{    			
+    		}finally{
     			state.popLevel();
     			newStatements = oldNewStatements;
     		}
@@ -609,10 +611,10 @@ public class EliminateStar extends PartialEvaluator {
 	        	}finally{
 	        		this.state.popLevel();
 	        	}
-	        	List<Statement> theList = new ArrayList<Statement>(func.getParams().size() + 1);
-	        	theList.add(body);
-	        	//postDoParams(func.getParams(), theList);
-	        	body = new StmtBlock(func.getContext(), theList);
+//	        	List<Statement> theList = new ArrayList<Statement>(func.getParams().size() + 1);
+//	        	theList.add(body);
+//	        	postDoParams(func.getParams(), theList);
+//	        	body = new StmtBlock(func.getContext(), theList);
 	        	func = new Function(func.getContext(), func.getCls(),
                         func.getName(), func.getReturnType(),
                         func.getParams(), func.getSpecification(), body);
