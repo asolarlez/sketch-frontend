@@ -487,6 +487,7 @@ public class NodesToJava implements FEVisitor
         switch(exp.getOp())
         {
         case ExprUnary.UNOP_NOT: return "!" + child;
+        case ExprUnary.UNOP_BNOT: return "~" + child;
         case ExprUnary.UNOP_NEG: return "-" + child;
         case ExprUnary.UNOP_PREINC: return "++" + child;
         case ExprUnary.UNOP_POSTINC: return child + "++";
