@@ -6,14 +6,80 @@ import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tosbit.EliminateStar.HasStars;
 
-public class BitVectorPreprocessor extends SymbolTableVisitor {
+public class BitVectorPreprocessor extends SymbolTableVisitor 
+{
 
+	private static class ParameterCopyResolver extends SymbolTableVisitor 
+	{
+		private HashMap<String,Parameter> unmodifiedParams;
+
+		public ParameterCopyResolver()
+		{
+			super(null);
+		}
+		
+		private Function addVarCopy(Function func, Parameter param, String newName)
+		{
+			StmtBlock body=(StmtBlock) func.getBody();
+			StmtVarDecl decl=new StmtVarDecl(func.getContext(),param.getType(),param.getName(),
+					new ExprVar(func.getContext(),newName));
+			List stmts=new ArrayList(body.getStmts().size()+2);
+			stmts.add(decl);
+			stmts.addAll(body.getStmts());
+			return new Function(func.getContext(),func.getCls(),func.getName(),func.getReturnType(),
+				func.getParams(),func.getSpecification(),
+				new StmtBlock(body.getContext(),stmts));
+		}
+		@Override
+		public Object visitFunction(Function func)
+		{
+			unmodifiedParams=new HashMap<String,Parameter>();
+			for(Iterator<Parameter> iter=func.getParams().iterator();iter.hasNext();) {
+				Parameter param=iter.next();
+				if(param.isParameterOutput()) continue;
+				unmodifiedParams.put(param.getName(),param);
+			}
+			Function ret=(Function) super.visitFunction(func);
+			List<Parameter> parameters=func.getParams(); //assume it's mutable; for the current Function implementation that is true
+			for(int i=0;i<parameters.size();i++) {
+				Parameter param=parameters.get(i);
+				if(param.isParameterOutput()) continue;
+				if(!unmodifiedParams.containsValue(param)) {
+					String newName=param.getName()+"_cp0";
+					Parameter newPar=new Parameter(param.getType(),newName,param.isParameterOutput());
+					parameters.set(i,newPar);
+					ret=addVarCopy(ret,param,newName);
+				}
+			}
+			return ret;
+		}
+		public Object visitStmtAssign(StmtAssign stmt)
+		{
+			Expression lhs=(Expression) stmt.getLHS().accept(this);
+			while (lhs instanceof ExprArrayRange) lhs=((ExprArrayRange)lhs).getBase();
+			assert lhs instanceof ExprVar;
+			String lhsName=((ExprVar)lhs).getName();
+			unmodifiedParams.remove(lhsName);
+			return super.visitStmtAssign(stmt);
+		}
+		public Object visitStmtVarDecl(StmtVarDecl stmt)
+		{
+			int n=stmt.getNumVars();
+			for(int i=0;i<n;i++) {
+				unmodifiedParams.remove(stmt.getName(i));
+			}
+			return super.visitStmtVarDecl(stmt);
+		}
+	}
+	
 	private TempVarGen varGen;
 	private HasStars starCheck;
+	private ParameterCopyResolver paramCopyRes;
 	
 	public BitVectorPreprocessor(TempVarGen varGen) {
 		super(null);
 		this.varGen=varGen;
+		paramCopyRes=new ParameterCopyResolver();
 	}
 	
 	private static boolean isBitType(Type t)
@@ -57,7 +123,8 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
-		if(isLongVector(stmt.getLHS())) {
+		Expression lhs=(Expression) stmt.getLHS().accept(this);
+		if(isLongVector(lhs)) {
 			//convert complicated vector assignments to a sequence of simple assignments
 			if(stmt.getRHS() instanceof ExprBinary)
 			{
@@ -78,8 +145,6 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 					newExpr=(Expression) newExpr.accept(this);
 					return new StmtAssign(stmt.getContext(),stmt.getLHS(),newExpr);
 				}
-//				else
-//					return stmt;
 			}
 		}
 		return super.visitStmtAssign(stmt);
@@ -88,7 +153,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 	@Override
 	public Object visitExprArray(ExprArray exp) {
 		return new ExprArrayRange(exp.getBase(),Collections.singletonList(
-			new RangeLen(exp.getOffset())));
+			new RangeLen(exp.getOffset()))).accept(this);
     }
 
 	@Override
@@ -155,6 +220,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor {
 	{
 		if(func.getSpecification()==null && starCheck.testNode(func))
 			return null;
+		func=(Function)func.accept(paramCopyRes);
 		return super.visitFunction(func);
 	}
 	
