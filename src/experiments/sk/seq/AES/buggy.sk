@@ -17,11 +17,11 @@ bit[32] Drot(bit[32] in, int r){
 }
 
 
-bit[W] normalRoundsk(bit[W] in_p) implements normalRound{
-  bit [32*256] T0 = ??;
-  bit [32*256] T1 = ??;
-  bit [32*256] T2 = ??;
-  bit [32*256] T3 = ??;
+bit normalRoundsk(bit[W] in_p) implements normalRound{
+  bit [256] T0 = ??;
+  bit [256] T1 = ??;
+  bit [256] T2 = ??;
+  bit [256] T3 = ??;
   bit[W] in;
   in = in_p; 
   
@@ -42,21 +42,19 @@ bit[W] normalRoundsk(bit[W] in_p) implements normalRound{
   	int i1 = (int) inv1;
   	int i2 = (int) inv2;
   	int i3 = (int) inv3;
-  	for(int j=0; j<32; ++j){
-  		bit tmp  = T0[i0*32+j] ^ T1[i1*32+j]^ T2[i2*32+j]^ T3[i3*32+j];		
-		output[i*32+ j] = tmp;
-	}
+  	bit tmp  = T0[i0] ^ T1[i1]^ T2[i2]^ T3[i3];		
+	output[0] = tmp;
   }
-  return output;
+  return output[0];
 }
 
 
 
-bit[W] normalRound(bit[W] in){
+bit normalRound(bit[W] in){
   bit [W] tmp1 = ByteSub(in);
   bit [W] tmp2 = tmp1; 
   bit [W] tmp3 = MixColumns(tmp2);
-  return tmp3;
+  return tmp3[0];
 }
 
 bit[W] ByteSub(bit[W] in){
