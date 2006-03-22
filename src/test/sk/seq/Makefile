@@ -1,6 +1,6 @@
 test-solver: 
-	bash regtest.sh
+	./regtest.sh
 test-cgen:
-	bash regtest2.sh
+	./regtest2.sh
 clean:
-	rm script *.h *.exe *.c *.cc *.sout *.output
+	./clean.sh
