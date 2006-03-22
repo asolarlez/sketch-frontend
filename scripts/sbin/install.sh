@@ -1,12 +1,14 @@
+#!/bin/bash
+
 PATH=$PATH:"`pwd`"
 export PATH
 
 FRONTEND="`pwd`/../";
-FRONTEND=`cygpath -w "$FRONTEND"`
-export FRONTEND;
+[ $OSTYPE == cygwin ] && FRONTEND=`cygpath -w "$FRONTEND"`
+export FRONTEND
 
 SOLVER=`pwd`;
-SOLVER=`cygpath -w "$SOLVER"`
-export SOLVER;
+[ $OSTYPE == cygwin ] && SOLVER=`cygpath -w "$SOLVER"`
+export SOLVER
 
 
