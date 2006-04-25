@@ -112,6 +112,12 @@ public class TypePrimitive extends Type
         {
         case TYPE_BIT:
             return "bit";
+        case TYPE_INT8:
+        	return "int8";
+        case TYPE_INT16:
+        	return "int16";
+        case TYPE_INT64:
+        	return "int64";
         case TYPE_INT:
             return "int";
         case TYPE_FLOAT:
