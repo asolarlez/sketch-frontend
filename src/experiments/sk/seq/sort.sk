@@ -1,0 +1,103 @@
+int N = 10;
+int No2 = N/2;
+
+// x <= y
+bit leq(bit x, bit y){
+	return !x || y;
+}
+bit[N] sort(bit[N] input){
+	bit[N] output=0;
+	bit[N] done = 0;
+	int k=0;
+	for(int i=0; i<N; ++i){
+		bit cur = 1;
+		for(int j=0; j<N; ++j){
+			if( leq(input[j], cur) && !done[j]){
+				k = j;
+				cur = input[j];
+			}
+		}
+		output[i] = cur;
+		done[k] = 1;
+	}
+	return output;
+}
+
+
+bit[No2] sortNover2(bit[No2] input){
+	
+	bit[No2] output=0;
+	bit[No2] done = 0;
+	int k=0;
+	for(int i=0; i<No2; ++i){
+		bit cur = 1;
+		for(int j=0; j<No2; ++j){
+			if( leq(input[j], cur) && !done[j]){
+				k = j;
+				cur = input[j];
+			}
+		}
+		output[i] = cur;
+		done[k] = 1;
+	}
+	return output;
+}
+
+bit binop(bit x, bit y, bit[4] table){
+	bit[2] b;
+	b[0] = x;
+	b[1] = y;
+	int idx = (int) b;	
+	return table[idx];
+}
+
+bit pred(int x, int y, bit[2] table){ 
+	bit rv;
+	if(table[0]){
+		if(table[1]){
+			rv = x > y || x < y; // x != y;
+		}else{
+			rv = x >= y || x <= y; // x != y;
+		}
+	}else{
+		if(table[1]){
+			rv = x > y;
+		}else{
+			rv = x < y;
+		}
+	}
+	return rv;
+}
+
+
+bit[N] MergeSort(bit[N] input)implements sort{
+
+	bit[4] table;
+	for(int i=0; i<4; ++i){ table[i] = ??; }
+	bit[2] ptable;
+	for(int i=0; i<2; ++i){ ptable[i] = ??; }
+	bit xv = ??;
+	bit[N] output;
+	bit[No2] firstHalf;
+	for(int i=0; i<No2; ++i){ firstHalf[i] = input[i]; }
+	bit[No2] secondHalf;
+	for(int i=0; i<No2; ++i){ secondHalf[i] = input[i+No2]; }
+		
+	firstHalf = sortNover2(firstHalf);
+	secondHalf = sortNover2(secondHalf);
+	int x=0;
+	int y=0;
+	for(int i=0; i<N; ++i){
+		bit x1 = pred(x , No2, ptable) ? firstHalf[x] : xv;
+		bit x2 = pred(y , No2, ptable) ? secondHalf[y] : xv;
+		bit t = binop( x1, x2, table);
+		if( t ){
+			output[i] = x1; x = x+1;
+		}else{
+			output[i] = x2; y = y+1;		
+		}
+	}	
+	return output;
+}
+
+
