@@ -16,5 +16,5 @@ rm *.tmp;
 
 grep -n '[0-9]' *.c | cpp | sed 's/:[0-9]*:/::/' > current.output;
 
-diff current.output reference;
+diff -w current.output reference;
 
