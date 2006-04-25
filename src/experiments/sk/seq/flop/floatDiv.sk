@@ -1,0 +1,113 @@
+int M=4;
+int E=4;
+int FW=M+E;
+
+bit[E] FOnegate(bit[E] x)
+{
+	for(int i=0;i<E;i++)	
+		x[i]=!x[i];
+	return x;
+}
+
+bit[E] FOsubtract(bit[E] a, bit[E] b)
+{
+	bit[E] ret=0;
+	ret[0]=1;
+	ret=ret+a;
+	ret=ret+FOnegate(b);
+	return ret;
+}
+
+bit[M*2] FOnegate2(bit[M*2] x)
+{
+	for(int i=0;i<M*2;i++)	
+		x[i]=!x[i];
+	return x;
+}
+
+bit[M*2] FOsubtract2(bit[M*2] a, bit[M*2] b)
+{
+	bit[M*2] ret=0;
+	ret[0]=1;
+	ret=ret+a;
+	ret=ret+FOnegate2(b);
+	return ret;
+}
+
+bit[FW] FOnormalize2(bit[2*M] m, bit[E] e) 
+{
+	bit[E] fix=0;
+	fix[2]=1; //fix=M(=4)
+	bit[E] neg_one=0;
+	for(int i=0;i<E;i++)
+		neg_one[i]=1;
+	int nz=0;
+	bit so=0;
+	for(int i=0;i<2*M;i++) if(!so) {
+		if(m[7-i]) {
+			so=1;
+		}
+		else {
+			nz=nz+1;
+			fix=fix+neg_one;
+		}
+	}
+	bit[FW] ret=0;
+	m=m>>nz;
+	ret[0::4]=m[M::4];
+	ret[M::4]=e+fix;
+	return ret;
+}
+
+bit[M*2] FOdivide(bit[M*2] a, bit[M] b)
+{
+	bit[2*M] ret=0;
+	bit[2*M] tosub=0;
+	tosub[M::4]=b;
+	for(int i=0;i<=M;i++) {
+		tosub=tosub<<1;
+		bit[2*M] res=FOsubtract2(a,tosub);
+		if(!res[M*2-1]) { // res>=0
+			ret[M-i]=1;
+			a=res;
+		}
+	}
+	return ret;
+}
+
+bit FOzero(bit[M] x)
+{
+	bit ret=1;
+	for(int i=0;i<M;i++)
+		if(x[i]) ret=0;
+	return ret;
+}
+
+bit[FW] floatDiv(bit[FW] a, bit[FW] b) 
+{
+	bit[M*2] aext=0;
+	aext[M::4]=a[0::4];
+	aext=FOdivide(aext,b[0::4]);
+	bit[E] e=FOsubtract(a[M::4],b[M::4]);
+	return FOnormalize2(aext,e);
+}
+
+bit[FW] test()
+{
+	bit[FW] a=0;
+	a[1]=1;
+	a[2]=1;
+	a[5]=1;
+	return a;
+}
+
+bit[FW] test2() implements test
+{
+	bit[FW] c=0;
+	c[2]=1;
+	c[3]=1;
+	c[5]=1;
+	c[6]=1;
+	bit[FW] b=??;
+	return floatDiv(c,b);
+}

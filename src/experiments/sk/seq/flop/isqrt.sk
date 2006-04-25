@@ -1,0 +1,41 @@
+int M=4;
+int E=4;
+int FW=M+E;
+
+bit[FW] isqrt(bit[FW] in)
+{
+	bit[FW] t=??;
+	if(??)
+		t=t-(in>>1);
+	else
+		t=t-in;
+	bit[FW] half=0;
+	half[6]=1;
+	bit[FW] th=0;
+	th[6]=1; th[7]=1;
+	bit[FW] hxx=floatMul(half,floatMul(in,in));
+	return floatMul(in,floatSub(th,hxx));
+}
+
+bit alwaysOne(bit[FW] in)
+{
+	return 1;
+}
+
+bit equiv(bit[FW] in) implements alwaysOne
+{
+	bit[FW] s=isqrt(in);
+	bit[FW] m=floatMul(s,s);
+	m=floatMul(s,in);
+	bit[FW] one=0;
+	one[M-1]=1;
+	bit[FW] dif=0;
+	if(FOless(dif,one))
+		dif=Fosubtract(one,dif);
+	else
+		dif=Fosubtract(dif,one);
+	if(FOless(dif,one))
+		return 1;
+	else
+		return 0;
+}
