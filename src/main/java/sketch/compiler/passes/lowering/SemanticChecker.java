@@ -848,7 +848,7 @@ public class SemanticChecker
                 		return super.visitExprArrayRange(expr);
                 	}
                 	RangeLen rl = (RangeLen)idx;                	
-                	Type ot = getType(rl.start);
+                	Type ot = getType(rl.start());
                 	if (ot != null)
                     {
                         if (!ot.promotesTo

@@ -67,26 +67,26 @@ public class GetExprType extends FENullVisitor
 			Object obj=l.get(i);
 			if(obj instanceof Range) {
 				Range range = (Range) obj;
-				Type start = (Type)((Range) obj).start.accept(this);
-				Type end = (Type)((Range) obj).end.accept(this);
+				Type start = (Type)((Range) obj).start().accept(this);
+				Type end = (Type)((Range) obj).end().accept(this);
 				isNonDet = isNonDet || start.isNonDet();
 				isNonDet = isNonDet || end.isNonDet();
 				if(expr == null){
-					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end, range.start);
+					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start());
 				}else{
 					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr, 
-							new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end, range.start)
+							new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start())
 					);
 				}
 			}
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
-				Type start = (Type)range.start.accept(this);
+				Type start = (Type)range.start().accept(this);
 				isNonDet = isNonDet || start.isNonDet();
 				if(expr == null){
-					expr = new ExprConstInt(range.len);
+					expr = new ExprConstInt(range.len());
 				}else{
-					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len));
+					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
 				}
 			}
 		}

@@ -611,17 +611,17 @@ public class FEReplacer implements FEVisitor
 			Object obj=l.get(i);
 			if(obj instanceof Range) {
 				Range range=(Range) obj;
-				Expression newStart=doExpression(range.start);
-				Expression newEnd=doExpression(range.end);
+				Expression newStart=doExpression(range.start());
+				Expression newEnd=doExpression(range.end());
 				newList.add(new Range(newStart,newEnd));
-				if(newStart!=range.start) change=true;
-				else if(newEnd!=range.end) change=true;
+				if(newStart!=range.start()) change=true;
+				else if(newEnd!=range.end()) change=true;
 			}
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
-				Expression newStart=doExpression(range.start);
-				newList.add(new RangeLen(newStart,range.len));
-				if(newStart!=range.start) change=true;
+				Expression newStart=doExpression(range.start());
+				newList.add(new RangeLen(newStart,range.len()));
+				if(newStart!=range.start()) change=true;
 			}
 		}
 		if(!change) return exp;

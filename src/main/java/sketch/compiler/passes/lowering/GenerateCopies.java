@@ -155,18 +155,18 @@ class UpgradeStarToInt extends FEReplacer{
 				{				
 					boolean oldBit = upToInt;
 			    	upToInt = true;
-					newStart=doExpression(range.start);
+					newStart=doExpression(range.start());
 					upToInt = oldBit;
 				}
 				{					
 					boolean oldBit = upToInt;
 			    	upToInt = true;
-			    	newEnd=doExpression(range.end);
+			    	newEnd=doExpression(range.end());
 			    	upToInt = oldBit;
 				}
 				newList.add(new Range(newStart,newEnd));
-				if(newStart!=range.start) change=true;
-				else if(newEnd!=range.end) change=true;
+				if(newStart!=range.start()) change=true;
+				else if(newEnd!=range.end()) change=true;
 			}
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
@@ -174,11 +174,11 @@ class UpgradeStarToInt extends FEReplacer{
 				{				
 					boolean oldBit = upToInt;
 			    	upToInt = true;
-			    	newStart=doExpression(range.start);
+			    	newStart=doExpression(range.start());
 			    	upToInt = oldBit;
 				}
-				newList.add(new RangeLen(newStart,range.len));
-				if(newStart!=range.start) change=true;
+				newList.add(new RangeLen(newStart,range.len()));
+				if(newStart!=range.start()) change=true;
 			}
 		}
 		if(!change) return exp;
@@ -232,7 +232,7 @@ class Indexify extends FEReplacer{
 	public Object visitExprArrayRange(ExprArrayRange exp){
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);		
-		Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, doExpression(rl.start));
+		Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, doExpression(rl.start()));
 		return new ExprArray(exp.getContext(), exp.getBase(), compIndex);		
     }	
 	
@@ -530,6 +530,11 @@ public class GenerateCopies extends SymbolTableVisitor
     			lt = lt.makeNonDet(); //symtab.lookupVar(lhsn);
     		}
     	}
+//    	if((lt != null && rt != null && !rt.promotesTo(lt)))
+//    	{
+//        	if((lt != null && rt != null && !rt.promotesTo(lt)))
+//        		System.out.println("CRAP");
+//    	}
     	assert !(lt != null && rt != null &&
                 !(rt.promotesTo(lt))) : (stmt.getContext() +
                        "BUG, this should never happen");

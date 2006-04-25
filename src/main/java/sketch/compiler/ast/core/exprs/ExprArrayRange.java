@@ -16,7 +16,7 @@ public class ExprArrayRange extends Expression
 {
 	public static class Range 
 	{
-		public final Expression start,end;
+		private final Expression start,end;
 		public Range(Expression start, Expression end)
 		{
 			this.start=start;
@@ -26,11 +26,13 @@ public class ExprArrayRange extends Expression
 		{
 			return start+":"+end;
 		}
+		public Expression start() {return start;}
+		public Expression end() {return end;}
 	}
 	public static class RangeLen 
 	{
-		public final Expression start;
-		public final int len;
+		private final Expression start;
+		private final int len;
 		public RangeLen(Expression start)
 		{
 			this(start,1);
@@ -45,6 +47,8 @@ public class ExprArrayRange extends Expression
 			if(len==1) return start.toString();
 			return start+"::"+len;
 		}
+		public Expression start() {return start;}
+		public int len() {return len;}
 	}
 
 	private Expression base;

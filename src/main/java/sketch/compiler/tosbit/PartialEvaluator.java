@@ -117,16 +117,16 @@ public class PartialEvaluator extends FEReplacer {
     	public Object visitExprArrayRange(ExprArrayRange exp) {
     		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
     		RangeLen rl = (RangeLen)exp.getMembers().get(0);
-    		Expression newStart = (Expression) rl.start.accept(PartialEvaluator.this);
+    		Expression newStart = (Expression) rl.start().accept(PartialEvaluator.this);
     		valueClass startVal = state.popVStack();    		
     		String vname = (String) exp.getBase().accept(this);    			
     		assert startVal.hasValue() : "For now, we require all array range expressions to have a computable start index.";		
     		if(startVal.hasValue()){
-    			lhsVals = new ArrayList<String>(rl.len);
- 	    		oldVals = new ArrayList<String>(rl.len);
- 	    		names = new ArrayList<String>(rl.len);
+    			lhsVals = new ArrayList<String>(rl.len());
+ 	    		oldVals = new ArrayList<String>(rl.len());
+ 	    		names = new ArrayList<String>(rl.len());
  	    		int start = startVal.getIntValue(); 	    		
- 	    		for(int i=0; i<rl.len; ++i){
+ 	    		for(int i=0; i<rl.len(); ++i){
  	    			int ofst = start + i;
  	    			String nm = vname + "_idx_" + ofst;
  	    			oldVals.add(state.varGetRHSName(nm));
@@ -135,9 +135,9 @@ public class PartialEvaluator extends FEReplacer {
  	    		}
  	    		NDArracc = true;
  	    		if(isReplacer){
- 		    		if(rl.start != newStart){
+ 		    		if(rl.start() != newStart){
  		    			List nlst = new ArrayList();
- 						nlst.add( new RangeLen(newStart, rl.len) );
+ 						nlst.add( new RangeLen(newStart, rl.len()) );
  						lhsExp = new ExprArrayRange(lhsExp, nlst);
  		    		}else{
  		    			lhsExp = exp;
@@ -265,7 +265,7 @@ public class PartialEvaluator extends FEReplacer {
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
-		Expression newStart = (Expression) rl.start.accept(this);
+		Expression newStart = (Expression) rl.start().accept(this);
 		valueClass startVal = state.popVStack();
 		
 		Expression newBase = (Expression) exp.getBase().accept(this);
@@ -274,20 +274,20 @@ public class PartialEvaluator extends FEReplacer {
 			assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
 			List<valueClass> lst = baseVal.getVectValue();
 			int sval = startVal.getIntValue();
-			List<valueClass> newLst = lst.subList(sval, sval + rl.len);
+			List<valueClass> newLst = lst.subList(sval, sval + rl.len());
 			state.pushVStack( new valueClass(newLst));
-			if(this.isReplacer && (rl.start != newStart || exp.getBase() != newBase )){
+			if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
 				List nlst = new ArrayList();
-				nlst.add( new RangeLen(newStart, rl.len) );
+				nlst.add( new RangeLen(newStart, rl.len()) );
 				return new ExprArrayRange(newBase, nlst);				
 			}else{
 				return exp;
 			}
 		}else{
 			state.pushVStack(new valueClass(exp.toString()));
-			if(this.isReplacer && (rl.start != newStart || exp.getBase() != newBase )){
+			if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
 				List nlst = new ArrayList();
-				nlst.add( new RangeLen(newStart, rl.len) );
+				nlst.add( new RangeLen(newStart, rl.len()) );
 				return new ExprArrayRange(newBase, nlst);			
 			}else{
 				return exp;
