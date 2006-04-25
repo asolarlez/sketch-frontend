@@ -1,0 +1,120 @@
+int M = 4;
+int E = 4;
+int FW = M + E;
+
+
+bit[FW] FOfloat (bit[M] m, bit[E] e)
+{
+    bit[FW] ret;
+
+    ret[0::4 /* 0::M */] = m;
+    ret[4::4 /* M::E */] = e;
+
+    return ret;
+}
+
+bit[M] FOman (bit[FW] n)
+{
+    return n[0::4 /* 0::M */];
+}
+
+bit[E] FOexp (bit[FW] n)
+{
+    return n[4::4 /* M::E */];
+}
+
+
+bit FOless (bit[E] e1, bit[E] e2)
+{
+    bit ret = 0;
+
+    for (i = 0; i < E; i++) {
+	if (e1[i] != e2[i]) {
+	    if (e2[i])
+		ret = 1;
+	    break;
+	}
+    }
+
+    return ret;
+}
+
+bit FOuleq (bit[E] e1, bit[E] e2)
+{
+    bit ret;
+
+    ret = ! FOless (e2, e1);
+    return ret;
+}
+
+bit FOzero(bit[FW] in) {
+	bit[M] m=FOman(in);
+	return !m[M-1];
+}
+
+bit[FW] floatAdd (bit[FW] n1, bit[FW] n2)
+{
+    bit[FW] ret;
+    bit[M + 1] m1 = 0, m2 = 0;
+    bit[E] e1, e2, d;
+
+    /* If any argument is zero, return the other one. This check is necessary
+     * due to the non-uniqueness of zero, which could lead to a case
+     * where n+0 != n. */
+    if (FOzero (n1)) {
+		ret = n2;
+	}
+    else if (FOzero (n2))
+		ret = n1;
+    else {
+		m1[0::4 /* 0::M */ ] = FOman (n1);
+		e1 = FOexp (n1);
+		m2[0::4 /* 0::M */ ] = FOman (n2);
+		e2 = FOexp (n2);
+	
+		/* Adjust exponents to the same value. */
+		if (FOless (e1, e2)) {
+		    d = FOsubtract (e2, e1);
+		    m1 = m1 >> d;
+		    e1 = e1 + d;
+		}
+		if (FOless (e2, e1)) {
+		    d = FOsubtract (e1, e2);
+		    m2 = m2 >> d;
+		    e2 = e2 + d;
+		}
+	
+		/* Apply integer addition. */
+		m1 = m1 + m2;
+	
+		/* Adjust mantisa width. */
+		if (m1[M] == 1) {
+		    m1 = m1 >> 1;
+		    e1 = e1 + 1;
+		}
+	
+		ret = FOfloat (m1[0::M], e);
+    }
+
+    return ret;
+}
+
+bit[FW] test()
+{
+	bit[FW] c=0;
+	c[2]=1;
+	c[3]=1;
+	c[5]=1;
+	c[6]=1;
+	return c;
+}
+
+bit[FW] test2() implements test
+{
+	bit[FW] a=0;
+	a[1]=1;
+	a[2]=1;
+	a[5]=1;
+	bit[FW] b=??;
+	return floatAdd(a,b);
+}
