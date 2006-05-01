@@ -33,6 +33,7 @@ public class ExprArrayRange extends Expression
 	{
 		private final Expression start;
 		private final int len;
+		private final Expression lenExpr;
 		public RangeLen(Expression start)
 		{
 			this(start,1);
@@ -41,14 +42,27 @@ public class ExprArrayRange extends Expression
 		{
 			this.start=start;
 			this.len=len;
+			this.lenExpr=null;
 		}
+		public RangeLen(Expression start, Expression len)
+		{
+			this.start=start;
+			this.len=0;
+			this.lenExpr=len;
+		}
+		public Expression start() {return start;}
+		public int len()
+		{
+			if(lenExpr!=null) throw new IllegalStateException("RangeLen len parameter has not been resolved to an int"); 
+			return len;
+		}
+		public Expression getLenExpression() {return lenExpr;}
+		public boolean hasLenExpression() {return lenExpr!=null;}
 		public String toString()
 		{
 			if(len==1) return start.toString();
 			return start+"::"+len;
 		}
-		public Expression start() {return start;}
-		public int len() {return len;}
 	}
 
 	private Expression base;

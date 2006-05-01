@@ -603,25 +603,30 @@ public class FEReplacer implements FEVisitor
 
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		boolean change=false;
-		Expression newBase=doExpression(exp.getBase());
+		final Expression newBase=doExpression(exp.getBase());
 		if(newBase!=exp.getBase()) change=true;
-		List l=exp.getMembers();
-		List newList=new ArrayList();
+		final List l=exp.getMembers();
+		List newList=new ArrayList(l.size()+1);
 		for(int i=0;i<l.size();i++) {
 			Object obj=l.get(i);
 			if(obj instanceof Range) {
 				Range range=(Range) obj;
 				Expression newStart=doExpression(range.start());
 				Expression newEnd=doExpression(range.end());
-				newList.add(new Range(newStart,newEnd));
-				if(newStart!=range.start()) change=true;
-				else if(newEnd!=range.end()) change=true;
+				if(newStart!=range.start() || newEnd!=range.end()) {
+					range=new Range(newStart,newEnd);
+					change=true;
+				}
+				newList.add(range);
 			}
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
 				Expression newStart=doExpression(range.start());
-				newList.add(new RangeLen(newStart,range.len()));
-				if(newStart!=range.start()) change=true;
+				if(newStart!=range.start()) {
+					range=new RangeLen(newStart,range.len());
+					change=true;
+				}
+				newList.add(range);
 			}
 		}
 		if(!change) return exp;

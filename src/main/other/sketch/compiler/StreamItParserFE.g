@@ -562,11 +562,13 @@ array_range_list returns [List l] { l=new ArrayList(); Object r;}
 (COMMA r=array_range {l.add(r);} )*
 ;
 
-array_range returns [Object x] { x=null; Expression start,end; }
+array_range returns [Object x] { x=null; Expression start,end,l; }
 :start=right_expr {x=new ExprArrayRange.RangeLen(start);}
 (COLON 
 (end=right_expr {x=new ExprArrayRange.Range(start,end);}
-|COLON len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
+|COLON 
+(len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
+|l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
 ))? 
 ;
 

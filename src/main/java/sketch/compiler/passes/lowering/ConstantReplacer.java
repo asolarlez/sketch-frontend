@@ -3,6 +3,8 @@ package streamit.frontend.passes;
 import java.util.*;
 
 import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArrayRange.Range;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 /**
  * Takes numeric constants defined at the beginning of the program and
@@ -32,6 +34,31 @@ public class ConstantReplacer extends FEReplacer {
 		return false;
 	}
 	
+	@Override
+	public Object visitExprArrayRange(ExprArrayRange exp) 
+	{
+		List newMembers=new ArrayList(exp.getMembers().size()+1);
+		boolean change=false;
+		for(Iterator members=exp.getMembers().iterator();members.hasNext();)
+		{
+			Object m=members.next();
+			if(m instanceof RangeLen) {
+				RangeLen range=(RangeLen) m;
+				if(range.hasLenExpression()) {
+					Expression l=(Expression) range.getLenExpression().accept(this);
+					assert l instanceof ExprConstInt;
+					range=new RangeLen(range.start(),((ExprConstInt)l).getVal());
+					change=true;
+				}
+				newMembers.add(range);
+			}
+			else 
+				newMembers.add(m);
+		}
+		if(change) exp=new ExprArrayRange(exp.getBase(),newMembers);
+		return super.visitExprArrayRange(exp);
+	}
+
 	@SuppressWarnings("unchecked")
 	public Object visitFieldDecl(FieldDecl field) {
 		field=(FieldDecl) super.visitFieldDecl(field);
