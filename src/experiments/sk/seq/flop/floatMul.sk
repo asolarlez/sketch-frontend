@@ -24,14 +24,6 @@ bit[M*2] FOmultiply(bit[M] a, bit[M] b)
 	return ret;
 }
 
-bit FOzero(bit[M] x)
-{
-	bit ret=1;
-	for(int i=0;i<M;i++)
-		if(x[i]) ret=0;
-	return ret;
-}
-
 bit[FW] floatMul(bit[FW] a, bit[FW] b) 
 {
 	bit[FW] ret=0;
