@@ -1,6 +1,15 @@
 int M=4;
 int E=4;
-int FW=M+E;
+int SB=M+E;
+int FW=M+E+1;
+
+bit[FW] floatOne()
+{
+	bit[FW] ret=0;
+	ret[SB-1]=1;
+	ret[M-1]=1;
+	return ret;
+}
 
 bit[M*2] FOmultiply(bit[M] a, bit[M] b)
 {
@@ -23,44 +32,33 @@ bit FOzero(bit[M] x)
 	return ret;
 }
 
-bit[FW] FOnormalize2(bit[2*M] m, bit[E] e) 
-{
-	bit[E] fix=0;
-	fix[2]=1; //fix=M(=4)
-	bit[E] neg_one=0;
-	for(int i=0;i<E;i++)
-		neg_one[i]=1;
-	int nz=0;
-	bit so=0;
-	for(int i=0;i<2*M;i++) if(!so) {
-		if(m[7-i]) {
-			so=1;
-		}
-		else {
-			nz=nz+1;
-			fix=fix+neg_one;
-		}
-	}
-	bit[FW] ret=0;
-	m=m>>nz;
-	ret[0::4]=m[M::4];
-	ret[M::4]=e+fix;
-	return ret;
-}
-
 bit[FW] floatMul(bit[FW] a, bit[FW] b) 
 {
-	bit[M*2] mmul=FOmultiply(a[0::4],b[0::4]);
-	bit[E] e=a[M::4];
-	e=e+b[M::4];
-	return FOnormalize2(mmul,e);
+	bit[FW] ret=0;
+	bit[E] one=0; 
+	one[0]=1;
+
+	bit[M*2] mmul=FOmultiply(a[0::M],b[0::M]);
+	bit[E] e=a[M::E];
+	e=e+b[M::E];    //add exponents
+	e[E-1]=!e[E-1]; //add bias, the fast way
+	
+	if(mmul[2*M-1]) {
+		ret[0::M]=mmul[M::M];
+		ret[M::E]=e+one;
+	}
+	else {
+		ret[0::M]=mmul[M-1::M];
+		ret[M::E]=e;
+	}
+	ret[SB]=a[SB]^b[SB];
+	return ret;
 }
 
 bit[FW] test()
 {
-	bit[FW] c=0;
+	bit[FW] c=floatOne();
 	c[2]=1;
-	c[3]=1;
 	c[5]=1;
 	c[6]=1;
 	return c;
@@ -68,9 +66,10 @@ bit[FW] test()
 
 bit[FW] test2() implements test
 {
-	bit[FW] a=0;
+	bit[FW] a=floatOne();
+//	a[2]=1;
+//	a[5]=1;
 	a[1]=1;
-	a[2]=1;
 	a[5]=1;
 	bit[FW] b=??;
 	return floatMul(a,b);
