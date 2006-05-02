@@ -100,6 +100,7 @@ public class NodesToJava implements FEVisitor
             case TypePrimitive.TYPE_NDBIT:
             case TypePrimitive.TYPE_BIT: return "int";
             case TypePrimitive.TYPE_NDINT:
+            case TypePrimitive.TYPE_SIGINT:
             case TypePrimitive.TYPE_INT: return "int";
             case TypePrimitive.TYPE_FLOAT: return "float";
             case TypePrimitive.TYPE_DOUBLE: return "double";

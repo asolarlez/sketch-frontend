@@ -46,7 +46,7 @@ public class NodesToCTest extends NodesToJava {
 		for(Iterator<String> iter=testFuncs.iterator();iter.hasNext();) {
 			writeLine(iter.next()+"();");
 		}
-		writeLine("printf(\"Automated testing passed\");");
+		writeLine("printf(\"Automated testing passed for "+filename+"\\n\");");
 		writeLine("return 0;");
 		unIndent();
 		writeLine("}");

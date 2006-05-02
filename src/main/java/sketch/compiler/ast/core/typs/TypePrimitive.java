@@ -49,6 +49,8 @@ public class TypePrimitive extends Type
     public static final int TYPE_NDINT = 12;
     /** Type constant for random bit types. */
     public static final int TYPE_NDBIT = 13;
+    /** Type constant for signed integers. */
+    public static final int TYPE_SIGINT = 14;
     
     /** Type object for boolean types. */
     public static final TypePrimitive booltype =
@@ -61,6 +63,7 @@ public class TypePrimitive extends Type
     public static final TypePrimitive int16type = new TypePrimitive(TYPE_INT16);
     public static final TypePrimitive int32type = new TypePrimitive(TYPE_INT32);
     public static final TypePrimitive int64type = new TypePrimitive(TYPE_INT64);
+    public static final TypePrimitive siginttype = new TypePrimitive(TYPE_SIGINT);
     /** Type object for float types. */
     public static final TypePrimitive floattype =
         new TypePrimitive(TYPE_FLOAT);
