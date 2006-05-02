@@ -67,6 +67,9 @@ bit[FW] FOadd(bit[FW] a, bit[FW] b)
 	bit[FW] ret=0;
 	bit[E] one=0;
 	one[0]=1;
+	bit[E] minusone=0;
+	for(int i=0;i<E;i++)
+		minusone[i]=1;
 	
 	bit difsign=a[SB]^b[SB];
 	bit[E] e1=a[M::E];
@@ -92,16 +95,16 @@ bit[FW] FOadd(bit[FW] a, bit[FW] b)
 		m1[0::M]=a[0::M];
 		m2[0::M]=b[0::M];
 		m2=m2<<sh;
-		if(difsign) m2=FOtwocomp(m2);
+		if(a[SB]^b[SB]) m2=FOtwocomp(m2);
 		m1=m1+m2;
-		if(m1[M]) {
-			ret[0::M]=m1[1::M];
-			ret[M::E]=e1+one;
+		for(int i=0;i<M;i++) {
+			if(!m1[M]) {
+				m1=m1>>1;
+				e1=e1+minusone;
+			}
 		}
-		else {
-			ret[0::M]=m1[0::M];
-			ret[M::E]=e1;
-		}
+		ret[0::M]=m1[1::M];
+		ret[M::E]=e1+one;
 	}
 	ret[SB]=a[SB];
 	return ret;
@@ -125,18 +128,24 @@ bit[FW] floatAdd(bit[FW] a, bit[FW] b)
 	return ret;
 }
 
-bit[FW] test()
+bit floatEquals(bit[FW] a, bit[FW] b) 
 {
-	bit[FW] c=floatOne();
-	c[2]=1; c[5]=1; c[6]=1;   // == 96
-	return c;
+	bit ret=1;
+	for(int i=0;i<FW;i++)
+		if(a[i]!=b[i]) ret=0;
+	return ret;
 }
 
-bit[FW] test2() implements test
+bit alwaysOne()
+{
+	return 1;
+}
+
+bit test2() implements alwaysOne
 {
 	bit[FW] a=floatOne();
-//	a[2]=1; a[5]=1;   // == 6
-	a[1]=1; a[6]=1;   // == 20
+	a[SB]=1;
 	bit[FW] b=??;
-	return floatAdd(a,b);
+	bit[FW] c=floatOne();
+	return floatEquals(floatAdd(a,b),c);
 }
