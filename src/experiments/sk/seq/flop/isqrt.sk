@@ -1,20 +1,196 @@
 int M=4;
 int E=4;
-int FW=M+E;
+int SB=M+E;
+int FW=M+E+1;
+int log_M=2;
+
+bit[FW] floatOne()
+{
+	bit[FW] ret=0;
+	ret[SB-1]=1;
+	ret[M-1]=1;
+	return ret;
+}
+
+bit[E] FOnegateE(bit[E] x)
+{
+	bit[E] ret;
+	for(int i=0;i<E;i++)
+		ret[i]=!x[i];
+	return ret;
+}
+
+bit[E] FOsubtractE(bit[E] e1, bit[E] e2)
+{
+	bit[E] ret=FOnegateE(e2);
+	ret=ret+e1;
+	bit[E] one=0;
+	one[0]=1;
+	return ret+one;
+}
+
+bit[M+1] FOtwocomp(bit[M+1] x)
+{
+	bit[M+1] ret;
+	for(int i=0;i<M+1;i++)
+		ret[i]=!x[i];
+	bit[M+1] one=0;
+	one[0]=1;
+	return ret+one;
+}
+
+bit floatIsZero(bit[FW] x)
+{
+	return !x[M-1];
+}
+
+bit floatAbsLess(bit[FW] a, bit[FW] b)
+{
+    bit ret=0;
+	bit eq=1;
+	if(!a[M-1]) //a==0
+		ret=1;
+	else {
+	    for(int i=M+E-1;i>=0;i--) {
+			if(eq && a[i]!=b[i]) {
+				ret=b[i];
+				eq=0;
+			}
+	    }
+    }
+    return ret;
+}
+
+bit[FW] FOadd(bit[FW] a, bit[FW] b)
+{
+	/* we assume a>=b */
+	bit[FW] ret=0;
+	bit[E] one=0;
+	one[0]=1;
+	
+	bit difsign=a[SB]^b[SB];
+	bit[E] e1=a[M::E];
+	bit[E] e2=b[M::E];
+	bit[E] edif=FOsubtractE(e1,e2);
+	bit over=0;
+	for(int i=log_M;i<E;i++) {
+		if(edif[i]) 
+			over=1;
+	}
+	int sh=0;
+	int t=1;
+	for(int i=0;i<log_M;i++) {
+		if(edif[i])
+			sh=sh+t;
+		t=t*2;
+	}
+	if(over || sh>=M) //the 2nd number is too small (insignificant)
+		ret=a;
+	else {
+		bit[M+1] m1=0;
+		bit[M+1] m2=0;
+		m1[0::M]=a[0::M];
+		m2[0::M]=b[0::M];
+		m2=m2<<sh;
+		if(difsign) m2=FOtwocomp(m2);
+		m1=m1+m2;
+		if(m1[M]) {
+			ret[0::M]=m1[1::M];
+			ret[M::E]=e1+one;
+		}
+		else {
+			ret[0::M]=m1[0::M];
+			ret[M::E]=e1;
+		}
+	}
+	ret[SB]=a[SB];
+	return ret;
+}
+
+bit[FW] floatAdd(bit[FW] a, bit[FW] b) 
+{
+	bit[FW] ret=0;
+
+	if(floatIsZero(a))
+		ret=b;
+	else if(floatIsZero(b))
+		ret=a;
+	else if(floatAbsLess(a,b)) {
+		ret=FOadd(b,a);
+	}
+	else {
+		/* a>=b */
+		ret=FOadd(a,b);
+	}
+	return ret;
+}
+
+bit[M*2] FOmultiply(bit[M] a, bit[M] b)
+{
+	bit[2*M] ret=0;
+	bit[2*M] toadd=0;
+	toadd=a;
+	for(int i=0;i<M;i++) {
+		if(b[i])
+			ret=ret+toadd;
+		toadd=toadd>>1;
+	}
+	return ret;
+}
+
+bit[FW] floatMul(bit[FW] a, bit[FW] b) 
+{
+	bit[FW] ret=0;
+	bit[E] one=0; 
+	one[0]=1;
+
+	bit[M*2] mmul=FOmultiply(a[0::M],b[0::M]);
+	bit[E] e=a[M::E];
+	e=e+b[M::E];    //add exponents
+	e[E-1]=!e[E-1]; //add bias, the fast way
+	
+	if(mmul[2*M-1]) {
+		ret[0::M]=mmul[M::M];
+		ret[M::E]=e+one;
+	}
+	else {
+		ret[0::M]=mmul[M-1::M];
+		ret[M::E]=e;
+	}
+	ret[SB]=a[SB]^b[SB];
+	return ret;
+}
+
+bit[FW] floatDiv2(bit[FW] a)
+{
+	bit[E] e=a[M::E];
+	bit[E] n_one=0;
+	for(int i=0;i<E;i++)
+		n_one[i]=1;
+	a[M::E]=e+n_one;
+	return a;
+}
+
+bit[FW] floatAbs(bit[FW] a)
+{
+	a[SB]=0;
+	return a;
+}
 
 bit[FW] isqrt(bit[FW] in)
 {
-	bit[FW] t=??;
-	if(??)
-		t=t-(in>>1);
-	else
-		t=t-in;
-	bit[FW] half=0;
-	half[6]=1;
-	bit[FW] th=0;
-	th[6]=1; th[7]=1;
+//	bit[FW] t=??;
+//	if(??)
+//		t=t-(in>>1);
+//	else
+//		t=t-in;
+	bit[FW] t=(in>>1) {|} in;
+	bit[FW] half=floatDiv2(floatOne());
+	bit[FW] th=floatOne();
+	th[M-2]=1;
 	bit[FW] hxx=floatMul(half,floatMul(in,in));
-	return floatMul(in,floatSub(th,hxx));
+	hxx[SB]=1; //negate
+	return floatMul(in,floatAdd(th,hxx));
 }
 
 bit alwaysOne(bit[FW] in)
@@ -24,17 +200,13 @@ bit alwaysOne(bit[FW] in)
 
 bit equiv(bit[FW] in) implements alwaysOne
 {
+	in[SB]=0;in[SB-1]=1;in[SB-2]=0;
 	bit[FW] s=isqrt(in);
 	bit[FW] m=floatMul(s,s);
-	m=floatMul(s,in);
-	bit[FW] one=0;
-	one[M-1]=1;
-	bit[FW] dif=0;
-	if(FOless(dif,one))
-		dif=Fosubtract(one,dif);
-	else
-		dif=Fosubtract(dif,one);
-	if(FOless(dif,one))
+	m[SB]=1;
+	bit[FW] dif=floatAdd(m,in); //computes in-s^2
+	bit[FW] eps=floatDiv2(in);
+	if(floatAbsLess(dif,eps))
 		return 1;
 	else
 		return 0;
