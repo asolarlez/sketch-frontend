@@ -1,0 +1,21 @@
+int M=4;
+int E=4;
+int SB=M+E;
+int FW=M+E+1;
+int log_M=2;
+
+bit[FW] floatOne()
+{
+	bit[FW] ret=0;
+	ret[SB-1]=1;
+	ret[M-1]=1;
+	return ret;
+}
+
+bit floatEquals(bit[FW] a, bit[FW] b) 
+{
+	bit ret=1;
+	for(int i=0;i<FW;i++)
+		if(a[i]!=b[i]) ret=0;
+	return ret;
+}
