@@ -1,0 +1,15 @@
+#include "test/flop/floatAdd.skh"
+
+bit alwaysOne(bit x)
+{
+	return 1;
+}
+
+bit test2(bit x) implements alwaysOne
+{
+	bit[FW] a=floatOne(); a[SB-2]=1;
+	a[SB]=1;
+	bit[FW] b=??;
+	bit[FW] c=floatOne(); c[SB]=1;
+	return floatEquals(floatAdd(a,b),c);
+}
