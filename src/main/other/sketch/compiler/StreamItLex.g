@@ -64,6 +64,8 @@ tokens {
 	"implements"; "overrides";
 }
 
+INCLUDE :"#include" ;
+
 ARROW :	"->" ;
 
 WS	:	(' '

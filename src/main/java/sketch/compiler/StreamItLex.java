@@ -101,6 +101,12 @@ tryAgain:
 		try {   // for char stream error handling
 			try {   // for lexical error handling
 				switch ( LA(1)) {
+				case '#':
+				{
+					mINCLUDE(true);
+					theRetToken=_returnToken;
+					break;
+				}
 				case '\t':  case '\n':  case '\r':  case ' ':
 				{
 					mWS(true);
@@ -367,6 +373,19 @@ tryAgain:
 	}
 }
 
+	public final void mINCLUDE(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = INCLUDE;
+		int _saveIndex;
+		
+		match("#include");
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
 	public final void mARROW(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = ARROW;
@@ -429,13 +448,13 @@ tryAgain:
 		
 		match("//");
 		{
-		_loop176:
+		_loop7:
 		do {
 			if ((_tokenSet_0.member(LA(1)))) {
 				matchNot('\n');
 			}
 			else {
-				break _loop176;
+				break _loop7;
 			}
 			
 		} while (true);
@@ -456,7 +475,7 @@ tryAgain:
 		
 		match("/*");
 		{
-		_loop180:
+		_loop11:
 		do {
 			if (((LA(1)=='*') && ((LA(2) >= '\u0003' && LA(2) <= '\u00ff')) && ((LA(3) >= '\u0003' && LA(3) <= '\u00ff')))&&( LA(2)!='/' )) {
 				match('*');
@@ -471,7 +490,7 @@ tryAgain:
 				}
 			}
 			else {
-				break _loop180;
+				break _loop11;
 			}
 			
 		} while (true);
@@ -1142,7 +1161,7 @@ tryAgain:
 		
 		match('"');
 		{
-		_loop225:
+		_loop56:
 		do {
 			if ((LA(1)=='\\')) {
 				mESC(false);
@@ -1151,7 +1170,7 @@ tryAgain:
 				matchNot('"');
 			}
 			else {
-				break _loop225;
+				break _loop56;
 			}
 			
 		} while (true);
@@ -1184,8 +1203,8 @@ tryAgain:
 		
 		match("0x");
 		{
-		int _cnt235=0;
-		_loop235:
+		int _cnt66=0;
+		_loop66:
 		do {
 			switch ( LA(1)) {
 			case '0':  case '1':  case '2':  case '3':
@@ -1259,10 +1278,10 @@ tryAgain:
 			}
 			default:
 			{
-				if ( _cnt235>=1 ) { break _loop235; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt66>=1 ) { break _loop66; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt235++;
+			_cnt66++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -1278,34 +1297,34 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt238=0;
-		_loop238:
+		int _cnt69=0;
+		_loop69:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt238>=1 ) { break _loop238; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt69>=1 ) { break _loop69; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt238++;
+			_cnt69++;
 		} while (true);
 		}
 		{
 		if ((LA(1)=='.')) {
 			mDOT(false);
 			{
-			int _cnt241=0;
-			_loop241:
+			int _cnt72=0;
+			_loop72:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt241>=1 ) { break _loop241; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt72>=1 ) { break _loop72; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt241++;
+				_cnt72++;
 			} while (true);
 			}
 		}
@@ -1358,17 +1377,17 @@ tryAgain:
 			}
 			}
 			{
-			int _cnt246=0;
-			_loop246:
+			int _cnt77=0;
+			_loop77:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt246>=1 ) { break _loop246; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt77>=1 ) { break _loop77; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt246++;
+				_cnt77++;
 			} while (true);
 			}
 		}
@@ -1432,7 +1451,7 @@ tryAgain:
 		}
 		}
 		{
-		_loop251:
+		_loop82:
 		do {
 			switch ( LA(1)) {
 			case 'a':  case 'b':  case 'c':  case 'd':
@@ -1471,7 +1490,7 @@ tryAgain:
 			}
 			default:
 			{
-				break _loop251;
+				break _loop82;
 			}
 			}
 		} while (true);

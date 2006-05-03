@@ -25,8 +25,8 @@ header {
 	import streamit.frontend.nodes.*;
 
 	import java.util.Collections;
-	import java.io.DataInputStream;
-	import java.util.List;
+import java.io.*;
+import java.util.List;
 
 	import java.util.ArrayList;
 }
@@ -74,14 +74,42 @@ options {
 		hasError = true;
 		super.reportError(s);
 	}
+
+public void handleInclude(String name, List funcs, List vars)
+{
+	name=name.substring(1,name.length()-1);
+			InputStream str=null;
+		try {
+			str = new FileInputStream(name);
+		} catch (FileNotFoundException e) {
+throw new IllegalArgumentException("File not found: "+name);
+		}
+		assert str!=null;
+		StreamItParserFE parser=new StreamItParserFE(new StreamItLex(str));
+		Program p=null;
+		try {
+			p = parser.program();
+		} catch (RecognitionException e) {
+throw new IllegalStateException(e);
+		} catch (TokenStreamException e) {
+			throw new IllegalStateException(e);
+		}
+		assert p!=null;
+		assert p.getStreams().size()==1;
+		StreamSpec ss=(StreamSpec) p.getStreams().get(0);
+		funcs.addAll(ss.getFuncs());
+		vars.addAll(ss.getVars());
 }
+
+}// end of ANTLR header block
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  List streams = new ArrayList();
 	List funcs=new ArrayList(); Function f; FieldDecl fd;
 }
 	:	( (return_types ID LPAREN) => f=function_decl { funcs.add(f); } |
-	   fd=field_decl SEMI { vars.add(fd); }
+	   fd=field_decl SEMI { vars.add(fd); } |
+	   INCLUDE st:STRING_LITERAL { handleInclude(st.getText(),funcs,vars); }
 )*
 		EOF
 		// Can get away with no context here.
@@ -90,7 +118,7 @@ program	 returns [Program p]
  				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN", 
  				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
-				 if (!hasError) p = new Program(null, streams, Collections.EMPTY_LIST /*structs*/); }
+				 if (!hasError) p = new Program(null, Collections.singletonList(ss), Collections.EMPTY_LIST /*structs*/); }
 	;
 
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
