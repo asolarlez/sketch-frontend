@@ -1,0 +1,82 @@
+// x = x1*b + x0
+// y = y1*b + y0
+//
+// x*y = (b*b)*x1*y1 + b*(x1*y0 + x0*y1) + x0*y0
+//
+// x*y = p(b)*x1*y1 + p(b)*a(x1, x0, y1, y0) * a(x1, x0, y1, y0) + p(b)*x0*y0
+//
+// x*y = (b*b +b)*x1*y1 + b*(x1 - x0)*(y1 - y0) + (b+1)*x0*y0
+//
+// p1, p2, a2, p3 are polynomials which the system has 
+// to discover in order to resolve the sketch
+
+
+
+
+int sel(int in1, int in2){
+	bit c = {*};
+	return c ? in1 : in2;
+}
+
+int poly(int n, int x0,int x1,int x2,int x3) {
+if (n<=0){
+ return {*};
+}else{
+return  ( ((  sel(sel(x0,  -(x0)), 0) 
+		+ sel(sel(x1,  -(x1)), 0)
+		+ sel(sel(x2,  -(x2)), 0)
+		+ sel(sel(x3,  -(x3)), 0)))*
+		 poly(n-1, x0,x1, x2, x3));
+}
+}
+
+int fu (int x, int y){
+	return x * y;
+}
+
+int k (int x, int y) implements fu
+{  
+    int N;
+	int x1, x2, y1, y2;
+	int base ;
+	x1 = x % base;	
+	y1 = y % base;
+	x2 = x / base;
+	y2 = y / base;
+	
+	int tmp11 = x1 * y1;
+	int tmp12 = poly(2, x1, x2, y1, y2);
+	int tmp22 = x2 * y2;
+	
+	int res = 0;
+	loop(5){
+		int t = sel(sel(tmp11, tmp22), tmp12) * (N*??);
+		res = res + sel(t, -(t));
+	}
+	return res;
+}
+
+
+//bit[WWWW] ZERO(bit i){
+//	return 0;
+//}
+
+//bit[WWWW] testMul(bit i) implements ZERO{
+//	bit[WW] x = {*};
+//	bit[WW] y= {*};
+//	bit[WWWW] tmp = k(x,y) ^ multiplyFull(x,y);
+//	return (k (x, y) ^ {*}) | !tmp[5];
+//}
+
+
+	
+//	bit[W] B = one>>(baseInBits << 1);   // 2^(baseInBits/2)
+//	
+//	if (baseInBits<=4) return multiply(x,y);
+//	else return 1;
+	
+//	return poly(b) * k(x1, y1, n/2) 
+//	     + poly(b) * k(x2, y2, n/2) 
+//	     + poly(b) * poly(x1, x2, y1, y2);
+//}
+
