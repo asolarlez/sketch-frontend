@@ -7,9 +7,9 @@ bit alwaysOne(bit x)
 
 bit test2(bit x) implements alwaysOne
 {
-	bit[FW] a=floatOne(); a[SB-2]=1;
-	a[SB]=1;
+	bit[FW] a=floatOne(); a[M]=1; a[SB]=1;   // a = -2
 	bit[FW] b=??;
-	bit[FW] c=floatOne(); c[SB]=1;
+	//b[SB]=0; //set the sign bit to 0; uncomment to make the sketch resolve
+	bit[FW] c=floatOne(); c[SB]=1;  // c = -1
 	return floatEquals(floatAdd(a,b),c);
 }

@@ -1,0 +1,17 @@
+#include "test/flop/floatAdd.skh"
+
+bit alwaysOne(bit x)
+{
+	return 1;
+}
+
+bit test2(bit x) implements alwaysOne
+{
+	bit[FW] a=floatOne();
+	a[SB]=1; a[1]=1; a[6]=1;   // == -20
+	bit[FW] b=??;
+	//b[SB]=0; //uncomment to make the sketch resolve properly (b=112=0xEE)
+	bit[FW] c=floatOne();
+	c[2]=1; c[5]=1; c[6]=1;   // == 96
+	return floatEquals(floatAdd(a,b),c);
+}
