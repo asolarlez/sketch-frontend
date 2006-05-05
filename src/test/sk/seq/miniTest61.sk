@@ -1,0 +1,12 @@
+bit alwaysOne(bit[3] x)
+{
+	return x[2];
+}
+
+bit test2(bit[3] x) implements alwaysOne
+{
+	bit tt = ??;
+	bit uu = ??;
+	x[1] = (!tt) ^ x[2];
+	return x[uu];
+}
