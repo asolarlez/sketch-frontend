@@ -1,0 +1,152 @@
+// #include "test/flop/floatCommon.skh"
+
+int M=4;
+int E=2;
+int SB=M+E;
+int FW=M+E+1;
+int log_M=2;
+
+bit[FW] floatOne()
+{
+	bit[FW] ret=0;
+	ret[SB-1]=1;
+	ret[M-1]=1;
+	return ret;
+}
+
+
+
+bit[E] FOnegateE(bit[E] x)
+{
+	bit[E] ret;
+	for(int i=0;i<E;i++)
+		ret[i]=!x[i];
+	return ret;
+}
+
+bit[E] FOsubtractE(bit[E] e1, bit[E] e2)
+{
+	bit[E] ret=FOnegateE(e2);
+	ret=ret+e1;
+	bit[E] one=0;
+	one[0]=1;
+	return ret+one;
+}
+
+bit[M+1] FOtwocomp(bit[M+1] x)
+{
+	bit[M+1] ret;
+	for(int i=0;i<M+1;i++)
+		ret[i]=!x[i];
+	bit[M+1] one=0;
+	one[0]=1;
+	return ret+one;
+}
+
+bit floatIsZero(bit[FW] x)
+{
+	return !x[M-1];
+}
+
+bit floatAbsLess(bit[FW] a, bit[FW] b)
+{
+    bit ret=0;
+	bit eq=1;
+	if(!a[M-1]) //a==0
+		ret=1;
+	else {
+	    for(int i=M+E-1;i>=0;i--) {
+			if(eq && a[i]!=b[i]) {
+				ret=b[i];
+				eq=0;
+			}
+	    }
+    }
+    return ret;
+}
+
+
+bit[FW] FOadd(bit[FW] a, bit[FW] b)
+{
+	/* we assume a>=b */
+	bit[FW] ret=0;
+	bit[E] one=0;
+	one[0]=1;
+	bit[E] minusone=0;
+	for(int i=0;i<E;i++)
+		minusone[i]=1;
+	
+	bit[E] e1=a[M::E];
+	bit[E] e2=b[M::E];
+	bit[E] edif=FOsubtractE(e1,e2);
+	bit over=0;
+	int sh=0;
+	int t=1;
+	{
+		if(edif[0])
+			sh=sh+t;
+		t=t*2;
+	}
+	{
+		if(edif[1])
+			sh=sh+t;
+		t=t*2;
+	}
+	{
+		bit[M+1] m1=0;
+		bit[M+1] m2=0;
+		m1[0::M]=a[0::M];
+		m2[0::M]=b[0::M]; // {00010}
+		m2=m2<<sh;
+		if(!b[SB])
+			 m2=FOtwocomp(m2);
+		m1=m1+m2;
+		
+		
+		if(!m1[M-1]) {
+			e1=e1+minusone;
+		}
+		
+		ret[M::E]=e1;
+	}
+	return ret;
+}
+
+bit[FW] floatAdd(bit[FW] a, bit[FW] b) 
+{
+	bit[FW] ret=0;
+
+	if(floatIsZero(b)){
+		ret=a;
+	}else{
+		/* a>=b */
+		ret=FOadd(a,b);
+	}
+	return ret;
+}
+
+bit alwaysOne(bit x)
+{
+	return 1;
+}
+
+
+bit floatEqualsE(bit[FW] a, bit[FW] b) 
+{
+	bit ret=1;
+	for(int i=4;i<6;i++)
+		if(a[i]!=b[i]) ret=0;
+	return ret;
+}
+
+bit test2(bit x) implements alwaysOne
+{
+	bit[FW] a=floatOne(); a[M]=1; a[SB]=1;   // a = -2
+	bit[FW] b=floatOne();
+	b[5] = ??;
+	b[SB] = ??;
+
+	//b[SB]=0; //set the sign bit to 0; uncomment to make the sketch resolve
+	bit[FW] c=floatOne(); c[SB]=1;  // c = -1
+	return floatEqualsE(floatAdd(a,b),c);
+}
