@@ -1,0 +1,91 @@
+int M=4;
+int E=4;
+int SB=M+E;
+int FW=M+E+1;
+int log_M=2;
+
+
+bit[M+1] FOtwocomp(bit[M+1] x)
+{
+	bit[M+1] ret;
+	for(int i=0;i<M+1;i++)
+		ret[i]=!x[i];
+	bit[M+1] one=0;
+	one[0]=1;
+	return ret+one;
+}
+
+bit[E] FOnegateE(bit[E] x)
+{
+	bit[E] ret;
+	for(int i=0;i<E;i++)
+		ret[i]=!x[i];
+	return ret;
+}
+
+bit[E] FOsubtractE(bit[E] e1, bit[E] e2)
+{
+	bit[E] ret=FOnegateE(e2);
+	ret=ret+e1;
+	bit[E] one=0;
+	one[0]=1;
+	return ret+one;
+}
+
+
+bit[M] FOadd(bit[FW] a, bit[FW] b, bit tt)
+{
+	/* we assume a>=b */
+	
+	{
+		bit[M+1] m1=0;
+		bit[M+1] m2=0;
+		bit[M+1] t1=  {0,0,1,1,1};
+		bit[M+1] t2= {0,0,0,1,1};
+
+		m1[0::M]=a[0::M]; // = t ? {00010} : {00110}
+		m2[0::M]=0;
+		if(tt){
+		 m2 = t1; // {0,0,1,1,1} + {0,0,0,1,0} = {0,0,1,0,0}
+		}else{
+		 m2 = t2; // {0,0,0,1,1} + {0,0,1,1,0} = {0,0,1,0,0}
+		}
+
+		m1=m1+m2; // m1 = m1-m2; {0,0,1,0,0};
+			
+		m1=m1>>2; // m1 = {0,0,0,0,1}
+		
+		if(!m1[M]) {
+			m1=m1>>1;
+		}
+		
+		return m1[1::M];
+
+	}
+}
+
+bit floatEquals(bit[M] a, bit[M] b) 
+{
+	bit ret=1;
+	for(int i=0;i<M;i++)
+		if(a[i]!=b[i]) ret=0;
+	return ret;
+}
+
+
+bit alwaysOne(bit x)
+{
+	return 1;
+}
+
+
+bit test2(bit x) implements alwaysOne
+{
+	bit[FW] a={0,0,0,1,0,0,0,1,1}; // -1
+	bit[FW] b={0,0,0,1,0,0,0,1,0};
+	bit tt = ??;
+	if(tt) b[M]=1; // makes it 1*2^(9-8)
+	else b[M-2]=1; // makes it 1.1*2^(8-8)
+	bit[M] c={0,0,0,1};
+	return floatEquals(FOadd(b,a, tt),c);
+}
