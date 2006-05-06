@@ -37,6 +37,14 @@ options {
 }
 
 {
+	private List processedIncludes=new ArrayList();
+	
+	public StreamItParserFE(StreamItLex lexer, List includes)
+	{
+		this(lexer);
+		processedIncludes=includes;
+	}
+	
 	public static void main(String[] args)
 	{
 		try
@@ -78,6 +86,7 @@ options {
 public void handleInclude(String name, List funcs, List vars)
 {
 	name=name.substring(1,name.length()-1);
+	if(processedIncludes.contains(name)) return;
 			InputStream str=null;
 		try {
 			str = new FileInputStream(name);
@@ -85,7 +94,8 @@ public void handleInclude(String name, List funcs, List vars)
 throw new IllegalArgumentException("File not found: "+name);
 		}
 		assert str!=null;
-		StreamItParserFE parser=new StreamItParserFE(new StreamItLex(str));
+		processedIncludes.add(name);
+		StreamItParserFE parser=new StreamItParserFE(new StreamItLex(str),processedIncludes);
 		Program p=null;
 		try {
 			p = parser.program();
