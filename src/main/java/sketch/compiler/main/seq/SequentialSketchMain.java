@@ -15,12 +15,26 @@
  */
 
 package streamit.frontend;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
@@ -28,14 +42,35 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.*;
+import streamit.frontend.passes.AssembleInitializers;
+import streamit.frontend.passes.AssignLoopTypes;
+import streamit.frontend.passes.BitTypeRemover;
+import streamit.frontend.passes.BitVectorPreprocessor;
+import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateArrayRange;
+import streamit.frontend.passes.ExtractRightShifts;
+import streamit.frontend.passes.ExtractVectorsInCasts;
+import streamit.frontend.passes.FindFreeVariables;
+import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.passes.GenerateCopies;
+import streamit.frontend.passes.NoRefTypes;
+import streamit.frontend.passes.NoticePhasedFilters;
+import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
 import streamit.frontend.tojava.InsertIODecls;
 import streamit.frontend.tojava.MoveStreamParameters;
 import streamit.frontend.tojava.NameAnonymousFunctions;
-import streamit.frontend.tosbit.*;
+import streamit.frontend.tosbit.EliminateStar;
+import streamit.frontend.tosbit.NodesToC;
+import streamit.frontend.tosbit.NodesToCTest;
+import streamit.frontend.tosbit.NodesToH;
+import streamit.frontend.tosbit.ProduceBooleanFunctions;
+import streamit.frontend.tosbit.ValueOracle;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -75,6 +110,7 @@ public class ToSBit
     private boolean hasTimeout = false;
     private int timeout = 30;
     private int seed = -1;
+    private Vector<String> commandLineOptions = new Vector<String>();
     private String resultFile = null;
     private Program beforeUnvectorizing=null;
     private boolean doVectorization=false;
@@ -131,6 +167,8 @@ public class ToSBit
             }else if (args[i].equals("--seed")) {
                 Integer value = new Integer(args[++i]);
                 seed = value.intValue();
+                commandLineOptions.add("-seed");
+                commandLineOptions.add("" + seed);
             }else if (args[i].equals("--dovectorization")) {
             	doVectorization=true;
             }else if (args[i].equals("--outputcfiles")) {
@@ -145,6 +183,9 @@ public class ToSBit
             	outputTest=true;
             }else if (args[i].equals("--fakesolver")) {
             	fakeSolver=true;
+            }else if( args[i].charAt(0)=='-') {
+            	commandLineOptions.add(args[i]);
+                commandLineOptions.add(args[++i]);
             }
             else
                 // Maybe check for unrecognized options.
@@ -448,7 +489,15 @@ public class ToSBit
         	int bits=0;
         	for(bits=1; bits<=this.incermentalAmt; ++bits){
         		System.out.println("TRYING SIZE " + bits);
-        		String[] commandLine  = {command , "-overrideCtrls", "" + bits, "-seed", "" + seed  ,outputFile, outputFile + ".tmp"};
+        		String[] commandLine = new String[ 5 + commandLineOptions.size()];
+        		commandLine[0] = command;
+        		commandLine[1] = "-overrideCtrls"; 
+        		commandLine[2] = "" + bits;
+        		for(int i=0; i<commandLineOptions.size(); ++i){
+        			commandLine[3+i] = commandLineOptions.elementAt(i);
+        		}
+        		commandLine[commandLine.length -2 ] = outputFile;
+        		commandLine[commandLine.length -1 ] = outputFile + ".tmp";        		
     	        boolean ret = runSolver(commandLine, bits);
     	        if(ret){
     	        	isSolved = true;
@@ -464,7 +513,13 @@ public class ToSBit
 	        System.out.println("Succeded with " + bits + " bits for integers");	        
         	oracle.capStarSizes(bits);
         }else{
-	        String[] commandLine  = {command ,  outputFile, outputFile + ".tmp"};
+        	String[] commandLine = new String[ 3 + commandLineOptions.size()];
+    		commandLine[0] = command;    		
+    		for(int i=0; i<commandLineOptions.size(); ++i){
+    			commandLine[1+i] = commandLineOptions.elementAt(i);
+    		}
+    		commandLine[commandLine.length -2 ] = outputFile;
+    		commandLine[commandLine.length -1 ] = outputFile + ".tmp";	        
 	        boolean ret = runSolver(commandLine, 0);
 	        if(!ret){
 	        	System.out.println("The sketch can not be resolved");
@@ -480,6 +535,7 @@ public class ToSBit
     
     
     private boolean runSolver(String[] commandLine, int i){
+    	System.out.println(commandLine);
         Runtime rt = Runtime.getRuntime();        
         try
         {
