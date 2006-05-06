@@ -941,12 +941,14 @@ public class NodesToSBit extends PartialEvaluator{
 		        }
 	            epms = state.popChangeTracker();
 	        }
-	        if(epms != null){	        	
-	        	out.print(state.procChangeTrackers(ipms, epms, vcond.toString()));
+	        if(epms != null){
+	        	String tmpVar = varGen.nextVar();
+	        	out.print(tmpVar + " = " + vcond.toString() + "; \n");
+	        	out.print(state.procChangeTrackers(ipms, epms, tmpVar));
 	        }else{	        	
-	        	//String tmpVar = varGen.nextVar();
-	        	//result += tmpVar + " = " + vcond.toString() + "; \n";
-	        	out.print(state.procChangeTrackers(ipms, vcond.toString()));
+	        	String tmpVar = varGen.nextVar();
+	        	out.print(tmpVar + " = " + vcond.toString() + "; \n");
+	        	out.print(state.procChangeTrackers(ipms, tmpVar));
 	        }
 	        return null;
 	    }
