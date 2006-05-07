@@ -21,6 +21,26 @@ bit[FW] floatDiv2(bit[FW] a)
 	return a;
 }
 
+bit[FW] floatDiv4(bit[FW] a)
+{
+	bit[E] e=a[M::E];
+	bit[E] n_two=0;
+	for(int i=0;i<E-1;i++)
+		n_two[i]=1;
+	a[M::E]=e+n_two;
+	return a;
+}
+
+bit[FW] floatDiv16(bit[FW] a)
+{
+	bit[E] e=a[M::E];
+	bit[E] n_four=0;
+	for(int i=0;i<E-2;i++)
+		n_four[i]=1;
+	a[M::E]=e+n_four;
+	return a;
+}
+
 bit[FW] floatAbs(bit[FW] a)
 {
 	a[SB]=0;
@@ -30,18 +50,10 @@ bit[FW] floatAbs(bit[FW] a)
 bit[FW] isqrt(bit[FW] in)
 {
 	bit[FW] t=??;
-//	if(??)
-		t=FObitsub(t,(in<<1));
-//	else
-//		t=t-in;
-
-//	bit[FW] t=0; //(in<<1) {|} (in);
-//	bit[FW] mm=??;
-//	bit[FW] ins=in<<1;
-//	for(int i=0;i<FW;i++)
-//		if(mm[i]) t[i]=ins[i]; else t[i]=in[i];
-	
+	t=FObitsub(t,(in<<1));
 	t[M-1]=1;
+	t[SB]=0;
+
 	bit[FW] half=floatDiv2(floatOne()); // = 0.5
 	bit[FW] th=floatOne(); th[M-2]=1; // = 1.5
 	bit[FW] hxx=floatMul(floatMul(half,in),floatMul(t,t));
@@ -56,7 +68,6 @@ bit alwaysOne(bit[FW] in)
 
 bit equiv(bit[FW] in) implements alwaysOne
 {
-//	in=floatOne(); in[2]=1; in[5]=1; in[6]=1; //=96
 	in[SB]=0;
 	in[M-1]=1;
 	bit[FW] one=floatOne();
@@ -65,9 +76,9 @@ bit equiv(bit[FW] in) implements alwaysOne
 	m=floatMul(m,in);
 	m[SB]=1;
 	bit[FW] dif=floatAdd(m,one); //computes 1-in*s^2
-	bit[FW] ub=floatOne(); ub[SB-2]=1; //=16
-	bit[FW] lb=floatOne(); lb[SB-1]=0; lb[SB-2]=1; //=1/16
-	bit[FW] eps=floatDiv2(floatDiv2(floatOne())); eps[0]=1;
+	bit[FW] ub=floatOne(); ub[SB-2]=1; //=2^4
+	bit[FW] lb=ub; lb[SB-1]=0; //=1/ub
+	bit[FW] eps=floatDiv4(floatDiv16(floatDiv16(floatOne()))); eps[0]=1;
 //	bit[FW] eps=floatDiv2(floatOne()); eps[M-4]=1;
 	if(floatAbsLess(lb,s) && floatAbsLess(s,ub) && floatAbsLess(dif,eps))
 		return 1;
