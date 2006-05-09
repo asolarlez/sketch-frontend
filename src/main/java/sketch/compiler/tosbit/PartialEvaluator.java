@@ -406,7 +406,13 @@ public class PartialEvaluator extends FEReplacer {
 	public Object visitExprTypeCast(ExprTypeCast exp) {
 		if(! exp.getType().equals(TypePrimitive.inttype) ){
 			Assert( exp.getType() instanceof TypeArray, "WHAT ARE YOU TRYING TO DO!!!");
-			return (String)exp.getExpr().accept(this);
+			Object rv = exp.getExpr().accept(this);
+			valueClass vc  = state.popVStack();
+			TypeArray ta = (TypeArray) exp.getType();
+			ExprConstInt ie =  (ExprConstInt) ta.getLength();
+			List<valueClass> vcl = vc.getVectValue();
+			state.pushVStack(new valueClass(vcl.subList(0, ie.getVal())));
+			return rv;
 		}
 		Expression param = (Expression)exp.getExpr().accept(this);
 		Expression rval = exp;
