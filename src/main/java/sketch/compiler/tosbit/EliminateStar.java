@@ -18,7 +18,10 @@ public class EliminateStar extends PartialEvaluator {
 		public HasStars(StreamSpec ss, boolean checkForStars) {
 			this.ss=ss;
 			this.checkForStars = checkForStars;
-		}		
+		}
+		public HasStars(StreamSpec ss) {
+			this.ss=ss;			
+		}
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {	
 			Function fun = ss.getFuncNamed(exp.getName());
