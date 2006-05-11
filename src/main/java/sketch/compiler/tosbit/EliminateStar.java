@@ -8,15 +8,17 @@ public class EliminateStar extends PartialEvaluator {
 	private ValueOracle oracle;	
 	private HasStars starCheck;
 	private int LUNROLL;
-	private Integer currentSize = null;
-	
+	private Integer currentSize = null;	
+	private boolean checkForStars = true;
 	public static class HasStars extends FEReplacer{
 		private StreamSpec ss;
 		boolean hasUnknown=false;
-		public HasStars(StreamSpec ss) {
+		private boolean checkForStars = true;
+		private Set<Function> visitedFunctions = new HashSet<Function>();;
+		public HasStars(StreamSpec ss, boolean checkForStars) {
 			this.ss=ss;
-		}
-		private Set<Function> visitedFunctions = new HashSet<Function>();;		
+			this.checkForStars = checkForStars;
+		}		
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {	
 			Function fun = ss.getFuncNamed(exp.getName());
@@ -41,11 +43,23 @@ public class EliminateStar extends PartialEvaluator {
 			return star;
 		}
 		public boolean testNode(FENode node){
+			if( !checkForStars ) return true;
+			this.visitedFunctions.clear();
 			hasUnknown = false;
 			node.accept(this);
 			return hasUnknown;
 		}
 	}
+
+	public EliminateStar(ValueOracle oracle, int LUNROLL, boolean checkForStars){
+		super(true);
+		this.oracle = oracle;
+		this.LUNROLL = LUNROLL;
+		oracle.initCurrentVals();
+		this.state = new MethodState();
+		this.checkForStars = checkForStars;
+	}
+
 	
 	public EliminateStar(ValueOracle oracle, int LUNROLL){
 		super(true);
@@ -626,8 +640,22 @@ public class EliminateStar extends PartialEvaluator {
 	@Override
 	public Object visitStreamSpec(StreamSpec spec)
 	{
-		starCheck=new HasStars(spec);
+		starCheck=new HasStars(spec, checkForStars);
 		return super.visitStreamSpec(spec);
+	}
+
+
+
+
+	public void setCheckForStars(boolean checkForStars) {
+		this.checkForStars = checkForStars;
+	}
+
+
+
+
+	public boolean getCheckForStars() {
+		return checkForStars;
 	}
 	
 }
