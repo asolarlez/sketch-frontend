@@ -17,25 +17,26 @@ int WWWW =  WW+WW;
 
 
 
-bit[WW+1] poly(int n, bit[W+1] x0,bit[W+1] x1,bit[W+1] x2,bit[W+1] x3) {
-if (n<=0){
- return {*};
-}else{
-return  multiplyHalf( ((bit[W+1])(  sel(sel(x0,  minus(x0)), 0) 
-		+ sel(sel(x1,  minus(x1)), 0)
-		+ sel(sel(x2,  minus(x2)), 0)
-		+ sel(sel(x3,  minus(x3)), 0))), (bit[W+1])poly(n-1, x0,x1, x2, x3));
+bit[W+1] poly1(bit[W] x0,bit[W] x1,bit[W] x2,bit[W] x3) {
+	bit[8] choice=??;
+	bit[W+1] sum=0;
+	if(choice[0] && !choice[1]) sum=    sum+x0;
+	if(choice[0] &&  choice[1]) sum=sub(sum,x0);
+	if(choice[2] && !choice[3]) sum=    sum+x1;
+	if(choice[2] &&  choice[3]) sum=sub(sum,x1);
+	if(choice[4] && !choice[5]) sum=    sum+x2;
+	if(choice[4] &&  choice[5]) sum=sub(sum,x2);
+	if(choice[6] && !choice[7]) sum=    sum+x3;
+	if(choice[6] &&  choice[7]) sum=sub(sum,x3);
+	return sum;
 }
-}
-
-
 
 int k = 0;  // this is used to verify mutliplication for some 
 			// specific values of y.  Succeeds for k=0, fails for k=1
 
 bit [WWWW] sel(bit[WWWW] in1, bit[WWWW] in2){
-	bit c = {*};
-	return (in1 & c) | (in2 & !c);
+	bit c=??;
+	return c ? in1 : in2;
 }
 
 bit [W+1] sub(bit[W+1] in1, bit[W+1] in2){
@@ -62,7 +63,7 @@ bit[WWWW] multiplyFull (bit[WW] in1, bit[WW] in2) {
 	return result;	
 }
 
-bit[WW+1] multiplyHalf (bit[W+1] in1, bit[W+1] in2) 
+bit[WWWW] multiplyHalf (bit[W+1] in1, bit[W+1] in2) 
 {	
 	bit [W] one = 0; one[0] = 1;
 	bit sgn1 = in1[W];
@@ -80,64 +81,35 @@ bit[WW+1] multiplyHalf (bit[W+1] in1, bit[W+1] in2)
 		in1w = in1w >> 1;
 	}
 	
+	bit[WWWW] ret = result;
 	if(sgn1 ^ sgn2){
-		result = ((result^1)+one);
-	}	
-	return result;
+		ret = ((ret^1)+one);
+	}
+	return ret;
 }
 
 
 
 
-bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
+bit[WWWW] multiplyKaratsuba (bit[WW] x, bit[WW] y) implements multiplyFull
 {  
 	bit [W] one = 0; one[0] = 1;
 	bit[W] x1, x2, y1, y2;
-	bit[WWWW]  tmp11=0, tmp12=0, tmp21=0, tmp22=0, res=0;
-	for (int i = 0; i < W; i++) {
-		x1[i] = x[i];
-		x2[i] = x[i+W];
-		y1[i] = y[i];
-		y2[i] = y[i+W];
-	}
+	bit[WWWW]  a=0, b=0, c=0, tmp21=0, res=0;
 	
-	tmp11 = multiplyHalf(x1, y1);	
-	tmp12 = poly(2, x1, x2, y1, y2);
-	tmp22 = multiplyHalf(x2, y2);
+	x1=x[0::W];  x2=x[W::W];
+	y1=y[0::W];  y2=y[W::W];
 	
-	for(int i=WW+1; i<WWWW; ++i){
-		tmp12[i] = tmp12[WW];
-	}
+	a = multiplyHalf(x1, y1);
+	b = multiplyHalf(x2, y2);
+	c = multiplyHalf(poly1(x1,x2,y1,y2), poly1(x1,x2,y1,y2));
 	
 	res = 0;
-	loop(5){
-		bit[WWWW] t = sel(sel(tmp11, tmp22), tmp12) >> (W*??);
+	res = res + a;
+	res = res + b >> (2*W);
+	loop(??){
+		bit[WWWW] t = sel(sel(a, b), c) >> W;
 		res = res + sel(t, minus(t));
 	}
 	return res;
 }
-
-
-//bit[WWWW] ZERO(bit i){
-//	return 0;
-//}
-
-//bit[WWWW] testMul(bit i) implements ZERO{
-//	bit[WW] x = {*};
-//	bit[WW] y= {*};
-//	bit[WWWW] tmp = k(x,y) ^ multiplyFull(x,y);
-//	return (k (x, y) ^ {*}) | !tmp[5];
-//}
-
-
-	
-//	bit[W] B = one>>(baseInBits << 1);   // 2^(baseInBits/2)
-//	
-//	if (baseInBits<=4) return multiply(x,y);
-//	else return 1;
-	
-//	return poly(b) * k(x1, y1, n/2) 
-//	     + poly(b) * k(x2, y2, n/2) 
-//	     + poly(b) * poly(x1, x2, y1, y2);
-//}
-
