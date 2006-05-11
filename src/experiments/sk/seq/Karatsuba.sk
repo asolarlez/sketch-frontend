@@ -11,7 +11,7 @@
 // to discover in order to resolve the sketch
 
 
-int WW = 6;
+int WW = 4;
 int W = WW/2;
 int WWWW =  WW+WW;
 
@@ -19,8 +19,8 @@ int k = 0;  // this is used to verify mutliplication for some
 			// specific values of y.  Succeeds for k=0, fails for k=1
 
 bit [WWWW] sel(bit[WWWW] in1, bit[WWWW] in2){
-	bit c = {*};
-	return (in1 & c) | (in2 & !c);
+	bit c = ??;
+	return c ? in1 : in2;
 }
 
 bit [W+1] sub(bit[W+1] in1, bit[W+1] in2){
@@ -79,12 +79,8 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 	bit [W] one = 0; one[0] = 1;
 	bit[W] x1, x2, y1, y2;
 	bit[WWWW]  tmp11=0, tmp12=0, tmp21=0, tmp22=0, res=0;
-	for (int i = 0; i < W; i++) {
-		x1[i] = x[i];
-		x2[i] = x[i+W];
-		y1[i] = y[i];
-		y2[i] = y[i+W];
-	}
+	x1=x[0::W]; x2=x[W::W];
+	y1=y[0::W]; y2=y[W::W];
 	
 	tmp11 = multiplyHalf(x1, y1);
 	tmp12 = multiplyHalf(sub(x2,x1), sub(y2,y1));
@@ -95,34 +91,9 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 	}
 	
 	res = 0;
-	loop(5){
-		bit[WWWW] t = sel(sel(tmp11, tmp22), tmp12) >> ??;
+	loop(??){
+		bit[WWWW] t = sel(sel(tmp11, tmp22), tmp12) >> (W*??);
 		res = res + sel(t, minus(t));
 	}
 	return res;
 }
-
-
-//bit[WWWW] ZERO(bit i){
-//	return 0;
-//}
-
-//bit[WWWW] testMul(bit i) implements ZERO{
-//	bit[WW] x = {*};
-//	bit[WW] y= {*};
-//	bit[WWWW] tmp = k(x,y) ^ multiplyFull(x,y);
-//	return (k (x, y) ^ {*}) | !tmp[5];
-//}
-
-
-	
-//	bit[W] B = one>>(baseInBits << 1);   // 2^(baseInBits/2)
-//	
-//	if (baseInBits<=4) return multiply(x,y);
-//	else return 1;
-	
-//	return poly(b) * k(x1, y1, n/2) 
-//	     + poly(b) * k(x2, y2, n/2) 
-//	     + poly(b) * poly(x1, x2, y1, y2);
-//}
-
