@@ -5,33 +5,6 @@ int FW=M+E+1;
 int log_M=2;
 
 
-bit[M+1] FOtwocomp(bit[M+1] x)
-{
-	bit[M+1] ret;
-	for(int i=0;i<M+1;i++)
-		ret[i]=!x[i];
-	bit[M+1] one=0;
-	one[0]=1;
-	return ret+one;
-}
-
-bit[E] FOnegateE(bit[E] x)
-{
-	bit[E] ret;
-	for(int i=0;i<E;i++)
-		ret[i]=!x[i];
-	return ret;
-}
-
-bit[E] FOsubtractE(bit[E] e1, bit[E] e2)
-{
-	bit[E] ret=FOnegateE(e2);
-	ret=ret+e1;
-	bit[E] one=0;
-	one[0]=1;
-	return ret+one;
-}
-
 
 bit[M] FOadd(bit[FW] a, bit[FW] b, bit tt)
 {
