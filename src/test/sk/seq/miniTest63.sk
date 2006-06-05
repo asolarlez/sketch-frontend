@@ -1,0 +1,28 @@
+bit tableSum(bit[4] in1) implements sum {
+	int k = 0;
+	if(in1[0]){
+		if(in1[1]){
+			k = ??;
+		}else{
+			k = 2;
+		}
+	}else{
+		if(in1[1]){
+			k = 0;
+		}else{
+			k = 1;
+		}
+	}
+	in1[1] = in1[3];
+	return in1[k];
+}
+
+bit sum (bit[4] in1) {	
+	bit t = in1[0];
+	bit t2 = !in1[1];
+	int k =  t;
+	int k2 =  t2;
+	in1[1] = in1[3];
+	return in1[k+k2];	
+}
+
