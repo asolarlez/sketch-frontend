@@ -114,6 +114,11 @@ public class NodesToCTest extends NodesToJava {
 		}
     }
     
+    private boolean typeIsArr(Type t) {
+		return (t instanceof TypeArray);
+    }
+    
+    
     private int typeWS(Type t) {
 		if(t instanceof TypeArray) {
 			TypeArray array=(TypeArray)t;
@@ -165,22 +170,36 @@ public class NodesToCTest extends NodesToJava {
     
     private void declareVar(String name, Type t) {
     	int len=typeLen(t);
+    	boolean isArr = typeIsArr(t);
     	String line=translateType(t);
     	line+=" "+name;
-    	if(len>1) line+="["+len+"]";
+    	if(isArr) line+="["+len+"]";
     	line+=";";
     	writeLine(line);
     }
 
+    private void padVar(String name, Type t) {
+    	int len=typeLen(t);
+    	boolean isArr = typeIsArr(t);
+    	int ws=typeWS(t);
+    	int pad=paddingBits(t);
+    	if(pad>0) {    		
+    		String line=name;
+    		if(isArr) line+="["+(len-1)+"]";
+    		line+="&=((1<<"+(ws-pad)+")-1);";
+    		writeLine(line);
+    	}
+    }
     private void initVar(String name, Type t,boolean random) {
     	int len=typeLen(t);
+    	boolean isArr = typeIsArr(t);
     	int ws=typeWS(t);
-    	if(len>1) {
+    	if(isArr) {
     		writeLine("for(int i=0;i<"+len+";i++) {");
     		addIndent();
     	}
     	String line=name;
-    	if(len>1) line+="[i]";
+    	if(isArr) line+="[i]";
     	if(random) {
 	    	line+="=rand()";
 	    	for(int s=16;s<ws;s+=16) {
@@ -191,33 +210,28 @@ public class NodesToCTest extends NodesToJava {
     		line+="=0";
     	line+=";";
     	writeLine(line);
-    	if(len>1) {
+    	if(isArr) {
     		unIndent();
     		writeLine("}");
     	}
-    	int pad=paddingBits(t);
-    	if(pad>0) {
-    		line=name;
-    		if(len>1) line+="["+(len-1)+"]";
-    		line+="&=((1<<"+(ws-pad)+")-1);";
-    		writeLine(line);
-    	}
+    	padVar(name, t);
     }
 
     private void outputVar(String name, Type t) 
     {
     	int len=typeLen(t);
+    	boolean isArr = typeIsArr(t);
     	int ws=typeWS(t);
     	writeLine("printf(\"%5s=\",\""+name+"\");");
-    	if(len>1) {
+    	if(isArr) {
     		writeLine("for(int z=0;z<"+len+";z++) {");
     		addIndent();
     	}
     	String line="printf(\"%0"+(ws/4)+"x\","+name;
-    	if(len>1) line+="[z]";
+    	if(isArr) line+="[z]";
    		line+=");";
     	writeLine(line);
-    	if(len>1) {
+    	if(isArr) {
     		unIndent();
     		writeLine("}");
     	}
@@ -226,14 +240,15 @@ public class NodesToCTest extends NodesToJava {
     
     private void doCompare(String name1, String name2, Type t, String fname, List<Parameter> inPars,Parameter outPar) {
     	int len=typeLen(t);
-    	if(len>1) {
+    	boolean isArr = typeIsArr(t);
+    	if(isArr) {
     		writeLine("for(int i=0;i<"+len+";i++) {");
     		addIndent();
     	}
     	String line="if("+name1;
-    	if(len>1) line+="[i]";
+    	if(isArr) line+="[i]";
     	line+="!="+name2;
-    	if(len>1) line+="[i]";
+    	if(isArr) line+="[i]";
     	line+=") {";
     	writeLine(line);
     	addIndent();
@@ -245,7 +260,7 @@ public class NodesToCTest extends NodesToJava {
     		writeLine("exit(1);");
     	unIndent();
     	writeLine("}");
-    	if(len>1) {
+    	if(isArr) {
     		unIndent();
     		writeLine("}");
     	}
@@ -266,7 +281,7 @@ public class NodesToCTest extends NodesToJava {
 			inPars.add(paramsList.get(i));
 		
 		for(int i=0;i<inPars.size();i++) {
-			Type inType=inPars.get(0).getType();
+			Type inType=inPars.get(i).getType();
 			declareVar(IN+i,inType);
 		}
 		Type outType=outPar.getType();
@@ -275,7 +290,7 @@ public class NodesToCTest extends NodesToJava {
 		writeLine("for(int _test_=0;_test_<"+NTESTS+";_test_++) {");
 		addIndent();
 		for(int i=0;i<inPars.size();i++) {
-			Type inType=inPars.get(0).getType();
+			Type inType=inPars.get(i).getType();
 			initVar(IN+i,inType,true);
 		}
 		initVar(OUTSK,outType,false);
@@ -284,6 +299,8 @@ public class NodesToCTest extends NodesToJava {
 		for(int i=0;i<inPars.size();i++) strInputs+=IN+i+",";
 		writeLine(func.getName()+"("+strInputs+OUTSK+");");
 		writeLine(func.getSpecification()+"("+strInputs+OUTSP+");");
+		this.padVar(OUTSK, outType);
+		this.padVar(OUTSP, outType);
 		doCompare(OUTSK,OUTSP,outType,fname,inPars,outPar);
 		unIndent();
 		writeLine("}");

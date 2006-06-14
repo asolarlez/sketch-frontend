@@ -16,25 +16,70 @@ public class NodesToC extends NodesToJava {
 		this.filename=filename;
 		if(macroDefinitions==null) {
 			macroDefinitions=new HashMap<String,String>();
-			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(1<<(i))))|(((x)&1)<<(i))");
-			macroDefinitions.put("SK_ONES","#define SK_ONES(n) ((1<<(n))-1)");
+			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(((unsigned long long)1)<<(i))))|(((x)&1)<<(i))");
+			macroDefinitions.put("SK_ONES","#define SK_ONES(n) ((((unsigned long long)1)<<(n))-1)");
 			macroDefinitions.put("SK_ONES_SL","#define SK_ONES_SL(s,l) (SK_ONES(l)<<(s))");
 			macroDefinitions.put("SK_ONES_SE","#define SK_ONES_SE(s,e) (SK_ONES((e)+1)^SK_ONES(s))");
 			macroDefinitions.put("SK_ONES_S","#define SK_ONES_S(s) (~SK_ONES(s))");
 			macroDefinitions.put("SK_ONES_E","#define SK_ONES_E(e) (SK_ONES((e)+1))");
 			macroDefinitions.put("SK_COPYBITS","#define SK_COPYBITS(l,m,r) l=((l)&~(m))|((r)&(m))");
-			macroDefinitions.put("SK_bitArrayCopy","void SK_bitArrayCopy(int* lhs, int s, int e, int* x, int ws)\n{\n	int aw=s/ws;\n	if(aw==e/ws) {\n		int mask=SK_ONES_SE(s%ws,e%ws);\n		SK_COPYBITS(lhs[aw],mask,x[0]<<(s%ws));\n	}\n	else {\n		int k=s%ws;\n		int l=e-s+1;\n		int nfw=(l+1)/ws;\n		int xw;\n		if(k==0) {\n			for(xw=0;xw<nfw;xw++) {\n				lhs[aw++]=x[xw];\n			}\n			int mask=SK_ONES_E(e%ws);\n			SK_COPYBITS(lhs[aw],mask,x[xw]);\n		}\n		else {\n			int kc=ws-k;\n			int mask1=SK_ONES_S(s);\n			int mask2=~mask1;\n			for(xw=0;xw<nfw;xw++) {\n				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);\n				aw++;\n				SK_COPYBITS(lhs[aw],mask2,x[xw]>>kc);\n			}\n			if(l%ws>kc) {\n				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);\n				aw++;\n				int mask=SK_ONES_E(e%ws);\n				SK_COPYBITS(lhs[aw],mask,x[xw]>>kc);\n			}\n			else {\n				int mask=SK_ONES_SE(k,e%ws);\n				SK_COPYBITS(lhs[aw],mask,x[xw]<<k);\n			}\n		}\n	}\n}\n");
+			macroDefinitions.put("SK_bitArrayCopy","template<typename T, typename V> void SK_bitArrayCopy(T* lhs, int s, int e, V* x, int ws)\n{\n	int aw=s/ws;\n	if(aw==e/ws) {\n		int mask=SK_ONES_SE(s%ws,e%ws);\n		SK_COPYBITS(lhs[aw],mask,x[0]<<(s%ws));\n	}\n	else {\n		int k=s%ws;\n		int l=e-s+1;\n		int nfw=(l)/ws;\n		int xw;\n		if(k==0) {\n			for(xw=0;xw<nfw;xw++) {\n				lhs[aw++]=x[xw];\n			}\n			int mask=SK_ONES_E(e%ws);\n			SK_COPYBITS(lhs[aw],mask,x[xw]);\n		}\n		else {\n			int kc=ws-k;\n			int mask1=SK_ONES_S(k);\n			int mask2=~mask1;\n			for(xw=0;xw<nfw;xw++) {\n				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);\n				aw++;\n				SK_COPYBITS(lhs[aw],mask2,x[xw]>>kc);\n			}\n			if(l%ws>kc) {\n				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);\n				aw++;\n				int mask=SK_ONES_E(e%ws);\n				SK_COPYBITS(lhs[aw],mask,x[xw]>>kc);\n			}\n			else {\n				int mask=SK_ONES_SE(k,e%ws);\n				SK_COPYBITS(lhs[aw],mask,x[xw]<<k);\n			}\n		}\n	}\n}\n");
+			macroDefinitions.put("SK_bitArrayCopyInv","template<typename T, typename V> void SK_bitArrayCopyInv(T* lhs, int s, int e, V* x, int ws, int totlen){\n" +
+								"    int aw=s/ws;\n" +
+								"    int l=e-s+1;\n" +
+								"    if(aw==e/ws) {\n" +
+								"       int mask=SK_ONES_SE(0,(e%ws) - (s%ws));\n" +
+								"       SK_COPYBITS(lhs[0],mask,x[aw]>>(s%ws));\n" +
+								"    }\n" +
+								"    else {\n" +
+								"       int k=s%ws;\n" +								
+								"       int nfw=(l)/ws;\n" +
+								"       int xw;\n" +
+								"       if(k==0) {\n" +
+								"           for(xw=0;xw<nfw;xw++) {\n" +
+								"               lhs[xw]=x[aw++];\n" +
+								"           }\n" +
+								"           int mask=SK_ONES_E(e%ws);\n" +
+								"           SK_COPYBITS(lhs[xw],mask,x[aw]);\n" +
+								"       }\n" +
+								"       else {\n" +
+								"           int kc=ws-k;\n" +
+								"           int mask1=SK_ONES(kc);\n" +
+								"           int mask2=~mask1;\n" +
+								"           for(xw=0;xw<nfw;xw++) {\n" +
+								"               SK_COPYBITS(lhs[xw],mask1,x[aw]>>k);\n" +
+								"               aw++;\n" +
+								"               SK_COPYBITS(lhs[xw],mask2,x[aw]<<kc);\n" +
+								"           }\n" +
+								"           if(l%ws>kc) {\n" +
+								"               SK_COPYBITS(lhs[aw],mask1,x[xw]>>k);\n" +
+								"               aw++;\n" +
+								"               int mask=SK_ONES_SE(kc, e%ws);\n" +
+								"               SK_COPYBITS(lhs[aw],mask,x[xw]<<kc);\n" +
+								"           }\n" +
+								"           else {\n" +
+								"               int mask=SK_ONES_E((e%ws)-k);\n" +
+								"               SK_COPYBITS(lhs[xw],mask,x[aw]>>k);\n" +
+								"           }\n" +
+								"       }\n" +
+								"    }\n" +
+								"    if(totlen > l){"+
+								"       for(int i=l; i<totlen; ++i) SK_BITASSIGN(lhs[i/ws], i%ws, 0); " +
+								"    }" +
+								"}      \n");
 		}
 	}
 	
 	private void requireMacro(String m) {
 		if(usedMacros.contains(m)) return;
 		if(m.startsWith("SK_ONES_")) requireMacro("SK_ONES");
-		else if(m.equals("SK_bitArrayCopy")) {
+		else if(m.equals("SK_bitArrayCopy") || m.equals("SK_bitArrayCopyInv")) {
 			requireMacro("SK_COPYBITS");
 			requireMacro("SK_ONES_SE");
 			requireMacro("SK_ONES_S");
 			requireMacro("SK_ONES_E");
+			requireMacro("SK_BITASSIGN");
+			
 		}
 		assert macroDefinitions.containsKey(m);
 		usedMacros.add(m);

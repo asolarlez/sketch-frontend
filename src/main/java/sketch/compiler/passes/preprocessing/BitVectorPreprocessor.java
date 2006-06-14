@@ -9,8 +9,7 @@ import streamit.frontend.tosbit.EliminateStar.HasStars;
 public class BitVectorPreprocessor extends SymbolTableVisitor 
 {
 	private TempVarGen varGen;
-	private HasStars starCheck;
-	
+	private HasStars starCheck;	
 	public BitVectorPreprocessor(TempVarGen varGen) {
 		super(null);
 		this.varGen=varGen;
@@ -44,32 +43,57 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		return false;
 	}
 
-	private Expression makeTempExpr(Expression e)
+	private Expression makeTempExpr(Expression e, Type type)
 	{
 		final FEContext ct=e.getContext();
 		final String tmp=varGen.nextVar();
+		StmtVarDecl svd = new StmtVarDecl(e.getContext(), type, tmp, null );
+		addStatement((Statement)super.visitStmtVarDecl(svd));
 		StmtAssign assign=new StmtAssign(ct,new ExprVar(ct,tmp),e);
 		assign=(StmtAssign) visitStmtAssign(assign);
 		addStatement(assign);
 		return new ExprVar(ct,tmp);
 	}
-
+	private int bitLength(Type type){
+		if( type instanceof TypeArray){
+			return ((TypeArray) type).getLength().getIValue();
+		}
+		if( isBitType(type) ){
+			return 1;
+		}
+		assert false;
+		return -1;
+		
+	}
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
 		Expression lhs=(Expression) stmt.getLHS().accept(this);
-		if(isLongVector(lhs)) {
+		Type lhsType = getType(lhs);
+		if(isBitArrayType(lhsType) || isBitType(lhsType)) {
 			//convert complicated vector assignments to a sequence of simple assignments
 			if(stmt.getRHS() instanceof ExprBinary)
 			{
 				ExprBinary rhs=(ExprBinary) stmt.getRHS();
 				Expression left=rhs.getLeft();
 				Expression right=rhs.getRight();
+				if(left instanceof ExprConstInt){
+					int sz = bitLength(lhsType); 					
+					List<Expression> lst=new ArrayList<Expression>();
+					for(int i=0; i<sz; ++i){ lst.add(left); }
+					left= new ExprArrayInit(stmt.getContext(), lst);						
+				}
+				if(right instanceof ExprConstInt && !(rhs.getOp() == ExprBinary.BINOP_LSHIFT || rhs.getOp() == ExprBinary.BINOP_RSHIFT)) {
+					int sz = bitLength(lhsType);					
+					List<Expression> lst=new ArrayList<Expression>();
+					for(int i=0; i<sz; ++i){ lst.add(right); }
+					right= new ExprArrayInit(stmt.getContext(), lst);	
+				}
 				if(left instanceof ExprBinary) {
-					left=makeTempExpr(left);
+					left=makeTempExpr(left, getType(left));
 				}
 				if(right instanceof ExprBinary) {
-					right=makeTempExpr(right);
+					right=makeTempExpr(right,  getType(right));
 				}
 				left=(Expression) left.accept(this);
 				right=(Expression) right.accept(this);
@@ -80,7 +104,34 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 					return new StmtAssign(stmt.getContext(),stmt.getLHS(),newExpr);
 				}
 			}
-		}
+		}		
+/*		if( isBitArrayType(lhsType)){
+			if(stmt.getRHS() instanceof ExprBinary)
+			{
+				ExprBinary rhs=(ExprBinary) stmt.getRHS();
+				Expression left=rhs.getLeft();
+				Expression right=rhs.getRight();
+				if(left instanceof ExprConstInt){
+					int sz = ((TypeArray) lhsType).getLength().getIValue();					
+					List<Expression> lst=new ArrayList<Expression>();
+					for(int i=0; i<sz; ++i){ lst.add(left); }
+					left= new ExprArrayInit(stmt.getContext(), lst);						
+				}
+				if(right instanceof ExprConstInt && !(rhs.getOp() == ExprBinary.BINOP_LSHIFT || rhs.getOp() == ExprBinary.BINOP_RSHIFT)) {
+					int sz = ((TypeArray) lhsType).getLength().getIValue();					
+					List<Expression> lst=new ArrayList<Expression>();
+					for(int i=0; i<sz; ++i){ lst.add(right); }
+					right= new ExprArrayInit(stmt.getContext(), lst);	
+				}			
+				left=(Expression) left.accept(this);
+				right=(Expression) right.accept(this);				
+				if(left!=rhs.getLeft() || right!=rhs.getRight()) {
+					Expression newExpr=new ExprBinary(rhs.getContext(),rhs.getOp(),left,right);
+					newExpr=(Expression) newExpr.accept(this);
+					return new StmtAssign(stmt.getContext(),stmt.getLHS(),newExpr);
+				}
+			}
+		}*/
 		return super.visitStmtAssign(stmt);
 	}
 

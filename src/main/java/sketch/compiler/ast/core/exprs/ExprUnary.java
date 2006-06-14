@@ -44,11 +44,12 @@ public class ExprUnary extends Expression
     private int op;
     private Expression expr;
     
-    Integer getIValue(){
+    public Integer getIValue(){
     	if(expr != null){
     		int v = expr.getIValue();
     		switch(op){
     		case UNOP_NOT: return new Integer(1-v);
+    		case UNOP_BNOT: return new Integer(~v);
     		case UNOP_NEG: return new Integer(-v);
     		case UNOP_PREINC:
     		case UNOP_POSTINC:
@@ -105,6 +106,7 @@ public class ExprUnary extends Expression
         switch(op)
         {
         case UNOP_NOT: preOp = "!"; break;
+        case UNOP_BNOT: preOp = "~"; break;
         case UNOP_NEG: preOp = "-"; break;
         case UNOP_PREINC: preOp = "++"; break;
         case UNOP_POSTINC: postOp = "++"; break;

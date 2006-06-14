@@ -70,9 +70,14 @@ public class ValueOracle {
 					size = starSizesCaped;
 				}
 				for(int i=0; i<size; ++i){
-					boolean val = valMap.get(var + "_" + i).booleanValue();
-					v += p*(val?1:0);
-					p = p*2;
+					String nm = var + "_" + i;
+					if( valMap.containsKey(nm) ){
+						boolean val = valMap.get(nm).booleanValue();
+						v += p*(val?1:0);
+						p = p*2;
+					}else{
+						break;
+					}
 				}
 				return(new ExprConstInt(node.getContext(), v));
 			}

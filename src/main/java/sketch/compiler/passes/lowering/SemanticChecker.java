@@ -562,6 +562,11 @@ public class SemanticChecker
                 public Object visitExprUnary(ExprUnary expr)
                 {
                     Type ot = getType(expr.getExpr());
+                    boolean isArr = false;
+                    if(ot instanceof TypeArray){
+                    	ot = ((TypeArray)ot).getBase();
+                    	isArr = true;
+                    }
                     if (ot != null)
                     {
                         Type inttype =

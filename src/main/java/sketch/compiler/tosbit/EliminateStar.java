@@ -149,20 +149,30 @@ public class EliminateStar extends PartialEvaluator {
 		if( rhsLst != null ){			
 			List<valueClass> lst= rhsLst;
 			Iterator<valueClass>  it = lst.iterator();
-			int idx = 0;
-			while( it.hasNext() ){
-				valueClass val = it.next(); 
-				if(val.hasValue()){
-					int i = val.getIntValue();
-					state.setVarValue(lhs + "_idx_" + idx, i);
+			
+			
+			for(int idx = 0; idx<arrSize; ++idx){
+				if( it.hasNext() ){
+					valueClass val = it.next(); 
+					if(val.hasValue()){
+						int i = val.getIntValue();
+						state.setVarValue(lhs + "_idx_" + idx, i);
+					}else{
+						hv = false;
+						state.unsetVarValue(lhs + "_idx_" + idx);
+					}
 				}else{
-					hv = false;
-					state.unsetVarValue(lhs + "_idx_" + idx);
-				}
-				++idx;
+					state.setVarValue(lhs + "_idx_" + idx, 0);
+				}				
 			}			
-		}else if(hv){			
-			state.setVarValue(lhs, vrhsVal.getIntValue());
+		}else if(hv){
+			if(isArr){
+				for(int i=0; i<arrSize; ++i){
+					state.setVarValue(lhs + "_idx_" + i, vrhsVal.getIntValue());
+				}
+			}else{
+				state.setVarValue(lhs, vrhsVal.getIntValue());
+			}
 		}
 		}
 		// Assume both sides are the right type.
@@ -242,7 +252,8 @@ public class EliminateStar extends PartialEvaluator {
 			newStatements = oldNewStatements;
 			return stmt;
 		}else{
-			oldNewStatements.addAll(newStatements);
+			oldNewStatements.add(new StmtBlock(stmt.getContext(), newStatements));
+			//oldNewStatements.addAll(newStatements);
 			newStatements = oldNewStatements;
 			return null;
 		}		
@@ -367,9 +378,9 @@ public class EliminateStar extends PartialEvaluator {
 			if( vt instanceof TypeArray){
 				TypeArray at = (TypeArray)vt;
 				Expression arLen = (Expression) at.getLength().accept(this);
-				valueClass tmp = state.popVStack();
-				Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getContext());
-				state.makeArray(nm, tmp.getIntValue());
+				valueClass arrSizeVal = state.popVStack();
+				Assert(arrSizeVal.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getContext());
+				state.makeArray(nm, arrSizeVal.getIntValue());
 				//this.state.markVectorStack();
 				if( stmt.getInit(i) != null){
 					Expression init = (Expression)stmt.getInit(i).accept(this);
@@ -387,18 +398,24 @@ public class EliminateStar extends PartialEvaluator {
 								state.setVarValue(nnm, ival.getIntValue());
 							}
 							++tt;
+						} 
+						for(; tt<arrSizeVal.getIntValue(); ++tt){
+							String nnm = nm + "_idx_" + tt;
+							state.varDeclare(nnm);
+							state.varGetLHSName(nnm);	
+							state.setVarValue(nnm,0);						
 						}
 						//continue;
 					}else{
 						Integer val = null;
 						if(vclass.hasValue())
 							val = vclass.getIntValue();
-						for(int tt=0; tt<tmp.getIntValue(); ++tt){
+						for(int tt=0; tt<arrSizeVal.getIntValue(); ++tt){
 							String nnm = nm + "_idx_" + tt;
 							state.varDeclare(nnm);
-							String tmplhsn = state.varGetLHSName(nnm);
+							state.varGetLHSName(nnm);
 							if(val != null){
-								state.setVarValue(tmplhsn, val.intValue());
+								state.setVarValue(nnm, val.intValue());
 							}
 						}	
 						//if(val != null) continue;
@@ -406,7 +423,7 @@ public class EliminateStar extends PartialEvaluator {
 					addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
 							nm, init) );
 				}else{
-					for(int tt=0; tt<tmp.getIntValue(); ++tt){
+					for(int tt=0; tt<arrSizeVal.getIntValue(); ++tt){
 						String nnm = nm + "_idx_" + tt;
 						state.varDeclare(nnm);
 						state.varGetLHSName(nnm);		            		

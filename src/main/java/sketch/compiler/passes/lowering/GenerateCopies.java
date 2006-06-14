@@ -232,7 +232,7 @@ class Indexify extends FEReplacer{
 	public Object visitExprArrayRange(ExprArrayRange exp){
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);		
-		Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, doExpression(rl.start()));
+		Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(stv));
 		return new ExprArray(exp.getContext(), exp.getBase(), compIndex);		
     }	
 	

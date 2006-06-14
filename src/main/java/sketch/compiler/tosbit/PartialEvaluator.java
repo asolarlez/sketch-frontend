@@ -257,8 +257,13 @@ public class PartialEvaluator extends FEReplacer {
 		}
 		if ((nbase == exp.getBase() && offset == exp.getOffset() ) || !isReplacer)
             return exp;
-        else
-            return new ExprArray(exp.getContext(), nbase, offset, exp.isUnchecked());
+        else{
+        	if( exp.getBase() instanceof ExprVar && nbase instanceof ExprArrayInit){
+        		return new ExprArray(exp.getContext(), exp.getBase(), offset, exp.isUnchecked());
+        	}else{
+        		return new ExprArray(exp.getContext(), nbase, offset, exp.isUnchecked());
+        	}
+        }
 	}
 
 	
@@ -277,18 +282,30 @@ public class PartialEvaluator extends FEReplacer {
 			List<valueClass> newLst = lst.subList(sval, sval + rl.len());
 			state.pushVStack( new valueClass(newLst));
 			if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
-				List nlst = new ArrayList();
-				nlst.add( new RangeLen(newStart, rl.len()) );
-				return new ExprArrayRange(newBase, nlst);				
+				if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
+	        		List nlst = new ArrayList();
+					nlst.add( new RangeLen(newStart, rl.len()) );
+					return new ExprArrayRange( exp.getBase(), nlst);		        		
+	        	}else{
+	        		List nlst = new ArrayList();
+					nlst.add( new RangeLen(newStart, rl.len()) );
+					return new ExprArrayRange(newBase, nlst);	        		
+	        	}				
 			}else{
 				return exp;
 			}
 		}else{
 			state.pushVStack(new valueClass(exp.toString()));
 			if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
-				List nlst = new ArrayList();
-				nlst.add( new RangeLen(newStart, rl.len()) );
-				return new ExprArrayRange(newBase, nlst);			
+	        	if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
+	        		List nlst = new ArrayList();
+					nlst.add( new RangeLen(newStart, rl.len()) );
+					return new ExprArrayRange( exp.getBase(), nlst);		        		
+	        	}else{
+	        		List nlst = new ArrayList();
+					nlst.add( new RangeLen(newStart, rl.len()) );
+					return new ExprArrayRange(newBase, nlst);	        		
+	        	}
 			}else{
 				return exp;
 			}	
@@ -506,19 +523,59 @@ public class PartialEvaluator extends FEReplacer {
 	    valueClass vchild = state.popVStack();
 	    String child = vchild.toString();
 	    Expression returnVal=exp;
-	    boolean hv = vchild.hasValue(); 	        
+	    boolean hv = vchild.hasValue(); 	
+	    boolean isV = vchild.isVect();
+	    assert !isV || (exp.getOp()== ExprUnary.UNOP_NOT) : "Vector unary currently only supported for not";
 	    switch(exp.getOp())
 	    {
 	    case ExprUnary.UNOP_NOT: 
+	    	if( isV ){
+	    		List<valueClass> lst0 = vchild.getVectValue();
+	    		List <valueClass> lst = new ArrayList<valueClass>();
+	    		for(Iterator<valueClass> it = lst0.iterator(); it.hasNext(); ){
+	    			valueClass vc = it.next();
+	    			if( vc.hasValue() ){
+	    				lst.add( new valueClass(1-vc.getIntValue()) );
+	    			}else{
+	    				lst.add(new valueClass("!" + vc) );
+	    			}
+	    		}
+	    		state.pushVStack( new valueClass(lst) );
+	    		return returnVal;
+	    	}else{
+	    		if( hv ){ 
+		    		state.pushVStack(new valueClass(1-vchild.getIntValue()));
+		    		if(this.isReplacer) returnVal = new ExprConstInt(1-vchild.getIntValue());
+		    	}else{
+		    		state.pushVStack( new valueClass("!" + child) );
+		    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getContext(), exp.getOp(), childExp );
+		    	}	
+	    	}
+	    return returnVal;
+	    case ExprUnary.UNOP_BNOT: 
 	    	if( hv ){ 
-	    		state.pushVStack(new valueClass(1-vchild.getIntValue()));
-	    		if(this.isReplacer) returnVal = new ExprConstInt(1-vchild.getIntValue());
+	    		if(vchild.isVect()){
+	    			List<valueClass> lst = vchild.getVectValue();
+	    			
+	    			List<valueClass> lst2 = new ArrayList<valueClass>();
+	    			for(Iterator<valueClass> it = lst.iterator(); it.hasNext();  ){
+	    				valueClass vc = it.next();
+	    				if( vc.hasValue()){
+	    					lst2.add(new valueClass(1-vc.getIntValue()));
+	    				}else{
+	    					lst2.add(new valueClass("~" + vc));
+	    				}
+	    			}
+	    			state.pushVStack(new valueClass(lst2));
+	    		}else{
+	    			state.pushVStack(new valueClass(1-vchild.getIntValue()));
+	    			if(this.isReplacer) returnVal = new ExprConstInt(1-vchild.getIntValue());
+	    		}
 	    	}else{
 	    		state.pushVStack( new valueClass("!" + child) );
 	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getContext(), exp.getOp(), childExp );
 	    	}
 	    return returnVal;
-	    
 	    case ExprUnary.UNOP_NEG:
 	    	if( hv ){
 	    		state.pushVStack(new valueClass(-vchild.getIntValue()));
@@ -588,6 +645,7 @@ public class PartialEvaluator extends FEReplacer {
 	    	return null; 
     		//TODO NYI;
 	    }
+	    assert false : "This should not happen";
 	    return null;
 	}
 	
@@ -774,7 +832,7 @@ public class PartialEvaluator extends FEReplacer {
         	state.pushVStack(new valueClass(""));
         	assert false : "NOT IMPLEMENTED";
         }
-        return rval;		
+        return rval;
 	}
 	
 	protected Object handleBinarySelect(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){

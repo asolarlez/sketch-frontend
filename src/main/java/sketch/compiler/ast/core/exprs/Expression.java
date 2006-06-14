@@ -43,7 +43,7 @@ abstract public class Expression extends FENode
     {
         return false;
     }
-    Integer getIValue(){
+    public Integer getIValue(){
     	return null;
     }
     public boolean equals(Object o){
