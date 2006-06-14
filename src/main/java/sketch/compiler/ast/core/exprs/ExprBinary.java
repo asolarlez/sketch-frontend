@@ -130,7 +130,7 @@ public class ExprBinary extends Expression
         return left.hashCode() ^ right.hashCode() ^ new Integer(op).hashCode();
     }
 
-    Integer getIValue(){    	
+    public Integer getIValue(){    	
     	if( getLeft().getIValue()!= null && getRight().getIValue()!= null){
     		int lv = getLeft().getIValue().intValue();
     		int rv = getRight().getIValue().intValue();
