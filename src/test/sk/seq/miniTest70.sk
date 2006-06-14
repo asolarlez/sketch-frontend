@@ -1,0 +1,13 @@
+bit[128] miniTest69(bit [128] in){
+	bit[128] out = 0;
+	for(int i=0; i<127; ++i){
+		out[i] = in[i];
+	}
+	return out;
+}
+
+bit[128] miniTest69sk(bit [128] in) implements miniTest69{
+	bit[128] out = 0;
+	out[0::127] = (bit[127]) in;
+	return out;
+}
