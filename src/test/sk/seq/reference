@@ -2,1634 +2,2804 @@
 # 1 "<built-in>"
 # 1 "<command line>"
 # 1 "<stdin>"
-miniTest1.c::#include "miniTest1.h"
-miniTest1.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest1.c:: _out_0 = ((in[1] & 0) | (in[3] & 1));
-miniTest1.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest1.c:: _out_0 = in[3];
-miniTest10.c::#include "miniTest10.h"
-miniTest10.c::void foo(unsigned char* in, unsigned char& _out_0) {
-miniTest10.c:: _out_0 = in[null];
-miniTest10.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest10.c:: unsigned char _ret_0;
-miniTest10.c:: {
-miniTest10.c:: {
-miniTest10.c:: _out_0 = in[2];
-miniTest10.c:: };
-miniTest10.c:: _ret_0 = _out_0;
-miniTest10.c:: };
-miniTest10.c:: _out_0 = (_ret_0 ^ in[3]);
-miniTest10.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest10.c:: _out_0 = (in[2] ^ in[3]);
-miniTest11.c::#include "miniTest11.h"
-miniTest11.c::void moo(unsigned char* in, unsigned char* _out_0) {
-miniTest11.c:: unsigned char tmp[2];
-miniTest11.c:: tmp[0] = in[0];
-miniTest11.c:: tmp[1] = in[2];
-miniTest11.c:: _out_0 = tmp;
-miniTest11.c::void foo(unsigned char* in, unsigned char& _out_0) {
-miniTest11.c:: unsigned char _ret_0[2];
-miniTest11.c:: moo(in, _ret_0);
-miniTest11.c:: unsigned char tmp[2];
-miniTest11.c:: tmp = _ret_0;
-miniTest11.c:: _out_0 = tmp[1];
-miniTest11.c:: ;
-miniTest11.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest11.c:: unsigned char _ret_0;
-miniTest11.c:: foo(in, _ret_0);
-miniTest11.c:: _out_0 = _ret_0;
-miniTest11.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest11.c:: _out_0 = in[2];
-miniTest12.c::#include "miniTest12.h"
-miniTest12.c::void foo(unsigned char* in, unsigned int& k, unsigned char& _out_0) {
-miniTest12.c:: if ((k > 0)) {
-miniTest12.c:: {
-miniTest12.c:: unsigned char _ret_0;
-miniTest12.c:: unsigned int _ret_1;
-miniTest12.c:: _ret_1 = (k - 1);
-miniTest12.c:: foo(in, _ret_1, _ret_0);
-miniTest12.c:: _out_0 = _ret_0;
-miniTest12.c:: };
-miniTest12.c:: } else {
-miniTest12.c:: {
-miniTest12.c:: _out_0 = in[2];
-miniTest12.c:: ;
-miniTest12.c:: };
-miniTest12.c:: }
-miniTest12.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest12.c:: unsigned char _ret_0;
-miniTest12.c:: unsigned int _ret_1;
-miniTest12.c:: _ret_1 = 4;
-miniTest12.c:: foo(in, _ret_1, _ret_0);
-miniTest12.c:: _out_0 = _ret_0;
-miniTest12.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest12.c:: _out_0 = in[2];
-miniTest13.c::#include "miniTest13.h"
-miniTest13.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest13.c:: unsigned int i1;
-miniTest13.c:: i1 = 2;
-miniTest13.c:: unsigned int i2;
-miniTest13.c:: i2 = 2;
-miniTest13.c:: _out_0 = (in[(i1 * i2)] ^ in[i1]);
-miniTest13.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest13.c:: _out_0 = (in[4] ^ in[2]);
-miniTest14.c::#include "miniTest14.h"
-miniTest14.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest14.c:: unsigned char t;
-miniTest14.c:: t = 0;
-miniTest14.c:: unsigned int i;
-miniTest14.c:: i = 0;
-miniTest14.c:: int __sa0 = 3;
-miniTest14.c:: for (int __sa1 = 0; __sa1 < __sa0; ++__sa1) {
-miniTest14.c:: t = in[i];
-miniTest14.c:: i = (i + 1);
-miniTest14.c:: };
-miniTest14.c:: _out_0 = t;
-miniTest14.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest14.c:: _out_0 = in[2];
-miniTest15.c::#include "miniTest15.h"
-miniTest15.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest15.c:: unsigned char tmp[2];
-miniTest15.c:: tmp = 0;
-miniTest15.c:: tmp[0] = 1;
-miniTest15.c:: tmp[1] = 1;
-miniTest15.c:: _out_0 = in[((unsigned int)(tmp))];
-miniTest15.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest15.c:: _out_0 = in[3];
-miniTest16.c::#include "miniTest16.h"
-miniTest16.c::void foo(unsigned char* in, unsigned char* _out_0) {
-miniTest16.c:: _out_0 = in;
-miniTest16.c::void reverseSketch(unsigned char* in_0, unsigned char* _out_0) {
-miniTest16.c:: unsigned char in[4];
-miniTest16.c:: in = in_0;
-miniTest16.c:: in[0] = 0;
-miniTest16.c:: unsigned char _ret_0[4];
-miniTest16.c:: foo(in, _ret_0);
-miniTest16.c:: _out_0 = _ret_0;
-miniTest16.c::void reverse(unsigned char* in_0, unsigned char* _out_0) {
-miniTest16.c:: unsigned char in[4];
-miniTest16.c:: in = in_0;
-miniTest16.c:: in[0] = 0;
-miniTest16.c:: _out_0 = in;
-miniTest17.c::#include "miniTest17.h"
-miniTest17.c::void foo(unsigned char* in, unsigned char* _out_0) {
-miniTest17.c:: _out_0 = in;
-miniTest17.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest17.c:: unsigned char _ret_0[10];
-miniTest17.c:: foo(in, _ret_0);
-miniTest17.c:: _out_0 = ((int[])(_ret_0));
-miniTest17.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest17.c:: unsigned char tmp[5];
-miniTest17.c:: tmp = 0;
-miniTest17.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest17.c:: {
-miniTest17.c:: tmp[i] = in[i];
-miniTest17.c:: };
-miniTest17.c:: };
-miniTest17.c:: _out_0 = tmp;
-miniTest18.c::#include "miniTest18.h"
-miniTest18.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest18.c:: unsigned char tmp[5];
-miniTest18.c:: tmp = {0,0,0,0,1};
-miniTest18.c:: unsigned char tmp2[2];
-miniTest18.c:: tmp2 = {1,1};
-miniTest18.c:: unsigned char __sa0[5];
-miniTest18.c:: __sa0 = (tmp << ((unsigned int)(tmp2)));
-miniTest18.c:: _out_0 = in[((unsigned int)(__sa0))];
-miniTest18.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest18.c:: _out_0 = in[2];
-miniTest19.c::#include "miniTest19.h"
-miniTest19.c::void foo(unsigned char* in, unsigned char* _out_0) {
-miniTest19.c:: _out_0 = in;
-miniTest19.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest19.c:: unsigned char _ret_0[4];
-miniTest19.c:: unsigned char _ret_1[4];
-miniTest19.c:: _ret_1 = 1;
-miniTest19.c:: foo(_ret_1, _ret_0);
-miniTest19.c:: _out_0 = (in ^ _ret_0);
-miniTest19.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest19.c:: _out_0 = (in ^ 1);
-miniTest2.c::#include "miniTest2.h"
-miniTest2.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest2.c:: unsigned char tmp[4];
-miniTest2.c:: tmp = in;
-miniTest2.c:: tmp[2] = 1;
-miniTest2.c:: tmp[3] = 0;
-miniTest2.c:: _out_0 = tmp[1];
-miniTest2.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest2.c:: _out_0 = in[1];
-miniTest20.c::#include "miniTest20.h"
-miniTest20.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest20.c:: unsigned int fu[4] = {2,3,4,0};
-miniTest20.c:: unsigned int idx1;
-miniTest20.c:: idx1 = 2;
-miniTest20.c:: unsigned int idx;
-miniTest20.c:: idx = {2,3,4,0}[idx1];
-miniTest20.c:: _out_0 = in[idx];
-miniTest20.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest20.c:: _out_0 = in[4];
-miniTest21.c::#include "miniTest21.h"
-miniTest21.c::void reverseSketch(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
-miniTest21.c:: unsigned int fu[8];
-miniTest21.c:: unsigned int i = 0;
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[0] = 2;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[1] = 1;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[2] = 1;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[3] = 0;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[4] = 1;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[5] = 2;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[6] = 2;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: {
-miniTest21.c:: {
-miniTest21.c:: fu[7] = 0;
-miniTest21.c:: };
-miniTest21.c:: };
-miniTest21.c:: unsigned int idx1;
-miniTest21.c:: idx1 = ((unsigned int)(in));
-miniTest21.c:: unsigned int idx;
-miniTest21.c:: idx = fu[idx1];
-miniTest21.c:: _out_0 = in2[idx];
-miniTest21.c::void reverse(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
-miniTest21.c:: unsigned int fu[8] = {2,1,1,0,1,2,2,0};
-miniTest21.c:: unsigned int idx1;
-miniTest21.c:: idx1 = ((unsigned int)(in));
-miniTest21.c:: unsigned int idx;
-miniTest21.c:: idx = fu[idx1];
-miniTest21.c:: _out_0 = in2[idx];
-miniTest22.c::#include "miniTest22.h"
-miniTest22.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest22.c:: unsigned int x;
-miniTest22.c:: if (1) {
-miniTest22.c:: {
-miniTest22.c:: x = 2;
-miniTest22.c:: };
-miniTest22.c:: } else {
-miniTest22.c:: {
-miniTest22.c:: x = 1;
-miniTest22.c:: };
-miniTest22.c:: }
-miniTest22.c:: _out_0 = in[x];
-miniTest22.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest22.c:: _out_0 = in[2];
-miniTest23.c::#include "miniTest23.h"
-miniTest23.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest23.c:: unsigned int p[3] = {2,1,3};
-miniTest23.c:: unsigned char out[3];
-miniTest23.c:: for (unsigned int i = 0; (i < 3); ++i) {
-miniTest23.c:: out[i] = in[(p[i] - 1)];
-miniTest23.c:: };
-miniTest23.c:: _out_0 = out;
-miniTest23.c::void miniTestSK(unsigned char* x, unsigned char* _out_0) {
-miniTest23.c:: unsigned int tt;
-miniTest23.c:: tt = 1;
-miniTest23.c:: unsigned char __sa0[3];
-miniTest23.c:: __sa0 = (x >> tt);
-miniTest23.c:: unsigned char tmp2[3];
-miniTest23.c:: tmp2 = ((__sa0 & {0,1,0}) | ((x << tt) & ~{0,1,0}));
-miniTest23.c:: unsigned char tmp[3];
-miniTest23.c:: tmp = ((tmp2 & {1,1,0}) | (x & ~{1,1,0}));
-miniTest23.c:: _out_0 = tmp;
-miniTest24.c::#include "miniTest24.h"
-miniTest24.c::void testSK(unsigned char* in, unsigned char& _out_0) {
-miniTest24.c:: unsigned int x;
-miniTest24.c:: x = 3;
-miniTest24.c:: unsigned int y;
-miniTest24.c:: y = 0;
-miniTest24.c:: if ((x > 2)) {
-miniTest24.c:: {
-miniTest24.c:: _out_0 = in[3];
-miniTest24.c:: };
-miniTest24.c:: } else {
-miniTest24.c:: {
-miniTest24.c:: _out_0 = in[(y * 2)];
-miniTest24.c:: };
-miniTest24.c:: }
-miniTest24.c::void test(unsigned char* in, unsigned char& _out_0) {
-miniTest24.c:: _out_0 = in[3];
-miniTest25.c::#include "miniTest25.h"
-miniTest25.c::void miniTest(unsigned char* in_0, unsigned char* _out_0) {
-miniTest25.c:: unsigned char in[3];
-miniTest25.c:: in = in_0;
-miniTest25.c:: in[0] = 1;
-miniTest25.c:: _out_0 = (in ^ (in << 1));
-miniTest25.c::void fu(unsigned char* x_0, unsigned char* _out_0) {
-miniTest25.c:: unsigned char x[3];
-miniTest25.c:: x = x_0;
-miniTest25.c:: x[0] = 1;
-miniTest25.c:: _out_0 = x;
-miniTest25.c::void miniTestSK(unsigned char* x_0, unsigned char* _out_0) {
-miniTest25.c:: unsigned char x[3];
-miniTest25.c:: x = x_0;
-miniTest25.c:: unsigned char _ret_0[3];
-miniTest25.c:: fu(x, _ret_0);
-miniTest25.c:: x = _ret_0;
-miniTest25.c:: _out_0 = (x ^ (x << 1));
-miniTest26.c::#include "miniTest26.h"
-miniTest26.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest26.c:: unsigned char one[2] = {0,0};
-miniTest26.c:: one[0] = 1;
-miniTest26.c:: _out_0 = (in ^ one);
-miniTest26.c::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
-miniTest26.c:: unsigned char one[2] = {0,0};
-miniTest26.c:: one[0] = 1;
-miniTest26.c:: _out_0 = (in ^ one);
-miniTest28.c::#include "miniTest28.h"
-miniTest28.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest28.c:: unsigned char one[2] = {0,0};
-miniTest28.c:: one[0] = 1;
-miniTest28.c:: _out_0 = (in ^ one);
-miniTest28.c::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
-miniTest28.c:: unsigned char tmp[2] = {0,0};
-miniTest28.c:: tmp[1] = 0;
-miniTest28.c:: unsigned char one[2];
-miniTest28.c:: one = tmp;
-miniTest28.c:: one[1] = 0;
-miniTest28.c:: one[0] = 1;
-miniTest28.c:: _out_0 = (in ^ one);
-miniTest29.c::#include "miniTest29.h"
-miniTest29.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest29.c:: unsigned char one[2] = {0,0};
-miniTest29.c:: one[0] = 1;
-miniTest29.c:: unsigned char __sa0[3];
-miniTest29.c:: __sa0 = (in >> 1);
-miniTest29.c:: _out_0 = (__sa0 ^ one);
-miniTest29.c::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
-miniTest29.c:: unsigned char __sa1[3];
-miniTest29.c:: __sa1 = (in >> 1);
-miniTest29.c:: unsigned char tmp[3];
-miniTest29.c:: tmp = __sa1;
-miniTest29.c:: unsigned char one[2] = {0,0};
-miniTest29.c:: unsigned int _2L11 = 1;
-miniTest29.c:: if ((_2L11 > 0)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 1;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 1)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 2)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 3)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 4)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 5)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 6)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: if ((_2L11 > 7)) {
-miniTest29.c:: {
-miniTest29.c:: one[0] = 0;
-miniTest29.c:: };
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: }
-miniTest29.c:: _out_0 = (tmp ^ one);
-miniTest3.c::#include "miniTest3.h"
-miniTest3.c::void simple(unsigned char* in, unsigned char* _out_0) {
-miniTest3.c:: unsigned char i1[4];
-miniTest3.c:: unsigned char x;
-miniTest3.c:: x = 1;
-miniTest3.c:: if (in[0]) {
-miniTest3.c:: {
-miniTest3.c:: x = 0;
-miniTest3.c:: };
-miniTest3.c:: }
-miniTest3.c:: i1 = x;
-miniTest3.c:: _out_0 = i1;
-miniTest3.c::void simpler(unsigned char* in, unsigned char* _out_0) {
-miniTest3.c:: _out_0 = !in[0];
-miniTest30.c::#include "miniTest30.h"
-miniTest30.c::void foo(unsigned int& i, unsigned int& j, unsigned int& _out_0) {
-miniTest30.c:: _out_0 = ((i * 2) + j);
-miniTest30.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest30.c:: unsigned int i;
-miniTest30.c:: i = 0;
-miniTest30.c:: unsigned int j;
-miniTest30.c:: j = 1;
-miniTest30.c:: unsigned int _ret_0;
-miniTest30.c:: foo(j, i, _ret_0);
-miniTest30.c:: _out_0 = in[_ret_0];
-miniTest30.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest30.c:: _out_0 = in[2];
-miniTest31.c::#include "miniTest31.h"
-miniTest31.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest31.c:: unsigned char x;
-miniTest31.c:: if (!in[0]) {
-miniTest31.c:: {
-miniTest31.c:: x = 1;
-miniTest31.c:: };
-miniTest31.c:: } else {
-miniTest31.c:: {
-miniTest31.c:: x = in[2];
-miniTest31.c:: };
-miniTest31.c:: }
-miniTest31.c:: _out_0 = in[x];
-miniTest31.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest31.c:: unsigned char x;
-miniTest31.c:: if (in[0]) {
-miniTest31.c:: {
-miniTest31.c:: x = in[2];
-miniTest31.c:: };
-miniTest31.c:: } else {
-miniTest31.c:: {
-miniTest31.c:: x = 1;
-miniTest31.c:: };
-miniTest31.c:: }
-miniTest31.c:: _out_0 = in[x];
-miniTest32.c::#include "miniTest32.h"
-miniTest32.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest32.c:: _out_0 = in[!in[0]];
-miniTest32.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest32.c:: unsigned char x;
-miniTest32.c:: if (in[0]) {
-miniTest32.c:: {
-miniTest32.c:: x = 0;
-miniTest32.c:: };
-miniTest32.c:: } else {
-miniTest32.c:: {
-miniTest32.c:: x = 1;
-miniTest32.c:: };
-miniTest32.c:: }
-miniTest32.c:: _out_0 = in[x];
-miniTest33.c::#include "miniTest33.h"
-miniTest33.c::void miniTest(unsigned char* in_0, unsigned char* _out_0) {
-miniTest33.c:: unsigned char in[4];
-miniTest33.c:: in = in_0;
-miniTest33.c:: in[2] = 1;
-miniTest33.c:: _out_0 = in;
-miniTest33.c::void miniTestSK(unsigned char* in_0, unsigned char* _out_0) {
-miniTest33.c:: unsigned char in[4];
-miniTest33.c:: in = in_0;
-miniTest33.c:: in[2] = 1;
-miniTest33.c:: _out_0 = in;
-miniTest34.c::#include "miniTest34.h"
-miniTest34.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest34.c:: _out_0 = in[2];
-miniTest34.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest34.c:: unsigned int fu[3] = {0,1,3};
-miniTest34.c:: fu[2] = 2;
-miniTest34.c:: _out_0 = in[fu[2]];
-miniTest35.c::#include "miniTest35.h"
-miniTest35.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest35.c:: _out_0 = in[2];
-miniTest35.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest35.c:: unsigned int fu[3] = {0,1,3};
-miniTest35.c:: fu[2] = 2;
-miniTest35.c:: _out_0 = in[fu[2]];
-miniTest36.c::#include "miniTest36.h"
-miniTest36.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest36.c:: _out_0 = in[2];
-miniTest36.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest36.c:: unsigned int fu[3] = {0,1,3};
-miniTest36.c:: fu[2] = 2;
-miniTest36.c:: _out_0 = in[fu[2]];
-miniTest37.c::#include "miniTest37.h"
-miniTest37.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest37.c:: _out_0 = in[2];
-miniTest37.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest37.c:: unsigned int fu[2] = {0,1};
-miniTest37.c:: fu[1] = 2;
-miniTest37.c:: _out_0 = in[fu[1]];
-miniTest38.c::#include "miniTest38.h"
-miniTest38.c::void miniTest(unsigned char* in_0, unsigned char* in2, unsigned char* _out_0) {
-miniTest38.c:: unsigned char in[4];
-miniTest38.c:: in = in_0;
-miniTest38.c:: unsigned int i;
-miniTest38.c:: i = ((unsigned int)(in2));
-miniTest38.c:: in[i] = 1;
-miniTest38.c:: _out_0 = in;
-miniTest38.c::void miniTestSK(unsigned char* in_0, unsigned char* in2, unsigned char* _out_0) {
-miniTest38.c:: unsigned char in[4];
-miniTest38.c:: in = in_0;
-miniTest38.c:: unsigned int i;
-miniTest38.c:: i = ((unsigned int)(in2));
-miniTest38.c:: in[i] = 1;
-miniTest38.c:: _out_0 = in;
-miniTest39.c::#include "miniTest39.h"
-miniTest39.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest39.c:: unsigned char mu[4] = {1,1,0,0};
-miniTest39.c:: _out_0 = (in ^ mu);
-miniTest39.c::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
-miniTest39.c:: unsigned char mu[4] = {0,0,0,1};
-miniTest39.c:: unsigned int i;
-miniTest39.c:: i = 0;
-miniTest39.c:: int __sa2 = 2;
-miniTest39.c:: for (int __sa3 = 0; __sa3 < __sa2; ++__sa3) {
-miniTest39.c:: mu[i] = 1;
-miniTest39.c:: i = (i + 1);
-miniTest39.c:: };
-miniTest39.c:: int __sa4 = 3;
-miniTest39.c:: for (int __sa5 = 0; __sa5 < __sa4; ++__sa5) {
-miniTest39.c:: mu[i] = 0;
-miniTest39.c:: i = (i + 1);
-miniTest39.c:: };
-miniTest39.c:: _out_0 = (in ^ mu);
-miniTest4.c::#include "miniTest4.h"
-miniTest4.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest4.c:: unsigned char tmp[4];
-miniTest4.c:: tmp = (in << 2);
-miniTest4.c:: _out_0 = tmp[0];
-miniTest4.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest4.c:: _out_0 = in[2];
-miniTest40.c::#include "miniTest40.h"
-miniTest40.c::void transpose(unsigned char* input, unsigned char* _out_0) {
-miniTest40.c:: unsigned char output[4];
-miniTest40.c:: output = 0;
-miniTest40.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest40.c:: {
-miniTest40.c:: output[i] = input[i];
-miniTest40.c:: };
-miniTest40.c:: };
-miniTest40.c:: _out_0 = output;
-miniTest40.c::void tiledTranspose(unsigned char* input, unsigned char* _out_0) {
-miniTest40.c:: unsigned char output[4];
-miniTest40.c:: output = 0;
-miniTest40.c:: unsigned int i;
-miniTest40.c:: i = 0;
-miniTest40.c:: unsigned int _2L6 = 2;
-miniTest40.c:: if ((_2L6 > 0)) {
-miniTest40.c:: {
-miniTest40.c:: unsigned int j;
-miniTest40.c:: j = 0;
-miniTest40.c:: if (1) {
-miniTest40.c:: {
-miniTest40.c:: output[0] = input[0];
-miniTest40.c:: j = 1;
-miniTest40.c:: output[1] = input[1];
-miniTest40.c:: j = 2;
-miniTest40.c:: };
-miniTest40.c:: }
-miniTest40.c:: i = 2;
-miniTest40.c:: };
-miniTest40.c:: if ((_2L6 > 1)) {
-miniTest40.c:: {
-miniTest40.c:: unsigned int j;
-miniTest40.c:: j = 0;
-miniTest40.c:: if (1) {
-miniTest40.c:: {
-miniTest40.c:: output[2] = input[2];
-miniTest40.c:: j = 1;
-miniTest40.c:: output[3] = input[3];
-miniTest40.c:: j = 2;
-miniTest40.c:: };
-miniTest40.c:: }
-miniTest40.c:: i = 4;
-miniTest40.c:: };
-miniTest40.c:: }
-miniTest40.c:: }
-miniTest40.c:: _out_0 = output;
-miniTest41.c::#include "miniTest41.h"
-miniTest41.c::void transpose(unsigned char* input, unsigned char* _out_0) {
-miniTest41.c:: unsigned char output[4];
-miniTest41.c:: output = 0;
-miniTest41.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest41.c:: {
-miniTest41.c:: output[i] = input[i];
-miniTest41.c:: };
-miniTest41.c:: };
-miniTest41.c:: _out_0 = output;
-miniTest41.c::void tiledTranspose(unsigned char* input, unsigned char* _out_0) {
-miniTest41.c:: unsigned char output[4];
-miniTest41.c:: output = 0;
-miniTest41.c:: unsigned int i;
-miniTest41.c:: i = 0;
-miniTest41.c:: unsigned int it;
-miniTest41.c:: it = 3;
-miniTest41.c:: int __sa4 = 2;
-miniTest41.c:: for (int __sa5 = 0; __sa5 < __sa4; ++__sa5) {
-miniTest41.c:: unsigned int j;
-miniTest41.c:: j = 0;
-miniTest41.c:: int __sa6 = it;
-miniTest41.c:: for (int __sa7 = 0; __sa7 < __sa6; ++__sa7) {
-miniTest41.c:: output[(i + j)] = input[(i + j)];
-miniTest41.c:: j = (j + 1);
-miniTest41.c:: };
-miniTest41.c:: i = (i + 2);
-miniTest41.c:: };
-miniTest41.c:: _out_0 = output;
-miniTest42.c::#include "miniTest42.h"
-miniTest42.c::void sort(unsigned char* input_0, unsigned char* _out_0) {
-miniTest42.c:: unsigned char input[3];
-miniTest42.c:: input = input_0;
-miniTest42.c:: if (input[0]) {
-miniTest42.c:: {
-miniTest42.c:: input[2] = 1;
-miniTest42.c:: };
-miniTest42.c:: } else {
-miniTest42.c:: {
-miniTest42.c:: input[1] = 1;
-miniTest42.c:: };
-miniTest42.c:: }
-miniTest42.c:: _out_0 = input;
-miniTest42.c::void mergeSort(unsigned char* input_0, unsigned char* _out_0) {
-miniTest42.c:: unsigned char input[3];
-miniTest42.c:: input = input_0;
-miniTest42.c:: unsigned int k;
-miniTest42.c:: k = 0;
-miniTest42.c:: if (input[0]) {
-miniTest42.c:: {
-miniTest42.c:: k = (k + 1);
-miniTest42.c:: };
-miniTest42.c:: }
-miniTest42.c:: k = (k + 1);
-miniTest42.c:: input[k] = 1;
-miniTest42.c:: _out_0 = input;
-miniTest43.c::#include "miniTest43.h"
-miniTest43.c::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
-miniTest43.c:: _out_0 = (!x || y);
-miniTest43.c::void sort(unsigned char* input, unsigned char* _out_0) {
-miniTest43.c:: unsigned char output[2];
-miniTest43.c:: output = 0;
-miniTest43.c:: unsigned char done[2];
-miniTest43.c:: done = 0;
-miniTest43.c:: unsigned int k;
-miniTest43.c:: k = 0;
-miniTest43.c:: for (unsigned int i = 0; (i < 2); ++i) {
-miniTest43.c:: {
-miniTest43.c:: unsigned char cur;
-miniTest43.c:: cur = 1;
-miniTest43.c:: for (unsigned int j = 0; (j < 2); ++j) {
-miniTest43.c:: {
-miniTest43.c:: unsigned char _ret_0;
-miniTest43.c:: unsigned char _ret_1;
-miniTest43.c:: _ret_1 = input[j];
-miniTest43.c:: leq(_ret_1, cur, _ret_0);
-miniTest43.c:: if ((_ret_0 && !done[j])) {
-miniTest43.c:: {
-miniTest43.c:: k = j;
-miniTest43.c:: cur = input[j];
-miniTest43.c:: };
-miniTest43.c:: }
-miniTest43.c:: };
-miniTest43.c:: };
-miniTest43.c:: output[i] = cur;
-miniTest43.c:: done[k] = 1;
-miniTest43.c:: };
-miniTest43.c:: };
-miniTest43.c:: _out_0 = output;
-miniTest43.c::void mergeSort(unsigned char* input, unsigned char* _out_0) {
-miniTest43.c:: unsigned char output[2];
-miniTest43.c:: output = 1;
-miniTest43.c:: if ((input[0] && input[1])) {
-miniTest43.c:: {
-miniTest43.c:: output[0] = 1;
-miniTest43.c:: output[1] = 1;
-miniTest43.c:: };
-miniTest43.c:: }
-miniTest43.c:: ;
-miniTest43.c:: if ((!input[0] && input[1])) {
-miniTest43.c:: {
-miniTest43.c:: output[0] = 0;
-miniTest43.c:: output[1] = 1;
-miniTest43.c:: };
-miniTest43.c:: }
-miniTest43.c:: ;
-miniTest43.c:: if ((input[0] && !input[1])) {
-miniTest43.c:: {
-miniTest43.c:: output[0] = 0;
-miniTest43.c:: output[1] = 1;
-miniTest43.c:: };
-miniTest43.c:: }
-miniTest43.c:: ;
-miniTest43.c:: if ((!input[0] && !input[1])) {
-miniTest43.c:: {
-miniTest43.c:: output[0] = 0;
-miniTest43.c:: output[1] = 0;
-miniTest43.c:: };
-miniTest43.c:: }
-miniTest43.c:: ;
-miniTest43.c:: _out_0 = output;
-miniTest44.c::#include "miniTest44.h"
-miniTest44.c::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
-miniTest44.c:: _out_0 = (!x || y);
-miniTest44.c::void sort(unsigned char* input, unsigned char* _out_0) {
-miniTest44.c:: unsigned char output[2];
-miniTest44.c:: output = 1;
-miniTest44.c:: if ((input[0] && input[1])) {
-miniTest44.c:: {
-miniTest44.c:: output[0] = 1;
-miniTest44.c:: output[1] = 1;
-miniTest44.c:: };
-miniTest44.c:: }
-miniTest44.c:: ;
-miniTest44.c:: if ((!input[0] && input[1])) {
-miniTest44.c:: {
-miniTest44.c:: output[0] = 0;
-miniTest44.c:: output[1] = 1;
-miniTest44.c:: };
-miniTest44.c:: }
-miniTest44.c:: ;
-miniTest44.c:: if ((input[0] && !input[1])) {
-miniTest44.c:: {
-miniTest44.c:: output[0] = 0;
-miniTest44.c:: output[1] = 1;
-miniTest44.c:: };
-miniTest44.c:: }
-miniTest44.c:: ;
-miniTest44.c:: if ((!input[0] && !input[1])) {
-miniTest44.c:: {
-miniTest44.c:: output[0] = 0;
-miniTest44.c:: output[1] = 0;
-miniTest44.c:: };
-miniTest44.c:: }
-miniTest44.c:: ;
-miniTest44.c:: _out_0 = output;
-miniTest44.c::void mergeSort(unsigned char* input, unsigned char* _out_0) {
-miniTest44.c:: unsigned char output[2];
-miniTest44.c:: output = 1;
-miniTest44.c:: unsigned int k;
-miniTest44.c:: k = 0;
-miniTest44.c:: for (unsigned int i = 0; (i < 2); ++i) {
-miniTest44.c:: {
-miniTest44.c:: if (!input[i]) {
-miniTest44.c:: {
-miniTest44.c:: output[k] = 0;
-miniTest44.c:: k = (k + 1);
-miniTest44.c:: };
-miniTest44.c:: }
-miniTest44.c:: };
-miniTest44.c:: };
-miniTest44.c:: _out_0 = output;
-miniTest45.c::#include "miniTest45.h"
-miniTest45.c::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
-miniTest45.c:: _out_0 = (!x || y);
-miniTest45.c::void mergeSort(unsigned char* input, unsigned char& _out_0) {
-miniTest45.c:: unsigned char output;
-miniTest45.c:: output = 1;
-miniTest45.c:: unsigned char done[3];
-miniTest45.c:: done = 0;
-miniTest45.c:: unsigned int k;
-miniTest45.c:: k = 0;
-miniTest45.c:: if (!input[2]) {
-miniTest45.c:: {
-miniTest45.c:: k = 2;
-miniTest45.c:: };
-miniTest45.c:: } else {
-miniTest45.c:: {
-miniTest45.c:: if (!input[1]) {
-miniTest45.c:: {
-miniTest45.c:: k = 1;
-miniTest45.c:: };
-miniTest45.c:: } else {
-miniTest45.c:: {
-miniTest45.c:: if (!input[0]) {
-miniTest45.c:: {
-miniTest45.c:: k = 0;
-miniTest45.c:: };
-miniTest45.c:: } else {
-miniTest45.c:: {
-miniTest45.c:: k = 2;
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: done[k] = 1;
-miniTest45.c:: {
-miniTest45.c:: unsigned char cur;
-miniTest45.c:: cur = 1;
-miniTest45.c:: for (unsigned int j = 0; (j < 3); ++j) {
-miniTest45.c:: {
-miniTest45.c:: unsigned char _ret_0;
-miniTest45.c:: unsigned char _ret_1;
-miniTest45.c:: _ret_1 = input[j];
-miniTest45.c:: leq(_ret_1, cur, _ret_0);
-miniTest45.c:: if ((_ret_0 && !done[j])) {
-miniTest45.c:: {
-miniTest45.c:: cur = input[j];
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: };
-miniTest45.c:: };
-miniTest45.c:: output = cur;
-miniTest45.c:: };
-miniTest45.c:: _out_0 = output;
-miniTest45.c::void sort(unsigned char* input, unsigned char& _out_0) {
-miniTest45.c:: unsigned char output;
-miniTest45.c:: output = 1;
-miniTest45.c:: if (((input[0] && input[1]) && input[2])) {
-miniTest45.c:: {
-miniTest45.c:: output = 1;
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: ;
-miniTest45.c:: if (((((!input[0] && input[1]) && input[2]) || ((input[0] && !input[1]) && input[2])) || ((input[0] && input[1]) && !input[2]))) {
-miniTest45.c:: {
-miniTest45.c:: output = 1;
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: ;
-miniTest45.c:: if (((((input[0] && !input[1]) && !input[2]) || ((!input[0] && input[1]) && !input[2])) || ((!input[0] && !input[1]) && input[2]))) {
-miniTest45.c:: {
-miniTest45.c:: output = 0;
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: ;
-miniTest45.c:: if (((!input[0] && !input[1]) && !input[2])) {
-miniTest45.c:: {
-miniTest45.c:: output = 0;
-miniTest45.c:: };
-miniTest45.c:: }
-miniTest45.c:: ;
-miniTest45.c:: _out_0 = output;
-miniTest46.c::#include "miniTest46.h"
-miniTest46.c::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
-miniTest46.c:: _out_0 = (!x || y);
-miniTest46.c::void mergeSort(unsigned char* input, unsigned char& _out_0) {
-miniTest46.c:: unsigned char output;
-miniTest46.c:: output = 1;
-miniTest46.c:: unsigned int k;
-miniTest46.c:: k = 0;
-miniTest46.c:: {
-miniTest46.c:: if (!input[0]) {
-miniTest46.c:: {
-miniTest46.c:: k = (k + 1);
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: };
-miniTest46.c:: {
-miniTest46.c:: if (!input[1]) {
-miniTest46.c:: {
-miniTest46.c:: if ((k > 0)) {
-miniTest46.c:: {
-miniTest46.c:: output = 0;
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: k = (k + 1);
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: };
-miniTest46.c:: {
-miniTest46.c:: if (!input[2]) {
-miniTest46.c:: {
-miniTest46.c:: if (((k > 0) && (k < 2))) {
-miniTest46.c:: {
-miniTest46.c:: output = 0;
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: k = (k + 1);
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: };
-miniTest46.c:: _out_0 = output;
-miniTest46.c::void sort(unsigned char* input, unsigned char& _out_0) {
-miniTest46.c:: unsigned char output;
-miniTest46.c:: output = 1;
-miniTest46.c:: if (((input[0] && input[1]) && input[2])) {
-miniTest46.c:: {
-miniTest46.c:: output = 1;
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: ;
-miniTest46.c:: if (((((!input[0] && input[1]) && input[2]) || ((input[0] && !input[1]) && input[2])) || ((input[0] && input[1]) && !input[2]))) {
-miniTest46.c:: {
-miniTest46.c:: output = 1;
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: ;
-miniTest46.c:: if (((((input[0] && !input[1]) && !input[2]) || ((!input[0] && input[1]) && !input[2])) || ((!input[0] && !input[1]) && input[2]))) {
-miniTest46.c:: {
-miniTest46.c:: output = 0;
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: ;
-miniTest46.c:: if (((!input[0] && !input[1]) && !input[2])) {
-miniTest46.c:: {
-miniTest46.c:: output = 0;
-miniTest46.c:: };
-miniTest46.c:: }
-miniTest46.c:: ;
-miniTest46.c:: _out_0 = output;
-miniTest47.c::#include "miniTest47.h"
-miniTest47.c::void sort(unsigned char* input, unsigned char& _out_0) {
-miniTest47.c:: unsigned char k;
-miniTest47.c:: k = 1;
-miniTest47.c:: if (input[0]) {
-miniTest47.c:: k = 0;
-miniTest47.c:: }
-miniTest47.c:: k = (k & input[0]);
-miniTest47.c:: unsigned int x;
-miniTest47.c:: x = 3;
-miniTest47.c:: if (k) {
-miniTest47.c:: x = 2;
-miniTest47.c:: }
-miniTest47.c:: _out_0 = input[x];
-miniTest47.c::void MergeSort(unsigned char* input, unsigned char& _out_0) {
-miniTest47.c:: _out_0 = input[3];
-miniTest48.c::#include "miniTest48.h"
-miniTest48.c::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
-miniTest48.c:: _out_0 = (!x || y);
-miniTest48.c::void sort(unsigned char* input, unsigned char* _out_0) {
-miniTest48.c:: unsigned char output[4];
-miniTest48.c:: output = 0;
-miniTest48.c:: unsigned char done[4];
-miniTest48.c:: done = 0;
-miniTest48.c:: unsigned int k;
-miniTest48.c:: k = 0;
-miniTest48.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest48.c:: {
-miniTest48.c:: unsigned char cur;
-miniTest48.c:: cur = 1;
-miniTest48.c:: for (unsigned int j = 0; (j < 4); ++j) {
-miniTest48.c:: {
-miniTest48.c:: unsigned char _ret_0;
-miniTest48.c:: unsigned char _ret_1;
-miniTest48.c:: _ret_1 = input[j];
-miniTest48.c:: leq(_ret_1, cur, _ret_0);
-miniTest48.c:: if ((_ret_0 && !done[j])) {
-miniTest48.c:: {
-miniTest48.c:: k = j;
-miniTest48.c:: cur = input[j];
-miniTest48.c:: };
-miniTest48.c:: }
-miniTest48.c:: };
-miniTest48.c:: };
-miniTest48.c:: output[i] = cur;
-miniTest48.c:: done[k] = 1;
-miniTest48.c:: };
-miniTest48.c:: };
-miniTest48.c:: _out_0 = output;
-miniTest48.c::void MergeSort(unsigned char* input, unsigned char* _out_0) {
-miniTest48.c:: unsigned char output[4];
-miniTest48.c:: unsigned char __sa0[4];
-miniTest48.c:: __sa0 = (input >> 0);
-miniTest48.c:: output = ((__sa0 & {0,0,0,0}) | ((input << 0) & ~{0,0,0,0}));
-miniTest48.c:: unsigned char _ret_0[4];
-miniTest48.c:: sort(output, _ret_0);
-miniTest48.c:: _out_0 = _ret_0;
-miniTest49.c::#include "miniTest49.h"
-miniTest49.c::void intToBit(unsigned int& v_0, unsigned char* _out_0) {
-miniTest49.c:: unsigned int v;
-miniTest49.c:: v = v_0;
-miniTest49.c:: unsigned char output[4];
-miniTest49.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest49.c:: {
-miniTest49.c:: output[i] = ((v % 2) > 0);
-miniTest49.c:: v = (v / 2);
-miniTest49.c:: };
-miniTest49.c:: };
-miniTest49.c:: _out_0 = output;
-miniTest49.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest49.c:: unsigned char tmp[4];
-miniTest49.c:: tmp = {1,1,0,0};
-miniTest49.c:: _out_0 = (in + tmp);
-miniTest49.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest49.c:: unsigned int tmp[16] = {3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2};
-miniTest49.c:: unsigned char _ret_0[4];
-miniTest49.c:: unsigned int _ret_1;
-miniTest49.c:: _ret_1 = tmp[((unsigned int)(in))];
-miniTest49.c:: intToBit(_ret_1, _ret_0);
-miniTest49.c:: _out_0 = _ret_0;
-miniTest5.c::#include "miniTest5.h"
-miniTest5.c::void foo(unsigned char* ina, unsigned char& _out_0) {
-miniTest5.c:: _out_0 = ina[null];
-miniTest5.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest5.c:: unsigned char _ret_0;
-miniTest5.c:: {
-miniTest5.c:: unsigned char ina[4] = in;
-miniTest5.c:: {
-miniTest5.c:: _out_0 = ina[2];
-miniTest5.c:: };
-miniTest5.c:: _ret_0 = _out_0;
-miniTest5.c:: };
-miniTest5.c:: unsigned char _ret_1;
-miniTest5.c:: {
-miniTest5.c:: unsigned char ina[4] = in;
-miniTest5.c:: {
-miniTest5.c:: _out_0 = ina[3];
-miniTest5.c:: };
-miniTest5.c:: _ret_1 = _out_0;
-miniTest5.c:: };
-miniTest5.c:: _out_0 = (_ret_0 ^ _ret_1);
-miniTest5.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest5.c:: _out_0 = (in[2] ^ in[3]);
-miniTest50.c::#include "miniTest50.h"
-miniTest50.c::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
-miniTest50.c:: unsigned int t;
-miniTest50.c:: t = 0;
-miniTest50.c:: if (in[0]) {
-miniTest50.c:: {
-miniTest50.c:: t = 7;
-miniTest50.c:: };
-miniTest50.c:: } else {
-miniTest50.c:: {
-miniTest50.c:: t = 6;
-miniTest50.c:: };
-miniTest50.c:: }
-miniTest50.c:: _out_0 = in[(t % 5)];
-miniTest50.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest50.c:: unsigned int t;
-miniTest50.c:: t = 0;
-miniTest50.c:: if (in[0]) {
-miniTest50.c:: {
-miniTest50.c:: t = 5;
-miniTest50.c:: };
-miniTest50.c:: } else {
-miniTest50.c:: {
-miniTest50.c:: t = 4;
-miniTest50.c:: };
-miniTest50.c:: }
-miniTest50.c:: _out_0 = in[(t % 3)];
-miniTest51.c::#include "miniTest51.h"
-miniTest51.c::void reverseSketch(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
-miniTest51.c:: unsigned int fu[8];
-miniTest51.c:: unsigned int i = 0;
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[0] = 0;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[1] = 1;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[2] = 2;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[3] = 2;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[4] = 2;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[5] = 2;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[6] = 2;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: {
-miniTest51.c:: {
-miniTest51.c:: fu[7] = 2;
-miniTest51.c:: };
-miniTest51.c:: };
-miniTest51.c:: unsigned int idx1;
-miniTest51.c:: idx1 = ((unsigned int)(in));
-miniTest51.c:: unsigned int idx;
-miniTest51.c:: idx = fu[idx1];
-miniTest51.c:: _out_0 = in2[idx];
-miniTest51.c::void reverse(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
-miniTest51.c:: unsigned int idx1;
-miniTest51.c:: idx1 = ((unsigned int)(in));
-miniTest51.c:: unsigned int idx;
-miniTest51.c:: idx = idx1;
-miniTest51.c:: if ((idx1 > 2)) {
-miniTest51.c:: {
-miniTest51.c:: idx = 2;
-miniTest51.c:: };
-miniTest51.c:: }
-miniTest51.c:: _out_0 = in2[idx];
-miniTest52.c::#include "miniTest52.h"
-miniTest52.c::void intToBit(unsigned int& v_0, unsigned char* _out_0) {
-miniTest52.c:: unsigned int v;
-miniTest52.c:: v = v_0;
-miniTest52.c:: unsigned char output[4];
-miniTest52.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest52.c:: {
-miniTest52.c:: output[i] = ((v % 2) > 0);
-miniTest52.c:: v = (v / 2);
-miniTest52.c:: };
-miniTest52.c:: };
-miniTest52.c:: _out_0 = output;
-miniTest52.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest52.c:: unsigned char out[4];
-miniTest52.c:: unsigned char Ta[64];
-miniTest52.c:: Ta = {1,0,0,0,1,1,1,1,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,1,0,1,1,0,0,1,0,0,0,1,1,1,1,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,1,0,1,1,0,0};
-miniTest52.c:: unsigned char Tb[64];
-miniTest52.c:: Tb = {0,0,1,0,1,1,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,1,0,1,1,0,0,1,0,0,0,1,1,1,1,0,0,1,1,0,1,0,1,0};
-miniTest52.c:: unsigned char a[4];
-miniTest52.c:: unsigned char b[4];
-miniTest52.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest52.c:: {
-miniTest52.c:: a[i] = in[i];
-miniTest52.c:: b[i] = in[(4 + i)];
-miniTest52.c:: };
-miniTest52.c:: };
-miniTest52.c:: unsigned int inva;
-miniTest52.c:: inva = ((unsigned int)(a));
-miniTest52.c:: unsigned int invb;
-miniTest52.c:: invb = ((unsigned int)(b));
-miniTest52.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest52.c:: {
-miniTest52.c:: out[i] = (Ta[((inva * 4) + i)] ^ Tb[((invb * 4) + i)]);
-miniTest52.c:: };
-miniTest52.c:: };
-miniTest52.c:: _out_0 = out;
-miniTest52.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest52.c:: unsigned int tmp[16] = {3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2};
-miniTest52.c:: unsigned char a[4];
-miniTest52.c:: unsigned char b[4];
-miniTest52.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest52.c:: {
-miniTest52.c:: a[i] = in[i];
-miniTest52.c:: b[i] = in[(4 + i)];
-miniTest52.c:: };
-miniTest52.c:: };
-miniTest52.c:: unsigned char _ret_0[4];
-miniTest52.c:: unsigned int _ret_1;
-miniTest52.c:: _ret_1 = tmp[((unsigned int)(a))];
-miniTest52.c:: intToBit(_ret_1, _ret_0);
-miniTest52.c:: unsigned char out[4];
-miniTest52.c:: out = _ret_0;
-miniTest52.c:: unsigned char _ret_2[4];
-miniTest52.c:: unsigned int _ret_3;
-miniTest52.c:: _ret_3 = tmp[((unsigned int)(b))];
-miniTest52.c:: intToBit(_ret_3, _ret_2);
-miniTest52.c:: unsigned char __sa0[4];
-miniTest52.c:: __sa0 = (out >> 1);
-miniTest52.c:: _out_0 = (__sa0 ^ _ret_2);
-miniTest53.c::#include "miniTest53.h"
-miniTest53.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest53.c:: unsigned char tmp[3] = {0,1,1};
-miniTest53.c:: _out_0 = (in ^ tmp);
-miniTest53.c::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
-miniTest53.c:: unsigned char tmp[3] = {0,0,0};
-miniTest53.c:: unsigned char two[2];
-miniTest53.c:: two = {1,1};
-miniTest53.c:: unsigned char __sa0[2];
-miniTest53.c:: __sa0 = two;
-miniTest53.c:: tmp[1::2] = __sa0;
-miniTest53.c:: _out_0 = (in ^ tmp);
-miniTest54.c::#include "miniTest54.h"
-miniTest54.c::void tableSum(unsigned char* in1, unsigned char* in2, unsigned char* _out_0) {
-miniTest54.c:: unsigned int exp;
-miniTest54.c:: exp = 16;
-miniTest54.c:: unsigned char tmp[512];
-miniTest54.c:: tmp = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-miniTest54.c:: unsigned char output[32];
-miniTest54.c:: unsigned char input[4];
-miniTest54.c:: unsigned char __sa0[2];
-miniTest54.c:: __sa0 = in1;
-miniTest54.c:: input[0::2] = __sa0;
-miniTest54.c:: unsigned char __sa1[2];
-miniTest54.c:: __sa1 = in2;
-miniTest54.c:: input[2::2] = __sa1;
-miniTest54.c:: unsigned int idx;
-miniTest54.c:: idx = ((unsigned int)(input));
-miniTest54.c:: unsigned char __sa2[32];
-miniTest54.c:: __sa2 = tmp[(idx * 32)::32];
-miniTest54.c:: output = __sa2;
-miniTest54.c:: _out_0 = output;
-miniTest54.c::void sum(unsigned char* in1, unsigned char* in2, unsigned char* _out_0) {
-miniTest54.c:: _out_0 = (in1 + in2);
-miniTest55.c::#include "miniTest55.h"
-miniTest55.c::void miniTest(unsigned char* in, unsigned char* _out_0) {
-miniTest55.c:: unsigned char tmp[3] = {0,1,0};
-miniTest55.c:: _out_0 = (in ^ tmp);
-miniTest55.c::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
-miniTest55.c:: unsigned char tmp[3] = {0,0,0};
-miniTest55.c:: unsigned char two[5];
-miniTest55.c:: two = {1,0,0,0,0};
-miniTest55.c:: unsigned char __sa0[2];
-miniTest55.c:: __sa0 = two[0::2];
-miniTest55.c:: unsigned char __sa1[2];
-miniTest55.c:: __sa1 = __sa0;
-miniTest55.c:: tmp[1::2] = __sa1;
-miniTest55.c:: _out_0 = (in ^ tmp);
-miniTest56.c::#include "miniTest56.h"
-miniTest56.c::void isIT(unsigned char* in, unsigned char& _out_0) {
-miniTest56.c:: unsigned char ret;
-miniTest56.c:: ret = 1;
-miniTest56.c:: for (unsigned int i = 0; (i < 32); i++) {
-miniTest56.c:: ret = (ret & !in[i]);
-miniTest56.c:: };
-miniTest56.c:: _out_0 = ret;
-miniTest56.c::void normalRoundsk(unsigned char* in, unsigned char* _out_0) {
-miniTest56.c:: unsigned char output[32];
-miniTest56.c:: output = 0;
-miniTest56.c:: unsigned char _ret_0;
-miniTest56.c:: isIT(in, _ret_0);
-miniTest56.c:: if (_ret_0) {
-miniTest56.c:: {
-miniTest56.c:: output = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-miniTest56.c:: };
-miniTest56.c:: }
-miniTest56.c:: _out_0 = output;
-miniTest56.c::void normalRound(unsigned char* in, unsigned char* _out_0) {
-miniTest56.c:: unsigned char output[32];
-miniTest56.c:: output = 0;
-miniTest56.c:: unsigned char _ret_0;
-miniTest56.c:: isIT(in, _ret_0);
-miniTest56.c:: if (_ret_0) {
-miniTest56.c:: {
-miniTest56.c:: output = 1;
-miniTest56.c:: };
-miniTest56.c:: }
-miniTest56.c:: _out_0 = output;
-miniTest57.c::#include "miniTest57.h"
-miniTest57.c::void miniTest(unsigned char* in, unsigned char& _out_0) {
-miniTest57.c:: unsigned char x;
-miniTest57.c:: if (!in[0]) {
-miniTest57.c:: {
-miniTest57.c:: x = 1;
-miniTest57.c:: };
-miniTest57.c:: } else {
-miniTest57.c:: {
-miniTest57.c:: x = in[2];
-miniTest57.c:: };
-miniTest57.c:: }
-miniTest57.c:: _out_0 = in[x];
-miniTest57.c::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
-miniTest57.c:: unsigned char x;
-miniTest57.c:: if (in[0]) {
-miniTest57.c:: {
-miniTest57.c:: x = in[2];
-miniTest57.c:: };
-miniTest57.c:: } else {
-miniTest57.c:: {
-miniTest57.c:: x = 1;
-miniTest57.c:: };
-miniTest57.c:: }
-miniTest57.c:: _out_0 = in[x];
-miniTest6.c::#include "miniTest6.h"
-miniTest6.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest6.c:: _out_0 = ((in + {0,1,0,0}) + in);
-miniTest6.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest6.c:: unsigned char tmp[4] = {0,1,0,0};
-miniTest6.c:: _out_0 = ((in + tmp) + in);
-miniTest60.c::#include "miniTest60.h"
-miniTest60.c::void FOadd(unsigned char* a, unsigned char* b, unsigned char& tt, unsigned char* _out_0) {
-miniTest60.c:: {
-miniTest60.c:: unsigned char m1[5];
-miniTest60.c:: m1 = 0;
-miniTest60.c:: unsigned char m2[5];
-miniTest60.c:: m2 = 0;
-miniTest60.c:: unsigned char t1[5] = {0,0,1,1,1};
-miniTest60.c:: unsigned char t2[5] = {0,0,0,1,1};
-miniTest60.c:: unsigned char __sa2[4];
-miniTest60.c:: __sa2 = a[0::4];
-miniTest60.c:: unsigned char __sa3[4];
-miniTest60.c:: __sa3 = __sa2;
-miniTest60.c:: m1[0::4] = __sa3;
-miniTest60.c:: unsigned char __sa4[4];
-miniTest60.c:: __sa4 = 0;
-miniTest60.c:: m2[0::4] = __sa4;
-miniTest60.c:: if (tt) {
-miniTest60.c:: {
-miniTest60.c:: m2 = t1;
-miniTest60.c:: };
-miniTest60.c:: } else {
-miniTest60.c:: {
-miniTest60.c:: m2 = t2;
-miniTest60.c:: };
-miniTest60.c:: }
-miniTest60.c:: m1 = (m1 + m2);
-miniTest60.c:: unsigned char __sa0[5];
-miniTest60.c:: __sa0 = (m1 >> 2);
-miniTest60.c:: m1 = __sa0;
-miniTest60.c:: if (!m1[4]) {
-miniTest60.c:: {
-miniTest60.c:: unsigned char __sa1[5];
-miniTest60.c:: __sa1 = (m1 >> 1);
-miniTest60.c:: m1 = __sa1;
-miniTest60.c:: };
-miniTest60.c:: }
-miniTest60.c:: unsigned char __sa5[4];
-miniTest60.c:: __sa5 = m1[1::4];
-miniTest60.c:: _out_0 = __sa5;
-miniTest60.c:: };
-miniTest60.c::void floatEquals(unsigned char* a, unsigned char* b, unsigned char& _out_0) {
-miniTest60.c:: unsigned char ret;
-miniTest60.c:: ret = 1;
-miniTest60.c:: for (unsigned int i = 0; (i < 4); i++) {
-miniTest60.c:: if ((a[i] != b[i])) {
-miniTest60.c:: ret = 0;
-miniTest60.c:: }
-miniTest60.c:: };
-miniTest60.c:: _out_0 = ret;
-miniTest60.c::void alwaysOne(unsigned char& x, unsigned char& _out_0) {
-miniTest60.c:: _out_0 = 1;
-miniTest60.c::void test2(unsigned char& x, unsigned char& _out_0) {
-miniTest60.c:: unsigned char a[9] = {0,0,0,1,0,0,0,1,1};
-miniTest60.c:: unsigned char b[9] = {0,0,0,1,0,0,0,1,0};
-miniTest60.c:: unsigned char tt;
-miniTest60.c:: tt = 0;
-miniTest60.c:: if (tt) {
-miniTest60.c:: b[4] = 1;
-miniTest60.c:: } else {
-miniTest60.c:: b[2] = 1;
-miniTest60.c:: }
-miniTest60.c:: unsigned char c[4] = {0,0,0,1};
-miniTest60.c:: unsigned char _ret_0[4];
-miniTest60.c:: FOadd(b, a, tt, _ret_0);
-miniTest60.c:: unsigned char _ret_1;
-miniTest60.c:: floatEquals(_ret_0, c, _ret_1);
-miniTest60.c:: _out_0 = _ret_1;
-miniTest61.c::#include "miniTest61.h"
-miniTest61.c::void alwaysOne(unsigned char* x, unsigned char& _out_0) {
-miniTest61.c:: _out_0 = x[2];
-miniTest61.c::void test2(unsigned char* x_0, unsigned char& _out_0) {
-miniTest61.c:: unsigned char x[3];
-miniTest61.c:: x = x_0;
-miniTest61.c:: unsigned char tt;
-miniTest61.c:: tt = 1;
-miniTest61.c:: unsigned char uu;
-miniTest61.c:: uu = 1;
-miniTest61.c:: x[1] = (!tt ^ x[2]);
-miniTest61.c:: _out_0 = x[uu];
-miniTest62.c::#include "miniTest62.h"
-miniTest62.c::void floatOne(unsigned char* _out_0) {
-miniTest62.c:: unsigned char ret[7];
-miniTest62.c:: ret = 0;
-miniTest62.c:: ret[5] = 1;
-miniTest62.c:: ret[3] = 1;
-miniTest62.c:: _out_0 = ret;
-miniTest62.c::void FOnegateE(unsigned char* x, unsigned char* _out_0) {
-miniTest62.c:: unsigned char ret[2];
-miniTest62.c:: for (unsigned int i = 0; (i < 2); i++) {
-miniTest62.c:: ret[i] = !x[i];
-miniTest62.c:: };
-miniTest62.c:: _out_0 = ret;
-miniTest62.c::void FOsubtractE(unsigned char* e1, unsigned char* e2, unsigned char* _out_0) {
-miniTest62.c:: unsigned char _ret_0[2];
-miniTest62.c:: FOnegateE(e2, _ret_0);
-miniTest62.c:: unsigned char ret[2];
-miniTest62.c:: ret = _ret_0;
-miniTest62.c:: ret = (ret + e1);
-miniTest62.c:: unsigned char one[2];
-miniTest62.c:: one = 0;
-miniTest62.c:: one[0] = 1;
-miniTest62.c:: _out_0 = (ret + one);
-miniTest62.c::void FOtwocomp(unsigned char* x, unsigned char* _out_0) {
-miniTest62.c:: unsigned char ret[5];
-miniTest62.c:: for (unsigned int i = 0; (i < 5); i++) {
-miniTest62.c:: ret[i] = !x[i];
-miniTest62.c:: };
-miniTest62.c:: unsigned char one[5];
-miniTest62.c:: one = 0;
-miniTest62.c:: one[0] = 1;
-miniTest62.c:: _out_0 = (ret + one);
-miniTest62.c::void floatIsZero(unsigned char* x, unsigned char& _out_0) {
-miniTest62.c:: _out_0 = !x[3];
-miniTest62.c::void floatAbsLess(unsigned char* a, unsigned char* b, unsigned char& _out_0) {
-miniTest62.c:: unsigned char ret;
-miniTest62.c:: ret = 0;
-miniTest62.c:: unsigned char eq;
-miniTest62.c:: eq = 1;
-miniTest62.c:: if (!a[3]) {
-miniTest62.c:: ret = 1;
-miniTest62.c:: } else {
-miniTest62.c:: {
-miniTest62.c:: for (unsigned int i = 5; (i >= 0); i--) {
-miniTest62.c:: {
-miniTest62.c:: if ((eq && (a[i] != b[i]))) {
-miniTest62.c:: {
-miniTest62.c:: ret = b[i];
-miniTest62.c:: eq = 0;
-miniTest62.c:: };
-miniTest62.c:: }
-miniTest62.c:: };
-miniTest62.c:: };
-miniTest62.c:: };
-miniTest62.c:: }
-miniTest62.c:: _out_0 = ret;
-miniTest62.c::void FOadd(unsigned char* a, unsigned char* b, unsigned char* _out_0) {
-miniTest62.c:: unsigned char ret[7];
-miniTest62.c:: ret = 0;
-miniTest62.c:: unsigned char one[2];
-miniTest62.c:: one = 0;
-miniTest62.c:: one[0] = 1;
-miniTest62.c:: unsigned char minusone[2];
-miniTest62.c:: minusone = 0;
-miniTest62.c:: for (unsigned int i = 0; (i < 2); i++) {
-miniTest62.c:: minusone[i] = 1;
-miniTest62.c:: };
-miniTest62.c:: unsigned char e1[2];
-miniTest62.c:: unsigned char __sa0[2];
-miniTest62.c:: __sa0 = a[4::2];
-miniTest62.c:: e1 = __sa0;
-miniTest62.c:: unsigned char e2[2];
-miniTest62.c:: unsigned char __sa1[2];
-miniTest62.c:: __sa1 = b[4::2];
-miniTest62.c:: e2 = __sa1;
-miniTest62.c:: unsigned char _ret_0[2];
-miniTest62.c:: FOsubtractE(e1, e2, _ret_0);
-miniTest62.c:: unsigned char edif[2];
-miniTest62.c:: edif = _ret_0;
-miniTest62.c:: unsigned char over;
-miniTest62.c:: over = 0;
-miniTest62.c:: unsigned int sh;
-miniTest62.c:: sh = 0;
-miniTest62.c:: unsigned int t;
-miniTest62.c:: t = 1;
-miniTest62.c:: {
-miniTest62.c:: if (edif[0]) {
-miniTest62.c:: sh = (sh + t);
-miniTest62.c:: }
-miniTest62.c:: t = (t * 2);
-miniTest62.c:: };
-miniTest62.c:: {
-miniTest62.c:: if (edif[1]) {
-miniTest62.c:: sh = (sh + t);
-miniTest62.c:: }
-miniTest62.c:: t = (t * 2);
-miniTest62.c:: };
-miniTest62.c:: {
-miniTest62.c:: unsigned char m1[5];
-miniTest62.c:: m1 = 0;
-miniTest62.c:: unsigned char m2[5];
-miniTest62.c:: m2 = 0;
-miniTest62.c:: unsigned char __sa2[4];
-miniTest62.c:: __sa2 = a[0::4];
-miniTest62.c:: unsigned char __sa3[4];
-miniTest62.c:: __sa3 = __sa2;
-miniTest62.c:: m1[0::4] = __sa3;
-miniTest62.c:: unsigned char __sa4[4];
-miniTest62.c:: __sa4 = b[0::4];
-miniTest62.c:: unsigned char __sa5[4];
-miniTest62.c:: __sa5 = __sa4;
-miniTest62.c:: m2[0::4] = __sa5;
-miniTest62.c:: m2 = (m2 << sh);
-miniTest62.c:: if (!b[6]) {
-miniTest62.c:: unsigned char _ret_1[5];
-miniTest62.c:: FOtwocomp(m2, _ret_1);
-miniTest62.c:: m2 = _ret_1;
-miniTest62.c:: }
-miniTest62.c:: m1 = (m1 + m2);
-miniTest62.c:: if (!m1[3]) {
-miniTest62.c:: {
-miniTest62.c:: e1 = (e1 + minusone);
-miniTest62.c:: };
-miniTest62.c:: }
-miniTest62.c:: unsigned char __sa6[2];
-miniTest62.c:: __sa6 = e1;
-miniTest62.c:: ret[4::2] = __sa6;
-miniTest62.c:: };
-miniTest62.c:: _out_0 = ret;
-miniTest62.c::void floatAdd(unsigned char* a, unsigned char* b, unsigned char* _out_0) {
-miniTest62.c:: unsigned char ret[7];
-miniTest62.c:: ret = 0;
-miniTest62.c:: unsigned char _ret_0;
-miniTest62.c:: floatIsZero(b, _ret_0);
-miniTest62.c:: if (_ret_0) {
-miniTest62.c:: {
-miniTest62.c:: ret = a;
-miniTest62.c:: };
-miniTest62.c:: } else {
-miniTest62.c:: {
-miniTest62.c:: unsigned char _ret_1[7];
-miniTest62.c:: FOadd(a, b, _ret_1);
-miniTest62.c:: ret = _ret_1;
-miniTest62.c:: };
-miniTest62.c:: }
-miniTest62.c:: _out_0 = ret;
-miniTest62.c::void alwaysOne(unsigned char& x, unsigned char& _out_0) {
-miniTest62.c:: _out_0 = 1;
-miniTest62.c::void floatEqualsE(unsigned char* a, unsigned char* b, unsigned char& _out_0) {
-miniTest62.c:: unsigned char ret;
-miniTest62.c:: ret = 1;
-miniTest62.c:: for (unsigned int i = 4; (i < 6); i++) {
-miniTest62.c:: if ((a[i] != b[i])) {
-miniTest62.c:: ret = 0;
-miniTest62.c:: }
-miniTest62.c:: };
-miniTest62.c:: _out_0 = ret;
-miniTest62.c::void test2(unsigned char& x, unsigned char& _out_0) {
-miniTest62.c:: unsigned char _ret_0[7];
-miniTest62.c:: floatOne(_ret_0);
-miniTest62.c:: unsigned char a[7];
-miniTest62.c:: a = _ret_0;
-miniTest62.c:: a[4] = 1;
-miniTest62.c:: a[6] = 1;
-miniTest62.c:: unsigned char _ret_1[7];
-miniTest62.c:: floatOne(_ret_1);
-miniTest62.c:: unsigned char b[7];
-miniTest62.c:: b = _ret_1;
-miniTest62.c:: b[5] = 0;
-miniTest62.c:: b[6] = 0;
-miniTest62.c:: unsigned char _ret_2[7];
-miniTest62.c:: floatOne(_ret_2);
-miniTest62.c:: unsigned char c[7];
-miniTest62.c:: c = _ret_2;
-miniTest62.c:: c[6] = 1;
-miniTest62.c:: unsigned char _ret_3[7];
-miniTest62.c:: floatAdd(a, b, _ret_3);
-miniTest62.c:: unsigned char _ret_4;
-miniTest62.c:: floatEqualsE(_ret_3, c, _ret_4);
-miniTest62.c:: _out_0 = _ret_4;
-miniTest63.c::#include "miniTest63.h"
-miniTest63.c::void tableSum(unsigned char* in1_0, unsigned char& _out_0) {
-miniTest63.c:: unsigned char in1[4];
-miniTest63.c:: in1 = in1_0;
-miniTest63.c:: unsigned int k;
-miniTest63.c:: k = 0;
-miniTest63.c:: if (in1[0]) {
-miniTest63.c:: {
-miniTest63.c:: if (in1[1]) {
-miniTest63.c:: {
-miniTest63.c:: k = 1;
-miniTest63.c:: };
-miniTest63.c:: } else {
-miniTest63.c:: {
-miniTest63.c:: k = 2;
-miniTest63.c:: };
-miniTest63.c:: }
-miniTest63.c:: };
-miniTest63.c:: } else {
-miniTest63.c:: {
-miniTest63.c:: if (in1[1]) {
-miniTest63.c:: {
-miniTest63.c:: k = 0;
-miniTest63.c:: };
-miniTest63.c:: } else {
-miniTest63.c:: {
-miniTest63.c:: k = 1;
-miniTest63.c:: };
-miniTest63.c:: }
-miniTest63.c:: };
-miniTest63.c:: }
-miniTest63.c:: in1[1] = in1[3];
-miniTest63.c:: _out_0 = in1[k];
-miniTest63.c::void sum(unsigned char* in1_0, unsigned char& _out_0) {
-miniTest63.c:: unsigned char in1[4];
-miniTest63.c:: in1 = in1_0;
-miniTest63.c:: unsigned char t;
-miniTest63.c:: t = in1[0];
-miniTest63.c:: unsigned char t2;
-miniTest63.c:: t2 = !in1[1];
-miniTest63.c:: unsigned int k;
-miniTest63.c:: k = t;
-miniTest63.c:: unsigned int k2;
-miniTest63.c:: k2 = t2;
-miniTest63.c:: in1[1] = in1[3];
-miniTest63.c:: _out_0 = in1[(k + k2)];
-miniTest64.c::#include "miniTest64.h"
-miniTest64.c::void tableSum(unsigned char* in, unsigned char& _out_0) {
-miniTest64.c:: unsigned char x1;
-miniTest64.c:: x1 = (in[1] && in[2]);
-miniTest64.c:: unsigned char x2;
-miniTest64.c:: x2 = (in[1] && in[2]);
-miniTest64.c:: unsigned char x3;
-miniTest64.c:: x3 = (x1 ^ x2);
-miniTest64.c:: x3 = !x3;
-miniTest64.c:: unsigned int f[4] = {3,2,0,1};
-miniTest64.c:: f[0] = 0;
-miniTest64.c:: f[0] = x3;
-miniTest64.c:: unsigned char rv;
-miniTest64.c:: rv = 0;
-miniTest64.c:: if ((f[0] > 0)) {
-miniTest64.c:: {
-miniTest64.c:: rv = 1;
-miniTest64.c:: };
-miniTest64.c:: } else {
-miniTest64.c:: {
-miniTest64.c:: rv = 0;
-miniTest64.c:: };
-miniTest64.c:: }
-miniTest64.c:: _out_0 = rv;
-miniTest64.c::void sum(unsigned char* in, unsigned char& _out_0) {
-miniTest64.c:: _out_0 = 1;
-miniTest7.c::#include "miniTest7.h"
-miniTest7.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest7.c:: unsigned char tmp1[4] = {0,0,1,0};
-miniTest7.c:: _out_0 = ((in + {1,0,1,0}) + {0,0,1,0});
-miniTest7.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest7.c:: unsigned char tmp1[4] = {0,1,1,0};
-miniTest7.c:: unsigned char tmp2[4] = {1,1,0,0};
-miniTest7.c:: _out_0 = ((in + tmp1) + tmp2);
-miniTest7small.c::#include "miniTest7small.h"
-miniTest7small.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest7small.c:: unsigned char tmp1[2] = {1,0};
-miniTest7small.c:: _out_0 = (in + ({1,1} ^ {1,0}));
-miniTest7small.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest7small.c:: unsigned char tmp1[2] = {1,0};
-miniTest7small.c:: unsigned char tmp2[2] = {1,1};
-miniTest7small.c:: _out_0 = (in + (tmp1 ^ tmp2));
-miniTest8.c::#include "miniTest8.h"
-miniTest8.c::void mult(unsigned char* in1_0, unsigned char* in2, unsigned char* _out_0) {
-miniTest8.c:: unsigned char in1[4];
-miniTest8.c:: in1 = in1_0;
-miniTest8.c:: unsigned char result[4];
-miniTest8.c:: result = 0;
-miniTest8.c:: for (unsigned int i = 0; (i < 4); ++i) {
-miniTest8.c:: {
-miniTest8.c:: if ((in2[i] == 1)) {
-miniTest8.c:: {
-miniTest8.c:: result = (result + in1);
-miniTest8.c:: };
-miniTest8.c:: }
-miniTest8.c:: unsigned char __sa0[4];
-miniTest8.c:: __sa0 = (in1 >> 1);
-miniTest8.c:: in1 = __sa0;
-miniTest8.c:: };
-miniTest8.c:: };
-miniTest8.c:: _out_0 = result;
-miniTest8.c::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
-miniTest8.c:: unsigned char tmp[4];
-miniTest8.c:: tmp = {1,1,0,0};
-miniTest8.c:: unsigned char _ret_0[4];
-miniTest8.c:: mult(in, tmp, _ret_0);
-miniTest8.c:: _out_0 = _ret_0;
-miniTest8.c::void reverse(unsigned char* in, unsigned char* _out_0) {
-miniTest8.c:: _out_0 = ((in + in) + in);
-miniTest9.c::#include "miniTest9.h"
-miniTest9.c::void reverseSketch(unsigned char* in_0, unsigned char& _out_0) {
-miniTest9.c:: unsigned char in[4];
-miniTest9.c:: in = in_0;
-miniTest9.c:: unsigned char __sa0[4];
-miniTest9.c:: __sa0 = (in >> 1);
-miniTest9.c:: in = __sa0;
-miniTest9.c:: in = (in << 1);
-miniTest9.c:: unsigned char __sa1[4];
-miniTest9.c:: __sa1 = (in >> 1);
-miniTest9.c:: in = __sa1;
-miniTest9.c:: _out_0 = in[3];
-miniTest9.c::void reverse(unsigned char* in, unsigned char& _out_0) {
-miniTest9.c:: _out_0 = in[2];
+miniTest1.cpp::#include "miniTest1.h"
+miniTest1.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest1.cpp:: _out_0 = ((in[1] & 0) | (in[3] & 1));
+miniTest1.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest1.cpp:: _out_0 = in[3];
+miniTest10.cpp::#include "miniTest10.h"
+miniTest10.cpp::void foo(unsigned char* in, unsigned char& _out_0) {
+miniTest10.cpp:: _out_0 = in[null];
+miniTest10.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest10.cpp:: unsigned char _ret_0;
+miniTest10.cpp:: {
+miniTest10.cpp:: {
+miniTest10.cpp:: _out_0 = in[2];
+miniTest10.cpp:: };
+miniTest10.cpp:: _ret_0 = _out_0;
+miniTest10.cpp:: };
+miniTest10.cpp:: _out_0 = (_ret_0 ^ in[3]);
+miniTest10.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest10.cpp:: _out_0 = (in[2] ^ in[3]);
+miniTest11.cpp::#include "miniTest11.h"
+miniTest11.cpp::void moo(unsigned char* in, unsigned char* _out_0) {
+miniTest11.cpp:: unsigned char tmp[2];
+miniTest11.cpp:: tmp[0] = in[0];
+miniTest11.cpp:: tmp[1] = in[2];
+miniTest11.cpp:: _out_0 = tmp;
+miniTest11.cpp::void foo(unsigned char* in, unsigned char& _out_0) {
+miniTest11.cpp:: unsigned char _ret_0[2];
+miniTest11.cpp:: moo(in, _ret_0);
+miniTest11.cpp:: unsigned char tmp[2];
+miniTest11.cpp:: tmp = _ret_0;
+miniTest11.cpp:: _out_0 = tmp[1];
+miniTest11.cpp:: ;
+miniTest11.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest11.cpp:: unsigned char _ret_0;
+miniTest11.cpp:: {
+miniTest11.cpp:: {
+miniTest11.cpp:: unsigned char _ret_0[2];
+miniTest11.cpp:: {
+miniTest11.cpp:: {
+miniTest11.cpp:: unsigned char tmp[2];
+miniTest11.cpp:: tmp[0] = in[0];
+miniTest11.cpp:: tmp[1] = in[2];
+miniTest11.cpp:: _out_0 = tmp;
+miniTest11.cpp:: };
+miniTest11.cpp:: _ret_0 = _out_0;
+miniTest11.cpp:: };
+miniTest11.cpp:: unsigned char tmp[2];
+miniTest11.cpp:: tmp = _ret_0;
+miniTest11.cpp:: _out_0 = tmp[1];
+miniTest11.cpp:: ;
+miniTest11.cpp:: };
+miniTest11.cpp:: _ret_0 = _out_0;
+miniTest11.cpp:: };
+miniTest11.cpp:: _out_0 = _ret_0;
+miniTest11.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest11.cpp:: _out_0 = in[2];
+miniTest12.cpp::#include "miniTest12.h"
+miniTest12.cpp::void foo(unsigned char* in, unsigned int& k, unsigned char& _out_0) {
+miniTest12.cpp:: if ((k > 0)) {
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned char _ret_0;
+miniTest12.cpp:: unsigned int _ret_1;
+miniTest12.cpp:: _ret_1 = (k - 1);
+miniTest12.cpp:: foo(in, _ret_1, _ret_0);
+miniTest12.cpp:: _out_0 = _ret_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: } else {
+miniTest12.cpp:: {
+miniTest12.cpp:: _out_0 = in[2];
+miniTest12.cpp:: ;
+miniTest12.cpp:: };
+miniTest12.cpp:: }
+miniTest12.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest12.cpp:: unsigned char _ret_0;
+miniTest12.cpp:: unsigned int _ret_1;
+miniTest12.cpp:: _ret_1 = 4;
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned int k = 4;
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned char _ret_0;
+miniTest12.cpp:: unsigned int _ret_1;
+miniTest12.cpp:: _ret_1 = 3;
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned int k = 3;
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned char _ret_0;
+miniTest12.cpp:: unsigned int _ret_1;
+miniTest12.cpp:: _ret_1 = 2;
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned int k = 2;
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned char _ret_0;
+miniTest12.cpp:: unsigned int _ret_1;
+miniTest12.cpp:: _ret_1 = 1;
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned int k = 1;
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned char _ret_0;
+miniTest12.cpp:: unsigned int _ret_1;
+miniTest12.cpp:: _ret_1 = 0;
+miniTest12.cpp:: {
+miniTest12.cpp:: unsigned int k = 0;
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: {
+miniTest12.cpp:: _out_0 = in[2];
+miniTest12.cpp:: ;
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: _ret_0 = _out_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: _out_0 = _ret_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: _ret_0 = _out_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: _out_0 = _ret_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: _ret_0 = _out_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: _out_0 = _ret_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: _ret_0 = _out_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: _out_0 = _ret_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: };
+miniTest12.cpp:: _ret_0 = _out_0;
+miniTest12.cpp:: };
+miniTest12.cpp:: _out_0 = _ret_0;
+miniTest12.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest12.cpp:: _out_0 = in[2];
+miniTest13.cpp::#include "miniTest13.h"
+miniTest13.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest13.cpp:: unsigned int i1;
+miniTest13.cpp:: i1 = 2;
+miniTest13.cpp:: unsigned int i2;
+miniTest13.cpp:: i2 = 2;
+miniTest13.cpp:: _out_0 = (in[4] ^ in[2]);
+miniTest13.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest13.cpp:: _out_0 = (in[4] ^ in[2]);
+miniTest14.cpp::#include "miniTest14.h"
+miniTest14.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest14.cpp:: unsigned char t;
+miniTest14.cpp:: t = 0;
+miniTest14.cpp:: unsigned int i;
+miniTest14.cpp:: i = 0;
+miniTest14.cpp:: {
+miniTest14.cpp:: t = in[0];
+miniTest14.cpp:: i = 1;
+miniTest14.cpp:: };
+miniTest14.cpp:: {
+miniTest14.cpp:: t = in[1];
+miniTest14.cpp:: i = 2;
+miniTest14.cpp:: };
+miniTest14.cpp:: {
+miniTest14.cpp:: t = in[2];
+miniTest14.cpp:: i = 3;
+miniTest14.cpp:: };
+miniTest14.cpp:: _out_0 = t;
+miniTest14.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest14.cpp:: _out_0 = in[2];
+miniTest15.cpp::#include "miniTest15.h"
+miniTest15.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest15.cpp:: unsigned char tmp[2];
+miniTest15.cpp:: tmp = 0;
+miniTest15.cpp:: tmp[0] = 1;
+miniTest15.cpp:: tmp[1] = 1;
+miniTest15.cpp:: _out_0 = in[3];
+miniTest15.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest15.cpp:: _out_0 = in[3];
+miniTest16.cpp::#include "miniTest16.h"
+miniTest16.cpp::void foo(unsigned char* in, unsigned char* _out_0) {
+miniTest16.cpp:: _out_0 = in;
+miniTest16.cpp::void reverseSketch(unsigned char* in_0, unsigned char* _out_0) {
+miniTest16.cpp:: unsigned char in[4];
+miniTest16.cpp:: in = in_0;
+miniTest16.cpp:: in[0] = 0;
+miniTest16.cpp:: unsigned char _ret_0[4];
+miniTest16.cpp:: {
+miniTest16.cpp:: {
+miniTest16.cpp:: _out_0 = in;
+miniTest16.cpp:: };
+miniTest16.cpp:: _ret_0 = _out_0;
+miniTest16.cpp:: };
+miniTest16.cpp:: _out_0 = _ret_0;
+miniTest16.cpp::void reverse(unsigned char* in_0, unsigned char* _out_0) {
+miniTest16.cpp:: unsigned char in[4];
+miniTest16.cpp:: in = in_0;
+miniTest16.cpp:: in[0] = 0;
+miniTest16.cpp:: _out_0 = in;
+miniTest17.cpp::#include "miniTest17.h"
+miniTest17.cpp::void foo(unsigned char* in, unsigned char* _out_0) {
+miniTest17.cpp:: _out_0 = in;
+miniTest17.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest17.cpp:: unsigned char _ret_0[10];
+miniTest17.cpp:: {
+miniTest17.cpp:: {
+miniTest17.cpp:: _out_0 = in;
+miniTest17.cpp:: };
+miniTest17.cpp:: _ret_0 = _out_0;
+miniTest17.cpp:: };
+miniTest17.cpp:: _out_0 = _ret_0;
+miniTest17.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest17.cpp:: unsigned char tmp[5];
+miniTest17.cpp:: tmp = 0;
+miniTest17.cpp:: for (unsigned int i = 0; (i < 4); ++i) {
+miniTest17.cpp:: {
+miniTest17.cpp:: tmp[i] = in[i];
+miniTest17.cpp:: };
+miniTest17.cpp:: };
+miniTest17.cpp:: _out_0 = tmp;
+miniTest19.cpp::#include "miniTest19.h"
+miniTest19.cpp::void foo(unsigned char* in, unsigned char* _out_0) {
+miniTest19.cpp:: _out_0 = in;
+miniTest19.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest19.cpp:: unsigned char _ret_0[4];
+miniTest19.cpp:: unsigned char _ret_1[4];
+miniTest19.cpp:: _ret_1 = 1;
+miniTest19.cpp:: {
+miniTest19.cpp:: unsigned char in[4] = _ret_1;
+miniTest19.cpp:: {
+miniTest19.cpp:: _out_0 = {1,1,1,1};
+miniTest19.cpp:: };
+miniTest19.cpp:: _ret_0 = _out_0;
+miniTest19.cpp:: };
+miniTest19.cpp:: _out_0 = (in ^ {1,1,1,1});
+miniTest19.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest19.cpp:: _out_0 = (in ^ 1);
+miniTest2.cpp::#include "miniTest2.h"
+miniTest2.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest2.cpp:: unsigned char tmp[4];
+miniTest2.cpp:: tmp = in;
+miniTest2.cpp:: tmp[2] = 1;
+miniTest2.cpp:: tmp[3] = 0;
+miniTest2.cpp:: _out_0 = tmp[1];
+miniTest2.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest2.cpp:: _out_0 = in[1];
+miniTest20.cpp::#include "miniTest20.h"
+miniTest20.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest20.cpp:: unsigned int fu[4] = {2,3,4,0};
+miniTest20.cpp:: unsigned int idx1;
+miniTest20.cpp:: idx1 = 2;
+miniTest20.cpp:: unsigned int idx;
+miniTest20.cpp:: idx = 4;
+miniTest20.cpp:: _out_0 = in[4];
+miniTest20.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest20.cpp:: _out_0 = in[4];
+miniTest21.cpp::#include "miniTest21.h"
+miniTest21.cpp::void reverseSketch(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
+miniTest21.cpp:: unsigned int fu[8];
+miniTest21.cpp:: {
+miniTest21.cpp:: unsigned int i = 0;
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[0] = 2;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[1] = 1;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[2] = 1;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[3] = 0;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[4] = 1;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[5] = 2;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[6] = 2;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: {
+miniTest21.cpp:: {
+miniTest21.cpp:: fu[7] = 0;
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: };
+miniTest21.cpp:: unsigned int idx1;
+miniTest21.cpp:: idx1 = ((unsigned int)(in));
+miniTest21.cpp:: unsigned int idx;
+miniTest21.cpp:: idx = fu[idx1];
+miniTest21.cpp:: _out_0 = in2[idx];
+miniTest21.cpp::void reverse(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
+miniTest21.cpp:: unsigned int fu[8] = {2,1,1,0,1,2,2,0};
+miniTest21.cpp:: unsigned int idx1;
+miniTest21.cpp:: idx1 = ((unsigned int)(in));
+miniTest21.cpp:: unsigned int idx;
+miniTest21.cpp:: idx = fu[idx1];
+miniTest21.cpp:: _out_0 = in2[idx];
+miniTest22.cpp::#include "miniTest22.h"
+miniTest22.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest22.cpp:: unsigned int x;
+miniTest22.cpp:: {
+miniTest22.cpp:: {
+miniTest22.cpp:: x = 2;
+miniTest22.cpp:: };
+miniTest22.cpp:: };
+miniTest22.cpp:: _out_0 = in[2];
+miniTest22.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest22.cpp:: _out_0 = in[2];
+miniTest24.cpp::#include "miniTest24.h"
+miniTest24.cpp::void testSK(unsigned char* in, unsigned char& _out_0) {
+miniTest24.cpp:: unsigned int x;
+miniTest24.cpp:: x = 3;
+miniTest24.cpp:: unsigned int y;
+miniTest24.cpp:: y = 0;
+miniTest24.cpp:: {
+miniTest24.cpp:: {
+miniTest24.cpp:: _out_0 = in[3];
+miniTest24.cpp:: };
+miniTest24.cpp:: };
+miniTest24.cpp::void test(unsigned char* in, unsigned char& _out_0) {
+miniTest24.cpp:: _out_0 = in[3];
+miniTest25.cpp::#include "miniTest25.h"
+miniTest25.cpp::void miniTest(unsigned char* in_0, unsigned char* _out_0) {
+miniTest25.cpp:: unsigned char in[3];
+miniTest25.cpp:: in = in_0;
+miniTest25.cpp:: in[0] = 1;
+miniTest25.cpp:: _out_0 = (in ^ (in << 1));
+miniTest25.cpp::void fu(unsigned char* x_0, unsigned char* _out_0) {
+miniTest25.cpp:: unsigned char x[3];
+miniTest25.cpp:: x = x_0;
+miniTest25.cpp:: x[0] = 1;
+miniTest25.cpp:: _out_0 = x;
+miniTest25.cpp::void miniTestSK(unsigned char* x_0, unsigned char* _out_0) {
+miniTest25.cpp:: unsigned char x[3];
+miniTest25.cpp:: x = x_0;
+miniTest25.cpp:: unsigned char _ret_0[3];
+miniTest25.cpp:: {
+miniTest25.cpp:: unsigned char x_0[3] = x;
+miniTest25.cpp:: {
+miniTest25.cpp:: unsigned char x[3];
+miniTest25.cpp:: x = x_0;
+miniTest25.cpp:: x[0] = 1;
+miniTest25.cpp:: _out_0 = x;
+miniTest25.cpp:: };
+miniTest25.cpp:: _ret_0 = _out_0;
+miniTest25.cpp:: };
+miniTest25.cpp:: x = _ret_0;
+miniTest25.cpp:: _out_0 = (x ^ (x << 1));
+miniTest26.cpp::#include "miniTest26.h"
+miniTest26.cpp::void miniTest(unsigned char* in, unsigned char* _out_0) {
+miniTest26.cpp:: unsigned char one[2] = {0,0};
+miniTest26.cpp:: one[0] = 1;
+miniTest26.cpp:: _out_0 = (in ^ one);
+miniTest26.cpp::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
+miniTest26.cpp:: unsigned char one[2] = {0,0};
+miniTest26.cpp:: one[0] = 1;
+miniTest26.cpp:: _out_0 = (in ^ {1,0});
+miniTest28.cpp::#include "miniTest28.h"
+miniTest28.cpp::void miniTest(unsigned char* in, unsigned char* _out_0) {
+miniTest28.cpp:: unsigned char one[2] = {0,0};
+miniTest28.cpp:: one[0] = 1;
+miniTest28.cpp:: _out_0 = (in ^ one);
+miniTest28.cpp::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
+miniTest28.cpp:: unsigned char tmp[2] = {0,0};
+miniTest28.cpp:: tmp[1] = 0;
+miniTest28.cpp:: unsigned char one[2];
+miniTest28.cpp:: one = {0,0};
+miniTest28.cpp:: one[1] = 0;
+miniTest28.cpp:: one[0] = 1;
+miniTest28.cpp:: _out_0 = (in ^ {1,0});
+miniTest29.cpp::#include "miniTest29.h"
+miniTest29.cpp::void miniTest(unsigned char* in, unsigned char* _out_0) {
+miniTest29.cpp:: unsigned char one[2] = {0,0};
+miniTest29.cpp:: one[0] = 1;
+miniTest29.cpp:: unsigned char __sa0[3];
+miniTest29.cpp:: __sa0 = (in >> 1);
+miniTest29.cpp:: _out_0 = (__sa0 ^ one);
+miniTest29.cpp::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
+miniTest29.cpp:: unsigned char __sa1[3];
+miniTest29.cpp:: __sa1 = (in >> 1);
+miniTest29.cpp:: unsigned char tmp[3];
+miniTest29.cpp:: tmp = __sa1;
+miniTest29.cpp:: unsigned char one[2] = {0,0};
+miniTest29.cpp:: unsigned int _2L11 = 1;
+miniTest29.cpp:: {
+miniTest29.cpp:: {
+miniTest29.cpp:: one[0] = 1;
+miniTest29.cpp:: };
+miniTest29.cpp:: };
+miniTest29.cpp:: _out_0 = (tmp ^ {1,0});
+miniTest3.cpp::#include "miniTest3.h"
+miniTest3.cpp::void simple(unsigned char* in, unsigned char* _out_0) {
+miniTest3.cpp:: unsigned char i1[4];
+miniTest3.cpp:: unsigned char x;
+miniTest3.cpp:: x = 1;
+miniTest3.cpp:: if (in[0]) {
+miniTest3.cpp:: {
+miniTest3.cpp:: x = 0;
+miniTest3.cpp:: };
+miniTest3.cpp:: }
+miniTest3.cpp:: i1 = x;
+miniTest3.cpp:: _out_0 = i1;
+miniTest3.cpp::void simpler(unsigned char* in, unsigned char* _out_0) {
+miniTest3.cpp:: _out_0 = !in[0];
+miniTest30.cpp::#include "miniTest30.h"
+miniTest30.cpp::void foo(unsigned int& i, unsigned int& j, unsigned int& _out_0) {
+miniTest30.cpp:: _out_0 = ((i * 2) + j);
+miniTest30.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest30.cpp:: unsigned int i;
+miniTest30.cpp:: i = 0;
+miniTest30.cpp:: unsigned int j;
+miniTest30.cpp:: j = 1;
+miniTest30.cpp:: unsigned int _ret_0;
+miniTest30.cpp:: foo(j, i, _ret_0);
+miniTest30.cpp:: _out_0 = in[_ret_0];
+miniTest30.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest30.cpp:: _out_0 = in[2];
+miniTest31.cpp::#include "miniTest31.h"
+miniTest31.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest31.cpp:: unsigned char x;
+miniTest31.cpp:: if (!in[0]) {
+miniTest31.cpp:: {
+miniTest31.cpp:: x = 1;
+miniTest31.cpp:: };
+miniTest31.cpp:: } else {
+miniTest31.cpp:: {
+miniTest31.cpp:: x = in[2];
+miniTest31.cpp:: };
+miniTest31.cpp:: }
+miniTest31.cpp:: _out_0 = in[x];
+miniTest31.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest31.cpp:: unsigned char x;
+miniTest31.cpp:: if (in[0]) {
+miniTest31.cpp:: {
+miniTest31.cpp:: x = in[2];
+miniTest31.cpp:: };
+miniTest31.cpp:: } else {
+miniTest31.cpp:: {
+miniTest31.cpp:: x = 1;
+miniTest31.cpp:: };
+miniTest31.cpp:: }
+miniTest31.cpp:: _out_0 = in[x];
+miniTest32.cpp::#include "miniTest32.h"
+miniTest32.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest32.cpp:: _out_0 = in[!in[0]];
+miniTest32.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest32.cpp:: unsigned char x;
+miniTest32.cpp:: if (in[0]) {
+miniTest32.cpp:: {
+miniTest32.cpp:: x = 0;
+miniTest32.cpp:: };
+miniTest32.cpp:: } else {
+miniTest32.cpp:: {
+miniTest32.cpp:: x = 1;
+miniTest32.cpp:: };
+miniTest32.cpp:: }
+miniTest32.cpp:: _out_0 = in[x];
+miniTest33.cpp::#include "miniTest33.h"
+miniTest33.cpp::void miniTest(unsigned char* in_0, unsigned char* _out_0) {
+miniTest33.cpp:: unsigned char in[4];
+miniTest33.cpp:: in = in_0;
+miniTest33.cpp:: in[2] = 1;
+miniTest33.cpp:: _out_0 = in;
+miniTest33.cpp::void miniTestSK(unsigned char* in_0, unsigned char* _out_0) {
+miniTest33.cpp:: unsigned char in[4];
+miniTest33.cpp:: in = in_0;
+miniTest33.cpp:: in[2] = 1;
+miniTest33.cpp:: _out_0 = in;
+miniTest34.cpp::#include "miniTest34.h"
+miniTest34.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest34.cpp:: _out_0 = in[2];
+miniTest34.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest34.cpp:: unsigned int fu[3] = {0,1,3};
+miniTest34.cpp:: fu[2] = 2;
+miniTest34.cpp:: _out_0 = in[2];
+miniTest35.cpp::#include "miniTest35.h"
+miniTest35.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest35.cpp:: _out_0 = in[2];
+miniTest35.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest35.cpp:: unsigned int fu[3] = {0,1,3};
+miniTest35.cpp:: fu[2] = 2;
+miniTest35.cpp:: _out_0 = in[2];
+miniTest36.cpp::#include "miniTest36.h"
+miniTest36.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest36.cpp:: _out_0 = in[2];
+miniTest36.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest36.cpp:: unsigned int fu[3] = {0,1,3};
+miniTest36.cpp:: fu[2] = 2;
+miniTest36.cpp:: _out_0 = in[2];
+miniTest37.cpp::#include "miniTest37.h"
+miniTest37.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest37.cpp:: _out_0 = in[2];
+miniTest37.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest37.cpp:: unsigned int fu[2] = {0,1};
+miniTest37.cpp:: fu[1] = 2;
+miniTest37.cpp:: _out_0 = in[2];
+miniTest38.cpp::#include "miniTest38.h"
+miniTest38.cpp::void miniTest(unsigned char* in_0, unsigned char* in2, unsigned char* _out_0) {
+miniTest38.cpp:: unsigned char in[4];
+miniTest38.cpp:: in = in_0;
+miniTest38.cpp:: unsigned int i;
+miniTest38.cpp:: i = ((unsigned int)(in2));
+miniTest38.cpp:: in[i] = 1;
+miniTest38.cpp:: _out_0 = in;
+miniTest38.cpp::void miniTestSK(unsigned char* in_0, unsigned char* in2, unsigned char* _out_0) {
+miniTest38.cpp:: unsigned char in[4];
+miniTest38.cpp:: in = in_0;
+miniTest38.cpp:: unsigned int i;
+miniTest38.cpp:: i = ((unsigned int)(in2));
+miniTest38.cpp:: in[i] = 1;
+miniTest38.cpp:: _out_0 = in;
+miniTest4.cpp::#include "miniTest4.h"
+miniTest4.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest4.cpp:: unsigned char tmp[4];
+miniTest4.cpp:: tmp = (in << 2);
+miniTest4.cpp:: _out_0 = tmp[0];
+miniTest4.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest4.cpp:: _out_0 = in[2];
+miniTest40.cpp::#include "miniTest40.h"
+miniTest40.cpp::void transpose(unsigned char* input, unsigned char* _out_0) {
+miniTest40.cpp:: unsigned char output[4];
+miniTest40.cpp:: output = 0;
+miniTest40.cpp:: for (unsigned int i = 0; (i < 4); ++i) {
+miniTest40.cpp:: {
+miniTest40.cpp:: output[i] = input[i];
+miniTest40.cpp:: };
+miniTest40.cpp:: };
+miniTest40.cpp:: _out_0 = output;
+miniTest40.cpp::void tiledTranspose(unsigned char* input, unsigned char* _out_0) {
+miniTest40.cpp:: unsigned char output[4];
+miniTest40.cpp:: output = 0;
+miniTest40.cpp:: unsigned int i;
+miniTest40.cpp:: i = 0;
+miniTest40.cpp:: unsigned int _2L6 = 2;
+miniTest40.cpp:: {
+miniTest40.cpp:: {
+miniTest40.cpp:: unsigned int j;
+miniTest40.cpp:: j = 0;
+miniTest40.cpp:: {
+miniTest40.cpp:: {
+miniTest40.cpp:: output[0] = input[0];
+miniTest40.cpp:: j = 1;
+miniTest40.cpp:: output[1] = input[1];
+miniTest40.cpp:: j = 2;
+miniTest40.cpp:: };
+miniTest40.cpp:: };
+miniTest40.cpp:: i = 2;
+miniTest40.cpp:: };
+miniTest40.cpp:: {
+miniTest40.cpp:: {
+miniTest40.cpp:: unsigned int j;
+miniTest40.cpp:: j = 0;
+miniTest40.cpp:: {
+miniTest40.cpp:: {
+miniTest40.cpp:: output[2] = input[2];
+miniTest40.cpp:: j = 1;
+miniTest40.cpp:: output[3] = input[3];
+miniTest40.cpp:: j = 2;
+miniTest40.cpp:: };
+miniTest40.cpp:: };
+miniTest40.cpp:: i = 4;
+miniTest40.cpp:: };
+miniTest40.cpp:: };
+miniTest40.cpp:: };
+miniTest40.cpp:: _out_0 = output;
+miniTest42.cpp::#include "miniTest42.h"
+miniTest42.cpp::void sort(unsigned char* input_0, unsigned char* _out_0) {
+miniTest42.cpp:: unsigned char input[3];
+miniTest42.cpp:: input = input_0;
+miniTest42.cpp:: if (input[0]) {
+miniTest42.cpp:: {
+miniTest42.cpp:: input[2] = 1;
+miniTest42.cpp:: };
+miniTest42.cpp:: } else {
+miniTest42.cpp:: {
+miniTest42.cpp:: input[1] = 1;
+miniTest42.cpp:: };
+miniTest42.cpp:: }
+miniTest42.cpp:: _out_0 = input;
+miniTest42.cpp::void mergeSort(unsigned char* input_0, unsigned char* _out_0) {
+miniTest42.cpp:: unsigned char input[3];
+miniTest42.cpp:: input = input_0;
+miniTest42.cpp:: unsigned int k;
+miniTest42.cpp:: k = 0;
+miniTest42.cpp:: if (input[0]) {
+miniTest42.cpp:: {
+miniTest42.cpp:: k = 1;
+miniTest42.cpp:: };
+miniTest42.cpp:: }
+miniTest42.cpp:: k = (k + 1);
+miniTest42.cpp:: input[k] = 1;
+miniTest42.cpp:: _out_0 = input;
+miniTest43.cpp::#include "miniTest43.h"
+miniTest43.cpp::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
+miniTest43.cpp:: _out_0 = (!x || y);
+miniTest43.cpp::void sort(unsigned char* input, unsigned char* _out_0) {
+miniTest43.cpp:: unsigned char output[2];
+miniTest43.cpp:: output = 0;
+miniTest43.cpp:: unsigned char done[2];
+miniTest43.cpp:: done = 0;
+miniTest43.cpp:: unsigned int k;
+miniTest43.cpp:: k = 0;
+miniTest43.cpp:: for (unsigned int i = 0; (i < 2); ++i) {
+miniTest43.cpp:: {
+miniTest43.cpp:: unsigned char cur;
+miniTest43.cpp:: cur = 1;
+miniTest43.cpp:: for (unsigned int j = 0; (j < 2); ++j) {
+miniTest43.cpp:: {
+miniTest43.cpp:: unsigned char _ret_0;
+miniTest43.cpp:: unsigned char _ret_1;
+miniTest43.cpp:: _ret_1 = input[j];
+miniTest43.cpp:: leq(_ret_1, cur, _ret_0);
+miniTest43.cpp:: if ((_ret_0 && !done[j])) {
+miniTest43.cpp:: {
+miniTest43.cpp:: k = j;
+miniTest43.cpp:: cur = input[j];
+miniTest43.cpp:: };
+miniTest43.cpp:: }
+miniTest43.cpp:: };
+miniTest43.cpp:: };
+miniTest43.cpp:: output[i] = cur;
+miniTest43.cpp:: done[k] = 1;
+miniTest43.cpp:: };
+miniTest43.cpp:: };
+miniTest43.cpp:: _out_0 = output;
+miniTest43.cpp::void mergeSort(unsigned char* input, unsigned char* _out_0) {
+miniTest43.cpp:: unsigned char output[2];
+miniTest43.cpp:: output = 1;
+miniTest43.cpp:: if ((input[0] && input[1])) {
+miniTest43.cpp:: {
+miniTest43.cpp:: output[0] = 1;
+miniTest43.cpp:: output[1] = 1;
+miniTest43.cpp:: };
+miniTest43.cpp:: }
+miniTest43.cpp:: ;
+miniTest43.cpp:: if ((!input[0] && input[1])) {
+miniTest43.cpp:: {
+miniTest43.cpp:: output[0] = 0;
+miniTest43.cpp:: output[1] = 1;
+miniTest43.cpp:: };
+miniTest43.cpp:: }
+miniTest43.cpp:: ;
+miniTest43.cpp:: if ((input[0] && !input[1])) {
+miniTest43.cpp:: {
+miniTest43.cpp:: output[0] = 0;
+miniTest43.cpp:: output[1] = 1;
+miniTest43.cpp:: };
+miniTest43.cpp:: }
+miniTest43.cpp:: ;
+miniTest43.cpp:: if ((!input[0] && !input[1])) {
+miniTest43.cpp:: {
+miniTest43.cpp:: output[0] = 0;
+miniTest43.cpp:: output[1] = 0;
+miniTest43.cpp:: };
+miniTest43.cpp:: }
+miniTest43.cpp:: ;
+miniTest43.cpp:: _out_0 = output;
+miniTest44.cpp::#include "miniTest44.h"
+miniTest44.cpp::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
+miniTest44.cpp:: _out_0 = (!x || y);
+miniTest44.cpp::void sort(unsigned char* input, unsigned char* _out_0) {
+miniTest44.cpp:: unsigned char output[2];
+miniTest44.cpp:: output = 1;
+miniTest44.cpp:: if ((input[0] && input[1])) {
+miniTest44.cpp:: {
+miniTest44.cpp:: output[0] = 1;
+miniTest44.cpp:: output[1] = 1;
+miniTest44.cpp:: };
+miniTest44.cpp:: }
+miniTest44.cpp:: ;
+miniTest44.cpp:: if ((!input[0] && input[1])) {
+miniTest44.cpp:: {
+miniTest44.cpp:: output[0] = 0;
+miniTest44.cpp:: output[1] = 1;
+miniTest44.cpp:: };
+miniTest44.cpp:: }
+miniTest44.cpp:: ;
+miniTest44.cpp:: if ((input[0] && !input[1])) {
+miniTest44.cpp:: {
+miniTest44.cpp:: output[0] = 0;
+miniTest44.cpp:: output[1] = 1;
+miniTest44.cpp:: };
+miniTest44.cpp:: }
+miniTest44.cpp:: ;
+miniTest44.cpp:: if ((!input[0] && !input[1])) {
+miniTest44.cpp:: {
+miniTest44.cpp:: output[0] = 0;
+miniTest44.cpp:: output[1] = 0;
+miniTest44.cpp:: };
+miniTest44.cpp:: }
+miniTest44.cpp:: ;
+miniTest44.cpp:: _out_0 = output;
+miniTest44.cpp::void mergeSort(unsigned char* input, unsigned char* _out_0) {
+miniTest44.cpp:: unsigned char output[2];
+miniTest44.cpp:: output = 1;
+miniTest44.cpp:: unsigned int k;
+miniTest44.cpp:: k = 0;
+miniTest44.cpp:: {
+miniTest44.cpp:: unsigned int i = 0;
+miniTest44.cpp:: {
+miniTest44.cpp:: {
+miniTest44.cpp:: if (!input[0]) {
+miniTest44.cpp:: {
+miniTest44.cpp:: output[0] = 0;
+miniTest44.cpp:: k = 1;
+miniTest44.cpp:: };
+miniTest44.cpp:: }
+miniTest44.cpp:: };
+miniTest44.cpp:: };
+miniTest44.cpp:: {
+miniTest44.cpp:: {
+miniTest44.cpp:: if (!input[1]) {
+miniTest44.cpp:: {
+miniTest44.cpp:: output[k] = 0;
+miniTest44.cpp:: k = (k + 1);
+miniTest44.cpp:: };
+miniTest44.cpp:: }
+miniTest44.cpp:: };
+miniTest44.cpp:: };
+miniTest44.cpp:: };
+miniTest44.cpp:: _out_0 = output;
+miniTest45.cpp::#include "miniTest45.h"
+miniTest45.cpp::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
+miniTest45.cpp:: _out_0 = (!x || y);
+miniTest45.cpp::void mergeSort(unsigned char* input, unsigned char& _out_0) {
+miniTest45.cpp:: unsigned char output;
+miniTest45.cpp:: output = 1;
+miniTest45.cpp:: unsigned char done[3];
+miniTest45.cpp:: done = 0;
+miniTest45.cpp:: unsigned int k;
+miniTest45.cpp:: k = 0;
+miniTest45.cpp:: if (!input[2]) {
+miniTest45.cpp:: {
+miniTest45.cpp:: k = 2;
+miniTest45.cpp:: };
+miniTest45.cpp:: } else {
+miniTest45.cpp:: {
+miniTest45.cpp:: if (!input[1]) {
+miniTest45.cpp:: {
+miniTest45.cpp:: k = 1;
+miniTest45.cpp:: };
+miniTest45.cpp:: } else {
+miniTest45.cpp:: {
+miniTest45.cpp:: if (!input[0]) {
+miniTest45.cpp:: {
+miniTest45.cpp:: k = 0;
+miniTest45.cpp:: };
+miniTest45.cpp:: } else {
+miniTest45.cpp:: {
+miniTest45.cpp:: k = 2;
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: done[k] = 1;
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char cur;
+miniTest45.cpp:: cur = 1;
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned int j = 0;
+miniTest45.cpp:: {
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char _ret_0;
+miniTest45.cpp:: unsigned char _ret_1;
+miniTest45.cpp:: _ret_1 = input[0];
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char x = _ret_1;
+miniTest45.cpp:: unsigned char y = 1;
+miniTest45.cpp:: {
+miniTest45.cpp:: _out_0 = (!x || 1);
+miniTest45.cpp:: };
+miniTest45.cpp:: _ret_0 = _out_0;
+miniTest45.cpp:: };
+miniTest45.cpp:: if ((_ret_0 && !done[0])) {
+miniTest45.cpp:: {
+miniTest45.cpp:: cur = input[0];
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: };
+miniTest45.cpp:: };
+miniTest45.cpp:: {
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char _ret_0;
+miniTest45.cpp:: unsigned char _ret_1;
+miniTest45.cpp:: _ret_1 = input[1];
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char x = _ret_1;
+miniTest45.cpp:: unsigned char y = cur;
+miniTest45.cpp:: {
+miniTest45.cpp:: _out_0 = (!x || y);
+miniTest45.cpp:: };
+miniTest45.cpp:: _ret_0 = _out_0;
+miniTest45.cpp:: };
+miniTest45.cpp:: if ((_ret_0 && !done[1])) {
+miniTest45.cpp:: {
+miniTest45.cpp:: cur = input[1];
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: };
+miniTest45.cpp:: };
+miniTest45.cpp:: {
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char _ret_0;
+miniTest45.cpp:: unsigned char _ret_1;
+miniTest45.cpp:: _ret_1 = input[2];
+miniTest45.cpp:: {
+miniTest45.cpp:: unsigned char x = _ret_1;
+miniTest45.cpp:: unsigned char y = cur;
+miniTest45.cpp:: {
+miniTest45.cpp:: _out_0 = (!x || y);
+miniTest45.cpp:: };
+miniTest45.cpp:: _ret_0 = _out_0;
+miniTest45.cpp:: };
+miniTest45.cpp:: if ((_ret_0 && !done[2])) {
+miniTest45.cpp:: {
+miniTest45.cpp:: cur = input[2];
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: };
+miniTest45.cpp:: };
+miniTest45.cpp:: };
+miniTest45.cpp:: output = cur;
+miniTest45.cpp:: };
+miniTest45.cpp:: _out_0 = output;
+miniTest45.cpp::void sort(unsigned char* input, unsigned char& _out_0) {
+miniTest45.cpp:: unsigned char output;
+miniTest45.cpp:: output = 1;
+miniTest45.cpp:: if (((input[0] && input[1]) && input[2])) {
+miniTest45.cpp:: {
+miniTest45.cpp:: output = 1;
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: ;
+miniTest45.cpp:: if (((((!input[0] && input[1]) && input[2]) || ((input[0] && !input[1]) && input[2])) || ((input[0] && input[1]) && !input[2]))) {
+miniTest45.cpp:: {
+miniTest45.cpp:: output = 1;
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: ;
+miniTest45.cpp:: if (((((input[0] && !input[1]) && !input[2]) || ((!input[0] && input[1]) && !input[2])) || ((!input[0] && !input[1]) && input[2]))) {
+miniTest45.cpp:: {
+miniTest45.cpp:: output = 0;
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: ;
+miniTest45.cpp:: if (((!input[0] && !input[1]) && !input[2])) {
+miniTest45.cpp:: {
+miniTest45.cpp:: output = 0;
+miniTest45.cpp:: };
+miniTest45.cpp:: }
+miniTest45.cpp:: ;
+miniTest45.cpp:: _out_0 = output;
+miniTest46.cpp::#include "miniTest46.h"
+miniTest46.cpp::void leq(unsigned char& x, unsigned char& y, unsigned char& _out_0) {
+miniTest46.cpp:: _out_0 = (!x || y);
+miniTest46.cpp::void mergeSort(unsigned char* input, unsigned char& _out_0) {
+miniTest46.cpp:: unsigned char output;
+miniTest46.cpp:: output = 1;
+miniTest46.cpp:: unsigned int k;
+miniTest46.cpp:: k = 0;
+miniTest46.cpp:: {
+miniTest46.cpp:: if (!input[0]) {
+miniTest46.cpp:: {
+miniTest46.cpp:: k = 1;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: };
+miniTest46.cpp:: {
+miniTest46.cpp:: if (!input[1]) {
+miniTest46.cpp:: {
+miniTest46.cpp:: if ((k > 0)) {
+miniTest46.cpp:: {
+miniTest46.cpp:: output = 0;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: k = (k + 1);
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: };
+miniTest46.cpp:: {
+miniTest46.cpp:: if (!input[2]) {
+miniTest46.cpp:: {
+miniTest46.cpp:: if (((k > 0) && (k < 2))) {
+miniTest46.cpp:: {
+miniTest46.cpp:: output = 0;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: k = (k + 1);
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: };
+miniTest46.cpp:: _out_0 = output;
+miniTest46.cpp::void sort(unsigned char* input, unsigned char& _out_0) {
+miniTest46.cpp:: unsigned char output;
+miniTest46.cpp:: output = 1;
+miniTest46.cpp:: if (((input[0] && input[1]) && input[2])) {
+miniTest46.cpp:: {
+miniTest46.cpp:: output = 1;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: ;
+miniTest46.cpp:: if (((((!input[0] && input[1]) && input[2]) || ((input[0] && !input[1]) && input[2])) || ((input[0] && input[1]) && !input[2]))) {
+miniTest46.cpp:: {
+miniTest46.cpp:: output = 1;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: ;
+miniTest46.cpp:: if (((((input[0] && !input[1]) && !input[2]) || ((!input[0] && input[1]) && !input[2])) || ((!input[0] && !input[1]) && input[2]))) {
+miniTest46.cpp:: {
+miniTest46.cpp:: output = 0;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: ;
+miniTest46.cpp:: if (((!input[0] && !input[1]) && !input[2])) {
+miniTest46.cpp:: {
+miniTest46.cpp:: output = 0;
+miniTest46.cpp:: };
+miniTest46.cpp:: }
+miniTest46.cpp:: ;
+miniTest46.cpp:: _out_0 = output;
+miniTest47.cpp::#include "miniTest47.h"
+miniTest47.cpp::void sort(unsigned char* input, unsigned char& _out_0) {
+miniTest47.cpp:: unsigned char k;
+miniTest47.cpp:: k = 1;
+miniTest47.cpp:: if (input[0]) {
+miniTest47.cpp:: k = 0;
+miniTest47.cpp:: }
+miniTest47.cpp:: k = (k & input[0]);
+miniTest47.cpp:: unsigned int x;
+miniTest47.cpp:: x = 3;
+miniTest47.cpp:: if (k) {
+miniTest47.cpp:: x = 2;
+miniTest47.cpp:: }
+miniTest47.cpp:: _out_0 = input[x];
+miniTest47.cpp::void MergeSort(unsigned char* input, unsigned char& _out_0) {
+miniTest47.cpp:: _out_0 = input[3];
+miniTest49.cpp::#include "miniTest49.h"
+miniTest49.cpp::void intToBit(unsigned int& v_0, unsigned char* _out_0) {
+miniTest49.cpp:: unsigned int v;
+miniTest49.cpp:: v = v_0;
+miniTest49.cpp:: unsigned char output[4];
+miniTest49.cpp:: for (unsigned int i = 0; (i < 4); ++i) {
+miniTest49.cpp:: {
+miniTest49.cpp:: output[i] = ((v % 2) > 0);
+miniTest49.cpp:: v = (v / 2);
+miniTest49.cpp:: };
+miniTest49.cpp:: };
+miniTest49.cpp:: _out_0 = output;
+miniTest49.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest49.cpp:: unsigned char tmp[4];
+miniTest49.cpp:: tmp = {1,1,0,0};
+miniTest49.cpp:: _out_0 = (in + {1,1,0,0});
+miniTest49.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest49.cpp:: unsigned int tmp[16] = {3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2};
+miniTest49.cpp:: unsigned char _ret_0[4];
+miniTest49.cpp:: unsigned int _ret_1;
+miniTest49.cpp:: _ret_1 = tmp[((unsigned int)(in))];
+miniTest49.cpp:: intToBit(_ret_1, _ret_0);
+miniTest49.cpp:: _out_0 = _ret_0;
+miniTest5.cpp::#include "miniTest5.h"
+miniTest5.cpp::void foo(unsigned char* ina, unsigned char& _out_0) {
+miniTest5.cpp:: _out_0 = ina[null];
+miniTest5.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest5.cpp:: unsigned char _ret_0;
+miniTest5.cpp:: {
+miniTest5.cpp:: unsigned char ina[4] = in;
+miniTest5.cpp:: {
+miniTest5.cpp:: _out_0 = ina[2];
+miniTest5.cpp:: };
+miniTest5.cpp:: _ret_0 = _out_0;
+miniTest5.cpp:: };
+miniTest5.cpp:: unsigned char _ret_1;
+miniTest5.cpp:: {
+miniTest5.cpp:: unsigned char ina[4] = in;
+miniTest5.cpp:: {
+miniTest5.cpp:: _out_0 = ina[3];
+miniTest5.cpp:: };
+miniTest5.cpp:: _ret_1 = _out_0;
+miniTest5.cpp:: };
+miniTest5.cpp:: _out_0 = (_ret_0 ^ _ret_1);
+miniTest5.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest5.cpp:: _out_0 = (in[2] ^ in[3]);
+miniTest50.cpp::#include "miniTest50.h"
+miniTest50.cpp::void reverseSketch(unsigned char* in, unsigned char& _out_0) {
+miniTest50.cpp:: unsigned int t;
+miniTest50.cpp:: t = 0;
+miniTest50.cpp:: if (in[0]) {
+miniTest50.cpp:: {
+miniTest50.cpp:: t = 7;
+miniTest50.cpp:: };
+miniTest50.cpp:: } else {
+miniTest50.cpp:: {
+miniTest50.cpp:: t = 6;
+miniTest50.cpp:: };
+miniTest50.cpp:: }
+miniTest50.cpp:: _out_0 = in[(t % 5)];
+miniTest50.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest50.cpp:: unsigned int t;
+miniTest50.cpp:: t = 0;
+miniTest50.cpp:: if (in[0]) {
+miniTest50.cpp:: {
+miniTest50.cpp:: t = 5;
+miniTest50.cpp:: };
+miniTest50.cpp:: } else {
+miniTest50.cpp:: {
+miniTest50.cpp:: t = 4;
+miniTest50.cpp:: };
+miniTest50.cpp:: }
+miniTest50.cpp:: _out_0 = in[(t % 3)];
+miniTest51.cpp::#include "miniTest51.h"
+miniTest51.cpp::void reverseSketch(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
+miniTest51.cpp:: unsigned int fu[8];
+miniTest51.cpp:: {
+miniTest51.cpp:: unsigned int i = 0;
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[0] = 0;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[1] = 1;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[2] = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[3] = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[4] = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[5] = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[6] = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: {
+miniTest51.cpp:: {
+miniTest51.cpp:: fu[7] = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: };
+miniTest51.cpp:: unsigned int idx1;
+miniTest51.cpp:: idx1 = ((unsigned int)(in));
+miniTest51.cpp:: unsigned int idx;
+miniTest51.cpp:: idx = fu[idx1];
+miniTest51.cpp:: _out_0 = in2[idx];
+miniTest51.cpp::void reverse(unsigned char* in, unsigned char* in2, unsigned char& _out_0) {
+miniTest51.cpp:: unsigned int idx1;
+miniTest51.cpp:: idx1 = ((unsigned int)(in));
+miniTest51.cpp:: unsigned int idx;
+miniTest51.cpp:: idx = idx1;
+miniTest51.cpp:: if ((idx1 > 2)) {
+miniTest51.cpp:: {
+miniTest51.cpp:: idx = 2;
+miniTest51.cpp:: };
+miniTest51.cpp:: }
+miniTest51.cpp:: _out_0 = in2[idx];
+miniTest52.cpp::#include "miniTest52.h"
+miniTest52.cpp::void intToBit(unsigned int& v_0, unsigned char* _out_0) {
+miniTest52.cpp:: unsigned int v;
+miniTest52.cpp:: v = v_0;
+miniTest52.cpp:: unsigned char output[4];
+miniTest52.cpp:: for (unsigned int i = 0; (i < 4); ++i) {
+miniTest52.cpp:: {
+miniTest52.cpp:: output[i] = ((v % 2) > 0);
+miniTest52.cpp:: v = (v / 2);
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: _out_0 = output;
+miniTest52.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest52.cpp:: unsigned char out[4];
+miniTest52.cpp:: unsigned char Ta[64];
+miniTest52.cpp:: Ta = {1,0,0,0,1,1,1,1,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,1,0,1,1,0,0,1,0,0,0,1,1,1,1,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,1,0,1,1,0,0};
+miniTest52.cpp:: unsigned char Tb[64];
+miniTest52.cpp:: Tb = {0,0,1,0,1,1,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,0,1,0,1,0,1,1,0,0,1,0,0,0,1,1,1,1,0,0,1,1,0,1,0,1,0};
+miniTest52.cpp:: unsigned char a[4];
+miniTest52.cpp:: unsigned char b[4];
+miniTest52.cpp:: {
+miniTest52.cpp:: unsigned int i = 0;
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: a[0] = in[0];
+miniTest52.cpp:: b[0] = in[4];
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: a[1] = in[1];
+miniTest52.cpp:: b[1] = in[5];
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: a[2] = in[2];
+miniTest52.cpp:: b[2] = in[6];
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: a[3] = in[3];
+miniTest52.cpp:: b[3] = in[7];
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: unsigned int inva;
+miniTest52.cpp:: inva = ((unsigned int)(a));
+miniTest52.cpp:: unsigned int invb;
+miniTest52.cpp:: invb = ((unsigned int)(b));
+miniTest52.cpp:: {
+miniTest52.cpp:: unsigned int i = 0;
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: out[0] = (Ta[((inva * 4) + 0)] ^ Tb[((invb * 4) + 0)]);
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: out[1] = (Ta[((inva * 4) + 1)] ^ Tb[((invb * 4) + 1)]);
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: out[2] = (Ta[((inva * 4) + 2)] ^ Tb[((invb * 4) + 2)]);
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: {
+miniTest52.cpp:: {
+miniTest52.cpp:: out[3] = (Ta[((inva * 4) + 3)] ^ Tb[((invb * 4) + 3)]);
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: _out_0 = out;
+miniTest52.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest52.cpp:: unsigned int tmp[16] = {3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2};
+miniTest52.cpp:: unsigned char a[4];
+miniTest52.cpp:: unsigned char b[4];
+miniTest52.cpp:: for (unsigned int i = 0; (i < 4); ++i) {
+miniTest52.cpp:: {
+miniTest52.cpp:: a[i] = in[i];
+miniTest52.cpp:: b[i] = in[(4 + i)];
+miniTest52.cpp:: };
+miniTest52.cpp:: };
+miniTest52.cpp:: unsigned char _ret_0[4];
+miniTest52.cpp:: unsigned int _ret_1;
+miniTest52.cpp:: _ret_1 = tmp[((unsigned int)(a))];
+miniTest52.cpp:: intToBit(_ret_1, _ret_0);
+miniTest52.cpp:: unsigned char out[4];
+miniTest52.cpp:: out = _ret_0;
+miniTest52.cpp:: unsigned char _ret_2[4];
+miniTest52.cpp:: unsigned int _ret_3;
+miniTest52.cpp:: _ret_3 = tmp[((unsigned int)(b))];
+miniTest52.cpp:: intToBit(_ret_3, _ret_2);
+miniTest52.cpp:: unsigned char __sa0[4];
+miniTest52.cpp:: __sa0 = (out >> 1);
+miniTest52.cpp:: _out_0 = (__sa0 ^ _ret_2);
+miniTest53.cpp::#include "miniTest53.h"
+miniTest53.cpp::void miniTest(unsigned char* in, unsigned char* _out_0) {
+miniTest53.cpp:: unsigned char tmp[3] = {0,1,1};
+miniTest53.cpp:: _out_0 = (in ^ tmp);
+miniTest53.cpp::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
+miniTest53.cpp:: unsigned char tmp[3] = {0,0,0};
+miniTest53.cpp:: unsigned char two[2];
+miniTest53.cpp:: two = {1,1};
+miniTest53.cpp:: unsigned char __sa0[2];
+miniTest53.cpp:: __sa0 = {1,1};
+miniTest53.cpp:: tmp[1::2] = {1,1};
+miniTest53.cpp:: _out_0 = (in ^ tmp);
+miniTest54.cpp::#include "miniTest54.h"
+miniTest54.cpp::void tableSum(unsigned char* in1, unsigned char* in2, unsigned char* _out_0) {
+miniTest54.cpp:: unsigned int exp;
+miniTest54.cpp:: exp = 16;
+miniTest54.cpp:: unsigned char tmp[512];
+miniTest54.cpp:: tmp = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+miniTest54.cpp:: unsigned char output[32];
+miniTest54.cpp:: unsigned char input[4];
+miniTest54.cpp:: unsigned char __sa0[2];
+miniTest54.cpp:: __sa0 = in1;
+miniTest54.cpp:: input[0::2] = __sa0;
+miniTest54.cpp:: unsigned char __sa1[2];
+miniTest54.cpp:: __sa1 = in2;
+miniTest54.cpp:: input[2::2] = __sa1;
+miniTest54.cpp:: unsigned int idx;
+miniTest54.cpp:: idx = ((unsigned int)(input));
+miniTest54.cpp:: unsigned char __sa2[32];
+miniTest54.cpp:: __sa2 = tmp[(idx * 32)::32];
+miniTest54.cpp:: output = __sa2;
+miniTest54.cpp:: _out_0 = output;
+miniTest54.cpp::void sum(unsigned char* in1, unsigned char* in2, unsigned char* _out_0) {
+miniTest54.cpp:: _out_0 = (in1 + in2);
+miniTest55.cpp::#include "miniTest55.h"
+miniTest55.cpp::void miniTest(unsigned char* in, unsigned char* _out_0) {
+miniTest55.cpp:: unsigned char tmp[3] = {0,1,0};
+miniTest55.cpp:: _out_0 = (in ^ tmp);
+miniTest55.cpp::void miniTestSK(unsigned char* in, unsigned char* _out_0) {
+miniTest55.cpp:: unsigned char tmp[3] = {0,0,0};
+miniTest55.cpp:: unsigned char two[5];
+miniTest55.cpp:: two = {1,0,0,0,0};
+miniTest55.cpp:: unsigned char __sa0[2];
+miniTest55.cpp:: __sa0 = two[0::2];
+miniTest55.cpp:: unsigned char __sa1[2];
+miniTest55.cpp:: __sa1 = {1,0};
+miniTest55.cpp:: tmp[1::2] = {1,0};
+miniTest55.cpp:: _out_0 = (in ^ tmp);
+miniTest56.cpp::#include "miniTest56.h"
+miniTest56.cpp::void isIT(unsigned char* in, unsigned char& _out_0) {
+miniTest56.cpp:: unsigned char ret;
+miniTest56.cpp:: ret = 1;
+miniTest56.cpp:: for (unsigned int i = 0; (i < 32); i++) {
+miniTest56.cpp:: ret = (ret & !in[i]);
+miniTest56.cpp:: };
+miniTest56.cpp:: _out_0 = ret;
+miniTest56.cpp::void normalRoundsk(unsigned char* in, unsigned char* _out_0) {
+miniTest56.cpp:: unsigned char output[32];
+miniTest56.cpp:: output = 0;
+miniTest56.cpp:: unsigned char _ret_0;
+miniTest56.cpp:: {
+miniTest56.cpp:: {
+miniTest56.cpp:: unsigned char ret;
+miniTest56.cpp:: ret = 1;
+miniTest56.cpp:: {
+miniTest56.cpp:: unsigned int i = 0;
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (1 & !in[0]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[1]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[2]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[3]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[4]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[5]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[6]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[7]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[8]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[9]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[10]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[11]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[12]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[13]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[14]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[15]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[16]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[17]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[18]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[19]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[20]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[21]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[22]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[23]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[24]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[25]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[26]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[27]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[28]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[29]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[30]);
+miniTest56.cpp:: };
+miniTest56.cpp:: {
+miniTest56.cpp:: ret = (ret & !in[31]);
+miniTest56.cpp:: };
+miniTest56.cpp:: };
+miniTest56.cpp:: _out_0 = ret;
+miniTest56.cpp:: };
+miniTest56.cpp:: _ret_0 = _out_0;
+miniTest56.cpp:: };
+miniTest56.cpp:: if (_ret_0) {
+miniTest56.cpp:: {
+miniTest56.cpp:: output = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+miniTest56.cpp:: };
+miniTest56.cpp:: }
+miniTest56.cpp:: _out_0 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+miniTest56.cpp::void normalRound(unsigned char* in, unsigned char* _out_0) {
+miniTest56.cpp:: unsigned char output[32];
+miniTest56.cpp:: output = 0;
+miniTest56.cpp:: unsigned char _ret_0;
+miniTest56.cpp:: isIT(in, _ret_0);
+miniTest56.cpp:: if (_ret_0) {
+miniTest56.cpp:: {
+miniTest56.cpp:: output = 1;
+miniTest56.cpp:: };
+miniTest56.cpp:: }
+miniTest56.cpp:: _out_0 = output;
+miniTest57.cpp::#include "miniTest57.h"
+miniTest57.cpp::void miniTest(unsigned char* in, unsigned char& _out_0) {
+miniTest57.cpp:: unsigned char x;
+miniTest57.cpp:: if (!in[0]) {
+miniTest57.cpp:: {
+miniTest57.cpp:: x = 1;
+miniTest57.cpp:: };
+miniTest57.cpp:: } else {
+miniTest57.cpp:: {
+miniTest57.cpp:: x = in[2];
+miniTest57.cpp:: };
+miniTest57.cpp:: }
+miniTest57.cpp:: _out_0 = in[x];
+miniTest57.cpp::void miniTestSK(unsigned char* in, unsigned char& _out_0) {
+miniTest57.cpp:: unsigned char x;
+miniTest57.cpp:: if (in[0]) {
+miniTest57.cpp:: {
+miniTest57.cpp:: x = in[2];
+miniTest57.cpp:: };
+miniTest57.cpp:: } else {
+miniTest57.cpp:: {
+miniTest57.cpp:: x = 1;
+miniTest57.cpp:: };
+miniTest57.cpp:: }
+miniTest57.cpp:: _out_0 = in[x];
+miniTest6.cpp::#include "miniTest6.h"
+miniTest6.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest6.cpp:: _out_0 = ((in + {0,1,0,0}) + in);
+miniTest6.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest6.cpp:: unsigned char tmp[4] = {0,1,0,0};
+miniTest6.cpp:: _out_0 = ((in + tmp) + in);
+miniTest60.cpp::#include "miniTest60.h"
+miniTest60.cpp::void FOadd(unsigned char* a, unsigned char* b, unsigned char& tt, unsigned char* _out_0) {
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char m1[5];
+miniTest60.cpp:: m1 = 0;
+miniTest60.cpp:: unsigned char m2[5];
+miniTest60.cpp:: m2 = 0;
+miniTest60.cpp:: unsigned char t1[5] = {0,0,1,1,1};
+miniTest60.cpp:: unsigned char t2[5] = {0,0,0,1,1};
+miniTest60.cpp:: unsigned char __sa2[4];
+miniTest60.cpp:: __sa2 = a[0::4];
+miniTest60.cpp:: unsigned char __sa3[4];
+miniTest60.cpp:: __sa3 = __sa2;
+miniTest60.cpp:: m1[0::4] = __sa3;
+miniTest60.cpp:: unsigned char __sa4[4];
+miniTest60.cpp:: __sa4 = 0;
+miniTest60.cpp:: m2[0::4] = __sa4;
+miniTest60.cpp:: if (tt) {
+miniTest60.cpp:: {
+miniTest60.cpp:: m2 = t1;
+miniTest60.cpp:: };
+miniTest60.cpp:: } else {
+miniTest60.cpp:: {
+miniTest60.cpp:: m2 = t2;
+miniTest60.cpp:: };
+miniTest60.cpp:: }
+miniTest60.cpp:: m1 = (m1 + m2);
+miniTest60.cpp:: unsigned char __sa0[5];
+miniTest60.cpp:: __sa0 = (m1 >> 2);
+miniTest60.cpp:: m1 = __sa0;
+miniTest60.cpp:: if (!m1[4]) {
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char __sa1[5];
+miniTest60.cpp:: __sa1 = (m1 >> 1);
+miniTest60.cpp:: m1 = __sa1;
+miniTest60.cpp:: };
+miniTest60.cpp:: }
+miniTest60.cpp:: unsigned char __sa5[4];
+miniTest60.cpp:: __sa5 = m1[1::4];
+miniTest60.cpp:: _out_0 = __sa5;
+miniTest60.cpp:: };
+miniTest60.cpp::void floatEquals(unsigned char* a, unsigned char* b, unsigned char& _out_0) {
+miniTest60.cpp:: unsigned char ret;
+miniTest60.cpp:: ret = 1;
+miniTest60.cpp:: for (unsigned int i = 0; (i < 4); i++) {
+miniTest60.cpp:: if ((a[i] != b[i])) {
+miniTest60.cpp:: ret = 0;
+miniTest60.cpp:: }
+miniTest60.cpp:: };
+miniTest60.cpp:: _out_0 = ret;
+miniTest60.cpp::void alwaysOne(unsigned char& x, unsigned char& _out_0) {
+miniTest60.cpp:: _out_0 = 1;
+miniTest60.cpp::void test2(unsigned char& x, unsigned char& _out_0) {
+miniTest60.cpp:: unsigned char a[9] = {0,0,0,1,0,0,0,1,1};
+miniTest60.cpp:: unsigned char b[9] = {0,0,0,1,0,0,0,1,0};
+miniTest60.cpp:: unsigned char tt;
+miniTest60.cpp:: tt = 0;
+miniTest60.cpp:: {
+miniTest60.cpp:: b[2] = 1;
+miniTest60.cpp:: };
+miniTest60.cpp:: unsigned char c[4] = {0,0,0,1};
+miniTest60.cpp:: unsigned char _ret_0[4];
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char a[9] = b;
+miniTest60.cpp:: unsigned char b[9] = a;
+miniTest60.cpp:: unsigned char tt = 0;
+miniTest60.cpp:: {
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char m1[5];
+miniTest60.cpp:: m1 = 0;
+miniTest60.cpp:: unsigned char m2[5];
+miniTest60.cpp:: m2 = 0;
+miniTest60.cpp:: unsigned char t1[5] = {0,0,1,1,1};
+miniTest60.cpp:: unsigned char t2[5] = {0,0,0,1,1};
+miniTest60.cpp:: unsigned char __sa2[4];
+miniTest60.cpp:: __sa2 = a[0::4];
+miniTest60.cpp:: unsigned char __sa3[4];
+miniTest60.cpp:: __sa3 = {0,0,1,1};
+miniTest60.cpp:: m1[0::4] = {0,0,1,1};
+miniTest60.cpp:: unsigned char __sa4[4];
+miniTest60.cpp:: __sa4 = 0;
+miniTest60.cpp:: m2[0::4] = {0,0,0,0};
+miniTest60.cpp:: {
+miniTest60.cpp:: {
+miniTest60.cpp:: m2 = {0,0,0,1,1};
+miniTest60.cpp:: };
+miniTest60.cpp:: };
+miniTest60.cpp:: m1 = (m1 + {0,0,0,1,1});
+miniTest60.cpp:: unsigned char __sa0[5];
+miniTest60.cpp:: __sa0 = (m1 >> 2);
+miniTest60.cpp:: m1 = __sa0;
+miniTest60.cpp:: if (!m1[4]) {
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char __sa1[5];
+miniTest60.cpp:: __sa1 = (m1 >> 1);
+miniTest60.cpp:: m1 = __sa1;
+miniTest60.cpp:: };
+miniTest60.cpp:: }
+miniTest60.cpp:: unsigned char __sa5[4];
+miniTest60.cpp:: __sa5 = m1[1::4];
+miniTest60.cpp:: _out_0 = __sa5;
+miniTest60.cpp:: };
+miniTest60.cpp:: };
+miniTest60.cpp:: _ret_0 = _out_0;
+miniTest60.cpp:: };
+miniTest60.cpp:: unsigned char _ret_1;
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char a[4] = _ret_0;
+miniTest60.cpp:: unsigned char b[4] = c;
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned char ret;
+miniTest60.cpp:: ret = 1;
+miniTest60.cpp:: {
+miniTest60.cpp:: unsigned int i = 0;
+miniTest60.cpp:: {
+miniTest60.cpp:: };
+miniTest60.cpp:: {
+miniTest60.cpp:: if ((a[1] != 0)) {
+miniTest60.cpp:: ret = 0;
+miniTest60.cpp:: }
+miniTest60.cpp:: };
+miniTest60.cpp:: {
+miniTest60.cpp:: if ((a[2] != 0)) {
+miniTest60.cpp:: ret = 0;
+miniTest60.cpp:: }
+miniTest60.cpp:: };
+miniTest60.cpp:: {
+miniTest60.cpp:: if ((a[3] != 1)) {
+miniTest60.cpp:: ret = 0;
+miniTest60.cpp:: }
+miniTest60.cpp:: };
+miniTest60.cpp:: };
+miniTest60.cpp:: _out_0 = ret;
+miniTest60.cpp:: };
+miniTest60.cpp:: _ret_1 = _out_0;
+miniTest60.cpp:: };
+miniTest60.cpp:: _out_0 = _ret_1;
+miniTest61.cpp::#include "miniTest61.h"
+miniTest61.cpp::void alwaysOne(unsigned char* x, unsigned char& _out_0) {
+miniTest61.cpp:: _out_0 = x[2];
+miniTest61.cpp::void test2(unsigned char* x_0, unsigned char& _out_0) {
+miniTest61.cpp:: unsigned char x[3];
+miniTest61.cpp:: x = x_0;
+miniTest61.cpp:: unsigned char tt;
+miniTest61.cpp:: tt = 1;
+miniTest61.cpp:: unsigned char uu;
+miniTest61.cpp:: uu = 1;
+miniTest61.cpp:: x[1] = (0 ^ x[2]);
+miniTest61.cpp:: _out_0 = x[1];
+miniTest62.cpp::#include "miniTest62.h"
+miniTest62.cpp::void floatOne(unsigned char* _out_0) {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: ret[5] = 1;
+miniTest62.cpp:: ret[3] = 1;
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp::void FOnegateE(unsigned char* x, unsigned char* _out_0) {
+miniTest62.cpp:: unsigned char ret[2];
+miniTest62.cpp:: for (unsigned int i = 0; (i < 2); i++) {
+miniTest62.cpp:: ret[i] = !x[i];
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp::void FOsubtractE(unsigned char* e1, unsigned char* e2, unsigned char* _out_0) {
+miniTest62.cpp:: unsigned char _ret_0[2];
+miniTest62.cpp:: FOnegateE(e2, _ret_0);
+miniTest62.cpp:: unsigned char ret[2];
+miniTest62.cpp:: ret = _ret_0;
+miniTest62.cpp:: ret = (ret + e1);
+miniTest62.cpp:: unsigned char one[2];
+miniTest62.cpp:: one = 0;
+miniTest62.cpp:: one[0] = 1;
+miniTest62.cpp:: _out_0 = (ret + one);
+miniTest62.cpp::void FOtwocomp(unsigned char* x, unsigned char* _out_0) {
+miniTest62.cpp:: unsigned char ret[5];
+miniTest62.cpp:: for (unsigned int i = 0; (i < 5); i++) {
+miniTest62.cpp:: ret[i] = !x[i];
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char one[5];
+miniTest62.cpp:: one = 0;
+miniTest62.cpp:: one[0] = 1;
+miniTest62.cpp:: _out_0 = (ret + one);
+miniTest62.cpp::void floatIsZero(unsigned char* x, unsigned char& _out_0) {
+miniTest62.cpp:: _out_0 = !x[3];
+miniTest62.cpp::void floatAbsLess(unsigned char* a, unsigned char* b, unsigned char& _out_0) {
+miniTest62.cpp:: unsigned char ret;
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: unsigned char eq;
+miniTest62.cpp:: eq = 1;
+miniTest62.cpp:: if (!a[3]) {
+miniTest62.cpp:: ret = 1;
+miniTest62.cpp:: } else {
+miniTest62.cpp:: {
+miniTest62.cpp:: for (unsigned int i = 5; (i >= 0); i--) {
+miniTest62.cpp:: {
+miniTest62.cpp:: if ((eq && (a[i] != b[i]))) {
+miniTest62.cpp:: {
+miniTest62.cpp:: ret = b[i];
+miniTest62.cpp:: eq = 0;
+miniTest62.cpp:: };
+miniTest62.cpp:: }
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: }
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp::void FOadd(unsigned char* a, unsigned char* b, unsigned char* _out_0) {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: unsigned char one[2];
+miniTest62.cpp:: one = 0;
+miniTest62.cpp:: one[0] = 1;
+miniTest62.cpp:: unsigned char minusone[2];
+miniTest62.cpp:: minusone = 0;
+miniTest62.cpp:: for (unsigned int i = 0; (i < 2); i++) {
+miniTest62.cpp:: minusone[i] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char e1[2];
+miniTest62.cpp:: unsigned char __sa0[2];
+miniTest62.cpp:: __sa0 = a[4::2];
+miniTest62.cpp:: e1 = __sa0;
+miniTest62.cpp:: unsigned char e2[2];
+miniTest62.cpp:: unsigned char __sa1[2];
+miniTest62.cpp:: __sa1 = b[4::2];
+miniTest62.cpp:: e2 = __sa1;
+miniTest62.cpp:: unsigned char _ret_0[2];
+miniTest62.cpp:: FOsubtractE(e1, e2, _ret_0);
+miniTest62.cpp:: unsigned char edif[2];
+miniTest62.cpp:: edif = _ret_0;
+miniTest62.cpp:: unsigned char over;
+miniTest62.cpp:: over = 0;
+miniTest62.cpp:: unsigned int sh;
+miniTest62.cpp:: sh = 0;
+miniTest62.cpp:: unsigned int t;
+miniTest62.cpp:: t = 1;
+miniTest62.cpp:: {
+miniTest62.cpp:: if (edif[0]) {
+miniTest62.cpp:: sh = (sh + t);
+miniTest62.cpp:: }
+miniTest62.cpp:: t = (t * 2);
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: if (edif[1]) {
+miniTest62.cpp:: sh = (sh + t);
+miniTest62.cpp:: }
+miniTest62.cpp:: t = (t * 2);
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char m1[5];
+miniTest62.cpp:: m1 = 0;
+miniTest62.cpp:: unsigned char m2[5];
+miniTest62.cpp:: m2 = 0;
+miniTest62.cpp:: unsigned char __sa2[4];
+miniTest62.cpp:: __sa2 = a[0::4];
+miniTest62.cpp:: unsigned char __sa3[4];
+miniTest62.cpp:: __sa3 = __sa2;
+miniTest62.cpp:: m1[0::4] = __sa3;
+miniTest62.cpp:: unsigned char __sa4[4];
+miniTest62.cpp:: __sa4 = b[0::4];
+miniTest62.cpp:: unsigned char __sa5[4];
+miniTest62.cpp:: __sa5 = __sa4;
+miniTest62.cpp:: m2[0::4] = __sa5;
+miniTest62.cpp:: m2 = (m2 << sh);
+miniTest62.cpp:: if (!b[6]) {
+miniTest62.cpp:: unsigned char _ret_1[5];
+miniTest62.cpp:: FOtwocomp(m2, _ret_1);
+miniTest62.cpp:: m2 = _ret_1;
+miniTest62.cpp:: }
+miniTest62.cpp:: m1 = (m1 + m2);
+miniTest62.cpp:: if (!m1[3]) {
+miniTest62.cpp:: {
+miniTest62.cpp:: e1 = (e1 + minusone);
+miniTest62.cpp:: };
+miniTest62.cpp:: }
+miniTest62.cpp:: unsigned char __sa6[2];
+miniTest62.cpp:: __sa6 = e1;
+miniTest62.cpp:: ret[4::2] = __sa6;
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp::void floatAdd(unsigned char* a, unsigned char* b, unsigned char* _out_0) {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: unsigned char _ret_0;
+miniTest62.cpp:: floatIsZero(b, _ret_0);
+miniTest62.cpp:: if (_ret_0) {
+miniTest62.cpp:: {
+miniTest62.cpp:: ret = a;
+miniTest62.cpp:: };
+miniTest62.cpp:: } else {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char _ret_1[7];
+miniTest62.cpp:: FOadd(a, b, _ret_1);
+miniTest62.cpp:: ret = _ret_1;
+miniTest62.cpp:: };
+miniTest62.cpp:: }
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp::void alwaysOne(unsigned char& x, unsigned char& _out_0) {
+miniTest62.cpp:: _out_0 = 1;
+miniTest62.cpp::void floatEqualsE(unsigned char* a, unsigned char* b, unsigned char& _out_0) {
+miniTest62.cpp:: unsigned char ret;
+miniTest62.cpp:: ret = 1;
+miniTest62.cpp:: for (unsigned int i = 4; (i < 6); i++) {
+miniTest62.cpp:: if ((a[i] != b[i])) {
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: }
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp::void test2(unsigned char& x, unsigned char& _out_0) {
+miniTest62.cpp:: unsigned char _ret_0[7];
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: ret[5] = 1;
+miniTest62.cpp:: ret[3] = 1;
+miniTest62.cpp:: _out_0 = {0,0,0,1,0,1,0};
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_0 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char a[7];
+miniTest62.cpp:: a = {0,0,0,1,0,1,0};
+miniTest62.cpp:: a[4] = 1;
+miniTest62.cpp:: a[6] = 1;
+miniTest62.cpp:: unsigned char _ret_1[7];
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: ret[5] = 1;
+miniTest62.cpp:: ret[3] = 1;
+miniTest62.cpp:: _out_0 = {0,0,0,1,0,1,0};
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_1 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char b[7];
+miniTest62.cpp:: b = {0,0,0,1,0,1,0};
+miniTest62.cpp:: b[5] = 0;
+miniTest62.cpp:: b[6] = 0;
+miniTest62.cpp:: unsigned char _ret_2[7];
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: ret[5] = 1;
+miniTest62.cpp:: ret[3] = 1;
+miniTest62.cpp:: _out_0 = {0,0,0,1,0,1,0};
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_2 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char c[7];
+miniTest62.cpp:: c = {0,0,0,1,0,1,0};
+miniTest62.cpp:: c[6] = 1;
+miniTest62.cpp:: unsigned char _ret_3[7];
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: unsigned char _ret_0;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char x[7] = b;
+miniTest62.cpp:: {
+miniTest62.cpp:: _out_0 = 0;
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_0 = 0;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char _ret_1[7];
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[7];
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: unsigned char one[2];
+miniTest62.cpp:: one = 0;
+miniTest62.cpp:: one[0] = 1;
+miniTest62.cpp:: unsigned char minusone[2];
+miniTest62.cpp:: minusone = 0;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned int i = 0;
+miniTest62.cpp:: {
+miniTest62.cpp:: minusone[0] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: minusone[1] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char e1[2];
+miniTest62.cpp:: unsigned char __sa0[2];
+miniTest62.cpp:: __sa0 = a[4::2];
+miniTest62.cpp:: e1 = {1,1};
+miniTest62.cpp:: unsigned char e2[2];
+miniTest62.cpp:: unsigned char __sa1[2];
+miniTest62.cpp:: __sa1 = b[4::2];
+miniTest62.cpp:: e2 = {0,0};
+miniTest62.cpp:: unsigned char _ret_0[2];
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char _ret_0[2];
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char x[2] = e2;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[2];
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned int i = 0;
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[0] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[1] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = {1,1};
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_0 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char ret[2];
+miniTest62.cpp:: ret = {1,1};
+miniTest62.cpp:: ret = ({1,1} + {1,1});
+miniTest62.cpp:: unsigned char one[2];
+miniTest62.cpp:: one = 0;
+miniTest62.cpp:: one[0] = 1;
+miniTest62.cpp:: _out_0 = ({0,1} + {1,0});
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_0 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char edif[2];
+miniTest62.cpp:: edif = {1,1};
+miniTest62.cpp:: unsigned char over;
+miniTest62.cpp:: over = 0;
+miniTest62.cpp:: unsigned int sh;
+miniTest62.cpp:: sh = 0;
+miniTest62.cpp:: unsigned int t;
+miniTest62.cpp:: t = 1;
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: sh = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: t = 2;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: {
+miniTest62.cpp:: sh = 3;
+miniTest62.cpp:: };
+miniTest62.cpp:: t = 4;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char m1[5];
+miniTest62.cpp:: m1 = 0;
+miniTest62.cpp:: unsigned char m2[5];
+miniTest62.cpp:: m2 = 0;
+miniTest62.cpp:: unsigned char __sa2[4];
+miniTest62.cpp:: __sa2 = a[0::4];
+miniTest62.cpp:: unsigned char __sa3[4];
+miniTest62.cpp:: __sa3 = {0,0,0,1};
+miniTest62.cpp:: m1[0::4] = {0,0,0,1};
+miniTest62.cpp:: unsigned char __sa4[4];
+miniTest62.cpp:: __sa4 = b[0::4];
+miniTest62.cpp:: unsigned char __sa5[4];
+miniTest62.cpp:: __sa5 = {0,0,0,1};
+miniTest62.cpp:: m2[0::4] = {0,0,0,1};
+miniTest62.cpp:: m2 = (m2 << 3);
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char _ret_1[5];
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char x[5] = m2;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret[5];
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned int i = 0;
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[0] = !x[0];
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[1] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[2] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[3] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: ret[4] = 1;
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char one[5];
+miniTest62.cpp:: one = 0;
+miniTest62.cpp:: one[0] = 1;
+miniTest62.cpp:: _out_0 = (ret + {1,0,0,0,0});
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_1 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: m2 = _ret_1;
+miniTest62.cpp:: };
+miniTest62.cpp:: m1 = (m1 + m2);
+miniTest62.cpp:: if (!m1[3]) {
+miniTest62.cpp:: {
+miniTest62.cpp:: e1 = ({1,1} + {1,1});
+miniTest62.cpp:: };
+miniTest62.cpp:: }
+miniTest62.cpp:: unsigned char __sa6[2];
+miniTest62.cpp:: __sa6 = e1;
+miniTest62.cpp:: ret[4::2] = __sa6;
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_1 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: ret = _ret_1;
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_3 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: unsigned char _ret_4;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char a[7] = _ret_3;
+miniTest62.cpp:: unsigned char b[7] = c;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned char ret;
+miniTest62.cpp:: ret = 1;
+miniTest62.cpp:: {
+miniTest62.cpp:: unsigned int i = 4;
+miniTest62.cpp:: {
+miniTest62.cpp:: if ((a[4] != 0)) {
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: }
+miniTest62.cpp:: };
+miniTest62.cpp:: {
+miniTest62.cpp:: if ((a[5] != 1)) {
+miniTest62.cpp:: ret = 0;
+miniTest62.cpp:: }
+miniTest62.cpp:: };
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = ret;
+miniTest62.cpp:: };
+miniTest62.cpp:: _ret_4 = _out_0;
+miniTest62.cpp:: };
+miniTest62.cpp:: _out_0 = _ret_4;
+miniTest63.cpp::#include "miniTest63.h"
+miniTest63.cpp::void tableSum(unsigned char* in1_0, unsigned char& _out_0) {
+miniTest63.cpp:: unsigned char in1[4];
+miniTest63.cpp:: in1 = in1_0;
+miniTest63.cpp:: unsigned int k;
+miniTest63.cpp:: k = 0;
+miniTest63.cpp:: if (in1[0]) {
+miniTest63.cpp:: {
+miniTest63.cpp:: if (in1[1]) {
+miniTest63.cpp:: {
+miniTest63.cpp:: k = 1;
+miniTest63.cpp:: };
+miniTest63.cpp:: } else {
+miniTest63.cpp:: {
+miniTest63.cpp:: k = 2;
+miniTest63.cpp:: };
+miniTest63.cpp:: }
+miniTest63.cpp:: };
+miniTest63.cpp:: } else {
+miniTest63.cpp:: {
+miniTest63.cpp:: if (in1[1]) {
+miniTest63.cpp:: {
+miniTest63.cpp:: k = 0;
+miniTest63.cpp:: };
+miniTest63.cpp:: } else {
+miniTest63.cpp:: {
+miniTest63.cpp:: k = 1;
+miniTest63.cpp:: };
+miniTest63.cpp:: }
+miniTest63.cpp:: };
+miniTest63.cpp:: }
+miniTest63.cpp:: in1[1] = in1[3];
+miniTest63.cpp:: _out_0 = in1[k];
+miniTest63.cpp::void sum(unsigned char* in1_0, unsigned char& _out_0) {
+miniTest63.cpp:: unsigned char in1[4];
+miniTest63.cpp:: in1 = in1_0;
+miniTest63.cpp:: unsigned char t;
+miniTest63.cpp:: t = in1[0];
+miniTest63.cpp:: unsigned char t2;
+miniTest63.cpp:: t2 = !in1[1];
+miniTest63.cpp:: unsigned int k;
+miniTest63.cpp:: k = t;
+miniTest63.cpp:: unsigned int k2;
+miniTest63.cpp:: k2 = t2;
+miniTest63.cpp:: in1[1] = in1[3];
+miniTest63.cpp:: _out_0 = in1[(k + k2)];
+miniTest64.cpp::#include "miniTest64.h"
+miniTest64.cpp::void tableSum(unsigned char* in, unsigned char& _out_0) {
+miniTest64.cpp:: unsigned char x1;
+miniTest64.cpp:: x1 = (in[1] && in[2]);
+miniTest64.cpp:: unsigned char x2;
+miniTest64.cpp:: x2 = (in[1] && in[2]);
+miniTest64.cpp:: unsigned char x3;
+miniTest64.cpp:: x3 = (x1 ^ x2);
+miniTest64.cpp:: x3 = !x3;
+miniTest64.cpp:: unsigned int f[4] = {3,2,0,1};
+miniTest64.cpp:: f[0] = 0;
+miniTest64.cpp:: f[0] = x3;
+miniTest64.cpp:: unsigned char rv;
+miniTest64.cpp:: rv = 0;
+miniTest64.cpp:: if ((f[0] > 0)) {
+miniTest64.cpp:: {
+miniTest64.cpp:: rv = 1;
+miniTest64.cpp:: };
+miniTest64.cpp:: } else {
+miniTest64.cpp:: {
+miniTest64.cpp:: rv = 0;
+miniTest64.cpp:: };
+miniTest64.cpp:: }
+miniTest64.cpp:: _out_0 = rv;
+miniTest64.cpp::void sum(unsigned char* in, unsigned char& _out_0) {
+miniTest64.cpp:: _out_0 = 1;
+miniTest65.cpp::#include "miniTest65.h"
+miniTest65.cpp::void poly(unsigned char* n, unsigned char* x, unsigned int& _out_0) {
+miniTest65.cpp:: if (((((!n[0] & !n[1]) & !n[2]) & !n[3]) & !n[4])) {
+miniTest65.cpp:: _out_0 = null;
+miniTest65.cpp:: } else {
+miniTest65.cpp:: _out_0 = null;
+miniTest65.cpp:: }
+miniTest65.cpp::void spec(unsigned char* x, unsigned char& _out_0) {
+miniTest65.cpp:: _out_0 = x[2];
+miniTest65.cpp::void p1Sk(unsigned char* x, unsigned char& _out_0) {
+miniTest65.cpp:: unsigned char one[5];
+miniTest65.cpp:: one = 0;
+miniTest65.cpp:: one[0] = 1;
+miniTest65.cpp:: unsigned char two[5];
+miniTest65.cpp:: two = 0;
+miniTest65.cpp:: two[1] = 1;
+miniTest65.cpp:: unsigned char three[5];
+miniTest65.cpp:: three = ({1,0,0,0,0} + {0,1,0,0,0});
+miniTest65.cpp:: unsigned char four[5];
+miniTest65.cpp:: four = ({0,1,0,0,0} + {0,1,0,0,0});
+miniTest65.cpp:: unsigned char five[5];
+miniTest65.cpp:: five = ({0,0,1,0,0} + {1,0,0,0,0});
+miniTest65.cpp:: unsigned int _ret_0;
+miniTest65.cpp:: {
+miniTest65.cpp:: unsigned char n[5] = {1,0,1,0,0};
+miniTest65.cpp:: {
+miniTest65.cpp:: {
+miniTest65.cpp:: _out_0 = 2;
+miniTest65.cpp:: };
+miniTest65.cpp:: };
+miniTest65.cpp:: _ret_0 = 2;
+miniTest65.cpp:: };
+miniTest65.cpp:: unsigned int idx;
+miniTest65.cpp:: idx = 2;
+miniTest65.cpp:: _out_0 = x[2];
+miniTest66.cpp::#include "miniTest66.h"
+miniTest66.cpp::void spec(unsigned char* x, unsigned char& _out_0) {
+miniTest66.cpp:: _out_0 = x[2];
+miniTest66.cpp::void ident2(unsigned char* in, unsigned char* _out_0) {
+miniTest66.cpp:: _out_0 = in;
+miniTest66.cpp::void ident(unsigned char* in, unsigned int& _out_0) {
+miniTest66.cpp:: unsigned char _ret_0[6];
+miniTest66.cpp:: ident2(in, _ret_0);
+miniTest66.cpp:: unsigned char ttt[6];
+miniTest66.cpp:: ttt = _ret_0;
+miniTest66.cpp:: unsigned int idx;
+miniTest66.cpp:: idx = 0;
+miniTest66.cpp:: if (ttt[5]) {
+miniTest66.cpp:: {
+miniTest66.cpp:: idx = 3;
+miniTest66.cpp:: };
+miniTest66.cpp:: } else {
+miniTest66.cpp:: {
+miniTest66.cpp:: idx = null;
+miniTest66.cpp:: };
+miniTest66.cpp:: }
+miniTest66.cpp:: _out_0 = idx;
+miniTest66.cpp::void p1Sk(unsigned char* x, unsigned char& _out_0) {
+miniTest66.cpp:: unsigned char fu[5] = {1,0,1,0,1};
+miniTest66.cpp:: unsigned int _ret_0;
+miniTest66.cpp:: {
+miniTest66.cpp:: unsigned char in[6] = {1,0,1,0,1};
+miniTest66.cpp:: {
+miniTest66.cpp:: unsigned char _ret_0[6];
+miniTest66.cpp:: {
+miniTest66.cpp:: {
+miniTest66.cpp:: _out_0 = {1,0,1,0,1,0};
+miniTest66.cpp:: };
+miniTest66.cpp:: _ret_0 = _out_0;
+miniTest66.cpp:: };
+miniTest66.cpp:: unsigned char ttt[6];
+miniTest66.cpp:: ttt = {1,0,1,0,1,0};
+miniTest66.cpp:: unsigned int idx;
+miniTest66.cpp:: idx = 0;
+miniTest66.cpp:: {
+miniTest66.cpp:: {
+miniTest66.cpp:: idx = 2;
+miniTest66.cpp:: };
+miniTest66.cpp:: };
+miniTest66.cpp:: _out_0 = 2;
+miniTest66.cpp:: };
+miniTest66.cpp:: _ret_0 = 2;
+miniTest66.cpp:: };
+miniTest66.cpp:: unsigned int idx;
+miniTest66.cpp:: idx = 2;
+miniTest66.cpp:: _out_0 = x[2];
+miniTest67.cpp::#include "miniTest67.h"
+miniTest67.cpp::void spec(unsigned char* x, unsigned char& _out_0) {
+miniTest67.cpp:: _out_0 = x[2];
+miniTest67.cpp::void ident2(unsigned char* in, unsigned char* _out_0) {
+miniTest67.cpp:: _out_0 = in;
+miniTest67.cpp::void ident(unsigned char* in, unsigned int& _out_0) {
+miniTest67.cpp:: unsigned char _ret_0[6];
+miniTest67.cpp:: ident2(in, _ret_0);
+miniTest67.cpp:: unsigned char ttt[6];
+miniTest67.cpp:: ttt = _ret_0;
+miniTest67.cpp:: unsigned int idx;
+miniTest67.cpp:: idx = 0;
+miniTest67.cpp:: if (ttt[5]) {
+miniTest67.cpp:: {
+miniTest67.cpp:: idx = 3;
+miniTest67.cpp:: };
+miniTest67.cpp:: } else {
+miniTest67.cpp:: {
+miniTest67.cpp:: idx = null;
+miniTest67.cpp:: };
+miniTest67.cpp:: }
+miniTest67.cpp:: _out_0 = idx;
+miniTest67.cpp::void p1Sk(unsigned char* x, unsigned char& _out_0) {
+miniTest67.cpp:: unsigned char fu[5] = {1,0,1,0,1};
+miniTest67.cpp:: unsigned char mu[2];
+miniTest67.cpp:: mu = {1,0,1,0,1};
+miniTest67.cpp:: unsigned int _ret_0;
+miniTest67.cpp:: unsigned char _ret_1[6];
+miniTest67.cpp:: _ret_1 = 0;
+miniTest67.cpp:: {
+miniTest67.cpp:: unsigned char in[6] = {0,0,0,0,0,0};
+miniTest67.cpp:: {
+miniTest67.cpp:: unsigned char _ret_0[6];
+miniTest67.cpp:: {
+miniTest67.cpp:: {
+miniTest67.cpp:: _out_0 = {0,0,0,0,0,0};
+miniTest67.cpp:: };
+miniTest67.cpp:: _ret_0 = _out_0;
+miniTest67.cpp:: };
+miniTest67.cpp:: unsigned char ttt[6];
+miniTest67.cpp:: ttt = {0,0,0,0,0,0};
+miniTest67.cpp:: unsigned int idx;
+miniTest67.cpp:: idx = 0;
+miniTest67.cpp:: {
+miniTest67.cpp:: {
+miniTest67.cpp:: idx = 2;
+miniTest67.cpp:: };
+miniTest67.cpp:: };
+miniTest67.cpp:: _out_0 = 2;
+miniTest67.cpp:: };
+miniTest67.cpp:: _ret_0 = 2;
+miniTest67.cpp:: };
+miniTest67.cpp:: unsigned int idx;
+miniTest67.cpp:: idx = 2;
+miniTest67.cpp:: _out_0 = x[2];
+miniTest68.cpp::#include "miniTest68.h"
+miniTest68.cpp::void ShiftRows(unsigned char* in, unsigned char* _out_0) {
+miniTest68.cpp:: unsigned int shift[4] = {0,1,2,3};
+miniTest68.cpp:: unsigned char Sin[128];
+miniTest68.cpp:: unsigned char Sout[128];
+miniTest68.cpp:: unsigned int k;
+miniTest68.cpp:: k = 0;
+miniTest68.cpp:: for (unsigned int c = 0; (c < 4); ++c) {
+miniTest68.cpp:: {
+miniTest68.cpp:: for (unsigned int r = 0; (r < 4); ++r) {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa0[8];
+miniTest68.cpp:: __sa0 = in[k::8];
+miniTest68.cpp:: unsigned char __sa1[8];
+miniTest68.cpp:: __sa1 = __sa0;
+miniTest68.cpp:: Sin[(8 * (r + (4 * c)))::8] = __sa1;
+miniTest68.cpp:: k = (k + 8);
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: for (unsigned int c = 0; (c < 4); ++c) {
+miniTest68.cpp:: {
+miniTest68.cpp:: for (unsigned int r = 0; (r < 4); ++r) {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = ((c + shift[r]) % 4);
+miniTest68.cpp:: unsigned char __sa2[8];
+miniTest68.cpp:: __sa2 = Sin[(8 * (r + (4 * newc)))::8];
+miniTest68.cpp:: unsigned char __sa3[8];
+miniTest68.cpp:: __sa3 = __sa2;
+miniTest68.cpp:: Sout[(8 * (r + (4 * c)))::8] = __sa3;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: _out_0 = Sout;
+miniTest68.cpp::void ShiftRowsSK(unsigned char* in, unsigned char* _out_0) {
+miniTest68.cpp:: unsigned int shift[4] = {0,1,2,3};
+miniTest68.cpp:: unsigned char Sin[128];
+miniTest68.cpp:: unsigned char Sout[128];
+miniTest68.cpp:: unsigned int k;
+miniTest68.cpp:: k = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int c = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[0::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[0::8] = __sa5;
+miniTest68.cpp:: k = 8;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[8::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[8::8] = __sa5;
+miniTest68.cpp:: k = 16;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[16::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[16::8] = __sa5;
+miniTest68.cpp:: k = 24;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[24::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[24::8] = __sa5;
+miniTest68.cpp:: k = 32;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[32::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[32::8] = __sa5;
+miniTest68.cpp:: k = 40;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[40::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[40::8] = __sa5;
+miniTest68.cpp:: k = 48;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[48::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[48::8] = __sa5;
+miniTest68.cpp:: k = 56;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[56::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[56::8] = __sa5;
+miniTest68.cpp:: k = 64;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[64::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[64::8] = __sa5;
+miniTest68.cpp:: k = 72;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[72::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[72::8] = __sa5;
+miniTest68.cpp:: k = 80;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[80::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[80::8] = __sa5;
+miniTest68.cpp:: k = 88;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[88::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[88::8] = __sa5;
+miniTest68.cpp:: k = 96;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[96::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[96::8] = __sa5;
+miniTest68.cpp:: k = 104;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[104::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[104::8] = __sa5;
+miniTest68.cpp:: k = 112;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[112::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[112::8] = __sa5;
+miniTest68.cpp:: k = 120;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned char __sa4[8];
+miniTest68.cpp:: __sa4 = in[120::8];
+miniTest68.cpp:: unsigned char __sa5[8];
+miniTest68.cpp:: __sa5 = __sa4;
+miniTest68.cpp:: Sin[120::8] = __sa5;
+miniTest68.cpp:: k = 128;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int c = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 0;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[0::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[0::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 1;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[40::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[8::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 2;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[80::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[16::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 3;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[120::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[24::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 1;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[32::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[32::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 2;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[72::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[40::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 3;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[112::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[48::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 0;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[24::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[56::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 2;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[64::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[64::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 3;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[104::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[72::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 0;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[16::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[80::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 1;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[56::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[88::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int r = 0;
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 3;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[96::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[96::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 0;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[8::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[104::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 1;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[48::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[112::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: {
+miniTest68.cpp:: {
+miniTest68.cpp:: unsigned int newc;
+miniTest68.cpp:: newc = 2;
+miniTest68.cpp:: unsigned char __sa6[8];
+miniTest68.cpp:: __sa6 = Sin[88::8];
+miniTest68.cpp:: unsigned char __sa7[8];
+miniTest68.cpp:: __sa7 = __sa6;
+miniTest68.cpp:: Sout[120::8] = __sa7;
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: };
+miniTest68.cpp:: _out_0 = Sout;
+miniTest69.cpp::#include "miniTest69.h"
+miniTest69.cpp::void miniTest69(unsigned char* in, unsigned char* _out_0) {
+miniTest69.cpp:: unsigned char out[64];
+miniTest69.cpp:: out = 0;
+miniTest69.cpp:: for (unsigned int i = 0; (i < 63); ++i) {
+miniTest69.cpp:: {
+miniTest69.cpp:: out[i] = in[i];
+miniTest69.cpp:: };
+miniTest69.cpp:: };
+miniTest69.cpp:: _out_0 = out;
+miniTest69.cpp::void miniTest69sk(unsigned char* in, unsigned char* _out_0) {
+miniTest69.cpp:: unsigned char out[64];
+miniTest69.cpp:: out = 0;
+miniTest69.cpp:: unsigned char __sa0[63];
+miniTest69.cpp:: __sa0 = in[0::63];
+miniTest69.cpp:: unsigned char __sa1[63];
+miniTest69.cpp:: __sa1 = __sa0;
+miniTest69.cpp:: out[0::63] = __sa1;
+miniTest69.cpp:: _out_0 = out;
+miniTest7.cpp::#include "miniTest7.h"
+miniTest7.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest7.cpp:: unsigned char tmp1[4] = {0,0,1,0};
+miniTest7.cpp:: _out_0 = ((in + {1,0,1,0}) + {0,0,1,0});
+miniTest7.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest7.cpp:: unsigned char tmp1[4] = {0,1,1,0};
+miniTest7.cpp:: unsigned char tmp2[4] = {1,1,0,0};
+miniTest7.cpp:: _out_0 = ((in + tmp1) + tmp2);
+miniTest70.cpp::#include "miniTest70.h"
+miniTest70.cpp::void miniTest69(unsigned char* in, unsigned char* _out_0) {
+miniTest70.cpp:: unsigned char out[128];
+miniTest70.cpp:: out = 0;
+miniTest70.cpp:: for (unsigned int i = 0; (i < 127); ++i) {
+miniTest70.cpp:: {
+miniTest70.cpp:: out[i] = in[i];
+miniTest70.cpp:: };
+miniTest70.cpp:: };
+miniTest70.cpp:: _out_0 = out;
+miniTest70.cpp::void miniTest69sk(unsigned char* in, unsigned char* _out_0) {
+miniTest70.cpp:: unsigned char out[128];
+miniTest70.cpp:: out = 0;
+miniTest70.cpp:: unsigned char __sa0[127];
+miniTest70.cpp:: __sa0 = in;
+miniTest70.cpp:: out[0::127] = __sa0;
+miniTest70.cpp:: _out_0 = out;
+miniTest71.cpp::#include "miniTest71.h"
+miniTest71.cpp::void miniTest69(unsigned char* in, unsigned char* _out_0) {
+miniTest71.cpp:: unsigned char out[128];
+miniTest71.cpp:: out = 0;
+miniTest71.cpp:: for (unsigned int i = 0; (i < 92); ++i) {
+miniTest71.cpp:: {
+miniTest71.cpp:: out[(i + 36)] = in[i];
+miniTest71.cpp:: };
+miniTest71.cpp:: };
+miniTest71.cpp:: _out_0 = out;
+miniTest71.cpp::void miniTest69sk(unsigned char* in, unsigned char* _out_0) {
+miniTest71.cpp:: unsigned char out[128];
+miniTest71.cpp:: out = 0;
+miniTest71.cpp:: unsigned char __sa0[92];
+miniTest71.cpp:: __sa0 = in;
+miniTest71.cpp:: out[36::92] = __sa0;
+miniTest71.cpp:: _out_0 = out;
+miniTest72.cpp::#include "miniTest72.h"
+miniTest72.cpp::void miniTest69(unsigned char* in, unsigned char* _out_0) {
+miniTest72.cpp:: unsigned char out[128];
+miniTest72.cpp:: out = 0;
+miniTest72.cpp:: for (unsigned int i = 0; (i < 92); ++i) {
+miniTest72.cpp:: {
+miniTest72.cpp:: out[i] = in[(i + 36)];
+miniTest72.cpp:: };
+miniTest72.cpp:: };
+miniTest72.cpp:: _out_0 = out;
+miniTest72.cpp::void miniTest69sk(unsigned char* in, unsigned char* _out_0) {
+miniTest72.cpp:: unsigned char out[128];
+miniTest72.cpp:: out = 0;
+miniTest72.cpp:: unsigned char __sa0[92];
+miniTest72.cpp:: __sa0 = in[36::92];
+miniTest72.cpp:: out = __sa0;
+miniTest72.cpp:: _out_0 = out;
+miniTest73.cpp::#include "miniTest73.h"
+miniTest73.cpp::void miniTest69(unsigned char* in, unsigned char* _out_0) {
+miniTest73.cpp:: unsigned char out[128];
+miniTest73.cpp:: out = 0;
+miniTest73.cpp:: for (unsigned int i = 0; (i < 92); ++i) {
+miniTest73.cpp:: {
+miniTest73.cpp:: out[i] = in[(i + 36)];
+miniTest73.cpp:: };
+miniTest73.cpp:: };
+miniTest73.cpp:: _out_0 = out;
+miniTest73.cpp::void miniTest69sk(unsigned char* in, unsigned char* _out_0) {
+miniTest73.cpp:: unsigned char out[128];
+miniTest73.cpp:: out = 0;
+miniTest73.cpp:: out = !out;
+miniTest73.cpp:: unsigned char __sa0[92];
+miniTest73.cpp:: __sa0 = in[36::92];
+miniTest73.cpp:: out = __sa0;
+miniTest73.cpp:: _out_0 = out;
+miniTest7small.cpp::#include "miniTest7small.h"
+miniTest7small.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest7small.cpp:: unsigned char tmp1[2] = {1,0};
+miniTest7small.cpp:: _out_0 = (in + ({1,1} ^ {1,0}));
+miniTest7small.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest7small.cpp:: unsigned char tmp1[2] = {1,0};
+miniTest7small.cpp:: unsigned char tmp2[2] = {1,1};
+miniTest7small.cpp:: _out_0 = (in + (tmp1 ^ tmp2));
+miniTest8.cpp::#include "miniTest8.h"
+miniTest8.cpp::void mult(unsigned char* in1_0, unsigned char* in2, unsigned char* _out_0) {
+miniTest8.cpp:: unsigned char in1[4];
+miniTest8.cpp:: in1 = in1_0;
+miniTest8.cpp:: unsigned char result[4];
+miniTest8.cpp:: result = 0;
+miniTest8.cpp:: for (unsigned int i = 0; (i < 4); ++i) {
+miniTest8.cpp:: {
+miniTest8.cpp:: if ((in2[i] == 1)) {
+miniTest8.cpp:: {
+miniTest8.cpp:: result = (result + in1);
+miniTest8.cpp:: };
+miniTest8.cpp:: }
+miniTest8.cpp:: unsigned char __sa0[4];
+miniTest8.cpp:: __sa0 = (in1 >> 1);
+miniTest8.cpp:: in1 = __sa0;
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: _out_0 = result;
+miniTest8.cpp::void reverseSketch(unsigned char* in, unsigned char* _out_0) {
+miniTest8.cpp:: unsigned char tmp[4];
+miniTest8.cpp:: tmp = {1,1,0,0};
+miniTest8.cpp:: unsigned char _ret_0[4];
+miniTest8.cpp:: {
+miniTest8.cpp:: unsigned char in1_0[4] = in;
+miniTest8.cpp:: unsigned char in2[4] = tmp;
+miniTest8.cpp:: {
+miniTest8.cpp:: unsigned char in1[4];
+miniTest8.cpp:: in1 = in1_0;
+miniTest8.cpp:: unsigned char result[4];
+miniTest8.cpp:: result = 0;
+miniTest8.cpp:: {
+miniTest8.cpp:: unsigned int i = 0;
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: result = ({0,0,0,0} + in1);
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: unsigned char __sa0[4];
+miniTest8.cpp:: __sa0 = (in1 >> 1);
+miniTest8.cpp:: in1 = __sa0;
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: result = (result + in1);
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: unsigned char __sa0[4];
+miniTest8.cpp:: __sa0 = (in1 >> 1);
+miniTest8.cpp:: in1 = __sa0;
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: unsigned char __sa0[4];
+miniTest8.cpp:: __sa0 = (in1 >> 1);
+miniTest8.cpp:: in1 = __sa0;
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: {
+miniTest8.cpp:: {
+miniTest8.cpp:: unsigned char __sa0[4];
+miniTest8.cpp:: __sa0 = (in1 >> 1);
+miniTest8.cpp:: in1 = {0,0,0,0};
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: };
+miniTest8.cpp:: _out_0 = result;
+miniTest8.cpp:: };
+miniTest8.cpp:: _ret_0 = _out_0;
+miniTest8.cpp:: };
+miniTest8.cpp:: _out_0 = _ret_0;
+miniTest8.cpp::void reverse(unsigned char* in, unsigned char* _out_0) {
+miniTest8.cpp:: _out_0 = ((in + in) + in);
+miniTest9.cpp::#include "miniTest9.h"
+miniTest9.cpp::void reverseSketch(unsigned char* in_0, unsigned char& _out_0) {
+miniTest9.cpp:: unsigned char in[4];
+miniTest9.cpp:: in = in_0;
+miniTest9.cpp:: unsigned char __sa0[4];
+miniTest9.cpp:: __sa0 = (in >> 1);
+miniTest9.cpp:: in = __sa0;
+miniTest9.cpp:: in = (in << 1);
+miniTest9.cpp:: unsigned char __sa1[4];
+miniTest9.cpp:: __sa1 = (in >> 1);
+miniTest9.cpp:: in = __sa1;
+miniTest9.cpp:: _out_0 = in[3];
+miniTest9.cpp::void reverse(unsigned char* in, unsigned char& _out_0) {
+miniTest9.cpp:: _out_0 = in[2];
