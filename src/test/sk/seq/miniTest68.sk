@@ -1,0 +1,40 @@
+int Nb = 4;
+int W = Nb*Nb*8;
+
+bit[W] ShiftRows(bit[W] in){
+    int [4] shift = {0,1,2,3};
+    bit[W] Sin;
+    bit[W] Sout;
+    int k=0;
+    for(int c=0; c<Nb; ++c){
+      for(int r=0; r<Nb; ++r){ 
+        Sin[8*(r+ Nb*c)::8 ] = in[k::8]; k = k+8;		
+      }
+    }
+    for(int c=0; c<Nb; ++c){
+      for(int r=0; r<Nb; ++r){      
+		int newc = (c+shift[r]) % Nb;
+		Sout[8*(r+ Nb*c)::8]=Sin[8*(r + Nb*newc)::8 ];
+      }
+    }
+    return Sout;
+}
+
+bit[W] ShiftRowsSK(bit[W] in) implements ShiftRows{
+    int [4] shift = {0,1,2,3};
+    bit[W] Sin;
+    bit[W] Sout;
+    int k=0;
+    for(int c=0; c<Nb; ++c){
+      for(int r=0; r<Nb; ++r){ 
+        Sin[8*(r+ Nb*c)::8 ] = in[k::8]; k = k+8;		
+      }
+    }
+    for(int c=0; c<Nb; ++c){
+      for(int r=0; r<Nb; ++r){      
+		int newc = (c+shift[r]) % Nb;
+		Sout[8*(r+ Nb*c)::8]=Sin[8*(r + Nb*newc)::8 ];
+      }
+    }
+    return Sout;
+}
