@@ -101,6 +101,7 @@ public class ExprArrayInit extends Expression
 	    if (i!=elements.size()-1) {
 		sb.append(",");
 	    }
+	    if( i>100){ sb.append("...");break;}
 	}
 	sb.append("}");
         return sb.toString();
