@@ -400,6 +400,8 @@ public class ToSBit
             throw new RuntimeException(e);
         }
         Program noindet = (Program)beforeUnvectorizing.accept(new EliminateStar(oracle, this.unrollAmt));
+        noindet = (Program)noindet.accept(new EliminateStar(oracle, this.unrollAmt, false));
+        
         if(doVectorization) {
         	noindet=(Program) noindet.accept(new BitVectorPreprocessor(new TempVarGen()));
         	noindet=(Program) noindet.accept(new BitTypeRemover(varGen));
@@ -427,7 +429,7 @@ public class ToSBit
 	            	outWriter.write(hcode);
 	                outWriter.flush();
 	                outWriter.close();
-	        		outWriter = new FileWriter(outputCDir+resultFile+".c");
+	        		outWriter = new FileWriter(outputCDir+resultFile+".cpp");
 	            	outWriter.write(ccode);
 	                outWriter.flush();
 	                outWriter.close();
@@ -443,7 +445,7 @@ public class ToSBit
             		Writer outWriter = new FileWriter(outputCDir+"script");
             		outWriter.write("#!/bin/sh\n");
             		if(outputTest)
-            			outWriter.write("g++ -o "+resultFile+" "+resultFile+".c "+resultFile+"_test.c\n");
+            			outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
             		else
             			outWriter.write("g++ -c "+resultFile+".c\n");
             		outWriter.write("./"+resultFile+"\n");
