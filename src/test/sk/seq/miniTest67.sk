@@ -1,0 +1,30 @@
+int W = 5;
+
+
+
+bit spec (bit[W] x) {
+	return x[2];
+}
+
+bit [W+1] ident2(bit [W+1] in){
+	return in;
+}
+
+int ident(bit [W+1] in){
+	bit [W+1] ttt = ident2(in);
+	int idx = 0;
+	if(ttt[5]){
+		idx = 3;
+	}else{
+		idx = ??;
+	}
+	return idx;
+}
+
+bit p1Sk (bit[W] x) implements spec {
+	bit[W] fu = {1,0,1,0,1};
+	bit[2] mu = (bit[2])fu;
+	int idx = ident(mu[1]);
+	return x[idx];
+}
+

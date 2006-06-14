@@ -11,9 +11,9 @@ bit reverseSketch(bit[4] in) implements reverse {
 bit reverse (bit[4] in) {
 	int t = 0;
 	if(in[0]){
-		t = 5;
+		t = 5; // 2
 	}else{
-		t = 4;
+		t = 4; // 1
 	}
 	return in[t % 3];
 }
