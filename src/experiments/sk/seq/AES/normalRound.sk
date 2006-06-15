@@ -10,27 +10,18 @@ bit[W] normalRoundsk(bit[W] in_p, bit[W] rkey) implements normalRound{
   bit [32*256] T3 = ??;
   bit[W] in;
   in = ShiftRows(in_p);
-  
   bit[W] output;
   for(int i=0; i<4; ++i){
-  	bit[8] inv0;
-  	bit[8] inv1;
-  	bit[8] inv2;
-  	bit[8] inv3;
-  	for(int j=0; j<8; ++j){
-  		inv0[j] = in[i*32+j];
-  		inv1[j] = in[i*32+8+j];
-  		inv2[j] = in[i*32+2*8+j];
-  		inv3[j] = in[i*32+3*8+j];
-  	}
+  	bit[8] inv0 = in[(i*32)::8];
+  	bit[8] inv1 = in[(i*32+8)::8];
+  	bit[8] inv2 = in[(i*32+2*8)::8];
+  	bit[8] inv3 = in[(i*32+3*8)::8];
   	int i0 = (int) inv0;
   	int i1 = (int) inv1;
   	int i2 = (int) inv2;
   	int i3 = (int) inv3;
-  	for(int j=0; j<32; ++j){
-  		bit tmp  = T0[i0*32+j] ^ T1[i1*32+j]^ T2[i2*32+j]^ T3[i3*32+j];		
-		output[i*32+ j] = tmp ^ rkey[i*32+j];
-	}
+  	output[i*32::32] = T0[(i0*32)::32] ^ T1[(i1*32)::32] ^ T2[(i2*32)::32]^T3[(i3*32)::32];
+  	output[i*32::32] = output[i*32::32] ^ rkey[(i*32)::32];
   }
   return output;
 }
@@ -47,14 +38,9 @@ bit[W] normalRound(bit[W] in, bit[W] rkey){
 bit[W] ByteSub(bit[W] in){
 	bit[W] result;
 	for(int i=0; i<W/8; ++i){
-		bit [8] word;
-		for(int j=0; j<8; j++){
-			word[j] = in[i*8 + j];
-		}
+		bit [8] word = in[i*8::8];		
 		word = ByteSubInd(word);
-		for(int j=0; j<8; j++){
-			result[i*8 + j] = word[j];
-		}
+		result[(i*8)::8] = word;		
 	}
 	return result;
 }
@@ -65,16 +51,14 @@ bit[W] ShiftRows(bit[W] in){
     bit[W] Sout;
     int k=0;
     for(int c=0; c<Nb; ++c){
-      for(int r=0; r<Nb; ++r){      
-		for(int i=0; i<8; ++i){
-			Sin[ i+8*(r+ Nb*c) ] = in[k]; k=k+1;
-		}
+      for(int r=0; r<Nb; ++r){ 
+        Sin[8*(r+ Nb*c)::8 ] = in[k::8]; k = k+8;		
       }
     }
     for(int c=0; c<Nb; ++c){
       for(int r=0; r<Nb; ++r){      
 		int newc = (c+shift[r]) % Nb;
-		for(int i=0; i<8; ++i) Sout[i+8*(r+ Nb*c)]=Sin[ i+8*(r + Nb*newc) ];
+		Sout[8*(r+ Nb*c)::8]=Sin[8*(r + Nb*newc)::8 ];
       }
     }
     return Sout;
