@@ -10,15 +10,15 @@ public class EliminateStar extends PartialEvaluator {
 	private int LUNROLL;
 	private Integer currentSize = null;	
 	private boolean checkForStars = true;
+	
+	public class ChangeNames extends FEReplacer{		
+		public Object visitExprVar(ExprVar exp) { return new ExprVar(exp.getContext(), state.transName(exp.getName()) ); }		
+	}
+	
 	public static class HasStars extends FEReplacer{
 		private StreamSpec ss;
-		boolean hasUnknown=false;
-		private boolean checkForStars = true;
-		private Set<Function> visitedFunctions = new HashSet<Function>();;
-		public HasStars(StreamSpec ss, boolean checkForStars) {
-			this.ss=ss;
-			this.checkForStars = checkForStars;
-		}
+		boolean hasUnknown=false;		
+		private Set<Function> visitedFunctions = new HashSet<Function>();;		
 		public HasStars(StreamSpec ss) {
 			this.ss=ss;			
 		}
@@ -45,8 +45,7 @@ public class EliminateStar extends PartialEvaluator {
 			hasUnknown = true;
 			return star;
 		}
-		public boolean testNode(FENode node){
-			if( !checkForStars ) return true;
+		public boolean testNode(FENode node){			
 			this.visitedFunctions.clear();
 			hasUnknown = false;
 			node.accept(this);
@@ -72,8 +71,25 @@ public class EliminateStar extends PartialEvaluator {
 		this.state = new MethodState();
 	}
 		
+	public boolean askIfPEval(Function node){
+		if( !checkForStars) return true;
+		return starCheck.testNode(node);
+	}
 	
+	public boolean askIfPEval(ExprFunCall exp)
+	{    	
+		if( !checkForStars ) return false;
+    	String name = exp.getName();
+    	// Local function?
+		Function fun = ss.getFuncNamed(name);
+		if( fun == null ) return false;
+		return askIfPEval(fun);
+	}
 	
+	public boolean askIfPEval(FENode node){	
+		if( !checkForStars ) return false;
+		return starCheck.testNode(node);
+	}
 	
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
@@ -248,15 +264,16 @@ public class EliminateStar extends PartialEvaluator {
 		}finally{
 			state.popLevel();
 		}
-		if(!starCheck.testNode(stmt)){
+		
+		if(!askIfPEval(stmt)){
 			newStatements = oldNewStatements;
-			return stmt;
+			return stmt.accept(new ChangeNames());
 		}else{
 			oldNewStatements.add(new StmtBlock(stmt.getContext(), newStatements));
 			//oldNewStatements.addAll(newStatements);
 			newStatements = oldNewStatements;
 			return null;
-		}		
+		}
 	}
 	
 	public Object visitStmtIfThen(StmtIfThen stmt)
@@ -353,11 +370,12 @@ public class EliminateStar extends PartialEvaluator {
 				addStatement( (Statement)stmt.getBody().accept(this) );				
 			}
 		}
-		if(!starCheck.testNode(stmt.getBody())){
+		
+		if(!askIfPEval(stmt.getBody())){
 			newStatements = oldNewStatements;
 			if(newIter == stmt.getIter())
-				return stmt;
-			return new StmtLoop(stmt.getContext(), newIter, stmt.getBody());
+				return stmt.accept(new ChangeNames());
+			return new StmtLoop(stmt.getContext(), newIter, (Statement)stmt.getBody().accept(new ChangeNames()));
 		}else{
 			oldNewStatements.addAll(newStatements);
 			newStatements = oldNewStatements;
@@ -421,7 +439,7 @@ public class EliminateStar extends PartialEvaluator {
 						//if(val != null) continue;
 					}
 					addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
-							nm, init) );
+							state.transName(nm), init) );
 				}else{
 					for(int tt=0; tt<arrSizeVal.getIntValue(); ++tt){
 						String nnm = nm + "_idx_" + tt;
@@ -429,7 +447,7 @@ public class EliminateStar extends PartialEvaluator {
 						state.varGetLHSName(nnm);		            		
 					}
 					addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
-							nm, null) );
+							state.transName(nm), null) );
 				}
 			}else{				
 				if (stmt.getInit(i) != null){     
@@ -438,13 +456,13 @@ public class EliminateStar extends PartialEvaluator {
 					String asgn = lhsn + " = " + tmp + "; \n";		                
 					if(tmp.hasValue()){
 						state.setVarValue(nm, tmp.getIntValue());
-						addStatement( new StmtVarDecl(stmt.getContext(), vt, nm, new ExprConstInt(tmp.getIntValue())) );
+						addStatement( new StmtVarDecl(stmt.getContext(), vt, state.transName(nm), new ExprConstInt(tmp.getIntValue())) );
 					}else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
 						result += asgn;
-						addStatement( new StmtVarDecl(stmt.getContext(), vt, nm, init) );
+						addStatement( new StmtVarDecl(stmt.getContext(), vt, state.transName(nm), init) );
 					} 	                
 				}else{
-					addStatement( new StmtVarDecl(stmt.getContext(), vt, nm, null) );
+					addStatement( new StmtVarDecl(stmt.getContext(), vt, state.transName(nm), null) );
 				}
 			}
 		}
@@ -555,14 +573,31 @@ public class EliminateStar extends PartialEvaluator {
     	String name = exp.getName();
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
-    	if (fun != null) {     
-    		if(!this.starCheck.testNode(fun)){
+    	if (fun != null) {    		
+    		if(!askIfPEval(exp)){
     			//if the called function contains no stars, keep the call but run the partial evaluator
     			List<Statement>  oldNewStatements = newStatements;
         		newStatements = new ArrayList<Statement> ();
         		super.visitExprFunCall(exp);
         		newStatements = oldNewStatements;
-    			return exp;
+        		//return exp;
+        		boolean hasChanged = false;
+                List<Expression> newParams = new ArrayList<Expression>();
+                for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+                {
+                    Expression param = (Expression)iter.next();
+                    Expression newParam = doExpression(param);
+                    state.popVStack();
+                    if( param instanceof ExprVar && newParam instanceof ExprArrayInit){
+                    	Expression renamedParam = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)param).getName()  ));
+                    	newParams.add(renamedParam);
+                    }else{
+                    	newParams.add(newParam);
+                    }
+                    if (param != newParam) hasChanged = true;
+                }
+                if (!hasChanged) return exp;
+                return new ExprFunCall(exp.getContext(), exp.getName(), newParams);
     		}
 			//....else inline the called function
 			List<Statement>  oldNewStatements = newStatements;
@@ -635,7 +670,7 @@ public class EliminateStar extends PartialEvaluator {
 	
 	public Object visitFunction(Function func)
     {
-        if(starCheck.testNode(func)){
+        if(askIfPEval(func)){
 	        if(func.getCls() != Function.FUNC_INIT && func.getCls() != Function.FUNC_WORK && func.getSpecification() != null ){
 	        	doParams(func.getParams(), "");
 	        	Statement body = null;
@@ -645,13 +680,22 @@ public class EliminateStar extends PartialEvaluator {
 	        	}finally{
 	        		this.state.popLevel();
 	        	}
+	        	
+	        	List<Parameter> newParams = new ArrayList<Parameter>(); 
+	        	for (Iterator iter = func.getParams().iterator(); iter.hasNext(); )
+	    	    {
+	    	        Parameter param = (Parameter)iter.next();
+	    	        Parameter newparam = new Parameter(param.getType(), state.transName(param.getName()), param.isParameterOutput());
+	    	        newParams.add(newparam);
+	    	    }
+	        	
 //	        	List<Statement> theList = new ArrayList<Statement>(func.getParams().size() + 1);
 //	        	theList.add(body);
 //	        	postDoParams(func.getParams(), theList);
 //	        	body = new StmtBlock(func.getContext(), theList);
 	        	func = new Function(func.getContext(), func.getCls(),
                         func.getName(), func.getReturnType(),
-                        func.getParams(), func.getSpecification(), body);
+                        newParams, func.getSpecification(), body);
 	        }
         }
         return func;
@@ -660,7 +704,7 @@ public class EliminateStar extends PartialEvaluator {
 	@Override
 	public Object visitStreamSpec(StreamSpec spec)
 	{
-		starCheck=new HasStars(spec, checkForStars);
+		starCheck=new HasStars(spec);
 		return super.visitStreamSpec(spec);
 	}
 

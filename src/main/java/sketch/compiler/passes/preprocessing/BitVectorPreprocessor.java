@@ -101,7 +101,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 				if(left!=rhs.getLeft() || right!=rhs.getRight()) {
 					Expression newExpr=new ExprBinary(rhs.getContext(),rhs.getOp(),left,right);
 					newExpr=(Expression) newExpr.accept(this);
-					return new StmtAssign(stmt.getContext(),stmt.getLHS(),newExpr);
+					return new StmtAssign(stmt.getContext(),lhs,newExpr);
 				}
 			}
 		}		
@@ -192,6 +192,33 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		addStatements(statements);
 		return null;
 	}
+	
+	
+	public Object visitExprFunCall(ExprFunCall exp)
+    {
+        boolean hasChanged = false;
+        Function fun = this.symtab.lookupFn(exp.getName());
+        List formals = fun.getParams();
+        Iterator form = formals.iterator();
+        List<Expression> newParams = new ArrayList<Expression>();
+        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+        {
+            Expression param = (Expression)iter.next();
+            Parameter formal = (Parameter) form.next();
+            Expression newParam = doExpression(param);
+            Type formalType = formal.getType();
+            Type actualType = getType(newParam);
+            if( !actualType.equals(formalType)  ){
+            	assert ! formal.isParameterOutput() : "This should never happen";
+            	newParam = makeTempExpr(newParam, formalType);
+            }
+            newParams.add(newParam);
+            if (param != newParam) hasChanged = true;
+        }
+        if (!hasChanged) return exp;
+        return new ExprFunCall(exp.getContext(), exp.getName(), newParams);
+    }
+	
 	
 	@Override
 	public Object visitStreamSpec(StreamSpec spec)

@@ -130,17 +130,17 @@ public class ExprBinary extends Expression
         return left.hashCode() ^ right.hashCode() ^ new Integer(op).hashCode();
     }
 
-    public Integer getIValue(){    	
-    	if( getLeft().getIValue()!= null && getRight().getIValue()!= null){
-    		int lv = getLeft().getIValue().intValue();
-    		int rv = getRight().getIValue().intValue();
+    public Integer getIValue(){  
+    	Integer ivI = getLeft().getIValue();
+    	Integer rvI = getRight().getIValue();
+    	if( ivI!= null && rvI!= null){
+    		int lv = ivI.intValue();
+    		int rv = rvI.intValue();
     		switch (op)
             {
             case ExprBinary.BINOP_ADD: return new Integer(lv + rv);
-            case ExprBinary.BINOP_SUB: return new Integer(lv - rv);
-            case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
-            case ExprBinary.BINOP_DIV: return new Integer(lv / rv);
-            case ExprBinary.BINOP_MOD: return new Integer(lv % rv);
+            case ExprBinary.BINOP_SUB: return new Integer(lv - rv);            
+            case ExprBinary.BINOP_DIV: return new Integer(lv / rv);            
             case ExprBinary.BINOP_AND: return new Integer((lv==1 && rv==1)?1:0);
             case ExprBinary.BINOP_OR: return new Integer((lv==1 || rv==1)?1:0);
             case ExprBinary.BINOP_EQ: return new Integer((lv== rv)?1:0);
@@ -153,8 +153,23 @@ public class ExprBinary extends Expression
             case ExprBinary.BINOP_BOR: return new Integer((lv | rv));
             case ExprBinary.BINOP_BXOR: return new Integer((lv ^ rv));
             case ExprBinary.BINOP_LSHIFT: return new Integer((lv << rv));
-            case ExprBinary.BINOP_RSHIFT: return new Integer((lv >> rv));            
+            case ExprBinary.BINOP_RSHIFT: return new Integer((lv >> rv));
+            case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
+            case ExprBinary.BINOP_MOD: return new Integer(lv % rv);
+            
             }    	
+    	}
+    	if( op == ExprBinary.BINOP_MOD && rvI != null){
+    		if( getLeft() instanceof ExprBinary ){
+    			ExprBinary left = (ExprBinary)getLeft();
+    			Integer lleft = left.getLeft().getIValue();
+    			Integer rleft = left.getRight().getIValue();
+    			if( left.getOp() == ExprBinary.BINOP_MUL ){
+    				if( rvI.equals(rleft) || rvI.equals(lleft) ){
+    					return new Integer(0);
+    				}
+    			}
+    		}
     	}
     	return null;
     }

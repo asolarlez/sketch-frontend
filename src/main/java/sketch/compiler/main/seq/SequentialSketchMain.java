@@ -403,7 +403,7 @@ public class ToSBit
         noindet = (Program)noindet.accept(new EliminateStar(oracle, this.unrollAmt, false));
         
         if(doVectorization) {
-        	noindet=(Program) noindet.accept(new BitVectorPreprocessor(new TempVarGen()));
+        	noindet=(Program) noindet.accept(new BitVectorPreprocessor(varGen));
         	noindet=(Program) noindet.accept(new BitTypeRemover(varGen));
         }
         

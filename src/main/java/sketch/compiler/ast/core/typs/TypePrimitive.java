@@ -138,7 +138,9 @@ public class TypePrimitive extends Type
         case TYPE_NDINT:
             return "ndint";
         case TYPE_NDBOOLEAN:
-            return "ndboolean";    
+            return "ndboolean";  
+        case TYPE_SIGINT:
+        	return "int";
         default:
             return "<primitive type " + type + ">";
         }
@@ -174,14 +176,16 @@ public class TypePrimitive extends Type
         {
         case TYPE_BOOLEAN:
             return t2 == TYPE_BOOLEAN || t2 == TYPE_BIT ||
-                t2 == TYPE_INT || t2 == TYPE_FLOAT ||
+            t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
                 t2 == TYPE_COMPLEX || t2 == TYPE_NDBOOLEAN || 
                 t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
         case TYPE_BIT:
-            return t2 == TYPE_BIT || t2 == TYPE_INT ||
+            return t2 == TYPE_SIGINT || t2 == TYPE_BIT || t2 == TYPE_INT ||
                 t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDBIT || t2 == TYPE_NDINT;            
         case TYPE_INT:
-            return t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
+            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
+        case TYPE_SIGINT:
+            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
         case TYPE_FLOAT:
             return t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
         case TYPE_COMPLEX:
@@ -191,7 +195,11 @@ public class TypePrimitive extends Type
         case TYPE_NDBIT:
         	return t2 == TYPE_NDBIT || t2 == TYPE_NDINT || t2 == TYPE_BIT;
         case TYPE_NDINT:
-            return t2 == TYPE_NDINT || t2 == TYPE_INT;
+            return t2 == TYPE_SIGINT || t2 == TYPE_NDINT || t2 == TYPE_INT;
+        case TYPE_INT16:         	
+        case TYPE_INT8:
+        case TYPE_INT64:
+        	return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
         default:
             assert false : t1;
             return false;
