@@ -352,7 +352,9 @@ public class NodesToSBit extends PartialEvaluator{
 	    
 	    public Object visitExprFunCall(ExprFunCall exp)
 	    {	    	
-	    	String result = " ";
+	    	//String result = " ";
+	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    	PrintStream ps = new PrintStream(baos);
 	    	String name = exp.getName();
 	    	// Local function?
 	    	if (ss.getFuncNamed(name) != null) {        	
@@ -361,21 +363,22 @@ public class NodesToSBit extends PartialEvaluator{
 	    		{
 	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
 	    			Iterator formalParams = fun.getParams().iterator();
-	    			result += inParameterSetter(formalParams, actualParams, false);
+	    			String tmp = inParameterSetter(formalParams, actualParams, false);
+	    			ps.print(tmp);
 	    		}
-	    		result += "// BEGIN CALL " + fun.getName() + "\n";
+	    		ps.print("// BEGIN CALL " + fun.getName() + "\n");
 	    		
-	    		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		    	PrintStream tmpout = out; out = new PrintStream( baos );	    		
 	    		fun.getBody().accept(this);	    		
-	    		result += baos.toString();	    		
+	    		//result += baos.toString();	    		
 	    		out = tmpout;
 	    			
-	    		result += "// END CALL " + fun.getName() + "\n";
+	    		ps.print("// END CALL " + fun.getName() + "\n");
 	    		{
 	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
 	    			Iterator formalParams = fun.getParams().iterator();
-	    			result += outParameterSetter(formalParams, actualParams, false);
+	    			String tmp =  outParameterSetter(formalParams, actualParams, false);
+	    			ps.print(tmp);
 	    		}
 	    		state.popLevel();
 	    	}else{ 
@@ -385,24 +388,24 @@ public class NodesToSBit extends PartialEvaluator{
 	    			System.err.println("The StreamBit compiler currently doesn't allow print statements in bit->bit filters.");
 	    			return "";
 	    		} else if (name.equals("println")) {
-	    			result = "System.out.println(";
+	    			//result = "System.out.println(";
 	    			System.err.println("The StreamBit compiler currently doesn't allow print statements in bit->bit filters.");
 	    			return "";
 	    		} else if (name.equals("super")) {
-	    			result = "";
+	    			//result = "";
 	    		} else if (name.equals("setDelay")) {
-	    			result = "";
+	    			//result = "";
 	    		} else if (name.startsWith("enqueue")) {	        	
-	    			result = "";
+	    			//result = "";
 	    		} else {
 	    			Assert(false, "The streamBit compiler currently doesn't allow bit->bit filters to call other functions. You are trying to call the function" + name);
 	    			// Math.sqrt will return a double, but we're only supporting
 	    			// float's now, so add a cast to float.  Not sure if this is
 	    			// the right thing to do for all math functions in all cases?
-	    			result = "(float)Math." + name + "(";
+	    			ps.print("(float)Math." + name + "(");
 	    		}
 	    	}
-	    	state.pushVStack( new valueClass(result) );
+	    	state.pushVStack( new valueClass(baos.toString()) );
 	    	return exp;    	
 	    }
 

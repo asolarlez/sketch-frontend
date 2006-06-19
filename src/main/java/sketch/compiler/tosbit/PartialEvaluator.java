@@ -80,7 +80,7 @@ public class PartialEvaluator extends FEReplacer {
  		    	vname = vname + "_idx_" + ofstV;
  		    	String rval = vname;
  		    	if(isReplacer){
- 		    		if(offsetE != exp.getOffset()){
+ 		    		if(offsetE != exp.getOffset() || lhsExp != exp.getBase()){
  		    			lhsExp = new ExprArray(exp.getContext(), lhsExp, offsetE);
  		    		}else{
  		    			lhsExp = exp;
@@ -135,7 +135,7 @@ public class PartialEvaluator extends FEReplacer {
  	    		}
  	    		NDArracc = true;
  	    		if(isReplacer){
- 		    		if(rl.start() != newStart){
+ 		    		if(rl.start() != newStart || exp.getBase() != lhsExp){
  		    			List nlst = new ArrayList();
  						nlst.add( new RangeLen(newStart, rl.len()) );
  						lhsExp = new ExprArrayRange(lhsExp, nlst);
@@ -152,8 +152,12 @@ public class PartialEvaluator extends FEReplacer {
     	}
     	
 	    public Object visitExprVar(ExprVar exp)
-	    {		    	
-	    	lhsExp = exp;
+	    {		   
+	    	if(isReplacer){
+	    		lhsExp = new ExprVar(exp.getContext(), state.transName(exp.getName())); //exp;
+	    	}else{
+	    		lhsExp = exp;
+	    	}
 	    	return exp.getName();		    	
 	    }	    	
     }
@@ -259,7 +263,8 @@ public class PartialEvaluator extends FEReplacer {
             return exp;
         else{
         	if( exp.getBase() instanceof ExprVar && nbase instanceof ExprArrayInit){
-        		return new ExprArray(exp.getContext(), exp.getBase(), offset, exp.isUnchecked());
+        		Expression renamedBase = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
+        		return new ExprArray(exp.getContext(), renamedBase, offset, exp.isUnchecked());
         	}else{
         		return new ExprArray(exp.getContext(), nbase, offset, exp.isUnchecked());
         	}
@@ -283,9 +288,10 @@ public class PartialEvaluator extends FEReplacer {
 			state.pushVStack( new valueClass(newLst));
 			if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
 				if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
+					Expression renamedBase = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
 	        		List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
-					return new ExprArrayRange( exp.getBase(), nlst);		        		
+					return new ExprArrayRange( renamedBase, nlst);		        		
 	        	}else{
 	        		List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
@@ -300,7 +306,8 @@ public class PartialEvaluator extends FEReplacer {
 	        	if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
 	        		List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
-					return new ExprArrayRange( exp.getBase(), nlst);		        		
+					Expression renamedBase = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
+					return new ExprArrayRange( renamedBase, nlst);		        		
 	        	}else{
 	        		List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
@@ -484,8 +491,9 @@ public class PartialEvaluator extends FEReplacer {
 			List<valueClass> nlist = new ArrayList<valueClass>(sz);
 			boolean isAllValues=true;
 			List<ExprConstInt> olist = new ArrayList<ExprConstInt>(sz);
+			String prefix = vname + "_idx_";
 			for(int i=0; i<sz; ++i){
-				String lnm = vname + "_idx_" + i;
+				String lnm = prefix + i;
 				if( state.varHasValue( lnm) ){
 					int v = state.varValue(lnm );
 					olist.add( new ExprConstInt(v));
@@ -499,14 +507,14 @@ public class PartialEvaluator extends FEReplacer {
 			if(this.isReplacer && isAllValues){
 				return new ExprArrayInit(exp.getContext(), olist);
 			}else{
-				return exp;
+				return new ExprVar(exp.getContext(), state.transName(exp.getName()));
 			}
 		}else{
 			state.pushVStack(intValue);
 			if(this.isReplacer && intValue.hasValue()){
 				return new ExprConstInt(intValue.getIntValue());
 			}else{
-				return exp;
+				return new ExprVar(exp.getContext(), state.transName(exp.getName()));
 			}
 		}
 	}
@@ -525,7 +533,7 @@ public class PartialEvaluator extends FEReplacer {
 	    Expression returnVal=exp;
 	    boolean hv = vchild.hasValue(); 	
 	    boolean isV = vchild.isVect();
-	    assert !isV || (exp.getOp()== ExprUnary.UNOP_NOT) : "Vector unary currently only supported for not";
+	    assert !isV || (exp.getOp()== ExprUnary.UNOP_NOT ||exp.getOp()== ExprUnary.UNOP_BNOT) : "Vector unary currently only supported for not";
 	    switch(exp.getOp())
 	    {
 	    case ExprUnary.UNOP_NOT: 
@@ -941,27 +949,30 @@ public class PartialEvaluator extends FEReplacer {
     
     private void addParamCopyDecl(Parameter param, Expression expr)
     {
-		if(expr instanceof ExprVar && param.getName().equals(((ExprVar)expr).getName()))
-			return;
-    	Statement varDecl=new StmtVarDecl(expr.getContext(),param.getType(),param.getName(),expr);
+		//if(expr instanceof ExprVar && param.getName().equals(((ExprVar)expr).getName()))
+		//	return;		
+    	Statement varDecl=new StmtVarDecl(expr.getContext(),param.getType(),state.transName(param.getName()),expr);
     	addStatement(varDecl);
     }
-    
+    private void addParamCopyDecl(Parameter param)
+    {
+    	Statement varDecl=new StmtVarDecl(null,param.getType(),state.transName(param.getName()),null);
+    	addStatement(varDecl);
+    }
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
-    String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
-    	String result = "";
+    String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){    	
     	List<Expression> actualsList = new ArrayList<Expression>();
     	List<valueClass> actualsValList = new ArrayList<valueClass>();
     	while(actualParamIterator.hasNext()){
     		Expression actualParam = (Expression)actualParamIterator.next();
-    		actualParam.accept(this);
+    		actualParam = (Expression) actualParam.accept(this);
         	valueClass actualParamValue = state.popVStack();
         	actualsList.add(actualParam);
         	actualsValList.add(actualParamValue);
     	}
-    	
+    	StringBuffer result = new StringBuffer();
     	Iterator<Expression> actualIterator = actualsList.iterator();
     	Iterator<valueClass> actualValIterator = actualsValList.iterator();
     	
@@ -994,6 +1005,7 @@ public class PartialEvaluator extends FEReplacer {
 	    		Iterator<valueClass> actualParamValueIt = lst.iterator();		    		
 	    		int idx = 0;
 	    		state.makeArray(formalParamName, lst.size());
+	    		result.ensureCapacity( result.length() +  lst.size()*10 );
 	    		while( actualParamValueIt.hasNext() ){
 	    			valueClass currentVal =  actualParamValueIt.next();
 	    			String currentName = formalParamName + "_idx_" + idx;
@@ -1001,7 +1013,7 @@ public class PartialEvaluator extends FEReplacer {
 		    		lhsname = state.varGetLHSName(currentName);			    		
 		    		if( !formalParam.isParameterOutput() ){
 			    		if(!currentVal.hasValue()){
-			    			result += lhsname + " = " + currentVal + ";\n";
+			    			result.append(lhsname + " = " + currentVal + ";\n");
 			    		}else{
 			    			state.setVarValue(currentName, currentVal.getIntValue());
 			    		}
@@ -1010,6 +1022,8 @@ public class PartialEvaluator extends FEReplacer {
 	    		}
 	    		if(this.isReplacer && !formalParam.isParameterOutput()) {
 	    			addParamCopyDecl(formalParam,actualParam);
+	    		}else if(this.isReplacer && formalParam.isParameterOutput()) {
+	    			addParamCopyDecl(formalParam);
 	    		}
 	    	}else{
 	    		String formalParamName = formalParam.getName();
@@ -1018,7 +1032,7 @@ public class PartialEvaluator extends FEReplacer {
 	    		Assert(actualParamValue.hasValue() || !checkError, "I must be able to determine the values of the parameters at compile time.");
 	    		if( !formalParam.isParameterOutput() ){
 		    		if(!actualParamValue.hasValue()){
-		    			result += lhsname + " = " + actualParamValue + ";\n";
+		    			result.append(lhsname + " = " + actualParamValue + ";\n");
 		    			if(isReplacer){
 		    				addParamCopyDecl(formalParam,actualParam);
 		    			}
@@ -1029,10 +1043,14 @@ public class PartialEvaluator extends FEReplacer {
 		    				addParamCopyDecl(formalParam,new ExprConstInt(actualParam.getContext(),value));
 		    			}
 		    		}
+	    		}else{
+	    			if(isReplacer){
+	    				addParamCopyDecl(formalParam);
+	    			}
 	    		}
 	    	}
         }
-        return result;
+        return result.toString();
     }
     
     
@@ -1042,7 +1060,8 @@ public class PartialEvaluator extends FEReplacer {
         	Expression actualParam = (Expression)actualParamIterator.next();			        	
         	Parameter formalParam = (Parameter) formalParamIterator.next();
         	
-        	String apnm = (String) actualParam.accept( new LHSvisitor());	        	
+        	LHSvisitor lhsvisit =  new LHSvisitor();
+        	String apnm = (String) actualParam.accept(lhsvisit);	        	
         	if( formalParam.isParameterOutput() ){
         		String formalParamName = formalParam.getName();
 	        	int sz = state.checkArray(formalParamName);
@@ -1057,20 +1076,20 @@ public class PartialEvaluator extends FEReplacer {
         				}				    		
 	        		}
 	        		if(this.isReplacer){
-	        			addStatement(new StmtAssign(actualParam.getContext(), actualParam, new ExprVar(actualParam.getContext(), formalParam.getName()) ));
+	        			addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprVar(actualParam.getContext(), state.transName(formalParam.getName())) ));
 	        		}
 		    	}else{
 	    			if(state.varHasValue(formalParamName)){
 	    				int val = state.varValue(formalParamName);
     					state.setVarValue(apnm, val);
     					if(this.isReplacer){
-    	        			addStatement(new StmtAssign(actualParam.getContext(), actualParam, new ExprConstInt(actualParam.getContext(), val) ));
+    	        			addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprConstInt(actualParam.getContext(), val) ));
     	        		}
     				}else{
     					String rhsname = state.varGetRHSName(formalParamName);
 		    			result += state.varGetLHSName(apnm) + " = " + rhsname + ";\n";
 		    			if(this.isReplacer){
-		        			addStatement(new StmtAssign(actualParam.getContext(), actualParam, new ExprVar(actualParam.getContext(), formalParam.getName()) ));
+		        			addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprVar(actualParam.getContext(), state.transName(formalParam.getName())) ));
 		        		}
     				}
 		    	}
@@ -1199,8 +1218,9 @@ public class PartialEvaluator extends FEReplacer {
 	        		state.varDeclare(nnm);
 	        		String tmplhsn = state.varGetLHSName(nnm);
 	        		if(param.isParameterOutput()){
-	        			state.varDeclare("_p_"+nnm);
-	            		String tmplhsn2 = state.varGetLHSName("_p_"+nnm);
+	        			String lname = "_p_"+nnm;
+	        			state.varDeclare(lname);
+	            		String tmplhsn2 = state.varGetLHSName(lname);
 	            		result += tmplhsn2 + "  ";
 	        		}else{
 	        			result += tmplhsn + "  ";
