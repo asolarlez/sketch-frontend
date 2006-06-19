@@ -15,22 +15,28 @@ import java.util.Iterator;
 
 class MapStack{
 	
-	private HashMap curVT; //HashMap<String, String>
+	private HashMap<String, String> curVT; //HashMap<String, String>
 	private MapStack kid;
 	private int pushcount=0;
+	private String lastSeen=null;
+	private String lastSeenTrans=null;
 	
 	MapStack(){
-		curVT = new HashMap();
+		curVT = new HashMap<String, String>();
 	}
 	/**
 	 * Creates the new unique name for this variable.
 	 */
 	public void varDeclare(String var){
 		String newname = var + "_" + pushcount +"L" + curVT.size();
+		lastSeen = var;
+		lastSeenTrans = newname;
 		curVT.put(var, newname);
 	}
 	public String varDeclareFresh(){		
 		String newname = "_" + pushcount +"L" + curVT.size();
+		lastSeen = newname;
+		lastSeenTrans = newname;
 		curVT.put(newname, newname);
 		return newname;
 	}
@@ -59,13 +65,17 @@ class MapStack{
 	
 	
 	public String transName(String nm){
+		if( nm == lastSeen) 
+			return lastSeenTrans;
+		lastSeen = nm;
 		String t = (String) curVT.get(nm);
 		if(t != null)
-			return t;
+			lastSeenTrans = t;
 		else
 			if(kid != null)
-				return kid.transName(nm);
+				lastSeenTrans = kid.transName(nm);
 			else
-				return nm;
+				lastSeenTrans = nm;
+		return lastSeenTrans;
 	}
 }
