@@ -1,21 +1,42 @@
 int Nb = 4;
 int W = Nb*Nb*8;
-int ROUNDS = 10;
+int Nr = 14;
+
+bit[W] Cypher(bit[W] in, bit[W*(Nr+1)] keys){
+bit[W] state;
+
+state = in;
+state = state^keys[0::W];
+for(int i=1; i<Nr; ++i){
+	state = normalRound(state, keys[(i*W)::W]);
+}
+
+state = ByteSub(state);
+state = ShiftRows(state);
+state = state ^ keys[(Nr*W)::W];
+return state;
+
+}
 
 
-bit[W] normalRoundsk(bit[W] in_p, bit[W] rkey) implements normalRound{
-  bit [32*256] T0 = ??;
-  bit [32*256] T1 = ??;
-  bit [32*256] T2 = ??;
-  bit [32*256] T3 = ??;
+
+
+
+
+
+
+
+bit[W] normalRoundHelper(bit[W] in_p, bit[W] rkey, bit [32*256] T0, bit [32*256] T1,bit [32*256] T2,bit [32*256] T3){
   bit[W] in;
   in = ShiftRows(in_p);
   bit[W] output;
+  bit[32] mask = {1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   for(int i=0; i<4; ++i){
-  	bit[8] inv0 = in[(i*32)::8];
-  	bit[8] inv1 = in[(i*32+8)::8];
-  	bit[8] inv2 = in[(i*32+2*8)::8];
-  	bit[8] inv3 = in[(i*32+3*8)::8];
+    bit[32] inw = in[(i*32)::32];
+  	bit[32] inv0 = inw &  mask;        //in[(i*32)::8];
+  	bit[32] inv1 = (inw << 8) & mask;  //in[(i*32+8)::8];
+  	bit[32] inv2 = (inw << 16) & mask; //in[(i*32+2*8)::8];
+  	bit[32] inv3 = (inw << 24) & mask; //in[(i*32+3*8)::8];
   	int i0 = (int) inv0;
   	int i1 = (int) inv1;
   	int i2 = (int) inv2;
@@ -24,6 +45,15 @@ bit[W] normalRoundsk(bit[W] in_p, bit[W] rkey) implements normalRound{
   	output[i*32::32] = output[i*32::32] ^ rkey[(i*32)::32];
   }
   return output;
+}
+
+
+bit[W] normalRoundsk(bit[W] in_p, bit[W] rkey) implements normalRound{
+  bit [32*256] T0 = ??;
+  bit [32*256] T1 = ??;
+  bit [32*256] T2 = ??;
+  bit [32*256] T3 = ??;
+  return normalRoundHelper(in_p, rkey, T0, T1, T2, T3);
 }
 
 
@@ -44,6 +74,7 @@ bit[W] ByteSub(bit[W] in){
 	}
 	return result;
 }
+
 
 bit[W] ShiftRows(bit[W] in){
     int [4] shift = {0,1,2,3};
