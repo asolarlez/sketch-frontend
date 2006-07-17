@@ -164,8 +164,9 @@ public class ExprBinary extends Expression
     			ExprBinary left = (ExprBinary)getLeft();
     			Integer lleft = left.getLeft().getIValue();
     			Integer rleft = left.getRight().getIValue();
+    			int rvIint = rvI.intValue();
     			if( left.getOp() == ExprBinary.BINOP_MUL ){
-    				if( rvI.equals(rleft) || rvI.equals(lleft) ){
+    				if(  (rleft != null && rleft.intValue()%rvIint == 0) || (lleft != null && lleft.intValue()%rvIint == 0) ){
     					return new Integer(0);
     				}
     			}
