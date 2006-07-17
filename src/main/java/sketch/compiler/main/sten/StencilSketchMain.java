@@ -59,6 +59,8 @@ import streamit.frontend.passes.NoticePhasedFilters;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.stencilSK.EliminateCompoundAssignments;
+import streamit.frontend.stencilSK.functionalizeStencils;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
@@ -84,7 +86,7 @@ import streamit.frontend.tosbit.ValueOracle;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ToSBit
+public class ToStencilSK
 {
     public void printUsage()
     {
@@ -355,6 +357,12 @@ public class ToSBit
         if (prog == null)
             throw new IllegalStateException();
 
+        System.out.println("Only implemented up to here.");
+        prog = (Program)prog.accept(new EliminateCompoundAssignments());
+        prog = (Program)prog.accept(new functionalizeStencils());
+        
+        if(true){ return ; }
+        
         TempVarGen varGen = new TempVarGen();
         prog = lowerIRToJava(prog, !libraryFormat, varGen);
         ValueOracle oracle = new ValueOracle();
@@ -576,7 +584,7 @@ public class ToSBit
     
     public static void main(String[] args)
     {
-        new ToSBit().run(args);
+        new ToStencilSK().run(args);
     }
 }
 
