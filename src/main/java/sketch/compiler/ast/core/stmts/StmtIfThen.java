@@ -71,8 +71,13 @@ public class StmtIfThen extends Statement
     public String toString(){
     	String result = "if(" + this.cond + "){\n";
     	result += this.cons;
-    	result += "}else{\n";
+    	result += "}";
+    	if(this.alt != null){
+    	result += "else{\n";
     	result += this.alt + "}\n";
+    	}else{
+    		result += "\n";
+    	}
     	return result;    	
     }
     
