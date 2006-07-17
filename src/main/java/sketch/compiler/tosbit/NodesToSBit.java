@@ -359,7 +359,12 @@ public class NodesToSBit extends PartialEvaluator{
 	    	// Local function?
 	    	if (ss.getFuncNamed(name) != null) {        	
 	    		state.pushLevel();
-	    		Function fun = ss.getFuncNamed(name);	 
+	    		Function fun = ss.getFuncNamed(name);
+	    		
+	    		if( fun.getSpecification() != null){
+	    			assert ss.getFuncNamed(fun.getSpecification()) != null;
+	    			fun = ss.getFuncNamed(fun.getSpecification());
+	    		}
 	    		{
 	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
 	    			Iterator formalParams = fun.getParams().iterator();

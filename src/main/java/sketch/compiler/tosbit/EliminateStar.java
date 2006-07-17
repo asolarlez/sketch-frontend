@@ -9,7 +9,15 @@ public class EliminateStar extends PartialEvaluator {
 	private HasStars starCheck;
 	private int LUNROLL;
 	private Integer currentSize = null;	
-	private boolean checkForStars = true;
+	/**
+	 * 0 means to visit only things that have stars. </br>
+	 * 1 means visit all functions, but only unroll their loops and inline their functions if they have stars </br>
+	 * 2 visit all functions that have specs, unroll their loops </br>
+	 * 3 visit all functions that have specs, unroll their loops inline their calls. </br>
+	 */
+	private int inlineLevel = 0; 
+	public Map<String, Function> newFuns;
+	
 	
 	public class ChangeNames extends FEReplacer{		
 		public Object visitExprVar(ExprVar exp) { return new ExprVar(exp.getContext(), state.transName(exp.getName()) ); }		
@@ -53,13 +61,14 @@ public class EliminateStar extends PartialEvaluator {
 		}
 	}
 
-	public EliminateStar(ValueOracle oracle, int LUNROLL, boolean checkForStars){
+	public EliminateStar(ValueOracle oracle, int LUNROLL, int inlineLevel){
 		super(true);
 		this.oracle = oracle;
 		this.LUNROLL = LUNROLL;
 		oracle.initCurrentVals();
 		this.state = new MethodState();
-		this.checkForStars = checkForStars;
+		this.newFuns = new HashMap<String, Function>();
+		this.inlineLevel = inlineLevel;
 	}
 
 	
@@ -68,27 +77,53 @@ public class EliminateStar extends PartialEvaluator {
 		this.oracle = oracle;
 		this.LUNROLL = LUNROLL;
 		oracle.initCurrentVals();
+		this.newFuns = new HashMap<String, Function>();
 		this.state = new MethodState();
 	}
 		
 	public boolean askIfPEval(Function node){
-		if( !checkForStars) return true;
-		return starCheck.testNode(node);
+		switch( inlineLevel ){
+		case 0: return starCheck.testNode(node);
+		case 1: return true;
+		case 2: 
+		case 3:
+			return node.getSpecification()!= null;
+		default :
+			return false;
+		}
 	}
 	
 	public boolean askIfPEval(ExprFunCall exp)
-	{    	
-		if( !checkForStars ) return false;
-    	String name = exp.getName();
+	{   
+		
+		String name = exp.getName();
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
 		if( fun == null ) return false;
-		return askIfPEval(fun);
+		
+		switch( inlineLevel ){
+		case 0:{
+			if( fun.getSpecification() != null) return false;
+			return askIfPEval(fun);
+		}
+		case 1: return false;
+		case 2: return false;
+		case 3:
+			return true;
+		default :
+			return false;
+		}
 	}
 	
 	public boolean askIfPEval(FENode node){	
-		if( !checkForStars ) return false;
-		return starCheck.testNode(node);
+		switch( inlineLevel ){
+		case 0: return starCheck.testNode(node);
+		case 1: return false;
+		case 2: return true;
+		case 3: return true;			
+		default :
+			return false;
+		}
 	}
 	
 	public Object visitStmtAssign(StmtAssign stmt)
@@ -573,12 +608,28 @@ public class EliminateStar extends PartialEvaluator {
     	String name = exp.getName();
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
+		boolean madeSubstitution=false;
+		if(fun.getSpecification()!= null){
+			String specName = fun.getSpecification();
+			if( newFuns.containsKey(specName)){
+				fun = newFuns.get(specName);
+			}else{
+				Function newFun = ss.getFuncNamed(specName);
+				fun = (Function)this.visitFunction(newFun);
+			}
+			madeSubstitution=true;
+		}
     	if (fun != null) {    		
     		if(!askIfPEval(exp)){
     			//if the called function contains no stars, keep the call but run the partial evaluator
     			List<Statement>  oldNewStatements = newStatements;
         		newStatements = new ArrayList<Statement> ();
-        		super.visitExprFunCall(exp);
+        		if( madeSubstitution ){
+        			ExprFunCall exp2 = new ExprFunCall(exp.getContext(), fun.getName(), exp.getParams());
+        			super.visitExprFunCall(exp2);
+        		}else{
+        			super.visitExprFunCall(exp);
+        		}
         		newStatements = oldNewStatements;
         		//return exp;
         		boolean hasChanged = false;
@@ -670,6 +721,9 @@ public class EliminateStar extends PartialEvaluator {
 	
 	public Object visitFunction(Function func)
     {
+		if( newFuns.containsKey(func.getName()) ){
+			return newFuns.get(func.getName());
+		}
         if(askIfPEval(func)){
 	        if(func.getCls() != Function.FUNC_INIT && func.getCls() != Function.FUNC_WORK && func.getSpecification() != null ){
 	        	doParams(func.getParams(), "");
@@ -698,6 +752,7 @@ public class EliminateStar extends PartialEvaluator {
                         newParams, func.getSpecification(), body);
 	        }
         }
+        newFuns.put(func.getName(), func);
         return func;
     }
 
@@ -711,15 +766,15 @@ public class EliminateStar extends PartialEvaluator {
 
 
 
-	public void setCheckForStars(boolean checkForStars) {
-		this.checkForStars = checkForStars;
+	public void setInlineLevel(int inlineLevel) {
+		this.inlineLevel = inlineLevel;
 	}
 
 
 
 
-	public boolean getCheckForStars() {
-		return checkForStars;
+	public int getInlineLevel() {
+		return inlineLevel;
 	}
 	
 }
