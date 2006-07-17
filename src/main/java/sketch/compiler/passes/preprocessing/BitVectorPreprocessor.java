@@ -154,7 +154,8 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
-		//convert all array initializations to separate assignments
+		//convert all array initializations to separate assignments.
+		//Unless they are constant expressions.
 		int n=stmt.getNumVars();
 		int na=0;
 		for(int i=0;i<n;i++) if(isBitArrayType(stmt.getType(i))) na++;
@@ -167,15 +168,20 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		for(int i=0;i<n;i++) {
 			if(isBitArrayType(stmt.getType(i))) {
 				String name=stmt.getName(i);
-				StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,null);
-				decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
-				statements.add(decl);
+				
 				Expression initExpr=stmt.getInit(i);
-				if(initExpr==null && !name.startsWith("__"))
+				if(false && initExpr==null && !name.startsWith("__"))
 					initExpr=new ExprConstInt(stmt.getContext(),0);
-				if(initExpr!=null) { 
+				if(initExpr!=null && !(initExpr instanceof ExprArrayInit)) { 
+					StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,null);
+					decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
+					statements.add(decl);
 					StmtAssign let=new StmtAssign(stmt.getContext(),new ExprVar(stmt.getContext(),name),initExpr);
 					statements.add((Statement)let.accept(this));
+				}else{
+					StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,initExpr);
+					decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
+					statements.add(decl);
 				}
 			}
 			else {

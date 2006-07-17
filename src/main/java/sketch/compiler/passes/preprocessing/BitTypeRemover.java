@@ -292,16 +292,22 @@ public class BitTypeRemover extends SymbolTableVisitor
 		processingDeclaration=true;
 		boolean change=false;
 		int n=stmt.getNumVars();
-		List types=new ArrayList(n+1);
+		List<Type> types=new ArrayList<Type>(n+1);
+		List<Expression> inits = new ArrayList<Expression>(n);
 		for(int i=0;i<n;i++) {
 			Type oldType=stmt.getType(i);
 			preSymtab.registerVar(stmt.getName(i),oldType);
 			Type newType=convertType(oldType);
 			if(newType!=oldType) change=true;
 			types.add(newType);
+			Expression init = stmt.getInit(i);
+			if( init != null  && init instanceof ExprArrayInit){				
+				init = convertArrayInit((ExprArrayInit)init, oldType, newType);
+			}
+			inits.add(init);
 		}
 		if(change)
-			stmt=new StmtVarDecl(stmt.getContext(),types,stmt.getNames(),stmt.getInits());
+			stmt=new StmtVarDecl(stmt.getContext(),types,stmt.getNames(),inits);
 		stmt=(StmtVarDecl) super.visitStmtVarDecl(stmt);
 		processingDeclaration=false;
 		return stmt;
@@ -476,6 +482,23 @@ public class BitTypeRemover extends SymbolTableVisitor
 		return mask;
 	}
 	
+	
+	
+	private ExprArrayInit convertArrayInit(ExprArrayInit exp, Type oldType, Type newType){
+		if( isBitArrayType(oldType)){
+			int ws = getArrayWordsize(newType);
+			List<Expression> oldElems = exp.getElements();
+			List<Expression> newElems = new ArrayList<Expression>((oldElems.size()-1)/ws + 1);
+			for(int i=0; i<oldElems.size(); i += ws){
+				newElems.add( makeHexString(exp, i/ws, ws));
+			}
+			return new ExprArrayInit( exp.getContext(), newElems );
+		}else{
+			return exp;
+		}
+	}
+	
+	
 	private Expression makeHexString(ExprArrayInit exp, int word, int ws) 
 	{
 		long mask=computeMask(exp,word,ws);
@@ -487,18 +510,30 @@ public class BitTypeRemover extends SymbolTableVisitor
 	private Statement callSK_bitArrayCopyInv(Expression lhs, Expression start, int len, Expression rhs, int ws, int rhws, Expression lhsLen  ){
 		// len == rhsws && lhsws == lhslen && start % rhsws == 0;
 		FEContext context = lhs.getContext();
-		boolean cond = len == rhws;
+		boolean cond = (len % rhws) == 0;
 		Integer lhsLenInt = lhsLen.getIValue();
-		cond = cond && (lhsLenInt != null && ws == lhsLenInt.intValue());
+		cond = cond && (lhsLenInt != null && ws*(len/rhws) == lhsLenInt.intValue());
 		Expression smodRWS = new ExprBinary(context, ExprBinary.BINOP_MOD, start, new ExprConstInt(context, rhws) );
 		Integer smodInt = smodRWS.getIValue();
 		cond = cond && (smodInt != null && smodInt.intValue() == 0);		
 		if(cond){
+			if( len == rhws ){
 			Expression zero = new ExprConstInt(0);
 			Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(zero))); ;// lhs[0];			
 			Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, rhws) );
 			Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(sdivRWS))); ; // rhs[start/rhsws];
 			return new StmtAssign(context, lhsNew, rhsNew); // lhsNew = rhsNew;
+			}else{
+				int sz = len/rhws;				
+				String var=varGen.nextVar();
+				ExprVar evar = new ExprVar(context,var);
+				Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(evar)));// lhs[0];			
+				Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, rhws) );
+				sdivRWS = new ExprBinary(context, ExprBinary.BINOP_ADD, sdivRWS, evar );
+				Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(sdivRWS))); ; // rhs[start/rhsws];
+				Statement body= new StmtAssign(context, lhsNew, rhsNew); // lhsNew = rhsNew;				
+				return makeForLoop(var, new ExprConstInt(sz) ,body);
+			}
 		}
 		
 		Expression end = new ExprBinary(context,ExprBinary.BINOP_ADD,start,new ExprConstInt(context,len-1));
