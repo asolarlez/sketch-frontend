@@ -45,8 +45,9 @@ public class ExprUnary extends Expression
     private Expression expr;
     
     public Integer getIValue(){
-    	if(expr != null){
-    		int v = expr.getIValue();
+    	Integer iVal = expr.getIValue();
+    	if(iVal != null){
+    		int v = iVal.intValue();
     		switch(op){
     		case UNOP_NOT: return new Integer(1-v);
     		case UNOP_BNOT: return new Integer(~v);
