@@ -1,0 +1,24 @@
+bit sk2(bit[4] in) implements sp2 {	
+	bit [4] tmp = in;
+	tmp[2] = 1;
+	tmp[3] = 0;
+	return tmp[{*}];
+}
+
+
+bit sp2 (bit[4] in) {
+	return in[1];
+}
+
+
+
+bit sk1(bit[4] in) implements sp1 {	
+	bit tmp = (in[1] & {*}) | (in[3] & {*});
+	tmp = tmp ^ sk2(in);
+	return tmp;
+}
+
+
+bit sp1 (bit[4] in) {
+	return in[3]^in[1];
+}
