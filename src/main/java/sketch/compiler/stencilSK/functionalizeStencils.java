@@ -176,6 +176,9 @@ class paramTree{
 		return tmp;
 	}
 	
+	public treeNode getRoot(){
+		return root;
+	}
 	public void endLevel(){
 		cnode = cnode.father;
 	}	
@@ -602,7 +605,18 @@ class processStencil extends FEReplacer {
     	    		ainf = new arrInfo();
     	    		smap.put(var, ainf);
     	    		fa(ainf, var, tt);
-	        	}	            
+	        	}else{
+	        		String var = stmt.getName(i);
+	        		arrInfo ainf = null;
+    	    		assert !smap.containsKey(var);
+    	    		ainf = new arrInfo();
+    	    		smap.put(var, ainf);
+    	    		fa(ainf, var, 0);
+    	    		if( stmt.getInit(i) != null ){
+    	    			List<Expression> indices = new ArrayList<Expression>(0);
+    	    			processArrAssign(var, indices, stmt.getInit(i));
+    	    		}
+	        	}
 	        }
 	        return stmt;
 	    }
@@ -678,8 +692,11 @@ class processStencil extends FEReplacer {
 	    	}
 	    	//Now we add the secondary constraints.	    	
 	    	//NOTE: Check the priority.	    
-	    	Expression binexp = buildSecondaryConstr(currentTN.pathIter(), newVar, 0);
-	    	smax.secC.add(binexp);
+	    	Iterator<StmtVarDecl> pIt = currentTN.pathIter();
+	    	if(pIt.hasNext()){
+		    	Expression binexp = buildSecondaryConstr(pIt, newVar, 0);
+		    	smax.secC.add(binexp);
+	    	}
 	    	
 	    	//Finally, we add the tertiary constraints.
 	    	for(Iterator<Expression> condIt = conds.iterator(); condIt.hasNext(); ){
@@ -739,38 +756,52 @@ class processStencil extends FEReplacer {
 	    		}
 	    	}
 	    	
+	    	public Object visitExprVar(ExprVar evar){
+	    		String bname = evar.getName();
+	    		if(smap.containsKey(bname)){
+	    			List tmp = new ArrayList();
+	    			return fa(bname, tmp);
+	    		}else{
+	    			return evar;
+	    		}
+	    	}
+	    	
+	    	public ExprFunCall fa(String bname, List mem){
+//	    		First, we get the function representation of the array.
+	    		arrInfo ainf = smap.get(bname);
+	    		arrFunction arFun = ainf.sfun.peek();
+	    		//Now we build a function call to replace the array access.
+	    		List<Expression> params = new ArrayList<Expression>();	    		
+	    		assert arFun.idxParams.size() == mem.size();
+	    		for(int i=0; i<mem.size(); ++i){	    			
+	    			Object obj=mem.get(i);
+	    			assert obj instanceof RangeLen;
+	    			Expression newPar = (Expression)((RangeLen)obj).start().accept(this);
+	    			params.add(newPar);
+	    		}
+	    		// Now we have to set the other parameters, which is a little trickier.
+	    		//What we will do is first compare the iter and posIter params of arFun with
+	    		//those of the current function fun. The two lists should have a matching prefix
+	    		//and a diverging suffix. For those arguments corresponding to the prefix, we'll		    		
+	    		//pass a current value (an idx_i) for the others, we'll pass the default value.
+	    		
+	    		setIterPosIterParams(arFun, fun, params);
+	    		//Finally, we must set all the other parameters.
+	    		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){		    			
+	   	 			Entry<String, Type> par = pIt.next();
+	   	 			params.add(new ExprVar(null, par.getKey()));
+	   	 		}
+	    		
+	    		return new ExprFunCall(null, arFun.getFullName(), params);
+	    	}
+	    	
 	    	public Object visitExprArrayRange(ExprArrayRange exp) {
-	    		final Expression newBase=doExpression(exp.getBase());
+	    		final Expression newBase=exp.getBase();
 	    		assert newBase instanceof ExprVar;
 	    		String bname = ((ExprVar) newBase).getName();
 	    		if(smap.containsKey(bname)){
-		    		//First, we get the function representation of the array.
-		    		arrInfo ainf = smap.get(bname);
-		    		arrFunction arFun = ainf.sfun.peek();
-		    		//Now we build a function call to replace the array access.
-		    		List<Expression> params = new ArrayList<Expression>();
-		    		List mem = exp.getMembers();
-		    		assert arFun.idxParams.size() == mem.size();
-		    		for(int i=0; i<mem.size(); ++i){	    			
-		    			Object obj=mem.get(i);
-		    			assert obj instanceof RangeLen;
-		    			Expression newPar = (Expression)((RangeLen)obj).start().accept(this);
-		    			params.add(newPar);
-		    		}
-		    		// Now we have to set the other parameters, which is a little trickier.
-		    		//What we will do is first compare the iter and posIter params of arFun with
-		    		//those of the current function fun. The two lists should have a matching prefix
-		    		//and a diverging suffix. For those arguments corresponding to the prefix, we'll		    		
-		    		//pass a current value (an idx_i) for the others, we'll pass the default value.
-		    		
-		    		setIterPosIterParams(arFun, fun, params);
-		    		//Finally, we must set all the other parameters.
-		    		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){		    			
-		   	 			Entry<String, Type> par = pIt.next();
-		   	 			params.add(new ExprVar(null, par.getKey()));
-		   	 		}
-		    		
-		    		return new ExprFunCall(null, arFun.getFullName(), params);
+	    			List mem = exp.getMembers();
+		    		return fa(bname, mem);
 	    		}else{
 	    			return exp;
 	    		}
@@ -813,19 +844,26 @@ class processStencil extends FEReplacer {
 	    {
 	        Expression lhs = stmt.getLHS();
 	        Expression rhs = stmt.getRHS();
-	        assert lhs instanceof ExprArrayRange ;	        
-	        ExprArrayRange nLHS = (ExprArrayRange) lhs;
-	        assert nLHS.getBase() instanceof ExprVar;
-	        String var = ((ExprVar) nLHS.getBase() ).getName();
-	        Iterator it = nLHS.getMembers().iterator();
-	        List<Expression> indices = new ArrayList<Expression>(nLHS.getMembers().size());
-	        while(it.hasNext()){
-	        	Object o = it.next();
-	        	assert o instanceof RangeLen;
-	        	Expression exp = ((RangeLen) o).start();
-	        	indices.add(exp);
+	        if( lhs instanceof ExprArrayRange ){
+		        assert lhs instanceof ExprArrayRange ;	        
+		        ExprArrayRange nLHS = (ExprArrayRange) lhs;
+		        assert nLHS.getBase() instanceof ExprVar;
+		        String var = ((ExprVar) nLHS.getBase() ).getName();
+		        Iterator it = nLHS.getMembers().iterator();
+		        List<Expression> indices = new ArrayList<Expression>(nLHS.getMembers().size());
+		        while(it.hasNext()){
+		        	Object o = it.next();
+		        	assert o instanceof RangeLen;
+		        	Expression exp = ((RangeLen) o).start();
+		        	indices.add(exp);
+		        }
+		        processArrAssign(var, indices, rhs);	
+	        }else{
+	        	assert lhs instanceof ExprVar;
+	        	String var = ((ExprVar) lhs ).getName();
+	        	List<Expression> indices = new ArrayList<Expression>(0);
+	        	processArrAssign(var, indices, rhs);	        	
 	        }
-	        processArrAssign(var, indices, rhs);	        
 	        return stmt;	        
 	    }
 	    
@@ -857,6 +895,7 @@ class processStencil extends FEReplacer {
     public Object visitFunction(Function func)
     {
     	ptree = (new SetupParamTree()).producePtree(func);
+    	currentTN = ptree.getRoot();
         return super.visitFunction(func);
     }
 
