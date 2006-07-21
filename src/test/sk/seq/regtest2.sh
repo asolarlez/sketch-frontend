@@ -6,7 +6,7 @@ bname=`echo  $x | sed 's/\.sk//'`
 rm -f ${bname}*.c
 rm -f ${bname}
 rm -f ${bname}*.h
-
+rm -f script
 
 
 
