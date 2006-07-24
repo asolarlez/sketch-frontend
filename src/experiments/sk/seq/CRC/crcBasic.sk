@@ -1,0 +1,47 @@
+int Win=16;
+int Wout=8;
+int N=2;
+int TSIZE=1<<N;
+
+
+bit[Wout] remainder(bit[Win] in)
+{
+	bit[Wout] poly=0;
+	poly[Wout-1]=1; poly[Wout-2]=1; poly[Wout-3]=1; //CRC-8
+	bit[Wout] ret=0;	
+	for(int i=0; i<Win; i++){
+		bit f1 = ret[Wout-1];
+		ret = ret >> 1;
+		ret[0] = in[i];
+		if( f1 ) ret = ret ^ poly;
+	}
+	return ret;
+}
+
+
+bit[Wout] crcCore(bit[Wout] in, bit[Wout] state){
+	bit[Wout] poly=0;
+	poly[Wout-1]=1; poly[Wout-2]=1; poly[Wout-3]=1; //CRC-8
+	bit[Wout] one = 0; one[0] = 1;
+	bit[Wout] ret= state;
+	for(int i=0; i<Wout; i++){
+		bit f1 = ret[Wout-1];
+		ret = ret >> 1;
+		ret = ret | (in & one);
+		in = in << 1;
+		if( f1 ) ret = ret ^ poly;
+	}
+	return ret;
+}
+
+bit[Wout] remainderSK(bit[Win] in) implements remainder
+{
+	bit[Wout] ret=0;
+	int T = Win / Wout;	
+	for(int j=0; j<T; ++j){
+		ret = crcCore(in[j*Wout::Wout], ret);		
+	}
+	return ret;
+}
+
+
