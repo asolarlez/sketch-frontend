@@ -4,12 +4,28 @@ int S = 4;
 int K = Wout/S;
 int TS = 1<<K;
 bit[Wout] crcCoreSK(bit[Wout] in, bit[Wout] state) implements crcCore{	
-	bit[TS*Wout*S] T = ??;
+	bit[TS*Wout] T0 = ??;
+	bit[TS*Wout] T1 = ??;
+	bit[TS*Wout] T2 = ??;
+	bit[TS*Wout] T3 = ??;
 	bit[Wout] ret= in;
-	
-	for(int i=0; i<S; ++i){
-		int idx = (int)(state[i*K::K]);
-		ret = 	T[((i*TS*Wout)+(Wout*idx))::Wout] ^ ret;
+	int idx;
+	int i;
+	{i=0;
+	idx = (int)(state[i*K::K]);
+	ret = 	T0[(Wout*idx)::Wout] ^ ret;
+	}
+	{i=1;
+	idx = (int)(state[i*K::K]);
+	ret = 	T1[(Wout*idx)::Wout] ^ ret;
+	}
+	{i=2;
+	idx = (int)(state[i*K::K]);
+	ret = 	T2[(Wout*idx)::Wout] ^ ret;
+	}
+	{i=3;
+	idx = (int)(state[i*K::K]);
+	ret = 	T3[(Wout*idx)::Wout] ^ ret;
 	}
 	return ret;
 }
