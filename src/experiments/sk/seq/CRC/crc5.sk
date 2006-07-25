@@ -1,0 +1,40 @@
+int Win=64;
+int Wout=32;
+int S = 4;
+int K = Wout/S;
+int TS = 1<<K;
+bit[Wout] crcCoreSK(bit[Wout] in, bit[Wout] state) implements crcCore{	
+	bit[TS*Wout*S] T = ??;
+	bit[Wout] ret= in;
+	
+	for(int i=0; i<S; ++i){
+		int idx = (int)(state[i*K::K]);
+		ret = 	T[((i*TS*Wout)+(Wout*idx))::Wout] ^ ret;
+	}
+	return ret;
+}
+
+
+bit[Wout] crcCore(bit[Wout] in, bit[Wout] state){
+	bit[Wout] poly=0;
+	poly[3] = 1; poly[20] = 1; poly[Wout-1]=1; poly[Wout-2]=1; poly[Wout-3]=1; //CRC-8
+	bit[Wout] one = 0; one[0] = 1;
+	bit[Wout] ret= state;
+	for(int i=0; i<Wout; i++){
+		bit f1 = ret[Wout-1];
+		ret = ret >> 1;
+		ret[0] = ret[0] | in[Wout-1-i];
+		if( f1 ) ret = ret ^ poly;
+	}
+	return ret;
+}
+
+bit[Wout] remainderSK(bit[Win] in)
+{
+	bit[Wout] ret=0;
+	int T = Win / Wout;	
+	for(int j=0; j<T; ++j){
+		ret = crcCore(in[j*Wout::Wout], ret);		
+	}
+	return ret;
+}
