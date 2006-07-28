@@ -15,6 +15,7 @@ int main(int argc, char** argv)
 	if(n<0) {printf("Bad number of jobs (%d)\n",n);return 1;}
 	
 	for(int i=1;i<=n;i++) {
+		printf("%d,",i);
 		sprintf(buf,"log%d.txt",i);
 		file=fopen(buf,"rt");
 		fgets(line,sizeof(line),file);

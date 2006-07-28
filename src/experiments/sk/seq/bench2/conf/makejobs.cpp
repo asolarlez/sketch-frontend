@@ -9,6 +9,7 @@ char buffer[1000];
 char tmp[100];
 char outputFile[100];
 char reportName[3][100];
+char localDir[100];
 #define bail() do{printf("error on line %d\n",ln); if(fout) fclose(fout); return 1;}while(false)
 
 char* getLine()
@@ -61,7 +62,7 @@ int makeTest(int n) {
 
 	fprintf(f,"cd /home/eecs/asolar/research/bodik/edu.berkeley.asolar.streamBitFrontend/sbin\n");
 	fprintf(f,"source install.sh\n");
-	fprintf(f,"cd ~/sketch\n\n");
+	fprintf(f,"cd %s\n\n",localDir);
 	fprintf(f,"echo generating %s\n",rname);
 	fprintf(f,"rm -f %s.sk\n",rname);
 	fprintf(f,"cp %s %s.sk\n",skname,rname);
@@ -139,6 +140,10 @@ int parseFile()
 			assert(line[5]!=0);
 			strcpy(gflags,line+6);
 		}
+		else if(!strcmp(word,"localdir")) {
+			assert(line[8]!=0);
+			strcpy(localDir,line+9);
+		}
 		else if(!strcmp(word,"test")) {
 			char name[100];
 			if(sscanf(line,"%s %s",word,name)!=2) bail();
@@ -158,6 +163,7 @@ int main(int argc, char **argv)
 	outputFile[0]=0;
 	reportName[0][0]=0;
 	gflags[0]=0;
+	strcpy(localDir,"~/sketch");
 	if(argc<2) {printf("usage %s <config file>\n",argv[0]); return 0;}
 	fin=fopen(argv[1],"rt");
 	if(!fin) {printf("can't open file %s\n",argv[1]); return 1;}
