@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Set classpath and solver path; adjust for Cygwin as necessary
+#
+TMPCLASSPATH="$FRONTEND/antlr-2.7.5.jar:$FRONTEND/bin:."
+TMPSBITPATH="$SOLVER/"
+if [ $OSTYPE == cygwin ]; then
+  TMPCLASSPATH=${TMPCLASSPATH//\//\\}
+  TMPCLASSPATH=${TMPCLASSPATH//:/\;}
+  TMPSBITPATH=${TMPSBITPATH//\//\\}
+  TMPSBITPATH=${TMPSBITPATH//:/\;}
+fi
+
+# Get the last command-line argument as INFILE
+#
+for INFILE; do continue; done
+
+# Set source path for debugger; adjust for Cygwin
+#
+TMPSOURCEPATH="${0%/*}"
+TMPSOURCEPATH="${TMPSOURCEPATH%/*}"
+if [ $OSTYPE == cygwin ]; then
+  TMPSOURCEPATH=${TMPSOURCEPATH//\//\\}
+  TMPSOURCEPATH=${TMPSOURCEPATH//:/\;}
+fi
+
+ddd --jdb -sourcepath "$TMPSOURCEPATH" -classpath "$TMPCLASSPATH" \
+  streamit.frontend.ToSBit $REST --output "$INFILE.tmp" \
+  --sbitpath "$TMPSBITPATH" $INFILE
