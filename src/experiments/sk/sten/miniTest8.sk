@@ -1,0 +1,73 @@
+int N;
+int X;
+
+int[N] test(int[N] in){
+  int[N] out=0;
+  for(int i=0; i<N; ++i){
+  		out[i] = in[i];
+  }
+}
+
+
+int[N] testSK(int[N] in) implements test{
+  int[N] out=0;
+  int[X] spari=0;
+  int[X] sparv=0;
+  int t = 0;
+  for(int ii=0; ii<N; ++ii){
+  	if(in[ii]!= 0){
+  	   spari[t] = ii;
+  	   sparv[t] = in[ii];
+  	   t = t+1;
+  	}
+  }
+  
+  for(int i=0; i<t; ++i){
+  	out[spari[i]]= sparv[i];
+  }
+}
+
+
+
+spari(int jj, ii){
+	assume jj==A || jj==B;
+	if(jj==A)
+		return ii-1;
+	if(jj==B)
+		return ii+1;
+}
+
+sparv(int jj, ii){
+	if(jj==A)
+		return V1;
+	if(jj==B)
+		return V2;
+}
+
+
+int[N] testB(int[X] spari, int[X] sparv){
+  int[N] out=0;
+  for(int ii=0; ii<N; ++ii){
+  	out[ii] = 0;
+  	for(int jj=0; jj<X; ++jj){
+  		if(spari[jj] == ii-1){
+  			out[ii] += sparv[jj];
+  		}
+  		if(spari[jj] == ii+1){
+  			out[ii] += sparv[jj];
+  		}
+  	}
+  }
+}
+
+int[N] testSKB(int[X] spari, int[X] sparv) implements testB{
+  int[N] out=0;
+  for(int ii=0; ii<X; ++ii){
+  	out[spari[ii]-1] += sparv[ii];
+  	out[spari[ii]+1] += sparv[ii];
+  }
+}
+
+
+
+

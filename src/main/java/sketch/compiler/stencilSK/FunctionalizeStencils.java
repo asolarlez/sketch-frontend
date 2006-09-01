@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import streamit.frontend.nodes.ExprArray;
@@ -19,7 +20,6 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FEVisitor;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
@@ -36,164 +36,6 @@ import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 
 
-
-
-
-class paramTree{
-	
-	private Map<FENode, treeNode> tnMap = new HashMap<FENode, treeNode>();
-	public treeNode getTNode(FENode node){
-		return tnMap.get(node);
-	}
-	class treeNode{
-		StmtVarDecl vdecl=null;
-		loopHist lh=null;
-		private treeNode father=null;
-		private List<treeNode> children = new ArrayList<treeNode>();
-		private int pos = -1;
-		private int level = -1;
-		public int nchildren(){
-			return children.size();
-		}
-		public int getLevel(){
-			return level;
-		}
-		public treeNode getFather(){
-			return father;
-		}
-		public treeNode child(int i){
-			return children.get(i);
-		}
-		public treeNode(loopHist lh, treeNode father){
-			this.lh = lh;
-			if( lh != null){this.vdecl = lh.newVD(); }
-			this.father = father;
-		}
-		public void add(treeNode tn){
-			tn.pos = children.size();
-			tn.level = level + 1;
-			children.add(tn);
-		}
-		public PathIterator pathIter(){
-			PathIterator pi = new PathIterator();			
-			return pi;
-		}
-
-		public class PathIterator implements Iterator<StmtVarDecl>{
-			private int[] path;
-			private int step;
-			private treeNode tn;
-			public PathIterator(){
-				path = new int[level];
-				step = 0;
-				tn = root;
-				treeNode ltn = treeNode.this;
-				int ii=level-1;
-				while(ltn != root){
-					path[ii] = ltn.pos;
-					ltn = ltn.father;
-					--ii;
-				}		
-				assert ii==-1;
-			}
-			public StmtVarDecl next(){				
-				treeNode tmp = tn.child(path[step]);		
-				tn = tmp;
-				++step;
-				return tmp.vdecl;
-			}
-			
-			public loopHist lhNext(){				
-				treeNode tmp = tn.child(path[step]);		
-				tn = tmp;
-				++step;
-				return tmp.lh;
-			}
-			
-			public boolean hasNext(){
-				return step != path.length;
-			}
-			public void remove(){
-				assert false;
-			}
-			
-		}
-	}
-	
-	
-	public class FullIterator implements Iterator<StmtVarDecl>{
-		private treeNode tn;
-		FullIterator(){			
-			tn = root;		
-			if(hasNext()) next();
-		}
-		public StmtVarDecl next(){			
-			treeNode curr = tn;		
-			if( tn.nchildren() > 0 ){
-				tn = tn.child(0);				
-			}else{
-				int pos = tn.pos;
-				tn = tn.father;
-				while(tn.nchildren()<= pos+1){
-					if( tn == root ){tn = null;  return curr.vdecl;}
-					pos = tn.pos;
-					tn = tn.father;
-				}
-				tn = tn.child(pos+1);
-			}
-			return curr.vdecl;
-		}		
-		public boolean hasNext(){
-			return tn != null; 
-		}
-		public void remove(){
-			assert false;
-		}
-	}
-	
-	public FullIterator iterator(){
-		return new FullIterator();
-	}
-	
-	public String toString(){
-		String rv = " ";
-		for(FullIterator it = iterator(); it.hasNext(); ){
-			rv += it.next().toString() + ", ";
-		}
-		return rv;
-	}
-	
-	private treeNode cnode;
-	private treeNode root;
-	private int depth;
-	public paramTree(){
-		root = new treeNode(new loopHist("BASE", null, null), null);
-		root.level = 0;
-		cnode = root;
-	}
-	
-	public treeNode beginLevel(loopHist lh, FENode node){
-		treeNode tmp = beginLevel(lh);
-		this.tnMap.put(node, tmp);
-		if( tmp.getLevel() > depth) depth = tmp.getLevel();
-		return tmp;
-	}
-	public treeNode beginLevel(loopHist lh){
-		treeNode tmp = new treeNode(lh, cnode);
-		cnode.add(tmp);
-		cnode = tmp;
-		return tmp;
-	}
-	
-	public treeNode getRoot(){
-		return root;
-	}
-	public void endLevel(){
-		cnode = cnode.father;
-	}	
-	
-	
-}
 
 
 
@@ -289,57 +131,6 @@ class arrInfo{
 }
 
 
-/**
- * Represents a max statement of the form:
- * int[dim] lhsvar = max{ primPred(lhsvar) && secPred(lhsvar) };
- */
-class StmtMax extends Statement{
-	int dim;
-	String lhsvar;	
-	/**
-	 * Primary constraints.
-	 * They are of the form expr(idx)==t
-	 */
-	List<Expression> primC;
-	/**
-	 * Secondary constraints.
-	 * They are of the form idx < something
-	 */
-	List<Expression> secC;
-	/**
-	 * Tertiary constraints.
-	 * They are pretty arbitrary.
-	 */
-	List<Expression> terC;
-	public Object accept(FEVisitor visitor){
-		assert false;
-		return null;
-	}
-	StmtMax(int dim, String lhsvar){super(null);
-		this.dim = dim;
-		this.lhsvar = lhsvar;
-		this.primC = new ArrayList<Expression>();
-		this.secC = new ArrayList<Expression>();
-		this.terC = new ArrayList<Expression>();
-	}
-	String getVar(){ assert false; return null;}
-	public String toString(){
-		String rv = "int[" + dim + "] " + lhsvar + "= max{";
-		for(Iterator<Expression> eit = primC.iterator(); eit.hasNext(); ){
-			rv += eit.next().toString() + " & ";
-		}
-		for(Iterator<Expression> eit = secC.iterator(); eit.hasNext(); ){
-			rv += eit.next().toString() + " & ";
-		}
-		for(Iterator<Expression> eit = terC.iterator(); eit.hasNext(); ){
-			rv += eit.next().toString() + " & ";
-		}
-		rv += "}";
-		return rv;
-	}
-}
-
-
 class VarReplacer extends FEReplacer{
 	String oldName;
 	Expression newName;
@@ -363,18 +154,26 @@ class VarReplacer extends FEReplacer{
 
 public class FunctionalizeStencils extends FEReplacer {
 	List<processStencil> stencilFuns;
+	Map<String, ArrFunction> funmap;
 	Map<String, Type> superParams;
 	public FunctionalizeStencils() {
 		super();
 		stencilFuns = new ArrayList<processStencil>();
 		superParams = new HashMap<String, Type>();
+		funmap = new TreeMap<String, ArrFunction>();
 	}
+	
+	public Map<String, ArrFunction> getFunMap(){
+		return funmap;
+	}
+	
 	 public Object visitFunction(Function func)
 	    {
-		 	processStencil ps = new processStencil();
+		 	processStencil ps = new processStencil(func.getName());
 		 	ps.setSuperParams(superParams);
-		 	stencilFuns.add(ps);
-		 	func.accept(ps);	        
+		 	stencilFuns.add(ps);		 	
+		 	func.accept(ps);	
+		 	funmap.putAll(ps.getAllFunctions());
 	        return func;
 	    }
 
@@ -401,16 +200,28 @@ class processStencil extends FEReplacer {
 	Map<String, Type> superParams;
 
 	Stack<Expression> conds;
-	paramTree.treeNode currentTN;
+	ParamTree.treeNode currentTN;
 	Stack<scopeHist> scopeStack;
 	Map<String, arrInfo> smap;
-	paramTree ptree;
+	ParamTree ptree;
+	final String suffix; 
+	
+	public Map<String, ArrFunction> getAllFunctions(){
+		Map<String, ArrFunction> nmap = new TreeMap<String, ArrFunction>();
+		for(Iterator<Entry<String, arrInfo>> it = smap.entrySet().iterator(); it.hasNext(); ){
+			Entry<String, arrInfo> tmp = it.next();
+			assert tmp.getValue().sfun.size() == 1;
+			ArrFunction fun = tmp.getValue().sfun.peek();
+			nmap.put(fun.getFullName(), fun);
+		}
+		return nmap;
+	}
 	
 	class SetupParamTree extends FEReplacer{
-		paramTree ptree;
-		public paramTree producePtree(Function func)
+		ParamTree ptree;
+		public ParamTree producePtree(Function func)
 	    {
-			ptree = new paramTree();
+			ptree = new ParamTree();
 			visitFunction(func);
 	        return ptree;
 	    }
@@ -454,7 +265,7 @@ class processStencil extends FEReplacer {
 	
 	 public void processForLoop(StmtFor floop, String indVar, Expression exprStartPred, Expression exprEndPred, Statement body, boolean direction){
 		 currentTN = ptree.getTNode(floop);
-		 loopHist lh = currentTN.lh;
+		 //loopHist lh = currentTN.lh;
 		 scopeHist sc = new scopeHist();
 		 scopeStack.push( sc );
 		 conds.push(exprStartPred);
@@ -517,7 +328,7 @@ class processStencil extends FEReplacer {
 	    }*/
 	    
 	    void fa(arrInfo ainf, String var, int dim){	    	
-   	 		ainf.fun = new ArrFunction(var, ainf.sfun.size(), ptree);
+   	 		ainf.fun = new ArrFunction(var, suffix, ainf.sfun.size(), ptree);
    	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD("t"+i, null) );
    	 		
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
@@ -525,7 +336,7 @@ class processStencil extends FEReplacer {
    	 			ainf.fun.othParams.add(new StmtVarDecl(null, par.getValue(), par.getKey(), null));
    	 		}
    	 		int sz = ainf.sfun.size();
-   	 		ainf.fun.retStmts.add( nullMaxIf(sz>0 ? ainf.sfun.peek():null));
+   	 		ainf.fun.addRetStmt( nullMaxIf(sz>0 ? ainf.sfun.peek():null));
    	 		ainf.sfun.add(ainf.fun);
    	 		scopeStack.peek().funs.add(ainf.fun);   	 		
 	    }
@@ -570,7 +381,7 @@ class processStencil extends FEReplacer {
 	    	return new StmtVarDecl(null, TypePrimitive.inttype,  name, init);	    	
 	    }
 	    public Statement nullMaxIf(ArrFunction prevFun){	    	
-	    	Expression cond = new ExprBinary(null, ExprBinary.BINOP_EQ, new ExprVar(null, "max_idx"), new ExprVar(null, "null") );
+	    	Expression cond = new ExprBinary(null, ExprBinary.BINOP_EQ, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(0) );
 	    	Statement rval;
 	    	if(prevFun != null){
 	    		List<Expression>  params = new ArrayList<Expression>();
@@ -586,7 +397,7 @@ class processStencil extends FEReplacer {
 	    			StmtVarDecl par = it.next();
 	    			params.add( new ExprVar(null, par.getName(0)));
 	    		}	    		
-	    		rval = new StmtReturn(null, new ExprFunCall(null, prevFun.getFullName(), params) );
+	    		rval = new StmtReturn(null, new ExprFunCall(null, prevFun.getFullName() , params) );
 	    	}else{
 	    		rval = new StmtReturn(null, new ExprConstInt(0) );
 	    	}	    	
@@ -615,11 +426,11 @@ class processStencil extends FEReplacer {
 	    
 	    public StmtMax newStmtMax(int i, List<Expression> indices, ArrFunction fun){	
 	    	assert indices.size() == fun.idxParams.size();
-	    	String newVar = "idx_" + i;
+	    	String newVar = ArrFunction.IDX_VAR + i;
 	    	
 	    	//"idx_i := max{expr1==t, idx < in_idx, conds }; "
 	    	int ii=0;
-	    	StmtMax smax = new StmtMax(currentTN.getLevel()*2+1, newVar);
+	    	StmtMax smax = new StmtMax(currentTN.getLevel()*2+1, newVar, ArrFunction.GUARD_VAR + i);
 	    	// First we add the primary constraints.
 	    	// indices[k][fun.iterParam[j] -> idx_i[2*j+1]]==fun.idxParams[k]
 	    	// idx_i[2*j] == pos_j 
@@ -644,7 +455,7 @@ class processStencil extends FEReplacer {
 		    		smax.primC.add(cindex);
 		    	}		    	
 		    	int jj=0;
-		    	for(paramTree.treeNode.PathIterator iterIt = currentTN.pathIter(); iterIt.hasNext();jj++){
+		    	for(ParamTree.treeNode.PathIterator iterIt = currentTN.pathIter(); iterIt.hasNext();jj++){
 		    		loopHist lh = iterIt.lhNext();
 		    		ExprConstInt val = new ExprConstInt( lh.stage);
 		    		ExprArray ear = new ExprArray(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+2));
@@ -677,14 +488,50 @@ class processStencil extends FEReplacer {
 	    	return smax;
 	    }
 	    
+	    
+
+		
+		public Expression comp(int pos, int dim, ExprVar v1, ExprVar v2){
+			ExprArray ear1 = new ExprArray(null, v1, new ExprConstInt(pos));
+			ExprArray ear2 = new ExprArray(null, v2, new ExprConstInt(pos));
+			Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, ear1, ear2);
+			Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, ear1, ear2);
+			Expression out;
+			if(pos<dim-1){
+				Expression andExp = new ExprBinary(null, ExprBinary.BINOP_AND, eq, comp(pos+1, dim,  v1, v2));
+				out = new ExprBinary(null, ExprBinary.BINOP_OR, tmp, andExp);
+			// out = tmp || (eq &&  comp(iterIt))
+			}else{
+				out = tmp;
+			// out = tmp;
+			}
+			return out;		
+		}
+		
+		
+		public Statement processMax(int dim, ExprVar v1, ExprVar v2, String gv2, int id){
+			Expression cond1 = new ExprVar(null, gv2);
+			Expression cond2 = comp(0, dim, v1, v2);
+			
+			StmtAssign as1 = new StmtAssign(null, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(id+1));
+			StmtAssign as2 = new StmtAssign(null, v1, v2);
+			List<Statement> lst = new ArrayList<Statement>(2);
+			lst.add(as1);
+			lst.add(as2);
+			
+			StmtIfThen if2 = new StmtIfThen(null, cond2,  new StmtBlock(null, lst), null);
+			StmtIfThen if1 = new StmtIfThen(null, cond1,  if2, null);		
+			return if1;
+		}
+	    
+	    
+	    
+	    
 	    public Statement pickLargest(int i, int dim){
 	    	//"max_idx = max(idx_i|{(stack-smap[x].stack_beg).stage}, max_idx);" 
-	    	ExprVar mvar = new ExprVar(null, "max_idx");
-	    	List<Expression> param = new ArrayList<Expression>(2);
-	    	param.add(mvar);
-	    	param.add(new ExprVar(null, "idx_" + i));
-	    	ExprFunCall fc = new ExprFunCall(null, "max", param);
-    		return new StmtAssign(null, mvar, fc);
+	    	ExprVar mvar = new ExprVar(null, ArrFunction.MAX_VAR);
+	    	ExprVar idxvar = new ExprVar(null, ArrFunction.IDX_VAR + i);
+    		return processMax(dim, mvar, idxvar, ArrFunction.GUARD_VAR + i , i);
 	    }
 	    
 	    /**
@@ -702,7 +549,6 @@ class processStencil extends FEReplacer {
 	    	}
 	    	
 	    	void setIterPosIterParams(ArrFunction callee,ArrFunction caller,List<Expression> params){
-	    		//TODO need to modify this method to take into account also the posIter parameters.
 	    		Iterator<StmtVarDecl> globIter = ptree.iterator();
 	    		Iterator<StmtVarDecl> locIter = currentTN.pathIter();
 	    		
@@ -777,9 +623,10 @@ class processStencil extends FEReplacer {
 	    
 	    public Statement iMaxIf(int i, Expression rhs, ArrFunction fun){
 	    	//if(max_idx == idx_i){ return rhs; }
-	    	ExprVar maxV = new ExprVar(null, "max_idx");
-	    	ExprVar idxi = new ExprVar(null, "idx_" + i);
-	    	Expression eq = new ExprBinary(null, ExprBinary.BINOP_EQ, maxV, idxi);
+	    	ExprVar indvar = new ExprVar(null, ArrFunction.IND_VAR);
+	    	ExprVar idxi = new ExprVar(null, ArrFunction.IDX_VAR + i);
+	    	ExprConstInt iiv = new ExprConstInt(i+1);
+	    	Expression eq = new ExprBinary(null, ExprBinary.BINOP_EQ, indvar, iiv);
 	    	int ii=0;
 	    	for(Iterator<StmtVarDecl> it = currentTN.pathIter(); it.hasNext(); ++ii){
 	    		StmtVarDecl par = it.next();	    		
@@ -794,14 +641,13 @@ class processStencil extends FEReplacer {
 	    
 	    public void processArrAssign(String var, List<Expression> indices, Expression rhs){
 	    	assert smap.containsKey(var);
-	    	arrInfo ainf = smap.get(var);	    	
-	    	int dim = indices.size();	//dimension of the array var.
+	    	arrInfo ainf = smap.get(var);	    		    	
 	   	 	assert ( ainf.fun != null);
 	   	 	ArrFunction fun = ainf.fun;
-	   	 	int i = fun.idxAss.size();
-	   	 	fun.idxAss.add( newStmtMax(i, indices, fun) );	   	 	
-	   	 	fun.maxAss.add( pickLargest(i, dim) );
-	   	 	fun.retStmts.add( iMaxIf(i, rhs, fun)  );
+	   	 	int i = fun.size();
+	   	 	fun.addIdxAss( newStmtMax(i, indices, fun) );	   	 	
+	   	 	fun.addMaxAss( pickLargest(i, currentTN.getLevel()*2+1) );
+	   	 	fun.addRetStmt( iMaxIf(i, rhs, fun)  );
 	   	 	++(currentTN.lh.stage);
 	    }
 
@@ -848,12 +694,13 @@ class processStencil extends FEReplacer {
 	    }
 	
 	
-	public processStencil() {
+	public processStencil(String suffix) {
 		super();
 		superParams = new HashMap<String, Type>();
 		conds = new Stack<Expression>();		
 		scopeStack = new Stack<scopeHist>();
-		smap = new HashMap<String, arrInfo>();	
+		smap = new HashMap<String, arrInfo>();
+		this.suffix = "_" + suffix;
 	}
 	
 
