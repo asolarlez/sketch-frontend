@@ -78,6 +78,7 @@ public interface FEVisitor
     public Object visitStmtPhase(StmtPhase stmt);
     public Object visitStmtPush(StmtPush stmt);
     public Object visitStmtReturn(StmtReturn stmt);
+    public Object visitStmtAssert(StmtAssert stmt);
     public Object visitStmtSendMessage(StmtSendMessage stmt);
     public Object visitStmtSplit(StmtSplit stmt);
     public Object visitStmtVarDecl(StmtVarDecl stmt);

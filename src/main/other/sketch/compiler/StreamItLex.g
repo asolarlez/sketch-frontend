@@ -61,7 +61,7 @@ tokens {
 // Intrinsic values:
 	"pi"; "true"; "false";
 	//sketching stuff
-	"implements"; "overrides";
+	"implements"; "overrides"; "assert";
 }
 
 INCLUDE :"#include" ;

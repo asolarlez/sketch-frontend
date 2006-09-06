@@ -1,0 +1,16 @@
+bit foo(bit[4] in){
+	return in[{*}];
+}
+
+bit reverseSketch(bit[4] in) implements reverse {		
+	int x;
+
+	x = ??;
+        if (x == 1)
+		assert 1;
+	return 	foo(in) ^ in[{*}];
+}
+
+bit reverse (bit[4] in) {
+	return in[2] ^ in[3];
+}

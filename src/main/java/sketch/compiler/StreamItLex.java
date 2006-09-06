@@ -1,4 +1,4 @@
-// $ANTLR : "StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR 2.7.5 (20050128): "StreamItLex.g" -> "StreamItLex.java"$
 
 	package streamit.frontend;
 
@@ -79,6 +79,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("return", this), new Integer(45));
 	literals.put(new ANTLRHashString("filter", this), new Integer(4));
 	literals.put(new ANTLRHashString("overrides", this), new Integer(50));
+	literals.put(new ANTLRHashString("assert", this), new Integer(51));
 	literals.put(new ANTLRHashString("bit", this), new Integer(29));
 	literals.put(new ANTLRHashString("if", this), new Integer(36));
 	literals.put(new ANTLRHashString("int", this), new Integer(30));

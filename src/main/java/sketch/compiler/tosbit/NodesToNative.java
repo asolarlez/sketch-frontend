@@ -55,6 +55,7 @@ import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPhase;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtSendMessage;
 import streamit.frontend.nodes.StmtSplit;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -711,6 +712,14 @@ public class NodesToNative extends  NodesToJava
     {
         if (stmt.getValue() == null) return "return";
         return "return " + (String)stmt.getValue().accept(this);
+    }
+
+    public Object visitStmtAssert(StmtAssert stmt)
+    {
+        /* Gilad, 2006-09-06: temporarily (?) prevent this method from
+         * being used, until I figure out what it's here for. */
+        assert (false) : ("shouldn't get here");
+        return "assert " + (String)stmt.getCond().accept(this);
     }
 
     public Object visitStmtSendMessage(StmtSendMessage stmt)

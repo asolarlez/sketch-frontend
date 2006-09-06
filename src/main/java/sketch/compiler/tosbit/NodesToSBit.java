@@ -16,6 +16,7 @@ import java.util.Stack;
 
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstBoolean;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
@@ -49,6 +50,7 @@ import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPhase;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtSendMessage;
 import streamit.frontend.nodes.StmtSplit;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -87,8 +89,7 @@ public class NodesToSBit extends PartialEvaluator{
     public int LUNROLL=8;
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
-    
-    
+
 	    public NodesToSBit(StreamSpec ss, TempVarGen varGen, ValueOracle oracle, PrintStream out)
 	    {
 	    	super(false);
@@ -919,7 +920,8 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        // must have an if part...
 	    		        
-	        stmt.getCond().accept(this);
+            Expression cond = stmt.getCond();
+	        cond.accept(this);
 	        valueClass vcond = state.popVStack();
 	        if(vcond.hasValue()){
 	        	if(vcond.getIntValue() > 0){
@@ -930,7 +932,10 @@ public class NodesToSBit extends PartialEvaluator{
 	        	}
 	        	return null;   	
 	        }
-	        state.pushChangeTracker();	        
+
+            /* Gilad, 2005-08-11: attach conditional to change tracker. */
+	        state.pushChangeTracker (cond, vcond);
+            
 	        try{
 	        	stmt.getCons().accept(this);
 	        }catch(RuntimeException e){
@@ -960,6 +965,38 @@ public class NodesToSBit extends PartialEvaluator{
 	        }
 	        return null;
 	    }
+
+        /**
+         * Assert statement visitor. Generates a complex assertion expression which
+         * takes into consideration the chain of nesting conditional expressions, and
+         * composes them as premises to the given expression.
+         *
+         * @author Gilad Arnold
+         */
+        public Object visitStmtAssert (StmtAssert stmt) {
+            /* Evaluate given assertion expression. */
+            Expression assertCond = stmt.getCond ();
+            assertCond.accept (this);
+            valueClass assertVal = state.popVStack ();
+
+            /* Compose complex expression by walking all nesting conditionals. */
+            String tmpVar = varGen.nextVar ();
+            String tmpLine = tmpVar + " = " + assertCond.toString ();
+            for (ChangeStack changeTracker = state.getChangeTracker ();
+                 changeTracker != null; changeTracker = changeTracker.kid )
+            {
+                if (! changeTracker.hasCondVal ())
+                    continue;
+                valueClass nestCond = changeTracker.getCondVal ();
+                tmpLine += " || ! (" + nestCond.toString () + ")";
+            }
+
+            tmpLine += ";\n";
+            out.print (tmpLine);
+            out.print ("assert " + tmpVar + ";\n");
+
+            return null;
+        }
 
 	    public Object visitStmtJoin(StmtJoin stmt)
 	    {

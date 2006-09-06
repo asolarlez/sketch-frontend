@@ -211,6 +211,7 @@ statement returns [Statement s] { s = null; }
 	|	s=while_statement
 	|	s=do_while_statement SEMI
 	|	s=for_statement
+	|	s=assert_statement SEMI
 	|s=return_statement SEMI
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
 	;
@@ -347,6 +348,10 @@ pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayLi
 
 return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	:	t:TK_return (x=right_expr)? { s = new StmtReturn(getContext(t), x); }
+	;
+
+assert_statement returns [StmtAssert s] { s = null; Expression x; }
+	:	t:TK_assert x=right_expr { s = new StmtAssert(getContext(t), x); }
 	;
 
 if_else_statement returns [Statement s]

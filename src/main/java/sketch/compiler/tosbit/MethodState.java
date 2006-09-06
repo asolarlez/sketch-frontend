@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import streamit.frontend.nodes.Expression;
+
 
 public class MethodState{
 	
@@ -38,7 +40,6 @@ public class MethodState{
 	 */
 	private ChangeStack changeTracker;
 	
-	
     
     /**
      * 
@@ -66,6 +67,14 @@ public class MethodState{
     public void popLevel(){
     	varTranslator = varTranslator.popLevel(vars, changeTracker);
     }
+
+    /**
+     * Return topmost change tracker.
+     * Used for walking the chain of trackers when (e.g.) translating an assertion.
+     */
+    public ChangeStack getChangeTracker () {
+        return changeTracker;
+    }
     
     public String transName(String nm){       	
     	String otpt = varTranslator.transName(nm);
@@ -83,20 +92,24 @@ public class MethodState{
 	}
 	
 
-	void pushChangeTracker(){	
-		if(changeTracker == null){
-			changeTracker = new ChangeStack();
-		}else{
-			ChangeStack tmp = changeTracker;
-			changeTracker = new ChangeStack();
-			changeTracker.kid  = tmp;
-		}
-		Iterator it =vars.values().iterator();	
-		while(it.hasNext()){						
+	void pushChangeTracker (Expression condExpr, valueClass condVal){	
+        /* Add new change tracker layer, including nesting conditional
+         * expression and value. */
+        ChangeStack oldChangeTracker = changeTracker;
+        changeTracker = new ChangeStack (condExpr, condVal);
+        changeTracker.kid = oldChangeTracker;
+        
+        /* Push current RHS for each variable. */
+		Iterator it = vars.values().iterator();	
+		while (it.hasNext()) {
 			varState vs = (varState) it.next();
 			vs.pushRHS();
 		}
 	}
+
+    void pushChangeTracker () {
+        pushChangeTracker (null, null);
+    }
 	
 	ChangeStack popChangeTracker(){
 		ChangeStack tmp = changeTracker;

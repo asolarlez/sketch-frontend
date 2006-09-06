@@ -834,6 +834,11 @@ public class NodesToJava implements FEVisitor
         return "return " + (String)stmt.getValue().accept(this);
     }
 
+    public Object visitStmtAssert(StmtAssert stmt)
+    {
+        return "assert " + (String)stmt.getCond().accept(this);
+    }
+
     public Object visitStmtSendMessage(StmtSendMessage stmt)
     {
         String receiver = (String)stmt.getReceiver().accept(this);

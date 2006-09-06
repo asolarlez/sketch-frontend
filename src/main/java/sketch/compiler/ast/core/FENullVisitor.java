@@ -73,6 +73,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtPhase(StmtPhase stmt) { return null; }
     public Object visitStmtPush(StmtPush stmt) { return null; }
     public Object visitStmtReturn(StmtReturn stmt) { return null; }
+    public Object visitStmtAssert(StmtAssert stmt) { return null; }
     public Object visitStmtSendMessage(StmtSendMessage stmt) { return null; }
     public Object visitStmtSplit(StmtSplit stmt) { return null; }
     public Object visitStmtVarDecl(StmtVarDecl stmt) { return null; }

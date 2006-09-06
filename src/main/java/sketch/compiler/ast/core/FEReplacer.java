@@ -506,6 +506,16 @@ public class FEReplacer implements FEVisitor
         return new StmtReturn(stmt.getContext(), newValue);
     }
     
+    public Object visitStmtAssert(StmtAssert stmt)
+    {
+        Expression newValue = stmt.getCond() == null ? null :
+            doExpression(stmt.getCond());
+        System.out.print (">>> FEReplacer::visitStmtAssert 1\n");
+        if (newValue == stmt.getCond()) return stmt;
+        System.out.print (">>> FEReplacer::visitStmtAssert 2\n");
+        return new StmtAssert(stmt.getContext(), newValue);
+    }
+    
     public Object visitStmtSendMessage(StmtSendMessage stmt)
     {
         boolean hasChanged = false;
