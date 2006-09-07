@@ -56,11 +56,11 @@ import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.GenerateCopies;
 import streamit.frontend.passes.NoRefTypes;
 import streamit.frontend.passes.NoticePhasedFilters;
-import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.stencilSK.EliminateCompoundAssignments;
-import streamit.frontend.stencilSK.functionalizeStencils;
+import streamit.frontend.stencilSK.FunctionalizeStencils;
+import streamit.frontend.stencilSK.StencilSemanticChecker;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
@@ -351,7 +351,7 @@ public class ToStencilSK
         }
         
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-        if (!SemanticChecker.check(prog))
+        if (!StencilSemanticChecker.check(prog))
             throw new IllegalStateException("Semantic check failed");
         prog = (Program)prog.accept(new AssignLoopTypes());
         if (prog == null)
@@ -359,8 +359,9 @@ public class ToStencilSK
 
         System.out.println("Only implemented up to here.");
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
-        prog = (Program)prog.accept(new functionalizeStencils());
-        
+        FunctionalizeStencils fs = new FunctionalizeStencils();
+        prog = (Program)prog.accept(fs);        
+        System.out.println("DONE!");
         if(true){ return ; }
         
         TempVarGen varGen = new TempVarGen();

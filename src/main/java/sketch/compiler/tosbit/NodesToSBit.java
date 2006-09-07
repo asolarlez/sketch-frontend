@@ -89,7 +89,8 @@ public class NodesToSBit extends PartialEvaluator{
     public int LUNROLL=8;
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
-
+    
+    
 	    public NodesToSBit(StreamSpec ss, TempVarGen varGen, ValueOracle oracle, PrintStream out)
 	    {
 	    	super(false);
@@ -906,7 +907,7 @@ public class NodesToSBit extends PartialEvaluator{
 		        	}
 		        	stmt.getCond().accept(this);
 			        vcond = state.popVStack();
-			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? ");
+			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getContext());
 		        }
 		        
 		        loopmap.popLoop();

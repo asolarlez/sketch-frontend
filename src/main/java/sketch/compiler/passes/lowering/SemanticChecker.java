@@ -114,7 +114,7 @@ public class SemanticChecker
     }
     
     // true if we haven't found any errors
-    private boolean good;
+    protected boolean good;
 
     private void report(FENode node, String message)
     {
