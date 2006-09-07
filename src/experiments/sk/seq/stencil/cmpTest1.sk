@@ -1,0 +1,57 @@
+int N = 32;
+
+bit eq(bit[N] a, bit[N] b){
+	bit rv = true;
+	int i=0;
+	loop(N){
+		if(a[i] ^ b[i]){
+			rv = false;
+		}
+		++i;
+	}
+	return rv;
+}
+
+bit gt(bit[N] a, bit[N] b){
+	bit rv = false;
+	bit done = false;
+	int i=N-1;
+	loop(N){
+		if( !done && a[i] && !b[i]){
+			rv = true;
+			done = true;
+		}
+		if( !done && !a[i] && b[i]){
+			done = true;
+			rv = false;
+		}	
+		i = i-1;
+	}
+	return rv;
+}
+
+
+
+bit test(bit[N] idx, bit[N] nval, bit A, bit B){
+	bit rv = 0;
+	if( gt( idx, 0) && gt(nval, idx) )
+		rv = A ^ B;
+	else
+		rv = 0;
+	return rv;
+}
+
+
+bit testSK(bit[N] idx, bit[N] nval, bit A, bit B) implements test{
+	bit rv = 0;
+	bit[N] one = ??;
+	bit[N] mone = ??;
+	
+	if(eq(idx, ??) || eq(idx, nval) || gt(idx, nval) ){
+		rv =??;
+	}else{
+		rv = A ^ B;
+	}	
+	return rv;
+}
+

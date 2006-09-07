@@ -1,0 +1,193 @@
+
+int in(int t0, int tabs, int iM1, int iP1){
+	int rv=0;
+	if( tabs==t0-1)
+		rv = iM1;
+	if( tabs==t0+1)
+		rv = iP1;
+	return rv;
+}
+
+int spec(int t0, int N, int iM1, int iP1){
+	return out_0(t0, N, N, t0, iM1, iP1);
+}
+
+int sketch(int t0, int N, int iM1, int iP1) implements spec{
+	return outSK(t0, N, N, t0, iM1, iP1);
+}
+
+int out_0(int t0,  int i, int N, int tabs, int iM1, int iP1){
+	int[3] idx_0; 
+	idx_0[0] = 0;
+	idx_0[1] = t0;	
+	idx_0[2] = 0;
+	bit g0 = (idx_0[1])<(i) & (idx_0[1])>=(0) & (idx_0[1])<(N) & ((idx_0[1])>(0))&&((idx_0[1])<(N));
+	
+	int[3] idx_1; 
+	idx_1[1] = t0;
+	idx_1[0]=0;
+	idx_1[2]=1;
+	bit g1 = (idx_1[1])<(i) & (idx_1[1])>=(0) & (idx_1[1])<(N) & !(((idx_1[1])>(0))&&((idx_1[1])<(N)));
+		
+	int ii=0;
+	int[3] max_idx=0;
+	if(g0){
+		ii = 1;
+		max_idx = idx_0;
+	}
+	if(g1){
+		if(idx_1[0]>max_idx[0] || (idx_1[0]==max_idx[0] && (idx_1[1] > max_idx[1] ||  (idx_1[1] == max_idx[1] && (idx_1[2] > max_idx[2]))))){
+			ii = 2;
+			max_idx = idx_1;
+		}		
+	}
+	int rv = 0;
+	if(ii==0){
+		rv = 0;
+	}
+	if(ii==1){
+		rv = in(idx_0[1]-1, tabs, iM1, iP1)+in(idx_0[1]+1, tabs, iM1, iP1);
+	}
+	if(ii==2){
+		rv = 0;
+	}
+	return rv;
+}
+
+int t2_0(int i, int N, int tabs, int iM1, int iP1){
+	int[3] idx_0;
+	idx_0[0] = 4;
+	idx_0[1] = i-1;
+	idx_0[2] = 0;
+	bit g0 = (idx_0[1])>=(1) & (idx_0[1])<((N)-(1));
+	int rv = 0;
+	if(!g0){
+		rv = 0;
+	}
+	if(g0){
+		rv = in(idx_0[1]+1, tabs, iM1, iP1);
+	}
+	return rv;
+}
+
+
+int outSK(int t0,  int i, int N, int tabs, int iM1, int iP1){
+	int[1] idx_0; 
+	idx_0[0] = 2;
+	bit g0 = (0)==(t0);
+	
+	int[1] idx_1; 
+	idx_1[0] = 3;
+	bit g1 = ((N)-(1))==(t0);
+	
+	int[3] idx_2; 
+	idx_2[0] = 4;
+	idx_2[1] = t0;
+	idx_2[2] = 1;
+	bit g2 = (idx_2[1])<(i) & (idx_2[1])>=(1) & (idx_2[1])<((N)-(1));
+	int ii=0;
+	int[3] max_idx = 0;
+	if(g0){
+		ii = 1;
+		max_idx = idx_0;
+	}
+	
+	if(g1){
+		if(idx_1[0] > max_idx[0]){
+			ii = 2;
+			max_idx = idx_1;
+		}
+	}
+	
+	if(g2){
+		if(idx_2[0]>max_idx[0] || (idx_2[0]==max_idx[0] && (idx_2[1] > max_idx[1] ||  (idx_2[1] == max_idx[1] && (idx_2[2] > max_idx[2]))) ) ){
+			ii = 3;
+			max_idx = idx_2;
+		}
+	}
+	int rv = 0;
+	if(ii == 0){
+		rv = 0;
+	}	
+	if(ii == 1){
+		rv = 0;
+	}
+	if(ii==2){
+		rv = 0;
+	}
+	if(ii==3){
+		rv = t0_0(idx_2[1], N, tabs, iM1, iP1)+t2_0(idx_2[1], N, tabs, iM1, iP1);
+	}
+	return rv;
+}
+int t0_0(int i, int N, int tabs, int iM1, int iP1){
+	int[1] idx_0;
+	idx_0[0] = 0;
+	bit g0 = true;
+	int[3] idx_1;
+	idx_1[0] = 4;
+	idx_1[1] = i-1;
+	idx_1[2] = 2;
+	bit g1 = (idx_1[1])>=(1) & (idx_1[1])<((N)-(1));
+	int[3] max_idx=0;	
+	int ii=0;
+	if(g0){
+		ii = 1;
+		max_idx = idx_0;
+	}
+	if(g1){
+		if(idx_1[0]>max_idx[0] || (idx_1[0]==max_idx[0] && (idx_1[1] > max_idx[1] ||  (idx_1[1] == max_idx[1] && (idx_1[2] > max_idx[2])) ) ) ){
+			ii = 2;
+			max_idx = idx_1;
+		}		
+	}
+	int rv=0;
+	if(ii==0){
+		rv = 0;
+	}
+	if(ii==1){
+		rv = in(0, tabs, iM1, iP1);
+	}
+	if(ii==2){
+		rv = t1_0(idx_1[1], N, tabs, iM1, iP1);
+	}
+	return rv;
+}
+int t1_0(int i, int N, int tabs, int iM1, int iP1){
+	int[1] idx_0;
+	idx_0[0] = 1;
+	bit g0 = true;
+	int[3] idx_1; 
+	idx_1[0] = 4;
+	idx_1[1] = i-1;
+	idx_1[2] = 3;
+	bit g1 = (idx_1[1])>=(1) & (idx_1[1])<((N)-(1));
+	int[3] max_idx=0;
+	
+	int ii=0;
+	if(g0){
+		ii = 1;
+		max_idx = idx_0;
+	}
+	if(g1){
+		if(idx_1[0]>max_idx[0] || (idx_1[0]==max_idx[0] && (idx_1[1] > max_idx[1] ||  (idx_1[1] == max_idx[1] && (idx_1[2] > max_idx[2])) ) ) ){
+			ii = 2;
+			max_idx = idx_1;
+		}		
+	}
+	int rv = 0;
+	if(ii==0){
+		rv = 0;
+	}
+
+	if(ii==1){
+		rv = in(1, tabs, iM1, iP1);
+	}
+
+	if(ii==2){
+		rv = t2_0(idx_1[1], N, tabs, iM1, iP1);
+	}
+	
+	return rv;
+}
+
