@@ -163,6 +163,15 @@ public class FunctionalizeStencils extends FEReplacer {
 		funmap = new TreeMap<String, ArrFunction>();
 	}
 	
+	
+	public void processFuns(){
+		for(Iterator<Entry<String, ArrFunction>> it = funmap.entrySet().iterator(); it.hasNext(); ){
+			ArrFunction af = it.next().getValue();
+			af.processMax();
+			System.out.println(af);
+		}
+	}
+	
 	public Map<String, ArrFunction> getFunMap(){
 		return funmap;
 	}

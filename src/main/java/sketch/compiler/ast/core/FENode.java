@@ -28,7 +28,7 @@ public abstract class FENode
 {
     private FEContext context;
     public boolean isNonDet=false;
-    
+    private Object tag = null;
     /**
      * Create a new node with the specified context.
      *
@@ -38,6 +38,9 @@ public abstract class FENode
     {
         this.context = context;
     }
+    
+    public Object getTag(){ return tag; }
+    public void setTag(Object tag){ this.tag = tag; }
     
     /**
      * Returns the context associated with this node.

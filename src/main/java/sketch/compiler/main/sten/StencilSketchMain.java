@@ -360,8 +360,12 @@ public class ToStencilSK
         System.out.println("Only implemented up to here.");
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
         FunctionalizeStencils fs = new FunctionalizeStencils();
-        prog = (Program)prog.accept(fs);        
+        prog = (Program)prog.accept(fs);    
+        
         System.out.println("DONE!");
+        
+        fs.processFuns();
+        
         if(true){ return ; }
         
         TempVarGen varGen = new TempVarGen();

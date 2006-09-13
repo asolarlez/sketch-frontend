@@ -101,4 +101,11 @@ public class ArrFunction{
 		rv += "}";
 		return rv;	
 	}
+	
+	public void processMax(){
+		for(Iterator<StmtMax> it = idxAss.iterator(); it.hasNext(); ){
+			StmtMax smax = it.next();
+			smax.resolve();
+		}
+	}
 }
