@@ -5,7 +5,7 @@ bit foo(bit[4] in){
 bit reverseSketch(bit[4] in) implements reverse {		
 	/* int __assert; */
 
-	assert 1;
+	assert 0;
 	return 	foo(in) ^ in[{*}];
 }
 
