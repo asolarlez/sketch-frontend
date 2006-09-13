@@ -510,9 +510,7 @@ public class FEReplacer implements FEVisitor
     {
         Expression newValue = stmt.getCond() == null ? null :
             doExpression(stmt.getCond());
-        System.out.print (">>> FEReplacer::visitStmtAssert 1\n");
         if (newValue == stmt.getCond()) return stmt;
-        System.out.print (">>> FEReplacer::visitStmtAssert 2\n");
         return new StmtAssert(stmt.getContext(), newValue);
     }
     
