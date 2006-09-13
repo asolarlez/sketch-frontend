@@ -982,7 +982,7 @@ public class NodesToSBit extends PartialEvaluator{
 
             /* Compose complex expression by walking all nesting conditionals. */
             String tmpVar = varGen.nextVar ();
-            String tmpLine = tmpVar + " = " + assertCond.toString ();
+            String tmpLine = tmpVar + " = " + assertVal.toString ();
             for (ChangeStack changeTracker = state.getChangeTracker ();
                  changeTracker != null; changeTracker = changeTracker.kid )
             {
