@@ -1,0 +1,12 @@
+
+bit dummy () {
+  return 0;
+}
+
+bit dummy_sketch () implements dummy {
+  bit[4] tmp = { 1, 1, 1, 1 };
+  int i = ??;
+  assert (i >= 0 && i < 4);
+  return tmp[i];
+}
+
