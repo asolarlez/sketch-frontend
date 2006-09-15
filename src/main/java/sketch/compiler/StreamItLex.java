@@ -1,4 +1,4 @@
-// $ANTLR 2.7.5 (20050128): "StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR : "StreamItLex.g" -> "StreamItLex.java"$
 
 	package streamit.frontend;
 

@@ -585,7 +585,7 @@ class processStencil extends FEReplacer {
 	    			return evar;
 	    		}
 	    	}
-	    	
+
 	    	public ExprFunCall fa(String bname, List mem){
 //	    		First, we get the function representation of the array.
 	    		arrInfo ainf = smap.get(bname);
@@ -616,7 +616,7 @@ class processStencil extends FEReplacer {
 	    	}
 	    	
 	    	public Object visitExprArrayRange(ExprArrayRange exp) {
-	    		final Expression newBase=exp.getBase();
+	    		final Expression newBase=getArrayBase(exp);
 	    		assert newBase instanceof ExprVar;
 	    		String bname = ((ExprVar) newBase).getName();
 	    		if(smap.containsKey(bname)){
@@ -660,6 +660,30 @@ class processStencil extends FEReplacer {
 	   	 	++(currentTN.lh.stage);
 	    }
 
+	    private ExprVar getArrayBase(ExprArrayRange array) {
+	        Expression base=array.getBase();
+	        if(base instanceof ExprArrayRange) {
+	        	return getArrayBase((ExprArrayRange) base);
+	        }
+	        assert base instanceof ExprVar: "The base of an array is expected to be a variable expression";
+	        return (ExprVar) base;
+	    }
+	    
+	    private List<Expression> getArrayIndices(ExprArrayRange array) {
+	        List<Expression> indices = new ArrayList<Expression>();
+	        Expression base=array.getBase();
+	        if(base instanceof ExprArrayRange) {
+	        	indices.addAll(getArrayIndices((ExprArrayRange) base));
+	        }
+	        List memb=array.getMembers();
+	        assert memb.size()==1: "In stencil mode, we permit only single-element indexing, i.e. no a[1,3,4]";
+	        assert memb.get(0) instanceof RangeLen: "In stencil mode, array ranges (a[1:4]) are not allowed";
+	        RangeLen rl=(RangeLen) memb.get(0);
+	        assert rl.len()==1: "In stencil mode, array ranges (a[1::2]) are not allowed";
+	        indices.add(rl.start());
+	        return indices;
+	    }
+	    
 	    public Object visitStmtAssign(StmtAssign stmt)
 	    {
 	        Expression lhs = stmt.getLHS();
@@ -667,16 +691,8 @@ class processStencil extends FEReplacer {
 	        if( lhs instanceof ExprArrayRange ){
 		        assert lhs instanceof ExprArrayRange ;	        
 		        ExprArrayRange nLHS = (ExprArrayRange) lhs;
-		        assert nLHS.getBase() instanceof ExprVar;
-		        String var = ((ExprVar) nLHS.getBase() ).getName();
-		        Iterator it = nLHS.getMembers().iterator();
-		        List<Expression> indices = new ArrayList<Expression>(nLHS.getMembers().size());
-		        while(it.hasNext()){
-		        	Object o = it.next();
-		        	assert o instanceof RangeLen;
-		        	Expression exp = ((RangeLen) o).start();
-		        	indices.add(exp);
-		        }
+		        String var = getArrayBase(nLHS).getName();
+		        List<Expression> indices = getArrayIndices(nLHS);
 		        processArrAssign(var, indices, rhs);	
 	        }else{
 	        	assert lhs instanceof ExprVar;

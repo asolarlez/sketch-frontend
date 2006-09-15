@@ -597,7 +597,7 @@ value returns [Expression x] { x = null; List rlist; }
 		|	l:LSQUARE 
 					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
 			RSQUARE
-		)?
+		)*
 	;
 
 array_range_list returns [List l] { l=new ArrayList(); Object r;}
@@ -610,7 +610,7 @@ array_range returns [Object x] { x=null; Expression start,end,l; }
 (COLON 
 (end=right_expr {x=new ExprArrayRange.Range(start,end);}
 |COLON 
-(len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
+((NUMBER) => len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
 |l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
 ))? 
 ;

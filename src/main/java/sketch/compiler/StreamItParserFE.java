@@ -1,4 +1,4 @@
-// $ANTLR 2.7.5 (20050128): "StreamItParserFE.g" -> "StreamItParserFE.java"$
+// $ANTLR : "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
 	package streamit.frontend;
 
@@ -135,12 +135,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 		
 		try {      // for error handling
 			{
-			_loop5:
+			_loop599:
 			do {
-				boolean synPredMatched4 = false;
+				boolean synPredMatched598 = false;
 				if (((_tokenSet_0.member(LA(1))))) {
-					int _m4 = mark();
-					synPredMatched4 = true;
+					int _m598 = mark();
+					synPredMatched598 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -150,12 +150,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched4 = false;
+						synPredMatched598 = false;
 					}
-					rewind(_m4);
+					rewind(_m598);
 					inputState.guessing--;
 				}
-				if ( synPredMatched4 ) {
+				if ( synPredMatched598 ) {
 					f=function_decl();
 					if ( inputState.guessing==0 ) {
 						funcs.add(f);
@@ -177,7 +177,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop5;
+					break _loop599;
 				}
 				
 			} while (true);
@@ -195,7 +195,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}
@@ -217,7 +218,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_2);
+				consume();
+				consumeUntil(_tokenSet_2);
 			} else {
 			  throw ex;
 			}
@@ -267,7 +269,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_3);
+				consume();
+				consumeUntil(_tokenSet_3);
 			} else {
 			  throw ex;
 			}
@@ -311,7 +314,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 				ctx = getContext(id); ts.add(t); ns.add(id.getText()); xs.add(x);
 			}
 			{
-			_loop10:
+			_loop604:
 			do {
 				if ((LA(1)==COMMA)) {
 					if ( inputState.guessing==0 ) {
@@ -344,7 +347,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop10;
+					break _loop604;
 				}
 				
 			} while (true);
@@ -356,7 +359,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -410,7 +414,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 				}
 				}
 				{
-				_loop42:
+				_loop636:
 				do {
 					if ((LA(1)==LSQUARE)) {
 						l = LT(1);
@@ -458,7 +462,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 						match(RSQUARE);
 					}
 					else {
-						break _loop42;
+						break _loop636;
 					}
 					
 				} while (true);
@@ -494,7 +498,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_5);
+				consume();
+				consumeUntil(_tokenSet_5);
 			} else {
 			  throw ex;
 			}
@@ -508,10 +513,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 		x = null;
 		
 		try {      // for error handling
-			boolean synPredMatched101 = false;
+			boolean synPredMatched695 = false;
 			if (((LA(1)==LCURLY))) {
-				int _m101 = mark();
-				synPredMatched101 = true;
+				int _m695 = mark();
+				synPredMatched695 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -519,12 +524,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched101 = false;
+					synPredMatched695 = false;
 				}
-				rewind(_m101);
+				rewind(_m695);
 				inputState.guessing--;
 			}
-			if ( synPredMatched101 ) {
+			if ( synPredMatched695 ) {
 				x=arr_initializer();
 			}
 			else if ((_tokenSet_6.member(LA(1)))) {
@@ -538,7 +543,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_7);
+				consume();
+				consumeUntil(_tokenSet_7);
 			} else {
 			  throw ex;
 			}
@@ -564,7 +570,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}
@@ -650,7 +657,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}
@@ -682,7 +690,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					l.add(p);
 				}
 				{
-				_loop56:
+				_loop650:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -692,7 +700,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					else {
-						break _loop56;
+						break _loop650;
 					}
 					
 				} while (true);
@@ -714,7 +722,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_8);
+				consume();
+				consumeUntil(_tokenSet_8);
 			} else {
 			  throw ex;
 			}
@@ -732,7 +741,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 			t = LT(1);
 			match(LCURLY);
 			{
-			_loop60:
+			_loop654:
 			do {
 				if ((_tokenSet_9.member(LA(1)))) {
 					s=statement();
@@ -741,7 +750,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop60;
+					break _loop654;
 				}
 				
 			} while (true);
@@ -754,7 +763,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_10);
+				consume();
+				consumeUntil(_tokenSet_10);
 			} else {
 			  throw ex;
 			}
@@ -816,7 +826,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 			}
 			}
 			{
-			_loop18:
+			_loop612:
 			do {
 				switch ( LA(1)) {
 				case TK_push:
@@ -839,7 +849,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 				}
 				default:
 				{
-					break _loop18;
+					break _loop612;
 				}
 				}
 			} while (true);
@@ -852,7 +862,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}
@@ -871,7 +882,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_11);
+				consume();
+				consumeUntil(_tokenSet_11);
 			} else {
 			  throw ex;
 			}
@@ -896,7 +908,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}
@@ -923,7 +936,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1038,10 +1052,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 				break;
 			}
 			default:
-				boolean synPredMatched23 = false;
+				boolean synPredMatched617 = false;
 				if (((_tokenSet_0.member(LA(1))))) {
-					int _m23 = mark();
-					synPredMatched23 = true;
+					int _m617 = mark();
+					synPredMatched617 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1050,20 +1064,20 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched23 = false;
+						synPredMatched617 = false;
 					}
-					rewind(_m23);
+					rewind(_m617);
 					inputState.guessing--;
 				}
-				if ( synPredMatched23 ) {
+				if ( synPredMatched617 ) {
 					s=variable_decl();
 					match(SEMI);
 				}
 				else {
-					boolean synPredMatched25 = false;
+					boolean synPredMatched619 = false;
 					if (((_tokenSet_12.member(LA(1))))) {
-						int _m25 = mark();
-						synPredMatched25 = true;
+						int _m619 = mark();
+						synPredMatched619 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -1071,12 +1085,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched25 = false;
+							synPredMatched619 = false;
 						}
-						rewind(_m25);
+						rewind(_m619);
 						inputState.guessing--;
 					}
-					if ( synPredMatched25 ) {
+					if ( synPredMatched619 ) {
 						s=expr_statement();
 						match(SEMI);
 					}
@@ -1088,7 +1102,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 			catch (RecognitionException ex) {
 				if (inputState.guessing==0) {
 					reportError(ex);
-					recover(ex,_tokenSet_13);
+					consume();
+					consumeUntil(_tokenSet_13);
 				} else {
 				  throw ex;
 				}
@@ -1116,7 +1131,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_13);
+				consume();
+				consumeUntil(_tokenSet_13);
 			} else {
 			  throw ex;
 			}
@@ -1141,7 +1157,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1166,7 +1183,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1191,7 +1209,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1238,7 +1257,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 				ts.add(t); ns.add(id.getText()); xs.add(x);
 			}
 			{
-			_loop48:
+			_loop642:
 			do {
 				if ((LA(1)==COMMA)) {
 					if ( inputState.guessing==0 ) {
@@ -1271,7 +1290,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop48;
+					break _loop642;
 				}
 				
 			} while (true);
@@ -1283,7 +1302,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1297,10 +1317,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 		s = null; Expression x;
 		
 		try {      // for error handling
-			boolean synPredMatched84 = false;
+			boolean synPredMatched678 = false;
 			if (((LA(1)==INCREMENT||LA(1)==DECREMENT||LA(1)==ID))) {
-				int _m84 = mark();
-				synPredMatched84 = true;
+				int _m678 = mark();
+				synPredMatched678 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1308,22 +1328,22 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched84 = false;
+					synPredMatched678 = false;
 				}
-				rewind(_m84);
+				rewind(_m678);
 				inputState.guessing--;
 			}
-			if ( synPredMatched84 ) {
+			if ( synPredMatched678 ) {
 				x=incOrDec();
 				if ( inputState.guessing==0 ) {
 					s = new StmtExpr(x);
 				}
 			}
 			else {
-				boolean synPredMatched87 = false;
+				boolean synPredMatched681 = false;
 				if (((LA(1)==ID))) {
-					int _m87 = mark();
-					synPredMatched87 = true;
+					int _m681 = mark();
+					synPredMatched681 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1364,19 +1384,19 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched87 = false;
+						synPredMatched681 = false;
 					}
-					rewind(_m87);
+					rewind(_m681);
 					inputState.guessing--;
 				}
-				if ( synPredMatched87 ) {
+				if ( synPredMatched681 ) {
 					s=assign_expr();
 				}
 				else {
-					boolean synPredMatched89 = false;
+					boolean synPredMatched683 = false;
 					if (((LA(1)==ID))) {
-						int _m89 = mark();
-						synPredMatched89 = true;
+						int _m683 = mark();
+						synPredMatched683 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -1385,12 +1405,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched89 = false;
+							synPredMatched683 = false;
 						}
-						rewind(_m89);
+						rewind(_m683);
 						inputState.guessing--;
 					}
-					if ( synPredMatched89 ) {
+					if ( synPredMatched683 ) {
 						x=func_call();
 						if ( inputState.guessing==0 ) {
 							s = new StmtExpr(x);
@@ -1410,7 +1430,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 				catch (RecognitionException ex) {
 					if (inputState.guessing==0) {
 						reportError(ex);
-						recover(ex,_tokenSet_14);
+						consume();
+						consumeUntil(_tokenSet_14);
 					} else {
 					  throw ex;
 					}
@@ -1432,10 +1453,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 			match(RPAREN);
 			t=pseudo_block();
 			{
-			boolean synPredMatched68 = false;
+			boolean synPredMatched662 = false;
 			if (((LA(1)==TK_else))) {
-				int _m68 = mark();
-				synPredMatched68 = true;
+				int _m662 = mark();
+				synPredMatched662 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1443,12 +1464,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched68 = false;
+					synPredMatched662 = false;
 				}
-				rewind(_m68);
+				rewind(_m662);
 				inputState.guessing--;
 			}
-			if ( synPredMatched68 ) {
+			if ( synPredMatched662 ) {
 				{
 				match(TK_else);
 				f=pseudo_block();
@@ -1468,7 +1489,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_13);
+				consume();
+				consumeUntil(_tokenSet_13);
 			} else {
 			  throw ex;
 			}
@@ -1496,7 +1518,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_13);
+				consume();
+				consumeUntil(_tokenSet_13);
 			} else {
 			  throw ex;
 			}
@@ -1525,7 +1548,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1593,7 +1617,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_13);
+				consume();
+				consumeUntil(_tokenSet_13);
 			} else {
 			  throw ex;
 			}
@@ -1618,7 +1643,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1676,7 +1702,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_4);
+				consume();
+				consumeUntil(_tokenSet_4);
 			} else {
 			  throw ex;
 			}
@@ -1699,10 +1726,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 				tr = LT(1);
 				match(TK_roundrobin);
 				{
-				boolean synPredMatched32 = false;
+				boolean synPredMatched626 = false;
 				if (((LA(1)==LPAREN))) {
-					int _m32 = mark();
-					synPredMatched32 = true;
+					int _m626 = mark();
+					synPredMatched626 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1711,12 +1738,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched32 = false;
+						synPredMatched626 = false;
 					}
-					rewind(_m32);
+					rewind(_m626);
 					inputState.guessing--;
 				}
-				if ( synPredMatched32 ) {
+				if ( synPredMatched626 ) {
 					match(LPAREN);
 					match(RPAREN);
 					if ( inputState.guessing==0 ) {
@@ -1724,10 +1751,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					boolean synPredMatched34 = false;
+					boolean synPredMatched628 = false;
 					if (((LA(1)==LPAREN))) {
-						int _m34 = mark();
-						synPredMatched34 = true;
+						int _m628 = mark();
+						synPredMatched628 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -1737,12 +1764,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched34 = false;
+							synPredMatched628 = false;
 						}
-						rewind(_m34);
+						rewind(_m628);
 						inputState.guessing--;
 					}
-					if ( synPredMatched34 ) {
+					if ( synPredMatched628 ) {
 						match(LPAREN);
 						x=right_expr();
 						match(RPAREN);
@@ -1841,7 +1868,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 			catch (RecognitionException ex) {
 				if (inputState.guessing==0) {
 					reportError(ex);
-					recover(ex,_tokenSet_4);
+					consume();
+					consumeUntil(_tokenSet_4);
 				} else {
 				  throw ex;
 				}
@@ -1882,7 +1910,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					l.add(x);
 				}
 				{
-				_loop96:
+				_loop690:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -1892,7 +1920,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					else {
-						break _loop96;
+						break _loop690;
 					}
 					
 				} while (true);
@@ -1914,7 +1942,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_15);
+				consume();
+				consumeUntil(_tokenSet_15);
 			} else {
 			  throw ex;
 			}
@@ -1986,7 +2015,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_16);
+				consume();
+				consumeUntil(_tokenSet_16);
 			} else {
 			  throw ex;
 			}
@@ -2015,7 +2045,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}
@@ -2040,7 +2071,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_17);
+				consume();
+				consumeUntil(_tokenSet_17);
 			} else {
 			  throw ex;
 			}
@@ -2065,7 +2097,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_13);
+				consume();
+				consumeUntil(_tokenSet_13);
 			} else {
 			  throw ex;
 			}
@@ -2079,10 +2112,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 		s = null;
 		
 		try {      // for error handling
-			boolean synPredMatched76 = false;
+			boolean synPredMatched670 = false;
 			if (((_tokenSet_0.member(LA(1))))) {
-				int _m76 = mark();
-				synPredMatched76 = true;
+				int _m670 = mark();
+				synPredMatched670 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2090,19 +2123,19 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched76 = false;
+					synPredMatched670 = false;
 				}
-				rewind(_m76);
+				rewind(_m670);
 				inputState.guessing--;
 			}
-			if ( synPredMatched76 ) {
+			if ( synPredMatched670 ) {
 				s=variable_decl();
 			}
 			else {
-				boolean synPredMatched78 = false;
+				boolean synPredMatched672 = false;
 				if (((_tokenSet_12.member(LA(1))))) {
-					int _m78 = mark();
-					synPredMatched78 = true;
+					int _m672 = mark();
+					synPredMatched672 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -2110,19 +2143,19 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched78 = false;
+						synPredMatched672 = false;
 					}
-					rewind(_m78);
+					rewind(_m672);
 					inputState.guessing--;
 				}
-				if ( synPredMatched78 ) {
+				if ( synPredMatched672 ) {
 					s=expr_statement();
 				}
 				else {
-					boolean synPredMatched80 = false;
+					boolean synPredMatched674 = false;
 					if (((LA(1)==SEMI))) {
-						int _m80 = mark();
-						synPredMatched80 = true;
+						int _m674 = mark();
+						synPredMatched674 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -2130,12 +2163,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched80 = false;
+							synPredMatched674 = false;
 						}
-						rewind(_m80);
+						rewind(_m674);
 						inputState.guessing--;
 					}
-					if ( synPredMatched80 ) {
+					if ( synPredMatched674 ) {
 						if ( inputState.guessing==0 ) {
 							s = new StmtEmpty(null);
 						}
@@ -2148,7 +2181,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 				catch (RecognitionException ex) {
 					if (inputState.guessing==0) {
 						reportError(ex);
-						recover(ex,_tokenSet_4);
+						consume();
+						consumeUntil(_tokenSet_4);
 					} else {
 					  throw ex;
 					}
@@ -2188,7 +2222,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_18);
+				consume();
+				consumeUntil(_tokenSet_18);
 			} else {
 			  throw ex;
 			}
@@ -2263,7 +2298,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_19);
+				consume();
+				consumeUntil(_tokenSet_19);
 			} else {
 			  throw ex;
 			}
@@ -2282,7 +2318,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_20);
+				consume();
+				consumeUntil(_tokenSet_20);
 			} else {
 			  throw ex;
 			}
@@ -2353,7 +2390,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_14);
+				consume();
+				consumeUntil(_tokenSet_14);
 			} else {
 			  throw ex;
 			}
@@ -2378,7 +2416,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_15);
+				consume();
+				consumeUntil(_tokenSet_15);
 			} else {
 			  throw ex;
 			}
@@ -2427,7 +2466,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_19);
+				consume();
+				consumeUntil(_tokenSet_19);
 			} else {
 			  throw ex;
 			}
@@ -2450,79 +2490,43 @@ public StreamItParserFE(ParserSharedInputState state) {
 				x = new ExprVar(getContext(name), name.getText());
 			}
 			{
-			switch ( LA(1)) {
-			case DOT:
-			{
-				match(DOT);
-				field = LT(1);
-				match(ID);
-				if ( inputState.guessing==0 ) {
-					x = new ExprField(x.getContext(), x, field.getText());
+			_loop755:
+			do {
+				switch ( LA(1)) {
+				case DOT:
+				{
+					match(DOT);
+					field = LT(1);
+					match(ID);
+					if ( inputState.guessing==0 ) {
+						x = new ExprField(x.getContext(), x, field.getText());
+					}
+					break;
 				}
-				break;
-			}
-			case LSQUARE:
-			{
-				l = LT(1);
-				match(LSQUARE);
-				rlist=array_range_list();
-				if ( inputState.guessing==0 ) {
-					x = new ExprArrayRange(x, rlist);
+				case LSQUARE:
+				{
+					l = LT(1);
+					match(LSQUARE);
+					rlist=array_range_list();
+					if ( inputState.guessing==0 ) {
+						x = new ExprArrayRange(x, rlist);
+					}
+					match(RSQUARE);
+					break;
 				}
-				match(RSQUARE);
-				break;
-			}
-			case TK_peek:
-			case TK_pop:
-			case TK_push:
-			case RPAREN:
-			case LCURLY:
-			case RCURLY:
-			case RSQUARE:
-			case PLUS:
-			case PLUS_EQUALS:
-			case INCREMENT:
-			case MINUS:
-			case MINUS_EQUALS:
-			case DECREMENT:
-			case STAR:
-			case STAR_EQUALS:
-			case DIV:
-			case DIV_EQUALS:
-			case MOD:
-			case LOGIC_AND:
-			case LOGIC_OR:
-			case BITWISE_AND:
-			case BITWISE_OR:
-			case BITWISE_XOR:
-			case ASSIGN:
-			case EQUAL:
-			case NOT_EQUAL:
-			case LESS_THAN:
-			case LESS_EQUAL:
-			case MORE_THAN:
-			case MORE_EQUAL:
-			case QUESTION:
-			case COLON:
-			case SEMI:
-			case COMMA:
-			case LSHIFT:
-			case RSHIFT:
-			case SELECT:
-			{
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			}
+				default:
+				{
+					break _loop755;
+				}
+				}
+			} while (true);
 			}
 		}
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_21);
+				consume();
+				consumeUntil(_tokenSet_21);
 			} else {
 			  throw ex;
 			}
@@ -2574,7 +2578,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_11);
+				consume();
+				consumeUntil(_tokenSet_11);
 			} else {
 			  throw ex;
 			}
@@ -2619,7 +2624,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					l.add(y);
 				}
 				{
-				_loop105:
+				_loop699:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -2629,7 +2634,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					else {
-						break _loop105;
+						break _loop699;
 					}
 					
 				} while (true);
@@ -2654,7 +2659,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_7);
+				consume();
+				consumeUntil(_tokenSet_7);
 			} else {
 			  throw ex;
 			}
@@ -2670,7 +2676,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=logicAndExpr();
 			{
-			_loop110:
+			_loop704:
 			do {
 				if ((LA(1)==LOGIC_OR)) {
 					match(LOGIC_OR);
@@ -2680,7 +2686,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop110;
+					break _loop704;
 				}
 				
 			} while (true);
@@ -2689,7 +2695,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_22);
+				consume();
+				consumeUntil(_tokenSet_22);
 			} else {
 			  throw ex;
 			}
@@ -2705,7 +2712,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=bitwiseExpr();
 			{
-			_loop113:
+			_loop707:
 			do {
 				if ((LA(1)==LOGIC_AND)) {
 					match(LOGIC_AND);
@@ -2715,7 +2722,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop113;
+					break _loop707;
 				}
 				
 			} while (true);
@@ -2724,7 +2731,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_23);
+				consume();
+				consumeUntil(_tokenSet_23);
 			} else {
 			  throw ex;
 			}
@@ -2740,7 +2748,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=equalExpr();
 			{
-			_loop117:
+			_loop711:
 			do {
 				if (((LA(1) >= BITWISE_AND && LA(1) <= BITWISE_XOR))) {
 					{
@@ -2781,7 +2789,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop117;
+					break _loop711;
 				}
 				
 			} while (true);
@@ -2790,7 +2798,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_24);
+				consume();
+				consumeUntil(_tokenSet_24);
 			} else {
 			  throw ex;
 			}
@@ -2806,7 +2815,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=compareExpr();
 			{
-			_loop121:
+			_loop715:
 			do {
 				if ((LA(1)==EQUAL||LA(1)==NOT_EQUAL)) {
 					{
@@ -2839,7 +2848,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop121;
+					break _loop715;
 				}
 				
 			} while (true);
@@ -2848,7 +2857,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_25);
+				consume();
+				consumeUntil(_tokenSet_25);
 			} else {
 			  throw ex;
 			}
@@ -2864,7 +2874,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=addExpr();
 			{
-			_loop125:
+			_loop719:
 			do {
 				if (((LA(1) >= LESS_THAN && LA(1) <= MORE_EQUAL))) {
 					{
@@ -2913,7 +2923,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop125;
+					break _loop719;
 				}
 				
 			} while (true);
@@ -2922,7 +2932,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_26);
+				consume();
+				consumeUntil(_tokenSet_26);
 			} else {
 			  throw ex;
 			}
@@ -2938,7 +2949,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=multExpr();
 			{
-			_loop129:
+			_loop723:
 			do {
 				if ((LA(1)==PLUS||LA(1)==MINUS||LA(1)==SELECT)) {
 					{
@@ -2979,7 +2990,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop129;
+					break _loop723;
 				}
 				
 			} while (true);
@@ -2988,7 +2999,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_27);
+				consume();
+				consumeUntil(_tokenSet_27);
 			} else {
 			  throw ex;
 			}
@@ -3004,7 +3016,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		try {      // for error handling
 			x=castExpr();
 			{
-			_loop133:
+			_loop727:
 			do {
 				if ((LA(1)==STAR||LA(1)==DIV||LA(1)==MOD)) {
 					{
@@ -3045,7 +3057,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop133;
+					break _loop727;
 				}
 				
 			} while (true);
@@ -3054,7 +3066,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_28);
+				consume();
+				consumeUntil(_tokenSet_28);
 			} else {
 			  throw ex;
 			}
@@ -3070,10 +3083,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 		x = null; Expression bound; Type t=null;
 		
 		try {      // for error handling
-			boolean synPredMatched136 = false;
+			boolean synPredMatched730 = false;
 			if (((LA(1)==LPAREN))) {
-				int _m136 = mark();
-				synPredMatched136 = true;
+				int _m730 = mark();
+				synPredMatched730 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -3082,18 +3095,18 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched136 = false;
+					synPredMatched730 = false;
 				}
-				rewind(_m136);
+				rewind(_m730);
 				inputState.guessing--;
 			}
-			if ( synPredMatched136 ) {
+			if ( synPredMatched730 ) {
 				{
 				l = LT(1);
 				match(LPAREN);
 				t=primitive_type();
 				{
-				_loop139:
+				_loop733:
 				do {
 					if ((LA(1)==LSQUARE)) {
 						sq = LT(1);
@@ -3105,7 +3118,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 						match(RSQUARE);
 					}
 					else {
-						break _loop139;
+						break _loop733;
 					}
 					
 				} while (true);
@@ -3128,7 +3141,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_19);
+				consume();
+				consumeUntil(_tokenSet_19);
 			} else {
 			  throw ex;
 			}
@@ -3143,10 +3157,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 		x = null;
 		
 		try {      // for error handling
-			boolean synPredMatched147 = false;
+			boolean synPredMatched741 = false;
 			if (((LA(1)==INCREMENT||LA(1)==DECREMENT||LA(1)==ID))) {
-				int _m147 = mark();
-				synPredMatched147 = true;
+				int _m741 = mark();
+				synPredMatched741 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -3154,12 +3168,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched147 = false;
+					synPredMatched741 = false;
 				}
-				rewind(_m147);
+				rewind(_m741);
 				inputState.guessing--;
 			}
-			if ( synPredMatched147 ) {
+			if ( synPredMatched741 ) {
 				x=incOrDec();
 			}
 			else if ((LA(1)==BANG)) {
@@ -3182,7 +3196,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_19);
+				consume();
+				consumeUntil(_tokenSet_19);
 			} else {
 			  throw ex;
 			}
@@ -3196,10 +3211,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 		x=null; Expression amt; Type t=null;
 		
 		try {      // for error handling
-			boolean synPredMatched142 = false;
+			boolean synPredMatched736 = false;
 			if (((_tokenSet_30.member(LA(1))))) {
-				int _m142 = mark();
-				synPredMatched142 = true;
+				int _m736 = mark();
+				synPredMatched736 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -3208,12 +3223,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched142 = false;
+					synPredMatched736 = false;
 				}
-				rewind(_m142);
+				rewind(_m736);
 				inputState.guessing--;
 			}
-			if ( synPredMatched142 ) {
+			if ( synPredMatched736 ) {
 				x=minic_value_expr();
 				match(RSHIFT);
 				amt=value_expr();
@@ -3222,10 +3237,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 				}
 			}
 			else {
-				boolean synPredMatched144 = false;
+				boolean synPredMatched738 = false;
 				if (((_tokenSet_30.member(LA(1))))) {
-					int _m144 = mark();
-					synPredMatched144 = true;
+					int _m738 = mark();
+					synPredMatched738 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -3234,12 +3249,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched144 = false;
+						synPredMatched738 = false;
 					}
-					rewind(_m144);
+					rewind(_m738);
 					inputState.guessing--;
 				}
-				if ( synPredMatched144 ) {
+				if ( synPredMatched738 ) {
 					x=minic_value_expr();
 					match(LSHIFT);
 					amt=value_expr();
@@ -3258,7 +3273,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 			catch (RecognitionException ex) {
 				if (inputState.guessing==0) {
 					reportError(ex);
-					recover(ex,_tokenSet_19);
+					consume();
+					consumeUntil(_tokenSet_19);
 				} else {
 				  throw ex;
 				}
@@ -3292,10 +3308,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 				break;
 			}
 			default:
-				boolean synPredMatched158 = false;
+				boolean synPredMatched752 = false;
 				if (((LA(1)==ID))) {
-					int _m158 = mark();
-					synPredMatched158 = true;
+					int _m752 = mark();
+					synPredMatched752 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -3303,12 +3319,12 @@ public StreamItParserFE(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched158 = false;
+						synPredMatched752 = false;
 					}
-					rewind(_m158);
+					rewind(_m752);
 					inputState.guessing--;
 				}
-				if ( synPredMatched158 ) {
+				if ( synPredMatched752 ) {
 					x=func_call();
 				}
 				else if ((LA(1)==ID)) {
@@ -3322,7 +3338,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_15);
+				consume();
+				consumeUntil(_tokenSet_15);
 			} else {
 			  throw ex;
 			}
@@ -3434,7 +3451,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_19);
+				consume();
+				consumeUntil(_tokenSet_19);
 			} else {
 			  throw ex;
 			}
@@ -3493,7 +3511,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_19);
+				consume();
+				consumeUntil(_tokenSet_19);
 			} else {
 			  throw ex;
 			}
@@ -3592,7 +3611,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_15);
+				consume();
+				consumeUntil(_tokenSet_15);
 			} else {
 			  throw ex;
 			}
@@ -3611,7 +3631,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 				l.add(r);
 			}
 			{
-			_loop163:
+			_loop758:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -3621,7 +3641,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop163;
+					break _loop758;
 				}
 				
 			} while (true);
@@ -3630,7 +3650,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_31);
+				consume();
+				consumeUntil(_tokenSet_31);
 			} else {
 			  throw ex;
 			}
@@ -3685,7 +3706,23 @@ public StreamItParserFE(ParserSharedInputState state) {
 				{
 					match(COLON);
 					{
-					if ((LA(1)==NUMBER)) {
+					boolean synPredMatched764 = false;
+					if (((LA(1)==NUMBER))) {
+						int _m764 = mark();
+						synPredMatched764 = true;
+						inputState.guessing++;
+						try {
+							{
+							match(NUMBER);
+							}
+						}
+						catch (RecognitionException pe) {
+							synPredMatched764 = false;
+						}
+						rewind(_m764);
+						inputState.guessing--;
+					}
+					if ( synPredMatched764 ) {
 						len = LT(1);
 						match(NUMBER);
 						if ( inputState.guessing==0 ) {
@@ -3728,7 +3765,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_32);
+				consume();
+				consumeUntil(_tokenSet_32);
 			} else {
 			  throw ex;
 			}
@@ -3751,7 +3789,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 			match(ID);
 			match(LCURLY);
 			{
-			_loop171:
+			_loop768:
 			do {
 				if ((_tokenSet_0.member(LA(1)))) {
 					p=param_decl();
@@ -3761,7 +3799,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop171;
+					break _loop768;
 				}
 				
 			} while (true);
@@ -3774,7 +3812,8 @@ public StreamItParserFE(ParserSharedInputState state) {
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
 				reportError(ex);
-				recover(ex,_tokenSet_1);
+				consume();
+				consumeUntil(_tokenSet_1);
 			} else {
 			  throw ex;
 			}

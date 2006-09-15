@@ -1,4 +1,4 @@
-// $ANTLR 2.7.5 (20050128): StreamItLex.g -> StreamItLexTokenTypes.txt$
+// $ANTLR : StreamItLex.g -> StreamItLexTokenTypes.txt$
 StreamItLex    // output token vocab name
 TK_filter="filter"=4
 TK_pipeline="pipeline"=5
