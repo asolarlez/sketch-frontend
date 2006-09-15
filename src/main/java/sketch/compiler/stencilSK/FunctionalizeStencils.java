@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 
 import streamit.frontend.nodes.ExprArray;
@@ -18,10 +20,10 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -212,6 +214,8 @@ class processStencil extends FEReplacer {
 	ParamTree.treeNode currentTN;
 	Stack<scopeHist> scopeStack;
 	Map<String, arrInfo> smap;
+	Set<String> inVar;
+	Set<String> outVar;
 	ParamTree ptree;
 	final String suffix; 
 	
@@ -356,19 +360,8 @@ class processStencil extends FEReplacer {
 	        {
 	        	if( stmt.getType(i) instanceof TypeArray ){
 	        		Type ta = stmt.getType(i);
-	        		int tt = 0;
-	        		while(ta instanceof TypeArray){
-	        			ta = ((TypeArray) ta).getBase();
-	        			++tt;
-	        			assert tt < 100;
-	        		}
-	        		
 	        		String var = stmt.getName(i);
-	        		arrInfo ainf = null;
-    	    		assert !smap.containsKey(var);
-    	    		ainf = new arrInfo();
-    	    		smap.put(var, ainf);
-    	    		fa(ainf, var, tt);
+	        		declareNewArray(ta, var);	        		
 	        	}else{
 	        		String var = stmt.getName(i);
 	        		arrInfo ainf = null;
@@ -586,7 +579,7 @@ class processStencil extends FEReplacer {
 	    		}
 	    	}
 
-	    	public ExprFunCall fa(String bname, List mem){
+	    	public ExprFunCall fa(String bname, List<Expression> mem){
 //	    		First, we get the function representation of the array.
 	    		arrInfo ainf = smap.get(bname);
 	    		ArrFunction arFun = ainf.sfun.peek();
@@ -594,9 +587,9 @@ class processStencil extends FEReplacer {
 	    		List<Expression> params = new ArrayList<Expression>();	    		
 	    		assert arFun.idxParams.size() == mem.size();
 	    		for(int i=0; i<mem.size(); ++i){	    			
-	    			Object obj=mem.get(i);
-	    			assert obj instanceof RangeLen;
-	    			Expression newPar = (Expression)((RangeLen)obj).start().accept(this);
+	    			Expression obj=mem.get(i);
+	    			//assert obj instanceof RangeLen;
+	    			Expression newPar = (Expression)obj.accept(this);
 	    			params.add(newPar);
 	    		}
 	    		// Now we have to set the other parameters, which is a little trickier.
@@ -616,11 +609,11 @@ class processStencil extends FEReplacer {
 	    	}
 	    	
 	    	public Object visitExprArrayRange(ExprArrayRange exp) {
-	    		final Expression newBase=getArrayBase(exp);
-	    		assert newBase instanceof ExprVar;
-	    		String bname = ((ExprVar) newBase).getName();
+	    		final ExprVar newBase= exp.getAbsoluteBase();	    		
+	    		String bname = newBase.getName();
 	    		if(smap.containsKey(bname)){
-	    			List mem = exp.getMembers();
+	    			
+	    			List<Expression> mem = getArrayIndices(exp);
 		    		return fa(bname, mem);
 	    		}else{
 	    			return exp;
@@ -660,14 +653,7 @@ class processStencil extends FEReplacer {
 	   	 	++(currentTN.lh.stage);
 	    }
 
-	    private ExprVar getArrayBase(ExprArrayRange array) {
-	        Expression base=array.getBase();
-	        if(base instanceof ExprArrayRange) {
-	        	return getArrayBase((ExprArrayRange) base);
-	        }
-	        assert base instanceof ExprVar: "The base of an array is expected to be a variable expression";
-	        return (ExprVar) base;
-	    }
+	   
 	    
 	    private List<Expression> getArrayIndices(ExprArrayRange array) {
 	        List<Expression> indices = new ArrayList<Expression>();
@@ -691,7 +677,7 @@ class processStencil extends FEReplacer {
 	        if( lhs instanceof ExprArrayRange ){
 		        assert lhs instanceof ExprArrayRange ;	        
 		        ExprArrayRange nLHS = (ExprArrayRange) lhs;
-		        String var = getArrayBase(nLHS).getName();
+		        String var = nLHS.getAbsoluteBase().getName();
 		        List<Expression> indices = getArrayIndices(nLHS);
 		        processArrAssign(var, indices, rhs);	
 	        }else{
@@ -725,15 +711,49 @@ class processStencil extends FEReplacer {
 		conds = new Stack<Expression>();		
 		scopeStack = new Stack<scopeHist>();
 		smap = new HashMap<String, arrInfo>();
+		this.inVar = new TreeSet<String>();
+		this.outVar = new TreeSet<String>();
 		this.suffix = "_" + suffix;
 	}
 	
 
+	private void declareNewArray(Type ta , String var){
+		
+		int tt = 0;
+		while(ta instanceof TypeArray){
+			ta = ((TypeArray) ta).getBase();
+			++tt;
+			assert tt < 100;
+		}
+				
+		arrInfo ainf = null;
+		assert !smap.containsKey(var);
+		ainf = new arrInfo();
+		smap.put(var, ainf);
+		fa(ainf, var, tt);
+	}
+	
+	
     public Object visitFunction(Function func)
     {
     	ptree = (new SetupParamTree()).producePtree(func);
     	currentTN = ptree.getRoot();
-        return super.visitFunction(func);
+    	 scopeHist sc = new scopeHist();
+		 scopeStack.push( sc );
+		 
+    	List params = func.getParams();
+    	for(Iterator it = params.iterator(); it.hasNext();  ){
+    		Parameter param = (Parameter) it.next();
+    		if( param.isParameterOutput() ){    			
+    			declareNewArray(param.getType(), param.getName());
+    			outVar.add(param.getName());
+    		}else{
+    			inVar.add(param.getName());
+    		}
+    	}
+    	Object tmp  = super.visitFunction(func);
+    	scopeStack.pop();
+        return tmp;
     }
 
 }
