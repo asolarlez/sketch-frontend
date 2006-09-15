@@ -20,29 +20,101 @@ public class ResolveMax {
 	int sz;
 	String name;
 	Expression[] expArr;
+	List<Expression>[] ltArr;
 	List<Expression> moreConstraints = new ArrayList<Expression>();
+	Integer[] tainted;
 	
 	public static Integer tag = new Integer(0);
 	public ResolveMax(StmtMax smax){
 		this.smax = smax;
 		sz = smax.dim;
 		name = smax.lhsvar;
-		expArr = new Expression[sz];		
+		expArr = new Expression[sz];
+		ltArr = new List[sz];
+		tainted = new Integer[sz];
 	}
 	
 	public void run(){
-		List<Expression> exprList = smax.primC ;
+		{
+			List<Expression> exprList = smax.primC ;		
+			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
+				Expression exp = expIt.next();
+				exp.accept(new tagNodes());
+				
+				if( exp.getTag() == null ){
+					//moreConstraints.add(exp);
+				}else{
+					IsolateVars isol = new IsolateVars();
+					exp.accept(isol);
+					assert isol.idx >= 0;
+					expArr[isol.idx] = isol.currentRHS;		
+					// moreConstraints.addAll(isol.moreConstraints); // I am pretty sure I don't need this, but just in case.	
+				}			
+			}
+		}
 		
-		for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
-			Expression exp = expIt.next();
-			exp.accept(new tagNodes());
-			IsolateVars isol = new IsolateVars();
-			exp.accept(isol);
-			assert isol.idx >= 0;
-			expArr[isol.idx] = isol.currentRHS;		
-			moreConstraints.addAll(isol.moreConstraints);
+		{
+			List<Expression> exprList = smax.secC ;			
+			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
+				Expression exp = expIt.next();
+				exp.accept(new tagNodes());				
+				if( exp.getTag() == null ){
+					//moreConstraints.add(exp);
+				}else{
+					IsolateVars isol = new IsolateVars();
+					try{
+						exp.accept(isol);
+					}catch(Exception e){						
+						exp.accept(new Taint());
+					}
+					if( isol.idx >= 0 && expArr[isol.idx] == null){
+						if( ltArr[isol.idx] == null) ltArr[isol.idx] = new ArrayList<Expression>();
+						ltArr[isol.idx].add(isol.currentRHS);
+					}
+				}			
+			}
+		}
+		
+		
+		{
+			List<Expression> exprList = smax.terC ;			
+			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
+				Expression exp = expIt.next();
+				exp.accept(new tagNodes());				
+				if( exp.getTag() == null ){
+					//moreConstraints.add(exp);
+				}else{
+					IsolateVars isol = new IsolateVars();
+					try{
+						exp.accept(isol);
+					}catch(Exception e){
+						exp.accept(new Taint());
+					}
+					if( isol.idx >= 0 && expArr[isol.idx] == null){
+						if( ltArr[isol.idx] == null) ltArr[isol.idx] = new ArrayList<Expression>();
+						ltArr[isol.idx].add(isol.currentRHS);
+					}
+				}			
+			}
+		}
+		
+		
+		
+	}
+	
+	
+	class Taint extends FENullVisitor{
+		public Object visitExprArray(ExprArray ea){
+			assert (  ea.getBase() instanceof ExprVar ); 
+			ExprVar ev = (ExprVar)ea.getBase();
+			assert ev.getName().equals(name);
+			Integer ival = ea.getOffset().getIValue();
+			assert ival != null;
+			tainted[ival] = tag;			
+			return null;	
 		}
 	}
+	
 	
 
 	class IsolateVars extends FENullVisitor{
@@ -60,7 +132,82 @@ public class ResolveMax {
 			moreConstraints.add(new ExprBinary(null, ExprBinary.BINOP_EQ, e1, e2));
 		}
 		
+		public void checkButIgnore(Expression exp){			
+			int tmpidx = idx;
+			exp.accept(this);
+			idx = tmpidx;
+			assert idx == -1;
+			
+		}
 		
+
+		public Object visitExprBinaryLE(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        
+	        if( (left.getTag() != null && right.getTag() == null) ){
+	        	currentRHS = right;	        
+		        left.accept(this);
+		        return null;			        	
+	        }	        
+	        
+	        if(left.getTag() != null && right.getTag() != null)
+	        	throw new RuntimeException("NYI");
+	        checkButIgnore(right);
+	        return null;	        			
+		}
+		
+		public Object visitExprBinaryLT(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        
+	        if( (left.getTag() != null && right.getTag() == null) ){
+	        	 currentRHS = new ExprBinary(null, ExprBinary.BINOP_SUB, right, new ExprConstInt(1));
+	 	        left.accept(this);
+	 	        return null;	        	
+	        }	   
+	        if(left.getTag() != null && right.getTag() != null)
+	        	throw new RuntimeException("NYI");
+	        checkButIgnore(right);
+	        return null;
+	       			
+		}
+		
+		public Object visitExprBinaryGE(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        
+	        if( (right.getTag() != null && left.getTag() == null) ){
+	        	currentRHS = left;	        
+		        right.accept(this);
+		        return null;			        	
+	        }
+	        
+	        if(left.getTag() != null && right.getTag() != null)
+	        	throw new RuntimeException("NYI");
+	        checkButIgnore(left);
+	        return null;	        			
+		}
+		
+		public Object visitExprBinaryGT(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        
+	        if( (right.getTag() != null && left.getTag() == null) ){
+	        	 currentRHS = new ExprBinary(null, ExprBinary.BINOP_SUB, left, new ExprConstInt(1));
+	 	        right.accept(this);
+	 	        return null;	        	
+	        }	   
+	        if(left.getTag() != null && right.getTag() != null)
+	        	throw new RuntimeException("NYI");
+	        checkButIgnore(left);
+	        return null;
+	       			
+		}
 		public Object visitExprBinaryEquals(ExprBinary exp){
 		    Expression left = exp.getLeft();
 	        Expression right = exp.getRight();
@@ -181,8 +328,14 @@ public class ResolveMax {
 	        case ExprBinary.BINOP_SUB:  return visitExprBinarySub(exp);
 	        case ExprBinary.BINOP_MUL: return visitExprBinaryMult(exp);
 	        
+	        case ExprBinary.BINOP_LE: return visitExprBinaryLE(exp);
+	        case ExprBinary.BINOP_LT: return visitExprBinaryLT(exp);
+	        
+	        case ExprBinary.BINOP_GE: return visitExprBinaryGE(exp);
+	        case ExprBinary.BINOP_GT: return visitExprBinaryGT(exp);
+	        
 	        case ExprBinary.BINOP_DIV: 
-	        case ExprBinary.BINOP_MOD: 	        
+	        case ExprBinary.BINOP_MOD: 
 	        default: throw new RuntimeException("NYI");	
 	        }
 	        
