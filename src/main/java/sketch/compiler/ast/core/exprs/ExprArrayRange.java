@@ -111,6 +111,20 @@ public class ExprArrayRange extends Expression
 		return ret.toString();
 	}
 
+	
+	public ExprVar getAbsoluteBase(){
+		Expression base= getBase();
+		if(base instanceof ExprArrayRange) {
+        	return ((ExprArrayRange)base).getAbsoluteBase();
+        }
+		if(base instanceof ExprVar) {
+        	return ((ExprVar)base);
+        }
+		throw new RuntimeException("This should not happen");		
+	}
+
+	
+	
 	public Expression getBase() {
 		return base;
 	}

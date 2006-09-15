@@ -49,6 +49,7 @@ import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
+import streamit.frontend.passes.ExprArrayToArrayRange;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FindFreeVariables;
@@ -356,7 +357,11 @@ public class ToStencilSK
         prog = (Program)prog.accept(new AssignLoopTypes());
         if (prog == null)
             throw new IllegalStateException();
-
+        
+        TempVarGen varGen = new TempVarGen();
+        prog = (Program) prog.accept( new GenerateCopies(varGen) );  
+        prog = (Program) prog.accept( new ExprArrayToArrayRange());
+        
         System.out.println("Only implemented up to here.");
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
         FunctionalizeStencils fs = new FunctionalizeStencils();
@@ -368,7 +373,7 @@ public class ToStencilSK
         
         if(true){ return ; }
         
-        TempVarGen varGen = new TempVarGen();
+        
         prog = lowerIRToJava(prog, !libraryFormat, varGen);
         ValueOracle oracle = new ValueOracle();
 
