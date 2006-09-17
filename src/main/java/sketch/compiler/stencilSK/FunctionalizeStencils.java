@@ -11,29 +11,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 
@@ -166,10 +144,12 @@ public class FunctionalizeStencils extends FEReplacer {
 	}
 	
 	
-	public void processFuns(){
+	public void processFuns(Program prog){
 		for(Iterator<Entry<String, ArrFunction>> it = funmap.entrySet().iterator(); it.hasNext(); ){
 			ArrFunction af = it.next().getValue();
 			af.processMax();
+			List functions=((StreamSpec)prog.getStreams().get(0)).getFuncs();
+			functions.add(af.toAST());
 			System.out.println(af);
 		}
 	}
@@ -185,7 +165,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		 	stencilFuns.add(ps);		 	
 		 	func.accept(ps);	
 		 	funmap.putAll(ps.getAllFunctions());
-	        return func;
+	        return null;
 	    }
 
 

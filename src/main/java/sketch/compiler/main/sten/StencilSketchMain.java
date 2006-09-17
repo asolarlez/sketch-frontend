@@ -365,12 +365,10 @@ public class ToStencilSK
         System.out.println("Only implemented up to here.");
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
         FunctionalizeStencils fs = new FunctionalizeStencils();
-        prog = (Program)prog.accept(fs);    
+        prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
+        fs.processFuns(prog); //process the ArrFunction's and create new Function's
         
         System.out.println("DONE!");
-        
-        fs.processFuns();
-        
         if(true){ return ; }
         
         

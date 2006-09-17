@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.*;
 
 
 /**
@@ -100,6 +98,25 @@ public class ArrFunction{
 		}
 		rv += "}";
 		return rv;	
+	}
+	
+	public Function toAST() {
+		List<StmtVarDecl> params=new ArrayList<StmtVarDecl>();
+		{
+			params.addAll(idxParams);
+			for(Iterator<StmtVarDecl> it=iterParams.iterator();it.hasNext();) {
+				params.add(it.next());
+			}
+			params.addAll(othParams);
+		}
+		List<Statement> stmts=new ArrayList<Statement>();
+		{
+			stmts.addAll(maxAss);
+			stmts.addAll(retStmts);
+		}
+		Statement body=new StmtBlock(null,stmts);
+		Function ret=Function.newHelper(null,getFullName(),new TypePrimitive(TypePrimitive.TYPE_VOID),params,body);
+		return ret;
 	}
 	
 	public void processMax(){
