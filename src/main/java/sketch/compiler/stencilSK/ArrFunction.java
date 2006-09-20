@@ -105,7 +105,12 @@ public class ArrFunction{
 		{
 			params.addAll(idxParams);
 			for(Iterator<StmtVarDecl> it=iterParams.iterator();it.hasNext();) {
-				params.add(it.next());
+				StmtVarDecl par=it.next();
+				List types=new ArrayList(par.getTypes());
+				List names=new ArrayList(par.getNames());
+				List inits=new ArrayList(par.getNumVars());
+				for(int i=0;i<par.getNumVars();i++) inits.add(null);
+				params.add(new StmtVarDecl(par.getContext(),types,names,inits));
 			}
 			params.addAll(othParams);
 		}
