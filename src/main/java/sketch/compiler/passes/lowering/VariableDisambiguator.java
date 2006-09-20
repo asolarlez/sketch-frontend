@@ -39,7 +39,7 @@ public class VariableDisambiguator extends FEReplacer
 		if(collecting) {
 			for(int i=0;i<stmt.getNumVars();i++) {
 				String name=stmt.getName(i);
-				if(variables.get(name)!=null)
+				if(variables.get(name)==null)
 					variables.put(name,stmt);
 			}
 			return stmt;
@@ -54,6 +54,7 @@ public class VariableDisambiguator extends FEReplacer
 					if(variables.get(newName)==null) {
 						names.set(i,newName);
 						renameMap.put(name,newName);
+						variables.put(newName,newName);
 						change=true;
 						break;
 					}
