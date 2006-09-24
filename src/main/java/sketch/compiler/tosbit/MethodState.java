@@ -2,9 +2,9 @@ package streamit.frontend.tosbit;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Map.Entry;
 
 import streamit.frontend.nodes.Expression;
 
@@ -209,12 +209,33 @@ public class MethodState{
 		
 	}
 	
+	public void ProcChangeTrackersConservative(ChangeStack ms1, ChangeStack ms2, String cond){		
+		Iterator<Entry<String, varValue>> it = ms1.currTracker.entrySet().iterator();
+		while(it.hasNext()){
+			Entry<String, varValue> me =  it.next();	
+			String nm = me.getKey();			
+			this.UTunsetVarValue(me.getKey());
+			
+			if(ms2.currTracker.containsKey( nm )){
+				//This means the me.getKey() was modified on both branches.				
+				ms2.currTracker.remove(me.getKey());
+			}
+		}		
+		Iterator<Entry<String, varValue>>  it2 = ms2.currTracker.entrySet().iterator();
+		while(it2.hasNext()){
+			Entry<String, varValue> me =  it2.next();
+			this.UTunsetVarValue(me.getKey());
+		}
+		return;
+	}
+	
+	
 	public String procChangeTrackers(ChangeStack ms1, ChangeStack ms2, String cond){	
 		String result = "";
-		Iterator it = ms1.currTracker.entrySet().iterator();
+		Iterator<Entry<String, varValue>> it = ms1.currTracker.entrySet().iterator();
 		while(it.hasNext()){
-			Map.Entry me = (Map.Entry) it.next();	
-			String nm = (String)me.getKey();
+			Entry<String, varValue> me =  it.next();	
+			String nm = me.getKey();
 			if(ms2.currTracker.containsKey( nm )){
 				//This means the me.getKey() was modified on both branches.
 				if(ms2.currTracker.get( nm ).equals(me.getValue())){

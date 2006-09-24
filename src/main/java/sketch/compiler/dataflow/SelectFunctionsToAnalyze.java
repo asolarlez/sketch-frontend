@@ -16,10 +16,10 @@ public class SelectFunctionsToAnalyze {
 		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
            Function oldFunc = (Function)iter.next();
-           String name = oldFunc.getSpecification();
-           if( name != null  ){
+           String specname = oldFunc.getSpecification();
+           if( specname != null  ){
         	   result.add(oldFunc);
-        	   result.add(spec.getFuncNamed(name));
+        	   result.add(spec.getFuncNamed(specname));
            }
         }
 		return result;

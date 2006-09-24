@@ -40,6 +40,11 @@ public class ArrFunction{
 	 */
 	List<StmtVarDecl> othParams;
 	
+	
+	List<StmtVarDecl> inputParams;
+	List<StmtVarDecl> outIdxParams;
+	
+	
 	private List<StmtMax> idxAss;
 	private List<Statement> maxAss;	
 	private List<Statement> retStmts;
@@ -84,7 +89,7 @@ public class ArrFunction{
 	
 	public String toString(){
 		String rv = getFullName();
-		rv += "(" + idxParams + ", " + iterParams + ", " + othParams + "){\n";
+		rv += "(" + idxParams + ", " + iterParams + ", " + othParams +  ", " + inputParams + ", " + outIdxParams + "){\n";
 		for(Iterator<StmtMax> it = idxAss.iterator(); it.hasNext(); ){
 			rv += it.next().toString() + ";\n";
 		}

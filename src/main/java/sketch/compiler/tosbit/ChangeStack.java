@@ -6,7 +6,7 @@ import streamit.frontend.tosbit.valueClass;
 
 
 class ChangeStack{
-	HashMap currTracker; //<String, int>
+	HashMap<String, varValue> currTracker; 
 	ChangeStack kid;
 
     /* Gilad, 2005-08-11: allow both syntactic expression and value of conditional
@@ -18,7 +18,7 @@ class ChangeStack{
 
 	ChangeStack (Expression newCondExpr, valueClass newCondVal){
 		kid = null;
-		currTracker = new HashMap ();
+		currTracker = new HashMap<String, varValue> ();
         condExpr = newCondExpr;
         condVal = newCondVal;
 	}
@@ -28,7 +28,7 @@ class ChangeStack{
     }
 	
 	boolean knowsAbout(String var){
-		varValue i = (varValue)currTracker.get(var);
+		varValue i = currTracker.get(var);
 		if(i != null)
 			return true;
 		else
@@ -36,7 +36,7 @@ class ChangeStack{
 	}
 	
 	boolean varHasValue(String var){
-		varValue i = (varValue)currTracker.get(var);
+		varValue i = currTracker.get(var);
 		if(i != null)
 			return i.hasValue;
 		else
@@ -44,7 +44,7 @@ class ChangeStack{
 	}
 	
 	int varValue(String var){
-		varValue i = (varValue)currTracker.get(var);
+		varValue i = currTracker.get(var);
 		if( i != null){
 			assert(i.hasValue) : ("This variable has been set to top at this level, and consequently doesn't have value even though it exists.");
 			return i.getValue();
@@ -53,7 +53,7 @@ class ChangeStack{
 		}
 	}	
 	void setVarValue(String var, int v){
-		varValue i = (varValue)currTracker.get(var);
+		varValue i = currTracker.get(var);
 		if(i == null)
 			currTracker.put(var, new varValue(v) );
 		else{
@@ -61,7 +61,7 @@ class ChangeStack{
 		}
 	}
 	public void unsetVarValue(String var, varState vs){
-		varValue i = (varValue)currTracker.get(var);
+		varValue i = currTracker.get(var);
 		if(i!= null){
 			i.hasValue = false;
 		}else{
@@ -78,7 +78,7 @@ class ChangeStack{
 	}
 	
 	void declVarLHS(String var, varState vs){
-		varValue i = (varValue)currTracker.get(var);		
+		varValue i = currTracker.get(var);		
 		if(i== null){
 			i = new varValue();
 			i.lastLHS = vs.getRHS();

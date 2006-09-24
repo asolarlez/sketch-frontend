@@ -11,8 +11,33 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayRange;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
 
 
 
@@ -136,11 +161,20 @@ public class FunctionalizeStencils extends FEReplacer {
 	List<processStencil> stencilFuns;
 	Map<String, ArrFunction> funmap;
 	Map<String, Type> superParams;
+	List<StmtVarDecl> outIdxs;
+	StreamSpec ss;
+	
+	/**
+	 * Maps a function name to a map of input grid names to abstract grids. 
+	 */	
+	Map<String, Map<String, AbstractArray> > globalInVars;
+	
 	public FunctionalizeStencils() {
 		super();
 		stencilFuns = new ArrayList<processStencil>();
-		superParams = new HashMap<String, Type>();
-		funmap = new TreeMap<String, ArrFunction>();
+		superParams = new TreeMap<String, Type>();
+		funmap = new HashMap<String, ArrFunction>();
+		globalInVars = new HashMap<String, Map<String, AbstractArray> >();
 	}
 	
 	
@@ -154,19 +188,168 @@ public class FunctionalizeStencils extends FEReplacer {
 		}
 	}
 	
+	
+	public void printFuns(){
+		for(Iterator<Entry<String, ArrFunction>> it = funmap.entrySet().iterator(); it.hasNext(); ){
+			ArrFunction af = it.next().getValue();
+			System.out.println(af);
+		}
+		
+		for(Iterator<Entry<String, Map<String, AbstractArray>>> it = globalInVars.entrySet().iterator(); it.hasNext(); ){
+			Map<String, AbstractArray> af = it.next().getValue();
+			
+			for(Iterator<Entry<String, AbstractArray>> aait = af.entrySet().iterator(); aait.hasNext(); ){
+				AbstractArray aa = aait.next().getValue();
+				System.out.println(aa);
+			}
+		}
+		
+	}
+	
+	
 	public Map<String, ArrFunction> getFunMap(){
 		return funmap;
 	}
 	
-	 public Object visitFunction(Function func)
+	
+	
+	 public Object visitStreamSpec(StreamSpec spec)
 	    {
-		 	processStencil ps = new processStencil(func.getName());
-		 	ps.setSuperParams(superParams);
-		 	stencilFuns.add(ps);		 	
-		 	func.accept(ps);	
-		 	funmap.putAll(ps.getAllFunctions());
-	        return null;
+	        
+	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
+	        {
+	            FieldDecl oldVar = (FieldDecl)iter.next();
+	            oldVar.accept(this);
+	        }
+	        
+	        StreamSpec oldSS = ss;
+	        ss = spec;
+	        
+	        SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
+		    List<Function> funcs = funSelector.selectFunctions(spec);
+	        
+	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
+	        	Function f = iter.next();
+	        	f.accept(this);
+	        }
+	        
+	        ss = oldSS;
+	        return spec;	        
 	    }
+
+
+		/**
+		 *
+		 * @param param
+		 * @return If param is a grid, it returns the dimension of the grid.
+		 * Otherwise, it returns -1
+		 */
+		
+		public static int checkIfGrid(Parameter param){
+			Type type = param.getType();
+			//TODO I am assuming that all arrays are unbounded. 
+			//This could be refined to make it identify bounded grids,
+			//since bounded grids don't have to be abstracted and 
+			//can be treated as regular inputs.
+			if( type instanceof TypeArray ){
+				int tt = 0;
+				while( type instanceof TypeArray ){
+					++tt;
+					TypeArray ta = (TypeArray)type;
+					type = ta.getBase();				
+				}
+				return tt;			
+			}else{
+				return -1;
+			}
+		}
+	
+	 
+	 public Map<String, AbstractArray> getInGrids(Function func){
+		 List<StmtVarDecl> othParams = new ArrayList<StmtVarDecl>();
+		 for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
+	 			Entry<String, Type> par = pIt.next();
+	 			othParams.add(new StmtVarDecl(null, par.getValue(), par.getKey(), null));
+	 	}
+		 
+		 
+		if( globalInVars.containsKey(func.getName()) ){
+			return globalInVars.get(func.getName());
+		}else{
+			//It may be that the abstract functions haven't been defined for this function,
+			//but if they have been defined for it's spec, then we reuse those. 
+			//Remember spec and sketch must share the same abstract grids.
+			String spec = func.getSpecification();
+			if( spec != null ){
+				if( globalInVars.containsKey(spec) ){
+					Map<String, AbstractArray> inVars = globalInVars.get(spec);
+					this.globalInVars.put(func.getName(), inVars);
+					return globalInVars.get(spec);
+				}
+			}
+		 
+			
+			Map<String, AbstractArray> inVars = new HashMap<String, AbstractArray>();
+			
+			outIdxs = new ArrayList<StmtVarDecl>();
+			boolean onlyOneOutput = true;
+			List params = func.getParams();
+			for(Iterator it = params.iterator(); it.hasNext();  ){
+				Parameter param = (Parameter) it.next();
+				if( !param.isParameterOutput() ){    		
+					int dim = checkIfGrid( param );
+					if( dim > 0){    				
+						AbstractArray absArr = new AbstractArray(param.getName(), func.getName(), dim, othParams, outIdxs);
+						inVars.put(param.getName(), absArr);
+						/////////////////
+					}else{
+						othParams.add( new StmtVarDecl(null, param.getType(), param.getName(), null)  );
+					}
+				}else{
+					assert onlyOneOutput : "The function can have only one output!! ";
+					onlyOneOutput = false;
+					int dim = checkIfGrid( param );
+					
+					for(int i=0; i<dim; ++i){
+						outIdxs.add(new StmtVarDecl(null, TypePrimitive.inttype, AbstractArray.outIndexParamName(i) , null));
+					}
+				}
+			}
+			
+			//Now, we need to populate the AbstractArray. 
+			//It is always populated from the spec, so if this is
+			//a sketch, we need to look for the spec and populate from there.
+			Function fToUse = func;
+			if( spec != null){
+				fToUse = ss.getFuncNamed(spec);
+			}
+			BuildAbstractArrays builder = new BuildAbstractArrays(inVars);
+			//TODO fToUse.accept(builder);
+			
+			this.globalInVars.put(func.getName(), inVars);
+			if( spec != null){
+				this.globalInVars.put(spec, inVars);
+			}
+			return inVars;
+		}
+	}
+	
+	 public Object visitFunction(Function func){
+		Map<String, AbstractArray> funInGrids = getInGrids(func);
+		 	
+		 
+		processStencil ps = new processStencil(func.getName());
+		 	
+			
+		ps.setSuperParams(superParams);		 	
+		ps.setOutIdxsParams(outIdxs);
+		
+		ps.setInVars(funInGrids);
+		stencilFuns.add(ps);
+		func.accept(ps);
+		funmap.putAll(ps.getAllFunctions());
+		return func;
+	 }
 
 
 	 public Object visitFieldDecl(FieldDecl field)
@@ -188,16 +371,23 @@ public class FunctionalizeStencils extends FEReplacer {
 }
 
 class processStencil extends FEReplacer {
+	
+	/*
+	 * Includes the global variables and the scalar parameters of the function.
+	 */
 	Map<String, Type> superParams;
 
 	Stack<Expression> conds;
 	ParamTree.treeNode currentTN;
 	Stack<scopeHist> scopeStack;
 	Map<String, arrInfo> smap;
-	Set<String> inVar;
+	Map<String, AbstractArray> inVars;
 	Set<String> outVar;
+	List<StmtVarDecl> outIdxs;
+	List<StmtVarDecl> inArrParams;
 	ParamTree ptree;
 	final String suffix; 
+		
 	
 	public Map<String, ArrFunction> getAllFunctions(){
 		Map<String, ArrFunction> nmap = new TreeMap<String, ArrFunction>();
@@ -246,11 +436,15 @@ class processStencil extends FEReplacer {
 		superParams = sp;
 	}
 	 
+	
+	public void  setOutIdxsParams(List<StmtVarDecl> outIdxs){
+		this.outIdxs = outIdxs;
+	}
+	
 	void closeOutOfScopeVars(scopeHist sc2){
 		for(Iterator<ArrFunction> it = sc2.funs.iterator(); it.hasNext();  ){
 			 ArrFunction t = it.next();
 			 t.close();
-			 System.out.println(t);
 			 smap.get(t.arrName).fun=null;
 		 }
 	}
@@ -320,7 +514,7 @@ class processStencil extends FEReplacer {
 	    	}	    	
 	    }*/
 	    
-	    void fa(arrInfo ainf, String var, int dim){	    	
+	    void populateArrInfo(arrInfo ainf, String var, int dim){	    	
    	 		ainf.fun = new ArrFunction(var, suffix, ainf.sfun.size(), ptree);
    	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD("t"+i, null) );
    	 		
@@ -328,6 +522,10 @@ class processStencil extends FEReplacer {
    	 			Entry<String, Type> par = pIt.next();
    	 			ainf.fun.othParams.add(new StmtVarDecl(null, par.getValue(), par.getKey(), null));
    	 		}
+   	 		
+   	 		ainf.fun.inputParams = this.inArrParams;
+   	 		ainf.fun.outIdxParams = this.outIdxs;
+   	 		
    	 		int sz = ainf.sfun.size();
    	 		ainf.fun.addRetStmt( nullMaxIf(sz>0 ? ainf.sfun.peek():null));
    	 		ainf.sfun.add(ainf.fun);
@@ -348,7 +546,7 @@ class processStencil extends FEReplacer {
     	    		assert !smap.containsKey(var);
     	    		ainf = new arrInfo();
     	    		smap.put(var, ainf);
-    	    		fa(ainf, var, 0);
+    	    		populateArrInfo(ainf, var, 0);
     	    		if( stmt.getInit(i) != null ){
     	    			List<Expression> indices = new ArrayList<Expression>(0);
     	    			processArrAssign(var, indices, stmt.getInit(i));
@@ -552,14 +750,14 @@ class processStencil extends FEReplacer {
 	    	public Object visitExprVar(ExprVar evar){
 	    		String bname = evar.getName();
 	    		if(smap.containsKey(bname)){
-	    			List tmp = new ArrayList();
-	    			return fa(bname, tmp);
+	    			List<Expression> tmp = new ArrayList<Expression>();
+	    			return doReplacement(bname, tmp);
 	    		}else{
 	    			return evar;
 	    		}
 	    	}
 
-	    	public ExprFunCall fa(String bname, List<Expression> mem){
+	    	public ExprFunCall doReplacement(String bname, List<Expression> mem){
 //	    		First, we get the function representation of the array.
 	    		arrInfo ainf = smap.get(bname);
 	    		ArrFunction arFun = ainf.sfun.peek();
@@ -588,14 +786,58 @@ class processStencil extends FEReplacer {
 	    		return new ExprFunCall(null, arFun.getFullName(), params);
 	    	}
 	    	
+	    	
+	    	public ExprFunCall doInputReplacement(String bname, List<Expression> mem){
+	    		AbstractArray inArr = inVars.get(bname);
+//	    		Now we build a function call to replace the array access.
+	    		List<Expression> params = new ArrayList<Expression>();	
+	    		assert inArr.dim == mem.size();
+	    		//First, we add the index parameters.
+	    		for(int i=0; i<mem.size(); ++i){	    			
+	    			Expression obj=mem.get(i);
+	    			Expression newPar = (Expression)obj.accept(this);
+	    			params.add(newPar);
+	    		}
+	    		//Then, we must add the output index parameters.
+	    		for(Iterator<StmtVarDecl> it = outIdxs.iterator(); it.hasNext(); ){
+	    			StmtVarDecl vd = it.next();
+	    			Expression obj = new ExprVar(null, vd.getName(0));
+	    			params.add(obj);
+	    		}
+	    		//And then the symbolic parameters, 
+	    		for(int i=0; i<inArr.numSymParams(); ++i){
+	    			Expression obj = new ExprVar(null, inArr.symParamName(i) );
+	    			params.add(obj);
+	    		}	    			    		
+	    		//And then the otherParams,
+	    		for(Iterator<StmtVarDecl> it = inArr.otherParams.iterator() ;it.hasNext();  ){
+	    			StmtVarDecl vd = it.next();
+	    			Expression obj = new ExprVar(null, vd.getName(0));
+	    			params.add(obj);
+	    		}	    		
+	    		//And then the globalParameters
+	    		for(Iterator<StmtVarDecl> it = inArr.globalParams.iterator() ;it.hasNext();  ){
+	    			StmtVarDecl vd = it.next();
+	    			Expression obj = new ExprVar(null, vd.getName(0));
+	    			params.add(obj);
+	    		}
+	    		return new ExprFunCall(null, inArr.getFullName(), params);
+	    	}
+	    	
+	    	
+	    	
 	    	public Object visitExprArrayRange(ExprArrayRange exp) {
 	    		final ExprVar newBase= exp.getAbsoluteBase();	    		
 	    		String bname = newBase.getName();
-	    		if(smap.containsKey(bname)){
-	    			
+	    		if(smap.containsKey(bname)){	    			
 	    			List<Expression> mem = getArrayIndices(exp);
-		    		return fa(bname, mem);
+		    		return doReplacement(bname, mem);
 	    		}else{
+	    			//Now, we must check whether it is an input array.
+	    			if( inVars.containsKey(bname)){
+	    				List<Expression> mem = getArrayIndices(exp);
+			    		return doInputReplacement(bname, mem);
+	    			}
 	    			return exp;
 	    		}
 	    	}
@@ -687,11 +929,10 @@ class processStencil extends FEReplacer {
 	
 	public processStencil(String suffix) {
 		super();
-		superParams = new HashMap<String, Type>();
+		superParams = new TreeMap<String, Type>();
 		conds = new Stack<Expression>();		
 		scopeStack = new Stack<scopeHist>();
-		smap = new HashMap<String, arrInfo>();
-		this.inVar = new TreeSet<String>();
+		smap = new HashMap<String, arrInfo>();		
 		this.outVar = new TreeSet<String>();
 		this.suffix = "_" + suffix;
 	}
@@ -710,7 +951,24 @@ class processStencil extends FEReplacer {
 		assert !smap.containsKey(var);
 		ainf = new arrInfo();
 		smap.put(var, ainf);
-		fa(ainf, var, tt);
+		populateArrInfo(ainf, var, tt);
+	}
+	
+	
+	
+	public void setInVars(Map<String, AbstractArray> inVars){
+		this.inVars = inVars;
+		
+		//TODO populateInParams.		
+		inArrParams = new ArrayList<StmtVarDecl>();
+		
+		for(Iterator<Entry<String, AbstractArray>> it = inVars.entrySet().iterator(); it.hasNext(); ){
+			AbstractArray aar = it.next().getValue();
+			
+			aar.addParamsToFunction(inArrParams);
+		}
+		
+		
 	}
 	
 	
@@ -728,7 +986,13 @@ class processStencil extends FEReplacer {
     			declareNewArray(param.getType(), param.getName());
     			outVar.add(param.getName());
     		}else{
-    			inVar.add(param.getName());
+    			
+    			int dim = FunctionalizeStencils.checkIfGrid(param);
+    			if( dim < 0){
+    				//This means the parameter is a scalar parameter, and should
+    				//be added to the SuperParams map.
+    				superParams.put(param.getName(), param.getType());
+    			}
     		}
     	}
     	Object tmp  = super.visitFunction(func);
