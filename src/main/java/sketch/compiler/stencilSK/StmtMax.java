@@ -50,6 +50,13 @@ public class StmtMax extends Statement{
 	 */
 	Statement maxAssign = null;
 	
+	
+	public Statement toAST(){
+		if( maxAssign != null)
+			return maxAssign;
+		return this;
+	}
+	
 	public Object accept(FEVisitor visitor){
 		assert false;
 		return null;
