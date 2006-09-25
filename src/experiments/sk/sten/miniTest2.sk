@@ -5,6 +5,7 @@ int[N] test(int[N] in){
   	if(i>0 && i<N) out[i] = in[i-1] + in[i+1];
   	else out[i] = 0;
   }
+  return out;
 }
 
 int[N] testSK(int[N] in) implements test {
@@ -13,4 +14,5 @@ int[N] testSK(int[N] in) implements test {
   	out[i-1] += in[i];
   	out[i+1] = in[i];
   }
+  return out;
 }

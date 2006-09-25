@@ -777,12 +777,26 @@ class processStencil extends FEReplacer {
 	    		//pass a current value (an idx_i) for the others, we'll pass the default value.
 	    		
 	    		setIterPosIterParams(arFun, fun, params);
-	    		//Finally, we must set all the other parameters.
+	    		//Then, we must set the other parameters.
 	    		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){		    			
 	   	 			Entry<String, Type> par = pIt.next();
 	   	 			params.add(new ExprVar(null, par.getKey()));
 	   	 		}
 	    		
+	    		//Finally, we must set the parameters that are passed through to the input arrays.
+	    		
+	    		for(Iterator<StmtVarDecl> it = inArrParams.iterator(); it.hasNext();  ){
+	    			StmtVarDecl svd = it.next();
+	    			ExprVar ev = new ExprVar(null, svd.getName(0));
+	    			params.add(ev);
+	    		}
+
+	    		for(Iterator<StmtVarDecl> it = outIdxs.iterator(); it.hasNext();  ){
+	    			StmtVarDecl svd = it.next();
+	    			ExprVar ev = new ExprVar(null, svd.getName(0));
+	    			params.add(ev);
+	    		}
+	    			
 	    		return new ExprFunCall(null, arFun.getFullName(), params);
 	    	}
 	    	
