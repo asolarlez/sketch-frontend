@@ -1,0 +1,24 @@
+bit loopTest() {
+    return 1;
+}
+
+bit debug() implements loopTest {
+    bit[10] tmp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+    int i = 0;
+    bit t = 0;
+
+    int j = ??;
+    assert (j >= 0 && j < 10);
+
+    t = tmp[j];
+
+    loop (j) {
+	i++;
+	if (tmp[i] == 1)
+	    t = 0;
+    }
+
+    return t;
+}
+
+
