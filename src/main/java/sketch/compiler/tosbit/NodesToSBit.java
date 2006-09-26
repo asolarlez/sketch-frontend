@@ -21,6 +21,7 @@ import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.FuncWork;
@@ -1007,12 +1008,38 @@ public class NodesToSBit extends PartialEvaluator{
 	    
 	    public Object visitStmtLoop(StmtLoop stmt)
 	    {
+            /* Generate a new variable, initialized with loop expression. */
+            FEContext nvarContext = stmt.getContext ();
+            String nvar = varGen.nextVar ();
+            StmtVarDecl nvarDecl =
+                new StmtVarDecl (nvarContext,
+                                 new TypePrimitive (TypePrimitive.TYPE_INT),
+                                 nvar,
+                                 stmt.getIter ());
+            nvarDecl.accept (this);
 
-	    	stmt.getIter().accept(this);
+            /* Generate and visit an expression consisting of the new variable. */
+            ExprVar nvarExp = 
+                new ExprVar (nvarContext,
+                             nvar);
+            nvarExp.accept (this);
+
+            /* Check result, get full (LHS) variable name. */
 	    	valueClass vcond = state.popVStack();
-	    	if(!vcond.hasValue()){
-	    		String nvar = state.varDeclare();
-	    		out.print(nvar + " = " + "(" + vcond + ");\n"); 	    		
+            String nvarFull = vcond.toString ();
+
+            /* If no known value, perform conditional unrolling of the loop. */
+	    	if (! vcond.hasValue ()) {
+                /* Assert loop expression does not exceed max unrolling constant. */
+                StmtAssert nvarAssert =
+                    new StmtAssert (nvarContext,
+                                    new ExprBinary (
+                                        nvarContext,
+                                        ExprBinary.BINOP_LE,
+                                        new ExprVar (nvarContext, nvar),
+                                        new ExprConstInt (nvarContext, LUNROLL)));
+                nvarAssert.accept (this);
+
 	    		int iters;
 	    		loopmap.pushLoop(LUNROLL);
 	    		for(iters=0; iters<LUNROLL; ++iters){			        		        
@@ -1033,7 +1060,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    		
 	    		for(int i=iters-1; i>=0; --i){
 
-	    			String cond = "(" + nvar + ")>" + i;
+	    			String cond = "(" + nvarFull + ")>" + i;
 	    			// I thought this would be more efficient, but it wasn't.
 //	    			String tmpVar = varGen.nextVar();
 	    			//result += tmpVar + " = " + cond + "; \n";		        		    			
