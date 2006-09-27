@@ -1,45 +1,79 @@
 package streamit.frontend.stencilSK;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import streamit.frontend.nodes.ExprArrayRange;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.tosbit.PartialEvaluator;
 
-public class BuildAbstractArrays extends PartialEvaluator {
+
+public class BuildAbstractArrays extends FEReplacer {
+	Map<String, AssignStruct> assignMap;
+	
 	Map<String, AbstractArray> inVars;
-	   /**
-     * The current symbol table.  Functions in this class keep the
-     * symbol table up to date; calling
-     * <code>super.visitSomething</code> from a derived class will
-     * update the symbol table if necessary and recursively visit
-     * children.
-     */
-    protected SymbolTable symtab;
-/*
+    
+    
+    class setPredecessors extends FEReplacer{
+    	AssignStruct as;
+    	List<AssignStruct> asList=null;
+    	setPredecessors(AssignStruct as){
+    		this.as = as;
+    		as.rhs.accept(this);
+    	}
+    	
+    	public Object visitExprArrayRange(ExprArrayRange exp) {
+    		List<Expression> indices = exp.getArrayIndices();
+    		String name = exp.getAbsoluteBase().getName();
+    		boolean isInput = false;
+    		if( inVars.containsKey(name) ){
+    			isInput = true;
+    		}
+    		if(isInput) asList = new ArrayList<AssignStruct>();
+    		for(Iterator<Expression> it = indices.iterator(); it.hasNext(); ){    			
+    			Expression idxExp = it.next();
+    			idxExp.accept(this);    			
+    		}
+    		asList = null;
+    		if(isInput){
+    			inVars.get(name).addAssignStruct(as, indices);
+    		}
+    		
+    		return exp;
+    	}
+    	
+    	public Object visitExprVar(ExprVar exp) { 
+    		if( inVars.containsKey(exp.getName()) ){
+    			return exp;
+    		}
+    		if( assignMap.containsKey(exp.getName()) ){
+    			AssignStruct as2 = assignMap.get(exp.getName());
+    			as.predecessors.add(as2);
+    			if( asList != null) asList.add(as2);
+    		}
+    		return exp;
+    	}
+    }
+    
+    
+    
+
     
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         for (int i = 0; i < stmt.getNumVars(); i++){
-            symtab.registerVar(stmt.getName(i),
-                               actualType(stmt.getType(i)),
-                               stmt,
-                               SymbolTable.KIND_LOCAL);
-            
-            
-            if (stmt.getInit(i) != null){     
-            	stmt.getInit(i).accept(this);
-            	valueClass tmp = state.popVStack();
-                String asgn = lhsn + " = " + tmp + "; \n";		                
-                if(tmp.hasValue()){
-                	state.setVarValue(nm, tmp.getIntValue());
-                }else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
-                	out.print(asgn);	
-                } 	                
+            if (stmt.getInit(i) != null){
+            	Expression exp = (Expression) stmt.getInit(i).accept(this);
+            	AssignStruct as = new AssignStruct(new ExprVar(null, stmt.getName(i)), exp);
+            	new setPredecessors(as);
+            	this.assignMap.put(stmt.getName(i), as);
             }
         }
         return super.visitStmtVarDecl(stmt);
@@ -47,58 +81,27 @@ public class BuildAbstractArrays extends PartialEvaluator {
     
     
     
-    
-    public Object visitFieldDecl(FieldDecl field)
-    {
-        for (int i = 0; i < field.getNumFields(); i++){
-            symtab.registerVar(field.getName(i),
-                               actualType(field.getType(i)),
-                               field,
-                               SymbolTable.KIND_FIELD);
-            
-        }
-        return super.visitFieldDecl(field);
-    }
-    
-    protected Type actualType(Type type)
-    {       
-        return type;
-    }
-
-    public Object visitFunction(Function func)
-    {
-        SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);
-        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); )
-        {
-            Parameter param = (Parameter)iter.next();
-            symtab.registerVar(param.getName(),
-                               actualType(param.getType()),
-                               param,
-                               SymbolTable.KIND_FUNC_PARAM);
-        }
-        Object result = super.visitFunction(func);
-        symtab = oldSymTab;
-        return result;
-    }
-    
-    
-    */
-    
 	public BuildAbstractArrays(Map<String, AbstractArray> inVars){
-		super(true);
-		this.inVars = inVars;		
+		super();
+		this.inVars = inVars;
+		assignMap = new HashMap<String, AssignStruct>();
+	}
+	
+	
+	public void makeDefault(){
 		for(Iterator<Entry<String, AbstractArray>> it = inVars.entrySet().iterator(); it.hasNext(); ){
 			it.next().getValue().makeDefault(3);
-			
-			
 		}
 	}
 	
 	
-	
     public Object visitStmtAssign(StmtAssign stmt){
-    	return null;
+    	
+    	assert (stmt.getOp() == 0);
+    	AssignStruct as = new AssignStruct(stmt.getLHS(), stmt.getRHS());
+    	new setPredecessors(as);
+    	this.assignMap.put(as.lhsName, as);
+    	return stmt;
     	/**
     	 * if( isArrayAccess){
     	 *   if( Array is grid ){

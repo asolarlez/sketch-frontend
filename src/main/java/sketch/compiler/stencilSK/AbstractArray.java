@@ -59,7 +59,35 @@ public class AbstractArray {
 	 */
 	List<StmtVarDecl> globalParams; 
 	
-	
+	public void addAssignStruct(AssignStruct ass, List<Expression> indices){
+		/*
+		 * I need to get the output indices from the assign structure,
+		 * and then replace them with the outIndexParameters in each
+		 * of the indices. 
+		 */
+		
+		assert indices.size() == this.dim;		
+		assert ass.indices.size() == outIndexParameters.size() : " This is because we require the lhs to be equal tou out[i,j,k]";
+		Expression[] expr = new Expression[dim];
+		int i=0;
+		for(Iterator<Expression> inIdxIt = indices.iterator(); inIdxIt.hasNext(); ++i){
+			Expression inIdx = inIdxIt.next();
+			Iterator<StmtVarDecl> outIdxNewIt = outIndexParameters.iterator();
+			for(Iterator<Expression> outIdxOldIt = ass.indices.iterator(); outIdxOldIt.hasNext(); ){
+				Expression outIdxOld = outIdxOldIt.next();
+				assert outIdxOld instanceof ExprVar : "Currently, it is assumed that the spec only has assignments of the form " 
+														+ "out[i,j,k] = blah; so the ori indices must be single variables.";
+				ExprVar outIdxOldVar = (ExprVar) outIdxOld;
+				StmtVarDecl svd = outIdxNewIt.next();
+
+				inIdx = (Expression)  inIdx.accept(new VarReplacer(outIdxOldVar.getName(), new ExprVar(null, svd.getName(0))));
+			}
+			expr[i] = inIdx;
+		}
+		//TODO : Still need ot add the statements corresponding to the dependencies of the AssignStruct.
+		idxArr.add(expr);
+		
+	}
 	
 	public void makeDefault(int vars){
 		for(int i=0; i<vars; ++i){

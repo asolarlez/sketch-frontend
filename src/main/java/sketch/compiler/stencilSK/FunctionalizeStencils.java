@@ -136,27 +136,6 @@ class arrInfo{
 }
 
 
-class VarReplacer extends FEReplacer{
-	String oldName;
-	Expression newName;
-	
-	VarReplacer(String oldName, Expression newName){
-		this.oldName = oldName;
-		this.newName = newName;
-	}
-	
-	public Object visitExprVar(ExprVar exp) {
-		if( exp.getName().equals(oldName)){
-			return newName;
-		}else{
-			return exp;
-		}
-	}
-	
-
-	
-}
-
 public class FunctionalizeStencils extends FEReplacer {
 	List<processStencil> stencilFuns;
 	Map<String, ArrFunction> funmap;
@@ -324,7 +303,10 @@ public class FunctionalizeStencils extends FEReplacer {
 				fToUse = ss.getFuncNamed(spec);
 			}
 			BuildAbstractArrays builder = new BuildAbstractArrays(inVars);
-			//TODO fToUse.accept(builder);
+			if(false)
+				builder.makeDefault();
+			else			
+				fToUse.accept(builder);
 			
 			this.globalInVars.put(func.getName(), inVars);
 			if( spec != null){
