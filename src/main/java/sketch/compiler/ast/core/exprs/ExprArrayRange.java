@@ -3,6 +3,7 @@
  */
 package streamit.frontend.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -111,6 +112,24 @@ public class ExprArrayRange extends Expression
 		return ret.toString();
 	}
 
+	
+	
+	public List<Expression> getArrayIndices() {
+        List<Expression> indices = new ArrayList<Expression>();
+        Expression base= getBase();
+        if(base instanceof ExprArrayRange) {
+        	indices.addAll(((ExprArrayRange) base).getArrayIndices());
+        }
+        List memb= getMembers();
+        assert memb.size()==1: "In stencil mode, we permit only single-element indexing, i.e. no a[1,3,4]";
+        assert memb.get(0) instanceof RangeLen: "In stencil mode, array ranges (a[1:4]) are not allowed";
+        RangeLen rl=(RangeLen) memb.get(0);
+        assert rl.len()==1: "In stencil mode, array ranges (a[1::2]) are not allowed";
+        indices.add(rl.start());
+        return indices;
+    }
+	
+	
 	
 	public ExprVar getAbsoluteBase(){
 		Expression base= getBase();
