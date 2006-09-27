@@ -105,19 +105,30 @@ public class ArrFunction{
 		return rv;	
 	}
 	
+	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
+		return makeParams(ls,false);
+	}
+	private static final List<Parameter> makeParams(List<StmtVarDecl> ls, boolean isOut) {
+		return makeParams(ls.iterator(),isOut);
+	}
+	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it, boolean isOut) {
+		List<Parameter> ret=new ArrayList<Parameter>();
+		while(it.hasNext()) {
+			StmtVarDecl var=it.next();
+			for(int i=0;i<var.getNumVars();i++)
+				ret.add(new Parameter(var.getType(i),var.getName(i),isOut));
+		}
+		return ret;
+	}
+	
 	public Function toAST() {
-		List<StmtVarDecl> params=new ArrayList<StmtVarDecl>();
+		List<Parameter> params=new ArrayList<Parameter>();
 		{
-			params.addAll(idxParams);
-			for(Iterator<StmtVarDecl> it=iterParams.iterator();it.hasNext();) {
-				StmtVarDecl par=it.next();
-				List types=new ArrayList(par.getTypes());
-				List names=new ArrayList(par.getNames());
-				List inits=new ArrayList(par.getNumVars());
-				for(int i=0;i<par.getNumVars();i++) inits.add(null);
-				params.add(new StmtVarDecl(par.getContext(),types,names,inits));
-			}
-			params.addAll(othParams);
+			params.addAll(makeParams(idxParams));
+			params.addAll(makeParams(iterParams.iterator(),false));
+			params.addAll(makeParams(othParams));
+			params.addAll(makeParams(inputParams));
+			params.addAll(makeParams(outIdxParams,true));
 		}
 		List<Statement> stmts=new ArrayList<Statement>();
 		{

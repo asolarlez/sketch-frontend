@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.*;
 
 /**
  * 
@@ -135,6 +132,10 @@ public class AbstractArray {
 		return getFullName() + "_" + i;
 	}
 	
+	protected String idxParamName(int i){
+		return IDXNAME + i;
+	}
+	
 	public int numSymParams(){
 		return idxArr.size();
 	}
@@ -144,7 +145,7 @@ public class AbstractArray {
 		String body="";
 		//( index parameters, outIndexParameters, symbolic parameters, otherParams, globalParameters).
 		for(int i=0; i<dim; ++i){
-			s += "int " + IDXNAME + i + ", ";			
+			s += "int " + idxParamName(i) + ", ";			
 		}
 		
 		for(Iterator<StmtVarDecl> it = outIndexParameters.iterator(); it.hasNext(); ){
@@ -162,7 +163,7 @@ public class AbstractArray {
 			s += ", ";
 			body += "if ( " ;
 			for(int j=0; j<dim; ++j){
-				body += IDXNAME + j + "==" + earr[j];
+				body += idxParamName(j) + "==" + earr[j];
 				if( j != dim-1) body += " && ";
 			}
 			body += ") return "  + spname + "; \n";			
@@ -180,5 +181,58 @@ public class AbstractArray {
 		return s;
 	}
 	
+	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
+		return makeParams(ls,false);
+	}
+	private static final List<Parameter> makeParams(List<StmtVarDecl> ls, boolean isOut) {
+		return makeParams(ls.iterator(),isOut);
+	}
+	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it, boolean isOut) {
+		List<Parameter> ret=new ArrayList<Parameter>();
+		while(it.hasNext()) {
+			StmtVarDecl var=it.next();
+			for(int i=0;i<var.getNumVars();i++)
+				ret.add(new Parameter(var.getType(i),var.getName(i),isOut));
+		}
+		return ret;
+	}
+	private final Expression aggregateExp(Expression[] exprs, int s, int f) {
+		assert 0<=s && s<f && f<=exprs.length;
+		if(s==f-1) return new ExprBinary(null,ExprBinary.BINOP_EQ,
+			new ExprVar(null,idxParamName(s)), exprs[s]);
+		return new ExprBinary(null,ExprBinary.BINOP_AND,
+			aggregateExp(exprs,s,s+1),
+			aggregateExp(exprs,s+1,f));
+	}
+	
+	public Function toAST() {
+		List<Parameter> params=new ArrayList<Parameter>();
+		{
+			//index parameters, outIndexParameters, symbolic parameters, otherParams, globalParameters
+			for(int i=0; i<dim; ++i){
+				params.add(new Parameter(TypePrimitive.inttype, idxParamName(i)));
+			}
+			params.addAll(makeParams(outIndexParameters));
+			for(int i=0;i<idxArr.size();i++){
+				params.add(new Parameter(TypePrimitive.inttype, symParamName(i)));
+			}
+			params.addAll(makeParams(otherParams));
+			params.addAll(makeParams(globalParams));
+		}
+		List<Statement> stmts=new ArrayList<Statement>();
+		{
+			for(int i=0; i<idxArr.size();i++){
+				String spname = symParamName(i);
+				Expression[] earr = idxArr.get(i);
+				Expression condition=aggregateExp(earr,0,dim);
+				Statement retStmt=new StmtReturn(null,new ExprVar(null,spname));
+				Statement ifStmt=new StmtIfThen(null,condition,retStmt,null);
+				stmts.add(ifStmt);
+			}
+		}
+		Statement body=new StmtBlock(null,stmts);
+		Function ret=Function.newHelper(null,arrName + suffix,new TypePrimitive(TypePrimitive.TYPE_VOID),params,body);
+		return ret;
+	}
 
 }
