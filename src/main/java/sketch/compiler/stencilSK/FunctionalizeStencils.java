@@ -37,6 +37,7 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
 
 
@@ -157,7 +158,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	}
 	
 	
-	public void processFuns(Program prog){
+	public Program processFuns(Program prog){
 		List functions=((StreamSpec)prog.getStreams().get(0)).getFuncs();
 		for(Iterator<Entry<String, ArrFunction>> it = funmap.entrySet().iterator(); it.hasNext(); ){
 			ArrFunction af = it.next().getValue();
@@ -172,6 +173,7 @@ public class FunctionalizeStencils extends FEReplacer {
 				functions.add(aa.toAST());
 			}
 		}
+		return (Program) prog.accept(new FunctionParamExtension());
 	}
 	
 	

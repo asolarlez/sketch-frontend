@@ -1,8 +1,6 @@
 package streamit.frontend.stencilSK;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import streamit.frontend.nodes.*;
 
@@ -128,7 +126,7 @@ public class ArrFunction{
 			params.addAll(makeParams(iterParams.iterator(),false));
 			params.addAll(makeParams(othParams));
 			params.addAll(makeParams(inputParams));
-			params.addAll(makeParams(outIdxParams,true));
+			params.addAll(makeParams(outIdxParams));
 		}
 		List<Statement> stmts=new ArrayList<Statement>();
 		{
@@ -136,7 +134,7 @@ public class ArrFunction{
 			stmts.addAll(retStmts);
 		}
 		Statement body=new StmtBlock(null,stmts);
-		Function ret=Function.newHelper(null,getFullName(),new TypePrimitive(TypePrimitive.TYPE_VOID),params,body);
+		Function ret=Function.newHelper(null,getFullName(),new TypeCompound(TypePrimitive.inttype),params,body);
 		return ret;
 	}
 	

@@ -60,9 +60,7 @@ import streamit.frontend.passes.NoticePhasedFilters;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.passes.VariableDisambiguator;
-import streamit.frontend.stencilSK.EliminateCompoundAssignments;
-import streamit.frontend.stencilSK.FunctionalizeStencils;
-import streamit.frontend.stencilSK.StencilSemanticChecker;
+import streamit.frontend.stencilSK.*;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
@@ -368,9 +366,10 @@ public class ToStencilSK
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
         FunctionalizeStencils fs = new FunctionalizeStencils();
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
-        fs.processFuns(prog); //process the ArrFunction's and create new Function's
+        prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
         
-        fs.printFuns();
+        //fs.printFuns();
+        prog.accept(new SimpleCodePrinter());
         System.out.println("DONE!");
         if(true){ return ; }
         

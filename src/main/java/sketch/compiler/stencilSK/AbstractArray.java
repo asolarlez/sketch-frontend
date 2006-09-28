@@ -1,8 +1,6 @@
 package streamit.frontend.stencilSK;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import streamit.frontend.nodes.*;
 
@@ -141,7 +139,7 @@ public class AbstractArray {
 	}
 	
 	public String toString(){
-		String s = arrName + suffix + "( ";
+		String s = getFullName() + "( ";
 		String body="";
 		//( index parameters, outIndexParameters, symbolic parameters, otherParams, globalParameters).
 		for(int i=0; i<dim; ++i){
@@ -153,8 +151,6 @@ public class AbstractArray {
 		}
 		
 		
-		
-		String fullName = getFullName();
 		int i=0;
 		for(Iterator<Expression[]> it = idxArr.iterator(); it.hasNext(); ++i ){
 			String spname = symParamName(i);
@@ -231,7 +227,7 @@ public class AbstractArray {
 			}
 		}
 		Statement body=new StmtBlock(null,stmts);
-		Function ret=Function.newHelper(null,arrName + suffix,new TypePrimitive(TypePrimitive.TYPE_VOID),params,body);
+		Function ret=Function.newHelper(null,getFullName(),new TypeCompound(TypePrimitive.inttype),params,body);
 		return ret;
 	}
 

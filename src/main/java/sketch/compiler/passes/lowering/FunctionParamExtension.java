@@ -98,6 +98,10 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return "_ret_"+(outCounter++); 
 	}
 
+	private String getReturnFlag() { 
+		return "_has_out_";
+	}
+	
 	private String getNewInCpID(String oldName) {
 		return oldName+"_"+(inCpCounter++); 
 	}
@@ -114,7 +118,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		// before we continue, we must add parameters to all the functions
 		for(Iterator itf=spec.getFuncs().iterator();itf.hasNext();) {
 			Function fun=(Function) itf.next();
-			TypeCompound rt=(TypeCompound) fun.getReturnType();
+			Type retType=fun.getReturnType();
+			if(!(retType instanceof TypeCompound)) continue;
+			TypeCompound rt=(TypeCompound) retType;
 			List types=rt.getTypes();
 			for(int i=0;i<types.size();i++) {
 				fun.getParams().add(new Parameter((Type) types.get(i),getParamName(i),true));
@@ -124,15 +130,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	}
 
 	public Object visitFunction(Function func) {
+		if(func.getReturnType()==TypePrimitive.voidtype) return func;
 		currentFunction=func;
 			outCounter=0;
 			inCpCounter=0;
 			func=(Function) super.visitFunction(func);
 		currentFunction=null;
 		func=(Function)func.accept(paramCopyRes);
+		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
+		//add a declaration for the "return flag"
+		stmts.add(0,new StmtVarDecl(func.getBody().getContext(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(null,0)));
 		func=new Function(func.getContext(),func.getCls(),func.getName(),
-				new TypePrimitive(TypePrimitive.TYPE_VOID), func.getParams(),
-				func.getSpecification(), func.getBody());
+				TypePrimitive.voidtype, func.getParams(),
+				func.getSpecification(), new StmtBlock(func.getContext(),stmts));
 		return func;
 	}
 
@@ -187,15 +197,24 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	}
 
 	public Object visitStmtReturn(StmtReturn stmt) {
+		FEContext cx=stmt.getContext();
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);
+		List stmts=new ArrayList();
 		List params=getOutputParams(currentFunction);
 		for(int i=0;i<params.size();i++) {
 			Parameter param=(Parameter) params.get(i);
 			String name=param.getName(); 
-			Statement assignRet=new StmtAssign(stmt.getContext(), new ExprVar(stmt.getContext(), name), stmt.getValue(), 0);
-			addStatement(assignRet);
+			Statement assignRet=new StmtAssign(cx, new ExprVar(cx, name), stmt.getValue(), 0);
+			stmts.add(assignRet);
 		}
-		return null;
+		stmts.add(new StmtAssign(cx, new ExprVar(cx, getReturnFlag()), new ExprConstInt(cx, 1), 0));
+		Statement ret=new StmtIfThen(cx,
+			new ExprBinary(cx, ExprBinary.BINOP_EQ, 
+				new ExprVar(cx, getReturnFlag()), 
+				new ExprConstInt(cx, 0)),
+			new StmtBlock(cx,stmts),
+			null);
+		return ret;
 	}
 
 }
