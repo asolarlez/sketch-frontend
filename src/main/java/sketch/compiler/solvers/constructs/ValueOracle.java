@@ -79,6 +79,14 @@ public class ValueOracle {
 						break;
 					}
 				}
+				
+				if( p == 1){
+					assert v == 0;
+					if( valMap.containsKey(var) ){
+						boolean val = valMap.get(var).booleanValue();
+						v = (val?1:0);
+					}
+				}
 				return(new ExprConstInt(node.getContext(), v));
 			}
 		}else{
