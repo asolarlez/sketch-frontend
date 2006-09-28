@@ -73,7 +73,8 @@ public class PartialEvaluator extends FEReplacer {
  		    	int ofstV = ofst.getIntValue();
  		    	int size = state.checkArray(vname);
  		    	if(ofstV >= size || ofstV < 0){
- 		    		if(!exp.isUnchecked())throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
+ 		    		if(!exp.isUnchecked())
+ 		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
  					state.pushVStack( new valueClass(0) );
  					return null;
  		    	} 		    	
@@ -233,7 +234,8 @@ public class PartialEvaluator extends FEReplacer {
 	    	List<valueClass> lst = baseVal.getVectValue();	    	
 	    	int size = lst.size();
 	    	if(ofstV >= size || ofstV < 0){
-	    		if(!exp.isUnchecked())throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
+	    		if(!exp.isUnchecked())
+	    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
 				state.pushVStack( new valueClass(0) );
 				return new ExprConstInt(0);
 	    	}
@@ -448,6 +450,7 @@ public class PartialEvaluator extends FEReplacer {
 	    	Iterator<valueClass> it = rhsLst.iterator();
 	    	int i = 0;
 	    	int val=0;
+	    	int t = 1;
 	    	boolean hasValue=true;
 	    	while(it.hasNext()){
 	    		valueClass o = it.next();
@@ -458,8 +461,8 @@ public class PartialEvaluator extends FEReplacer {
 	    			int curv =  o.getIntValue();
 	    			result += " " + o.getIntValue();
 	    			Assert(curv == 1 || curv == 0, "Only boolean arrays please!!");
-	    			val = val*2;
-	    			val = val + curv;
+	    			if( curv == 1 ) val += t; 
+	    			t = t*2;
 	    		}
 	    		++i;
 	    	}
