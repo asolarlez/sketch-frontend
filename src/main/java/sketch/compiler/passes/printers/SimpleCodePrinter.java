@@ -71,22 +71,26 @@ public class SimpleCodePrinter extends FEReplacer
 	@Override
 	public Object visitStmtWhile(StmtWhile stmt)
 	{
-		// TODO Auto-generated method stub
-		return super.visitStmtWhile(stmt);
+    	printLine("while(" + stmt.getCond() + ")");
+    	printIndentedStatement(stmt.getBody());
+		return stmt;
 	}
 
 	@Override
 	public Object visitStmtDoWhile(StmtDoWhile stmt)
 	{
-		// TODO Auto-generated method stub
-		return super.visitStmtDoWhile(stmt);
+		printLine("do");
+		printIndentedStatement(stmt.getBody());
+    	printLine("while(" + stmt.getCond() + ")");
+		return stmt;
 	}
 
 	@Override
 	public Object visitStmtLoop(StmtLoop stmt)
 	{
-		// TODO Auto-generated method stub
-		return super.visitStmtLoop(stmt);
+    	printLine("loop(" + stmt.getIter() + ")");
+    	printIndentedStatement(stmt.getBody());
+		return stmt;
 	}
 
 	@Override
