@@ -11,6 +11,10 @@ import java.util.*;
 public class TypeCompound extends Type {
 	private final List fTypes;
 	
+	public TypeCompound(Type t) {
+		this(Collections.singletonList(t));
+	}
+	
 	public TypeCompound(List types) {
 		fTypes=new ArrayList(types);
 	}
