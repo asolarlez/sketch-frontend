@@ -1,14 +1,6 @@
 package streamit.frontend.stencilSK;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.Map.Entry;
 
 import streamit.frontend.nodes.ExprArray;
@@ -160,18 +152,20 @@ public class FunctionalizeStencils extends FEReplacer {
 	
 	public Program processFuns(Program prog){
 		List functions=((StreamSpec)prog.getStreams().get(0)).getFuncs();
-		for(Iterator<Entry<String, ArrFunction>> it = funmap.entrySet().iterator(); it.hasNext(); ){
-			ArrFunction af = it.next().getValue();
+		for(Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext(); ){
+			ArrFunction af = it.next();
 			af.processMax();
 			functions.add(af.toAST());
-			System.out.println(af);
+//			System.out.println(af);
 		}
+		Set<AbstractArray> arrys=new HashSet<AbstractArray>();
 		for(Iterator<Entry<String, Map<String, AbstractArray>>> it = globalInVars.entrySet().iterator(); it.hasNext(); ){
 			Map<String, AbstractArray> af = it.next().getValue();
-			for(Iterator<Entry<String, AbstractArray>> aait = af.entrySet().iterator(); aait.hasNext(); ){
-				AbstractArray aa = aait.next().getValue();
-				functions.add(aa.toAST());
-			}
+			arrys.addAll(af.values());
+		}
+		for(Iterator<AbstractArray> it = arrys.iterator(); it.hasNext(); ){
+			AbstractArray aa = it.next();
+			functions.add(aa.toAST());
 		}
 		return (Program) prog.accept(new FunctionParamExtension());
 	}

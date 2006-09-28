@@ -92,6 +92,7 @@ public class ArrFunction{
 			rv += it.next().toString() + ";\n";
 		}
 		rv += " int [" + max_size + "] " + MAX_VAR  + " = 0;\n";
+		rv += " int " + IND_VAR  + " = 0;\n";
 		for(Iterator<Statement> it = maxAss.iterator(); it.hasNext(); ){
 			rv += it.next().toString() + ";\n";
 		}
@@ -130,6 +131,21 @@ public class ArrFunction{
 		}
 		List<Statement> stmts=new ArrayList<Statement>();
 		{
+			for(Iterator<StmtMax> it = idxAss.iterator(); it.hasNext(); ){
+				Statement stmt=it.next().toAST();
+				assert !(stmt instanceof StmtMax);
+				if(stmt instanceof StmtBlock) {
+					stmts.addAll(((StmtBlock)stmt).getStmts());
+				}
+				else
+					stmts.add(stmt);
+			}
+			stmts.add(new StmtVarDecl(null, 
+				new TypeArray(TypePrimitive.inttype, new ExprConstInt(null, max_size)),
+				MAX_VAR, new ExprConstInt(null, 0)));
+			stmts.add(new StmtVarDecl(null, 
+					TypePrimitive.inttype,
+					IND_VAR, new ExprConstInt(null, 0)));
 			stmts.addAll(maxAss);
 			stmts.addAll(retStmts);
 		}

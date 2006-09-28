@@ -3,8 +3,7 @@
  */
 package streamit.frontend.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * An array-range reference. A[0:2] means the first 3 elements of A, and
@@ -68,6 +67,11 @@ public class ExprArrayRange extends Expression
 
 	private Expression base;
 	private List members;
+	
+	public ExprArrayRange(Expression base, Expression offset)
+	{
+		this(base, Collections.singletonList(new RangeLen(offset)));
+	}
 	
 	/**
 	 * Construct a new array range Expression. "members" must be a

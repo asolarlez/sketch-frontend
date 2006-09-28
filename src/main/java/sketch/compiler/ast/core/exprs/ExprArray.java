@@ -23,6 +23,7 @@ package streamit.frontend.nodes;
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
+ * @deprecated
  */
 public class ExprArray extends Expression
 {
