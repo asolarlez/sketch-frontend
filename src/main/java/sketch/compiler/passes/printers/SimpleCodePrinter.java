@@ -209,4 +209,11 @@ public class SimpleCodePrinter extends FEReplacer
 		return super.visitStmtVarDecl(stmt);
 	}
 
+	@Override
+	public Object visitFieldDecl(FieldDecl field)
+	{
+		printLine(field.toString());
+		return super.visitFieldDecl(field);
+	}
+
 }
