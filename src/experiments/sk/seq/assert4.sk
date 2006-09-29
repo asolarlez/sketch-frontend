@@ -1,0 +1,14 @@
+bit[4] miniTest(bit[4] in) {
+    bit[4] mu = { 1, 1, 0, 0};
+    return in ^ mu;
+}
+
+
+bit[4] miniTestSK (bit[4] in) implements miniTest {
+    bit[4] mu = { 0, 0, 0, 1};
+    int i=0;
+    loop (??) { mu[i] = 1;  i = i+1; }
+    loop (??) { assert i < 4;  mu[i] = 0;  i = i+1; }
+    return in ^ mu;
+}
+
