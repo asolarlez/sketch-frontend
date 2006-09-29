@@ -73,6 +73,21 @@ public class ExprArrayRange extends Expression
 		this(base, Collections.singletonList(new RangeLen(offset)));
 	}
 	
+	public ExprArrayRange(FEContext context, Expression base, Expression offset)
+	{
+		this(base, Collections.singletonList(new RangeLen(offset)));		
+	}
+	
+	
+	public Expression getOffset(){
+		assert members.size() == 1;
+		assert members.get(0) instanceof RangeLen;
+		RangeLen rl = (RangeLen)members.get(0);
+		assert rl.len == 1;
+		return rl.start;
+	}
+	
+	
 	/**
 	 * Construct a new array range Expression. "members" must be a
 	 * list containing Range and RangeLen objects.
