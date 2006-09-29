@@ -146,6 +146,53 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return func;
 	}
 
+	@Override
+	public Object visitStmtIfThen(StmtIfThen stmt)
+	{
+		Statement cons=stmt.getCons();
+		Statement alt=stmt.getAlt();
+		if(cons!=null && !(cons instanceof StmtBlock))
+			cons=new StmtBlock(stmt.getContext(),Collections.singletonList(cons));
+		if(alt!=null && !(alt instanceof StmtBlock))
+			alt=new StmtBlock(stmt.getContext(),Collections.singletonList(alt));
+		if(cons!=stmt.getCons() || alt!=stmt.getAlt())
+			stmt=new StmtIfThen(stmt.getContext(),stmt.getCond(),cons,alt);
+		return super.visitStmtIfThen(stmt);
+	}
+
+	@Override
+	public Object visitStmtDoWhile(StmtDoWhile stmt)
+	{
+		Statement body=stmt.getBody();
+		if(body!=null && !(body instanceof StmtBlock))
+			body=new StmtBlock(stmt.getContext(),Collections.singletonList(body));
+		if(body!=stmt.getBody())
+			stmt=new StmtDoWhile(stmt.getContext(),body,stmt.getCond());
+		return super.visitStmtDoWhile(stmt);
+	}
+
+	@Override
+	public Object visitStmtFor(StmtFor stmt)
+	{
+		Statement body=stmt.getBody();
+		if(body!=null && !(body instanceof StmtBlock))
+			body=new StmtBlock(stmt.getContext(),Collections.singletonList(body));
+		if(body!=stmt.getBody())
+			stmt=new StmtFor(stmt.getContext(),stmt.getInit(),stmt.getCond(),stmt.getIncr(),body);
+		return super.visitStmtFor(stmt);
+	}
+
+	@Override
+	public Object visitStmtLoop(StmtLoop stmt)
+	{
+		Statement body=stmt.getBody();
+		if(body!=null && !(body instanceof StmtBlock))
+			body=new StmtBlock(stmt.getContext(),Collections.singletonList(body));
+		if(body!=stmt.getBody())
+			stmt=new StmtLoop(stmt.getContext(),stmt.getIter(),body);
+		return super.visitStmtLoop(stmt);
+	}
+
 	public Object visitExprFunCall(ExprFunCall exp) {
 		// first let the superclass process the parameters (which may be function calls)
 		exp=(ExprFunCall) super.visitExprFunCall(exp);
