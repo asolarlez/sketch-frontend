@@ -92,11 +92,13 @@ public class MethodState{
 	}
 	
 
-	void pushChangeTracker (Expression condExpr, valueClass condVal){	
+	void pushChangeTracker (Expression condExpr, valueClass condVal,
+                            boolean isNegated)
+    {	
         /* Add new change tracker layer, including nesting conditional
          * expression and value. */
         ChangeStack oldChangeTracker = changeTracker;
-        changeTracker = new ChangeStack (condExpr, condVal);
+        changeTracker = new ChangeStack (condExpr, condVal, isNegated);
         changeTracker.kid = oldChangeTracker;
         
         /* Push current RHS for each variable. */
@@ -107,10 +109,6 @@ public class MethodState{
 		}
 	}
 
-    void pushChangeTracker () {
-        pushChangeTracker (null, null);
-    }
-	
 	ChangeStack popChangeTracker(){
 		ChangeStack tmp = changeTracker;
 		changeTracker = changeTracker.kid;

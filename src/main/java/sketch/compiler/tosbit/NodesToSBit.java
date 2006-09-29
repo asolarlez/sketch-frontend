@@ -88,6 +88,8 @@ public class NodesToSBit extends PartialEvaluator{
     protected List<Statement> additInit;
     private ValueOracle oracle;
     public int LUNROLL=8;
+    public int MAX_INLINE = 2;
+    private HashMap<String, Integer> inlineTable = new HashMap ();
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
     
@@ -359,36 +361,71 @@ public class NodesToSBit extends PartialEvaluator{
 	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	    	PrintStream ps = new PrintStream(baos);
 	    	String name = exp.getName();
+            Function fun = ss.getFuncNamed (name);
 	    	// Local function?
-	    	if (ss.getFuncNamed(name) != null) {        	
-	    		state.pushLevel();
-	    		Function fun = ss.getFuncNamed(name);
-	    		
-	    		if( fun.getSpecification() != null){
-	    			assert ss.getFuncNamed(fun.getSpecification()) != null;
-	    			fun = ss.getFuncNamed(fun.getSpecification());
+	    	if (fun != null) {        	
+                String spec = fun.getSpecification ();
+	    		if (spec != null) {
+                    fun = ss.getFuncNamed (spec);
+                    assert (fun != null);
 	    		}
-	    		{
-	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-	    			Iterator formalParams = fun.getParams().iterator();
-	    			String tmp = inParameterSetter(formalParams, actualParams, false);
-	    			ps.print(tmp);
-	    		}
-	    		ps.print("// BEGIN CALL " + fun.getName() + "\n");
-	    		
-		    	PrintStream tmpout = out; out = new PrintStream( baos );	    		
-	    		fun.getBody().accept(this);	    		
-	    		//result += baos.toString();	    		
-	    		out = tmpout;
-	    			
-	    		ps.print("// END CALL " + fun.getName() + "\n");
-	    		{
-	    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-	    			Iterator formalParams = fun.getParams().iterator();
-	    			String tmp =  outParameterSetter(formalParams, actualParams, false);
-	    			ps.print(tmp);
-	    		}
-	    		state.popLevel();
+
+                /* Check to see whether function was already inlined to its
+                 * maximum allowed number of times. */
+                Integer numInlinedInteger = inlineTable.get (fun.getName ());
+                int numInlined = 0;
+                if (numInlinedInteger != null)
+                    numInlined = numInlinedInteger.intValue ();
+
+                if (numInlined == MAX_INLINE) {
+                    /* FIXME remove debug code */
+                    //return exp;
+
+                    /* Cannot inline further, plant an assertion. */
+                    FEContext exprContext = exp.getContext ();
+                    StmtAssert inlineAssert =
+                        new StmtAssert (exprContext,
+                                        new ExprConstBoolean (
+                                            exprContext,
+                                            false));
+                    ps.print ("// MAX INLINED " + fun.getName () + "\n");
+                    inlineAssert.accept (this);
+                } else {
+                    /* Increment inline counter, unfold another level. */
+                    numInlined++;
+                    numInlinedInteger = new Integer (numInlined);
+                    inlineTable.put (fun.getName (), numInlinedInteger);
+
+                    state.pushLevel();
+
+                    Iterator actualParams = exp.getParams().iterator();	        		        	       	
+                    Iterator formalParams = fun.getParams().iterator();
+                    String tmp = inParameterSetter(formalParams, actualParams, false);
+                    ps.print(tmp);
+
+                    ps.print("// BEGIN CALL " + fun.getName() +
+                             " (" + numInlined + ")\n");
+
+                    PrintStream tmpout = out; out = new PrintStream( baos );	    		
+                    fun.getBody().accept(this);	    		
+                    //result += baos.toString();	    		
+                    out = tmpout;
+
+                    ps.print("// END CALL " + fun.getName() +
+                             " (" + numInlined +  ")\n");
+
+                    actualParams = exp.getParams().iterator();	        		        	       	
+                    formalParams = fun.getParams().iterator();
+                    tmp =  outParameterSetter(formalParams, actualParams, false);
+                    ps.print(tmp);
+
+                    state.popLevel();
+
+                    /* Decrement inline counter. */
+                    numInlined--;
+                    numInlinedInteger = new Integer (numInlined);
+                    inlineTable.put (fun.getName (), numInlinedInteger);
+                }
 	    	}else{ 
 	    		// look for print and println statements; assume everything
 	    		// else is a math function
@@ -935,8 +972,8 @@ public class NodesToSBit extends PartialEvaluator{
 	        	return null;   	
 	        }
 
-            /* Gilad, 2005-08-11: attach conditional to change tracker. */
-	        state.pushChangeTracker (cond, vcond);
+            /* Attach conditional to change tracker. */
+	        state.pushChangeTracker (cond, vcond, false);
             
 	        try{
 	        	stmt.getCons().accept(this);
@@ -947,7 +984,8 @@ public class NodesToSBit extends PartialEvaluator{
 	        ChangeStack ipms = state.popChangeTracker();
 	        ChangeStack epms = null;	        
 	        if (stmt.getAlt() != null){
-	        	state.pushChangeTracker();
+                /* Attach inverse conditional to change tracker. */
+                state.pushChangeTracker (cond, vcond, true);
 	        	try{
 	        		stmt.getAlt().accept(this);
 	        	}catch(RuntimeException e){
@@ -984,13 +1022,20 @@ public class NodesToSBit extends PartialEvaluator{
             /* Compose complex expression by walking all nesting conditionals. */
             String tmpVar = varGen.nextVar ();
             String tmpLine = tmpVar + " = " + assertVal.toString ();
+            int parCounter = 0;
             for (ChangeStack changeTracker = state.getChangeTracker ();
                  changeTracker != null; changeTracker = changeTracker.kid )
             {
                 if (! changeTracker.hasCondVal ())
                     continue;
                 valueClass nestCond = changeTracker.getCondVal ();
-                tmpLine += " || ! (" + nestCond.toString () + ")";
+                tmpLine += " || (" + (changeTracker.isNegated () ? "" : "! ") +
+                    "(" + nestCond.toString () + ")";
+                parCounter++;
+            }
+            while (parCounter > 0) {
+                tmpLine += ")";
+                parCounter--;
             }
 
             tmpLine += ";\n";
@@ -1041,9 +1086,19 @@ public class NodesToSBit extends PartialEvaluator{
                 nvarAssert.accept (this);
 
 	    		int iters;
-	    		loopmap.pushLoop(LUNROLL);
-	    		for(iters=0; iters<LUNROLL; ++iters){			        		        
-			        state.pushChangeTracker();
+	    		loopmap.pushLoop (LUNROLL);
+	    		for (iters=0; iters < LUNROLL; ++iters) {
+                    /* Generate context condition to go with change tracker. */
+                    Expression guard =
+                        new ExprBinary (nvarContext,
+                                        ExprBinary.BINOP_GT,
+                                        new ExprVar (nvarContext, nvar),
+                                        new ExprConstInt (nvarContext, iters));
+                    guard.accept (this);
+                    valueClass vguard = state.popVStack ();
+                    assert (! vguard.hasValue ());
+			        state.pushChangeTracker (guard, vguard, false);
+
 			        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			    	PrintStream tmpout = out; out = new PrintStream( baos );
 			        try{

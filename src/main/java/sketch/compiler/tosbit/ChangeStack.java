@@ -15,16 +15,20 @@ class ChangeStack{
      */
     private Expression condExpr;
     private valueClass condVal;
+    private boolean isNegated;
 
-	ChangeStack (Expression newCondExpr, valueClass newCondVal){
+	ChangeStack (Expression newCondExpr, valueClass newCondVal,
+                 boolean newIsNegated)
+    {
 		kid = null;
 		currTracker = new HashMap<String, varValue> ();
         condExpr = newCondExpr;
         condVal = newCondVal;
+        isNegated = newIsNegated;
 	}
 
     ChangeStack () {
-        this (null, null);
+        this (null, null, false);
     }
 	
 	boolean knowsAbout(String var){
@@ -94,6 +98,10 @@ class ChangeStack{
 
     boolean hasCondVal () {
         return (condVal != null);
+    }
+
+    boolean isNegated () {
+        return isNegated;
     }
 
     Expression getCondExpr () {

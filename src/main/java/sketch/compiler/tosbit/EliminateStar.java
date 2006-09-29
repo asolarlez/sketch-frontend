@@ -330,7 +330,7 @@ public class EliminateStar extends PartialEvaluator {
 			}
 			return null;
 		}
-		state.pushChangeTracker();
+		state.pushChangeTracker(newCond, vcond, false);
 		Statement newCons = null;
 		try{
 			newCons =  (Statement) stmt.getCons().accept(this);
@@ -342,7 +342,7 @@ public class EliminateStar extends PartialEvaluator {
 		Statement newAlt = null;
 		ChangeStack epms = null;				
 		if (stmt.getAlt() != null){
-			state.pushChangeTracker();
+			state.pushChangeTracker(newCond, vcond, true);
 			try{
 				newAlt = (Statement) stmt.getAlt().accept(this);
 			}catch(RuntimeException e){
@@ -368,7 +368,17 @@ public class EliminateStar extends PartialEvaluator {
 		List<Statement> oldStatements = newStatements;
 		StmtIfThen ifStmt;			
         newStatements = new ArrayList<Statement> ();        
-        state.pushChangeTracker();
+
+        /* Generate unrolling condition to go with change tracker. */
+        Expression guard =
+            new ExprBinary (stmt.getContext (),
+                            ExprBinary.BINOP_GT,
+                            cond,
+                            new ExprConstInt (stmt.getContext (), LUNROLL - i));
+        guard.accept (this);
+        valueClass vguard = state.popVStack ();
+
+        state.pushChangeTracker(guard, vguard, false);
         try{
         	addStatement((Statement)stmt.getBody().accept(this));
 		}catch(ArrayIndexOutOfBoundsException er){			        	
