@@ -3,7 +3,6 @@ package streamit.frontend.stencilSK;
 import java.util.*;
 import java.util.Map.Entry;
 
-import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
@@ -571,9 +570,10 @@ class processStencil extends FEReplacer {
 	    }
 	    
 	    public Expression buildSecondaryConstr(Iterator<StmtVarDecl> iterIt, String newVar, int jj){
+	    	//TODO add constraints for position parameters as well.
 	    	assert iterIt.hasNext();
 	    	StmtVarDecl iterPar = iterIt.next();
-    		ExprArray ear = new ExprArray(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
+    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
     		Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, ear, new ExprVar(null, iterPar.getName(0)));
     		Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, ear, new ExprVar(null, iterPar.getName(0)));
     		Expression out;
@@ -605,7 +605,7 @@ class processStencil extends FEReplacer {
 	    		int jj=0;
 	    		for(Iterator<StmtVarDecl> iterIt = currentTN.pathIter(); iterIt.hasNext(); jj++){
 	    			StmtVarDecl iterPar = iterIt.next();
-	    			ExprArray ear = new ExprArray(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
+	    			ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
 	    			cindex = (Expression) cindex.accept(new VarReplacer(iterPar.getName(0), ear ));
 	    		}
 	    		cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, cindex, new ExprVar(null, idxPar.getName(0)));
@@ -615,7 +615,7 @@ class processStencil extends FEReplacer {
 		    	{
 		    		int stage0 = this.ptree.getRoot().lh.stage;	
 		    		ExprConstInt val = new ExprConstInt( stage0);
-		    		ExprArray ear = new ExprArray(null, new ExprVar(null, newVar), new ExprConstInt(0));
+		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(0));
 		    		Expression cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, ear, val);
 		    		smax.primC.add(cindex);
 		    	}		    	
@@ -623,7 +623,7 @@ class processStencil extends FEReplacer {
 		    	for(ParamTree.treeNode.PathIterator iterIt = currentTN.pathIter(); iterIt.hasNext();jj++){
 		    		loopHist lh = iterIt.lhNext();
 		    		ExprConstInt val = new ExprConstInt( lh.stage);
-		    		ExprArray ear = new ExprArray(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+2));
+		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+2));
 		    		Expression cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, ear, val);
 		    		smax.primC.add(cindex);
 		    	}
@@ -631,8 +631,8 @@ class processStencil extends FEReplacer {
 	    	}
 	    	
 	    	
-	    	//Now we add the secondary constraints.	    	
-	    	//NOTE: Check the priority.	    
+	    	//Now we add the secondary constraints.
+	    	//NOTE: Check the priority.
 	    	Iterator<StmtVarDecl> pIt = currentTN.pathIter();
 	    	if(pIt.hasNext()){
 		    	Expression binexp = buildSecondaryConstr(pIt, newVar, 0);
@@ -640,25 +640,29 @@ class processStencil extends FEReplacer {
 	    	}
 	    	
 	    	//Finally, we add the tertiary constraints.
+	    	//In these constraints, we again replace
+	    	//   fun.iterParam[j] -> idx_i[2*j+1]
+	    	//We must also replace all accesses to arrays with calls to the array functions.
+	    	ExprVar idxi = new ExprVar(null, newVar);
 	    	for(Iterator<Expression> condIt = conds.iterator(); condIt.hasNext(); ){
 	    		Expression cond = condIt.next();
 	    		int jj=0;
 	    		for(Iterator<StmtVarDecl> iterIt = currentTN.pathIter(); iterIt.hasNext(); jj++){
 	    			StmtVarDecl iterPar = iterIt.next();
-	    			ExprArray ear = new ExprArray(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
+	    			ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
 	    			cond = (Expression) cond.accept(new VarReplacer(iterPar.getName(0), ear ));
 	    		}
+	    		
+		    	cond = (Expression)cond.accept(new ArrReplacer(idxi));
 	    		smax.terC.add(cond);
 	    	}
 	    	return smax;
 	    }
 	    
-	    
-
 		
 		public Expression comp(int pos, int dim, ExprVar v1, ExprVar v2){
-			ExprArray ear1 = new ExprArray(null, v1, new ExprConstInt(pos));
-			ExprArray ear2 = new ExprArray(null, v2, new ExprConstInt(pos));
+			ExprArrayRange ear1 = new ExprArrayRange(null, v1, new ExprConstInt(pos));
+			ExprArrayRange ear2 = new ExprArrayRange(null, v2, new ExprConstInt(pos));
 			Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, ear1, ear2);
 			Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, ear1, ear2);
 			Expression out;
@@ -706,14 +710,13 @@ class processStencil extends FEReplacer {
 	     *
 	     */
 	    class ArrReplacer extends FEReplacer{
-	    	ArrFunction fun;
-	    	ExprVar idxi;
-	    	public ArrReplacer(ArrFunction fun, ExprVar idxi){
-	    		this.fun = fun;
+	    	ExprVar idxi;	    	
+	    	public ArrReplacer( ExprVar idxi){
 	    		this.idxi = idxi;
 	    	}
 	    	
-	    	void setIterPosIterParams(ArrFunction callee,ArrFunction caller,List<Expression> params){
+	    	void setIterPosIterParams(ArrFunction callee, List<Expression> params){
+	    		//TODO should also add position parameters. 
 	    		Iterator<StmtVarDecl> globIter = ptree.iterator();
 	    		Iterator<StmtVarDecl> locIter = currentTN.pathIter();
 	    		
@@ -722,7 +725,7 @@ class processStencil extends FEReplacer {
 	    		while(globIter.hasNext()){
 	    			StmtVarDecl par = globIter.next();
 	    			if( par == loc){
-	    				ExprArray ear = new ExprArray(null,idxi, new ExprConstInt(2*ii+1));
+	    				ExprArrayRange ear = new ExprArrayRange(null,idxi, new ExprConstInt(2*ii+1));
 	    				++ii;
 	    				params.add(ear);
 	    				loc = locIter.hasNext()? locIter.next() : null;
@@ -755,13 +758,8 @@ class processStencil extends FEReplacer {
 	    			Expression newPar = (Expression)obj.accept(this);
 	    			params.add(newPar);
 	    		}
-	    		// Now we have to set the other parameters, which is a little trickier.
-	    		//What we will do is first compare the iter and posIter params of arFun with
-	    		//those of the current function fun. The two lists should have a matching prefix
-	    		//and a diverging suffix. For those arguments corresponding to the prefix, we'll		    		
-	    		//pass a current value (an idx_i) for the others, we'll pass the default value.
-	    		
-	    		setIterPosIterParams(arFun, fun, params);
+	    		// Now we have to set the other parameters, which is a little trickier.	    			    		
+	    		setIterPosIterParams(arFun, params);
 	    		//Then, we must set the other parameters.
 	    		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){		    			
 	   	 			Entry<String, Type> par = pIt.next();
@@ -851,13 +849,15 @@ class processStencil extends FEReplacer {
 	    	ExprConstInt iiv = new ExprConstInt(i+1);
 	    	Expression eq = new ExprBinary(null, ExprBinary.BINOP_EQ, indvar, iiv);
 	    	int ii=0;
+	    	
+	    	// rhs[ idx_param[ii] -> idx_i[2*ii+1] ]; 
 	    	for(Iterator<StmtVarDecl> it = currentTN.pathIter(); it.hasNext(); ++ii){
 	    		StmtVarDecl par = it.next();	    		
-	    		ExprArray ear = new ExprArray(null,idxi, new ExprConstInt(2*ii+1));
+	    		ExprArrayRange ear = new ExprArrayRange(null,idxi, new ExprConstInt(2*ii+1));
 	    		rhs = (Expression)rhs.accept(new VarReplacer(par.getName(0), ear));
 	    	}
-	    	
-	    	Expression retV = (Expression)rhs.accept(new ArrReplacer(fun, idxi));	    	
+//	    	 rhs[ arr[i] -> arr_fun(i, idxi) ]; 
+	    	Expression retV = (Expression)rhs.accept(new ArrReplacer(idxi));	    	
 	    	return new StmtIfThen(rhs.getContext(), eq, new StmtReturn(null, retV), null); 
 	    }
 	   
@@ -958,7 +958,6 @@ class processStencil extends FEReplacer {
 	public void setInVars(Map<String, AbstractArray> inVars){
 		this.inVars = inVars;
 		
-		//TODO populateInParams.		
 		inArrParams = new ArrayList<StmtVarDecl>();
 		
 		for(Iterator<Entry<String, AbstractArray>> it = inVars.entrySet().iterator(); it.hasNext(); ){

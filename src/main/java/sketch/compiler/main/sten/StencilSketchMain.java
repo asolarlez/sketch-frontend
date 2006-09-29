@@ -361,16 +361,19 @@ public class ToStencilSK
         TempVarGen varGen = new TempVarGen();
         prog = (Program) prog.accept( new GenerateCopies(varGen) );  
         prog = (Program) prog.accept( new ExprArrayToArrayRange());
+//        prog.accept(new SimpleCodePrinter());
+        System.out.println("Before preprocessing.");
         
-        System.out.println("Only implemented up to here.");
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
         FunctionalizeStencils fs = new FunctionalizeStencils();
+        
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
         prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
-        
         //fs.printFuns();
         prog.accept(new SimpleCodePrinter());
         System.out.println("DONE!");
+        
+        
         if(true){ return ; }
         
         

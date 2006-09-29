@@ -5,8 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
@@ -113,6 +115,17 @@ public class ResolveMax {
 			tainted[ival] = tag;			
 			return null;	
 		}
+		
+		public Object visitExprArrayRange(ExprArrayRange ea){
+			ExprVar ev = ea.getAbsoluteBase();
+			assert ev.getName().equals(name);
+			Integer ival = ea.getOffset().getIValue();
+			assert ival != null;
+			tainted[ival] = tag;			
+			return null;	
+		}
+		
+		
 	}
 	
 	
@@ -208,6 +221,62 @@ public class ResolveMax {
 	        return null;
 	       			
 		}
+		
+		
+		public Object visitExprBinaryAND(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        if( left.getTag()== tag && right.getTag() == tag){
+	        	//This produces multiple pieces of information, so it's not handled at this point.
+	        	throw new RuntimeException("NYI");
+	        }
+	        
+	        if( left.getTag()== null && right.getTag() == null){
+	        	return null;        	
+	        }
+	        
+	        if( left.getTag() == null){
+	        	Expression tmp = left;
+	        	left = right;
+	        	right = tmp;	        	
+	        }
+	        assert left.getTag() != null && right.getTag() == null;
+	        left.accept(this);
+	        return null;			
+		}
+		
+		
+		public Object visitExprBinaryOR(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        if( left.getTag()== tag && right.getTag() == tag){
+	        	//This is very problematic; probably won't be handled ever.
+	        	throw new RuntimeException("NYI");
+	        }
+	        
+	        if( left.getTag()== null && right.getTag() == null){
+	        	return null;
+	        }
+	        
+	        if( left.getTag() == null){
+	        	Expression tmp = left;
+	        	left = right;
+	        	right = tmp;	        	
+	        }
+	        assert left.getTag() != null && right.getTag() == null;
+	        left.accept(this);
+	        //At this point, currentRHS has the new constraint. However, this constraint should be
+	        //predicated on the rhs, because if the rhs is true, then the constraint doesn't really count.
+	        //TODO need to figure out what to put in that null.
+	        this.currentRHS = new ExprTernary(null, ExprTernary.TEROP_COND, new ExprUnary(null, ExprUnary.UNOP_NOT, right), left, null);
+	        return null;			
+		}
+		
+		
+		
+		
 		public Object visitExprBinaryEquals(ExprBinary exp){
 		    Expression left = exp.getLeft();
 	        Expression right = exp.getRight();
@@ -334,6 +403,10 @@ public class ResolveMax {
 	        case ExprBinary.BINOP_GE: return visitExprBinaryGE(exp);
 	        case ExprBinary.BINOP_GT: return visitExprBinaryGT(exp);
 	        
+	        
+	        case ExprBinary.BINOP_AND: return visitExprBinaryAND(exp);
+	        
+	        
 	        case ExprBinary.BINOP_DIV: 
 	        case ExprBinary.BINOP_MOD: 
 	        default: throw new RuntimeException("NYI");	
@@ -352,6 +425,19 @@ public class ResolveMax {
 			this.idx = ival;
 			return null;	
 		}
+		
+		
+		public Object visitExprArrayRange(ExprArrayRange ea){
+			//assert (  ea.getBase() instanceof ExprVar ); 
+			ExprVar ev = ea.getAbsoluteBase();
+			assert ev.getName().equals(name);
+			Integer ival = ea.getOffset().getIValue();
+			assert ival != null;
+			this.idx = ival;
+			return null;	
+		}
+		
+		
 	}
 	
 	
@@ -390,5 +476,17 @@ public class ResolveMax {
 			}
 			return ea;
 		}
+		
+		public Object visitExprArrayRange(ExprArrayRange ea){
+			ExprVar ev = ea.getAbsoluteBase(); 					
+			if( ev.getName().equals(name) ){
+				int idx = ea.getOffset().getIValue();
+				if( expArr[idx] == null || (tainted[idx] != null ) ){
+					ea.setTag(tag);	
+				}
+			}
+			return ea;
+		}
+		
 	}
 }
