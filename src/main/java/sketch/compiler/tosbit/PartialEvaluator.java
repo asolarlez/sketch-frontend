@@ -1101,6 +1101,38 @@ public class PartialEvaluator extends FEReplacer {
         return result;
     }
     
+    String outParameterSetterArbitrary (Iterator formalParamIterator,
+                                        Iterator actualParamIterator,
+                                        boolean checkError)
+    {
+        String result = "";
+        while(actualParamIterator.hasNext()){	        	
+            Expression actualParam = (Expression)actualParamIterator.next();			        	
+            Parameter formalParam = (Parameter) formalParamIterator.next();
+
+            LHSvisitor lhsvisit =  new LHSvisitor();
+            String apnm = (String) actualParam.accept(lhsvisit);	        	
+            if( formalParam.isParameterOutput() ){
+                String formalParamName = formalParam.getName();
+                int sz = state.checkArray(formalParamName);
+                if( sz > 0 ){
+                    for(int i=0; i<sz; ++i){
+                        state.setVarValue(apnm+"_idx_"+i, 0);
+                    }
+                    if(this.isReplacer){
+                        addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprConstInt(actualParam.getContext(), 0) ));
+                    }
+                }else{
+                    state.setVarValue(apnm, 0);
+                    if(this.isReplacer){
+                        addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprConstInt(actualParam.getContext(), 0) ));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
     
     
     public Object visitExprFunCall(ExprFunCall exp)

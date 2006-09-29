@@ -88,7 +88,7 @@ public class NodesToSBit extends PartialEvaluator{
     protected List<Statement> additInit;
     private ValueOracle oracle;
     public int LUNROLL=8;
-    public int MAX_INLINE = 2;
+    public int MAX_INLINE = 4;
     private HashMap<String, Integer> inlineTable = new HashMap ();
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
@@ -378,9 +378,6 @@ public class NodesToSBit extends PartialEvaluator{
                     numInlined = numInlinedInteger.intValue ();
 
                 if (numInlined == MAX_INLINE) {
-                    /* FIXME remove debug code */
-                    //return exp;
-
                     /* Cannot inline further, plant an assertion. */
                     FEContext exprContext = exp.getContext ();
                     StmtAssert inlineAssert =
@@ -388,8 +385,20 @@ public class NodesToSBit extends PartialEvaluator{
                                         new ExprConstBoolean (
                                             exprContext,
                                             false));
-                    ps.print ("// MAX INLINED " + fun.getName () + "\n");
+                    ps.print ("// MAX INLINED " + fun.getName () + " (" +
+                              MAX_INLINE + ")\n");
+                    PrintStream tmpout = out;
+                    out = new PrintStream (baos);
                     inlineAssert.accept (this);
+                    out = tmpout;
+
+                    Iterator actualParams = exp.getParams().iterator();	        		        	       	
+                    Iterator formalParams = fun.getParams().iterator();
+                    String tmp =
+                        outParameterSetterArbitrary (formalParams,
+                                                     actualParams,
+                                                     false);
+                    ps.print (tmp);
                 } else {
                     /* Increment inline counter, unfold another level. */
                     numInlined++;
