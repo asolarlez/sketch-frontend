@@ -177,4 +177,18 @@ public class FieldDecl extends FENode
     {
         return v.visitFieldDecl(this);
     }
+
+    public String toString()
+    {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < types.size(); i++)
+        {
+            if (i != 0)
+                result.append("; ");
+            result.append(types.get(i) + " " + names.get(i));
+            if (inits.get(i) != null)
+                result.append("=" + inits.get(i));
+        }
+        return result.toString();
+    }
 }
