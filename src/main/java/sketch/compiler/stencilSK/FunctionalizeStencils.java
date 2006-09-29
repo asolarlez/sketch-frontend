@@ -3,30 +3,7 @@ package streamit.frontend.stencilSK;
 import java.util.*;
 import java.util.Map.Entry;
 
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
@@ -129,16 +106,17 @@ class arrInfo{
 
 
 public class FunctionalizeStencils extends FEReplacer {
-	List<processStencil> stencilFuns;
-	Map<String, ArrFunction> funmap;
-	Map<String, Type> superParams;
-	List<StmtVarDecl> outIdxs;
-	StreamSpec ss;
+	private List<processStencil> stencilFuns;
+	private Map<String, ArrFunction> funmap;
+	private Map<String, Type> superParams;
+	private List<StmtVarDecl> outIdxs;
+	private List<Function> userFuns;
+	private StreamSpec ss;
 	
 	/**
 	 * Maps a function name to a map of input grid names to abstract grids. 
 	 */	
-	Map<String, Map<String, AbstractArray> > globalInVars;
+	private Map<String, Map<String, AbstractArray> > globalInVars;
 	
 	public FunctionalizeStencils() {
 		super();
@@ -146,27 +124,102 @@ public class FunctionalizeStencils extends FEReplacer {
 		superParams = new TreeMap<String, Type>();
 		funmap = new HashMap<String, ArrFunction>();
 		globalInVars = new HashMap<String, Map<String, AbstractArray> >();
+		userFuns = new ArrayList<Function>();
 	}
 	
 	
+	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
+		return makeParams(ls.iterator());
+	}
+	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it) {
+		List<Parameter> ret=new ArrayList<Parameter>();
+		while(it.hasNext()) {
+			StmtVarDecl var=it.next();
+			for(int i=0;i<var.getNumVars();i++)
+				ret.add(new Parameter(var.getType(i),var.getName(i)));
+		}
+		return ret;
+	}
+	private static final List<ExprVar> makeRefs(List<StmtVarDecl> ls) {
+		return makeRefs(ls.iterator());
+	}
+	private static final List<ExprVar> makeRefs(Iterator<StmtVarDecl> it) {
+		List<ExprVar> ret=new ArrayList<ExprVar>();
+		while(it.hasNext()) {
+			StmtVarDecl var=it.next();
+			for(int i=0;i<var.getNumVars();i++)
+				ret.add(new ExprVar(null,var.getName(i)));
+		}
+		return ret;
+	}
+	private static final List<Expression> extractInits(Iterator<StmtVarDecl> it) {
+		List<Expression> ret=new ArrayList<Expression>();
+		while(it.hasNext()) {
+			StmtVarDecl var=it.next();
+			for(int i=0;i<var.getNumVars();i++)
+				ret.add(var.getInit(i));
+		}
+		return ret;
+	}
+	
 	public Program processFuns(Program prog){
-		List functions=((StreamSpec)prog.getStreams().get(0)).getFuncs();
+		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
+		List functions=strs.getFuncs();
+		functions.clear();
+		//add the functions generated from ArrFunction objects to the program 
 		for(Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext(); ){
 			ArrFunction af = it.next();
 			af.processMax();
 			functions.add(af.toAST());
-//			System.out.println(af);
 		}
+		//collect all unique AbstractArray objects 
 		Set<AbstractArray> arrys=new HashSet<AbstractArray>();
 		for(Iterator<Entry<String, Map<String, AbstractArray>>> it = globalInVars.entrySet().iterator(); it.hasNext(); ){
 			Map<String, AbstractArray> af = it.next().getValue();
 			arrys.addAll(af.values());
 		}
+		//add the functions generated from AbstractArray objects to the program 
 		for(Iterator<AbstractArray> it = arrys.iterator(); it.hasNext(); ){
 			AbstractArray aa = it.next();
 			functions.add(aa.toAST());
 		}
-		return (Program) prog.accept(new FunctionParamExtension());
+		//convert all functions to procedures, translating calls and returns appropriately 
+		prog = (Program) prog.accept(new FunctionParamExtension());
+		strs=(StreamSpec)prog.getStreams().get(0);
+		functions=strs.getFuncs();
+		
+		//generate the "driver" functions for spec and sketch
+		for(Iterator<Function> it=userFuns.iterator();it.hasNext();) {
+			Function f=it.next();
+			Parameter outp=(Parameter) f.getParams().get(f.getParams().size()-1);
+			assert outp.isParameterOutput();
+			String outfname=outp.getName()+"_"+f.getName();
+			ArrFunction outf=funmap.get(outfname);
+			assert outf!=null;
+			
+			List<Parameter> driverParams=new ArrayList<Parameter>();
+			driverParams.addAll(makeParams(outf.idxParams));
+			driverParams.addAll(makeParams(outf.othParams));
+			driverParams.addAll(makeParams(outf.inputParams));
+			driverParams.add(new Parameter(outp.getType(),outp.getName(),true));
+			
+			List<Expression> callArgs=new ArrayList<Expression>();
+			callArgs.addAll(makeRefs(outf.idxParams));
+			callArgs.addAll(extractInits(outf.iterParams.iterator()));
+			callArgs.addAll(makeRefs(outf.othParams));
+			callArgs.addAll(makeRefs(outf.inputParams));
+			callArgs.addAll(makeRefs(outf.idxParams));
+			callArgs.add(new ExprVar(null,outp.getName()));
+			assert(callArgs.size()==strs.getFuncNamed(outfname).getParams().size());
+			
+			Statement fcall=new StmtExpr(new ExprFunCall(null,outfname,callArgs));
+			
+			Function fun=Function.newHelper(null,f.getName(),TypePrimitive.voidtype,
+				driverParams, f.getSpecification(), 
+				new StmtBlock(null, Collections.singletonList(fcall)));
+			functions.add(fun);
+		}
+		return prog;
 	}
 	
 	
@@ -332,26 +385,28 @@ public class FunctionalizeStencils extends FEReplacer {
 		stencilFuns.add(ps);
 		func.accept(ps);
 		funmap.putAll(ps.getAllFunctions());
+		userFuns.add(func);
+
 		return func;
 	 }
 
 
-	 public Object visitFieldDecl(FieldDecl field)
-	    {
-	        List<Expression> newInits = new ArrayList<Expression>();
-	        for (int i = 0; i < field.getNumFields(); i++)
-	        {
-	            Expression init = field.getInit(i);
-	            if (init != null){
-	                init = (Expression)init.accept(this);
-	            }else{
-	            	superParams.put(field.getName(i), field.getType(i));
-	            }
-	            newInits.add(init);
-	        }
-	        return new FieldDecl(field.getContext(), field.getTypes(),
-	                             field.getNames(), newInits);
-	    }
+	public Object visitFieldDecl(FieldDecl field)
+    {
+        List<Expression> newInits = new ArrayList<Expression>();
+        for (int i = 0; i < field.getNumFields(); i++)
+        {
+            Expression init = field.getInit(i);
+            if (init != null){
+                init = (Expression)init.accept(this);
+            }else{
+            	superParams.put(field.getName(i), field.getType(i));
+            }
+            newInits.add(init);
+        }
+        return new FieldDecl(field.getContext(), field.getTypes(),
+                             field.getNames(), newInits);
+    }
 }
 
 class processStencil extends FEReplacer {
@@ -359,18 +414,18 @@ class processStencil extends FEReplacer {
 	/*
 	 * Includes the global variables and the scalar parameters of the function.
 	 */
-	Map<String, Type> superParams;
+	private Map<String, Type> superParams;
 
-	Stack<Expression> conds;
-	ParamTree.treeNode currentTN;
-	Stack<scopeHist> scopeStack;
-	Map<String, arrInfo> smap;
-	Map<String, AbstractArray> inVars;
-	Set<String> outVar;
-	List<StmtVarDecl> outIdxs;
-	List<StmtVarDecl> inArrParams;
-	ParamTree ptree;
-	final String suffix; 
+	private Stack<Expression> conds;
+	private ParamTree.treeNode currentTN;
+	private Stack<scopeHist> scopeStack;
+	private Map<String, arrInfo> smap;
+	private Map<String, AbstractArray> inVars;
+	private Set<String> outVar;
+	private List<StmtVarDecl> outIdxs;
+	private List<StmtVarDecl> inArrParams;
+	private ParamTree ptree;
+	private final String suffix; 
 		
 	
 	public Map<String, ArrFunction> getAllFunctions(){
@@ -499,7 +554,8 @@ class processStencil extends FEReplacer {
 	    }*/
 	    
 	    void populateArrInfo(arrInfo ainf, String var, int dim){	    	
-   	 		ainf.fun = new ArrFunction(var, suffix, ainf.sfun.size(), ptree);
+	    	assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
+   	 		ainf.fun = new ArrFunction(var, suffix, ptree);
    	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD("t"+i, null) );
    	 		
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){

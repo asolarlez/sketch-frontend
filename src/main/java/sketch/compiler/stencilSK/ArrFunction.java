@@ -22,7 +22,6 @@ public class ArrFunction{
 	
 	String arrName;
 	String suffix;
-	int idx;
 	int max_size=0;
 	/**
 	 * These parameters correspond to the indices of the array.
@@ -66,9 +65,8 @@ public class ArrFunction{
 		return idxAss.size();
 	}
 	
-	public ArrFunction(String arrName, String suffix,  int idx, ParamTree pt){
+	public ArrFunction(String arrName, String suffix, ParamTree pt){
 		this.arrName = arrName;
-		this.idx = idx;
 		idxParams = new ArrayList<StmtVarDecl>();
 		iterParams = pt;		
 		othParams = new ArrayList<StmtVarDecl>();
@@ -79,7 +77,7 @@ public class ArrFunction{
 	}
 	
 	public String getFullName(){
-		return arrName + "_" + idx + suffix;
+		return arrName + suffix;
 	}
 	
 	public void close(){
@@ -107,17 +105,14 @@ public class ArrFunction{
 	}
 	
 	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
-		return makeParams(ls,false);
+		return makeParams(ls.iterator());
 	}
-	private static final List<Parameter> makeParams(List<StmtVarDecl> ls, boolean isOut) {
-		return makeParams(ls.iterator(),isOut);
-	}
-	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it, boolean isOut) {
+	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it) {
 		List<Parameter> ret=new ArrayList<Parameter>();
 		while(it.hasNext()) {
 			StmtVarDecl var=it.next();
 			for(int i=0;i<var.getNumVars();i++)
-				ret.add(new Parameter(var.getType(i),var.getName(i),isOut));
+				ret.add(new Parameter(var.getType(i),var.getName(i)));
 		}
 		return ret;
 	}
@@ -126,7 +121,7 @@ public class ArrFunction{
 		List<Parameter> params=new ArrayList<Parameter>();
 		{
 			params.addAll(makeParams(idxParams));
-			params.addAll(makeParams(iterParams.iterator(),false));
+			params.addAll(makeParams(iterParams.iterator()));
 			params.addAll(makeParams(othParams));
 			params.addAll(makeParams(inputParams));
 			params.addAll(makeParams(outIdxParams));
