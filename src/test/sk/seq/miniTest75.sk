@@ -1,0 +1,20 @@
+int W = 7;
+//This should resolve, but it doesn't. 
+//It exposes a bug in the compiler. 
+//Will fix soon.
+//Armando. 10/02/2006.
+
+bit[W] debug(bit[W] in) implements swap {
+	bit[W] tmp = (in ^ !in);
+	return (tmp >> 5);
+}
+
+
+
+bit[W] swap (bit[W] in) {
+	return ((in ^ !in)>>5);
+}
+
+
+
+
