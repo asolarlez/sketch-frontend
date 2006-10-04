@@ -87,16 +87,15 @@ public class NodesToSBit extends PartialEvaluator{
     protected Stack<String> preFil;
     protected List<Statement> additInit;
     private ValueOracle oracle;
-    public int LUNROLL=8;
-    public int MAX_INLINE = 4;
-    private HashMap<String, Integer> inlineTable = new HashMap ();
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
     
     
-	    public NodesToSBit(StreamSpec ss, TempVarGen varGen, ValueOracle oracle, PrintStream out)
+	    public NodesToSBit (StreamSpec ss, TempVarGen varGen,
+                            ValueOracle oracle, PrintStream out,
+                            int maxUnroll, int maxInline)
 	    {
-	    	super(false);
+	    	super(false, maxUnroll, maxInline);
 	        this.ss = ss;	        
 	        this.varGen = varGen;	         
 	        this.state = new MethodState();
@@ -372,10 +371,7 @@ public class NodesToSBit extends PartialEvaluator{
 
                 /* Check to see whether function was already inlined to its
                  * maximum allowed number of times. */
-                Integer numInlinedInteger = inlineTable.get (fun.getName ());
-                int numInlined = 0;
-                if (numInlinedInteger != null)
-                    numInlined = numInlinedInteger.intValue ();
+                int numInlined = getInlineCounter (fun.getName ());
 
                 if (numInlined == MAX_INLINE) {
                     /* Cannot inline further, plant an assertion. */
@@ -385,12 +381,14 @@ public class NodesToSBit extends PartialEvaluator{
                                         new ExprConstBoolean (
                                             exprContext,
                                             false));
-                    ps.print ("// MAX INLINED " + fun.getName () + " (" +
+                    ps.print ("// MAX INLINED: BEGIN " + fun.getName () + " (" +
                               MAX_INLINE + ")\n");
                     PrintStream tmpout = out;
                     out = new PrintStream (baos);
                     inlineAssert.accept (this);
                     out = tmpout;
+                    ps.print ("// MAX INLINED: END " + fun.getName () + " (" +
+                              MAX_INLINE + ")\n");
 
                     Iterator actualParams = exp.getParams().iterator();	        		        	       	
                     Iterator formalParams = fun.getParams().iterator();
@@ -401,9 +399,7 @@ public class NodesToSBit extends PartialEvaluator{
                     ps.print (tmp);
                 } else {
                     /* Increment inline counter, unfold another level. */
-                    numInlined++;
-                    numInlinedInteger = new Integer (numInlined);
-                    inlineTable.put (fun.getName (), numInlinedInteger);
+                    incInlineCounter (fun.getName ());
 
                     state.pushLevel();
 
@@ -431,9 +427,7 @@ public class NodesToSBit extends PartialEvaluator{
                     state.popLevel();
 
                     /* Decrement inline counter. */
-                    numInlined--;
-                    numInlinedInteger = new Integer (numInlined);
-                    inlineTable.put (fun.getName (), numInlinedInteger);
+                    decInlineCounter (fun.getName ());
                 }
 	    	}else{ 
 	    		// look for print and println statements; assume everything
@@ -1091,12 +1085,12 @@ public class NodesToSBit extends PartialEvaluator{
                                         nvarContext,
                                         ExprBinary.BINOP_LE,
                                         new ExprVar (nvarContext, nvar),
-                                        new ExprConstInt (nvarContext, LUNROLL)));
+                                        new ExprConstInt (nvarContext, MAX_UNROLL)));
                 nvarAssert.accept (this);
 
 	    		int iters;
-	    		loopmap.pushLoop (LUNROLL);
-	    		for (iters=0; iters < LUNROLL; ++iters) {
+	    		loopmap.pushLoop (MAX_UNROLL);
+	    		for (iters=0; iters < MAX_UNROLL; ++iters) {
                     /* Generate context condition to go with change tracker. */
                     Expression guard =
                         new ExprBinary (nvarContext,

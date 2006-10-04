@@ -20,8 +20,9 @@ import streamit.frontend.nodes.TypePrimitive;
 public class ProduceBooleanFunctions extends NodesToSBit {
 
 	public ProduceBooleanFunctions(StreamSpec ss, TempVarGen varGen,
-			ValueOracle oracle, PrintStream out) {
-		super(ss, varGen, oracle, out);
+			ValueOracle oracle, PrintStream out,
+            int maxUnroll, int maxInline) {
+		super(ss, varGen, oracle, out, maxUnroll, maxInline);
 	}
 	
 	

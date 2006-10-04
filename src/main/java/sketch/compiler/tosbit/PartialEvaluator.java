@@ -10,6 +10,11 @@ public class PartialEvaluator extends FEReplacer {
 	protected MethodState state;
 	public final boolean isReplacer;	
 
+    /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
+    protected int MAX_UNROLL = 0;
+    protected int MAX_INLINE = 0;
+    private HashMap<String, Integer> inlineCounter = new HashMap ();
+
 	public class CheckSize extends FENullVisitor{
 		int size = -1;
 		 public Object visitExprVar(ExprVar exp) { 
@@ -164,9 +169,11 @@ public class PartialEvaluator extends FEReplacer {
     }
 	
 	
-	public PartialEvaluator(boolean isReplacer) {
+	public PartialEvaluator(boolean isReplacer, int maxUnroll, int maxInline) {
 		super();
 		this.isReplacer = isReplacer;
+        this.MAX_UNROLL = maxUnroll;
+        this.MAX_INLINE = maxInline;
 	}
 
 	protected boolean intToBool(int v) {
@@ -1101,6 +1108,11 @@ public class PartialEvaluator extends FEReplacer {
         return result;
     }
     
+    /* Set output parameters to arbitrary values (i.e. 0).
+     * This is needed when we don't really care for the computation done
+     * inside a function, but do want to preserve the dependences between
+     * inputs and output in a way (e.g. when doing bounded function inlining).
+     */
     String outParameterSetterArbitrary (Iterator formalParamIterator,
                                         Iterator actualParamIterator,
                                         boolean checkError)
@@ -1281,5 +1293,37 @@ public class PartialEvaluator extends FEReplacer {
 		ss = spec;
 		return super.visitStreamSpec(spec);
     }
-    
+
+    public int getInlineCounter (String funcName)
+    {
+        assert (funcName != null);
+        Integer numInlinedInteger = inlineCounter.get (funcName);
+        return (numInlinedInteger != null ? numInlinedInteger.intValue () : 0);
+    }
+
+    private int addInlineCounter (String funcName, int step) {
+        int numInlined = getInlineCounter (funcName);
+        numInlined += step;
+        assert (numInlined >= 0);
+        inlineCounter.put (funcName, new Integer (numInlined));
+        return numInlined;
+    }
+
+    public int incInlineCounter (String funcName, int step) {
+        assert (step > 0);
+        return addInlineCounter (funcName, step);
+    }
+
+    public int incInlineCounter (String funcName) {
+        return incInlineCounter (funcName, 1);
+    }
+
+    public int decInlineCounter (String funcName, int step) {
+        assert (step > 0);
+        return addInlineCounter (funcName, -step);
+    }
+
+    public int decInlineCounter (String funcName) {
+        return decInlineCounter (funcName, 1);
+    }
 }

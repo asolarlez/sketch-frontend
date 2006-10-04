@@ -7,7 +7,6 @@ import streamit.frontend.nodes.*;
 public class EliminateStar extends PartialEvaluator {
 	private ValueOracle oracle;	
 	private HasStars starCheck;
-	private int LUNROLL;
 	private Integer currentSize = null;	
 	/**
 	 * 0 means to visit only things that have stars. </br>
@@ -15,7 +14,7 @@ public class EliminateStar extends PartialEvaluator {
 	 * 2 visit all functions that have specs, unroll their loops </br>
 	 * 3 visit all functions that have specs, unroll their loops inline their calls. </br>
 	 */
-	private int inlineLevel = 0; 
+	private int inlineLevel;   /* Default value given by constructor. */
 	public Map<String, Function> newFuns;
 	
 	
@@ -61,10 +60,11 @@ public class EliminateStar extends PartialEvaluator {
 		}
 	}
 
-	public EliminateStar(ValueOracle oracle, int LUNROLL, int inlineLevel){
-		super(true);
+	public EliminateStar(ValueOracle oracle, int maxUnroll,
+                         int maxInline, int inlineLevel)
+    {
+		super(true, maxUnroll, maxInline);
 		this.oracle = oracle;
-		this.LUNROLL = LUNROLL;
 		oracle.initCurrentVals();
 		this.state = new MethodState();
 		this.newFuns = new HashMap<String, Function>();
@@ -72,13 +72,9 @@ public class EliminateStar extends PartialEvaluator {
 	}
 
 	
-	public EliminateStar(ValueOracle oracle, int LUNROLL){
-		super(true);
-		this.oracle = oracle;
-		this.LUNROLL = LUNROLL;
-		oracle.initCurrentVals();
-		this.newFuns = new HashMap<String, Function>();
-		this.state = new MethodState();
+	public EliminateStar(ValueOracle oracle, int maxUnroll, int maxInline)
+    {
+        this (oracle, maxUnroll, maxInline, 0);
 	}
 		
 	public boolean askIfPEval(Function node){
@@ -374,7 +370,7 @@ public class EliminateStar extends PartialEvaluator {
             new ExprBinary (stmt.getContext (),
                             ExprBinary.BINOP_GT,
                             cond,
-                            new ExprConstInt (stmt.getContext (), LUNROLL - i));
+                            new ExprConstInt (stmt.getContext (), MAX_UNROLL - i));
         guard.accept (this);
         valueClass vguard = state.popVStack ();
 
@@ -392,7 +388,7 @@ public class EliminateStar extends PartialEvaluator {
         state.procChangeTrackers(ms1, " ");
         Statement result = new StmtBlock(stmt.getContext(), newStatements);
         ifStmt = new StmtIfThen(stmt.getContext(), 
-        		new ExprBinary(stmt.getContext(), ExprBinary.BINOP_GT, cond, new ExprConstInt(LUNROLL - i) ), result, null);
+        		new ExprBinary(stmt.getContext(), ExprBinary.BINOP_GT, cond, new ExprConstInt(MAX_UNROLL - i) ), result, null);
         newStatements = oldStatements;    
         addStatement(ifStmt);
 	}
@@ -409,7 +405,7 @@ public class EliminateStar extends PartialEvaluator {
 			String nvar = state.varDeclare();
 			state.varGetLHSName(nvar);
 	        this.addStatement( new StmtVarDecl(stmt.getContext(),TypePrimitive.inttype, nvar, newIter));	        
-			loopHelper(stmt, LUNROLL, new ExprVar(stmt.getContext(), nvar) );			
+			loopHelper(stmt, MAX_UNROLL, new ExprVar(stmt.getContext(), nvar) );			
 		}else{			
 			for(int i=0; i<vcond.getIntValue(); ++i){
 				addStatement( (Statement)stmt.getBody().accept(this) );				
@@ -631,34 +627,56 @@ public class EliminateStar extends PartialEvaluator {
 		}
     	if (fun != null) {    		
     		if(!askIfPEval(exp)){
-    			//if the called function contains no stars, keep the call but run the partial evaluator
-    			List<Statement>  oldNewStatements = newStatements;
-        		newStatements = new ArrayList<Statement> ();
-        		if( madeSubstitution ){
-        			ExprFunCall exp2 = new ExprFunCall(exp.getContext(), fun.getName(), exp.getParams());
-        			super.visitExprFunCall(exp2);
-        		}else{
-        			super.visitExprFunCall(exp);
-        		}
-        		newStatements = oldNewStatements;
-        		//return exp;
-        		boolean hasChanged = false;
-                List<Expression> newParams = new ArrayList<Expression>();
-                for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
-                {
-                    Expression param = (Expression)iter.next();
-                    Expression newParam = doExpression(param);
-                    state.popVStack();
-                    if( param instanceof ExprVar && newParam instanceof ExprArrayInit){
-                    	Expression renamedParam = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)param).getName()  ));
-                    	newParams.add(renamedParam);
-                    }else{
-                    	newParams.add(newParam);
+                /* Check inline counters. */
+                int numInlined = getInlineCounter (fun.getName ());
+                if (numInlined < MAX_INLINE) {
+                    /* Increment inline counter. */
+                    incInlineCounter (fun.getName ());
+
+                    // if the called function contains no stars, keep the call
+                    // but run the partial evaluator
+                    List<Statement>  oldNewStatements = newStatements;
+                    newStatements = new ArrayList<Statement> ();
+                    if (madeSubstitution) {
+                        ExprFunCall exp2 =
+                            new ExprFunCall (exp.getContext(), fun.getName(),
+                                             exp.getParams());
+                        super.visitExprFunCall(exp2);
+                    } else {
+                        super.visitExprFunCall(exp);
                     }
-                    if (param != newParam) hasChanged = true;
+                    newStatements = oldNewStatements;
+
+                    /* Decrement inline counter. */
+                    decInlineCounter (fun.getName ());
+
+                    //return exp;
+                    boolean hasChanged = false;
+                    List<Expression> newParams = new ArrayList<Expression>();
+                    for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+                    {
+                        Expression param = (Expression)iter.next();
+                        Expression newParam = doExpression(param);
+                        state.popVStack();
+                        if (param instanceof ExprVar
+                            && newParam instanceof ExprArrayInit)
+                        {
+                            Expression renamedParam =
+                                new ExprVar (exp.getContext (),
+                                             state.transName (
+                                                 ((ExprVar) param).getName()));
+                            newParams.add (renamedParam);
+                        } else {
+                            newParams.add (newParam);
+                        }
+                        if (param != newParam)
+                            hasChanged = true;
+                    }
+                    if (hasChanged)
+                        return new ExprFunCall (exp.getContext(), exp.getName(),
+                                                newParams);
                 }
-                if (!hasChanged) return exp;
-                return new ExprFunCall(exp.getContext(), exp.getName(), newParams);
+                return exp;
     		}
 			//....else inline the called function
 			List<Statement>  oldNewStatements = newStatements;

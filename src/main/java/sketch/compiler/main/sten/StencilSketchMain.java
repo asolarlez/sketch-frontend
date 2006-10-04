@@ -108,6 +108,7 @@ public class ToStencilSK
     private List<String> inputFiles = new java.util.ArrayList<String>();
     private Map<String, Integer> defines=new HashMap<String, Integer>();
     private int unrollAmt = 8;
+    private int inlineAmt = 8;
     private boolean incremental = false;
     private int incermentalAmt = 0;
     private boolean hasTimeout = false;
@@ -159,6 +160,9 @@ public class ToStencilSK
             } else if (args[i].equals("--unrollamnt")) {
                 Integer value = new Integer(args[++i]);
                 unrollAmt = value.intValue(); 
+            } else if (args[i].equals("--inlineamnt")) {
+                Integer value = new Integer(args[++i]);
+                inlineAmt = value.intValue(); 
             }else if (args[i].equals("--incremental")) {
                 Integer value = new Integer(args[++i]);
                 incremental = true;
@@ -389,9 +393,12 @@ public class ToStencilSK
                 outStream = new FileOutputStream(outputFile);
             else
                 outStream = System.out;
-            ProduceBooleanFunctions partialEval = new ProduceBooleanFunctions(null, varGen, oracle, new PrintStream(outStream));
-            partialEval.LUNROLL = this.unrollAmt;
+            ProduceBooleanFunctions partialEval =
+                new ProduceBooleanFunctions(null, varGen,
+                                            oracle, new PrintStream(outStream),
+                                            this.unrollAmt, this.inlineAmt);
             System.out.println("MAX LOOP UNROLLING = " + unrollAmt);
+            System.out.println("MAX FUNC INLINING  = " + inlineAmt);
             prog.accept( partialEval );
             outStream.flush();
         }
@@ -420,8 +427,12 @@ public class ToStencilSK
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-        Program noindet = (Program)beforeUnvectorizing.accept(new EliminateStar(oracle, this.unrollAmt));
-        noindet = (Program)noindet.accept(new EliminateStar(oracle, this.unrollAmt, 3));
+        Program noindet =
+            (Program) beforeUnvectorizing.accept (
+                new EliminateStar (oracle, this.unrollAmt, this.inlineAmt));
+        noindet =
+            (Program)noindet.accept (
+                new EliminateStar (oracle, this.unrollAmt, this.inlineAmt, 3));
         
         if(doVectorization) {
         	noindet = (Program)noindet.accept(new AssembleInitializers());
