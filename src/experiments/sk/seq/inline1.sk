@@ -1,0 +1,39 @@
+/*
+ * Test inline functionality of partial evaluator.
+ * 
+ * This program uses a recursive function to accumulate an integer value.
+ * It is used to sketch an "incremental" implementation to a function
+ * returning a constant... This sketch can only succeed if the amount
+ * of inlining done per function is bounded, and is at least 3. Note that
+ * this is fully resolved by the frontend / partial evaluator (i.e. nothing
+ * needs to be solved further).
+ */
+
+bit[2] intToBit2 (int v) {
+    bit[2] output;
+
+    for (int i = 0; i < 2; ++i) {
+	output[i] = (v % 2) > 0;
+	v = v / 2;
+    }
+
+    return output;
+}
+
+bit[2] dummy () {
+    return (intToBit2 (3));
+}
+
+int inc (int in) {
+    int val = in;
+
+    if (val < 3)
+	val = inc (val + 1);
+
+    return val;
+}
+
+bit[2] dummy_sketch () implements dummy {
+    return intToBit2 (inc (0));
+}
+

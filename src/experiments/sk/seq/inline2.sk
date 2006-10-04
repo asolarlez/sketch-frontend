@@ -1,0 +1,43 @@
+/*
+ * Test inline functionality of partial evaluator.
+ *
+ * This program sketches an "incremental" implementation for a function
+ * returning a constant value, using a recursive function call. Note the
+ * use of a hole to infer the seed for the recursive function (which needs
+ * to be exactly zero, as enforced by the assertion...). This sketch can
+ * only succeed if the number of inlining expansions per function is bounded,
+ * and is at least 3. This sketch indeed gets to the solver (since there's
+ * a hole that needs to be resolved) but in the end the synthesized
+ * solution is all about constants.
+ */
+
+bit[2] intToBit2 (int v) {
+    bit[2] output;
+
+    for (int i = 0; i < 2; ++i) {
+	output[i] = (v % 2) > 0;
+	v = v / 2;
+    }
+
+    return output;
+}
+
+bit[2] dummy () {
+    return (intToBit2 (3));
+}
+
+int inc (int in) {
+    int val = in;
+
+    if (val < 3)
+	val = inc (val + 1);
+
+    return val;
+}
+
+bit[2] dummy_sketch () implements dummy {
+    int test = ??;
+    assert (test < 1);
+    return intToBit2 (inc (test));
+}
+
