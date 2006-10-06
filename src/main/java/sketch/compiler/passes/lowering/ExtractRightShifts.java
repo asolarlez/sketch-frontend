@@ -11,6 +11,14 @@ import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 
+/**
+ * Actually, this extracts both right shifts and left shifts.
+ * Without this transformation, GenerateCopies produces buggy code.
+ * @author asolar
+ *
+ */
+
+
 public class ExtractRightShifts extends SymbolTableVisitor {
 	private TempVarGen varGen;
 	public ExtractRightShifts(TempVarGen varGen) {
@@ -26,19 +34,17 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 	
 	public Object visitExprBinary(ExprBinary exp)
     {
-		if(exp.getOp() == ExprBinary.BINOP_RSHIFT){
+		if(exp.getOp() == ExprBinary.BINOP_RSHIFT || exp.getOp() == ExprBinary.BINOP_LSHIFT){
 			Type t = this.getType(exp);
 			FEContext context = exp.getContext();
 			String tmpName = varGen.nextVar();
 			Expression lexp = this.doExpression(exp.getLeft());
-			Expression rexp = this.doExpression(exp.getRight());
-			ExprBinary nexp = exp;
-			if(lexp != exp.getLeft() || rexp != exp.getRight()){
-				nexp = new ExprBinary(context, exp.getOp(), lexp, rexp, exp.getAlias());
-			}
-			StmtVarDecl decl = new StmtVarDecl(context, t, tmpName, nexp);
+			Expression rexp = this.doExpression(exp.getRight());			
+			StmtVarDecl decl = new StmtVarDecl(context, t, tmpName, lexp);
 			this.addStatement(decl);
-			return new ExprVar(context, tmpName);
+			
+			
+			return new ExprBinary(context, exp.getOp(), new ExprVar(null, tmpName), rexp, exp.getAlias());
 		}else{
 			return super.visitExprBinary(exp);
 		}        
