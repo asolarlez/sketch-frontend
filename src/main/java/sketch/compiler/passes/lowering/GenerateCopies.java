@@ -58,6 +58,11 @@ import streamit.frontend.nodes.ExprArrayRange.RangeLen;
  * It also generates temporary variables for push, pop, and peek
  * statements to ensure that languages with references do not see
  * false copies.
+ * Armando: 
+ * This now does a lot more than generate copies. 
+ * This transformation assumes that you have already run ExtractRightShift.
+ * Otherwise, it produces incorrect code.
+ *
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
@@ -244,6 +249,7 @@ class Indexify extends FEReplacer{
 			//Type rType = stv.getType(exp.getRight());
 			Expression result;
 			if(true){
+				//This branch just assumes that an out of bounds access doesn't 
 				FEContext context = exp.getContext();
 				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
 				ExprVar oldRHS = new ExprVar(context, newVarName);
@@ -259,6 +265,7 @@ class Indexify extends FEReplacer{
 				this.postStmts.addAll(indexify.postStmts);			
 				result = newVal;								
 			}else{
+				//In this branch, we actually emmit a test that explicitly returns zero if the array goes out of bounds.
 				FEContext context = exp.getContext();
 				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
 				ExprVar oldRHS = new ExprVar(context, newVarName);
