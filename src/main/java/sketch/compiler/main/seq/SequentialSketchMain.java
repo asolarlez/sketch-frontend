@@ -59,6 +59,7 @@ import streamit.frontend.passes.NoticePhasedFilters;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
@@ -73,63 +74,31 @@ import streamit.frontend.tosbit.ProduceBooleanFunctions;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
 
-/**
- * Convert StreamIt programs to legal Java code.  This is the main
- * entry point for the StreamIt syntax converter.  Running it as
- * a standalone program reads the list of files provided on the
- * command line and produces equivalent Java code on standard
- * output or the file named in the <tt>--output</tt> command-line
- * parameter.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
- * @version $Id$
- */
-public class ToSBit
-{
-    public void printUsage()
-    {
-        System.err.println(
-"streamit.frontend.ToJava: StreamIt syntax translator\n" +
-"Usage: java streamit.frontend.ToJava [--output out.java] in.str ...\n" +
-"\n" +
-"Options:\n" +
-"  --library      Output code suitable for the Java library\n" +
-"  --help         Print this message\n" +
-"  --output file  Write output to file, not stdout\n" +
-"\n");
-    }
 
-    private boolean printHelp = false;
-    private boolean libraryFormat = false;
-    private String outputFile = null;
-    private String sbitPath = null;
-    private List<String> inputFiles = new java.util.ArrayList<String>();
-    private Map<String, Integer> defines=new HashMap<String, Integer>();
-    private int unrollAmt = 8;
-    private int inlineAmt = 8;
-    private boolean incremental = false;
-    private int incermentalAmt = 0;
-    private boolean hasTimeout = false;
-    private int timeout = 30;
-    private int seed = -1;
-    private Vector<String> commandLineOptions = new Vector<String>();
-    private String resultFile = null;
-    private Program beforeUnvectorizing=null;
-    private boolean doVectorization=false;
-    private boolean outputCFiles=false;
-    private String outputCDir="./";
-    private boolean outputScript=false;
-    private boolean outputTest=false;
-    private boolean fakeSolver=false;
-    
-    private static class NullStream extends OutputStream 
-    {
-		public void flush() throws IOException {}
-		public void close() throws IOException {}
-		public void write(int arg0) throws IOException {}
-    }
-    
-    public void doOptions(String[] args)
+class CommandLineParams{
+	boolean printHelp = false;
+	boolean libraryFormat = false;
+	String outputFile = null;
+	String sbitPath = null;
+	List<String> inputFiles = new java.util.ArrayList<String>();
+	Map<String, Integer> defines=new HashMap<String, Integer>();
+	int unrollAmt = 8;
+	int inlineAmt = 8;
+	boolean incremental = false;
+	int incermentalAmt = 0;
+	boolean hasTimeout = false;
+	int timeout = 30;
+	int seed = -1;
+	Vector<String> commandLineOptions = new Vector<String>();
+	String resultFile = null;	
+	boolean doVectorization=false;
+	boolean outputCFiles=false;
+	String outputCDir="./";
+	boolean outputScript=false;
+	boolean outputTest=false;
+	boolean fakeSolver=false;
+	
+	public CommandLineParams(String[] args)
     {
         for (int i = 0; i < args.length; i++)
         {
@@ -197,6 +166,60 @@ public class ToSBit
                 inputFiles.add(args[i]);
         }
     }
+
+}
+
+
+
+
+
+
+/**
+ * Convert StreamIt programs to legal Java code.  This is the main
+ * entry point for the StreamIt syntax converter.  Running it as
+ * a standalone program reads the list of files provided on the
+ * command line and produces equivalent Java code on standard
+ * output or the file named in the <tt>--output</tt> command-line
+ * parameter.
+ *
+ * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * @version $Id$
+ */
+public class ToSBit
+{
+	
+	
+	CommandLineParams params;
+	Program beforeUnvectorizing=null;
+	
+	
+	ToSBit(CommandLineParams params){
+		this.params = params;
+	}
+	
+    public void printUsage()
+    {
+        System.err.println(
+"streamit.frontend.ToJava: StreamIt syntax translator\n" +
+"Usage: java streamit.frontend.ToJava [--output out.java] in.str ...\n" +
+"\n" +
+"Options:\n" +
+"  --library      Output code suitable for the Java library\n" +
+"  --help         Print this message\n" +
+"  --output file  Write output to file, not stdout\n" +
+"\n");
+    }
+
+
+    
+    private static class NullStream extends OutputStream 
+    {
+		public void flush() throws IOException {}
+		public void close() throws IOException {}
+		public void write(int arg0) throws IOException {}
+    }
+    
+   
 
     /**
      * Generate a Program object that includes built-in structures
@@ -272,7 +295,7 @@ public class ToSBit
         }
         //invoke post-parse passes
         prog = (Program)prog.accept(new FunctionParamExtension());
-        prog = (Program)prog.accept(new ConstantReplacer(defines));
+        prog = (Program)prog.accept(new ConstantReplacer(params.defines));
         return prog;
     }
 
@@ -284,14 +307,12 @@ public class ToSBit
      * Java library, as opposed to the compiler, has slightly
      * different output, mostly centered around phased filters.
      *
-     * @param prog  the complete IR tree to lower
      * @param libraryFormat  true if the program is being converted
      *        to run under the StreamIt Java library
      * @param varGen  object to generate unique temporary variable names
      * @returns the converted IR tree
      */        
-    public Program lowerIRToJava(Program prog, boolean libraryFormat,
-                                        TempVarGen varGen)
+    public void lowerIRToJava(boolean libraryFormat)
     {
         /* What's the right order for these?  Clearly generic
          * things like MakeBodiesBlocks need to happen first.
@@ -321,63 +342,58 @@ public class ToSBit
 //        prog = (Program)prog.accept(new InsertInitConstructors(varGen));
         prog = (Program)prog.accept(new MoveStreamParameters());
         prog = (Program)prog.accept(new NameAnonymousFunctions());        
-        prog = (Program)prog.accept(new TrimDumbDeadCode());
-        return prog;
+        prog = (Program)prog.accept(new TrimDumbDeadCode());        
     }
 
-    public void run(String[] args)
-    {
-        doOptions(args);
-        if (printHelp)
-        {
-            printUsage();
-            return;
-        }
+    
+    TempVarGen varGen = new TempVarGen();
+    Program prog = null;
+    ValueOracle oracle;
+    Program finalCode;
+    
+    public Program parseProgram(){
+         try
+         {
+             prog = parseFiles(params.inputFiles);
+         }
+         catch (Exception e)
+         {
+             //e.printStackTrace(System.err);
+             throw new RuntimeException(e);
+         }
+
+         if (prog == null)
+         {
+             System.err.println("Compilation didn't generate a parse tree.");
+             throw new IllegalStateException();
+         }
+    	return prog;
+    	
+    }
+    
+    
+    public void partialEvalAndSolve(){
+lowerIRToJava(!params.libraryFormat);
         
-        Program prog = null;
-
-        try
-        {
-            prog = parseFiles(inputFiles);
-        }
-        catch (Exception e)
-        {
-            //e.printStackTrace(System.err);
-            throw new RuntimeException(e);
-        }
-
-        if (prog == null)
-        {
-            System.err.println("Compilation didn't generate a parse tree.");
-            throw new IllegalStateException();
-        }
         
-        // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-        if (!SemanticChecker.check(prog))
-            throw new IllegalStateException("Semantic check failed");
-        prog = (Program)prog.accept(new AssignLoopTypes());
-        if (prog == null)
-            throw new IllegalStateException();
-
-        TempVarGen varGen = new TempVarGen();
-        prog = lowerIRToJava(prog, !libraryFormat, varGen);
-        ValueOracle oracle = new ValueOracle();
+        
+        oracle = new ValueOracle();
 
         try
         {
             OutputStream outStream;
-        	if(fakeSolver)
+        	if(params.fakeSolver)
         		outStream = new NullStream();
-        	else if(outputFile != null)
-                outStream = new FileOutputStream(outputFile);
+        	else if(params.outputFile != null)
+                outStream = new FileOutputStream(params.outputFile);
             else
                 outStream = System.out;
             ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,
                                              new PrintStream(outStream),
-                                             this.unrollAmt, this.inlineAmt);
-            System.out.println("MAX LOOP UNROLLING = " + unrollAmt);
-            System.out.println("MAX FUNC INLINING  = " + inlineAmt);
+                                             params.unrollAmt, params.inlineAmt);
+            System.out.println("MAX LOOP UNROLLING = " + params.unrollAmt);
+            System.out.println("MAX FUNC INLINING  = " + params.inlineAmt);
             prog.accept( partialEval );
             outStream.flush();
         }
@@ -388,13 +404,13 @@ public class ToSBit
         }
 
         
-        boolean worked = fakeSolver || solve(oracle);
+        boolean worked = params.fakeSolver || solve(oracle);
         if(!worked){
         	throw new RuntimeException("The sketch could not be resolved.");
         }
         
         try{
-        	String fname = outputFile + ".tmp";
+        	String fname = params.outputFile + ".tmp";
         	File f = new File(fname);
             FileInputStream fis = new FileInputStream(f); 
             BufferedInputStream bis = new BufferedInputStream(fis);  
@@ -406,85 +422,115 @@ public class ToSBit
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-        Program noindet =
+        Program finalCode =
             (Program) beforeUnvectorizing.accept (
-                new EliminateStar(oracle, this.unrollAmt, this.inlineAmt));
-        noindet =
-            (Program) noindet.accept (
-                new EliminateStar(oracle, this.unrollAmt, this.inlineAmt, 3));
-        
-        if(doVectorization) {
-        	noindet = (Program)noindet.accept(new AssembleInitializers());
-        	noindet=(Program) noindet.accept(new BitVectorPreprocessor(varGen));
-        	noindet=(Program) noindet.accept(new BitTypeRemover(varGen));
-        	noindet=(Program) noindet.accept(new SimplifyExpressions());
-        }
-        
-    	if(resultFile==null) {
-    		resultFile=inputFiles.get(0);
-    	}
-		if(resultFile.lastIndexOf("/")>=0)
-			resultFile=resultFile.substring(resultFile.lastIndexOf("/")+1);
-		if(resultFile.lastIndexOf("\\")>=0)
-			resultFile=resultFile.substring(resultFile.lastIndexOf("\\")+1);
-		if(resultFile.lastIndexOf(".")>=0)
-			resultFile=resultFile.substring(0,resultFile.lastIndexOf("."));
-        
-		String hcode = (String)noindet.accept(new NodesToH(resultFile));
-        String ccode = (String)noindet.accept(new NodesToC(varGen,resultFile));
-        if(!outputCFiles){
-        	System.out.println(hcode);
-        	System.out.println(ccode);
-        }else{
-        	try{
-        		{
-	        		Writer outWriter = new FileWriter(outputCDir+resultFile+".h");
-	            	outWriter.write(hcode);
-	                outWriter.flush();
-	                outWriter.close();
-	        		outWriter = new FileWriter(outputCDir+resultFile+".cpp");
-	            	outWriter.write(ccode);
-	                outWriter.flush();
-	                outWriter.close();
-        		}
-                if(outputTest) {
-                	String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
-                	Writer outWriter = new FileWriter(outputCDir+resultFile+"_test.c");
-            		outWriter.write(testcode);
-                    outWriter.flush();
-                    outWriter.close();
-                }
-                if(outputScript) {
-            		Writer outWriter = new FileWriter(outputCDir+"script");
-            		outWriter.write("#!/bin/sh\n");
-            		if(outputTest)
-            			outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
-            		else
-            			outWriter.write("g++ -c "+resultFile+".c\n");
-            		outWriter.write("./"+resultFile+"\n");
-            		outWriter.flush();
-                    outWriter.close();
-                }
-            }
-            catch (java.io.IOException e){
-                throw new RuntimeException(e);
-            }
-        }
+                new EliminateStar(oracle, params.unrollAmt, params.inlineAmt));
+        finalCode =
+            (Program) finalCode.accept (
+                new EliminateStar(oracle, params.unrollAmt, params.inlineAmt, 3));
 
-        System.exit(0);
+    }
+    
+    
+    public void generateCode(){
+    	 if(params.doVectorization) {
+         	finalCode = (Program)finalCode.accept(new AssembleInitializers());
+         	finalCode=(Program) finalCode.accept(new BitVectorPreprocessor(varGen));
+         	finalCode=(Program) finalCode.accept(new BitTypeRemover(varGen));
+         	finalCode=(Program) finalCode.accept(new SimplifyExpressions());
+         }
+         
+         String resultFile = params.resultFile;
+         
+     	if(resultFile==null) {
+     		resultFile=params.inputFiles.get(0);
+     	}
+ 		if(resultFile.lastIndexOf("/")>=0)
+ 			resultFile=resultFile.substring(resultFile.lastIndexOf("/")+1);
+ 		if(resultFile.lastIndexOf("\\")>=0)
+ 			resultFile=resultFile.substring(resultFile.lastIndexOf("\\")+1);
+ 		if(resultFile.lastIndexOf(".")>=0)
+ 			resultFile=resultFile.substring(0,resultFile.lastIndexOf("."));
+         
+ 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
+         String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
+         if(!params.outputCFiles){
+         	System.out.println(hcode);
+         	System.out.println(ccode);
+         }else{
+         	try{
+         		{
+ 	        		Writer outWriter = new FileWriter(params.outputCDir+resultFile+".h");
+ 	            	outWriter.write(hcode);
+ 	                outWriter.flush();
+ 	                outWriter.close();
+ 	        		outWriter = new FileWriter(params.outputCDir+resultFile+".cpp");
+ 	            	outWriter.write(ccode);
+ 	                outWriter.flush();
+ 	                outWriter.close();
+         		}
+                 if(params.outputTest) {
+                 	String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
+                 	Writer outWriter = new FileWriter(params.outputCDir+resultFile+"_test.c");
+             		outWriter.write(testcode);
+                     outWriter.flush();
+                     outWriter.close();
+                 }
+                 if(params.outputScript) {
+             		Writer outWriter = new FileWriter(params.outputCDir+"script");
+             		outWriter.write("#!/bin/sh\n");
+             		if(params.outputTest)
+             			outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
+             		else
+             			outWriter.write("g++ -c "+resultFile+".c\n");
+             		outWriter.write("./"+resultFile+"\n");
+             		outWriter.flush();
+                     outWriter.close();
+                 }
+             }
+             catch (java.io.IOException e){
+                 throw new RuntimeException(e);
+             }
+         }
+
+    }
+    
+    
+    public void run()
+    {        
+        if (params.printHelp)
+        {
+            printUsage();
+            return;
+        }
+        
+        parseProgram();
+        prog.accept(new SimpleCodePrinter());
+        // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
+        if (!SemanticChecker.check(prog))
+            throw new IllegalStateException("Semantic check failed");
+        prog = (Program)prog.accept(new AssignLoopTypes());
+        if (prog == null)
+            throw new IllegalStateException();
+
+        
+        partialEvalAndSolve();
+        
+        generateCode();
+        
     }
     
     private boolean solve(ValueOracle oracle){
         final List<Boolean> done=new ArrayList<Boolean>();
         
         Thread stopper=null;
-        if(hasTimeout){
+        if(params.hasTimeout){
 	        stopper = new Thread() {
 				@Override
 				public void run()
 				{
 					try {
-						sleep(timeout*60*1000);
+						sleep(params.timeout*60*1000);
 					}
 					catch (InterruptedException e) {
 						e.printStackTrace();
@@ -497,22 +543,22 @@ public class ToSBit
 	        };
 	        stopper.start();
         }
-        System.out.println("OFILE = " + outputFile);
-        String command = (sbitPath!=null? sbitPath : "") + "SBitII";
-        if(this.incremental){
+        System.out.println("OFILE = " + params.outputFile);
+        String command = (params.sbitPath!=null? params.sbitPath : "") + "SBitII";
+        if(params.incremental){
         	boolean isSolved = false;
         	int bits=0;
-        	for(bits=1; bits<=this.incermentalAmt; ++bits){
+        	for(bits=1; bits<=params.incermentalAmt; ++bits){
         		System.out.println("TRYING SIZE " + bits);
-        		String[] commandLine = new String[ 5 + commandLineOptions.size()];
+        		String[] commandLine = new String[ 5 + params.commandLineOptions.size()];
         		commandLine[0] = command;
         		commandLine[1] = "-overrideCtrls"; 
         		commandLine[2] = "" + bits;
-        		for(int i=0; i<commandLineOptions.size(); ++i){
-        			commandLine[3+i] = commandLineOptions.elementAt(i);
+        		for(int i=0; i< params.commandLineOptions.size(); ++i){
+        			commandLine[3+i] = params.commandLineOptions.elementAt(i);
         		}
-        		commandLine[commandLine.length -2 ] = outputFile;
-        		commandLine[commandLine.length -1 ] = outputFile + ".tmp";        		
+        		commandLine[commandLine.length -2 ] = params.outputFile;
+        		commandLine[commandLine.length -1 ] = params.outputFile + ".tmp";        		
     	        boolean ret = runSolver(commandLine, bits);
     	        if(ret){
     	        	isSolved = true;
@@ -528,13 +574,13 @@ public class ToSBit
 	        System.out.println("Succeded with " + bits + " bits for integers");	        
         	oracle.capStarSizes(bits);
         }else{
-        	String[] commandLine = new String[ 3 + commandLineOptions.size()];
+        	String[] commandLine = new String[ 3 + params.commandLineOptions.size()];
     		commandLine[0] = command;    		
-    		for(int i=0; i<commandLineOptions.size(); ++i){
-    			commandLine[1+i] = commandLineOptions.elementAt(i);
+    		for(int i=0; i< params.commandLineOptions.size(); ++i){
+    			commandLine[1+i] = params.commandLineOptions.elementAt(i);
     		}
-    		commandLine[commandLine.length -2 ] = outputFile;
-    		commandLine[commandLine.length -1 ] = outputFile + ".tmp";	        
+    		commandLine[commandLine.length -2 ] = params.outputFile;
+    		commandLine[commandLine.length -1 ] = params.outputFile + ".tmp";	        
 	        boolean ret = runSolver(commandLine, 0);
 	        if(!ret){
 	        	System.out.println("The sketch can not be resolved");
@@ -542,7 +588,7 @@ public class ToSBit
 	        }
         }
         done.add(Boolean.TRUE);
-        if(hasTimeout){
+        if(params.hasTimeout){
         	stopper.interrupt();
         }
         return true;
@@ -587,7 +633,9 @@ public class ToSBit
     
     public static void main(String[] args)
     {
-        new ToSBit().run(args);
+    	
+        new ToSBit(new CommandLineParams(args)).run();
+        System.exit(0);
     }
 }
 

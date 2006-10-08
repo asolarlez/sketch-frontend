@@ -17,6 +17,7 @@ public class ArrFunction{
 	public static final String IDX_VAR = "idx_";
 	public static final String GUARD_VAR = "gv_";
 	public static final String IND_VAR = "ii";
+	public static final String PPPREFIX = "pp_";
 	public static final ExprVar NULL = new ExprVar(null, "null");
 	////////////////////////////////////////////////////////////////
 	

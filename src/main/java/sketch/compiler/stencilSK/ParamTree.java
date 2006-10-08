@@ -6,8 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.TypePrimitive;
 
 
 public class ParamTree{
@@ -18,11 +20,22 @@ public class ParamTree{
 	}
 	class treeNode{
 		StmtVarDecl vdecl=null;
-		loopHist lh=null;
+		StmtVarDecl posParam = null;
+		private loopHist lh=null;
 		private treeNode father=null;
 		private List<treeNode> children = new ArrayList<treeNode>();
 		private int pos = -1;
 		private int level = -1;
+		
+		
+		public int getStage(){
+			return lh.stage;
+		}
+		
+		public void incrStage(){
+			++lh.stage; 
+		}
+		
 		public int nchildren(){
 			return children.size();
 		}
@@ -37,7 +50,10 @@ public class ParamTree{
 		}
 		public treeNode(loopHist lh, treeNode father){
 			this.lh = lh;
-			if( lh != null){this.vdecl = lh.newVD(); }
+			if( lh != null){
+				this.vdecl = lh.newVD();
+				this.posParam = new StmtVarDecl(null, TypePrimitive.inttype, ArrFunction.PPPREFIX + vdecl.getName(0), new ExprConstInt(100));
+			}
 			this.father = father;
 		}
 		public void add(treeNode tn){
@@ -46,15 +62,36 @@ public class ParamTree{
 			children.add(tn);
 		}
 		public PathIterator pathIter(){
-			PathIterator pi = new PathIterator();			
+			PathIterator pi = new PathIterator(true);			
 			return pi;
 		}
 
+		public PathIterator limitedPathIter(){
+			PathIterator pi = new PathIterator(false);			
+			return pi;
+		}
+		
 		public class PathIterator implements Iterator<StmtVarDecl>{
 			private int[] path;
 			private int step;
 			private treeNode tn;
-			public PathIterator(){
+			/**
+			 * If withPos is true, then the iterator also returns
+			 * varDecls for the position parameters. Otherwise, 
+			 * it only returns them for the inductionVar parameters.
+			 */
+			private final boolean withPos;
+			/**
+			 * Only used when withPos == true.
+			 * Flips from true to false. True means
+			 * that next() returns a position parameter.
+			 * False means next() returns an indVar parameter.
+			 * 
+			 */
+			private boolean wpState;
+			public PathIterator(boolean withPos){
+				this.withPos = withPos;
+				wpState = true;
 				path = new int[level];
 				step = 0;
 				tn = root;
@@ -67,14 +104,28 @@ public class ParamTree{
 				}		
 				assert ii==-1;
 			}
-			public StmtVarDecl next(){				
-				treeNode tmp = tn.child(path[step]);		
-				tn = tmp;
-				++step;
-				return tmp.vdecl;
+			public StmtVarDecl next(){	
+				if( withPos ){
+					if(wpState ){
+						wpState = false;
+						return tn.posParam;
+					}else{
+						wpState = true;
+						treeNode tmp = tn.child(path[step]);		
+						tn = tmp;
+						++step;
+						return tmp.vdecl;
+					}
+				}else{
+					treeNode tmp = tn.child(path[step]);		
+					tn = tmp;
+					++step;
+					return tmp.vdecl;
+				}
 			}
 			
-			public loopHist lhNext(){				
+			public loopHist lhNext(){	
+				assert !withPos ;
 				treeNode tmp = tn.child(path[step]);		
 				tn = tmp;
 				++step;
@@ -82,7 +133,12 @@ public class ParamTree{
 			}
 			
 			public boolean hasNext(){
-				return step != path.length;
+				if(withPos){
+					return step != path.length || wpState;
+				}else{
+					return step != path.length;	
+				}
+				
 			}
 			public void remove(){
 				assert false;
@@ -94,25 +150,67 @@ public class ParamTree{
 	
 	public class FullIterator implements Iterator<StmtVarDecl>{
 		private treeNode tn;
-		FullIterator(){			
+		/**
+		 * If withPos is true, then the iterator also returns
+		 * varDecls for the position parameters. Otherwise, 
+		 * it only returns them for the inductionVar parameters.
+		 */
+		private final boolean withPos;
+		/**
+		 * Only used when withPos == true.
+		 * Flips from true to false. True means
+		 * that next() returns a position parameter.
+		 * False means next() returns an indVar parameter.
+		 * 
+		 */
+		private boolean wpState;
+		
+		/**
+		 * 
+		 * @param withPos make true if you want the iterator
+		 * to include possition parameters.
+		 */
+		FullIterator(boolean withPos){			
 			tn = root;		
-			if(hasNext()) next();
+			this.withPos = withPos;
+			if(withPos){
+				wpState = true;
+			}else{
+				if(hasNext()) next();
+			}
 		}
-		public StmtVarDecl next(){			
-			treeNode curr = tn;		
+		
+		private void advanceTN(){
+			treeNode curr = tn;	
 			if( tn.nchildren() > 0 ){
 				tn = tn.child(0);				
 			}else{
 				int pos = tn.pos;
 				tn = tn.father;
 				while(tn.nchildren()<= pos+1){
-					if( tn == root ){tn = null;  return curr.vdecl;}
+					if( tn == root ){tn = null;  return ;}
 					pos = tn.pos;
 					tn = tn.father;
 				}
 				tn = tn.child(pos+1);
 			}
-			return curr.vdecl;
+		}
+		
+		public StmtVarDecl next(){			
+			treeNode curr = tn;	
+			if( withPos ){
+				if( wpState ){
+					wpState = false;
+					advanceTN();
+					return curr.posParam;
+				}else{
+					wpState = true;
+					return curr.vdecl;
+				}
+			}else{
+				advanceTN();
+				return curr.vdecl;
+			}
 		}		
 		public boolean hasNext(){
 			return tn != null; 
@@ -123,7 +221,11 @@ public class ParamTree{
 	}
 	
 	public FullIterator iterator(){
-		return new FullIterator();
+		return new FullIterator(true);
+	}
+	
+	public FullIterator limitedIterator(){
+		return new FullIterator(false);
 	}
 	
 	public String toString(){

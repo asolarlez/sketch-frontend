@@ -80,6 +80,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	private int outCounter;
 	private Function currentFunction;
 	private ParameterCopyResolver paramCopyRes;
+	public boolean initOutputs=false;
+	
+	public FunctionParamExtension(boolean io) {		
+		this(null);
+		initOutputs = io;
+	}
 	
 	public FunctionParamExtension() {
 		this(null);
@@ -140,6 +146,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
 		//add a declaration for the "return flag"
 		stmts.add(0,new StmtVarDecl(func.getBody().getContext(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(null,0)));
+		Parameter outParam = (Parameter)func.getParams().get( func.getParams().size()-1);
+		if(initOutputs){
+			String outParamName  = outParam.getName();
+			assert outParam.isParameterOutput();
+			stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), new ExprConstInt(0)));
+		}
 		func=new Function(func.getContext(),func.getCls(),func.getName(),
 				TypePrimitive.voidtype, func.getParams(),
 				func.getSpecification(), new StmtBlock(func.getContext(),stmts));

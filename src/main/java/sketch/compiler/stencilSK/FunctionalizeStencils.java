@@ -163,7 +163,8 @@ public class FunctionalizeStencils extends FEReplacer {
 	}
 	
 	public Program processFuns(Program prog){
-		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
+		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);		
+		strs.getVars().clear();
 		List functions=strs.getFuncs();
 		functions.clear();
 		//add the functions generated from ArrFunction objects to the program 
@@ -184,7 +185,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			functions.add(aa.toAST());
 		}
 		//convert all functions to procedures, translating calls and returns appropriately 
-		prog = (Program) prog.accept(new FunctionParamExtension());
+		prog = (Program) prog.accept(new FunctionParamExtension(true));
 		strs=(StreamSpec)prog.getStreams().get(0);
 		functions=strs.getFuncs();
 		
@@ -192,6 +193,12 @@ public class FunctionalizeStencils extends FEReplacer {
 		for(Iterator<Function> it=userFuns.iterator();it.hasNext();) {
 			Function f=it.next();
 			Parameter outp=(Parameter) f.getParams().get(f.getParams().size()-1);
+			Type outpType = outp.getType();
+			
+			while(outpType instanceof TypeArray){
+				outpType = ((TypeArray) outpType).getBase();
+			}
+			
 			assert outp.isParameterOutput();
 			String outfname=outp.getName()+"_"+f.getName();
 			ArrFunction outf=funmap.get(outfname);
@@ -201,7 +208,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			driverParams.addAll(makeParams(outf.idxParams));
 			driverParams.addAll(makeParams(outf.othParams));
 			driverParams.addAll(makeParams(outf.inputParams));
-			driverParams.add(new Parameter(outp.getType(),outp.getName(),true));
+			driverParams.add(new Parameter(outpType,outp.getName(),true));
 			
 			List<Expression> callArgs=new ArrayList<Expression>();
 			callArgs.addAll(makeRefs(outf.idxParams));
@@ -507,7 +514,7 @@ class processStencil extends FEReplacer {
 		 scopeHist sc2 = scopeStack.pop();
 		 assert sc2 == sc;
 		 currentTN = currentTN.getFather();
-		 ++(currentTN.lh.stage);
+		 currentTN.incrStage();
 		 closeOutOfScopeVars(sc2);
 	 }
 	 
@@ -536,8 +543,8 @@ class processStencil extends FEReplacer {
 	        	conds.push(cond);
 	        	stmt.getAlt().accept(this);
 	        	conds.pop();
-	        }	      
-	        ++(currentTN.lh.stage);
+	        }	 
+	        currentTN.incrStage();	        
 	        return stmt;	        
 	    }
 	    
@@ -601,6 +608,7 @@ class processStencil extends FEReplacer {
 	    	return new StmtVarDecl(null, TypePrimitive.inttype,  name, init);	    	
 	    }
 	    public Statement nullMaxIf(ArrFunction prevFun){	    	
+	    	// cond = IND_VAR = 0;
 	    	Expression cond = new ExprBinary(null, ExprBinary.BINOP_EQ, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(0) );
 	    	Statement rval;
 	    	if(prevFun != null){
@@ -629,8 +637,9 @@ class processStencil extends FEReplacer {
 	    	//TODO add constraints for position parameters as well.
 	    	assert iterIt.hasNext();
 	    	StmtVarDecl iterPar = iterIt.next();
-    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
+    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(jj));
     		Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, ear, new ExprVar(null, iterPar.getName(0)));
+    		//tmp = idx[2*jj+1] < par_jj
     		Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, ear, new ExprVar(null, iterPar.getName(0)));
     		Expression out;
     		if( iterIt.hasNext()){
@@ -659,7 +668,7 @@ class processStencil extends FEReplacer {
 	    		StmtVarDecl idxPar = idxIt.next();	   
 	    		Expression cindex = indices.get(ii);
 	    		int jj=0;
-	    		for(Iterator<StmtVarDecl> iterIt = currentTN.pathIter(); iterIt.hasNext(); jj++){
+	    		for(Iterator<StmtVarDecl> iterIt = currentTN.limitedPathIter(); iterIt.hasNext(); jj++){
 	    			StmtVarDecl iterPar = iterIt.next();
 	    			ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
 	    			cindex = (Expression) cindex.accept(new VarReplacer(iterPar.getName(0), ear ));
@@ -669,14 +678,14 @@ class processStencil extends FEReplacer {
 	    	}
 	    	{		    	
 		    	{
-		    		int stage0 = this.ptree.getRoot().lh.stage;	
+		    		int stage0 = this.ptree.getRoot().getStage(); 		    			
 		    		ExprConstInt val = new ExprConstInt( stage0);
 		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(0));
 		    		Expression cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, ear, val);
 		    		smax.primC.add(cindex);
 		    	}		    	
 		    	int jj=0;
-		    	for(ParamTree.treeNode.PathIterator iterIt = currentTN.pathIter(); iterIt.hasNext();jj++){
+		    	for(ParamTree.treeNode.PathIterator iterIt = currentTN.limitedPathIter(); iterIt.hasNext();jj++){
 		    		loopHist lh = iterIt.lhNext();
 		    		ExprConstInt val = new ExprConstInt( lh.stage);
 		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+2));
@@ -703,7 +712,7 @@ class processStencil extends FEReplacer {
 	    	for(Iterator<Expression> condIt = conds.iterator(); condIt.hasNext(); ){
 	    		Expression cond = condIt.next();
 	    		int jj=0;
-	    		for(Iterator<StmtVarDecl> iterIt = currentTN.pathIter(); iterIt.hasNext(); jj++){
+	    		for(Iterator<StmtVarDecl> iterIt = currentTN.limitedPathIter(); iterIt.hasNext(); jj++){
 	    			StmtVarDecl iterPar = iterIt.next();
 	    			ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
 	    			cond = (Expression) cond.accept(new VarReplacer(iterPar.getName(0), ear ));
@@ -781,7 +790,7 @@ class processStencil extends FEReplacer {
 	    		while(globIter.hasNext()){
 	    			StmtVarDecl par = globIter.next();
 	    			if( par == loc){
-	    				ExprArrayRange ear = new ExprArrayRange(null,idxi, new ExprConstInt(2*ii+1));
+	    				ExprArrayRange ear = new ExprArrayRange(null,idxi, new ExprConstInt(ii));
 	    				++ii;
 	    				params.add(ear);
 	    				loc = locIter.hasNext()? locIter.next() : null;
@@ -899,7 +908,7 @@ class processStencil extends FEReplacer {
 	    
 	    
 	    public Statement iMaxIf(int i, Expression rhs, ArrFunction fun){
-	    	//if(max_idx == idx_i){ return rhs; }
+	    	//if(indvar == i+1){ return rhs; }
 	    	ExprVar indvar = new ExprVar(null, ArrFunction.IND_VAR);
 	    	ExprVar idxi = new ExprVar(null, ArrFunction.IDX_VAR + i);
 	    	ExprConstInt iiv = new ExprConstInt(i+1);
@@ -907,7 +916,7 @@ class processStencil extends FEReplacer {
 	    	int ii=0;
 	    	
 	    	// rhs[ idx_param[ii] -> idx_i[2*ii+1] ]; 
-	    	for(Iterator<StmtVarDecl> it = currentTN.pathIter(); it.hasNext(); ++ii){
+	    	for(Iterator<StmtVarDecl> it = currentTN.limitedPathIter(); it.hasNext(); ++ii){
 	    		StmtVarDecl par = it.next();	    		
 	    		ExprArrayRange ear = new ExprArrayRange(null,idxi, new ExprConstInt(2*ii+1));
 	    		rhs = (Expression)rhs.accept(new VarReplacer(par.getName(0), ear));
@@ -927,7 +936,7 @@ class processStencil extends FEReplacer {
 	   	 	fun.addIdxAss( newStmtMax(i, indices, fun) );	   	 	
 	   	 	fun.addMaxAss( pickLargest(i, currentTN.getLevel()*2+1) );
 	   	 	fun.addRetStmt( iMaxIf(i, rhs, fun)  );
-	   	 	++(currentTN.lh.stage);
+	   	 	currentTN.incrStage();
 	    }
 
 	   

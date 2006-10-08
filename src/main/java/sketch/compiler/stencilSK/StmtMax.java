@@ -146,6 +146,12 @@ public class StmtMax extends Statement{
 			else
 				cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
 		}
+		
+		{
+			StmtAssign ass = new StmtAssign(null, indicator,cond);
+			statements.add(ass);
+		}
+		cond = null;
 		for(Iterator<Expression> eit = terC.iterator(); eit.hasNext(); ){
 			if( cond == null)
 				cond = eit.next();
@@ -158,8 +164,11 @@ public class StmtMax extends Statement{
 			else
 				cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
 		}
-		StmtAssign ass = new StmtAssign(null, indicator,cond);
-		statements.add(ass);
+		if( cond != null){
+			StmtAssign ass = new StmtAssign(null, indicator,cond);			
+			StmtIfThen sit = new StmtIfThen(null, indicator, ass, null);
+			statements.add(sit);
+		}		
 		maxAssign = new StmtBlock(null, statements);
 		return true;
 	}
