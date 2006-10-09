@@ -400,8 +400,7 @@ public class NodesToSBit extends PartialEvaluator{
                 } else {
                     /* Increment inline counter, unfold another level. */
                     incInlineCounter (fun.getName ());
-
-                    state.pushLevel();
+                    
 
                     Iterator actualParams = exp.getParams().iterator();	        		        	       	
                     Iterator formalParams = fun.getParams().iterator();
@@ -423,8 +422,7 @@ public class NodesToSBit extends PartialEvaluator{
                     formalParams = fun.getParams().iterator();
                     tmp =  outParameterSetter(formalParams, actualParams, false);
                     ps.print(tmp);
-
-                    state.popLevel();
+                    
 
                     /* Decrement inline counter. */
                     decInlineCounter (fun.getName ());
