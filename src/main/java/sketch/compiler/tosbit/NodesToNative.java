@@ -719,7 +719,7 @@ public class NodesToNative extends  NodesToJava
         /* Gilad, 2006-09-06: temporarily (?) prevent this method from
          * being used, until I figure out what it's here for. */
         assert (false) : ("shouldn't get here");
-        return "assert " + (String)stmt.getCond().accept(this);
+        return "assert (" + (String)stmt.getCond().accept(this) + ")";
     }
 
     public Object visitStmtSendMessage(StmtSendMessage stmt)
