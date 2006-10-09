@@ -1043,7 +1043,7 @@ public class NodesToSBit extends PartialEvaluator{
 
             tmpLine += ";\n";
             out.print (tmpLine);
-            out.print ("assert " + tmpVar + ";\n");
+            out.print ("assert (" + tmpVar + ");\n");
 
             return null;
         }
