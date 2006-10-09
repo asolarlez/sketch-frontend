@@ -44,4 +44,10 @@ public class StmtAssert extends Statement
     {
         return v.visitStmtAssert(this);
     }
+
+    /** Output to string. */
+    public String toString () {
+        String result = "assert (" + this.cond + ")\n";
+        return result;
+    }
 }

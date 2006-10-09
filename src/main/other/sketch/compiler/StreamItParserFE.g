@@ -351,7 +351,7 @@ return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	;
 
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
-	:	t:TK_assert x=right_expr { s = new StmtAssert(getContext(t), x); }
+	:	t:TK_assert LPAREN x=right_expr RPAREN { s = new StmtAssert(getContext(t), x); }
 	;
 
 if_else_statement returns [Statement s]
