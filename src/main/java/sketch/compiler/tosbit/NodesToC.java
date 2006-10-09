@@ -140,6 +140,7 @@ public class NodesToC extends NodesToJava {
 		String ret=(String)super.visitProgram(prog);
 		StringBuffer preamble=new StringBuffer();
 		preamble.append("#include <cstdio>\n");
+		preamble.append("#include <assert.h>\n");
 		preamble.append("#include \"");
 		preamble.append(filename);
 		preamble.append(".h\"\n");
