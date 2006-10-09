@@ -83,7 +83,7 @@ class CommandLineParams{
 	List<String> inputFiles = new java.util.ArrayList<String>();
 	Map<String, Integer> defines=new HashMap<String, Integer>();
 	int unrollAmt = 8;
-	int inlineAmt = 8;
+	int inlineAmt = 3;
 	boolean incremental = false;
 	int incermentalAmt = 0;
 	boolean hasTimeout = false;
@@ -422,7 +422,7 @@ lowerIRToJava(!params.libraryFormat);
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-        Program finalCode =
+        finalCode =
             (Program) beforeUnvectorizing.accept (
                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt));
         finalCode =
