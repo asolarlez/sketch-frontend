@@ -982,6 +982,9 @@ public class PartialEvaluator extends FEReplacer {
         	actualsList.add(actualParam);
         	actualsValList.add(actualParamValue);
     	}
+    	
+    	state.pushLevel();
+    	
     	StringBuffer result = new StringBuffer();
     	Iterator<Expression> actualIterator = actualsList.iterator();
     	Iterator<valueClass> actualValIterator = actualsValList.iterator();
@@ -1066,40 +1069,85 @@ public class PartialEvaluator extends FEReplacer {
     
     String outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
     	String result = "";
-        while(actualParamIterator.hasNext()){	        	
-        	Expression actualParam = (Expression)actualParamIterator.next();			        	
-        	Parameter formalParam = (Parameter) formalParamIterator.next();
-        	
-        	LHSvisitor lhsvisit =  new LHSvisitor();
-        	String apnm = (String) actualParam.accept(lhsvisit);	        	
-        	if( formalParam.isParameterOutput() ){
-        		String formalParamName = formalParam.getName();
+    	FEContext context = null;
+    	List<valueClass> formalList = new ArrayList<valueClass>();
+    	List<String> formalTransNames = new ArrayList<String>();
+    	while(formalParamIterator.hasNext()){
+    		Parameter formalParam = (Parameter) formalParamIterator.next();
+    		if( formalParam.isParameterOutput() ){
+    			String formalParamName = formalParam.getName();    			    			
+    			formalTransNames.add(state.transName(formalParamName));
+    			
 	        	int sz = state.checkArray(formalParamName);
 	        	if( sz > 0 ){
+	        		List<valueClass> tmplst = new ArrayList<valueClass>();
 	        		for(int i=0; i<sz; ++i){
 	        			String formalName = formalParamName + "_idx_" + i;		        			
         				if(state.varHasValue(formalName)){
-        					state.setVarValue(apnm+"_idx_"+i, state.varValue(formalName));
+        					valueClass vv = new valueClass(state.varValue(formalName));
+        					tmplst.add(vv);
         				}else{
         					String rhsname = state.varGetRHSName(formalName);
-			    			result += state.varGetLHSName(apnm+"_idx_"+i) + " = " + rhsname + ";\n";
+        					valueClass vv = new valueClass(rhsname);
+        					tmplst.add(vv);
+        				}				    		
+	        		}
+	        		valueClass vv = new valueClass(tmplst);
+	        		formalList.add(vv);
+	        	}else{
+	        		if(state.varHasValue(formalParamName)){
+	    				int val = state.varValue(formalParamName);
+	    				valueClass vv = new valueClass(val);
+		        		formalList.add(vv);
+    				}else{
+    					String rhsname = state.varGetRHSName(formalParamName);
+    					valueClass vv = new valueClass(rhsname);
+    					formalList.add(vv);
+    				}
+	        	}
+    		}else{
+    			formalList.add(null);
+    			formalTransNames.add(null);
+    		}
+    	}
+    	
+    	state.popLevel();
+    	Iterator<valueClass> vcIt = formalList.iterator();
+    	Iterator<String> fTransNamesIt = formalTransNames.iterator(); 
+        while(actualParamIterator.hasNext()){	        	
+        	Expression actualParam = (Expression)actualParamIterator.next();			        	        	
+        	valueClass formal = vcIt.next();
+        	String fTransName = fTransNamesIt.next();
+        	if( formal != null ){
+        		LHSvisitor lhsvisit =  new LHSvisitor();
+            	String apnm = (String) actualParam.accept(lhsvisit);	        			        	
+	        	
+	        	if( formal.isVect() ){
+	        		List<valueClass> elems = formal.getVectValue();
+	        		int sz = elems.size();
+	        		
+	        		for(int i=0; i<sz; ++i){
+	        			valueClass elemValue = elems.get(i);
+        				if(elemValue.hasValue()){
+        					state.setVarValue(apnm+"_idx_"+i, elemValue.getIntValue());
+        				}else{        					
+			    			result += state.varGetLHSName(apnm+"_idx_"+i) + " = " + elemValue.toString() + ";\n";
         				}				    		
 	        		}
 	        		if(this.isReplacer){
-	        			addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprVar(actualParam.getContext(), state.transName(formalParam.getName())) ));
+	        			addStatement(new StmtAssign(context, lhsvisit.lhsExp, new ExprVar(context, fTransName) ));
 	        		}
 		    	}else{
-	    			if(state.varHasValue(formalParamName)){
-	    				int val = state.varValue(formalParamName);
+	    			if(formal.hasValue()){
+	    				int val = formal.getIntValue();
     					state.setVarValue(apnm, val);
     					if(this.isReplacer){
-    	        			addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprConstInt(actualParam.getContext(), val) ));
+    	        			addStatement(new StmtAssign(context, lhsvisit.lhsExp, new ExprConstInt(context, val) ));
     	        		}
-    				}else{
-    					String rhsname = state.varGetRHSName(formalParamName);
-		    			result += state.varGetLHSName(apnm) + " = " + rhsname + ";\n";
+    				}else{    					
+		    			result += state.varGetLHSName(apnm) + " = " + formal.toString() + ";\n";
 		    			if(this.isReplacer){
-		        			addStatement(new StmtAssign(actualParam.getContext(), lhsvisit.lhsExp, new ExprVar(actualParam.getContext(), state.transName(formalParam.getName())) ));
+		        			addStatement(new StmtAssign(context, lhsvisit.lhsExp, new ExprVar(context, fTransName) ));
 		        		}
     				}
 		    	}
