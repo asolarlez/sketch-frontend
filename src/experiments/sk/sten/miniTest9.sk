@@ -1,0 +1,17 @@
+int N;
+int[N] test(int[N] in){
+  int[N] out=0;
+  for(int i=1; i<N-1; ++i){
+  	out[i] = in[i-1] + in[i+1];  	
+  }
+  return out;
+}
+
+int[N] testSK(int[N] in) implements test {
+  int[N] out = 0;
+  for(int i=1; i<(N-1); ++i){
+  	out[i] = in[i-??];
+  	out[i] += in[i+??];  	
+  }
+  return out;
+}

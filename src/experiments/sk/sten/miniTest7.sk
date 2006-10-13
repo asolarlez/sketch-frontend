@@ -15,7 +15,7 @@ int[N][N] testSK(int[N][N] in) implements test{
   int[N][N] out=0;
   for(int i=??; i<N-??; ++i){
     for(int j=??; j<N-??; ++j){
-    	out[i+1][j+1] =  in[i+1][j] + in[i][j+1];
+    	out[i+??][j+??] =  in[i+1][j] + in[i][j+1];
     	out[i][j] += in[i-1][j] + in[i][ j-1];
     }  	
   }
