@@ -38,6 +38,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -566,6 +567,12 @@ public class GenerateCopies extends SymbolTableVisitor
         return result;
     }
 
+    public Object visitStmtIfThen(StmtIfThen stmt){
+    	Expression ie = stmt.getCond();
+    	ie.accept(new UpgradeStarToInt(this, false) );   
+    	return super.visitStmtIfThen(stmt);
+    }
+    
     public Object visitStmtLoop(StmtLoop stmt){    	
     	Expression ie = stmt.getIter();
     	ie.accept(new UpgradeStarToInt(this, true) );    	
