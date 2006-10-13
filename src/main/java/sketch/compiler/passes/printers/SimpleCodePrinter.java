@@ -64,7 +64,10 @@ public class SimpleCodePrinter extends FEReplacer
 	{
     	printLine("if(" + stmt.getCond() + ")");
     	printIndentedStatement(stmt.getCons());
-    	printIndentedStatement(stmt.getAlt());
+    	if(stmt.getAlt() != null){
+    		printLine("else");
+    		printIndentedStatement(stmt.getAlt());
+    	}
 		return stmt;
 	}
 
