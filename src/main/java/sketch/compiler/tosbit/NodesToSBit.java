@@ -285,8 +285,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        	}else{
 	        		hasv = false;
 	        		String rval = null;
-	        		String cvar = state.varDeclare();	        		
-	        		oracle.addBinding(exp.getAlias(), cvar);
+	        		String cvar = oracle.addBinding(exp.getAlias());
 	        		if(lhs.hasValue() && rhs.hasValue()){
 	        			if(lhs.getIntValue() == 1){
 	        				rval =  "<" + cvar + ">";
@@ -1577,8 +1576,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        return "";
 	    }
 		public Object visitExprStar(ExprStar star) {			
-			String cvar = state.varDeclare();
-			oracle.addBinding(star, cvar);
+			String cvar = oracle.addBinding(star);
 			String isFixed = star.isFixed()? " *" : "";
 			String rval;
 			if(star.getSize() > 1)

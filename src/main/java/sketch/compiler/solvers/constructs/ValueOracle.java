@@ -15,46 +15,76 @@ import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.FENode;
 
 public class ValueOracle {
-	private Map<FENode, List<String>> store;	
-	private Map<FENode, Iterator<String>> currentVal;
+	private HoleNameTracker holeNamer;
+	
+	/**
+	 * After sketch is resolved, this map will contain the 
+	 * value of each variable in store.
+	 */
 	private Map<String, Boolean> valMap;
+	
+	
+	public HoleNameTracker getHoleNamer(){
+		return holeNamer;
+	}
+	
+	//The following functions are to be called before resolution.
+	
 	private int starSizesCaped = -1;
 	
-	public void initCurrentVals(){
-		currentVal = new HashMap<FENode, Iterator<String>>();
-		for(Iterator<Entry<FENode, List<String>>> it = store.entrySet().iterator(); it.hasNext(); ){
-			Entry<FENode, List<String>> ent = it.next();
-			currentVal.put(ent.getKey(),ent.getValue().iterator());
-		}
+	public ValueOracle(HoleNameTracker holeNamer) {
+		super();		
+		valMap = null;
+		this.holeNamer = holeNamer;
 	}
 	
-	public void capStarSizes(int size){
-		starSizesCaped = size;
-	}
-	
-	public ValueOracle() {
-		super();
-		store = new HashMap<FENode, List<String>>();
-		valMap = new HashMap<String, Boolean>();
-	}
-	
-	public void addBinding(FENode node, String vname){
-		if(store.containsKey(node)){
-			store.get(node).add(vname);
-		}else{
-			List<String> lst = new LinkedList<String>();
-			lst.add(vname);
-			store.put(node, lst);
-		}
+	/**
+	 * 
+	 * Register a new variable name for a node.
+	 *
+	 * @param node
+	 * @param vname
+	 */
+	public String addBinding(FENode node){
+		return holeNamer.getName(node);		
 	}	
 	
-	public ExprConstInt popValueForNode(FENode node){
-		Iterator<String> cit = currentVal.get(node);
-		assert cit.hasNext() : "This can't happen";		
-		return getVal(node, cit.next());
+	
+	/**
+	 * This function populates the valMap with information
+	 * from the file in, about what variables got what values.
+	 * @param in
+	 * @throws IOException
+	 */
+	public void loadFromStream(LineNumberReader in) throws IOException{
+		String dbRecord = null;
+		valMap = new HashMap<String, Boolean>();
+		while ( (dbRecord = in.readLine()) != null) {
+            StringTokenizer st = new StringTokenizer(dbRecord, "\t");
+            String vname = st.nextToken();
+            String sval = st.nextToken();
+            int val = Integer.parseInt(sval);
+            valMap.put(vname, val==1);
+         }
 	}
 	
-	public ExprConstInt getVal(FENode node, String var){
+	/**
+	 * Before we begin, populating the sketch, we set all the 
+	 * streams to the beginning.
+	 */
+	
+	public void initCurrentVals(){
+		holeNamer.reset();
+	}
+	
+	
+	
+	public ExprConstInt popValueForNode(FENode node){
+		String name = holeNamer.getName(node);	
+		return getVal(node, name);
+	}
+	
+	protected ExprConstInt getVal(FENode node, String var){
 		if(node instanceof ExprStar){
 			ExprStar star = (ExprStar) node;
 			if(star.getSize() == 1){
@@ -98,29 +128,8 @@ public class ValueOracle {
 		return new ExprConstInt(node.getContext(), -1);
 	}
 	
-	public List<ExprConstInt> getVarsForNode(FENode node){
-		List<ExprConstInt> result= new LinkedList<ExprConstInt>();
-		List<String> varsForNode = store.get(node);
-		if(varsForNode == null) return result;
-		Iterator<String> it = varsForNode.iterator();
-		while(it.hasNext()){
-			String var = it.next();
-			result.add(getVal(node, var));
-		}
-		return result;
+
+	public void capStarSizes(int size){
+		starSizesCaped = size;
 	}
-	
-	
-	public void loadFromStream(LineNumberReader in) throws IOException{
-		String dbRecord = null;
-		
-		while ( (dbRecord = in.readLine()) != null) {
-            StringTokenizer st = new StringTokenizer(dbRecord, "\t");
-            String vname = st.nextToken();
-            String sval = st.nextToken();
-            int val = Integer.parseInt(sval);
-            valMap.put(vname, val==1);
-         }
-	}
-	
 }
