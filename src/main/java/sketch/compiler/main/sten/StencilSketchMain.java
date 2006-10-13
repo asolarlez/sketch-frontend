@@ -15,64 +15,18 @@
  */
 
 package streamit.frontend;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
-import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AssignLoopTypes;
-import streamit.frontend.passes.BitTypeRemover;
-import streamit.frontend.passes.BitVectorPreprocessor;
-import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.ExprArrayToArrayRange;
-import streamit.frontend.passes.ExtractRightShifts;
-import streamit.frontend.passes.ExtractVectorsInCasts;
-import streamit.frontend.passes.FindFreeVariables;
-import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.GenerateCopies;
-import streamit.frontend.passes.NoRefTypes;
-import streamit.frontend.passes.NoticePhasedFilters;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.passes.VariableDisambiguator;
-import streamit.frontend.stencilSK.*;
-import streamit.frontend.tojava.ComplexToStruct;
-import streamit.frontend.tojava.DoComplexProp;
-import streamit.frontend.tojava.EnqueueToFunction;
-import streamit.frontend.tojava.InsertIODecls;
-import streamit.frontend.tojava.MoveStreamParameters;
-import streamit.frontend.tojava.NameAnonymousFunctions;
-import streamit.frontend.tosbit.EliminateStar;
-import streamit.frontend.tosbit.NodesToC;
-import streamit.frontend.tosbit.NodesToCTest;
-import streamit.frontend.tosbit.NodesToH;
-import streamit.frontend.tosbit.ProduceBooleanFunctions;
-import streamit.frontend.tosbit.SimplifyExpressions;
+import streamit.frontend.stencilSK.EliminateCompoundAssignments;
+import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.FunctionalizeStencils;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
+import streamit.frontend.stencilSK.StaticHoleTracker;
+import streamit.frontend.stencilSK.StencilSemanticChecker;
 import streamit.frontend.tosbit.ValueOracle;
 
 /**
@@ -89,6 +43,7 @@ import streamit.frontend.tosbit.ValueOracle;
 public class ToStencilSK extends ToSBit
 {
 
+	Program originalProg;
 	ToStencilSK(CommandLineParams params){
 		super(params);
 	}
@@ -102,7 +57,7 @@ public class ToStencilSK extends ToSBit
         }
         
         parseProgram();
-        
+        originalProg = prog;
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         prog = (Program)prog.accept(new VariableDisambiguator());
         if (!StencilSemanticChecker.check(prog))
@@ -126,11 +81,19 @@ public class ToStencilSK extends ToSBit
         prog.accept(new SimpleCodePrinter());
         System.out.println("DONE!");
         
-
+        oracle = new ValueOracle( new StaticHoleTracker(varGen) );
         partialEvalAndSolve();
-        
+        eliminateStar();
+        finalCode.accept(new SimpleCodePrinter());
+        System.out.print("DONE");
     }
     
+    
+    public void eliminateStar(){
+   	 finalCode =
+            (Program) originalProg.accept (
+                new EliminateStarStatic(oracle));      
+   }
     
     public static void main(String[] args)
     {

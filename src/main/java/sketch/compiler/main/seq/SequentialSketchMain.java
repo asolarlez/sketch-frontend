@@ -71,6 +71,7 @@ import streamit.frontend.tosbit.NodesToC;
 import streamit.frontend.tosbit.NodesToCTest;
 import streamit.frontend.tosbit.NodesToH;
 import streamit.frontend.tosbit.ProduceBooleanFunctions;
+import streamit.frontend.tosbit.SequentialHoleTracker;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
 
@@ -83,7 +84,7 @@ class CommandLineParams{
 	List<String> inputFiles = new java.util.ArrayList<String>();
 	Map<String, Integer> defines=new HashMap<String, Integer>();
 	int unrollAmt = 8;
-	int inlineAmt = 3;
+	int inlineAmt = 5;
 	boolean incremental = false;
 	int incermentalAmt = 0;
 	boolean hasTimeout = false;
@@ -376,9 +377,7 @@ public class ToSBit
 lowerIRToJava(!params.libraryFormat);
         
         
-        
-        oracle = new ValueOracle();
-
+        assert oracle != null;
         try
         {
             OutputStream outStream;
@@ -422,15 +421,19 @@ lowerIRToJava(!params.libraryFormat);
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-        finalCode =
-            (Program) beforeUnvectorizing.accept (
-                new EliminateStar(oracle, params.unrollAmt, params.inlineAmt));
-        finalCode =
-            (Program) finalCode.accept (
-                new EliminateStar(oracle, params.unrollAmt, params.inlineAmt, 3));
+       
 
     }
     
+    
+    public void eliminateStar(){
+    	 finalCode =
+             (Program) beforeUnvectorizing.accept (
+                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt));
+         finalCode =
+             (Program) finalCode.accept (
+                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt, 3));
+    }
     
     public void generateCode(){
     	 if(params.doVectorization) {
@@ -513,9 +516,9 @@ lowerIRToJava(!params.libraryFormat);
         if (prog == null)
             throw new IllegalStateException();
 
-        
+        oracle = new ValueOracle( new SequentialHoleTracker(varGen) );
         partialEvalAndSolve();
-        
+        eliminateStar();
         generateCode();
         
     }
