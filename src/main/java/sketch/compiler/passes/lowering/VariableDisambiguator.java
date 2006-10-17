@@ -49,7 +49,7 @@ public class VariableDisambiguator extends FEReplacer
 		for(int i=0;i<stmt.getNumVars();i++) {
 			final String name=names.get(i);
 			if(variables.get(name)!=stmt) {
-				for(int suff=2;;i++) {
+				for(int suff=2;;suff++) {
 					final String newName=name+suff;
 					if(variables.get(newName)==null) {
 						names.set(i,newName);
