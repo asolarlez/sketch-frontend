@@ -5,9 +5,11 @@ int W=32;
 bit[W] countBits(bit[W] in)
 {
 	bit[W] ret=0;
+	bit[W] tmp=0;
+	tmp[0] = 1;
 	for(int i=0;i<W;i++)
 		if(in[i])
-			ret=ret+1;
+			ret=ret+tmp;
 	return ret;
 }
 
@@ -17,7 +19,7 @@ bit[W] countSketch(bit[W] in) implements countBits
 	loop({*})
 	{
 		bit[W] t1=tmp {|} 0;
-		bit[W] t2=(tmp>>{*}) {|} 0;
+		bit[W] t2=(tmp<<{*}) {|} 0;
 		tmp=t1+t2;
 	}
 	return tmp;
@@ -29,7 +31,7 @@ bit[W] countSketch2(bit[W] in) implements countBits
 	loop({*})
 	{
 		bit[W] m={*};
-		tmp=(tmp & m) + (tmp>>{*} & m);
+		tmp=(tmp & m) + (tmp<<{*} & m);
 	}
 	return tmp;
 }
