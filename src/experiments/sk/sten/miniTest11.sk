@@ -1,0 +1,32 @@
+int N;
+int[N][N] sten(int[N][N]  in, int a, int b){
+   int[N][N] out=0;
+   for(int i=1; i<N-1; ++i){
+     for(int j=1; j<N-1; ++j){
+      out[i][j] = a*in[i-1][j] + b*in[i][j-1]
+                 + b*in[i+1][j] + a*in[i][j+1];
+     }
+   }
+   return out; 
+}
+
+
+int[N][N] stenSK(int[N][N] in, int a, int b) implements sten{
+   int[N][N] out=0;
+   int [N][N] t;
+   for(int j=??; j<N-??; ++j){
+      out[1][j] =  a*in[??][j+??] + b*in[??][j-??];
+   }
+   for(int i=??; i<N-??; ++i){
+      t[i][0] = a*in[i+??][??]  + b*in[i+??][??];
+      for(int j=??; j<N-??; ++j){
+           out[i+??][j+??] = t[i][j+??] ;
+           t[i][j+??]  = a*in[i+??][j+??] + b*in[i+??][j+??];
+           out[i+??][j+??] += t[i][j+??]  ;
+      }
+   }
+   for(int k=??; k<N-??; ++k){
+      out[N-??][k] +=  a*in[N-??][k+??] + b*in[N-??][k+??];
+   }
+   return out;
+}
