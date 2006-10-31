@@ -1,0 +1,70 @@
+int N = 8;
+
+bit[N*N] sten(bit[N*N]  in, bit a, bit b){
+   bit[N*N] out=0;
+   for(int i=1; i<N-1; ++i){
+     for(int j=1; j<N-1; ++j){
+      out[i*N+j] = (a & in[(i-1)*N+j]) ^ (b & in[i*N+j-1])
+                 ^ (b & in[(i+1)*N+j]) ^ (a & in[i*N+j+1]);
+     }
+   }
+   return out; 
+}
+
+bit[N*N] stenSK(bit[N*N] in, bit a, bit b) implements sten{
+   bit[N*N] out=0;
+   bit t = 0;
+   
+   int j = ??;
+   int h1 = ??;
+   int h2 = ??;
+   int h3 = ??;
+   int h4 = ??;
+   loop(N-??){
+      out[1*N+j] =  (a & in[h1*N+j+h2]) ^ (b & in[h3*N+j-h4]);
+      j = j+1;
+   }
+   int aa = ??;
+   int bb = ??;
+   
+   int i=??;
+   int h5 = ??;
+   int h6 = ??;
+   int h7 = ??;
+   int h8 = ??;
+   int jinit = ??;
+   int innloop = ??;
+   int h9 = ??;
+   int h10 = ??;
+   int h11 = ??;
+   int h12 = ??;
+   int h13 = ??;
+   int h14 = ??;
+   int h15 = ??;   
+   int h16 = ??;
+   int h17 = ??;   
+   loop(N-??){
+      t = (a & in[(i+h5)*N+h6])  ^ (b & in[(i+h7)*N+h8]);
+      int j = jinit;
+      loop(N-innloop){
+           out[(i+h9)*N+j+h10] = t;
+           t  = (a & in[(i+h13)*N+j+h14]) ^ (b & in[(i+h15)*N+j+h16]);
+           out[(i+aa)*N+j+bb] =  out[(i+aa)*N+j+bb] ^ t;
+           j = j+1;
+      }
+      i = i+1;
+   }
+   int tt = ??;
+   int h18 = ??;
+   int h19 = ??;
+   int h20 = ??;
+   int h21 = ??;
+   int k = ??;
+
+   loop(N-??){
+      out[(N-tt)*N+k] =  out[(N-tt)*N+k] ^ (a & in[(N-h18)*N+k+h19]) ^ (b & in[(N-h20)*N+k+h21]);
+      k = k+1;
+   }
+   return out;
+}
+
