@@ -23,6 +23,7 @@ public class ArrFunction{
 	
 	String arrName;
 	String suffix;
+	Type arrType;
 	int max_size=0;
 	/**
 	 * These parameters correspond to the indices of the array.
@@ -66,7 +67,7 @@ public class ArrFunction{
 		return idxAss.size();
 	}
 	
-	public ArrFunction(String arrName, String suffix, ParamTree pt){
+	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt){
 		this.arrName = arrName;
 		idxParams = new ArrayList<StmtVarDecl>();
 		iterParams = pt;		
@@ -75,6 +76,7 @@ public class ArrFunction{
 		maxAss = new ArrayList<Statement>();
 		retStmts = new ArrayList<Statement>();	
 		this.suffix = suffix;
+		this.arrType = arrType;
 	}
 	
 	public String getFullName(){
@@ -148,7 +150,8 @@ public class ArrFunction{
 			stmts.addAll(retStmts);
 		}
 		Statement body=new StmtBlock(null,stmts);
-		Function ret=Function.newHelper(null,getFullName(),new TypeCompound(TypePrimitive.inttype),params,body);
+		
+		Function ret=Function.newHelper(null,getFullName(), new TypeCompound(arrType),params,body);
 		return ret;
 	}
 	

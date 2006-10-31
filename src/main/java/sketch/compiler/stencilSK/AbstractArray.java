@@ -22,6 +22,7 @@ import streamit.frontend.nodes.*;
 
 
 public class AbstractArray {
+	Type arrType;
 	public static String IDXNAME="i";
 	public static String outIndexParamName(int i){
 		return "OUT_" + IDXNAME + "_" + i;
@@ -100,7 +101,7 @@ public class AbstractArray {
 	}
 	
 	
-	AbstractArray(String arrName, String suffix, int dim, List<StmtVarDecl> globalParams, List<StmtVarDecl> outIdxParams){
+	AbstractArray(String arrName, Type arrType, String suffix, int dim, List<StmtVarDecl> globalParams, List<StmtVarDecl> outIdxParams){
 		this.arrName = arrName;
 		this.suffix = suffix;
 		this.dim = dim;
@@ -108,13 +109,14 @@ public class AbstractArray {
 		this.outIndexParameters = outIdxParams;
 		this.idxArr = new ArrayList<Expression[]>();
 		this.otherParams = new ArrayList<StmtVarDecl>();
+		this.arrType = arrType;
 	}
 	
 	
 	public void addParamsToFunction(List<StmtVarDecl> svd){
 		
 		for(int i=0; i<numSymParams(); ++i){
-			StmtVarDecl obj = new StmtVarDecl(null, TypePrimitive.inttype, symParamName(i) , null) ;
+			StmtVarDecl obj = new StmtVarDecl(null, this.arrType, symParamName(i) , null) ;
 			svd.add(obj);
 		}
 		for(Iterator<StmtVarDecl> it = otherParams.iterator(); it.hasNext(); ){
@@ -210,7 +212,7 @@ public class AbstractArray {
 			}
 			params.addAll(makeParams(outIndexParameters));
 			for(int i=0;i<idxArr.size();i++){
-				params.add(new Parameter(TypePrimitive.inttype, symParamName(i)));
+				params.add(new Parameter( this.arrType , symParamName(i)));
 			}
 			params.addAll(makeParams(otherParams));
 			params.addAll(makeParams(globalParams));
@@ -227,7 +229,7 @@ public class AbstractArray {
 			}
 		}
 		Statement body=new StmtBlock(null,stmts);
-		Function ret=Function.newHelper(null,getFullName(),new TypeCompound(TypePrimitive.inttype),params,body);
+		Function ret=Function.newHelper(null,getFullName(),new TypeCompound(arrType),params,body);
 		return ret;
 	}
 

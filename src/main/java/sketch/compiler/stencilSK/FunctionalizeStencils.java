@@ -184,6 +184,9 @@ public class FunctionalizeStencils extends FEReplacer {
 			AbstractArray aa = it.next();
 			functions.add(aa.toAST());
 		}
+		
+		prog.accept(new SimpleCodePrinter());
+		
 		//convert all functions to procedures, translating calls and returns appropriately 
 		prog = (Program) prog.accept(new FunctionParamExtension(true));
 		strs=(StreamSpec)prog.getStreams().get(0);
@@ -340,7 +343,11 @@ public class FunctionalizeStencils extends FEReplacer {
 				if( !param.isParameterOutput() ){    		
 					int dim = checkIfGrid( param );
 					if( dim > 0){    				
-						AbstractArray absArr = new AbstractArray(param.getName(), func.getName(), dim, othParams, outIdxs);
+						Type ptype = param.getType();
+						while( ptype instanceof TypeArray){
+							ptype = ((TypeArray)ptype).getBase();
+						}
+						AbstractArray absArr = new AbstractArray(param.getName(), ptype ,func.getName(), dim, othParams, outIdxs);
 						inVars.put(param.getName(), absArr);
 						/////////////////
 					}else{
@@ -560,9 +567,9 @@ class processStencil extends FEReplacer {
 	    	}	    	
 	    }*/
 	    
-	    void populateArrInfo(arrInfo ainf, String var, int dim){	    	
+	    void populateArrInfo(arrInfo ainf, String var, Type type, int dim){	    	
 	    	assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
-   	 		ainf.fun = new ArrFunction(var, suffix, ptree);
+   	 		ainf.fun = new ArrFunction(var, type, suffix, ptree);
    	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD("t"+i, null) );
    	 		
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
@@ -593,7 +600,7 @@ class processStencil extends FEReplacer {
     	    		assert !smap.containsKey(var);
     	    		ainf = new arrInfo();
     	    		smap.put(var, ainf);
-    	    		populateArrInfo(ainf, var, 0);
+    	    		populateArrInfo(ainf, var, stmt.getType(i), 0);
     	    		if( stmt.getInit(i) != null ){
     	    			List<Expression> indices = new ArrayList<Expression>(0);
     	    			processArrAssign(var, indices, stmt.getInit(i));
@@ -657,7 +664,7 @@ class processStencil extends FEReplacer {
 	    public StmtMax newStmtMax(int i, List<Expression> indices, ArrFunction fun){	
 	    	assert indices.size() == fun.idxParams.size();
 	    	String newVar = ArrFunction.IDX_VAR + i;
-	    	
+	    	ExprVar idxi = new ExprVar(null, newVar);
 	    	//"idx_i := max{expr1==t, idx < in_idx, conds }; "
 	    	int ii=0;
 	    	StmtMax smax = new StmtMax(currentTN.getLevel()*2+1, newVar, ArrFunction.GUARD_VAR + i);
@@ -674,6 +681,7 @@ class processStencil extends FEReplacer {
 	    			cindex = (Expression) cindex.accept(new VarReplacer(iterPar.getName(0), ear ));
 	    		}
 	    		cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, cindex, new ExprVar(null, idxPar.getName(0)));
+	    		cindex = (Expression)cindex.accept(new ArrReplacer(idxi));
 	    		smax.primC.add(cindex);
 	    	}
 	    	{		    	
@@ -682,6 +690,7 @@ class processStencil extends FEReplacer {
 		    		ExprConstInt val = new ExprConstInt( stage0);
 		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(0));
 		    		Expression cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, ear, val);
+		    		cindex = (Expression)cindex.accept(new ArrReplacer(idxi));
 		    		smax.primC.add(cindex);
 		    	}		    	
 		    	int jj=0;
@@ -690,6 +699,7 @@ class processStencil extends FEReplacer {
 		    		ExprConstInt val = new ExprConstInt( lh.stage);
 		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+2));
 		    		Expression cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, ear, val);
+		    		cindex = (Expression)cindex.accept(new ArrReplacer(idxi));
 		    		smax.primC.add(cindex);
 		    	}
 		    	//assert jj == indices.size();
@@ -707,8 +717,7 @@ class processStencil extends FEReplacer {
 	    	//Finally, we add the tertiary constraints.
 	    	//In these constraints, we again replace
 	    	//   fun.iterParam[j] -> idx_i[2*j+1]
-	    	//We must also replace all accesses to arrays with calls to the array functions.
-	    	ExprVar idxi = new ExprVar(null, newVar);
+	    	//We must also replace all accesses to arrays with calls to the array functions.	    	
 	    	for(Iterator<Expression> condIt = conds.iterator(); condIt.hasNext(); ){
 	    		Expression cond = condIt.next();
 	    		int jj=0;
@@ -771,6 +780,8 @@ class processStencil extends FEReplacer {
 	    /**
 	     * This class replaces arrays with their corresponding function representations.
 	     * expr2[x[l]->x_fun(l, idx_i)]
+	     * 
+	     * The idx_i parameter is the base for the loop index parameters
 	     * @author asolar
 	     *
 	     */
@@ -1015,10 +1026,14 @@ class processStencil extends FEReplacer {
 		assert !smap.containsKey(var);
 		ainf = new arrInfo();
 		smap.put(var, ainf);
-		populateArrInfo(ainf, var, tt);
+		populateArrInfo(ainf, var, ta, tt);
 	}
 	
-	
+	/**
+	 * Initializes inArrParams. This is the variable that keeps track of all the 
+	 * parameters that correspond to symbolic input array values.
+	 * @param inVars
+	 */
 	
 	public void setInVars(Map<String, AbstractArray> inVars){
 		this.inVars = inVars;
