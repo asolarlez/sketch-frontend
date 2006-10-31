@@ -34,27 +34,27 @@ public class StaticHoleTracker implements HoleNameTracker {
 	}
 
 	public void pushFor(StmtFor floop) {
-		// TODO Auto-generated method stub
+
 
 	}
 
 	public void pushFunCall(ExprFunCall call) {
-		// TODO Auto-generated method stub
+
 
 	}
 
 	public void pushLoop(StmtLoop loop) {
-		// TODO Auto-generated method stub
+
 
 	}
 
 	public void regLoopIter() {
-		// TODO Auto-generated method stub
+
 
 	}
 
 	public void reset() {
-		// TODO Auto-generated method stub
+
 
 	}
 
