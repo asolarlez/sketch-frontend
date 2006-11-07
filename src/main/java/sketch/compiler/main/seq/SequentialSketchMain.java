@@ -93,6 +93,7 @@ class CommandLineParams{
 	Vector<String> commandLineOptions = new Vector<String>();
 	String resultFile = null;	
 	boolean doVectorization=false;
+	boolean outputFortran=false;
 	boolean outputCFiles=false;
 	String outputCDir="./";
 	boolean outputScript=false;
@@ -148,6 +149,8 @@ class CommandLineParams{
             	doVectorization=true;
             }else if (args[i].equals("--outputcfiles")) {
             	outputCFiles=true;
+            }else if (args[i].equals("--outputfortran")) {
+            	outputFortran=true;
             }else if (args[i].equals("--outputdir")) {
                 outputCDir = args[++i];
                 if(!outputCDir.endsWith("/"))
@@ -294,9 +297,6 @@ public class ToSBit
             newStructs.addAll(pprog.getStructs());
             prog = new Program(null, newStreams, newStructs);
         }
-        //invoke post-parse passes
-        prog = (Program)prog.accept(new FunctionParamExtension());
-        prog = (Program)prog.accept(new ConstantReplacer(params.defines));
         return prog;
     }
 
@@ -372,10 +372,15 @@ public class ToSBit
     	
     }
     
+    public Program preprocessProgram(Program prog) {
+        //invoke post-parse passes
+        prog = (Program)prog.accept(new FunctionParamExtension());
+        prog = (Program)prog.accept(new ConstantReplacer(params.defines));
+        return prog;
+    }
     
     public void partialEvalAndSolve(){
-lowerIRToJava(!params.libraryFormat);
-        
+    	lowerIRToJava(!params.libraryFormat);
         
         assert oracle != null;
         try
@@ -425,7 +430,6 @@ lowerIRToJava(!params.libraryFormat);
 
     }
     
-    
     public void eliminateStar(){
     	 finalCode =
              (Program) beforeUnvectorizing.accept (
@@ -435,16 +439,8 @@ lowerIRToJava(!params.libraryFormat);
                  new EliminateStar(oracle, params.unrollAmt, params.inlineAmt, 3));
     }
     
-    public void generateCode(){
-    	 if(params.doVectorization) {
-         	finalCode = (Program)finalCode.accept(new AssembleInitializers());
-         	finalCode=(Program) finalCode.accept(new BitVectorPreprocessor(varGen));
-         	finalCode=(Program) finalCode.accept(new BitTypeRemover(varGen));
-         	finalCode=(Program) finalCode.accept(new SimplifyExpressions());
-         }
-         
-         String resultFile = params.resultFile;
-         
+    protected String getOutputFileName() {
+        String resultFile = params.resultFile;
      	if(resultFile==null) {
      		resultFile=params.inputFiles.get(0);
      	}
@@ -454,48 +450,62 @@ lowerIRToJava(!params.libraryFormat);
  			resultFile=resultFile.substring(resultFile.lastIndexOf("\\")+1);
  		if(resultFile.lastIndexOf(".")>=0)
  			resultFile=resultFile.substring(0,resultFile.lastIndexOf("."));
-         
- 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
-         String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
-         if(!params.outputCFiles){
-         	System.out.println(hcode);
-         	System.out.println(ccode);
-         }else{
-         	try{
-         		{
- 	        		Writer outWriter = new FileWriter(params.outputCDir+resultFile+".h");
- 	            	outWriter.write(hcode);
- 	                outWriter.flush();
- 	                outWriter.close();
- 	        		outWriter = new FileWriter(params.outputCDir+resultFile+".cpp");
- 	            	outWriter.write(ccode);
- 	                outWriter.flush();
- 	                outWriter.close();
-         		}
-                 if(params.outputTest) {
-                 	String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
-                 	Writer outWriter = new FileWriter(params.outputCDir+resultFile+"_test.c");
-             		outWriter.write(testcode);
-                     outWriter.flush();
-                     outWriter.close();
-                 }
-                 if(params.outputScript) {
-             		Writer outWriter = new FileWriter(params.outputCDir+"script");
-             		outWriter.write("#!/bin/sh\n");
-             		if(params.outputTest)
-             			outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
-             		else
-             			outWriter.write("g++ -c "+resultFile+".c\n");
-             		outWriter.write("./"+resultFile+"\n");
-             		outWriter.flush();
-                     outWriter.close();
-                 }
-             }
-             catch (java.io.IOException e){
-                 throw new RuntimeException(e);
-             }
+ 		return resultFile;
+    }
+    
+    protected void outputCCode() {
+        String resultFile = getOutputFileName();
+        
+        String hcode = (String)finalCode.accept(new NodesToH(resultFile));
+        String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
+        if(!params.outputCFiles){
+        	System.out.println(hcode);
+        	System.out.println(ccode);
+        }else{
+        	try{
+        		{
+	        		Writer outWriter = new FileWriter(params.outputCDir+resultFile+".h");
+	            	outWriter.write(hcode);
+	                outWriter.flush();
+	                outWriter.close();
+	        		outWriter = new FileWriter(params.outputCDir+resultFile+".cpp");
+	            	outWriter.write(ccode);
+	                outWriter.flush();
+	                outWriter.close();
+        		}
+                if(params.outputTest) {
+                	String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
+                	Writer outWriter = new FileWriter(params.outputCDir+resultFile+"_test.c");
+            		outWriter.write(testcode);
+                    outWriter.flush();
+                    outWriter.close();
+                }
+                if(params.outputScript) {
+            		Writer outWriter = new FileWriter(params.outputCDir+"script");
+            		outWriter.write("#!/bin/sh\n");
+            		if(params.outputTest)
+            			outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
+            		else
+            			outWriter.write("g++ -c "+resultFile+".c\n");
+            		outWriter.write("./"+resultFile+"\n");
+            		outWriter.flush();
+                    outWriter.close();
+                }
+            }
+            catch (java.io.IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    public void generateCode(){
+    	 if(params.doVectorization) {
+         	finalCode = (Program)finalCode.accept(new AssembleInitializers());
+         	finalCode=(Program) finalCode.accept(new BitVectorPreprocessor(varGen));
+         	finalCode=(Program) finalCode.accept(new BitTypeRemover(varGen));
+         	finalCode=(Program) finalCode.accept(new SimplifyExpressions());
          }
-
+         outputCCode();
     }
     
     
@@ -599,7 +609,10 @@ lowerIRToJava(!params.libraryFormat);
     
     
     private boolean runSolver(String[] commandLine, int i){
-    	System.out.println(commandLine);
+    	for(int k=0;k<commandLine.length;k++) 
+    		System.out.print(commandLine[k]+" "); 
+    	System.out.println("");
+    	
         Runtime rt = Runtime.getRuntime();        
         try
         {
