@@ -61,6 +61,7 @@ import streamit.frontend.tosbit.ValueOracle;
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
+ * @deprecated
  */
 public class ToJava
 {
@@ -284,8 +285,8 @@ public class ToJava
             else
                 outWriter = new OutputStreamWriter(System.out);
 
-            String javaOut =
-                (String)prog.accept(new NodesToSBit(null, varGen, new ValueOracle(),null));
+            String javaOut = "";
+//                (String)prog.accept(new NodesToSBit(null, varGen, new ValueOracle(),null,8,8));
             outWriter.write(javaOut);
             outWriter.flush();
         }
