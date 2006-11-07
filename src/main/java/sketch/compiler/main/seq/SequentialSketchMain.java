@@ -372,7 +372,7 @@ public class ToSBit
     	
     }
     
-    public Program preprocessProgram(Program prog) {
+    protected Program preprocessProgram(Program prog) {
         //invoke post-parse passes
         prog = (Program)prog.accept(new FunctionParamExtension());
         prog = (Program)prog.accept(new ConstantReplacer(params.defines));
@@ -498,16 +498,20 @@ public class ToSBit
         }
     }
     
-    public void generateCode(){
-    	 if(params.doVectorization) {
-         	finalCode = (Program)finalCode.accept(new AssembleInitializers());
-         	finalCode=(Program) finalCode.accept(new BitVectorPreprocessor(varGen));
-         	finalCode=(Program) finalCode.accept(new BitTypeRemover(varGen));
-         	finalCode=(Program) finalCode.accept(new SimplifyExpressions());
-         }
-         outputCCode();
+    protected Program doBackendPasses(Program prog) {
+    	if(params.doVectorization) {
+    		prog=(Program) prog.accept(new AssembleInitializers());
+    		prog=(Program) prog.accept(new BitVectorPreprocessor(varGen));
+    		prog=(Program) prog.accept(new BitTypeRemover(varGen));
+    		prog=(Program) prog.accept(new SimplifyExpressions());
+    	}
+    	return prog;
     }
     
+    public void generateCode(){
+    	finalCode=doBackendPasses(finalCode);
+    	outputCCode();
+    }
     
     public void run()
     {        

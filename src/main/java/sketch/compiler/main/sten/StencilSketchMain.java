@@ -18,15 +18,13 @@ package streamit.frontend;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.AssignLoopTypes;
-import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.BackendCleanup;
 import streamit.frontend.passes.ExprArrayToArrayRange;
-import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.GenerateCopies;
 import streamit.frontend.passes.VariableDisambiguator;
 import streamit.frontend.stencilSK.EliminateCompoundAssignments;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.FunctionalizeStencils;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.stencilSK.StencilSemanticChecker;
 import streamit.frontend.tosbit.ValueOracle;
@@ -45,7 +43,7 @@ public class ToStencilSK extends ToSBit
 		super(params);
 	}
 	
-    public Program preprocessProgram(Program prog) {
+    protected Program preprocessProgram(Program prog) {
         prog = super.preprocessProgram(prog);
         prog = (Program)prog.accept(new VariableDisambiguator());
         return prog;
@@ -98,7 +96,15 @@ public class ToStencilSK extends ToSBit
 		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));
 	}
 
+	
+	protected Program doBackendPasses(Program prog) {
+    	prog=super.doBackendPasses(prog);
+    	prog=(Program) prog.accept(new BackendCleanup());
+    	return prog;
+	}
+
 	public void generateCode(){
+		finalCode=doBackendPasses(finalCode);
 		if(!params.outputFortran) {
 			outputCCode();
 		} else {
