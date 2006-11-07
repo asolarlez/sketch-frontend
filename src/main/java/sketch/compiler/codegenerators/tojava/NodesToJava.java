@@ -56,6 +56,7 @@ public class NodesToJava implements FEVisitor
     protected String indent;
     private boolean libraryFormat;
     protected TempVarGen varGen;
+    private int binOpLevel=0;
     
     public NodesToJava(boolean libraryFormat, TempVarGen varGen) {
     	this(libraryFormat, varGen, false);
@@ -336,36 +337,38 @@ public class NodesToJava implements FEVisitor
     
     public Object visitExprBinary(ExprBinary exp)
     {
-        String result;
+        StringBuffer result=new StringBuffer();
         String op = null;
-        result = "(";
-        result += (String)exp.getLeft().accept(this);
+        if(binOpLevel>0) result.append("(");
+        binOpLevel++;
+        result.append((String)exp.getLeft().accept(this));
         switch (exp.getOp())
         {
-        case ExprBinary.BINOP_ADD: op = "+"; break;
-        case ExprBinary.BINOP_SUB: op = "-"; break;
-        case ExprBinary.BINOP_MUL: op = "*"; break;
-        case ExprBinary.BINOP_DIV: op = "/"; break;
-        case ExprBinary.BINOP_MOD: op = "%"; break;
-        case ExprBinary.BINOP_AND: op = "&&"; break;
-        case ExprBinary.BINOP_OR:  op = "||"; break;
-        case ExprBinary.BINOP_EQ:  op = "=="; break;
-        case ExprBinary.BINOP_NEQ: op = "!="; break;
-        case ExprBinary.BINOP_LT:  op = "<"; break;
-        case ExprBinary.BINOP_LE:  op = "<="; break;
-        case ExprBinary.BINOP_GT:  op = ">"; break;
-        case ExprBinary.BINOP_GE:  op = ">="; break;
-        case ExprBinary.BINOP_BAND:op = "&"; break;
-        case ExprBinary.BINOP_BOR: op = "|"; break;
-        case ExprBinary.BINOP_BXOR:op = "^"; break;
-        case ExprBinary.BINOP_RSHIFT: op = ">>"; break;
-        case ExprBinary.BINOP_LSHIFT: op = "<<"; break;
-        default: assert false : exp; break;
+	        case ExprBinary.BINOP_ADD: op = "+"; break;
+	        case ExprBinary.BINOP_SUB: op = "-"; break;
+	        case ExprBinary.BINOP_MUL: op = "*"; break;
+	        case ExprBinary.BINOP_DIV: op = "/"; break;
+	        case ExprBinary.BINOP_MOD: op = "%"; break;
+	        case ExprBinary.BINOP_AND: op = "&&"; break;
+	        case ExprBinary.BINOP_OR:  op = "||"; break;
+	        case ExprBinary.BINOP_EQ:  op = "=="; break;
+	        case ExprBinary.BINOP_NEQ: op = "!="; break;
+	        case ExprBinary.BINOP_LT:  op = "<"; break;
+	        case ExprBinary.BINOP_LE:  op = "<="; break;
+	        case ExprBinary.BINOP_GT:  op = ">"; break;
+	        case ExprBinary.BINOP_GE:  op = ">="; break;
+	        case ExprBinary.BINOP_BAND:op = "&"; break;
+	        case ExprBinary.BINOP_BOR: op = "|"; break;
+	        case ExprBinary.BINOP_BXOR:op = "^"; break;
+	        case ExprBinary.BINOP_RSHIFT: op = ">>"; break;
+	        case ExprBinary.BINOP_LSHIFT: op = "<<"; break;
+	        default: assert false : exp; break;
         }
-        result += " " + op + " ";
-        result += (String)exp.getRight().accept(this);
-        result += ")";
-        return result;
+        result.append(" ").append(op).append(" ");
+        result.append((String)exp.getRight().accept(this));
+        binOpLevel--;
+        if(binOpLevel>0) result.append(")");
+        return result.toString();
     }
 
     public Object visitExprComplex(ExprComplex exp)
@@ -709,9 +712,11 @@ public class NodesToJava implements FEVisitor
             Statement s = (Statement)iter.next();
             String line = indent;
             line += (String)s.accept(this);
-	    if (!(s instanceof StmtIfThen)) {
-		line += ";";
-	    }
+		    if(!(s instanceof StmtIfThen ||
+		         s instanceof StmtFor ||
+		         s instanceof StmtWhile)) {
+		    	line += ";";
+		    }
             if (printSourceLines && s.getContext() != null)
                 line += " // " + s.getContext();
             line += "\n";
