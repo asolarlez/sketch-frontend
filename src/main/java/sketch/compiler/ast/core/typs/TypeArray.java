@@ -16,6 +16,9 @@
 
 package streamit.frontend.nodes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A fixed-length homogenous array type.  This type has a base type and
  * an expression for the length.  The expression must be real and integral,
@@ -103,5 +106,16 @@ public class TypeArray extends Type
     }
     public boolean isNonDet(){
     	return base.isNonDet();
+    }
+    
+    public List<Expression> getDimensions() {
+    	List<Expression> ret=new ArrayList<Expression>();
+    	Type t=this;
+    	while(t instanceof TypeArray) {
+    		TypeArray ta=(TypeArray) t;
+    		ret.add(0,ta.getLength());
+    		t=ta.getBase();
+    	}
+    	return ret;
     }
 }
