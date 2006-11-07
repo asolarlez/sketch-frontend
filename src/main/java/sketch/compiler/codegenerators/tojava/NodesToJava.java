@@ -47,17 +47,27 @@ public class NodesToJava implements FEVisitor
 		return ss;
 	}
 
+	/**
+	 * Whether or not to annotate every line with "//<sourcefile>:<sourceline>"
+	 */
+	private boolean printSourceLines;
+	
     // A string consisting of an even number of spaces.
     protected String indent;
     private boolean libraryFormat;
     protected TempVarGen varGen;
     
-    public NodesToJava(boolean libraryFormat, TempVarGen varGen)
+    public NodesToJava(boolean libraryFormat, TempVarGen varGen) {
+    	this(libraryFormat, varGen, false);
+    }
+    
+    public NodesToJava(boolean libraryFormat, TempVarGen varGen, boolean printSourceLines)
     {
         this.ss = null;
         this.indent = "";
         this.libraryFormat = libraryFormat;
         this.varGen = varGen;
+        this.printSourceLines=printSourceLines;
     }
 
     // Add two spaces to the indent.
@@ -515,7 +525,7 @@ public class NodesToJava implements FEVisitor
                 result += " = " + (String)field.getInit(i).accept(this);
         }
         result += ";";
-        if (field.getContext() != null)
+        if (printSourceLines && field.getContext() != null)
             result += " // " + field.getContext();
         result += "\n";
         return result;
@@ -690,7 +700,7 @@ public class NodesToJava implements FEVisitor
     {
         // Put context label at the start of the block, too.
         String result = "{";
-        if (stmt.getContext() != null)
+        if (printSourceLines && stmt.getContext() != null)
             result += " // " + stmt.getContext();
         result += "\n";
         addIndent();
@@ -702,7 +712,7 @@ public class NodesToJava implements FEVisitor
 	    if (!(s instanceof StmtIfThen)) {
 		line += ";";
 	    }
-            if (s.getContext() != null)
+            if (printSourceLines && s.getContext() != null)
                 line += " // " + s.getContext();
             line += "\n";
             result += line;
@@ -1096,8 +1106,10 @@ public class NodesToJava implements FEVisitor
                 TypePrimitive.TYPE_VOID)
             {
                 result += "public class " + spec.getName() +
-                    " extends StreamIt" + spec.getTypeString() + ifaces +
-                    " // " + spec.getContext() + "\n";
+                    " extends StreamIt" + spec.getTypeString() + ifaces;
+                if(printSourceLines && spec.getContext()!=null)
+                	result += " // " + spec.getContext();
+                result += "\n";
                 result += indent + "{\n";
                 addIndent();
                 result += indent + "public static void main(String[] args) {\n";
@@ -1135,8 +1147,11 @@ public class NodesToJava implements FEVisitor
                         result += "FeedbackLoop";
                         break;
                     }
-                result += ifaces + " // " + spec.getContext() + "\n" +
-                    indent + "{\n";
+                result += ifaces;
+                if(printSourceLines && spec.getContext()!=null)
+                	result += " // " + spec.getContext();
+                result += "\n";
+                result += indent + "{\n";
                 addIndent();
                 // If we're in the library backend, we need a construct()
                 // method too; in the compiler backend, a constructor.
