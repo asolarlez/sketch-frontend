@@ -46,7 +46,7 @@ public class BitTest extends TestCase
 		p=(Program) p.accept(new BitTypeRemover(new TempVarGen()));
         //p=(Program) p.accept(new DoComplexProp(varGen));
 		//p.accept(new ProduceBooleanFunctions(null, varGen, new ValueOracle()));
-        String ccode = (String)p.accept(new NodesToC(false,varGen));
+        String ccode = (String)p.accept(new NodesToC(varGen,name));
 		System.out.println(ccode);
 		return p;
 	}
