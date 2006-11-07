@@ -98,7 +98,6 @@ public class ToStencilSK extends ToSBit
 
 	
 	protected Program doBackendPasses(Program prog) {
-    	prog=super.doBackendPasses(prog);
     	prog=(Program) prog.accept(new BackendCleanup());
     	return prog;
 	}
