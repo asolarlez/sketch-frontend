@@ -185,7 +185,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			functions.add(aa.toAST());
 		}
 		
-		prog.accept(new SimpleCodePrinter());
+//		prog.accept(new SimpleCodePrinter());
 		
 		//convert all functions to procedures, translating calls and returns appropriately 
 		prog = (Program) prog.accept(new FunctionParamExtension(true));
