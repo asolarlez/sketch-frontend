@@ -7,125 +7,299 @@ import streamit.frontend.tojava.NodesToJava;
 
 public class NodesToC extends NodesToJava {
 
-	private String filename; 
-	private ArrayList<String> usedMacros=new ArrayList<String>();
-	private static HashMap<String,String> macroDefinitions=null;
+	private static final class ArrayGen {
+		private final int dim;
+		private final String indent="\t\t\t";
+		private final String arrayType;
+		private final String arrayPtrType;
+		private StringBuffer buf;
+		
+		public ArrayGen(int d) {
+			dim=d;
+			arrayType=getArrayTypeName();
+			arrayPtrType=arrayType+"Ptr";
+		}
+		
+		public String getArrayTypeName() {
+			return "Array"+dim+"D";
+		}
+		
+		public void generatePtrCode(StringBuffer b) 
+		{
+			buf=b;
+			
+			buf.append("class ");
+			buf.append(arrayPtrType);
+			buf.append(" {\n");
+
+			buf.append("\tfriend class ");
+			buf.append(arrayType);
+			buf.append(";\n");
+
+			buf.append("\tprivate:\n");
+
+			buf.append("\t\t");
+			buf.append(arrayType);
+			buf.append(" *ptr;\n");
+
+			buf.append("\tpublic:\n");
+
+			buf.append("\t\t");
+			buf.append(arrayPtrType);
+			buf.append("(");
+			buf.append(arrayType);
+			buf.append(" *p):ptr(p) {}\n");
+
+			buf.append("};\n");
+
+			buf.append("\n");
+		}
+		
+		public void generateArrayCode(StringBuffer b) {
+			buf=b;
+			
+			buf.append("class ");
+			buf.append(arrayType);
+			buf.append(" {\n");
+
+			buf.append("\tprivate:\n");
+
+			buf.append("\t\t");
+			buf.append(dataType(dim));
+			buf.append(" data;\n");
+
+			buf.append("\t\tvoid clear() {\n");
+
+			buf.append(makeDeleteCode(dim));
+
+			buf.append("\t\t}\n");
+
+			buf.append("\tpublic:\n");
+
+			buf.append("\t\tconst int dim0;\n");
+
+			buf.append("\t\tconst int dim1;\n");
+
+			buf.append("\t\t");
+			buf.append(arrayType);
+			buf.append("(");
+			buf.append(ctorParams(dim));
+			buf.append("):");
+			buf.append(ctorInits(dim));
+			buf.append(" {\n");
+
+			buf.append(makeAllocCode(dim));
+
+			buf.append("\t\t\t");
+			buf.append(loopNest(dim));
+			buf.append("data");
+			buf.append(indexNest(dim));
+			buf.append("=0;\n");
+
+			buf.append("\t\t}\n");
+
+			buf.append("\t\t");
+			buf.append(arrayType);
+			buf.append("(");
+			buf.append(arrayPtrType);
+			buf.append(" p):");
+			buf.append(ctorInits2(dim));
+			buf.append(" {\n");
+
+			buf.append("\t\t\tdata=p.ptr->data;\n");
+
+			buf.append("\t\t}\n");
+
+			buf.append("\t\t~");
+			buf.append(arrayType);
+			buf.append("() {clear();}\n");
+
+			buf.append("\t\tdouble*& operator[] (int i) {return data[i];}\n");
+
+			buf.append("\t\t");
+			buf.append(arrayType);
+			buf.append("& operator= (");
+			buf.append(arrayType);
+			buf.append("& other) {\n");
+
+			buf.append(makeAssertCode(dim));
+
+			buf.append("\t\t\t");
+			buf.append(loopNest(dim));
+			buf.append("data");
+			buf.append(indexNest(dim));
+			buf.append("=other.data");
+			buf.append(indexNest(dim));
+			buf.append(";\n");
+
+			buf.append("\t\t\treturn *this;\n");
+
+			buf.append("\t\t}\n");
+
+			buf.append("\t\t");
+			buf.append(arrayType);
+			buf.append("& operator= (");
+			buf.append(arrayPtrType);
+			buf.append(" otherptr) {\n");
+
+			buf.append("\t\t\t");
+			buf.append(arrayType);
+			buf.append("& other=*(otherptr.ptr);\n");
+
+			buf.append(makeAssertCode(dim));
+
+			buf.append("\t\t\tdata=other.data;\n");
+
+			buf.append("\t\t\treturn *this;\n");
+
+			buf.append("\t\t}\n");
+
+			buf.append("\t\t");
+			buf.append(arrayPtrType);
+			buf.append(" makePtr() {\n");
+
+			buf.append("\t\t\t");
+			buf.append(arrayPtrType);
+			buf.append(" ret(this);\n");
+
+			buf.append("\t\t\treturn ret;\n");
+
+			buf.append("\t\t}\n");
+
+			buf.append("};\n");
+		}
+
+		private String dataType(int dim) {
+			String ret="double";
+			for(int i=0;i<dim;i++) ret+="*";
+			return ret;
+		}
+		
+		private String forLoop(int d) {
+			//for(int i0=0;i0<dim0;i0++)
+			return "for(int i"+d+"=0;i"+d+"<dim"+d+";i"+d+"++) "; 
+		}
+
+		private String loopNest(int dim) {
+			//for(int i0=0;i0<dim0;i0++) for(int i1=0;i1<dim1;i1++) 
+			String ret="";
+			for(int i=0;i<dim;i++)
+				ret+=forLoop(i);
+			return ret;
+		}
+
+		private String indexNest(int dim) {
+			//[i0][i1]
+			String ret="";
+			for(int i=0;i<dim;i++)
+				ret+="[i"+i+"]";
+			return ret;
+		}
+
+		private String makeAllocCode(int dim) {
+			//data=new double**[dim0];
+			//for(int i0=0;i0<dim0;i0++) data[i0]=new double*[dim1];
+			//for(int i0=0;i0<dim0;i0++) for(int i1=0;i1<dim1;i1++) data[i0][i1]=new double[dim2];
+			String ret="";
+			for(int d=0;d<dim;d++) {
+				ret+=indent;
+				ret+=loopNest(d);
+				ret+="data"+indexNest(d)+"=new "+dataType(dim-1-d)+"[dim"+d+"];\n";
+			}
+			return ret;
+		}
+
+		private String makeDeleteCode(int dim) {
+			//for(int i0=0;i0<dim0;i0++) for(int i1=0;i1<dim1;i1++) delete[] data[i0][i1];
+			//for(int i0=0;i0<dim0;i0++) delete[] data[i0];
+			//delete[] data;
+			String ret="";
+			for(int d=dim-1;d>=0;d--) {
+				ret+=indent;
+				ret+=loopNest(d);
+				ret+="delete[] data"+indexNest(d)+";\n";
+			}
+			return ret;
+		}
+
+		private String makeAssertCode(int dim) {
+			//assert(dim0==other.dim0);
+			String ret="";
+			for(int i=0;i<dim;i++) {
+				ret+=indent+"assert(dim"+i+"==other.dim"+i+");\n";
+			}
+			return ret;
+		}
+
+		private String ctorParams(int dim) {
+			//int d0, int d1
+			String ret="";
+			for(int i=0;i<dim;i++) {
+				if(i>0) ret+=", ";
+				ret+="int d"+i;
+			}
+			return ret;
+		}
+
+		private String ctorInits(int dim) {
+			//dim0(d0),dim1(d1)
+			String ret="";
+			for(int i=0;i<dim;i++) {
+				if(i>0) ret+=",";
+				ret+="dim"+i+"(d"+i+")";
+			}
+			return ret;
+		}
+
+		private String ctorInits2(int dim) {
+			//dim0(p.ptr->dim0),dim1(p.ptr->dim1)
+			String ret="";
+			for(int i=0;i<dim;i++) {
+				if(i>0) ret+=",";
+				ret+="dim"+i+"(p.ptr->dim"+i+")";
+			}
+			return ret;
+		}
+
+	}
+	
+	private static Map<String,String> macroDefinitions=null;
+
+	private final String filename; 
+	private final List<String> usedMacros;
+	/** List containing the dimensionalities of array types used in the program */
+	private final List<Integer> usedArrayTypes;
+	private boolean curFunctionReturnsArray;
 	
 	public NodesToC(TempVarGen varGen, String filename) {
 		super(false, varGen);
 		this.filename=filename;
+		usedMacros=new ArrayList<String>();
+		usedArrayTypes=new ArrayList<Integer>();
 		if(macroDefinitions==null) {
 			macroDefinitions=new HashMap<String,String>();
-			macroDefinitions.put("SK_BITASSIGN","#define SK_BITASSIGN(a,i,x) a=((a)&(~(((unsigned long long)1)<<(i))))|(((x)&1)<<(i))");
-			macroDefinitions.put("SK_ONES","#define SK_ONES(n) ((((unsigned long long)1)<<(n))-1)");
-			macroDefinitions.put("SK_ONES_SL","#define SK_ONES_SL(s,l) (SK_ONES(l)<<(s))");
-			macroDefinitions.put("SK_ONES_SE","#define SK_ONES_SE(s,e) (SK_ONES((e)+1)^SK_ONES(s))");
-			macroDefinitions.put("SK_ONES_S","#define SK_ONES_S(s) (~SK_ONES(s))");
-			macroDefinitions.put("SK_ONES_E","#define SK_ONES_E(e) (SK_ONES((e)+1))");
-			macroDefinitions.put("SK_COPYBITS","#define SK_COPYBITS(l,m,r) l=((l)&~(m))|((r)&(m))");
-			macroDefinitions.put("SK_bitArrayCopy","template<typename T, typename V> \n"+
-					"void SK_bitArrayCopy(T* lhs, int s, int e, V* x, int ws)\n"+
-					"{\n	int aw=s/ws;\n	if(aw==e/ws) {\n	"+
-					"	int mask=SK_ONES_SE(s%ws,e%ws);\n"+
-					"		SK_COPYBITS(lhs[aw],mask,x[0]<<(s%ws));\n	}\n"+
-					"	else {\n"+
-					"		int k=s%ws;\n"+
-					"		int l=e-s;\n"+
-					"		int nfw=(l)/ws;\n"+
-					"       l = l+1;\n"+
-					"		int xw;\n"+
-					"		if(k==0) {\n"+
-					"			for(xw=0;xw<nfw;xw++) {\n"+
-					"				lhs[aw++]=x[xw];\n"+
-					"			}\n"+
-					"			int mask=SK_ONES_E(e%ws);\n"+
-					"			SK_COPYBITS(lhs[aw],mask,x[xw]);\n"+
-					"		}\n		else {\n			int kc=ws-k;\n"+
-					"			int mask1=SK_ONES_S(k);\n"+
-					"			int mask2=~mask1;\n"+
-					"			for(xw=0;xw<nfw;xw++) {\n"+
-					"				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);\n"+
-					"				aw++;\n"+
-					"				SK_COPYBITS(lhs[aw],mask2,x[xw]>>kc);\n"+
-					"			}\n"+
-					"			if(l%ws>kc) {\n"+
-					"				SK_COPYBITS(lhs[aw],mask1,x[xw]<<k);\n"+
-					"				aw++;\n"+
-					"				int mask=SK_ONES_E(e%ws);\n"+
-					"				SK_COPYBITS(lhs[aw],mask,x[xw]>>kc);\n"+
-					"			}\n"+
-					"			else {\n"+
-					"				int mask=SK_ONES_SE(k,e%ws);\n"+
-					"				SK_COPYBITS(lhs[aw],mask,x[xw]<<k);\n"+
-					"			}\n"+
-					"		}\n	}\n}\n");
-			macroDefinitions.put("SK_bitArrayCopyInv","template<typename T, typename V> \n" +
-					"void SK_bitArrayCopyInv(T* lhs, int s, int e, V* x, int wsl, int wsr, int totlen){\n" +
-					"    int aw=s/wsr;\n" +
-					"    int l=e-s+1;\n" +
-					"    if(aw==e/wsr) {\n" +
-					"       if( (l-1)/wsl == 0 ){\n" +
-					"           if( l == wsr ){ lhs[0] = x[aw]; return; } \n"+
-					"           int mask=SK_ONES_SE(0,(e%wsr) - (s%wsr));\n" +
-					"           SK_COPYBITS(lhs[0],mask,x[aw]>>(s%wsr));\n" +
-					"       }else{\n" +
-					"          printf(\"THIS HAS NOT BEEN IMPLEMENTED\"); return;\n" +
-					"       }\n" +
-					"    }\n" +
-					"    else {\n" +
-					"       int ws = wsr;\n" +
-					"       if( wsr != wsl ){ printf(\"THIS HAS NOT BEEN IMPLEMENTED\"); return;}\n" +
-					"       int k=s%ws;\n" +
-					"       int nfw=(l-1)/ws;\n" +
-					"       int xw;\n" +
-					"       if(k==0) {\n" +
-					"           for(xw=0;xw<nfw;xw++) {\n" +
-					"               lhs[xw]=x[aw++];\n" +
-					"           }\n" +
-					"           int mask=SK_ONES_E(e%ws);\n" +
-					"           SK_COPYBITS(lhs[xw],mask,x[aw]);\n" +
-					"       }\n" +
-					"       else {\n" +
-					"           int kc=ws-k;\n" +
-					"           int mask1=SK_ONES(kc);\n" +
-					"           int mask2=~mask1;\n" +
-					"           for(xw=0;xw<nfw;xw++) {\n" +
-					"               SK_COPYBITS(lhs[xw],mask1,x[aw]>>k);\n" +
-					"               aw++;\n" +
-					"               SK_COPYBITS(lhs[xw],mask2,x[aw]<<kc);\n" +
-					"           }\n" +
-					"           if(l%ws>kc) {\n" +
-					"               SK_COPYBITS(lhs[aw],mask1,x[xw]>>k);\n" +
-					"               aw++;\n" +
-					"               int mask=SK_ONES_SE(kc, e%ws);\n" +
-					"               SK_COPYBITS(lhs[aw],mask,x[xw]<<kc);\n" +
-					"           }\n" +
-					"           else {\n" +
-					"               int mask=SK_ONES_E((e%ws)-k);\n" +
-					"               SK_COPYBITS(lhs[xw],mask,x[aw]>>k);\n" +
-					"           }\n" +
-					"       }\n" +
-					"    }\n" +
-					"    if(totlen > l){       for(int i=l; i<totlen; ++i) SK_BITASSIGN(lhs[i/wsl], i%wsl, 0);     }}\n" +
-					"\n" );
 		}
 	}
 	
 	private void requireMacro(String m) {
 		if(usedMacros.contains(m)) return;
-		if(m.startsWith("SK_ONES_")) requireMacro("SK_ONES");
-		else if(m.equals("SK_bitArrayCopy") || m.equals("SK_bitArrayCopyInv")) {
-			requireMacro("SK_COPYBITS");
-			requireMacro("SK_ONES_SE");
-			requireMacro("SK_ONES_S");
-			requireMacro("SK_ONES_E");
-			requireMacro("SK_BITASSIGN");
-			
-		}
 		assert macroDefinitions.containsKey(m);
 		usedMacros.add(m);
 	}
+
+	private void requireArray(int dim) {
+		if(usedArrayTypes.contains(dim)) return;
+		usedArrayTypes.add(dim);
+	}
 	
+	protected String generateArrayImpl(int dim) {
+		StringBuffer buf=new StringBuffer();
+		ArrayGen ag=new ArrayGen(dim);
+		ag.generatePtrCode(buf);
+		ag.generateArrayCode(buf);
+		return buf.toString();
+	}
+
 	@Override
 	public Object visitExprUnary(ExprUnary exp)
 	{
@@ -144,8 +318,13 @@ public class NodesToC extends NodesToJava {
 		preamble.append("#include \"");
 		preamble.append(filename);
 		preamble.append(".h\"\n");
-		for(Iterator<String> it=usedMacros.iterator();it.hasNext();) {
-			preamble.append(macroDefinitions.get(it.next()));
+		for(String macroName: usedMacros) {
+			preamble.append(macroDefinitions.get(macroName));
+			preamble.append("\n");
+		}
+		for(Integer dim: usedArrayTypes) {
+			String code=generateArrayImpl(dim);
+			preamble.append(code);
 			preamble.append("\n");
 		}
 		preamble.append(ret);
@@ -165,9 +344,10 @@ public class NodesToC extends NodesToJava {
 	
 	public Object visitFunction(Function func)
     {
+		curFunctionReturnsArray=(func.getReturnType() instanceof TypeArray);
         String result = indent ;
         if (!func.getName().equals(ss.getName()))
-            result += convertType(func.getReturnType()) + " ";
+            result += convertType(func.getReturnType(),true) + " ";
         result += func.getName();
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";
@@ -188,8 +368,7 @@ public class NodesToC extends NodesToJava {
             Type type = param.getType();
             String postFix = "";
             if(type instanceof TypeArray){
-            	postFix = "*";
-            	type = ((TypeArray)type).getBase();
+            	postFix = "&";
             }
             
             if (!first) result += ", ";
@@ -210,19 +389,33 @@ public class NodesToC extends NodesToJava {
     {
         String result = "";
         Type type = stmt.getType(0);
+        result += convertType(type) +  " ";
+        boolean isArray=false;
+        
         String postFix = "";
         if(type instanceof TypeArray){
-        	postFix = "[" + ((TypeArray)type).getLength() +  "]";
-        	type = ((TypeArray)type).getBase();
+        	isArray=true;
+        	List<Expression> dims=((TypeArray)type).getDimensions();
+        	for(int i=0;i<dims.size();i++) {
+        		if(i>0) postFix+=",";
+        		postFix+=(String)dims.get(i).accept(this);
+        	}
+        	postFix = "(" + postFix +  ")";
         }
-        result += convertType(type) +  " ";
+        
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             if (i > 0)
                 result += ", ";
             result += stmt.getName(i)+ postFix ;
-            if (stmt.getInit(i) != null)
-                result += " = " + (String)stmt.getInit(i).accept(this);
+            if (stmt.getInit(i) != null) {
+	            if(isArray) {
+	            	assert stmt.getInit(i) instanceof ExprConstInt;
+	            	assert ((ExprConstInt)stmt.getInit(i)).getVal()==0;
+	            } else { 
+	                result += " = " + (String)stmt.getInit(i).accept(this);
+	            }
+            }
         }
         return result;
     }
@@ -283,8 +476,18 @@ public class NodesToC extends NodesToJava {
             (String)stmt.getRHS().accept(this);
 	}
 
-	@Override
-	public String convertType(Type type)
+	public Object visitStmtReturn(StmtReturn stmt) {
+		String ret=(String) super.visitStmtReturn(stmt);
+		if(curFunctionReturnsArray)
+			ret+=".makePtr()";
+		return ret;
+	}
+
+	public String convertType(Type type) {
+		return convertType(type,false);
+	}
+	
+	public String convertType(Type type, boolean isReturnType)
 	{
 		if(type instanceof TypePrimitive) {
 			switch(((TypePrimitive)type).getType()) {
@@ -297,9 +500,12 @@ public class NodesToC extends NodesToJava {
 	            case TypePrimitive.TYPE_SIGINT: return "int";
 			}
 		}
-		if( type instanceof TypeArray){
-			TypeArray ta = (TypeArray) type;			
-			return convertType(ta.getBase()) + "*"; 
+		if(type instanceof TypeArray){
+			TypeArray ta = (TypeArray) type;
+			List<Expression> idx=ta.getDimensions();
+			int dim=idx.size();
+			requireArray(dim);
+			return new ArrayGen(dim).getArrayTypeName()+(isReturnType?"Ptr":"");
 		}
 		return super.convertType(type);
 	}
