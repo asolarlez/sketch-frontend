@@ -229,7 +229,7 @@ public class AbstractArray {
 			}
 		}
 		Statement body=new StmtBlock(null,stmts);
-		Function ret=Function.newHelper(null,getFullName(),new TypeCompound(arrType),params,body);
+		Function ret=Function.newHelper(null,getFullName(),arrType,params,body);
 		return ret;
 	}
 

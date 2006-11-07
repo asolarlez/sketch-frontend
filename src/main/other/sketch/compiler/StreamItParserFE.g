@@ -117,7 +117,7 @@ program	 returns [Program p]
 { p = null; List vars = new ArrayList();  List streams = new ArrayList();
 	List funcs=new ArrayList(); Function f; FieldDecl fd;
 }
-	:	( (return_types ID LPAREN) => f=function_decl { funcs.add(f); } |
+	:	( (return_type ID LPAREN) => f=function_decl { funcs.add(f); } |
 	   fd=field_decl SEMI { vars.add(fd); } |
 	   INCLUDE st:STRING_LITERAL { handleInclude(st.getText(),funcs,vars); }
 )*
@@ -301,21 +301,20 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		// We explicitly use the context of the first identifier.
 	;
 
-function_decl returns [Function f] { List rt; List l; StmtBlock s; f = null; }
-	:	rt=return_types
+function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; }
+	:	rt=return_type
 	id:ID 
 	l=param_decl_list 
 	(TK_implements impl:ID)? 
 	s=block
 	{
-			f = Function.newHelper(getContext(id), id.getText(), new TypeCompound(rt), l, 
+			f = Function.newHelper(getContext(id), id.getText(), rt, l, 
 				impl==null?null:impl.getText(), s); 
 	}
 	;
 
-return_types returns [List l] { l=new ArrayList(); Type t;}
+return_type returns [Type t] { t=null; }
 	: 	t=data_type
-	{ l=Collections.singletonList(t); }
 	;
 
 handler_decl returns [Function f] { List l; Statement s; f = null;

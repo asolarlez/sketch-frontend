@@ -96,8 +96,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		paramCopyRes=new ParameterCopyResolver();
 	}
 
-	private String getParamName(int x) { 
-		return "_out_"+x; 
+	private String getOutParamName() { 
+		return "_out"; 
 	}
 	
 	private String getNewOutID() {
@@ -125,12 +125,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		for(Iterator itf=spec.getFuncs().iterator();itf.hasNext();) {
 			Function fun=(Function) itf.next();
 			Type retType=fun.getReturnType();
-			if(!(retType instanceof TypeCompound)) continue;
-			TypeCompound rt=(TypeCompound) retType;
-			List types=rt.getTypes();
-			for(int i=0;i<types.size();i++) {
-				fun.getParams().add(new Parameter((Type) types.get(i),getParamName(i),true));
-			}
+			fun.getParams().add(new Parameter(retType,getOutParamName(),true));
 		}
 		return super.visitStreamSpec(spec);
 	}
