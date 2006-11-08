@@ -15,19 +15,12 @@
  */
 
 package streamit.frontend;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.passes.AssignLoopTypes;
-import streamit.frontend.passes.BackendCleanup;
-import streamit.frontend.passes.ExprArrayToArrayRange;
-import streamit.frontend.passes.GenerateCopies;
-import streamit.frontend.passes.VariableDisambiguator;
-import streamit.frontend.stencilSK.EliminateCompoundAssignments;
-import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.FunctionalizeStencils;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.stencilSK.StencilSemanticChecker;
-import streamit.frontend.tosbit.ValueOracle;
+import java.io.*;
+
+import streamit.frontend.nodes.*;
+import streamit.frontend.passes.*;
+import streamit.frontend.stencilSK.*;
+import streamit.frontend.tosbit.*;
 
 /**
  * This class manages all the work involed in compiling a stencil 
@@ -102,6 +95,24 @@ public class ToStencilSK extends ToSBit
     	return prog;
 	}
 
+    protected void outputCCode() {
+        String resultFile = getOutputFileName();
+        String ccode = (String)finalCode.accept(new SNodesToC(varGen,resultFile));
+        if(!params.outputCFiles){
+        	System.out.println(ccode);
+        }else{
+        	try{
+				Writer outWriter = new FileWriter(params.outputCDir+resultFile+".cpp");
+				outWriter.write(ccode);
+				outWriter.flush();
+				outWriter.close();
+            }
+            catch (java.io.IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+    }
+	
 	public void generateCode(){
 		finalCode=doBackendPasses(finalCode);
 		if(!params.outputFortran) {
