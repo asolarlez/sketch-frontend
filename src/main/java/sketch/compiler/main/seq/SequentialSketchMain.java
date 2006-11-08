@@ -104,25 +104,21 @@ class CommandLineParams{
     {
         for (int i = 0; i < args.length; i++)
         {
-            if (args[i].equals("--full"))
+            if (args[i].equals("--full")) {
                 ; // Accept but ignore for compatibil5ity
-            else if (args[i].equals("--help"))
+            } else if (args[i].equals("--help")) {
                 printHelp = true;
-            else if (args[i].equals("--"))
-            {
+            } else if (args[i].equals("--")) {
                 // Add all of the remaining args as input files.
                 for (i++; i < args.length; i++)
                     inputFiles.add(args[i]);
-            }
-            else if (args[i].equals("--output"))
+        	} else if (args[i].equals("--output")) {
                 outputFile = args[++i];
-            else if (args[i].equals("--ccode"))
-            	resultFile = args[++i];
-            else if (args[i].equals("--library"))
+        	} else if (args[i].equals("--library")) {
                 libraryFormat = true;
-            else if (args[i].equals("--sbitpath"))
+        	} else if (args[i].equals("--sbitpath")) {
                 sbitPath = args[++i];
-            else if (args[i].equals("-D")) {
+        	} else if (args[i].equals("-D")) {
                 String word = args[++i];
                 Integer value = new Integer(args[++i]);
                 defines.put(word,value);
@@ -132,42 +128,44 @@ class CommandLineParams{
             } else if (args[i].equals("--inlineamnt")) {
                 Integer value = new Integer(args[++i]);
                 inlineAmt = value.intValue(); 
-            }else if (args[i].equals("--incremental")) {
+            } else if (args[i].equals("--incremental")) {
                 Integer value = new Integer(args[++i]);
                 incremental = true;
                 incermentalAmt = value.intValue();
-            }else if (args[i].equals("--timeout")) {
+            } else if (args[i].equals("--timeout")) {
                 Integer value = new Integer(args[++i]);
                 hasTimeout = true;
                 timeout = value.intValue();
-            }else if (args[i].equals("--seed")) {
+            } else if (args[i].equals("--seed")) {
                 Integer value = new Integer(args[++i]);
                 seed = value.intValue();
                 commandLineOptions.add("-seed");
                 commandLineOptions.add("" + seed);
-            }else if (args[i].equals("--dovectorization")) {
+            } else if (args[i].equals("--fakesolver")) {
+            	fakeSolver=true;
+            } else if (args[i].equals("--dovectorization")) {
             	doVectorization=true;
-            }else if (args[i].equals("--outputfiles")) {
+            } else if (args[i].equals("--outputprogname")) {
+                	resultFile = args[++i];
+            } else if (args[i].equals("--outputfiles")) {
             	outputToFiles=true;
-            }else if (args[i].equals("--outputc")) {
+            } else if (args[i].equals("--outputc")) {
             	outputFortran=false;
-            }else if (args[i].equals("--outputdir")) {
+            } else if (args[i].equals("--outputdir")) {
                 outputCDir = args[++i];
                 if(!outputCDir.endsWith("/"))
                 	outputCDir=outputCDir+"/";
-            }else if (args[i].equals("--outputscript")) {
+            } else if (args[i].equals("--outputscript")) {
             	outputScript=true;
-            }else if (args[i].equals("--outputtest")) {
+            } else if (args[i].equals("--outputtest")) {
             	outputTest=true;
-            }else if (args[i].equals("--fakesolver")) {
-            	fakeSolver=true;
-            }else if( args[i].charAt(0)=='-') {
+            } else if( args[i].charAt(0)=='-') {
             	commandLineOptions.add(args[i]);
                 commandLineOptions.add(args[++i]);
-            }
-            else
+            } else {
                 // Maybe check for unrecognized options.
                 inputFiles.add(args[i]);
+            }
         }
     }
 
