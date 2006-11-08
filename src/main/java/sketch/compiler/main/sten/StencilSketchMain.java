@@ -98,7 +98,7 @@ public class ToStencilSK extends ToSBit
     protected void outputCCode() {
         String resultFile = getOutputFileName();
         String ccode = (String)finalCode.accept(new SNodesToC(varGen,resultFile));
-        if(!params.outputCFiles){
+        if(!params.outputToFiles){
         	System.out.println(ccode);
         }else{
         	try{
@@ -113,12 +113,30 @@ public class ToStencilSK extends ToSBit
         }
     }
 	
+    protected void outputFortranCode() {
+        String resultFile = getOutputFileName();
+        String fcode = (String)finalCode.accept(new SNodesToFortran(resultFile));
+        if(!params.outputToFiles){
+        	System.out.println(fcode);
+        }else{
+        	try{
+				Writer outWriter = new FileWriter(params.outputCDir+resultFile+".f");
+				outWriter.write(fcode);
+				outWriter.flush();
+				outWriter.close();
+            }
+            catch (java.io.IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+    }
+	
 	public void generateCode(){
 		finalCode=doBackendPasses(finalCode);
-		if(!params.outputFortran) {
-			outputCCode();
+		if(params.outputFortran) {
+			outputFortranCode();
 		} else {
-			//TODO
+			outputCCode();
 		}
 	}
 	
