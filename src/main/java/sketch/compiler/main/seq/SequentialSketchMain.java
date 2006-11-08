@@ -93,8 +93,8 @@ class CommandLineParams{
 	Vector<String> commandLineOptions = new Vector<String>();
 	String resultFile = null;	
 	boolean doVectorization=false;
-	boolean outputFortran=false;
-	boolean outputCFiles=false;
+	boolean outputFortran=true;
+	boolean outputToFiles=false;
 	String outputCDir="./";
 	boolean outputScript=false;
 	boolean outputTest=false;
@@ -147,10 +147,10 @@ class CommandLineParams{
                 commandLineOptions.add("" + seed);
             }else if (args[i].equals("--dovectorization")) {
             	doVectorization=true;
-            }else if (args[i].equals("--outputcfiles")) {
-            	outputCFiles=true;
-            }else if (args[i].equals("--outputfortran")) {
-            	outputFortran=true;
+            }else if (args[i].equals("--outputfiles")) {
+            	outputToFiles=true;
+            }else if (args[i].equals("--outputc")) {
+            	outputFortran=false;
             }else if (args[i].equals("--outputdir")) {
                 outputCDir = args[++i];
                 if(!outputCDir.endsWith("/"))
@@ -458,7 +458,7 @@ public class ToSBit
         
         String hcode = (String)finalCode.accept(new NodesToH(resultFile));
         String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
-        if(!params.outputCFiles){
+        if(!params.outputToFiles){
         	System.out.println(hcode);
         	System.out.println(ccode);
         }else{
