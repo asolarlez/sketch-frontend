@@ -523,12 +523,12 @@ public class SNodesToC extends NodesToJava {
 	{
 		if(type instanceof TypePrimitive) {
 			switch(((TypePrimitive)type).getType()) {
-				case TypePrimitive.TYPE_INT8:  return "unsigned char";
-				case TypePrimitive.TYPE_INT16: return "unsigned short int";
-				case TypePrimitive.TYPE_INT32: return "unsigned int";
-				case TypePrimitive.TYPE_INT64: return "unsigned long long";
+				case TypePrimitive.TYPE_INT8:  return "char";
+				case TypePrimitive.TYPE_INT16: return "short int";
+				case TypePrimitive.TYPE_INT32: return "int";
+				case TypePrimitive.TYPE_INT64: return "long long";
 	            case TypePrimitive.TYPE_BOOLEAN:
-				case TypePrimitive.TYPE_BIT:   return "unsigned char";
+				case TypePrimitive.TYPE_BIT:   return "char";
 	            case TypePrimitive.TYPE_SIGINT: return "int";
 			}
 		}
