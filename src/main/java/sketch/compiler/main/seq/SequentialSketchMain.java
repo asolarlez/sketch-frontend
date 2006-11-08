@@ -522,6 +522,7 @@ public class ToSBit
         }
         
         parseProgram();
+        prog=preprocessProgram(prog); // perform prereq transformations
         prog.accept(new SimpleCodePrinter());
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         if (!SemanticChecker.check(prog))
