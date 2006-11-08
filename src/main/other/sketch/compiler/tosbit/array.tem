@@ -1,0 +1,45 @@
+class Array2DPtr {
+	friend class Array2D;
+	private:
+		double** data;
+<dimfields>
+		Array2DPtr(double** d, int d0, int d1);
+};
+
+class Array2D {
+	private:
+		double** data;
+		void clear() {
+			if(data==0) return;
+<delete>
+			data=0;
+		}
+	public:
+<dimfields>
+		Array2D(int d0, int d1):dim0(d0),dim1(d1) {
+<alloc>
+			for(int i0=0;i0<dim0;i0++) for(int i1=0;i1<dim1;i1++) data[i0][i1]=0;
+		}
+		Array2D(Array2DPtr p):dim0(p.dim0),dim1(p.dim1) {
+			data=p.data;
+		}
+		~Array2D() {clear();}
+		double*& operator[] (int i) {return data[i];}
+		Array2D& operator= (Array2D& other) {
+<assert>
+			for(int i0=0;i0<dim0;i0++) for(int i1=0;i1<dim1;i1++) data[i0][i1]=other.data[i0][i1];
+			return *this;
+		}
+		Array2D& operator= (Array2DPtr other) {
+<assert>
+			data=other.data;
+			return *this;
+		}
+		Array2DPtr makePtr() {
+			Array2DPtr ret(data,dim0,dim1);
+			data=0;
+			return ret;
+		}
+};
+
+Array2DPtr::Array2DPtr(double** d, int d0, int d1):dim0(d0),dim1(d1) {data=d;}
