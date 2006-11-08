@@ -41,7 +41,7 @@ public class NodesToH extends NodesToJava {
 	public Object visitFunction(Function func)
 	{
 		String result = indent + "extern ";
-		result += _converter.convertType(func.getReturnType(),true) + " ";
+		result += _converter.convertType(func.getReturnType()) + " ";
 		result += func.getName();
 		String prefix = null;
 		result += _converter.doParams(func.getParams(), prefix) + ";\n";
