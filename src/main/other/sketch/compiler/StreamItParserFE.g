@@ -601,7 +601,6 @@ value returns [Expression x] { x = null; List rlist; }
 
 array_range_list returns [List l] { l=new ArrayList(); Object r;}
 :r=array_range {l.add(r);}
-(COMMA r=array_range {l.add(r);} )*
 ;
 
 array_range returns [Object x] { x=null; Expression start,end,l; }

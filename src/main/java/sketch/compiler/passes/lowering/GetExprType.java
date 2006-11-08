@@ -58,7 +58,7 @@ public class GetExprType extends FENullVisitor
         }
     }    
     public Object visitExprArrayRange(ExprArrayRange exp) {
-    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented.";
+    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getContext();
     	Type base = (Type)exp.getBase().accept(this);
     	boolean isNonDet=false;				
 		List l=exp.getMembers();
