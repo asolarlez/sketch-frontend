@@ -47,12 +47,14 @@ public class SNodesToFortran implements FEVisitor {
 	/** line prefix (6 spaces) */
 	private String lp="      ";
 	private String cline="c     ";
+	private String indentStr="";
 	private int lineCounter;
 	
 	private Function curFunc;
 	private String outvar;
 	private boolean returnsArray;
 	private boolean isProcedure;
+	private int indent=0;
 	
 	public SNodesToFortran(String filename) {
 		this.filename=filename;
@@ -68,12 +70,21 @@ public class SNodesToFortran implements FEVisitor {
 		return ret+lp.substring(ret.length());
 	}
 	
+	private String getIndent() {
+		if(indent*2!=indentStr.length()) {
+			indentStr="";
+			for(int i=0;i<indent;i++)
+				indentStr+="  ";
+		}
+		return indentStr;
+	}
+	
 	protected String line(String s) {
-		return lp+s+"\n";
+		return lp+getIndent()+s+"\n";
 	}
 
 	protected String line(int lbl,String s) {
-		return labeledLP(lbl)+s+"\n";
+		return labeledLP(lbl)+getIndent()+s+"\n";
 	}
 	
 	protected String newline() {
@@ -231,7 +242,7 @@ public class SNodesToFortran implements FEVisitor {
     	
     	Type type = stmt.getType(0);
         String name=stmt.getName(0);
-        assert(stmt.getInit(0)==null);
+        assert (stmt.getInit(0)==null):"declaration initializers are not allowed";
         
         //don't declare the output variable again (it is an argument to the function)
         if(name.equals(outvar)) return "";
@@ -256,23 +267,25 @@ public class SNodesToFortran implements FEVisitor {
 	{
 		String lhs=(String)stmt.getLHS().accept(this);
 		String rhs=(String)stmt.getRHS().accept(this);
+		String op;
         switch(stmt.getOp())
         {
 	        case 0: 
 	        	return line(lhs+" = "+rhs);
-	        case ExprBinary.BINOP_ADD:
-	        case ExprBinary.BINOP_SUB:
-	        case ExprBinary.BINOP_MUL:
-	        case ExprBinary.BINOP_DIV:
+	        case ExprBinary.BINOP_ADD: op="+"; break;
+	        case ExprBinary.BINOP_SUB: op="-"; break;
+	        case ExprBinary.BINOP_MUL: op="*"; break;
+	        case ExprBinary.BINOP_DIV: op="/"; break;
+	        
 	        case ExprBinary.BINOP_BOR:
 	        case ExprBinary.BINOP_BAND:
 	        case ExprBinary.BINOP_BXOR:
 	        	assert false;
-	        	break;
+	        	return null;
 	        default: 
 	        	throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
         }
-        return null;
+        return line(lhs+" = "+lhs+" "+op+" "+rhs);
 	}
 
 	public Object visitStmtReturn(StmtReturn stmt) {
@@ -414,15 +427,28 @@ public class SNodesToFortran implements FEVisitor {
 		String ret="do "+indexVar+" = "+startstr+", "+finishstr;
 		if(!"1".equals(stridestr)) ret+=", "+stridestr;
 		ret=line(ret);
+		indent++;
 		ret+=stmt.getBody().accept(this);
+		indent--;
 		ret+=line("enddo");
 	    return ret;
     }
 
 	public Object visitStmtIfThen(StmtIfThen stmt) {
-	    //TODO
-		assert false: "if statements not supported yet";
-	    return null;
+		String ret="";
+		String condstr=(String) stmt.getCond().accept(this);
+		ret+=line("if ("+condstr+") then");
+		indent++;
+		ret+=stmt.getCons().accept(this);
+		indent--;
+		if(stmt.getAlt()!=null) {
+			ret+=line("else");
+			indent++;
+			ret+=stmt.getAlt().accept(this);
+			indent--;
+		}
+		ret+=line("endif");
+	    return ret;
     }
 
 	public Object visitExprUnary(ExprUnary exp)
