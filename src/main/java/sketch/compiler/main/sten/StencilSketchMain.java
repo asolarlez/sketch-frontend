@@ -115,6 +115,7 @@ public class ToStencilSK extends ToSBit
 	
     protected void outputFortranCode() {
         String resultFile = getOutputFileName();
+		finalCode=(Program) finalCode.accept(new VariableDeclarationMover());
         String fcode = (String)finalCode.accept(new SNodesToFortran(resultFile));
         if(!params.outputToFiles){
         	System.out.println(fcode);
