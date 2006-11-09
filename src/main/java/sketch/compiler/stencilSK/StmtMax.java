@@ -12,6 +12,7 @@ import streamit.frontend.nodes.*;
  * int[dim] lhsvar = max{ primPred(lhsvar) && secPred(lhsvar) };
  */
 public class StmtMax extends Statement{
+	public static String TMP_VAR = "_tmp";
 	int dim;
 	String lhsvar;	
 	String indvar;
@@ -111,27 +112,69 @@ public class StmtMax extends Statement{
 		statements.add( ass  );		
 		return new StmtBlock(null, statements);
 	}
+	
+	// v1 < v2; 
+    public Expression lexCompare(ExprVar v1, ExprVar v2, int [] subs, int jj, int N){
+    	assert jj<N;    	
+		ExprArrayRange aa1 = new ExprArrayRange(null, v1, new ExprConstInt(subs[jj]));
+		ExprArrayRange aa2 = new ExprArrayRange(null, v2, new ExprConstInt(subs[jj]));
+		Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, aa1, aa2);
+		//tmp = idx[2*jj+1] < par_jj
+		Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, aa1,aa2);
+		Expression out;
+		if( jj+1 < N){
+			Expression andExp = new ExprBinary(null, ExprBinary.BINOP_AND, eq, lexCompare(v1, v2, subs, jj+1, N));
+			out = new ExprBinary(null, ExprBinary.BINOP_OR, tmp, andExp);
+		// out = tmp || (eq &&  buildSecondaryConstr(iterIt))
+		}else{
+			out = tmp;
+		// out = tmp;
+		}
+		return out;
+    }
+
+	
+	
+	
 	public boolean resolve(){
 		ResolveMax rmax = new ResolveMax(this);
 		rmax.run();
 		for(int i=0; i<dim; ++i){
-			if( rmax.expArr[i] == null && ( rmax.ltArr[i] == null || rmax.tainted[i]!= null ) )
+			if( rmax.expArr[i] == null && ( rmax.meArr[i] == null || rmax.tainted[i]!= null ) )
 				return false;
 		}
 		List<Statement> statements = new ArrayList<Statement>();		
 		ExprVar base = new ExprVar(null, this.lhsvar);
 		
+		
+		// int lhsvar[dim];
 		statements.add(  new StmtVarDecl(null, new TypeArray( TypePrimitive.inttype, new ExprConstInt(dim) ), this.lhsvar, null) );
+		// int indvar; 
 		statements.add(  new StmtVarDecl(null, TypePrimitive.bittype, this.indvar, null) );
-		for(int i=0; i<dim; ++i){
-			ExprArrayRange ea = new ExprArrayRange(base, new ExprConstInt(i));
-			if( rmax.expArr[i] == null){
-				statements.add(ltStmtAssign(rmax.ltArr[i], ea, i));
-			}else{				
+		//First, we set all the entries that are known.		
+		
+		int size = 1;
+		int[] multis = new int[dim]; 
+		int multisSize = 0;
+		for(int i=0; i<dim; ++i){			
+			if( rmax.expArr[i] != null){
+				ExprArrayRange ea = new ExprArrayRange(base, new ExprConstInt(i));	
+				// lhsvar[i] =  rmax.expArr[i];
 				StmtAssign ass = new StmtAssign(null, ea, rmax.expArr[i]);
 				statements.add(ass);
+			}else{
+				ExprArrayRange ea = new ExprArrayRange(base, new ExprConstInt(i));	
+				// lhsvar[i] =  0;
+				StmtAssign ass = new StmtAssign(null, ea, new ExprConstInt(0));
+				statements.add(ass);
+				
+				assert rmax.meArr[i].size() > 1;
+				size = size * rmax.meArr[i].size();	
+				multis[multisSize] = i;
+				++multisSize;
 			}
 		}
+		//Finally, we check that lhsvar satisfies the conditions.
 		ExprVar indicator  = new ExprVar(null, this.indvar);
 		Expression cond = null;
 		for(Iterator<Expression> eit = primC.iterator(); eit.hasNext(); ){
@@ -146,10 +189,10 @@ public class StmtMax extends Statement{
 			else
 				cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
 		}
-		
+		List<Statement> slist = new ArrayList<Statement>();
 		{
 			StmtAssign ass = new StmtAssign(null, indicator,cond);
-			statements.add(ass);
+			slist.add(ass);
 		}
 		cond = null;
 		for(Iterator<Expression> eit = terC.iterator(); eit.hasNext(); ){
@@ -158,17 +201,69 @@ public class StmtMax extends Statement{
 			else
 				cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
 		}
-		for(Iterator<Expression> eit = rmax.moreConstraints.iterator(); eit.hasNext(); ){
-			if( cond == null)
-				cond = eit.next();
-			else
-				cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
-		}
 		if( cond != null){
 			StmtAssign ass = new StmtAssign(null, indicator,cond);			
 			StmtIfThen sit = new StmtIfThen(null, indicator, ass, null);
-			statements.add(sit);
-		}		
+			slist.add(sit);
+		}				
+		Statement check = new StmtBlock(null, slist);		
+		if(size > 1){
+						 			
+			ExprVar tmpvar  = new ExprVar(null, TMP_VAR);
+			Statement check2 = (Statement) check.accept( new VarReplacer(this.lhsvar, tmpvar));
+			
+			
+			List<Statement> aslist = new ArrayList<Statement>();
+			for(int j=0; j<multisSize; ++j){
+				ExprArrayRange ea = new ExprArrayRange(tmpvar, new ExprConstInt(multis[j]));
+				ExprArrayRange ba = new ExprArrayRange(base, new ExprConstInt(multis[j]));
+				StmtAssign ass = new StmtAssign(null, ba, ea);
+				aslist.add(ass);				
+			}
+			// lhsvar[multis] = tmp[multis];
+			Statement idxUpdate =  new StmtBlock(null, aslist);
+			
+			// lhsvar[multis] < tmp[multis]
+			Expression lcomp = lexCompare(base, tmpvar, multis, 0, multisSize);			
+			StmtIfThen lessthanif = new StmtIfThen(null, lcomp, idxUpdate , null);
+			StmtIfThen indvif = new StmtIfThen(null, indicator, lessthanif  , null); 
+			// indvif := 
+			//     if( indvar ){ if( lhsvar[multis] < tmp[multis] ){ lhsvar[multis] = tmp[multis] } }						
+			int[] current= new int[multisSize];
+			for(int i=0; i<multisSize; ++i) current[i] = 0;
+			for(int i=0; i<size; ++i){
+				List<Statement> blist = new ArrayList<Statement>();
+				// int[dim] tmp = lhsvar;
+				blist.add(  new StmtVarDecl(null, new TypeArray( TypePrimitive.inttype, new ExprConstInt(dim) ), TMP_VAR, base) );
+				for(int j=0; j<multisSize; ++j){
+					// tmp[multis[j]] = rmax.meArr[multis[j]].get( current[j] ); 
+					ExprArrayRange ea = new ExprArrayRange(tmpvar, new ExprConstInt(multis[j]));	
+					StmtAssign ass = new StmtAssign(null, ea, rmax.meArr[multis[j]].get( current[j] ));
+					blist.add(ass);
+				}
+				// check2; i.e. assign to indvar;
+				blist.add(check2);				
+				// if( indvar ){ if (tmp>idx) idx = tmp }
+				blist.add(indvif);
+				
+				int xx = 0;	boolean more = true;
+				while(more && xx < multisSize){
+					++current[xx];
+					if( current[xx] >= rmax.meArr[multis[xx]].size()){
+						current[xx] = 0;
+						xx++;
+					}else{
+						more = false;
+					}
+				}		
+				assert !(xx == multisSize) || (i==size-1);
+				Statement multiUpdate =  new StmtBlock(null, blist);
+				statements.add(multiUpdate);
+			}	
+		}
+
+		statements.add(check);
+
 		maxAssign = new StmtBlock(null, statements);
 		return true;
 	}

@@ -170,6 +170,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		//add the functions generated from ArrFunction objects to the program 
 		for(Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext(); ){
 			ArrFunction af = it.next();
+			System.out.println(af.toString());
 			af.processMax();
 			functions.add(af.toAST());
 		}
@@ -185,7 +186,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			functions.add(aa.toAST());
 		}
 		
-//		prog.accept(new SimpleCodePrinter());
+		// prog.accept(new SimpleCodePrinter());
 		
 		//convert all functions to procedures, translating calls and returns appropriately 
 		prog = (Program) prog.accept(new FunctionParamExtension(true));
@@ -570,7 +571,7 @@ class processStencil extends FEReplacer {
 	    void populateArrInfo(arrInfo ainf, String var, Type type, int dim){	    	
 	    	assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
    	 		ainf.fun = new ArrFunction(var, type, suffix, ptree);
-   	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD("t"+i, null) );
+   	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD(ArrFunction.IPARAM+i, null) );
    	 		
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
    	 			Entry<String, Type> par = pIt.next();
@@ -641,7 +642,6 @@ class processStencil extends FEReplacer {
 	    }
 	    
 	    public Expression buildSecondaryConstr(Iterator<StmtVarDecl> iterIt, String newVar, int jj){
-	    	//TODO add constraints for position parameters as well.
 	    	assert iterIt.hasNext();
 	    	StmtVarDecl iterPar = iterIt.next();
     		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(jj));

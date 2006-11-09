@@ -22,8 +22,7 @@ public class ResolveMax {
 	int sz;
 	String name;
 	Expression[] expArr;
-	List<Expression>[] ltArr;
-	List<Expression> moreConstraints = new ArrayList<Expression>();
+	List<Expression>[] meArr;	
 	Integer[] tainted;
 	
 	public static Integer tag = new Integer(0);
@@ -32,26 +31,18 @@ public class ResolveMax {
 		sz = smax.dim;
 		name = smax.lhsvar;
 		expArr = new Expression[sz];
-		ltArr = new List[sz];
+		meArr = new List[sz];
 		tainted = new Integer[sz];
 	}
 	
 	public void run(){
+		CollectConstraints cc = new CollectConstraints();
 		{
-			List<Expression> exprList = smax.primC ;		
+			List<Expression> exprList = smax.primC ;				
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
 				exp.accept(new tagNodes());
-				
-				if( exp.getTag() == null ){
-					//moreConstraints.add(exp);
-				}else{
-					IsolateVars isol = new IsolateVars();
-					exp.accept(isol);
-					assert isol.idx >= 0;
-					expArr[isol.idx] = isol.currentRHS;		
-					// moreConstraints.addAll(isol.moreConstraints); // I am pretty sure I don't need this, but just in case.	
-				}			
+				exp.accept(cc);
 			}
 		}
 		
@@ -59,21 +50,8 @@ public class ResolveMax {
 			List<Expression> exprList = smax.secC ;			
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
-				exp.accept(new tagNodes());				
-				if( exp.getTag() == null ){
-					//moreConstraints.add(exp);
-				}else{
-					IsolateVars isol = new IsolateVars();
-					try{
-						exp.accept(isol);
-					}catch(Exception e){						
-						exp.accept(new Taint());
-					}
-					if( isol.idx >= 0 && expArr[isol.idx] == null){
-						if( ltArr[isol.idx] == null) ltArr[isol.idx] = new ArrayList<Expression>();
-						ltArr[isol.idx].add(isol.currentRHS);
-					}
-				}			
+				exp.accept(new tagNodes());
+				exp.accept(cc);	
 			}
 		}
 		
@@ -82,25 +60,16 @@ public class ResolveMax {
 			List<Expression> exprList = smax.terC ;			
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
-				exp.accept(new tagNodes());				
-				if( exp.getTag() == null ){
-					//moreConstraints.add(exp);
-				}else{
-					IsolateVars isol = new IsolateVars();
-					try{
-						exp.accept(isol);
-					}catch(Exception e){
-						exp.accept(new Taint());
-					}
-					if( isol.idx >= 0 && expArr[isol.idx] == null){
-						if( ltArr[isol.idx] == null) ltArr[isol.idx] = new ArrayList<Expression>();
-						ltArr[isol.idx].add(isol.currentRHS);
-					}
-				}			
+				exp.accept(new tagNodes());
+				exp.accept(cc);			
 			}
 		}
 		
-		
+		for(int i=0; i<sz; ++i){
+			if( expArr[i] == null && meArr[i].size() == 1){
+				expArr[i] =  meArr[i].get(0);
+			}
+		}
 		
 	}
 	
@@ -129,21 +98,99 @@ public class ResolveMax {
 	}
 	
 	
+	
+	class CollectConstraints extends FENullVisitor{
+		
+		boolean isRoot=true;
+		
+		public Object visitExprBinary(ExprBinary exp)
+	    {			
+			
+	        switch(exp.getOp()){
+	        case ExprBinary.BINOP_EQ: {
+	        	if( exp.getTag() != null ){
+		        	IsolateVars isol = new IsolateVars();
+					exp.accept(isol);
+					if( isRoot ){
+						assert isol.idx >= 0;
+						expArr[isol.idx] = isol.currentRHS;
+						
+					}else{
+						assert isol.idx >= 0;
+						if( meArr[isol.idx] == null) meArr[isol.idx] = new ArrayList<Expression>();
+						meArr[isol.idx].add(isol.currentRHS);
+						
+					}
+	        	}
+	        	return null;
+	        }
+	        
+	        case ExprBinary.BINOP_AND:{
+	        	exp.getRight().accept(this);
+	        	exp.getLeft().accept(this);
+	        	return null;
+	        }
+	        
+	        case ExprBinary.BINOP_OR:{
+	        	boolean tmp = isRoot;
+	        	isRoot = false;
+	        	exp.getRight().accept(this);
+	        	exp.getLeft().accept(this);
+	        	isRoot = tmp;
+	        	return null;
+	        }
+	        
+	        case ExprBinary.BINOP_LE: 
+	        case ExprBinary.BINOP_LT: 	        
+	        case ExprBinary.BINOP_GE: 
+	        case ExprBinary.BINOP_GT: {
+	        	if( exp.getTag() != null ){
+		        	IsolateVars isol = new IsolateVars();
+					exp.accept(isol);
+					if( isol.idx >= 0 ){
+						if( meArr[isol.idx] == null) meArr[isol.idx] = new ArrayList<Expression>();
+						meArr[isol.idx].add(isol.currentRHS);
+					}
+	        	}
+	        	return null;
+	        }
+	        
+	        
+	        case ExprBinary.BINOP_ADD: 
+	        case ExprBinary.BINOP_SUB:
+	        case ExprBinary.BINOP_MUL:
+	        case ExprBinary.BINOP_DIV: 
+	        case ExprBinary.BINOP_MOD: 
+	        	default: throw new RuntimeException("BAD STUFF");	
+	        }
+	    }
+	}
+	
+	
 
 	class IsolateVars extends FENullVisitor{
 		
-		Expression currentRHS=null;
-		List<Expression> moreConstraints = new ArrayList<Expression>();
+		class multivar{
+			private String name;
+			private int lrange;
+			private int urange;
+			public multivar(String name, int lrange, int urange){
+				this.name = name;
+				this.lrange = lrange;
+				this.urange = urange;
+			}			
+		}		
+		Expression currentRHS=null;		
 		int idx = -1;
+		List<multivar> mlist = null;
+		
+		
 		
 		public Object handleSpecialCase(ExprBinary exp){
 			throw new RuntimeException("NYI");
 			
 		}
 		
-		public void addConstraintEquals(Expression e1, Expression e2){
-			moreConstraints.add(new ExprBinary(null, ExprBinary.BINOP_EQ, e1, e2));
-		}
 		
 		public void checkButIgnore(Expression exp){			
 			int tmpidx = idx;
@@ -223,56 +270,8 @@ public class ResolveMax {
 		}
 		
 		
-		public Object visitExprBinaryAND(ExprBinary exp){
-		    Expression left = exp.getLeft();
-	        Expression right = exp.getRight();
-	        assert exp.getTag() != null;
-	        if( left.getTag()== tag && right.getTag() == tag){
-	        	//This produces multiple pieces of information, so it's not handled at this point.
-	        	throw new RuntimeException("NYI");
-	        }
-	        
-	        if( left.getTag()== null && right.getTag() == null){
-	        	return null;        	
-	        }
-	        
-	        if( left.getTag() == null){
-	        	Expression tmp = left;
-	        	left = right;
-	        	right = tmp;	        	
-	        }
-	        assert left.getTag() != null && right.getTag() == null;
-	        left.accept(this);
-	        return null;			
-		}
 		
 		
-		public Object visitExprBinaryOR(ExprBinary exp){
-		    Expression left = exp.getLeft();
-	        Expression right = exp.getRight();
-	        assert exp.getTag() != null;
-	        if( left.getTag()== tag && right.getTag() == tag){
-	        	//This is very problematic; probably won't be handled ever.
-	        	throw new RuntimeException("NYI");
-	        }
-	        
-	        if( left.getTag()== null && right.getTag() == null){
-	        	return null;
-	        }
-	        
-	        if( left.getTag() == null){
-	        	Expression tmp = left;
-	        	left = right;
-	        	right = tmp;	        	
-	        }
-	        assert left.getTag() != null && right.getTag() == null;
-	        left.accept(this);
-	        //At this point, currentRHS has the new constraint. However, this constraint should be
-	        //predicated on the rhs, because if the rhs is true, then the constraint doesn't really count.
-	        //TODO need to figure out what to put in that null.
-	        this.currentRHS = new ExprTernary(null, ExprTernary.TEROP_COND, new ExprUnary(null, ExprUnary.UNOP_NOT, right), left, null);
-	        return null;			
-		}
 		
 		
 		
@@ -367,8 +366,7 @@ public class ResolveMax {
 	        	left = right;
 	        	right = tmp;	        	
 	        }
-	        assert left.getTag() != null && right.getTag() == null;
-	        addConstraintEquals( new ExprBinary( null,ExprBinary.BINOP_MOD, currentRHS, right), new ExprConstInt(0) );
+	        assert left.getTag() != null && right.getTag() == null;	        
 	        currentRHS = new ExprBinary(null, ExprBinary.BINOP_DIV, currentRHS, right);   
 	        left.accept(this);
 	        return null;			
@@ -404,9 +402,7 @@ public class ResolveMax {
 	        case ExprBinary.BINOP_GT: return visitExprBinaryGT(exp);
 	        
 	        
-	        case ExprBinary.BINOP_AND: return visitExprBinaryAND(exp);
-	        
-	        
+	        case ExprBinary.BINOP_AND: 
 	        case ExprBinary.BINOP_DIV: 
 	        case ExprBinary.BINOP_MOD: 
 	        default: throw new RuntimeException("NYI");	
@@ -414,18 +410,7 @@ public class ResolveMax {
 	        
 	        
 	        
-	    }			
-
-		public Object visitExprArray(ExprArray ea){
-			assert (  ea.getBase() instanceof ExprVar ); 
-			ExprVar ev = (ExprVar)ea.getBase();
-			assert ev.getName().equals(name);
-			Integer ival = ea.getOffset().getIValue();
-			assert ival != null;
-			this.idx = ival;
-			return null;	
-		}
-		
+	    }
 		
 		public Object visitExprArrayRange(ExprArrayRange ea){
 			//assert (  ea.getBase() instanceof ExprVar ); 

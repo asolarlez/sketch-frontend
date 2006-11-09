@@ -13,6 +13,7 @@ import streamit.frontend.nodes.*;
 
 //TODO add position parameters.
 public class ArrFunction{
+	public static final String IPARAM = "__t";
 	public static final String MAX_VAR = "max_idx";
 	public static final String IDX_VAR = "idx_";
 	public static final String GUARD_VAR = "gv_";
