@@ -231,6 +231,7 @@ public class StmtMax extends Statement{
 			//     if( indvar ){ if( lhsvar[multis] < tmp[multis] ){ lhsvar[multis] = tmp[multis] } }						
 			int[] current= new int[multisSize];
 			for(int i=0; i<multisSize; ++i) current[i] = 0;
+			Expression indTot = null;
 			for(int i=0; i<size; ++i){
 				List<Statement> blist = new ArrayList<Statement>();
 				// int[dim] tmp = lhsvar;
@@ -241,10 +242,13 @@ public class StmtMax extends Statement{
 					StmtAssign ass = new StmtAssign(null, ea, rmax.meArr[multis[j]].get( current[j] ));
 					blist.add(ass);
 				}
+				Expression indI = new ExprVar(null, this.indvar+"_"+i) ;
+				//This declaration goes outside the block.
+				statements.add(  new StmtVarDecl(null, TypePrimitive.bittype, this.indvar+"_"+i, null) );
 				// check2; i.e. assign to indvar;
-				blist.add(check2);				
+				blist.add((Statement)check2.accept(new VarReplacer(this.indvar, indI)));				
 				// if( indvar ){ if (tmp>idx) idx = tmp }
-				blist.add(indvif);
+				blist.add((Statement)indvif.accept(new VarReplacer(this.indvar, indI )));
 				
 				int xx = 0;	boolean more = true;
 				while(more && xx < multisSize){
@@ -259,10 +263,16 @@ public class StmtMax extends Statement{
 				assert !(xx == multisSize) || (i==size-1);
 				Statement multiUpdate =  new StmtBlock(null, blist);
 				statements.add(multiUpdate);
+				if(indTot == null){
+					indTot = indI;
+				}else{
+					indTot = new ExprBinary(null, ExprBinary.BINOP_OR, indI, indTot );
+				}
 			}	
+			statements.add(new StmtAssign(null, indicator,indTot)	);
+		}else{
+			statements.add(check);
 		}
-
-		statements.add(check);
 
 		maxAssign = new StmtBlock(null, statements);
 		return true;
