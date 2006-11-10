@@ -132,6 +132,14 @@ public class ParamTree{
 				return tmp.lh;
 			}
 			
+			public treeNode tnNext(){	
+				assert !withPos ;
+				treeNode tmp = tn.child(path[step]);		
+				tn = tmp;
+				++step;
+				return tmp;
+			}
+			
 			public boolean hasNext(){
 				if(withPos){
 					return step != path.length || wpState;
