@@ -1,8 +1,19 @@
 package streamit.frontend.stencilSK;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
 
 
 /**
@@ -42,6 +53,7 @@ public class ArrFunction{
 	 */
 	List<StmtVarDecl> othParams;
 	
+	ParamTree.treeNode declarationSite;
 	
 	List<StmtVarDecl> inputParams;
 	List<StmtVarDecl> outIdxParams;
@@ -68,7 +80,7 @@ public class ArrFunction{
 		return idxAss.size();
 	}
 	
-	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt){
+	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt, ParamTree.treeNode declarationSite){
 		this.arrName = arrName;
 		idxParams = new ArrayList<StmtVarDecl>();
 		iterParams = pt;		
@@ -78,6 +90,7 @@ public class ArrFunction{
 		retStmts = new ArrayList<Statement>();	
 		this.suffix = suffix;
 		this.arrType = arrType;
+		this.declarationSite = declarationSite;
 	}
 	
 	public String getFullName(){
