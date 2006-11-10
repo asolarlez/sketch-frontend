@@ -51,6 +51,7 @@ public class SNodesToFortran implements FEVisitor {
 	private int lineCounter;
 	
 	private Function curFunc;
+	private Map<String,Type> varTypes;
 	private String outvar;
 	private boolean returnsArray;
 	private boolean isProcedure;
@@ -59,6 +60,7 @@ public class SNodesToFortran implements FEVisitor {
 	public SNodesToFortran(String filename) {
 		this.filename=filename;
 		lineCounter=1;
+		varTypes=new HashMap<String,Type>();
 	}
 	
 	protected int getNewLabel() {
@@ -234,6 +236,7 @@ public class SNodesToFortran implements FEVisitor {
     	Type type = stmt.getType(0);
         String name=stmt.getName(0);
         assert (stmt.getInit(0)==null):"declaration initializers are not allowed "+stmt+" "+stmt.getContext();
+        varTypes.put(name, type);
         
         //don't declare the output variable again (it is an argument to the function)
         if(name.equals(outvar)) return "";
@@ -254,8 +257,54 @@ public class SNodesToFortran implements FEVisitor {
 		return null;
     }
 
+    private ExprVar genLoopVar(int idx) {
+    	return new ExprVar(null,"i_"+idx);
+    }
+    
+    private String generateZeroCode(String name,TypeArray type) {
+    	String ret="";
+    	List<Expression> dims=type.getDimensions();
+    	Expression arr=new ExprVar(null,name);
+    	for(int i=0;i<dims.size();i++) {
+    		arr=new ExprArrayRange(arr,genLoopVar(i));
+    	}
+    	Statement body=new StmtAssign(null,arr,new ExprConstInt(0));
+    	for(int i=dims.size()-1;i>=0;i--) {
+    		ExprVar loopVar=genLoopVar(i);
+    		body=new StmtFor(null,
+    			new StmtVarDecl(null, TypePrimitive.inttype, loopVar.getName(), new ExprConstInt(0)),
+    			new ExprBinary(null, ExprBinary.BINOP_LT, loopVar, dims.get(i)),
+    			new StmtExpr(new ExprUnary(null, ExprUnary.UNOP_POSTINC, loopVar)),
+    			body
+    		);
+    	}
+    	return (String) body.accept(this);
+    }
+    
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
+		while(stmt.getLHS() instanceof ExprVar) {
+			ExprVar var=(ExprVar) stmt.getLHS();
+			Type varType=varTypes.get(var.getName());
+			if(varType instanceof TypeArray) {
+				if(stmt.getRHS() instanceof ExprConstInt) {
+					ExprConstInt zero=(ExprConstInt) stmt.getRHS();
+					assert zero.getVal()==0: "Can't assign arbitrary stuff to an array";
+					return generateZeroCode(var.getName(),(TypeArray) varType);
+				} else if(stmt.getRHS() instanceof ExprVar) {
+					ExprVar rvar=(ExprVar) stmt.getRHS();
+					Type rvarType=varTypes.get(rvar.getName());
+					assert rvarType instanceof TypeArray: "Can't assign arbitrary stuff to an array";
+					//TODO: implement array copy
+					//for now just use the default handler which outputs a simple "a=b"
+					break;
+				} else {
+					assert false: "Can't assign arbitrary stuff to an array";
+				}
+				return null;
+			}
+			break;
+		}
 		String lhs=(String)stmt.getLHS().accept(this);
 		String rhs=(String)stmt.getRHS().accept(this);
 		String op;
