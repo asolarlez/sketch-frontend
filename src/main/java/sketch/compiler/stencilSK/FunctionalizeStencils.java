@@ -1,11 +1,46 @@
 package streamit.frontend.stencilSK;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArrayRange;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.stencilSK.ParamTree.treeNode.PathIterator;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
 
 
@@ -570,7 +605,7 @@ class processStencil extends FEReplacer {
 	    
 	    void populateArrInfo(arrInfo ainf, String var, Type type, int dim){	    	
 	    	assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
-   	 		ainf.fun = new ArrFunction(var, type, suffix, ptree);
+   	 		ainf.fun = new ArrFunction(var, type, suffix, ptree, currentTN);
    	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD(ArrFunction.IPARAM+i, null) );
    	 		
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
@@ -684,6 +719,23 @@ class processStencil extends FEReplacer {
 	    		cindex = (Expression)cindex.accept(new ArrReplacer(idxi));
 	    		smax.primC.add(cindex);
 	    	}
+	    	//Put additional primary constraints for the loop variables for loops outside the declaration site.
+	    	
+	    	if( fun.declarationSite != this.ptree.getRoot()  ){
+	    		boolean found = false;
+	    		int jj=0;
+		    	for(PathIterator iterIt = currentTN.limitedPathIter(); iterIt.hasNext(); jj++){
+		    		ParamTree.treeNode iterPar = iterIt.tnNext();
+		    		ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
+		    		Expression cindex = new ExprBinary(null, ExprBinary.BINOP_EQ, ear, new ExprVar(null, iterPar.vdecl.getName(0)));		    		
+		    		smax.primC.add(cindex);
+		    		if( iterPar == fun.declarationSite ){ found = true; break;}
+		    	}
+		    	assert found;
+	    	}
+	    	
+	    	
+	    	
 	    	{		    	
 		    	{
 		    		int stage0 = this.ptree.getRoot().getStage(); 		    			
