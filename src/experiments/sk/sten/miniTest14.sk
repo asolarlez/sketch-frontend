@@ -1,0 +1,24 @@
+int N;
+bit[N][N] sten(bit[N][N]  in, int a){
+   bit[N][N] out=0;
+   for(int i=a; i<N; ++i){
+     for(int j=a; j<N; ++j){
+      out[i][j] = in[i][j];
+     }
+   }
+   return out; 
+}
+
+
+bit[N][N] stenSK(bit[N][N]  in, int a) implements sten{
+   bit[N][N] out=0;
+   bit[N+1][N+1] t;
+   for(int i=a; i<N; ++i){
+	 t[i][a] = in[i][a];
+     for(int j=a; j<N; ++j){
+      out[i][j] = t[i][j];
+      t[i][j+??] = in[i][j+??];
+     }
+   }
+   return out; 
+}
