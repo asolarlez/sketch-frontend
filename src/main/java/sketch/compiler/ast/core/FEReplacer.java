@@ -433,6 +433,7 @@ public class FEReplacer implements FEVisitor
     public Object visitStmtExpr(StmtExpr stmt)
     {
         Expression newExpr = doExpression(stmt.getExpression());
+        if( newExpr == null) return null;
         if (newExpr == stmt.getExpression()) return stmt;
         return new StmtExpr(stmt.getContext(), newExpr);
     }

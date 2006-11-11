@@ -67,7 +67,20 @@ public class ExprArrayRange extends Expression
 
 	private Expression base;
 	private List members;
-	
+	 private boolean unchecked=false;
+	/**
+	 * @param unchecked The unchecked to set.
+	 */
+	public void setUnchecked(boolean unchecked) {
+		this.unchecked = unchecked;
+	}
+
+	/**
+	 * @return Returns the unchecked.
+	 */
+	public boolean isUnchecked() {
+		return unchecked;
+	}
 	public ExprArrayRange(Expression base, Expression offset)
 	{
 		this(base, Collections.singletonList(new RangeLen(offset)));

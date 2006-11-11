@@ -15,12 +15,27 @@
  */
 
 package streamit.frontend;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.Writer;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.passes.*;
-import streamit.frontend.stencilSK.*;
-import streamit.frontend.tosbit.*;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.passes.AssignLoopTypes;
+import streamit.frontend.passes.BackendCleanup;
+import streamit.frontend.passes.ExprArrayToArrayRange;
+import streamit.frontend.passes.GenerateCopies;
+import streamit.frontend.passes.VariableDeclarationMover;
+import streamit.frontend.passes.VariableDisambiguator;
+import streamit.frontend.stencilSK.EliminateCompoundAssignments;
+import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.FunctionalizeStencils;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
+import streamit.frontend.stencilSK.StaticHoleTracker;
+import streamit.frontend.stencilSK.StencilPreprocessor;
+import streamit.frontend.stencilSK.StencilSemanticChecker;
+import streamit.frontend.tosbit.SNodesToC;
+import streamit.frontend.tosbit.SNodesToFortran;
+import streamit.frontend.tosbit.ValueOracle;
 
 /**
  * This class manages all the work involed in compiling a stencil 
@@ -54,6 +69,10 @@ public class ToStencilSK extends ToSBit
         originalProg = prog;  // save
         prog=preprocessProgram(prog); // perform prereq transformations
 
+        prog = (Program)prog.accept(new StencilPreprocessor(params.unrollAmt, params.inlineAmt));
+        
+        prog.accept(new SimpleCodePrinter());
+        
         //run semantic checker
         if (!StencilSemanticChecker.check(prog))
             throw new IllegalStateException("Semantic check failed");
@@ -75,7 +94,7 @@ public class ToStencilSK extends ToSBit
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
         prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
         //fs.printFuns();
-//        prog.accept(new SimpleCodePrinter());
+        prog.accept(new SimpleCodePrinter());
         
         oracle = new ValueOracle( new StaticHoleTracker(varGen) );
         partialEvalAndSolve();

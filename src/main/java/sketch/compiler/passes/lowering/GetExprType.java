@@ -155,6 +155,11 @@ public class GetExprType extends FENullVisitor
         }
         // The type of the expression is some type that both sides
         // promote to, otherwise.
+        
+        if( tr == null){
+        	exp.getRight().accept(this);
+        }
+        
         return tl.leastCommonPromotion(tr);
     }
 

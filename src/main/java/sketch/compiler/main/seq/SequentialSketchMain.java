@@ -431,7 +431,7 @@ public class ToSBit
     public void eliminateStar(){
     	 finalCode =
              (Program) beforeUnvectorizing.accept (
-                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt));
+                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt,3));
          finalCode =
              (Program) finalCode.accept (
                  new EliminateStar(oracle, params.unrollAmt, params.inlineAmt, 3));

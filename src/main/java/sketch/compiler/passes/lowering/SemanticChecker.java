@@ -1568,7 +1568,7 @@ public class SemanticChecker
                     }
                     catch(UnrecognizedVariableException e)
                     {
-                        report(var, "unrecognized variable");
+                        report(var, "unrecognized variable '" + var.getName() + "'");
                     }
                     return super.visitExprVar(var);
                 }
