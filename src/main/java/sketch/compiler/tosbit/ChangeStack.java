@@ -5,7 +5,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.tosbit.valueClass;
 
 
-class ChangeStack{
+public class ChangeStack{
 	HashMap<String, varValue> currTracker; 
 	ChangeStack kid;
 
