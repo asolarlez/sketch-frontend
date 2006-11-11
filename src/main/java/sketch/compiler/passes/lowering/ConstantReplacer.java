@@ -133,7 +133,8 @@ public class ConstantReplacer extends FEReplacer {
 	public Object visitFunction(Function func) {
 		//before visiting the body, we check to see if we need to
 		//make constant substitutions in array lengths
-		List<Parameter> params=func.getParams();
+		List<Parameter> params=new ArrayList<Parameter>(func.getParams());
+		boolean changed=false;
 		for(int i=0;i<params.size();i++) {
 			Parameter par=params.get(i);
 			if(par.getType() instanceof TypeArray) {
@@ -142,9 +143,12 @@ public class ConstantReplacer extends FEReplacer {
 				Expression newlen=(Expression) len.accept(this);
 				if(newlen!=len) {
 					params.set(i,new Parameter(new TypeArray(arr.getBase(),newlen),par.getName(), par.isParameterOutput()));
+					changed=true;
 				}
 			}
 		}
+		if(changed)
+			func=new Function(func.getContext(),func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
 		return super.visitFunction(func);
 	}
 
