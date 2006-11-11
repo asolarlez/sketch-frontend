@@ -92,7 +92,7 @@ public class MethodState{
 	}
 	
 
-	void pushChangeTracker (Expression condExpr, valueClass condVal,
+	public void pushChangeTracker (Expression condExpr, valueClass condVal,
                             boolean isNegated)
     {	
         /* Add new change tracker layer, including nesting conditional
@@ -109,7 +109,7 @@ public class MethodState{
 		}
 	}
 
-	ChangeStack popChangeTracker(){
+	public ChangeStack popChangeTracker(){
 		ChangeStack tmp = changeTracker;
 		changeTracker = changeTracker.kid;
 		Iterator it = vars.values().iterator();
@@ -370,11 +370,22 @@ public class MethodState{
 		return UTvarGetRHSName(var);
 	}
 	
+	/**
+	 * Ask if the method state knows about variable var.
+	 * @param var 
+	 * Name of the variable.
+	 * @return
+	 */
+	public boolean knowsVar(String var){
+		var = this.transName(var);
+		return vars.containsKey(var);
+	}
+	
 	private String UTvarGetRHSName(String var){
 		if(this.UTvarHasValue(var)){
 			return "" + this.UTvarValue(var) ;
 		}else{
-			varState tv = (varState) vars.get(var);
+			varState tv = vars.get(var);
 			assert(tv != null) : ( "You are using variable " + var + " before initializing it.");
 			return tv.getRHSName();
 		}
