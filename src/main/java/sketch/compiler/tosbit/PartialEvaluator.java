@@ -9,7 +9,8 @@ public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
 	protected MethodState state;
 	public final boolean isReplacer;	
-
+	protected boolean isComplete = true;
+	
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
     protected int MAX_UNROLL = 0;
     protected int MAX_INLINE = 0;
@@ -18,14 +19,22 @@ public class PartialEvaluator extends FEReplacer {
 	public class CheckSize extends FENullVisitor{
 		int size = -1;
 		 public Object visitExprVar(ExprVar exp) { 
-			 size = state.checkArray(exp.getName());
+			 if(isComplete || state.knowsVar(exp.getName())){
+				 size = state.checkArray(exp.getName());
+			 }else{
+				 size = 0;
+			 }
 			 return exp.getName();
 		 }
 		 public Object visitExprArray(ExprArray exp)
  	    {	 	    	
  	    	String vname =  (String) exp.getBase().accept(this);	 	    	
  		    vname = vname + "_idx_" + 0;
- 		    size = state.checkArray(vname);
+ 		    if(isComplete || state.knowsVar(vname)){
+ 		    	size = state.checkArray(vname);
+ 		    }else{
+ 		    	size = 0;
+ 		    }
  		    return vname;
  	    }
 		public int checkSize(FENode node){
@@ -49,8 +58,13 @@ public class PartialEvaluator extends FEReplacer {
     	}
     	
     	public void unset(){
-    		for(Iterator<String> it = names.iterator(); it.hasNext(); ){
-    		    state.unsetVarValue(it.next());
+    		if( names != null){
+	    		for(Iterator<String> it = names.iterator(); it.hasNext(); ){
+	    			String lnm = it.next();
+	    			if( isComplete || state.knowsVar(lnm)){
+	    				state.unsetVarValue(lnm);	
+	    			}
+	    		}
     		}
     	}
     	
@@ -68,7 +82,8 @@ public class PartialEvaluator extends FEReplacer {
     		return rval;    		
     	}
     	
-    	public Object visitExprArray(ExprArray exp)
+    	@SuppressWarnings("deprecation")
+		public Object visitExprArray(ExprArray exp)
  	    { 	    	
  	    	String vname =  (String) exp.getBase().accept(this); 
  	    	Expression offsetE = (Expression) exp.getOffset().accept(PartialEvaluator.this);
@@ -108,7 +123,7 @@ public class PartialEvaluator extends FEReplacer {
  	    		}
  	    		NDArracc = true;
  	    		if(isReplacer){
- 		    		if(offsetE != exp.getOffset()){
+ 		    		if(offsetE != exp.getOffset() || lhsExp != exp.getBase()){
  		    			lhsExp = new ExprArray(exp.getContext(), lhsExp, offsetE);
  		    		}else{
  		    			lhsExp = exp;
@@ -126,7 +141,7 @@ public class PartialEvaluator extends FEReplacer {
     		Expression newStart = (Expression) rl.start().accept(PartialEvaluator.this);
     		valueClass startVal = state.popVStack();    		
     		String vname = (String) exp.getBase().accept(this);    			
-    		assert startVal.hasValue() : "For now, we require all array range expressions to have a computable start index.";		
+    		assert startVal.hasValue() || rl.len() == 1 : "For now, we require all array range expressions to have a computable start index.";		
     		if(startVal.hasValue()){
     			lhsVals = new ArrayList<String>(rl.len());
  	    		oldVals = new ArrayList<String>(rl.len());
@@ -135,8 +150,13 @@ public class PartialEvaluator extends FEReplacer {
  	    		for(int i=0; i<rl.len(); ++i){
  	    			int ofst = start + i;
  	    			String nm = vname + "_idx_" + ofst;
- 	    			oldVals.add(state.varGetRHSName(nm));
- 	    			lhsVals.add(state.varGetLHSName(nm));
+ 	    			if( isComplete || state.knowsVar(nm) ){
+ 	    				oldVals.add(state.varGetRHSName(nm));
+ 	 	    			lhsVals.add(state.varGetLHSName(nm));	
+ 	    			}else{
+ 	    				oldVals.add("null");
+ 	 	    			lhsVals.add("null");	
+ 	    			} 	    			
  	    			names.add(nm);
  	    		}
  	    		NDArracc = true;
@@ -152,7 +172,64 @@ public class PartialEvaluator extends FEReplacer {
  		    		lhsExp = exp;
  		    	}
     		}else{
-    			throw new RuntimeException("AAAARGH!!!");
+    			assert rl.len() == 1 : " NYI";
+    			offset = startVal.toString();
+     	    	if( startVal.hasValue()){
+     		    	int ofstV = startVal.getIntValue();
+     		    	int size = state.checkArray(vname);
+     		    	if(ofstV >= size || ofstV < 0){
+     		    		if(!exp.isUnchecked())
+     		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
+     					state.pushVStack( new valueClass(0) );
+     					return null;
+     		    	} 		    	
+     		    	vname = vname + "_idx_" + ofstV;
+     		    	String rval = vname;
+     		    	if(isReplacer){
+     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
+     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+     		    		}else{
+     		    			lhsExp = exp;
+     		    		}
+     		    	}else{
+     		    		lhsExp = exp;
+     		    	}
+     		    	return rval;
+     	    	}else{
+     	    		int size = state.checkArray(vname);
+     	    		NDArracc = true;
+     	    		if(  isComplete || size > 0  ){
+	     	    		lhsVals = new ArrayList<String>(size);
+	     	    		oldVals = new ArrayList<String>(size);
+	     	    		names = new ArrayList<String>(size);
+	     	    		for(int i=0; i<size; ++i){
+	     	    			String nm = vname + "_idx_" + i;
+	     	    			oldVals.add(state.varGetRHSName(nm));
+	     	    			lhsVals.add(state.varGetLHSName(nm));
+	     	    			names.add(nm);
+	     	    		}	     	    		
+	     	    		if(isReplacer){
+	     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
+	     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+	     		    		}else{
+	     		    			lhsExp = exp;
+	     		    		}
+	     		    	}else{
+	     		    		lhsExp = exp;
+	     		    	}
+     	    		}else{
+     	    			if(isReplacer){
+	     		    		if(newStart != exp.getOffset()|| lhsExp != exp.getBase()){
+	     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+	     		    		}else{
+	     		    			lhsExp = exp;
+	     		    		}
+	     		    	}else{
+	     		    		lhsExp = exp;
+	     		    	}	
+     	    		}
+     	    	}
+    			
     		}
     		return vname;
     	}
@@ -290,23 +367,28 @@ public class PartialEvaluator extends FEReplacer {
 		Expression newBase = (Expression) exp.getBase().accept(this);
 		valueClass baseVal = state.popVStack();				
 		if(startVal.hasValue()){
-			assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
-			List<valueClass> lst = baseVal.getVectValue();
-			int sval = startVal.getIntValue();
-			List<valueClass> newLst = lst.subList(sval, sval + rl.len());
-			state.pushVStack( new valueClass(newLst));
-			if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
-				if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
-					Expression renamedBase = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
-	        		List nlst = new ArrayList();
-					nlst.add( new RangeLen(newStart, rl.len()) );
-					return new ExprArrayRange( renamedBase, nlst);		        		
-	        	}else{
-	        		List nlst = new ArrayList();
-					nlst.add( new RangeLen(newStart, rl.len()) );
-					return new ExprArrayRange(newBase, nlst);	        		
-	        	}				
+			if( baseVal.isVect()  || isComplete ){
+				assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
+				List<valueClass> lst = baseVal.getVectValue();
+				int sval = startVal.getIntValue();
+				List<valueClass> newLst = lst.subList(sval, sval + rl.len());
+				state.pushVStack( new valueClass(newLst));
+				if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
+					if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
+						Expression renamedBase = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
+		        		List nlst = new ArrayList();
+						nlst.add( new RangeLen(newStart, rl.len()) );
+						return new ExprArrayRange( renamedBase, nlst);		        		
+		        	}else{
+		        		List nlst = new ArrayList();
+						nlst.add( new RangeLen(newStart, rl.len()) );
+						return new ExprArrayRange(newBase, nlst);	        		
+		        	}				
+				}else{
+					return exp;
+				}
 			}else{
+				state.pushVStack(new valueClass(exp.toString()));
 				return exp;
 			}
 		}else{
@@ -488,9 +570,18 @@ public class PartialEvaluator extends FEReplacer {
 	    }
 	    return null;
 	}
+	
 	public Object visitExprVar(ExprVar exp) {
 		String vname =  exp.getName();
 		valueClass intValue;
+		
+		if( !isComplete ){
+			if( ! state.knowsVar(vname) ){
+				state.pushVStack( new valueClass(vname) );
+				return exp;
+			}
+		}
+		
 		if( state.varHasValue( vname ) ){
 			intValue = new valueClass(state.varValue(vname)) ;	    		
 		}else{
