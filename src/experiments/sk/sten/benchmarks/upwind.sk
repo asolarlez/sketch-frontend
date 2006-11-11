@@ -1,0 +1,94 @@
+int N;
+
+
+int[N][N][N][3] upwindSP(int[N][N][N] in1, int[N][N][N] in2, int[N][N][N] in3){
+	int[N][N][N][3] out=0;
+	for(int k1=1; k1<N-1; ++k1){
+		for(int k2=1; k2<N-1; ++k2){
+			for(int k3=1; k3<N-1; ++k3){
+				int D1u1, D1u2, D1u3, D2u1, D2u2, D2u3, D3u1, D3u2, D3u3;
+				if (in1[k1][k2][k3] == 0){
+			      D1u1 = in1[k1+1][k2][k3] - in1[k1][k2][k3];
+			      D1u2 = in2[k1+1][k2][k3] - in2[k1][k2][k3];
+			      D1u3 = in3[k1+1][k2][k3] - in3[k1][k2][k3];
+			    }else{
+			      D1u1 = in1[k1][k2][k3] - in1[k1-1][k2][k3];
+			      D1u2 = in2[k1][k2][k3] - in2[k1-1][k2][k3];
+			      D1u3 = in3[k1][k2][k3] - in3[k1-1][k2][k3];
+			    }	     
+		
+			    if (in2[k1][k2][k3] == 0){
+			      D2u1 = in1[k1][k2+1][k3] - in1[k1][k2][k3];
+			      D2u2 = in2[k1][k2+1][k3] - in2[k1][k2][k3];
+			      D2u3 = in3[k1][k2+1][k3] - in3[k1][k2][k3];
+			    }else{
+			      D2u1 = in1[k1][k2][k3] - in1[k1][k2-1][k3];
+			      D2u2 = in2[k1][k2][k3] - in2[k1][k2-1][k3];
+			      D2u3 = in3[k1][k2][k3] - in3[k1][k2-1][k3];
+			    }
+			    if (in3[k1][k2][k3] == 0){
+			      D3u1 = in1[k1][k2][k3+1] - in1[k1][k2][k3];
+			      D3u2 = in2[k1][k2][k3+1] - in2[k1][k2][k3];
+			      D3u3 = in3[k1][k2][k3+1] - in3[k1][k2][k3];
+			    }else{
+			      D3u1 = in1[k1][k2][k3] - in1[k1][k2][k3-1];
+			      D3u2 = in2[k1][k2][k3] - in2[k1][k2][k3-1];
+			      D3u3 = in3[k1][k2][k3] - in3[k1][k2][k3-1];
+			    }		
+		    	for(int ii=0; ii<3; ++ii){
+		    		if( ii == 0) out[ii][k1][k2][k3] = in1[k1][k2][k3] - (in1[k1][k2][k3] * D1u1 + in2[k1][k2][k3] * D2u1 + in3[k1][k2][k3] * D3u1);
+		    		if( ii == 1) out[ii][k1][k2][k3] = in2[k1][k2][k3] - (in1[k1][k2][k3] * D1u2 + in2[k1][k2][k3] * D2u2 + in3[k1][k2][k3] * D3u2);
+		    		if( ii == 2) out[ii][k1][k2][k3] = in3[k1][k2][k3] - (in1[k1][k2][k3] * D1u3 + in2[k1][k2][k3] * D2u3 + in3[k1][k2][k3] * D3u3);
+				}
+			}
+		}
+	}
+	return out;
+}
+
+
+
+
+int[N][N][N][3] upwind(int[N][N][N] in1, int[N][N][N] in2, int[N][N][N] in3) implements upwindSP{
+	int[N][N][N][3] out=0;
+	for(int k1=??; k1<N-??; ++k1){
+		for(int k2=??; k2<N-??; ++k2){
+			for(int k3=??; k3<N-??; ++k3){
+				int D1u1, D1u2, D1u3, D2u1, D2u2, D2u3, D3u1, D3u2, D3u3;
+				if (in1[k1][k2][k3] == 0){
+			      D1u1 = in1[k1+1][k2][k3] - in1[k1][k2][k3];
+			      D1u2 = in2[k1+1][k2][k3] - in2[k1][k2][k3];
+			      D1u3 = in3[k1+1][k2][k3] - in3[k1][k2][k3];
+			    }else{
+			      D1u1 = in1[k1][k2][k3] - in1[k1-1][k2][k3];
+			      D1u2 = in2[k1][k2][k3] - in2[k1-1][k2][k3];
+			      D1u3 = in3[k1][k2][k3] - in3[k1-1][k2][k3];
+			    }	     
+		
+			    if (in2[k1][k2][k3] == 0){
+			      D2u1 = in1[k1][k2+1][k3] - in1[k1][k2][k3];
+			      D2u2 = in2[k1][k2+1][k3] - in2[k1][k2][k3];
+			      D2u3 = in3[k1][k2+1][k3] - in3[k1][k2][k3];
+			    }else{
+			      D2u1 = in1[k1][k2][k3] - in1[k1][k2-1][k3];
+			      D2u2 = in2[k1][k2][k3] - in2[k1][k2-1][k3];
+			      D2u3 = in3[k1][k2][k3] - in3[k1][k2-1][k3];
+			    }
+			    if (in3[k1][k2][k3] == 0){
+			      D3u1 = in1[k1][k2][k3+1] - in1[k1][k2][k3];
+			      D3u2 = in2[k1][k2][k3+1] - in2[k1][k2][k3];
+			      D3u3 = in3[k1][k2][k3+1] - in3[k1][k2][k3];
+			    }else{
+			      D3u1 = in1[k1][k2][k3] - in1[k1][k2][k3-1];
+			      D3u2 = in2[k1][k2][k3] - in2[k1][k2][k3-1];
+			      D3u3 = in3[k1][k2][k3] - in3[k1][k2][k3-1];
+			    }			    
+				out[0][k1][k2][k3] = in1[k1][k2][k3] - (in1[k1][k2][k3] * D1u1 + in2[k1][k2][k3] * D2u1 + in3[k1][k2][k3] * D3u1);
+				out[1][k1][k2][k3] = in2[k1][k2][k3] - (in1[k1][k2][k3] * D1u2 + in2[k1][k2][k3] * D2u2 + in3[k1][k2][k3] * D3u2);
+				out[2][k1][k2][k3] = in3[k1][k2][k3] - (in1[k1][k2][k3] * D1u3 + in2[k1][k2][k3] * D2u3 + in3[k1][k2][k3] * D3u3);
+			}
+		}
+	}
+	return out;
+}
+
