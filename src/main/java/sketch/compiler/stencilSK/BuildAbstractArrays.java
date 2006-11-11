@@ -43,7 +43,8 @@ public class BuildAbstractArrays extends FEReplacer {
     		}
     		asList = null;
     		if(isInput){
-    			inVars.get(name).addAssignStruct(as, indices);
+    			as.addInput(inVars.get(name), indices);
+    			// inVars.get(name).addAssignStruct(as, indices);
     		}
     		
     		return exp;
@@ -95,12 +96,30 @@ public class BuildAbstractArrays extends FEReplacer {
 	}
 	
 	
+	private void addASForPreds(AssignStruct base, AssignStruct current){
+		for(int i=0; i<current.inputs.size(); ++i){
+			AbstractArray inx = current.inputs.get(i);
+			List<Expression> idxs = current.inputIndices.get(i);			
+			inx.addAssignStruct(base, idxs);
+		}
+		for(int i=0; i< current.predecessors.size(); ++i){
+			addASForPreds(base, current.predecessors.get(i));
+		}
+	}
+	
     public Object visitStmtAssign(StmtAssign stmt){
     	
     	assert (stmt.getOp() == 0);
     	AssignStruct as = new AssignStruct(stmt.getLHS(), stmt.getRHS());
     	new setPredecessors(as);
     	this.assignMap.put(as.lhsName, as);
+    	
+    	if( stmt.getLHS() instanceof ExprArrayRange ){
+    		//addASForPreds.
+    		addASForPreds(as, as);
+    	}
+    	
+    	
     	return stmt;
     	/**
     	 * if( isArrayAccess){
