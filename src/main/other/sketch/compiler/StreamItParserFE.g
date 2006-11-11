@@ -350,7 +350,7 @@ return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	;
 
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
-	:	t:TK_assert LPAREN x=right_expr RPAREN { s = new StmtAssert(getContext(t), x); }
+	:	t:TK_assert x=right_expr { s = new StmtAssert(getContext(t), x); }
 	;
 
 if_else_statement returns [Statement s]
@@ -392,7 +392,7 @@ for_incr_statement returns [Statement s] { s = null; }
 
 expr_statement returns [Statement s] { s = null; Expression x; }
 	:	(incOrDec) => x=incOrDec { s = new StmtExpr(x); }
-	|	(left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS | 				DIV_EQUALS)) => s=assign_expr
+	|	(left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS | DIV_EQUALS)) => s=assign_expr
 	|	(ID LPAREN) => x=func_call { s = new StmtExpr(x); }
 	|	x=streamit_value_expr { s = new StmtExpr(x); }
 	;
