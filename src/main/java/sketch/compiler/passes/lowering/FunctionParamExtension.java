@@ -44,7 +44,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				unmodifiedParams.put(param.getName(),param);
 			}
 			Function ret=(Function) super.visitFunction(func);
-			List<Parameter> parameters=func.getParams(); //assume it's mutable; for the current Function implementation that is true
+			List<Parameter> parameters=new ArrayList<Parameter>(func.getParams());
 			for(int i=0;i<parameters.size();i++) {
 				Parameter param=parameters.get(i);
 				if(param.isParameterOutput()) continue;
@@ -55,7 +55,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					ret=addVarCopy(ret,param,newName);
 				}
 			}
-			return ret;
+			return new Function(func.getContext(), func.getCls(), func.getName(),
+				func.getReturnType(), parameters, func.getSpecification(), func.getBody());
 		}
 		public Object visitStmtAssign(StmtAssign stmt)
 		{
@@ -122,11 +123,15 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	
 	public Object visitStreamSpec(StreamSpec spec) {
 		// before we continue, we must add parameters to all the functions
-		for(Iterator itf=spec.getFuncs().iterator();itf.hasNext();) {
-			Function fun=(Function) itf.next();
+		List<Function> funs=new ArrayList<Function>();
+		for(Function fun: (List<Function>)spec.getFuncs()) {
 			Type retType=fun.getReturnType();
-			fun.getParams().add(new Parameter(retType,getOutParamName(),true));
+			List<Parameter> params=new ArrayList<Parameter>(fun.getParams());
+			params.add(new Parameter(retType,getOutParamName(),true));
+			funs.add(new Function(fun.getContext(), fun.getCls(), fun.getName(), fun.getReturnType(),
+				params, fun.getSpecification(), fun.getBody()));
 		}
+		spec=new StreamSpec(spec.getContext(), spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
 		return super.visitStreamSpec(spec);
 	}
 
@@ -141,8 +146,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
 		//add a declaration for the "return flag"
 		stmts.add(0,new StmtVarDecl(func.getBody().getContext(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(null,0)));
-		Parameter outParam = (Parameter)func.getParams().get( func.getParams().size()-1);
 		if(initOutputs){
+			Parameter outParam = (Parameter)func.getParams().get( func.getParams().size()-1);
 			String outParamName  = outParam.getName();
 			assert outParam.isParameterOutput();
 			stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), new ExprConstInt(0)));

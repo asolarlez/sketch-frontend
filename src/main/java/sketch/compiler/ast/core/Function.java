@@ -129,7 +129,7 @@ public class Function extends FENode
      * objects. */
     public List getParams()
     {
-        return params;
+        return Collections.unmodifiableList(params);
     }
     
     /** Returns the return type of this function. */

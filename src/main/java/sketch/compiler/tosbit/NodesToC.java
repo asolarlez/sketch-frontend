@@ -184,7 +184,6 @@ public class NodesToC extends NodesToJava {
         for(Iterator iter = params.iterator(); iter.hasNext();)
         {
             Parameter param = (Parameter)iter.next();
-            if(param.isParameterOutput()) continue;
             Type type = param.getType();
             String postFix = "";
             if(type instanceof TypeArray){
