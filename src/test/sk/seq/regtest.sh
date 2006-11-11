@@ -9,7 +9,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash preproc.sh --outputcfiles  --incremental 6 --seed 10 ${x} &> ${x}.output ;
+bash preproc.sh --outputfiles  --incremental 6 --seed 10 ${x} &> ${x}.output ;
 grep oracle.*\[[0-9]+\] ${x}.output ;
 done;
 
