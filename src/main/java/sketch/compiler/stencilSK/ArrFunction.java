@@ -54,6 +54,7 @@ public class ArrFunction{
 	List<StmtVarDecl> othParams;
 	
 	ParamTree.treeNode declarationSite;
+	int condsPos = -1;
 	
 	List<StmtVarDecl> inputParams;
 	List<StmtVarDecl> outIdxParams;
@@ -80,7 +81,7 @@ public class ArrFunction{
 		return idxAss.size();
 	}
 	
-	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt, ParamTree.treeNode declarationSite){
+	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt, ParamTree.treeNode declarationSite, int condsPos){
 		this.arrName = arrName;
 		idxParams = new ArrayList<StmtVarDecl>();
 		iterParams = pt;		
@@ -91,6 +92,7 @@ public class ArrFunction{
 		this.suffix = suffix;
 		this.arrType = arrType;
 		this.declarationSite = declarationSite;
+		this.condsPos = condsPos;
 	}
 	
 	public String getFullName(){
