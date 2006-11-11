@@ -8,7 +8,6 @@ import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
@@ -35,6 +34,16 @@ public class ResolveMax {
 		tainted = new Integer[sz];
 	}
 	
+	private boolean isDone(){
+		
+		for(int i=0; i<sz; ++i){
+			if( expArr[i] == null)
+				return false;
+		}
+		return true;
+		
+	}
+	
 	public void run(){
 		CollectConstraints cc = new CollectConstraints();
 		{
@@ -45,7 +54,7 @@ public class ResolveMax {
 				exp.accept(cc);
 			}
 		}
-		
+		if( isDone() ) return ;
 		{
 			List<Expression> exprList = smax.secC ;			
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
@@ -55,6 +64,7 @@ public class ResolveMax {
 			}
 		}
 		
+		if( isDone() ) return ;
 		
 		{
 			List<Expression> exprList = smax.terC ;			
@@ -372,6 +382,31 @@ public class ResolveMax {
 	        return null;			
 		}
 		
+		
+		public Object visitExprBinaryDiv(ExprBinary exp){
+		    Expression left = exp.getLeft();
+	        Expression right = exp.getRight();
+	        assert exp.getTag() != null;
+	        if( left.getTag()== tag && right.getTag() == tag){
+	        	return handleSpecialCase(exp);
+	        }
+	        
+	        if( left.getTag()== null && right.getTag() == null){
+	        	throw new RuntimeException("NYI");	        	
+	        }
+	        
+	        if( left.getTag() == null){
+	        	Expression tmp = left;
+	        	left = right;
+	        	right = tmp;	        	
+	        }
+	        assert left.getTag() != null && right.getTag() == null;	  
+	        assert false : "NYI";
+	        currentRHS = new ExprBinary(null, ExprBinary.BINOP_DIV, currentRHS, right);   
+	        left.accept(this);
+	        return null;			
+		}
+		
 		public Object visitExprUnary(ExprUnary exp){
 			switch(exp.getOp()){
 			case ExprUnary.UNOP_NEG: {				
@@ -394,6 +429,8 @@ public class ResolveMax {
 	        case ExprBinary.BINOP_ADD:  return visitExprBinaryAdd(exp);
 	        case ExprBinary.BINOP_SUB:  return visitExprBinarySub(exp);
 	        case ExprBinary.BINOP_MUL: return visitExprBinaryMult(exp);
+	        //case ExprBinary.BINOP_DIV: return visitExprBinaryDiv(exp);
+	        
 	        
 	        case ExprBinary.BINOP_LE: return visitExprBinaryLE(exp);
 	        case ExprBinary.BINOP_LT: return visitExprBinaryLT(exp);

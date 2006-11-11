@@ -122,6 +122,18 @@ class loopHist{
 	}
 }
 
+
+
+class condition{
+	Expression expr;
+	ParamTree.treeNode tn;
+	condition(Expression expr, ParamTree.treeNode tn ){
+		this.expr = expr;
+		this.tn = tn;
+	}
+}
+
+
 /**
  * This class keeps track of all the functions 
  * that represent a given array.
@@ -605,7 +617,7 @@ class processStencil extends FEReplacer {
 	    
 	    void populateArrInfo(arrInfo ainf, String var, Type type, int dim){	    	
 	    	assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
-   	 		ainf.fun = new ArrFunction(var, type, suffix, ptree, currentTN);
+   	 		ainf.fun = new ArrFunction(var, type, suffix, ptree, currentTN, conds.size());
    	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD(ArrFunction.IPARAM+i, null) );
    	 		
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
@@ -759,28 +771,43 @@ class processStencil extends FEReplacer {
 	    	
 	    	
 	    	//Now we add the secondary constraints.
-	    	//NOTE: Check the priority.
-	    	Iterator<StmtVarDecl> pIt = currentTN.pathIter();
+	    	int tt = 0;
+	    	PathIterator pIt = currentTN.limitedPathIter();
+	    	
+	    	/*
+	    	if( fun.declarationSite != this.ptree.getRoot()  ){
+	    		for(; pIt.hasNext(); ){
+		    		ParamTree.treeNode iterPar = pIt.tnNext();	
+		    		tt+= 2;
+		    		if( iterPar == fun.declarationSite ){break;}
+		    	}
+	    		
+	    	}
+	    	*/	    	
+	    	pIt.makeUnlimited();
 	    	if(pIt.hasNext()){
-		    	Expression binexp = buildSecondaryConstr(pIt, newVar, 0);
+		    	Expression binexp = buildSecondaryConstr(pIt, newVar, tt);
 		    	smax.secC.add(binexp);
 	    	}
 	    	
 	    	//Finally, we add the tertiary constraints.
 	    	//In these constraints, we again replace
 	    	//   fun.iterParam[j] -> idx_i[2*j+1]
-	    	//We must also replace all accesses to arrays with calls to the array functions.	    	
-	    	for(Iterator<Expression> condIt = conds.iterator(); condIt.hasNext(); ){
+	    	//We must also replace all accesses to arrays with calls to the array functions.	
+	    	int ll = 0;
+	    	for(Iterator<Expression> condIt = conds.iterator(); condIt.hasNext(); ++ll ){
 	    		Expression cond = condIt.next();
-	    		int jj=0;
-	    		for(Iterator<StmtVarDecl> iterIt = currentTN.limitedPathIter(); iterIt.hasNext(); jj++){
-	    			StmtVarDecl iterPar = iterIt.next();
-	    			ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
-	    			cond = (Expression) cond.accept(new VarReplacer(iterPar.getName(0), ear ));
+	    		if( ll >= fun.condsPos   ){
+		    		int jj=0;
+		    		for(Iterator<StmtVarDecl> iterIt = currentTN.limitedPathIter(); iterIt.hasNext(); jj++){
+		    			StmtVarDecl iterPar = iterIt.next();
+		    			ExprArrayRange ear = new ExprArrayRange(null, new ExprVar(null, newVar), new ExprConstInt(2*jj+1));
+		    			cond = (Expression) cond.accept(new VarReplacer(iterPar.getName(0), ear ));
+		    		}
+		    		
+			    	cond = (Expression)cond.accept(new ArrReplacer(idxi));
+		    		smax.terC.add(cond);
 	    		}
-	    		
-		    	cond = (Expression)cond.accept(new ArrReplacer(idxi));
-	    		smax.terC.add(cond);
 	    	}
 	    	return smax;
 	    }

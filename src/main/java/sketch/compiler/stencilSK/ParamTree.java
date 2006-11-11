@@ -80,7 +80,7 @@ public class ParamTree{
 			 * varDecls for the position parameters. Otherwise, 
 			 * it only returns them for the inductionVar parameters.
 			 */
-			private final boolean withPos;
+			private boolean withPos;
 			/**
 			 * Only used when withPos == true.
 			 * Flips from true to false. True means
@@ -130,6 +130,12 @@ public class ParamTree{
 				tn = tmp;
 				++step;
 				return tmp.lh;
+			}
+			
+			public void makeUnlimited(){
+				assert !withPos ;
+				withPos = true;
+				wpState = true;
 			}
 			
 			public treeNode tnNext(){	
