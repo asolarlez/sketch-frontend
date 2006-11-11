@@ -14,8 +14,16 @@ class AssignStruct{
 	String lhsName;
 	List<Expression> indices;
 	List<AssignStruct> predecessors;
+	List<AbstractArray> inputs = new ArrayList<AbstractArray>();
+	List<List<Expression>> inputIndices = new ArrayList<List<Expression>>();
 	
-	AssignStruct(Expression lhs, Expression rhs){
+	
+	public void addInput(AbstractArray aa, List<Expression> el){
+		inputs.add(aa);
+		inputIndices.add(el);
+	}
+	
+	public AssignStruct(Expression lhs, Expression rhs){
 		this.rhs = rhs;
 		if( lhs instanceof ExprVar ){
 			lhsName = ((ExprVar)lhs).getName();
