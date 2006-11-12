@@ -377,11 +377,19 @@ public class SNodesToFortran implements FEVisitor {
 	        case ExprBinary.BINOP_LE:  op = ".LE."; break;
 	        case ExprBinary.BINOP_GT:  op = ".GT."; break;
 	        case ExprBinary.BINOP_GE:  op = ".GE."; break;
-	        	
+	        
+	        //special conversions
+	        case ExprBinary.BINOP_BAND: op = "*"; break;
+	        case ExprBinary.BINOP_BXOR: op = "+"; break;
+
 	        case ExprBinary.BINOP_MOD:
-	        case ExprBinary.BINOP_BAND:
+	        {
+	    		String lhs=(String) exp.getLeft().accept(this);
+	    		String rhs=(String) exp.getRight().accept(this);
+	    	    return "mod("+lhs+","+rhs+")";
+	        }
+	        
 	        case ExprBinary.BINOP_BOR:
-	        case ExprBinary.BINOP_BXOR:
 	        case ExprBinary.BINOP_RSHIFT:
 	        case ExprBinary.BINOP_LSHIFT:
 	        default: 
