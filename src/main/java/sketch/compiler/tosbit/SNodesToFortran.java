@@ -3,7 +3,6 @@ package streamit.frontend.tosbit;
 import java.util.*;
 
 import streamit.frontend.nodes.*;
-import streamit.frontend.tojava.NodesToJava;
 
 /**
  * FORTRAN 77 code generator.
@@ -43,6 +42,8 @@ public class SNodesToFortran implements FEVisitor {
         }
 	}
 	
+	private static final int MAX_LINE_LEN=72;
+	
 	private final String filename;
 	/** line prefix (6 spaces) */
 	private String lp="      ";
@@ -81,12 +82,32 @@ public class SNodesToFortran implements FEVisitor {
 		return indentStr;
 	}
 	
+	/** 
+	 * Takes in a line of code (without \n at the end) and returns
+	 * either the same line (with \n appended) or a concatenation of
+	 * several lines capped at 72 characters as per Fortran spec.
+	 */
+	private String lineSplit(String s) {
+		if(s.length()<=MAX_LINE_LEN)
+			return s+"\n";
+		return s.substring(0,MAX_LINE_LEN)+"\n"+lineSplit("     +"+s.substring(MAX_LINE_LEN));
+	}
+	
+	/** 
+	 * Returns Fortran-formatted code for the statement encoded in s. 
+	 * Indentation is added based on the value of the indent field.
+	 */
 	protected String line(String s) {
-		return lp+getIndent()+s+"\n";
+		return lineSplit(lp+getIndent()+s);
 	}
 
+	/** 
+	 * Returns Fortran-formatted code for the statement encoded in s and 
+	 * labeled with lbl. 
+	 * Indentation is added based on the value of the indent field.
+	 */
 	protected String line(int lbl,String s) {
-		return labeledLP(lbl)+getIndent()+s+"\n";
+		return lineSplit(labeledLP(lbl)+getIndent()+s);
 	}
 	
 	protected String newline() {
