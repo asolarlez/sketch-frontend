@@ -80,9 +80,22 @@ public class AbstractArray {
 			}
 			expr[i] = inIdx;
 		}
-		//TODO : Still need ot add the statements corresponding to the dependencies of the AssignStruct.
-		idxArr.add(expr);
-		
+		for(int t=0; t<idxArr.size(); ++t){
+			Expression[] e1 = idxArr.get(t);
+			Expression[] e2 = expr;						
+			if( e1.length ==  e2.length ){
+				int eqn = 0;
+				for(int tt=0; tt< e1.length; ++tt ){
+					if( e1[tt].toString().equals(e2[tt].toString())   ){
+						++eqn;
+					}
+				}
+				if(eqn == e1.length){
+					return;
+				}
+			}
+		}
+		idxArr.add(expr);		
 	}
 	
 	public void makeDefault(int vars){
