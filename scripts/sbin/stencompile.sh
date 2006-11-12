@@ -2,7 +2,7 @@
 
 # Set classpath, solver path, and source path; adjust for Cygwin as necessary
 #
-TMPCLASSPATH="$FRONTEND/antlr-2.7.5.jar#$FRONTEND/bin#."
+TMPCLASSPATH="$FRONTEND/antlr.jar#$FRONTEND/bin#."
 TMPSBITPATH="$SOLVER/"
 TMPSOURCEPATH="${0%/*}"
 TMPSOURCEPATH="${TMPSOURCEPATH%/*}"
