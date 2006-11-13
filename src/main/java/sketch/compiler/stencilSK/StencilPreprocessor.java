@@ -9,10 +9,11 @@ import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.tosbit.ChangeStack;
 import streamit.frontend.tosbit.CodePEval;
 import streamit.frontend.tosbit.valueClass;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class StencilPreprocessor extends CodePEval{
 
-	public StencilPreprocessor(int maxUnroll, int maxInline){
+	public StencilPreprocessor(int maxUnroll, RecursionControl maxInline){
 		super(maxUnroll, maxInline);
 		this.isComplete = false;
 		this.inlineLevel = 3;
