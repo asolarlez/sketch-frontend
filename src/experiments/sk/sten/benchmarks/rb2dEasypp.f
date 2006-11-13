@@ -1,5 +1,5 @@
       program rb2dEasypp
-      parameter (N=1000)
+      parameter (N=2000)
       parameter (prtarr=0)
 
       parameter (ce=0.5, no=0.1, so=0.2, ea=0.3, we=0.4)
@@ -7,6 +7,7 @@
       real f(0:N-1, 0:N-1)
       real out(0:N-1, 0:N-1)
       real out2(0:N-1, 0:N-1)
+      real tmp(0:N-1, 0:N-1)
       integer clockrate, t0, t1
       integer k
 
@@ -26,14 +27,14 @@
       if(prtarr .GT. 0) print *, f
       
       call system_clock(count=t0)
-      call rbGaussSeidel(in,f,ce,no,so,ea,we,out,N)
+      call rbGaussSeidel(in,f,ce,no,so,ea,we,out,N,tmp)
       call system_clock(count=t1)
       print *, "spec"
       if(prtarr .GT. 0) print *, out
       print *, real(t1-t0)/(real(clockrate)/1000.0)
 
       call system_clock(count=t0)
-      call rbGaussSeidelSK(in,f,ce,no,so,ea,we,out2,N)
+      call rbGaussSeidelSK(in,f,ce,no,so,ea,we,out2,N,tmp)
       call system_clock(count=t1)
       print *, "sketch"
       if(prtarr .GT. 0) print *, out2
@@ -51,7 +52,7 @@
       print *,"No differences found between the 2 outputs"
       end
 
-      subroutine rbGaussSeidel(in,f,ce,no,so,ea,we,output2,N)
+      subroutine rbGaussSeidel(in,f,ce,no,so,ea,we,output2,N,tmp2)
       real in(0:N-1, 0:N-1)
       real f(0:N-1, 0:N-1)
       real ce
@@ -95,7 +96,7 @@
       return
       end
 
-      subroutine rbGaussSeidelSK(in,f,ce,no,so,ea,we,output2,N)
+      subroutine rbGaussSeidelSK(in,f,ce,no,so,ea,we,output2,N,tmp2)
       real in(0:N-1, 0:N-1)
       real f(0:N-1, 0:N-1)
       real ce
@@ -105,6 +106,7 @@
       real we
       real output2(0:N-1, 0:N-1)
       integer N
+      real tmp2(0:N-1, 0:N-1)
       integer ta2
       integer tb2
       integer ta3
@@ -121,7 +123,6 @@
       integer tb8
       integer ta9
       integer tb9
-      real tmp2(0:N-1, 0:N-1)
       do i_0 = 0, (N - 1)
         do i_1 = 0, (N - 1)
           output2(i_0, i_1) = 0
