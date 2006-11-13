@@ -68,6 +68,7 @@ import streamit.frontend.tojava.ExprJavaConstructor;
 import streamit.frontend.tojava.StmtAddPhase;
 import streamit.frontend.tojava.StmtIODecl;
 import streamit.frontend.tojava.StmtSetTypes;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 
 /**
@@ -93,9 +94,9 @@ public class NodesToSBit extends PartialEvaluator{
     
 	    public NodesToSBit (StreamSpec ss, TempVarGen varGen,
                             ValueOracle oracle, PrintStream out,
-                            int maxUnroll, int maxInline)
+                            int maxUnroll, RecursionControl rcontrol)
 	    {
-	    	super(false, maxUnroll, maxInline);
+	    	super(false, maxUnroll, rcontrol);
 	        this.ss = ss;	        
 	        this.varGen = varGen;	         
 	        this.state = new MethodState();
@@ -370,9 +371,9 @@ public class NodesToSBit extends PartialEvaluator{
 
                 /* Check to see whether function was already inlined to its
                  * maximum allowed number of times. */
-                int numInlined = getInlineCounter (fun.getName ());
+                //int numInlined = getInlineCounter (fun.getName ());
 
-                if (numInlined == MAX_INLINE) {
+                if (!rcontrol.testCall(exp)) {
                     /* Cannot inline further, plant an assertion. */
                     FEContext exprContext = exp.getContext ();
                     StmtAssert inlineAssert =
@@ -381,13 +382,13 @@ public class NodesToSBit extends PartialEvaluator{
                                             exprContext,
                                             false));
                     ps.print ("// MAX INLINED: BEGIN " + fun.getName () + " (" +
-                              MAX_INLINE + ")\n");
+                    		rcontrol.inlineLevel(exp) + ")\n");
                     PrintStream tmpout = out;
                     out = new PrintStream (baos);
                     inlineAssert.accept (this);
                     out = tmpout;
                     ps.print ("// MAX INLINED: END " + fun.getName () + " (" +
-                              MAX_INLINE + ")\n");
+                    		rcontrol.inlineLevel(exp) + ")\n");
 
                     Iterator actualParams = exp.getParams().iterator();	        		        	       	
                     Iterator formalParams = fun.getParams().iterator();
@@ -398,8 +399,7 @@ public class NodesToSBit extends PartialEvaluator{
                     ps.print (tmp);
                 } else {
                     /* Increment inline counter, unfold another level. */
-                    incInlineCounter (fun.getName ());
-                    
+                	rcontrol.pushFunCall(exp, fun);                    
 
                     Iterator actualParams = exp.getParams().iterator();	        		        	       	
                     Iterator formalParams = fun.getParams().iterator();
@@ -407,7 +407,7 @@ public class NodesToSBit extends PartialEvaluator{
                     ps.print(tmp);
 
                     ps.print("// BEGIN CALL " + fun.getName() +
-                             " (" + numInlined + ")\n");
+                             " (" + rcontrol.inlineLevel(exp) + ")\n");
 
                     PrintStream tmpout = out; out = new PrintStream( baos );	    		
                     fun.getBody().accept(this);	    		
@@ -415,7 +415,7 @@ public class NodesToSBit extends PartialEvaluator{
                     out = tmpout;
 
                     ps.print("// END CALL " + fun.getName() +
-                             " (" + numInlined +  ")\n");
+                             " (" + rcontrol.inlineLevel(exp) +  ")\n");
 
                     actualParams = exp.getParams().iterator();	        		        	       	
                     formalParams = fun.getParams().iterator();
@@ -424,7 +424,7 @@ public class NodesToSBit extends PartialEvaluator{
                     
 
                     /* Decrement inline counter. */
-                    decInlineCounter (fun.getName ());
+                    rcontrol.popFunCall(exp);                    
                 }
 	    	}else{ 
 	    		// look for print and println statements; assume everything
@@ -964,10 +964,21 @@ public class NodesToSBit extends PartialEvaluator{
 	        valueClass vcond = state.popVStack();
 	        if(vcond.hasValue()){
 	        	if(vcond.getIntValue() > 0){
-	        		stmt.getCons().accept(this);	        		
+	        		if( rcontrol.testBlock(stmt.getCons()) ){
+	        			stmt.getCons().accept(this);	
+	        			rcontrol.doneWithBlock(stmt.getCons());
+	        		}else{
+						( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+					}
 	        	}else{
-	        		if (stmt.getAlt() != null)
-	    	            stmt.getAlt().accept(this);
+	        		if (stmt.getAlt() != null){
+	        			if( rcontrol.testBlock(stmt.getAlt()) ){
+	        				stmt.getAlt().accept(this);
+	        				rcontrol.doneWithBlock(stmt.getAlt());
+	        			}else{
+							( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+						}
+	        		}
 	        	}
 	        	return null;   	
 	        }
@@ -975,23 +986,34 @@ public class NodesToSBit extends PartialEvaluator{
             /* Attach conditional to change tracker. */
 	        state.pushChangeTracker (cond, vcond, false);
             
-	        try{
-	        	stmt.getCons().accept(this);
-	        }catch(RuntimeException e){
-	        	state.popChangeTracker();
-	        	throw e;
-	        }
+	        if( rcontrol.testBlock(stmt.getCons()) ){
+		        try{
+		        	stmt.getCons().accept(this);
+		        }catch(RuntimeException e){
+		        	state.popChangeTracker();
+		        	throw e;
+		        }
+		        rcontrol.doneWithBlock(stmt.getCons());
+	        }else{
+				( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+			}	        
 	        ChangeStack ipms = state.popChangeTracker();
+	        
 	        ChangeStack epms = null;	        
 	        if (stmt.getAlt() != null){
                 /* Attach inverse conditional to change tracker. */
                 state.pushChangeTracker (cond, vcond, true);
-	        	try{
-	        		stmt.getAlt().accept(this);
-	        	}catch(RuntimeException e){
-		        	state.popChangeTracker();
-		        	throw e;
-		        }
+                if( rcontrol.testBlock(stmt.getAlt()) ){
+		        	try{
+		        		stmt.getAlt().accept(this);
+		        	}catch(RuntimeException e){
+			        	state.popChangeTracker();
+			        	throw e;
+			        }
+		        	rcontrol.doneWithBlock(stmt.getAlt());
+                }else{
+    				( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+    			}
 	            epms = state.popChangeTracker();
 	        }
 	        if(epms != null){
