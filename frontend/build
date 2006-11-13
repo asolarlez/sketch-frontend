@@ -1,2 +1,2 @@
 #/bin/bash
-javac -classpath antlr-2.7.5.jar:. -d bin "$@" streamit/frontend/ToSBit.java
+javac -classpath antlr.jar:. -d bin "$@" streamit/frontend/ToSBit.java
