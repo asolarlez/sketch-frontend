@@ -704,9 +704,9 @@ public class SNodesToFortran implements FEVisitor {
 	{
 		assert (type instanceof TypePrimitive);
 		switch(((TypePrimitive)type).getType()) {
-			case TypePrimitive.TYPE_INT: return "integer";
             case TypePrimitive.TYPE_BOOLEAN:
-			case TypePrimitive.TYPE_BIT:   return "integer";
+			case TypePrimitive.TYPE_INT: return "integer";
+			case TypePrimitive.TYPE_BIT:   return "real";
 		}
 		assert false;
 		return null;
