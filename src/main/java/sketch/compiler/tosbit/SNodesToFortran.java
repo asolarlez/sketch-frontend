@@ -522,8 +522,14 @@ public class SNodesToFortran implements FEVisitor {
 
 	public Object visitExprUnary(ExprUnary exp)
 	{
-		//TODO
-		assert false;
+		switch(exp.getOp()) {
+			case ExprUnary.UNOP_NOT:
+				return ".NOT. "+exp.getExpr().accept(this);
+			case ExprUnary.UNOP_NEG:
+				return "(-"+exp.getExpr().accept(this)+")";
+			default:
+				assert false: "Unsupported unary operator";
+		}
 		return null;
 	}
 
