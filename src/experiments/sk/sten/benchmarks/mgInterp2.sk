@@ -1,0 +1,78 @@
+int N;
+
+bit[2*N][2*N][2*N] MGinter(bit[N][N][N] in, bit half, bit fourth, bit eight){
+
+	bit[2*N][2*N][2*N]  output=0;
+	for(int i=0; i<2*N-2; ++i){
+		for(int j=0; j<2*N-2; ++j){
+		for(int k=0; k<2*N-2; ++k){
+		 if( i%2==0 && j%2==0 && k%2==0) output[i][j][k] = in[i/2][j/2][k/2];
+		 
+		 if( i%2==1 && j%2==0 && k%2==0) output[i][j][k] = 
+		 									half & (in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2]);
+		 if( i%2==0 && j%2==1 && k%2==0) output[i][j][k] = 
+		 									half & (in[i/2][j/2][k/2] ^ in[i/2][j/2+1][k/2]);
+		 if( i%2==0 && j%2==0 && k%2==1) output[i][j][k] = 
+		 									half & (in[i/2][j/2][k/2] ^ in[i/2][j/2][k/2+1]);
+		 
+		 if( i%2==1 && j%2==1 && k%2==0) output[i][j][k] = 
+		 									fourth & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2+1][k/2] ^
+		 										in[i/2][j/2+1][k/2] ^ in[i/2+1][j/2][k/2]);
+		 if( i%2==0 && j%2==1 && k%2==1) output[i][j][k] = 
+		 									fourth & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2][j/2+1][k/2+1] ^
+		 										in[i/2][j/2+1][k/2] ^ in[i/2][j/2][k/2+1]
+		 									);
+		 									
+		 if( i%2==1 && j%2==0 && k%2==1) output[i][j][k] = 
+		 									fourth & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2+1] ^
+		 										in[i/2+1][j/2][k/2] ^ in[i/2][j/2][k/2+1]
+		 									);
+		 if( i%2==1 && j%2==1 && k%2==1) output[i][j][k] = 
+		 									eight & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2] ^
+		 										in[i/2][j/2+1][k/2] ^ in[i/2][j/2][k/2+1] ^
+		 										in[i/2+1][j/2+1][k/2] ^ in[i/2][j/2+1][k/2+1] ^
+		 										in[i/2+1][j/2][k/2+1] ^ in[i/2+1][j/2+1][k/2+1]
+		 									);
+		}
+		}
+	}
+	return output;
+}
+
+
+
+
+
+
+bit[2*N][2*N][2*N] skMGinter(bit[N][N][N] in, bit half, bit fourth, bit eight)implements MGinter
+{
+
+	bit[2*N][2*N][2*N]  output=0;
+	for(int i=??; i<(N-2)+??; ++i){
+		for(int j=??; j<(N-2)+??; ++j){
+			for(int k=??; k<(N-2)+??; ++k){
+				output[k*2+??][j*2+??][i*2+??] = in[k+??][j+??][i+??]; //
+				output[k*2+??][j*2+??][i*2+??] = half & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] );
+				output[k*2+??][j*2+??][i*2+??] = half & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] );
+				output[k*2+??][j*2+??][i*2+??] = half & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] );
+				
+				output[k*2+??][j*2+??][i*2+??] = fourth & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??]);
+				output[k*2+??][j*2+??][i*2+??] = fourth & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??]);
+				output[k*2+??][j*2+??][i*2+??] = fourth & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??]);				
+
+				output[k*2+??][j*2+??][i*2+??] = eight & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] 
+				                                  ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??]);				
+			}						
+		}
+	}
+	return output;
+}
+
+
+
+
+
