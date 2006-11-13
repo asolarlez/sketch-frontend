@@ -421,7 +421,7 @@ public class FEReplacer implements FEVisitor
         return new StmtDoWhile(stmt.getContext(), newBody, newCond);
     }
     
-    public Object visitStmtEmpty(StmtEmpty stmt) { return stmt; }
+    public Object visitStmtEmpty(StmtEmpty stmt) { return null; }
 
     public Object visitStmtEnqueue(StmtEnqueue stmt)
     {
