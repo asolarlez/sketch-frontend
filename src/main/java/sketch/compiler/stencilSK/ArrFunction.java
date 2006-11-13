@@ -28,7 +28,7 @@ public class ArrFunction{
 	public static final String MAX_VAR = "max_idx";
 	public static final String IDX_VAR = "idx_";
 	public static final String GUARD_VAR = "gv_";
-	public static final String IND_VAR = "ii";
+	public static final String IND_VAR = "_ii_";
 	public static final String PPPREFIX = "pp_";
 	public static final ExprVar NULL = new ExprVar(null, "null");
 	////////////////////////////////////////////////////////////////
@@ -160,8 +160,13 @@ public class ArrFunction{
 				new TypeArray(TypePrimitive.inttype, new ExprConstInt(null, max_size)),
 				MAX_VAR, new ExprConstInt(null, 0)));
 			stmts.add(new StmtVarDecl(null, 
-					TypePrimitive.inttype,
-					IND_VAR, new ExprConstInt(null, 0)));
+					TypePrimitive.bittype,
+					IND_VAR, new ExprConstInt(null, 1)));
+			for(int i=0; i<maxAss.size(); ++i){
+				stmts.add(new StmtVarDecl(null, 
+						TypePrimitive.bittype,
+						IND_VAR+i, new ExprConstInt(null, 0)));
+			}
 			stmts.addAll(maxAss);
 			stmts.addAll(retStmts);
 		}

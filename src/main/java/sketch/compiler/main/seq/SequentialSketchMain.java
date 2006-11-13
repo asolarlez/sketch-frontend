@@ -74,6 +74,8 @@ import streamit.frontend.tosbit.ProduceBooleanFunctions;
 import streamit.frontend.tosbit.SequentialHoleTracker;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 
 class CommandLineParams{
@@ -175,7 +177,6 @@ class CommandLineParams{
 
 
 
-
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
  * entry point for the StreamIt syntax converter.  Running it as
@@ -213,6 +214,11 @@ public class ToSBit
     }
 
 
+    public RecursionControl newRControl(){
+    	return new BaseRControl(params.inlineAmt);
+    }
+    
+    
     
     private static class NullStream extends OutputStream 
     {
@@ -393,7 +399,7 @@ public class ToSBit
             ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,
                                              new PrintStream(outStream),
-                                             params.unrollAmt, params.inlineAmt);
+                                             params.unrollAmt, newRControl());
             System.out.println("MAX LOOP UNROLLING = " + params.unrollAmt);
             System.out.println("MAX FUNC INLINING  = " + params.inlineAmt);
             prog.accept( partialEval );
@@ -431,10 +437,10 @@ public class ToSBit
     public void eliminateStar(){
     	 finalCode =
              (Program) beforeUnvectorizing.accept (
-                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt,3));
+                 new EliminateStar(oracle, params.unrollAmt, newRControl(),3));
          finalCode =
              (Program) finalCode.accept (
-                 new EliminateStar(oracle, params.unrollAmt, params.inlineAmt, 3));
+                 new EliminateStar(oracle, params.unrollAmt, newRControl(), 3));
     }
     
     protected String getOutputFileName() {
@@ -533,6 +539,7 @@ public class ToSBit
         partialEvalAndSolve();
         eliminateStar();
         generateCode();
+        System.out.println("DONE");
         
     }
     
