@@ -4,17 +4,17 @@ import java.util.*;
 
 import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
 	protected MethodState state;
 	public final boolean isReplacer;	
 	protected boolean isComplete = true;
-	
+	protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
     protected int MAX_UNROLL = 0;
-    protected int MAX_INLINE = 0;
-    private HashMap<String, Integer> inlineCounter = new HashMap ();
+   
 
 	public class CheckSize extends FENullVisitor{
 		int size = -1;
@@ -246,11 +246,11 @@ public class PartialEvaluator extends FEReplacer {
     }
 	
 	
-	public PartialEvaluator(boolean isReplacer, int maxUnroll, int maxInline) {
+	public PartialEvaluator(boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
 		super();
 		this.isReplacer = isReplacer;
         this.MAX_UNROLL = maxUnroll;
-        this.MAX_INLINE = maxInline;
+        this.rcontrol = rcontrol;        
 	}
 
 	protected boolean intToBool(int v) {
@@ -389,7 +389,13 @@ public class PartialEvaluator extends FEReplacer {
 				}
 			}else{
 				state.pushVStack(new valueClass(exp.toString()));
-				return exp;
+				if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
+					List nlst = new ArrayList();
+					nlst.add( new RangeLen(newStart, rl.len()) );
+					return new ExprArrayRange(newBase, nlst);	        		
+				}else{
+					return exp;
+				}
 			}
 		}else{
 			state.pushVStack(new valueClass(exp.toString()));
@@ -998,8 +1004,36 @@ public class PartialEvaluator extends FEReplacer {
         case ExprBinary.BINOP_DIV:  if(hasv) newv = lhs.getIntValue() / rhs.getIntValue(); break;
         case ExprBinary.BINOP_MOD:  if(hasv) newv = lhs.getIntValue() % rhs.getIntValue(); break;
         
-        case ExprBinary.BINOP_AND:  if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
-        case ExprBinary.BINOP_OR:   if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue())); break;
+        case ExprBinary.BINOP_AND:{
+        	if(hasv){        
+        		newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue()));
+        	}else{
+        		if( lhs.hasValue() && !intToBool(lhs.getIntValue())){
+        			hasv = true;
+        			newv = 0;
+        		}
+        		if( rhs.hasValue() && !intToBool(rhs.getIntValue())){
+        			hasv = true;
+        			newv = 0;
+        		}
+        	}
+        	break;
+        }
+        case ExprBinary.BINOP_OR:{   
+        	if(hasv){
+	        	newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue())); 
+	        }else{
+	    		if( lhs.hasValue() && intToBool(lhs.getIntValue())){
+	    			hasv = true;
+	    			newv = 1;
+	    		}
+	    		if( rhs.hasValue() && intToBool(rhs.getIntValue())){
+	    			hasv = true;
+	    			newv = 1;
+	    		}
+	    	}
+        	break;
+        }
         case ExprBinary.BINOP_EQ:   if(hasv) newv = boolToInt(lhs.getIntValue() == rhs.getIntValue()); break;
         case ExprBinary.BINOP_NEQ:  if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
         case ExprBinary.BINOP_LT:   if(hasv) newv = boolToInt(lhs.getIntValue() < rhs.getIntValue()); break;
@@ -1433,36 +1467,5 @@ public class PartialEvaluator extends FEReplacer {
 		return super.visitStreamSpec(spec);
     }
 
-    public int getInlineCounter (String funcName)
-    {
-        assert (funcName != null);
-        Integer numInlinedInteger = inlineCounter.get (funcName);
-        return (numInlinedInteger != null ? numInlinedInteger.intValue () : 0);
-    }
 
-    private int addInlineCounter (String funcName, int step) {
-        int numInlined = getInlineCounter (funcName);
-        numInlined += step;
-        assert (numInlined >= 0);
-        inlineCounter.put (funcName, new Integer (numInlined));
-        return numInlined;
-    }
-
-    public int incInlineCounter (String funcName, int step) {
-        assert (step > 0);
-        return addInlineCounter (funcName, step);
-    }
-
-    public int incInlineCounter (String funcName) {
-        return incInlineCounter (funcName, 1);
-    }
-
-    public int decInlineCounter (String funcName, int step) {
-        assert (step > 0);
-        return addInlineCounter (funcName, -step);
-    }
-
-    public int decInlineCounter (String funcName) {
-        return decInlineCounter (funcName, 1);
-    }
 }
