@@ -16,13 +16,14 @@ import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class ProduceBooleanFunctions extends NodesToSBit {
 
 	public ProduceBooleanFunctions(StreamSpec ss, TempVarGen varGen,
 			ValueOracle oracle, PrintStream out,
-            int maxUnroll, int maxInline) {
-		super(ss, varGen, oracle, out, maxUnroll, maxInline);
+            int maxUnroll, RecursionControl rcontrol) {
+		super(ss, varGen, oracle, out, maxUnroll, rcontrol);
 	}
 	
 	
