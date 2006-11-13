@@ -1,0 +1,24 @@
+int N;
+int[N] test(int[N] in){
+  int[N] out;
+  for(int i=0; i<N-3; ++i){
+  	out[i] = in[i+3] + in[i+3];
+  }
+  return out;
+}
+
+int foo(int x){
+	return x + x;
+}
+
+
+int[N] testSK(int[N] in) implements test {
+  int[N] out;
+  for(int i=0; i<N-??; ++i){
+ 	int a = ??;
+  	out[i] = foo(in[i+a]);
+  }
+  return out;
+}
+
+

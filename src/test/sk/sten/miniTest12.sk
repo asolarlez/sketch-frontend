@@ -1,0 +1,18 @@
+int N;
+bit[N] test(bit[N] in){
+  bit[N] out;
+  for(int i=0; i<N-3; ++i){
+  	out[i] = in[i+3];
+  }
+  return out;
+}
+
+bit[N] testSK(bit[N] in) implements test {
+  bit[N] out;
+  for(int i=0; i<N-??; ++i){
+  	out[i] = in[i+??];
+  }
+  return out;
+}
+
+    
