@@ -664,7 +664,7 @@ class processStencil extends FEReplacer {
 	    }
 	    public Statement nullMaxIf(ArrFunction prevFun){	    	
 	    	// cond = IND_VAR = 0;
-	    	Expression cond = new ExprBinary(null, ExprBinary.BINOP_EQ, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(0) );
+	    	Expression cond = new ExprVar(null, ArrFunction.IND_VAR); 
 	    	Statement rval;
 	    	if(prevFun != null){
 	    		List<Expression>  params = new ArrayList<Expression>();
@@ -773,8 +773,6 @@ class processStencil extends FEReplacer {
 	    	//Now we add the secondary constraints.
 	    	int tt = 0;
 	    	PathIterator pIt = currentTN.limitedPathIter();
-	    	
-	    	/*
 	    	if( fun.declarationSite != this.ptree.getRoot()  ){
 	    		for(; pIt.hasNext(); ){
 		    		ParamTree.treeNode iterPar = pIt.tnNext();	
@@ -783,7 +781,6 @@ class processStencil extends FEReplacer {
 		    	}
 	    		
 	    	}
-	    	*/	    	
 	    	pIt.makeUnlimited();
 	    	if(pIt.hasNext()){
 		    	Expression binexp = buildSecondaryConstr(pIt, newVar, tt);
@@ -835,9 +832,16 @@ class processStencil extends FEReplacer {
 			Expression cond1 = new ExprVar(null, gv2);
 			Expression cond2 = comp(0, dim, v1, v2);
 			
-			StmtAssign as1 = new StmtAssign(null, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(id+1));
+			
 			StmtAssign as2 = new StmtAssign(null, v1, v2);
-			List<Statement> lst = new ArrayList<Statement>(2);
+			List<Statement> lst = new ArrayList<Statement>(3+id);
+			StmtAssign as0 = new StmtAssign(null, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(0));
+			lst.add(as0);
+			for(int i=0; i<id; ++i){
+				StmtAssign as = new StmtAssign(null, new ExprVar(null, ArrFunction.IND_VAR+i), new ExprConstInt(0));
+				lst.add(as);
+			}
+			StmtAssign as1 = new StmtAssign(null, new ExprVar(null, ArrFunction.IND_VAR+id), new ExprConstInt(1));
 			lst.add(as1);
 			lst.add(as2);
 			
@@ -999,10 +1003,9 @@ class processStencil extends FEReplacer {
 	    
 	    public Statement iMaxIf(int i, Expression rhs, ArrFunction fun){
 	    	//if(indvar == i+1){ return rhs; }
-	    	ExprVar indvar = new ExprVar(null, ArrFunction.IND_VAR);
+	    	ExprVar indvar = new ExprVar(null, ArrFunction.IND_VAR+i);
 	    	ExprVar idxi = new ExprVar(null, ArrFunction.IDX_VAR + i);
-	    	ExprConstInt iiv = new ExprConstInt(i+1);
-	    	Expression eq = new ExprBinary(null, ExprBinary.BINOP_EQ, indvar, iiv);
+	    	//ExprConstInt iiv = new ExprConstInt(i+1);	    	
 	    	int ii=0;
 	    	
 	    	// rhs[ idx_param[ii] -> idx_i[2*ii+1] ]; 
@@ -1013,7 +1016,7 @@ class processStencil extends FEReplacer {
 	    	}
 //	    	 rhs[ arr[i] -> arr_fun(i, idxi) ]; 
 	    	Expression retV = (Expression)rhs.accept(new ArrReplacer(idxi));	    	
-	    	return new StmtIfThen(rhs.getContext(), eq, new StmtReturn(null, retV), null); 
+	    	return new StmtIfThen(rhs.getContext(), indvar, new StmtReturn(null, retV), null); 
 	    }
 	   
 	    
