@@ -1,0 +1,102 @@
+int N;
+
+bit[2*N][2*N][2*N] MGinter(bit[N][N][N] in, bit half, bit fourth, bit eight){
+
+	bit[2*N][2*N][2*N]  output=0;
+	for(int i=0; i<2*N-2; ++i){
+		for(int j=0; j<2*N-2; ++j){
+		for(int k=0; k<2*N-2; ++k){
+		 if( i%2==0 && j%2==0 && k%2==0) output[i][j][k] = in[i/2][j/2][k/2];
+		 
+		 if( i%2==1 && j%2==0 && k%2==0) output[i][j][k] = 
+		 									half & (in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2]);
+		 if( i%2==0 && j%2==1 && k%2==0) output[i][j][k] = 
+		 									half & (in[i/2][j/2][k/2] ^ in[i/2][j/2+1][k/2]);
+		 if( i%2==0 && j%2==0 && k%2==1) output[i][j][k] = 
+		 									half & (in[i/2][j/2][k/2] ^ in[i/2][j/2][k/2+1]);
+		 
+		 if( i%2==1 && j%2==1 && k%2==0) output[i][j][k] = 
+		 									fourth & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2+1][k/2] ^
+		 										in[i/2][j/2+1][k/2] ^ in[i/2+1][j/2][k/2]);
+		 if( i%2==0 && j%2==1 && k%2==1) output[i][j][k] = 
+		 									fourth & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2][j/2+1][k/2+1] ^
+		 										in[i/2][j/2+1][k/2] ^ in[i/2][j/2][k/2+1]
+		 									);
+		 									
+		 if( i%2==1 && j%2==0 && k%2==1) output[i][j][k] = 
+		 									fourth & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2+1] ^
+		 										in[i/2+1][j/2][k/2] ^ in[i/2][j/2][k/2+1]
+		 									);
+		 if( i%2==1 && j%2==1 && k%2==1) output[i][j][k] = 
+		 									eight & 
+		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2] ^
+		 										in[i/2][j/2+1][k/2] ^ in[i/2][j/2][k/2+1] ^
+		 										in[i/2+1][j/2+1][k/2] ^ in[i/2][j/2+1][k/2+1] ^
+		 										in[i/2+1][j/2][k/2+1] ^ in[i/2+1][j/2+1][k/2+1]
+		 									);
+		}
+		}
+	}
+	return output;
+}
+
+
+
+
+
+
+bit[2*N][2*N][2*N] skMGinter(bit[N][N][N] in, bit half, bit fourth, bit eight)implements MGinter
+{
+
+	bit[2*N][2*N][2*N]  output=0;
+	for(int i=??; i<(N-2)+??; ++i){
+		for(int j=??; j<(N-2)+??; ++j){
+			bit[3][N+1] z;
+			for(int k=??; k<(N-2)+??; ++k){
+				bit t1 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ;
+				bit t2 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??];
+				bit t3 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??];				
+				
+				output[k*2+??][j*2+??][i*2+??] = in[k+??][j+??][i+??]; //
+				output[k*2+??][j*2+??][i*2+??] = 
+				half & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] );
+				
+				t3 =  t3 ^ t1;
+				z[0][k] = t1;
+				z[1][k] = t2;
+				z[2][k] = t3;
+			}
+			for(int k=N-2+??; k<(N-2)+??; ++k){
+				bit v1 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ;
+				bit v2 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??];
+				bit v3 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??];
+				v3 =  v3 ^ v1;
+				z[0][k] = v1;
+				z[1][k] = v2;
+				z[2][k] = v3;
+			}
+			for(int k=??; k<(N-2)+??; ++k){
+				output[k*2+??][j*2+??][i*2+??] = half   & z[0][k+??]; //
+				output[k*2+??][j*2+??][i*2+??] = fourth & (z[0][k+??] ^ z[0][k+??]);
+			}
+			for(int k=??; k<(N-2)+??; ++k){
+				output[k*2+??][j*2+??][i*2+??] = half   & z[1][k+??]; //
+				output[k*2+??][j*2+??][i*2+??] = fourth & (z[1][k+??] ^ z[1][k+??]);
+			}
+			for(int k=??; k<(N-2)+??; ++k){
+				output[k*2+??][j*2+??][i*2+??] = fourth & z[2][k+??]; //
+				output[k*2+??][j*2+??][i*2+??] = eight  & (z[2][k+??] ^ z[2][k+??]);
+			}
+						
+		}
+	}
+	return output;
+}
+
+
+
+
+
