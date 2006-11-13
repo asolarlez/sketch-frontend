@@ -1,8 +1,35 @@
 package streamit.frontend.tosbit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class EliminateStar extends CodePEval {
 	private ValueOracle oracle;	
@@ -59,18 +86,18 @@ public class EliminateStar extends CodePEval {
 	}
 
 	public EliminateStar(ValueOracle oracle, int maxUnroll,
-                         int maxInline, int inlineLevel)
+			RecursionControl rcontrol, int inlineLevel)
     {
-		super(maxUnroll, maxInline, inlineLevel);
+		super(maxUnroll, rcontrol, inlineLevel);
 		this.oracle = oracle;
 		oracle.initCurrentVals();
 		this.state = new MethodState();		
 	}
 
 	
-	public EliminateStar(ValueOracle oracle, int maxUnroll, int maxInline)
+	public EliminateStar(ValueOracle oracle, int maxUnroll, RecursionControl rcontrol)
     {
-        this (oracle, maxUnroll, maxInline, 0);
+        this (oracle, maxUnroll, rcontrol, 0);
 	}
 		
 	public boolean askIfPEval(Function node){
