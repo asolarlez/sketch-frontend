@@ -129,9 +129,9 @@
       real z1(0:(N + 1)-1)
       real z2(0:(N + 1)-1)
       real z3(0:(N + 1)-1)
-      integer t1
-      integer t2
-      integer t3
+      real t1
+      real t2
+      real t3
       do i_0 = 0, ((2 * N) - 1)
         do i_1 = 0, ((2 * N) - 1)
           do i_2 = 0, ((2 * N) - 1)
