@@ -36,6 +36,9 @@ import streamit.frontend.stencilSK.StencilSemanticChecker;
 import streamit.frontend.tosbit.SNodesToC;
 import streamit.frontend.tosbit.SNodesToFortran;
 import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
+import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 /**
  * This class manages all the work involed in compiling a stencil 
@@ -51,12 +54,18 @@ public class ToStencilSK extends ToSBit
 		super(params);
 	}
 	
+	
+	
     protected Program preprocessProgram(Program prog) {
         prog = super.preprocessProgram(prog);
         prog = (Program)prog.accept(new VariableDisambiguator());
         return prog;
     }
 	
+    public RecursionControl newRControl(){
+    	return new AdvancedRControl(18, params.inlineAmt, prog);
+    }
+    
     public void run()
     {
     	if (params.printHelp)
@@ -69,7 +78,7 @@ public class ToStencilSK extends ToSBit
         originalProg = prog;  // save
         prog=preprocessProgram(prog); // perform prereq transformations
 
-        prog = (Program)prog.accept(new StencilPreprocessor(params.unrollAmt, params.inlineAmt));
+        prog = (Program)prog.accept(new StencilPreprocessor(params.unrollAmt, newRControl()));
         
         prog.accept(new SimpleCodePrinter());
         
