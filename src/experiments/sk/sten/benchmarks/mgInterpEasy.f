@@ -6,6 +6,7 @@
       real in(0:N-1, 0:N-1, 0:N-1)
       real out(0:(2 * N)-1, 0:(2 * N)-1, 0:(2 * N)-1)
       real out2(0:(2 * N)-1, 0:(2 * N)-1, 0:(2 * N)-1)
+      real out3(0:(2 * N)-1, 0:(2 * N)-1, 0:(2 * N)-1)
       integer clockrate, t0, t1
       integer k, k2
 
@@ -36,6 +37,13 @@
       print *, "sketch"
       if(prtarr .GT. 0) print *, out2
       print *, real(t1-t0)/(real(clockrate)/1000.0)
+
+      call system_clock(count=t0)
+      call skSimpleMGinter(in,f2,f4,f8,out3,N)
+      call system_clock(count=t1)
+      print *, "simplesketch"
+      if(prtarr .GT. 0) print *, out3
+      print *, real(t1-t0)/(real(clockrate)/1000.0)
       
       do i_0 = 0, ((2 * N) - 1)
         do i_1 = 0, ((2 * N) - 1)
@@ -43,6 +51,11 @@
             if(out(i_0,i_1,i_2) .NE. out2(i_0,i_1,i_2)) then
               print *,"Found a difference in output!"
               print *,i_0,i_1,i_2,out(i_0,i_1,i_2),out2(i_0,i_1,i_2)
+              stop
+            endif
+            if(out(i_0,i_1,i_2) .NE. out3(i_0,i_1,i_2)) then
+              print *,"Found a difference in output (2)!"
+              print *,i_0,i_1,i_2,out(i_0,i_1,i_2),out3(i_0,i_1,i_2)
               stop
             endif
           enddo
@@ -191,3 +204,51 @@
       return
       end
 
+      subroutine skSimpleMGinter(in,half,fourth,eight,output,N)
+      real in(0:N-1, 0:N-1, 0:N-1)
+      real half
+      real fourth
+      real eight
+      real output(0:(2 * N)-1, 0:(2 * N)-1, 0:(2 * N)-1)
+      integer N
+      do i_0 = 0, ((2 * N) - 1)
+        do i_1 = 0, ((2 * N) - 1)
+          do i_2 = 0, ((2 * N) - 1)
+            output(i_0, i_1, i_2) = 0
+          enddo
+        enddo
+      enddo
+      do i = 0, (((N - 2) + 1) - 1)
+        do j = 0, (((N - 2) + 1) - 1)
+          do k = 0, (((N - 2) + 1) - 1)
+            output(((k * 2) + 0), ((j * 2) + 0), ((i * 2) + 0)) = in((k 
+     ++ 0), (j + 0), (i + 0))
+            output(((k * 2) + 0), ((j * 2) + 1), ((i * 2) + 0)) = (half 
+     +* (in((k + 0), (j + 1), (i + 0)) + in((k + 0), (j + 0), (i + 0))))
+            output(((k * 2) + 0), ((j * 2) + 0), ((i * 2) + 1)) = (half 
+     +* (in((k + 0), (j + 0), (i + 0)) + in((k + 0), (j + 0), (i + 1))))
+            output(((k * 2) + 1), ((j * 2) + 0), ((i * 2) + 0)) = (half 
+     +* (in((k + 0), (j + 0), (i + 0)) + in((k + 1), (j + 0), (i + 0))))
+            output(((k * 2) + 0), ((j * 2) + 1), ((i * 2) + 1)) = (fourt
+     +h * (((in((k + 0), (j + 1), (i + 0)) + in((k + 0), (j + 0), (i + 0
+     +))) + in((k + 0), (j + 0), (i + 1))) + in((k + 0), (j + 1), (i + 1
+     +))))
+            output(((k * 2) + 1), ((j * 2) + 0), ((i * 2) + 1)) = (fourt
+     +h * (((in((k + 1), (j + 0), (i + 1)) + in((k + 0), (j + 0), (i + 0
+     +))) + in((k + 0), (j + 0), (i + 1))) + in((k + 1), (j + 0), (i + 0
+     +))))
+            output(((k * 2) + 1), ((j * 2) + 1), ((i * 2) + 0)) = (fourt
+     +h * (((in((k + 1), (j + 1), (i + 0)) + in((k + 0), (j + 0), (i + 0
+     +))) + in((k + 1), (j + 0), (i + 0))) + in((k + 0), (j + 1), (i + 0
+     +))))
+            output(((k * 2) + 1), ((j * 2) + 1), ((i * 2) + 1)) = (eight
+     + * (((((((in((k + 1), (j + 1), (i + 0)) + in((k + 0), (j + 1), (i 
+     ++ 1))) + in((k + 0), (j + 0), (i + 1))) + in((k + 1), (j + 1), (i 
+     ++ 1))) + in((k + 1), (j + 0), (i + 1))) + in((k + 1), (j + 0), (i 
+     ++ 0))) + in((k + 0), (j + 0), (i + 0))) + in((k + 0), (j + 1), (i 
+     ++ 0))))
+          enddo
+        enddo
+      enddo
+      return
+      end
