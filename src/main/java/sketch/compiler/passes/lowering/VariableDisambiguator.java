@@ -44,6 +44,9 @@ public class VariableDisambiguator extends FEReplacer
 			}
 			return stmt;
 		}
+		//take care of variable substitution in the initializers first
+		stmt=(StmtVarDecl) super.visitStmtVarDecl(stmt);
+		
 		List<String> names=new ArrayList<String>(stmt.getNames());		
 		boolean change=false;
 		for(int i=0;i<stmt.getNumVars();i++) {
