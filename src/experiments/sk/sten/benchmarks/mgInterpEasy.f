@@ -1,6 +1,6 @@
       program mgInterpEasy
-      parameter (N=2)
-      parameter (prtarr=1)
+      parameter (N=100)
+      parameter (prtarr=0)
 
       parameter (f2=0.5, f4=0.25, f8=0.125)
       real in(0:N-1, 0:N-1, 0:N-1)
@@ -12,16 +12,16 @@
 
       call system_clock(count_rate=clockrate)
 
-      do i_0 = 0, N-1
+      do i_2 = 0, N-1
         do i_1 = 0, N-1
-          do i_2 = 0, N-1
+          do i_0 = 0, N-1
             in(i_0, i_1, i_2) = 1.0 + sin(real(k))
             k=mod(k*k+73,997)
           enddo
         enddo
       enddo
 
-      print *, "input"
+      if(prtarr .GT. 0) print *, "input"
       if(prtarr .GT. 0) print *, in
       
       call system_clock(count=t0)
@@ -45,15 +45,15 @@
       if(prtarr .GT. 0) print *, out3
       print *, real(t1-t0)/(real(clockrate)/1000.0)
       
-      do i_0 = 0, ((2 * N) - 1)
+      do i_2 = 0, ((2 * N) - 1)
         do i_1 = 0, ((2 * N) - 1)
-          do i_2 = 0, ((2 * N) - 1)
-            if(out(i_0,i_1,i_2) .NE. out2(i_0,i_1,i_2)) then
+          do i_0 = 0, ((2 * N) - 1)
+            if(abs(out(i_0,i_1,i_2)-out2(i_0,i_1,i_2)) .GT. 0.0001) then
               print *,"Found a difference in output!"
               print *,i_0,i_1,i_2,out(i_0,i_1,i_2),out2(i_0,i_1,i_2)
               stop
             endif
-            if(out(i_0,i_1,i_2) .NE. out3(i_0,i_1,i_2)) then
+            if(abs(out(i_0,i_1,i_2)-out3(i_0,i_1,i_2)) .GT. 0.0001) then
               print *,"Found a difference in output (2)!"
               print *,i_0,i_1,i_2,out(i_0,i_1,i_2),out3(i_0,i_1,i_2)
               stop
@@ -61,6 +61,7 @@
           enddo
         enddo
       enddo
+      print *,"No differences found between the 3 outputs"
       end
 
       subroutine MGinter(in,half,fourth,eight,output,N)
@@ -70,9 +71,9 @@
       real eight
       real output(0:(2 * N)-1, 0:(2 * N)-1, 0:(2 * N)-1)
       integer N
-      do i_0 = 0, ((2 * N) - 1)
+      do i_2 = 0, ((2 * N) - 1)
         do i_1 = 0, ((2 * N) - 1)
-          do i_2 = 0, ((2 * N) - 1)
+          do i_0 = 0, ((2 * N) - 1)
             output(i_0, i_1, i_2) = 0
           enddo
         enddo
