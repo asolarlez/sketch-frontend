@@ -78,16 +78,46 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 				Expression left=rhs.getLeft();
 				Expression right=rhs.getRight();
 				if(left instanceof ExprConstInt){
-					int sz = bitLength(lhsType); 					
-					List<Expression> lst=new ArrayList<Expression>();
-					for(int i=0; i<sz; ++i){ lst.add(left); }
-					left= new ExprArrayInit(stmt.getContext(), lst);						
+					switch(rhs.getOp()) {
+					case ExprBinary.BINOP_ADD:
+					case ExprBinary.BINOP_AND:
+					case ExprBinary.BINOP_BAND:
+					case ExprBinary.BINOP_BOR:
+					case ExprBinary.BINOP_BXOR:
+					case ExprBinary.BINOP_DIV:
+					case ExprBinary.BINOP_LSHIFT:
+					case ExprBinary.BINOP_MOD:
+					case ExprBinary.BINOP_MUL:
+					case ExprBinary.BINOP_OR:
+					case ExprBinary.BINOP_RSHIFT:
+					case ExprBinary.BINOP_SELECT:
+					case ExprBinary.BINOP_SUB:
+						int sz = bitLength(lhsType); 					
+						List<Expression> lst=new ArrayList<Expression>();
+						for(int i=0; i<sz; ++i){ lst.add(left); }
+						left= new ExprArrayInit(stmt.getContext(), lst);
+						break;
+					}
 				}
-				if(right instanceof ExprConstInt && !(rhs.getOp() == ExprBinary.BINOP_LSHIFT || rhs.getOp() == ExprBinary.BINOP_RSHIFT)) {
-					int sz = bitLength(lhsType);					
-					List<Expression> lst=new ArrayList<Expression>();
-					for(int i=0; i<sz; ++i){ lst.add(right); }
-					right= new ExprArrayInit(stmt.getContext(), lst);	
+				if(right instanceof ExprConstInt) {
+					switch(rhs.getOp()) {
+					case ExprBinary.BINOP_ADD:
+					case ExprBinary.BINOP_AND:
+					case ExprBinary.BINOP_BAND:
+					case ExprBinary.BINOP_BOR:
+					case ExprBinary.BINOP_BXOR:
+					case ExprBinary.BINOP_DIV:
+					case ExprBinary.BINOP_MOD:
+					case ExprBinary.BINOP_MUL:
+					case ExprBinary.BINOP_OR:
+					case ExprBinary.BINOP_SELECT:
+					case ExprBinary.BINOP_SUB:
+						int sz = bitLength(lhsType);					
+						List<Expression> lst=new ArrayList<Expression>();
+						for(int i=0; i<sz; ++i){ lst.add(right); }
+						right= new ExprArrayInit(stmt.getContext(), lst);
+						break;
+					}
 				}
 				if(left instanceof ExprBinary) {
 					left=makeTempExpr(left, getType(left));
