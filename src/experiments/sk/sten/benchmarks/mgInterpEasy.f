@@ -78,9 +78,10 @@
           enddo
         enddo
       enddo
-      do i = 0, (((2 * N) - 2) - 1)
+
+      do k = 0, (((2 * N) - 2) - 1)
         do j = 0, (((2 * N) - 2) - 1)
-          do k = 0, (((2 * N) - 2) - 1)
+          do i = 0, (((2 * N) - 2) - 1)
             if ((((mod(i,2) .EQ. 0) .AND. (mod(j,2) .EQ. 0)) .AND. (mod(
      +k,2) .EQ. 0))) then
               output(i, j, k) = in((i / 2), (j / 2), (k / 2))
@@ -154,16 +155,7 @@
         enddo
       enddo
       do i = 0, (((N - 2) + 1) - 1)
-        do j = 0, (((N - 2) + 1) - 1)
-          do i_0 = 0, ((N + 1) - 1)
-            z1(i_0) = 0
-          enddo
-          do i_0 = 0, ((N + 1) - 1)
-            z2(i_0) = 0
-          enddo
-          do i_0 = 0, ((N + 1) - 1)
-            z3(i_0) = 0
-          enddo
+        do j = 0, (((N - 2) + 1) - 1)         
           do k = 0, (((N - 2) + 3) - 1)
             t1 = (in((k + 0), (j + 0), (i + 1)) + in((k + 0), (j + 0), (
      +i + 0)))
