@@ -8,8 +8,8 @@ bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit e
  for(int i=1; i<N-1; ++i){
   for(int j=1; j<N-1; ++j){
    if(i%2 == j%2){
-    tmp[i][j] = (f[i][j] ) ^ ( ce&in[i][j]) ^ (
-    no&in[i-1][j]) ^ (so&in[i+1][j]) ^ (ea&in[i][j+1]) ^ (we&in[i][j-1]);
+    tmp[j][i] = (f[j][i] ) ^ ( ce&in[j][i]) ^ (
+    no&in[j][i-1]) ^ (so&in[j][i+1]) ^ (ea&in[j+1][i]) ^ (we&in[j-1][i]);
    }
   }
  }
@@ -17,10 +17,10 @@ bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit e
  for(int i=1; i<N-1; ++i){
   for(int j=1; j<N-1; ++j){
    if(!(i%2 == j%2)){
-    output[i][j] = ( f[i][j] ) ^ ( ce&in[i][j]) ^ (
-    no&tmp[i-1][j]) ^ (so&tmp[i+1][j]) ^ (ea&tmp[i][j+1]) ^ (we&tmp[i][j-1] );
+    output[j][i] = ( f[j][i] ) ^ ( ce&in[j][i]) ^ (
+    no&tmp[j][i-1]) ^ (so&tmp[j][i+1]) ^ (ea&tmp[j+1][i]) ^ (we&tmp[j-1][i] );
    }else{
-    output[i][j] = tmp[i][j];
+    output[j][i] = tmp[j][i];
    }
   }
  }
@@ -32,38 +32,40 @@ bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit e
 
 
 bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidel{
- bit[N][N] output=0;
+ bit[N][N] bigO=0;
  if( N%2 == 0){
+  bit[N][N] output=0;
   for(int j=1; j<N/2; ++j){
 
-    { int ta; ta=??; int tb; tb=2*j-1; output[??][2*j-1] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta-1][tb] ) ^ (so&in[ta+1][tb]) ^ (ea&in[ta][tb+1]) ^ (we&in[ta][tb-1] ); };
-    { int ta; ta=??; int tb; tb=2*j; output[??][2*j] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta-1][tb] ) ^ (so&in[ta+1][tb]) ^ (ea&in[ta][tb+1]) ^ (we&in[ta][tb-1] ); };
+    { int ta; ta=2*j-1; int tb; tb=??; output[2*j-1][??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta; ta=2*j; int tb; tb=??; output[2*j][??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
   }
 
   for(int i=??; i<N/2; ++i){
    for(int j=??; j<N/2; ++j){
 
-    { int ta; ta=2*i-1; int tb; tb=2*j-1; output[2*i-1][2*j-1] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta-1][tb] ) ^ (so&in[ta+1][tb]) ^ (ea&in[ta][tb+1]) ^ (we&in[ta][tb-1] ); };
-    { int ta; ta=2*i; int tb; tb=2*j; output[2*i][2*j] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta-1][tb] ) ^ (so&in[ta+1][tb]) ^ (ea&in[ta][tb+1]) ^ (we&in[ta][tb-1] ); };
+    { int ta; ta=2*j-1; int tb; tb=2*i-1; output[2*j-1][2*i-1] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta; ta=2*j; int tb; tb=2*i; output[2*j][2*i] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
 
-    { int ta; ta=2*i-1-2; int tb; tb=2*j; output[2*i-1-2][2*j] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta-1][tb] ) ^ (so&output[ta+1][tb]) ^ (ea&output[ta][tb+1]) ^ (we&output[ta][tb-1] ); };
-    { int ta; ta=2*i-2; int tb; tb=2*j-1; output[2*i-2][2*j-1] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta-1][tb] ) ^ (so&output[ta+1][tb]) ^ (ea&output[ta][tb+1]) ^ (we&output[ta][tb-1] ); };
+    { int ta; ta=2*j; int tb; tb=2*i-1-2; output[2*j][2*i-1-2] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta; ta=2*j-1; int tb; tb=2*i-2; output[2*j-1][2*i-2] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
    }
   }
 
   for(int j=1; j<N/2; ++j){
 
-    { int ta; ta=N-??; int tb; tb=2*j-1; output[N-??][2*j-1] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta-1][tb] ) ^ (so&output[ta+1][tb]) ^ (ea&output[ta][tb+1]) ^ (we&output[ta][tb-1] ); };
-    { int ta; ta=N-??; int tb; tb=2*j; output[N-??][2*j] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta-1][tb] ) ^ (so&output[ta+1][tb]) ^ (ea&output[ta][tb+1]) ^ (we&output[ta][tb-1] ); };
+    { int ta; ta=2*j-1; int tb; tb=N-??; output[2*j-1][N-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta; ta=2*j; int tb; tb=N-??; output[2*j][N-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
   }
+  bigO = output;
  }else{
+  bit[N][N] output=0;
   bit[N][N] tmp=0;
-
   for(int i=1; i<N-1; ++i){
    for(int j=1; j<N-1; ++j){
     if(i%2 == j%2){
-     tmp[i][j] = (f[i][j] ) ^ ( ce&in[i][j]) ^ (
-     no&in[i-1][j]) ^ (so&in[i+1][j]) ^ (ea&in[i][j+1]) ^ (we&in[i][j-1]);
+     tmp[j][i] = (f[j][i] ) ^ ( ce&in[j][i]) ^ (
+     no&in[j][i-1]) ^ (so&in[j][i+1]) ^ (ea&in[j+1][i]) ^ (we&in[j-1][i]);
     }
    }
   }
@@ -71,13 +73,14 @@ bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit
   for(int i=1; i<N-1; ++i){
    for(int j=1; j<N-1; ++j){
     if(!(i%2 == j%2)){
-     output[i][j] = ( f[i][j] ) ^ ( ce&in[i][j]) ^ (
-     no&tmp[i-1][j]) ^ (so&tmp[i+1][j]) ^ (ea&tmp[i][j+1]) ^ (we&tmp[i][j-1] );
+     output[j][i] = ( f[j][i] ) ^ ( ce&in[j][i]) ^ (
+     no&tmp[j][i-1]) ^ (so&tmp[j][i+1]) ^ (ea&tmp[j+1][i]) ^ (we&tmp[j-1][i] );
     }else{
-     output[i][j] = tmp[i][j];
+     output[j][i] = tmp[j][i];
     }
    }
   }
+  bigO = output;
  }
- return output;
+ return bigO;
 }
