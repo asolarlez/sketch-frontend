@@ -28,7 +28,7 @@ bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f,  bit ce, bit no, bit so, bit 
 }
 
 
-#define F(dst, a, b, ar ) { int ta; ta=a; int tb; tb=b; dst[a][b] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ (	no&ar[ta-1][tb] ) ^ (so&ar[ta+1][tb]) ^ (ea&ar[ta][tb+1]) ^ (we&ar[ta][tb-1] ); }
+#define F(dst, a, b, ar ) { int ta; ta=a; int tb; tb=b; dst[a][b] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ (	no&ar[ta][tb-1] ) ^ (so&ar[ta][tb+1]) ^ (ea&ar[ta+1][tb]) ^ (we&ar[ta-1][tb] ); }
 
 
 bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f,  bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidel{
