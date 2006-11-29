@@ -1,0 +1,163 @@
+// *** Support Code ***
+
+int N;
+int NP;
+int maxiter;
+
+int NUMPROC;
+
+int null = 0x0;
+
+// this should be an arbitrary function
+/*int g (int x, int y)
+{
+	return (int)x * (int)y;
+}
+
+int[N][N] initf ()
+{
+	int i, j;
+	int[N][N] f;
+	
+	for (i = 0; i < N; i++)
+		for (j = 0; j < N; j++)
+			f[i][j] = g(i,j);
+			
+	return f;
+}
+
+int[NUMPROC][NP][NP] initu ()
+{
+	int i, j, p;
+	int[NUMPROC][NP][NP] u;
+
+	for (p = 0; p < NUMPROC; p++)
+		for (i = 0; i <= N; i++)
+			for (j = 0; j <= N; j++)
+				u[p][i][j] = 0;
+	
+	for( int p = 0; p < NUMPROC; p++ )
+	{
+		for (i = 0; i <= N; i++)
+		{
+			u[p][i][0] = g(i,0);
+			u[p][0][i] = g(0,i);
+		
+			u[p][N][i] = g(N, i);
+			u[p][i][N] = g(i, N);	
+		}
+	}
+	
+	return u;
+}*/
+
+// MPI simulation implementation
+//void mpi_copy(int[NUMPROC][NP][NP] array, 
+//			  int ifrom, int jfrom, int lengthfrom, int processoridfrom,
+//        	  int ito,   int jto,   int lengthto,   int processoridto)
+//{
+//       for (int i=0; i<lengthfrom && i<lengthto; i++)
+//       {
+//               array[processoridto][ito+i][jto] =
+//                  array[processoridfrom][ifrom+i][jfrom];
+//       }
+//}
+
+// *** Actual Code ***
+
+// Standard, run of the mill iterative jacobi method
+int[NP][NP] approximatePoisson (int[NP][NP] u, int[N][N] f)
+{
+	int h;
+	int[NP][NP] unew;
+	
+	h = 1; // / N;
+	for (int j = 1; j < N-1; ++j)
+	{
+		for (int i = 1; i < N-1; ++i)
+		{
+			// 1 is an arbitrary constant
+		/*	unew[i][j] = u[i+1][j];
+			unew[i][j] = unew[i][j] + u[i-1][j];
+			unew[i][j] = unew[i][j] + u[i][j+1];
+			unew[i][j] = unew[i][j] + u[i][j-1];
+			unew[i][j] = unew[i][j] - h * h * f[i][j];
+			unew[i][j] = unew[i][j] * 1;*/
+			unew[i][j] = 1 * (u[i+1][j] + u[i-1][j] + u[i][j+1] + u[i][j-1] - h * h * f[i][j]);
+		}
+	}
+	
+	return unew;
+}
+
+
+// MPI sketched implementation
+int[NP][NP] sketchedApproximatePoisson (int[NP][NP] u, int[N][N] f) implements approximatePoisson
+{
+	int i, j, k, proc;
+	
+	int[NUMPROC] js, je;
+	int[NUMPROC][NP][NP] udist;
+	int[NUMPROC][NP][NP] unew;
+
+	int h;
+	int nbr_down, nbr_up;
+	
+	// NOTE: js, je are per-process
+	
+	h = 1; // / N;
+
+	int iter = ??;
+	for (int i = 0; i < iter; ++i)
+	{
+		js[i] = ??;
+		je[i] = ??;
+	}
+		
+	// copy u into udist
+	for (proc = 0; proc < NUMPROC; ++proc)
+		udist[proc] = u;
+	
+	for (proc = 0; proc < NUMPROC; ++proc)
+	{
+		// Send down
+		//mpi_copy (u, 1, js[proc],   N-1, nbr_down,
+		//		  	 1, je[proc]+1, N-1, nbr_up);
+		
+		for (i=0; i < N; ++i)
+       	{
+			if (proc == 0)
+				udist[proc+1][1+i][je[proc]+1] = udist[NUMPROC-1][1+i][js[proc]];
+			else if (proc == NUMPROC-1)
+				udist[0][1+i][je[proc]+1] = udist[proc-1][1+i][js[proc]];
+			else
+               	udist[proc+1][1+i][je[proc]+1] = udist[proc-1][1+i][js[proc]];
+	    }
+	
+		// Send up
+		//mpi_copy (u, 1, je[proc],   N-1, nbr_up,
+		//		  	 1, js[proc]-1, N-1, nbr_down);
+				
+		for (i=0; i < N; ++i)
+       	{
+			if (proc == 0)
+				udist[NUMPROC-1][1+i][js[proc]-1] = udist[proc+1][1+i][je[proc]];
+			else if (proc == NUMPROC-1)
+				udist[proc-1][1+i][js[proc]-1] = udist[0][1+i][je[proc]];
+			else
+              	udist[proc-1][1+i][js[proc]-1] = udist[proc+1][1+i][je[proc]];
+	    }
+	
+		for (j = js[proc]; j < je[proc]; ++j)
+			for (i = 1; i < N-1; ++i)
+				unew[proc][i][j] = 1 * ( udist[proc][i+1][j] + udist[proc][i-1][j] + udist[proc][i][j+1] + udist[proc][i][j-1] - h * h * f[i][j]);
+	}	
+	
+	// merge together udists into u
+	for( int proc = 0; proc < NUMPROC; ++proc )
+		for( int j = js[proc]; j < je[proc]; ++j )
+			for (i = 0; i < N+1; ++i)
+				u[i][j] = unew[proc][i][j];
+	
+	return u;
+}
