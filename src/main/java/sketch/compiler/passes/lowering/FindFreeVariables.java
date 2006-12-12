@@ -55,8 +55,10 @@ public class FindFreeVariables extends SymbolTableVisitor
     public Object visitExprVar(ExprVar expr)
     {
         Object result = super.visitExprVar(expr);
-        if (!(symtab.hasVar(expr.getName())))
+        if (!(symtab.hasVar(expr.getName()))){
+        	System.err.println("Can't find variable " + expr);
             freeVars.add(expr.getName());
+        }
         return result;
     }
 
