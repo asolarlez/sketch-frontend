@@ -94,7 +94,7 @@ int[NP][NP] approximatePoisson (int[NP][NP] u, int[N][N] f)
 // MPI sketched implementation
 int[NP][NP] sketchedApproximatePoisson (int[NP][NP] u, int[N][N] f) implements approximatePoisson
 {	
-	int[NUMPROC] js, je;
+	//int[NUMPROC] js, je;
 	int[NUMPROC][NP][NP] udist;
 	int[NUMPROC][NP][NP] unew;
 
@@ -104,13 +104,31 @@ int[NP][NP] sketchedApproximatePoisson (int[NP][NP] u, int[N][N] f) implements a
 	// NOTE: js, je are per-process
 	
 	h = 1; // / N;
-
-	int iter = ??;
-	for (int i = 0; i < iter; ++i)
-	{
-		js[i] = ??;
-		je[i] = ??;
+	
+	/*
+	int tt = 0;
+	for (int i = 0; i < NUMPROC; ++i)
+	{	
+		js[i] = tt;
+		if( i < (NP % NUMPROC) ){
+			tt += NP/NUMPROC + 1;
+		}else{
+			tt += NP/NUMPROC;
+		}
+		je[i] = tt;
 	}
+
+	int tt = 0;	
+	for (int i = 0 ; i < NUMPROC; ++i)
+	{	
+		js[i] = tt;		
+		tt = ( i < (NP % NUMPROC) ) ? (i * (NP/NUMPROC + 1)) : 
+			 ((i-(NP % NUMPROC))* NP/NUMPROC + (NP % NUMPROC)*(NP/NUMPROC + 1));
+		je[i] = tt;
+	}
+	*/
+	
+
 		
 	// copy u into udist
 	for (int proc = 0; proc < NUMPROC; ++proc)
@@ -121,41 +139,41 @@ int[NP][NP] sketchedApproximatePoisson (int[NP][NP] u, int[N][N] f) implements a
 	for (int proc = 0; proc < NUMPROC; ++proc)
 	{
 		// Send down
-		//mpi_copy (u, 1, js[proc],   N-1, nbr_down,
-		//		  	 1, je[proc]+1, N-1, nbr_up);
+		//mpi_copy (u, 1, (proc)*(NP/NUMPROC),   N-1, nbr_down,
+		//		  	 1, (proc+1)*(NP/NUMPROC)+1, N-1, nbr_up);
 		
 		for (int i=0; i < N; ++i)
        	{
 			if (proc == 0)
-				udist[proc+1][1+i][je[proc]+1] = udist[NUMPROC-1][1+i][js[proc]];
+				udist[proc+1][1+i][(proc+1)*(NP/NUMPROC)+1] = udist[NUMPROC-1][1+i][(proc)*(NP/NUMPROC)];
 			else if (proc == NUMPROC-1)
-				udist[0][1+i][je[proc]+1] = udist[proc-1][1+i][js[proc]];
+				udist[proc - (NUMPROC-1)][1+i][(proc+1)*(NP/NUMPROC)+1] = udist[(proc+1)*(NP/NUMPROC)][1+i][(proc)*(NP/NUMPROC)];
 			else
-               	udist[proc+1][1+i][je[proc]+1] = udist[proc-1][1+i][js[proc]];
+               	udist[proc+1][1+i][(proc+1)*(NP/NUMPROC)+1] = udist[proc-1][1+i][(proc)*(NP/NUMPROC)];
 	    }
 	
 		// Send up
-		//mpi_copy (u, 1, je[proc],   N-1, nbr_up,
-		//		  	 1, js[proc]-1, N-1, nbr_down);
+		//mpi_copy (u, 1, (proc+1)*(NP/NUMPROC),   N-1, nbr_up,
+		//		  	 1, (proc)*(NP/NUMPROC)-1, N-1, nbr_down);
 				
 		for (int i=0; i < N; ++i)
        	{
 			if (proc == 0)
-				udist[NUMPROC-1][1+i][js[proc]-1] = udist[proc+1][1+i][je[proc]];
+				udist[NUMPROC-1][1+i][(proc)*(NP/NUMPROC)-1] = udist[proc+1][1+i][(proc+1)*(NP/NUMPROC)];
 			else if (proc == NUMPROC-1)
-				udist[proc-1][1+i][js[proc]-1] = udist[0][1+i][je[proc]];
+				udist[proc-1][1+i][(proc)*(NP/NUMPROC)-1] = udist[0][1+i][(proc+1)*(NP/NUMPROC)];
 			else
-              	udist[proc-1][1+i][js[proc]-1] = udist[proc+1][1+i][je[proc]];
+              	udist[proc-1][1+i][(proc)*(NP/NUMPROC)-1] = udist[proc+1][1+i][(proc+1)*(NP/NUMPROC)];
 	    }
 	
-		for (int j = js[proc]; j < je[proc]; ++j)
+		for (int j = (proc)*(NP/NUMPROC); j < (proc+1)*(NP/NUMPROC); ++j)
 			for (int i = 1; i < N-1; ++i)
 				unew[proc][i][j] = 1 * ( udist[proc][i+1][j] + udist[proc][i-1][j] + udist[proc][i][j+1] + udist[proc][i][j-1] - h * h * f[i][j]);
 	}	
 	
 	// merge together udists into u
 	for( int proc = 0; proc < NUMPROC; ++proc )
-		for( int j = js[proc]; j < je[proc]; ++j )
+		for( int j = (proc)*(NP/NUMPROC); j < (proc+1)*(NP/NUMPROC); ++j )
 			for (int i = 0; i < N+1; ++i)
 				u[i][j] = unew[proc][i][j];
 	
