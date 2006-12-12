@@ -29,6 +29,7 @@ import streamit.frontend.passes.VariableDisambiguator;
 import streamit.frontend.stencilSK.EliminateCompoundAssignments;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.FunctionalizeStencils;
+import streamit.frontend.stencilSK.MatchParamNames;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.stencilSK.StencilPreprocessor;
@@ -37,7 +38,6 @@ import streamit.frontend.tosbit.SNodesToC;
 import streamit.frontend.tosbit.SNodesToFortran;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
-import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 /**
@@ -59,11 +59,12 @@ public class ToStencilSK extends ToSBit
     protected Program preprocessProgram(Program prog) {
         prog = super.preprocessProgram(prog);
         prog = (Program)prog.accept(new VariableDisambiguator());
+        prog = (Program) prog.accept(new MatchParamNames());
         return prog;
     }
 	
     public RecursionControl newRControl(){
-    	return new AdvancedRControl(18, params.inlineAmt, prog);
+    	return new AdvancedRControl(10, params.inlineAmt, prog);
     }
     
     public void run()
@@ -75,16 +76,15 @@ public class ToStencilSK extends ToSBit
         }
         
         parseProgram();       // parse
-        originalProg = prog;  // save
-        prog=preprocessProgram(prog); // perform prereq transformations
-
-        prog = (Program)prog.accept(new StencilPreprocessor(params.unrollAmt, newRControl()));
-        
-        prog.accept(new SimpleCodePrinter());
         
         //run semantic checker
         if (!StencilSemanticChecker.check(prog))
             throw new IllegalStateException("Semantic check failed");
+        
+        originalProg = prog;  // save
+        prog=preprocessProgram(prog); // perform prereq transformations
+
+        prog = (Program)prog.accept(new StencilPreprocessor(params.unrollAmt, newRControl()));
 
         //is this necessary?
         prog = (Program)prog.accept(new AssignLoopTypes());
@@ -98,6 +98,9 @@ public class ToStencilSK extends ToSBit
         System.out.println("Before preprocessing.");
         
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
+        
+        prog.accept(new SimpleCodePrinter());
+        
         FunctionalizeStencils fs = new FunctionalizeStencils();
         
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's

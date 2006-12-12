@@ -569,12 +569,20 @@ public class FEReplacer implements FEVisitor
             return stmt;
         return new StmtWhile(stmt.getContext(), newCond, newBody);
     }
+    
+    StreamSpec sspec;
 
+    public Function getFuncNamed(String name){
+    	return sspec.getFuncNamed(name);
+    }
+    
     public Object visitStreamSpec(StreamSpec spec)
     {
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
         StreamType newST = null;
+        StreamSpec oldSS = sspec;
+        sspec = spec;        
         if (spec.getStreamType() != null)
             newST = (StreamType)spec.getStreamType().accept(this);
         List newVars = new ArrayList();
@@ -595,7 +603,7 @@ public class FEReplacer implements FEVisitor
             if (oldFunc != newFunc) changed = true;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
-
+        sspec = oldSS;
         if (!changed && newST == spec.getStreamType()) return spec;
         return new StreamSpec(spec.getContext(), spec.getType(),
                               newST, spec.getName(), spec.getParams(),
