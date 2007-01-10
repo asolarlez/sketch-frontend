@@ -1,0 +1,14 @@
+
+int test() implements spec{
+	bit[5]  tmp  = {0, 1, 0, 1, 0};
+	int tt = ??;
+	assert tt > 0;
+	assert tt != 2;
+	return tmp[tt];
+}
+
+int spec(){
+	bit[5]  tmp  = {0, 1, 0, 1, 0};
+	return tmp[4];
+}
+
