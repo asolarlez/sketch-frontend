@@ -163,7 +163,9 @@ class CommandLineParams{
             	outputTest=true;
             } else if( args[i].charAt(0)=='-') {
             	commandLineOptions.add(args[i]);
-                commandLineOptions.add(args[++i]);
+            	if( args[i+1].charAt(0) != '-' ){
+            		commandLineOptions.add(args[++i]);
+            	}
             } else {
                 // Maybe check for unrecognized options.
                 inputFiles.add(args[i]);
