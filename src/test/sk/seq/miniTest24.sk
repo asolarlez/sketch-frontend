@@ -1,6 +1,7 @@
 bit testSK(bit[4] in) implements test {	
 	int x = ??;
 	int y = ??;
+	assert y < 1;
 	if( x > 2){
 		return in[3];
 	}else{

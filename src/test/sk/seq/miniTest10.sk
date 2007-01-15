@@ -2,8 +2,9 @@ bit foo(bit[4] in){
 	return in[{*}];
 }
 
-bit reverseSketch(bit[4] in) implements reverse {		
-	return 	foo(in) ^ in[{*}];
+bit reverseSketch(bit[4] in) implements reverse {	
+	int tt = ??;	assert tt == 3;
+	return 	foo(in) ^ in[tt];
 }
 
 bit reverse (bit[4] in) {

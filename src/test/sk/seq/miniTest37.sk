@@ -6,5 +6,6 @@ bit miniTest(bit[4] in) {
 bit miniTestSK (bit[4] in) implements miniTest{
 	int[2] fu = {0, 1};
 	fu[??] = ??;
+	assert fu[1] > 1;
     return in[fu[??]];
 }

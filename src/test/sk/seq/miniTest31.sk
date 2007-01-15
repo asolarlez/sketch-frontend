@@ -16,5 +16,6 @@ bit miniTestSK (bit[4] in) implements miniTest{
 	}else{
 		x = in[??] {|} ??;
 	}
+	assert in[0] || x ;
     return in[x];
 }

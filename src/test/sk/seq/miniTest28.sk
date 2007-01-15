@@ -8,6 +8,7 @@ bit[3] miniTest(bit[3] in) {
 bit[3] miniTestSK (bit[3] in) implements miniTest{
 	bit [2] tmp = {0, 0};
 	tmp[1] = ??;
+	assert !tmp[1];
 	bit[2] one;
 	one  = tmp;	
 	one[1] = 0;
