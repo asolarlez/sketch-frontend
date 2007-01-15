@@ -16,6 +16,7 @@ bit[4] reverseSketch(bit[8] in) implements reverse {
 	bit[4*16] Tb = ??;
 	bit [4] a;
 	bit [4] b;
+	assert !Ta[0] && Ta[1] && !Ta[2] && !Ta[3];
 	for(int i=0; i<4; ++i){
 		a[i] = in[i];
 		b[i] = in[4+i];
