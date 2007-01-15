@@ -428,7 +428,9 @@ public class CodePEval extends PartialEvaluator {
                     if (hasChanged)
                         return new ExprFunCall (exp.getContext(), exp.getName(),
                                                 newParams);
-                }
+                }// if (rcontrol.testCall(exp))
+                // If the if rcontrol.testCall(exp) returns false, then this call better not be made ever, 
+                // so it really doesn't matter what we return. 
                 return exp;
     		}
 			//....else inline the called function
