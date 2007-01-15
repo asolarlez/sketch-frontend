@@ -4,6 +4,7 @@ int test() implements spec{
 	int tt = ??;
 	assert tt > 0;
 	assert tt != 2;
+	assert tt < 5;
 	return tmp[tt];
 }
 
