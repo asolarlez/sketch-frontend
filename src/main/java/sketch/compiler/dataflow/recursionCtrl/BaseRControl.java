@@ -27,7 +27,7 @@ public class BaseRControl extends RecursionControl {
 
 	
 	public void pushFunCall(ExprFunCall fc, Function fun) {
-		incInlineCounter(fun.getName());
+		incInlineCounter(fc.getName());
 	}
 
 	
@@ -56,7 +56,7 @@ public class BaseRControl extends RecursionControl {
     private int addInlineCounter (String funcName, int step) {
         int numInlined = getInlineCounter (funcName);
         numInlined += step;
-        assert (numInlined >= 0);
+        assert (numInlined >= 0) : " This is a problem  " + funcName + ", " + step + ", " + numInlined;
         inlineCounter.put (funcName, new Integer (numInlined));
         return numInlined;
     }

@@ -13,17 +13,31 @@ import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StreamSpec;
 
+/**
+ * 
+ * 
+ * 
+ * 
+ * @author asolar
+ *
+ */
+
+
+
 public class AdvancedRControl extends RecursionControl {
 	
 	Stack<Integer> bfStack;
 	int branchingTheshold;
-	private int MAX_INLINE;
+	private int MAX_INLINE;	
 	Map<String, FunInfo> funmap;
 	
-	/*
-	 * For each function, we must keep the following information:
-	 * - Current recursion depth
-	 * - Does it make subcalls
+	/**
+	 * For each function, we must keep the following information: <BR>
+	 * - Current recursion depth <BR>
+	 * - Does it make subcalls <BR>
+	 * Note that the second field is a static property, where as the first one is
+	 * a dynamic property.
+	 * This information is kept by the FunInfo class.
 	 */
 	private static class FunInfo{
 		int rdepth;
@@ -38,7 +52,11 @@ public class AdvancedRControl extends RecursionControl {
 	}
 	
 	
-	
+	/**
+	 * This class populates the funmap with initial values, setting the isTerminal field for all functions.
+	 * @author asolar
+	 *
+	 */
 	private class PopFunMap extends FEReplacer{
 		String currentFun;
 		int currentCalls;
@@ -68,7 +86,12 @@ public class AdvancedRControl extends RecursionControl {
 	    }
 	}
 	
-	
+	/**
+	 * This visitor will be called on a statement (generally a block),
+	 * and after the visiting is done, <BR> 
+	 * - <code>forbiddenCalls</code> will be true if any calls within the block can be guaranteed to  fail testCall. <BR> 
+	 * - <code>bfactor</code> will have the minimum number of calls which must be made by the block.
+	 */
 	private class CheckBFandCalls extends FEReplacer{
 		int bfactor = 0;
 		boolean forbiddenCalls = false;
@@ -124,7 +147,10 @@ public class AdvancedRControl extends RecursionControl {
 
 	}
 
-	int tt = 0;
+	/**
+	 * This field is here solely for debugging reasons.
+	 */ 
+	int tt = 0; //DEBUGGING INFO
 	@Override
 	public int inlineLevel(ExprFunCall fun) {
 		FunInfo fi = funmap.get(fun.getName());
@@ -142,8 +168,8 @@ public class AdvancedRControl extends RecursionControl {
 	public void pushFunCall(ExprFunCall fc, Function fun) {
 		FunInfo fi = funmap.get(fc.getName());
 		if( ! fi.isTerminal ){
-			for(int i=0; i<tt; ++i) System.out.print("  ");
-			System.out.println(fc.getName());
+			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
+			System.out.println(fc.getName()); //DEBUGGING INFO
 		}
 		++tt;
 		fi.rdepth++;
