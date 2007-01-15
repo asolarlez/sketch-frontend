@@ -1125,9 +1125,19 @@ public class NodesToSBit extends PartialEvaluator{
 			    	PrintStream tmpout = out; out = new PrintStream( baos );
 			        try{
 			        	stmt.getBody().accept(this);
-			        }catch(ArrayIndexOutOfBoundsException er){			        	
-			        	state.popChangeTracker();
+			        }catch(ArrayIndexOutOfBoundsException er){
+			        	//If this happens, it means that we statically determined that unrolling by (iters+1) leads to an out
+			        	//of bounds error. Thus, we will put a new assertion on the loop condition. 
+			        	state.popChangeTracker();			        	
 			        	out = tmpout;
+			        	StmtAssert nvarAssert2 =
+		                    new StmtAssert (nvarContext,
+		                                    new ExprBinary (
+		                                        nvarContext,
+		                                        ExprBinary.BINOP_LE,
+		                                        new ExprVar (nvarContext, nvar),
+		                                        new ExprConstInt (nvarContext, iters)));
+		                nvarAssert2.accept (this);
 			        	break;
 		    		}
 			        loopmap.nextIter();
