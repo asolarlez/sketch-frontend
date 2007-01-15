@@ -656,6 +656,7 @@ public class PartialEvaluator extends FEReplacer {
 	    			}
 	    		}
 	    		state.pushVStack( new valueClass(lst) );
+	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getContext(), exp.getOp(), childExp );
 	    		return returnVal;
 	    	}else{
 	    		if( hv ){ 
