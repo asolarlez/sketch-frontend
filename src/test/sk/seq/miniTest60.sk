@@ -57,6 +57,7 @@ bit test2(bit x) implements alwaysOne
 	bit[FW] a={0,0,0,1,0,0,0,1,1}; // -1
 	bit[FW] b={0,0,0,1,0,0,0,1,0};
 	bit tt = ??;
+	assert tt == 0;
 	if(tt) b[M]=1; // makes it 1*2^(9-8)
 	else b[M-2]=1; // makes it 1.1*2^(8-8)
 	bit[M] c={0,0,0,1};
