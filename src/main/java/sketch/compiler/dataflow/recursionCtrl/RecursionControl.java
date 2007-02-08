@@ -17,8 +17,8 @@ import streamit.frontend.nodes.Statement;
  * 
  * Since the partial evaluator is supposed to produce function-free code, 
  * it is assumed that function calls not inlined will be replaced with 
- * ‘assert false’. Thus, a basic block containing any such functions might 
- * as well be replaced entirely with ‘assert false’. Thus, the 
+ * <code>assert false</code>. Thus, a basic block containing any such functions might 
+ * as well be replaced entirely with <code>assert false</code>. Thus, the 
  * RecursionControl also allows one to test for basic blocks that 
  * will be left with un-inlined functions. 
  * 
