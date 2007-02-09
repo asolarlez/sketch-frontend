@@ -1,0 +1,8 @@
+
+bit test(int in) implements spec{
+	return in == in;
+}
+
+bit spec(int in){
+	return in-1 > in-2;
+}
