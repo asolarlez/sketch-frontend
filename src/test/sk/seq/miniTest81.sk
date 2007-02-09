@@ -1,0 +1,23 @@
+int LW = 3;
+
+int
+test ()
+{
+    return (LW - 1);
+}
+
+int
+sk_offset (int x)
+{
+    int b = ??;
+    return (x - b);
+}
+
+
+int
+test_sk () implements test
+{
+    return (sk_offset (LW));
+}
+
+
