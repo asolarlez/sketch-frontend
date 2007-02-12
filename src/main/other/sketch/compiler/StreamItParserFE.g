@@ -216,8 +216,8 @@ statement returns [Statement s] { s = null; }
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
 	;
 
-loop_statement returns [Statement s] { s = null; Expression exp; StmtBlock b;}
-	: t:TK_loop LPAREN exp=right_expr RPAREN b=block
+loop_statement returns [Statement s] { s = null; Expression exp; Statement b;}
+	: t:TK_loop LPAREN exp=right_expr RPAREN b=pseudo_block
 	{ s = new StmtLoop(getContext(t), exp, b); }
 	;
 
