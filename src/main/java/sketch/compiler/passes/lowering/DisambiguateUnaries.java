@@ -58,11 +58,13 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     
     protected void doStatement(Statement stmt)
     {
+        List<Statement> oldSuccessors = successors;
         successors = new java.util.ArrayList();
         Statement result = (Statement)stmt.accept(this);
         if (result != null)
             addStatement(result);
         addStatements(successors);
+        successors = oldSuccessors;
     }
 
     public Object visitExprUnary(ExprUnary expr)
