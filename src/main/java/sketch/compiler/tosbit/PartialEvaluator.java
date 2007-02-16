@@ -147,16 +147,16 @@ public class PartialEvaluator extends FEReplacer {
  	    		oldVals = new ArrayList<String>(rl.len());
  	    		names = new ArrayList<String>(rl.len());
  	    		int start = startVal.getIntValue(); 	    		
+                int size = state.checkArray(vname);
  	    		for(int i=0; i<rl.len(); ++i){
-     		    	int size = state.checkArray(vname);
-     		    	if(start >= size || start < 0){
+ 	    			int ofst = start + i;
+     		    	if(ofst >= size || ofst < 0){
      		    		if(!exp.isUnchecked())
      		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
      					state.pushVStack( new valueClass(0) );
      					return null;
      		    	} 		    	
 
- 	    			int ofst = start + i;
  	    			String nm = vname + "_idx_" + ofst;
  	    			if( isComplete || state.knowsVar(nm) ){
  	    				oldVals.add(state.varGetRHSName(nm));
