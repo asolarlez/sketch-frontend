@@ -148,6 +148,14 @@ public class PartialEvaluator extends FEReplacer {
  	    		names = new ArrayList<String>(rl.len());
  	    		int start = startVal.getIntValue(); 	    		
  	    		for(int i=0; i<rl.len(); ++i){
+     		    	int size = state.checkArray(vname);
+     		    	if(start >= size || start < 0){
+     		    		if(!exp.isUnchecked())
+     		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
+     					state.pushVStack( new valueClass(0) );
+     					return null;
+     		    	} 		    	
+
  	    			int ofst = start + i;
  	    			String nm = vname + "_idx_" + ofst;
  	    			if( isComplete || state.knowsVar(nm) ){
@@ -174,62 +182,39 @@ public class PartialEvaluator extends FEReplacer {
     		}else{
     			assert rl.len() == 1 : " NYI";
     			offset = startVal.toString();
-     	    	if( startVal.hasValue()){
-     		    	int ofstV = startVal.getIntValue();
-     		    	int size = state.checkArray(vname);
-     		    	if(ofstV >= size || ofstV < 0){
-     		    		if(!exp.isUnchecked())
-     		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
-     					state.pushVStack( new valueClass(0) );
-     					return null;
-     		    	} 		    	
-     		    	vname = vname + "_idx_" + ofstV;
-     		    	String rval = vname;
-     		    	if(isReplacer){
-     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
-     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
-     		    		}else{
-     		    			lhsExp = exp;
-     		    		}
-     		    	}else{
-     		    		lhsExp = exp;
-     		    	}
-     		    	return rval;
-     	    	}else{
-     	    		int size = state.checkArray(vname);
-     	    		NDArracc = true;
-     	    		if(  isComplete || size > 0  ){
-	     	    		lhsVals = new ArrayList<String>(size);
-	     	    		oldVals = new ArrayList<String>(size);
-	     	    		names = new ArrayList<String>(size);
-	     	    		for(int i=0; i<size; ++i){
-	     	    			String nm = vname + "_idx_" + i;
-	     	    			oldVals.add(state.varGetRHSName(nm));
-	     	    			lhsVals.add(state.varGetLHSName(nm));
-	     	    			names.add(nm);
-	     	    		}	     	    		
-	     	    		if(isReplacer){
-	     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
-	     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
-	     		    		}else{
-	     		    			lhsExp = exp;
-	     		    		}
-	     		    	}else{
-	     		    		lhsExp = exp;
-	     		    	}
-     	    		}else{
-     	    			if(isReplacer){
-	     		    		if(newStart != exp.getOffset()|| lhsExp != exp.getBase()){
-	     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
-	     		    		}else{
-	     		    			lhsExp = exp;
-	     		    		}
-	     		    	}else{
-	     		    		lhsExp = exp;
-	     		    	}	
-     	    		}
-     	    	}
-    			
+
+                int size = state.checkArray(vname);
+                NDArracc = true;
+                if(  isComplete || size > 0  ){
+                    lhsVals = new ArrayList<String>(size);
+                    oldVals = new ArrayList<String>(size);
+                    names = new ArrayList<String>(size);
+                    for(int i=0; i<size; ++i){
+                        String nm = vname + "_idx_" + i;
+                        oldVals.add(state.varGetRHSName(nm));
+                        lhsVals.add(state.varGetLHSName(nm));
+                        names.add(nm);
+                    }	     	    		
+                    if(isReplacer){
+                        if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
+                            lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+                        }else{
+                            lhsExp = exp;
+                        }
+                    }else{
+                        lhsExp = exp;
+                    }
+                }else{
+                    if(isReplacer){
+                        if(newStart != exp.getOffset()|| lhsExp != exp.getBase()){
+                            lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+                        }else{
+                            lhsExp = exp;
+                        }
+                    }else{
+                        lhsExp = exp;
+                    }	
+                }
     		}
     		return vname;
     	}
