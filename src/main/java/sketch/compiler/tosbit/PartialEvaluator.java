@@ -356,6 +356,15 @@ public class PartialEvaluator extends FEReplacer {
 				assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
 				List<valueClass> lst = baseVal.getVectValue();
 				int sval = startVal.getIntValue();
+
+                /* Ensure in-bound array access. */
+ 		    	if (sval + rl.len() - 1 >= lst.size() || sval < 0) {
+ 		    		if (!exp.isUnchecked())
+ 		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + sval + " < " + lst.size());
+ 					state.pushVStack( new valueClass(0) );
+ 					return null;
+ 		    	}
+
 				List<valueClass> newLst = lst.subList(sval, sval + rl.len());
 				state.pushVStack( new valueClass(newLst));
 				if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
