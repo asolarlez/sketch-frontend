@@ -10,6 +10,17 @@ abstract public class varState {
 	private int maxSize = -1;
 	private TreeMap<Integer, abstractValue> arrElems=null;
 	private abstractValue absVal = null;
+	private varState parent = null;	
+	
+	
+	public varState rootParent(){
+		if( parent == null){
+			return this;
+		}else{
+			return parent.rootParent();
+		}
+	}
+	
 	final public abstractValue state(abstractValueType vtype){
 		if( arrElems != null){
 			int sz = this.maxKey();
@@ -78,9 +89,6 @@ abstract public class varState {
 		return newVal;
 	}
 	
-	private varState parent = null;
-	
-	
 	
 	public void update(abstractValue val, abstractValueType vtype){
 		if( arrElems != null){
@@ -125,7 +133,14 @@ abstract public class varState {
 			abstractValue bottom = vtype.BOTTOM();
 			int lv = this.maxKey();
 			for(int i=0; i<lv ; ++i){
-				update(vtype.CONST(i), bottom, vtype);
+				// update(vtype.CONST(i), bottom, vtype);
+				if( arrElems.containsKey(i) ){
+					arrElems.get(i).update(bottom); // This could be more precise by doing a condjoin between the current value and prevvalue on cond (idx == i).
+				}else{
+					abstractValue newVal = newLHSvalue(i);
+					arrElems.put(i, newVal);
+					newVal.update(bottom);
+				}
 			}
 			/*
 			for(Iterator<Entry<Integer, abstractValue>> it = arrElems.entrySet().iterator(); it.hasNext(); ){
@@ -136,7 +151,7 @@ abstract public class varState {
 		}
 	}
 	
-	abstract public varState getDeltaClone();
+	abstract public varState getDeltaClone(abstractValueType vt);
 	abstract public abstractValue newLHSvalue();
 	abstract public abstractValue newLHSvalue(int i);
 	
@@ -159,27 +174,28 @@ abstract public class varState {
 	 * @return
 	 */
 	final public varState condjoin(abstractValue cond, varState val, abstractValueType vt){
-		//WARNING: This call poisons both this and val.
+		//WARNING: This call poisons val.
 		//After a call to this function, val should not be used at all
-		varState rv = getDeltaClone();
+		varState rv = getDeltaClone(vt);		
 		if( rv.isArr() ){
 			assert val.isArr() : "NYS";
-			for(Iterator<Entry<Integer, abstractValue>>  thIt = rv.arrElems.entrySet().iterator(); thIt.hasNext(); ){
+			for(Iterator<Entry<Integer, abstractValue>>  thIt = arrElems.entrySet().iterator(); thIt.hasNext(); ){
 				Entry<Integer, abstractValue> toUd = thIt.next();
 				int idx = toUd.getKey();
 				if( val.arrElems.containsKey( idx ) ){
 					//update(vt.CONST( idx ), vt.condjoin(cond, toUd.getValue() , val.arrElems.get(idx) ), vt );
-					toUd.setValue(vt.condjoin(cond, val.arrElems.get(idx), toUd.getValue() ));
+					rv.arrElems.put(idx,  vt.condjoin(cond, val.arrElems.get(idx), toUd.getValue() ));
 					// toUd.getValue().update( vt.condjoin(cond, toUd.getValue() , val.arrElems.get(idx) ) );
 					val.arrElems.remove(idx);
 				}else{
+					rv.arrElems.put(idx,  vt.condjoin(cond, val.state(idx), toUd.getValue() ));
 					//Nothing to do here, since we would be updating to the same value.
 				}
-			}			
+			}
 			for(Iterator<Entry<Integer, abstractValue>>  thIt = val.arrElems.entrySet().iterator(); thIt.hasNext(); ){
 				Entry<Integer, abstractValue> toUd = thIt.next();
 				int idx = toUd.getKey();
-				rv.arrElems.put(idx, toUd.getValue());
+				rv.arrElems.put(idx,  vt.condjoin(cond, toUd.getValue(), state(idx) ));
 			}
 		}else{
 			assert !val.isArr() : " Can't assign an array into a non-array";			
@@ -189,6 +205,41 @@ abstract public class varState {
 		val.arrElems = null;
 		val.absVal = null;
 		return rv;
+	}
+	
+	/**
+	 * returns true if vs equals this. 
+	 * @param vs
+	 * @return
+	 */
+	public boolean compare(varState val, abstractValueType vt){
+		//WARNING: This call poisons val.
+		//After a call to this function, val should not be used at all
+		if( this.isArr() ){
+			if(!val.isArr()) return false;
+			for(Iterator<Entry<Integer, abstractValue>>  thIt = arrElems.entrySet().iterator(); thIt.hasNext(); ){
+				Entry<Integer, abstractValue> toUd = thIt.next();
+				int idx = toUd.getKey();
+				if( val.arrElems.containsKey( idx ) ){
+					if( !val.arrElems.get(idx).equals(toUd.getValue()) ) return false;
+					val.arrElems.remove(idx);
+				}else{
+					if( !val.state(idx).equals(toUd.getValue()) ) return false;					
+					//Nothing to do here, since we would be updating to the same value.
+				}
+			}
+			for(Iterator<Entry<Integer, abstractValue>>  thIt = val.arrElems.entrySet().iterator(); thIt.hasNext(); ){
+				Entry<Integer, abstractValue> toUd = thIt.next();
+				int idx = toUd.getKey();
+				if(!arrElems.containsKey(idx)){
+					if( !toUd.getValue().equals( state(idx) ) ) return false;
+				}
+			}
+		}else{
+			if(val.isArr()) return false;
+			if( !val.state(vt).equals( state(vt) ) ) return false;
+		}
+		return true;
 	}
 	
 	final public boolean isArr(){		

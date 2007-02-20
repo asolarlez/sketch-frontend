@@ -2,7 +2,9 @@ package streamit.frontend.experimental;
 
 import java.util.List;
 
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Type;
 
 
@@ -50,9 +52,17 @@ public abstract class abstractValueType{
 	abstract public abstractValue not(abstractValue v1);
 	abstract public abstractValue neg(abstractValue v1);
 	
-	abstract public abstractValue join(abstractValue v1, abstractValue v2);
+	/**
+	 * Conditional join. 
+	 * When cond is null, it is simply a join between vtrue and vfalse. 
+	 * When cond is not null, then it is a conditional join, such that if cond is true, the return value should be vtrue, and otherwise it should be vfalse. 
+	 * @param cond
+	 * @param vtrue
+	 * @param vfalse
+	 * @return
+	 */
 	abstract public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
 	abstract public void Assert(abstractValue val);
-	abstract public abstractValue funcall(String name, List<abstractValue> params , List<String> outputs);
+	abstract public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist);
 }
 

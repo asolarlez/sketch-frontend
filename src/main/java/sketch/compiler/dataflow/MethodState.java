@@ -43,17 +43,18 @@ public class MethodState {
 		public abstractValue getCondVal(){
 			return condition;
 		}
+		/*
 		ChangeTracker pushChangeTracker(abstractValue cond, boolean isNegated){
 			ChangeTracker tmp = new ChangeTracker( cond,  isNegated);
 			tmp.kid = this;
 			return tmp;
 		}
-		
+		*/
 		public void setVarValue(String var, abstractValue val){
 			varState current = null;
 			if( !deltas.containsKey(var) ){
 				current = UTvarState(var);
-				current = current.getDeltaClone();
+				current = current.getDeltaClone(vtype);
 				deltas.put(var, current );				
 			}else{
 				current = deltas.get(var);
@@ -65,7 +66,7 @@ public class MethodState {
 			varState current = null;
 			if( !deltas.containsKey(var) ){
 				current =  UTvarState(var);
-				current = current.getDeltaClone();
+				current = current.getDeltaClone(vtype);
 				deltas.put(var, current );				
 			}else{
 				current = deltas.get(var);
@@ -132,7 +133,7 @@ public class MethodState {
 		this.vtype = vtype; 
 	}
 	
-	protected String transName(String nm){       	
+	public String transName(String nm){       	
     	String otpt = varTranslator.transName(nm);
     	// System.out.println(nm + " = " +  otpt);
     	return  otpt;
@@ -165,7 +166,7 @@ public class MethodState {
 	private varState UTvarState(String var){
 		varState i =  vars.get(var);		
 		if(changeTracker == null){	
-			assert i != null;		
+			assert i != null : "The variable " + var + " is causing problems";		
 			return i;
 		}else{
 			if( changeTracker.knowsAbout(var) ){
@@ -239,6 +240,41 @@ public class MethodState {
 	}
 	
 	
+	public boolean compareChangeTrackers(ChangeTracker ch1, ChangeTracker ch2){
+		{
+			Iterator<Entry<String, varState>> it = ch1.deltas.entrySet().iterator();
+			while(it.hasNext()){
+				Entry<String, varState> me =  it.next();
+				String nm = me.getKey();
+				varState av1 = me.getValue();
+				if(ch2.deltas.containsKey( nm )){
+					//This means the me.getKey() was modified on both branches.				
+					varState av2 = ch2.deltas.get( nm );
+					
+					if( !av1.compare(av2, vtype) ) return false;				
+				}else{
+					varState av2 = this.UTvarState(me.getKey());
+					if( !av1.compare(av2, vtype) ) return false;
+				}
+			}
+		}
+		
+		{
+			Iterator<Entry<String, varState>> it = ch2.deltas.entrySet().iterator();
+			while(it.hasNext()){
+				Entry<String, varState> me =  it.next();
+				String nm = me.getKey();
+				varState av2 = me.getValue();
+				if(!ch1.deltas.containsKey( nm )){
+					varState av1 = this.UTvarState(me.getKey());
+					if( !av1.compare(av2, vtype) ) return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	
 	public void Assert(abstractValue val){
         /* Compose complex expression by walking all nesting conditionals. */        
         for (ChangeTracker tmpTracker = changeTracker;
@@ -246,8 +282,8 @@ public class MethodState {
         {
             if (! tmpTracker.hasCondVal ())
                 continue;
-            abstractValue nestCond = tmpTracker.getCondVal ();
-            val = vtype.or(val, nestCond );                     
+            abstractValue nestCond = vtype.not(tmpTracker.getCondVal ());
+            val = vtype.or(val, nestCond );
         }        
 		vtype.Assert(val);
 	}
