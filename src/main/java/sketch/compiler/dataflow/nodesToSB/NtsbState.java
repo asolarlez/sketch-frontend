@@ -8,16 +8,34 @@ import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 
 public class NtsbState extends varState {
+	public class lhsIndexes{
+		public int idx=1;
+	}
 	private final String name;
 	private final Type t;
 	NtsbVtype vtype;
+	private lhsIndexes[] lhsIdxs;
+	
+	
+	public void incrLhsIdx(int i){
+		((NtsbState)this.rootParent()).lhsIdxs[i].idx++;
+	}
+	
 	
 	public abstractValue newLHSvalue(){
-		return new NtsbValue(name, true);
+		return new NtsbValue(name, ((NtsbState)this.rootParent()).lhsIdxs[0]);
 	}
 	
 	public abstractValue newLHSvalue(int i){
-		return new NtsbValue(name + "_idx_" + i, true);
+		return new NtsbValue(name + "_idx_" + i, ((NtsbState)this.rootParent()).lhsIdxs[i]);
+	}
+	
+	private lhsIndexes[] idxsArr(int sz){
+		lhsIndexes[] rv = new lhsIndexes[sz];
+		for(int i=0; i<sz; ++i){
+			rv[i] = new lhsIndexes();
+		}
+		return rv;
 	}
 	
 	NtsbState(String name, Type t, NtsbVtype vtype){		
@@ -25,16 +43,20 @@ public class NtsbState extends varState {
 		this.t = t;
 		this.vtype = vtype;
 		if( t instanceof  TypePrimitive){
-			init( newLHSvalue() );
+			lhsIdxs = idxsArr(1);
+			init( newLHSvalue() );			
 		}
 		
 		if( t instanceof TypeArray  ){
 			TypeArray tarr = (TypeArray) t;
 			abstractValue av = (abstractValue) tarr.getLength().accept( vtype.eval );
 			if( av.hasIntVal() ){
-				init( av.getIntVal() );
+				int arrsz = av.getIntVal();
+				lhsIdxs = idxsArr(arrsz);
+				init( arrsz );
 			}else{
 				init( -1 );
+				lhsIdxs = null;
 			}
 		}
 	}
@@ -46,9 +68,10 @@ public class NtsbState extends varState {
 		return (NtsbValue)this.state(i);
 	}
 	
-	public varState getDeltaClone(){
+	public varState getDeltaClone(abstractValueType vt){
 		NtsbState st  = new NtsbState(name, t, vtype);
 		st.helperDeltaClone(this, vtype);
+		if(st.rootParent() != this)  st.lhsIdxs = null;
 		return st;
 	}
 	
@@ -81,7 +104,7 @@ public class NtsbState extends varState {
 				}
 			}
 			vtype.out.print("$[ " + idx + "]=" +  val +";");
-		}		
+		}
 		super.update(idx, val, vtype);
 	}
 }

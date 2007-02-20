@@ -84,11 +84,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	        out.print(convertType(param.getType()) + " ");
 	        String lhs = param.getName();
     		state.varDeclare(lhs , param.getType());
-    		NtsbValue inval = (NtsbValue)state.varValue(lhs);
+    		IntAbsValue inval = (IntAbsValue)state.varValue(lhs);
     		
     		if( param.getType() instanceof TypeArray ){
 	        	TypeArray ta = (TypeArray) param.getType();
-	        	NtsbValue tmp = (NtsbValue)  ta.getLength().accept(this);	        	
+	        	IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);	        	
 	        	report(tmp.hasIntVal(), "The array size must be a compile time constant !! \n" );
 	        	assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
 	        	int sz = tmp.getIntVal();
@@ -131,7 +131,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     		first = false;
 	        String lhs = param.getName();
 	        if(param.isParameterOutput()){	        
-	        	NtsbValue inval = (NtsbValue)state.varValue(lhs);
+	        	IntAbsValue inval = (IntAbsValue)state.varValue(lhs);
 	        	assert opsz.hasNext() : "This can't happen.";
 	        	int sz = opsz.next();
 	        	for(int tt=0; tt<sz; ++tt){
