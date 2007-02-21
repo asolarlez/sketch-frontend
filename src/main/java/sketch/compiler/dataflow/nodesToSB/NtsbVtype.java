@@ -4,15 +4,12 @@ import java.io.PrintStream;
 import java.util.List;
 
 import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
 import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.valueClass;
 
 public class NtsbVtype extends IntVtype {
 	public PrintStream out;
@@ -24,15 +21,20 @@ public class NtsbVtype extends IntVtype {
 		this.out = out;		
 	}
 	
-	public abstractValue STAR(ExprStar star){
-		String cvar = oracle.addBinding(star);
-		String isFixed = star.isFixed()? " *" : "";
-		String rval;
-		if(star.getSize() > 1)
-			rval =  "<" + cvar + "  " + star.getSize() + isFixed+ ">";
-		else
-			rval =  "<" + cvar +  ">";		
-		return new NtsbValue(rval);
+	public abstractValue STAR(FENode node){
+		String cvar = oracle.addBinding(node);
+		if(node instanceof ExprStar){
+			ExprStar star = (ExprStar) node;			
+			String isFixed = star.isFixed()? " *" : "";
+			String rval;
+			if(star.getSize() > 1)
+				rval =  "<" + cvar + "  " + star.getSize() + isFixed+ ">";
+			else
+				rval =  "<" + cvar +  ">";		
+			return new NtsbValue(rval);
+		}
+		
+		return new NtsbValue("<" + cvar +  ">");
 	}
 	
 	public abstractValue BOTTOM(){

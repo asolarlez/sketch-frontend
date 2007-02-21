@@ -6,10 +6,7 @@ import java.util.List;
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.abstractValueType;
 import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Type;
@@ -19,7 +16,7 @@ public class IntVtype extends abstractValueType {
 
 	
 
-	public abstractValue STAR(ExprStar star){
+	public abstractValue STAR(FENode star){
 		return BOTTOM("??");
 	}
 	
@@ -190,14 +187,16 @@ public class IntVtype extends abstractValueType {
 		assert false; return null;
 	}
 
-	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len) {
+	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
 		if(len != null) assert len.hasIntVal() && len.getIntVal() == 1 : "NYI";
 		
 		if( idx.hasIntVal() ){
 			int iidx = idx.getIntVal() ;
 			int size = arr.getVectValue().size();
-			if( iidx < 0 || iidx >= size  )
+			if( !isUnchecked && (iidx < 0 || iidx >= size)  )
 				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+			if(iidx < 0 || iidx >= size)
+				return CONST(0);
 			return arr.getVectValue().get(idx.getIntVal());
 		}else{
 			return BOTTOM( "(" + arr + "[" + idx + "])" );

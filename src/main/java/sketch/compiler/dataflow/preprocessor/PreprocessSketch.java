@@ -128,7 +128,7 @@ public class PreprocessSketch extends PartialEvaluator {
                 	assert ear.getMembers().size() == 1 && ear.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
             		RangeLen rl = (RangeLen)ear.getMembers().get(0);
             		lhsIdx = (abstractValue)rl.start().accept(this);
-            		nlhs = new ExprArrayRange(actualParam.getCx(), nlhs, exprRV);
+            		nlhs = new ExprArrayRange(actualParam.getCx(), nlhs, exprRV, ear.isUnchecked());
             		assert rl.len() == 1 ;
                 }
         		
@@ -156,7 +156,9 @@ public class PreprocessSketch extends PartialEvaluator {
 				fun = newFuns.get(specName);
 			}else{
 				Function newFun = ss.getFuncNamed(specName);
+				state.pushLevel();
 				fun = (Function)this.visitFunction(newFun);
+				state.popLevel();
 			}
 		}
     	if (fun != null) {    		
@@ -171,7 +173,7 @@ public class PreprocessSketch extends PartialEvaluator {
 				try{
 		    		{
 		    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-		    			Iterator formalParams = fun.getParams().iterator();
+		    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 		    			inParameterSetter(formalParams, actualParams, false);
 		    		}
 		    		Statement body = (Statement) fun.getBody().accept(this);
@@ -250,4 +252,12 @@ public class PreprocessSketch extends PartialEvaluator {
     	return new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody);
     }
 	
+	public Object visitFunction(Function func){
+		if( newFuns.containsKey(func.getName()) ){
+			return newFuns.get(func.getName());
+		}
+		Function obj = (Function)super.visitFunction(func);
+		newFuns.put(obj.getName(), obj);
+		return obj;
+	}
 }

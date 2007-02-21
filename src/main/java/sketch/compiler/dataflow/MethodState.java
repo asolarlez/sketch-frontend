@@ -125,6 +125,8 @@ public class MethodState {
 	 */
 	private ChangeTracker changeTracker;
 	
+	private int level = 0;  
+	
 	public MethodState(abstractValueType vtype){
 		// System.out.println("New Method State for new method.");
 		vars = new HashMap<String, varState>();					
@@ -335,11 +337,13 @@ public class MethodState {
 	}
 	
 	public void pushLevel(){    	
-    	varTranslator = varTranslator.pushLevel();    	    	    	
+    	varTranslator = varTranslator.pushLevel();  
+    	level++;
     }
 	
 	public void popLevel(){
     	varTranslator = varTranslator.popLevel(vars, changeTracker);
+    	level--;
     }
 	
 	public void beginFunction(String fname){

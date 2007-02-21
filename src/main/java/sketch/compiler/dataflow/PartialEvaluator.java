@@ -133,10 +133,9 @@ public class PartialEvaluator extends FEReplacer {
 		Expression nstart = exprRV;
 		
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
-		Expression nbase = exprRV;
-		
-		if(isReplacer ) exprRV = new ExprArrayRange(exp.getContext(), nbase, nstart);
-		return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ) );
+		Expression nbase = exprRV;		
+		if(isReplacer ) exprRV = new ExprArrayRange(exp.getContext(), nbase, nstart, exp.isUnchecked());
+		return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked());
 	}
 
 	public Object visitExprComplex(ExprComplex exp) {
@@ -297,9 +296,12 @@ public class PartialEvaluator extends FEReplacer {
         	case ExprBinary.BINOP_BAND: rv = vtype.and(left, right); break;
         	case ExprBinary.BINOP_BOR: rv = vtype.or(left, right); break;
         	case ExprBinary.BINOP_BXOR: rv = vtype.xor(left, right); break;
-        	case ExprBinary.BINOP_LSHIFT: 
-        	case ExprBinary.BINOP_RSHIFT: 
         	case ExprBinary.BINOP_SELECT: 
+        		abstractValue choice = vtype.STAR(exp);
+        		rv = vtype.condjoin(choice, left, right);
+        		break;
+        	case ExprBinary.BINOP_LSHIFT: 
+        	case ExprBinary.BINOP_RSHIFT:         	
         		assert false : "NYI";        	
         }
         
@@ -385,7 +387,16 @@ public class PartialEvaluator extends FEReplacer {
         	assert ear.getMembers().size() == 1 && ear.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
     		RangeLen rl = (RangeLen)ear.getMembers().get(0);
     		lhsIdx = (abstractValue)rl.start().accept(this);
-    		if(isReplacer) nlhs = new ExprArrayRange(stmt.getCx(), nlhs, exprRV);
+    		
+    		if( lhsIdx.hasIntVal()  ){
+    			int iidx = lhsIdx.getIntVal();
+    			abstractValue  vv = state.varValue(lhsName);
+    			int size = vv.getVectValue().size();
+    			if( !ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
+    				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+    		}
+    		
+    		if(isReplacer) nlhs = new ExprArrayRange(stmt.getCx(), nlhs, exprRV, ear.isUnchecked());
     		assert rl.len() == 1 ;
         }
         
@@ -727,7 +738,13 @@ public class PartialEvaluator extends FEReplacer {
     	return null;
     }
 
-
+    public Object visitTypeArray(TypeArray t) {
+    	Type nbase = (Type)t.getBase().accept(this);
+    	abstractValue avlen = (abstractValue) t.getLength().accept(this);
+    	Expression nlen = exprRV;
+    	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
+    	return isReplacer? new TypeArray(nbase, nlen) : t; 
+    }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
@@ -737,7 +754,7 @@ public class PartialEvaluator extends FEReplacer {
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             String nm = stmt.getName(i);
-            Type vt = stmt.getType(i);
+            Type vt = (Type)stmt.getType(i).accept(this);
             state.varDeclare(nm, vt);
             Expression ninit = null;
             if( stmt.getInit(i) != null ){

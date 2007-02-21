@@ -2,8 +2,7 @@ package streamit.frontend.experimental;
 
 import java.util.List;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Type;
 
@@ -15,7 +14,7 @@ public abstract class abstractValueType{
 		this.eval = eval;
 	}
 	
-	abstract public abstractValue STAR(ExprStar star);
+	abstract public abstractValue STAR(FENode star);
 	abstract public abstractValue BOTTOM(); // == BOTTOM(TypePrimitive);
 	abstract public abstractValue BOTTOM(Type t);	
 	/**
@@ -45,7 +44,7 @@ public abstract class abstractValueType{
 	abstract public abstractValue eq(abstractValue v1, abstractValue v2);
 	
 	abstract public abstractValue arracc(abstractValue arr, abstractValue idx);
-	abstract public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len);
+	abstract public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked);
 	
 	abstract public abstractValue cast(abstractValue v1, Type t);
 	
