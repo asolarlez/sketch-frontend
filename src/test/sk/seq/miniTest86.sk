@@ -1,0 +1,50 @@
+int L = 2;
+int W = 4;  /* FIXME should be an exponent of L. */
+
+int
+count (bit[W] a)
+{
+    int ret = 0;
+
+    for (int i = 0; i < W; i++)
+	if (a[i])
+	    ret = ret + 1;
+
+    return ret;
+}
+
+int
+count_sk (bit[W] a) implements count
+{
+    bit[L * W] mm;
+    int[L] ss;
+    bit[W] m;
+    int s;
+    int i;
+
+    s = 0;
+    m[0::W] = 0;
+
+    ss[0] = 2;
+    ss[1] = 1;
+    mm[0] = 1;
+    mm[1] = 1;
+    mm[2] = 0;
+    mm[3] = 0;
+    mm[4] = 1;
+    mm[5] = 0;
+    mm[6] = 1;
+    mm[7] = 0;
+
+    i = 0;
+    loop (L  + ?? ){	i++; }
+
+    loop (i) {
+	i--;
+	m = mm[i * W :: W];
+	s = ss[i];
+	a = (a & m) + ((a << s) & m);
+    }
+
+    return (int) a;
+}
