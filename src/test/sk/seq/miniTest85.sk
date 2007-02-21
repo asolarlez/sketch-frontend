@@ -1,0 +1,19 @@
+
+bit[3] test(bit[3] in){
+	bit[3] tmp = {0,1,1};
+	return in ^ tmp;
+}
+
+bit[3] testsk(bit[3] in) implements test{
+	bit[3] tmp = 0;
+	int j=0;
+	for(int i=0; i<1; ++i){
+		++j;
+	}
+	loop(??){
+		tmp[j] = ??;
+		j++;
+	}
+	
+	return in ^ tmp;
+}
