@@ -1,0 +1,21 @@
+int L = 2;
+int W = 4;  /* FIXME should be an exponent of L. */
+
+bit
+count (bit[2] a)
+{
+  return a[1]; 
+}
+
+bit
+count_sk (bit[2] a) implements count
+{
+	int[2] s = {3,1};
+	int i=1;
+	int j=3;
+	if(??){ i=2; j =0; }
+	bit out = a[s[1]];
+	if(i>1){ out = a[s[j]]; }
+
+    return out;
+}
