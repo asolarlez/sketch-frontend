@@ -36,14 +36,35 @@ count_sk (bit[W] a) implements count
     mm[6] = 1;
     mm[7] = 0;
 
-    i = 0;
-    loop (L  + ?? ){	i++; }
-
-    loop (i) {
+    i = 2;
+    if(??){ i=3; }
+	int t = L;
+	int ttt = i;
+	{	
+	t--;
 	i--;
-	m = mm[i * W :: W];
-	s = ss[i];
+	m[0] = mm[t * W];
+	m[1] = mm[t * W+1];
+	m[2] = mm[t * W+2];
+	m[3] = mm[t * W+3];
+	s = ss[t];
 	a = (a & m) + ((a << s) & m);
+	{
+		t--;
+	i--;
+	m[0] = mm[t * W];
+	m[1] = mm[t * W+1];
+	m[2] = mm[t * W+2];
+	m[3] = mm[t * W+3];
+	s = ss[t];
+	a = (a & m) + ((a << s) & m);
+	if(ttt>2){
+	i--;
+	s = ss[i];
+	a =((a << s) );
+	}
+	
+	}
     }
 
     return (int) a;
