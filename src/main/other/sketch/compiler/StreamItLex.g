@@ -37,31 +37,34 @@ options {
 
 tokens {
 	// Stream types:
-	"filter"; "pipeline"; "splitjoin";  "sbox"; "feedbackloop";
+//	"filter"; "pipeline"; "splitjoin";  "sbox"; "feedbackloop";
 	// Messaging:
-	"portal"; "to"; "handler";
+//	"portal"; "to"; "handler";
 	// Composite streams:
-	"add";
+//	"add";
 	// Splitters and joiners:
-	"split"; "join";
-	"duplicate"; "roundrobin";
+//	"split"; "join";
+//	"duplicate"; "roundrobin";
 	// Feedback loops:
-	"body"; "loop"; "enqueue";
+//	"body";
+	"loop"; //"enqueue";
 	// Special functions:
-	"init"; "prework"; "work"; "phase";
+//	"init"; "prework"; "work"; "phase";
 	// Manipulating tapes:
-	"peek"; "pop"; "push";
+//	"peek"; "pop"; "push";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
 	// Complicated types:
-	"struct"; "template";
+	"struct"; // "template";
 	// Control flow:
 	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break";
 	"continue"; "return";
 // Intrinsic values:
-	"pi"; "true"; "false";
+	//"pi";
+	"true"; "false";
 	//sketching stuff
-	"implements"; "overrides"; "assert";
+	"implements"; //"overrides";
+	"assert";
 }
 
 INCLUDE :"#include" ;
