@@ -19,3 +19,4 @@ bit[N] mergeSort(bit[N] input)implements sort{
 	input[k] = 1;
 	return input;
 }
+

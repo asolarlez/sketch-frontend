@@ -5,7 +5,6 @@ bit reverseSketch(bit[4] in) implements reverse {
 	return tmp[{*}];
 }
 
-
 bit reverse (bit[4] in) {
 	return in[1];
 }

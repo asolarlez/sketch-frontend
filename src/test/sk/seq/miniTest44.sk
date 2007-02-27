@@ -4,7 +4,7 @@ bit leq(bit x, bit y){
 	return !x || y;
 }
 bit[N] sort(bit[N] input){
-	bit[N] output=1;
+	bit[N] output={1,1};
 	if( input[0] && input[1] ){ output[0] = 1; output[1] = 1;   };
 	if( !input[0] && input[1] ){ output[0] = 0; output[1] = 1;   };
 	if( input[0] && !input[1] ){ output[0] = 0; output[1] = 1;   };
@@ -17,7 +17,7 @@ bit[N] sort(bit[N] input){
 
 
 bit[N] mergeSort(bit[N] input)implements sort{
-	bit[N] output=1;
+	bit[N] output={1,1};
 	int k=0;
 	for(int i=0; i<N; ++i){
 		if(!input[i]){
