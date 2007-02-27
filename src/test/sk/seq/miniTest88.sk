@@ -1,0 +1,101 @@
+int L = 3;
+int W = 8;  /* FIXME should be an exponent of L. */
+
+int
+pow2 (int p)
+{
+    int a = 1;
+
+    loop (p){	a = a * 2; }
+
+    return a;
+}
+
+bit[W]
+intToBit (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; ++i) {
+	output[i] = (v % 2) > 0;
+	v = v / 2;
+    }
+
+    return output;
+}
+
+int
+count (bit[W] a)
+{
+    int ret = 0;
+
+    for (int i = 0; i < W; i++)
+	if (a[i])
+	    ret = ret + 1;
+
+    return ret;
+}
+
+/*
+int
+sk_linear (int x)
+{
+    int a = ??, b = ??;
+
+    return (a * x + b);
+}
+*/
+
+int
+sk_offset (int x)
+{
+    int b = ??;
+    return (?? ? x + b : x - b);
+}
+
+int
+count_sk (bit[W] a) implements count
+{
+    /* FIXME the following array should have exactly L*W bits; since I want
+     * some degree of freedom to handle "roughly-logarithmic" number of
+     * masks, we add this padding. Ultimately, we should allow arrays
+     * of dynamic size, either using dependent types, or malloc, or
+     * a more general notion of "sets". */
+    bit[(L + 5) * W] mm;
+    int[L + 5] ss;
+    bit[W] m;
+    int s;
+    int i;
+
+    /* Initialize bit-vectors (otherwise causes a bug in the frontend). */
+    ss[0 :: L + 5] = 0;
+    mm[0 :: (L + 5) * W] = 0;
+
+    /* Populate shift/mask arrays. */
+    /* - initial shift amount exponent-distant from the bit-width. */
+    /* FIXME better be shift. */
+    /* TODO alternatively: s = W [ << | >> ] ??  */
+    s = pow2 (sk_offset (L) /* L - 1 */);
+    /* - initial mask is a sequence of 1's of constant factor of the shift amount. */
+    /* FIXME better be shift; better use casting. */
+    /* TODO alternatively: m[0 :: s [ << | >> ] ??] = 1  */
+    m = intToBit (pow2 (sk_offset (s) /* s */) - 1);
+    /* - number of iterations is logarithmic by width. */
+    i = 0;
+    loop (sk_offset (L) /* L */) {
+	mm[i * W :: W] = m;
+	ss[i] = s;
+	s = s / 2;  /* FIXME better be shift. */
+	m = m ^ (m >> s);  /* FIXME reverse shift direction. */
+	i++;
+    }
+
+    loop (i) {
+	i--;
+	m = mm[i * W :: W];
+	s = ss[i];
+	a = (a & m) + ((a << s) & m);
+    }
+
+    return (int) a;
+}
