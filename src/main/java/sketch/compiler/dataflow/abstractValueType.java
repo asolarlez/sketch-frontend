@@ -37,11 +37,17 @@ public abstract class abstractValueType{
 	abstract public abstractValue and(abstractValue v1, abstractValue v2);
 	abstract public abstractValue or(abstractValue v1, abstractValue v2);
 	abstract public abstractValue xor(abstractValue v1, abstractValue v2);
+	
+	abstract public abstractValue shr(abstractValue v1, abstractValue v2);
+	abstract public abstractValue shl(abstractValue v1, abstractValue v2);
+	
+	
 	abstract public abstractValue gt(abstractValue v1, abstractValue v2);
 	abstract public abstractValue lt(abstractValue v1, abstractValue v2);
 	abstract public abstractValue ge(abstractValue v1, abstractValue v2);
 	abstract public abstractValue le(abstractValue v1, abstractValue v2);
 	abstract public abstractValue eq(abstractValue v1, abstractValue v2);
+	
 	
 	abstract public abstractValue arracc(abstractValue arr, abstractValue idx);
 	abstract public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked);

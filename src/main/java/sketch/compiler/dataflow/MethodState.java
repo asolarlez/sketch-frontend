@@ -143,6 +143,9 @@ public class MethodState {
 	
 	private void UTsetVarValue(String var, abstractValue val){		
 		varState tv =  vars.get(var);
+		if(tv == null){
+			System.out.print("AAAARRRRGGGGHHH");
+		}
 		assert(tv != null) : ( " This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
 		if(changeTracker != null){
 			changeTracker.setVarValue(var, val);
@@ -174,6 +177,9 @@ public class MethodState {
 			if( changeTracker.knowsAbout(var) ){
 				return changeTracker.varState(var);
 			}else{
+				if(i==null){
+					System.out.println("  ");
+				}
 				assert(i != null) : ( "The value of " + var + " is input dependent, but it's not supposed to be.\n");
 				return i;
 			}

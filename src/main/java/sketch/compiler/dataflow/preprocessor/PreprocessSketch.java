@@ -225,18 +225,23 @@ public class PreprocessSketch extends PartialEvaluator {
 	        		isReplacer = lisReplacer;	        		
 	        		break;
 	        	}
-	        	stmt.getBody().accept(this);
-	        	if (stmt.getIncr() != null){
-		        	stmt.getIncr().accept(this);
+	        	ChangeTracker ct = null;
+	        	try{
+	        		stmt.getBody().accept(this);	        	
+		        	if (stmt.getIncr() != null){
+			        	stmt.getIncr().accept(this);
+		        	}
+	        	}finally{
+	        		ct = state.popChangeTracker();	
+	        		isReplacer = lisReplacer;
 	        	}
-	        	ChangeTracker ct = state.popChangeTracker();
+	        	
 	        	state.pushChangeTracker(null, false);
 	        	ChangeTracker ct2 = state.popChangeTracker();
 	        	
 	        	goOn = !state.compareChangeTrackers(ct, ct2);
 	        	
-	        	state.procChangeTrackers(ct, ct2);	        	
-	        	isReplacer = lisReplacer;
+	        	state.procChangeTrackers(ct, ct2);	        		        	
 	        	++iters;
 	        }
 	        stmt.getCond().accept(this);
@@ -247,7 +252,7 @@ public class PreprocessSketch extends PartialEvaluator {
         	}
     	}finally{
     		state.popLevel();	        	
-    	}    	
+    	}
     	if(nbody == null) return stmt;
     	return new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody);
     }

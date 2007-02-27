@@ -1,5 +1,6 @@
 package streamit.frontend.experimental.nodesToSB;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 
 public class IntVtype extends abstractValueType {
@@ -118,6 +120,16 @@ public class IntVtype extends abstractValueType {
 		else 
 			return 0;
 	}
+	
+	
+	public abstractValue shr(abstractValue v1, abstractValue v2){
+		return BOTTOM( v1 + ">>" + v2);
+	}
+	
+	public abstractValue shl(abstractValue v1, abstractValue v2){
+		return BOTTOM( v1 + "<<" + v2);
+	}
+
 
 	public abstractValue and(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
@@ -188,7 +200,21 @@ public class IntVtype extends abstractValueType {
 	}
 
 	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
-		if(len != null) assert len.hasIntVal() && len.getIntVal() == 1 : "NYI";
+		if(len != null){
+			assert len.hasIntVal() : "NYI";
+			int ilen = len.getIntVal();
+			if(ilen != 1){
+				List<abstractValue> lst = new ArrayList<abstractValue>(ilen);
+				for(int i=0; i<ilen; ++i){
+					lst.add(  arracc(arr, plus(idx, CONST(i)), null, isUnchecked)  );
+				}
+				return ARR( lst );
+			}
+		}
+		
+		
+		
+		
 		
 		if( idx.hasIntVal() ){
 			int iidx = idx.getIntVal() ;
@@ -233,6 +259,29 @@ public class IntVtype extends abstractValueType {
 	    		return BOTTOM(result);
 	    	}
 		}
+		
+		
+		if(v1.isVect() && type instanceof TypeArray ){
+			TypeArray t =  (TypeArray) type;
+			Integer len = t.getLength().getIValue();
+			if(len != null){
+				int mlen = len;
+				List<abstractValue> lst1 = v1.getVectValue();
+				if( mlen >= lst1.size()  ) mlen = lst1.size();
+				List<abstractValue> lst2 = lst1.subList(0, mlen);
+				for(int j=mlen; j<len; ++j){
+					lst2.add(CONST(0));
+				}
+				return ARR(lst2);
+			}else{
+				return v1;
+			}
+		}
+		
+		if(v1.isBottom() ){
+			return v1;
+		}
+		
 		assert false : "Can't cast " + v1 + " into " + type;
 		return null;
 	}
@@ -270,7 +319,7 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
-			return BOTTOM( "(" + cond + "?" + vtrue + ":" + vfalse + ")" ); 
+			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" ); 
 		}	
 	}
 	

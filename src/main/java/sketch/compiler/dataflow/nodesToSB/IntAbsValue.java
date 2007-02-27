@@ -124,6 +124,9 @@ public class IntAbsValue extends abstractValue {
 		}
 		case BOTTOM:{ 
 			if( obj != null ){
+				if(obj.toString().length() > 10){
+					return "BOTTOM";
+				}
 				return obj.toString();
 			}else{
 				return "BOTTOM";

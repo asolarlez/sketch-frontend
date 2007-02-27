@@ -20,7 +20,22 @@ import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
-
+/**
+ * This class translates the ast into a boolean function which is output to a file.
+ * The format is suitable for the SBitII backend solver.<BR>
+ * Preconditions:
+ * <DL>
+ * <DT>  Arrays
+ * <DD>  * Only 1 dimensional arrays allowed.
+ * <DD>  * The [] operator can only be used on an array variable.
+ * <DD>  * binary operators work only for scalars.
+ * <DD>  * Array to array assignments are supported. (arr1 = arr2)
+ * <DD>  * Array ranges with len != 1 are not supported.
+ * <DD>  * Scalar to array assignments are supported.
+ * </DL>
+ * 
+ * @author asolar
+ */
 public class ProduceBooleanFunctions extends PartialEvaluator {
 	public ProduceBooleanFunctions(TempVarGen varGen, 
 			ValueOracle oracle, PrintStream out, int maxUnroll, RecursionControl rcontrol){

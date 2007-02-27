@@ -105,11 +105,14 @@ abstract public class varState {
 					update(vtype.CONST(i), cv, vtype);
 				}
 			}else{
+				//For precise analysis, you shouldn't have scalar-to-array assignments.
+				//So if we are in this case, the analysis is imprecise, and we fill up 
+				//the remaining entries in the array with bottom.
 				int lv = this.maxKey();
 				update(vtype.CONST(0), val, vtype);
-				for(int i=1; i<lv ; ++i){
-					abstractValue cv;
-					cv = vtype.CONST(0);
+				abstractValue cv;
+				cv = vtype.BOTTOM();
+				for(int i=1; i<lv ; ++i){					
 					update(vtype.CONST(i), cv, vtype);
 				}
 			}

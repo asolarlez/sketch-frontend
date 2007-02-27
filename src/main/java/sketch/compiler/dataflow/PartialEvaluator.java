@@ -134,7 +134,9 @@ public class PartialEvaluator extends FEReplacer {
 		
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
 		Expression nbase = exprRV;		
-		if(isReplacer ) exprRV = new ExprArrayRange(exp.getContext(), nbase, nstart, exp.isUnchecked());
+		if(isReplacer ){
+			exprRV = new ExprArrayRange(exp.getContext(), nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
+		}
 		return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked());
 	}
 
@@ -301,8 +303,9 @@ public class PartialEvaluator extends FEReplacer {
         		rv = vtype.condjoin(choice, left, right);
         		break;
         	case ExprBinary.BINOP_LSHIFT: 
-        	case ExprBinary.BINOP_RSHIFT:         	
-        		assert false : "NYI";        	
+        		rv = vtype.shl(left, right);
+        	case ExprBinary.BINOP_RSHIFT:      
+        		rv = vtype.shr(left, right);
         }
         
         
@@ -320,6 +323,8 @@ public class PartialEvaluator extends FEReplacer {
         
     }
     public Object visitExprStar(ExprStar star) {
+    	Type t = (Type) star.getType().accept(this);
+    	star.setType(t);
     	exprRV = star;
 		return vtype.STAR(star);
 	}
@@ -371,6 +376,7 @@ public class PartialEvaluator extends FEReplacer {
         String lhsName = null;
         abstractValue lhsIdx = null;
         Expression nlhs = null;
+        int rlen = -1;
         
         if( lhs instanceof ExprVar){
         	lhsName = ((ExprVar)lhs).getName();
@@ -395,29 +401,64 @@ public class PartialEvaluator extends FEReplacer {
     			if( !ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
     				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
     		}
-    		
-    		if(isReplacer) nlhs = new ExprArrayRange(stmt.getCx(), nlhs, exprRV, ear.isUnchecked());
-    		assert rl.len() == 1 ;
+    		rlen = rl.len();
+    		if(isReplacer){
+    			if(rlen == 1){
+    				nlhs = new ExprArrayRange(stmt.getCx(), nlhs, exprRV, ear.isUnchecked());
+    			}else{
+    				nlhs = new ExprArrayRange(stmt.getCx(), nlhs, new RangeLen(exprRV, rlen), ear.isUnchecked());
+    			}
+    		}    		
         }
         
         
         
         switch(stmt.getOp())
         {
-        case ExprBinary.BINOP_ADD: 	        	
+        case ExprBinary.BINOP_ADD: 	
+        	assert rlen == 1;
         	state.setVarValue(lhsName, lhsIdx, vtype.plus((abstractValue) lhs.accept(this), rhs));        	
         	break;
         case ExprBinary.BINOP_SUB: 
+        	assert rlen == 1;
         	state.setVarValue(lhsName, lhsIdx, vtype.minus((abstractValue) lhs.accept(this), rhs));        	
         	break;        
         case ExprBinary.BINOP_MUL:
+        	assert rlen == 1;
         	state.setVarValue(lhsName, lhsIdx, vtype.times((abstractValue) lhs.accept(this), rhs));        	
         	break;
         case ExprBinary.BINOP_DIV:
+        	assert rlen == 1;
         	state.setVarValue(lhsName, lhsIdx, vtype.over((abstractValue) lhs.accept(this), rhs));        	
         	break;       
         default:
-        	state.setVarValue(lhsName, lhsIdx, rhs); 	
+        	if( rlen <= 1){
+        		state.setVarValue(lhsName, lhsIdx, rhs);
+        	}else{
+        		List<abstractValue> lst = null;
+        		if(rhs.isVect()){
+        			lst = rhs.getVectValue();
+        		}
+        		for(int i=0; i<rlen; ++i){
+        			if(i==0){
+        				if(lst != null){
+        					if(lst.size() > i ){
+        						state.setVarValue(lhsName, lhsIdx, lst.get(i));
+        					}else{
+        						state.setVarValue(lhsName, lhsIdx, vtype.CONST(0));
+        					}
+        				}else{
+        					state.setVarValue(lhsName, lhsIdx, rhs);
+        				}
+        			}else{
+        				if(lst != null && lst.size() > i){
+        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), lst.get(i));
+        				}else{
+        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), vtype.CONST(0));
+        				}
+        			}
+        		}
+        	}
     		break;
         }
         return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
@@ -530,7 +571,7 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue vcond = (abstractValue)cond.accept(this);  
         Expression ncond  = exprRV;        
         if(vcond.hasIntVal()){
-        	if(vcond.getIntVal() != 0){
+        	if(vcond.getIntVal() != 0){ // vtrue
         		Statement rv ;
         		if( rcontrol.testBlock(stmt.getCons()) ){
         			rv =(Statement) stmt.getCons().accept(this);	
@@ -550,8 +591,7 @@ public class PartialEvaluator extends FEReplacer {
 					}
         			return rv;
         		}
-        	}
-        	assert false: "Control flow should never get here";
+        	}        	
         	return null;   	
         }
 
@@ -562,6 +602,15 @@ public class PartialEvaluator extends FEReplacer {
         if( rcontrol.testBlock(stmt.getCons()) ){
 	        try{
 	        	nvtrue  = (Statement) stmt.getCons().accept(this);
+	        }catch(ArrayIndexOutOfBoundsException e){
+	        	//IF the body throws this exception, it means that no matter what the input,
+	        	//if this branch runs, it will cause the exception, so we can just assert that this
+	        	//branch will never run.	        	
+	        	//In order to improve the precision of the analysis, we pop the dirty change tracker,
+	        	//and push in a clean one, so the rest of the function thinks that nothing at all was written in this branch.
+	        	state.popChangeTracker();
+	        	state.pushChangeTracker (vcond, false);
+	        	nvtrue = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
 	        }catch(RuntimeException e){
 	        	state.popChangeTracker();
 	        	throw e;
@@ -579,7 +628,11 @@ public class PartialEvaluator extends FEReplacer {
             if( rcontrol.testBlock(stmt.getAlt()) ){
 	        	try{
 	        		nvfalse = (Statement) stmt.getAlt().accept(this);
-	        	}catch(RuntimeException e){
+	        	}catch(ArrayIndexOutOfBoundsException e){	        		
+		        	state.popChangeTracker();
+		        	state.pushChangeTracker (vcond, true);
+		        	nvfalse = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+		        }catch(RuntimeException e){
 		        	state.popChangeTracker();
 		        	throw e;
 		        }
