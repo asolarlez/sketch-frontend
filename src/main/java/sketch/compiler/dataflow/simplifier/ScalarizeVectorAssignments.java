@@ -45,7 +45,7 @@ import streamit.frontend.passes.SymbolTableVisitor;
  */
 public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 	TempVarGen varGen;
-	
+	boolean agressive;
 
     public String addNewDeclaration(Type type,  Expression exp){
     	String newVarName = varGen.nextVar();
@@ -59,6 +59,13 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 	public ScalarizeVectorAssignments(TempVarGen varGen){
 		super(null);
 		this.varGen = varGen;
+	}
+	
+
+	public ScalarizeVectorAssignments(TempVarGen varGen, boolean agressive){
+		super(null);
+		this.varGen = varGen;
+		this.agressive = agressive;
 	}
 	
 	/**
@@ -79,7 +86,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		Type rt = getType(rhs);
 		if( !(rt instanceof TypeArray )  ) return 2;
 		if( (new OpFinder()).hasOp(rhs) ) return 3;
-		if( lt.equals(rt) ) return 0;
+		if( lt.equals(rt) && !agressive ) return 0;
 		return 1; //lhs and rhs are arrays of different dimensions.
 	}
 	
@@ -182,8 +189,15 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		public Object visitExprArrayRange(ExprArrayRange exp){
 			assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 			RangeLen rl = (RangeLen)exp.getMembers().get(0);
-			Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(ScalarizeVectorAssignments.this));
-			return new ExprArrayRange(exp.getContext(), exp.getBase(), compIndex);		
+			Type t = getType(exp);
+			Expression tl = typeLen(t);
+			Integer itl = tl.getIValue();
+			if( itl != null && itl <= 1  ){
+				Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(ScalarizeVectorAssignments.this));
+				return new ExprArrayRange(exp.getContext(), exp.getBase(), compIndex);
+			}else{
+				return new ExprArrayRange(exp.getContext(), exp, index);
+			}
 	    }	
 		
 		
@@ -357,7 +371,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     			return rtlen;
     		}
     	}
-    	
+    	if( ltlen.equals(rtlen)  ){
+    		return ltlen;
+    	}
     	Expression comp = new ExprBinary(ltlen.getCx(), ExprBinary.BINOP_LE, ltlen, rtlen );
     	return new ExprTernary(ltlen.getCx(), ExprTernary.TEROP_COND, comp, ltlen, rtlen );
 	}

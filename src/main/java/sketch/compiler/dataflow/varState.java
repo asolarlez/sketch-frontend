@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import streamit.frontend.nodes.Type;
+
 abstract public class varState {	
 	private int maxSize = -1;
 	private TreeMap<Integer, abstractValue> arrElems=null;
 	private abstractValue absVal = null;
 	private varState parent = null;	
+	protected Type t;
 	
 	
 	public varState rootParent(){
@@ -23,7 +26,8 @@ abstract public class varState {
 	
 	final public abstractValue state(abstractValueType vtype){
 		if( arrElems != null){
-			int sz = this.maxKey();
+			int sz = this.numKeys();
+			if( sz < 0){ return vtype.BOTTOM();  }
 			List<abstractValue> avl = new ArrayList<abstractValue>(sz);
 			for(int i=0; i<sz; ++i){
 				if( this.hasKey(i)  ){
@@ -46,23 +50,45 @@ abstract public class varState {
 		maxSize = size;
 		arrElems = new TreeMap<Integer, abstractValue>();
 	}
-	public varState(){
-		
+	public varState(Type t){
+		this.t = t;
 	}
-	public varState(abstractValue absVal){
+	public varState(abstractValue absVal, Type t){
 		init(absVal);
+		this.t = t;
 	}
-	public varState(int size){
+	public varState(int size, Type t){
 		init(size);
+		this.t = t;
 	}
 	
-	final public int maxKey(){
+	public void setType(Type t){
+		this.t = t;
+	}
+	public Type getType(){
+		return t;
+	}
+	
+	final public int numKeys(){
 		if(maxSize >= 0) return maxSize;
-		int lmax = arrElems.lastKey();
+		else return -1;
+		//The stuff on the bottom could make some analysis more precise, 
+		//but it's not worth the effort at this point, so for now, we 
+		//assume that if the array doesn't have a fixed size, we won't be keeping track
+		//of what values have what.
+		//TODO: Fix it for the future.
+		/*
+		int lmax;
+		if( arrElems.size() > 0){
+			lmax = arrElems.lastKey();
+		}else{
+			lmax = -1;
+		}
 		if( parent == null)
 			return lmax;
 		else
-			return Math.max(parent.maxKey(), lmax);
+			return Math.max(parent.numKeys(), lmax);
+		*/
 	}
 	
 	final public boolean hasKey(int idx){
@@ -93,7 +119,7 @@ abstract public class varState {
 	public void update(abstractValue val, abstractValueType vtype){
 		if( arrElems != null){
 			if(  val.isVect() ){
-				int lv = this.maxKey();
+				int lv = this.numKeys();
 				List<abstractValue> vlist = val.getVectValue();
 				for(int i=0; i<lv ; ++i){
 					abstractValue cv;
@@ -108,7 +134,7 @@ abstract public class varState {
 				//For precise analysis, you shouldn't have scalar-to-array assignments.
 				//So if we are in this case, the analysis is imprecise, and we fill up 
 				//the remaining entries in the array with bottom.
-				int lv = this.maxKey();
+				int lv = this.numKeys();
 				update(vtype.CONST(0), val, vtype);
 				abstractValue cv;
 				cv = vtype.BOTTOM();
@@ -134,7 +160,7 @@ abstract public class varState {
 			}
 		}else{
 			abstractValue bottom = vtype.BOTTOM();
-			int lv = this.maxKey();
+			int lv = this.numKeys();
 			for(int i=0; i<lv ; ++i){
 				// update(vtype.CONST(i), bottom, vtype);
 				if( arrElems.containsKey(i) ){

@@ -66,6 +66,7 @@ public class PartialEvaluator extends FEReplacer {
 	protected Expression exprRV=null;
     protected boolean isReplacer;
     
+    public boolean isPrecise = true;
     
     
     
@@ -330,14 +331,12 @@ public class PartialEvaluator extends FEReplacer {
 	}
     
     public Object visitExprFunCall(ExprFunCall exp)
-    {	    	
-    	
-    	
-    	String name = exp.getName();
-    	
+    {    	
+    	String name = exp.getName();    	
     	Iterator actualParams = exp.getParams().iterator();
     	List<abstractValue> avlist = new ArrayList<abstractValue>(exp.getParams().size());
     	List<String> outNmList = new ArrayList<String>(exp.getParams().size());
+    	List<Expression> nparams = new ArrayList<Expression>(exp.getParams().size());
     	Function fun = ss.getFuncNamed(name);
     	Iterator<Parameter> formalParams = fun.getParams().iterator();
     	while(actualParams.hasNext()){
@@ -345,9 +344,12 @@ public class PartialEvaluator extends FEReplacer {
     		Parameter param = (Parameter) formalParams.next();    	
     		if( param.isParameterOutput()){
     			assert actual instanceof ExprVar;
-    			outNmList.add(((ExprVar)actual).getName());
+    			String pnm = ((ExprVar)actual).getName();
+    			outNmList.add(pnm);
+    			nparams.add(new ExprVar(exp.getCx(),  transName(pnm)  ));
     		}else{
     			abstractValue av = (abstractValue)actual.accept(this);
+    			nparams.add(exprRV);
     			avlist.add(av);
     		}
     	}
@@ -357,12 +359,81 @@ public class PartialEvaluator extends FEReplacer {
     	for( Iterator<abstractValue> it = outSlist.iterator(); it.hasNext();   ){
     		state.setVarValue(nmIt.next(), it.next());	
     	}
-    	assert !isReplacer : "A replacer should really do something different with function calls.";
-    	exprRV = exp;
-    	return null;
+    	//assert !isReplacer : "A replacer should really do something different with function calls.";
+    	exprRV = isReplacer ?  new ExprFunCall(exp.getCx(), name, nparams)  : exp ;
+    	return  vtype.BOTTOM();
     }
 
 
+    public class lhsVisitor extends FEReplacer{
+    	//public Expression nlhs;
+    	public String lhsName=null;
+    	public int rlen = -1;  
+    	abstractValue lhsIdx = null;
+    	private Type t;
+    	
+    	public abstractValue typeLen(Type t){
+    		if( t instanceof TypeArray){
+    			TypeArray ta = (TypeArray) t;
+    			abstractValue len = (abstractValue)ta.getLength().accept(PartialEvaluator.this);    			
+    			abstractValue olen = typeLen(ta.getBase());
+    			return vtype.times(len, olen);
+    		}else{
+    			assert  t instanceof TypePrimitive : "NYI" ;
+    			return vtype.CONST(1);
+    		}
+    	}
+    	
+    	
+    	public Object visitExprArrayRange(ExprArrayRange ear){
+    		Expression base = ear.getBase();
+    		Expression nbase = (Expression) base.accept(this);
+    		RangeLen rl = (RangeLen)ear.getMembers().get(0);
+    		abstractValue olidx=null;    		
+    		olidx = lhsIdx;    		
+    		lhsIdx = (abstractValue)rl.start().accept(PartialEvaluator.this);
+    		Expression idxExpr = exprRV;
+    		
+    		assert t instanceof TypeArray;
+    		TypeArray ta = (TypeArray) t;
+    		abstractValue tlen = typeLen(ta);
+    		t = ta.getBase();    		
+    		if(olidx != null){
+    			lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) ); 
+    		}
+    		
+    		
+    		if( lhsIdx.hasIntVal()  ){
+    			int iidx = lhsIdx.getIntVal();    		
+    			if( tlen.hasIntVal() ){
+	    			int size = tlen.getIntVal();
+	    			if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
+	    				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+    			}
+    		}
+    		
+    		rlen = rl.len();
+    		if(isReplacer){
+    			if(rlen == 1){
+    				return  new ExprArrayRange(ear.getCx(), nbase, idxExpr, ear.isUnchecked());
+    			}else{
+    				return  new ExprArrayRange(ear.getCx(), nbase, new RangeLen(idxExpr, rlen), ear.isUnchecked());
+    			}
+    		}else{
+    			return ear;
+    		}
+    	}
+    	public Object visitExprVar(ExprVar expr){
+    		assert lhsName == null;
+    		lhsName = expr.getName();
+    		t = state.varType(lhsName);    		
+    		if(isReplacer) return new ExprVar(expr.getCx(), transName(lhsName));
+    		else return expr;
+    	}
+    }
+    
+    
+    
     public Object visitStmtAssign(StmtAssign stmt)
     {
     	
@@ -378,38 +449,12 @@ public class PartialEvaluator extends FEReplacer {
         Expression nlhs = null;
         int rlen = -1;
         
-        if( lhs instanceof ExprVar){
-        	lhsName = ((ExprVar)lhs).getName();
-        	if(isReplacer) nlhs = new ExprVar(stmt.getCx(), transName(lhsName));
-        }
+        lhsVisitor lhsv = new lhsVisitor();
+        nlhs = (Expression)lhs.accept(lhsv);
+        lhsName = lhsv.lhsName;
+        lhsIdx = lhsv.lhsIdx;
+        rlen = lhsv.rlen;
         
-        if( lhs instanceof ExprArrayRange){
-        	ExprArrayRange ear = ((ExprArrayRange)lhs);
-        	Expression base = ear.getBase();
-        	assert base instanceof ExprVar;        	
-        	lhsName = ((ExprVar)base).getName();
-        	if(isReplacer) nlhs = new ExprVar(stmt.getCx(), transName(lhsName));
-        	
-        	assert ear.getMembers().size() == 1 && ear.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
-    		RangeLen rl = (RangeLen)ear.getMembers().get(0);
-    		lhsIdx = (abstractValue)rl.start().accept(this);
-    		
-    		if( lhsIdx.hasIntVal()  ){
-    			int iidx = lhsIdx.getIntVal();
-    			abstractValue  vv = state.varValue(lhsName);
-    			int size = vv.getVectValue().size();
-    			if( !ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
-    				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
-    		}
-    		rlen = rl.len();
-    		if(isReplacer){
-    			if(rlen == 1){
-    				nlhs = new ExprArrayRange(stmt.getCx(), nlhs, exprRV, ear.isUnchecked());
-    			}else{
-    				nlhs = new ExprArrayRange(stmt.getCx(), nlhs, new RangeLen(exprRV, rlen), ear.isUnchecked());
-    			}
-    		}    		
-        }
         
         
         
@@ -489,7 +534,8 @@ public class PartialEvaluator extends FEReplacer {
     		Parameter param = it.next();
     		state.varDeclare(param.getName() , param.getType());
     		if( isReplacer){
-    			nparams.add( new Parameter(param.getType(), transName(param.getName()), param.isParameterOutput()));
+    			Type ntype = (Type)param.getType().accept(this);
+    			nparams.add( new Parameter(ntype, transName(param.getName()), param.isParameterOutput()));
     		}
     	}
     	
@@ -749,11 +795,12 @@ public class PartialEvaluator extends FEReplacer {
     		
     		StmtIfThen ifthen = null;
     		
-    		if( iters+1 == condlist.size() ){
-    			int i=iters;
-    			ifthen = new StmtIfThen(stmt.getCx(), condlist.get(i), bodlist.get(i), null);
+    		if(isReplacer){
+	    		if( iters+1 == condlist.size() ){
+	    			int i=iters;
+	    			ifthen = new StmtIfThen(stmt.getCx(), condlist.get(i), bodlist.get(i), null);
+	    		}
     		}
-    		
     		
     		for(int i=iters-1; i>=0; --i){        		    			
     			ChangeTracker ipms = state.popChangeTracker();
@@ -849,7 +896,7 @@ public class PartialEvaluator extends FEReplacer {
 						field.getInit(i))).accept(this);   
 				nexpr = exprRV; //This may be a bit risky, but will work for now.
             }else{	            	
-            	report(false, "Vars should be initialized" + field);
+            	nexpr = null;
             }
             if(isReplacer){
             	types.add(field.getType(i));
@@ -909,4 +956,104 @@ public class PartialEvaluator extends FEReplacer {
                 newST, spec.getName(), spec.getParams(),
                 newVars, newFuncs) : spec;
     }
+    
+	/**
+	 * This function evaluates each of the actual parameters to the functions, and collects both the transformed
+	 * parameters and their abstract values in the two respective arrays.
+	 * 
+	 * @param formalParamIterator
+	 * @param actualParamIterator
+	 * @param actualsList OUTPUT parameter, returns the list of actual parameters.
+	 * @param actualsValList OUTPUT parameter, returns the list of abstractValues for the input parameters.
+	 */
+    void evalInParam(Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, List<Expression> actualsList, List<abstractValue> actualsValList){
+		while(actualParamIterator.hasNext()){
+    		Expression actualParam = actualParamIterator.next();
+    		abstractValue actualParamValue = (abstractValue) actualParam.accept(this);
+    		actualParam = exprRV;
+        	actualsList.add(actualParam);
+        	actualsValList.add(actualParamValue);
+    	}
+	}
+	
+	
+	
+    public void inParameterSetter(Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, boolean checkError){    	
+    	List<Expression> actualsList = new ArrayList<Expression>();
+    	List<abstractValue> actualsValList = new ArrayList<abstractValue>();
+    	
+    	evalInParam(formalParamIterator, actualParamIterator, actualsList, actualsValList);
+    	
+    	state.pushLevel();
+    	
+    	Iterator<Expression> actualIterator = actualsList.iterator();    	
+    	Iterator<abstractValue> actualValIterator = actualsValList.iterator();    	
+    	
+        while(actualIterator.hasNext()){	        	
+        	Expression actualParam = actualIterator.next();			        	
+        	Parameter formalParam = (Parameter) formalParamIterator.next();
+        	        	
+        	abstractValue actualParamValue = actualValIterator.next();
+    		
+        	String formalParamName = formalParam.getName();
+        	state.varDeclare(formalParamName, formalParam.getType());        	
+    		if( !formalParam.isParameterOutput() ){
+    			state.setVarValue(formalParamName, actualParamValue);
+    	    	Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),actualParam);
+    	    	addStatement((Statement)varDecl);
+    		}else{
+    			Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),null);
+    	    	addStatement((Statement)varDecl);
+    		}
+        }
+    }
+    
+    
+    public void outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){    	
+    	FEContext context = null;
+    	List<abstractValue> formalList = new ArrayList<abstractValue>();
+    	List<String> formalTransNames = new ArrayList<String>();
+    	while(formalParamIterator.hasNext()){
+    		Parameter formalParam = (Parameter) formalParamIterator.next();
+    		if( formalParam.isParameterOutput() ){
+    			String formalParamName = formalParam.getName();    			    			
+    			formalTransNames.add(transName(formalParamName));
+    			abstractValue av = state.varValue(formalParamName);
+    			formalList.add(av);
+    		}else{
+    			formalList.add(null);
+    			formalTransNames.add(null);
+    		}
+    	}
+    	
+    	state.popLevel();
+    	
+    	Iterator<abstractValue> vcIt = formalList.iterator();
+    	Iterator<String> fTransNamesIt = formalTransNames.iterator(); 
+    	
+        while(actualParamIterator.hasNext()){	        	
+        	Expression actualParam = (Expression)actualParamIterator.next();			        	        	
+        	abstractValue formal = vcIt.next();
+        	String fTransName = fTransNamesIt.next();
+        	if( formal != null ){
+        		
+        		
+        		String lhsName = null;
+                abstractValue lhsIdx = null;
+                Expression nlhs = null;
+                
+
+                lhsVisitor lhsv = new lhsVisitor();
+                nlhs = (ExprVar)actualParam.accept(lhsv);
+                lhsName = lhsv.lhsName;
+                lhsIdx = lhsv.lhsIdx;
+                assert lhsv.rlen == -1 : "Violates invariant";
+                
+        		
+        		state.setVarValue(lhsName, lhsIdx, formal);
+        		addStatement(new StmtAssign(context, nlhs, new ExprVar(context, fTransName) ));
+        	}
+        }        
+    }
+
 }

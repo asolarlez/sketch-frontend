@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import streamit.frontend.experimental.preprocessor.PreprocessSketch;
+import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
+import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
@@ -43,7 +46,6 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.AssignLoopTypes;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.ConstantReplacer;
@@ -51,17 +53,12 @@ import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
-import streamit.frontend.passes.FindFreeVariables;
 import streamit.frontend.passes.FunctionParamExtension;
-import streamit.frontend.passes.GenerateCopies;
-import streamit.frontend.passes.NoRefTypes;
-import streamit.frontend.passes.NoticePhasedFilters;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tojava.ComplexToStruct;
-import streamit.frontend.tojava.DoComplexProp;
 import streamit.frontend.tojava.EnqueueToFunction;
 import streamit.frontend.tojava.InsertIODecls;
 import streamit.frontend.tojava.MoveStreamParameters;
@@ -70,7 +67,6 @@ import streamit.frontend.tosbit.EliminateStar;
 import streamit.frontend.tosbit.NodesToC;
 import streamit.frontend.tosbit.NodesToCTest;
 import streamit.frontend.tosbit.NodesToH;
-import streamit.frontend.tosbit.ProduceBooleanFunctions;
 import streamit.frontend.tosbit.SequentialHoleTracker;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
@@ -321,35 +317,16 @@ public class ToSBit
      */        
     public void lowerIRToJava(boolean libraryFormat)
     {
-        /* What's the right order for these?  Clearly generic
-         * things like MakeBodiesBlocks need to happen first.
-         * I don't think there's actually a problem running
-         * MoveStreamParameters after DoComplexProp, since
-         * this introduces only straight assignments which the
-         * Java front-end can handle.  OTOH,
-         * MoveStreamParameters introduces references to
-         * "this", which doesn't exist. */
         prog = (Program)prog.accept(new MakeBodiesBlocks());
         prog = (Program)prog.accept(new ExtractRightShifts(varGen));
         prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
         prog = (Program)prog.accept(new SeparateInitializers());
-        prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
-        prog = (Program)prog.accept(new NoRefTypes());
-        prog = (Program)prog.accept(new FindFreeVariables());
-        if (!libraryFormat)
-            prog = (Program)prog.accept(new NoticePhasedFilters());
-        prog = (Program)prog.accept(new DoComplexProp(varGen));
+        //prog = (Program)prog.accept(new NoRefTypes());        
+        
         prog = (Program)prog.accept(new EliminateArrayRange(varGen));
-        beforeUnvectorizing = prog;
-        prog = (Program)prog.accept(new GenerateCopies(varGen));
-        prog = (Program)prog.accept(new ComplexToStruct());
-        prog = (Program)prog.accept(new SeparateInitializers());
-        prog = (Program)prog.accept(new EnqueueToFunction());
-        prog = (Program)prog.accept(new InsertIODecls(libraryFormat));
-//        prog = (Program)prog.accept(new InsertInitConstructors(varGen));
-        prog = (Program)prog.accept(new MoveStreamParameters());
-        prog = (Program)prog.accept(new NameAnonymousFunctions());        
-        prog = (Program)prog.accept(new TrimDumbDeadCode());        
+        beforeUnvectorizing = prog;        
+        prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
+        
     }
 
     
@@ -380,14 +357,24 @@ public class ToSBit
     
     protected Program preprocessProgram(Program prog) {
         //invoke post-parse passes
+    	System.out.println("=============================================================");
+    	prog.accept( new SimpleCodePrinter() );
+    	System.out.println("=============================================================");
         prog = (Program)prog.accept(new FunctionParamExtension());
-        prog = (Program)prog.accept(new ConstantReplacer(params.defines));
+        prog = (Program)prog.accept(new ConstantReplacer(params.defines));   
+        prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
+        prog = (Program)prog.accept(new TypeInferenceForStars());
+        prog = (Program) prog.accept( new PreprocessSketch( varGen, params.unrollAmt, newRControl() ) );        
+        System.out.println("=============================================================");
+        prog.accept( new SimpleCodePrinter() );
+    	System.out.println("=============================================================");
         return prog;
     }
     
     public void partialEvalAndSolve(){
     	lowerIRToJava(!params.libraryFormat);
-        
+    	System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    	prog.accept(new SimpleCodePrinter());
         assert oracle != null;
         try
         {
@@ -398,10 +385,20 @@ public class ToSBit
                 outStream = new FileOutputStream(params.outputFile);
             else
                 outStream = System.out;
-            ProduceBooleanFunctions partialEval =
+        	
+        	
+        	streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions
+        	partialEval =
+                new streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions (varGen, oracle,
+                                             new PrintStream(outStream)
+                							 //	System.out
+                							 ,
+                                             params.unrollAmt, newRControl()); 
+        	/*
+             ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,
                                              new PrintStream(outStream),
-                                             params.unrollAmt, newRControl());
+                                             params.unrollAmt, newRControl()); */ 
             System.out.println("MAX LOOP UNROLLING = " + params.unrollAmt);
             System.out.println("MAX FUNC INLINING  = " + params.inlineAmt);
             prog.accept( partialEval );
@@ -432,7 +429,6 @@ public class ToSBit
             //e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-       
 
     }
     
@@ -528,12 +524,10 @@ public class ToSBit
         }
         
         parseProgram();
-        prog=preprocessProgram(prog); // perform prereq transformations
-        prog.accept(new SimpleCodePrinter());
+        prog=preprocessProgram(prog); // perform prereq transformations        
         // RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
         if (!SemanticChecker.check(prog))
-            throw new IllegalStateException("Semantic check failed");
-        prog = (Program)prog.accept(new AssignLoopTypes());
+            throw new IllegalStateException("Semantic check failed");        
         if (prog == null)
             throw new IllegalStateException();
 

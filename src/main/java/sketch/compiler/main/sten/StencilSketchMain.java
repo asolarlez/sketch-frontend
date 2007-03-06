@@ -18,6 +18,7 @@ package streamit.frontend;
 import java.io.FileWriter;
 import java.io.Writer;
 
+import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.AssignLoopTypes;
@@ -58,10 +59,14 @@ public class ToStencilSK extends ToSBit
 	
     protected Program preprocessProgram(Program prog) {
         prog = super.preprocessProgram(prog);
-        prog = (Program)prog.accept(new VariableDisambiguator());
+        //prog = (Program)prog.accept(new VariableDisambiguator());
+        System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());
+        System.out.println(" After mpn ");
         return prog;
     }
+	
+	
 	
     public RecursionControl newRControl(){
     	return new AdvancedRControl(10, params.inlineAmt, prog);
@@ -82,19 +87,20 @@ public class ToStencilSK extends ToSBit
             throw new IllegalStateException("Semantic check failed");
         
         originalProg = prog;  // save
-        prog=preprocessProgram(prog); // perform prereq transformations
+        prog=preprocessProgram(prog); // perform prereq transformations        
 
-        prog = (Program)prog.accept(new StencilPreprocessor(params.unrollAmt, newRControl()));
-
-        //is this necessary?
-        prog = (Program)prog.accept(new AssignLoopTypes());
+        
         if (prog == null)
             throw new IllegalStateException();
         
         TempVarGen varGen = new TempVarGen();
-        prog = (Program) prog.accept( new GenerateCopies(varGen) );  
-        prog = (Program) prog.accept( new ExprArrayToArrayRange());
-//        prog.accept(new SimpleCodePrinter());
+        prog = (Program) prog.accept( new ScalarizeVectorAssignments(varGen, true) );  
+
+        System.out.println("After SVA.");
+        
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+       prog.accept(new SimpleCodePrinter());
+       System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         System.out.println("Before preprocessing.");
         
         prog = (Program)prog.accept(new EliminateCompoundAssignments());

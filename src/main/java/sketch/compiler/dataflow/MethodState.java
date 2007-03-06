@@ -336,6 +336,13 @@ public class MethodState {
 		var = this.transName(var);
 		return UTvarValue(var);		
 	}
+	
+	public Type varType(String var){
+		assert var != null : "NOO!!";
+		var = this.transName(var);
+		varState vs = UTvarState(var);
+		return vs.getType();
+	}
 		
 	public void setVarValue(String var, abstractValue val){
 		var = this.transName(var);
