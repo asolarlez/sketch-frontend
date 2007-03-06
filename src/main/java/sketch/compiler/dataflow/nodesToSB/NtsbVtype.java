@@ -1,12 +1,15 @@
 package streamit.frontend.experimental.nodesToSB;
 
 import java.io.PrintStream;
+import java.util.Iterator;
 import java.util.List;
 
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.ValueOracle;
@@ -71,5 +74,24 @@ public class NtsbVtype extends IntVtype {
 	
 	public varState cleanState(String var, Type t){
 		return new NtsbState(var, t, this);
+	}
+	
+	public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist){
+		Iterator<abstractValue> actualParams = avlist.iterator();
+		String name = fun.getName();
+		String plist = "";
+		while( actualParams.hasNext() ){
+			abstractValue param = actualParams.next();
+			plist += param;
+			if( actualParams.hasNext()  ){ plist += ", "; }
+		}
+		
+		Iterator<Parameter> formalParams = fun.getParams().iterator();
+    	while(formalParams.hasNext()){
+    		Parameter param = formalParams.next();    	
+    		if( param.isParameterOutput()){
+    			outSlist.add(BOTTOM(name+ "_" + param.getName() + "[" + param.getType() + "]( "+ plist +"  )"));
+    		}
+    	}
 	}
 }

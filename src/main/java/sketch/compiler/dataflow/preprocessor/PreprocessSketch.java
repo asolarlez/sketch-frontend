@@ -45,102 +45,6 @@ public class PreprocessSketch extends PartialEvaluator {
 	
 
 	
-    void inParameterSetter(Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, boolean checkError){    	
-    	List<Expression> actualsList = new ArrayList<Expression>();
-    	List<abstractValue> actualsValList = new ArrayList<abstractValue>();
-    	while(actualParamIterator.hasNext()){
-    		Expression actualParam = actualParamIterator.next();
-    		abstractValue actualParamValue = (abstractValue) actualParam.accept(this);
-    		actualParam = exprRV;
-        	actualsList.add(actualParam);
-        	actualsValList.add(actualParamValue);
-    	}
-    	
-    	state.pushLevel();
-    	
-    	Iterator<Expression> actualIterator = actualsList.iterator();
-    	Iterator<abstractValue> actualValIterator = actualsValList.iterator();
-    	
-        while(actualIterator.hasNext()){	        	
-        	Expression actualParam = actualIterator.next();			        	
-        	Parameter formalParam = (Parameter) formalParamIterator.next();
-        	        	
-        	//abstractValue actualParamValue = actualValIterator.next();
-    		
-        	String formalParamName = formalParam.getName();
-        	state.varDeclare(formalParamName, formalParam.getType());
-    		if( !formalParam.isParameterOutput() ){
-    			
-    	    	Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),actualParam);
-    	    	addStatement((Statement)varDecl);
-    		}else{
-    			Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),null);
-    	    	addStatement((Statement)varDecl);
-    		}
-        }
-    }
-    
-    
-    String outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
-    	String result = "";
-    	FEContext context = null;
-    	List<abstractValue> formalList = new ArrayList<abstractValue>();
-    	List<String> formalTransNames = new ArrayList<String>();
-    	while(formalParamIterator.hasNext()){
-    		Parameter formalParam = (Parameter) formalParamIterator.next();
-    		if( formalParam.isParameterOutput() ){
-    			String formalParamName = formalParam.getName();    			    			
-    			formalTransNames.add(transName(formalParamName));
-    			abstractValue av = state.varValue(formalParamName);
-    			formalList.add(av);
-    		}else{
-    			formalList.add(null);
-    			formalTransNames.add(null);
-    		}
-    	}
-    	
-    	state.popLevel();
-    	
-    	Iterator<abstractValue> vcIt = formalList.iterator();
-    	Iterator<String> fTransNamesIt = formalTransNames.iterator(); 
-    	
-        while(actualParamIterator.hasNext()){	        	
-        	Expression actualParam = (Expression)actualParamIterator.next();			        	        	
-        	abstractValue formal = vcIt.next();
-        	String fTransName = fTransNamesIt.next();
-        	if( formal != null ){
-        		
-        		
-        		String lhsName = null;
-                abstractValue lhsIdx = null;
-                Expression nlhs = null;
-                if( actualParam instanceof ExprVar){
-                	lhsName = ((ExprVar)actualParam).getName();  
-                	nlhs = new ExprVar(actualParam.getCx(), transName(lhsName));
-                }
-                
-                if( actualParam instanceof ExprArrayRange){
-                	ExprArrayRange ear = ((ExprArrayRange)actualParam);
-                	Expression base = ear.getBase();
-                	assert base instanceof ExprVar;        	
-                	lhsName = ((ExprVar)base).getName();
-                	nlhs = new ExprVar(actualParam.getCx(), transName(lhsName));
-                	assert ear.getMembers().size() == 1 && ear.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
-            		RangeLen rl = (RangeLen)ear.getMembers().get(0);
-            		lhsIdx = (abstractValue)rl.start().accept(this);
-            		nlhs = new ExprArrayRange(actualParam.getCx(), nlhs, exprRV, ear.isUnchecked());
-            		assert rl.len() == 1 ;
-                }
-        		
-        		state.setVarValue(lhsName, lhsIdx, formal);
-        		addStatement(new StmtAssign(context, nlhs, new ExprVar(context, fTransName) ));
-        		
-
-        	}
-        }
-        return result;
-    }
-	
 	
 	
 	
@@ -161,42 +65,46 @@ public class PreprocessSketch extends PartialEvaluator {
 				state.popLevel();
 			}
 		}
-    	if (fun != null) {    		
-    		if (rcontrol.testCall(exp)) {
-                /* Increment inline counter. */
-            	rcontrol.pushFunCall(exp, fun);  
-    		
-				List<Statement>  oldNewStatements = newStatements;
-				newStatements = new ArrayList<Statement> ();
-				Statement result = null;
-				state.pushLevel();
-				try{
-		    		{
-		    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-		    			Iterator<Parameter> formalParams = fun.getParams().iterator();
-		    			inParameterSetter(formalParams, actualParams, false);
-		    		}
-		    		Statement body = (Statement) fun.getBody().accept(this);
-		    		addStatement(body);
-		    		{
-		    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
-		    			Iterator formalParams = fun.getParams().iterator();
-		    			outParameterSetter(formalParams, actualParams, false);
-		    		}
-		    		result = new StmtBlock(exp.getContext(), newStatements);
-	    		}finally{
-	    			state.popLevel();
-	    			newStatements = oldNewStatements;
-	    		}
-	            addStatement(result);
-	    		
-	    		rcontrol.popFunCall(exp);
+    	if (fun != null) {   
+    		if( fun.isUninterp()  ){    			
+    			return super.visitExprFunCall(exp);
     		}else{
-    			StmtAssert sas = new StmtAssert(exp.getContext(), new ExprConstInt(0));
-    			addStatement(sas);    			    		
+	    		if (rcontrol.testCall(exp)) {
+	                /* Increment inline counter. */
+	            	rcontrol.pushFunCall(exp, fun);  
+	    		
+					List<Statement>  oldNewStatements = newStatements;
+					newStatements = new ArrayList<Statement> ();
+					Statement result = null;
+					state.pushLevel();
+					try{
+			    		{
+			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
+			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
+			    			inParameterSetter(formalParams, actualParams, false);
+			    		}
+			    		Statement body = (Statement) fun.getBody().accept(this);
+			    		addStatement(body);
+			    		{
+			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
+			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
+			    			outParameterSetter(formalParams, actualParams, false);
+			    		}
+			    		result = new StmtBlock(exp.getContext(), newStatements);
+		    		}finally{
+		    			state.popLevel();
+		    			newStatements = oldNewStatements;
+		    		}
+		            addStatement(result);
+		    		
+		    		rcontrol.popFunCall(exp);
+	    		}else{
+	    			StmtAssert sas = new StmtAssert(exp.getContext(), new ExprConstInt(0));
+	    			addStatement(sas);    			    		
+	    		}
+	    		exprRV = null;
+	    		return vtype.BOTTOM();
     		}
-    		exprRV = null;
-    		return vtype.BOTTOM();
     	}
     	exprRV = null;
     	return vtype.BOTTOM();    	

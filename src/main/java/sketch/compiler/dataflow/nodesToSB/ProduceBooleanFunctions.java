@@ -7,9 +7,14 @@ import java.util.List;
 
 import streamit.frontend.experimental.PartialEvaluator;
 import streamit.frontend.experimental.abstractValue;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -199,7 +204,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 		return func;
     }
 	
-
+	
     public Object visitStreamSpec(StreamSpec spec)
     {  
     	((NtsbVtype)this.vtype).out.println("Filter " + spec.getName() + " {");
@@ -209,5 +214,54 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     	
     }
 	
+    
+	public Object visitExprFunCall(ExprFunCall exp)
+	{
+    	String name = exp.getName();
+    	// Local function?
+		Function fun = ss.getFuncNamed(name);
+		if(fun.getSpecification()!= null){
+			assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
+		}
+    	if (fun != null) {   
+    		if( fun.isUninterp()  ){    			
+    			return super.visitExprFunCall(exp);
+    		}else{
+	    		if (rcontrol.testCall(exp)) {
+	                /* Increment inline counter. */
+	            	rcontrol.pushFunCall(exp, fun);  
+	    		
+					List<Statement>  oldNewStatements = newStatements;
+					newStatements = new ArrayList<Statement> ();					
+					state.pushLevel();
+					try{
+			    		{
+			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
+			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
+			    			inParameterSetter(formalParams, actualParams, false);
+			    		}
+			    		Statement body = (Statement) fun.getBody().accept(this);
+			    		addStatement(body);
+			    		{
+			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
+			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
+			    			outParameterSetter(formalParams, actualParams, false);
+			    		}			    		
+		    		}finally{
+		    			state.popLevel();
+		    			newStatements = oldNewStatements;
+		    		}
+		    		rcontrol.popFunCall(exp);
+	    		}else{
+	    			StmtAssert sas = new StmtAssert(exp.getContext(), new ExprConstInt(0));
+	    			sas.accept(this);
+	    		}
+	    		exprRV = exp;
+	    		return vtype.BOTTOM();
+    		}
+    	}
+    	exprRV = null;
+    	return vtype.BOTTOM();    	
+    }
 	
 }
