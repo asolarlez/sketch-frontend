@@ -217,16 +217,6 @@ public class DoComplexProp extends SymbolTableVisitor
         return super.visitExprField(exp);
     }
 
-    public Object visitExprArray(ExprArray exp)
-    {
-        // If the type of the expression is complex, decompose it;
-        // otherwise, move on.
-        if (getType(exp).isComplex())
-            return makeComplexPair(exp);
-        else
-            return exp;
-    }
-
     public Object visitSCSimple(SCSimple creator)
     {
         // Run propagation, but insert temporaries for any

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
@@ -146,7 +146,7 @@ public class InsertInitConstructors extends InitMunger
                                  new ExprUnary(ctx,
                                                ExprUnary.UNOP_POSTINC,
                                                varExp));
-                Expression lhs = new ExprArray(ctx, name, varExp);
+                Expression lhs = new ExprArrayRange(ctx, name, varExp);
                 Statement body =
                     new StmtBlock(ctx,
                                   stmtsForConstructor(ctx, lhs, base, false));
