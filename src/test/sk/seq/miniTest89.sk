@@ -1,0 +1,10 @@
+
+int sin(int x);
+
+int  test(int in1, int in2) implements spec{
+	return sin(in1+in2);
+}
+
+int spec(int in1, int in2){
+	return sin(in1+in2);
+}

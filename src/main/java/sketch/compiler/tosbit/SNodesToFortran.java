@@ -573,9 +573,6 @@ public class SNodesToFortran implements FEVisitor {
 	    throw new IllegalStateException();
     }
 
-	public Object visitExprArray(ExprArray exp) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitExprArrayInit(ExprArrayInit exp) {
 	    assert false;
@@ -717,5 +714,8 @@ public class SNodesToFortran implements FEVisitor {
 		assert false;
 		return null;
 	}
+	public Object visitType(Type t) { return null; }
+    public Object visitTypePrimitive(TypePrimitive t) { return null; }
+    public Object visitTypeArray(TypeArray t) { return null; }
 
 }
