@@ -1,23 +1,16 @@
 package streamit.frontend.stencilSK;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
 
 public class ExpandBinMax {	
 
@@ -29,8 +22,8 @@ public class ExpandBinMax {
 	
 	
 	public Expression comp(int pos, int dim, ExprVar v1, ExprVar v2){
-		ExprArray ear1 = new ExprArray(null, v1, new ExprConstInt(pos));
-		ExprArray ear2 = new ExprArray(null, v2, new ExprConstInt(pos));
+		ExprArrayRange ear1 = new ExprArrayRange(null, v1, new ExprConstInt(pos));
+		ExprArrayRange ear2 = new ExprArrayRange(null, v2, new ExprConstInt(pos));
 		Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, ear1, ear2);
 		Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, ear1, ear2);
 		Expression out;

@@ -17,6 +17,7 @@
 package streamit.frontend.passes;
 
 import streamit.frontend.nodes.ExprArray;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprConstBoolean;
 import streamit.frontend.nodes.ExprConstChar;
 import streamit.frontend.nodes.ExprConstFloat;
@@ -45,7 +46,7 @@ public class TrimDumbDeadCode extends FEReplacer
         // NB: for array and field expressions, we really should look
         // for side-effect-causing children.  At this point in the
         // process it's probably okay, though.
-        if (expr instanceof ExprArray ||
+        if (expr instanceof ExprArrayRange ||
             expr instanceof ExprConstBoolean ||
             expr instanceof ExprConstChar ||
             expr instanceof ExprConstFloat ||
