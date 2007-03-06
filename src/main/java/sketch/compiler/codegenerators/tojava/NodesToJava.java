@@ -303,15 +303,6 @@ public class NodesToJava implements FEVisitor
         }
     }
 
-    public Object visitExprArray(ExprArray exp)
-    {
-        String result = "";
-        result += (String)exp.getBase().accept(this);
-        result += "[";
-        result += (String)exp.getOffset().accept(this);
-        result += "]";
-        return result;
-    }
     
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
@@ -1286,5 +1277,8 @@ public class NodesToJava implements FEVisitor
 		}
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
 	}
+	public Object visitType(Type t) { return null; }
+    public Object visitTypePrimitive(TypePrimitive t) { return null; }
+    public Object visitTypeArray(TypeArray t) { return null; }
 	
 }
