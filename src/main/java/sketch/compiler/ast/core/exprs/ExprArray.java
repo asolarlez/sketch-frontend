@@ -23,38 +23,19 @@ package streamit.frontend.nodes;
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
- * @deprecated
+ * 
  */
-public class ExprArray extends Expression
-{
-    private Expression base, offset;
-    private boolean unchecked;
+public interface ExprArray 
+{    
     /** Creates a new ExprArray with the specified base and offset. */
-    public ExprArray(FEContext context, Expression base, Expression offset)
-    {
-        super(context);
-        this.base = base;
-        this.offset = offset;
-        this.unchecked = false;
-    }
-    public ExprArray(FEContext context, Expression base, Expression offset, boolean unchecked)
-    {
-        super(context);
-        this.base = base;
-        this.offset = offset;
-        this.unchecked = unchecked;
-    }
     /** Returns the base expression of this. */
-    public Expression getBase() { return base; }
+    public Expression getBase();
 
     /** Returns the offset expression of this. */
-    public Expression getOffset() { return offset; }
+    public Expression getOffset();
     
     /** Accept a front-end visitor. */
-    public Object accept(FEVisitor v)
-    {
-        return v.visitExprArray(this);
-    }
+    public Object accept(FEVisitor v);
 
     /**
      * Determine if this expression can be assigned to.  Array
@@ -62,40 +43,18 @@ public class ExprArray extends Expression
      *
      * @return always true
      */
-    public boolean isLValue()
-    {
-        return true;
-    }
+    public boolean isLValue();
 
-    public String toString()
-    {
-        return base + "[" + offset + "]";
-    }
+    public int hashCode();
     
-    public int hashCode()
-    {
-        return base.hashCode() ^ offset.hashCode();
-    }
-    
-    public boolean equals(Object o)
-    {
-        if (!(o instanceof ExprArray))
-            return false;
-        ExprArray ao = (ExprArray)o;
-        return (ao.base.equals(base) && ao.offset.equals(offset));
-    }
+    public boolean equals(Object o);
 
 	/**
 	 * @param unchecked The unchecked to set.
 	 */
-	public void setUnchecked(boolean unchecked) {
-		this.unchecked = unchecked;
-	}
-
+	public void setUnchecked(boolean unchecked);
 	/**
 	 * @return Returns the unchecked.
 	 */
-	public boolean isUnchecked() {
-		return unchecked;
-	}
+	public boolean isUnchecked();
 }
