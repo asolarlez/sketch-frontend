@@ -200,6 +200,9 @@ public class IntVtype extends abstractValueType {
 	}
 
 	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
+		if(  arr.isBottom()  ){
+			return BOTTOM( "(" + arr + "[" + idx + "])" ); 
+		}
 		if(len != null){
 			assert len.hasIntVal() : "NYI";
 			int ilen = len.getIntVal();
@@ -211,10 +214,6 @@ public class IntVtype extends abstractValueType {
 				return ARR( lst );
 			}
 		}
-		
-		
-		
-		
 		
 		if( idx.hasIntVal() ){
 			int iidx = idx.getIntVal() ;
