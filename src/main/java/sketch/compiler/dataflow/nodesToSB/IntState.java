@@ -10,11 +10,12 @@ import streamit.frontend.nodes.TypePrimitive;
 public class IntState extends varState {
 
 	
-	IntState(){
+	IntState(Type t){
+		super(t);
 	}
 	
 	IntState(Type t, abstractValueType vtype){		
-		
+		super(t);
 		if( t instanceof  TypePrimitive){
 			init( newLHSvalue() );			
 		}
@@ -34,7 +35,7 @@ public class IntState extends varState {
 	
 	@Override
 	public varState getDeltaClone(abstractValueType vt) {
-		IntState st  = new IntState();
+		IntState st  = new IntState(getType());
 		st.helperDeltaClone(this, vt);		
 		return st;
 	}
