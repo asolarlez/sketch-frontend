@@ -12,7 +12,7 @@ import java.util.*;
  * 
  * @author liviu
  */
-public class ExprArrayRange extends Expression 
+public class ExprArrayRange extends Expression  implements ExprArray
 {
 	public static class Range 
 	{
@@ -90,6 +90,20 @@ public class ExprArrayRange extends Expression
 	{
 		this(base, Collections.singletonList(new RangeLen(offset)));		
 	}
+	public ExprArrayRange(FEContext context, Expression base, RangeLen rl)
+	{
+		this(base, Collections.singletonList(rl));		
+	}
+	public ExprArrayRange(FEContext context, Expression base, RangeLen rl, boolean unchecked)
+	{
+		this(base, Collections.singletonList(rl), unchecked);		
+	}
+	
+	public ExprArrayRange(FEContext context, Expression base, Expression offset, boolean unchecked)
+	{
+		this(base, Collections.singletonList(new RangeLen(offset)));		
+		setUnchecked(unchecked);
+	}
 	
 	
 	public Expression getOffset(){
@@ -111,6 +125,14 @@ public class ExprArrayRange extends Expression
 		this.base=base;
 		this.members=members;
 		if(members.isEmpty()) throw new IllegalArgumentException();
+	}
+	public ExprArrayRange(Expression base, List members, boolean unchecked)
+	{
+		super(base.getContext());
+		this.base=base;
+		this.members=members;
+		if(members.isEmpty()) throw new IllegalArgumentException();
+		setUnchecked(unchecked);
 	}
 	
 	/* (non-Javadoc)

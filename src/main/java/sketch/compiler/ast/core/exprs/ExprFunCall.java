@@ -30,7 +30,7 @@ import java.util.*;
 public class ExprFunCall extends Expression
 {
     private final String name;
-    private final List params;
+    private final List<Expression> params;
     
     /** Creates a new function call with the specified name and
      * parameter list. */
@@ -70,7 +70,7 @@ public class ExprFunCall extends Expression
     
     /** Returns the parameters of the function call, as an unmodifiable
      * list. */
-    public List getParams()
+    public List<Expression> getParams()
     {
         return params;
     }
