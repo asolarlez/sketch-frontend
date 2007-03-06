@@ -85,15 +85,6 @@ public class ResolveMax {
 	
 	
 	class Taint extends FENullVisitor{
-		public Object visitExprArray(ExprArray ea){
-			assert (  ea.getBase() instanceof ExprVar ); 
-			ExprVar ev = (ExprVar)ea.getBase();
-			assert ev.getName().equals(name);
-			Integer ival = ea.getOffset().getIValue();
-			assert ival != null;
-			tainted[ival] = tag;			
-			return null;	
-		}
 		
 		public Object visitExprArrayRange(ExprArrayRange ea){
 			ExprVar ev = ea.getAbsoluteBase();
@@ -488,16 +479,7 @@ public class ResolveMax {
 	        else
 	            return new ExprUnary(exp.getContext(), exp.getOp(), expr);
 	    }
-		
-		public Object visitExprArray(ExprArray ea){
-			if(  ea.getBase() instanceof ExprVar ){
-				ExprVar ev = (ExprVar)ea.getBase();
-				if( ev.getName().equals(name) ){
-					ea.setTag(tag);
-				}
-			}
-			return ea;
-		}
+				
 		
 		public Object visitExprArrayRange(ExprArrayRange ea){
 			ExprVar ev = ea.getAbsoluteBase(); 					

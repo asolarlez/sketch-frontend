@@ -26,7 +26,6 @@ public class StaticHoleTracker implements HoleNameTracker {
 		if(store.containsKey(hole)){
 			vname = store.get(hole);
 		}else{
-			
 			vname = "H_" + varGen.nextVar();			
 			store.put(hole, vname);			
 		}
