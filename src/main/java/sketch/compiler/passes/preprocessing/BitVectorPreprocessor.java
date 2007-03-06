@@ -165,11 +165,6 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		return super.visitStmtAssign(stmt);
 	}
 
-	@Override
-	public Object visitExprArray(ExprArray exp) {
-		return new ExprArrayRange(exp.getBase(),Collections.singletonList(
-			new RangeLen(exp.getOffset()))).accept(this);
-    }
 
 	@Override
 	public Object visitExprBinary(ExprBinary exp)

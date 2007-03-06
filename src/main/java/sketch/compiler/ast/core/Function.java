@@ -40,11 +40,13 @@ public class Function extends FENode
     public static final int FUNC_BUILTIN_HELPER = 6;
     public static final int FUNC_PHASE = 7;
     public static final int FUNC_PREWORK = 8;
+    public static final int FUNC_UNINTERP = 9;
+    
     
     private int cls;
     private String name; // or null
     private Type returnType;
-    private List params;
+    private List<Parameter> params;
     private Statement body;
     
     private String fImplements=null;
@@ -53,7 +55,7 @@ public class Function extends FENode
      * This is public so that visitors that want to create new objects
      * can, but you probably want one of the other creator functions. */
     public Function(FEContext context, int cls, String name,
-                    Type returnType, List params, Statement body)
+                    Type returnType, List<Parameter> params, Statement body)
     {
         super(context);
         this.cls = cls;
@@ -64,7 +66,7 @@ public class Function extends FENode
     }
     
     public Function(FEContext context, int cls, String name,
-            Type returnType, List params, String fImplements, Statement body)
+            Type returnType, List<Parameter> params, String fImplements, Statement body)
 	{
 		super(context);
 		this.cls = cls;
@@ -74,6 +76,10 @@ public class Function extends FENode
 		this.body = body;
 		this.fImplements = fImplements;
 	}
+    
+    public static Function newUninterp(String name, List<Parameter> params){
+    	return new Function(null, FUNC_UNINTERP, name,new TypePrimitive(TypePrimitive.TYPE_VOID), params, null);
+    }
     
     /** Create a new init function given its body. */
     public static Function newInit(FEContext context, Statement body)
@@ -86,7 +92,7 @@ public class Function extends FENode
     /** Create a new message handler given its name (not null), parameters,
      * and body. */
     public static Function newHandler(FEContext context, String name,
-                                      List params, Statement body)
+                                      List<Parameter> params, Statement body)
     {
         return new Function(context, FUNC_HANDLER, name,
                             new TypePrimitive(TypePrimitive.TYPE_VOID),
@@ -95,7 +101,7 @@ public class Function extends FENode
     
     /** Create a new helper function given its parts. */
     public static Function newHelper(FEContext context, String name,
-                                     Type returnType, List params,
+                                     Type returnType, List<Parameter> params,
                                      Statement body)
     {
         return new Function(context, FUNC_HELPER, name, returnType,
@@ -104,7 +110,7 @@ public class Function extends FENode
 
     /** Create a new helper function given its parts. */
     public static Function newHelper(FEContext context, String name,
-                                     Type returnType, List params,
+                                     Type returnType, List<Parameter> params,
                                      String impl, Statement body)
     {
         Function f=new Function(context, FUNC_HELPER, name, returnType,
@@ -113,6 +119,12 @@ public class Function extends FENode
         return f;
     }
 
+    
+    public boolean isUninterp(){
+    	return cls == FUNC_UNINTERP;
+    }
+    
+    
     /** Returns the class of this function as an integer. */
     public int getCls() 
     {
@@ -127,7 +139,7 @@ public class Function extends FENode
     
     /** Returns the parameters of this function, as a List of Parameter
      * objects. */
-    public List getParams()
+    public List<Parameter> getParams()
     {
         return Collections.unmodifiableList(params);
     }

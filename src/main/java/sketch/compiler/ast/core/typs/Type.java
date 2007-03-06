@@ -71,4 +71,8 @@ public abstract class Type
     	return false;
     }
     
+    public Object accept(FEVisitor visitor){
+    	return visitor.visitType(this);
+    }
+    
 }

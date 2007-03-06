@@ -57,6 +57,11 @@ import streamit.frontend.nodes.ExprArrayRange.*;
  */
 public class FEReplacer implements FEVisitor
 {
+	
+	final public Object visitExprArray(ExprArrayInit exp){
+		return null;
+	}
+	
     /**
      * Mutable list of statements to be added to the current block.
      * This is only usefully defined within a call to
@@ -134,17 +139,6 @@ public class FEReplacer implements FEVisitor
     {
         return (Expression)expr.accept(this);
     }
-
-    public Object visitExprArray(ExprArray exp)
-    {
-        Expression base = doExpression(exp.getBase());
-        Expression offset = doExpression(exp.getOffset());
-        if (base == exp.getBase() && offset == exp.getOffset())
-            return exp;
-        else
-            return new ExprArray(exp.getContext(), base, offset, exp.isUnchecked());
-    }
-    
     
     
     public Object visitExprArrayInit(ExprArrayInit exp)
@@ -394,7 +388,12 @@ public class FEReplacer implements FEVisitor
             // be dropped in the output
             if (s == null)
                 continue;
-            doStatement(s);
+            try{
+            	doStatement(s);
+            }catch(RuntimeException e){
+            	newStatements = oldStatements;
+            	throw e;
+            }
         }
         Statement result = new StmtBlock(stmt.getContext(), newStatements);
         newStatements = oldStatements;
@@ -649,4 +648,19 @@ public class FEReplacer implements FEVisitor
 		if(!change) return exp;
 		return new ExprArrayRange(newBase,newList);
 	}
+	
+	public Object visitType(Type t) {
+		return t; 
+	}
+    public Object visitTypePrimitive(TypePrimitive t) {
+    	return t; 
+    }
+    public Object visitTypeArray(TypeArray t) {
+    	Type nbase = (Type)t.getBase().accept(this);
+    	Expression nlen = (Expression)t.getLength().accept(this);
+    	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
+    	return new TypeArray(nbase, nlen); 
+    }
+	
+	
 }

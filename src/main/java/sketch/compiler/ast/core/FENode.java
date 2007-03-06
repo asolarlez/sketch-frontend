@@ -51,6 +51,11 @@ public abstract class FENode
     {
         return context;
     }
+    
+    public FEContext getCx(){
+    	return context;
+    }
+    
 
     /**
      * Calls an appropriate method in a visitor object with this as

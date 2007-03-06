@@ -28,8 +28,7 @@ package streamit.frontend.nodes;
  * @version $Id$
  */
 public class FENullVisitor implements FEVisitor
-{
-    public Object visitExprArray(ExprArray exp) { return null; }
+{    
     public Object visitExprArrayInit(ExprArrayInit exp) { return null; }
     public Object visitExprBinary(ExprBinary exp) { return null; }
     public Object visitExprComplex(ExprComplex exp) { return null; }
@@ -83,4 +82,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitOther(FENode node) { return null; }
 	public Object visitExprStar(ExprStar star) { return null; }
 	public Object visitExprArrayRange(ExprArrayRange exp) { return null; }
+	public Object visitType(Type t) { return null; }
+    public Object visitTypePrimitive(TypePrimitive t) { return null; }
+    public Object visitTypeArray(TypeArray t) { return null; }
 }

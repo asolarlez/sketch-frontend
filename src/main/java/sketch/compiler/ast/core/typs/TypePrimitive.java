@@ -249,4 +249,7 @@ public class TypePrimitive extends Type
     public boolean isNonDet(){
     	return type == TYPE_NDBIT || type == TYPE_NDBOOLEAN || type == TYPE_NDINT;
     }
+    public Object accept(FEVisitor visitor){
+    	return visitor.visitTypePrimitive(this);
+    }
 }

@@ -118,4 +118,7 @@ public class TypeArray extends Type
     	}
     	return ret;
     }
+    public Object accept(FEVisitor visitor){
+    	return visitor.visitTypeArray(this);
+    }
 }

@@ -29,6 +29,8 @@ public class ExprStar extends Expression
 	private int size;
 	public Expression vectorSize;
 	private boolean isFixed;
+	private Type type;
+	public int INT_SIZE=5;
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FEContext context)
     {
@@ -59,7 +61,9 @@ public class ExprStar extends Expression
     
     public String toString()
     {
-        return "*";
+    	if(getType() != null)
+    		return "??:" + getType() + ":" + size;
+        return "??";
     }
 
 	/**
@@ -89,4 +93,22 @@ public class ExprStar extends Expression
 	public boolean isFixed() {
 		return isFixed;
 	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(Type type) {
+		this.type = type;
+		if( (type.equals(TypePrimitive.inttype) || type.equals(TypePrimitive.ndinttype)) && !isFixed ){
+			setSize(INT_SIZE);
+		}
+	}
+
+	/**
+	 * @return the type
+	 */
+	public Type getType() {
+		return type;
+	}
+	
 }

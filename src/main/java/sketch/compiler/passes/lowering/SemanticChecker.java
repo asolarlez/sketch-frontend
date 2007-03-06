@@ -865,26 +865,6 @@ public class SemanticChecker
                 	return super.visitExprArrayRange(expr);
                 }
 
-                public Object visitExprArray(ExprArray expr)
-                {
-                    Type bt = getType(expr.getBase());
-                    Type ot = getType(expr.getOffset());
-                    
-                    if (bt != null)
-                    {
-                        if (!(bt instanceof TypeArray))
-                            report(expr, "array access with a non-array base");
-                    }
-
-                    if (ot != null)
-                    {
-                        if (!ot.promotesTo
-                            (new TypePrimitive(TypePrimitive.TYPE_NDINT)))
-                            report(expr, "array index must be an int");
-                    }
-                    
-                    return super.visitExprArray(expr);
-                }
 
                 public Object visitExprArrayInit(ExprArrayInit expr)
                 {
@@ -1033,10 +1013,7 @@ public class SemanticChecker
                     Type lt = getType(stmt.getLHS());
                     Type rt = getType(stmt.getRHS());
                     String lhsn = null;
-                    Expression lhsExp = stmt.getLHS();
-                    if(lhsExp instanceof ExprArray){
-                    	lhsExp = ((ExprArray)stmt.getLHS()).getBase();
-                    }
+                    Expression lhsExp = stmt.getLHS();                    
                     if(lhsExp instanceof ExprArrayRange){
                     	lhsExp = ((ExprArrayRange)stmt.getLHS()).getBase();
                     }

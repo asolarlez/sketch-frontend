@@ -44,19 +44,7 @@ public class GetExprType extends FENullVisitor
         this.streamType = streamType;
         this.structsByName = structsByName;
     }
-    
-    public Object visitExprArray(ExprArray exp)
-    {
-        Type base = (Type)exp.getBase().accept(this);
-        Type offset = (Type) exp.getOffset().accept(this);
-        // ASSERT: base is a TypeArray.
-        if(!(base instanceof TypeArray)) return null;
-        if(offset.isNonDet()){
-        	return ((TypeArray)base).getBase().makeNonDet();
-        }else{
-        	return ((TypeArray)base).getBase();
-        }
-    }    
+      
     public Object visitExprArrayRange(ExprArrayRange exp) {
     	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getContext();
     	Type base = (Type)exp.getBase().accept(this);
@@ -174,7 +162,11 @@ public class GetExprType extends FENullVisitor
     }
     
     public Object visitExprStar(ExprStar exp){
-    	return new TypePrimitive(TypePrimitive.TYPE_NDBIT);
+    	if(exp.getType() != null  ){
+    		return exp.getType();
+    	}else{
+    		return new TypePrimitive(TypePrimitive.TYPE_NDBIT);
+    	}
     }
 
     public Object visitExprConstChar(ExprConstChar exp)

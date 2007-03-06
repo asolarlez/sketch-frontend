@@ -135,17 +135,7 @@ class UpgradeStarToInt extends FEReplacer{
         return new StmtLoop(stmt.getContext(), newIter, newBody);
     }
     
-    public Object visitExprArray(ExprArray exp){
-    	boolean oldBit = upToInt;
-    	upToInt = true;
-    	Expression offset = doExpression(exp.getOffset());
-        upToInt = oldBit;    	    	
-    	Expression base = doExpression(exp.getBase());        
-        if (base == exp.getBase() && offset == exp.getOffset())
-            return exp;
-        else
-            return new ExprArray(exp.getContext(), base, offset, exp.isUnchecked());
-    }
+
     public Object visitExprArrayRange(ExprArrayRange exp){
     	boolean change=false;
 		Expression newBase=doExpression(exp.getBase());
@@ -211,20 +201,10 @@ class Indexify extends FEReplacer{
 	}
 	public Object visitExprVar(ExprVar exp) {
 		if ( stv.getType(exp) instanceof TypeArray)
-			return new ExprArray(exp.getContext(), exp, index, true);
+			return new ExprArrayRange(exp.getContext(), exp, index, true);
 		else
 			return exp;
 	}
-	
-	public Object visitExprArray(ExprArray exp){
-		//Since arrays are all one dimensional, 
-		//This will be of type int, but just in case
-		//as a precausion.
-		if ( stv.getType(exp) instanceof TypeArray)
-			return new ExprArray(exp.getContext(), exp, index);
-		else
-			return exp;
-    }
 	
 	public Object visitExprTypeCast(ExprTypeCast exp)
     {
@@ -239,7 +219,7 @@ class Indexify extends FEReplacer{
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);		
 		Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(stv));
-		return new ExprArray(exp.getContext(), exp.getBase(), compIndex);		
+		return new ExprArrayRange(exp.getContext(), exp.getBase(), compIndex);		
     }	
 	
 	
@@ -609,9 +589,6 @@ public class GenerateCopies extends SymbolTableVisitor
        Type rt = getType(stmt.getRHS());
        String lhsn = null;
        Expression lhsExp = stmt.getLHS();
-       if(lhsExp instanceof ExprArray){
-       	lhsExp = ((ExprArray)stmt.getLHS()).getBase();
-       }
        if(lhsExp instanceof ExprArrayRange){
           	lhsExp = ((ExprArrayRange)stmt.getLHS()).getBase();
        }

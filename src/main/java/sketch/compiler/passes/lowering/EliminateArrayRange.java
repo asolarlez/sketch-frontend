@@ -77,7 +77,7 @@ public class EliminateArrayRange extends SymbolTableVisitor {
     	if( rl.len() == 1 ){
     		Expression newBase=doExpression(exp.getBase());
     		Expression newIndex = doExpression(rl.start());	
-    		return new ExprArray(exp.getContext(), newBase, newIndex);
+    		return new ExprArrayRange(exp.getContext(), newBase, newIndex);
     	}else{    			
 			TypeArray arrType = (TypeArray) getType(exp.getBase());
 			Type baseType = arrType.getBase();				
