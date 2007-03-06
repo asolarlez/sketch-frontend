@@ -11,8 +11,7 @@ public class NtsbState extends varState {
 	public class lhsIndexes{
 		public int idx=1;
 	}
-	private final String name;
-	private final Type t;
+	private final String name;	
 	NtsbVtype vtype;
 	private lhsIndexes[] lhsIdxs;
 	
@@ -38,9 +37,9 @@ public class NtsbState extends varState {
 		return rv;
 	}
 	
-	NtsbState(String name, Type t, NtsbVtype vtype){		
-		this.name = name;
-		this.t = t;
+	NtsbState(String name, Type t, NtsbVtype vtype){	
+		super(t);
+		this.name = name;		
 		this.vtype = vtype;
 		if( t instanceof  TypePrimitive){
 			lhsIdxs = idxsArr(1);
@@ -90,7 +89,7 @@ public class NtsbState extends varState {
 			String result  =  name + "_idx_" + iidx + "_" +  lhsval.getlhsIdx() + " = " + val + ";";
 			vtype.out.println( result );
 		}else{
-			int lk = maxKey();
+			int lk = numKeys();
 			vtype.out.print("$ ");
 			for(int i=0; i<lk; ++i){
 				vtype.out.print(" " + name + "_idx_" + i + "_" +  val(i).getlhsIdx() );
