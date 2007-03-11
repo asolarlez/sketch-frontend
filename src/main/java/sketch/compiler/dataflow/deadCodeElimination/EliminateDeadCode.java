@@ -1,0 +1,97 @@
+package streamit.frontend.experimental.deadCodeElimination;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import streamit.frontend.experimental.abstractValue;
+import streamit.frontend.experimental.abstractValueType;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+
+public class EliminateDeadCode extends BackwardDataflow {
+
+	public EliminateDeadCode(){
+		super(LiveVariableVType.vtype, null, true, -1,(new BaseRControl(10)));
+	}
+	
+	public Object visitStmtAssign(StmtAssign stmt)
+    {
+		if(stmt.getLHS() instanceof ExprVar  ){
+			ExprVar v = (ExprVar) stmt.getLHS();
+			LiveVariableAV av = (LiveVariableAV)state.varValue(v.getName());
+			if(av.getLiveness() == LiveVariableAV.DEAD){
+				return null;
+			}
+			
+		}
+		return super.visitStmtAssign(stmt);
+    }
+	
+	
+	
+	 public Object visitFunction(Function func)
+	    {
+	        List<Parameter> params = func.getParams();
+	        List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
+	    	for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
+	    		Parameter param = it.next();
+	    		state.varDeclare(param.getName() , param.getType());
+	    		if( isReplacer){
+	    			Type ntype = (Type)param.getType().accept(this);
+	    			nparams.add( new Parameter(ntype, transName(param.getName()), param.isParameterOutput()));
+	    		}
+	    		if(param.isParameterOutput()){
+	    			state.setVarValue(param.getName(), new joinAV(LiveVariableAV.LIVE));
+	    		}
+	    	}
+	    	
+	    	
+	    	state.beginFunction(func.getName());
+	    	
+	    	Statement newBody = (Statement)func.getBody().accept(this);
+	    	
+	    	state.endFunction();
+
+	        return isReplacer? new Function(func.getContext(), func.getCls(),
+	                            func.getName(), func.getReturnType(),
+	                            nparams, func.getSpecification(), newBody) : null;
+	    	
+	    	//state.pushVStack(new valueClass((String)null) );
+	    }
+	
+	
+	
+	 public Object visitStmtVarDecl(StmtVarDecl stmt)
+	    {
+	    	List<Type> types =  new ArrayList<Type>();
+	    	List<String> names = new ArrayList<String>();
+	    	List<Expression> inits = new ArrayList<Expression>();
+	        for (int i = 0; i < stmt.getNumVars(); i++)
+	        {
+	            String nm = stmt.getName(i);
+	            
+	            LiveVariableAV av = (LiveVariableAV)state.varValue(nm);
+	            if(av.hasBeenLive()){
+	            	types.add(stmt.getType(i));
+	            	names.add(nm);
+	            	inits.add(stmt.getInit(i));
+	            }
+	        }
+	        if(types.size() > 0){
+	        	return super.visitStmtVarDecl(new StmtVarDecl(stmt.getCx(), types, names, inits));
+	        }else{
+	        	return null;
+	        }
+	    }
+	
+}
