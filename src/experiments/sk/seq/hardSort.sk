@@ -1,0 +1,92 @@
+int N = 4;
+int No2 = N/2;
+
+int[N] sort(int[N] input){
+	int[N] output=input;
+	int[N] done = 0;
+	int k=0;
+	for(int i=0; i<N; ++i){
+		for(int j=i+1; j<N; ++j){
+			if( output[j]< output[i]){
+				int tmp = output[j];
+				output[j] = output[i];
+				output[i] = tmp;
+			}
+		}
+	}
+	return output;
+}
+
+
+int[No2] sortNover2(int[No2] input){
+	int[No2] output=input;
+	int[No2] done = 0;
+	int k=0;
+	for(int i=0; i<No2; ++i){
+		for(int j=i+1; j<No2; ++j){
+			if( output[j]< output[i]){
+				int tmp = output[j];
+				output[j] = output[i];
+				output[i] = tmp;
+			}
+		}
+	}
+	return output;
+}
+
+
+int inthole(int x1, int x2, int x3, int x4, int x5, int x6){
+	int t2 = ??;
+
+	if( t2== 0){ return x1; }
+	if( t2== 1){ return x2; }
+	if( t2== 2){ return x3;	}
+	if( t2== 3){ return x4; }
+	if( t2== 4){ return x5; }
+	if( t2== 5){ return x6;	}
+	assert t2 <= 5;
+	return 0;
+}
+
+bit hole(int x1, int x2, int x3, int x4, int x5, int x6){
+	int t = ??;
+	
+	if( t==0){
+		bit x = hole(x1, x2, x3, x4, x5, x6);
+		if(x){
+			return x & hole(x1, x2, x3, x4, x5, x6);
+		}
+	}
+	if( t==1){
+		return !hole(x1, x2, x3, x4, x5, x6);
+	}
+	if( t==2){
+		return inthole(x1, x2, x3, x4, x5, x6) < inthole(x1, x2, x3, x4, x5, x6);
+	}
+	assert t <= 2;
+	return 0;
+}
+
+
+
+int[N] MergeSort(int[N] input)implements sort{
+	int[N] output;
+	int[No2] firstHalf = input[0::No2];
+
+	int[No2] secondHalf = input[No2::No2];
+		
+	firstHalf = sortNover2(firstHalf);
+	secondHalf = sortNover2(secondHalf);
+	int x=0;
+	int y=0;
+	for(int i=0; i<N; ++i){
+		if( hole(x,y, firstHalf[x], secondHalf[y], N, No2) ){
+			output[i] = firstHalf[x]; x = x+1;
+		}else{
+			output[i] = secondHalf[y]; y = y+1;
+		}
+	}	
+	return output;
+}
+
+
