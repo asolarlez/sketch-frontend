@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import streamit.frontend.experimental.MethodState;
 import streamit.frontend.experimental.abstractValue;
 
 public class LVSet extends abstractValue {
@@ -52,7 +53,9 @@ public class LVSet extends abstractValue {
 		Iterator<LiveVariableAV> it = set.iterator();
 		while(it.hasNext()){
 			LiveVariableAV lv = it.next();
-			lv.setLiveness(LiveVariableAV.LIVE);
+			if(lv.mstate != null){
+				lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+			}
 		}
 	}
 
