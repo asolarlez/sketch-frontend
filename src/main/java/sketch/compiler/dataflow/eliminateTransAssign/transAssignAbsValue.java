@@ -69,36 +69,66 @@ public class transAssignAbsValue extends abstractValue {
 
 	@Override
 	public void update(abstractValue v) {
-		if(v instanceof transAssignAbsValue ){
-			transAssignAbsValue ta = (transAssignAbsValue) v; 			
-			
-			
-			
-			if(ta.me.equals(me)){
-				this.varIamEqualTo = ta.varIamEqualTo;
-				this.varsEqToMe = ta.varsEqToMe;
-			}else{
+		final int ADD = taUpdater.ADD;
+		final int REMOVE = taUpdater.REMOVE;
+		final int CLEAR = taUpdater.CLEAR;
+		final int OVERWRITE = taUpdater.OVERWRITE;
+		if(v instanceof taUpdater){
+			taUpdater tau = (taUpdater) v;
+			if( tau.command == ADD){
+				varsEqToMe.add(tau.arg);
+			}
+			if( tau.command == REMOVE){
+				assert varsEqToMe.contains(tau.arg) : "This is an invariant";
+				varsEqToMe.remove(tau.arg);
+			}
+			if( tau.command == CLEAR ){
+				assert varIamEqualTo == tau.arg: "This is an invariant";
+				varIamEqualTo = null;
+			}
+			if( tau.command == OVERWRITE ){
+				assert tau.tav.me == me : "You can only overwrite yourself";
+				/*
+				if(this.varIamEqualTo != tau.tav.varIamEqualTo){
+					if(varIamEqualTo != null ){
+						ms.setVarValue(ms.untransName(varIamEqualTo), new  taUpdater(REMOVE, me)  );
+					}
+					this.varIamEqualTo = tau.tav.varIamEqualTo;
+					ms.setVarValue(ms.untransName( tau.tav.varIamEqualTo ), new  taUpdater(ADD, me) );
+				}
+				
+				Iterator<String> it = varsEqToMe.iterator();
+				while(it.hasNext()){
+					String newNm = it.next();
+					if( !tau.tav.varsEqToMe.contains(newNm) ){
+						ms.setVarValue(ms.untransName(newNm), new  taUpdater(CLEAR, me)  );
+					}
+				}
+				this.varsEqToMe.clear();
+				*/
+				this.varIamEqualTo = tau.tav.varIamEqualTo;
+				this.varsEqToMe = tau.tav.varsEqToMe;
+			}
+		}else{
+			if(v instanceof transAssignAbsValue ){
+				transAssignAbsValue ta = (transAssignAbsValue) v;
+				if(varIamEqualTo != null ){
+					ms.setVarValue(ms.untransName(varIamEqualTo), new  taUpdater(REMOVE, me)  );
+				}
 				varIamEqualTo = ta.me;
-				ta.varsEqToMe.add(me);
+				ms.setVarValue(ms.untransName( ta.me ), new  taUpdater(ADD, me) );			
 			}
-		}
-		if(v instanceof TAsupperBottom  ){
-			if(varIamEqualTo != null ){
-				varState vs = ms.UTvarState(varIamEqualTo);
-				abstractValue tmp = vs.state(TAvalueType.vtype);
-				transAssignAbsValue tatmp = (transAssignAbsValue)tmp;
-				assert tatmp.varsEqToMe.contains(me) : "This is an invariant";
-				tatmp.varsEqToMe.remove(me);
+			if(v instanceof TAsupperBottom  ){
+				if(varIamEqualTo != null ){
+					ms.setVarValue(ms.untransName(varIamEqualTo), new  taUpdater(REMOVE, me)  );
+				}
+				varIamEqualTo = null;
 			}
-			varIamEqualTo = null;
-		}
-		Iterator<String> it = varsEqToMe.iterator();
-		while(it.hasNext()){
-			varState vs = ms.UTvarState(it.next());
-			abstractValue tmp = vs.state(TAvalueType.vtype);
-			transAssignAbsValue tatmp = (transAssignAbsValue)tmp;
-			assert tatmp.varIamEqualTo == me : "This is an invariant";
-			tatmp.varIamEqualTo = null;
+			Iterator<String> it = varsEqToMe.iterator();
+			while(it.hasNext()){
+				ms.setVarValue(ms.untransName(it.next()), new  taUpdater(CLEAR, me)  );				
+			}
+			varsEqToMe.clear();
 		}
 	}
 	public String toString(){		
