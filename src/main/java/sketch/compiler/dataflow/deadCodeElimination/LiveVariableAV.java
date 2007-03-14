@@ -1,29 +1,34 @@
 package streamit.frontend.experimental.deadCodeElimination;
 
-import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.experimental.MethodState;
 import streamit.frontend.experimental.abstractValue;
 
 public class LiveVariableAV extends abstractValue {
 	static final int DEAD=0;
 	static final int LIVE=1;
-	
+	final String name;
 	private int liveness;
 	private boolean beenLive = false;
-	
+	public final MethodState mstate;
 	
 	public boolean hasBeenLive(){
 		return beenLive;
 	}
 	
-	LiveVariableAV(){
+	LiveVariableAV(String name, MethodState mstate){
 		setLiveness(DEAD);
+		assert name != null;
+		this.name = name;
+		this.mstate = mstate;
 	}
 	
 	
 	LiveVariableAV(LiveVariableAV av){
 		setLiveness(av.getLiveness());
+		this.name = av.name;
+		this.mstate = av.mstate;
 	}
 	
 	
@@ -63,8 +68,10 @@ public class LiveVariableAV extends abstractValue {
 	public void update(abstractValue v) {
 		setLiveness(DEAD);
 		if( v instanceof LiveVariableAV){
-			LiveVariableAV lv = (LiveVariableAV) v;
-			lv.setLiveness(LIVE);
+			LiveVariableAV lv = (LiveVariableAV) v;	
+			if(lv.mstate != null  ){
+				mstate.setVarValue(mstate.untransName(lv.name), new joinAV(LIVE));
+			}
 		}
 		if( v instanceof LVSet){
 			((LVSet)v).enliven();
@@ -84,7 +91,7 @@ public class LiveVariableAV extends abstractValue {
 	/**
 	 * @param liveness the liveness to set
 	 */
-	public void setLiveness(int liveness) {
+	private void setLiveness(int liveness) {
 		if(liveness == LIVE){ beenLive = true; }
 		this.liveness = liveness;
 	}
