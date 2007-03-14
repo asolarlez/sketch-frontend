@@ -48,7 +48,7 @@ public class AssembleInitializers extends FEReplacer
     public Object visitStmtBlock(StmtBlock block)
     {
         List oldStatements = newStatements;
-        newStatements = new java.util.ArrayList();
+        newStatements = new java.util.ArrayList<Statement>();
         for (ListIterator iter = block.getStmts().listIterator();
              iter.hasNext(); )
         {
@@ -58,7 +58,7 @@ public class AssembleInitializers extends FEReplacer
                 Statement nst = (Statement)iter.next();
                 iter.previous();
                 if (!(nst instanceof StmtAssign))
-                    break;
+                    break;                
                 // check that the LHS of the next statement is
                 // a simple variable
                 Expression lhs = ((StmtAssign)nst).getLHS();
@@ -91,7 +91,7 @@ public class AssembleInitializers extends FEReplacer
                                        decl.getNames(),
                                        newInits);
             }
-            addStatement(stmt);
+            addStatement((Statement)stmt.accept(this));
         }   
         Statement result = new StmtBlock(block.getContext(), newStatements);
         newStatements = oldStatements;

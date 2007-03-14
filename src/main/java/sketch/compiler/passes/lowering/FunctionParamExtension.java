@@ -137,6 +137,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 	public Object visitFunction(Function func) {
 		if(func.getReturnType()==TypePrimitive.voidtype) return func;
+		if(func.isUninterp() ) return func;
 		currentFunction=func;
 			outCounter=0;
 			inCpCounter=0;
