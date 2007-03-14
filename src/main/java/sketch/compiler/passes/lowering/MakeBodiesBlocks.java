@@ -39,6 +39,7 @@ public class MakeBodiesBlocks extends FEReplacer
 
     public Object visitFunction(Function func)
     {
+    	if( func.isUninterp() ) return func;
         Statement newBody = (Statement)func.getBody().accept(this);
         newBody = buildBlock(newBody);
         if (newBody == func.getBody()) return func;

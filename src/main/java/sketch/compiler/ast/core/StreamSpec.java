@@ -41,7 +41,7 @@ public class StreamSpec extends FENode
     private String name;
     private List params;
     private List vars;
-    private List funcs;
+    private List<Function> funcs;
 
     /** Stream type constant for a filter. */
     public static final int STREAM_FILTER = 1;
@@ -187,7 +187,7 @@ public class StreamSpec extends FENode
      *
      * @return  list of {@link Function}
      */
-    public List getFuncs()
+    public List<Function> getFuncs()
     {
         return funcs;
     }

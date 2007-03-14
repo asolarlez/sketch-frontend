@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class StmtBlock extends Statement
 {
-    private List stmts;
+    private List<Statement> stmts;
     // Should this also have a symbol table?  --dzm
     
     /** Create a new StmtBlock with the specified ordered list of
@@ -42,7 +42,7 @@ public class StmtBlock extends Statement
     }
     
     /** Returns the list of statements of this. */
-    public List getStmts()
+    public List<Statement> getStmts()
     {
         return stmts;
     }
