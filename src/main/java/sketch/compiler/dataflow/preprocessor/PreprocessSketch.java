@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import streamit.frontend.experimental.DataflowWithFixpoint;
 import streamit.frontend.experimental.PartialEvaluator;
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.MethodState.ChangeTracker;
@@ -13,6 +14,7 @@ import streamit.frontend.experimental.nodesToSB.IntVtype;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
@@ -25,12 +27,21 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
-public class PreprocessSketch extends PartialEvaluator {
+public class PreprocessSketch extends DataflowWithFixpoint {
 
 	public Map<String, Function> newFuns;
+	
+	
+	 public Object visitExprStar(ExprStar star) {
+		 Object obj = super.visitExprStar(star);
+		 ExprStar old = (ExprStar)exprRV;
+		 exprRV = new ExprStar(old);
+		 return obj;
+		}
 	
 	
 	@Override
@@ -111,59 +122,6 @@ public class PreprocessSketch extends PartialEvaluator {
     }
 
 	
-	
-	public Object visitStmtFor(StmtFor stmt)
-    {
-    	state.pushLevel();
-    	Statement ninit = null;
-		Expression ncond = null;
-		Statement nincr = null;
-		Statement nbody = null;
-    	try{    		
-	        if (stmt.getInit() != null)
-	            ninit = (Statement) stmt.getInit().accept(this);
-	        boolean goOn = true;
-	        int iters = 0;	
-	        while(goOn){
-	        	state.pushChangeTracker(null, false);
-	        	boolean lisReplacer = isReplacer;
-	        	isReplacer = false;
-	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
-	        	if(!vcond.isBottom() && vcond.getIntVal() == 0){
-	        		isReplacer = lisReplacer;	        		
-	        		break;
-	        	}
-	        	ChangeTracker ct = null;
-	        	try{
-	        		stmt.getBody().accept(this);	        	
-		        	if (stmt.getIncr() != null){
-			        	stmt.getIncr().accept(this);
-		        	}
-	        	}finally{
-	        		ct = state.popChangeTracker();	
-	        		isReplacer = lisReplacer;
-	        	}
-	        	
-	        	state.pushChangeTracker(null, false);
-	        	ChangeTracker ct2 = state.popChangeTracker();
-	        	
-	        	goOn = !state.compareChangeTrackers(ct, ct2);
-	        	
-	        	state.procChangeTrackers(ct, ct2);	        		        	
-	        	++iters;
-	        }
-	        stmt.getCond().accept(this);
-	        ncond = exprRV;
-	        nbody = (Statement) stmt.getBody().accept(this);
-	        if (stmt.getIncr() != null){
-	        	nincr = (Statement) stmt.getIncr().accept(this);
-        	}
-    	}finally{
-    		state.popLevel();	        	
-    	}
-    	if(nbody == null) return stmt;
-    	return new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody);
-    }
 	
 	public Object visitFunction(Function func){
 		if( newFuns.containsKey(func.getName()) ){

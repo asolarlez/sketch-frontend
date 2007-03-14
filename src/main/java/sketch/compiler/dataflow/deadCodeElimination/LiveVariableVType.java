@@ -37,18 +37,21 @@ public class LiveVariableVType extends abstractValueType {
 
 	@Override
 	public void Assert(abstractValue val) {
-		if( val instanceof LVSet){			
+		if( val instanceof LVSet){					
 			((LVSet)val).enliven();
 		}
 		if( val instanceof LiveVariableAV){
-			((LiveVariableAV) val ).setLiveness(LiveVariableAV.LIVE);
+			LiveVariableAV lv = (LiveVariableAV) val;
+			if(lv.mstate != null  ){
+				lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+			}			
 		}
 
 	}
 
 	@Override
 	public abstractValue BOTTOM() {		
-		return new LiveVariableAV();
+		return new LiveVariableAV("BOTTOM", null);
 	}
 
 	@Override
@@ -135,7 +138,7 @@ public class LiveVariableVType extends abstractValueType {
 
 	@Override
 	public varState cleanState(String var, Type t, MethodState mstate) {
-		return new LiveVariableVarState(t);
+		return new LiveVariableVarState(var,t, mstate);
 	}
 
 	@Override
@@ -146,7 +149,8 @@ public class LiveVariableVType extends abstractValueType {
 				((LVSet)cond).enliven();
 			}
 			if( cond instanceof LiveVariableAV){
-				((LiveVariableAV)cond).setLiveness(LiveVariableAV.LIVE);
+				LiveVariableAV lv = (LiveVariableAV) cond;
+				lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));		
 			}
 		}
 		

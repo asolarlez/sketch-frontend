@@ -392,6 +392,25 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     	
     	Expression ltlen = typeLen(lt);
     	
+    	Integer irtlen = rtlen.getIValue();
+    	
+    	if( irtlen != null && irtlen == 1 ){
+    		Integer irhs = rhs.getIValue();
+    		if( irhs != null && irhs == 0 ){
+    			
+    			List<Statement> mainLst = new ArrayList<Statement>();				
+				zeroOut(lhs, new ExprConstInt(0), ltlen, mainLst);				
+				Statement mainBody =
+				new StmtBlock(null,    mainLst);
+				// Now generate the loop, we have all the parts.
+				addStatement(mainBody);
+
+    			
+    			return;
+    			
+    		}
+    		
+    	}
     	
     	
     	Expression minLen = minLength(ltlen, rtlen);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.experimental.MethodState;
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.abstractValueType;
 import streamit.frontend.experimental.varState;
@@ -59,7 +60,7 @@ public class IntVtype extends abstractValueType {
 	}
 	
 
-	public varState cleanState(String var, Type t){
+	public varState cleanState(String var, Type t, MethodState mstate){
 		return new IntState(t, this);
 	}
 	

@@ -31,6 +31,19 @@ public class ExprStar extends Expression
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
+	
+	
+	public ExprStar(ExprStar old)
+    {
+        super(old);
+        size = old.size;
+        isFixed = old.isFixed;
+        type = old.type;
+        INT_SIZE = old.INT_SIZE;
+        vectorSize = old.vectorSize;
+    }
+	
+	
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FEContext context)
     {

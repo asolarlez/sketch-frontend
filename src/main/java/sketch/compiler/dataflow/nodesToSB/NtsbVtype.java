@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.experimental.MethodState;
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.ExprStar;
@@ -72,7 +73,7 @@ public class NtsbVtype extends IntVtype {
 		 out.print ("assert (" + val + ");\n");
 	}
 	
-	public varState cleanState(String var, Type t){
+	public varState cleanState(String var, Type t, MethodState mstate){
 		return new NtsbState(var, t, this);
 	}
 	
@@ -83,7 +84,7 @@ public class NtsbVtype extends IntVtype {
 		while( actualParams.hasNext() ){
 			abstractValue param = actualParams.next();
 			plist += param;
-			if( actualParams.hasNext()  ){ plist += ", "; }
+			plist += " ";			
 		}
 		
 		Iterator<Parameter> formalParams = fun.getParams().iterator();
