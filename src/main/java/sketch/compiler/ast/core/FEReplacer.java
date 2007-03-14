@@ -267,6 +267,10 @@ public class FEReplacer implements FEVisitor
 
     public Object visitFunction(Function func)
     {
+    	if( func.getBody() == null  ){
+    		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
+    		return func;
+    	}
         Statement newBody = (Statement)func.getBody().accept(this);
         if (newBody == func.getBody()) return func;
         return new Function(func.getContext(), func.getCls(),

@@ -81,6 +81,10 @@ public class Function extends FENode
     	return new Function(null, FUNC_UNINTERP, name,new TypePrimitive(TypePrimitive.TYPE_VOID), params, null);
     }
     
+    public static Function newUninterp(String name, Type rettype, List<Parameter> params){
+    	return new Function(null, FUNC_UNINTERP, name,rettype, params, null);
+    }
+    
     /** Create a new init function given its body. */
     public static Function newInit(FEContext context, Statement body)
     {
