@@ -98,21 +98,21 @@ public class ToStencilSK extends ToSBit
 
         System.out.println("After SVA.");
         
-        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-       prog.accept(new SimpleCodePrinter());
-       System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+//        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+//       prog.accept(new SimpleCodePrinter());
+//       System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         System.out.println("Before preprocessing.");
         
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
         
-        prog.accept(new SimpleCodePrinter());
+//        prog.accept(new SimpleCodePrinter());
         
         FunctionalizeStencils fs = new FunctionalizeStencils();
         
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
         prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
         //fs.printFuns();
-        prog.accept(new SimpleCodePrinter());
+//        prog.accept(new SimpleCodePrinter());
         
         oracle = new ValueOracle( new StaticHoleTracker(varGen) );
         partialEvalAndSolve();

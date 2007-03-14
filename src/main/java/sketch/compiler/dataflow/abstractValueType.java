@@ -21,9 +21,10 @@ public abstract class abstractValueType{
 	 * Called by varDeclare. Used to create the state that goes on the left hand side.
 	 * @param var the name of the variable we are declaring.
 	 * @param t the type.
+	 * @param mstate TODO
 	 * @return
 	 */
-	abstract public varState cleanState(String var, Type t);
+	abstract public varState cleanState(String var, Type t, MethodState mstate);
 	abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);
 	
@@ -68,6 +69,12 @@ public abstract class abstractValueType{
 	 */
 	abstract public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
 	abstract public void Assert(abstractValue val);
+	/**
+	 * 
+	 * @param fun
+	 * @param avlist Contains the abstractValue for the input parameters only.
+	 * @param outSlist This is an output parameter. Needs to be set with 1 entry per output parameter.
+	 */
 	abstract public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist);
 }
 

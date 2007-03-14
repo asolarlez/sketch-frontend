@@ -36,7 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
+import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
+import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.MakeBodiesBlocks;
@@ -57,7 +61,9 @@ import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
+import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tojava.ComplexToStruct;
 import streamit.frontend.tojava.EnqueueToFunction;
 import streamit.frontend.tojava.InsertIODecls;
@@ -70,6 +76,7 @@ import streamit.frontend.tosbit.NodesToH;
 import streamit.frontend.tosbit.SequentialHoleTracker;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
@@ -213,7 +220,8 @@ public class ToSBit
 
 
     public RecursionControl newRControl(){
-    	return new BaseRControl(params.inlineAmt);
+    	// return new BaseRControl(params.inlineAmt);
+    	return new AdvancedRControl(10, params.inlineAmt, prog);
     }
     
     
@@ -358,23 +366,23 @@ public class ToSBit
     protected Program preprocessProgram(Program prog) {
         //invoke post-parse passes
     	System.out.println("=============================================================");
-    	prog.accept( new SimpleCodePrinter() );
+    	//prog.accept( new SimpleCodePrinter() );
     	System.out.println("=============================================================");
         prog = (Program)prog.accept(new FunctionParamExtension());
         prog = (Program)prog.accept(new ConstantReplacer(params.defines));   
         prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
         prog = (Program)prog.accept(new TypeInferenceForStars());
         prog = (Program) prog.accept( new PreprocessSketch( varGen, params.unrollAmt, newRControl() ) );        
-        System.out.println("=============================================================");
-        prog.accept( new SimpleCodePrinter() );
-    	System.out.println("=============================================================");
+        //System.out.println("=============================================================");
+        //prog.accept( new SimpleCodePrinter() );
+    	//System.out.println("=============================================================");
         return prog;
     }
     
     public void partialEvalAndSolve(){
     	lowerIRToJava(!params.libraryFormat);
     	System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    	prog.accept(new SimpleCodePrinter());
+    	//prog.accept(new SimpleCodePrinter());
         assert oracle != null;
         try
         {
@@ -433,12 +441,26 @@ public class ToSBit
     }
     
     public void eliminateStar(){
+    	finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
+    	finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.unrollAmt, newRControl() ));
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
+    	finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
+    	//System.out.println("=========  After ElimTransAssign  =========");
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new EliminateDeadCode());
+    	//System.out.println("=========  After ElimDeadCode  =========");
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new SimplifyVarNames());
+    	finalCode = (Program)finalCode.accept(new AssembleInitializers());
+    	/*
     	 finalCode =
              (Program) beforeUnvectorizing.accept (
                  new EliminateStar(oracle, params.unrollAmt, newRControl(),3));
          finalCode =
              (Program) finalCode.accept (
                  new EliminateStar(oracle, params.unrollAmt, newRControl(), 3));
+    	 */
     }
     
     protected String getOutputFileName() {
@@ -455,14 +477,17 @@ public class ToSBit
  		return resultFile;
     }
     
-    protected void outputCCode() {
+    protected void outputCCode() {    	
+    	
+    	
         String resultFile = getOutputFileName();
         
         String hcode = (String)finalCode.accept(new NodesToH(resultFile));
         String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
         if(!params.outputToFiles){
-        	System.out.println(hcode);
-        	System.out.println(ccode);
+        	finalCode.accept( new SimpleCodePrinter() );
+        	//System.out.println(hcode);
+        	//System.out.println(ccode);
         }else{
         	try{
         		{
@@ -531,9 +556,10 @@ public class ToSBit
         if (prog == null)
             throw new IllegalStateException();
 
-        oracle = new ValueOracle( new SequentialHoleTracker(varGen) );
+        oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
         partialEvalAndSolve();
         eliminateStar();
+        
         generateCode();
         System.out.println("DONE");
         
@@ -630,8 +656,11 @@ public class ToSBit
 	        BufferedReader br = new BufferedReader(isr);
 	        BufferedReader errBr = new BufferedReader(errStr);
 	        String line = null;
-	        while ( (line = br.readLine()) != null)
-	            System.out.println(i + "  " + line);
+	        while ( (line = br.readLine()) != null){
+	        	if(line.length() > 4){
+	        		System.out.println(i + "  " + line);
+	        	}
+	        }
 	        while ( (line = errBr.readLine()) != null)
 	            System.err.println(line);
 	        int exitVal = proc.waitFor();

@@ -166,8 +166,9 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 		        	if (stmt.getIncr() != null){
 			        	stmt.getIncr().accept(this);
 		        	}
-	        	}catch(Exception e){
+	        	}catch(RuntimeException e){
 	        		state.popChangeTracker();
+	        		throw e;
 	        		//Should also pop the other change tracker.
 	        	}finally{
 	        		ct = state.popChangeTracker();	

@@ -355,6 +355,7 @@ public class PartialEvaluator extends FEReplacer {
     	}
     	List<abstractValue> outSlist = new ArrayList<abstractValue>();    	
     	vtype.funcall(fun, avlist, outSlist);
+    	assert outSlist.size() == outNmList.size(): "The funcall in vtype should populate the outSlist with 1 element per output parameter";
     	Iterator<String> nmIt = outNmList.iterator();
     	for( Iterator<abstractValue> it = outSlist.iterator(); it.hasNext();   ){
     		state.setVarValue(nmIt.next(), it.next());	
@@ -1002,7 +1003,7 @@ public class PartialEvaluator extends FEReplacer {
     	    	Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),actualParam);
     	    	addStatement((Statement)varDecl);
     		}else{
-    			Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),null);
+    			Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()), new ExprConstInt(0));
     	    	addStatement((Statement)varDecl);
     		}
         }

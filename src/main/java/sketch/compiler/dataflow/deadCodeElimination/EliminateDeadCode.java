@@ -11,6 +11,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
@@ -23,6 +24,11 @@ public class EliminateDeadCode extends BackwardDataflow {
 	public EliminateDeadCode(){
 		super(LiveVariableVType.vtype, null, true, -1,(new BaseRControl(10)));
 	}
+	
+	public Object visitStmtAssert (StmtAssert stmt) {
+		return null;
+	}
+	
 	
 	public Object visitStmtAssign(StmtAssign stmt)
     {

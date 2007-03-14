@@ -36,6 +36,13 @@ class MapStack{
 		curVT.put(var, newname);
 		return newname;
 	}
+	
+	public String untransName(String var){
+		int lio = var.lastIndexOf('_');
+		return var.substring(0, lio);		
+	}
+	
+	
 	public String varDeclareFresh(){		
 		String newname = "_" + pushcount +"L" + curVT.size();
 		lastSeen = newname;
@@ -57,6 +64,11 @@ class MapStack{
     	while(it.hasNext()){
     		String nm = (String) it.next();
     		//System.out.println("Unseting " + nm);
+    		varState vs = vars.get(nm);
+    		if(nm.equals("_out_5L1_4L1_4L1")){
+    			System.out.print("AAARGH");
+    		}
+    		vs.outOfScope();
     		vars.remove(nm);
     		if(changeTracker != null){
     			changeTracker.remove(nm);

@@ -25,7 +25,13 @@ public class MethodState {
 		
 		
 		public void remove(String var){
+			if(deltas.containsKey(var)){
+				deltas.get(var).outOfScope();
+			}			
 			deltas.remove(var);
+			if(kid != null){
+				assert !kid.deltas.containsKey(var): "This can't happen.";
+			}
 		}
 		
 		ChangeTracker(abstractValue cond, boolean isNegated){
@@ -135,6 +141,12 @@ public class MethodState {
 		this.vtype = vtype; 
 	}
 	
+	public String untransName(String nm){       	
+    	String otpt = varTranslator.untransName(nm);
+    	// System.out.println(nm + " = " +  otpt);
+    	return  otpt;
+    }
+	
 	public String transName(String nm){       	
     	String otpt = varTranslator.transName(nm);
     	// System.out.println(nm + " = " +  otpt);
@@ -168,7 +180,7 @@ public class MethodState {
 		return i.state(vtype);
 	}
 	
-	private varState UTvarState(String var){
+	public varState UTvarState(String var){
 		varState i =  vars.get(var);		
 		if(changeTracker == null){	
 			assert i != null : "The variable " + var + " is causing problems";		
@@ -180,7 +192,7 @@ public class MethodState {
 				if(i==null){
 					System.out.println("  ");
 				}
-				assert(i != null) : ( "The value of " + var + " is input dependent, but it's not supposed to be.\n");
+				assert(i != null) : ( "The variable " + var + " is used before being set with a value.\n");
 				return i;
 			}
 		}
@@ -327,7 +339,7 @@ public class MethodState {
 		assert var != null : "NOO!!";
 		String newname = varTranslator.varDeclare(var);	
 		assert !vars.containsKey(newname): "You are redeclaring variable "  + var + ":" + t + "   " + newname;
-		varState	tv = vtype.cleanState(newname, t);
+		varState	tv = vtype.cleanState(newname, t, this);
 		vars.put(newname, tv);
 	}
 

@@ -24,7 +24,7 @@ abstract public class varState {
 		}
 	}
 	
-	final public abstractValue state(abstractValueType vtype){
+	final public abstractValue state(abstractValueType vtype){		
 		if( arrElems != null){
 			int sz = this.numKeys();
 			if( sz < 0){ return vtype.BOTTOM();  }
@@ -148,7 +148,14 @@ abstract public class varState {
 	}
 	
 	public void update(abstractValue idx, abstractValue val, abstractValueType vtype){
-		assert arrElems != null;
+		//assert arrElems != null;
+		if(arrElems == null){
+			if( absVal.isVect()){
+				assert false : "NYI";
+			}else{
+				absVal.update(vtype.BOTTOM());
+			}
+		}
 		if( idx.hasIntVal() ){
 			int iidx = idx.getIntVal();
 			if( arrElems.containsKey(iidx) ){
@@ -182,6 +189,18 @@ abstract public class varState {
 	
 	abstract public varState getDeltaClone(abstractValueType vt);
 	abstract public abstractValue newLHSvalue();
+	
+	/**
+	 * It is possible for abstract values that sit in the 
+	 * varState to be different from other abstract values.
+	 * (They may keep more book-keeping information, for example).
+	 * This function returns a clean abstract value corresponding
+	 * to an entry in an array (entry i, to be more precise).
+	 * 
+	 * 
+	 * @param i
+	 * @return
+	 */
 	abstract public abstractValue newLHSvalue(int i);
 	
 	protected void helperDeltaClone(varState parent, abstractValueType vt){
@@ -296,5 +315,12 @@ abstract public class varState {
 		}
 		return "NULL";
 	}
+	
+	public void outOfScope(){
+		
+	}
+	
+	
+
 	
 }
