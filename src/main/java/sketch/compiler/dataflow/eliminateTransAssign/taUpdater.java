@@ -5,22 +5,39 @@ import java.util.List;
 import streamit.frontend.experimental.abstractValue;
 
 public class taUpdater extends abstractValue {
-
+	public static final int ADD = 0;
+	public static final int REMOVE = 1;
+	public static final int CLEAR = 2;
+	public static final int OVERWRITE = 3;
+	
+	public int command;
+	public String arg;
+	public transAssignAbsValue tav;
+	taUpdater(int command, String arg){
+		this.command = command;
+		this.arg = arg;
+	}
+	
+	taUpdater(int command, transAssignAbsValue tav){
+		assert command == OVERWRITE;
+		this.command = command;
+		this.tav = tav;
+	}
+	
 	@Override
 	public abstractValue clone() {
-		// TODO Auto-generated method stub
+		assert false :" This shouldn't be called.";
 		return null;
 	}
 
 	@Override
-	public int getIntVal() {
-		// TODO Auto-generated method stub
+	public int getIntVal() {		
 		return 0;
 	}
 
 	@Override
 	public List<abstractValue> getVectValue() {
-		// TODO Auto-generated method stub
+		assert false :" This shouldn't be called.";
 		return null;
 	}
 
@@ -44,6 +61,7 @@ public class taUpdater extends abstractValue {
 
 	@Override
 	public void update(abstractValue v) {
+		assert false :" This shouldn't be called.";
 		// TODO Auto-generated method stub
 
 	}

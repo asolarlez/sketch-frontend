@@ -41,22 +41,11 @@ public class TAvarState extends varState {
 		transAssignAbsValue av = (transAssignAbsValue)this.state(TAvalueType.vtype);
 		Iterator<String> it = av.varsEqToMe.iterator();
 		while(it.hasNext()){
-			varState vs = ms.UTvarState(it.next());
-			abstractValue tmp = vs.state(TAvalueType.vtype);
-			transAssignAbsValue tatmp = (transAssignAbsValue)tmp;
-			assert tatmp.varIamEqualTo == av.me : "This is an invariant";
-			tatmp.varIamEqualTo = null;
+			ms.setVarValue(ms.untransName(it.next()), new  taUpdater(taUpdater.CLEAR, av.me)  );			
 		}
 		if( av.varIamEqualTo != null  ){
-			varState vs = ms.UTvarState(av.varIamEqualTo);
-			abstractValue tmp = vs.state(TAvalueType.vtype);
-			transAssignAbsValue tatmp = (transAssignAbsValue)tmp;
-			assert tatmp.varsEqToMe.contains(av.me) : "This is an invariant: "+ name + "  " + tatmp.me;
-			tatmp.varsEqToMe.remove(av.me);
+			ms.setVarValue(ms.untransName(av.varIamEqualTo), new  taUpdater(taUpdater.REMOVE, av.me)  );
 		}
-		
-		System.out.println(" OUT OF SCOPE " + this.name);
-		
 	}
 	
 	public String toString(){
