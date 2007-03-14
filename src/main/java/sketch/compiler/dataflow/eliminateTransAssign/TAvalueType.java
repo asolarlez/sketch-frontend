@@ -79,8 +79,8 @@ public class TAvalueType extends abstractValueType {
 		
 		transAssignAbsValue taTrue = (transAssignAbsValue) vtrue;
 		transAssignAbsValue taFalse = (transAssignAbsValue) vfalse;		
-		assert taTrue.me.equals(taFalse.me) : "Their me should be equal";
-		transAssignAbsValue tmerged = new transAssignAbsValue(taTrue.me, taTrue.ms);
+		assert taTrue.me.equals(taFalse.me) : "Their me should be equal";				
+		transAssignAbsValue tmerged = new transAssignAbsValue(taTrue.me, taTrue.ms);		
 		
 		if(taTrue.varIamEqualTo != null && taTrue.varIamEqualTo.equals(taFalse.varIamEqualTo)  ){
 			tmerged.varIamEqualTo =  taTrue.varIamEqualTo;
@@ -90,19 +90,13 @@ public class TAvalueType extends abstractValueType {
 		Set<String> varsEqToMe = tmerged.varsEqToMe;
 		Iterator<String> titer = taTrue.varsEqToMe.iterator();
 		while(titer.hasNext()){
-			String tnm = titer.next();
-			
+			String tnm = titer.next();			
 			if( taFalse.varsEqToMe.contains(tnm)  ){
 				varsEqToMe.add(tnm);
-			}else{
-				varState vs = taTrue.ms.UTvarState(tnm);
-				abstractValue tmp = vs.state(TAvalueType.vtype);
-				transAssignAbsValue tatmp = (transAssignAbsValue)tmp;
-				assert tatmp.varIamEqualTo == taTrue.me : "This is an invariant";
-				tatmp.varIamEqualTo = null;
 			}
 		}
-		return tmerged;
+		taUpdater tau = new taUpdater(taUpdater.OVERWRITE, tmerged);
+		return tau;
 	}
 
 	@Override
