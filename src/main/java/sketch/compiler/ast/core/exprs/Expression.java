@@ -25,6 +25,10 @@ package streamit.frontend.nodes;
  */
 abstract public class Expression extends FENode
 {
+	
+	public Expression(Expression exp){
+		super(exp);
+	}
     public Expression(FEContext context)
     {
         super(context);

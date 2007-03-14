@@ -34,6 +34,13 @@ public abstract class FENode
      *
      * @param context  file and line number for the node
      */
+    
+    public FENode(FENode node){
+    	context = node.context;
+    	isNonDet = node.isNonDet;
+    	tag = node.tag;
+    }
+    
     public FENode(FEContext context)
     {
         this.context = context;
