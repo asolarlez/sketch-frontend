@@ -267,15 +267,27 @@ public class FEReplacer implements FEVisitor
 
     public Object visitFunction(Function func)
     {
+    	
+    	
+    	List<Parameter> newParam = new ArrayList<Parameter>();
+    	Iterator<Parameter> it = func.getParams().iterator();
+    	boolean samePars = true;
+    	while(it.hasNext()){
+    		Parameter par = it.next();
+    		Parameter newPar = (Parameter) par.accept(this) ;
+    		if(par != newPar) samePars = false;
+    		newParam.add( newPar );    		
+    	}
+    	
     	if( func.getBody() == null  ){
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
     		return func;
     	}
         Statement newBody = (Statement)func.getBody().accept(this);
-        if (newBody == func.getBody()) return func;
+        if (newBody == func.getBody() && samePars) return func;
         return new Function(func.getContext(), func.getCls(),
                             func.getName(), func.getReturnType(),
-                            func.getParams(), func.getSpecification(), newBody);
+                            newParam, func.getSpecification(), newBody);
     }
     
     public Object visitFuncWork(FuncWork func)
@@ -553,14 +565,17 @@ public class FEReplacer implements FEVisitor
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         List<Expression> newInits = new ArrayList<Expression>();
+        List<Type> newTypes = new ArrayList<Type>();
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             Expression init = stmt.getInit(i);
             if (init != null)
                 init = doExpression(init);
+            Type t = (Type) stmt.getType(i).accept(this);
             newInits.add(init);
+            newTypes.add(t);
         }
-        return new StmtVarDecl(stmt.getContext(), stmt.getTypes(),
+        return new StmtVarDecl(stmt.getContext(), newTypes,
                                stmt.getNames(), newInits);
     }
     
@@ -666,5 +681,12 @@ public class FEReplacer implements FEVisitor
     	return new TypeArray(nbase, nlen); 
     }
 	
-	
+    public Object visitParameter(Parameter par){
+    	Type t = (Type) par.getType().accept(this);
+    	if( t == par.getType()){
+    		return par;
+    	}else{
+    		return new Parameter(t, par.getName(), par.isParameterOutput() );
+    	}
+    }
 }

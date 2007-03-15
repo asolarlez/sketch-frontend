@@ -88,4 +88,5 @@ public interface FEVisitor
     public Object visitType(Type t);
     public Object visitTypePrimitive(TypePrimitive t);
     public Object visitTypeArray(TypeArray t);
+    public Object visitParameter(Parameter par);
 }

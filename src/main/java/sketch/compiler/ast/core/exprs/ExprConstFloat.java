@@ -73,4 +73,8 @@ public class ExprConstFloat extends Expression
     {
         return v.visitExprConstFloat(this);
     }
+    
+    public String toString(){
+    	return Double.toString(getVal());
+    }
 }
