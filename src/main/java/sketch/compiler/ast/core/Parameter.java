@@ -16,6 +16,8 @@
 
 package streamit.frontend.nodes;
 
+import com.sun.org.apache.xml.internal.utils.NodeVector;
+
 /**
  * A formal parameter to a function or stream.  This is a pair of a
  * string name and a <code>Type</code>.
@@ -63,4 +65,9 @@ public class Parameter
     	
     	return (isOutput? "!":"") +  type.toString()+" "+name;
     }
+    
+    public Object accept(FEVisitor v){
+    	return v.visitParameter(this);
+    }
+    
 }
