@@ -153,8 +153,8 @@ public class PartialEvaluator extends FEReplacer {
 	}
 
 	public Object visitExprConstFloat(ExprConstFloat exp) {
-		report(false, "NYS");
-	    return exp;
+		exprRV = exp;
+		return vtype.BOTTOM();
 	}
 
 	public Object visitExprConstInt(ExprConstInt exp) {
