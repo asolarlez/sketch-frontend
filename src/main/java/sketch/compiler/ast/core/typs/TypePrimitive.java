@@ -243,7 +243,7 @@ public class TypePrimitive extends Type
         case TYPE_NDBOOLEAN:
         	return this;    
         default:
-            return null;
+            return this;
         }     
     }
     public boolean isNonDet(){
