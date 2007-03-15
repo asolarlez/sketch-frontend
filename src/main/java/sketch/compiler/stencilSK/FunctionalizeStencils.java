@@ -212,11 +212,18 @@ public class FunctionalizeStencils extends FEReplacer {
 	public Program processFuns(Program prog){
 		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);		
 		strs.getVars().clear();
-		List<Function> functions=strs.getFuncs();
-		functions.clear();
+		List<Function> functions=strs.getFuncs();		
+		for(Iterator<Function> it = functions.iterator(); it.hasNext(); ){
+			Function fun = it.next();
+			if(!fun.isUninterp()){
+				it.remove();
+			}
+		}
+		
+		
 		//add the functions generated from ArrFunction objects to the program 
 		for(Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext(); ){
-			ArrFunction af = it.next();
+			ArrFunction af = it.next();			
 			System.out.println(af.toString());
 			af.processMax();
 			functions.add(af.toAST());
