@@ -1,6 +1,7 @@
 package streamit.frontend.experimental;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -222,11 +223,11 @@ abstract public class varState {
 	 * @return
 	 */
 	final public varState condjoin(abstractValue cond, varState val, abstractValueType vt){
-		//WARNING: This call poisons val.
-		//After a call to this function, val should not be used at all
 		varState rv = getDeltaClone(vt);		
 		if( rv.isArr() ){
 			assert val.isArr() : "NYS";
+			TreeMap<Integer, abstractValue> tmpArrElems = new TreeMap<Integer, abstractValue>();
+			tmpArrElems.putAll(val.arrElems);
 			for(Iterator<Entry<Integer, abstractValue>>  thIt = arrElems.entrySet().iterator(); thIt.hasNext(); ){
 				Entry<Integer, abstractValue> toUd = thIt.next();
 				int idx = toUd.getKey();
@@ -234,13 +235,13 @@ abstract public class varState {
 					//update(vt.CONST( idx ), vt.condjoin(cond, toUd.getValue() , val.arrElems.get(idx) ), vt );
 					rv.arrElems.put(idx,  vt.condjoin(cond, val.arrElems.get(idx), toUd.getValue() ));
 					// toUd.getValue().update( vt.condjoin(cond, toUd.getValue() , val.arrElems.get(idx) ) );
-					val.arrElems.remove(idx);
+					tmpArrElems.remove(idx);
 				}else{
 					rv.arrElems.put(idx,  vt.condjoin(cond, val.state(idx), toUd.getValue() ));
 					//Nothing to do here, since we would be updating to the same value.
 				}
 			}
-			for(Iterator<Entry<Integer, abstractValue>>  thIt = val.arrElems.entrySet().iterator(); thIt.hasNext(); ){
+			for(Iterator<Entry<Integer, abstractValue>>  thIt = tmpArrElems.entrySet().iterator(); thIt.hasNext(); ){
 				Entry<Integer, abstractValue> toUd = thIt.next();
 				int idx = toUd.getKey();
 				rv.arrElems.put(idx,  vt.condjoin(cond, toUd.getValue(), state(idx) ));
@@ -261,22 +262,22 @@ abstract public class varState {
 	 * @return
 	 */
 	public boolean compare(varState val, abstractValueType vt){
-		//WARNING: This call poisons val.
-		//After a call to this function, val should not be used at all
 		if( this.isArr() ){
 			if(!val.isArr()) return false;
+			TreeMap<Integer, abstractValue> tmpArrElems = new TreeMap<Integer, abstractValue>();
+			tmpArrElems.putAll(val.arrElems);
 			for(Iterator<Entry<Integer, abstractValue>>  thIt = arrElems.entrySet().iterator(); thIt.hasNext(); ){
 				Entry<Integer, abstractValue> toUd = thIt.next();
 				int idx = toUd.getKey();
 				if( val.arrElems.containsKey( idx ) ){
 					if( !val.arrElems.get(idx).equals(toUd.getValue()) ) return false;
-					val.arrElems.remove(idx);
+					tmpArrElems.remove(idx);
 				}else{
 					if( !val.state(idx).equals(toUd.getValue()) ) return false;					
 					//Nothing to do here, since we would be updating to the same value.
 				}
 			}
-			for(Iterator<Entry<Integer, abstractValue>>  thIt = val.arrElems.entrySet().iterator(); thIt.hasNext(); ){
+			for(Iterator<Entry<Integer, abstractValue>>  thIt = tmpArrElems.entrySet().iterator(); thIt.hasNext(); ){
 				Entry<Integer, abstractValue> toUd = thIt.next();
 				int idx = toUd.getKey();
 				if(!arrElems.containsKey(idx)){
