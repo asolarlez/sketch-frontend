@@ -547,9 +547,8 @@ public class SNodesToFortran implements FEVisitor {
 	    return null;
     }
 
-	public Object visitExprConstFloat(ExprConstFloat exp) {
-	    assert false;
-	    return null;
+	public Object visitExprConstFloat(ExprConstFloat exp) {	    
+	    return ""+exp.getVal();
     }
 
 	public Object visitExprConstInt(ExprConstInt exp) {
@@ -710,6 +709,7 @@ public class SNodesToFortran implements FEVisitor {
             case TypePrimitive.TYPE_BOOLEAN:
 			case TypePrimitive.TYPE_INT: return "integer";
 			case TypePrimitive.TYPE_BIT:   return "real";
+			case TypePrimitive.TYPE_FLOAT: return "real";
 		}
 		assert false;
 		return null;
@@ -717,5 +717,9 @@ public class SNodesToFortran implements FEVisitor {
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }
     public Object visitTypeArray(TypeArray t) { return null; }
+    public Object visitParameter(Parameter par){
+    	assert false :"NYI";
+    	return null;
+    }
 
 }
