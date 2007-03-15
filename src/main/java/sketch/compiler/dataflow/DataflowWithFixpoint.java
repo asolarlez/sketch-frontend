@@ -27,6 +27,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        int iters = 0;	
 	        while(goOn){
 	        	state.pushChangeTracker(null, false);
+	        	state.pushChangeTracker(null, false);
 	        	boolean lisReplacer = isReplacer;
 	        	isReplacer = false;
 	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
@@ -40,6 +41,10 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 		        	if (stmt.getIncr() != null){
 			        	stmt.getIncr().accept(this);
 		        	}
+	        	}catch(RuntimeException e){
+	        		state.popChangeTracker();
+	        		throw e;
+	        		//Should also pop the other change tracker.
 	        	}finally{
 	        		ct = state.popChangeTracker();	
 	        		isReplacer = lisReplacer;
@@ -47,11 +52,17 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        	
 	        	state.pushChangeTracker(null, false);
 	        	ChangeTracker ct2 = state.popChangeTracker();
-	        	
-	        	goOn = !state.compareChangeTrackers(ct, ct2);
-	        	
-	        	state.procChangeTrackers(ct, ct2);	        		        	
+	        	state.procChangeTrackers(ct, ct2);	 
+
+	        	ChangeTracker changed = state.popChangeTracker();
+	        	state.pushChangeTracker(null, false);	        	
+	        	ChangeTracker orig = state.popChangeTracker();
+	        	goOn = !state.compareChangeTrackers(changed, orig);
+	        	state.procChangeTrackers(changed, orig);
 	        	++iters;
+	        	if(iters > 5000){
+	        		throw new RuntimeException("Infinite loop detected: " + stmt);
+	        	}
 	        }
 	        stmt.getCond().accept(this);
 	        ncond = exprRV;
