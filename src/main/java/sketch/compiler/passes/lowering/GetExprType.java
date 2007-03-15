@@ -83,6 +83,8 @@ public class GetExprType extends FENullVisitor
 		
 		Type baseType = isNonDet ? ((TypeArray)base).getBase().makeNonDet() : ((TypeArray)base).getBase();   
 		
+		
+		
 		if(expr.getIValue() == 1){
 			return baseType;
 		}else{
