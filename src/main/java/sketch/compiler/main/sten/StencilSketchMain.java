@@ -21,10 +21,7 @@ import java.io.Writer;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.passes.AssignLoopTypes;
 import streamit.frontend.passes.BackendCleanup;
-import streamit.frontend.passes.ExprArrayToArrayRange;
-import streamit.frontend.passes.GenerateCopies;
 import streamit.frontend.passes.VariableDeclarationMover;
 import streamit.frontend.passes.VariableDisambiguator;
 import streamit.frontend.stencilSK.EliminateCompoundAssignments;
@@ -33,8 +30,8 @@ import streamit.frontend.stencilSK.FunctionalizeStencils;
 import streamit.frontend.stencilSK.MatchParamNames;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.stencilSK.StencilPreprocessor;
 import streamit.frontend.stencilSK.StencilSemanticChecker;
+import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import streamit.frontend.tosbit.SNodesToC;
 import streamit.frontend.tosbit.SNodesToFortran;
 import streamit.frontend.tosbit.ValueOracle;
@@ -57,12 +54,14 @@ public class ToStencilSK extends ToSBit
 	
 	
 	
-    protected Program preprocessProgram(Program prog) {
+    protected Program preprocessProgram(Program prog) {    	
+    	prog.accept( new SimpleCodePrinter() );
         prog = super.preprocessProgram(prog);
+        prog = (Program) prog.accept(new ReplaceFloatsWithBits());
         //prog = (Program)prog.accept(new VariableDisambiguator());
         System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());
-        System.out.println(" After mpn ");
+        System.out.println(" After mpn ");        
         return prog;
     }
 	
