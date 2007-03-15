@@ -110,6 +110,11 @@ public class transAssignAbsValue extends abstractValue {
 				this.varsEqToMe = tau.tav.varsEqToMe;
 			}
 		}else{
+			Iterator<String> it = varsEqToMe.iterator();
+			while(it.hasNext()){
+				ms.setVarValue(ms.untransName(it.next()), new  taUpdater(CLEAR, me)  );				
+			}
+			varsEqToMe.clear();
 			if(v instanceof transAssignAbsValue ){
 				transAssignAbsValue ta = (transAssignAbsValue) v;
 				if(varIamEqualTo != null ){
@@ -123,12 +128,7 @@ public class transAssignAbsValue extends abstractValue {
 					ms.setVarValue(ms.untransName(varIamEqualTo), new  taUpdater(REMOVE, me)  );
 				}
 				varIamEqualTo = null;
-			}
-			Iterator<String> it = varsEqToMe.iterator();
-			while(it.hasNext()){
-				ms.setVarValue(ms.untransName(it.next()), new  taUpdater(CLEAR, me)  );				
-			}
-			varsEqToMe.clear();
+			}						
 		}
 	}
 	public String toString(){		
