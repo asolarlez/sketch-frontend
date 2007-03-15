@@ -1280,5 +1280,5 @@ public class NodesToJava implements FEVisitor
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }
     public Object visitTypeArray(TypeArray t) { return null; }
-	
+    public Object visitParameter(Parameter par){ return null; }
 }
