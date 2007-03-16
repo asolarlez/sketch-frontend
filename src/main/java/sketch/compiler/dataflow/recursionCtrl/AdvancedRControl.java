@@ -69,13 +69,19 @@ public class AdvancedRControl extends RecursionControl {
 			 return super.visitStreamSpec(spec);
 		 }
 		public Object visitFunction(Function func){
+			String altName = null;
 			if(func.getSpecification() != null){
+				altName = func.getName();
 				func = ss.getFuncNamed(func.getSpecification());
 			}
 			currentFun = func.getName();
 			currentCalls = 0;
 			Object obj = super.visitFunction(func);
-			funmap.put(currentFun, new FunInfo(currentCalls==0));
+			FunInfo fin = new FunInfo(currentCalls==0);
+			funmap.put(currentFun, fin);
+			if(altName != null){
+				funmap.put(altName, fin);	
+			}
 			return obj;
 		}
 		
