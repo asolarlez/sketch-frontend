@@ -89,23 +89,27 @@ class loopHist{
 	
 	
 	void computeHighPlusOne(){		
-		assert high instanceof ExprBinary;
-		ExprBinary bhigh = (ExprBinary) high;
-		assert bhigh.getLeft() instanceof ExprVar || bhigh.getRight() instanceof ExprVar;
-		if( bhigh.getLeft() instanceof ExprVar && ((ExprVar)bhigh.getLeft()).getName().equals(var) ){
-			if( bhigh.getOp() == ExprBinary.BINOP_LE ){
-			highPlusOne = new ExprBinary(null, ExprBinary.BINOP_ADD, bhigh.getRight(), new ExprConstInt(1));
-			}else{
-				assert bhigh.getOp() == ExprBinary.BINOP_LT;
-				highPlusOne = bhigh.getRight();
-			}
-		}else{
-			if( bhigh.getOp() == ExprBinary.BINOP_LE ){
-				highPlusOne = new ExprBinary(null, ExprBinary.BINOP_ADD, bhigh.getLeft(), new ExprConstInt(1));
+		if(false){
+			assert high instanceof ExprBinary;
+			ExprBinary bhigh = (ExprBinary) high;
+			assert bhigh.getLeft() instanceof ExprVar || bhigh.getRight() instanceof ExprVar;
+			if( bhigh.getLeft() instanceof ExprVar && ((ExprVar)bhigh.getLeft()).getName().equals(var) ){
+				if( bhigh.getOp() == ExprBinary.BINOP_LE ){
+				highPlusOne = new ExprBinary(null, ExprBinary.BINOP_ADD, bhigh.getRight(), new ExprConstInt(1));
 				}else{
 					assert bhigh.getOp() == ExprBinary.BINOP_LT;
-					highPlusOne = bhigh.getLeft();
+					highPlusOne = bhigh.getRight();
 				}
+			}else{
+				if( bhigh.getOp() == ExprBinary.BINOP_LE ){
+					highPlusOne = new ExprBinary(null, ExprBinary.BINOP_ADD, bhigh.getLeft(), new ExprConstInt(1));
+					}else{
+						assert bhigh.getOp() == ExprBinary.BINOP_LT;
+						highPlusOne = bhigh.getLeft();
+					}
+			}
+		}else{
+			highPlusOne = new ExprConstInt(0);
 		}
 	}
 	loopHist(String var, Expression low, Expression high){
@@ -151,12 +155,37 @@ class arrInfo{
 	Stack<ArrFunction> sfun = new Stack<ArrFunction>();
 }
 
-
-public class FunctionalizeStencils extends FEReplacer {
-	private List<processStencil> stencilFuns;
+/**
+ * This function directs the process of reducing the stencils down to finite functions.
+ * All the actual work is done by {@link ProcessStencil}. 
+ * 
+ * To use it, first visit the functions that you want to process. 
+ * If you visit the functions one at a time, instead of the whole program, {@link superParams}
+ * won't be populated.
+ * 
+ * Visiting the program produces {@link ArrFunction} objects for each variable, 
+ * but then you have to call processFuns to actually make function objects out of these.
+ * 
+ * 
+ * @author asolar
+ *
+ */
+public class FunctionalizeStencils extends FEReplacer {	
+	/**
+	 * This map stores the {@link ArrFunction} for all the variables in all the
+	 * functions we've analyzed. The indices have all been quantified with the
+	 * name of their respective function already.
+	 */
 	private Map<String, ArrFunction> funmap;
+	/**
+	 * These correspond to the global parameters which need to be passed
+	 * as inputs to all functions. Part of the job of {@link FunctionalizeStencils}
+	 * is to populate this array before visiting the functions.
+	 */
 	private Map<String, Type> superParams;
-	private List<StmtVarDecl> outIdxs;
+	/**
+	 * This list contains all the functions that we have reduced.
+	 */
 	private List<Function> userFuns;
 	private StreamSpec ss;
 	
@@ -167,7 +196,6 @@ public class FunctionalizeStencils extends FEReplacer {
 	
 	public FunctionalizeStencils() {
 		super();
-		stencilFuns = new ArrayList<processStencil>();
 		superParams = new TreeMap<String, Type>();
 		funmap = new HashMap<String, ArrFunction>();
 		globalInVars = new HashMap<String, Map<String, Function> >();
@@ -273,7 +301,6 @@ public class FunctionalizeStencils extends FEReplacer {
 			callArgs.addAll(extractInits(outf.iterParams.iterator()));
 			callArgs.addAll(makeRefs(outf.othParams));
 			callArgs.addAll(makeRefs(outf.inputParams));
-			callArgs.addAll(makeRefs(outf.idxParams));
 			callArgs.add(new ExprVar(null,outp.getName()));
 			assert(callArgs.size()==strs.getFuncNamed(outfname).getParams().size());
 			
@@ -304,10 +331,6 @@ public class FunctionalizeStencils extends FEReplacer {
 		}
 	}
 	
-	
-	public Map<String, ArrFunction> getFunMap(){
-		return funmap;
-	}
 	
 	
 	
@@ -363,7 +386,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		}
 	
 	 
-	 public Map<String, Function> getInGrids(Function func){
+	 protected Map<String, Function> getInGrids(Function func){
 		 
 		if( globalInVars.containsKey(func.getName()) ){
 			return globalInVars.get(func.getName());
@@ -382,7 +405,6 @@ public class FunctionalizeStencils extends FEReplacer {
 			
 			Map<String, Function> inVars = new HashMap<String, Function>();
 			
-			outIdxs = new ArrayList<StmtVarDecl>();
 			boolean onlyOneOutput = true;
 			List params = func.getParams();
 			for(Iterator it = params.iterator(); it.hasNext();  ){
@@ -406,12 +428,7 @@ public class FunctionalizeStencils extends FEReplacer {
 					}
 				}else{
 					assert onlyOneOutput : "The function can have only one output!! ";
-					onlyOneOutput = false;
-					int dim = checkIfGrid( param );
-					
-					for(int i=0; i<dim; ++i){
-						outIdxs.add(new StmtVarDecl(null, TypePrimitive.inttype, AbstractArray.outIndexParamName(i) , null));
-					}
+					onlyOneOutput = false;					
 				}
 			}
 			
@@ -427,14 +444,8 @@ public class FunctionalizeStencils extends FEReplacer {
 		Map<String, Function> funInGrids = getInGrids(func);
 		 	
 		 
-		processStencil ps = new processStencil(func.getName());
-		 	
-			
-		ps.setSuperParams(superParams);		 	
-		ps.setOutIdxsParams(outIdxs);
+		ProcessStencil ps = new ProcessStencil(func.getName(), superParams, funInGrids);
 		
-		ps.setInVars(funInGrids);
-		stencilFuns.add(ps);
 		func.accept(ps);
 		funmap.putAll(ps.getAllFunctions());
 		userFuns.add(func);
@@ -461,21 +472,20 @@ public class FunctionalizeStencils extends FEReplacer {
     }
 }
 
-class processStencil extends FEReplacer {
+class ProcessStencil extends FEReplacer {
 	private FEContext ccontext = null; 
 	/*
 	 * Includes the global variables and the scalar parameters of the function.
 	 */
-	private Map<String, Type> superParams;
+	private final Map<String, Type> superParams;
 
 	private Stack<Expression> conds;
 	private ParamTree.treeNode currentTN;
 	private Stack<scopeHist> scopeStack;
 	private Map<String, arrInfo> smap;
-	private Map<String, Function> inVars;
+	private final Map<String, Function> inVars;
 	private Set<String> outVar;
-	private List<StmtVarDecl> outIdxs;
-	private List<StmtVarDecl> inArrParams;
+	private final List<StmtVarDecl> inArrParams;
 	private ParamTree ptree;
 	private final String suffix; 
 		
@@ -521,16 +531,8 @@ class processStencil extends FEReplacer {
 		}
 	}
 	
-	
-
-	public void setSuperParams(Map<String, Type> sp){
-		superParams = sp;
-	}
 	 
 	
-	public void  setOutIdxsParams(List<StmtVarDecl> outIdxs){
-		this.outIdxs = outIdxs;
-	}
 	
 	void closeOutOfScopeVars(scopeHist sc2){
 		for(Iterator<ArrFunction> it = sc2.funs.iterator(); it.hasNext();  ){
@@ -617,7 +619,6 @@ class processStencil extends FEReplacer {
    	 		}
    	 		
    	 		ainf.fun.inputParams = this.inArrParams;
-   	 		ainf.fun.outIdxParams = this.outIdxs;
    	 		
    	 		int sz = ainf.sfun.size();
    	 		ainf.fun.addRetStmt( nullMaxIf(sz>0 ? ainf.sfun.peek():null));
@@ -924,12 +925,6 @@ class processStencil extends FEReplacer {
 	    			ExprVar ev = new ExprVar(ccontext, svd.getName(0));
 	    			params.add(ev);
 	    		}
-
-	    		for(Iterator<StmtVarDecl> it = outIdxs.iterator(); it.hasNext();  ){
-	    			StmtVarDecl svd = it.next();
-	    			ExprVar ev = new ExprVar(ccontext, svd.getName(0));
-	    			params.add(ev);
-	    		}
 	    			
 	    		return new ExprFunCall(ccontext, arFun.getFullName(), params);
 	    	}
@@ -1056,14 +1051,16 @@ class processStencil extends FEReplacer {
 	    }
 	
 	
-	public processStencil(String suffix) {
+	public ProcessStencil(String suffix, Map<String, Type> sp, Map<String, Function> inVars) {
 		super();
-		superParams = new TreeMap<String, Type>();
 		conds = new Stack<Expression>();		
 		scopeStack = new Stack<scopeHist>();
 		smap = new HashMap<String, arrInfo>();		
 		this.outVar = new TreeSet<String>();
 		this.suffix = "_" + suffix;
+		this.superParams = sp;
+		this.inVars = inVars;
+		this.inArrParams = new ArrayList<StmtVarDecl>();
 	}
 	
 
@@ -1083,18 +1080,6 @@ class processStencil extends FEReplacer {
 		populateArrInfo(ainf, var, ta, tt);
 	}
 	
-	/**
-	 * Initializes inArrParams. This is the variable that keeps track of all the 
-	 * parameters that correspond to symbolic input array values.
-	 * @param inVars
-	 */
-	
-	public void setInVars(Map<String, Function> inVars){
-		this.inVars = inVars;
-		
-		inArrParams = new ArrayList<StmtVarDecl>();
-		
-	}
 	
 	
     public Object visitFunction(Function func)

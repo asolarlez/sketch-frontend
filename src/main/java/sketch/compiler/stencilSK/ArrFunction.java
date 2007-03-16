@@ -57,7 +57,6 @@ public class ArrFunction{
 	int condsPos = -1;
 	
 	List<StmtVarDecl> inputParams;
-	List<StmtVarDecl> outIdxParams;
 	
 	
 	private List<StmtMax> idxAss;
@@ -106,7 +105,7 @@ public class ArrFunction{
 	
 	public String toString(){
 		String rv = getFullName();
-		rv += "(" + idxParams + ", " + iterParams + ", " + othParams +  ", " + inputParams + ", " + outIdxParams + "){\n";
+		rv += "(" + idxParams + ", " + iterParams + ", " + othParams +  ", " + inputParams +  "){\n";
 		for(Iterator<StmtMax> it = idxAss.iterator(); it.hasNext(); ){
 			rv += it.next().toString() + ";\n";
 		}
@@ -143,7 +142,6 @@ public class ArrFunction{
 			params.addAll(makeParams(iterParams.iterator()));
 			params.addAll(makeParams(othParams));
 			params.addAll(makeParams(inputParams));
-			params.addAll(makeParams(outIdxParams));
 		}
 		List<Statement> stmts=new ArrayList<Statement>();
 		{
