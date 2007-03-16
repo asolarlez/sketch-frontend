@@ -532,12 +532,13 @@ castExpr returns [Expression x] { x = null; Expression bound; Type t=null; }
 	|	x=shiftExpr
 	;
 
-shiftExpr returns [Expression x] { x=null; Expression amt; Type t=null; }
-: (minic_value_expr RSHIFT) => x=minic_value_expr RSHIFT amt=value_expr
-{ x=new ExprBinary(x.getContext(), ExprBinary.BINOP_RSHIFT, x, amt); }
-| (minic_value_expr LSHIFT) => x=minic_value_expr LSHIFT amt=value_expr
-{ x=new ExprBinary(x.getContext(), ExprBinary.BINOP_LSHIFT, x, amt); }
-| x=inc_dec_expr
+shiftExpr returns [Expression x] { x=null; Expression r; Type t=null; int op=0; }
+: x=inc_dec_expr
+(
+	(LSHIFT {op=ExprBinary.BINOP_LSHIFT;} | RSHIFT {op=ExprBinary.BINOP_RSHIFT;})
+	r=inc_dec_expr
+	{x=new ExprBinary(x.getContext(), op, x, r);}
+)*
 ;
 
 inc_dec_expr returns [Expression x] { x = null; }

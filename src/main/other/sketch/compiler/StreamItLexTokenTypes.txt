@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): StreamItLex.g -> StreamItLexTokenTypes.txt$
+// $ANTLR : StreamItLex.g -> StreamItLexTokenTypes.txt$
 StreamItLex    // output token vocab name
 TK_loop="loop"=4
 TK_boolean="boolean"=5
