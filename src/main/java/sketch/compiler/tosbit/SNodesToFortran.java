@@ -216,7 +216,7 @@ public class SNodesToFortran implements FEVisitor {
 		List<Parameter> params=new ArrayList<Parameter>();
 		for(Iterator it=func.getParams().iterator();it.hasNext();) {
 			Parameter p=(Parameter)it.next();
-			if(p.isParameterOutput()) continue;
+			//if(p.isParameterOutput()) continue;
 			params.add(p);
 		}
 		if(returnsArray) {

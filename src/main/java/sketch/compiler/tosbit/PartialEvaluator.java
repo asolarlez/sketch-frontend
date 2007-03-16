@@ -26,7 +26,7 @@ public class PartialEvaluator extends FEReplacer {
 			 }
 			 return exp.getName();
 		 }
-		 public Object visitExprArray(ExprArray exp)
+		 public Object visitExprArrayRange(ExprArrayRange exp)
  	    {	 	    	
  	    	String vname =  (String) exp.getBase().accept(this);	 	    	
  		    vname = vname + "_idx_" + 0;
@@ -82,58 +82,7 @@ public class PartialEvaluator extends FEReplacer {
     		return rval;    		
     	}
     	
-    	@SuppressWarnings("deprecation")
-		public Object visitExprArray(ExprArray exp)
- 	    { 	    	
- 	    	String vname =  (String) exp.getBase().accept(this); 
- 	    	Expression offsetE = (Expression) exp.getOffset().accept(PartialEvaluator.this);
- 	    	valueClass ofst = state.popVStack();
- 	    	offset = ofst.toString();
- 	    	if( ofst.hasValue()){
- 		    	int ofstV = ofst.getIntValue();
- 		    	int size = state.checkArray(vname);
- 		    	if(ofstV >= size || ofstV < 0){
- 		    		if(!exp.isUnchecked())
- 		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
- 					state.pushVStack( new valueClass(0) );
- 					return null;
- 		    	} 		    	
- 		    	vname = vname + "_idx_" + ofstV;
- 		    	String rval = vname;
- 		    	if(isReplacer){
- 		    		if(offsetE != exp.getOffset() || lhsExp != exp.getBase()){
- 		    			lhsExp = new ExprArray(exp.getContext(), lhsExp, offsetE);
- 		    		}else{
- 		    			lhsExp = exp;
- 		    		}
- 		    	}else{
- 		    		lhsExp = exp;
- 		    	}
- 		    	return rval;
- 	    	}else{ 	    		
- 	    		int size = state.checkArray(vname);
- 	    		lhsVals = new ArrayList<String>(size);
- 	    		oldVals = new ArrayList<String>(size);
- 	    		names = new ArrayList<String>(size);
- 	    		for(int i=0; i<size; ++i){
- 	    			String nm = vname + "_idx_" + i;
- 	    			oldVals.add(state.varGetRHSName(nm));
- 	    			lhsVals.add(state.varGetLHSName(nm));
- 	    			names.add(nm);
- 	    		}
- 	    		NDArracc = true;
- 	    		if(isReplacer){
- 		    		if(offsetE != exp.getOffset() || lhsExp != exp.getBase()){
- 		    			lhsExp = new ExprArray(exp.getContext(), lhsExp, offsetE);
- 		    		}else{
- 		    			lhsExp = exp;
- 		    		}
- 		    	}else{
- 		    		lhsExp = exp;
- 		    	}
- 	    	}
- 	    	return null;
- 	    }
+ 
     	
     	public Object visitExprArrayRange(ExprArrayRange exp) {
     		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
@@ -147,16 +96,8 @@ public class PartialEvaluator extends FEReplacer {
  	    		oldVals = new ArrayList<String>(rl.len());
  	    		names = new ArrayList<String>(rl.len());
  	    		int start = startVal.getIntValue(); 	    		
-                int size = state.checkArray(vname);
  	    		for(int i=0; i<rl.len(); ++i){
  	    			int ofst = start + i;
-     		    	if(ofst >= size || ofst < 0){
-     		    		if(!exp.isUnchecked())
-     		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
-     					state.pushVStack( new valueClass(0) );
-     					return null;
-     		    	} 		    	
-
  	    			String nm = vname + "_idx_" + ofst;
  	    			if( isComplete || state.knowsVar(nm) ){
  	    				oldVals.add(state.varGetRHSName(nm));
@@ -182,39 +123,62 @@ public class PartialEvaluator extends FEReplacer {
     		}else{
     			assert rl.len() == 1 : " NYI";
     			offset = startVal.toString();
-
-                int size = state.checkArray(vname);
-                NDArracc = true;
-                if(  isComplete || size > 0  ){
-                    lhsVals = new ArrayList<String>(size);
-                    oldVals = new ArrayList<String>(size);
-                    names = new ArrayList<String>(size);
-                    for(int i=0; i<size; ++i){
-                        String nm = vname + "_idx_" + i;
-                        oldVals.add(state.varGetRHSName(nm));
-                        lhsVals.add(state.varGetLHSName(nm));
-                        names.add(nm);
-                    }	     	    		
-                    if(isReplacer){
-                        if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
-                            lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
-                        }else{
-                            lhsExp = exp;
-                        }
-                    }else{
-                        lhsExp = exp;
-                    }
-                }else{
-                    if(isReplacer){
-                        if(newStart != exp.getOffset()|| lhsExp != exp.getBase()){
-                            lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
-                        }else{
-                            lhsExp = exp;
-                        }
-                    }else{
-                        lhsExp = exp;
-                    }	
-                }
+     	    	if( startVal.hasValue()){
+     		    	int ofstV = startVal.getIntValue();
+     		    	int size = state.checkArray(vname);
+     		    	if(ofstV >= size || ofstV < 0){
+     		    		if(!exp.isUnchecked())
+     		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
+     					state.pushVStack( new valueClass(0) );
+     					return null;
+     		    	} 		    	
+     		    	vname = vname + "_idx_" + ofstV;
+     		    	String rval = vname;
+     		    	if(isReplacer){
+     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
+     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+     		    		}else{
+     		    			lhsExp = exp;
+     		    		}
+     		    	}else{
+     		    		lhsExp = exp;
+     		    	}
+     		    	return rval;
+     	    	}else{
+     	    		int size = state.checkArray(vname);
+     	    		NDArracc = true;
+     	    		if(  isComplete || size > 0  ){
+	     	    		lhsVals = new ArrayList<String>(size);
+	     	    		oldVals = new ArrayList<String>(size);
+	     	    		names = new ArrayList<String>(size);
+	     	    		for(int i=0; i<size; ++i){
+	     	    			String nm = vname + "_idx_" + i;
+	     	    			oldVals.add(state.varGetRHSName(nm));
+	     	    			lhsVals.add(state.varGetLHSName(nm));
+	     	    			names.add(nm);
+	     	    		}	     	    		
+	     	    		if(isReplacer){
+	     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
+	     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+	     		    		}else{
+	     		    			lhsExp = exp;
+	     		    		}
+	     		    	}else{
+	     		    		lhsExp = exp;
+	     		    	}
+     	    		}else{
+     	    			if(isReplacer){
+	     		    		if(newStart != exp.getOffset()|| lhsExp != exp.getBase()){
+	     		    			lhsExp = new ExprArrayRange(exp.getContext(), lhsExp, newStart);
+	     		    		}else{
+	     		    			lhsExp = exp;
+	     		    		}
+	     		    	}else{
+	     		    		lhsExp = exp;
+	     		    	}	
+     	    		}
+     	    	}
+    			
     		}
     		return vname;
     	}
@@ -286,62 +250,6 @@ public class PartialEvaluator extends FEReplacer {
         return new ExprArrayInit(exp.getContext(), newElements);		
 	}
 
-	public Object visitExprArray(ExprArray exp) {
-		Assert(exp.getBase() instanceof ExprVar, "Currently only 1 dimensional arrays are supported. \n" + exp.getContext());
-		//ExprVar base = (ExprVar)exp.getBase();	    		    		    	
-		Expression nbase = null;
-        Expression offset = null;
-        
-		nbase = (Expression) exp.getBase().accept(this); //base.getName();
-		valueClass baseVal = state.popVStack();		
-		Object fu = exp.getOffset().accept(this);;
-		offset = (Expression)fu;
-		valueClass ofst = state.popVStack();		
-		if( ofst.hasValue()){
-	    	Assert(ofst != null, "The array index must be computable at compile time. \n" + exp.getContext());
-	    	int ofstV = ofst.getIntValue();
-	    	List<valueClass> lst = baseVal.getVectValue();	    	
-	    	int size = lst.size();
-	    	if(ofstV >= size || ofstV < 0){
-	    		if(!exp.isUnchecked())
-	    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + ofst.getIntValue() + " < " + size);
-				state.pushVStack( new valueClass(0) );
-				return new ExprConstInt(0);
-	    	}
-	    	valueClass rval = lst.get(ofstV);
-	    	state.pushVStack(rval);
-	    	if(isReplacer && rval.hasValue()){
-	    		if(rval.isVect()){
-	    			assert false : "NYI";
-	    		}else{
-	    			return new ExprConstInt(rval.getIntValue());	
-	    		}
-	    	}
-		}else{
-			List<valueClass> lst = baseVal.getVectValue();
-			int arrSize = lst.size();
-			Iterator<valueClass> iter = lst.iterator();
-			StringBuffer vname = new StringBuffer();
-			vname.append("($ ");
-			for(int i=0; i< arrSize; ++i ){
-				if( i!= 0) vname.append(" ");
-				vname.append(iter.next().toString());
-			}
-			vname.append("$").append("[").append(ofst).append("])");
-			state.pushVStack( new valueClass(vname.toString()));			
-		}
-		if ((nbase == exp.getBase() && offset == exp.getOffset() ) || !isReplacer)
-            return exp;
-        else{
-        	if( exp.getBase() instanceof ExprVar && nbase instanceof ExprArrayInit){
-        		Expression renamedBase = new ExprVar(exp.getContext(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
-        		return new ExprArray(exp.getContext(), renamedBase, offset, exp.isUnchecked());
-        	}else{
-        		return new ExprArray(exp.getContext(), nbase, offset, exp.isUnchecked());
-        	}
-        }
-	}
-
 	
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
@@ -356,15 +264,6 @@ public class PartialEvaluator extends FEReplacer {
 				assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
 				List<valueClass> lst = baseVal.getVectValue();
 				int sval = startVal.getIntValue();
-
-                /* Ensure in-bound array access. */
- 		    	if (sval + rl.len() - 1 >= lst.size() || sval < 0) {
- 		    		if (!exp.isUnchecked())
- 		    			throw new ArrayIndexOutOfBoundsException(exp.getContext() + ": ARRAY OUT OF BOUNDS !(0<=" + sval + " < " + lst.size());
- 					state.pushVStack( new valueClass(0) );
- 					return null;
- 		    	}
-
 				List<valueClass> newLst = lst.subList(sval, sval + rl.len());
 				state.pushVStack( new valueClass(newLst));
 				if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
