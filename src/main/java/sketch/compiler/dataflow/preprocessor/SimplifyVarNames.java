@@ -45,15 +45,17 @@ public class SimplifyVarNames extends FEReplacer {
     {
         List<Expression> newInits = new ArrayList<Expression>();
         List<String> newNames = new ArrayList<String>();
+        List<Type> newTypes = new ArrayList<Type>();
         for (int i = 0; i < stmt.getNumVars(); i++)
         {        	
         	newNames.add(transName((String)stmt.getNames().get(i)));
             Expression init = stmt.getInit(i);
+            newTypes.add( (Type) stmt.getType(i).accept(this)  ); 
             if (init != null)
                 init = doExpression(init);
             newInits.add(init);
         }
-        return new StmtVarDecl(stmt.getContext(), stmt.getTypes(),
+        return new StmtVarDecl(stmt.getContext(), newTypes,
                                newNames, newInits);
     }
     
