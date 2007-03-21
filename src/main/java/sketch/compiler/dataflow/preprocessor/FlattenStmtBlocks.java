@@ -15,21 +15,7 @@ import streamit.frontend.nodes.StmtIfThen;
 public class FlattenStmtBlocks extends FEReplacer {
 	
 	boolean isWithinBlock = false;
-	
-	public Object visitStmtAssert(StmtAssert stmt)
-    {		
-		Expression exp = stmt.getCond();
-		if( exp != null){
-		 Integer i = exp.getIValue();
-		 if( i!= null){
-			 if(i == 1){
-				 return null;
-			 }
-		 }
-		}       
-        return stmt;
-    }
-	
+			
 	
 	 public Object visitStmtFor(StmtFor stmt)
 	    {

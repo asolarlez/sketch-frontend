@@ -61,6 +61,9 @@ public class SimplifyVarNames extends FEReplacer {
     
     public Object visitFunction(Function func)
     {
+    	nmMap.clear();
+    	if(func.isUninterp()) return func;
+    	
         List<Parameter> params = func.getParams();
         List<Parameter> nparams = new ArrayList<Parameter>();
     	for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
