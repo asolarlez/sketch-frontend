@@ -1,5 +1,5 @@
 int N;
-int[N] test(int[N] in){
+int[N] test4(int[N] in){
   int[N] out;
   for(int i=0; i<N; ++i){
   	if(i>0 && i<N-1) out[i] = in[i-1] + in[i+1];
@@ -9,7 +9,7 @@ int[N] test(int[N] in){
 }
 
 
-int[N] testSK(int[N] in) implements test{
+int[N] testSK4(int[N] in) implements test4{
   int[N] out;
   int[N+1] t0 ;
   t0[??] = in[0];
