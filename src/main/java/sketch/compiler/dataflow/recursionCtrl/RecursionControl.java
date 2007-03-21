@@ -61,5 +61,8 @@ public abstract class RecursionControl{
 	 * @return return true if this call should be inlined.
 	 */
 	public abstract boolean testCall(ExprFunCall fc);
+	public String debugMsg(){
+		return "";
+	}
 	
 }
