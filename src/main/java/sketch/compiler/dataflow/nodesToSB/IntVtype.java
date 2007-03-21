@@ -53,9 +53,9 @@ public class IntVtype extends abstractValueType {
 	}
 
 
-	public void Assert(abstractValue val){
+	public void Assert(abstractValue val, String msg){
 		 if( val.hasIntVal() ){
-			 assert val.getIntVal() != 0 : "Assertion failure";
+			 assert val.getIntVal() != 0 : "Assertion failure: " + msg;
 		 }
 	}
 	
@@ -136,6 +136,22 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( boolToInt(intToBool(v1.getIntVal()) && intToBool(v2.getIntVal())) ); 
 		}else{
+			if( v1.hasIntVal() ){
+				if(v1.getIntVal() == 0){
+					return CONST(0);
+				}else{
+					assert v1.getIntVal()==1;
+					return v2;
+				}
+			}
+			if( v2.hasIntVal()){
+				if(v2.getIntVal() == 0){
+					return CONST(0);
+				}else{
+					assert v2.getIntVal()==1;
+					return v1;
+				}			
+			}
 			return BOTTOM( opStr(v1, v2, "&") );
 		}
 	}
@@ -144,6 +160,22 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( boolToInt(intToBool(v1.getIntVal()) || intToBool(v2.getIntVal())) ); 
 		}else{
+			if( v1.hasIntVal() ){
+				if(v1.getIntVal() == 1){
+					return CONST(1);
+				}else{
+					assert v1.getIntVal()==0;
+					return v2;
+				}
+			}
+			if( v2.hasIntVal()){
+				if(v2.getIntVal() == 1){
+					return CONST(1);
+				}else{
+					assert v2.getIntVal()==0;
+					return v1;
+				}			
+			}
 			return BOTTOM( opStr(v1, v2, "|") );
 		}
 	}

@@ -69,8 +69,8 @@ public class NtsbVtype extends IntVtype {
 	}
 	
 	
-	public void Assert(abstractValue val){
-		 out.print ("assert (" + val + ");\n");
+	public void Assert(abstractValue val, String msg){
+		 out.print ("assert (" + val + ") : \"" + msg + "\" ;\n");
 	}
 	
 	public varState cleanState(String var, Type t, MethodState mstate){

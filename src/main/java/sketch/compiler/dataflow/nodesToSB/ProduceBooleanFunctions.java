@@ -216,7 +216,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	
     
 	public Object visitExprFunCall(ExprFunCall exp)
-	{
+	{		
     	String name = exp.getName();
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
@@ -253,7 +253,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 		    		}
 		    		rcontrol.popFunCall(exp);
 	    		}else{
-	    			StmtAssert sas = new StmtAssert(exp.getContext(), new ExprConstInt(0));
+	    			StmtAssert sas = new StmtAssert(exp.getCx(), new ExprConstInt(0));
+	    			sas.setMsg( (exp.getCx()!=null?exp.getCx().toString() : "" ) + exp.getName()  );
 	    			sas.accept(this);
 	    		}
 	    		exprRV = exp;

@@ -23,7 +23,7 @@ public class TAvalueType extends abstractValueType {
 	}
 
 	@Override
-	public void Assert(abstractValue val) {
+	public void Assert(abstractValue val, String msg) {
 	}
 
 	@Override
