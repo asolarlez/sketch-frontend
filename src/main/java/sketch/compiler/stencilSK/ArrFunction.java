@@ -174,6 +174,11 @@ public class ArrFunction{
 		return ret;
 	}
 	
+	/**
+	 * This method runs the symbolic solver on the max statements in the
+	 * ArrFunction to replace them with sequences of guarded assignments.
+	 *
+	 */
 	public void processMax(){
 		for(Iterator<StmtMax> it = idxAss.iterator(); it.hasNext(); ){
 			StmtMax smax = it.next();
