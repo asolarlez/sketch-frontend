@@ -36,7 +36,7 @@ public class LiveVariableVType extends abstractValueType {
 	}
 
 	@Override
-	public void Assert(abstractValue val) {
+	public void Assert(abstractValue val, String msg) {
 		if( val instanceof LVSet){					
 			((LVSet)val).enliven();
 		}
@@ -150,7 +150,9 @@ public class LiveVariableVType extends abstractValueType {
 			}
 			if( cond instanceof LiveVariableAV){
 				LiveVariableAV lv = (LiveVariableAV) cond;
-				lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));		
+				if(lv.mstate != null){
+					lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+				}
 			}
 		}
 		

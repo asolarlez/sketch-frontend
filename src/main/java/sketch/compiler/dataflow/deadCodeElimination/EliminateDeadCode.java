@@ -13,7 +13,9 @@ import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
@@ -25,10 +27,31 @@ public class EliminateDeadCode extends BackwardDataflow {
 		super(LiveVariableVType.vtype, null, true, -1,(new BaseRControl(10)));
 	}
 	
+	
+	public Object visitStmtIfThen(StmtIfThen stmt)
+    {
+		Object obj = super.visitStmtIfThen(stmt);
+		
+		
+		
+		return obj;
+    }
+	
+	
 	public Object visitStmtAssert (StmtAssert stmt) {
-		return null;
+		Expression exp = stmt.getCond();
+		Integer ival = exp.getIValue();
+		if(ival != null){
+			if(ival == 1){
+				return null;
+			}
+		}
+		return super.visitStmtAssert(stmt);
 	}
 	
+	protected List<Function> functionsToAnalyze(StreamSpec spec){
+	    return spec.getFuncs();
+    }
 	
 	public Object visitStmtAssign(StmtAssign stmt)
     {
