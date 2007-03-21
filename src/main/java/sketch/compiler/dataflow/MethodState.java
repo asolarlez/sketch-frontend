@@ -132,6 +132,16 @@ public class MethodState {
 	private ChangeTracker changeTracker;
 	
 	private int level = 0;  
+	private int changeTrackers = 0;
+	
+	public int getLevel(){
+		return level;
+	}
+	
+	public int getCTlevel(){
+		return changeTrackers;
+	}
+	
 	
 	public MethodState(abstractValueType vtype){
 		// System.out.println("New Method State for new method.");
@@ -295,7 +305,7 @@ public class MethodState {
 	}
 	
 	
-	public void Assert(abstractValue val){
+	public void Assert(abstractValue val, String msg){
         /* Compose complex expression by walking all nesting conditionals. */        
         for (ChangeTracker tmpTracker = changeTracker;
         		tmpTracker != null; tmpTracker = tmpTracker.kid )
@@ -305,7 +315,7 @@ public class MethodState {
             abstractValue nestCond = vtype.not(tmpTracker.getCondVal ());
             val = vtype.or(val, nestCond );
         }        
-		vtype.Assert(val);
+		vtype.Assert(val, msg);
 	}
 	
 	public void setVarValue(String var, abstractValue idx, abstractValue val){
@@ -320,6 +330,7 @@ public class MethodState {
 	public ChangeTracker popChangeTracker(){
 		ChangeTracker tmp = changeTracker;
 		changeTracker = changeTracker.kid;
+		changeTrackers--;
 		return tmp;
 	}
 	
@@ -331,6 +342,7 @@ public class MethodState {
 		ChangeTracker oldChangeTracker = changeTracker;
 		changeTracker = new ChangeTracker (cond, isNegated);
 		changeTracker.kid = oldChangeTracker;		
+		changeTrackers++;
 	}
 	
 	

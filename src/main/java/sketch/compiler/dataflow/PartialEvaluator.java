@@ -514,6 +514,8 @@ public class PartialEvaluator extends FEReplacer {
     {
         // Put context label at the start of the block, too.
     	Statement s = null;
+    	int level = state.getLevel();
+    	int ctlevel = state.getCTlevel();
     	state.pushLevel();	    	
     	try{
     		s = (Statement)super.visitStmtBlock(stmt);
@@ -522,6 +524,8 @@ public class PartialEvaluator extends FEReplacer {
     			s = stmt;
     		}
     		state.popLevel();
+    		assert level == state.getLevel() : "Somewhere we lost a level!!";
+    		assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
     	}
         return s;
     }
@@ -624,7 +628,9 @@ public class PartialEvaluator extends FEReplacer {
         			rv =(Statement) stmt.getCons().accept(this);	
         			rcontrol.doneWithBlock(stmt.getCons());
         		}else{
-					rv = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+        			StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+        			sa.setMsg( rcontrol.debugMsg() );
+					rv = (Statement)( sa ).accept(this);
 				}
         		return rv;
         	}else{
@@ -634,7 +640,9 @@ public class PartialEvaluator extends FEReplacer {
         				rv =(Statement)stmt.getAlt().accept(this);
         				rcontrol.doneWithBlock(stmt.getAlt());
         			}else{
-        				rv =(Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+        				StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+        				sa.setMsg( rcontrol.debugMsg() );
+        				rv =(Statement)( sa ).accept(this);
 					}
         			return rv;
         		}
@@ -643,6 +651,7 @@ public class PartialEvaluator extends FEReplacer {
         }
 
         /* Attach conditional to change tracker. */
+        int ctlevel = state.getCTlevel();
         state.pushChangeTracker (vcond, false);
         Statement nvtrue = null;
         Statement nvfalse = null;
@@ -664,9 +673,12 @@ public class PartialEvaluator extends FEReplacer {
 	        }
 	        rcontrol.doneWithBlock(stmt.getCons());
         }else{
-			nvtrue = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+        	StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+        	sa.setMsg( rcontrol.debugMsg() );
+			nvtrue = (Statement)( sa ).accept(this);
 		}	        
         ChangeTracker ipms = state.popChangeTracker();
+        assert state.getCTlevel() == ctlevel : "Somewhere we lost a ctlevel!! " + ctlevel + " != " + state.getCTlevel();
         
         ChangeTracker epms = null;	        
         if (stmt.getAlt() != null){
@@ -694,7 +706,14 @@ public class PartialEvaluator extends FEReplacer {
         }else{        	
         	state.procChangeTrackers(ipms);
         }
-        return isReplacer?  new StmtIfThen(stmt.getCx(),ncond, nvtrue, nvfalse ) : stmt;
+        if(isReplacer){
+        	if(nvtrue == null && nvfalse == null){
+        		return null;
+        	}
+        	return new StmtIfThen(stmt.getCx(),ncond, nvtrue, nvfalse );        	
+        }else{
+        	return stmt;
+        }        
     }
 
     /**
@@ -709,9 +728,11 @@ public class PartialEvaluator extends FEReplacer {
         Expression assertCond = stmt.getCond();        
         abstractValue vcond  = (abstractValue) assertCond.accept (this);
         Expression ncond = exprRV;
-        state.Assert(vcond);
+        String msg = null;
+        msg = stmt.getMsg();
+        state.Assert(vcond, msg);
         return isReplacer ?  new StmtAssert(stmt.getContext(), ncond)  : stmt;
-    }    
+    }
     
     public Object visitStmtLoop(StmtLoop stmt)
     {
@@ -910,6 +931,13 @@ public class PartialEvaluator extends FEReplacer {
     
     
     
+    protected List<Function> functionsToAnalyze(StreamSpec spec){
+    	SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
+	    return funSelector.selectFunctions(spec);
+    }
+    
+    
+    
 
     public Object visitStreamSpec(StreamSpec spec)
     {    	
@@ -933,18 +961,23 @@ public class PartialEvaluator extends FEReplacer {
             if( isReplacer ){ newVars.add(nstmt); }
         }
         	
-        
-		SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
-	    List<Function> funcs = funSelector.selectFunctions(spec);
+	    List<Function> funcs = this.functionsToAnalyze(spec);
 		
 	    Function f = null;
         for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
         	f = iter.next();
-        	if( ! f.getName().equals("init") ){
+        	if( ! f.getName().equals("init") &&  !f.isUninterp()){
         		Function nstmt =  (Function)f.accept(this);
         		if( isReplacer ){ newFuncs.add(nstmt); }	
         	}
         }
+        
+        for(Function sf : spec.getFuncs()){
+        	if(sf.isUninterp()){
+        		if( isReplacer ){ newFuncs.add(sf); }
+        	}
+        }
+        
         
         ss = oldSS;
                 
@@ -997,13 +1030,16 @@ public class PartialEvaluator extends FEReplacer {
         	abstractValue actualParamValue = actualValIterator.next();
     		
         	String formalParamName = formalParam.getName();
-        	state.varDeclare(formalParamName, formalParam.getType());        	
+        	
+        	Type type = (Type) formalParam.getType().accept(this);
+        	
+        	state.varDeclare(formalParamName, type);        	
     		if( !formalParam.isParameterOutput() ){
     			state.setVarValue(formalParamName, actualParamValue);
-    	    	Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()),actualParam);
+    	    	Statement varDecl=new StmtVarDecl(null,type,state.transName(formalParam.getName()),actualParam);
     	    	addStatement((Statement)varDecl);
     		}else{
-    			Statement varDecl=new StmtVarDecl(null,formalParam.getType(),state.transName(formalParam.getName()), new ExprConstInt(0));
+    			Statement varDecl=new StmtVarDecl(null,type,state.transName(formalParam.getName()), new ExprConstInt(0));
     	    	addStatement((Statement)varDecl);
     		}
         }

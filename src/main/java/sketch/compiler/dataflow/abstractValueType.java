@@ -68,7 +68,7 @@ public abstract class abstractValueType{
 	 * @return
 	 */
 	abstract public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
-	abstract public void Assert(abstractValue val);
+	abstract public void Assert(abstractValue val, String msg);
 	/**
 	 * 
 	 * @param fun
