@@ -364,8 +364,7 @@ public class ToSBit
     }
     
     protected Program preprocessProgram(Program prog) {
-        //invoke post-parse passes
-    	System.out.println("=============================================================");
+        //invoke post-parse passes    	
     	//prog.accept( new SimpleCodePrinter() );
     	System.out.println("=============================================================");
         prog = (Program)prog.accept(new FunctionParamExtension());

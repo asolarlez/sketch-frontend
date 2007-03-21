@@ -17,11 +17,22 @@
 package streamit.frontend;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.List;
 
+import streamit.frontend.experimental.DataflowWithFixpoint;
+import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
+import streamit.frontend.experimental.nodesToSB.IntVtype;
+import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
+import streamit.frontend.experimental.preprocessor.PreprocessSketch;
+import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
+import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.BackendCleanup;
+import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.VariableDeclarationMover;
 import streamit.frontend.passes.VariableDisambiguator;
 import streamit.frontend.stencilSK.EliminateCompoundAssignments;
@@ -55,8 +66,17 @@ public class ToStencilSK extends ToSBit
 	
 	
     protected Program preprocessProgram(Program prog) {    	
-    	prog.accept( new SimpleCodePrinter() );
         prog = super.preprocessProgram(prog);
+        originalProg = prog;
+    	//prog.accept( new SimpleCodePrinter() );
+    	System.out.println("=============================================================");    	
+    	prog = (Program)prog.accept(new FlattenStmtBlocks());    	
+    	prog= (Program)prog.accept(new EliminateTransitiveAssignments());
+    	//System.out.println("=========  After ElimTransAssign  =========");
+    	prog = (Program)prog.accept(new EliminateDeadCode());
+    	System.out.println("=============================================================");
+    	
+    	
         prog = (Program) prog.accept(new ReplaceFloatsWithBits());
         //prog = (Program)prog.accept(new VariableDisambiguator());
         System.out.println(" After preprocessing level 1. ");
@@ -84,8 +104,8 @@ public class ToStencilSK extends ToSBit
         //run semantic checker
         if (!StencilSemanticChecker.check(prog))
             throw new IllegalStateException("Semantic check failed");
+                
         
-        originalProg = prog;  // save
         prog=preprocessProgram(prog); // perform prereq transformations        
 
         
@@ -93,13 +113,14 @@ public class ToStencilSK extends ToSBit
             throw new IllegalStateException();
         
         TempVarGen varGen = new TempVarGen();
+        prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept( new ScalarizeVectorAssignments(varGen, true) );  
 
         System.out.println("After SVA.");
         
-//        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-//       prog.accept(new SimpleCodePrinter());
-//       System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+       //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+       //prog.accept(new SimpleCodePrinter());
+       //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         System.out.println("Before preprocessing.");
         
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
@@ -111,7 +132,40 @@ public class ToStencilSK extends ToSBit
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
         prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
         //fs.printFuns();
-//        prog.accept(new SimpleCodePrinter());
+        System.out.println("After running transformation.");
+        
+       
+        /*
+        Program tmp = (Program)prog.accept(new FlattenStmtBlocks());
+    	tmp = (Program)tmp.accept(new EliminateTransitiveAssignments());
+    	//System.out.println("=========  After ElimTransAssign  =========");
+    	tmp = (Program)tmp.accept(new EliminateDeadCode());
+    	//System.out.println("=========  After ElimDeadCode  =========");
+    	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
+        tmp.accept(new SimpleCodePrinter());
+        */
+                
+    	
+    	Program tmp = (Program) prog.accept( 
+    			new DataflowWithFixpoint(new IntVtype(), varGen, true, params.unrollAmt, newRControl() ){
+    				protected List<Function> functionsToAnalyze(StreamSpec spec){
+    				    return spec.getFuncs();
+    			    }	
+    				public String transName(String name){
+    					return state.transName(name);
+    				}
+    			});    	
+        //Program tmp = (Program) prog.accept( new PreprocessSketch(varGen, params.unrollAmt, newRControl()));
+        tmp = (Program)tmp.accept(new FlattenStmtBlocks());
+    	tmp = (Program)tmp.accept(new EliminateTransitiveAssignments());
+    	//System.out.println("=========  After ElimTransAssign  =========");
+    	tmp = (Program)tmp.accept(new EliminateDeadCode());
+    	//System.out.println("=========  After ElimDeadCode  =========");
+    	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
+        tmp.accept(new SimpleCodePrinter());
+        
+        prog = tmp;
+        
         
         oracle = new ValueOracle( new StaticHoleTracker(varGen) );
         partialEvalAndSolve();
@@ -123,6 +177,17 @@ public class ToStencilSK extends ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));
+		
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.unrollAmt, newRControl() ));
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
+    	finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
+    	//System.out.println("=========  After ElimTransAssign  =========");
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new EliminateDeadCode());
+    	//System.out.println("=========  After ElimDeadCode  =========");
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 	}
 
 	
