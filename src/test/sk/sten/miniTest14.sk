@@ -1,6 +1,6 @@
 int N;
-bit[N][N] sten(bit[N][N]  in, int a){
-   bit[N][N] out=0;
+float[N][N] sten14(float[N][N]  in, int a){
+   float[N][N] out=0;
    for(int i=a; i<N; ++i){
      for(int j=a; j<N; ++j){
       out[i][j] = in[i][j];
@@ -10,9 +10,9 @@ bit[N][N] sten(bit[N][N]  in, int a){
 }
 
 
-bit[N][N] stenSK(bit[N][N]  in, int a) implements sten{
-   bit[N][N] out=0;
-   bit[N+1][N+1] t;
+float[N][N] stenSK14(float[N][N]  in, int a) implements sten14{
+   float[N][N] out=0;
+   float[N+1][N+1] t;
    for(int i=a; i<N; ++i){
 	 t[i][a] = in[i][a];
      for(int j=a; j<N; ++j){
