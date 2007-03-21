@@ -27,16 +27,19 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        int iters = 0;	
 	        while(goOn){
 	        	state.pushChangeTracker(null, false);
-	        	state.pushChangeTracker(null, false);
+	        	
+	        	ChangeTracker ct = null;
+	        	
 	        	boolean lisReplacer = isReplacer;
 	        	isReplacer = false;
-	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
+	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);	        	
 	        	if(vcond.hasIntVal() && vcond.getIntVal() == 0){
-	        		isReplacer = lisReplacer;	        		
+	        		isReplacer = lisReplacer;	
+	        		state.popChangeTracker();
 	        		break;
-	        	}
-	        	ChangeTracker ct = null;
+	        	}	        	
 	        	try{
+	        		state.pushChangeTracker(vcond, false);
 	        		stmt.getBody().accept(this);	        	
 		        	if (stmt.getIncr() != null){
 			        	stmt.getIncr().accept(this);
@@ -49,10 +52,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        		ct = state.popChangeTracker();	
 	        		isReplacer = lisReplacer;
 	        	}
-	        	
-	        	state.pushChangeTracker(null, false);
-	        	ChangeTracker ct2 = state.popChangeTracker();
-	        	state.procChangeTrackers(ct, ct2);	 
+	        	state.procChangeTrackers(ct);	 
 
 	        	ChangeTracker changed = state.popChangeTracker();
 	        	state.pushChangeTracker(null, false);	        	
@@ -64,16 +64,20 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        		throw new RuntimeException("Infinite loop detected: " + stmt);
 	        	}
 	        }
-	        stmt.getCond().accept(this);
+	        abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
 	        ncond = exprRV;
-	        nbody = (Statement) stmt.getBody().accept(this);
-	        if (stmt.getIncr() != null){
-	        	nincr = (Statement) stmt.getIncr().accept(this);
-        	}
+	        if(vcond.hasIntVal() && vcond.getIntVal() == 0){
+	        	nbody = null;
+	        }else{
+		        nbody = (Statement) stmt.getBody().accept(this);
+		        if (stmt.getIncr() != null){
+		        	nincr = (Statement) stmt.getIncr().accept(this);
+	        	}
+	        }
     	}finally{
     		state.popLevel();	        	
     	}
-    	if(nbody == null) return stmt;
-    	return new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody);
+    	if(nbody == null) return null;
+    	return isReplacer?  new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody) : stmt;
     }
 }
