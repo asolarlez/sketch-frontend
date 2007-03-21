@@ -1,8 +1,11 @@
 bit reverseSketch(bit[3] in, bit[3] in2) implements reverse {
 	int [8] fu;
-	for(int i=0; i<8; ++i){
+	int i=0;
+	loop(8){
 		fu[i] = {*};
+		++i;
 	}
+		
 	int idx1 = (int) in;
 	int idx = fu[ idx1 ];
 	return in2[idx];
