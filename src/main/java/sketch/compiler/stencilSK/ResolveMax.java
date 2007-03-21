@@ -15,7 +15,12 @@ import streamit.frontend.nodes.FENullVisitor;
 import streamit.frontend.nodes.FEReplacer;
 
 
-
+/**
+ * Symbolic solver, replaces a {@link StmtMax} with a sequence of guarded assignments. 
+ * 
+ * @author asolar
+ *
+ */
 public class ResolveMax {
 	StmtMax smax;
 	int sz;
@@ -43,6 +48,48 @@ public class ResolveMax {
 		return true;
 		
 	}
+	
+	
+	
+	
+	/**
+	 * If exprArr[i] depends on exprArr[j] for some i,j, these may lead to unwanted 
+	 * dependencies, so this function replaces all instances of exprArr[j] in the expression exprArr[i]. 
+	 *
+	 */	
+	public void removeDependencies(){			
+		FEReplacer repl = new FEReplacer(){
+			public Object visitExprArrayRange(ExprArrayRange ea){
+				ExprVar ev = ea.getAbsoluteBase(); 					
+				if( ev.getName().equals(name) ){
+					int idx = ea.getOffset().getIValue();
+					if( expArr[idx] != null && tainted[idx] == null){
+						return expArr[idx];
+					}
+				}
+				return ea;
+			}
+		};
+		boolean goon = true;
+		int it = 0;
+		while(goon){
+			goon = false;
+			for(int i=0; i<sz; ++i){
+				if(expArr[i] != null && tainted[i] == null ){
+					Expression old = expArr[i];
+					expArr[i] = (Expression) old.accept(repl);
+					if(expArr[i] != old){
+						goon = true;
+					}
+				}
+			}
+			++it;
+			if(it > 2*sz){
+				assert false : "This is probably in an infinite loop!!!";
+			}
+		}
+	}
+	
 	
 	public void run(){
 		CollectConstraints cc = new CollectConstraints();
@@ -453,7 +500,15 @@ public class ResolveMax {
 		
 	}
 	
-	
+	/**
+	 * This visitor sets the tag of the expression according to the following criteria.
+	 * If the expression contains an index whose value is still unknown, its tag will be set.
+	 * 
+	 * 
+	 * 
+	 * @author asolar
+	 *
+	 */
 	class tagNodes extends FEReplacer{		
 		public Object visitExprBinary(ExprBinary exp)
 	    {

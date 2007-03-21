@@ -13,6 +13,8 @@ import streamit.frontend.nodes.TypePrimitive;
 
 
 public class ParamTree{
+
+	public static int MAX_POS = 2000;
 	
 	private Map<FENode, treeNode> tnMap = new HashMap<FENode, treeNode>();
 	public treeNode getTNode(FENode node){
@@ -34,6 +36,7 @@ public class ParamTree{
 		
 		public void incrStage(){
 			++lh.stage; 
+			assert lh.stage < MAX_POS : "The maximum number of statements is not set to a high enough value.";
 		}
 		
 		public int nchildren(){
@@ -52,7 +55,7 @@ public class ParamTree{
 			this.lh = lh;
 			if( lh != null){
 				this.vdecl = lh.newVD();
-				this.posParam = new StmtVarDecl(null, TypePrimitive.inttype, ArrFunction.PPPREFIX + vdecl.getName(0), new ExprConstInt(100));
+				this.posParam = new StmtVarDecl(null, TypePrimitive.inttype, ArrFunction.PPPREFIX + vdecl.getName(0), new ExprConstInt(MAX_POS));
 			}
 			this.father = father;
 		}
