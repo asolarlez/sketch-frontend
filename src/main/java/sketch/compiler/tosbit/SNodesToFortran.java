@@ -180,6 +180,7 @@ public class SNodesToFortran implements FEVisitor {
 	}
 	
 	protected String makeDeclaration(Type type, String name) {
+		
 		String bounds="";
 		String typestr;
 		if(type instanceof TypeArray) {
@@ -216,6 +217,7 @@ public class SNodesToFortran implements FEVisitor {
 		List<Parameter> params=new ArrayList<Parameter>();
 		for(Iterator it=func.getParams().iterator();it.hasNext();) {
 			Parameter p=(Parameter)it.next();
+			varTypes.put(p.getName(), p.getType());
 			//if(p.isParameterOutput()) continue;
 			params.add(p);
 		}
