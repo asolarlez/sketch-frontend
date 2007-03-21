@@ -25,7 +25,7 @@ import streamit.frontend.nodes.StreamSpec;
 
 
 public class AdvancedRControl extends RecursionControl {
-	
+	public String debugMsg = null;
 	Stack<Integer> bfStack;
 	int branchingTheshold;
 	private int MAX_INLINE;	
@@ -177,10 +177,14 @@ public class AdvancedRControl extends RecursionControl {
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
 			System.out.println(fc.getName()); //DEBUGGING INFO
 		}
+		debugMsg = fc.getName();
 		++tt;
 		fi.rdepth++;
 	}
 
+	public String debugMsg(){
+		return debugMsg;
+	}
 
 	public boolean testBlock(Statement stmt) {
 		/* First, we check if the block is legal. I.e. if it has any
