@@ -1,0 +1,20 @@
+int N;
+
+float[N] rec6ptFrag(float[N] in, float[N] out, int il, int ih){
+	float[N] output = out;
+	for(int i=il; i<ih; ++i){
+			output[i] = in[i];
+	}
+	return output;
+}
+
+
+float[N] rec6ptFragSK(float[N] in, float[N] out, int il, int ih) implements rec6ptFrag{
+	float[N] output = out;
+	if( (ih-il)>5){
+		output = rec6ptFrag(in, out, il, ih);		
+	}else{
+		output = rec6ptFrag(in, out, il, ih);			
+	}
+	return output;
+}
