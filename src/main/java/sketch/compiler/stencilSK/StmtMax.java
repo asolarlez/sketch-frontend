@@ -135,10 +135,16 @@ public class StmtMax extends Statement{
 
 	
 	
-	
+	/**
+	 * Calls the symbolic solver to produce a sequence of gurarded assignments
+	 * to replace the max statement.
+	 * 
+	 * @return whether or not the symbolic solver succeeded in replacing the max.
+	 */
 	public boolean resolve(){
 		ResolveMax rmax = new ResolveMax(this);
 		rmax.run();
+		rmax.removeDependencies();
 		for(int i=0; i<dim; ++i){
 			if( rmax.expArr[i] == null && ( rmax.meArr[i] == null || rmax.tainted[i]!= null ) )
 				return false;
@@ -259,7 +265,7 @@ public class StmtMax extends Statement{
 					}else{
 						more = false;
 					}
-				}		
+				}
 				assert !(xx == multisSize) || (i==size-1);
 				Statement multiUpdate =  new StmtBlock(null, blist);
 				statements.add(multiUpdate);
@@ -268,7 +274,7 @@ public class StmtMax extends Statement{
 				}else{
 					indTot = new ExprBinary(null, ExprBinary.BINOP_OR, indI, indTot );
 				}
-			}	
+			}
 			statements.add(new StmtAssign(null, indicator,indTot)	);
 		}else{
 			statements.add(check);
