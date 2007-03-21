@@ -124,7 +124,7 @@ public class SimpleCodePrinter extends FEReplacer
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
-		printLine(stmt.toString());
+		printLine(stmt.toString()  + ';');
 		return super.visitStmtAssign(stmt);
 	}
 
