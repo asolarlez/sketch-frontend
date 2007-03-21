@@ -116,7 +116,7 @@ class loopHist{
 		this.var = var;
 		this.low = low;
 		this.high = high;
-		stage = 0;		
+		stage = 1;		
 		if(high != null)
 			computeHighPlusOne();
 	}
@@ -252,7 +252,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		//add the functions generated from ArrFunction objects to the program 
 		for(Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext(); ){
 			ArrFunction af = it.next();			
-			System.out.println(af.toString());
+			//System.out.println(af.toString());
 			af.processMax();
 			functions.add(af.toAST());
 		}
