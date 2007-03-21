@@ -151,13 +151,15 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	        boolean goOn = true;
 	        int iters = 0;	
 	        while(goOn){
-	        	state.pushChangeTracker(null, false);
-	        	state.pushChangeTracker(null, false);
+	        	state.pushChangeTracker(null, false);	        	
 	        	boolean lisReplacer = isReplacer;
 	        	isReplacer = false;
 	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
+	        	state.pushChangeTracker(vcond, false);
 	        	if(vcond.hasIntVal() && vcond.getIntVal() == 0){
-	        		isReplacer = lisReplacer;	        		
+	        		isReplacer = lisReplacer;	
+	        		state.popChangeTracker();
+	        		state.popChangeTracker();
 	        		break;
 	        	}
 	        	ChangeTracker ct = null;
