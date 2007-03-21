@@ -25,7 +25,7 @@ package streamit.frontend.nodes;
 public class StmtAssert extends Statement
 {
     Expression cond;
-    
+    private String msg = null;
     /** Creates a new assert statement with the specified conditional. */
     public StmtAssert(FEContext context, Expression cond)
     {
@@ -50,4 +50,19 @@ public class StmtAssert extends Statement
         String result = "assert (" + this.cond + ")\n";
         return result;
     }
+
+	/**
+	 * @param msg the msg to set
+	 */
+	public void setMsg(String msg) {
+		this.msg = msg;
+	}
+
+	/**
+	 * @return the msg
+	 */
+	public String getMsg() {
+		if(msg == null && getCx() != null) return getCx().toString(); 
+		return msg;
+	}
 }
