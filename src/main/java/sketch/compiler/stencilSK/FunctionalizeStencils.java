@@ -964,9 +964,33 @@ class ProcessStencil extends FEReplacer {
 	    	}
 	    }
 	    
+	    class RHSReplacer extends VarReplacer{
+	    	final List<Expression> indices;
+	    	final List<StmtVarDecl> formals;
+	    	RHSReplacer(String oldName, Expression newName, List<Expression> indices, List<StmtVarDecl> formals){
+	    		super(oldName, newName);
+	    		this.indices = indices;
+	    		this.formals = formals;
+	    	}
+	    	
+	    	 public Object visitExprBinary(ExprBinary exp)
+    	    {
+	    		 int i=0;
+    		 for(Expression e : indices ){
+    			 if( exp.equals(e)){
+    				 StmtVarDecl sv = formals.get(i);
+    				 System.out.println("FOUND ONE");
+    				 return new ExprVar(sv.getCx(), sv.getName(0));
+    			 }
+    			 ++i;
+    		 }
+    		 
+    		 return super.visitExprBinary(exp);
+    	    }
+	    } 
 	    
 	    
-	    public Statement iMaxIf(int i, Expression rhs, ArrFunction fun){
+	    public Statement iMaxIf(int i, Expression rhs, ArrFunction fun, List<Expression> indices){
 	    	//if(indvar == i+1){ return rhs; }
 	    	ExprVar indvar = new ExprVar(ccontext, ArrFunction.IND_VAR+i);
 	    	ExprVar idxi = new ExprVar(ccontext, ArrFunction.IDX_VAR + i);
@@ -977,7 +1001,7 @@ class ProcessStencil extends FEReplacer {
 	    	for(Iterator<StmtVarDecl> it = currentTN.limitedPathIter(); it.hasNext(); ++ii){
 	    		StmtVarDecl par = it.next();	    		
 	    		ExprArrayRange ear = new ExprArrayRange(ccontext,idxi, new ExprConstInt(2*ii+1));
-	    		rhs = (Expression)rhs.accept(new VarReplacer(par.getName(0), ear));
+	    		rhs = (Expression)rhs.accept(new RHSReplacer(par.getName(0), ear, indices, fun.idxParams));
 	    	}
 //	    	 rhs[ arr[i] -> arr_fun(i, idxi) ]; 
 	    	Expression retV = (Expression)rhs.accept(new ArrReplacer(idxi));	    	
@@ -993,7 +1017,7 @@ class ProcessStencil extends FEReplacer {
 	   	 	int i = fun.size();
 	   	 	fun.addIdxAss( newStmtMax(i, indices, fun) );	   	 	
 	   	 	fun.addMaxAss( pickLargest(i, currentTN.getLevel()*2+1) );
-	   	 	fun.addRetStmt( iMaxIf(i, rhs, fun)  );
+	   	 	fun.addRetStmt( iMaxIf(i, rhs, fun, indices)  );
 	   	 	currentTN.incrStage();
 	    }
 
