@@ -11,7 +11,7 @@ bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f,  bit ce, bit no, bit so, bit 
 				tmp[i][j] = (f[i][j] ) ^ ( ce&in[i][j]) ^ (
 				no&in[i-1][j]) ^ (so&in[i+1][j]) ^ (ea&in[i][j+1]) ^ (we&in[i][j-1]);
 			} 		
-		}		
+		}	
 	}
 	//black
 	for(int i=1; i<N-1; ++i){

@@ -1,0 +1,93 @@
+int N;
+int T=3;
+
+float[N][T] cacheObv1d(float[N] in, float[N][T] f){
+
+	float[N][T]	out = 0;
+	
+	for(int i=0; i<N; ++i){
+		out[0][i] = in[i];
+	}
+	
+	for(int t=1; t<T; ++t){
+		out[t][0] = 0;
+		out[t][N-1] = 0;
+		for(int i=1; i<N-1; ++i){
+			out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
+		}	
+	}
+	return out;	
+}
+
+
+int hole2(int i){
+	int rv = 0;
+	if(??){
+		if(??){
+			rv =  N;
+		}else{
+			rv = T;	
+		}
+	}else{
+		if(??){
+			rv = i;
+		}else{
+			rv = ??;	
+		}
+	}	
+	return rv;	
+}
+
+int hole(int i){
+	int rv = 0;
+	if(??){
+		if(??){
+			rv =  N;
+		}else{
+			rv = T;	
+		}
+	}else{
+		if(??){
+			rv = i;
+		}else{
+			rv = ??;	
+		}
+	}
+	if(??){
+		int x = hole2(i);
+		if(??){ 
+			rv = rv + x;  	
+		}else{
+			rv = rv - x;	
+		}
+	}
+	return rv;	
+}
+
+
+
+float[N][T] helper(float[N][T] f, float[N][T] outold){
+	float[N][T]	out = outold;
+	for(int i=hole(0); i<hole(0); ++i){			
+		for(int t=hole(i)+??; t<hole(i); ++t){
+			out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+		}
+	}
+	return out;
+}
+
+
+float[N][T] cacheObv1dSK(float[N] in, float[N][T] f) implements cacheObv1d{	
+	float[N][T]	out = 0;
+	if(N>=3){
+		for(int i=0; i<N; ++i){
+			out[0][i] = in[i];
+		}
+		out = helper(f, out);
+		out = helper(f, out);
+		out = helper(f, out);
+	}else{
+		out = cacheObv1d(in, f);
+	}	
+	return out;	
+}

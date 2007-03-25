@@ -1,41 +1,41 @@
 int N;
 
-bit[2*N][2*N][2*N] MGinter(bit[N][N][N] in, bit half, bit fourth, bit eight){
+float[2*N][2*N][2*N] MGinterEA(float[N][N][N] in){
 
-	bit[2*N][2*N][2*N]  output=0;
+	float[2*N][2*N][2*N]  output=0;
 	for(int k=0; k<2*N-2; ++k){
 		for(int j=0; j<2*N-2; ++j){
 		for(int i=0; i<2*N-2; ++i){
 		 if( i%2==0 && j%2==0 && k%2==0) output[i][j][k] = in[i/2][j/2][k/2];
 		 
 		 if( i%2==1 && j%2==0 && k%2==0) output[i][j][k] = 
-		 									half & (in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2]);
+		 									0.5 * (in[i/2][j/2][k/2] + in[i/2+1][j/2][k/2]);
 		 if( i%2==0 && j%2==1 && k%2==0) output[i][j][k] = 
-		 									half & (in[i/2][j/2][k/2] ^ in[i/2][j/2+1][k/2]);
+		 									0.5 * (in[i/2][j/2][k/2] + in[i/2][j/2+1][k/2]);
 		 if( i%2==0 && j%2==0 && k%2==1) output[i][j][k] = 
-		 									half & (in[i/2][j/2][k/2] ^ in[i/2][j/2][k/2+1]);
+		 									0.5 * (in[i/2][j/2][k/2] + in[i/2][j/2][k/2+1]);
 		 
 		 if( i%2==1 && j%2==1 && k%2==0) output[i][j][k] = 
-		 									fourth & 
-		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2+1][k/2] ^
-		 										in[i/2][j/2+1][k/2] ^ in[i/2+1][j/2][k/2]);
+		 									0.25 * 
+		 									(in[i/2][j/2][k/2] + in[i/2+1][j/2+1][k/2] +
+		 										in[i/2][j/2+1][k/2] + in[i/2+1][j/2][k/2]);
 		 if( i%2==0 && j%2==1 && k%2==1) output[i][j][k] = 
-		 									fourth & 
-		 									(in[i/2][j/2][k/2] ^ in[i/2][j/2+1][k/2+1] ^
-		 										in[i/2][j/2+1][k/2] ^ in[i/2][j/2][k/2+1]
+		 									0.25 * 
+		 									(in[i/2][j/2][k/2] + in[i/2][j/2+1][k/2+1] +
+		 										in[i/2][j/2+1][k/2] + in[i/2][j/2][k/2+1]
 		 									);
 		 									
 		 if( i%2==1 && j%2==0 && k%2==1) output[i][j][k] = 
-		 									fourth & 
-		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2+1] ^
-		 										in[i/2+1][j/2][k/2] ^ in[i/2][j/2][k/2+1]
+		 									0.25 * 
+		 									(in[i/2][j/2][k/2] + in[i/2+1][j/2][k/2+1] +
+		 										in[i/2+1][j/2][k/2] + in[i/2][j/2][k/2+1]
 		 									);
 		 if( i%2==1 && j%2==1 && k%2==1) output[i][j][k] = 
-		 									eight & 
-		 									(in[i/2][j/2][k/2] ^ in[i/2+1][j/2][k/2] ^
-		 										in[i/2][j/2+1][k/2] ^ in[i/2][j/2][k/2+1] ^
-		 										in[i/2+1][j/2+1][k/2] ^ in[i/2][j/2+1][k/2+1] ^
-		 										in[i/2+1][j/2][k/2+1] ^ in[i/2+1][j/2+1][k/2+1]
+		 									0.125 * 
+		 									(in[i/2][j/2][k/2] + in[i/2+1][j/2][k/2] +
+		 										in[i/2][j/2+1][k/2] + in[i/2][j/2][k/2+1] +
+		 										in[i/2+1][j/2+1][k/2] + in[i/2][j/2+1][k/2+1] +
+		 										in[i/2+1][j/2][k/2+1] + in[i/2+1][j/2+1][k/2+1]
 		 									);
 		}
 		}
@@ -48,20 +48,20 @@ bit[2*N][2*N][2*N] MGinter(bit[N][N][N] in, bit half, bit fourth, bit eight){
 
 
 
-bit[2*N][2*N][2*N] skMGinter(bit[N][N][N] in, bit half, bit fourth, bit eight)implements MGinter
+float[2*N][2*N][2*N] skMGinterEA(float[N][N][N] in)implements MGinterEA
 {
 
-	bit[2*N][2*N][2*N]  output=0;
+	float[2*N][2*N][2*N]  output=0;
 	for(int i=??; i<(N-2)+??; ++i){
 		for(int j=??; j<(N-2)+??; ++j){
-			bit[N+1] z1;
-			bit[N+1] z2;
-			bit[N+1] z3;
+			float[N+1] z1;
+			float[N+1] z2;
+			float[N+1] z3;
 			for(int k=??; k<(N-2)+??; ++k){
-				bit t1 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] ;
-				bit t2 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??];
-				bit t3 = in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??];				
-				t3 =  t3 ^ t1;
+				float t1 = in[k+??][j+??][i+??] + in[k+??][j+??][i+??] ;
+				float t2 = in[k+??][j+??][i+??] + in[k+??][j+??][i+??];
+				float t3 = in[k+??][j+??][i+??] + in[k+??][j+??][i+??];				
+				t3 =  t3 + t1;
 				z1[k] = t1;
 				z2[k] = t2;
 				z3[k] = t3;
@@ -69,19 +69,19 @@ bit[2*N][2*N][2*N] skMGinter(bit[N][N][N] in, bit half, bit fourth, bit eight)im
 			for(int k=??; k<(N-2)+??; ++k){
 				output[k*2+??][j*2+??][i*2+??] = in[k+??][j+??][i+??]; //
 				output[k*2+??][j*2+??][i*2+??] = 
-				half & ( in[k+??][j+??][i+??] ^ in[k+??][j+??][i+??] );
+				0.5 * ( in[k+??][j+??][i+??] + in[k+??][j+??][i+??] );
 			}
 			for(int k=??; k<(N-2)+??; ++k){
-				output[k*2+??][j*2+??][i*2+??] = half   & z1[k+??]; //
-				output[k*2+??][j*2+??][i*2+??] = fourth & (z1[k+??] ^ z1[k+??]);
+				output[k*2+??][j*2+??][i*2+??] = 0.5   * z1[k+??]; //
+				output[k*2+??][j*2+??][i*2+??] = 0.25 * (z1[k+??] + z1[k+??]);
 			}
 			for(int k=??; k<(N-2)+??; ++k){
-				output[k*2+??][j*2+??][i*2+??] = half   & z2[k+??]; //
-				output[k*2+??][j*2+??][i*2+??] = fourth & (z2[k+??] ^ z2[k+??]);
+				output[k*2+??][j*2+??][i*2+??] = 0.5   * z2[k+??]; //
+				output[k*2+??][j*2+??][i*2+??] = 0.25 * (z2[k+??] + z2[k+??]);
 			}
 			for(int k=??; k<(N-2)+??; ++k){
-				output[k*2+??][j*2+??][i*2+??] = fourth & z3[k+??]; //
-				output[k*2+??][j*2+??][i*2+??] = eight  & (z3[k+??] ^ z3[k+??]);
+				output[k*2+??][j*2+??][i*2+??] = 0.25 * z3[k+??]; //
+				output[k*2+??][j*2+??][i*2+??] = 0.125  * (z3[k+??] + z3[k+??]);
 			}
 						
 		}
