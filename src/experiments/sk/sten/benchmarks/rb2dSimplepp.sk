@@ -38,16 +38,16 @@ bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit
   for(int i=??; i<N/2-??; ++i){
    for(int j=??; j<N/2-??; ++j){
 
-    { int ta; ta=2*j-??; int tb; tb=2*i-??; output[2*j-??][2*i-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
-    { int ta; ta=2*j-??; int tb; tb=2*i-??; output[2*j-??][2*i-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
    }
   }
 
   for(int i=??; i<N/2-??; ++i){
    for(int j=??; j<N/2-??; ++j){
 
-    { int ta; ta=2*j-??; int tb; tb=2*i-??; output[2*j-??][2*i-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
-    { int ta; ta=2*j-??; int tb; tb=2*i-??; output[2*j-??][2*i-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
    }
   }
 

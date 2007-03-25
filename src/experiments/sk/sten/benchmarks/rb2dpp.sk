@@ -1,4 +1,3 @@
-
 int N;
 
 bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we){

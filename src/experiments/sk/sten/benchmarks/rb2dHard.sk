@@ -1,0 +1,94 @@
+int N;
+
+bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f,  bit ce, bit no, bit so, bit ea, bit we){
+
+	bit[N][N]  tmp=0;
+	bit[N][N]  output=0;
+	//red
+	for(int i=1; i<N-1; ++i){
+		for(int j=1; j<N-1; ++j){
+			if(i%2 == j%2){
+				tmp[i][j] = (f[i][j] ) ^ ( ce&in[i][j]) ^ (
+				no&in[i-1][j]) ^ (so&in[i+1][j]) ^ (ea&in[i][j+1]) ^ (we&in[i][j-1]);
+			} 		
+		}		
+	}
+	//black
+	for(int i=1; i<N-1; ++i){
+		for(int j=1; j<N-1; ++j){
+			if(!(i%2 == j%2)){
+				output[i][j] = ( f[i][j] ) ^ ( ce&in[i][j]) ^ (
+				no&tmp[i-1][j]) ^ (so&tmp[i+1][j]) ^ (ea&tmp[i][j+1]) ^ (we&tmp[i][j-1] );
+			}else{
+				output[i][j] = tmp[i][j];
+			}
+		}		
+	}
+	return output;
+}
+
+
+#define F( a, b, ar ) { int ta=a; int tb=b; output[a][b] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ (	no&ar[ta-1][tb] ) ^ (so&ar[ta+1][tb]) ^ (ea&ar[ta][tb+1]) ^ (we&ar[ta][tb-1] ); }
+
+
+bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f,  bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidel{
+
+
+	bit[N][N]  output=0;
+	//red
+	
+	for(int j=1; j<N/2; ++j){
+			//First the reds
+			F(??, 2*j-1, in);
+			F(??, 2*j, in);
+	}
+	
+	if( N % 2 == 1){
+			//First the reds
+			F(??, N-??, in);
+			F(??, N-??, in);
+	}
+	
+	for(int i=1; i<N/2; ++i){
+		for(int j=1; j<N/2; ++j){
+			//First the reds
+			F(2*i-1, 2*j-1, in);
+			F(2*i, 2*j, in);
+			//Then the blacks
+			F(2*i-1-2, 2*j, output);
+			F(2*i-2, 2*j-1, output);
+		}		
+		if( N % 2 == 1){
+			//First the reds
+			F(2*i-1, N-??, in);
+			//Then the blacks
+			F(2*i-2, N-??, output);				
+		}
+	}
+	if( N % 2 == 1){
+		for(int j=1; j<N-1; ++j){
+			if((N-??)%2 == j%2){
+				F(N-??, j, in);
+			}else{
+				F(N-??, j, output);
+			}	
+		}
+	}
+	for(int j=1; j<N/2; ++j){
+			//Then the blacks
+			F(N-??, 2*j-1, output);
+			F(N-??, 2*j, output);
+	}	
+	if( N % 2 == 1){
+		//Then the blacks
+		F(N-??, N-??, output);				
+	}	
+	return output;
+}
+
+
+
+
+
+
+
