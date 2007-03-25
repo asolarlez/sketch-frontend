@@ -104,6 +104,8 @@ class CommandLineParams{
 	boolean outputScript=false;
 	boolean outputTest=false;
 	boolean fakeSolver=false;
+	int branchingFactor = 10;
+	
 	
 	public CommandLineParams(String[] args)
     {
@@ -133,6 +135,9 @@ class CommandLineParams{
             } else if (args[i].equals("--inlineamnt")) {
                 Integer value = new Integer(args[++i]);
                 inlineAmt = value.intValue(); 
+            } else if (args[i].equals("--branchamnt")) {
+                Integer value = new Integer(args[++i]);
+                branchingFactor = value.intValue(); 
             } else if (args[i].equals("--incremental")) {
                 Integer value = new Integer(args[++i]);
                 incremental = true;
@@ -221,7 +226,7 @@ public class ToSBit
 
     public RecursionControl newRControl(){
     	// return new BaseRControl(params.inlineAmt);
-    	return new AdvancedRControl(10, params.inlineAmt, prog);
+    	return new AdvancedRControl(params.branchingFactor, params.inlineAmt, prog);
     }
     
     

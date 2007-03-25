@@ -25,6 +25,7 @@ import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAs
 import streamit.frontend.experimental.nodesToSB.IntVtype;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
+import streamit.frontend.experimental.preprocessor.PropagateFinals;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.Function;
@@ -67,28 +68,29 @@ public class ToStencilSK extends ToSBit
 	
     protected Program preprocessProgram(Program prog) {    	
         prog = super.preprocessProgram(prog);
-        originalProg = prog;
-    	//prog.accept( new SimpleCodePrinter() );
+        originalProg = prog;    	
     	System.out.println("=============================================================");    	
     	prog = (Program)prog.accept(new FlattenStmtBlocks());    	
     	prog= (Program)prog.accept(new EliminateTransitiveAssignments());
+    	prog= (Program)prog.accept(new PropagateFinals());    	
     	//System.out.println("=========  After ElimTransAssign  =========");
     	prog = (Program)prog.accept(new EliminateDeadCode());
     	System.out.println("=============================================================");
-    	
+    	prog.accept( new SimpleCodePrinter() );
     	
         prog = (Program) prog.accept(new ReplaceFloatsWithBits());
         //prog = (Program)prog.accept(new VariableDisambiguator());
         System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());
-        System.out.println(" After mpn ");        
+        System.out.println(" After mpn ");     
+        params.inlineAmt += 3;
         return prog;
     }
 	
 	
 	
     public RecursionControl newRControl(){
-    	return new AdvancedRControl(10, params.inlineAmt, prog);
+    	return new AdvancedRControl(params.branchingFactor, params.inlineAmt, prog);
     }
     
     public void run()
@@ -235,6 +237,7 @@ public class ToStencilSK extends ToSBit
     }
 	
 	public void generateCode(){
+		finalCode.accept(new SimpleCodePrinter());
 		finalCode=doBackendPasses(finalCode);
 		if(params.outputFortran) {
 			outputFortranCode();
