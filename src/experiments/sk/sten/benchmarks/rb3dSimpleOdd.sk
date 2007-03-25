@@ -1,0 +1,114 @@
+int N;
+
+float[N][N][N] rbGaussSeidel(float[N][N][N] in,  float ce, float no, float so, float ea, float we, float up, float bot){
+
+	float[N][N][N]  tmp=0;
+	float[N][N][N]  output=0;
+	if( N%2 == 1){
+		//red
+		for(int i=1; i<N-1; ++i){
+			for(int j=1; j<N-1; ++j){
+				for(int k=1; k<N-1; ++k){
+					if(i%2==1 ^ j%2==1 ^ k%2==1 ){
+						tmp[k][j][i] =  ( ce*in[k][j][i]) + (
+						no*in[k][j][i-1]) + (so*in[k][j][i+1]) + (ea*in[k][j+1][i]) + (we*in[k][j-1][i])+ (up*in[k+1][j][i])+ (bot*in[k-1][j][i]);
+					}
+				} 		
+			}		
+		}
+		//black
+		for(int i=1; i<N-1; ++i){
+			for(int j=1; j<N-1; ++j){
+				for(int k=1; k<N-1; ++k){
+					if(!(i%2==1 ^ j%2==1 ^ k%2==1 )){
+						output[k][j][i] =  ( ce*in[k][j][i]) + (
+						no*tmp[k][j][i-1]) + (so*tmp[k][j][i+1]) + (ea*tmp[k][j+1][i]) + (we*tmp[k][j-1][i])+ (up*tmp[k+1][j][i])+ (bot*tmp[k-1][j][i]);
+					}else{
+						output[k][j][i] = tmp[k][j][i];
+					}
+				}
+			}		
+		}
+	}
+	return output;
+}
+
+
+#define F(dst, c, a, b, ar ) {int tc = c; int ta=a; int tb=b; dst[tc][ta][tb] = ( ce*in[tc][ta][tb]) + (	no*ar[tc][ta][tb-1] ) + (so*ar[tc][ta][tb+1]) + (ea*ar[tc][ta+1][tb]) + (we*ar[tc][ta-1][tb] )+ (up*ar[tc+1][ta][tb])+ (bot*ar[tc-1][ta][tb]); }
+
+
+float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, float ea, float we, float up, float bot) implements rbGaussSeidel{
+	float[N][N][N]  bigO=0;
+	if( N%2 == 1){
+		float[N][N][N]  output=0;
+		for(int i=??; i<N/2; ++i){
+			for(int j=??; j<N/2; ++j){
+				for(int k=??; k<N/2; ++k){
+					//First the reds
+					F(output, 2*k-1, 2*j-0, 2*i-0, in);
+					F(output, 2*k-0, 2*j-1, 2*i-0, in);
+					F(output, 2*k-0, 2*j-0, 2*i-1, in);
+					F(output, 2*k-1, 2*j-1, 2*i-1, in);
+				}	
+				F(output, N-2, 2*j-0, 2*i-0, in);
+				F(output, N-2, 2*j-1, 2*i-1, in);
+			}
+			for(int k=??; k<N/2; ++k){
+				//First the reds
+				F(output, 2*k-??, N-2, 2*i-??, in);
+				F(output, 2*k-??, N-2, 2*i-??, in);					
+			}	
+			F(output, N-2, N-2, 2*i-??, in);				
+		}
+		for(int j=??; j<N/2; ++j){
+			for(int k=??; k<N/2; ++k){
+				//First the reds
+				F(output, 2*k-??, 2*j-??, N-2, in);
+				F(output, 2*k-??, 2*j-??, N-2, in);					
+			}
+			F(output, N-2, 2*j-??, N-2, in);				
+		}
+		for(int k=??; k<N/2; ++k){
+			//First the reds
+			F(output, 2*k-??, N-2, N-2, in);
+			
+		}	
+		F(output, N-2, N-2, N-2, in);
+				
+		float[N][N][N]  output2=output;
+		for(int i=??; i<N/2; ++i){
+			for(int j=??; j<N/2; ++j){
+				for(int k=??; k<N/2; ++k){
+					//Then the blacks
+					F(output2, 2*k-0, 2*j-1, 2*i-1, output);
+					F(output2, 2*k-1, 2*j-0, 2*i-1, output);
+					F(output2, 2*k-1, 2*j-1, 2*i-0, output);
+					F(output2, 2*k-0, 2*j-0, 2*i-0, output);
+				}
+				F(output2, N-2, 2*j-??, 2*i-??, output);
+				F(output2, N-2, 2*j-??, 2*i-??, output);
+			}
+			for(int k=??; k<N/2; ++k){
+				//First the reds
+				F(output2, 2*k-??, N-2, 2*i-??, output);
+				F(output2, 2*k-??, N-2, 2*i-??, output);					
+			}	
+			F(output2, N-2, N-2, 2*i-??, output);	
+		}
+		for(int j=??; j<N/2; ++j){
+			for(int k=??; k<N/2; ++k){
+				//First the reds
+				F(output2, 2*k-??, 2*j-??, N-2, output);
+				F(output2, 2*k-??, 2*j-??, N-2, output);					
+			}
+			F(output2, N-2, 2*j-??, N-2, output);				
+		}
+		for(int k=??; k<N/2; ++k){
+			//First the reds
+			F(output2, 2*k-??, N-2, N-2, output);
+		}
+		F(output2, N-??, N-??, N-??, output);
+		bigO = output2;
+	}
+	return bigO;
+}
