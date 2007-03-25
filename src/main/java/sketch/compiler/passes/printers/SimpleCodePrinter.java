@@ -208,7 +208,7 @@ public class SimpleCodePrinter extends FEReplacer
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
-		printLine(stmt.toString());
+		printLine(stmt.toString() + ';');
 		return super.visitStmtVarDecl(stmt);
 	}
 
