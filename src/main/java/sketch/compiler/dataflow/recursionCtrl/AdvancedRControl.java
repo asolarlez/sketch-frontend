@@ -4,7 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry.Entry;
+
+import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Program;
@@ -22,7 +26,28 @@ import streamit.frontend.nodes.StreamSpec;
  *
  */
 
-
+class WeightFunctions extends FEReplacer{
+	String currFun = null;
+	int w = 0;
+	Map<String, Integer> funWeight = new HashMap<String, Integer>();
+	int maxWeight = 0;
+	 public Object visitExprBinary(ExprBinary exp)
+	    {
+		  ++w;
+	       return super.visitExprBinary(exp);
+	    }
+	
+	 public Object visitFunction(Function func)
+    {
+	 currFun = func.getName();
+	 w = 0;
+	 Object obj = super.visitFunction(func);
+	 funWeight.put(currFun, w);
+	 if(w > maxWeight) maxWeight= w;
+	 return obj;
+    }
+	
+}
 
 public class AdvancedRControl extends RecursionControl {
 	public String debugMsg = null;
@@ -30,7 +55,8 @@ public class AdvancedRControl extends RecursionControl {
 	int branchingTheshold;
 	private int MAX_INLINE;	
 	Map<String, FunInfo> funmap;
-	
+	WeightFunctions funWeighter = new WeightFunctions();
+	int FACTOR = 0;
 	/**
 	 * For each function, we must keep the following information: <BR>
 	 * - Current recursion depth <BR>
@@ -101,6 +127,7 @@ public class AdvancedRControl extends RecursionControl {
 	private class CheckBFandCalls extends FEReplacer{
 		int bfactor = 0;
 		boolean forbiddenCalls = false;
+		String callsContained = "";
 		public Object visitStmtIfThen(StmtIfThen stmt)
 	    {
 			//We don't want to look into If Statements. We don't know if they'll execute.
@@ -115,11 +142,12 @@ public class AdvancedRControl extends RecursionControl {
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {
 			if( !(funmap.get(exp.getName()).isTerminal )){
-				++bfactor;
+				++bfactor; // += funWeighter.funWeight.get(exp.getName());
 			}
 			if( ! testCall(exp) ){
 				forbiddenCalls = true;
 			}
+			callsContained += exp.getName() + ", ";
 			return exp;
 	    }
 		
@@ -132,6 +160,11 @@ public class AdvancedRControl extends RecursionControl {
 		bfStack = new Stack<Integer>();
 		bfStack.push(1);
 		prog.accept(new PopFunMap());
+		prog.accept(funWeighter);
+		for(Map.Entry<String, Integer> en : funWeighter.funWeight.entrySet()){
+			System.out.println(en);
+		}
+		FACTOR = (funWeighter.maxWeight * 2 ) / 3;
 		MAX_INLINE = maxInline;		
 	}
 	
@@ -175,7 +208,7 @@ public class AdvancedRControl extends RecursionControl {
 		FunInfo fi = funmap.get(fc.getName());
 		if( ! fi.isTerminal ){
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
-			System.out.println(fc.getName()); //DEBUGGING INFO
+			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  + "  "  +  fc.hashCode() + "  " + fc.getCx()); //DEBUGGING INFO
 		}
 		debugMsg = fc.getName();
 		++tt;
@@ -198,6 +231,11 @@ public class AdvancedRControl extends RecursionControl {
 			 *  of non-terminal calls made by the block.  
 			 */
 			int bfactor = check.bfactor;
+			/*if(bfactor > 0){
+				bfactor = bfactor;
+			}
+			bfactor = bfactor / FACTOR;
+			if(bfactor < 1) bfactor = 1;*/
 			/*
 			 * Then we test the cummulative branching factor. This is the 
 			 * product of all the elements in bfStack * bfactor. 
@@ -205,9 +243,12 @@ public class AdvancedRControl extends RecursionControl {
 			 * a threshold, we return false. Otherwise, we push bfactor into the
 			 * bfStack and return true.
 			 * 
-			 */						
-			return bfactorTest(bfactor);			
+			 */		
+			boolean recurse = bfactorTest(bfactor);
+			if(!recurse) System.out.println("BRANCHING FACTOR EXCEEDED  " + (bfactor*bfStack.peek()) + ">=" + this.branchingTheshold + "  " + bfactor + "  prevented " + check.callsContained);
+			return 	recurse;
 		}
+		System.out.println("ITERATION DEPTH EXCEEDED  prevented " + check.callsContained);
 		return false;
 	}
 
