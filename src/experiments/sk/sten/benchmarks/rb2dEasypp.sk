@@ -1,6 +1,6 @@
 int N;
 
-bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we){
+bit[N][N] rbGaussSeidelEasy(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we){
 
  bit[N][N] tmp=0;
  bit[N][N] output=0;
@@ -31,7 +31,7 @@ bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit e
 
 
 
-bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidel{
+bit[N][N] rbGaussSeidelSKEasy(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidelEasy{
  bit[N][N] bigO=0;
  if( N%2 == 0){
   bit[N][N] output=0;
