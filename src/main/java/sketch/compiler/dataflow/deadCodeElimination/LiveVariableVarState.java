@@ -55,6 +55,8 @@ public class LiveVariableVarState extends varState {
 			}
 			val = tmp;
 		}
+		assert val instanceof LVSet;
+		((LVSet)val).set.add( (LiveVariableAV) lhs );
 		lhs.update(val);
 	}
 
