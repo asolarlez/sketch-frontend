@@ -115,6 +115,6 @@ public class ExprUnary extends Expression
         case UNOP_POSTDEC: postOp = "--"; break;
         default: preOp = "?(" + op + ")"; break;
         }
-        return preOp + "(" + expr.toString() + ")" + postOp;
+        return preOp +  expr.toString()  + postOp;
     }
 }
