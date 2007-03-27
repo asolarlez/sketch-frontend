@@ -41,7 +41,7 @@ float[N][N][N] rbGaussSeidel(float[N][N][N] in, float ce, float no, float so, fl
 float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, float ea, float we, float up, float bot) implements rbGaussSeidel{
  float[N][N][N] output;
  if( N%2 == 0){
-  for(int j=1; j<N/2; ++j){
+  for(int j=??; j<N/2-??; ++j){
    for(int k=??; k<N/2-??; ++k){
 
     {int tc = 2*k-0; int ta=2*j-0; int tb=??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*in[tc][ta][tb-1] ) + (so*in[tc][ta][tb+1]) + (ea*in[tc][ta+1][tb]) + (we*in[tc][ta-1][tb] )+ (up*in[tc+1][ta][tb])+ (bot*in[tc-1][ta][tb]); };
@@ -51,9 +51,9 @@ float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, 
    }
   }
 
-  for(int i=??; i<N/2; ++i){
-   for(int j=??; j<N/2; ++j){
-    for(int k=??; k<N/2; ++k){
+  for(int i=??; i<N/2-??; ++i){
+   for(int j=??; j<N/2-??; ++j){
+    for(int k=??; k<N/2-??; ++k){
 
      {int tc = 2*k-0; int ta=2*j-0; int tb=2*i-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*in[tc][ta][tb-1] ) + (so*in[tc][ta][tb+1]) + (ea*in[tc][ta+1][tb]) + (we*in[tc][ta-1][tb] )+ (up*in[tc+1][ta][tb])+ (bot*in[tc-1][ta][tb]); };
      {int tc = 2*k-0; int ta=2*j-1; int tb=2*i-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*in[tc][ta][tb-1] ) + (so*in[tc][ta][tb+1]) + (ea*in[tc][ta+1][tb]) + (we*in[tc][ta-1][tb] )+ (up*in[tc+1][ta][tb])+ (bot*in[tc-1][ta][tb]); };
@@ -62,15 +62,15 @@ float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, 
 
 
 
-     {int tc = 2*k-0; int ta=2*j-0; int tb=2*i-??-2; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
-     {int tc = 2*k-0; int ta=2*j-1; int tb=2*i-??-2; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
-     {int tc = 2*k-1; int ta=2*j-0; int tb=2*i-??-2; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
-     {int tc = 2*k-1; int ta=2*j-1; int tb=2*i-??-2; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
+     {int tc = 2*k-0; int ta=2*j-0; int tb=2*i-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
+     {int tc = 2*k-0; int ta=2*j-1; int tb=2*i-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
+     {int tc = 2*k-1; int ta=2*j-0; int tb=2*i-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
+     {int tc = 2*k-1; int ta=2*j-1; int tb=2*i-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
     }
    }
   }
 
-  for(int j=1; j<N/2; ++j){
+  for(int j=??; j<N/2-??; ++j){
    for(int k=??; k<N/2-??; ++k){
 
     {int tc = 2*k-0; int ta=2*j-1; int tb=N-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };

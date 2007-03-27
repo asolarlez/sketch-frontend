@@ -41,7 +41,7 @@ float[N][N][N] rbGaussSeidel(float[N][N][N] in,  float ce, float no, float so, f
 float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, float ea, float we, float up, float bot) implements rbGaussSeidel{
 	float[N][N][N]  output;
 	if( N%2 == 0){		
-		for(int j=1; j<N/2; ++j){
+		for(int j=??; j<N/2-??; ++j){
 			for(int k=??; k<N/2-??; ++k){
 				//First the reds
 				F(output, 2*k-0, 2*j-0, ??, in);
@@ -51,9 +51,9 @@ float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, 
 			}
 		}
 
-		for(int i=??; i<N/2; ++i){
-			for(int j=??; j<N/2; ++j){
-				for(int k=??; k<N/2; ++k){	
+		for(int i=??; i<N/2-??; ++i){
+			for(int j=??; j<N/2-??; ++j){
+				for(int k=??; k<N/2-??; ++k){	
 					//First the reds 
 					F(output, 2*k-0, 2*j-0, 2*i-??, in);
 					F(output, 2*k-0, 2*j-1, 2*i-??, in);
@@ -62,15 +62,15 @@ float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, 
 					
 					
 					//Then the blacks
-					F(output, 2*k-0, 2*j-0, 2*i-??-2, output);
-					F(output, 2*k-0, 2*j-1, 2*i-??-2, output);
-					F(output, 2*k-1, 2*j-0, 2*i-??-2, output);
-					F(output, 2*k-1, 2*j-1, 2*i-??-2, output);
+					F(output, 2*k-0, 2*j-0, 2*i-??, output);
+					F(output, 2*k-0, 2*j-1, 2*i-??, output);
+					F(output, 2*k-1, 2*j-0, 2*i-??, output);
+					F(output, 2*k-1, 2*j-1, 2*i-??, output);
 				}
 			}
 		}
 
-		for(int j=1; j<N/2; ++j){
+		for(int j=??; j<N/2-??; ++j){
 			for(int k=??; k<N/2-??; ++k){
 				//Then the blacks
 				F(output, 2*k-0, 2*j-1, N-??, output);
