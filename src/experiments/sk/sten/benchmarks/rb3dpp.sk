@@ -6,8 +6,8 @@ int N;
 
 float[N][N][N] rbGaussSeidel(float[N][N][N] in, float ce, float no, float so, float ea, float we, float up, float bot){
 
- float[N][N][N] tmp=0;
- float[N][N][N] output=0;
+ float[N][N][N] tmp;
+ float[N][N][N] output;
  if( N%2 == 0){
 
   for(int i=1; i<N-1; ++i){
@@ -39,9 +39,8 @@ float[N][N][N] rbGaussSeidel(float[N][N][N] in, float ce, float no, float so, fl
 
 
 float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, float ea, float we, float up, float bot) implements rbGaussSeidel{
- float[N][N][N] bigO=0;
+ float[N][N][N] output;
  if( N%2 == 0){
-  float[N][N][N] output=0;
   for(int j=1; j<N/2; ++j){
    for(int k=??; k<N/2-??; ++k){
 
@@ -80,8 +79,6 @@ float[N][N][N] rbGaussSeidelSK(float[N][N][N] in, float ce, float no, float so, 
     {int tc = 2*k-0; int ta=2*j; int tb=N-??; output[tc][ta][tb] = ( ce*in[tc][ta][tb]) + ( no*output[tc][ta][tb-1] ) + (so*output[tc][ta][tb+1]) + (ea*output[tc][ta+1][tb]) + (we*output[tc][ta-1][tb] )+ (up*output[tc+1][ta][tb])+ (bot*output[tc-1][ta][tb]); };
    }
   }
-
-  bigO = output;
  }
- return bigO;
+ return output;
 }
