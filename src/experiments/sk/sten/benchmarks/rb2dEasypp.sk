@@ -1,6 +1,6 @@
 int N;
 
-bit[N][N] rbGaussSeidelEasy(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we){
+bit[N][N] rbGaussSeidel(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we){
 
  bit[N][N] tmp=0;
  bit[N][N] output=0;
@@ -31,31 +31,31 @@ bit[N][N] rbGaussSeidelEasy(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, b
 
 
 
-bit[N][N] rbGaussSeidelSKEasy(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidelEasy{
+bit[N][N] rbGaussSeidelSK(bit[N][N] in, bit[N][N] f, bit ce, bit no, bit so, bit ea, bit we) implements rbGaussSeidel{
  bit[N][N] bigO=0;
  if( N%2 == 0){
   bit[N][N] output=0;
-  for(int j=1; j<N/2; ++j){
+  for(int j=??; j<N/2-??; ++j){
 
-    { int ta; ta=2*j-1; int tb; tb=??; output[2*j-1][??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
-    { int ta; ta=2*j; int tb; tb=??; output[2*j][??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
   }
 
   for(int i=??; i<N/2; ++i){
    for(int j=??; j<N/2; ++j){
 
-    { int ta; ta=2*j-1; int tb; tb=2*i-1; output[2*j-1][2*i-1] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
-    { int ta; ta=2*j; int tb; tb=2*i; output[2*j][2*i] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&in[ta][tb-1] ) ^ (so&in[ta][tb+1]) ^ (ea&in[ta+1][tb]) ^ (we&in[ta-1][tb] ); };
 
-    { int ta; ta=2*j; int tb; tb=2*i-1-2; output[2*j][2*i-1-2] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
-    { int ta; ta=2*j-1; int tb; tb=2*i-2; output[2*j-1][2*i-2] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=2*i-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
    }
   }
 
-  for(int j=1; j<N/2; ++j){
+  for(int j=??; j<N/2-??; ++j){
 
-    { int ta; ta=2*j-1; int tb; tb=N-??; output[2*j-1][N-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
-    { int ta; ta=2*j; int tb; tb=N-??; output[2*j][N-??] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=N-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
+    { int ta=2*j-??; int tb=N-??; output[ta][tb] = f[ta][tb] ^ ( ce&in[ta][tb]) ^ ( no&output[ta][tb-1] ) ^ (so&output[ta][tb+1]) ^ (ea&output[ta+1][tb]) ^ (we&output[ta-1][tb] ); };
   }
   bigO = output;
  }else{
