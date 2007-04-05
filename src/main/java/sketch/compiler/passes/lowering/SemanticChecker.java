@@ -114,7 +114,6 @@ public class SemanticChecker
 		checker.checkStatementPlacement(prog);
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
-		checker.checkControlStatements(prog);
 		checker.checkStatementCounts(prog);
 		return checker.good;
 	}
@@ -522,9 +521,14 @@ public class SemanticChecker
 
 				return super.visitExprUnary(expr);
 			}
+			
+			private Type currentFunctionReturn = null;
+			
 			public Object visitFunction(Function func)
 			{
-				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction");
+				System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction: " + func.getName());
+				
+				currentFunctionReturn = func.getReturnType();
 
 				if(func.getSpecification() != null){
 
@@ -555,10 +559,12 @@ public class SemanticChecker
 					}
 
 					// check return value
-					if (! func.getReturnType().promotesTo(parent.getReturnType()))
+					if (! func.getReturnType().promotesTo(parent.getReturnType())){
 						report (func, "Return type of sketch & function are not compatible: " + func.getReturnType() + " vs. " + parent.getReturnType());
-
+						return super.visitFunction(func);
+					}
 				}
+				
 				return super.visitFunction(func);
 			}
 
@@ -931,7 +937,7 @@ public class SemanticChecker
 			}
 			public Object visitStmtAssign(StmtAssign stmt)
 			{
-				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
+				System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
 
 				Type lt = getType(stmt.getLHS());
 				Type rt = getType(stmt.getRHS());
@@ -980,13 +986,8 @@ public class SemanticChecker
 				return result;
 			}
 
-		});
-	}
-
-	public void checkControlStatements(Program prog)
-	{
-		prog.accept(new SymbolTableVisitor(null) {
-
+			// Control Statements
+			
 			public Object visitStmtDoWhile(StmtDoWhile stmt)
 			{
 				// check the condition
@@ -1051,23 +1052,19 @@ public class SemanticChecker
 				return super.visitStmtWhile(stmt);
 			}
 			
-			public Object visitFunction(Function func)
-			{
-				System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction");
-				
-				return super.visitFunction(func);
-			}
-			
 			public Object visitStmtReturn(StmtReturn stmt)
 			{
 				// Check that the return value can be promoted to the
 				// function return type
-				System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtReturn");
+				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtReturn");
+				//System.out.println("Return values: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
 				
+				if (! getType(stmt.getValue()).promotesTo(currentFunctionReturn))
+					report (stmt, "Return value incompatible with declared function return value: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
 				
 				return super.visitStmtReturn(stmt);
 			}
-
+			
 		});
 	}
 
