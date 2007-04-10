@@ -164,7 +164,7 @@ public class ToStencilSK extends ToSBit
     	tmp = (Program)tmp.accept(new EliminateDeadCode());
     	//System.out.println("=========  After ElimDeadCode  =========");
     	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
-        tmp.accept(new SimpleCodePrinter());
+        //tmp.accept(new SimpleCodePrinter());
         
         prog = tmp;
         
