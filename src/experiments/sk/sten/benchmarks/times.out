@@ -1,0 +1,1516 @@
+0  * NINPUTS = 4
+0  * before  EVERYTHING: SPEC nodes = 4461	 SKETCH nodes = 4437
+0  * before  CSE: SPEC nodes = 4382	 SKETCH nodes = 4358
+0  * AFTER PREPROC SKETCH: SPEC nodes = 387	 SKETCH nodes = 815
+0  * after OPTIM: Problem nodes = 2334
+0  * after OPTIM2: Problem nodes = 2334
+0  -1  1  -1  1  1  1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  114 ms 
+0  * TIME TO ADD CONTROLS :  71 ms 
+0  ********  0	ftime=663	ctime=84
+0  1  1  1  1  -1  1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  69 ms 
+0  ********  1	ftime=125	ctime=84
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  73 ms 
+0  ********  2	ftime=130	ctime=85
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  65 ms 
+0  ********  3	ftime=140	ctime=80
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  76 ms 
+0  ********  4	ftime=138	ctime=90
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  73 ms 
+0  ********  5	ftime=139	ctime=86
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  68 ms 
+0  ********  6	ftime=145	ctime=80
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  78 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  7	ftime=149	ctime=80
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  8	ftime=145	ctime=79
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  9	ftime=151	ctime=79
+0  1  1  -1  1  1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  10	ftime=163	ctime=76
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  68 ms 
+0  ********  11	ftime=159	ctime=83
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  80 ms 
+0  * TIME TO ADD CONTROLS :  71 ms 
+0  ********  12	ftime=186	ctime=87
+0  1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  13	ftime=198	ctime=83
+0  1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  14	ftime=198	ctime=78
+0  1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  77 ms 
+0  * TIME TO ADD CONTROLS :  178 ms 
+0  ********  15	ftime=221	ctime=216
+0  1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  82 ms 
+0  * TIME TO ADD CONTROLS :  73 ms 
+0  ********  16	ftime=219	ctime=86
+0  -1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  68 ms 
+0  ********  17	ftime=240	ctime=84
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  18	ftime=215	ctime=83
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  19	ftime=236	ctime=82
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  20	ftime=4635	ctime=83
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  68 ms 
+0  ********  21	ftime=2758	ctime=82
+0  -1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  ********  22	ftime=292	ctime=77
+0  1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  23	ftime=268	ctime=81
+0  1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  72 ms 
+0  ********  24	ftime=274	ctime=85
+0  -1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  25	ftime=266	ctime=82
+0  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  26	ftime=334	ctime=81
+0  -1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  218 ms 
+0  ********  27	ftime=4167	ctime=261
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  83 ms 
+0  * TIME TO ADD CONTROLS :  80 ms 
+0  ********  28	ftime=304	ctime=96
+0  -1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  29	ftime=218	ctime=82
+0  -1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  30	ftime=3813	ctime=81
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  31	ftime=191	ctime=80
+0  1  1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  74 ms 
+0  ********  32	ftime=237	ctime=92
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  33	ftime=4033	ctime=85
+0  -1  1  1  -1  -1  1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  181 ms 
+0  ********  34	ftime=333	ctime=198
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  35	ftime=326	ctime=82
+0  -1  1  1  -1  -1  1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  36	ftime=319	ctime=81
+0  -1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  69 ms 
+0  ********  37	ftime=328	ctime=86
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  38	ftime=4931	ctime=86
+0  1  1  1  -1  -1  1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  65 ms 
+0  ********  39	ftime=298	ctime=82
+0  -1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  307 ms 
+0  ********  40	ftime=4755	ctime=585
+0  -1  1  -1  1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  192 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  41	ftime=416	ctime=81
+0  1  1  -1  1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  590 ms 
+0  ********  42	ftime=9915	ctime=693
+0  -1  1  1  -1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  136 ms 
+0  * TIME TO ADD CONTROLS :  73 ms 
+0  ********  43	ftime=289	ctime=91
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  80 ms 
+0  * TIME TO ADD CONTROLS :  71 ms 
+0  ********  44	ftime=9021	ctime=89
+0  1  1  1  -1  -1  1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  45	ftime=3466	ctime=84
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  78 ms 
+0  * TIME TO ADD CONTROLS :  139 ms 
+0  ********  46	ftime=398	ctime=155
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  75 ms 
+0  ********  47	ftime=270	ctime=91
+0  -1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  80 ms 
+0  * TIME TO ADD CONTROLS :  68 ms 
+0  ********  48	ftime=4247	ctime=91
+0  -1  1  1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  49	ftime=271	ctime=90
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  50	ftime=308	ctime=86
+0  1  1  -1  1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  51	ftime=250	ctime=84
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  77 ms 
+0  * TIME TO ADD CONTROLS :  70 ms 
+0  ********  52	ftime=4541	ctime=101
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  53	ftime=3626	ctime=86
+0  1  1  -1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  79 ms 
+0  * TIME TO ADD CONTROLS :  70 ms 
+0  ********  54	ftime=3671	ctime=89
+0  1  1  -1  1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  65 ms 
+0  ********  55	ftime=233	ctime=92
+0  -1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  56	ftime=285	ctime=89
+0  1  1  -1  1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  57	ftime=257	ctime=85
+0  -1  1  -1  -1  1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  ********  58	ftime=4979	ctime=86
+0  1  1  -1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  59	ftime=272	ctime=89
+0  1  1  -1  1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  81 ms 
+0  * TIME TO ADD CONTROLS :  65 ms 
+0  ********  60	ftime=4644	ctime=96
+0  -1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  74 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  61	ftime=286	ctime=90
+0  1  1  -1  1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  78 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  62	ftime=296	ctime=93
+0  1  1  -1  -1  1  1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  76 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  ********  63	ftime=364	ctime=85
+0  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  ********  64	ftime=5557	ctime=85
+0  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  73 ms 
+0  * TIME TO ADD CONTROLS :  66 ms 
+0  ********  65	ftime=296	ctime=91
+0  -1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  72 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  ********  66	ftime=5358	ctime=87
+0  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  75 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  * growing the inputs
+0  * growing s_0_68L8_0__S_0x9acc38 to 3
+0  * growing s_1_68L8_0__S_0x9acd10 to 3
+0  * growing s_2_68L8_0__S_0x9acda0 to 3
+0  * growing N_3_68L8_0__S_0x9ace50 to 3
+0  * input eight_4_68L8_0__S_0x9aced0 doesn't need to grow its size is already1
+0  * input fourth_4_68L8_0__S_0x9acf80 doesn't need to grow its size is already1
+0  * input half_4_68L8_0__S_0x9ad010 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa63958_0__S_0xa00c98 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa63ff8_1__S_0xa66638 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa646b0_2__S_0xa62418 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa65598_3__S_0xa5b2b8 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa64d68_4__S_0xa64df0 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa65d90_5__S_0x907808 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa66588_6__S_0x9b7758 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa66ec0_7__S_0x9ce0f0 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0x94a028_8__S_0x9cb8e8 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  85 ms 
+0  * growing the inputs
+0  * growing s_0_68L8_0__S_0x9acc38 to 4
+0  * growing s_1_68L8_0__S_0x9acd10 to 4
+0  * growing s_2_68L8_0__S_0x9acda0 to 4
+0  * growing N_3_68L8_0__S_0x9ace50 to 4
+0  * input eight_4_68L8_0__S_0x9aced0 doesn't need to grow its size is already1
+0  * input fourth_4_68L8_0__S_0x9acf80 doesn't need to grow its size is already1
+0  * input half_4_68L8_0__S_0x9ad010 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa63958_0__S_0xa00c98 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa63ff8_1__S_0xa66638 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa646b0_2__S_0xa62418 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa65598_3__S_0xa5b2b8 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa64d68_4__S_0xa64df0 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa65d90_5__S_0x907808 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa66588_6__S_0x9b7758 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa66ec0_7__S_0x9ce0f0 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0x94a028_8__S_0x9cb8e8 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  151 ms 
+0  * growing the inputs
+0  * input s_0_68L8_0__S_0x9acc38 doesn't need to grow its size is already4
+0  * input s_1_68L8_0__S_0x9acd10 doesn't need to grow its size is already4
+0  * input s_2_68L8_0__S_0x9acda0 doesn't need to grow its size is already4
+0  * input N_3_68L8_0__S_0x9ace50 doesn't need to grow its size is already4
+0  * input eight_4_68L8_0__S_0x9aced0 doesn't need to grow its size is already1
+0  * input fourth_4_68L8_0__S_0x9acf80 doesn't need to grow its size is already1
+0  * input half_4_68L8_0__S_0x9ad010 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa63958_0__S_0xa00c98 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa63ff8_1__S_0xa66638 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa646b0_2__S_0xa62418 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa65598_3__S_0xa5b2b8 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa64d68_4__S_0xa64df0 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa65d90_5__S_0x907808 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa66588_6__S_0x9b7758 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0xa66ec0_7__S_0x9ce0f0 doesn't need to grow its size is already1
+0  * input in_65L6__out__UFUN_0x94a028_8__S_0x9cb8e8 doesn't need to grow its size is already1
+0  * Done growing inputs. All integer inputs have reached size 4
+0  ********  67	ftime=12360	ctime=2385
+0   *GOT THE CORRECT ANSWER IN 68 iterations.
+0   *FIND TIME 112916, CHECK TIME 9697, TOTAL TIME 122749
+
+real	2m10.388s
+user	0m0.168s
+sys	0m0.278s
+0  * NINPUTS = 4
+0  * before  EVERYTHING: SPEC nodes = 2691	 SKETCH nodes = 557731
+0  * before  CSE: SPEC nodes = 2527	 SKETCH nodes = 496046
+0  * AFTER PREPROC SKETCH: SPEC nodes = 432	 SKETCH nodes = 16386
+0  * after OPTIM: Problem nodes = 32730
+0  * after OPTIM2: Problem nodes = 32730
+0  -1  1  -1  1  1  1  1  -1  * RECYCLED 0 values out of 44
+0  * TIME TO ADD INPUT :  465 ms 
+0  * TIME TO ADD CONTROLS :  483 ms 
+0  * growing the inputs
+0  * growing s_0_15169L12_0__S_0x61d7188 to 3
+0  * growing s_1_15169L12_0__S_0x61d7260 to 3
+0  * growing s_2_15169L12_0__S_0x61d72f0 to 3
+0  * growing N_3_15169L12_0__S_0x61d73a0 to 3
+0  * input bot_4_15169L12_0__S_0x61d7428 doesn't need to grow its size is already1
+0  * input ce_4_15169L12_0__S_0x61d74d8 doesn't need to grow its size is already1
+0  * input ea_4_15169L12_0__S_0x61d7568 doesn't need to grow its size is already1
+0  * input no_4_15169L12_0__S_0x61d75f8 doesn't need to grow its size is already1
+0  * input so_4_15169L12_0__S_0x61d7688 doesn't need to grow its size is already1
+0  * input up_4_15169L12_0__S_0x61d7758 doesn't need to grow its size is already1
+0  * input we_4_15169L12_0__S_0x61d77e8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6200a88_0__S_0x623d950 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624fc28_1__S_0x61fe1b8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f590_2__S_0x623c008 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6226b48_3__S_0x61d9380 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241680_4__S_0x61faaa0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624eb68_5__S_0x61f10f0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624e7d8_6__S_0x61f5f08 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6242b18_7__S_0x61e5930 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6242070_8__S_0x61e8218 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6227540_9__S_0x61eaa20 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6235eb0_10__S_0x61df740 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621ac20_11__S_0x61f79e8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x620e480_12__S_0x61ed648 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6226e48_13__S_0x6211480 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241a10_14__S_0x621dac8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624ee68_15__S_0x6238608 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621a8f0_16__S_0x61fb400 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621a5d8_17__S_0x621a888 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241d60_18__S_0x61e0e80 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f170_19__S_0x6249470 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6203ed0_20__S_0x6245b28 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6205c28_21__S_0x919348 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6205850_22__S_0x61f5688 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x62054c8_23__S_0x3eae4e0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f8a0_24__S_0x13c23b8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621ad38_25__S_0x1015638 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6227220_26__S_0x16d0c98 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x620e0f8_27__S_0x16b1e58 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x5561008_28__S_0x4c281a8 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  630 ms 
+0  ********  0	ftime=470	ctime=1594
+0  1  1  1  -1  -1  -1  -1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  483 ms 
+0  * TIME TO ADD CONTROLS :  626 ms 
+0  ********  1	ftime=576	ctime=739
+0  1  -1  1  -1  1  -1  1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  518 ms 
+0  * TIME TO ADD CONTROLS :  632 ms 
+0  ********  2	ftime=682	ctime=803
+0  1  -1  1  -1  1  -1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  486 ms 
+0  * TIME TO ADD CONTROLS :  631 ms 
+0  ********  3	ftime=674	ctime=854
+0  1  1  1  1  1  -1  -1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  485 ms 
+0  * TIME TO ADD CONTROLS :  632 ms 
+0  ********  4	ftime=695	ctime=881
+0  1  1  -1  1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  497 ms 
+0  * TIME TO ADD CONTROLS :  627 ms 
+0  ********  5	ftime=798	ctime=878
+0  1  1  -1  -1  -1  -1  -1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  481 ms 
+0  * TIME TO ADD CONTROLS :  634 ms 
+0  ********  6	ftime=903	ctime=854
+0  1  -1  1  1  1  -1  1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  475 ms 
+0  * TIME TO ADD CONTROLS :  646 ms 
+0  ********  7	ftime=889	ctime=858
+0  1  1  -1  -1  -1  -1  1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  499 ms 
+0  * TIME TO ADD CONTROLS :  640 ms 
+0  ********  8	ftime=927	ctime=875
+0  1  -1  1  -1  1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  491 ms 
+0  * TIME TO ADD CONTROLS :  638 ms 
+0  ********  9	ftime=1011	ctime=876
+0  1  1  1  -1  -1  1  -1  -1  1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  480 ms 
+0  * TIME TO ADD CONTROLS :  610 ms 
+0  ********  10	ftime=1019	ctime=869
+0  1  1  -1  1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  482 ms 
+0  * TIME TO ADD CONTROLS :  621 ms 
+0  ********  11	ftime=843	ctime=876
+0  1  1  1  -1  1  -1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  479 ms 
+0  * TIME TO ADD CONTROLS :  617 ms 
+0  ********  12	ftime=980	ctime=832
+0  1  -1  1  -1  1  -1  1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  497 ms 
+0  * TIME TO ADD CONTROLS :  612 ms 
+0  ********  13	ftime=1015	ctime=854
+0  1  1  1  1  -1  1  -1  -1  1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  492 ms 
+0  * TIME TO ADD CONTROLS :  626 ms 
+0  ********  14	ftime=1123	ctime=914
+0  1  1  -1  1  -1  -1  -1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  482 ms 
+0  * TIME TO ADD CONTROLS :  616 ms 
+0  ********  15	ftime=1272	ctime=902
+0  1  1  1  1  -1  1  -1  -1  1  1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  483 ms 
+0  * TIME TO ADD CONTROLS :  616 ms 
+0  ********  16	ftime=1084	ctime=938
+0  1  -1  1  1  1  -1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  477 ms 
+0  * TIME TO ADD CONTROLS :  625 ms 
+0  ********  17	ftime=1102	ctime=904
+0  1  1  1  1  -1  1  1  1  -1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  478 ms 
+0  * TIME TO ADD CONTROLS :  619 ms 
+0  ********  18	ftime=1314	ctime=1033
+0  1  1  1  -1  -1  1  -1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  473 ms 
+0  * TIME TO ADD CONTROLS :  638 ms 
+0  ********  19	ftime=1136	ctime=1129
+0  1  1  1  1  1  -1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  483 ms 
+0  * TIME TO ADD CONTROLS :  623 ms 
+0  ********  20	ftime=1770	ctime=1006
+0  1  1  1  1  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  478 ms 
+0  * TIME TO ADD CONTROLS :  631 ms 
+0  ********  21	ftime=1805	ctime=925
+0  1  -1  1  -1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  484 ms 
+0  * TIME TO ADD CONTROLS :  651 ms 
+0  ********  22	ftime=1392	ctime=956
+0  1  -1  1  -1  1  -1  1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  507 ms 
+0  * TIME TO ADD CONTROLS :  634 ms 
+0  ********  23	ftime=2430	ctime=881
+0  1  -1  1  1  -1  -1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  477 ms 
+0  * TIME TO ADD CONTROLS :  611 ms 
+0  ********  24	ftime=1874	ctime=1070
+0  1  1  -1  -1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  492 ms 
+0  * TIME TO ADD CONTROLS :  609 ms 
+0  ********  25	ftime=1970	ctime=960
+0  1  1  1  1  -1  -1  1  -1  1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  477 ms 
+0  * TIME TO ADD CONTROLS :  631 ms 
+0  ********  26	ftime=1513	ctime=949
+0  1  -1  1  1  1  -1  1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  488 ms 
+0  * TIME TO ADD CONTROLS :  639 ms 
+0  ********  27	ftime=1689	ctime=877
+0  1  -1  1  -1  -1  -1  -1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  487 ms 
+0  * TIME TO ADD CONTROLS :  632 ms 
+0  ********  28	ftime=1597	ctime=947
+0  1  -1  1  1  1  -1  -1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  488 ms 
+0  * TIME TO ADD CONTROLS :  613 ms 
+0  ********  29	ftime=1566	ctime=1028
+0  1  1  -1  1  -1  -1  -1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  485 ms 
+0  * TIME TO ADD CONTROLS :  623 ms 
+0  ********  30	ftime=2142	ctime=1026
+0  1  -1  1  1  1  -1  1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  502 ms 
+0  * TIME TO ADD CONTROLS :  629 ms 
+0  ********  31	ftime=2126	ctime=956
+0  1  -1  1  -1  1  -1  1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  493 ms 
+0  * TIME TO ADD CONTROLS :  617 ms 
+0  ********  32	ftime=2298	ctime=957
+0  1  -1  1  -1  1  -1  1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  489 ms 
+0  * TIME TO ADD CONTROLS :  614 ms 
+0  ********  33	ftime=1718	ctime=1233
+0  1  1  1  1  -1  1  -1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  481 ms 
+0  * TIME TO ADD CONTROLS :  724 ms 
+0  ********  34	ftime=3091	ctime=66481.4
+0  1  1  1  -1  -1  1  1  1  -1  1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  1252 ms 
+0  * TIME TO ADD CONTROLS :  732 ms 
+0  ********  35	ftime=2756	ctime=1390
+0  1  -1  1  1  1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  460 ms 
+0  * TIME TO ADD CONTROLS :  615 ms 
+0  ********  36	ftime=2896	ctime=972
+0  1  -1  1  1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  467 ms 
+0  * TIME TO ADD CONTROLS :  623 ms 
+0  ********  37	ftime=3268	ctime=15395
+0  1  1  1  1  -1  1  1  -1  1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  617 ms 
+0  * TIME TO ADD CONTROLS :  684 ms 
+0  ********  38	ftime=2507	ctime=1166
+0  1  -1  1  1  1  -1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  818 ms 
+0  * TIME TO ADD CONTROLS :  785 ms 
+0  ********  39	ftime=4817	ctime=1416
+0  1  1  1  -1  -1  -1  1  -1  1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  470 ms 
+0  * TIME TO ADD CONTROLS :  616 ms 
+0  ********  40	ftime=2620	ctime=1043
+0  1  -1  1  1  1  -1  1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  523 ms 
+0  * TIME TO ADD CONTROLS :  791 ms 
+0  ********  41	ftime=3773	ctime=1081
+0  1  1  1  1  1  -1  1  -1  1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  494 ms 
+0  * TIME TO ADD CONTROLS :  821 ms 
+0  ********  42	ftime=3662	ctime=15448
+0  1  1  1  1  1  -1  1  -1  1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  646 ms 
+0  * TIME TO ADD CONTROLS :  700 ms 
+0  ********  43	ftime=2217	ctime=2332
+0  1  1  1  1  1  -1  1  -1  1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  463 ms 
+0  * TIME TO ADD CONTROLS :  771 ms 
+0  ********  44	ftime=2866	ctime=1190
+0  1  -1  1  -1  1  -1  1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  490 ms 
+0  * TIME TO ADD CONTROLS :  804 ms 
+0  ********  45	ftime=4960	ctime=15726
+0  1  -1  1  1  -1  -1  -1  -1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  618 ms 
+0  * TIME TO ADD CONTROLS :  628 ms 
+0  ********  46	ftime=2541	ctime=1105
+0  1  1  1  -1  -1  -1  -1  -1  -1  1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  461 ms 
+0  * TIME TO ADD CONTROLS :  639 ms 
+0  ********  47	ftime=2347	ctime=1282
+0  1  1  1  -1  1  -1  -1  1  -1  1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  467 ms 
+0  * TIME TO ADD CONTROLS :  1054 ms 
+0  ********  48	ftime=5497	ctime=2090
+0  1  -1  1  1  -1  -1  -1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  501 ms 
+0  * TIME TO ADD CONTROLS :  907 ms 
+0  ********  49	ftime=3131	ctime=15837
+0  1  1  1  -1  -1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  845 ms 
+0  * TIME TO ADD CONTROLS :  652 ms 
+0  ********  50	ftime=2556	ctime=1206
+0  1  -1  1  1  -1  -1  1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  480 ms 
+0  * TIME TO ADD CONTROLS :  612 ms 
+0  * growing the inputs
+0  * growing s_0_15169L12_0__S_0x61d7188 to 4
+0  * growing s_1_15169L12_0__S_0x61d7260 to 4
+0  * growing s_2_15169L12_0__S_0x61d72f0 to 4
+0  * growing N_3_15169L12_0__S_0x61d73a0 to 4
+0  * input bot_4_15169L12_0__S_0x61d7428 doesn't need to grow its size is already1
+0  * input ce_4_15169L12_0__S_0x61d74d8 doesn't need to grow its size is already1
+0  * input ea_4_15169L12_0__S_0x61d7568 doesn't need to grow its size is already1
+0  * input no_4_15169L12_0__S_0x61d75f8 doesn't need to grow its size is already1
+0  * input so_4_15169L12_0__S_0x61d7688 doesn't need to grow its size is already1
+0  * input up_4_15169L12_0__S_0x61d7758 doesn't need to grow its size is already1
+0  * input we_4_15169L12_0__S_0x61d77e8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6200a88_0__S_0x623d950 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624fc28_1__S_0x61fe1b8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f590_2__S_0x623c008 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6226b48_3__S_0x61d9380 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241680_4__S_0x61faaa0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624eb68_5__S_0x61f10f0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624e7d8_6__S_0x61f5f08 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6242b18_7__S_0x61e5930 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6242070_8__S_0x61e8218 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6227540_9__S_0x61eaa20 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6235eb0_10__S_0x61df740 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621ac20_11__S_0x61f79e8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x620e480_12__S_0x61ed648 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6226e48_13__S_0x6211480 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241a10_14__S_0x621dac8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624ee68_15__S_0x6238608 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621a8f0_16__S_0x61fb400 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621a5d8_17__S_0x621a888 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241d60_18__S_0x61e0e80 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f170_19__S_0x6249470 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6203ed0_20__S_0x6245b28 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6205c28_21__S_0x919348 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6205850_22__S_0x61f5688 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x62054c8_23__S_0x3eae4e0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f8a0_24__S_0x13c23b8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621ad38_25__S_0x1015638 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6227220_26__S_0x16d0c98 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x620e0f8_27__S_0x16b1e58 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x5561008_28__S_0x4c281a8 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  1405 ms 
+0  * growing the inputs
+0  * input s_0_15169L12_0__S_0x61d7188 doesn't need to grow its size is already4
+0  * input s_1_15169L12_0__S_0x61d7260 doesn't need to grow its size is already4
+0  * input s_2_15169L12_0__S_0x61d72f0 doesn't need to grow its size is already4
+0  * input N_3_15169L12_0__S_0x61d73a0 doesn't need to grow its size is already4
+0  * input bot_4_15169L12_0__S_0x61d7428 doesn't need to grow its size is already1
+0  * input ce_4_15169L12_0__S_0x61d74d8 doesn't need to grow its size is already1
+0  * input ea_4_15169L12_0__S_0x61d7568 doesn't need to grow its size is already1
+0  * input no_4_15169L12_0__S_0x61d75f8 doesn't need to grow its size is already1
+0  * input so_4_15169L12_0__S_0x61d7688 doesn't need to grow its size is already1
+0  * input up_4_15169L12_0__S_0x61d7758 doesn't need to grow its size is already1
+0  * input we_4_15169L12_0__S_0x61d77e8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6200a88_0__S_0x623d950 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624fc28_1__S_0x61fe1b8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f590_2__S_0x623c008 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6226b48_3__S_0x61d9380 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241680_4__S_0x61faaa0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624eb68_5__S_0x61f10f0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624e7d8_6__S_0x61f5f08 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6242b18_7__S_0x61e5930 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6242070_8__S_0x61e8218 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6227540_9__S_0x61eaa20 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6235eb0_10__S_0x61df740 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621ac20_11__S_0x61f79e8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x620e480_12__S_0x61ed648 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6226e48_13__S_0x6211480 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241a10_14__S_0x621dac8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624ee68_15__S_0x6238608 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621a8f0_16__S_0x61fb400 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621a5d8_17__S_0x621a888 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6241d60_18__S_0x61e0e80 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f170_19__S_0x6249470 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6203ed0_20__S_0x6245b28 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6205c28_21__S_0x919348 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6205850_22__S_0x61f5688 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x62054c8_23__S_0x3eae4e0 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x624f8a0_24__S_0x13c23b8 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x621ad38_25__S_0x1015638 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x6227220_26__S_0x16d0c98 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x620e0f8_27__S_0x16b1e58 doesn't need to grow its size is already1
+0  * input in_332L10__out__UFUN_0x5561008_28__S_0x4c281a8 doesn't need to grow its size is already1
+0  * Done growing inputs. All integer inputs have reached size 4
+0  ********  51	ftime=3261	ctime=255274
+0   *GOT THE CORRECT ANSWER IN 52 iterations.
+0   *FIND TIME 103169, CHECK TIME 432668, TOTAL TIME 535913
+
+real	10m25.917s
+user	0m0.199s
+sys	0m0.169s
+0  * NINPUTS = 4
+0  * before  EVERYTHING: SPEC nodes = 4461	 SKETCH nodes = 5459
+0  * before  CSE: SPEC nodes = 4382	 SKETCH nodes = 5161
+0  * AFTER PREPROC SKETCH: SPEC nodes = 387	 SKETCH nodes = 864
+0  * after OPTIM: Problem nodes = 2360
+0  * after OPTIM2: Problem nodes = 2360
+0  -1  1  -1  1  1  1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  121 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  0	ftime=551	ctime=70
+0  1  1  1  1  -1  1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  1	ftime=149	ctime=76
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  2	ftime=167	ctime=70
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  89 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  3	ftime=194	ctime=70
+0  1  1  -1  1  1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  4	ftime=215	ctime=70
+0  -1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  5	ftime=234	ctime=72
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  83 ms 
+0  * TIME TO ADD CONTROLS :  64 ms 
+0  ********  6	ftime=209	ctime=75
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  88 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  7	ftime=270	ctime=69
+0  1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  8	ftime=286	ctime=72
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  87 ms 
+0  * TIME TO ADD CONTROLS :  58 ms 
+0  ********  9	ftime=214	ctime=74
+0  1  1  -1  -1  1  1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  10	ftime=271	ctime=71
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  88 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  11	ftime=283	ctime=73
+0  1  1  1  1  1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  12	ftime=322	ctime=69
+0  1  1  1  -1  1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  13	ftime=291	ctime=70
+0  1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  89 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  14	ftime=326	ctime=69
+0  1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  56 ms 
+0  ********  15	ftime=372	ctime=68
+0  -1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  88 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  16	ftime=4654	ctime=68
+0  1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  88 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  17	ftime=283	ctime=69
+0  1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  18	ftime=357	ctime=68
+0  1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  87 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  19	ftime=301	ctime=71
+0  -1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  20	ftime=4113	ctime=69
+0  -1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  21	ftime=267	ctime=77
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  22	ftime=310	ctime=70
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  54 ms 
+0  ********  23	ftime=334	ctime=69
+0  -1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  589 ms 
+0  * TIME TO ADD CONTROLS :  61 ms 
+0  ********  24	ftime=779	ctime=79
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  110 ms 
+0  * TIME TO ADD CONTROLS :  60 ms 
+0  ********  25	ftime=396	ctime=74
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  58 ms 
+0  ********  26	ftime=322	ctime=73
+0  -1  1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  58 ms 
+0  ********  27	ftime=5347	ctime=76
+0  1  1  1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  28	ftime=309	ctime=72
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  87 ms 
+0  * TIME TO ADD CONTROLS :  54 ms 
+0  ********  29	ftime=278	ctime=68
+0  -1  1  1  -1  -1  1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  61 ms 
+0  ********  30	ftime=368	ctime=75
+0  -1  1  1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  31	ftime=6204	ctime=69
+0  -1  1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  90 ms 
+0  * TIME TO ADD CONTROLS :  56 ms 
+0  ********  32	ftime=4753	ctime=77
+0  1  1  -1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  84 ms 
+0  * TIME TO ADD CONTROLS :  56 ms 
+0  ********  33	ftime=329	ctime=72
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  56 ms 
+0  ********  34	ftime=5175	ctime=73
+0  -1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  56 ms 
+0  ********  35	ftime=4705	ctime=74
+0  -1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  36	ftime=321	ctime=76
+0  1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  91 ms 
+0  * TIME TO ADD CONTROLS :  54 ms 
+0  ********  37	ftime=309	ctime=71
+0  -1  1  1  -1  -1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  90 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  38	ftime=391	ctime=70
+0  1  1  1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  90 ms 
+0  * TIME TO ADD CONTROLS :  58 ms 
+0  ********  39	ftime=412	ctime=78
+0  1  1  -1  -1  -1  1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  40	ftime=243	ctime=75
+0  1  1  -1  1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  56 ms 
+0  ********  41	ftime=535	ctime=74
+0  1  1  -1  1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  87 ms 
+0  * TIME TO ADD CONTROLS :  67 ms 
+0  ********  42	ftime=561	ctime=87
+0  -1  1  -1  1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  58 ms 
+0  ********  43	ftime=512	ctime=81
+0  1  1  -1  -1  -1  1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  92 ms 
+0  * TIME TO ADD CONTROLS :  63 ms 
+0  ********  44	ftime=369	ctime=107
+0  -1  1  -1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  61 ms 
+0  ********  45	ftime=493	ctime=89
+0  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  89 ms 
+0  * TIME TO ADD CONTROLS :  57 ms 
+0  ********  46	ftime=410	ctime=79
+0  1  1  -1  -1  -1  1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  89 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  47	ftime=524	ctime=74
+0  -1  1  -1  1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  87 ms 
+0  * TIME TO ADD CONTROLS :  58 ms 
+0  ********  48	ftime=9235	ctime=80
+0  1  1  -1  1  -1  1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  49	ftime=6810	ctime=86
+0  -1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  92 ms 
+0  * TIME TO ADD CONTROLS :  54 ms 
+0  ********  50	ftime=293	ctime=85
+0  -1  1  -1  -1  1  -1  1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  86 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  51	ftime=360	ctime=78
+0  1  1  -1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  59 ms 
+0  ********  52	ftime=373	ctime=85
+0  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  85 ms 
+0  * TIME TO ADD CONTROLS :  55 ms 
+0  ********  53	ftime=431	ctime=80
+0  -1  1  -1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  87 ms 
+0  * TIME TO ADD CONTROLS :  54 ms 
+0  ********  54	ftime=376	ctime=74
+0  1  1  -1  -1  1  -1  -1  1  * RECYCLED 0 values out of 20
+0  * TIME TO ADD INPUT :  88 ms 
+0  * TIME TO ADD CONTROLS :  54 ms 
+0  * growing the inputs
+0  * growing s_0_248L5_0__S_0x9de490 to 3
+0  * growing s_1_248L5_0__S_0x9de568 to 3
+0  * growing s_2_248L5_0__S_0x9de5f8 to 3
+0  * growing N_3_248L5_0__S_0x9de6a8 to 3
+0  * input FL_0_5__out__S_0xa32ce0 doesn't need to grow its size is already1
+0  * input FL_0_25__out__S_0xa8d150 doesn't need to grow its size is already1
+0  * input FL_0_125__out__S_0xa94c18 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa950d8_0__S_0x9dfdd8 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa957d8_1__S_0xa97e18 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa95e90_2__S_0xa965d0 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa96d78_3__S_0xa8d778 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa96548_4__S_0xa30ec8 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa97570_5__S_0x974e10 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa97d68_6__S_0xa8fe88 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa986a0_7__S_0xa373a0 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0x949b80_8__S_0x9ff570 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  74 ms 
+0  * growing the inputs
+0  * growing s_0_248L5_0__S_0x9de490 to 4
+0  * growing s_1_248L5_0__S_0x9de568 to 4
+0  * growing s_2_248L5_0__S_0x9de5f8 to 4
+0  * growing N_3_248L5_0__S_0x9de6a8 to 4
+0  * input FL_0_5__out__S_0xa32ce0 doesn't need to grow its size is already1
+0  * input FL_0_25__out__S_0xa8d150 doesn't need to grow its size is already1
+0  * input FL_0_125__out__S_0xa94c18 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa950d8_0__S_0x9dfdd8 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa957d8_1__S_0xa97e18 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa95e90_2__S_0xa965d0 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa96d78_3__S_0xa8d778 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa96548_4__S_0xa30ec8 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa97570_5__S_0x974e10 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa97d68_6__S_0xa8fe88 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa986a0_7__S_0xa373a0 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0x949b80_8__S_0x9ff570 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  143 ms 
+0  * growing the inputs
+0  * input s_0_248L5_0__S_0x9de490 doesn't need to grow its size is already4
+0  * input s_1_248L5_0__S_0x9de568 doesn't need to grow its size is already4
+0  * input s_2_248L5_0__S_0x9de5f8 doesn't need to grow its size is already4
+0  * input N_3_248L5_0__S_0x9de6a8 doesn't need to grow its size is already4
+0  * input FL_0_5__out__S_0xa32ce0 doesn't need to grow its size is already1
+0  * input FL_0_25__out__S_0xa8d150 doesn't need to grow its size is already1
+0  * input FL_0_125__out__S_0xa94c18 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa950d8_0__S_0x9dfdd8 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa957d8_1__S_0xa97e18 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa95e90_2__S_0xa965d0 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa96d78_3__S_0xa8d778 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa96548_4__S_0xa30ec8 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa97570_5__S_0x974e10 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa97d68_6__S_0xa8fe88 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0xa986a0_7__S_0xa373a0 doesn't need to grow its size is already1
+0  * input in_205L3__out__UFUN_0x949b80_8__S_0x9ff570 doesn't need to grow its size is already1
+0  * Done growing inputs. All integer inputs have reached size 4
+0  ********  55	ftime=532	ctime=2400
+0   *GOT THE CORRECT ANSWER IN 56 iterations.
+0   *FIND TIME 67428, CHECK TIME 6510, TOTAL TIME 74005
+
+real	1m25.946s
+user	0m0.215s
+sys	0m0.077s
+0  * NINPUTS = 4
+0  * before  EVERYTHING: SPEC nodes = 2979	 SKETCH nodes = 843752
+0  * before  CSE: SPEC nodes = 1874	 SKETCH nodes = 737633
+0  * AFTER PREPROC SKETCH: SPEC nodes = 266	 SKETCH nodes = 7014
+0  * after OPTIM: Problem nodes = 7238
+0  * after OPTIM2: Problem nodes = 7238
+0  -1  1  1  1  1  -1  * RECYCLED 0 values out of 18
+0  * TIME TO ADD INPUT :  230 ms 
+0  * TIME TO ADD CONTROLS :  133 ms 
+0  ********  0	ftime=236	ctime=479
+0  1  1  1  -1  1  -1  * RECYCLED 0 values out of 18
+0  * TIME TO ADD INPUT :  233 ms 
+0  * TIME TO ADD CONTROLS :  117 ms 
+0  ********  1	ftime=319	ctime=128
+0  1  1  1  -1  -1  1  * RECYCLED 0 values out of 18
+0  * TIME TO ADD INPUT :  233 ms 
+0  * TIME TO ADD CONTROLS :  106 ms 
+0  ********  2	ftime=381	ctime=118
+0  1  1  -1  1  1  -1  * RECYCLED 0 values out of 18
+0  * TIME TO ADD INPUT :  237 ms 
+0  * TIME TO ADD CONTROLS :  109 ms 
+0  ********  3	ftime=408	ctime=123
+0  1  1  -1  -1  -1  1  * RECYCLED 0 values out of 18
+0  * TIME TO ADD INPUT :  237 ms 
+0  * TIME TO ADD CONTROLS :  139 ms 
+0  ********  4	ftime=411	ctime=153
+0  1  1  1  -1  -1  -1  * RECYCLED 0 values out of 18
+0  * TIME TO ADD INPUT :  254 ms 
+0  * TIME TO ADD CONTROLS :  118 ms 
+0  * growing the inputs
+0  * growing s_0_62681L4_0__S_0x97998d8 to 3
+0  * growing s_1_62681L4_0__S_0x97999b0 to 3
+0  * growing N_2_62681L4_0__S_0x9799a40 to 3
+0  * input in_744L0__out__UFUN_0x97f12f8_0__S_0x9811c80 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x97e6d90_1__S_0x97ada20 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x97bfb28_2__S_0x97ec998 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x97d4f88_0__S_0x979afe0 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x97fd238_1__S_0x97bd2e0 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x980e050_3__S_0x97f4788 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x9822548_2__S_0x97c8e30 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x9821bf8_4__S_0x9821a10 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x9822fc0_3__S_0x97fba80 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x9818610_5__S_0x97a26f8 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x63a8918_6__S_0x97aec00 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x63d6500_4__S_0x97e7c08 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  180 ms 
+0  ********  5	ftime=473	ctime=340
+0  -1  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  233 ms 
+0  * TIME TO ADD CONTROLS :  185 ms 
+0  ********  6	ftime=481	ctime=204
+0  -1  1  1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  234 ms 
+0  * TIME TO ADD CONTROLS :  207 ms 
+0  ********  7	ftime=6339	ctime=235
+0  1  1  1  1  -1  1  -1  1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  231 ms 
+0  * TIME TO ADD CONTROLS :  202 ms 
+0  ********  8	ftime=4931	ctime=235
+0  -1  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  237 ms 
+0  * TIME TO ADD CONTROLS :  172 ms 
+0  ********  9	ftime=503	ctime=201
+0  1  -1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  229 ms 
+0  * TIME TO ADD CONTROLS :  210 ms 
+0  ********  10	ftime=505	ctime=228
+0  -1  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  231 ms 
+0  * TIME TO ADD CONTROLS :  201 ms 
+0  ********  11	ftime=7602	ctime=236
+0  -1  -1  1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 21
+0  * TIME TO ADD INPUT :  232 ms 
+0  * TIME TO ADD CONTROLS :  129 ms 
+0  * growing the inputs
+0  * growing s_0_62681L4_0__S_0x97998d8 to 4
+0  * growing s_1_62681L4_0__S_0x97999b0 to 4
+0  * growing N_2_62681L4_0__S_0x9799a40 to 4
+0  * input in_744L0__out__UFUN_0x97f12f8_0__S_0x9811c80 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x97e6d90_1__S_0x97ada20 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x97bfb28_2__S_0x97ec998 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x97d4f88_0__S_0x979afe0 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x97fd238_1__S_0x97bd2e0 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x980e050_3__S_0x97f4788 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x9822548_2__S_0x97c8e30 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x9821bf8_4__S_0x9821a10 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x9822fc0_3__S_0x97fba80 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x9818610_5__S_0x97a26f8 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x63a8918_6__S_0x97aec00 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x63d6500_4__S_0x97e7c08 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  249 ms 
+0  * growing the inputs
+0  * input s_0_62681L4_0__S_0x97998d8 doesn't need to grow its size is already4
+0  * input s_1_62681L4_0__S_0x97999b0 doesn't need to grow its size is already4
+0  * input N_2_62681L4_0__S_0x9799a40 doesn't need to grow its size is already4
+0  * input in_744L0__out__UFUN_0x97f12f8_0__S_0x9811c80 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x97e6d90_1__S_0x97ada20 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x97bfb28_2__S_0x97ec998 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x97d4f88_0__S_0x979afe0 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x97fd238_1__S_0x97bd2e0 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x980e050_3__S_0x97f4788 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x9822548_2__S_0x97c8e30 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x9821bf8_4__S_0x9821a10 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x9822fc0_3__S_0x97fba80 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x9818610_5__S_0x97a26f8 doesn't need to grow its size is already1
+0  * input in_744L0__out__UFUN_0x63a8918_6__S_0x97aec00 doesn't need to grow its size is already1
+0  * input f_744L1__out__UFUN_0x63d6500_4__S_0x97e7c08 doesn't need to grow its size is already1
+0  * Done growing inputs. All integer inputs have reached size 4
+0  ********  12	ftime=7499	ctime=487
+0   *GOT THE CORRECT ANSWER IN 13 iterations.
+0   *FIND TIME 30088, CHECK TIME 3167, TOTAL TIME 33271
+
+real	2m39.095s
+user	0m0.200s
+sys	0m0.061s
+0  * NINPUTS = 4
+0  * before  EVERYTHING: SPEC nodes = 1079	 SKETCH nodes = 384830
+0  * before  CSE: SPEC nodes = 1028	 SKETCH nodes = 366621
+0  * AFTER PREPROC SKETCH: SPEC nodes = 345	 SKETCH nodes = 17693
+0  * after OPTIM: Problem nodes = 19928
+0  * after OPTIM2: Problem nodes = 19904
+0  -1  1  -1  1  1  1  1  -1  * RECYCLED 0 values out of 44
+0  * TIME TO ADD INPUT :  307 ms 
+0  * TIME TO ADD CONTROLS :  321 ms 
+0  * growing the inputs
+0  * growing s_0_6173L12_0__S_0x44cd9c8 to 3
+0  * growing s_1_6173L12_0__S_0x44cda90 to 3
+0  * growing s_2_6173L12_0__S_0x44cdb20 to 3
+0  * growing N_3_6173L12_0__S_0x44cdbd0 to 3
+0  * input bot_4_6173L12_0__S_0x44cdc50 doesn't need to grow its size is already1
+0  * input ce_4_6173L12_0__S_0x44cdd00 doesn't need to grow its size is already1
+0  * input ea_4_6173L12_0__S_0x44cdd90 doesn't need to grow its size is already1
+0  * input no_4_6173L12_0__S_0x44cde20 doesn't need to grow its size is already1
+0  * input so_4_6173L12_0__S_0x44cdeb0 doesn't need to grow its size is already1
+0  * input up_4_6173L12_0__S_0x44cdf80 doesn't need to grow its size is already1
+0  * input we_4_6173L12_0__S_0x44ce010 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44dedd0_0__S_0x44ceb20 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4501690_1__S_0xd90688 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4500f88_2__S_0x44df070 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44eee88_3__S_0x44e9408 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9510_4__S_0x44df378 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6718_5__S_0x14239f0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6398_6__S_0x35f8500 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44fa5f8_7__S_0x3693e50 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9ec8_8__S_0x1ba2ef8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef850_9__S_0x1e4aba0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4d28_10__S_0x1b44e68 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ea168_11__S_0x27cc578 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e4478_12__S_0x44ea100 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef190_13__S_0xebf290 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9820_14__S_0x44ef128 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6aa0_15__S_0x14f3a18 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e9e60_16__S_0x91f988 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e9b58_17__S_0x44e9df8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9b28_18__S_0x3c6bb20 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4500c60_19__S_0x44e4718 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4a00_20__S_0x2d7d750 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4660_21__S_0x44d65a8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4358_22__S_0x2d0e188 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4048_23__S_0x10fe3f0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4501308_24__S_0x1149be8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44fa1f0_25__S_0x125aee8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef498_26__S_0x128a710 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e4170_27__S_0x12a5c80 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x3ddb898_28__S_0x136e970 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  466 ms 
+0  ********  0	ftime=311	ctime=1200
+0  -1  -1  1  -1  1  -1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  299 ms 
+0  * TIME TO ADD CONTROLS :  460 ms 
+0  ********  1	ftime=313	ctime=549
+0  -1  1  1  -1  -1  -1  1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  286 ms 
+0  * TIME TO ADD CONTROLS :  448 ms 
+0  ********  2	ftime=306	ctime=541
+0  -1  1  1  -1  -1  1  1  -1  -1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  307 ms 
+0  * TIME TO ADD CONTROLS :  466 ms 
+0  ********  3	ftime=333	ctime=649
+0  -1  1  1  -1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  285 ms 
+0  * TIME TO ADD CONTROLS :  466 ms 
+0  ********  4	ftime=314	ctime=595
+0  -1  1  1  -1  1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  312 ms 
+0  * TIME TO ADD CONTROLS :  455 ms 
+0  ********  5	ftime=352	ctime=686
+0  -1  -1  1  -1  1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  311 ms 
+0  * TIME TO ADD CONTROLS :  463 ms 
+0  ********  6	ftime=346	ctime=610
+0  -1  1  1  -1  -1  -1  -1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  294 ms 
+0  * TIME TO ADD CONTROLS :  451 ms 
+0  ********  7	ftime=334	ctime=617
+0  -1  -1  1  1  -1  -1  1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  294 ms 
+0  * TIME TO ADD CONTROLS :  468 ms 
+0  ********  8	ftime=341	ctime=719
+0  -1  1  1  -1  1  -1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  308 ms 
+0  * TIME TO ADD CONTROLS :  442 ms 
+0  ********  9	ftime=378	ctime=710
+0  -1  -1  1  1  -1  -1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  295 ms 
+0  * TIME TO ADD CONTROLS :  461 ms 
+0  ********  10	ftime=357	ctime=644
+0  -1  -1  1  -1  -1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  289 ms 
+0  * TIME TO ADD CONTROLS :  463 ms 
+0  ********  11	ftime=349	ctime=681
+0  -1  -1  1  1  1  -1  -1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  295 ms 
+0  * TIME TO ADD CONTROLS :  452 ms 
+0  ********  12	ftime=352	ctime=678
+0  -1  -1  1  -1  1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  301 ms 
+0  * TIME TO ADD CONTROLS :  697 ms 
+0  ********  13	ftime=378	ctime=913
+0  -1  -1  1  -1  -1  -1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  288 ms 
+0  * TIME TO ADD CONTROLS :  460 ms 
+0  ********  14	ftime=348	ctime=661
+0  -1  1  1  1  -1  -1  -1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  304 ms 
+0  * TIME TO ADD CONTROLS :  474 ms 
+0  ********  15	ftime=367	ctime=659
+0  -1  1  1  -1  -1  1  -1  -1  1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  303 ms 
+0  * TIME TO ADD CONTROLS :  451 ms 
+0  ********  16	ftime=389	ctime=614
+0  -1  1  1  -1  -1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  314 ms 
+0  * TIME TO ADD CONTROLS :  456 ms 
+0  ********  17	ftime=424	ctime=681
+0  -1  1  1  -1  1  -1  -1  -1  1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  298 ms 
+0  * TIME TO ADD CONTROLS :  461 ms 
+0  ********  18	ftime=396	ctime=737
+0  -1  -1  1  -1  1  -1  1  -1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  299 ms 
+0  * TIME TO ADD CONTROLS :  460 ms 
+0  ********  19	ftime=385	ctime=661
+0  -1  1  1  -1  1  -1  1  -1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  301 ms 
+0  * TIME TO ADD CONTROLS :  460 ms 
+0  ********  20	ftime=397	ctime=656
+0  -1  1  1  1  1  -1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  310 ms 
+0  * TIME TO ADD CONTROLS :  457 ms 
+0  ********  21	ftime=418	ctime=729
+0  -1  -1  1  -1  1  -1  -1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  300 ms 
+0  * TIME TO ADD CONTROLS :  460 ms 
+0  ********  22	ftime=440	ctime=686
+0  -1  1  1  1  1  -1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  311 ms 
+0  * TIME TO ADD CONTROLS :  452 ms 
+0  ********  23	ftime=431	ctime=685
+0  -1  -1  1  1  1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  311 ms 
+0  * TIME TO ADD CONTROLS :  454 ms 
+0  ********  24	ftime=418	ctime=700
+0  -1  -1  1  -1  -1  -1  -1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  289 ms 
+0  * TIME TO ADD CONTROLS :  443 ms 
+0  ********  25	ftime=386	ctime=699
+0  -1  1  1  -1  1  -1  -1  -1  1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  354 ms 
+0  * TIME TO ADD CONTROLS :  460 ms 
+0  ********  26	ftime=465	ctime=689
+0  -1  1  1  1  1  -1  -1  1  -1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  314 ms 
+0  * TIME TO ADD CONTROLS :  458 ms 
+0  ********  27	ftime=467	ctime=692
+0  -1  1  1  -1  1  -1  -1  -1  1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  302 ms 
+0  * TIME TO ADD CONTROLS :  466 ms 
+0  ********  28	ftime=474	ctime=741
+0  -1  -1  1  -1  -1  -1  1  -1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  289 ms 
+0  * TIME TO ADD CONTROLS :  453 ms 
+0  ********  29	ftime=404	ctime=692
+0  -1  1  1  1  -1  -1  1  1  -1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  304 ms 
+0  * TIME TO ADD CONTROLS :  455 ms 
+0  ********  30	ftime=464	ctime=694
+0  -1  1  1  -1  -1  -1  1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  298 ms 
+0  * TIME TO ADD CONTROLS :  459 ms 
+0  ********  31	ftime=411	ctime=732
+0  -1  1  1  -1  -1  1  -1  -1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  300 ms 
+0  * TIME TO ADD CONTROLS :  452 ms 
+0  ********  32	ftime=505	ctime=703
+0  -1  1  1  -1  -1  -1  -1  -1  1  1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  289 ms 
+0  * TIME TO ADD CONTROLS :  453 ms 
+0  ********  33	ftime=498	ctime=867
+0  -1  1  1  1  -1  -1  -1  1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  299 ms 
+0  * TIME TO ADD CONTROLS :  450 ms 
+0  ********  34	ftime=415	ctime=923
+0  -1  1  1  -1  -1  -1  1  -1  -1  1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  292 ms 
+0  * TIME TO ADD CONTROLS :  441 ms 
+0  ********  35	ftime=417	ctime=691
+0  -1  1  1  1  -1  -1  1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  306 ms 
+0  * TIME TO ADD CONTROLS :  448 ms 
+0  ********  36	ftime=529	ctime=666
+0  -1  1  1  1  1  -1  1  1  -1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  302 ms 
+0  * TIME TO ADD CONTROLS :  449 ms 
+0  ********  37	ftime=440	ctime=716
+0  -1  1  1  -1  1  -1  -1  1  -1  -1  -1  1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  302 ms 
+0  * TIME TO ADD CONTROLS :  443 ms 
+0  ********  38	ftime=477	ctime=689
+0  -1  1  1  -1  1  -1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  305 ms 
+0  * TIME TO ADD CONTROLS :  458 ms 
+0  ********  39	ftime=506	ctime=1168
+0  -1  1  1  -1  -1  1  -1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  316 ms 
+0  * TIME TO ADD CONTROLS :  470 ms 
+0  ********  40	ftime=538	ctime=1030
+0  -1  1  1  -1  1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  313 ms 
+0  * TIME TO ADD CONTROLS :  452 ms 
+0  ********  41	ftime=588	ctime=763
+0  -1  -1  1  1  -1  -1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  386 ms 
+0  * TIME TO ADD CONTROLS :  464 ms 
+0  ********  42	ftime=571	ctime=855
+0  -1  1  1  -1  -1  -1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  294 ms 
+0  * TIME TO ADD CONTROLS :  453 ms 
+0  ********  43	ftime=515	ctime=740
+0  -1  1  1  -1  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  314 ms 
+0  * TIME TO ADD CONTROLS :  441 ms 
+0  ********  44	ftime=477	ctime=838
+0  -1  1  1  -1  -1  1  1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  300 ms 
+0  * TIME TO ADD CONTROLS :  446 ms 
+0  ********  45	ftime=529	ctime=707
+0  -1  1  1  -1  1  -1  -1  1  -1  -1  -1  -1  * RECYCLED 0 values out of 48
+0  * TIME TO ADD INPUT :  302 ms 
+0  * TIME TO ADD CONTROLS :  458 ms 
+0  * growing the inputs
+0  * growing s_0_6173L12_0__S_0x44cd9c8 to 4
+0  * growing s_1_6173L12_0__S_0x44cda90 to 4
+0  * growing s_2_6173L12_0__S_0x44cdb20 to 4
+0  * growing N_3_6173L12_0__S_0x44cdbd0 to 4
+0  * input bot_4_6173L12_0__S_0x44cdc50 doesn't need to grow its size is already1
+0  * input ce_4_6173L12_0__S_0x44cdd00 doesn't need to grow its size is already1
+0  * input ea_4_6173L12_0__S_0x44cdd90 doesn't need to grow its size is already1
+0  * input no_4_6173L12_0__S_0x44cde20 doesn't need to grow its size is already1
+0  * input so_4_6173L12_0__S_0x44cdeb0 doesn't need to grow its size is already1
+0  * input up_4_6173L12_0__S_0x44cdf80 doesn't need to grow its size is already1
+0  * input we_4_6173L12_0__S_0x44ce010 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44dedd0_0__S_0x44ceb20 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4501690_1__S_0xd90688 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4500f88_2__S_0x44df070 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44eee88_3__S_0x44e9408 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9510_4__S_0x44df378 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6718_5__S_0x14239f0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6398_6__S_0x35f8500 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44fa5f8_7__S_0x3693e50 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9ec8_8__S_0x1ba2ef8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef850_9__S_0x1e4aba0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4d28_10__S_0x1b44e68 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ea168_11__S_0x27cc578 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e4478_12__S_0x44ea100 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef190_13__S_0xebf290 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9820_14__S_0x44ef128 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6aa0_15__S_0x14f3a18 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e9e60_16__S_0x91f988 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e9b58_17__S_0x44e9df8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9b28_18__S_0x3c6bb20 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4500c60_19__S_0x44e4718 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4a00_20__S_0x2d7d750 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4660_21__S_0x44d65a8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4358_22__S_0x2d0e188 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4048_23__S_0x10fe3f0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4501308_24__S_0x1149be8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44fa1f0_25__S_0x125aee8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef498_26__S_0x128a710 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e4170_27__S_0x12a5c80 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x3ddb898_28__S_0x136e970 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  759 ms 
+0  * growing the inputs
+0  * input s_0_6173L12_0__S_0x44cd9c8 doesn't need to grow its size is already4
+0  * input s_1_6173L12_0__S_0x44cda90 doesn't need to grow its size is already4
+0  * input s_2_6173L12_0__S_0x44cdb20 doesn't need to grow its size is already4
+0  * input N_3_6173L12_0__S_0x44cdbd0 doesn't need to grow its size is already4
+0  * input bot_4_6173L12_0__S_0x44cdc50 doesn't need to grow its size is already1
+0  * input ce_4_6173L12_0__S_0x44cdd00 doesn't need to grow its size is already1
+0  * input ea_4_6173L12_0__S_0x44cdd90 doesn't need to grow its size is already1
+0  * input no_4_6173L12_0__S_0x44cde20 doesn't need to grow its size is already1
+0  * input so_4_6173L12_0__S_0x44cdeb0 doesn't need to grow its size is already1
+0  * input up_4_6173L12_0__S_0x44cdf80 doesn't need to grow its size is already1
+0  * input we_4_6173L12_0__S_0x44ce010 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44dedd0_0__S_0x44ceb20 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4501690_1__S_0xd90688 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4500f88_2__S_0x44df070 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44eee88_3__S_0x44e9408 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9510_4__S_0x44df378 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6718_5__S_0x14239f0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6398_6__S_0x35f8500 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44fa5f8_7__S_0x3693e50 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9ec8_8__S_0x1ba2ef8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef850_9__S_0x1e4aba0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4d28_10__S_0x1b44e68 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ea168_11__S_0x27cc578 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e4478_12__S_0x44ea100 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef190_13__S_0xebf290 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9820_14__S_0x44ef128 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e6aa0_15__S_0x14f3a18 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e9e60_16__S_0x91f988 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e9b58_17__S_0x44e9df8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f9b28_18__S_0x3c6bb20 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4500c60_19__S_0x44e4718 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4a00_20__S_0x2d7d750 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4660_21__S_0x44d65a8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4358_22__S_0x2d0e188 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44f4048_23__S_0x10fe3f0 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x4501308_24__S_0x1149be8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44fa1f0_25__S_0x125aee8 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44ef498_26__S_0x128a710 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x44e4170_27__S_0x12a5c80 doesn't need to grow its size is already1
+0  * input in_167L10__out__UFUN_0x3ddb898_28__S_0x136e970 doesn't need to grow its size is already1
+0  * Done growing inputs. All integer inputs have reached size 4
+0  ********  46	ftime=517	ctime=37329
+0   *GOT THE CORRECT ANSWER IN 47 iterations.
+0   *FIND TIME 19770, CHECK TIME 70885, TOTAL TIME 90713
+
+real	2m16.970s
+user	0m0.168s
+sys	0m0.108s
+0  * NINPUTS = 4
+0  * before  EVERYTHING: SPEC nodes = 13733	 SKETCH nodes = 103250
+0  * before  CSE: SPEC nodes = 13030	 SKETCH nodes = 89695
+0  * AFTER PREPROC SKETCH: SPEC nodes = 861	 SKETCH nodes = 2778
+0  * after OPTIM: Problem nodes = 3707
+0  * after OPTIM2: Problem nodes = 3707
+0  -1  -1  -1  1  -1  1  1  1  1  -1  * RECYCLED 0 values out of 26
+0  * TIME TO ADD INPUT :  289 ms 
+0  * TIME TO ADD CONTROLS :  99 ms 
+0  * growing the inputs
+0  * growing s_0_7117L6_0__S_0x1a0a5c0 to 3
+0  * growing s_1_7117L6_0__S_0x1a0a698 to 3
+0  * growing K1_2_7117L6_0__S_0x1a0a728 to 3
+0  * growing K2_3_7117L6_0__S_0x1a0a7d8 to 3
+0  * growing N_4_7117L6_0__S_0x1a0a858 to 3
+0  * input in_226L0__out__UFUN_0x1a69268_0__S_0x1b07360 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a55120_1__S_0x1ad6738 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a42f88_2__S_0x1b63320 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b89d78_3__S_0x1a94220 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a2fd98_4__S_0x1a6f428 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b64b58_5__S_0x1aee290 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c54f38_6__S_0x1aeec78 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a1d3b8_7__S_0x1ae1c90 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c42720_8__S_0x1b2be00 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1be6e40_9__S_0x1af44e8 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c30590_10__S_0x1b2b450 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1bf8fe8_11__S_0x1af4728 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b4b9b8_12__S_0x1b07120 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b5db40_13__S_0x1a34e90 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c0b130_14__S_0x1a425b8 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x12baa00_15__S_0x1a11b08 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  284 ms 
+0  ********  0	ftime=295	ctime=781
+0  1  1  1  1  -1  1  -1  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 31
+0  * TIME TO ADD INPUT :  347 ms 
+0  * TIME TO ADD CONTROLS :  126 ms 
+0  ********  1	ftime=719	ctime=163
+0  -1  1  1  -1  1  1  -1  -1  1  -1  1  -1  -1  1  -1  * RECYCLED 0 values out of 31
+0  * TIME TO ADD INPUT :  354 ms 
+0  * TIME TO ADD CONTROLS :  128 ms 
+0  ********  2	ftime=965	ctime=169
+0  1  1  1  1  1  1  -1  1  1  -1  -1  1  -1  1  -1  * RECYCLED 0 values out of 31
+0  * TIME TO ADD INPUT :  475 ms 
+0  * TIME TO ADD CONTROLS :  191 ms 
+0  ********  3	ftime=1436	ctime=279
+0  1  1  1  1  1  1  1  1  -1  1  -1  -1  -1  1  -1  * RECYCLED 0 values out of 31
+0  * TIME TO ADD INPUT :  283 ms 
+0  * TIME TO ADD CONTROLS :  167 ms 
+0  * growing the inputs
+0  * growing s_0_7117L6_0__S_0x1a0a5c0 to 4
+0  * growing s_1_7117L6_0__S_0x1a0a698 to 4
+0  * growing K1_2_7117L6_0__S_0x1a0a728 to 4
+0  * growing K2_3_7117L6_0__S_0x1a0a7d8 to 4
+0  * growing N_4_7117L6_0__S_0x1a0a858 to 4
+0  * input in_226L0__out__UFUN_0x1a69268_0__S_0x1b07360 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a55120_1__S_0x1ad6738 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a42f88_2__S_0x1b63320 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b89d78_3__S_0x1a94220 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a2fd98_4__S_0x1a6f428 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b64b58_5__S_0x1aee290 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c54f38_6__S_0x1aeec78 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a1d3b8_7__S_0x1ae1c90 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c42720_8__S_0x1b2be00 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1be6e40_9__S_0x1af44e8 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c30590_10__S_0x1b2b450 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1bf8fe8_11__S_0x1af4728 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b4b9b8_12__S_0x1b07120 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b5db40_13__S_0x1a34e90 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c0b130_14__S_0x1a425b8 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x12baa00_15__S_0x1a11b08 doesn't need to grow its size is already1
+0  * TIME TO ADD CONTROLS :  540 ms 
+0  * growing the inputs
+0  * input s_0_7117L6_0__S_0x1a0a5c0 doesn't need to grow its size is already4
+0  * input s_1_7117L6_0__S_0x1a0a698 doesn't need to grow its size is already4
+0  * input K1_2_7117L6_0__S_0x1a0a728 doesn't need to grow its size is already4
+0  * input K2_3_7117L6_0__S_0x1a0a7d8 doesn't need to grow its size is already4
+0  * input N_4_7117L6_0__S_0x1a0a858 doesn't need to grow its size is already4
+0  * input in_226L0__out__UFUN_0x1a69268_0__S_0x1b07360 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a55120_1__S_0x1ad6738 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a42f88_2__S_0x1b63320 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b89d78_3__S_0x1a94220 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a2fd98_4__S_0x1a6f428 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b64b58_5__S_0x1aee290 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c54f38_6__S_0x1aeec78 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1a1d3b8_7__S_0x1ae1c90 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c42720_8__S_0x1b2be00 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1be6e40_9__S_0x1af44e8 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c30590_10__S_0x1b2b450 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1bf8fe8_11__S_0x1af4728 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b4b9b8_12__S_0x1b07120 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1b5db40_13__S_0x1a34e90 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x1c0b130_14__S_0x1a425b8 doesn't need to grow its size is already1
+0  * input in_226L0__out__UFUN_0x12baa00_15__S_0x1a11b08 doesn't need to grow its size is already1
+0  * Done growing inputs. All integer inputs have reached size 4
+0  ********  4	ftime=1187	ctime=6079
+0   *GOT THE CORRECT ANSWER IN 5 iterations.
+0   *FIND TIME 4602, CHECK TIME 7471, TOTAL TIME 12073
+
+real	0m27.001s
+user	0m0.153s
+sys	0m0.091s
