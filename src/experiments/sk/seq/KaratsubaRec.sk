@@ -1,0 +1,139 @@
+/*
+ * Resizable Karatsuba multiplication.
+ *
+ * If x = x1 * b + x0 and y = y1 * b + y0, then
+ * x * y = b^2 * x1 * y1 + b * (x1 * y1 + x0 * y0 - (x1 - x0) * (y1 - y0)) + x0 * y0 .
+ *
+ * We code this as an extensible sketch which gets parameterized by
+ * the width of integers and works recursively.
+ *
+ */
+
+/* FIXME int logW = 2; */  /* Max is 5 (i.e. 64-bit). */
+
+int
+pow2 (int p)
+{
+    int a = 1;
+    loop (p)
+	a = a * 2;
+    return a;
+}
+
+int W = 4;  /* FIXME pow2 (logW) */
+
+int
+leq (bit[W] l, bit[W] r, int start, int count)
+{
+    for (int i = start + count; i > start; i--) {  /* FIXME while (i > 0) */
+	int j = i - 1;
+	if (l[j] != r[j])
+	    return r[j];
+    }
+
+    return 1;
+}
+
+
+bit[W]
+mult (bit[W] x, bit[W] y)
+{
+    bit [W] ret = 0;
+
+    for (int i = 0; i < W; i++) {
+	if (x[i] == 1)
+	    ret = ret + y;
+	y = y >> 1;
+    }
+
+    return ret;
+}
+
+bit[W]
+neg (bit[W] x)
+{
+    bit[W] s = 0;
+    s[0] = 1;
+    bit[W] y;
+    for (int i = 0; i < W; i++)
+	y[i] = x[i] ^ 1;
+    return y + s;
+}
+
+bit[W]
+sub (bit[W] x, bit[W] y)
+{
+    return x + neg (y);
+}
+
+bit[W]
+sel (bit[W] x, bit[W] y)
+{
+    if (??)
+	return x;
+    else
+	return y;
+}
+
+bit[W]
+karatsuba_rec (bit[W] x, bit[W] y, int start, int count)
+{
+    assert (count > 0);
+    bit[W] ret = 0;
+
+    if (count == 1)
+	ret[0] = x[0] & y[0];  /* Base case (single-bit). */
+    else {
+	/* Split operands. */
+	count = count / 2;
+	bit[W] x1 = 0;
+	bit[W] x0 = 0;
+	bit[W] y1 = 0;
+	bit[W] y0 = 0;
+	for (int i = 0; i < count; i++) {  /* FIXME initialization by range */
+	    x0[i] = x[start + i];
+	    x1[i] = x[start + count + i];
+	    y0[i] = y[start + i];
+	    y1[i] = y[start + count + i];
+	}
+
+	/* Recursively compute two sub-components. */
+	bit[W] x1y1 = karatsuba_rec (x1, y1, 0, count);
+	bit[W] x0y0 = karatsuba_rec (x0, y0, 0, count);
+
+	/* Recursively compute third sub-component. */
+	int invert = 0;
+	bit[W] x1x0diff, y1y0diff;
+	if (leq (x0, x1, 0, count) == 1)  /* FIXME implicit casting to bool */
+	    x1x0diff = sub (x1, x0);  /* FIXME x1 - x0 */
+	else {
+	    x1x0diff = sub (x0, x1);  /* FIXME x0 - x1 */
+	    invert = (invert ? 0 : 1);
+	}
+	if (leq (y0, y1, 0, count) == 1)  /* FIXME implicit casting to bool */
+	    y1y0diff = sub (y1, y0);  /* FIXME y1 - y0 */
+	else {
+	    y1y0diff = sub (y0, y1);  /* FIXME y0 - y1 */
+	    invert = (invert ? 0 : 1);
+	}
+
+	bit[W] x1x0y1y0 = karatsuba_rec (x1x0diff, y1y0diff, 0, count);
+	if (invert == 1)
+	    x1x0y1y0 = neg (x1x0y1y0);
+
+	/* Gather final result. */
+	loop (??) {
+	    bit[W] tmp = sel (sel (x1y1, x0y0), x1x0y1y0) >> (count * ??);
+	    ret = ret + sel (tmp, neg (tmp));
+	}
+    }
+
+    return ret;
+}
+
+bit[W]
+karatsuba (bit[W] x, bit[W] y) implements mult
+{
+    return karatsuba_rec (x, y, 0, W);
+}
+
