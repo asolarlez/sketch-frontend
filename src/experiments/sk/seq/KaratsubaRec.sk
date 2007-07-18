@@ -1,11 +1,13 @@
 /*
- * Resizable Karatsuba multiplication.
+ * Resizable, recursive variant of Karatsuba multiplication.
  *
  * If x = x1 * b + x0 and y = y1 * b + y0, then
- * x * y = b^2 * x1 * y1 + b * (x1 * y1 + x0 * y0 - (x1 - x0) * (y1 - y0)) + x0 * y0 .
+ * x * y = b^2 x1 y1 + b  (x1 y1 + x0 y0 - (x1 - x0) (y1 - y0)) + x0 y0 .
  *
  * We code this as an extensible sketch which gets parameterized by
- * the width of integers and works recursively.
+ * the width of integers and works recursively. Must be used with
+ * multiples of 2^i widths. Some awkwardness needs to go away once
+ * language support is improved (see FIXME).
  *
  */
 
