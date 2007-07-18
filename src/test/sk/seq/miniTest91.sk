@@ -1,0 +1,14 @@
+int W = 4;
+
+bit[W]
+first (bit[W] x, bit[W] y)
+{
+    return x;
+}
+
+bit[W]
+first_sk (bit[W] x, bit[W] y) implements first
+{
+    return ((0 == 0) ? x : y);
+}
+
