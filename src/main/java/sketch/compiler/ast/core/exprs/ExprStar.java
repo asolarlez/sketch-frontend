@@ -16,6 +16,8 @@
 
 package streamit.frontend.nodes;
 
+import java.util.Vector;
+
 /**
  * An integer-valued constant.  This can be freely promoted to an
  * ExprConstFloat.  This is always real-valued, though it can appear
@@ -28,6 +30,7 @@ public class ExprStar extends Expression
 {		
 	private int size;
 	public Expression vectorSize;
+	Vector<FENode> depObjects;
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
@@ -43,6 +46,19 @@ public class ExprStar extends Expression
         vectorSize = old.vectorSize;
     }
 	
+	public FENode getDepObject(int i){
+		if(depObjects == null){
+			depObjects = new Vector<FENode>();
+			depObjects.setSize(i+1);			
+		}
+		if(depObjects.size() <= i){
+			depObjects.setSize(i+1);			
+		}
+		if(depObjects.get(i) == null){
+			depObjects.set(i, new DummyFENode(getCx()));			
+		}
+		return depObjects.get(i);
+	}
 	
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FEContext context)
