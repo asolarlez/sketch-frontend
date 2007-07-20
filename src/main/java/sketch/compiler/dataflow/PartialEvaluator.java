@@ -1,10 +1,11 @@
 package streamit.frontend.experimental;
 
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import streamit.frontend.experimental.MethodState.ChangeTracker;
 import streamit.frontend.nodes.ExprArrayInit;
@@ -27,7 +28,6 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.FuncWork;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
@@ -52,7 +52,6 @@ import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
-import streamit.frontend.tosbit.valueClass;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class PartialEvaluator extends FEReplacer {
@@ -68,6 +67,8 @@ public class PartialEvaluator extends FEReplacer {
     
     public boolean isPrecise = true;
     
+    protected List<Function> funcsToAnalyze = null;
+    private Set<Function> funcsAnalyzed = null;
     
     
     public String transName(String name){
@@ -338,6 +339,7 @@ public class PartialEvaluator extends FEReplacer {
     	List<String> outNmList = new ArrayList<String>(exp.getParams().size());
     	List<Expression> nparams = new ArrayList<Expression>(exp.getParams().size());
     	Function fun = ss.getFuncNamed(name);
+    	assert fun != null : " The function " + name + " does not exist!! funcall: " + exp;
     	Iterator<Parameter> formalParams = fun.getParams().iterator();
     	while(actualParams.hasNext()){
     		Expression actual = (Expression) actualParams.next();
@@ -938,6 +940,7 @@ public class PartialEvaluator extends FEReplacer {
     
     
     
+    
 
     public Object visitStreamSpec(StreamSpec spec)
     {    	
@@ -961,17 +964,24 @@ public class PartialEvaluator extends FEReplacer {
             if( isReplacer ){ newVars.add(nstmt); }
         }
         	
-	    List<Function> funcs = this.functionsToAnalyze(spec);
-		
-	    Function f = null;
-        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
-        	f = iter.next();
-        	if( ! f.getName().equals("init") &&  !f.isUninterp()){
-        		Function nstmt =  (Function)f.accept(this);
-        		if( isReplacer ){ newFuncs.add(nstmt); }	
-        	}
-        }
+        funcsToAnalyze = this.functionsToAnalyze(spec);
+        assert funcsToAnalyze != spec.getFuncs();
+        funcsAnalyzed = new HashSet<Function>();
         
+        while(funcsToAnalyze.size() > 0){
+        	Function f = funcsToAnalyze.get(0);
+        	if( ! funcsAnalyzed.contains(f) ){
+        		
+        		if( ! f.getName().equals("init") &&  !f.isUninterp()){        			
+            		Function nstmt =  (Function)f.accept(this);
+            		if( isReplacer ){ newFuncs.add(nstmt); }	
+            	}
+        		funcsAnalyzed.add(f);
+        	}
+        	Function tf = funcsToAnalyze.remove(0);
+    		assert tf == f;
+        }
+                
         for(Function sf : spec.getFuncs()){
         	if(sf.isUninterp()){
         		if( isReplacer ){ newFuncs.add(sf); }
