@@ -2,6 +2,7 @@ package streamit.frontend.experimental.deadCodeElimination;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import streamit.frontend.experimental.abstractValue;
@@ -50,7 +51,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 	}
 	
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
-	    return spec.getFuncs();
+		 return new LinkedList<Function>(spec.getFuncs());
     }
 	
 	public Object visitStmtAssign(StmtAssign stmt)
