@@ -1,6 +1,7 @@
 package streamit.frontend.experimental.nodesToSB;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.ValueOracle;
 
@@ -25,19 +27,36 @@ public class NtsbVtype extends IntVtype {
 		this.out = out;		
 	}
 	
-	public abstractValue STAR(FENode node){
-		String cvar = oracle.addBinding(node);
+	public abstractValue STAR(FENode node){		
 		if(node instanceof ExprStar){
-			ExprStar star = (ExprStar) node;			
+			ExprStar star = (ExprStar) node;
+			
+			Type t = star.getType();
+			int ssz = 1;
+			List<abstractValue> avlist = null;
+			if(t instanceof TypeArray){
+				Integer iv = ((TypeArray)t).getLength().getIValue();
+				assert iv != null;
+				ssz = iv;
+				avlist = new ArrayList<abstractValue>(ssz);
+			}
 			String isFixed = star.isFixed()? " *" : "";
-			String rval;
-			if(star.getSize() > 1)
-				rval =  "<" + cvar + "  " + star.getSize() + isFixed+ ">";
-			else
-				rval =  "<" + cvar +  ">";		
-			return new NtsbValue(rval);
+			NtsbValue nv = null;
+			for(int i=0; i<ssz; ++i){				
+				String cvar = oracle.addBinding(star.getDepObject(i));
+				String rval = "";
+				if(star.getSize() > 1)
+					rval =  "<" + cvar + "  " + star.getSize() + isFixed+ "> ";
+				else
+					rval =  "<" + cvar +  "> ";
+				nv = new NtsbValue(rval);
+				if(avlist != null) avlist.add(nv);
+			}
+			
+			if(avlist != null) return new NtsbValue(avlist);			
+			return nv;
 		}
-		
+		String cvar = oracle.addBinding(node);
 		return new NtsbValue("<" + cvar +  ">");
 	}
 	
@@ -91,8 +110,16 @@ public class NtsbVtype extends IntVtype {
     	while(formalParams.hasNext()){
     		Parameter param = formalParams.next();    	
     		if( param.isParameterOutput()){
+    			if( fun.isUninterp() ){
     			outSlist.add(BOTTOM(name+ "_" + param.getName() + "[" + param.getType() + "]( "+ plist +"  )"));
+    			}else{
+    				outSlist.add(BOTTOM(name + "[" + param.getType() + "]( "+ plist +"  )"));
+    			}
     		}
     	}
+    	if(!fun.isUninterp()){
+    		assert outSlist.size() == 1 : "If a function is to be dynamically inlined, it ought to have only one return value.";
+    	}
+    	
 	}
 }
