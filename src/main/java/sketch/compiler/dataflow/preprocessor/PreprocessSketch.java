@@ -31,6 +31,13 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
+/**
+ * 
+ * The sketch preprocessor mainly does constant propagation and inlining of functions and unrolling of loops.
+ * After this step, all the holes are now regarded as static holes.
+ * @author asolar
+ *
+ */
 public class PreprocessSketch extends DataflowWithFixpoint {
 
 	public Map<String, Function> newFuns;
