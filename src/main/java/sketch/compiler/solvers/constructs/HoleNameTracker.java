@@ -4,7 +4,6 @@
 package streamit.frontend.tosbit;
 
 import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtLoop;
 
@@ -13,7 +12,7 @@ import streamit.frontend.nodes.StmtLoop;
  *
  */
 public interface HoleNameTracker {	
-	String getName(FENode hole);
+	String getName(Object hole);
 	void reset();
 	void pushFunCall(ExprFunCall call);
 	void pushLoop(StmtLoop loop);	

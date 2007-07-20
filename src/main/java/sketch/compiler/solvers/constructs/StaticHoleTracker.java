@@ -13,14 +13,14 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.tosbit.HoleNameTracker;
 
 public class StaticHoleTracker implements HoleNameTracker {
-	private Map<FENode, String> store;
+	private Map<Object, String> store;
 	TempVarGen varGen;
 	public StaticHoleTracker(TempVarGen varGen){
 		this.varGen = varGen;
-		store = new HashMap<FENode, String>();
+		store = new HashMap<Object, String>();
 	}
 	
-	public String getName(FENode hole) {
+	public String getName(Object hole) {
 		
 		String vname = null;
 		if(store.containsKey(hole)){

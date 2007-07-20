@@ -45,7 +45,7 @@ public class ValueOracle {
 	 * @param node
 	 * @param vname
 	 */
-	public String addBinding(FENode node){
+	public String addBinding(Object node){
 		return holeNamer.getName(node);		
 	}	
 	

@@ -27,15 +27,15 @@ public class SequentialHoleTracker implements HoleNameTracker {
 	 * store maps each hole to a stream of variables that
 	 * contain values for this hole. 
 	 */
-	private Map<FENode, List<String>> store;
-	private Map<FENode, Iterator<String>> currentVal;
+	private Map<Object, List<String>> store;
+	private Map<Object, Iterator<String>> currentVal;
 	
 	public SequentialHoleTracker(TempVarGen varGen){
 		this.varGen = varGen;
-		store = new HashMap<FENode, List<String>>();
+		store = new HashMap<Object, List<String>>();
 	}
 	
-	public String getNameFirst(FENode hole) {
+	public String getNameFirst(Object hole) {
 		String vname = "H_" + varGen.nextVar();
 		if(store.containsKey(hole)){
 			store.get(hole).add(vname);
@@ -48,14 +48,14 @@ public class SequentialHoleTracker implements HoleNameTracker {
 	}
 
 	
-	public String getNameOthers(FENode hole) {		
+	public String getNameOthers(Object hole) {		
 		Iterator<String> cit = currentVal.get(hole);
 		assert cit.hasNext() : "This can't happen";		
 		return cit.next();
 	}
 	
 	
-	public String getName(FENode hole){
+	public String getName(Object hole){
 		if( currentVal == null )
 			return getNameFirst(hole);
 		else
@@ -85,9 +85,9 @@ public class SequentialHoleTracker implements HoleNameTracker {
 	}
 	
 	public void reset() {
-		currentVal = new HashMap<FENode, Iterator<String>>();
-		for(Iterator<Entry<FENode, List<String>>> it = store.entrySet().iterator(); it.hasNext(); ){
-			Entry<FENode, List<String>> ent = it.next();
+		currentVal = new HashMap<Object, Iterator<String>>();
+		for(Iterator<Entry<Object, List<String>>> it = store.entrySet().iterator(); it.hasNext(); ){
+			Entry<Object, List<String>> ent = it.next();
 			currentVal.put(ent.getKey(),ent.getValue().iterator());
 		}
 	}
