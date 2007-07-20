@@ -168,11 +168,26 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		
 		
 		public Object visitExprStar(ExprStar exp){
-			ExprStar ns = new ExprStar(exp.getContext(), exp.getSize());
+			ExprStar ns = exp; //new ExprStar(exp.getContext(), exp.getSize());
+			
 			if( exp.getType() instanceof TypeArray  ){
-				ns.setType( ((TypeArray)exp.getType()).getBase()  );
+				// ns.setType( ((TypeArray)exp.getType()).getBase()  );
+				Expression arrLen = typeLen(getType(exp));
+				if( arrLen.equals(len) || !isRHS){
+					return new ExprArrayRange(exp.getContext(), ns, index, true);
+				}else{
+					return new ExprTernary(exp.getCx(),
+							ExprTernary.TEROP_COND, 
+							new ExprBinary(exp.getCx(),ExprBinary.BINOP_AND,
+									new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index, arrLen ),
+									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, new ExprConstInt(0) )
+							)
+							,
+							new ExprArrayRange(exp.getContext(), ns, index, true),
+							new ExprConstInt(0));
+				}
 			}else{
-				ns.setTag(exp.getType());
+				assert len.getIValue()== 1 : "This can't be happening!!";				
 			}
 			return ns;
 		}
