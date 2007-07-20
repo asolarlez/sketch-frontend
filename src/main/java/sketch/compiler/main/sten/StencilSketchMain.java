@@ -17,6 +17,7 @@
 package streamit.frontend;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.LinkedList;
 import java.util.List;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
@@ -90,7 +91,8 @@ public class ToStencilSK extends ToSBit
 	
 	
     public RecursionControl newRControl(){
-    	return new AdvancedRControl(params.branchingFactor, params.inlineAmt, prog);
+    	// return new DelayedInlineRControl(params.inlineAmt, params.branchingFactor);
+    	return new AdvancedRControl(params.branchingFactor, params.inlineAmt, prog); 
     }
     
     public void run()
@@ -151,8 +153,8 @@ public class ToStencilSK extends ToSBit
     	Program tmp = (Program) prog.accept( 
     			new DataflowWithFixpoint(new IntVtype(), varGen, true, params.unrollAmt, newRControl() ){
     				protected List<Function> functionsToAnalyze(StreamSpec spec){
-    				    return spec.getFuncs();
-    			    }	
+    				    return new LinkedList<Function>(spec.getFuncs());
+    			    }
     				public String transName(String name){
     					return state.transName(name);
     				}
@@ -164,7 +166,7 @@ public class ToStencilSK extends ToSBit
     	tmp = (Program)tmp.accept(new EliminateDeadCode());
     	//System.out.println("=========  After ElimDeadCode  =========");
     	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
-        //tmp.accept(new SimpleCodePrinter());
+//        tmp.accept(new SimpleCodePrinter());
         
         prog = tmp;
         

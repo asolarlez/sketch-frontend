@@ -336,14 +336,20 @@ public class ToSBit
 	public void lowerIRToJava(boolean libraryFormat)
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
+		prog.accept(new SimpleCodePrinter());
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
+		prog.accept(new SimpleCodePrinter());
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
+		prog.accept(new SimpleCodePrinter());
 		prog = (Program)prog.accept(new SeparateInitializers());
+		prog.accept(new SimpleCodePrinter());
 		//prog = (Program)prog.accept(new NoRefTypes());        
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
+		prog.accept(new SimpleCodePrinter());
 		beforeUnvectorizing = prog;        
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
+		prog.accept(new SimpleCodePrinter());
 
 	}
 
@@ -391,7 +397,7 @@ public class ToSBit
 	public void partialEvalAndSolve(){
 		lowerIRToJava(!params.libraryFormat);
 		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		//prog.accept(new SimpleCodePrinter());
+		prog.accept(new SimpleCodePrinter());
 		assert oracle != null;
 		try
 		{
@@ -558,7 +564,8 @@ public class ToSBit
 		}
 
 		parseProgram();
-		prog=preprocessProgram(prog); // perform prereq transformations        
+		prog=preprocessProgram(prog); // perform prereq transformations   
+		prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		if (!SemanticChecker.check(prog))
 			throw new IllegalStateException("Semantic check failed");        
