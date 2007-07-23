@@ -54,6 +54,7 @@ import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
+import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -344,7 +345,8 @@ public class ToSBit
 		prog = (Program)prog.accept(new SeparateInitializers());
 		prog.accept(new SimpleCodePrinter());
 		//prog = (Program)prog.accept(new NoRefTypes());        
-
+		prog = (Program)prog.accept(new EliminateBitSelector());
+		
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		prog.accept(new SimpleCodePrinter());
 		beforeUnvectorizing = prog;        
@@ -385,7 +387,7 @@ public class ToSBit
 		System.out.println("=============================================================");
 		prog = (Program)prog.accept(new FunctionParamExtension());
 		prog = (Program)prog.accept(new ConstantReplacer(params.defines));   
-		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
+		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));		
 		prog = (Program)prog.accept(new TypeInferenceForStars());
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.unrollAmt, newRControl() ) );        
 		//System.out.println("=============================================================");
