@@ -128,7 +128,12 @@ public class ExprStar extends Expression
 	 */
 	public void setType(Type type) {
 		this.type = type;
-		if( (type.equals(TypePrimitive.inttype) || type.equals(TypePrimitive.ndinttype)) && !isFixed ){
+		
+		Type tt = type;
+		while(tt instanceof TypeArray){
+			tt = ((TypeArray)tt).getBase();
+		}
+		if( (tt.equals(TypePrimitive.inttype) || tt.equals(TypePrimitive.ndinttype)) && !isFixed ){
 			setSize(INT_SIZE);
 		}
 	}
