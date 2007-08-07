@@ -116,8 +116,10 @@ public class IntAbsValue extends abstractValue {
 		case INT: return obj.toString();
 		case LIST: {
 			String rval = "$ ";
+			int i=0;
 			for(Iterator<abstractValue> it = getVectValue().iterator(); it.hasNext(); ){
 				rval += it.next().toString() + " ";
+				if(++i>10){ rval += "..." ; break; }
 			}
 			rval += "$";
 			return rval;
