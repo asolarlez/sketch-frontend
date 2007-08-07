@@ -17,6 +17,29 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
+/**
+ * This class isolates array range reads and writes so that
+ * expressions of the form arr[a::b] = complicated
+ * become 
+ * tmp = complicated;
+ * arr[a::b] = tmp;
+ * 
+ * Also, things like
+ * 
+ *  arr = fun_of(x[a::b]);
+ *  
+ *  become
+ *  tmp = x[a::b];
+ *  arr = func_of(tmp);
+ *
+ * 
+ * This way, assignments to array ranges can assume that the rhs is simply an arrya variable of the same size,
+ * and binary expressions, etc, can assume they have no array ranges.
+ * @author asolar
+ *
+ */
+
+
 public class EliminateArrayRange extends SymbolTableVisitor {
 
 	private TempVarGen varGen;

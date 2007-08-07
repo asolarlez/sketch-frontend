@@ -211,8 +211,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		exp=(ExprFunCall) super.visitExprFunCall(exp);
 
 		// resolve the function being called
-		Function fun=symtab.lookupFn(exp.getName());
-		
+		Function fun;
+		try{
+		fun =symtab.lookupFn(exp.getName());
+		}catch(UnrecognizedVariableException e){
+			throw new UnrecognizedVariableException(exp.getCx() + ": Function name " + e.getMessage() + " not found"  );
+		}
 		// now we create a temp (or several?) to store the result
 		List outParams=getOutputParams(fun);
 		String tempNames[]=new String[outParams.size()];
