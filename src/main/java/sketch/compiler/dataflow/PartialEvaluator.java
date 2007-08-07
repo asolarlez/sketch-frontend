@@ -133,9 +133,11 @@ public class PartialEvaluator extends FEReplacer {
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
 		abstractValue newStart = (abstractValue) rl.start().accept(this);
 		Expression nstart = exprRV;
-		
+		if(exp.getBase() instanceof ExprArrayRange){
+			System.out.println("WTF??");
+		}
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
-		Expression nbase = exprRV;		
+		Expression nbase = exprRV;
 		if(isReplacer ){
 			exprRV = new ExprArrayRange(exp.getContext(), nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
 		}
@@ -441,8 +443,13 @@ public class PartialEvaluator extends FEReplacer {
     {
     	
         String op;
-        	        
-        abstractValue rhs = (abstractValue) stmt.getRHS().accept(this);
+        abstractValue rhs = null;	        
+        try{
+        	rhs = (abstractValue) stmt.getRHS().accept(this);
+        }catch(ArrayIndexOutOfBoundsException e){
+        	String msg = e.getMessage() + ":" + stmt.getCx();
+        	throw new ArrayIndexOutOfBoundsException(msg);
+        }
         Expression nrhs = exprRV; 
                 
         Expression lhs = stmt.getLHS();
@@ -1022,7 +1029,7 @@ public class PartialEvaluator extends FEReplacer {
 	
 	
 	
-    public void inParameterSetter(Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, boolean checkError){    	
+    public void inParameterSetter(FEContext cx,  Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, boolean checkError){    	
     	List<Expression> actualsList = new ArrayList<Expression>();
     	List<abstractValue> actualsValList = new ArrayList<abstractValue>();
     	
@@ -1046,10 +1053,10 @@ public class PartialEvaluator extends FEReplacer {
         	state.varDeclare(formalParamName, type);        	
     		if( !formalParam.isParameterOutput() ){
     			state.setVarValue(formalParamName, actualParamValue);
-    	    	Statement varDecl=new StmtVarDecl(null,type,state.transName(formalParam.getName()),actualParam);
+    	    	Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
     	    	addStatement((Statement)varDecl);
     		}else{
-    			Statement varDecl=new StmtVarDecl(null,type,state.transName(formalParam.getName()), new ExprConstInt(0));
+    			Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), new ExprConstInt(0));
     	    	addStatement((Statement)varDecl);
     		}
         }

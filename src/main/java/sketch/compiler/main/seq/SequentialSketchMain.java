@@ -55,6 +55,7 @@ import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
+import streamit.frontend.passes.EliminateNestedArrAcc;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -337,22 +338,19 @@ public class ToSBit
 	public void lowerIRToJava(boolean libraryFormat)
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		prog.accept(new SimpleCodePrinter());
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
-		prog.accept(new SimpleCodePrinter());
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
-		prog.accept(new SimpleCodePrinter());
 		prog = (Program)prog.accept(new SeparateInitializers());
-		prog.accept(new SimpleCodePrinter());
 		//prog = (Program)prog.accept(new NoRefTypes());        
 		prog = (Program)prog.accept(new EliminateBitSelector());
 		
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
-		prog.accept(new SimpleCodePrinter());
 		beforeUnvectorizing = prog;        
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
-		prog.accept(new SimpleCodePrinter());
+		//prog.accept(new SimpleCodePrinter());
 
+		prog = (Program)prog.accept(new EliminateNestedArrAcc());
+		//prog.accept(new SimpleCodePrinter());
 	}
 
 
@@ -546,6 +544,7 @@ public class ToSBit
 		if(params.doVectorization) {
 			prog=(Program) prog.accept(new AssembleInitializers());
 			prog=(Program) prog.accept(new BitVectorPreprocessor(varGen));
+			//prog.accept(new SimpleCodePrinter());
 			prog=(Program) prog.accept(new BitTypeRemover(varGen));
 			prog=(Program) prog.accept(new SimplifyExpressions());
 		}
@@ -567,7 +566,7 @@ public class ToSBit
 
 		parseProgram();
 		prog=preprocessProgram(prog); // perform prereq transformations   
-		prog.accept(new SimpleCodePrinter());
+		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		if (!SemanticChecker.check(prog))
 			throw new IllegalStateException("Semantic check failed");        
