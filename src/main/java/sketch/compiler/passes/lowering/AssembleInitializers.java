@@ -16,9 +16,12 @@
 
 package streamit.frontend.passes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
@@ -26,6 +29,8 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
 
 /**
  * Pair up variable declarations and adjacent assignments.  Some of the
@@ -57,13 +62,75 @@ public class AssembleInitializers extends FEReplacer
             {
                 Statement nst = (Statement)iter.next();
                 iter.previous();
-                if (!(nst instanceof StmtAssign))
+                if (!(nst instanceof StmtAssign)){
+                	StmtVarDecl decl = (StmtVarDecl)stmt;
+                	
+                	if(decl.getInit(0) == null){
+	                	List newInits = new java.util.ArrayList();
+	                	 for (int i = 0; i < decl.getNumVars(); i++)
+	                     {
+	                		Expression init = null;
+	                		Type type = decl.getType(i);
+	                		if(decl.getInit(i) != null){
+	                			init =decl.getInit(i); 
+	                		}else{
+								if( type instanceof TypeArray ){
+									List<Expression> ilist = new ArrayList<Expression>();
+									int N = ((TypeArray)type).getLength().getIValue();
+									for(int k=0; k<N; ++k){
+										ilist.add( new ExprConstInt(0) );
+									}
+									init = new ExprArrayInit(decl.getCx(), ilist);
+								}else{
+									
+									init = new ExprConstInt(0);
+								}
+	                		}
+	                		newInits.add(init);
+	                     }
+	                	 stmt = new StmtVarDecl(decl.getContext(),
+	                             decl.getTypes(),
+	                             decl.getNames(),
+	                             newInits);
+                	}
                     break;                
+                }
+                
                 // check that the LHS of the next statement is
                 // a simple variable
                 Expression lhs = ((StmtAssign)nst).getLHS();
-                if (!(lhs instanceof ExprVar))
+                if (!(lhs instanceof ExprVar)){                	
+                	StmtVarDecl decl = (StmtVarDecl)stmt;
+                	if(decl.getInit(0) == null){
+	                	List newInits = new java.util.ArrayList();
+	                	 for (int i = 0; i < decl.getNumVars(); i++)
+	                     {
+	                		Expression init = null;
+	                		Type type = decl.getType(i);
+	                		if(decl.getInit(i) != null){
+	                			init =decl.getInit(i); 
+	                		}else{
+								if( type instanceof TypeArray ){
+									List<Expression> ilist = new ArrayList<Expression>();
+									int N = ((TypeArray)type).getLength().getIValue();
+									for(int k=0; k<N; ++k){
+										ilist.add( new ExprConstInt(0) );
+									}
+									init = new ExprArrayInit(decl.getCx(), ilist);
+								}else{
+									
+									init = new ExprConstInt(0);
+								}
+	                		}
+	                		newInits.add(init);
+	                     }
+	                	 stmt = new StmtVarDecl(decl.getContext(),
+	                             decl.getTypes(),
+	                             decl.getNames(),
+	                             newInits);
+                	}
                     break;
+                }
                 String varName = ((ExprVar)lhs).getName();
                 // Now, walk through the declaration.
                 StmtVarDecl decl = (StmtVarDecl)stmt;

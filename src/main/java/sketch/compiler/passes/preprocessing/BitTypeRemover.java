@@ -164,14 +164,14 @@ public class BitTypeRemover extends SymbolTableVisitor
 					int val=ival.intValue();
 					Type base = TypePrimitive.int32type;
 					int sz = 32;
-					if(val<=8)
+				 if(val<=8)
 					{	base = TypePrimitive.int8type; sz = 8; }
 					else if(val<=16)
 					{	base = TypePrimitive.int16type; sz = 16; }
 					else if(val<=32)
 					{	base = TypePrimitive.int32type; sz = 32; }
-					else if(val<=64)
-					{	base = TypePrimitive.int64type; sz = 64; }
+					/*else if(val<=64)
+					{	base = TypePrimitive.int64type; sz = 64; } */
 					//ok, looks like we'll need an array to store the large integer
 					return new TypeArray(base,
 							new ExprConstInt(len.getContext(),((val-1)/sz)+1));
@@ -690,6 +690,16 @@ public class BitTypeRemover extends SymbolTableVisitor
 								if(start%rhws!=0)
 									newRhs=new ExprBinary(newRhs.getContext(),ExprBinary.BINOP_RSHIFT,newRhs,new ExprConstInt(start%rhws));
 							}
+							
+							if( end-start < ws ){
+								final Expression bitMask;								
+									bitMask=new ExprFunCall(stmt.getContext(),"SK_ONES",Arrays.asList(new Expression[] {
+											new ExprConstInt(end-start+1)
+										}));
+									newRhs=new ExprBinary(newRhs.getCx(),ExprBinary.BINOP_BAND ,newRhs,bitMask);
+							}
+							
+							
 							Expression zero = new ExprConstInt(0);
 							Expression newLhs = lhs;
 							{								
