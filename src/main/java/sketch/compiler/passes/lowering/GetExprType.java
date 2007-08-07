@@ -150,7 +150,11 @@ public class GetExprType extends FENullVisitor
         	exp.getRight().accept(this);
         }
         
-        return tl.leastCommonPromotion(tr);
+        Type rv = tl.leastCommonPromotion(tr);
+        
+        assert rv != null : "Type ERROR: " + "The types are incompatible " + tl + " , " + tr; 
+        
+        return rv; 
     }
 
     public Object visitExprComplex(ExprComplex exp)
@@ -308,6 +312,12 @@ public class GetExprType extends FENullVisitor
     public Object visitExprVar(ExprVar exp)
     {
         // Look this up in the symbol table.
-        return symTab.lookupVar(exp.getName());
+    	Type t;
+    	try{
+    		t = symTab.lookupVar(exp.getName());
+    	}catch(UnrecognizedVariableException e){
+    		throw new UnrecognizedVariableException(exp.getCx() + ": The variable " + e.getMessage() + " has not been defined.");
+    	}
+        return t;
     }
 }
