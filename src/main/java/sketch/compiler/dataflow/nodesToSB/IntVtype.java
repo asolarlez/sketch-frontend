@@ -251,14 +251,19 @@ public class IntVtype extends abstractValueType {
 		if( idx.hasIntVal() ){
 			int iidx = idx.getIntVal() ;
 			int size = arr.getVectValue().size();
-			if( !isUnchecked && (iidx < 0 || iidx >= size)  )
-				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+			 if( !isUnchecked && (iidx < 0 || iidx >= size)  )
+				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size+") ");
 			if(iidx < 0 || iidx >= size)
 				return CONST(0);
 			return arr.getVectValue().get(idx.getIntVal());
 		}else{
-			return BOTTOM( "(" + arr + "[" + idx + "])" );
+			return rawArracc(arr, idx);
 		}		
+	}
+	
+	
+	protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
+		return BOTTOM( "(" + arr + "[" + idx + "])" );
 	}
 
 	public abstractValue cast(abstractValue v1, Type type) {
