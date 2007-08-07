@@ -4,11 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry.Entry;
-
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Program;
@@ -98,7 +95,11 @@ public class AdvancedRControl extends RecursionControl {
 			String altName = null;
 			if(func.getSpecification() != null){
 				altName = func.getName();
-				func = ss.getFuncNamed(func.getSpecification());
+				Function tmp = ss.getFuncNamed(func.getSpecification());
+				if(tmp == null){					
+					throw new RuntimeException("The function " + func.getSpecification() + " does not exist.\n\t" + func.getCx());
+				}
+				func = tmp; 
 			}
 			currentFun = func.getName();
 			currentCalls = 0;
