@@ -24,6 +24,11 @@ public class ValueOracle {
 	private Map<String, Boolean> valMap;
 	
 	
+	
+	public boolean allowMemoization(){
+		return holeNamer.allowMemoization();	
+	}
+	
 	public HoleNameTracker getHoleNamer(){
 		return holeNamer;
 	}
