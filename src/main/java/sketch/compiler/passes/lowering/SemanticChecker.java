@@ -526,7 +526,7 @@ public class SemanticChecker
 			
 			public Object visitFunction(Function func)
 			{
-				System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction: " + func.getName());
+				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction: " + func.getName());
 				
 				currentFunctionReturn = func.getReturnType();
 
@@ -930,14 +930,14 @@ public class SemanticChecker
 						!(rt.promotesTo(lt)))
 					report(stmt,
 							"right-hand side of assignment must "+
-					"be promotable to left-hand side's type");
+					"be promotable to left-hand side's type " + lt + "!>=" + rt );
 				if( lt == null || rt == null)
 					report(stmt,
 					"This assignments involves a bad type");
 			}
 			public Object visitStmtAssign(StmtAssign stmt)
 			{
-				System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
+				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
 
 				Type lt = getType(stmt.getLHS());
 				Type rt = getType(stmt.getRHS());
