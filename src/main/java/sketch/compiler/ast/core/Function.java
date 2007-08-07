@@ -63,6 +63,11 @@ public class Function extends FENode
         this.returnType = returnType;
         this.params = params;
         this.body = body;
+        if(body instanceof StmtBlock){
+        	if(((StmtBlock) body ).getStmts().size() == 0){
+        		this.cls = this.FUNC_UNINTERP;
+        	}
+        }
     }
     
     public Function(FEContext context, int cls, String name,
