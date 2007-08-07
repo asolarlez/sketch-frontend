@@ -18,5 +18,5 @@ public interface HoleNameTracker {
 	void pushLoop(StmtLoop loop);	
 	void pushFor(StmtFor floop);
 	void regLoopIter();
-	
+	public boolean allowMemoization();	
 }

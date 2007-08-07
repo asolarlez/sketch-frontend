@@ -30,6 +30,10 @@ public class SequentialHoleTracker implements HoleNameTracker {
 	private Map<Object, List<String>> store;
 	private Map<Object, Iterator<String>> currentVal;
 	
+	public boolean allowMemoization(){
+		return false;	
+	}
+	
 	public SequentialHoleTracker(TempVarGen varGen){
 		this.varGen = varGen;
 		store = new HashMap<Object, List<String>>();
