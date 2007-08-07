@@ -47,7 +47,20 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 	{
 		final FEContext ct=e.getContext();
 		final String tmp=varGen.nextVar();
-		StmtVarDecl svd = new StmtVarDecl(e.getContext(), type, tmp, null );
+		Expression init = null;
+		if( type instanceof TypeArray ){
+			List<Expression> ilist = new ArrayList<Expression>();
+			int N = ((TypeArray)type).getLength().getIValue();
+			for(int i=0; i<N; ++i){
+				ilist.add( new ExprConstInt(0) );
+			}
+			init = new ExprArrayInit(e.getCx(), ilist);
+		}else{
+			
+			init = new ExprConstInt(0);
+		}
+		
+		StmtVarDecl svd = new StmtVarDecl(e.getContext(), type, tmp, init );
 		addStatement((Statement)super.visitStmtVarDecl(svd));
 		StmtAssign assign=new StmtAssign(ct,new ExprVar(ct,tmp),e);
 		assign=(StmtAssign) visitStmtAssign(assign);
@@ -198,7 +211,20 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 				if(false && initExpr==null && !name.startsWith("__"))
 					initExpr=new ExprConstInt(stmt.getContext(),0);
 				if(initExpr!=null && !(initExpr instanceof ExprArrayInit)) { 
-					StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,null);
+					Expression init = null;
+					Type type = stmt.getType(i);
+					if( type instanceof TypeArray ){
+						List<Expression> ilist = new ArrayList<Expression>();
+						int N = ((TypeArray)type).getLength().getIValue();
+						for(int s=0; s<N; ++s){
+							ilist.add( new ExprConstInt(0) );
+						}
+						init = new ExprArrayInit(stmt.getCx(), ilist);
+					}else{
+						
+						init = new ExprConstInt(0);
+					}
+					StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,init);
 					decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
 					statements.add(decl);
 					StmtAssign let=new StmtAssign(stmt.getContext(),new ExprVar(stmt.getContext(),name),initExpr);
