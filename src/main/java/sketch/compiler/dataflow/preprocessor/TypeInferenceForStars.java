@@ -76,7 +76,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 //    	}
     	assert !(lt != null && rt != null &&
                 !(rt.promotesTo(lt))) : (stmt.getContext() +
-                       "BUG, this should never happen");
+                       "  Type missmatch " + lt +" !>= " + rt);
     	
         assert !( lt == null || rt == null):(stmt.getContext() +
             ": BUG, this should never happen " + lt + "   " + rt);

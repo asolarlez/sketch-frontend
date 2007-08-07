@@ -47,6 +47,14 @@ public class ExprStar extends Expression
     }
 	
 	public FENode getDepObject(int i){
+		Type t = type;
+		if(type instanceof TypePrimitive){
+			return this;
+		}else{
+			assert type instanceof TypeArray;
+			t = ((TypeArray)type).getBase();
+		}
+		
 		if(depObjects == null){
 			depObjects = new Vector<FENode>();
 			depObjects.setSize(i+1);			
@@ -55,6 +63,8 @@ public class ExprStar extends Expression
 			depObjects.setSize(i+1);			
 		}
 		if(depObjects.get(i) == null){
+			ExprStar es = new ExprStar(this);
+			es.type = t;
 			depObjects.set(i, new DummyFENode(getCx()));			
 		}
 		return depObjects.get(i);
