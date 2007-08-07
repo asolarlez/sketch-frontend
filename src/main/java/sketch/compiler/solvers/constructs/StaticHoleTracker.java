@@ -15,6 +15,11 @@ import streamit.frontend.tosbit.HoleNameTracker;
 public class StaticHoleTracker implements HoleNameTracker {
 	private Map<Object, String> store;
 	TempVarGen varGen;
+	
+	public boolean allowMemoization(){
+		return true;	
+	}
+	
 	public StaticHoleTracker(TempVarGen varGen){
 		this.varGen = varGen;
 		store = new HashMap<Object, String>();
