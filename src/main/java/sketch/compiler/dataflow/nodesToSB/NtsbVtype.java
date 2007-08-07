@@ -2,6 +2,7 @@ package streamit.frontend.experimental.nodesToSB;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,7 +28,15 @@ public class NtsbVtype extends IntVtype {
 		this.out = out;		
 	}
 	
+	
+	java.util.Map<FENode, NtsbValue> memoizedValues = new HashMap<FENode, NtsbValue>();
+	
 	public abstractValue STAR(FENode node){		
+		if(oracle.allowMemoization()){ 
+			if(memoizedValues.containsKey(node)){ 
+				return memoizedValues.get(node); 
+			}
+		}
 		if(node instanceof ExprStar){
 			ExprStar star = (ExprStar) node;
 			
@@ -53,11 +62,14 @@ public class NtsbVtype extends IntVtype {
 				if(avlist != null) avlist.add(nv);
 			}
 			
-			if(avlist != null) return new NtsbValue(avlist);			
+			if(avlist != null) nv = new NtsbValue(avlist);
+			if(oracle.allowMemoization()){ memoizedValues.put(node, nv); }
 			return nv;
 		}
 		String cvar = oracle.addBinding(node);
-		return new NtsbValue("<" + cvar +  ">");
+		NtsbValue nv =new NtsbValue("<" + cvar +  ">");
+		if(oracle.allowMemoization()){ memoizedValues.put(node, nv); }
+		return nv;
 	}
 	
 	public abstractValue BOTTOM(){
@@ -96,13 +108,99 @@ public class NtsbVtype extends IntVtype {
 		return new NtsbState(var, t, this);
 	}
 	
+	public abstractValue plus(abstractValue v1, abstractValue v2) {
+		NtsbValue rv = (NtsbValue) super.plus(v1, v2);
+		if(rv.isBottom()){
+			if(v1.hasIntVal() || v2.hasIntVal()){
+				if(v2.hasIntVal()){
+					abstractValue tmp = v2;
+					v2 = v1;
+					v1 = tmp;
+				}				
+				assert v1.hasIntVal() && !v2.hasIntVal() : "This is an invariant";
+				NtsbValue nv2 = (NtsbValue) v2;
+				int A = 1;
+				int B = 0;
+				NtsbValue X = (NtsbValue)v2;
+				if( nv2.isAXPB ){
+					A = nv2.A;
+					B = nv2.B;
+					X = nv2.X;
+				}
+				B = B + v1.getIntVal();
+				rv.isAXPB = true;
+				rv.A = A;
+				rv.B = B;
+				rv.X = X;
+			}
+		}
+		return rv;
+	}
+	
+	
+	public abstractValue times(abstractValue v1, abstractValue v2) {
+		NtsbValue rv = (NtsbValue) super.times(v1, v2);
+		if(rv.isBottom()){
+			if(v1.hasIntVal() || v2.hasIntVal()){
+				if(v2.hasIntVal()){
+					abstractValue tmp = v2;
+					v2 = v1;
+					v1 = tmp;
+				}
+				assert v1.hasIntVal() && !v2.hasIntVal() : "This is an invariant";
+				NtsbValue nv2 = (NtsbValue) v2;
+				int A = 1;
+				int B = 0;
+				NtsbValue X = (NtsbValue)v2;
+				if( nv2.isAXPB ){
+					A = nv2.A;
+					B = nv2.B;
+					X = nv2.X;
+				}
+				A = A * v1.getIntVal();
+				B = B * v1.getIntVal();
+				rv.isAXPB = true;
+				rv.A = A;
+				rv.B = B;
+				rv.X = X;
+			}
+		}		
+		return rv;
+	}
+	
+	
+	protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
+		NtsbValue nidx = (NtsbValue) idx;
+		if(nidx.isAXPB){
+			int i=nidx.B;
+			List<abstractValue> vlist =arr.getVectValue(); 
+			String rval = "($ ";
+			int vsz = vlist.size();
+			while(i < vsz ){
+				rval += vlist.get(i).toString() + " ";
+				i += nidx.A;
+			}
+			rval += "$[" + nidx.X + "])";
+			return BOTTOM(rval);
+		}else
+			return BOTTOM( "(" + arr + "[" + idx + "])" );
+	}
+	
+	
 	public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist){
 		Iterator<abstractValue> actualParams = avlist.iterator();
 		String name = fun.getName();
 		String plist = "";
 		while( actualParams.hasNext() ){
 			abstractValue param = actualParams.next();
-			plist += param;
+			if(param.isVect()){
+				List<abstractValue> lst = param.getVectValue();
+				for(int tt = 0; tt<lst.size(); ++tt){
+					plist += lst.get(tt) + " ";
+				}
+			}else{
+				plist += param;
+			}
 			plist += " ";			
 		}
 		

@@ -240,7 +240,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 			    		{
 			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
-			    			inParameterSetter(formalParams, actualParams, false);
+			    			inParameterSetter(exp.getCx() ,formalParams, actualParams, false);
 			    		}
 			    		Statement body = (Statement) fun.getBody().accept(this);
 			    		addStatement(body);

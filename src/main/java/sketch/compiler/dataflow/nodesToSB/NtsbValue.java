@@ -13,6 +13,11 @@ public class NtsbValue extends IntAbsValue {
 	private final String name; // name is only used when it is LHS.
 	private int rhsIdx=0;
 	
+	boolean isAXPB=false;
+	int A;
+	int B;
+	NtsbValue X;
+	
 	public abstractValue clone(){	
 		return new NtsbValue(this);
 	}
@@ -102,6 +107,8 @@ public class NtsbValue extends IntAbsValue {
 	}
 	public void update(abstractValue v){
 		assert lhsIdx != null;
+		isAXPB=false;
+		X = null;
 		rhsIdx = lhsIdx.idx;
 		lhsIdx.idx ++;
 		super.update(v);
