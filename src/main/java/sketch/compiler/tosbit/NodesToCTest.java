@@ -103,7 +103,8 @@ public class NodesToCTest extends NodesToJava {
 			TypeArray array=(TypeArray)t;
 			if(isBitType(array.getBase())) {
 				int len=getBitLength(array);
-				if(len<=64) return 1;
+				int ws = typeWS(array);
+				if(len <= ws) return 1;
 				else return (len-1)/32+1;
 			}
 			else
@@ -130,8 +131,8 @@ public class NodesToCTest extends NodesToJava {
 					return 16;
 				else if(len<=32)
 					return 32;
-				else if(len<=64)
-					return 64;
+				//else if(len<=64)
+				//	return 64;
 				else
 					return 32;
 			}

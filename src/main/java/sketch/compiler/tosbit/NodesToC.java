@@ -279,7 +279,7 @@ public class NodesToC extends NodesToJava {
         }
         // Assume both sides are the right type.
         return (String)stmt.getLHS().accept(this) + op +
-            (String)stmt.getRHS().accept(this);
+            (String)stmt.getRHS().accept(this) + ";";
 	}
 
 	@Override
