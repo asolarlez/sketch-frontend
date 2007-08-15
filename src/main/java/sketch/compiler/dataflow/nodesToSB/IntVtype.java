@@ -347,6 +347,20 @@ public class IntVtype extends abstractValueType {
 		}
 	}
 
+	
+	public abstractValue ternary(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
+		assert (cond != null) : "API usage bug";
+		if( cond.hasIntVal() ){
+			if( cond.getIntVal() != 0){
+				return vtrue;
+			}else{
+				return vfalse;
+			}
+		}else{
+			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" ); 
+		}	
+	}
+	
 	public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
 		if(cond == null) return join(vtrue, vfalse);
 		if( cond.hasIntVal() ){

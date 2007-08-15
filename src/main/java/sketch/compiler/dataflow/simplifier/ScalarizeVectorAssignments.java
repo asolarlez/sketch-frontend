@@ -161,8 +161,14 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 							new ExprConstInt(0));
 				}
 			}else{
-				assert len.getIValue()== 1 : "This can't be happening!!";
-				return exp;
+				if( len.getIValue()== 1 ){
+					return exp;					
+				}else{
+					return new ExprTernary(exp.getCx(),
+							ExprTernary.TEROP_COND, 
+							new ExprBinary(exp.getCx(), ExprBinary.BINOP_EQ, index, new ExprConstInt(0) ), exp, new ExprConstInt(0));
+					
+				}
 			}
 		}
 		
@@ -273,6 +279,16 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		}
 	    
 	    
+		
+		public Object visitExprTernary(ExprTernary exp){
+			assert exp.getOp() == ExprTernary.TEROP_COND : "Strange operator I've never seen  " + exp + "!?";
+			Integer condlen = typeLen(getType(exp.getA())).getIValue();
+			assert condlen == 1 : "The type of the predicate for a conditional must be a scalar. " + exp + ": " + exp.getCx();			
+			Expression expB = (Expression) exp.getB().accept(this);
+			Expression expC = (Expression) exp.getC().accept(this);
+			
+			return new ExprTernary(exp.getCx(), exp.getOp(), exp.getA(), expB, expC );						
+		}
 		
 		public Object visitExprBinary(ExprBinary exp)
 	    {
