@@ -13,6 +13,12 @@ import streamit.frontend.experimental.varState;
 public class transAssignAbsValue extends abstractValue {
 	String varIamEqualTo=null;
 	Set<String> varsEqToMe;
+	/**
+	 * If the abstract value is a left hand side value, then me corresponds to the name
+	 * of the variable associated with the transitive assignment.
+	 * Note that this assignment is not precise enough to identify transitive assignments through
+	 * array locations or memory, only through single variables. That's why this variable makes any sense at all.
+	 */
 	final String me;
 	final MethodState ms;
 	

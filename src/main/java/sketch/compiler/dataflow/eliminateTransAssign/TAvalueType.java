@@ -71,6 +71,12 @@ public class TAvalueType extends abstractValueType {
 	public varState cleanState(String var, Type t, MethodState mstate) {
 		return new TAvarState(var, t, mstate);
 	}
+	
+	public abstractValue ternary(abstractValue cond, abstractValue vtrue,
+			abstractValue vfalse) {		
+		return bottom;
+	}
+	
 
 	@Override
 	public abstractValue condjoin(abstractValue cond, abstractValue vtrue,

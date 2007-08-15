@@ -141,6 +141,34 @@ public class LiveVariableVType extends abstractValueType {
 		return new LiveVariableVarState(var,t, mstate);
 	}
 
+	
+	
+	public abstractValue ternary(abstractValue cond, abstractValue vtrue,
+			abstractValue vfalse) {
+		LVSet lv = new LVSet();
+		if( cond instanceof LVSet){
+			lv.set.addAll(((LVSet)cond).set );
+		}
+		if( cond instanceof LiveVariableAV){
+			lv.set.add( (LiveVariableAV) cond );
+		}
+		if( vtrue instanceof LVSet){
+			lv.set.addAll(((LVSet)vtrue).set );
+		}
+		if( vtrue instanceof LiveVariableAV){
+			lv.set.add( (LiveVariableAV) vtrue );
+		}
+		
+		if( vfalse instanceof LVSet){
+			lv.set.addAll(((LVSet)vfalse).set );
+		}
+		if( vfalse instanceof LiveVariableAV){
+			lv.set.add( (LiveVariableAV) vfalse );
+		}
+		return lv;
+	}
+	
+	
 	@Override
 	public abstractValue condjoin(abstractValue cond, abstractValue vtrue,
 			abstractValue vfalse) {

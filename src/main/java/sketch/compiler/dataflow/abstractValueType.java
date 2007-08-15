@@ -58,10 +58,13 @@ public abstract class abstractValueType{
 	abstract public abstractValue not(abstractValue v1);
 	abstract public abstractValue neg(abstractValue v1);
 	
+	abstract public abstractValue ternary(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
+	
 	/**
 	 * Conditional join. 
 	 * When cond is null, it is simply a join between vtrue and vfalse. 
-	 * When cond is not null, then it is a conditional join, such that if cond is true, the return value should be vtrue, and otherwise it should be vfalse. 
+	 * When cond is not null, then it is a conditional join, such that if cond is true, the return value should be vtrue, and otherwise it should be vfalse.
+	 * Very similar to ternary, but not the same thing. Be careful with this. 
 	 * @param cond
 	 * @param vtrue
 	 * @param vfalse
