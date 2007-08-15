@@ -342,7 +342,7 @@ public class ToSBit
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
 		//prog = (Program)prog.accept(new NoRefTypes());        
-		prog = (Program)prog.accept(new EliminateBitSelector());
+		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 		
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;        

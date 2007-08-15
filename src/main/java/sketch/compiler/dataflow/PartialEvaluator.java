@@ -188,7 +188,7 @@ public class PartialEvaluator extends FEReplacer {
 	    {
 	    case ExprTernary.TEROP_COND:	
 	    	if(isReplacer) exprRV = new ExprTernary(exp.getContext(), exp.getOp(), ncond, nvtrue, nvfalse);
-			return vtype.condjoin(cond, vtrue, vfalse);
+			return vtype.ternary(cond, vtrue, vfalse);
 	    }
 		assert false;
 	    return null;
