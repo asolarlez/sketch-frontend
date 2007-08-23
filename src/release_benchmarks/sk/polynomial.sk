@@ -1,5 +1,5 @@
 int W = 5;
-// This benchmark requires --inlineamnt  > 5 in order to resolve.
+// This benchmark requires --inlineamnt  >= 5 in order to resolve.
 
 bit [W] mult(bit[W] in1, bit[W] in2){
 	bit [W] result = 0;
@@ -35,8 +35,7 @@ bit[W] p1Sk (bit[W] x) implements spec {
 	bit[W] two = 0; two[1] = 1;
 	bit[W] three = one+two;
 	bit[W] four = two+two;
-	bit[W] five = four+one;
 
-	return poly(five,x);
+	return poly(four,x);
 }
 
