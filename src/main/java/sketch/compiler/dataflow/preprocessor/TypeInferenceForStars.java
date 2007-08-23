@@ -57,18 +57,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     	return super.visitStmtLoop(stmt);    	
     }
 
-    private Type matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
-    	if( lt != null && rt != null && lhsn != null){
-    		if(!lt.isNonDet() && rt.isNonDet()){
-    			/*
-    			 * In this case, the lhs of the assignment is a deterministic
-    			 * type, but the rhs is not. In this case, we promote the
-    			 * type of the var on the lhs.
-    			 */
-    			symtab.upgradeVar(lhsn, lt.makeNonDet());
-    			lt = lt.makeNonDet(); //symtab.lookupVar(lhsn);
-    		}
-    	}
+    private Type matchTypes(Statement stmt,String lhsn, Type lt, Type rt){    	
 //    	if((lt != null && rt != null && !rt.promotesTo(lt)))
 //    	{
 //        	if((lt != null && rt != null && !rt.promotesTo(lt)))
