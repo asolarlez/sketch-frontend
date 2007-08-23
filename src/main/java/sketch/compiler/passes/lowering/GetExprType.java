@@ -48,7 +48,7 @@ public class GetExprType extends FENullVisitor
     public Object visitExprArrayRange(ExprArrayRange exp) {
     	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getContext();
     	Type base = (Type)exp.getBase().accept(this);
-    	boolean isNonDet=false;				
+    			
 		List l=exp.getMembers();
 		Expression expr = null;
 		for(int i=0;i<l.size();i++) {
@@ -56,9 +56,7 @@ public class GetExprType extends FENullVisitor
 			if(obj instanceof Range) {
 				Range range = (Range) obj;
 				Type start = (Type)((Range) obj).start().accept(this);
-				Type end = (Type)((Range) obj).end().accept(this);
-				isNonDet = isNonDet || start.isNonDet();
-				isNonDet = isNonDet || end.isNonDet();
+				Type end = (Type)((Range) obj).end().accept(this);				
 				if(expr == null){
 					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start());
 				}else{
@@ -70,7 +68,6 @@ public class GetExprType extends FENullVisitor
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
 				Type start = (Type)range.start().accept(this);
-				isNonDet = isNonDet || start.isNonDet();
 				if(expr == null){
 					expr = new ExprConstInt(range.len());
 				}else{
@@ -81,7 +78,7 @@ public class GetExprType extends FENullVisitor
 		if(!(base instanceof TypeArray)) return null;
         // ASSERT: base is a TypeArray.
 		
-		Type baseType = isNonDet ? ((TypeArray)base).getBase().makeNonDet() : ((TypeArray)base).getBase();   
+		Type baseType = ((TypeArray)base).getBase();   
 		
 		
 		
@@ -139,10 +136,7 @@ public class GetExprType extends FENullVisitor
         	assert (tl instanceof TypeArray) && tr != null : "You can only do shift on an array for now.";
         	return tl;        	
         }        
-        switch(exp.getOp()){
-        case ExprBinary.BINOP_SELECT:
-        	return tl.leastCommonPromotion(tr).makeNonDet();
-        }
+        
         // The type of the expression is some type that both sides
         // promote to, otherwise.
         
@@ -171,7 +165,7 @@ public class GetExprType extends FENullVisitor
     	if(exp.getType() != null  ){
     		return exp.getType();
     	}else{
-    		return new TypePrimitive(TypePrimitive.TYPE_NDBIT);
+    		return TypePrimitive.bittype;    		
     	}
     }
 
