@@ -20,7 +20,9 @@ public class ConstantReplacer extends FEReplacer {
 	
 	public ConstantReplacer(Map subs) {
 		constants=new HashMap<String,Integer>();
-		constants.putAll(subs);
+		if(subs != null){
+			constants.putAll(subs);
+		}
 	}
 
 	private boolean addConstant(Type type, String name, Expression init) {
