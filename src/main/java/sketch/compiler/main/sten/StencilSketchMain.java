@@ -20,6 +20,8 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
+import streamit.frontend.codegenerators.SNodesToC;
+import streamit.frontend.codegenerators.SNodesToFortran;
 import streamit.frontend.experimental.DataflowWithFixpoint;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
@@ -45,8 +47,6 @@ import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.stencilSK.StencilSemanticChecker;
 import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
-import streamit.frontend.tosbit.SNodesToC;
-import streamit.frontend.tosbit.SNodesToFortran;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
