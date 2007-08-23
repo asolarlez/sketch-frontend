@@ -143,7 +143,7 @@ public class ExprStar extends Expression
 		while(tt instanceof TypeArray){
 			tt = ((TypeArray)tt).getBase();
 		}
-		if( (tt.equals(TypePrimitive.inttype) || tt.equals(TypePrimitive.ndinttype)) && !isFixed ){
+		if( ( tt.equals(TypePrimitive.inttype) ) && !isFixed ){
 			setSize(INT_SIZE);
 		}
 	}
