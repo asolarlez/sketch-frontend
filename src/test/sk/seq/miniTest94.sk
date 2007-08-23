@@ -1,0 +1,8 @@
+bit[5] reverseSketch(bit[5] in1, bit[5] in2) implements reverse {
+	return ?? ? in1 : in2;
+}
+
+
+bit[5] reverse (bit[5] in1, bit[5] in2) {
+	return in1;
+}
