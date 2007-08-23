@@ -141,7 +141,13 @@ public class PartialEvaluator extends FEReplacer {
 		if(isReplacer ){
 			exprRV = new ExprArrayRange(exp.getContext(), nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
 		}
-		return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked());
+		
+		try{
+			return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked());
+		}catch(ArrayIndexOutOfBoundsException e){
+			
+			throw new ArrayIndexOutOfBoundsException( e.getMessage() + ":" + exp.getCx() );
+		}
 	}
 
 	public Object visitExprComplex(ExprComplex exp) {
@@ -706,7 +712,9 @@ public class PartialEvaluator extends FEReplacer {
 		        }
 	        	rcontrol.doneWithBlock(stmt.getAlt());
             }else{
-            	nvfalse = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+            	StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+            	sa.setMsg( rcontrol.debugMsg() );
+            	nvfalse = (Statement)( sa ).accept(this);
 			}
             epms = state.popChangeTracker();
         }
@@ -740,7 +748,7 @@ public class PartialEvaluator extends FEReplacer {
         String msg = null;
         msg = stmt.getMsg();
         state.Assert(vcond, msg);
-        return isReplacer ?  new StmtAssert(stmt.getContext(), ncond)  : stmt;
+        return isReplacer ?  new StmtAssert(stmt.getContext(), ncond, stmt.getMsg())  : stmt;
     }
     
     public Object visitStmtLoop(StmtLoop stmt)
@@ -904,7 +912,7 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitStmtWhile(StmtWhile stmt)
     {
-    	assert false : "NYI";
+    	assert false : "While loops are not yet implemented (I know it sounds strange, why wouldn't we implement while loops. Well, it's a long story, but they just aren't implemented)";
         return "while (" + (String)stmt.getCond().accept(this) +
             ") " + (String)stmt.getBody().accept(this);
     }
