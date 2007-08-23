@@ -1,3 +1,14 @@
+/**
+ * This example provides a nice case study of the use of generators to produce 
+ * complicated expressions. It also illustrates how one can synthesize code for fixed 
+ * word sizes, and produce code that actually works for arbitrary sizes.
+ * 
+ * Recursion control is very important for this example. Using --inlineamnt > 5 for this 
+ * example will cause it to run for a very very long time.
+ * 
+ * 
+ */
+
 int N = 4;
 int No2 = N/2;
 
