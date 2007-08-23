@@ -217,7 +217,7 @@ public class AdvancedRControl extends RecursionControl {
 	}
 
 	public String debugMsg(){
-		return debugMsg;
+		return "Function " +  debugMsg + " was not inlined enough. Increase inlining with --inlineamnt flag.";
 	}
 
 	public boolean testBlock(Statement stmt) {
