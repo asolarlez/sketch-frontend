@@ -637,7 +637,7 @@ public class SemanticChecker
 					case ExprBinary.BINOP_DIV:
 					case ExprBinary.BINOP_MUL:
 					case ExprBinary.BINOP_SUB:
-						if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.ndinttype)))
+						if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.inttype)))
 							report(expr,
 									"cannot perform arithmetic on " + ct);
 						break;
@@ -646,21 +646,21 @@ public class SemanticChecker
 					case ExprBinary.BINOP_BAND:
 					case ExprBinary.BINOP_BOR:
 					case ExprBinary.BINOP_BXOR:
-						if (!ct.promotesTo(TypePrimitive.ndinttype))
+						if (!ct.promotesTo(TypePrimitive.inttype))
 							report(expr,
 									"cannot perform bitwise operations on "
 									+ ct);
 						break;
 
 					case ExprBinary.BINOP_MOD:
-						if (!ct.promotesTo(TypePrimitive.ndinttype))
+						if (!ct.promotesTo(TypePrimitive.inttype))
 							report(expr, "cannot perform % on " + ct);
 						break;
 
 						// Boolean operations:
 					case ExprBinary.BINOP_AND:
 					case ExprBinary.BINOP_OR:
-						if (!ct.promotesTo(TypePrimitive.ndbittype))
+						if (!ct.promotesTo(TypePrimitive.bittype))
 							report(expr,
 									"cannot perform boolean operations on "
 									+ ct);
@@ -671,7 +671,7 @@ public class SemanticChecker
 					case ExprBinary.BINOP_GT:
 					case ExprBinary.BINOP_LE:
 					case ExprBinary.BINOP_LT:
-						if (!ct.promotesTo(floattype) && !ct.promotesTo(TypePrimitive.ndinttype))
+						if (!ct.promotesTo(floattype) && !ct.promotesTo(TypePrimitive.inttype))
 							report(expr,
 									"cannot compare non-real type " + ct);
 						break;
@@ -715,7 +715,7 @@ public class SemanticChecker
 				if (at != null)
 				{
 					if (!at.promotesTo
-							(TypePrimitive.ndinttype))
+							(TypePrimitive.inttype))
 						report(expr,
 								"first part of ternary expression "+
 						"must be int");
@@ -806,7 +806,7 @@ public class SemanticChecker
 				if (ot != null)
 				{
 					if (!ot.promotesTo
-							(new TypePrimitive(TypePrimitive.TYPE_NDINT)))
+							(new TypePrimitive(TypePrimitive.TYPE_INT)))
 						report(expr, "array index must be an int");
 				}else{
 					report(expr, "array index must be an int");
@@ -913,17 +913,7 @@ public class SemanticChecker
 			}
 
 			public void matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
-				if( lt != null && rt != null && lhsn != null){
-					if(!lt.isNonDet() && rt.isNonDet()){
-						/*
-						 * In this case, the lhs of the assignment is a deterministic
-						 * type, but the rhs is not. In this case, we promote the
-						 * type of the var on the lhs.
-						 */
-						symtab.upgradeVar(lhsn, lt.makeNonDet());
-						lt = lt.makeNonDet(); //symtab.lookupVar(lhsn);
-					}
-				}
+				
 
 
 				if (lt != null && rt != null &&
