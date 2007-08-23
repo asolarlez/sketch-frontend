@@ -55,12 +55,6 @@ public abstract class Type
             return that;
         if (that.promotesTo(this))
             return this;
-        if(this.isNonDet() && !that.isNonDet()){
-        	return leastCommonPromotion(that.makeNonDet());
-        }
-        if(that.isNonDet() && !this.isNonDet()){
-        	return that.leastCommonPromotion(this.makeNonDet());
-        }
         return null;
     }
     public Type makeNonDet()

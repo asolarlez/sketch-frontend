@@ -42,13 +42,7 @@ public class TypePrimitive extends Type
     /** Type constant for void types. */
     public static final int TYPE_VOID = 9;
     /** Type constant for boolean types. */
-    public static final int TYPE_BOOLEAN = 10;
-    /** Type constant for random boolean types. */
-    public static final int TYPE_NDBOOLEAN = 11;
-    /** Type constant for random int types. */
-    public static final int TYPE_NDINT = 12;
-    /** Type constant for random bit types. */
-    public static final int TYPE_NDBIT = 13;
+    public static final int TYPE_BOOLEAN = 10;    
     /** Type constant for signed integers. */
     public static final int TYPE_SIGINT = 14;
     
@@ -74,13 +68,6 @@ public class TypePrimitive extends Type
     public static final TypePrimitive voidtype =
         new TypePrimitive(TYPE_VOID);
     
-    /** Type object for bit types. */
-    public static final TypePrimitive ndbittype = new TypePrimitive(TYPE_NDBIT);
-    /** Type object for int types. */
-    public static final TypePrimitive ndinttype = new TypePrimitive(TYPE_NDINT);
-    /** Type object for boolean types. */
-    public static final TypePrimitive ndbooltype =
-        new TypePrimitive(TYPE_NDBOOLEAN);
     
     private int type;
 
@@ -133,12 +120,7 @@ public class TypePrimitive extends Type
             return "void";
         case TYPE_BOOLEAN:
             return "boolean";
-        case TYPE_NDBIT:
-            return "ndbit";
-        case TYPE_NDINT:
-            return "ndint";
-        case TYPE_NDBOOLEAN:
-            return "ndboolean";  
+
         case TYPE_SIGINT:
         	return "int";
         default:
@@ -177,29 +159,23 @@ public class TypePrimitive extends Type
         case TYPE_BOOLEAN:
             return t2 == TYPE_BOOLEAN || t2 == TYPE_BIT ||
             t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
-                t2 == TYPE_COMPLEX || t2 == TYPE_NDBOOLEAN || 
-                t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
+                t2 == TYPE_COMPLEX ;
         case TYPE_BIT:
             return t2 == TYPE_SIGINT || t2 == TYPE_BIT || t2 == TYPE_INT ||
-                t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDBIT || t2 == TYPE_NDINT;            
+                t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;            
         case TYPE_INT:
-            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
+            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
         case TYPE_SIGINT:
-            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
+            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
         case TYPE_FLOAT:
             return t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
         case TYPE_COMPLEX:
             return t2 == TYPE_COMPLEX;
-        case TYPE_NDBOOLEAN:
-        	return t2 == TYPE_NDBOOLEAN || t2 == TYPE_NDBIT || t2 == TYPE_NDINT;
-        case TYPE_NDBIT:
-        	return t2 == TYPE_NDBIT || t2 == TYPE_NDINT || t2 == TYPE_BIT;
-        case TYPE_NDINT:
-            return t2 == TYPE_SIGINT || t2 == TYPE_NDINT || t2 == TYPE_INT;
+       
         case TYPE_INT16:         	
         case TYPE_INT8:
         case TYPE_INT64:
-        	return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX || t2 == TYPE_NDINT;
+        	return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
         default:
             assert false : t1;
             return false;
@@ -228,27 +204,8 @@ public class TypePrimitive extends Type
     {
         return new Integer(type).hashCode();
     }
-    public Type makeNonDet()
-    {
-    	switch (type)
-        {
-        case TYPE_BIT:
-            return TypePrimitive.ndbittype;
-        case TYPE_INT:
-            return TypePrimitive.ndinttype;
-        case TYPE_BOOLEAN:
-            return TypePrimitive.ndbooltype;
-        case TYPE_NDBIT:
-        case TYPE_NDINT:
-        case TYPE_NDBOOLEAN:
-        	return this;    
-        default:
-            return this;
-        }     
-    }
-    public boolean isNonDet(){
-    	return type == TYPE_NDBIT || type == TYPE_NDBOOLEAN || type == TYPE_NDINT;
-    }
+    
+    
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypePrimitive(this);
     }
