@@ -277,13 +277,13 @@ public class IntVtype extends abstractValueType {
 	    	boolean hasValue = true;
 			for(Iterator<abstractValue> it = lst.iterator(); it.hasNext(); ){
 				abstractValue o = it.next();
-	    		if(!o.hasIntVal()){	        			
+	    		if(!o.hasIntVal()){
 	    			result += " " + o;
 	    			hasValue = false;
 	    		}else{	        			
 	    			int curv =  o.getIntVal();
 	    			result += " " + curv;
-	    			assert curv == 1 || curv == 0 : "Only boolean arrays please!!";
+	    			assert curv == 1 || curv == 0 : "Casting only works for boolean arrays!!" + v1;
 	    			if( curv == 1 ) val += t; 
 	    			t = t*2;
 	    		}
