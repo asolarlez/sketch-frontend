@@ -61,8 +61,8 @@ public class ToStencilSK extends ToSBit
 {
 
 	Program originalProg;
-	ToStencilSK(CommandLineParams params){
-		super(params);
+	ToStencilSK(String[] args){
+		super(args);
 	}
 	
 	
@@ -83,8 +83,7 @@ public class ToStencilSK extends ToSBit
         //prog = (Program)prog.accept(new VariableDisambiguator());
         System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());
-        System.out.println(" After mpn ");     
-        params.inlineAmt += 3;
+        System.out.println(" After mpn ");             
         return prog;
     }
 	
@@ -92,16 +91,11 @@ public class ToStencilSK extends ToSBit
 	
     public RecursionControl newRControl(){
     	// return new DelayedInlineRControl(params.inlineAmt, params.branchingFactor);
-    	return new AdvancedRControl(params.branchingFactor, params.inlineAmt, prog); 
+    	return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog); 
     }
     
     public void run()
-    {
-    	if (params.printHelp)
-        {
-            printUsage();
-            return;
-        }
+    {    	
         
         parseProgram();       // parse
         
@@ -151,7 +145,7 @@ public class ToStencilSK extends ToSBit
                 
     	
     	Program tmp = (Program) prog.accept( 
-    			new DataflowWithFixpoint(new IntVtype(), varGen, true, params.unrollAmt, newRControl() ){
+    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  params.flagValue("unrollamnt"), newRControl() ){
     				protected List<Function> functionsToAnalyze(StreamSpec spec){
     				    return new LinkedList<Function>(spec.getFuncs());
     			    }
@@ -182,7 +176,7 @@ public class ToStencilSK extends ToSBit
 	public void eliminateStar(){
 		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));
 		
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.unrollAmt, newRControl() ));
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), newRControl() ));
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
     	finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
@@ -203,11 +197,11 @@ public class ToStencilSK extends ToSBit
     protected void outputCCode() {
         String resultFile = getOutputFileName();
         String ccode = (String)finalCode.accept(new SNodesToC(varGen,resultFile));
-        if(!params.outputToFiles){
+        if(!params.hasFlag("outputcode")){
         	System.out.println(ccode);
         }else{
         	try{
-				Writer outWriter = new FileWriter(params.outputCDir+resultFile+".cpp");
+				Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+".cpp");
 				outWriter.write(ccode);
 				outWriter.flush();
 				outWriter.close();
@@ -223,11 +217,11 @@ public class ToStencilSK extends ToSBit
 		finalCode=(Program) finalCode.accept(new VariableDisambiguator());
 		finalCode=(Program) finalCode.accept(new VariableDeclarationMover());
         String fcode = (String)finalCode.accept(new SNodesToFortran(resultFile));
-        if(!params.outputToFiles){
+        if(!params.hasFlag("outputcode")){
         	System.out.println(fcode);
         }else{
         	try{
-				Writer outWriter = new FileWriter(params.outputCDir+resultFile+".f");
+				Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+".f");
 				outWriter.write(fcode);
 				outWriter.flush();
 				outWriter.close();
@@ -241,7 +235,7 @@ public class ToStencilSK extends ToSBit
 	public void generateCode(){
 		finalCode.accept(new SimpleCodePrinter());
 		finalCode=doBackendPasses(finalCode);
-		if(params.outputFortran) {
+		if(params.hasFlag("outputfortran")) {
 			outputFortranCode();
 		} else {
 			outputCCode();
@@ -250,7 +244,7 @@ public class ToStencilSK extends ToSBit
 	
 	public static void main(String[] args)
 	{
-		new ToStencilSK(new CommandLineParams(args)).run();
+		new ToStencilSK(args).run();
 		System.exit(0);
 	}
 }

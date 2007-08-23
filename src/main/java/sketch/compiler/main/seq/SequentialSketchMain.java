@@ -29,12 +29,15 @@ import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.Map.Entry;
 
+import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
@@ -73,107 +76,238 @@ import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 
-class CommandLineParams{
-	boolean printHelp = false;
-	boolean libraryFormat = false;
-	String outputFile = null;
-	String sbitPath = null;
-	List<String> inputFiles = new java.util.ArrayList<String>();
-	Map<String, Integer> defines=new HashMap<String, Integer>();
-	int unrollAmt = 8;
-	int inlineAmt = 5;
-	boolean incremental = false;
-	int incermentalAmt = 0;
-	boolean hasTimeout = false;
-	int timeout = 30;
-	int seed = -1;
-	Vector<String> commandLineOptions = new Vector<String>();
-	String resultFile = null;	
-	boolean doVectorization=false;
-	boolean outputFortran=true;
-	boolean outputToFiles=false;
-	String outputCDir="./";
-	boolean outputScript=false;
-	boolean outputTest=false;
-	boolean fakeSolver=false;
-	int branchingFactor = 10;
 
-
-	public CommandLineParams(String[] args)
-	{
-		for (int i = 0; i < args.length; i++)
-		{
-			if (args[i].equals("--full")) {
-				; // Accept but ignore for compatibil5ity
-			} else if (args[i].equals("--help")) {
-				printHelp = true;
-			} else if (args[i].equals("--")) {
-				// Add all of the remaining args as input files.
-				for (i++; i < args.length; i++)
-					inputFiles.add(args[i]);
-			} else if (args[i].equals("--output")) {
-				outputFile = args[++i];
-			} else if (args[i].equals("--library")) {
-				libraryFormat = true;
-			} else if (args[i].equals("--sbitpath")) {
-				sbitPath = args[++i];
-			} else if (args[i].equals("-D")) {
-				String word = args[++i];
-				Integer value = new Integer(args[++i]);
-				defines.put(word,value);
-			} else if (args[i].equals("--unrollamnt")) {
-				Integer value = new Integer(args[++i]);
-				unrollAmt = value.intValue(); 
-			} else if (args[i].equals("--inlineamnt")) {
-				Integer value = new Integer(args[++i]);
-				inlineAmt = value.intValue(); 
-			} else if (args[i].equals("--branchamnt")) {
-				Integer value = new Integer(args[++i]);
-				branchingFactor = value.intValue(); 
-			} else if (args[i].equals("--incremental")) {
-				Integer value = new Integer(args[++i]);
-				incremental = true;
-				incermentalAmt = value.intValue();
-			} else if (args[i].equals("--timeout")) {
-				Integer value = new Integer(args[++i]);
-				hasTimeout = true;
-				timeout = value.intValue();
-			} else if (args[i].equals("--seed")) {
-				Integer value = new Integer(args[++i]);
-				seed = value.intValue();
-				commandLineOptions.add("-seed");
-				commandLineOptions.add("" + seed);
-			} else if (args[i].equals("--fakesolver")) {
-				fakeSolver=true;
-			} else if (args[i].equals("--dovectorization")) {
-				doVectorization=true;
-			} else if (args[i].equals("--outputprogname")) {
-				resultFile = args[++i];
-			} else if (args[i].equals("--outputfiles")) {
-				outputToFiles=true;
-			} else if (args[i].equals("--outputc")) {
-				outputFortran=false;
-			} else if (args[i].equals("--outputdir")) {
-				outputCDir = args[++i];
-				if(!outputCDir.endsWith("/"))
-					outputCDir=outputCDir+"/";
-			} else if (args[i].equals("--outputscript")) {
-				outputScript=true;
-			} else if (args[i].equals("--outputtest")) {
-				outputTest=true;
-			} else if( args[i].charAt(0)=='-') {
-				commandLineOptions.add(args[i]);
-				if( args[i+1].charAt(0) != '-' ){
-					commandLineOptions.add(args[++i]);
+class CommandLineParamManager{
+	public static class POpts{
+		static final int FLAG = 0;
+		static final int NUMBER = 1;
+		static final int TOKEN = 2;
+		static final int STRING = 3;
+		static final int VVAL = 4;
+		Map<String, String> tokenDescriptions;
+		String description;	
+		String defVal;
+		int type;
+		
+		POpts(int type, String descrip, String defVal, Map<String, String> td ){
+			this.description = descrip;
+			this.defVal = defVal;
+			this.type = type;
+			this.tokenDescriptions = td;			
+		}
+		public String toString(){
+			switch(type){
+				case STRING:
+				case FLAG:
+				case NUMBER:{
+					String msg = description;
+					if(defVal != null ){
+						msg += "\n \t\t Default value is " + defVal;
+					}
+					return msg;
 				}
-			} else {
-				// Maybe check for unrecognized options.
-				inputFiles.add(args[i]);
+				case TOKEN:{
+					String msg = description;
+					msg += "OPT can be:";
+					
+					for(Iterator<Entry<String, String> > it = tokenDescriptions.entrySet().iterator(); it.hasNext();  ){
+						Entry<String, String> en = it.next();
+						msg += "\n\t\t" + en.getKey() + " : " + en.getValue();
+					}
+					return msg;					
+				}
+				case VVAL:{
+					return description;					
+				}
+				default:
+					return null;
 			}
 		}
+		
 	}
-
+	Map<String, POpts> allowedParameters;
+	Map<String, Object> passedParameters;
+	List<String> inputFiles = new ArrayList<String>();
+	List<String> commandLineOptions = new ArrayList<String>();
+	
+	CommandLineParamManager(){
+		allowedParameters = new HashMap<String, POpts>();
+		passedParameters = new HashMap<String, Object>();
+	}
+	
+	
+	public void loadParams(String[] args){
+		for(int i=0; i<args.length; ){
+			if( args[i].charAt(0)=='-') {				
+				if( args[i].charAt(1)=='-' ){					
+					
+					i+= readParameter(args[i], i+1< args.length ? args[i+1] : "", i+2< args.length ?args[i+2]:"");					
+					
+				}else{
+					commandLineOptions.add(args[i]);
+					if( args[i+1].charAt(0) != '-' ){						
+						System.out.println("BACKEND FLAG " + args[i] + " " + args[i+1]);
+						commandLineOptions.add(args[i+1]);
+						i+= 2;
+					}else{
+						System.out.println("BACKEND FLAG " + args[i] );
+						i+= 1;
+					}
+				}
+			} else {
+				inputFiles.add(args[i]);
+				i+= 1;
+			}
+		}
+		assert inputFiles.size() > 0 : "You did not specify any input files!!";
+	}
+	
+	public void setAllowedParam(String flag, POpts po){
+		allowedParameters.put(flag, po);
+	}
+	
+	
+	public void printHelp(){
+		for(Iterator<Entry<String, POpts> >  it = allowedParameters.entrySet().iterator(); it.hasNext();   ){
+			Entry<String, POpts> en = it.next();
+			System.out.println(en.getValue());
+		}		
+	}
+	
+	/***
+	 * 
+	 * @param argn
+	 * @param argnp1
+	 * @return returns the number of arguments consumed;
+	 */
+	@SuppressWarnings("unchecked")
+	private int readParameter(String argn, String argnp1, String argnp2){
+		if(argn.equals("--help")){ printHelp();   return 1; }
+		
+		assert argn.charAt(0) == '-' && argn.charAt(1) == '-' : "Something is wrong here.";		
+		argn = argn.substring(2);
+		
+		if( allowedParameters.containsKey(argn) ){
+			POpts argInfo = allowedParameters.get(argn);
+			switch( argInfo.type ){
+				case POpts.FLAG:{
+					passedParameters.put(argn, "TRUE");
+					return 1;
+				}
+				case POpts.NUMBER:
+				case POpts.STRING:
+				{
+					if(argnp1.length() < 1){ throw new RuntimeException("Flag " + argn + " requires an additional argument. \n" + argInfo); }					
+					passedParameters.put(argn, argnp1);
+					return 2;
+				}
+			
+				case POpts.TOKEN:{
+					if(argnp1.length() < 1){ throw new RuntimeException("Flag " + argn + " requires an additional argument. \n" + argInfo); }
+					if( !argInfo.tokenDescriptions.containsKey(argnp1) ){
+						throw new RuntimeException("The argument " + argnp1 + " is not allowed for flag " + argn + ". \n" + argInfo);						
+					}
+					passedParameters.put(argn, argnp1);
+					return 2;
+				}
+				
+				case POpts.VVAL:{
+					if(argnp1.length() < 1){ throw new RuntimeException("Flag " + argn + " requires two additional arguments. \n" + argInfo); }
+					if(argnp2.length() < 1){ throw new RuntimeException("Flag " + argn + " requires two additional arguments. \n" + argInfo); }
+					if( !passedParameters.containsKey(argn) ){
+						passedParameters.put(argn, new HashMap<String, String>());
+					}
+					((Map) passedParameters.get(argn)).put(argnp1, argnp2);					
+				}
+				
+				default:
+					throw new RuntimeException(" There was an error with argument " + argn + ". Report this as a bug to the SKETCH team.");
+			}			
+		}else{
+			throw new RuntimeException(" The command line argument " + argn + " is not recognized!!");			
+		}		
+	}
+	
+	
+	
+	protected void checkFlagAllowed(String flag){
+		if( !allowedParameters.containsKey(flag) ){
+			throw new RuntimeException("The flag " + flag + " does not exist.");
+		}
+	}
+	
+	public boolean hasFlag(String flag){
+		checkFlagAllowed(flag);
+		return passedParameters.containsKey(flag);		
+	}
+	
+	public String sValue(String flag){
+		checkFlagAllowed(flag);
+		String val = null;
+		if(passedParameters.containsKey(flag)){
+			val = (String)passedParameters.get(flag);			
+		}else{
+			
+			val = allowedParameters.get(flag).defVal;
+		}
+		return val;
+	}
+	
+	public int flagValue(String flag){
+		checkFlagAllowed(flag);
+		String val = null;
+		if(passedParameters.containsKey(flag)){
+			val = (String)passedParameters.get(flag);			
+		}else{
+			
+			val = allowedParameters.get(flag).defVal;
+		}
+		Integer i = Integer.decode(val);
+		return i;		
+	}
+	
+	public Integer varValue(String flag, String var){
+		checkFlagAllowed(flag);
+		if( passedParameters.containsKey(flag) ){
+			Map<String, String> map = ((Map<String, String>) passedParameters.get(flag));
+			if(map.containsKey(var)){
+				String val = map.get(var);
+				return  Integer.decode(val);
+			}
+		}
+		return null;
+	}
+	
+	public Map<String, Integer> varValues(String flag){
+		checkFlagAllowed(flag);
+		if( passedParameters.containsKey(flag) ){
+			Map<String, String> map = ((Map<String, String>) passedParameters.get(flag));
+			Map<String, Integer> outMap = new HashMap<String, Integer>();
+			for(Iterator<Entry<String, String>> it = map.entrySet().iterator(); it.hasNext(); ){
+				Entry<String, String> es  = it.next();
+				outMap.put(es.getKey(), Integer.decode(es.getValue()));				
+			}
+			return outMap;
+		}	
+		return null;
+	}
+	
+	public boolean flagEquals(String flag, String candidate){
+		checkFlagAllowed(flag);
+		String val = null;
+		if(passedParameters.containsKey(flag)){
+			val = (String)passedParameters.get(flag);			
+		}else{
+			
+			val = allowedParameters.get(flag).defVal;
+		}
+		return val.equals(candidate);
+	}
+	
 }
+
+
+
 
 
 
@@ -222,30 +356,23 @@ public class ToSBit
 
 	};
 
-	protected final CommandLineParams params;
+	// protected final CommandLineParams params;
 	protected Program beforeUnvectorizing=null;
 
-	protected ToSBit(CommandLineParams params){
-		this.params = params;
+	public static final CommandLineParamManager params = new CommandLineParamManager();
+	
+	
+	protected ToSBit(String[] args){
+		this.setCommandLineParams();
+		params.loadParams(args);
 	}
 
-	public void printUsage()
-	{
-		System.err.println(
-			"streamit.frontend.ToJava: StreamIt syntax translator\n" +
-			"Usage: java streamit.frontend.ToJava [--output out.java] in.str ...\n" +
-			"\n" +
-			"Options:\n" +
-			"  --library      Output code suitable for the Java library\n" +
-			"  --help         Print this message\n" +
-			"  --output file  Write output to file, not stdout\n" +
-		"\n");
-	}
+	
 
 
 	public RecursionControl newRControl(){
 		// return new BaseRControl(params.inlineAmt);
-		return new AdvancedRControl(params.branchingFactor, params.inlineAmt, prog);
+		return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog);
 	}
 
 
@@ -335,7 +462,7 @@ public class ToSBit
 	 * @param varGen  object to generate unique temporary variable names
 	 * @returns the converted IR tree
 	 */        
-	public void lowerIRToJava(boolean libraryFormat)
+	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
@@ -383,11 +510,11 @@ public class ToSBit
 		//invoke post-parse passes    	
 		//prog.accept( new SimpleCodePrinter() );
 		System.out.println("=============================================================");
-		prog = (Program)prog.accept(new FunctionParamExtension());
-		prog = (Program)prog.accept(new ConstantReplacer(params.defines));   
+		prog = (Program)prog.accept(new FunctionParamExtension(true));
+		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));   
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));		
 		prog = (Program)prog.accept(new TypeInferenceForStars());
-		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.unrollAmt, newRControl() ) );        
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );        
 		//System.out.println("=============================================================");
 		//prog.accept( new SimpleCodePrinter() );
 		//System.out.println("=============================================================");
@@ -395,17 +522,17 @@ public class ToSBit
 	}
 
 	public void partialEvalAndSolve(){
-		lowerIRToJava(!params.libraryFormat);
+		lowerIRToJava();
 		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		prog.accept(new SimpleCodePrinter());
+		//prog.accept(new SimpleCodePrinter());
 		assert oracle != null;
 		try
 		{
 			OutputStream outStream;
-			if(params.fakeSolver)
+			if(params.hasFlag("fakesolver"))
 				outStream = new NullStream();
-			else if(params.outputFile != null)
-				outStream = new FileOutputStream(params.outputFile);
+			else if(params.sValue("output") != null)
+				outStream = new FileOutputStream(params.sValue("output"));
 			else
 				outStream = System.out;
 
@@ -416,14 +543,14 @@ public class ToSBit
 					new PrintStream(outStream)
 				//	System.out
 				,
-				params.unrollAmt, newRControl()); 
+				params.flagValue("unrollamnt"), newRControl()); 
 			/*
              ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,
                                              new PrintStream(outStream),
                                              params.unrollAmt, newRControl()); */ 
-			System.out.println("MAX LOOP UNROLLING = " + params.unrollAmt);
-			System.out.println("MAX FUNC INLINING  = " + params.inlineAmt);
+			System.out.println("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
+			System.out.println("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
 			prog.accept( partialEval );
 			outStream.flush();
 		}
@@ -434,13 +561,13 @@ public class ToSBit
 		}
 
 
-		boolean worked = params.fakeSolver || solve(oracle);
+		boolean worked = params.hasFlag("fakesolver") || solve(oracle);
 		if(!worked){
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
 
 		try{
-			String fname = params.outputFile + ".tmp";
+			String fname = params.sValue("output")+ ".tmp";
 			File f = new File(fname);
 			FileInputStream fis = new FileInputStream(f); 
 			BufferedInputStream bis = new BufferedInputStream(fis);  
@@ -457,7 +584,7 @@ public class ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.unrollAmt, newRControl() ));
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ));
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
@@ -479,7 +606,7 @@ public class ToSBit
 	}
 
 	protected String getOutputFileName() {
-		String resultFile = params.resultFile;
+		String resultFile = params.sValue("outputprogname");
 		if(resultFile==null) {
 			resultFile=params.inputFiles.get(0);
 		}
@@ -499,36 +626,35 @@ public class ToSBit
 
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
-		if(!params.outputToFiles){
+		if(!params.hasFlag("outputcode")){
 			finalCode.accept( new SimpleCodePrinter() );
 			//System.out.println(hcode);
 			//System.out.println(ccode);
 		}else{
 			try{
 				{
-					Writer outWriter = new FileWriter(params.outputCDir+resultFile+".h");
+					Writer outWriter = new FileWriter(params.sValue("outputdir") +resultFile+".h");
 					outWriter.write(hcode);
 					outWriter.flush();
 					outWriter.close();
-					outWriter = new FileWriter(params.outputCDir+resultFile+".cpp");
+					outWriter = new FileWriter(params.sValue("outputdir")+resultFile+".cpp");
 					outWriter.write(ccode);
 					outWriter.flush();
 					outWriter.close();
 				}
-				if(params.outputTest) {
+				if( params.hasFlag("outputtest")  ) {
 					String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
-					Writer outWriter = new FileWriter(params.outputCDir+resultFile+"_test.c");
+					Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+"_test.c");
 					outWriter.write(testcode);
 					outWriter.flush();
 					outWriter.close();
 				}
-				if(params.outputScript) {
-					Writer outWriter = new FileWriter(params.outputCDir+"script");
+				if( params.hasFlag("outputtest") ) {
+					Writer outWriter = new FileWriter(params.sValue("outputdir")+"script");
 					outWriter.write("#!/bin/sh\n");
-					if(params.outputTest)
-						outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
-					else
-						outWriter.write("g++ -c "+resultFile+".c\n");
+					
+					outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
+					
 					outWriter.write("./"+resultFile+"\n");
 					outWriter.flush();
 					outWriter.close();
@@ -540,8 +666,83 @@ public class ToSBit
 		}
 	}
 
+	
+	
+	protected void setCommandLineParams(){
+		
+		params.setAllowedParam("D", new POpts(POpts.VVAL, 
+				"--D VAR val    \t If the program contains a global variable VAR, it sets its value to val.",
+				null, null));
+		
+		params.setAllowedParam("unrollamnt", new POpts(POpts.NUMBER, 
+				"--unrollamnt n \t It sets the unroll ammount for loops to n.",
+				"8", null) );
+		
+		params.setAllowedParam("inlineamnt", new POpts(POpts.NUMBER, 
+				"--inlineamnt n \t Bounds inlining to n levels of recursion, so" +
+				"\n\t\t each function can appear at most n times in the stack.",
+				"5", null) );
+		
+		params.setAllowedParam("branchamnt", new POpts(POpts.NUMBER, 
+				"--branchamnt n \t This flag is also used for recursion control. " +
+				"\n\t\t It bounds inlining based on the idea that if a function calls " +
+				"\n\t\t itself recureively ten times, we want to inline it less than a function" +
+				"\n\t\t that calls itself recursively only once. In this case, n is the " +
+				"\n\t\t maximum value of the branching factor, which is the number of times" +
+				"\n\t\t a function calls itself recursively, times the amount of inlining. ",
+				"20", null) );
+		
+		params.setAllowedParam("incremental", new POpts(POpts.NUMBER, 
+				"--incremental n\t Tells the solver to incrementally grow the size of integer holes from 1 to n bits.",
+				"5", null) );
+		
+		params.setAllowedParam("timeout", new POpts(POpts.NUMBER, 
+				"--timeout min  \t Kills the solver after min minutes.",
+				null, null) );
+		
+		params.setAllowedParam("fakesolver", new POpts(POpts.FLAG, 
+				"--fakesolver   \t This flag indicates that the SAT solver should not be invoked. " +
+				"\n \t\t Instead the frontend should look for a solution file, and generate the code from that. " +
+				"\n \t\t It is useful when working with sketches that take a long time to resolve" +
+				"\n \t\t if one wants to play with different settings for code generation.",
+				null, null) );
+		
+		params.setAllowedParam("seed", new POpts(POpts.NUMBER, 
+				"--seed s       \t Seeds the random number generator with s.",
+				null, null) );
+		
+		params.setAllowedParam("outputcode", new POpts(POpts.FLAG, 
+				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
+				null, null) );
+		
+		params.setAllowedParam("outputtest", new POpts(POpts.FLAG, 
+				"--outputtest   \t Produce also a harness to test the generated C code.",
+				null, null) );
+		
+		params.setAllowedParam("outputdir", new POpts(POpts.STRING, 
+				"--outputdir dir\t Set the directory where you want the generated code to live.",
+				"./", null) );
+		
+		params.setAllowedParam("outputprogname", new POpts(POpts.STRING, 
+				"--outputprogname name \t Set the name of the output C files." +
+				"\n \t\t By default it is the name of the first input file.",
+				null, null) );
+		
+		
+		params.setAllowedParam("output", new POpts(POpts.STRING, 
+				"--output file  \t Temporary output file used to communicate with backend solver. " +
+				"\n \t\t This flag is already set by the sketch script, so don't try to set it yourself.",
+				null, null) );
+		
+		params.setAllowedParam("sbitpath", new POpts(POpts.STRING, 
+				"--sbitpath path\t Path where the SBitII solver can be found. This flag " +
+				"\n \t\t is already set by the sketch script, so don't try to set it yourself.",
+				null, null) );
+	}
+	
+	
 	protected Program doBackendPasses(Program prog) {
-		if(params.doVectorization) {
+		if( params.hasFlag("outputcode") ) {
 			prog=(Program) prog.accept(new AssembleInitializers());
 			prog=(Program) prog.accept(new BitVectorPreprocessor(varGen));
 			//prog.accept(new SimpleCodePrinter());
@@ -558,12 +759,6 @@ public class ToSBit
 
 	public void run()
 	{        
-		if (params.printHelp)
-		{
-			printUsage();
-			return;
-		}
-
 		parseProgram();
 		prog=preprocessProgram(prog); // perform prereq transformations   
 		//prog.accept(new SimpleCodePrinter());
@@ -584,26 +779,28 @@ public class ToSBit
 
 	private boolean solve(ValueOracle oracle){
 		TimeoutThread stopper=null;
-		if(params.hasTimeout) {
-			stopper=new TimeoutThread(params.timeout);
+		if(params.hasFlag("timeout")) {
+			System.out.println("Timing out after " + params.flagValue("timeout") + " minutes.");
+			stopper=new TimeoutThread( params.flagValue("timeout") );
 			stopper.start();
 		}
-		System.out.println("OFILE = " + params.outputFile);
-		String command = (params.sbitPath!=null? params.sbitPath : "") + "SBitII";
-		if(params.incremental){
+		System.out.println("OFILE = " + params.sValue("output"));
+		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
+		if(params.hasFlag("incremental")){
 			boolean isSolved = false;
 			int bits=0;
-			for(bits=1; bits<=params.incermentalAmt; ++bits){
+			int maxBits = params.flagValue("incremental");
+			for(bits=1; bits<=maxBits; ++bits){
 				System.out.println("TRYING SIZE " + bits);
 				String[] commandLine = new String[ 5 + params.commandLineOptions.size()];
 				commandLine[0] = command;
 				commandLine[1] = "-overrideCtrls"; 
 				commandLine[2] = "" + bits;
 				for(int i=0; i< params.commandLineOptions.size(); ++i){
-					commandLine[3+i] = params.commandLineOptions.elementAt(i);
+					commandLine[3+i] = params.commandLineOptions.get(i);
 				}
-				commandLine[commandLine.length -2 ] = params.outputFile;
-				commandLine[commandLine.length -1 ] = params.outputFile + ".tmp";        		
+				commandLine[commandLine.length -2 ] = params.sValue("output") ;
+				commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";        		
 				boolean ret = runSolver(commandLine, bits);
 				if(ret){
 					isSolved = true;
@@ -614,6 +811,7 @@ public class ToSBit
 			}
 			if(!isSolved){
 				System.out.println("The sketch can not be resolved");
+				System.err.println(solverErrorStr);
 				if(stopper!=null) stopper.abort();
 				return false;
 			}
@@ -621,12 +819,12 @@ public class ToSBit
 			oracle.capStarSizes(bits);
 		}else{
 			String[] commandLine = new String[ 3 + params.commandLineOptions.size()];
-			commandLine[0] = command;    		
+			commandLine[0] = command;
 			for(int i=0; i< params.commandLineOptions.size(); ++i){
-				commandLine[1+i] = params.commandLineOptions.elementAt(i);
+				commandLine[1+i] = params.commandLineOptions.get(i);
 			}
-			commandLine[commandLine.length -2 ] = params.outputFile;
-			commandLine[commandLine.length -1 ] = params.outputFile + ".tmp";	        
+			commandLine[commandLine.length -2 ] = params.sValue("output");
+			commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";	        
 			boolean ret = runSolver(commandLine, 0);
 			if(!ret){
 				System.out.println("The sketch can not be resolved");
@@ -638,6 +836,7 @@ public class ToSBit
 		return true;
 	}
 
+	String solverErrorStr;
 
 	private boolean runSolver(String[] commandLine, int i){
 		for(int k=0;k<commandLine.length;k++) 
@@ -660,8 +859,9 @@ public class ToSBit
 					System.out.println(i + "  " + line);
 				}
 			}
+			solverErrorStr = "";
 			while ( (line = errBr.readLine()) != null)
-				System.err.println(line);
+				solverErrorStr += line + "\n";
 			int exitVal = proc.waitFor();
 			System.out.println("Process exitValue: " + exitVal);
 			if(exitVal != 0) {
@@ -683,7 +883,7 @@ public class ToSBit
 
 	public static void main(String[] args)
 	{
-		new ToSBit(new CommandLineParams(args)).run();
+		new ToSBit(args).run();
 		System.exit(0);
 	}
 
