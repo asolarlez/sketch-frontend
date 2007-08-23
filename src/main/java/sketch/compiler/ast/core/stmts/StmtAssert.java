@@ -32,6 +32,13 @@ public class StmtAssert extends Statement
         super(context);
         this.cond = cond;
     }
+    
+    public StmtAssert(FEContext context, Expression cond, String msg)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+    }
 
     /** Returns the assertion condition. */
     public Expression getCond()
