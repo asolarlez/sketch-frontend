@@ -183,9 +183,9 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 	public Object visitExprBinary(ExprBinary exp)
 	{
 		if(exp.getOp()==ExprBinary.BINOP_LSHIFT)
-			exp=new ExprBinary(exp.getContext(),ExprBinary.BINOP_RSHIFT,exp.getLeft(),exp.getRight());
-		else if(exp.getOp()==ExprBinary.BINOP_RSHIFT)
 			exp=new ExprBinary(exp.getContext(),ExprBinary.BINOP_LSHIFT,exp.getLeft(),exp.getRight());
+		else if(exp.getOp()==ExprBinary.BINOP_RSHIFT)
+			exp=new ExprBinary(exp.getContext(),ExprBinary.BINOP_RSHIFT,exp.getLeft(),exp.getRight());
 		return super.visitExprBinary(exp);
 	}
 
