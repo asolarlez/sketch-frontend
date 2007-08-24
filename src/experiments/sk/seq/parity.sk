@@ -11,8 +11,8 @@ bit parity(bit[W] in)
 bit fastparity(bit[W] in) implements parity
 {
 	bit[W] y=in;
-	loop(5) {
-		y=y^(y >> ??);
+	loop(??) {
+		y=y^(y << ??);
 	}
 	return y[W-1];
 }

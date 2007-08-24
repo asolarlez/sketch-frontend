@@ -1,4 +1,5 @@
-int W = 13;
+int W = 5;
+// This benchmark requires --inlineamnt  > 5 in order to resolve.
 
 bit [W] mult(bit[W] in1, bit[W] in2){
 	bit [W] result = 0;
@@ -6,14 +7,15 @@ bit [W] mult(bit[W] in1, bit[W] in2){
 		if(in2[i]==1){
 			result = result + in1;
 		}
-		in1 = in1 >> 1;
+		in1 = in1 << 1;
 	}
 	return result;
 }
 
 
 bit[W] poly(bit[W] n, bit[W] x) {
-	bit[W] minusone = 1;
+	bit[W] minusone = 0;
+	minusone = !minusone;
 		
 	if (!n[0]&!n[1]&!n[2]&!n[3]&!n[4]) return ??; 
 	else return mult(x, poly(n+minusone, x)) + ??;

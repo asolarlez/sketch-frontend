@@ -18,7 +18,7 @@ bit[16] countSketch2(bit[16] in) implements countBits
 	loop({*})
 	{
 		bit[16] m={*};
-		tmp=(tmp & m) + (tmp<<{*} & m);
+		tmp=(tmp & m) + (tmp>>{*} & m);
 	}
 	return tmp;
 }
