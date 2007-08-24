@@ -40,5 +40,5 @@ bit[4] reverse (bit[8] in) {
 		b[i] = in[4+i];
 	}
 	bit [4] out = intToBit( tmp[(int)a] );
-	return  (out>>1) ^ intToBit( tmp[(int)b] );
+	return  (out<<1) ^ intToBit( tmp[(int)b] );
 }
