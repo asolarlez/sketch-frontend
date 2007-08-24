@@ -19,7 +19,7 @@ bit[W] countSketch(bit[W] in) implements countBits
 	loop({*})
 	{
 		bit[W] t1=tmp {|} 0;
-		bit[W] t2=(tmp<<{*}) {|} 0;
+		bit[W] t2=(tmp>>{*}) {|} 0;
 		tmp=t1+t2;
 	}
 	return tmp;
@@ -31,7 +31,7 @@ bit[W] countSketch2(bit[W] in) implements countBits
 	loop({*})
 	{
 		bit[W] m={*};
-		tmp=(tmp & m) + (tmp<<{*} & m);
+		tmp=(tmp & m) + (tmp>>{*} & m);
 	}
 	return tmp;
 }
