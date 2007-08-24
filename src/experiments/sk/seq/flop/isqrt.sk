@@ -50,7 +50,7 @@ bit[FW] floatAbs(bit[FW] a)
 bit[FW] isqrt(bit[FW] in)
 {
 	bit[FW] t=??;
-	t=FObitsub(t,(in<<1));
+	t=FObitsub(t,(in>>1));
 	t[M-1]=1;
 	t[SB]=0;
 
