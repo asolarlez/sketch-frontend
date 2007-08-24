@@ -2,7 +2,7 @@ bit reverseSketch(bit[4] in) implements reverse {
 	bit [5] tmp = {*};
 	bit [2] tmp2 = {*};
 	int lll = ((int)tmp2);
-	int ttt = (int)(tmp<<lll);
+	int ttt = (int)(tmp>>lll);
 	assert ttt < 4;
 	return in[ttt];
 }
