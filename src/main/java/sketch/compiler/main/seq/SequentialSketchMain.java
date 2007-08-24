@@ -159,7 +159,12 @@ class CommandLineParamManager{
 				i+= 1;
 			}
 		}
-		assert inputFiles.size() > 0 : "You did not specify any input files!!";
+		
+		if( !(inputFiles.size() > 0)){
+			System.err.println("You did not specify any input files!!");
+			printHelp();
+			System.exit(1);
+		}
 	}
 	
 	public void setAllowedParam(String flag, POpts po){
@@ -182,7 +187,7 @@ class CommandLineParamManager{
 	 */
 	@SuppressWarnings("unchecked")
 	private int readParameter(String argn, String argnp1, String argnp2){
-		if(argn.equals("--help")){ printHelp();   return 1; }
+		if(argn.equals("--help")){ printHelp(); System.exit(1);  return 1; }
 		
 		assert argn.charAt(0) == '-' && argn.charAt(1) == '-' : "Something is wrong here.";		
 		argn = argn.substring(2);
@@ -653,7 +658,7 @@ public class ToSBit
 					Writer outWriter = new FileWriter(params.sValue("outputdir")+"script");
 					outWriter.write("#!/bin/sh\n");
 					
-					outWriter.write("g++ -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
+					outWriter.write("g++ -I \"$FRONTEND/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
 					
 					outWriter.write("./"+resultFile+"\n");
 					outWriter.flush();
@@ -742,7 +747,7 @@ public class ToSBit
 	
 	
 	protected Program doBackendPasses(Program prog) {
-		if( params.hasFlag("outputcode") ) {
+		if( false && params.hasFlag("outputcode") ) {
 			prog=(Program) prog.accept(new AssembleInitializers());
 			prog=(Program) prog.accept(new BitVectorPreprocessor(varGen));
 			//prog.accept(new SimpleCodePrinter());
