@@ -6,8 +6,8 @@ bit[W] reverseSketch(bit[W] in) implements reverse {
 	int s = 1;
 	int r = ??;
 	loop(??){
-		bit[W] tmp1 = (t >> s);
-		bit[W] tmp2 = (t << s);
+		bit[W] tmp1 = (t << s);
+		bit[W] tmp2 = (t >> s);
 		t = tmp1 {|} tmp2;
 		s = s*r;
 	}
