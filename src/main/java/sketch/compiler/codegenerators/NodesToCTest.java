@@ -67,7 +67,7 @@ public class NodesToCTest extends NodesToJava {
 	}
 	
     private static int getWordsize(Type type)
-    {
+    {    	
     	if(type instanceof TypePrimitive) {
     		switch(((TypePrimitive)type).getType()) {
     			case TypePrimitive.TYPE_BIT:
@@ -101,14 +101,7 @@ public class NodesToCTest extends NodesToJava {
     private int typeLen(Type t) {
 		if(t instanceof TypeArray) {
 			TypeArray array=(TypeArray)t;
-			if(isBitType(array.getBase())) {
-				int len=getBitLength(array);
-				int ws = typeWS(array);
-				if(len <= ws) return 1;
-				else return (len-1)/32+1;
-			}
-			else
-				return ((ExprConstInt)array.getLength()).getVal();
+			return ((ExprConstInt)array.getLength()).getVal();
 		}
 		else {
 			return 1;
@@ -170,11 +163,13 @@ public class NodesToCTest extends NodesToJava {
     }
     
     private void declareVar(String name, Type t) {
-    	int len=typeLen(t);
+    	
+    	String line = _converter.typeForDecl(t, name);
+    	/*int len=typeLen(t);
     	boolean isArr = typeIsArr(t);
     	String line=translateType(t);
     	line+=" "+name;
-    	if(isArr) line+="["+len+"]";
+    	if(isArr) line+="["+len+"]";*/
     	line+=";";
     	writeLine(line);
     }
@@ -215,13 +210,18 @@ public class NodesToCTest extends NodesToJava {
     		unIndent();
     		writeLine("}");
     	}
-    	padVar(name, t);
+    	// padVar(name, t);
     }
 
     private void outputVar(String name, Type t) 
     {
-    	int len=typeLen(t);
     	boolean isArr = typeIsArr(t);
+    	if( baseType(t).equals(TypePrimitive.bittype) ){
+    		writeLine("cout<<\"" + name + " = \"<<"  + name + "<<endl;");
+    		return;
+    	}
+    	int len=typeLen(t);
+    	
     	int ws=typeWS(t);
     	writeLine("printf(\"%5s=\",\""+name+"\");");
     	if(isArr) {

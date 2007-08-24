@@ -22,6 +22,7 @@ public class NodesToH extends NodesToJava {
 		String defname=filename.toUpperCase()+"_H";
 		String ret="#ifndef "+defname+"\n";
 		ret+="#define "+defname+"\n\n";
+		ret+="#include \"bitvec.h\"\n";
 		ret+=super.visitProgram(prog);
 		ret+="\n#endif\n";
 		return ret;
