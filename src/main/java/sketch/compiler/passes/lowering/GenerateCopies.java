@@ -235,7 +235,7 @@ class Indexify extends FEReplacer{
 				String newVarName = this.stv.addNewDeclaration(TypePrimitive.inttype, exp.getRight());								
 				ExprVar oldRHS = new ExprVar(context, newVarName);
 				Expression newIdx = null;
-				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
+				if( exp.getOp() == ExprBinary.BINOP_RSHIFT ){
 					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS , exp.getAlias());					
 				}else{
 					newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS, exp.getAlias());
@@ -253,7 +253,7 @@ class Indexify extends FEReplacer{
 				Expression newIdx = null;
 				int op;
 				Expression newConst = null;
-				if( exp.getOp() == ExprBinary.BINOP_LSHIFT ){
+				if( exp.getOp() == ExprBinary.BINOP_RSHIFT ){
 					newIdx = new ExprBinary(context, ExprBinary.BINOP_ADD, index, oldRHS, exp.getAlias() );
 					op = ExprBinary.BINOP_LT;
 					TypeArray ta = (TypeArray) lType;					
