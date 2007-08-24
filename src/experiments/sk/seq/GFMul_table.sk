@@ -3,7 +3,7 @@
 //galois field of polynomials in {0,1},  mod P.
 
 int W=8;
-int TSIZE=1<<W;
+int TSIZE=1>>W;
 
 bit[W] GFMul02 (bit[W] in) {
 	bit[W+1] tin= 0;
