@@ -18,7 +18,7 @@ bit[W] sklog2(bit[W] in) implements log2 {
 	bit[W] ret = 0;
 	loop (logW){
 		if (!iszero(in & ??)) {
-			in = in << ??;
+			in = in >> ??;
 			ret = ret | ??;
 		}
 	}
