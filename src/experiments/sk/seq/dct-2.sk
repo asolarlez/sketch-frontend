@@ -13,7 +13,7 @@ bit [MP] mult(bit[MP] in1, bit[MP] in2){
 		if(in2[i]==1){
 			result = result + in1;
 		}
-		in1 = in1 >> 1;
+		in1 = in1 << 1;
 	}
 	return result;
 }

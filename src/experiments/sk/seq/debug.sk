@@ -1,24 +1,71 @@
-bit[3] debug(bit[3] in) implements swap {
-	bit [3] tmp1;
-	tmp1 = in>>1;
-	bit[3] tmp2 = tmp1 ^ in;
-	bit[3] tmp3 = tmp2 & {*};
-	bit [3] tmp4;
-	tmp4 = tmp3<<1;
-	bit[3] t = tmp4 ^ tmp3 ^ in;
-	return t;
+int N_1L0;
+
+float[N_1L0][N_1L0][N_1L0] rec6ptSk(float[N_1L0][N_1L0][N_1L0] in_1L1 ) implements rec6pt
+{
+  
+  float[N_1L0][N_1L0][N_1L0] output_3L1;
+  float[N_1L0][N_1L0][N_1L0] _ret_0_3L2;
+  int _ret_1_3L3=0;
+  int _ret_2_3L4=0;
+  int _ret_3_3L5=0;
+  {
+    float[N_1L0][N_1L0][N_1L0] in_4L0_44L0=in_1L1;
+    float[N_1L0][N_1L0][N_1L0] _out_4L7_44L7=0;
+    {
+      float[N_1L0][N_1L0][N_1L0] output_6L1_45L1=in_4L0_44L0;
+      for(int i_7L0_46L0=0;i_7L0_46L0<N_1L0;++i_7L0_46L0)
+      {
+        {
+          for(int j_27L0_109L0=0;j_27L0_109L0<N_1L0;++j_27L0_109L0)
+          {
+            {
+              for(int k_37L0_130L0=0;k_37L0_130L0<N_1L0;++k_37L0_130L0)
+              {
+                {
+                  output_6L1_45L1[i_7L0_46L0][j_27L0_109L0][k_37L0_130L0] = in_4L0_44L0[((i_7L0_46L0)+(1))%(N_1L0)][j_27L0_109L0][k_37L0_130L0]
+                  +in_4L0_44L0[i_7L0_46L0][((j_27L0_109L0)+(1))%(N_1L0)][k_37L0_130L0]
+                  +in_4L0_44L0[i_7L0_46L0][j_27L0_109L0][((k_37L0_130L0)+(1))%(N_1L0)]
+                  +in_4L0_44L0[(((i_7L0_46L0)-(1))+(N_1L0))%(N_1L0)][j_27L0_109L0][k_37L0_130L0]
+                  +in_4L0_44L0[i_7L0_46L0][(((j_27L0_109L0)-(1))+(N_1L0))%(N_1L0)][k_37L0_130L0]
+                  +in_4L0_44L0[i_7L0_46L0][j_27L0_109L0][(((k_37L0_130L0)-(1))+(N_1L0))%(N_1L0)];
+                }
+              }
+            }
+          }
+        }
+      }
+      {
+        _out_4L7_44L7 = output_6L1_45L1;
+      }
+    }
+    _ret_0_3L2 = _out_4L7_44L7;
+  }
+  return _ret_0_3L2;
 }
+float[N_1L0][N_1L0][N_1L0] rec6pt(float[N_1L0][N_1L0][N_1L0] in_138L3)
+{
 
-
-
-
-
-bit[3] swap(bit[3] in) {
-	bit [3] t;
-	t[0] = in[0];
-	t[1] = in[2];
-	t[2] = in[1];	
-	return t;
+  float[N_1L0][N_1L0][N_1L0] output_140L1;
+  for(int i_141L0=0;(i_141L0)<(N_1L0);++i_141L0)
+  {
+    {
+      for(int j_204L0=0;(j_204L0)<(N_1L0);++j_204L0)
+      {
+        {
+          for(int k_225L0=0;(k_225L0)<(N_1L0);++k_225L0)
+          {
+            {
+              output_140L1[i_141L0][j_204L0][k_225L0] = in_138L3[((i_141L0)+(1))%(N_1L0)][j_204L0][k_225L0]
+              											+in_138L3[i_141L0][((j_204L0)+(1))%(N_1L0)][k_225L0]
+              											+in_138L3[i_141L0][j_204L0][((k_225L0)+(1))%(N_1L0)]
+              											+in_138L3[(((i_141L0)-(1))+(N_1L0))%(N_1L0)][j_204L0][k_225L0]
+              											+in_138L3[i_141L0][(((j_204L0)-(1))+(N_1L0))%(N_1L0)][k_225L0]
+              											+in_138L3[i_141L0][j_204L0][(((k_225L0)-(1))+(N_1L0))%(N_1L0)];
+            }
+          }
+        }
+      }
+    }
+  }
+  return output_140L1;
 }
-
-

@@ -1,16 +1,43 @@
-// Debug sketch file, to be modified by Liviu only
+int K=8;
 
-int S=2;
-int P=S+S;
-
-bit foo(bit[P] in){
-   return in[{*}];
+bit[K*K] sten13(bit[K*K]  in, int a, int N){
+   bit[K*K] out=0;
+   int i=a;
+   int j=0;
+   int T = 0;
+   if(N>a){ T = N-a; }
+   
+   loop(T){
+	   j=a;
+	   loop(T){
+		   out[i*K+j] = in[i*K+j];   
+		   j=j+1;
+	   }
+   i=i+1;
+   }
+   return out; 
 }
 
-bit revsk(bit[P] in) implements reverse {           
-   return foo(in);
+
+bit[K*K] stenSK13(bit[K*K]  in, int a, int N) implements sten13{
+    bit[K*K] out=0;
+   int i=a;
+   int j=0;
+   int T = 0;
+   int H = ??;
+   if(N>a){ T = N-a; }
+   loop(T){
+	   bit t = in[i*K+a];
+	   j=a;
+	   loop(T){
+		   out[i*K+j] = t;   
+	         t = in[i*K+j+H];
+		   j=j+1;
+	   }
+   i=i+1;
+   } 
+   return out; 
 }
 
-bit reverse (bit[P] in) {
-   return in[S];
-}
+
+    

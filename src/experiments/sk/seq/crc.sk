@@ -1,6 +1,6 @@
 int W=8;
 int N=2;
-int TSIZE=1<<N;
+int TSIZE=1>>N;
 
 bit[W] remainder(bit[W] in)
 {
@@ -9,7 +9,7 @@ bit[W] remainder(bit[W] in)
 	bit[W] ret=0;
 	for(int i=0;i<W;i++) {
 		bit fl=ret[0]^in[i];
-		ret=ret<<1;
+		ret=ret>>1;
 		if(fl) ret=ret^poly;
 	}
 	return ret;
@@ -22,21 +22,21 @@ bit[W] remainderOpt(bit[W] in) implements remainder
 	bit[TSIZE*W] table=??;
 	bit[W] ret=0;
 	for(int i=0;i<W/N;i++) {
-		//ret=(ret<<N)^table[in[i*N::N]^ret[0::N]]; // what I really want to write here but can't
+		//ret=(ret>>N)^table[in[i*N::N]^ret[0::N]]; // what I really want to write here but can't
 		if(in[i*N+0]^ret[0]) {
 			if(in[i*N+1]^ret[1]) {
-				for(int j=0;j<N;j++) ret=(ret<<N)^table[3*W+j];
+				for(int j=0;j<N;j++) ret=(ret>>N)^table[3*W+j];
 			}
 			else {
-				for(int j=0;j<N;j++) ret=(ret<<N)^table[2*W+j];
+				for(int j=0;j<N;j++) ret=(ret>>N)^table[2*W+j];
 			}
 		}
 		else {
 			if(in[i*N+1]^ret[1]) {
-				for(int j=0;j<N;j++) ret=(ret<<N)^table[1*W+j];
+				for(int j=0;j<N;j++) ret=(ret>>N)^table[1*W+j];
 			}
 			else {
-				for(int j=0;j<N;j++) ret=(ret<<N)^table[0*W+j];
+				for(int j=0;j<N;j++) ret=(ret>>N)^table[0*W+j];
 			}
 		}
 	}

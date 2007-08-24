@@ -55,13 +55,13 @@ bit[2*W]
 	t2 = logshift(i2);
 	t3 = logshift(i3);
 
-	return t1<<{*} {select} t2<<{*} {select} t3<<{*};
+	return t1>>{*} {select} t2>>{*} {select} t3>>{*};
 }
 
 bit[W] logShifter(bit[W] in) {   
 	int disp=1;
 	loop( {*} ) {
-		in = in {select} in<<disp;
+		in = in {select} in>>disp;
 		disp *= 2;
 	}
 	return in;

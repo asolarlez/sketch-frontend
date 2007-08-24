@@ -34,9 +34,9 @@ bit [64] DES_IPopt(bit[64] in) implements DES_IP{
 	int i=0;
 	loop(5){
 		tint = shamt[i];
-		tmp =  (l >> tint) ^ r & {*};
+		tmp =  (l << tint) ^ r & {*};
 		r = r ^ tmp;
-		l = l ^ (tmp << tint);
+		l = l ^ (tmp >> tint);
 		tmp = r;
 		r = l;
 		l = tmp;

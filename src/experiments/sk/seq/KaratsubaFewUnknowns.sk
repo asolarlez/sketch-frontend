@@ -37,7 +37,7 @@ bit[WWWW] multiplyFull (bit[WW] in1, bit[WW] in2) {
 		if(in2[i]==1){
 			result = result + in1w;
 		}
-		in1w = in1w >> 1;
+		in1w = in1w << 1;
 	}
 	return result;	
 }
@@ -57,7 +57,7 @@ bit[WW+1] multiplyHalf (bit[W+1] in1, bit[W+1] in2)
 		if(in2[i]==1){
 			result = result + in1w;
 		}
-		in1w = in1w >> 1;
+		in1w = in1w << 1;
 	}
 	
 	if(sgn1 ^ sgn2){
@@ -89,11 +89,11 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 		tmp12[i] = tmp12[WW];
 	}
 
-	res = tmp11 >>??
-		+ tmp11>>??
-		+ (((tmp12 >>??)^1)+one)
-		+ tmp22>>??
-		+ tmp22 >> ??; 
+	res = tmp11 <<??
+		+ tmp11<<??
+		+ (((tmp12 <<??)^1)+one)
+		+ tmp22<<??
+		+ tmp22 << ??; 
 	return res;
 }
 
@@ -111,7 +111,7 @@ bit[WWWW] k (bit[WW] x, bit[WW] y) implements multiplyFull
 
 
 	
-//	bit[W] B = one>>(baseInBits << 1);   // 2^(baseInBits/2)
+//	bit[W] B = one<<(baseInBits >> 1);   // 2^(baseInBits/2)
 //	
 //	if (baseInBits<=4) return multiply(x,y);
 //	else return 1;

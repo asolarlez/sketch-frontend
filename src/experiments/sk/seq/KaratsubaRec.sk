@@ -45,7 +45,7 @@ mult (bit[W] x, bit[W] y)
     for (int i = 0; i < W; i++) {
 	if (x[i] == 1)
 	    ret = ret + y;
-	y = y >> 1;
+	y = y << 1;
     }
 
     return ret;
@@ -125,7 +125,7 @@ karatsuba_rec (bit[W] x, bit[W] y, int start, int count)
 
 	/* Gather final result. */
 	loop (??) {
-	    bit[W] tmp = sel (sel (x1y1, x0y0), x1x0y1y0) >> (count * ??);
+	    bit[W] tmp = sel (sel (x1y1, x0y0), x1x0y1y0) << (count * ??);
 	    ret = ret + sel (tmp, neg (tmp));
 	}
     }

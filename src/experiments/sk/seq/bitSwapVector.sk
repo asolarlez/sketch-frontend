@@ -1,11 +1,11 @@
 bit[3] debug(bit[3] in) implements swap {
 	int shamt = {*};
 	bit [3] tmp1;
-	tmp1 = in>>shamt;
+	tmp1 = in<<shamt;
 	bit[3] tmp2 = tmp1 ^ in;
 	bit[3] tmp3 = tmp2 & {*};
 	bit [3] tmp4;
-	tmp4 = tmp3<<shamt;
+	tmp4 = tmp3>>shamt;
 	bit[3] t = tmp4 ^ tmp3 ^ in;
 	return t;
 }

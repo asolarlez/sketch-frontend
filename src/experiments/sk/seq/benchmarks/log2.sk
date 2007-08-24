@@ -14,6 +14,10 @@ bit[W] slog2(bit[W] in)
 	return ret;
 }
 
+
+
+
+
 bit iszero(bit[W] in)
 {
 	bit res=1;
@@ -26,12 +30,16 @@ bit[W] sklog2(bit[W] in) implements slog2
 {
 	bit[W] ret=0; 
 
-	loop(??)
+	loop(4)
 	{
-		if (!iszero(in & {*}))
-		{
-			in = in << {*};
-			ret = ret | {*};
+		bit[W] mask1 = 0;
+		int i=0; loop(W){ mask1[i] = ??; ++i; } 
+		if (!iszero(in & mask1))
+		{			
+			bit[W] mask2 = 0;
+			int i=0; loop(W){ mask2[i] = ??; ++i; }
+			in = in >> {*};
+			ret = ret | mask2;
 		} 
 	}
 	return ret;

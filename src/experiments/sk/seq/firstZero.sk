@@ -1,6 +1,6 @@
 bit[32] firstZeroSk(bit[32] in) implements firstZero {	
 	bit[32] ret;
-	ret = (!in + {*}) & (in + {*});
+	ret = !(in + ??) & (in + ??);
 	return ret;
 }
 

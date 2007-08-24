@@ -1,3 +1,18 @@
+/**
+ * When running this benchmark with W=32, use -overrideCtrls 5
+ * rather than --incremental. The reason is that the holes have 
+ * to be at least 5 bits wide in order for the benchmark to resolve.
+ * However, when you limit them to 4 bits, it takes the solver a long
+ * time to discover that it needs more bits. This is a bit unusual; 
+ * most benchmarks, if you don't give them enough bits for holes, they 
+ * fail very quickly. Also, using an unrollamnt > 6 ,it will take a long time.
+ * 
+ * With W < 32, it should resolve fairly quickly without requiring any flags.
+ * 
+ *  -overrideCtrls 5 --unrollamnt 5
+ * 
+ */
+
 int W=32;
 
 bit parity(bit[W] in)
@@ -11,8 +26,9 @@ bit parity(bit[W] in)
 bit fastparity(bit[W] in) implements parity
 {
 	bit[W] y=in;
+	int x = ??;
 	loop(??) {
-		y=y^(y >> ??);
-	}
+		y=y^(y << ??);
+	}	
 	return y[W-1];
 }

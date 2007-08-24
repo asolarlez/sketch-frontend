@@ -70,7 +70,7 @@ int k (int x, int y) implements fu
 
 
 	
-//	bit[W] B = one>>(baseInBits << 1);   // 2^(baseInBits/2)
+//	bit[W] B = one<<(baseInBits >> 1);   // 2^(baseInBits/2)
 //	
 //	if (baseInBits<=4) return multiply(x,y);
 //	else return 1;

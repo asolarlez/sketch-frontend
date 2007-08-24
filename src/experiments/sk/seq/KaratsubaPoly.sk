@@ -11,7 +11,7 @@
 // to discover in order to resolve the sketch
 
 
-int WW = 4;
+int WW = 6;
 int W = WW/2;
 int WWWW =  WW+WW;
 
@@ -58,7 +58,7 @@ bit[WWWW] multiplyFull (bit[WW] in1, bit[WW] in2) {
 		if(in2[i]==1){
 			result = result + in1w;
 		}
-		in1w = in1w >> 1;
+		in1w = in1w << 1;
 	}
 	return result;	
 }
@@ -78,7 +78,7 @@ bit[WWWW] multiplyHalf (bit[W+1] in1, bit[W+1] in2)
 		if(in2[i]==1){
 			result = result + in1w;
 		}
-		in1w = in1w >> 1;
+		in1w = in1w << 1;
 	}
 	
 	bit[WWWW] ret = result;
@@ -106,9 +106,9 @@ bit[WWWW] multiplyKaratsuba (bit[WW] x, bit[WW] y) implements multiplyFull
 	
 	res = 0;
 	res = res + a;
-	res = res + b >> (2*W);
+	res = res + b << (2*W);
 	loop(??){
-		bit[WWWW] t = sel(sel(a, b), c) >> W;
+		bit[WWWW] t = sel(sel(a, b), c) << W;
 		res = res + sel(t, minus(t));
 	}
 	return res;

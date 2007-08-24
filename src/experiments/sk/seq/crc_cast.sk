@@ -1,7 +1,7 @@
 int W=8;
 int N=1;
 int X=1;
-int TSIZE=1<<N;
+int TSIZE=1>>N;
 
 bit[W] remainder(bit[X*W] in, bit[W] poly)
 {
@@ -10,7 +10,7 @@ bit[W] remainder(bit[X*W] in, bit[W] poly)
 	bit[W] ret=0;
 	for(int i=0;i<X*W;i++) {
 		bit fl=ret[0]^in[i];
-		ret=ret<<1;
+		ret=ret>>1;
 		if(fl) ret=ret^poly;
 	}
 	return ret;
@@ -24,14 +24,14 @@ bit[W] remainderOpt(bit[X*W] in, bit[W] poly) implements remainder
 	bit[W] ret=0;
 	for(int i=0;i<X*W/N;i++) {
 		// what I really want to write here but can't:
-		// ret=(ret<<N)^table[in[i*N::N]^ret[0::N]]; 
+		// ret=(ret>>N)^table[in[i*N::N]^ret[0::N]]; 
 		// instead I have to do:
 		bit[N] sel;
 		for(int j=0;j<N;j++) sel[j]=in[i*N+j]^ret[j];
 		int base=(int)sel;
 		base=base*W;
 		
-		ret=ret<<N;
+		ret=ret>>N;
 		for(int k=0;k<W;k++) {
 			ret[k]=ret[k]^table[base+k];
 		}
