@@ -727,7 +727,7 @@ public class PartialEvaluator extends FEReplacer {
         	}      
         } break;
         
-        case ExprBinary.BINOP_LSHIFT:{
+        case ExprBinary.BINOP_RSHIFT:{
         	Iterator<valueClass> lhsIt = lhsList.iterator();
         	int N = lhsList.size();
         	if(rhs.hasValue()){
@@ -749,7 +749,7 @@ public class PartialEvaluator extends FEReplacer {
         	}
         } break;
         
-        case ExprBinary.BINOP_RSHIFT:{
+        case ExprBinary.BINOP_LSHIFT:{
         	Iterator<valueClass> lhsIt = lhsList.iterator();
         	int N = lhsList.size();
         	if(rhs.hasValue()){
