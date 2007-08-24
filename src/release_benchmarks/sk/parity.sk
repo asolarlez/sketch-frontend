@@ -13,7 +13,7 @@ bit fastparity(bit[W] in) implements parity
 	bit[W] y=in;
 	int x = ??;
 	loop(??) {
-		y=y^(y >> ??);
+		y=y^(y << ??);
 	}	
 	return y[W-1];
 }
