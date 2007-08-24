@@ -32,13 +32,13 @@ bit[W] sklog2(bit[W] in) implements slog2
 	
 		if (!iszero(in & {*}))
 		{
-			in = in << ??;
+			in = in >> ??;
 			ret = ret | {*};
 		} 
 	
 			if (!iszero(in & {*}))
 		{
-			in = in << 1;
+			in = in >> 1;
 			ret = ret | {*};
 		}
 	return ret;
