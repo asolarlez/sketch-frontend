@@ -1,8 +1,8 @@
 bit reverseSketch(bit[4] in) implements reverse {
 	
-	in = in >> 1;
-	in = in << {*};
-	in = in >> 1;
+	in = in << 1;
+	in = in >> {*};
+	in = in << 1;
 	return 	in[3];
 }
 

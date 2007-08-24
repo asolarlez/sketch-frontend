@@ -1,5 +1,5 @@
 bit reverseSketch(bit[4] in) implements reverse {	
-	bit [4] tmp = in << {*};
+	bit [4] tmp = in >> {*};
 	return tmp[0];
 }
 
