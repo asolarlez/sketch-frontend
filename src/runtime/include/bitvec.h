@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <iostream>
-#include <stdlib.h>
+#include <climits>
 
 #define WORDSIZE  (sizeof (unsigned))
 #define WORDBITS  (WORDSIZE << 3)
