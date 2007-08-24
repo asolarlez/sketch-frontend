@@ -74,11 +74,11 @@ count_sk (bit[W] a) implements count
     /* Populate shift/mask arrays. */
     /* - initial shift amount exponent-distant from the bit-width. */
     /* FIXME better be shift. */
-    /* TODO alternatively: s = W [ << | >> ] ??  */
+    /* TODO alternatively: s = W [ >> | << ] ??  */
     s = pow2 (sk_offset (L) /* L - 1 */);
     /* - initial mask is a sequence of 1's of constant factor of the shift amount. */
     /* FIXME better be shift; better use casting. */
-    /* TODO alternatively: m[0 :: s [ << | >> ] ??] = 1  */
+    /* TODO alternatively: m[0 :: s [ >> | << ] ??] = 1  */
     m = intToBit (pow2 (sk_offset (s) /* s */) - 1);
     /* - number of iterations is logarithmic by width. */
     i = 0;
@@ -86,7 +86,7 @@ count_sk (bit[W] a) implements count
 	mm[i * W :: W] = m;
 	ss[i] = s;
 	s = s / 2;  /* FIXME better be shift. */
-	m = m ^ (m >> s);  /* FIXME reverse shift direction. */
+	m = m ^ (m << s);  /* FIXME reverse shift direction. */
 	i++;
     }
 
@@ -94,7 +94,7 @@ count_sk (bit[W] a) implements count
 	i--;
 	m = mm[i * W :: W];
 	s = ss[i];
-	a = (a & m) + ((a << s) & m);
+	a = (a & m) + ((a >> s) & m);
     }
 
     return (int) a;

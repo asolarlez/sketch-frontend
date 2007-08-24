@@ -40,7 +40,7 @@ count_sk (bit[W] a) implements count
 	mm[i * W :: W] = m;
 	ss[i] = s;
 	s = s / 2;
-	m = m ^ (m >> s);
+	m = m ^ (m << s);
 	i++;
     }
 
@@ -49,7 +49,7 @@ count_sk (bit[W] a) implements count
 	i--;
 	m = mm[i * W :: W];
 	s = ss[i];
-	a = (a & m) + ((a << s) & m);
+	a = (a & m) + ((a >> s) & m);
     }
 
     return (int) a;
