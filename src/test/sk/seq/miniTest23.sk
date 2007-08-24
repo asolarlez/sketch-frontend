@@ -10,7 +10,7 @@ bit[3] miniTest(bit[3] in) {
 
 bit[3] miniTestSK (bit[3] x) implements miniTest{
    int tt = ??;
-   bit [3] tmp2 = (x>>tt) {|} (x<<tt);
+   bit [3] tmp2 = (x<<tt) {|} (x>>tt);
    bit [3] tmp;
    tmp = tmp2 {|} x;
    return tmp;
