@@ -5,7 +5,7 @@ bit [4] mult(bit[4] in1, bit[4] in2){
 		if(in2[i]==1){
 			result = result + in1;
 		}
-		in1 = in1 >> 1;
+		in1 = in1 << 1;
 	}
 	return result;
 }

@@ -97,7 +97,7 @@ bit[FW] FOadd(bit[FW] a, bit[FW] b)
 		bit[M+1] m2=0;
 		m1[0::M]=a[0::M];
 		m2[0::M]=b[0::M]; // {00010}
-		m2=m2<<sh;
+		m2=m2>>sh;
 		if(!b[SB])
 			 m2=FOtwocomp(m2);
 		m1=m1+m2;
