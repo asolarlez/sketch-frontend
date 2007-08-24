@@ -41,7 +41,7 @@ word_cmp (unsigned &wtag, unsigned w1, unsigned w2, unsigned &carry) {
     return (w1 == w2 ? 0 : (w1 > w2) ? 1 : -1);
 }
 
-int
+inline int
 word_add (unsigned &wtag, unsigned w1, unsigned w2, unsigned &carry)
 {
     const unsigned half_shift = WORDBITS >> 1;
@@ -105,7 +105,7 @@ public:
 
     inline operator bool (void) const {
 	return ((*w & m) != 0);
-    }
+    }    
 };
 
 class bitref : public const_bitref {
@@ -172,8 +172,8 @@ public:
     //template <int S> const bitvec range (size_t i) const;
 
     const bitvec<N> &operator= (const bitvec<N> &bv);
-    const bitvec<N> &operator= (unsigned w);
-    const bitvec<N> &operator= (bool bit);
+    /*const bitvec<N> &operator= (unsigned w);
+    const bitvec<N> &operator= (bool bit); */
     const bitvec<N> &operator+= (const bitvec &bv);
     const bitvec<N> &operator|= (const bitvec<N> &bv);
     const bitvec<N> &operator&= (const bitvec<N> &bv);
@@ -202,8 +202,9 @@ public:
      */
 public:
     bitvec (bool val = false);
-    bitvec (const unsigned w);
+    //bitvec (const unsigned w);
     bitvec (const bitvec<N> &bv);
+    bitvec (const const_bitref &bv);
 
     /*
      * Friends.
@@ -227,7 +228,7 @@ public:
 		      const bool a_reversed = false);
 
     inline void advance (const size_t n);
-    unsigned read (const size_t n);
+    inline unsigned read (const size_t n);
 };
  
 
@@ -382,7 +383,7 @@ bitvec<N>::operator= (const bitvec<N> &bv)
     iter (bv, 0, word_copy, 0);
     return *this;
 }
-
+/*
 template <size_t N> const bitvec<N> &
 bitvec<N>::operator= (unsigned w)
 {
@@ -411,7 +412,7 @@ bitvec<N>::operator= (bool bit)
 
     return *this;
 }
-
+*/
 
 template <size_t N> const bitvec<N> &
 bitvec<N>::operator+= (const bitvec<N> &bv)
@@ -443,38 +444,38 @@ bitvec<N>::operator^= (const bitvec<N> &bv)
 
 template <size_t N> const bool
 bitvec<N>::operator==(const bitvec<N> bv) const
-{
-    return (iter (bv, 0, word_cmp, 0) == 0);
+{	
+    return (((bitvec<N>*)this)->iter (bv, 0, word_cmp, 0) == 0);
 }
 
 template <size_t N> const bool
 bitvec<N>::operator!=(const bitvec<N> bv) const
 {
-    return (iter (bv, 0, word_cmp, 0) != 0);
+    return (((bitvec<N>*)this)->iter (bv, 0, word_cmp, 0) != 0);
 }
 
 template <size_t N> const bool 
 bitvec<N>::operator<(const bitvec<N> bv) const
 {
-    return (iter (bv, 0, word_cmp, 0) < 0);
+    return (((bitvec<N>*)this)->iter (bv, 0, word_cmp, 0) < 0);
 }
 
 template <size_t N> const bool 
 bitvec<N>::operator<=(const bitvec<N> bv) const
 {
-    return (iter (bv, 0, word_cmp, 0) <= 0);
+    return (((bitvec<N>*)this)->iter (bv, 0, word_cmp, 0) <= 0);
 }
 
 template <size_t N> const bool 
 bitvec<N>::operator>(const bitvec<N> bv) const
 {
-    return (iter (bv, 0, word_cmp, 0) > 0);
+    return (((bitvec<N>*)this)->iter (bv, 0, word_cmp, 0) > 0);
 }
 
 template <size_t N> const bool 
 bitvec<N>::operator>=(const bitvec<N> bv) const
 {
-    return (iter (bv, 0, word_cmp, 0) >= 0);
+    return (((bitvec<N>*)this)->iter (bv, 0, word_cmp, 0) >= 0);
 }
 
 
@@ -526,19 +527,36 @@ bitvec<N>::operator>> (size_t s)
 template <size_t N>
 bitvec<N>::bitvec (bool val)
 {
-    *this = val;
+    size_t c = N;
+    unsigned *vtag = v;
+    unsigned w = (val ? (unsigned) -1 : 0);
+
+    while (c >= WORDBITS) {
+	*vtag++ = w;
+	c -= WORDBITS;
+    }
+
+    if (c)
+	*vtag = w & bitmask (c, 0);
 }
 
+/*
 template <size_t N>
 bitvec<N>::bitvec (unsigned w)
 {
     *this = w;
 }
+*/
 
 template <size_t N>
 bitvec<N>::bitvec (const bitvec<N> &bv)
 {
     *this = bv;
+}
+
+template <size_t N>
+bitvec<N>::bitvec (const const_bitref &bv){
+	*this = (bool) bv;	
 }
 
 
