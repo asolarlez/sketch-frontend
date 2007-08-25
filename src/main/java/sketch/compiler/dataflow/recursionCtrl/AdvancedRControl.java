@@ -162,9 +162,9 @@ public class AdvancedRControl extends RecursionControl {
 		bfStack.push(1);
 		prog.accept(new PopFunMap());
 		prog.accept(funWeighter);
-		for(Map.Entry<String, Integer> en : funWeighter.funWeight.entrySet()){
+		/*for(Map.Entry<String, Integer> en : funWeighter.funWeight.entrySet()){
 			System.out.println(en);
-		}
+		}*/
 		FACTOR = (funWeighter.maxWeight * 2 ) / 3;
 		MAX_INLINE = maxInline;		
 	}
