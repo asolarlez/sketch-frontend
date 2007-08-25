@@ -164,10 +164,7 @@ public class MethodState {
     }
 	
 	private void UTsetVarValue(String var, abstractValue val){		
-		varState tv =  vars.get(var);
-		if(tv == null){
-			System.out.print("AAAARRRRGGGGHHH");
-		}
+		varState tv =  vars.get(var);		
 		assert(tv != null) : ( " This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
 		if(changeTracker != null){
 			changeTracker.setVarValue(var, val);
@@ -198,10 +195,7 @@ public class MethodState {
 		}else{
 			if( changeTracker.knowsAbout(var) ){
 				return changeTracker.varState(var);
-			}else{
-				if(i==null){
-					System.out.println("  ");
-				}
+			}else{				
 				assert(i != null) : ( "The variable " + var + " is used before being set with a value.\n");
 				return i;
 			}
