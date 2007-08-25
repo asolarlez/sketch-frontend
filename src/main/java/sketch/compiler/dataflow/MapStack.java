@@ -64,10 +64,7 @@ class MapStack{
     	while(it.hasNext()){
     		String nm = (String) it.next();
     		//System.out.println("Unseting " + nm);
-    		varState vs = vars.get(nm);
-    		if(nm.equals("_out_5L1_4L1_4L1")){
-    			System.out.print("AAARGH");
-    		}
+    		varState vs = vars.get(nm);    		
     		vs.outOfScope();
     		vars.remove(nm);
     		if(changeTracker != null){
