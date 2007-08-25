@@ -3,6 +3,7 @@ package streamit.frontend.codegenerators;
 import java.util.*;
 
 import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tojava.NodesToJava;
 
 public class NodesToC extends NodesToJava {
@@ -178,10 +179,34 @@ public class NodesToC extends NodesToJava {
 	        default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
         }
         // Assume both sides are the right type.
-        return (String)stmt.getLHS().accept(this) + op +
-            (String)stmt.getRHS().accept(this) + ";";
+        isLHS = true;
+        String lhs = (String)stmt.getLHS().accept(this);
+        isLHS = false;
+        String rhs = (String)stmt.getRHS().accept(this);
+        return lhs + op + rhs + ";";
 	}
 
+	boolean isLHS = false;
+	
+	
+	public Object visitExprArrayRange(ExprArrayRange exp){
+		Expression base=exp.getBase();
+		List ranges=exp.getMembers();
+		if(ranges.size()==0) throw new IllegalStateException();
+		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
+		Object o=ranges.get(0);
+		if(o instanceof RangeLen) 
+		{
+			RangeLen range=(RangeLen) o;
+			if(range.len()==1 || isLHS) {
+				return base.accept(this)+"["+range.start().accept(this)+"]"; 
+			}else{
+				return base.accept(this)+ ".sub<" + range.len() + ">("+range.start().accept(this) + ")";
+			}
+		}
+		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
+	}
+	
 	@Override
 	public String convertType(Type type)
 	{
