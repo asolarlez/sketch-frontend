@@ -132,10 +132,7 @@ public class PartialEvaluator extends FEReplacer {
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
 		abstractValue newStart = (abstractValue) rl.start().accept(this);
-		Expression nstart = exprRV;
-		if(exp.getBase() instanceof ExprArrayRange){
-			System.out.println("WTF??");
-		}
+		Expression nstart = exprRV;		
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
 		Expression nbase = exprRV;
 		if(isReplacer ){
@@ -982,7 +979,9 @@ public class PartialEvaluator extends FEReplacer {
         funcsToAnalyze = this.functionsToAnalyze(spec);
         assert funcsToAnalyze != spec.getFuncs();
         funcsAnalyzed = new HashSet<Function>();
-        
+        if(funcsToAnalyze.size() == 0){
+        	System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
+        }
         while(funcsToAnalyze.size() > 0){
         	Function f = funcsToAnalyze.get(0);
         	if( ! funcsAnalyzed.contains(f) ){
