@@ -479,7 +479,7 @@ public class ToSBit
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;        
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
-		//prog.accept(new SimpleCodePrinter());
+		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//prog.accept(new SimpleCodePrinter());
@@ -649,7 +649,7 @@ public class ToSBit
 				}
 				if( params.hasFlag("outputtest")  ) {
 					String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
-					Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+"_test.c");
+					Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+"_test.cpp");
 					outWriter.write(testcode);
 					outWriter.flush();
 					outWriter.close();
@@ -658,7 +658,7 @@ public class ToSBit
 					Writer outWriter = new FileWriter(params.sValue("outputdir")+"script");
 					outWriter.write("#!/bin/sh\n");
 					
-					outWriter.write("g++ -I \"$FRONTEND/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.c\n");
+					outWriter.write("g++ -I \"$FRONTEND/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
 					
 					outWriter.write("./"+resultFile+"\n");
 					outWriter.flush();
@@ -743,6 +743,11 @@ public class ToSBit
 				"--sbitpath path\t Path where the SBitII solver can be found. This flag " +
 				"\n \t\t is already set by the sketch script, so don't try to set it yourself.",
 				null, null) );
+		
+		params.setAllowedParam("showpartial", new POpts(POpts.FLAG, 
+				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
+				null, null) );
+		
 	}
 	
 	
