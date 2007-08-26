@@ -696,7 +696,7 @@ public class SemanticChecker
 						"semantic checker missed a binop type");
 					break;
 					}
-					return expr;
+					//return expr;
 				}
 
 				return super.visitExprBinary(expr);
