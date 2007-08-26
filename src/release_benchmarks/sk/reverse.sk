@@ -8,7 +8,7 @@ bit[W] reverseSketch(bit[W] in) implements reverse {
 	loop(??){
 		bit[W] tmp1 = (t << s);
 		bit[W] tmp2 = (t >> s);
-		t = tmp1 {|} tmp2;
+		t = tmp1 {|} tmp2; // The {|} operator is syntactic sugar for m=??, (tmp1&m | tmp2&!m).
 		s = s*r;
 	}
 	return t;
