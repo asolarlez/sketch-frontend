@@ -9,12 +9,34 @@ import streamit.frontend.tojava.NodesToJava;
 public class NodesToC extends NodesToJava {
 
 	private String filename; 	
+	private boolean isBool = true;
 	
 	public NodesToC(TempVarGen varGen, String filename) {
 		super(false, varGen);
 		this.filename=filename;		
 	}
 			
+	
+	public Object visitExprArrayInit(ExprArrayInit exp)
+    {
+		
+		if(isBool){
+			StringBuffer sb = new StringBuffer();
+			sb.append("\"");
+		
+			List elems = exp.getElements();
+			for (int i=0; i<elems.size(); i++) {
+			    sb.append((String)((Expression)elems.get(i)).accept(this));
+			}
+	
+			sb.append("\"");
+	        return sb.toString();
+		}
+		return super.visitExprArrayInit(exp);
+    }
+	
+	
+	
 	@Override
 	public Object visitExprUnary(ExprUnary exp)
 	{
@@ -122,10 +144,16 @@ public class NodesToC extends NodesToJava {
         for (int i = 0; i < stmt.getNumVars(); i++)
         {            
             Type type = stmt.getType(i);
+            if(type instanceof TypeArray){
+	            if( ((TypeArray)type).getBase().equals( TypePrimitive.inttype )){
+	            	isBool = false;
+	            }
+            }
             result += typeForDecl(type,   stmt.getName(i));
             if (stmt.getInit(i) != null)
                 result += " = " + (String)stmt.getInit(i).accept(this);
             result += ";\n";
+            isBool = true;
         }
         return result;
     }
