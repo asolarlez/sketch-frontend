@@ -70,6 +70,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 	public Object visitExprFunCall(ExprFunCall exp)
 	{
     	String name = exp.getName();
+    	
+    	
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
 		if(fun.getSpecification()!= null){

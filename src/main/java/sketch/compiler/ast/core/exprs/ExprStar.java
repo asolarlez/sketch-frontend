@@ -18,6 +18,8 @@ package streamit.frontend.nodes;
 
 import java.util.Vector;
 
+import streamit.frontend.ToSBit;
+
 /**
  * An integer-valued constant.  This can be freely promoted to an
  * ExprConstFloat.  This is always real-valued, though it can appear
@@ -144,7 +146,7 @@ public class ExprStar extends Expression
 			tt = ((TypeArray)tt).getBase();
 		}
 		if( ( tt.equals(TypePrimitive.inttype) ) && !isFixed ){
-			setSize(INT_SIZE);
+			setSize( ToSBit.params.flagValue("cbits")  );
 		}
 	}
 
