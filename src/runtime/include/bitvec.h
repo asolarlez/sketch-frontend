@@ -257,6 +257,7 @@ public:
 public:
     bitvec (void);
     bitvec (const unsigned w);
+    bitvec (char *s);
     template <size_t Ntag> bitvec (const bitvec<Ntag> &bv);
 
     /*
@@ -581,11 +582,42 @@ bitvec<N>::bitvec (void)
 }
 
 template <size_t N>
-bitvec<N>::bitvec (unsigned w){
+bitvec<N>::bitvec (unsigned w)
+{
     reset ();
     if (N < WORDBITS)
 	w &= bitmask (N, 0);
     v[0] = w;
+}
+
+template <size_t N>
+bitvec<N>::bitvec (char *s)
+{
+    reset ();
+
+    size_t n = N;
+    unsigned *vtag = v;
+
+    while (n) {
+	unsigned w = 0;
+	char c;
+	unsigned m = 1;
+
+	for (int i = 0; n && i < WORDBITS && (c = *s);
+	     i++, m <<= 1, n--, s++)
+	{
+	    if (c == '1')
+		w |= m;
+	    else
+		assert (c == '0');
+	}
+
+	*vtag++ = w;
+
+	/* End of initialization string. */
+	if (! c)
+	    break;
+    }
 }
 
 template <size_t N> template <size_t Ntag>
