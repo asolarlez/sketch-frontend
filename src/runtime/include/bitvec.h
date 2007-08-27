@@ -166,7 +166,7 @@ public:
 	size_t itag = i;
 	for (size_t j = 0; j < N; j++) {
 	    unsigned m = bitmask (1, itag);
-	    *wtag = (*wtag & ~m) | (bv[j] ? m : 0);
+	    *wtag = (*wtag & ~m) | ((j < N && bv[j]) ? m : 0);
 	    if (++itag == WORDBITS) {
 		itag = 0;
 		wtag++;
