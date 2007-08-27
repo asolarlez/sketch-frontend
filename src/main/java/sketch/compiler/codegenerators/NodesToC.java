@@ -226,10 +226,10 @@ public class NodesToC extends NodesToJava {
 		if(o instanceof RangeLen) 
 		{
 			RangeLen range=(RangeLen) o;
-			if(range.len()==1 || isLHS) {
+			if(isLHS) {
 				return base.accept(this)+"["+range.start().accept(this)+"]"; 
 			}else{
-				return base.accept(this)+ ".sub<" + range.len() + ">("+range.start().accept(this) + ")";
+				return base.accept(this)+ ".sub<" + range.len() + ">("+range.start().accept(this) + ")";	
 			}
 		}
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
