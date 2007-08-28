@@ -56,7 +56,7 @@ public class NodesToJava implements FEVisitor
     protected String indent;
     private boolean libraryFormat;
     protected TempVarGen varGen;
-    private int binOpLevel=0;
+    protected int binOpLevel=0;
     
     public NodesToJava(boolean libraryFormat, TempVarGen varGen) {
     	this(libraryFormat, varGen, false);
