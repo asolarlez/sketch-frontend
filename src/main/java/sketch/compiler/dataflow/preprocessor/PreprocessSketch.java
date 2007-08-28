@@ -56,6 +56,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 		return state.transName(name);
 	}
 	
+	
+	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol, boolean uncheckedArrays){
+		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
+		newFuns = new HashMap<String, Function>();
+		this.uncheckedArrays = uncheckedArrays;
+	}
+	
 	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol){
 		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
 		newFuns = new HashMap<String, Function>();

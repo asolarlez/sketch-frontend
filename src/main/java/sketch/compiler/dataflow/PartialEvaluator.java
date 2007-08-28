@@ -64,7 +64,7 @@ public class PartialEvaluator extends FEReplacer {
     protected abstractValueType vtype;
 	protected Expression exprRV=null;
     protected boolean isReplacer;
-    
+    protected boolean uncheckedArrays = false;
     public boolean isPrecise = true;
     
     protected List<Function> funcsToAnalyze = null;
@@ -140,7 +140,7 @@ public class PartialEvaluator extends FEReplacer {
 		}
 		
 		try{
-			return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked());
+			return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked() || uncheckedArrays);
 		}catch(ArrayIndexOutOfBoundsException e){
 			
 			throw new ArrayIndexOutOfBoundsException( e.getMessage() + ":" + exp.getCx() );
