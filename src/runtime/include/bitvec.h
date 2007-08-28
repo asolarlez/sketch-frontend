@@ -243,6 +243,7 @@ public:
     const bitvec<N> operator^ (const bitvec<N> &bv) const;
     const bitvec<N> operator<< (size_t s) const;
     const bitvec<N> operator>> (size_t s) const;
+    const bitvec<N> operator~ () const;
 
     /* XXX casting operator */
     //operator char *bitvec_string (char *, size_t, struct bitvec *);
@@ -250,6 +251,10 @@ public:
 
     template <size_t Ntag> const bitvec<Ntag> sub (size_t offset) const;
 
+
+	inline operator unsigned (void) const {
+		return v[0];
+    }
 
     /*
      * Constructors.
@@ -539,6 +544,15 @@ bitvec<N>::operator^ (const bitvec<N> &bv) const
 {
     return (bitvec<N> (*this) ^= bv);
 }
+
+template <size_t N> const bitvec<N> 
+bitvec<N>::operator~ () const{
+	bitvec<N> tmp;
+	for (int i = 0; i < N; i++)
+	    tmp[i] = ~(*this)[i];
+    return tmp;
+}
+
 
 template <size_t N> const bitvec<N>
 bitvec<N>::operator<< (size_t s) const
