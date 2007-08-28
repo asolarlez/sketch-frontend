@@ -23,6 +23,7 @@ public class NodesToH extends NodesToJava {
 		String ret="#ifndef "+defname+"\n";
 		ret+="#define "+defname+"\n\n";
 		ret+="#include \"bitvec.h\"\n";
+		ret+="#include \"fixedarr.h\"\n";
 		ret+=super.visitProgram(prog);
 		ret+="\n#endif\n";
 		return ret;

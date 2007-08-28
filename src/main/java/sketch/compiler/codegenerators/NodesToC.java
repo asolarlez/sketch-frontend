@@ -31,25 +31,67 @@ public class NodesToC extends NodesToJava {
         
         switch (exp.getOp())
         {
-	        case ExprBinary.BINOP_ADD: op = "+"; break;
+	        case ExprBinary.BINOP_ADD: op = "+"; 
+	        if(exp.getLeft() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+	        	int sz = eai.getElements().size();
+	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        }
+	        
+	        if(exp.getRight() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getRight();
+	        	int sz = eai.getElements().size();
+	        	right = "bitvec<" + sz + ">(" + right + ")";
+	        }
+	        
+	        break;
 	        case ExprBinary.BINOP_SUB: op = "-"; break;
 	        case ExprBinary.BINOP_MUL: op = "*"; break;
 	        case ExprBinary.BINOP_DIV: op = "/"; break;
 	        case ExprBinary.BINOP_MOD: op = "%"; break;
 	        case ExprBinary.BINOP_AND: op = "&&"; break;
 	        case ExprBinary.BINOP_OR:  op = "||"; break;
-	        case ExprBinary.BINOP_EQ:  op = "=="; break;
-	        case ExprBinary.BINOP_NEQ: op = "!="; break;
-	        case ExprBinary.BINOP_LT:  op = "<"; break;
-	        case ExprBinary.BINOP_LE:  op = "<="; break;
-	        case ExprBinary.BINOP_GT:  op = ">"; break;
-	        case ExprBinary.BINOP_GE:  op = ">="; break;
+	        case ExprBinary.BINOP_EQ:  op = "=="; 
+	        left = "((unsigned)" + left + ")";
+	        right = "((unsigned)" + right + ")";
+	        break;
+	        case ExprBinary.BINOP_NEQ: op = "!="; 
+	        left = "((unsigned)" + left + ")";
+	        right = "((unsigned)" + right + ")";
+	        break;
+	        case ExprBinary.BINOP_LT:  op = "<"; 
+	        left = "((unsigned)" + left + ")";
+	        right = "((unsigned)" + right + ")";
+	        break;
+	        case ExprBinary.BINOP_LE:  op = "<="; 
+	        left = "((unsigned)" + left + ")";
+	        right = "((unsigned)" + right + ")";
+	        break;
+	        case ExprBinary.BINOP_GT:  op = ">"; 
+	        left = "((unsigned)" + left + ")";
+	        right = "((unsigned)" + right + ")";
+	        break;
+	        case ExprBinary.BINOP_GE:  op = ">="; 
+	        left = "((unsigned)" + left + ")";
+	        right = "((unsigned)" + right + ")";
+	        break;
 	        case ExprBinary.BINOP_BAND:op = "&";
 	        if(exp.getLeft() instanceof ExprConstInt){
 	        	left = "bitvec<1>(" + left + ")";
 	        }
 	        if(exp.getRight() instanceof ExprConstInt){
 	        	right = "bitvec<1>(" + right + ")";
+	        }
+	        if(exp.getLeft() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+	        	int sz = eai.getElements().size();
+	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        }
+	        
+	        if(exp.getRight() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getRight();
+	        	int sz = eai.getElements().size();
+	        	right = "bitvec<" + sz + ">(" + right + ")";
 	        }
 	        break;
 	        case ExprBinary.BINOP_BOR: op = "|"; 
@@ -59,6 +101,17 @@ public class NodesToC extends NodesToJava {
 	        if(exp.getRight() instanceof ExprConstInt){
 	        	right = "bitvec<1>(" + right + ")";
 	        }
+	        if(exp.getLeft() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+	        	int sz = eai.getElements().size();
+	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        }
+	        
+	        if(exp.getRight() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getRight();
+	        	int sz = eai.getElements().size();
+	        	right = "bitvec<" + sz + ">(" + right + ")";
+	        }
 	        break;
 	        case ExprBinary.BINOP_BXOR:op = "^"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
@@ -67,15 +120,36 @@ public class NodesToC extends NodesToJava {
 	        if(exp.getRight() instanceof ExprConstInt){
 	        	right = "bitvec<1>(" + right + ")";
 	        }
+	        if(exp.getLeft() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+	        	int sz = eai.getElements().size();
+	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        }
+	        
+	        if(exp.getRight() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getRight();
+	        	int sz = eai.getElements().size();
+	        	right = "bitvec<" + sz + ">(" + right + ")";
+	        }
 	        break;
 	        case ExprBinary.BINOP_RSHIFT: op = ">>"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
 	        	left = "bitvec<1>(" + left + ")";
 	        }
+	        if(exp.getLeft() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+	        	int sz = eai.getElements().size();
+	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        }
 	        break;
 	        case ExprBinary.BINOP_LSHIFT: op = "<<"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
 	        	left = "bitvec<1>(" + left + ")";
+	        }
+	        if(exp.getLeft() instanceof ExprArrayInit){
+	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+	        	int sz = eai.getElements().size();
+	        	left = "bitvec<" + sz + ">(" + left + ")";
 	        }
 	        break;
 	        default: assert false : exp; break;
@@ -109,8 +183,16 @@ public class NodesToC extends NodesToJava {
 	
 			sb.append("\"");
 	        return sb.toString();
+		}else{
+			StringBuffer sb = new StringBuffer();
+			List elems = exp.getElements();
+			sb.append("fixedarr<unsigned int," + elems.size() + ">()");
+			for (int i=0; i<elems.size(); i++) {
+			    sb.append(".v(" + i + ","+elems.get(i)+")");
+			}			
+	        return sb.toString();
+			
 		}
-		return super.visitExprArrayInit(exp);
     }
 	
 	
@@ -175,7 +257,7 @@ public class NodesToC extends NodesToJava {
             
             if (!first) result += ", ";
             if (prefix != null) result += prefix + " ";
-            result += typeForParam(type);            
+            result += typeForParam(type, param.isParameterOutput());            
             result += " ";
             result += param.getName();
             first = false;
@@ -184,17 +266,18 @@ public class NodesToC extends NodesToJava {
         return result;
     }
 
-    public String typeForParam(Type type){
+    public String typeForParam(Type type, boolean isOutput){
+    	String postfix = isOutput? "&" : "";
         if(type instanceof TypeArray){
         	TypeArray otype = (TypeArray)type;
         	type = ((TypeArray)type).getBase();
         	if(type.equals(TypePrimitive.bittype)){
-        		return "bitvec<" + (otype).getLength() + "> ";
+        		return "bitvec<" + (otype).getLength() + "> " + postfix;
         	}else{
-        		return convertType(type) + "*";
+        		return "fixedarr<" + convertType(type) + ", " + (otype).getLength() + "> " + postfix;
         	}
         }else{
-        	return convertType(type) + "&";
+        	return convertType(type) + postfix;
         }
     }
     
@@ -208,8 +291,7 @@ public class NodesToC extends NodesToJava {
         	if(type.equals(TypePrimitive.bittype)){
         		return "bitvec<" + ((TypeArray)otype).getLength() + "> " + name + postFix ;
         	}else{
-        		postFix = "[" + ((TypeArray)otype).getLength() +  "]";        	
-        		return convertType(type) +  " " + name + postFix ;
+        		return "fixedarr<" + convertType(type) + ", " + ((TypeArray)otype).getLength() + "> " + name;        		
         	}
         }
         return convertType(type) +  " " + name + postFix ;

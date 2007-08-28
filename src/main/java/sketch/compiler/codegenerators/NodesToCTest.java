@@ -215,6 +215,9 @@ public class NodesToCTest extends NodesToJava {
 
     private void outputVar(String name, Type t) 
     {
+    	
+    	writeLine("cout<<\"" + name + " = \"<<"  + name + "<<endl;");
+    	/*
     	boolean isArr = typeIsArr(t);
     	if( baseType(t).equals(TypePrimitive.bittype) ){
     		writeLine("cout<<\"" + name + " = \"<<"  + name + "<<endl;");
@@ -236,7 +239,7 @@ public class NodesToCTest extends NodesToJava {
     		unIndent();
     		writeLine("}");
     	}
-    	writeLine("printf(\"\\n\");");
+    	writeLine("printf(\"\\n\");"); */
     }
     
     private void doCompare(String name1, String name2, Type t, String fname, List<Parameter> inPars,Parameter outPar) {
@@ -247,9 +250,9 @@ public class NodesToCTest extends NodesToJava {
     		addIndent();
     	}
     	String line="if("+name1;
-    	if(isArr) line+="[i]";
+    	if(isArr) line+=".sub<1>(i)";
     	line+="!="+name2;
-    	if(isArr) line+="[i]";
+    	if(isArr) line+=".sub<1>(i)";
     	line+=") {";
     	writeLine(line);
     	addIndent();
