@@ -67,7 +67,7 @@ public class ExprStar extends Expression
 		if(depObjects.get(i) == null){
 			ExprStar es = new ExprStar(this);
 			es.type = t;
-			depObjects.set(i, new DummyFENode(getCx()));			
+			depObjects.set(i, es);			
 		}
 		return depObjects.get(i);
 	}
