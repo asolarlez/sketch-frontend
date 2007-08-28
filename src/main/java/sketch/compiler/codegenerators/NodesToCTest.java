@@ -203,7 +203,7 @@ public class NodesToCTest extends NodesToJava {
 	    	}
     	}
     	else
-    		line+="=0";
+    		line+="=0U";
     	line+=";";
     	writeLine(line);
     	if(isArr) {
@@ -300,8 +300,8 @@ public class NodesToCTest extends NodesToJava {
 		for(int i=0;i<inPars.size();i++) strInputs+=IN+i+",";
 		writeLine(func.getName()+"("+strInputs+OUTSK+");");
 		writeLine(func.getSpecification()+"("+strInputs+OUTSP+");");
-		this.padVar(OUTSK, outType);
-		this.padVar(OUTSP, outType);
+		//this.padVar(OUTSK, outType);
+		//this.padVar(OUTSP, outType);
 		doCompare(OUTSK,OUTSP,outType,fname,inPars,outPar);
 		unIndent();
 		writeLine("}");

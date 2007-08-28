@@ -17,6 +17,84 @@ public class NodesToC extends NodesToJava {
 	}
 			
 	
+	
+	
+	
+	public Object visitExprBinary(ExprBinary exp)
+    {
+        StringBuffer result=new StringBuffer();
+        String op = null;
+        if(binOpLevel>0) result.append("(");
+        binOpLevel++;
+        String left = (String)exp.getLeft().accept(this);
+        String right = (String)exp.getRight().accept(this);
+        
+        switch (exp.getOp())
+        {
+	        case ExprBinary.BINOP_ADD: op = "+"; break;
+	        case ExprBinary.BINOP_SUB: op = "-"; break;
+	        case ExprBinary.BINOP_MUL: op = "*"; break;
+	        case ExprBinary.BINOP_DIV: op = "/"; break;
+	        case ExprBinary.BINOP_MOD: op = "%"; break;
+	        case ExprBinary.BINOP_AND: op = "&&"; break;
+	        case ExprBinary.BINOP_OR:  op = "||"; break;
+	        case ExprBinary.BINOP_EQ:  op = "=="; break;
+	        case ExprBinary.BINOP_NEQ: op = "!="; break;
+	        case ExprBinary.BINOP_LT:  op = "<"; break;
+	        case ExprBinary.BINOP_LE:  op = "<="; break;
+	        case ExprBinary.BINOP_GT:  op = ">"; break;
+	        case ExprBinary.BINOP_GE:  op = ">="; break;
+	        case ExprBinary.BINOP_BAND:op = "&";
+	        if(exp.getLeft() instanceof ExprConstInt){
+	        	left = "bitvec<1>(" + left + ")";
+	        }
+	        if(exp.getRight() instanceof ExprConstInt){
+	        	right = "bitvec<1>(" + right + ")";
+	        }
+	        break;
+	        case ExprBinary.BINOP_BOR: op = "|"; 
+	        if(exp.getLeft() instanceof ExprConstInt){
+	        	left = "bitvec<1>(" + left + ")";
+	        }
+	        if(exp.getRight() instanceof ExprConstInt){
+	        	right = "bitvec<1>(" + right + ")";
+	        }
+	        break;
+	        case ExprBinary.BINOP_BXOR:op = "^"; 
+	        if(exp.getLeft() instanceof ExprConstInt){
+	        	left = "bitvec<1>(" + left + ")";
+	        }
+	        if(exp.getRight() instanceof ExprConstInt){
+	        	right = "bitvec<1>(" + right + ")";
+	        }
+	        break;
+	        case ExprBinary.BINOP_RSHIFT: op = ">>"; 
+	        if(exp.getLeft() instanceof ExprConstInt){
+	        	left = "bitvec<1>(" + left + ")";
+	        }
+	        break;
+	        case ExprBinary.BINOP_LSHIFT: op = "<<"; 
+	        if(exp.getLeft() instanceof ExprConstInt){
+	        	left = "bitvec<1>(" + left + ")";
+	        }
+	        break;
+	        default: assert false : exp; break;
+        }
+        result.append(left);
+        result.append(" ").append(op).append(" ");
+        result.append(right);
+        binOpLevel--;
+        if(binOpLevel>0) result.append(")");
+        return result.toString();
+    }
+	
+	
+	
+	public Object visitExprConstInt(ExprConstInt exp)
+    {
+        return exp.getVal()+"U";
+    }
+	
 	public Object visitExprArrayInit(ExprArrayInit exp)
     {
 		
@@ -26,7 +104,7 @@ public class NodesToC extends NodesToJava {
 		
 			List elems = exp.getElements();
 			for (int i=0; i<elems.size(); i++) {
-			    sb.append((String)((Expression)elems.get(i)).accept(this));
+			    sb.append(elems.get(i));
 			}
 	
 			sb.append("\"");
@@ -152,7 +230,7 @@ public class NodesToC extends NodesToJava {
             result += typeForDecl(type,   stmt.getName(i));
             if (stmt.getInit(i) != null)
                 result += " = " + (String)stmt.getInit(i).accept(this);
-            result += ";\n";
+            //result += ";\n";
             isBool = true;
         }
         return result;
@@ -211,7 +289,7 @@ public class NodesToC extends NodesToJava {
         String lhs = (String)stmt.getLHS().accept(this);
         isLHS = false;
         String rhs = (String)stmt.getRHS().accept(this);
-        return lhs + op + rhs + ";";
+        return lhs + op + rhs ;
 	}
 
 	boolean isLHS = false;
@@ -234,6 +312,24 @@ public class NodesToC extends NodesToJava {
 		}
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
 	}
+	
+	
+	public Object visitExprTypeCast(ExprTypeCast exp)
+    {
+    	
+    	if( exp.getType() instanceof TypeArray ){
+    		TypeArray t = (TypeArray)exp.getType();
+    		assert t.getBase().equals(TypePrimitive.bittype): "TASDVAS " + exp;
+    		
+    		return "bitvec<" + t.getLength() + ">(" +
+            (String)exp.getExpr().accept(this) + ")";
+    		
+    	}
+    	
+        return "((" + convertType(exp.getType()) + ")(" +
+            (String)exp.getExpr().accept(this) + "))";
+    }
+	
 	
 	@Override
 	public String convertType(Type type)
