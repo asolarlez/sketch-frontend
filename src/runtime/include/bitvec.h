@@ -244,6 +244,7 @@ public:
     const bitvec<N> operator<< (size_t s) const;
     const bitvec<N> operator>> (size_t s) const;
     const bitvec<N> operator~ () const;
+    const bitvec<N> operator! () const;
 
     /* XXX casting operator */
     //operator char *bitvec_string (char *, size_t, struct bitvec *);
@@ -549,10 +550,14 @@ template <size_t N> const bitvec<N>
 bitvec<N>::operator~ () const{
 	bitvec<N> tmp;
 	for (int i = 0; i < N; i++)
-	    tmp[i] = ~(*this)[i];
+	    tmp[i] = !(*this)[i];
     return tmp;
 }
 
+template <size_t N> const bitvec<N> 
+bitvec<N>::operator! () const{
+	return ~(*this);
+}
 
 template <size_t N> const bitvec<N>
 bitvec<N>::operator<< (size_t s) const
@@ -580,6 +585,7 @@ template <size_t N> template <size_t Ntag>
 const bitvec<Ntag>
 bitvec<N>::sub (size_t offset) const
 {
+	//cout<<"offset = "<<offset <<" Ntag = "<<Ntag<<" N="<< N<<endl;
     assert (offset + Ntag <= N);
     bitvec<N> tmp = *this >> offset;
     return (bitvec<Ntag> (tmp));

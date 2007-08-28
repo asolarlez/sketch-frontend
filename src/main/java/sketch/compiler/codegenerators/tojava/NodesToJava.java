@@ -783,8 +783,15 @@ public class NodesToJava implements FEVisitor
         assert stmt.getCond() != null;
         String result = "if (" + (String)stmt.getCond().accept(this) + ") ";
         result += (String)stmt.getCons().accept(this);
-        if (stmt.getAlt() != null)
+        if(! (stmt.getCons() instanceof StmtBlock ) ){
+        	result += ";";
+        }
+        if (stmt.getAlt() != null){
             result += " else " + (String)stmt.getAlt().accept(this);
+            if(! (stmt.getAlt() instanceof StmtBlock ) ){
+            	result += ";";
+            }
+        }
         return result;
     }
 
