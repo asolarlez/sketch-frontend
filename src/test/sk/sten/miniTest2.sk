@@ -8,21 +8,27 @@ int[N] test16(int[N] in){
   return out;
 }
 
+int exp(){
+	int rv = 0;
+	if(??){ rv = rv + ??;} else { rv = rv - ??; } 	
+	if(??){ rv = rv + N; }	
+	return rv;
+}
 
 int[N] testSK16(int[N] in) implements test16 {
   int[N] out = 0;
   if( N>= 4){
-	  out[1] = in[0];
-	  out[2] = in[1];
+	  out[exp()] = in[exp()];
+	  out[exp()] = in[exp()];
 	  for(int i=??; i<N-??; ++i){  	
-	  	out[i-1] += in[i];
-	  	out[i+1] = in[i];
+	  	out[i-??] += in[i];
+	  	out[i+??] = in[i];
 	  }
-	  out[N-??] += in[N-??];
-	  out[N-??] += in[N-??];
+	  out[exp()] += in[exp()];
+	  out[exp()] += in[exp()];
   }else{
 	  for(int i=??; i<N-??; ++i){
-	  	 out[i] = in[i-1] + in[i+1];
+	  	 out[i] = in[i-??] + in[i+??];
 	  }
   }
   return out;
