@@ -11,7 +11,7 @@ bit[Wout] remainder(bit[Win] in)
 	bit[Wout] ret=0;	
 	for(int i=0; i<Win; i++){
 		bit f1 = ret[Wout-1];
-		ret = ret >> 1;
+		ret = ret << 1;
 		ret[0] = in[i];
 		if( f1 ) ret = ret ^ poly;
 	}
@@ -26,9 +26,9 @@ bit[Wout] crcCore(bit[Wout] in, bit[Wout] state){
 	bit[Wout] ret= state;
 	for(int i=0; i<Wout; i++){
 		bit f1 = ret[Wout-1];
-		ret = ret >> 1;
+		ret = ret << 1;
 		ret = ret | (in & one);
-		in = in << 1;
+		in = in >> 1;
 		if( f1 ) ret = ret ^ poly;
 	}
 	return ret;
