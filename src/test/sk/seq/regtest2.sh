@@ -9,7 +9,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash preproc.sh --outputtest  --outputcode -synth ABC -verif ABC  --incremental 6 --seed 10 ${x} &> ${x}.output ;
+bash sketch --outputtest  --outputcode -synth ABC -verif ABC  --incremental 6 --seed 10 ${x} &> ${x}.output ;
 bash script;
 done;
 
