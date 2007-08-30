@@ -3,6 +3,7 @@ int W = Nb*Nb*8;
 int ROUNDS = 10;
 
 
+
 bit[W] normalRoundsk(bit[W] in, bit[W] rkey) implements normalRound{
   bit [32*256] T0 = ??;
   bit [32*256] T1 = ??;
