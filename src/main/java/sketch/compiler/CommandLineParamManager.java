@@ -59,7 +59,7 @@ public class CommandLineParamManager{
 	Map<String, POpts> allowedParameters;
 	Map<String, Object> passedParameters;
 	List<String> inputFiles = new ArrayList<String>();
-	List<String> commandLineOptions = new ArrayList<String>();
+	public List<String> commandLineOptions = new ArrayList<String>();
 	
 	CommandLineParamManager(){
 		allowedParameters = new HashMap<String, POpts>();

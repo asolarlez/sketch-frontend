@@ -346,17 +346,19 @@ public class ToSBit
 
 	}
 
-	public void eliminateStar(){
+	public void eliminateStar(){		
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ));
+		//beforeUnvectorizing.accept( new SimpleCodePrinter() );
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl(), true ));
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
+		
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode());
 		//System.out.println("=========  After ElimDeadCode  =========");
-		//finalCode.accept( new SimpleCodePrinter() );
+		//finalCode.accept( new SimpleCodePrinter() );		
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 		/*
@@ -386,8 +388,7 @@ public class ToSBit
 	protected void outputCCode() {    	
 
 
-		String resultFile = getOutputFileName();
-
+		String resultFile = getOutputFileName();		
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		if(!params.hasFlag("outputcode")){
@@ -511,6 +512,10 @@ public class ToSBit
 				"--cbits n      \t Specify the number of bits to use for integer holes.",
 				"5", null) );
 		
+		params.setAllowedParam("inbits", new POpts(POpts.NUMBER, 
+				"--inbits n      \t Specify the number of bits to use for integer inputs.",
+				"5", null) );
+		
 	}
 	
 	
@@ -561,6 +566,12 @@ public class ToSBit
 			stopper=new TimeoutThread( params.flagValue("timeout") );
 			stopper.start();
 		}
+		List<String> commandLineOptions = params.commandLineOptions;
+		
+		if( params.hasFlag("inbits") ){
+			commandLineOptions.add("-overrideInputs");
+			commandLineOptions.add( "" + params.flagValue("inbits") );
+		}				
 		System.out.println("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
 		if(params.hasFlag("incremental")){
@@ -569,12 +580,12 @@ public class ToSBit
 			int maxBits = params.flagValue("incremental");
 			for(bits=1; bits<=maxBits; ++bits){
 				System.out.println("TRYING SIZE " + bits);
-				String[] commandLine = new String[ 5 + params.commandLineOptions.size()];
+				String[] commandLine = new String[ 5 + commandLineOptions.size()];
 				commandLine[0] = command;
 				commandLine[1] = "-overrideCtrls"; 
 				commandLine[2] = "" + bits;
-				for(int i=0; i< params.commandLineOptions.size(); ++i){
-					commandLine[3+i] = params.commandLineOptions.get(i);
+				for(int i=0; i< commandLineOptions.size(); ++i){
+					commandLine[3+i] = commandLineOptions.get(i);
 				}
 				commandLine[commandLine.length -2 ] = params.sValue("output") ;
 				commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";        		
@@ -595,10 +606,10 @@ public class ToSBit
 			System.out.println("Succeded with " + bits + " bits for integers");	        
 			oracle.capStarSizes(bits);
 		}else{
-			String[] commandLine = new String[ 3 + params.commandLineOptions.size()];
+			String[] commandLine = new String[ 3 + commandLineOptions.size()];
 			commandLine[0] = command;
-			for(int i=0; i< params.commandLineOptions.size(); ++i){
-				commandLine[1+i] = params.commandLineOptions.get(i);
+			for(int i=0; i< commandLineOptions.size(); ++i){
+				commandLine[1+i] = commandLineOptions.get(i);
 			}
 			commandLine[commandLine.length -2 ] = params.sValue("output");
 			commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";	        
