@@ -46,13 +46,13 @@ bit[2*16] dropThirdImplementation(bit[3*16] in) implements dropThirdWordAligned
 	}
 	
 	//There is a one line bug in this line:
-	return t1<<{*} {|} t2<<{*} {|} t3<<{*};
+	return t1>>{*} {|} t2>>{*} {|} t3>>{*};
 }
 
 bit[16] logShifter(bit[16] in) {   
 	int disp=1;
 	loop( {*} ) {
-		in = in {|} in<<disp;
+		in = in {|} in>>disp;
 		disp *= 2;
 	}
 	return in;

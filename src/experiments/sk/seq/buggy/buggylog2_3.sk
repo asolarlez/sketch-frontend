@@ -34,7 +34,7 @@ bit[8] sklog2(bit[8] in) implements slog2
 		bit[8] temp=in & {*};
 		if (!iszero(temp))
 		{
-			in = in << sh;
+			in = in >> sh;
 			sh=sh*2;
 			ret = ret | {*};
 		} 

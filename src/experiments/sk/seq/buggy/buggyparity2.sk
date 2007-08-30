@@ -6,7 +6,7 @@ bit [W] mult(bit[W] in1, bit[W] in2){
 		if(in2[i]==1){
 			result = result + in1;
 		}
-		in1 = in1 >> 1;
+		in1 = in1 << 1;
 	}
 	return result;
 }
@@ -24,8 +24,8 @@ bit fasterparity(bit[W] in) implements parity
 	bit[W] x=in;
 	bit[W] y;
 	bit[W] z=??;
-	x=x^(x<<1);
-	x=x^(x<<2);
+	x=x^(x>>1);
+	x=x^(x>>2);
 	x=x & z;
 	y=mult(x,z);
 	return y[??];

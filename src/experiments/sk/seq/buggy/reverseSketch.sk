@@ -3,8 +3,8 @@ bit[32] reverseSketch(bit[32] in) implements reverse {
 	bit[32]  t = in;
 	int i=1; 
 	loop(5){
-		bit[32] tmp1 = (t >> i);
-		bit[32] tmp2 = (t << i);
+		bit[32] tmp1 = (t << i);
+		bit[32] tmp2 = (t >> i);
 		for(int i=0; i<32; ++i){
 			t[i] = tmp1[i] {|} tmp2[i];
 		}

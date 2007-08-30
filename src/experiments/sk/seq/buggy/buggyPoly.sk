@@ -1,0 +1,20 @@
+// This benchmark requires --inlineamnt  > 5 in order to resolve.
+//It also requires at least 4 bits of controls. That was the bug. The benchmark is OK.
+
+int poly(int n, int x) {	
+	if (n <= 0) return ??; 
+	else 
+	  return x * poly(n-1, x) + ??;
+}
+
+
+int spec (int x) {
+
+	return ( (x + 2)*(x + 1) ) * x * (x+3);	
+}
+
+
+int p1Sk (int x) implements spec {
+	return poly(5, x);
+}
+

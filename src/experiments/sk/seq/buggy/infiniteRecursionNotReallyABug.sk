@@ -21,7 +21,7 @@ bit[W] countSketch3 (bit[W] in) implements countBits
 
 bit[W] count(bit[W] in) {
 	bit[W] m={*};
-	in = (in & m) + (in<<?? & m);
+	in = (in & m) + (in>>?? & m);
 	return ?? ? in : count(in);
 }
 
