@@ -1,0 +1,24 @@
+int N;
+float[N][N] sten13(float[N][N]  in, int a){
+   float[N][N] out=0;
+   for(int i=a; i<N; ++i){
+     for(int j=a; j<N; ++j){
+      out[i][j] = in[i][j];
+     }
+   }
+   return out; 
+}
+
+
+float[N][N] stenSK13(float[N][N]  in, int a) implements sten13{
+   float[N][N] out=0;
+   
+   for(int i=a; i<N; ++i){
+	float t = in[i][a];
+     for(int j=a; j<N; ++j){
+      out[i][j] = t;
+      t = in[i][j+1];
+     }
+   }
+   return out; 
+}
