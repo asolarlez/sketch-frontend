@@ -1,0 +1,41 @@
+int W = 8, logW = 3;
+
+
+bit[W] log2(bit[W] in) implements slog2{
+	bit[W] i = castInt(W);
+	bit[W] minusone = 0; minusone = !minusone;
+	
+	for(int t=0; t<W; ++t){
+		i = i + minusone;
+		if (in[(int)i]){
+			return i;	
+		}
+	}	
+}
+
+
+
+bit[W] slog2(bit[W] in) 
+{
+	bit[W] ret=0; 
+	bit[W] ONE=0; ONE[0]=1;
+	bit done=0;
+	for(int i=W-1;i>0;i--)
+		if(!done && in[i]==0) {}
+		else {
+			done=1;
+			ret=ret+ONE;
+		}
+	return ret;
+}
+
+
+bit[W] castInt(int n){
+	bit[W] one = 0;
+	one[0] = 1;
+	bit[W] ret = 0;
+	loop(n){
+		ret = ret + one;	
+	}
+	return ret;
+}
