@@ -77,8 +77,8 @@ int[N] MergeSort(int[N] input)implements sort{
 		int x=0;
 		int y=0;
 		for(int i=0; i<N; ++i){
-			//  
-			if(generator(firstHalf, x, secondHalf, y, N, No2) ){
+			//generator(firstHalf, x, secondHalf, y, N, No2) 
+			if( firstHalf[x] < secondHalf[y]){
 				output[i] = firstHalf[x]; x = x+1;
 			}else{
 				output[i] = secondHalf[y]; y = y+1;
