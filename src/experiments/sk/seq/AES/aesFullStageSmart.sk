@@ -1,8 +1,8 @@
 int W = 32;
 
 bit[W] Drot(bit[W] in, int r){
-	bit[W] tmp = in>>r;
-	bit[W] tmp2 = in<<(W-r);
+	bit[W] tmp = in<<r;
+	bit[W] tmp2 = in>>(W-r);
 	bit[W] out=0;
 	int i =0;
 	for(i=0; i<W; ++i){
@@ -12,8 +12,8 @@ bit[W] Drot(bit[W] in, int r){
 }
 
 bit[W] rot(bit[W] in, int r){
-	bit[W] tmp = in>>r;
-	bit[W] tmp2 = in<<(W-r);
+	bit[W] tmp = in<<r;
+	bit[W] tmp2 = in>>(W-r);
 	bit[W] out=0;
 	int i =0;
 	for(i=0; i<W; ++i){
@@ -24,10 +24,10 @@ bit[W] rot(bit[W] in, int r){
 
 
 bit[32] rowFilSK(bit[32] in){ 	
-	bit [32] t1 = ((in >> 1 ) &{*}) ^ ((in) &{*});
-	bit [32] m1 = (in<<7) & {*};
-	bit [32] m2 = (m1>>3) | m1;
-	bit [32] m3 = (m2>>1) | m2;
+	bit [32] t1 = ((in << 1 ) &{*}) ^ ((in) &{*});
+	bit [32] m1 = (in>>7) & {*};
+	bit [32] m2 = (m1<<3) | m1;
+	bit [32] m3 = (m2<<1) | m2;
 	bit [32] rval = t1 ^ m3;	
 	return rval;
 }
