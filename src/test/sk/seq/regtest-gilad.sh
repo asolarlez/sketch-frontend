@@ -4,7 +4,7 @@ for x in ${*:-*.sk}; do
   echo "RUNNING $x"
   bname="${x%%.sk}"
   rm -f "${bname}".{output,cc,c,h}
-  preproc.sh --outputcfiles --incremental 6 --seed 10 "$x" &> "${bname}.output"
+  sketch --outputcfiles --incremental 6 --seed 10 "$x" &> "${bname}.output"
 done
 
 rm -f *.tmp

@@ -1,14 +1,18 @@
 bit N = 5;
 
 bit[N] spec(bit[N] in1, int in2){
-	in1[in2] = !in1[in2];
+	if(in2<N){
+		in1[in2] = !in1[in2];
+	}
 	in1[0] = 1;
 	return in1;
 }
 
 
 bit[N] sketch(bit[N] in1, int in2) implements spec{
-	in1[in2] = !in1[in2+??];
+	if(in2<N){
+		in1[in2] = !in1[in2+??];
+	}
 	in1[??] = 1;
 	return in1;
 }

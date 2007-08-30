@@ -6,6 +6,7 @@ bit reverseSketch(bit[3] in, bit[3] in2) implements reverse {
 }
 
 
+
 bit reverse (bit[3] in, bit[3] in2) {
 	int idx1 = (int) in;
 	int idx = idx1;
