@@ -1,0 +1,41 @@
+int N;
+
+float[N][N][N] rec6ptFrag(float[N][N][N] in, int il, int ih, int jl, int jh, int kl, int kh){
+	float[N][N][N] output = in;
+	for(int i=il; i<ih; ++i){
+		for(int j=jl; j<jh; ++j){
+			for(int k=kl; k<kh; ++k){
+				output[i][j][k] = in[(i+1)%N][j][k] +
+				in[i][(j+1)%N][k] + 
+				in[i][j][(k+1)%N] + 
+				in[(i-1+N)%N][j][k] +
+				in[i][(j-1+N)%N][k] + 
+				in[i][j][(k-1+N)%N]; 
+			}
+		}
+	}
+	return output;
+}
+
+
+
+
+float[N][N][N] rec6ptFragSK(float[N][N][N] in, int il, int ih, int jl, int jh, int kl, int kh) implements rec6ptFrag{
+	float[N][N][N] output = in;
+	if( (ih-il)>5  && (jh-jl)>5 && (kh-kl)>5){
+		int im = (il + ih) / 2;		
+		int jm = (jl + jh) / 2;
+		int km = (kl + kh) / 2;
+		output = rec6ptFragSK(output, il, im, jl, jm, kl, km);
+		output = rec6ptFragSK(output, im, ih, jl, jm, kl, km);
+		output = rec6ptFragSK(output, il, im, jm, jh, kl, km);
+		output = rec6ptFragSK(output, im, ih, jm, jh, kl, km);
+		output = rec6ptFragSK(output, il, im, jl, jm, km, kh);
+		output = rec6ptFragSK(output, im, ih, jl, jm, km, kh);
+		output = rec6ptFragSK(output, il, im, jm, jh, km, kh);
+		output = rec6ptFragSK(output, im, ih, jm, jh, km, kh);
+	}else{
+		output = rec6ptFrag(in, il, ih, jl, jh, kl, kh);			
+	}
+	return output;
+}

@@ -1,0 +1,51 @@
+//Buggy version of cacheObv1d.sk
+
+int N;
+int T=3;
+
+float[N][T] cacheObv1d(float[N] in, float[N][T] f){
+
+	float[N][T]	out = 0;
+	
+	for(int i=0; i<N; ++i){
+		out[0][i] = in[i];
+	}
+	int t=1;
+	loop(T-1){
+		out[t][0] = 0;
+		out[t][N-1] = 0;
+		for(int i=1; i<N-1; ++i){
+			out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
+			
+		}
+		t = t+1;
+	}
+	return out;	
+}
+
+
+float[N][T] cacheObv1dSK(float[N] in, float[N][T] f) implements cacheObv1d{
+
+	float[N][T]	out = 0;
+	int M = ??;
+	int K = ??;
+	for(int i=??; i<M; ++i){
+		out[0][i] = in[i];
+		for(int t=1; t<(i-2+??); ++t){
+			out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+		}
+	}
+	
+	for(int i=M; i<N-K; ++i){
+		out[0][i] = in[i];
+		for(int t=1; t<T-??; ++t){
+			out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+		}
+	}
+	for(int i=N-K; i<N-??; ++i){
+		for(int t=i-N-??; t<T-??; ++t){
+			out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+		}
+	}		
+	return out;	
+}
