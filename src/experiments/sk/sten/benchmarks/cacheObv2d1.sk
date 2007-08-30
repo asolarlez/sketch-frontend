@@ -1,0 +1,158 @@
+int N;
+int M;
+int T=3;
+
+float[M][N][T] cacheObv1d(float[M][N] in){
+
+	float[M][N][T]	out = 0;
+	
+	for(int i=0; i<N; ++i){
+		for(int j=0; j<M; ++j){
+			out[0][i][j] = in[i][j];
+		}
+	}
+	
+	for(int t=1; t<T; ++t){
+		for(int i=1; i<N-1; ++i){
+			for(int j=1; j<M-1; ++j){
+				out[t][i][j] = out[t-1][i-1][j] + out[t-1][i+1][j] + 
+							   out[t-1][i][j-1] + out[t-1][i][j+1] ;
+			}
+		}
+	}
+	return out;	
+}
+
+float[M][N][T] gen1(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p){
+	
+	for(int t=t1; t<t2; ++t){
+		for(int i=x1 + x1p*t; i<x2+x2p*t; ++i){
+			for(int j=y1 + y1p*t; j< y2 + y2p*t  ; ++j){
+				X[t][i][j] = X[t-1][i-1][j] + X[t-1][i+1][j] + 
+							   X[t-1][i][j-1] + X[t-1][i][j+1] ;
+			}
+		}	
+	}	
+	return X;
+}
+
+int egen(){
+	int rv = ??-2;
+	if(??){ rv = N + rv; }
+	if(??){ rv = M + rv; }
+	if(??){ rv = T + rv; }
+	return rv;
+}
+
+float[M][N][T] cacheObv1dSK(float[M][N] in) implements cacheObv1d{
+	float[M][N][T]	out = 0;	
+	for(int i=0; i<N; ++i){
+		for(int j=0; j<M; ++j){
+			out[0][i][j] = in[i][j];
+		}
+	}
+	
+	out = gen1( out, egen() , egen(), egen(), egen(), egen(), egen(),  egen(), egen(), egen(), egen());
+	return out;	
+}
+
+
+int newp(int p){
+	int rv = 0;
+	if(??){ rv = -1; }
+	if(??){ rv = 1; }
+	if(??){ rv = p; }	
+}
+
+
+
+float[M][N][T] xCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p, int m){
+	X = gen1SK( X, x1, m, y1, y2, t1, t2, newp(x1p), newp(x2p), y1p, y2p );
+	X = gen1SK( X, m, x2, y1, y2, t1, t2, newp(x1p), newp(x2p), y1p, y2p );
+	return X;
+}
+
+
+float[M][N][T] yCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p, int m){
+	X = gen1SK( X, x1, x2, y1, m, t1, t2, x1p, x2p, newp(y1p), newp(y2p));
+	X = gen1SK( X, x1, x2, m, y2, t1, t2, x1p, x2p, newp(y1p), newp(y2p));
+	return X;
+}
+
+
+float[M][N][T] tCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p){
+	int m = (t1 + t2) / 2;
+	X = gen1SK( X, x1, x2, y1, y2, t1, m, x1p, x2p, y1p, y2p);
+	X = gen1SK( X, x1, x2, y1, y2, m, t2, x1p, x2p, y1p, y2p);
+	return X;
+}
+
+
+
+float[M][N][T] gen1SK(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p)implements gen1{
+	int dt = t2 - t1;
+	int x2t = x2 + x2p * dt;
+	int x1t = x1 + x1p * dt;
+	
+	int y2t = y2 + y2p * dt;
+	int y1t = y1 + y1p * dt;
+	
+	
+	
+	
+	
+	if(x1p == 0 && x2 != x1 && x2t != x1t){
+		X = xCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p, x1);		
+		return X;		
+	} 
+	if(x2p == 0 && x2 != x1 && x2t != x1t){
+		X = xCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p, x2);	
+		return X;			
+	} 	
+	
+	if(y1p == 0 && y2 != y1 && y2t != y1t){
+		X = yCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p, y1);	
+		return X;	
+	}
+	if(y2p == 0 && y2 != y1 && y2t != y1t){
+		X = yCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p, y2);	
+		return X;	
+	}
+	
+	
+	if( (x2 != x1 && x2t != x1t) || (y2 != y1 && y2t != y1t) || (t2 != t1)  ){
+		int dx = ((x2 + x2t) - (x1 + x1t)) / 2 ;
+		int dy = ((y2 + y2t) - (y1 + y1t)) / 2 ;
+		
+		
+		if( dx > dy && dx > dt){
+			int m = (x1 + x2) / 2;
+			X = xCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p, m);	
+			return X;	
+		}
+		
+		if( dy > dx && dy > dt){
+			int m = (y1 + y2) / 2;
+			X = yCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p, m);
+			return X;	
+		}
+		
+		if( dt > dy && dt > dx){
+			X = tCut( X, x1, x2, y1, y2, t1, t2, x1p, x2p, y1p, y2p);
+			return X;	
+		}		
+	}
+	{
+		// x2==x1 , y2==y1, t2==t1;
+		X[t1][x1][y1] = X[t1-1][x1-1][y1] + X[t1-1][x1+1][y1] + 
+							   X[t1-1][x1][y1-1] + X[t1-1][x1][y1+1] ;
+	}
+	return 0;
+}
+
+
+
+
+
+
+
