@@ -8,7 +8,7 @@ int[N] test(int[N] in){
   return out;
 }
 
-// TEST THIS!!!! This shouldn't work!!!
+
 int[N] testSK(int[N] in) implements test {
   int[N] out;
   out[??] = 1;
