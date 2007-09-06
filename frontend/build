@@ -1,3 +1,5 @@
-#/bin/bash
+#!/bin/bash
+echo "Building frontend..."
 javac -classpath antlr.jar:. -d bin "$@" streamit/frontend/ToSBit.java
 javac -classpath antlr.jar:. -d bin "$@" streamit/frontend/ToStencilSK.java
+echo "...done"
