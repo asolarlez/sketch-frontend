@@ -1,0 +1,41 @@
+bit[48] E(bit[32] in){
+int [48] p = { 32, 1, 2, 3, 4, 5,
+		   4, 5, 6, 7, 8, 9,
+		   8, 9, 10, 11, 12, 13,
+		   12, 13, 14, 15, 16, 17,
+		   16, 17, 18, 19, 20, 21,
+		   20, 21, 22, 23, 24, 25,
+		   24, 25, 26, 27, 28, 29,
+		   28, 29, 30, 31, 32, 1    };
+	bit [48] out;	
+	for (int i = 0; i < 48; ++i)
+		out[i]=in[p[i]-1];	
+	return out;
+}
+
+
+
+bit[48] Esk(bit[32] in) implements E{
+  return E2(E1(in));
+ }
+
+ bit[64] E1(bit[32] in){
+  bit[64] bigIn = in;
+  bit[64] result;
+  result = (bigIn >> ??) && ??;
+  result = result | ( (bigIn >> ??) && ?? );
+  result = result | ( (bigIn >> ??) && ?? );
+  return result;
+ }
+
+ bit[48] E2(bit[64] in){
+  bit[48] result = 0;
+  bit[64] check = 0;
+  for(int i=0; i<48; ++i){
+    int t = ??;
+    result[i]=in[t];
+    assert !check[t];
+    check[t] = 1;
+  }
+  return result;
+ }

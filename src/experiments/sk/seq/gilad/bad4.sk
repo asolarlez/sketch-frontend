@@ -1,0 +1,29 @@
+int L = 3;
+
+int
+count ()
+{
+    return L;
+}
+
+int
+count_sk () implements count
+{
+    int i;
+    int a = 0;
+
+    i = 0;
+    loop (L + ??)
+	i++;
+
+    loop (i) {
+	i--;
+	a = a + i;
+    }
+
+    return a;
+}
+
+
+
+

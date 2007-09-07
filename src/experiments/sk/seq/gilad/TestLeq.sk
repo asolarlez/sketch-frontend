@@ -1,0 +1,49 @@
+int W = 8;  /* FIXME pow2 (logW) */
+
+int
+leq (bit[W] l, bit[W] r, int start, int count)
+{
+    int a = 0;
+    for (int i = start + count; i > start; i--) {  /* FIXME while (i > 0) */
+	int j = i - 1;
+	if (l[j] != r[j])
+	    return r[j];
+    }
+
+    return 1;
+}
+
+bit[W]
+itob (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; ++i) {
+	output[i] = (v % 2) > 0;
+	v = v / 2;
+    }
+
+    return output;
+}
+
+int
+spec ()
+{
+    int l = 7;
+    int r = 8;
+
+    return (l <= r ? 1 : 0);
+}
+
+int
+sketch () implements spec
+{
+    int l = 7;
+    int r = 8;
+
+    bit[W] x = itob (l);
+    bit[W] y = itob (r);
+
+    return leq (x, y, 0, W);
+}
+

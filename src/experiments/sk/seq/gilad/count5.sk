@@ -1,0 +1,138 @@
+int L = 2;
+int W = 4;  /* FIXME should be an exponent of L. */
+
+/*
+ * Utilities.
+ */
+
+int
+exp (int b, int e)
+{
+    int a = 1;
+
+    loop (e)
+	a = a * b;
+
+    return a;
+}
+
+
+bit[W]
+itob (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; ++i) {
+	output[i] = (v % 2) > 0;
+	v = v / 2;
+    }
+
+    return output;
+}
+
+
+/*
+ * Sketching templates / converters.
+ */
+
+int
+tem_linear (int a, int x, int b)
+{
+    return (a * x +  b);
+}
+
+int
+tem_linear2 (int a, int x, int b, int y, int c)
+{
+    return tem_linear (a, x, 0) + tem_linear (b, y, c);
+}
+
+int
+any_sign (int a)
+{
+    return (?? ? a : -a);
+}
+
+
+/*
+ * Shift amount generator, returning an 2^O(i+l).
+ */
+int
+shift (int i, int l, int a, int b, int c)
+{
+    int s;
+
+    s = exp (2, tem_linear2 (a, i, b, l, c) /* i */);
+    return s;
+}
+
+/* 
+ * Bit-mask generator of the form (0^{n}1^{n})^{2^l/2n}, where n is
+ * correlated with the value of the iteration counter, i.
+ */
+bit[W]
+filter (int i, int l, int a1, int b1, int a2, int b2, int a3, int b3, int c3)
+{
+    bit[W] m;
+    int s;
+
+    s = exp (2, tem_linear (a1, l, b1) /* l - 1 */);
+    m = itob (exp (2, tem_linear (a2, s, b2) /* s */) - 1);
+    loop (tem_linear2 (a3, i, b3, l, c3) /* l - i - 1 */) {
+	s = s / 2;
+	m = m ^ (m >> s);
+    }
+
+    return m;
+}
+
+/*
+ * Sketch: in place computation in logarithmic number of steps.
+ */
+int
+sk_count (bit[W] a) implements count
+{
+    bit[W] m = { 0 };
+    //bit[W] ones = { 1 };
+    int s = 0;
+    int i;
+
+    int a0 = any_sign (??), b0 = any_sign (??), c0 = any_sign (??),
+	a1 = any_sign (??), b1 = any_sign (??),
+	a2 = any_sign (??), b2 = any_sign (??),
+	a3 = any_sign (??), b3 = any_sign (??), c3 = any_sign (??);
+
+    i = 0;
+    loop (tem_linear (??, L, ??) /* L */) {
+	s = shift (i, L, a0, b0, c0);
+	m = filter (i, L, a1, b1, a2, b2, a3, b3, c3);
+
+//   	assert ((m | (m >> s)) == ones);
+
+//	bit[W] tmp = m | (m >> s);
+//	for (int j = 0; j < W; j++)
+//	    assert (tmp[i] == 1);
+
+//	assert (m[0] == 1);
+
+	a = (a & m) + ((a << s) & m);
+	i++;
+    }
+
+    return (int) a;
+}
+
+/*
+ * Spec: linear counting of one-bits.
+ */
+int
+count (bit[W] a)
+{
+    int ret = 0;
+
+    for (int i = 0; i < W; i++)
+	ret = ret + a[(i)];
+
+    return ret;
+}
+

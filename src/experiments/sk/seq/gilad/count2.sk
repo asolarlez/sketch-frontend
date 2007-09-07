@@ -1,0 +1,63 @@
+int W = 8;
+
+bit[W]
+intToBit (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; ++i) {
+	output[i] = (v % 2) > 0;
+	v = v / 2;
+    }
+
+    return output;
+}
+
+bit[W]
+count (bit[W] a)
+{
+    bit[W] ret = 0;
+    bit[W] tmp = 0;
+    tmp[0] = 1;
+
+    for (int i = 0; i < W; i++)
+	if (a[i])
+	    ret = ret + tmp;
+
+    return ret;
+}
+
+bit[W]
+count_sk_rec (bit[W] a, bit[W] s, bit[W] m)
+{
+    if ((int) s == 0)
+	return a;
+    else {
+	bit[W] stag = s << 1;
+	int shift = (int) stag;
+	bit[W] mtag = m ^ (m >> shift);
+
+	bit[W] atag = count_sk_rec (a, stag, mtag);
+
+	shift = (int) s;
+	return (atag & m) + ((atag << shift) & m);
+    }
+}
+
+bit[W]
+count_sk (bit[W] a) implements count
+{
+    int Wtag = W / 2;
+
+    /* Initialize shift amount. */
+    bit[W] s = intToBit (W);
+    s = s << 1;
+    s[0::8] = 0; /* debug */
+
+    /* Initialize mask. */
+    bit[W] m = 0;
+    m[0::4] = 1;
+
+    return count_sk_rec (a, s, m);
+}
+

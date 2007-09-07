@@ -1,0 +1,20 @@
+/*
+ * This is a simple test for bit-vector implementation of arithmetics.
+ * 
+ * It assumes that the solver uses (signed) bit-vectors to represent
+ * integers.
+ *
+ */
+
+bit
+bitvec_spec (int a, int b)
+{
+    return (6 > 5);
+}
+
+bit
+bitvec_sketch (int a, int b) implements bitvec_spec
+{
+    return 1;
+}
+
