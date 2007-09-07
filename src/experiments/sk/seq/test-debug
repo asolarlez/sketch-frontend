@@ -1,2 +1,2 @@
 #!/bin/bash
-sketch-debug --outputcfiles --incremental 6 --seed 10 "$@"
+sketch-debug --outputcode --incremental 6 --seed 10 "$@"
