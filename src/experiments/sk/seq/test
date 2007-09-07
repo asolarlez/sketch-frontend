@@ -1,0 +1,3 @@
+#!/bin/bash
+preproc.sh --dovectorization --outputfiles --outputc --incremental 6 --seed 10 "$@"
+#preproc.sh --dovectorization --outputfiles --outputc -overrideCtrls 3 -overrideInputs 3 --seed 10 "$@"

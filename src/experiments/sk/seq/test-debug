@@ -1,0 +1,2 @@
+#!/bin/bash
+preproc-debug.sh --outputcfiles --incremental 6 --seed 10 "$@"
