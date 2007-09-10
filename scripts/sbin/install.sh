@@ -1,14 +1,23 @@
 #!/bin/bash
 
-PATH=$PATH:"`pwd`"
-export PATH
+# Infer sbin directory location
+#
+MYDIR="${0%/*}"
+[ "${MYDIR:0:1}" == '/' ] || MYDIR="$PWD/$MYDIR"
 
-FRONTEND="`pwd`/../";
-[ $OSTYPE == cygwin ] && FRONTEND=`cygpath -w "$FRONTEND"`
-export FRONTEND
+SOLVER="$MYDIR"
+FRONTEND="${MYDIR%/*}"
 
-SOLVER=`pwd`;
-[ $OSTYPE == cygwin ] && SOLVER=`cygpath -w "$SOLVER"`
+# Add sbin directory to PATH
+#
+export PATH="$PATH:$MYDIR"
+
+# Convert pathnames (for Cygwin) and export
+#
+if [ "$OSTYPE" == cygwin ]; then
+  SOLVER=`cygpath -w "$SOLVER"`
+  FRONTEND=`cygpath -w "$FRONTEND"`
+fi
 export SOLVER
-
+export FRONTEND
 
