@@ -1,19 +1,15 @@
 #!/bin/bash
 
-# Infer sbin directory location
-#
-MYDIR="${0%/*}"
-[ "${MYDIR:0:1}" == '/' ] || MYDIR="$PWD/$MYDIR"
-
-SOLVER="$MYDIR"
-FRONTEND="${MYDIR%/*}"
+MYDIR="$PWD"
 
 # Add sbin directory to PATH
 #
 export PATH="$PATH:$MYDIR"
 
-# Convert pathnames (for Cygwin) and export
+# Set SBit environment variables (optionally convert for Cygwin)
 #
+SOLVER="$MYDIR"
+FRONTEND="${MYDIR%/*}"
 if [ "$OSTYPE" == cygwin ]; then
   SOLVER=`cygpath -w "$SOLVER"`
   FRONTEND=`cygpath -w "$FRONTEND"`
