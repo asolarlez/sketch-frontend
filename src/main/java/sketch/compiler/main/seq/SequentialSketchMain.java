@@ -392,9 +392,9 @@ public class ToSBit
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		if(!params.hasFlag("outputcode")){
-			finalCode.accept( new SimpleCodePrinter() );
+			//finalCode.accept( new SimpleCodePrinter() );
 			//System.out.println(hcode);
-			//System.out.println(ccode);
+			System.out.println(ccode);
 		}else{
 			try{
 				{
@@ -571,7 +571,12 @@ public class ToSBit
 		if( params.hasFlag("inbits") ){
 			commandLineOptions.add("-overrideInputs");
 			commandLineOptions.add( "" + params.flagValue("inbits") );
-		}				
+		}
+		if( params.hasFlag("seed") ){
+			commandLineOptions.add("-seed");
+			commandLineOptions.add( "" + params.flagValue("seed") );
+		}
+		
 		System.out.println("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
 		if(params.hasFlag("incremental")){
