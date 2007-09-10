@@ -148,7 +148,9 @@ public class AdvancedRControl extends RecursionControl {
 			if( ! testCall(exp) ){
 				forbiddenCalls = true;
 			}
-			callsContained += exp.getName() + ", ";
+			//System.out.println("Finished testing bf =" + bfactor);
+			FunInfo fi = funmap.get(exp.getName());
+			callsContained += exp.getName() +"(" + fi.rdepth  + ")"+ ", ";
 			return exp;
 	    }
 		
@@ -209,7 +211,7 @@ public class AdvancedRControl extends RecursionControl {
 		FunInfo fi = funmap.get(fc.getName());
 		if( ! fi.isTerminal ){
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
-			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  + "  "  +  fc.hashCode() + "  " + fc.getCx()); //DEBUGGING INFO
+			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  /*+ "  "  +  fc.hashCode()*/ + "  " + fc.getCx()); //DEBUGGING INFO
 		}
 		debugMsg = fc.getName();
 		++tt;
@@ -256,6 +258,7 @@ public class AdvancedRControl extends RecursionControl {
 
 	public boolean testCall(ExprFunCall fc) {
 		FunInfo fi = funmap.get(fc.getName());		
+		//System.out.println("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);
 		if( fi.rdepth < MAX_INLINE ){
 			return true;
 		}else{
