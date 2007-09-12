@@ -16,7 +16,7 @@
 
 package streamit.frontend.nodes;
 
-import com.sun.org.apache.xml.internal.utils.NodeVector;
+
 
 /**
  * A formal parameter to a function or stream.  This is a pair of a
