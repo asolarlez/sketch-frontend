@@ -20,6 +20,6 @@ grep -n '[0-9]' *.cpp | cpp | sed 's/:[0-9]*:/::/' > current.output;
 # diff -w current.output reference;
 grep 'CORRECT' *.output | tr ':' ' ' | awk '{ print $1; }' > cur
 echo "LISTED BELOW ARE THE FAILED TESTS (IF ANY)"
-diff cur ref 
+diff  -w cur ref 
 echo "END OF LIST"
 rm cur
