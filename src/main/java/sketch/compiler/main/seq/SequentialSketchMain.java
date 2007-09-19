@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -317,6 +318,7 @@ public class ToSBit
 			System.out.println("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
 			prog.accept( partialEval );
 			outStream.flush();
+			outStream.close();
 		}
 		catch (java.io.IOException e)
 		{
@@ -326,6 +328,19 @@ public class ToSBit
 
 
 		boolean worked = params.hasFlag("fakesolver") || solve(oracle);
+		
+		{
+			java.io.File fd = new File(params.sValue("output"));
+			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
+				boolean t = fd.delete();
+				if(!t){
+					System.out.println("couldn't delete file" + fd.getAbsolutePath());
+				}
+			}else{
+				System.out.println("Not Deleting");
+			}
+		}
+		
 		if(!worked){
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
@@ -336,7 +351,12 @@ public class ToSBit
 			FileInputStream fis = new FileInputStream(f); 
 			BufferedInputStream bis = new BufferedInputStream(fis);  
 			LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
-			oracle.loadFromStream(lir);        	
+			oracle.loadFromStream(lir);  
+			fis.close();
+			java.io.File fd = new File(fname);
+			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
+				fd.delete();
+			}
 		}
 		catch (java.io.IOException e)
 		{
@@ -506,6 +526,10 @@ public class ToSBit
 		
 		params.setAllowedParam("showpartial", new POpts(POpts.FLAG, 
 				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
+				null, null) );
+		
+		params.setAllowedParam("keeptmpfiles", new POpts(POpts.FLAG, 
+				"--keeptmpfiles  \t Keep intermediate files. Useful for debugging the compiler.",
 				null, null) );
 		
 		params.setAllowedParam("cbits", new POpts(POpts.NUMBER, 
