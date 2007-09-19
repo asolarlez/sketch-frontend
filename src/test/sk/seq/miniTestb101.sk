@@ -1,0 +1,16 @@
+
+int infun(int i, int j){}
+
+int test(int i, int j){
+  if( i > 8){
+  	return infun((i+1)+i, j-1);
+  }	
+  return infun(i-3, j);	
+}
+
+int testSK(int i, int j) implements test{
+  if( i > ??){
+  	return infun(??*i+??, j-1);
+  }	
+  return infun(i-3, j);	
+}
