@@ -1,0 +1,13 @@
+
+int foo(int i) implements boo{
+	int x = -7;
+	if(??){
+		x = 1;			
+	}	
+	return x + i;	
+}
+
+
+int boo(int i){
+	return i-7;;	
+}

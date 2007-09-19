@@ -1,0 +1,26 @@
+
+int foo(int i, bit j) implements boo{
+	int x = -7;
+	if(??){
+		x = 1;			
+	}
+	if(j){
+		if(??){
+			x = x + j;	
+		}else{
+			x = x - j;	
+		}
+	}
+	return x + i;	
+}
+
+
+int boo(int i, bit j){
+	int x = i;
+	if(j){
+		x = -8;
+	}else{
+		x = -7;	
+	}
+	return i + x;
+}
