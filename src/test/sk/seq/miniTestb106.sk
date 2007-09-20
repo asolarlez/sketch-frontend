@@ -1,0 +1,7 @@
+bit foo(int arr, bit org){
+	return (3 == arr) && org; 
+}
+
+bit fooSK(int arr, bit org) implements foo{
+	return (?? == arr) && org; 
+}
