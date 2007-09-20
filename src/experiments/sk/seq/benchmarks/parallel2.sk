@@ -1,0 +1,66 @@
+int N = 8;
+int NULL = -1;
+int  NTHREADS = 2;
+int MEMSIZE = 8;
+
+bit one(bit[N] in){
+	return 1;
+}
+
+
+bit checker(int[MEMSIZE] mem, int tail){
+	int val = mem[0];
+	int ptr = mem[1];
+	int lastPtr = NULL;	
+	int checksum = 0;
+	for(int i=0; i<MEMSIZE/2; ++i){
+	  if(ptr != NULL){	  	
+	  	val = mem[ptr];
+	  	checksum = checksum + val;	  	
+	  	lastPtr = ptr;
+	  	ptr = mem[ptr+1];
+	  }
+	}
+	return (lastPtr == tail) && (checksum == 15);	
+}
+
+
+bit parallel1(bit[N] in) implements one{
+  int[NTHREADS] pc = 0;    
+  int malloc = 4;
+  int tail = 2;  
+  int[MEMSIZE] mem = 0;
+  mem[0] = -1;
+  mem[1] = 2;
+  mem[2] = 4;
+  mem[3] = NULL;
+  
+  int [NTHREADS] data = {5, 6};
+  int[NTHREADS] ne= 0; 
+  
+  for(int t=0; t < N; ++t){
+  	bit runThr0 = (in[t] && pc[1] < 4 ) || pc[0] >= 4 ;
+  	{
+  		if(pc[runThr0] == 0){
+  		  ne[runThr0] = malloc;	
+  		  malloc = malloc + 2;  		  
+  		}
+  		if(pc[runThr0] == 1){
+  		  mem[ne[runThr0]] = data[runThr0];
+  		  mem[ne[runThr0]+1] = NULL;
+  		}  		
+  		if(pc[runThr0] == 2){
+  		  mem[tail+1] = ne[runThr0];
+  		}
+  		if(pc[runThr0] == 3){
+		  tail = ne[runThr0];	
+  		}
+  		pc[runThr0] = pc[runThr0] + 1;
+  	}
+  }
+
+   return ((mem[2] == 4 && mem[4] == 5 && mem[6] == 6 ) ||
+   			( mem[2] == 4 && mem[4] == 6 && mem[6] == 5 )) &&
+   		  (( mem[3] == 4 && mem[5] == 6 && mem[7] == NULL && tail == 6) ||
+   		   ( mem[3] == 6 && mem[7] == 4 && mem[5] == NULL && tail == 4));
+} 
