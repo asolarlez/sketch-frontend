@@ -1,3 +1,22 @@
+#define $swap(__type, v1, v2)                   \
+    {                                           \
+        __type t = v1;                          \
+        v1 = v2;                                \
+        v2 = t;                                 \
+    }
+
+#define $oneof2(e1, e2)                         \
+    (?? ? (e1) : (e2))
+
+#define $choose2assn(lhs1, lhs2, rhs)           \
+    if (??) {                                   \
+        lhs1 = rhs;                             \
+    } else {                                    \
+        lhs2 = rhs;                             \
+    }
+
+int NULL = -1;
+
 #define $0(block)                               \
     if (pc[me] == 0) {                          \
         block;                                  \
