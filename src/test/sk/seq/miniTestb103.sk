@@ -25,7 +25,7 @@ bit checker(int[MEMSIZE] mem, int tail){
 	  }
 	}
 	return ((mem[2] == 4 && mem[4] == 5 && mem[6] == 6 ) ||
-   			( mem[2] == 4 && mem[4] == 6 && mem[6] == 5 ))&& cnt == 3;	
+   			( mem[2] == 4 && mem[4] == 6 && mem[6] == 5 ))&& cnt == ??;	
 }
 
 

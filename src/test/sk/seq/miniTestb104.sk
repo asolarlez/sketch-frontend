@@ -123,7 +123,7 @@ bit parallel1(bit[N] in) implements one{
   		  oldTail[runThr0] = tail;
   		  tail = ne[runThr0];	
   		}
-  		if(pc[runThr0] == 3){
+  		if(pc[runThr0] == ??){
   		  mem[oldTail[runThr0]+1] = ne[runThr0];	
   		}
   		pc[runThr0] = pc[runThr0] + 1;
