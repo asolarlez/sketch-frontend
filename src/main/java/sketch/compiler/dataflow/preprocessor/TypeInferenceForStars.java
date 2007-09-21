@@ -154,7 +154,7 @@ class UpgradeStarToInt extends FEReplacer{
                 return new ExprBinary(exp.getContext(), exp.getOp(), left, right,  exp.getAlias());
         }
         case ExprBinary.BINOP_LSHIFT:
-        case ExprBinary.BINOP_RSHIFT:
+        case ExprBinary.BINOP_RSHIFT:{
         	Expression left = doExpression(exp.getLeft());
         	Type oldType = type;
         	type = TypePrimitive.inttype;        	
@@ -164,7 +164,23 @@ class UpgradeStarToInt extends FEReplacer{
                 return exp;
             else
                 return new ExprBinary(exp.getContext(), exp.getOp(), left, right,  exp.getAlias());
-        
+        }
+        case ExprBinary.BINOP_EQ:{
+        	Type tleft = stv.getType(exp.getLeft());
+        	Type tright = stv.getType(exp.getRight());
+        	Type tboth = tleft.leastCommonPromotion(tright);
+        	Type oldType = type;
+        	type = tboth;
+        	Expression left = doExpression(exp.getLeft());
+            Expression right = doExpression(exp.getRight());
+            type = oldType;
+            if (left == exp.getLeft() && right == exp.getRight())
+                return exp;
+            else
+                return new ExprBinary(exp.getContext(), exp.getOp(), left, right,  exp.getAlias());
+        }
+            
+            
         default:
         	return super.visitExprBinary(exp);
 		}		
