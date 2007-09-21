@@ -7,7 +7,7 @@ int NULL = -1;
 
 
 
-int N = 50;
+int N = 35;
 int NTHREADS = 2;
 int MEMSIZE = 12;
 
@@ -23,7 +23,18 @@ bit verify (int prevHead,
             int[MEMSIZE] mem) {
     return
 
-        (pc[0] == 11 || pc[1] == 11);
+        ((prevHead == 6) && (mem[prevHead + 2] == 9))
+
+
+        &&
+        ((popped[0] == 1 && popped[1] == 2)
+         || (popped[1] == 1 && popped[0] == 2))
+
+        &&
+        (pc[0] == 11 && pc[1] == 11)
+
+        ;
+
 }
 
 bit dequeueTest (bit[N] schedule) implements alwaysTrue {
