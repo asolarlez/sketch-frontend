@@ -1,0 +1,108 @@
+#define $0(block)                               \
+    if (pc[me] == 0) {                          \
+        block;                                  \
+    }
+
+#define $(n, block)                             \
+    else if (pc[me] == n) {                     \
+        block;                                  \
+    }
+
+#define goto(stmt)  pc[me] = stmt
+
+int N = 50;                     /* XXX: should calculate this ... */
+int NTHREADS = 2;
+int MEMSIZE = 12;
+
+
+bit alwaysTrue (bit[N] in) {
+    return 1;
+}
+
+
+bit verify (int prevHead,
+            int[NTHREADS] popped,
+            int[NTHREADS] pc,
+            int[MEMSIZE] mem) {
+    return
+        /* prevHead is correct, and its 'next' pointer isn't corrupted */
+//        ((prevHead == 9) && (mem[prevHead + 2] == NULL))
+        /* plausible values were popped */
+//        &&
+//        ((popped[0] == 1 && popped[1] == 2)
+//         || (popped[1] == 1 && popped[0] == 2))
+        /* both threads halted */
+//        &&
+        (pc[0] == 11 || pc[1] == 11);
+}
+
+bit dequeueTest (bit[N] schedule) implements alwaysTrue {
+    int[MEMSIZE] mem = {
+        -1,  0,  3,
+         1,  0,  6,
+         2,  0,  9,
+        -1,  0, -1              /* BUG: I want 'NULL' here */
+    };
+
+    /* Global data-structure variables */
+    int prevHead = 0;
+
+    /* Thread-local variables */
+    int[NTHREADS] pc = 0;
+    int[NTHREADS] myNext = 0;
+    int[NTHREADS] myStored = 0;
+
+    /* Variables to verify */
+    int[NTHREADS] popped = 0;
+
+    for (int t = 0; t < N; ++t) {
+        bit me = (schedule[t] && pc[1] < 11 ) || pc[0] >= 11;
+
+        $0(myNext[me] = mem[prevHead + 2];
+           goto (1);)
+
+        /*while (next != null && AtomicSwap (next.taken, 1)) {*/
+            $(1,
+              goto ((myNext[me] != NULL) ? 2 : 4);)
+            $(2,
+              { int taken = mem[myNext[me] + 1];
+                if (taken == 1) {
+                    goto (3);
+                } else {
+                    mem[myNext[me] + 1] = 1;
+                    goto (4);
+                } })
+            $(3,
+              myNext[me] = mem[myNext[me] + 2];
+              goto (1);)
+        /*}*/
+
+        $(4,
+          goto ((myNext[me] == NULL) ? 11 : 5);)
+
+        $(5,
+          myStored[me] = mem[myNext[me]];
+          goto (6);)
+
+        /*do {*/
+            $(6,
+              prevHead = myNext[me];
+              goto (7);)
+            $(7,
+              myNext[me] = mem[myNext[me] + 2];
+              goto (8);)
+        /*} until (next == null || next.taken == 0);*/
+            $(8,
+              goto ((myNext[me] == NULL) ? 10 : 9);)
+            $(9,
+              goto ((mem[myNext[me] + 1] == 0) ? 10 : 6);)
+
+        $(10,
+          popped[me] = myStored[me];
+          goto (11);)
+
+        /*$(11, halt)*/
+    }
+
+    return verify (prevHead, popped, pc, mem);
+}
