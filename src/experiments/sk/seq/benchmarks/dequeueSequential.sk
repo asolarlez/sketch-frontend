@@ -1,0 +1,102 @@
+#define $swap(__type, v1, v2)                   \
+    {                                           \
+        __type t = v1;                          \
+        v1 = v2;                                \
+        v2 = t;                                 \
+    }
+
+#define $oneof2(e1, e2)                         \
+    (?? ? (e1) : (e2))
+
+#define $choose2assn(lhs1, lhs2, rhs)           \
+    if (??) {                                   \
+        lhs1 = rhs;                             \
+    } else {                                    \
+        lhs2 = rhs;                             \
+    }
+
+int NULL = -1;
+
+#define $0(block)                               \
+    if (pc[me] == 0) {                          \
+        block;                                  \
+    }
+
+#define $(n, block)                             \
+    else if (pc[me] == n) {                     \
+        block;                                  \
+    }
+
+#define goto(stmt)  pc[me] = stmt
+
+int N = 35;                     /* XXX: should calculate this ... */
+int NTHREADS = 2;
+int MEMSIZE = 12;
+
+
+#define END  5
+
+
+bit alwaysTrue (bit[N] in) {
+    return 1;
+}
+
+
+bit verify (int prevHead,
+            int[NTHREADS] popped,
+            int[NTHREADS] pc,
+            int[MEMSIZE] mem) {
+    return
+        /* prevHead is correct, and its 'next' pointer isn't corrupted */
+        ((prevHead == 6) && (mem[prevHead + 2] == 9))
+        /* plausible values were popped */
+        &&
+        ((popped[0] == 1 && popped[1] == 2)
+         || (popped[1] == 1 && popped[0] == 2))
+        /* both threads halted */
+        &&
+        (pc[0] == END && pc[1] == END)
+        ;
+}
+
+bit dequeueTest (bit[N] schedule) implements alwaysTrue {
+    int[MEMSIZE] mem = {
+        -1,  0,  3,
+         1,  0,  6,
+         2,  0,  9,
+        -1,  0, -1              /* BUG: I want 'NULL' here */
+    };
+
+    /* Global data-structure variables */
+    int prevHead = 0;
+
+    /* Thread-local variables */
+    int[NTHREADS] pc = 0;
+    int[NTHREADS] myStored = 0;
+    int[NTHREADS] myTemp = 0;
+
+    /* Variables to verify */
+    int[NTHREADS] popped = 0;
+
+    for (int t = 0; t < N; ++t) {
+        bit me = (schedule[t] && pc[1] < END ) || pc[0] >= END;
+
+        $0(goto ( (mem[prevHead + 2] == NULL) ? END : 1))
+        $(1,
+          myTemp[me] = mem[prevHead + 2];
+          goto (2);)
+        $(2,
+          myStored[me] = mem[myTemp[me]];
+          goto (3);)
+        $(3,
+          prevHead = mem[prevHead + 2];
+          goto (4);)
+        $(4,
+          popped[me] = myStored[me];
+          goto (5);)
+
+        /*$(5, halt)*/
+    }
+
+    return verify (prevHead, popped, pc, mem);
+}
