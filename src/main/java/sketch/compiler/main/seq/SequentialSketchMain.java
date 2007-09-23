@@ -645,6 +645,7 @@ public class ToSBit
 			boolean ret = runSolver(commandLine, 0);
 			if(!ret){
 				System.out.println("The sketch can not be resolved");
+				System.err.println(solverErrorStr);
 				if(stopper!=null) stopper.abort();
 				return false;
 			}
