@@ -71,10 +71,11 @@ bit scheduleThr(bit[N] schedule, bit[NTHREADS] thrState_waiting, int[NTHREADS] t
 	//It's thread 1's turn, but first, check that it can actually run;
 		if(pc[1] >= 11) return 0;
 		if(thrState_waiting[1]){
-			//Thread was waiting, on a lock. Then, we must check to see if the lock has been released.
+			//Thread was waiting, on a lock. Then, we must check to see if the lock has been released.			
 			int mloc = thrState_waitingOn[1];
 			assert locks[mloc] != 1;
-			if(locks[mloc] != -1) return 0; // if lock hasn't been released, yield to the other thread.			
+			if(locks[mloc] != -1) return 0; // if lock hasn't been released, yield to the other thread.
+			thrState_waiting[1] = 0;	//if lock has been released, we can stop waiting.		
 		}
 		return 1;
 	}else{
@@ -83,7 +84,8 @@ bit scheduleThr(bit[N] schedule, bit[NTHREADS] thrState_waiting, int[NTHREADS] t
 			//Thread was waiting, on a lock. Then, we must check to see if the lock has been released.
 			int mloc = thrState_waitingOn[0];
 			assert locks[mloc] != 0;
-			if(locks[mloc] != -1) return 1; // if lock hasn't been released, yield to the other thread.			
+			if(locks[mloc] != -1) return 1; // if lock hasn't been released, yield to the other thread.
+			thrState_waiting[0] = 0;	//if lock has been released, we can stop waiting.		
 		}
 		return 0;
 	}
