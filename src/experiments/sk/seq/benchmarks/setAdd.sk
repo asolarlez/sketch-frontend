@@ -29,9 +29,10 @@ int NULL = -1;
 
 #define goto(stmt)  pc[me] = stmt
 
-#define lockSet(mem)											\
+#define lockSet(mem, block)											\
 	if(locks[mem] == -1 || locks[mem] == me){					\
 		locks[mem] = me;										\
+		block; 													\
 	}else{														\
 		thrState_waiting[me] = 1;								\
 		thrState_waitingOn[me] = mem;							\
@@ -111,15 +112,15 @@ bit setAddTest(bit[N] schedule) implements alwaysTrue{
 		bit me = scheduleThr(schedule, thrState_waiting, thrState_waitingOn, locks, pc);
 		thrState_waiting[me] = 0;	
 		$0({
-			curr[me] = 0;
-			pred[me] = NULL; 
-			goto(1);
-		})
-		$(1, {
 			ne[me] = malloc; 
 			malloc = malloc+2;
 			mem[ne[me]] = key[me];
-			mem[ne[me]+1] = NULL;
+			mem[ne[me]+1] = NULL;			
+			goto(1);
+		})
+		$(1, {
+			curr[me] = 0;
+			pred[me] = NULL; 
 			goto(2); 
 		})
 		/*while(curr.key < key){ */
@@ -141,15 +142,14 @@ bit setAddTest(bit[N] schedule) implements alwaysTrue{
 		})
 		/*}*/
 		$(5, {
-			lockSet(pred[me]+1);	
-			goto(6);
+			lockSet(pred[me]+1, goto(6));
 		})
 		$(6, {
 			if(mem[pred[me]+1] == curr[me]){
 				goto(7);
 			}else{
 				unlock(pred[me]+1);
-				goto(2);
+				goto(1);
 			}
 		})
 		$(7, {
