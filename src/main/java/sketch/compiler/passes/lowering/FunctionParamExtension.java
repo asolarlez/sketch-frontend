@@ -62,9 +62,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		{
 			Expression lhs=(Expression) stmt.getLHS().accept(this);
 			while (lhs instanceof ExprArrayRange) lhs=((ExprArrayRange)lhs).getBase();
-			assert lhs instanceof ExprVar;
-			String lhsName=((ExprVar)lhs).getName();
-			unmodifiedParams.remove(lhsName);
+			assert lhs instanceof ExprVar  || lhs instanceof ExprField;
+			if( lhs instanceof ExprVar ){
+				String lhsName=((ExprVar)lhs).getName();
+				unmodifiedParams.remove(lhsName);
+			}
 			return super.visitStmtAssign(stmt);
 		}
 		public Object visitStmtVarDecl(StmtVarDecl stmt)
