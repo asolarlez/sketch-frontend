@@ -141,6 +141,10 @@ public class FEReplacer implements FEVisitor
     }
     
     
+    public Object visitExprNew(ExprNew expNew){
+    	return expNew;
+    }
+    
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
         boolean hasChanged = false;
