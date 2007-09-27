@@ -1,0 +1,21 @@
+int N = 5;
+
+bit test(bit[N] in){
+	return 1;	
+}
+
+
+
+bit testSK(bit[N] in) implements test{
+	int[N] fa = {-1,-1,-1,-1,-1};
+	int[N] fb = 0;	
+	if(in[0]){
+		fa[fa[??]] = 2;	
+	}else{
+		fa[0] = 3;
+	}
+	fa[fa[0]] = 2;  
+	return fa[2] == 2 || fa[3] == 2;
+}
+
+

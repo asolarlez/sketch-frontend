@@ -1,0 +1,13 @@
+
+bit foo(bit in) implements ka{
+	bit[4] f = {1,1,0,1};
+	f[2] = in;
+	int[2] tt = {3, 2};
+	int t = ??;
+	assert t > 1;
+	return f[tt[t]];	
+}
+
+bit ka(bit in){
+	return 1;	
+} 
