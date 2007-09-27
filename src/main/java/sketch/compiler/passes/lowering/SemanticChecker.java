@@ -674,6 +674,9 @@ public class SemanticChecker
 						if (!ct.promotesTo(floattype) && !ct.promotesTo(TypePrimitive.inttype))
 							report(expr,
 									"cannot compare non-real type " + ct);
+						if(isLeftArr || isRightArr )
+							report(expr,
+									"Comparissons are not supported for array types" + expr);
 						break;
 
 						// Equality, can compare anything:
