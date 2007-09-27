@@ -9,7 +9,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash sketch   -synth MINI -verif MINI  --incremental 6 --seed 10 ${x} &> ${x}.output ;
+bash sketch   -synth MINI -verif MINI  --incremental 6  ${x} &> ${x}.output ;
 
 done;
 
