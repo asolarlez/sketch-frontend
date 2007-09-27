@@ -6,6 +6,7 @@ import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStructRef;
 
 public class IntState extends varState {
 
@@ -18,7 +19,7 @@ public class IntState extends varState {
 		super(t);
 		if( t instanceof  TypePrimitive){
 			init( newLHSvalue() );			
-		}
+		} else
 		
 		if( t instanceof TypeArray  ){
 			TypeArray tarr = (TypeArray) t;
@@ -29,7 +30,13 @@ public class IntState extends varState {
 			}else{
 				init( -1 );
 			}
+		} else
+		if( t instanceof TypeStructRef){
+			init( newLHSvalue() );	
+		}else{
+			assert false :"This shouldn't happen";
 		}
+		
 	}
 	
 	

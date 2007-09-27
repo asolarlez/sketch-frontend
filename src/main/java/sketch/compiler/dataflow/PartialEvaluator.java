@@ -174,8 +174,10 @@ public class PartialEvaluator extends FEReplacer {
 	}
 
 	public Object visitExprField(ExprField exp) {
-		report(false, "NYS");	    
-	    return exp;
+		abstractValue useless = (abstractValue)exp.getLeft().accept(this);
+		 Expression left = exprRV;		 
+		 if(isReplacer) exprRV = new ExprField(exp.getContext(), left, exp.getName());
+	     return vtype.BOTTOM();
 	}
 
 
@@ -378,6 +380,7 @@ public class PartialEvaluator extends FEReplacer {
     	public String lhsName=null;
     	public int rlen = -1;  
     	abstractValue lhsIdx = null;
+    	public boolean isFieldAcc = false;
     	private Type t;
     	
     	public abstractValue typeLen(Type t){
@@ -391,6 +394,13 @@ public class PartialEvaluator extends FEReplacer {
     			return vtype.CONST(1);
     		}
     	}
+    	
+    	
+    	public Object visitExprField(ExprField exp)
+        {
+    		isFieldAcc = true;
+    		return super.visitExprField(exp);            
+        }
     	
     	
     	public Object visitExprArrayRange(ExprArrayRange ear){
@@ -446,6 +456,7 @@ public class PartialEvaluator extends FEReplacer {
     {
     	
         String op;
+        boolean isFieldAcc;
         abstractValue rhs = null;	        
         try{
         	rhs = (abstractValue) stmt.getRHS().accept(this);
@@ -467,55 +478,57 @@ public class PartialEvaluator extends FEReplacer {
         lhsName = lhsv.lhsName;
         lhsIdx = lhsv.lhsIdx;
         rlen = lhsv.rlen;
-        
+        isFieldAcc = lhsv.isFieldAcc;
         
         
         
         switch(stmt.getOp())
         {
         case ExprBinary.BINOP_ADD: 	
-        	assert rlen == 1;
+        	assert rlen == 1 && !isFieldAcc;
         	state.setVarValue(lhsName, lhsIdx, vtype.plus((abstractValue) lhs.accept(this), rhs));        	
         	break;
         case ExprBinary.BINOP_SUB: 
-        	assert rlen == 1;
+        	assert rlen == 1 && !isFieldAcc;
         	state.setVarValue(lhsName, lhsIdx, vtype.minus((abstractValue) lhs.accept(this), rhs));        	
         	break;        
         case ExprBinary.BINOP_MUL:
-        	assert rlen == 1;
+        	assert rlen == 1 && !isFieldAcc;
         	state.setVarValue(lhsName, lhsIdx, vtype.times((abstractValue) lhs.accept(this), rhs));        	
         	break;
         case ExprBinary.BINOP_DIV:
-        	assert rlen == 1;
+        	assert rlen == 1 && !isFieldAcc;
         	state.setVarValue(lhsName, lhsIdx, vtype.over((abstractValue) lhs.accept(this), rhs));        	
         	break;       
         default:
-        	if( rlen <= 1){
-        		state.setVarValue(lhsName, lhsIdx, rhs);
-        	}else{
-        		List<abstractValue> lst = null;
-        		if(rhs.isVect()){
-        			lst = rhs.getVectValue();
-        		}
-        		for(int i=0; i<rlen; ++i){
-        			if(i==0){
-        				if(lst != null){
-        					if(lst.size() > i ){
-        						state.setVarValue(lhsName, lhsIdx, lst.get(i));
-        					}else{
-        						state.setVarValue(lhsName, lhsIdx, vtype.CONST(0));
-        					}
-        				}else{
-        					state.setVarValue(lhsName, lhsIdx, rhs);
-        				}
-        			}else{
-        				if(lst != null && lst.size() > i){
-        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), lst.get(i));
-        				}else{
-        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), vtype.CONST(0));
-        				}
-        			}
-        		}
+        	if( !isFieldAcc ){
+	        	if( rlen <= 1){
+	        		state.setVarValue(lhsName, lhsIdx, rhs);
+	        	}else{
+	        		List<abstractValue> lst = null;
+	        		if(rhs.isVect()){
+	        			lst = rhs.getVectValue();
+	        		}
+	        		for(int i=0; i<rlen; ++i){
+	        			if(i==0){
+	        				if(lst != null){
+	        					if(lst.size() > i ){
+	        						state.setVarValue(lhsName, lhsIdx, lst.get(i));
+	        					}else{
+	        						state.setVarValue(lhsName, lhsIdx, vtype.CONST(0));
+	        					}
+	        				}else{
+	        					state.setVarValue(lhsName, lhsIdx, rhs);
+	        				}
+	        			}else{
+	        				if(lst != null && lst.size() > i){
+	        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), lst.get(i));
+	        				}else{
+	        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), vtype.CONST(0));
+	        				}
+	        			}
+	        		}
+	        	}
         	}
     		break;
         }
