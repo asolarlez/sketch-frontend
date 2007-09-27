@@ -1,0 +1,39 @@
+
+int MEMSIZE = 4;
+int NTHREADS = 2;
+int N = 3;
+
+
+bit alwaysTrue (bit[N] in) {
+    return 1;
+}
+
+bit test(bit[N] in) implements alwaysTrue{
+ int[NTHREADS] pc = 0;
+ bit[NTHREADS] thrState_waiting = 0;
+ int[MEMSIZE] locks = {-1, -1, -1, -1};
+ for(int i=0; i<N; ++i){
+  bit me = in[i];
+  if (pc[me] == 0) { 
+  	{
+  		 if(locks[2] == -1 || locks[2] == me){
+  		 	 locks[2] = me;
+  		 	 pc[me] = 1;  
+  		 }else{ 
+  		 	thrState_waiting[me] = 1;  
+  		 }  		 
+  	}
+  }
+  else if (pc[me] == 1) { 
+  	{ 
+  		if( locks[2] == me ){ 
+  			locks[2] = -1; 
+  		}else{ 
+  			assert false; 
+  		}
+  		pc[me] = 2; 
+  	} 
+  }
+ }
+ return 1;
+}
