@@ -115,10 +115,11 @@ throw new IllegalStateException(e);
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  List streams = new ArrayList();
-	List funcs=new ArrayList(); Function f; FieldDecl fd;
+	List funcs=new ArrayList(); Function f; FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
 }
 	:	( (return_type ID LPAREN) => f=function_decl { funcs.add(f); } |
 	   fd=field_decl SEMI { vars.add(fd); } |
+	   ts=struct_decl { structs.add(ts); } |
 	   INCLUDE st:STRING_LITERAL { handleInclude(st.getText(),funcs,vars); }
 )*
 		EOF
@@ -128,7 +129,7 @@ program	 returns [Program p]
  				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN", 
  				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
-				 if (!hasError) p = new Program(null, Collections.singletonList(ss), Collections.EMPTY_LIST /*structs*/); }
+				 if (!hasError) p = new Program(null, Collections.singletonList(ss), structs); }
 	;
 
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;

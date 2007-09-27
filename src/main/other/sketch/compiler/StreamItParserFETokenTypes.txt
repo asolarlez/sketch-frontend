@@ -1,4 +1,4 @@
-// $ANTLR : StreamItParserFE.g -> StreamItParserFETokenTypes.txt$
+// $ANTLR 2.7.7 (2006-11-01): StreamItParserFE.g -> StreamItParserFETokenTypes.txt$
 StreamItParserFE    // output token vocab name
 TK_loop="loop"=4
 TK_boolean="boolean"=5

@@ -235,7 +235,7 @@ public class ToStencilSK extends ToSBit
 	public void generateCode(){
 		finalCode.accept(new SimpleCodePrinter());
 		finalCode=doBackendPasses(finalCode);
-		if(params.hasFlag("outputfortran")) {
+		if(false && params.hasFlag("outputfortran")) {
 			outputFortranCode();
 		} else {
 			outputCCode();
