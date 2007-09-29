@@ -588,10 +588,15 @@ streamit_value_expr returns [Expression x] { x = null; }
 minic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|	(func_call) => x=func_call
+	| 	(constructor_expr) => x = constructor_expr
 	|	x=value
 	|	x=constantExpr
 	;
 
+
+constructor_expr returns [Expression x] { x = null; Type t; List l;}
+	: n:TK_new t=data_type l=func_call_params {  x = new ExprNew( getContext(n), t);     }
+	;
 value returns [Expression x] { x = null; List rlist; }
 	:	name:ID { x = new ExprVar(getContext(name), name.getText()); }
 		(	DOT field:ID 			{ x = new ExprField(x.getContext(), x, field.getText()); }

@@ -6,7 +6,7 @@ import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.nodes.TypeStruct;
 
 public class IntState extends varState {
 
@@ -31,7 +31,7 @@ public class IntState extends varState {
 				init( -1 );
 			}
 		} else
-		if( t instanceof TypeStructRef){
+		if( t instanceof TypeStruct){
 			init( newLHSvalue() );	
 		}else{
 			assert false :"This shouldn't happen";

@@ -15,6 +15,10 @@ public class ExprNew extends Expression {
 	public Object accept(FEVisitor v) {
 		return v.visitExprNew(this);
 	}
+	
+	public String toString(){
+		return "new " + typeToConstruct + "()";
+	}
 
 }
 

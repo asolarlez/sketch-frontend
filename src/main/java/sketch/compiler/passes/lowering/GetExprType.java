@@ -303,6 +303,12 @@ public class GetExprType extends FENullVisitor
     }
 
     
+    public Object visitExprNew(ExprNew expNew){     	
+    	return expNew.typeToConstruct;
+    
+    }
+    
+    
     public Object visitExprVar(ExprVar exp)
     {
         // Look this up in the symbol table.

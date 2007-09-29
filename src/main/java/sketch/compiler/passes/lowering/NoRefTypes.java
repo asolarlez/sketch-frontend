@@ -101,43 +101,9 @@ public class NoRefTypes extends FEReplacer
         return super.visitProgram(prog);
     }
 
-    public Object visitFieldDecl(FieldDecl field)
-    {
-        List newTypes = new java.util.ArrayList();
-        for (int i = 0; i < field.getNumFields(); i++)
-            newTypes.add(remapType(field.getType(i)));
-        return new FieldDecl(field.getContext(), newTypes,
-                             field.getNames(), field.getInits());
-    }
-
-    public Object visitFunction(Function func)
-    {
-        // Visit the parameter list, then let FEReplacer do the
-        // rest of the work.
-        List newParams = new java.util.ArrayList();
-        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); )
-        {
-            Parameter param = (Parameter)iter.next();
-            Type type = remapType(param.getType());
-            param = new Parameter(type, param.getName(), param.isParameterOutput());
-            newParams.add(param);
-        }
-        Type returnType = remapType(func.getReturnType());
-        return super.visitFunction(new Function(func.getContext(),
-                                                func.getCls(),
-                                                func.getName(),
-                                                returnType,
-                                                newParams, func.getSpecification(),
-                                                func.getBody()));
-    }
-
-    public Object visitStmtVarDecl(StmtVarDecl stmt)
-    {
-        List newTypes = new java.util.ArrayList();
-        for (int i = 0; i < stmt.getNumVars(); i++)
-            newTypes.add(remapType(stmt.getType(i)));
-        return new StmtVarDecl(stmt.getContext(), newTypes,
-                               stmt.getNames(), stmt.getInits());
+    
+    public Object visitType(Type t){
+    	return remapType(t);
     }
 
     public Object visitStreamSpec(StreamSpec ss)

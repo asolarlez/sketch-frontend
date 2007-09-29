@@ -36,22 +36,8 @@ options {
 }
 
 tokens {
-	// Stream types:
-//	"filter"; "pipeline"; "splitjoin";  "sbox"; "feedbackloop";
-	// Messaging:
-//	"portal"; "to"; "handler";
-	// Composite streams:
-//	"add";
-	// Splitters and joiners:
-//	"split"; "join";
-//	"duplicate"; "roundrobin";
-	// Feedback loops:
-//	"body";
 	"loop"; //"enqueue";
-	// Special functions:
-//	"init"; "prework"; "work"; "phase";
-	// Manipulating tapes:
-//	"peek"; "pop"; "push";
+	"new";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
 	// Complicated types:

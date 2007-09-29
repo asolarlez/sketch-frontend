@@ -724,4 +724,8 @@ public class SNodesToFortran implements FEVisitor {
     	return null;
     }
 
+    public Object visitExprNew(ExprNew expNew){
+    	assert false :"No alloc in fortran.";
+    	return null;
+    }
 }

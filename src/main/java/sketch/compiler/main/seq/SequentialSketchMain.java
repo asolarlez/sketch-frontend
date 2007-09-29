@@ -19,7 +19,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -30,13 +29,8 @@ import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-import java.util.Map.Entry;
 
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.codegenerators.NodesToC;
@@ -66,6 +60,7 @@ import streamit.frontend.passes.EliminateNestedArrAcc;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.passes.NoRefTypes;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.stencilSK.EliminateStarStatic;
@@ -275,6 +270,7 @@ public class ToSBit
 		//invoke post-parse passes    	
 		//prog.accept( new SimpleCodePrinter() );
 		System.out.println("=============================================================");
+		prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));   
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));		

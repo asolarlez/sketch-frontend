@@ -6,6 +6,7 @@ import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
 
 public class NtsbState extends varState {
 	public class lhsIndexes{
@@ -44,8 +45,11 @@ public class NtsbState extends varState {
 		if( t instanceof  TypePrimitive){
 			lhsIdxs = idxsArr(1);
 			init( newLHSvalue() );			
-		}
-		
+		}else
+		if( t instanceof  TypeStruct){
+			lhsIdxs = idxsArr(1);
+			init( newLHSvalue() );	
+		}else
 		if( t instanceof TypeArray  ){
 			TypeArray tarr = (TypeArray) t;
 			abstractValue av = (abstractValue) tarr.getLength().accept( vtype.eval );
@@ -57,7 +61,11 @@ public class NtsbState extends varState {
 				init( -1 );
 				lhsIdxs = null;
 			}
+		}else{
+			assert false :"This is an error.";
 		}
+		
+		
 	}
 	
 	NtsbValue val(){

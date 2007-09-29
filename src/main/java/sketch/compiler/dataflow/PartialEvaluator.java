@@ -19,6 +19,7 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstStr;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprNew;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprTypeCast;
@@ -920,6 +921,12 @@ public class PartialEvaluator extends FEReplacer {
         return isReplacer? new StmtVarDecl(stmt.getCx(), types, names, inits) : stmt;
     }
 
+    
+    public Object visitExprNew(ExprNew expNew){    	
+    	exprRV = expNew;
+    	return vtype.BOTTOM();    
+    }
+    
     public Object visitStmtWhile(StmtWhile stmt)
     {
     	assert false : "While loops are not yet implemented (I know it sounds strange, why wouldn't we implement while loops. Well, it's a long story, but they just aren't implemented)";
