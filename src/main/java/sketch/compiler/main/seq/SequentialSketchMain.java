@@ -57,6 +57,7 @@ import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.EliminateNestedArrAcc;
+import streamit.frontend.passes.EliminateNewsAndStructVars;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -120,14 +121,14 @@ public class ToSBit
 	protected Program beforeUnvectorizing=null;
 
 	public static final CommandLineParamManager params = new CommandLineParamManager();
-	
-	
+
+
 	protected ToSBit(String[] args){
 		this.setCommandLineParams();
 		params.loadParams(args);
 	}
 
-	
+
 
 
 	public RecursionControl newRControl(){
@@ -221,18 +222,19 @@ public class ToSBit
 	 *        to run under the StreamIt Java library
 	 * @param varGen  object to generate unique temporary variable names
 	 * @returns the converted IR tree
-	 */        
+	 */
 	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
+		prog = (Program)prog.accept(new EliminateNewsAndStructVars());
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
-		//prog = (Program)prog.accept(new NoRefTypes());        
+		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
-		
+
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
-		beforeUnvectorizing = prog;        
+		beforeUnvectorizing = prog;
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
 		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
@@ -267,15 +269,15 @@ public class ToSBit
 	}
 
 	protected Program preprocessProgram(Program prog) {
-		//invoke post-parse passes    	
+		//invoke post-parse passes
 		//prog.accept( new SimpleCodePrinter() );
 		System.out.println("=============================================================");
 		prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
-		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));   
-		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));		
+		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
+		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
-		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );        
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );
 		//System.out.println("=============================================================");
 		//prog.accept( new SimpleCodePrinter() );
 		//System.out.println("=============================================================");
@@ -304,12 +306,12 @@ public class ToSBit
 					new PrintStream(outStream)
 				//	System.out
 				,
-				params.flagValue("unrollamnt"), newRControl()); 
+				params.flagValue("unrollamnt"), newRControl());
 			/*
              ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,
                                              new PrintStream(outStream),
-                                             params.unrollAmt, newRControl()); */ 
+                                             params.unrollAmt, newRControl()); */
 			System.out.println("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
 			System.out.println("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
 			prog.accept( partialEval );
@@ -324,7 +326,7 @@ public class ToSBit
 
 
 		boolean worked = params.hasFlag("fakesolver") || solve(oracle);
-		
+
 		{
 			java.io.File fd = new File(params.sValue("output"));
 			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
@@ -336,7 +338,7 @@ public class ToSBit
 				System.out.println("Not Deleting");
 			}
 		}
-		
+
 		if(!worked){
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
@@ -344,10 +346,10 @@ public class ToSBit
 		try{
 			String fname = params.sValue("output")+ ".tmp";
 			File f = new File(fname);
-			FileInputStream fis = new FileInputStream(f); 
-			BufferedInputStream bis = new BufferedInputStream(fis);  
+			FileInputStream fis = new FileInputStream(f);
+			BufferedInputStream bis = new BufferedInputStream(fis);
 			LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
-			oracle.loadFromStream(lir);  
+			oracle.loadFromStream(lir);
 			fis.close();
 			java.io.File fd = new File(fname);
 			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
@@ -362,19 +364,19 @@ public class ToSBit
 
 	}
 
-	public void eliminateStar(){		
+	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
 		//beforeUnvectorizing.accept( new SimpleCodePrinter() );
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl(), true ));
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-		
+
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode());
 		//System.out.println("=========  After ElimDeadCode  =========");
-		//finalCode.accept( new SimpleCodePrinter() );		
+		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 		/*
@@ -401,10 +403,10 @@ public class ToSBit
 		return resultFile;
 	}
 
-	protected void outputCCode() {    	
+	protected void outputCCode() {
 
 
-		String resultFile = getOutputFileName();		
+		String resultFile = getOutputFileName();
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		if(!params.hasFlag("outputcode")){
@@ -433,9 +435,9 @@ public class ToSBit
 				if( params.hasFlag("outputtest") ) {
 					Writer outWriter = new FileWriter(params.sValue("outputdir")+"script");
 					outWriter.write("#!/bin/sh\n");
-					
+
 					outWriter.write("g++ -I \"$FRONTEND/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
-					
+
 					outWriter.write("./"+resultFile+"\n");
 					outWriter.flush();
 					outWriter.close();
@@ -447,24 +449,24 @@ public class ToSBit
 		}
 	}
 
-	
-	
+
+
 	protected void setCommandLineParams(){
-		
-		params.setAllowedParam("D", new POpts(POpts.VVAL, 
+
+		params.setAllowedParam("D", new POpts(POpts.VVAL,
 				"--D VAR val    \t If the program contains a global variable VAR, it sets its value to val.",
 				null, null));
-		
-		params.setAllowedParam("unrollamnt", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("unrollamnt", new POpts(POpts.NUMBER,
 				"--unrollamnt n \t It sets the unroll ammount for loops to n.",
 				"8", null) );
-		
-		params.setAllowedParam("inlineamnt", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("inlineamnt", new POpts(POpts.NUMBER,
 				"--inlineamnt n \t Bounds inlining to n levels of recursion, so" +
 				"\n\t\t each function can appear at most n times in the stack.",
 				"5", null) );
-		
-		params.setAllowedParam("branchamnt", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("branchamnt", new POpts(POpts.NUMBER,
 				"--branchamnt n \t This flag is also used for recursion control. " +
 				"\n\t\t It bounds inlining based on the idea that if a function calls " +
 				"\n\t\t itself recureively ten times, we want to inline it less than a function" +
@@ -472,73 +474,73 @@ public class ToSBit
 				"\n\t\t maximum value of the branching factor, which is the number of times" +
 				"\n\t\t a function calls itself recursively, times the amount of inlining. ",
 				"15", null) );
-		
-		params.setAllowedParam("incremental", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("incremental", new POpts(POpts.NUMBER,
 				"--incremental n\t Tells the solver to incrementally grow the size of integer holes from 1 to n bits.",
 				"5", null) );
-		
-		params.setAllowedParam("timeout", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("timeout", new POpts(POpts.NUMBER,
 				"--timeout min  \t Kills the solver after min minutes.",
 				null, null) );
-		
-		params.setAllowedParam("fakesolver", new POpts(POpts.FLAG, 
+
+		params.setAllowedParam("fakesolver", new POpts(POpts.FLAG,
 				"--fakesolver   \t This flag indicates that the SAT solver should not be invoked. " +
 				"\n \t\t Instead the frontend should look for a solution file, and generate the code from that. " +
 				"\n \t\t It is useful when working with sketches that take a long time to resolve" +
 				"\n \t\t if one wants to play with different settings for code generation.",
 				null, null) );
-		
-		params.setAllowedParam("seed", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("seed", new POpts(POpts.NUMBER,
 				"--seed s       \t Seeds the random number generator with s.",
 				null, null) );
-		
-		params.setAllowedParam("outputcode", new POpts(POpts.FLAG, 
+
+		params.setAllowedParam("outputcode", new POpts(POpts.FLAG,
 				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
 				null, null) );
-		
-		params.setAllowedParam("outputtest", new POpts(POpts.FLAG, 
+
+		params.setAllowedParam("outputtest", new POpts(POpts.FLAG,
 				"--outputtest   \t Produce also a harness to test the generated C code.",
 				null, null) );
-		
-		params.setAllowedParam("outputdir", new POpts(POpts.STRING, 
+
+		params.setAllowedParam("outputdir", new POpts(POpts.STRING,
 				"--outputdir dir\t Set the directory where you want the generated code to live.",
 				"./", null) );
-		
-		params.setAllowedParam("outputprogname", new POpts(POpts.STRING, 
+
+		params.setAllowedParam("outputprogname", new POpts(POpts.STRING,
 				"--outputprogname name \t Set the name of the output C files." +
 				"\n \t\t By default it is the name of the first input file.",
 				null, null) );
-		
-		
-		params.setAllowedParam("output", new POpts(POpts.STRING, 
+
+
+		params.setAllowedParam("output", new POpts(POpts.STRING,
 				"--output file  \t Temporary output file used to communicate with backend solver. " +
 				"\n \t\t This flag is already set by the sketch script, so don't try to set it yourself.",
 				null, null) );
-		
-		params.setAllowedParam("sbitpath", new POpts(POpts.STRING, 
+
+		params.setAllowedParam("sbitpath", new POpts(POpts.STRING,
 				"--sbitpath path\t Path where the SBitII solver can be found. This flag " +
 				"\n \t\t is already set by the sketch script, so don't try to set it yourself.",
 				null, null) );
-		
-		params.setAllowedParam("showpartial", new POpts(POpts.FLAG, 
+
+		params.setAllowedParam("showpartial", new POpts(POpts.FLAG,
 				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
 				null, null) );
-		
-		params.setAllowedParam("keeptmpfiles", new POpts(POpts.FLAG, 
+
+		params.setAllowedParam("keeptmpfiles", new POpts(POpts.FLAG,
 				"--keeptmpfiles  \t Keep intermediate files. Useful for debugging the compiler.",
 				null, null) );
-		
-		params.setAllowedParam("cbits", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("cbits", new POpts(POpts.NUMBER,
 				"--cbits n      \t Specify the number of bits to use for integer holes.",
 				"5", null) );
-		
-		params.setAllowedParam("inbits", new POpts(POpts.NUMBER, 
+
+		params.setAllowedParam("inbits", new POpts(POpts.NUMBER,
 				"--inbits n      \t Specify the number of bits to use for integer inputs.",
 				"5", null) );
-		
+
 	}
-	
-	
+
+
 	protected Program doBackendPasses(Program prog) {
 		if( false && params.hasFlag("outputcode") ) {
 			prog=(Program) prog.accept(new AssembleInitializers());
@@ -556,17 +558,17 @@ public class ToSBit
 	}
 
 	public void run()
-	{        
+	{
 		parseProgram();
 		/*
 		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed"); */   
-		
-		prog=preprocessProgram(prog); // perform prereq transformations   
+			throw new IllegalStateException("Semantic check failed"); */
+
+		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed");        
+			throw new IllegalStateException("Semantic check failed");
 		if (prog == null)
 			throw new IllegalStateException();
 
@@ -587,7 +589,7 @@ public class ToSBit
 			stopper.start();
 		}
 		List<String> commandLineOptions = params.commandLineOptions;
-		
+
 		if( params.hasFlag("inbits") ){
 			commandLineOptions.add("-overrideInputs");
 			commandLineOptions.add( "" + params.flagValue("inbits") );
@@ -596,7 +598,7 @@ public class ToSBit
 			commandLineOptions.add("-seed");
 			commandLineOptions.add( "" + params.flagValue("seed") );
 		}
-		
+
 		System.out.println("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
 		if(params.hasFlag("incremental")){
@@ -607,13 +609,13 @@ public class ToSBit
 				System.out.println("TRYING SIZE " + bits);
 				String[] commandLine = new String[ 5 + commandLineOptions.size()];
 				commandLine[0] = command;
-				commandLine[1] = "-overrideCtrls"; 
+				commandLine[1] = "-overrideCtrls";
 				commandLine[2] = "" + bits;
 				for(int i=0; i< commandLineOptions.size(); ++i){
 					commandLine[3+i] = commandLineOptions.get(i);
 				}
 				commandLine[commandLine.length -2 ] = params.sValue("output") ;
-				commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";        		
+				commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";
 				boolean ret = runSolver(commandLine, bits);
 				if(ret){
 					isSolved = true;
@@ -628,7 +630,7 @@ public class ToSBit
 				if(stopper!=null) stopper.abort();
 				return false;
 			}
-			System.out.println("Succeded with " + bits + " bits for integers");	        
+			System.out.println("Succeded with " + bits + " bits for integers");
 			oracle.capStarSizes(bits);
 		}else{
 			String[] commandLine = new String[ 3 + commandLineOptions.size()];
@@ -637,7 +639,7 @@ public class ToSBit
 				commandLine[1+i] = commandLineOptions.get(i);
 			}
 			commandLine[commandLine.length -2 ] = params.sValue("output");
-			commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";	        
+			commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";
 			boolean ret = runSolver(commandLine, 0);
 			if(!ret){
 				System.out.println("The sketch can not be resolved");
@@ -653,14 +655,14 @@ public class ToSBit
 	String solverErrorStr;
 
 	private boolean runSolver(String[] commandLine, int i){
-		for(int k=0;k<commandLine.length;k++) 
-			System.out.print(commandLine[k]+" "); 
+		for(int k=0;k<commandLine.length;k++)
+			System.out.print(commandLine[k]+" ");
 		System.out.println("");
 
-		Runtime rt = Runtime.getRuntime();        
+		Runtime rt = Runtime.getRuntime();
 		try
 		{
-			Process proc = rt.exec(commandLine);   
+			Process proc = rt.exec(commandLine);
 			InputStream output = proc.getInputStream();
 			InputStream stdErr = proc.getErrorStream();
 			InputStreamReader isr = new InputStreamReader(output);

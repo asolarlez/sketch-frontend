@@ -86,7 +86,7 @@ public class FieldDecl extends FENode
              Collections.singletonList(name),
              Collections.singletonList(init));
     }
-    
+
     /**
      * Get the type of the nth field declared by this.
      *
@@ -96,6 +96,16 @@ public class FieldDecl extends FENode
     public Type getType(int n)
     {
         return (Type)types.get(n);
+    }
+
+    /**
+     * Set the type of the nth field to t.
+     *
+     * @param n  Which field's type is changing.
+     * @param t  The type to change it to.
+     */
+    public void setType (int n, Type t) {
+    	types.set (n, t);
     }
 
     /**
@@ -109,7 +119,7 @@ public class FieldDecl extends FENode
     {
         return Collections.unmodifiableList(types);
     }
-    
+
     /**
      * Get the name of the nth field declared by this.
      *
@@ -120,7 +130,7 @@ public class FieldDecl extends FENode
     {
         return (String)names.get(n);
     }
-    
+
     /**
      * Get an immutable list of the names of all of the fields
      * declared by this.
@@ -132,7 +142,7 @@ public class FieldDecl extends FENode
     {
         return Collections.unmodifiableList(names);
     }
-    
+
     /**
      * Get the initializer of the nth field declared by this.
      *
@@ -145,7 +155,7 @@ public class FieldDecl extends FENode
     {
         return (Expression)inits.get(n);
     }
-    
+
     /**
      * Get an immutable list of the initializers of all of the field
      * declared by this.  Members of the list may be <code>null</code>
@@ -159,7 +169,7 @@ public class FieldDecl extends FENode
     {
         return Collections.unmodifiableList(inits);
     }
-    
+
     /**
      * Get the number of fields declared by this.  This value should
      * always be at least 1.

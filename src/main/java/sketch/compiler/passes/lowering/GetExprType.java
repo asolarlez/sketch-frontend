@@ -36,7 +36,7 @@ public class GetExprType extends FENullVisitor
     private SymbolTable symTab;
     private StreamType streamType;
     private Map structsByName;
-    
+
     public GetExprType(SymbolTable symTab, StreamType streamType,
                        Map structsByName)
     {
@@ -44,11 +44,11 @@ public class GetExprType extends FENullVisitor
         this.streamType = streamType;
         this.structsByName = structsByName;
     }
-      
+
     public Object visitExprArrayRange(ExprArrayRange exp) {
     	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getContext();
     	Type base = (Type)exp.getBase().accept(this);
-    			
+
 		List l=exp.getMembers();
 		Expression expr = null;
 		for(int i=0;i<l.size();i++) {
@@ -56,11 +56,11 @@ public class GetExprType extends FENullVisitor
 			if(obj instanceof Range) {
 				Range range = (Range) obj;
 				Type start = (Type)((Range) obj).start().accept(this);
-				Type end = (Type)((Range) obj).end().accept(this);				
+				Type end = (Type)((Range) obj).end().accept(this);
 				if(expr == null){
 					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start());
 				}else{
-					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr, 
+					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr,
 							new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start())
 					);
 				}
@@ -77,16 +77,16 @@ public class GetExprType extends FENullVisitor
 		}
 		if(!(base instanceof TypeArray)) return null;
         // ASSERT: base is a TypeArray.
-		
-		Type baseType = ((TypeArray)base).getBase();   
-		
-		
-		
+
+		Type baseType = ((TypeArray)base).getBase();
+
+
+
 		if(expr.getIValue() == 1){
 			return baseType;
 		}else{
 			return new TypeArray(baseType, expr);
-		}		
+		}
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp)
@@ -105,13 +105,13 @@ public class GetExprType extends FENullVisitor
 	} else {
 	    // otherwise, take promotion over all elements declared
 	    base = (Type)((Expression)elems.get(0)).accept(this);
-	    
+
 	    for (int i=1; i<elems.size(); i++) {
 		Type t = (Type)((Expression)elems.get(i)).accept(this);
 		base = t.leastCommonPromotion(t);
 	    }
 	}
-	
+
 	return new TypeArray(base, new ExprConstInt(elems.size()));
     }
 
@@ -134,38 +134,38 @@ public class GetExprType extends FENullVisitor
         case ExprBinary.BINOP_RSHIFT:
         case ExprBinary.BINOP_LSHIFT:
         	assert (tl instanceof TypeArray) && tr != null : "You can only do shift on an array for now.";
-        	return tl;        	
-        }        
-        
+        	return tl;
+        }
+
         // The type of the expression is some type that both sides
         // promote to, otherwise.
-        
+
         if( tr == null){
         	exp.getRight().accept(this);
         }
-        
+
         Type rv = tl.leastCommonPromotion(tr);
-        
-        assert rv != null : "Type ERROR: " + "The types are incompatible " + tl + " , " + tr; 
-        
-        return rv; 
+
+        assert rv != null : "Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
+
+        return rv;
     }
 
     public Object visitExprComplex(ExprComplex exp)
     {
         return new TypePrimitive(TypePrimitive.TYPE_COMPLEX);
     }
-    
+
     public Object visitExprConstBoolean(ExprConstBoolean exp)
     {
         return new TypePrimitive(TypePrimitive.TYPE_BOOLEAN);
     }
-    
+
     public Object visitExprStar(ExprStar exp){
     	if(exp.getType() != null  ){
     		return exp.getType();
     	}else{
-    		return TypePrimitive.bittype;    		
+    		return TypePrimitive.bittype;
     	}
     }
 
@@ -174,7 +174,7 @@ public class GetExprType extends FENullVisitor
         // return new TypePrimitive(TypePrimitive.TYPE_CHAR);
         return null;
     }
-    
+
     public Object visitExprConstFloat(ExprConstFloat exp)
     {
         return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
@@ -189,20 +189,20 @@ public class GetExprType extends FENullVisitor
 	    return new TypePrimitive(TypePrimitive.TYPE_INT);
 	}
     }
-    
+
     public Object visitExprConstStr(ExprConstStr exp)
     {
         // return new TypePrimitive(TypePrimitive.TYPE_STRING);
         return null;
     }
-    
+
     public Object visitExprField(ExprField exp)
     {
         Type base = (Type)exp.getLeft().accept(this);
         // If the base is a complex type, a field of it is float.
         if (base.isComplex())
             return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
-        else if (base instanceof TypeStruct)
+        else if (base.isStruct ())
             return ((TypeStruct)base).getType(exp.getName());
         else if (base instanceof TypeStructRef)
         {
@@ -236,7 +236,7 @@ public class GetExprType extends FENullVisitor
 	if (exp.getName().equals("abs")) {
 	    return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
 	}
-        
+
         // Otherwise, we can assume that the only function calls are
         // calls to built-in functions in the absence of helper
         // function support in the parser.  These by and large have a
@@ -252,17 +252,17 @@ public class GetExprType extends FENullVisitor
 	}
         return ((Expression)params.get(0)).accept(this);
     }
-    
+
     public Object visitExprPeek(ExprPeek exp)
     {
         return streamType.getIn();
     }
-    
+
     public Object visitExprPop(ExprPop exp)
     {
         return streamType.getIn();
     }
-    
+
     public Object visitExprTernary(ExprTernary exp)
     {
         // Do type unification on the two sides.
@@ -293,7 +293,7 @@ public class GetExprType extends FENullVisitor
 	    case ExprUnary.UNOP_NEG:
 	    case ExprUnary.UNOP_PREINC:
 	    case ExprUnary.UNOP_POSTINC:
-	    case ExprUnary.UNOP_PREDEC: 
+	    case ExprUnary.UNOP_PREDEC:
 	    case ExprUnary.UNOP_POSTDEC: {
 		return TypePrimitive.inttype;
 	    }
@@ -302,13 +302,13 @@ public class GetExprType extends FENullVisitor
 	return t;
     }
 
-    
-    public Object visitExprNew(ExprNew expNew){     	
+
+    public Object visitExprNew(ExprNew expNew){
     	return expNew.typeToConstruct;
-    
+
     }
-    
-    
+
+
     public Object visitExprVar(ExprVar exp)
     {
         // Look this up in the symbol table.

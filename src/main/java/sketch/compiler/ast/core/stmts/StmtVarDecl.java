@@ -81,7 +81,7 @@ public class StmtVarDecl extends Statement
              Collections.singletonList(name),
              Collections.singletonList(init));
     }
-    
+
     /**
      * Get the type of the nth variable declared by this.
      *
@@ -91,6 +91,17 @@ public class StmtVarDecl extends Statement
     public Type getType(int n)
     {
         return (Type)types.get(n);
+    }
+
+    /**
+     * Set the nth type of this declaration to 't'.
+     *
+     * @param n Index of variable whose type will change
+     * @param t The type to change it to.
+     * @return
+     */
+    public void setType (int n, Type t) {
+    	types.set (n, t);
     }
 
     /**
@@ -104,7 +115,7 @@ public class StmtVarDecl extends Statement
     {
         return types;
     }
-    
+
     /**
      * Get the name of the nth variable declared by this.
      *
@@ -115,7 +126,7 @@ public class StmtVarDecl extends Statement
     {
         return (String)names.get(n);
     }
-    
+
     /**
      * Get an immutable list of the names of all of the variables
      * declared by this.
@@ -127,7 +138,7 @@ public class StmtVarDecl extends Statement
     {
         return Collections.unmodifiableList(names);
     }
-    
+
     /**
      * Get the initializer of the nth variable declared by this.
      *
@@ -140,7 +151,7 @@ public class StmtVarDecl extends Statement
     {
         return (Expression)inits.get(n);
     }
-    
+
     /**
      * Get an immutable list of the initializers of all of the
      * variables declared by this.  Members of the list may be
@@ -154,7 +165,7 @@ public class StmtVarDecl extends Statement
     {
         return Collections.unmodifiableList(inits);
     }
-    
+
     /**
      * Get the number of variables declared by this.  This value should
      * always be at least 1.
@@ -194,7 +205,7 @@ public class StmtVarDecl extends Statement
         }
         return true;
     }
-    
+
     public int hashCode()
     {
         // just use the first type and name.

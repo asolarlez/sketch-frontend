@@ -41,7 +41,8 @@ public class TypeStruct extends Type
     private String name;
     private List fields;
     private Map types;
-    
+    private int instances = 0;
+
     /**
      * Creates a new structured type.  The fields and ftypes lists must
      * be the same length; a field in a given position in the fields
@@ -64,6 +65,8 @@ public class TypeStruct extends Type
             this.types.put(fields.get(i), ftypes.get(i));
     }
 
+    public boolean isStruct () { return true; }
+
     /**
      * Returns the context of the structure in the original source code.
      *
@@ -73,7 +76,7 @@ public class TypeStruct extends Type
     {
         return context;
     }
-    
+
     /**
      * Returns the name of the structure.
      *
@@ -83,7 +86,7 @@ public class TypeStruct extends Type
     {
         return name;
     }
-    
+
     /**
      * Returns the number of fields.
      *
@@ -93,7 +96,7 @@ public class TypeStruct extends Type
     {
         return fields.size();
     }
-    
+
     /**
      * Returns the name of the specified field.
      *
@@ -104,7 +107,7 @@ public class TypeStruct extends Type
     {
         return (String)fields.get(n);
     }
-    
+
     /**
      * Returns the type of the field with the specified name.
      *
@@ -116,6 +119,14 @@ public class TypeStruct extends Type
         return (Type)types.get(f);
     }
 
+    /**
+     * Allocate a new instance of this struct.
+     * @return the "pointer" to the new instance
+     */
+    public int newInstance () {
+    	return instances++;
+    }
+
     // Remember, equality and such only test on the name.
     public boolean equals(Object other)
     {
@@ -124,24 +135,24 @@ public class TypeStruct extends Type
             TypeStruct that = (TypeStruct)other;
             return this.name.equals(that.name);
         }
-        
+
         if (other instanceof TypeStructRef)
         {
             TypeStructRef that = (TypeStructRef)other;
             return name.equals(that.getName());
         }
-        
+
         if (this.isComplex() && other instanceof Type)
             return ((Type)other).isComplex();
-        
+
         return false;
     }
-    
+
     public int hashCode()
     {
         return name.hashCode();
     }
-    
+
     public String toString()
     {
         return name;
