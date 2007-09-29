@@ -1,0 +1,17 @@
+
+
+struct Node{
+	int val;
+	int next;	
+}
+
+int test(int i){
+	Node n = new Node();
+	n.val = i;	
+	return n.val;
+}
+
+int rest(int i) implements test{
+	
+	return 0;
+}
