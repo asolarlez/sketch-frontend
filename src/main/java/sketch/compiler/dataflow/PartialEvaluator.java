@@ -406,29 +406,28 @@ public class PartialEvaluator extends FEReplacer {
     	
     	public Object visitExprArrayRange(ExprArrayRange ear){
     		Expression base = ear.getBase();
-    		Expression nbase = (Expression) base.accept(this);
+    		Expression nbase = (Expression) base.accept(this);    		
     		RangeLen rl = (RangeLen)ear.getMembers().get(0);
-    		abstractValue olidx=null;    		
-    		olidx = lhsIdx;    		
+    		abstractValue olidx=null;
+    		olidx = lhsIdx;
     		lhsIdx = (abstractValue)rl.start().accept(PartialEvaluator.this);
     		Expression idxExpr = exprRV;
     		
-    		assert t instanceof TypeArray;
-    		TypeArray ta = (TypeArray) t;
-    		abstractValue tlen = typeLen(ta);
-    		t = ta.getBase();    		
-    		if(olidx != null){
-    			lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) ); 
-    		}
-    		
-    		
-    		if( lhsIdx.hasIntVal()  ){
-    			int iidx = lhsIdx.getIntVal();    		
-    			if( tlen.hasIntVal() ){
-	    			int size = tlen.getIntVal();
-	    			if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
-	    				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
-    			}
+    		if( t instanceof TypeArray ){
+	    		TypeArray ta = (TypeArray) t;
+	    		abstractValue tlen = typeLen(ta);
+	    		t = ta.getBase();    		
+	    		if(olidx != null){
+	    			lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) ); 
+	    		}
+	    		if( lhsIdx.hasIntVal()  ){
+	    			int iidx = lhsIdx.getIntVal();    		
+	    			if( tlen.hasIntVal() ){
+		    			int size = tlen.getIntVal();
+		    			if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
+		    				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+	    			}
+	    		}
     		}
     		
     		rlen = rl.len();

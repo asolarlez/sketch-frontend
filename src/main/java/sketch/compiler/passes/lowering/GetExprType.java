@@ -213,7 +213,7 @@ public class GetExprType extends FENullVisitor
         }
         else
         {
-            assert false : base;
+            assert false : "You are trying to do a field access on a " + base + " in expr " + exp + " . " + exp.getCx();
             return null;
         }
     }

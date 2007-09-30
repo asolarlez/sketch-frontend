@@ -142,7 +142,12 @@ public class FEReplacer implements FEVisitor
     
     
     public Object visitExprNew(ExprNew expNew){
-    	return expNew;
+    	Type nt = (Type)expNew.getTypeToConstruct().accept(this);
+    	if(nt != expNew.getTypeToConstruct()){
+    		return new ExprNew(expNew.getCx(), nt );
+    	}else{
+    		return expNew;
+    	}    	
     }
     
     public Object visitExprArrayInit(ExprArrayInit exp)
