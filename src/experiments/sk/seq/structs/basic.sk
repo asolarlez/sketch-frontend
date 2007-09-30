@@ -1,0 +1,24 @@
+struct Bar {
+    int x;
+}
+
+struct Foo {
+    int bar;
+    bit[4] baz;
+    Bar boo;
+}
+
+int spec () {
+    Foo f = new Foo ();
+    bit[2] b = 1;
+
+    f.bar = 5;
+    f.baz[2::2] = b;
+    f.boo = new Bar ();
+
+    return f.bar;
+}
+
+int sk () implements spec {
+    return 5;
+}
