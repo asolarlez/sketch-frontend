@@ -133,7 +133,12 @@ public class GetExprType extends FENullVisitor
         switch(exp.getOp()){
         case ExprBinary.BINOP_RSHIFT:
         case ExprBinary.BINOP_LSHIFT:
-        	assert (tl instanceof TypeArray) && tr != null : "You can only do shift on an array for now.";
+        	if( ! (tl instanceof TypeArray) || tr == null ){
+        		if( !(exp.getLeft() instanceof ExprConstInt )){
+        			assert false : "You can only do shift on an array or a constant for now.";
+        		}
+        		
+        	}
         	return tl;
         }
 

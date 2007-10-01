@@ -274,7 +274,6 @@ public class ToSBit
 		System.out.println("=============================================================");
 		prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
-		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );
@@ -560,9 +559,11 @@ public class ToSBit
 	public void run()
 	{
 		parseProgram();
-		/*
+		
+		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
+		prog.accept(new SimpleCodePrinter());
 		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed"); */
+			throw new IllegalStateException("Semantic check failed");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());

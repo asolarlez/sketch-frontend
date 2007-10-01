@@ -42,13 +42,19 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		{
 			this.start=start;
 			this.len=len;
-			this.lenExpr=null;
+			this.lenExpr= null;
 		}
 		public RangeLen(Expression start, Expression len)
 		{
-			this.start=start;
-			this.len=0;
-			this.lenExpr=len;
+			this.start=start;			
+			Integer i = len.getIValue();
+			if(i!= null){
+				this.len = i;
+				this.lenExpr = null;
+			}else{
+				this.len=0;
+				this.lenExpr=len;
+			}
 		}
 		public Expression start() {return start;}
 		public int len()

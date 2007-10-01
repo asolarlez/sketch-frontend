@@ -288,14 +288,16 @@ public class FEReplacer implements FEVisitor
     		newParam.add( newPar );    		
     	}
     	
+    	Type rtype = (Type)func.getReturnType().accept(this);
+    	
     	if( func.getBody() == null  ){
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
     		return func;
     	}
         Statement newBody = (Statement)func.getBody().accept(this);
-        if (newBody == func.getBody() && samePars) return func;
+        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
         return new Function(func.getContext(), func.getCls(),
-                            func.getName(), func.getReturnType(),
+                            func.getName(), rtype,
                             newParam, func.getSpecification(), newBody);
     }
     

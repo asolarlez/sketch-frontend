@@ -689,7 +689,7 @@ public class SemanticChecker
 
 					case ExprBinary.BINOP_LSHIFT:
 					case ExprBinary.BINOP_RSHIFT:
-						if (!isLeftArr)
+						if (!isLeftArr && !(expr.getLeft() instanceof ExprConstInt))
 							report(expr,
 									"Can only shift array types for now. " + ct);
 						break;
