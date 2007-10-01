@@ -57,7 +57,7 @@ import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.EliminateNestedArrAcc;
-import streamit.frontend.passes.EliminateNewsAndStructVars;
+import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -226,7 +226,8 @@ public class ToSBit
 	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		prog = (Program)prog.accept(new EliminateNewsAndStructVars());
+		prog = (Program)prog.accept(new EliminateStructs(varGen));
+		//dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
@@ -239,7 +240,7 @@ public class ToSBit
 		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
-		//prog.accept(new SimpleCodePrinter());
+		//dump (prog, "After lowerIR:");
 	}
 
 
@@ -696,6 +697,16 @@ public class ToSBit
 			throw new RuntimeException(e);
 		}
 		return true;
+	}
+
+	protected void dump (Program prog) {
+		dump (prog, "");
+	}
+	protected void dump (Program prog, String message) {
+		System.out.println("=============================================================");
+		System.out.println ("  ----- "+ message +" -----");
+		prog.accept( new SimpleCodePrinter() );
+		System.out.println("=============================================================");
 	}
 
 	public static void main(String[] args)

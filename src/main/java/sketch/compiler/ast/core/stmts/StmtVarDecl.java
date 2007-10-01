@@ -153,6 +153,16 @@ public class StmtVarDecl extends Statement
     }
 
     /**
+     * Set the initializer of the nth variable.
+     *
+     * @param n     Which initializer to set
+     * @param init  What to set it to
+     */
+    public void setInit (int n, Expression init) {
+    	inits.set (n, init);
+    }
+
+    /**
      * Get an immutable list of the initializers of all of the
      * variables declared by this.  Members of the list may be
      * <code>null</code> if a particular variable is uninitialized.
