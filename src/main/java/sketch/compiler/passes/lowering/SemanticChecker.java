@@ -300,6 +300,17 @@ public class SemanticChecker
 			private StreamSpec spec = null;
 			private Function func = null;
 
+			
+			public Object visitStmtFor(StmtFor stmt)
+			{
+				// check the condition
+				
+				if( stmt.getInit() == null){
+					report(stmt, "For loops without initializer not supported." );
+				}
+				return super.visitStmtFor(stmt);
+			}
+			
 			public Object visitStreamSpec(StreamSpec ss)
 			{
 				//System.out.println("checkStatementPlacement::visitStreamSpec");
@@ -996,6 +1007,11 @@ public class SemanticChecker
 			public Object visitStmtFor(StmtFor stmt)
 			{
 				// check the condition
+				
+				if( stmt.getInit() == null){
+					report(stmt, "For loops without initializer not supported." );
+				}
+				
 				Type cond = getType(stmt.getCond());
 				if (!cond.promotesTo(new TypePrimitive(TypePrimitive.TYPE_BIT)))
 					report (stmt, "Condition clause is not a proper conditional");
