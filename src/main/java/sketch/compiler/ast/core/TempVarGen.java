@@ -120,7 +120,7 @@ public class TempVarGen
             }
         }
     }
-    
+
     /**
      * Get the next variable number, and increment the counter.
      *
@@ -128,9 +128,7 @@ public class TempVarGen
      */
     public int nextVarNum()
     {
-        int num = seq;
-        seq++;
-        return num;
+    	return seq++;
     }
 
     /**
@@ -162,6 +160,16 @@ public class TempVarGen
     public String nextVar()
     {
         return varName(nextVarNum());
+    }
+
+    /**
+     * Return a unique variable name with a given prefix.
+     *
+     * @param startingWith	The variable's prefix
+     * @return				A unique variable name
+     */
+    public String nextVar (String startingWith) {
+    	return "__s"+ startingWith + nextVarNum ();
     }
 }
 
