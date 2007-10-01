@@ -466,9 +466,16 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtFor(StmtFor stmt)
     {
-        Statement newInit = (Statement)stmt.getInit().accept(this);
+    	
+        Statement newInit = null;
+        if(stmt.getInit() != null){
+        	newInit = (Statement)stmt.getInit().accept(this);
+        }
         Expression newCond = doExpression(stmt.getCond());
-        Statement newIncr = (Statement)stmt.getIncr().accept(this);
+        Statement newIncr = null;
+        if(stmt.getIncr() != null){
+        	newIncr = (Statement)stmt.getIncr().accept(this);
+        }
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
             newIncr == stmt.getIncr() && newBody == stmt.getBody())
