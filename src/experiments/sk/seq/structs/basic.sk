@@ -15,6 +15,7 @@ int spec () {
     f.bar = 5;
     f.baz[2::2] = b;
     f.boo = new Bar ();
+    f.boo.x = 2;
 
     return f.bar;
 }

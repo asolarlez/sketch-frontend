@@ -51,17 +51,17 @@ public class NodesToJava implements FEVisitor
 	 * Whether or not to annotate every line with "//<sourcefile>:<sourceline>"
 	 */
 	private boolean printSourceLines;
-	
+
     // A string consisting of an even number of spaces.
     protected String indent;
     private boolean libraryFormat;
     protected TempVarGen varGen;
     protected int binOpLevel=0;
-    
+
     public NodesToJava(boolean libraryFormat, TempVarGen varGen) {
     	this(libraryFormat, varGen, false);
     }
-    
+
     public NodesToJava(boolean libraryFormat, TempVarGen varGen, boolean printSourceLines)
     {
         this.ss = null;
@@ -72,11 +72,11 @@ public class NodesToJava implements FEVisitor
     }
 
     // Add two spaces to the indent.
-    protected void addIndent() 
+    protected void addIndent()
     {
         indent += "  ";
     }
-    
+
     // Remove two spaces from the indent.
     protected void unIndent()
     {
@@ -122,7 +122,7 @@ public class NodesToJava implements FEVisitor
             return ((TypePortal)type).getName() + "Portal";
         }
         else
-        {            
+        {
             return type.toString();
         }
     }
@@ -130,7 +130,7 @@ public class NodesToJava implements FEVisitor
     public String convertType(Type type) {
     	return _convertType(type);
     }
-    
+
     // Do the same conversion, but including array dimensions.
     public String convertTypeFull(Type type)
     {
@@ -194,17 +194,17 @@ public class NodesToJava implements FEVisitor
     {
         return annotatedFunction("output.push", st.getOut());
     }
-    
+
     public static String popFunction(StreamType st)
     {
         return annotatedFunction("input.pop", st.getIn());
     }
-    
+
     public static String peekFunction(StreamType st)
     {
         return annotatedFunction("input.peek", st.getIn());
     }
-    
+
     private static String annotatedFunction(String name, Type type)
     {
         String prefix = "", suffix = "";
@@ -300,7 +300,7 @@ public class NodesToJava implements FEVisitor
         }
     }
 
-    
+
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
 	StringBuffer sb = new StringBuffer();
@@ -317,12 +317,12 @@ public class NodesToJava implements FEVisitor
 		sb.append("\n");
 	    }
 	}
-	
+
 	sb.append("}");
 
         return sb.toString();
     }
-    
+
     public Object visitExprBinary(ExprBinary exp)
     {
         StringBuffer result=new StringBuffer();
@@ -393,7 +393,7 @@ public class NodesToJava implements FEVisitor
     {
         return Integer.toString(exp.getVal());
     }
-    
+
     public Object visitExprConstStr(ExprConstStr exp)
     {
         return exp.getVal();
@@ -451,12 +451,17 @@ public class NodesToJava implements FEVisitor
         return result;
     }
 
+    public Object visitExprNew (ExprNew newe) {
+    	// TODO: this may not be "Java clean"
+    	return newe.toString ();
+    }
+
     public Object visitExprPeek(ExprPeek exp)
     {
         String result = (String)exp.getExpr().accept(this);
         return peekFunction(ss.getStreamType()) + "(" + result + ")";
     }
-    
+
     public Object visitExprPop(ExprPop exp)
     {
         return popFunction(ss.getStreamType()) + "()";
@@ -535,7 +540,7 @@ public class NodesToJava implements FEVisitor
         result += "\n";
         return result;
     }
-    
+
     public Object visitFuncWork(FuncWork func)
     {
         // Nothing special here; we get to ignore the I/O rates.
@@ -571,7 +576,7 @@ public class NodesToJava implements FEVisitor
     {
         return creator.getSpec().accept(this);
     }
-    
+
     public Object visitSCSimple(SCSimple creator)
     {
         String result;
@@ -664,12 +669,12 @@ public class NodesToJava implements FEVisitor
         }
         return result;
     }
-    
+
     public Object visitStmtAdd(StmtAdd stmt)
     {
         return doStreamCreator("add", stmt.getCreator());
     }
-    
+
     public Object visitStmtAssign(StmtAssign stmt)
     {
         String op;
@@ -719,12 +724,12 @@ public class NodesToJava implements FEVisitor
     {
         return doStreamCreator("setBody", stmt.getCreator());
     }
-    
+
     public Object visitStmtBreak(StmtBreak stmt)
     {
         return "break";
     }
-    
+
     public Object visitStmtContinue(StmtContinue stmt)
     {
         return "continue";
@@ -749,7 +754,7 @@ public class NodesToJava implements FEVisitor
         return "/* enqueue(" + (String)stmt.getValue().accept(this) +
             ") */";
     }
-    
+
     public Object visitStmtExpr(StmtExpr stmt)
     {
         String result = (String)stmt.getExpression().accept(this);
@@ -800,7 +805,7 @@ public class NodesToJava implements FEVisitor
         assert stmt.getJoiner() != null;
         return "setJoiner(" + (String)stmt.getJoiner().accept(this) + ")";
     }
-    
+
     public Object visitStmtLoop(StmtLoop stmt)
     {
     	throw new UnsupportedOperationException();
@@ -827,7 +832,7 @@ public class NodesToJava implements FEVisitor
             push = "0";
         else
             push = (String)target.getPushRate().accept(this);
-        
+
         return "phase(new WorkFunction(" + peek + "," + pop + "," + push +
             ") { public void work() { " + call.accept(this) + "; } })";
     }
@@ -876,7 +881,7 @@ public class NodesToJava implements FEVisitor
                 (String)stmt.getMinLatency().accept(this) + ", " +
                 (String)max.accept(this) + ")";
         }
-        
+
         result += ";\n" + indent + receiver + "." + stmt.getName() + "(";
         boolean first = true;
         for (Iterator iter = stmt.getParams().iterator(); iter.hasNext(); )
@@ -940,7 +945,7 @@ public class NodesToJava implements FEVisitor
         }
         if (handlers.isEmpty())
             return null;
-        
+
         // Okay.  Assemble the interface:
         StringBuffer result = new StringBuffer();
         result.append(indent + "interface " + spec.getName() +
@@ -957,7 +962,7 @@ public class NodesToJava implements FEVisitor
         }
         unIndent();
         result.append(indent + "}\n");
-        
+
         // Assemble the portal:
         result.append(indent + "class " + spec.getName() +
                       "Portal extends Portal implements " + spec.getName() +
@@ -994,13 +999,13 @@ public class NodesToJava implements FEVisitor
     private String maybeGenerateConstruct(StreamSpec spec)
     {
         StringBuffer result = new StringBuffer();
-        
+
         // The StreamSpec at this point has no parameters; we need to
         // find the parameters of the init function.
         Function init = spec.getInitFunc();
         // (ASSERT: init != null)
         List params = init.getParams();
-        
+
         // In the library path, generate the __construct() mechanism:
         if (libraryFormat)
         {
@@ -1039,7 +1044,7 @@ public class NodesToJava implements FEVisitor
             result.append(indent + "return __obj;\n");
             unIndent();
             result.append(indent + "}\n");
-            
+
             // Generate a callInit() method.
             result.append(indent + "protected void callInit()\n" +
                           indent + "{\n");
@@ -1072,7 +1077,7 @@ public class NodesToJava implements FEVisitor
             }
             result.append(")\n" + indent + "{\n" + indent + "}\n");
         }
-        
+
         return result.toString();
     }
 
@@ -1176,7 +1181,7 @@ public class NodesToJava implements FEVisitor
             result += "() {\n" + indent;
             addIndent();
         }
-        
+
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
         StreamSpec oldSS = ss;
@@ -1188,7 +1193,7 @@ public class NodesToJava implements FEVisitor
             FieldDecl varDecl = (FieldDecl)iter.next();
             result += (String)varDecl.accept(this);
         }
-        
+
         // Output method definitions:
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
             result += (String)(((Function)iter.next()).accept(this));
@@ -1198,13 +1203,13 @@ public class NodesToJava implements FEVisitor
         result += "}\n";
         return result;
     }
-    
+
     public Object visitStreamType(StreamType type)
     {
         // Nothing to do here.
         return "";
     }
-    
+
     public Object visitOther(FENode node)
     {
         if (node instanceof ExprJavaConstructor)
@@ -1258,23 +1263,23 @@ public class NodesToJava implements FEVisitor
             return "";
         }
     }
-    
+
 	public Object visitExprStar(ExprStar star) {
 		//throw new UnsupportedOperationException();
 		return null;
 	}
-	
+
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		Expression base=exp.getBase();
 		List ranges=exp.getMembers();
 		if(ranges.size()==0) throw new IllegalStateException();
 		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
 		Object o=ranges.get(0);
-		if(o instanceof RangeLen) 
+		if(o instanceof RangeLen)
 		{
 			RangeLen range=(RangeLen) o;
 			if(range.len()==1) {
-				return base.accept(this)+"["+range.start().accept(this)+"]"; 
+				return base.accept(this)+"["+range.start().accept(this)+"]";
 			}else{
 				return base.accept(this)+"["+range.start().accept(this)+"::" + range.len() + "]";
 			}

@@ -73,7 +73,7 @@ public class SymbolTableVisitor extends FEReplacer
      * type, before NoRefTypes has been run, this can perform that
      * resolution.  It is populated by <code>visitProgram()</code>.
      */
-    protected Map structsByName;
+    protected Map<String, TypeStruct> structsByName;
 
     /**
      * Create a new symbol table visitor.
@@ -179,7 +179,7 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
         return result;
     }
-    
+
     public Object visitFuncWork(FuncWork func)
     {
         SymbolTable oldSymTab = symtab;
@@ -199,7 +199,7 @@ public class SymbolTableVisitor extends FEReplacer
         }
         return super.visitProgram(prog);
     }
-    
+
     public Object visitStmtBlock(StmtBlock block)
     {
         SymbolTable oldSymTab = symtab;

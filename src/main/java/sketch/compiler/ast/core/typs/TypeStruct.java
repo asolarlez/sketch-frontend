@@ -41,7 +41,6 @@ public class TypeStruct extends Type
     private String name;
     private List fields;
     private Map types;
-    private int instances = 0;
 
     /**
      * Creates a new structured type.  The fields and ftypes lists must
@@ -117,14 +116,6 @@ public class TypeStruct extends Type
     public Type getType(String f)
     {
         return (Type)types.get(f);
-    }
-
-    /**
-     * Allocate a new instance of this struct.
-     * @return the "pointer" to the new instance
-     */
-    public int newInstance () {
-    	return instances++;
     }
 
     // Remember, equality and such only test on the name.
