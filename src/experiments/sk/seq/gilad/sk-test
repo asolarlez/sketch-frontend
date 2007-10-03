@@ -1,0 +1,60 @@
+#!/bin/bash
+
+while (( $# > 0 )); do
+  case "$1" in
+    -*)
+    OPT="$1" && shift && echo "OPT=$OPT"
+
+    case "$OPT" in
+      -s)
+      (( $# < 2 )) && echo "missing argument(s)" && exit 1
+      N=${#SKDSEQVAR[@]} && echo "N=$N"
+      SKDSEQVAR[$N]="$1" && shift
+      until (( $# == 0 )) || [[ $1 == -* ]]; do
+	[ -n "${SKDSEQVAL[$N]}" ] && SKDSEQVAL[$N]="${SKDSEQVAL[$N]} "
+	SKDSEQVAL[$N]="${SKDSEQVAL[$N]}$1" && shift
+      done
+      echo "SKDSEQVAR[$N]=${SKDSEQVAR[$N]}"
+      echo "SKDSEQVAL[$N]=\"${SKDSEQVAL[$N]}\""
+      ;;
+
+      -b)
+      (( $# < 1 )) && echo "missing argument(s)" && exit 1
+      N=${#SKDFLAG[@]} && echo "N=$N"
+      SKDFLAG[$N]="$1" && shift \
+      && echo "SKDFLAG[$N]=${SKDFLAG[$N]}"
+      ;;
+
+      -r)
+      (( $# < 1 )) && echo "missing argument(s)" && exit 1
+      SKRETRIES=$1 && shift && echo "SKRETRIES=$SKRETRIES"
+      ;;
+
+      -i)
+      (( $# < 1 )) && echo "missing argument(s)" && exit 1
+      SKFILE=$1 && shift && echo "SKFILE=$SKFILE"
+      ;;
+
+      --)
+      echo "end of options" && break
+      ;;
+
+      *)
+      echo "unrecognized option" && exit 1
+      ;;
+
+    esac
+    ;;
+
+    *)
+    echo "non-option, assuming end" && break
+    ;;
+
+  esac
+done
+
+SKCMD=("${@}")
+
+echo "# seq: ${#SKDSEQVAR[@]}  # flag: ${#SKDFLAG[@]}  # cmd: ${#SKCMD[@]}"
+echo "executing: ${SKCMD[@]}"
+

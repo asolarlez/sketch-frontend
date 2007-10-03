@@ -1,0 +1,10 @@
+#!/bin/bash
+
+(( $# < 1 )) && echo "Usage: ${0##*/} SKFILE" && exit 1
+
+SKFILE=$1
+shift
+
+sketch --outputfiles -synth "${SKSYNTH:-ABC}" -verif "${SKVERIF:-ABC}" \
+-overrideCtrls "${SKOVRCTL:-3}" -overrideInputs "${SKOVRINP:-3}" \
+--seed "${SKSEED:-10}" "$SKFILE"

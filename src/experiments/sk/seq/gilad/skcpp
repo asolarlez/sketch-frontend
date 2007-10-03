@@ -1,0 +1,20 @@
+#!/bin/bash
+
+(( $# < 2 )) && echo "Usage: ${0##*/} FILE CPPOPTS [...]" && exit 1
+
+SKFILE="$1"
+shift
+
+for OPTS in "$@"; do
+  OPTSSTR="$OPTS"
+  OPTSSTR="${OPTSSTR//-D/-}"
+  OPTSSTR="${OPTSSTR// }"
+  OPTSSTR="${OPTSSTR//=}"
+  SKOUTFILE="${SKFILE%.sk}$OPTSSTR.sk"
+
+  echo -n "Generating $SKOUTFILE... "
+  cat "$SKFILE" | cpp -undef -nostdinc -CC ${OPTS[*]} - - \
+  | grep -v '^ *#' > "$SKOUTFILE" \
+  && echo okay || { echo failed && exit 1 ; }
+done
+
