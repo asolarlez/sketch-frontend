@@ -1,0 +1,159 @@
+#define $swap(__type, v1, v2)                   \
+    {                                           \
+        __type t = v1;                          \
+        v1 = v2;                                \
+        v2 = t;                                 \
+    }
+
+#define $oneof2(e1, e2)                         \
+    (?? ? (e1) : (e2))
+
+#define $choose2assn(lhs1, lhs2, rhs)           \
+    if (??) {                                   \
+        lhs1 = rhs;                             \
+    } else {                                    \
+        lhs2 = rhs;                             \
+    }
+
+int NULL = -1;
+
+#define MY_PC  pc[me]
+
+#define $0(block)                               \
+    if (MY_PC == 0) {                           \
+        block;                                  \
+    }
+
+#define $(n, block)                             \
+    else if (MY_PC == n) {                      \
+        block;                                  \
+    }
+
+#define goto(stmt)  MY_PC = stmt
+
+int N = 25;
+int NTHREADS = 2;
+int MEMSIZE = 12;
+
+bit alwaysTrue (bit[N] in) {
+    return 1;
+}
+
+
+bit verify (int prevHead,
+            int[NTHREADS] popped,
+            int[NTHREADS] pc,
+            int[MEMSIZE] mem) {
+    return
+        /* prevHead is correct, and its 'next' pointer isn't corrupted */
+        ((prevHead == 3 && mem[prevHead + 2] == 6)
+         || (prevHead == 6 && mem[prevHead + 2] == 9))
+        /* the logical head is at the right place */
+        &&
+        (mem[4] == 1 && mem[7] == 1 && mem[10] == 0)
+        /* plausible values were popped */
+        &&
+        ((popped[0] == 1 && popped[1] == 2)
+         || (popped[1] == 1 && popped[0] == 2))
+        /* both threads halted */
+        &&
+        (pc[0] == END && pc[1] == END)
+        ;
+}
+
+
+int END = 15;
+int RETURN = 14;
+int WHILE = 0;
+int START = 1;
+
+int NSTMTS = 4;
+int BLOCK_LEN = 3;
+
+bit restrictPermutation (int[NSTMTS] P) {
+    for (int i = 0; i < NSTMTS; ++i) {
+        for (int j = i + 1; j < NSTMTS; j++) {
+            assert P[i] != P[j];
+        }
+    }
+    return 1;
+}
+
+bit dequeueTest (bit[N] schedule) implements alwaysTrue {
+    int[MEMSIZE] mem = {
+        -1,  0,  3,
+         1,  0,  6,
+         2,  0,  9,
+        -1,  0, -1              /* BUG: I want 'NULL' here */
+    };
+
+    /* Global data-structure variables */
+    int prevHead = 0;
+
+    /* Thread-local variables */
+    int[NTHREADS] pc = 0;
+    int[NTHREADS] myTmp = 0;
+    int[NTHREADS] myTaken = 0;
+
+    /* Variables to verify */
+    int[NTHREADS] popped = 0;
+
+
+#define $s(n, which, s, base, block)                                    \
+    else if ((n == which) && (MY_PC == (s + base))) {                   \
+        block;                                                          \
+    }
+
+
+#define execStmt(which, base)                                           \
+    $s(3, which, 0, base,                                               \
+         goto ((myTmp[me] == NULL) ? END : (base + BLOCK_LEN));)        \
+                                                                        \
+    $s(2, which, 0, base,                                               \
+       prevHead = $oneof2 ($oneof2 (myTmp[me], mem[myTmp[me] + 2]),     \
+                            $oneof2 (prevHead, mem[prevHead + 2]));     \
+       goto (base + BLOCK_LEN);)                                        \
+                                                                        \
+    $s(1, which, 0, base,                                               \
+       goto ((mem[myTmp[me] + 1] == 1) ? (base + BLOCK_LEN) : pc[me] + 1);) \
+    $s(1, which, 1, base,                                               \
+       myTaken[me] = mem[myTmp[me] + 1];                                \
+       mem[myTmp[me] + 1] = 1;                                          \
+       goto (base + 2))                                                 \
+    $s(1, which, 2, base,                                               \
+       goto ((myTaken[me] == 0) ? RETURN : (base + BLOCK_LEN));)        \
+                                                                        \
+    $s(0, which, 0, base,                                               \
+       goto (WHILE))
+
+
+    /** The ordering on the statement execution */
+    int[NSTMTS] permutation = { * 2};
+
+    restrictPermutation (permutation);
+
+    for (int t = 0; t < N; ++t) {
+        bit me = (schedule[t] && pc[1] < END ) || pc[0] >= END;
+
+        $0(myTmp[me] = $oneof2 (prevHead,
+                                $oneof2 (mem[prevHead + 2],
+                                         mem[mem[prevHead + 2] + 2]));
+           goto (START);)
+
+#define choice(n)  (permutation[n])
+#define start(n)   (START + n*BLOCK_LEN)
+
+        execStmt (choice (0), start (0))
+        execStmt (choice (1), start (1))
+        execStmt (choice (2), start (2))
+        execStmt (choice (3), start (3))
+
+        $(RETURN,
+          popped[me] = mem[myTmp[me]];
+          goto (END);)
+
+        /*$(15, HALT)*/
+    }
+
+    return verify (prevHead, popped, pc, mem);
+}
