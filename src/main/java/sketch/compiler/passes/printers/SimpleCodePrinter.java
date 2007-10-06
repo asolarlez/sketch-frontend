@@ -225,5 +225,12 @@ public class SimpleCodePrinter extends FEReplacer
 		printLine(field.toString());
 		return super.visitFieldDecl(field);
 	}
+	
+	public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+		printLine("anyorder");
+		block.getBlock().accept(this);
+		return block;
+	}
+	
 
 }
