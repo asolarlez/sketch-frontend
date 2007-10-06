@@ -3,6 +3,8 @@ package streamit.frontend.experimental;
 import streamit.frontend.experimental.MethodState.ChangeTracker;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -15,20 +17,15 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 		super(vtype, varGen, isReplacer, maxUnroll, rcontrol);
 	}	
 	
+	public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+		processBlockWithCrazyEffects(block.getBlock());
+		StmtBlock newBlock = (StmtBlock) block.getBlock().accept(this);
+		return isReplacer ? new StmtAnyOrderBlock(block.getCx(), newBlock.getStmts() ) : block;		
+	}
 	
 	
-	public Object visitStmtPloop(StmtPloop loop){
-		/// When preprocessing ploops, we must assume that any variable touched by 
-		/// the ploop will be potentially modified. So any variable that could be touched
-		/// by the ploop body will be wiped out by the procChangeTrackersConservative.
-		state.pushLevel();
-		abstractValue viter = (abstractValue) loop.getIter().accept(this);
-        Expression niter = exprRV;
-        Statement nbody = null;
-        StmtVarDecl ndecl = null; 
-        try{ 
-        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
-	        boolean goOn = true;
+	public void processBlockWithCrazyEffects(Statement stmt){		
+		 boolean goOn = true;
 	        int iters = 0;
 	        while(goOn){
 	        	state.pushChangeTracker(null, false);
@@ -37,7 +34,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        	isReplacer = false;
 	        	try{
 	        		state.pushChangeTracker(null, false);
-	        		loop.getBody().accept(this);	        	
+	        		stmt.accept(this);	        	
 	        	}catch(RuntimeException e){
 	        		state.popChangeTracker();
 	        		throw e;
@@ -55,9 +52,24 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        	state.procChangeTrackers(changed, orig);
 	        	++iters;
 	        	if(iters > 5000){
-	        		throw new RuntimeException("Infinite loop detected: " + loop +":" + loop.getCx());
+	        		throw new RuntimeException("Infinite loop detected: " + stmt +":" + stmt.getCx());
 	        	}
-	        }
+	        }		
+	}
+	
+	
+	public Object visitStmtPloop(StmtPloop loop){
+		/// When preprocessing ploops, we must assume that any variable touched by 
+		/// the ploop will be potentially modified. So any variable that could be touched
+		/// by the ploop body will be wiped out by the procChangeTrackersConservative.
+		state.pushLevel();
+		abstractValue viter = (abstractValue) loop.getIter().accept(this);
+        Expression niter = exprRV;
+        Statement nbody = null;
+        StmtVarDecl ndecl = null; 
+        try{ 
+        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
+        	processBlockWithCrazyEffects(loop.getBody());
 	        nbody = (Statement)loop.getBody().accept(this);
         }finally{
     		state.popLevel();	        	

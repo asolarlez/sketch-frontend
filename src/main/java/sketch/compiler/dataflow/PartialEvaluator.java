@@ -32,6 +32,7 @@ import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAnyOrderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -555,6 +556,11 @@ public class PartialEvaluator extends FEReplacer {
     	}
         return s;
     }
+    
+    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+    	throw new UnsupportedOperationException();
+    }
+    
     
     
     public Object visitFunction(Function func)
