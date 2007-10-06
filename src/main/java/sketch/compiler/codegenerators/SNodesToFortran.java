@@ -728,4 +728,7 @@ public class SNodesToFortran implements FEVisitor {
     	assert false :"No alloc in fortran.";
     	return null;
     }
+    public Object visitStmtPloop(StmtPloop loop){
+		throw new UnsupportedOperationException();
+	}
 }

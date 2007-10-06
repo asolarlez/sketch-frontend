@@ -199,6 +199,7 @@ push_statement returns [Statement s] { s = null; Expression x; }
 
 statement returns [Statement s] { s = null; }
 	:	s=loop_statement
+	|   s=ploop_statement
 	|	s=split_statement SEMI
 	|	s=join_statement SEMI
 	|	s=enqueue_statement SEMI
@@ -220,6 +221,12 @@ statement returns [Statement s] { s = null; }
 loop_statement returns [Statement s] { s = null; Expression exp; Statement b;}
 	: t:TK_loop LPAREN exp=right_expr RPAREN b=pseudo_block
 	{ s = new StmtLoop(getContext(t), exp, b); }
+	;
+	
+
+ploop_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
+	: t:TK_ploop LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block
+	{ s = new StmtPloop(getContext(t), (StmtVarDecl) ivar, exp, b); }
 	;
 
 split_statement returns [Statement s] { s = null; SplitterJoiner sj; }

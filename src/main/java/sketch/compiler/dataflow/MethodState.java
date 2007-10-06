@@ -203,6 +203,20 @@ public class MethodState {
 	}
 	
 	
+
+	
+	public void procChangeTrackersConservative (ChangeTracker ch1){
+		Iterator<Entry<String, varState>> it2 = ch1.deltas.entrySet().iterator();
+		while(it2.hasNext()){
+			Entry<String, varState> me =  it2.next();
+			varState av2 = me.getValue();
+			varState oldstate = this.UTvarState(me.getKey());
+			this.UTsetVarValue(me.getKey(),   vtype.BOTTOM() );				
+		}
+	}
+	
+	
+	
 	public void procChangeTrackers (ChangeTracker ch1){
 		Iterator<Entry<String, varState>> it2 = ch1.deltas.entrySet().iterator();
 		while(it2.hasNext()){

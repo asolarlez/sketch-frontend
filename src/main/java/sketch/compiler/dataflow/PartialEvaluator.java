@@ -42,6 +42,7 @@ import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StmtWhile;
@@ -614,6 +615,12 @@ public class PartialEvaluator extends FEReplacer {
 	    return isReplacer? ( nexp == null ? null : new StmtExpr(stmt.getCx(), nexp) )  :stmt;
     }
 
+    
+    public Object visitStmtPloop(StmtPloop loop){
+    	report( false , "Ploop not yet supported by the partial evaluator.");
+    	return null;
+    }
+    
     public Object visitStmtFor(StmtFor stmt)
     {
     	state.pushLevel();	    	

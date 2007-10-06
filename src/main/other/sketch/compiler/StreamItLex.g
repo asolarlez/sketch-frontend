@@ -37,6 +37,7 @@ options {
 
 tokens {
 	"loop"; //"enqueue";
+	"ploop";
 	"new";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";

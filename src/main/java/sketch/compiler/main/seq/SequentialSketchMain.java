@@ -226,11 +226,13 @@ public class ToSBit
 	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		prog = (Program)prog.accept(new EliminateStructs(varGen));
+		dump (prog, "MBB:");
+		//prog = (Program)prog.accept(new EliminateStructs(varGen));
 		//dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
+		dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 
@@ -271,15 +273,17 @@ public class ToSBit
 
 	protected Program preprocessProgram(Program prog) {
 		//invoke post-parse passes
-		//prog.accept( new SimpleCodePrinter() );
-		System.out.println("=============================================================");
+		
+		dump (prog, "before:");
 		prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
+		dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
+		dump (prog, "tifs:");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );
 		//System.out.println("=============================================================");
-		//prog.accept( new SimpleCodePrinter() );
+		dump (prog, "aftpp");
 		//System.out.println("=============================================================");
 		return prog;
 	}

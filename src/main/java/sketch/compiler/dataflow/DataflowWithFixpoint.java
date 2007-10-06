@@ -4,6 +4,8 @@ import streamit.frontend.experimental.MethodState.ChangeTracker;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
@@ -12,6 +14,56 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	public DataflowWithFixpoint(abstractValueType vtype, TempVarGen varGen,  boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
 		super(vtype, varGen, isReplacer, maxUnroll, rcontrol);
 	}	
+	
+	
+	
+	public Object visitStmtPloop(StmtPloop loop){
+		/// When preprocessing ploops, we must assume that any variable touched by 
+		/// the ploop will be potentially modified. So any variable that could be touched
+		/// by the ploop body will be wiped out by the procChangeTrackersConservative.
+		state.pushLevel();
+		abstractValue viter = (abstractValue) loop.getIter().accept(this);
+        Expression niter = exprRV;
+        Statement nbody = null;
+        StmtVarDecl ndecl = null; 
+        try{ 
+        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
+	        boolean goOn = true;
+	        int iters = 0;
+	        while(goOn){
+	        	state.pushChangeTracker(null, false);
+	        	ChangeTracker ct = null;        	
+	        	boolean lisReplacer = isReplacer;
+	        	isReplacer = false;
+	        	try{
+	        		state.pushChangeTracker(null, false);
+	        		loop.getBody().accept(this);	        	
+	        	}catch(RuntimeException e){
+	        		state.popChangeTracker();
+	        		throw e;
+	        		//Should also pop the other change tracker.
+	        	}finally{
+	        		ct = state.popChangeTracker();	
+	        		isReplacer = lisReplacer;
+	        	}
+	        	state.procChangeTrackersConservative(ct);	 
+	
+	        	ChangeTracker changed = state.popChangeTracker();
+	        	state.pushChangeTracker(null, false);
+	        	ChangeTracker orig = state.popChangeTracker();
+	        	goOn = !state.compareChangeTrackers(changed, orig);
+	        	state.procChangeTrackers(changed, orig);
+	        	++iters;
+	        	if(iters > 5000){
+	        		throw new RuntimeException("Infinite loop detected: " + loop +":" + loop.getCx());
+	        	}
+	        }
+	        nbody = (Statement)loop.getBody().accept(this);
+        }finally{
+    		state.popLevel();	        	
+    	}
+        return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
+	}
 	
 	public Object visitStmtFor(StmtFor stmt)
     {
@@ -40,7 +92,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        	}	        	
 	        	try{
 	        		state.pushChangeTracker(vcond, false);
-	        		stmt.getBody().accept(this);	        	
+	        		Object ka =stmt.getBody().accept(this);	        	
 		        	if (stmt.getIncr() != null){
 			        	stmt.getIncr().accept(this);
 		        	}
