@@ -733,4 +733,5 @@ public class SNodesToFortran implements FEVisitor {
 	}
     
     public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){throw new UnsupportedOperationException();}
+    public Object visitTypeStruct(TypeStruct ts){throw new UnsupportedOperationException();}
 }
