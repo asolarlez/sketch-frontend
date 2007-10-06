@@ -25,6 +25,7 @@ import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 
 /**
@@ -88,6 +89,18 @@ public class SeparateInitializers extends FEReplacer
         return null;
     }
 
+
+    public Object visitStmtPloop(StmtPloop loop){
+//    	 Only recurse into the body.
+    	StmtVarDecl decl = loop.getLoopVarDecl();
+    	Expression niter = loop.getIter();
+    	Statement body = (Statement) loop.getBody().accept(this);    	
+    	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
+    		return loop;
+    	}    	
+    	return new StmtPloop(loop.getCx(), decl, niter, body);
+    }
+    
     public Object visitStmtFor(StmtFor stmt)
     {
         // Only recurse into the body.

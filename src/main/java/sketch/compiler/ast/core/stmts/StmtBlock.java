@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class StmtBlock extends Statement
 {
-    private List<Statement> stmts;
+    protected List<Statement> stmts;
     // Should this also have a symbol table?  --dzm
     
     /** Create a new StmtBlock with the specified ordered list of

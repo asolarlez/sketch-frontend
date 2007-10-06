@@ -707,4 +707,15 @@ public class FEReplacer implements FEVisitor
     		return new Parameter(t, par.getName(), par.isParameterOutput() );
     	}
     }
+    
+    public Object visitStmtPloop(StmtPloop loop){
+    	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
+    	Expression niter = (Expression) loop.getIter().accept(this);
+    	Statement body = (Statement) loop.getBody().accept(this);    	
+    	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
+    		return loop;
+    	}    	
+    	return new StmtPloop(loop.getCx(), decl, niter, body);
+    }
+    
 }

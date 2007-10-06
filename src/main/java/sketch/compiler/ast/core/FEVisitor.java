@@ -90,4 +90,6 @@ public interface FEVisitor
     public Object visitTypeArray(TypeArray t);
     public Object visitParameter(Parameter par);
     public Object visitExprNew(ExprNew expNew);
+    public Object visitStmtPloop(StmtPloop loop);
+   // public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block);
 }

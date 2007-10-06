@@ -87,4 +87,5 @@ public class FENullVisitor implements FEVisitor
     public Object visitTypeArray(TypeArray t) { return null; }
     public Object visitParameter(Parameter par){ return null; }
     public Object visitExprNew(ExprNew expNew){ return null; }
+    public Object visitStmtPloop(StmtPloop loop){ return null; }
 }

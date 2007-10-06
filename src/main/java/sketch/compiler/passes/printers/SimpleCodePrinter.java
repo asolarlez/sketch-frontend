@@ -95,6 +95,13 @@ public class SimpleCodePrinter extends FEReplacer
     	printIndentedStatement(stmt.getBody());
 		return stmt;
 	}
+	@Override
+	public Object visitStmtPloop(StmtPloop stmt)
+	{
+    	printLine("ploop(" +  stmt.getLoopVarDecl() + "; "  + stmt.getIter() + ")");
+    	printIndentedStatement(stmt.getBody());
+		return stmt;
+	}
 
 	@Override
 	public Object visitStmtBlock(StmtBlock stmt)
