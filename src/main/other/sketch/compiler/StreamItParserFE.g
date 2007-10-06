@@ -204,6 +204,7 @@ statement returns [Statement s] { s = null; }
 	|	s=join_statement SEMI
 	|	s=enqueue_statement SEMI
 	|	s=push_statement SEMI
+	|	s=anyorder_block
 	|	s=block
 	|	(data_type ID) => s=variable_decl SEMI!
 	|	(expr_statement) => s=expr_statement SEMI!
@@ -346,6 +347,13 @@ param_decl returns [Parameter p] { Type t; p = null; }
 block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
 	:	t:LCURLY ( s=statement { l.add(s); } )* RCURLY
 		{ sb = new StmtBlock(getContext(t), l); }
+	;
+	
+	
+
+anyorder_block returns [StmtAnyOrderBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
+	:	TK_anyorder t:LCURLY ( s=statement { l.add(s); } )* RCURLY
+		{ sb = new StmtAnyOrderBlock(getContext(t), l); }
 	;
 
 pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }

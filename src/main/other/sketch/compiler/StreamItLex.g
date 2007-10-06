@@ -39,6 +39,7 @@ tokens {
 	"loop"; //"enqueue";
 	"ploop";
 	"new";
+	"anyorder";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
 	// Complicated types:
