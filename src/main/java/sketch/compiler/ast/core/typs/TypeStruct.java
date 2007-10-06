@@ -39,8 +39,8 @@ public class TypeStruct extends Type
 {
     private FEContext context;
     private String name;
-    private List fields;
-    private Map types;
+    private List<String> fields;
+    private Map<String, Type> types;
 
     /**
      * Creates a new structured type.  The fields and ftypes lists must
@@ -54,12 +54,12 @@ public class TypeStruct extends Type
      * @param ftypes   list of <code>Type</code> containing the types of
      *                 the fields
      */
-    public TypeStruct(FEContext context, String name, List fields, List ftypes)
+    public TypeStruct(FEContext context, String name, List<String> fields, List<Type> ftypes)
     {
         this.context = context;
         this.name = name;
         this.fields = fields;
-        this.types = new HashMap();
+        this.types = new HashMap<String, Type> ();
         for (int i = 0; i < fields.size(); i++)
             this.types.put(fields.get(i), ftypes.get(i));
     }
@@ -104,7 +104,7 @@ public class TypeStruct extends Type
      */
     public String getField(int n)
     {
-        return (String)fields.get(n);
+        return fields.get(n);
     }
 
     /**
@@ -115,7 +115,23 @@ public class TypeStruct extends Type
      */
     public Type getType(String f)
     {
-        return (Type)types.get(f);
+        return types.get(f);
+    }
+
+    /**
+     * Set the type of field 'f' to 't'.
+     *
+     * @param f
+     * @param t
+     */
+    public void setType (String f, Type t) {
+    	types.put (f, t);
+    }
+
+    /** Accept a front-end visitor. */
+    public Object accept(FEVisitor v)
+    {
+        return v.visitTypeStruct (this);
     }
 
     // Remember, equality and such only test on the name.

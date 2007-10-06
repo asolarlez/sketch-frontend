@@ -156,9 +156,9 @@ public class ToSBit
 		ftypes.add(floattype);
 		fields.add("imag");
 		ftypes.add(floattype);
-		TypeStruct complexStruct =
-			new TypeStruct(null, "Complex", fields, ftypes);
-		structs.add(complexStruct);
+		//TypeStruct complexStruct =
+		//	new TypeStruct(null, "Complex", fields, ftypes);
+		//structs.add(complexStruct);
 
 		return new Program(null, streams, structs);
 	}

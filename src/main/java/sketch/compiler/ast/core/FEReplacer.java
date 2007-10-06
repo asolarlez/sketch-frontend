@@ -51,17 +51,17 @@ import streamit.frontend.nodes.ExprArrayRange.*;
  * default, this accepts <code>this</code> on the provided expression,
  * but derived classes can override <code>doExpression</code> to
  * perform some custom action.
- * 
+ *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class FEReplacer implements FEVisitor
 {
-	
+
 	final public Object visitExprArray(ExprArrayInit exp){
 		return null;
 	}
-	
+
     /**
      * Mutable list of statements to be added to the current block.
      * This is only usefully defined within a call to
@@ -83,9 +83,9 @@ public class FEReplacer implements FEVisitor
      * example, it is legitimate to use <code>addStatement</code> to
      * add a declaration for a variable that is used inside a rewritten
      * statement, and return the statement from the visitor function.
-     * 
+     *
      * @param stmt The statement to add
-     */ 
+     */
     protected void addStatement(Statement stmt)
     {
         newStatements.add(stmt);
@@ -100,9 +100,9 @@ public class FEReplacer implements FEVisitor
      * is legitimate to use <code>addStatement</code> to add a
      * declaration for a variable that is used inside a rewritten
      * statement, and return the statement from the visitor function.
-     * 
+     *
      * @param stmt The statement to add
-     */ 
+     */
     protected void addStatements(Collection<Statement> stmts)
     {
         newStatements.addAll(stmts);
@@ -131,7 +131,7 @@ public class FEReplacer implements FEVisitor
      * expression, it can override this method.  This function is
      * always called in a statement context; <code>addStatement</code>
      * will add a statement before the current statement.
-     * 
+     *
      * @param expr  Expression to visit
      * @return      Expression to replace <code>expr</code>
      */
@@ -139,17 +139,17 @@ public class FEReplacer implements FEVisitor
     {
         return (Expression)expr.accept(this);
     }
-    
-    
+
+
     public Object visitExprNew(ExprNew expNew){
     	Type nt = (Type)expNew.getTypeToConstruct().accept(this);
     	if(nt != expNew.getTypeToConstruct()){
     		return new ExprNew(expNew.getCx(), nt );
     	}else{
     		return expNew;
-    	}    	
+    	}
     }
-    
+
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
         boolean hasChanged = false;
@@ -174,7 +174,7 @@ public class FEReplacer implements FEVisitor
         else
             return new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
     }
-    
+
     public Object visitExprComplex(ExprComplex exp)
     {
         Expression real = exp.getReal();
@@ -186,7 +186,7 @@ public class FEReplacer implements FEVisitor
         else
             return new ExprComplex(exp.getContext(), real, imag);
     }
-    
+
     public Object visitExprConstBoolean(ExprConstBoolean exp) { return exp; }
     public Object visitExprConstChar(ExprConstChar exp) { return exp; }
     public Object visitExprConstFloat(ExprConstFloat exp) { return exp; }
@@ -228,7 +228,7 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprPop(ExprPop exp) { return exp; }
-    
+
     public Object visitExprTernary(ExprTernary exp)
     {
         Expression a = doExpression(exp.getA());
@@ -239,7 +239,7 @@ public class FEReplacer implements FEVisitor
         else
             return new ExprTernary(exp.getContext(), exp.getOp(), a, b, c);
     }
-    
+
     public Object visitExprTypeCast(ExprTypeCast exp)
     {
         Expression expr = doExpression(exp.getExpr());
@@ -257,7 +257,7 @@ public class FEReplacer implements FEVisitor
         else
             return new ExprUnary(exp.getContext(), exp.getOp(), expr);
     }
-    
+
     public Object visitExprVar(ExprVar exp) { return exp; }
 
     public Object visitFieldDecl(FieldDecl field)
@@ -276,8 +276,8 @@ public class FEReplacer implements FEVisitor
 
     public Object visitFunction(Function func)
     {
-    	
-    	
+
+
     	List<Parameter> newParam = new ArrayList<Parameter>();
     	Iterator<Parameter> it = func.getParams().iterator();
     	boolean samePars = true;
@@ -285,11 +285,11 @@ public class FEReplacer implements FEVisitor
     		Parameter par = it.next();
     		Parameter newPar = (Parameter) par.accept(this) ;
     		if(par != newPar) samePars = false;
-    		newParam.add( newPar );    		
+    		newParam.add( newPar );
     	}
-    	
+
     	Type rtype = (Type)func.getReturnType().accept(this);
-    	
+
     	if( func.getBody() == null  ){
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
     		return func;
@@ -300,7 +300,7 @@ public class FEReplacer implements FEVisitor
                             func.getName(), rtype,
                             newParam, func.getSpecification(), newBody);
     }
-    
+
     public Object visitFuncWork(FuncWork func)
     {
         Statement newBody = (Statement)func.getBody().accept(this);
@@ -316,19 +316,37 @@ public class FEReplacer implements FEVisitor
         return new FuncWork(func.getContext(), func.getCls(), func.getName(),
                             newBody, newPeek, newPop, newPush);
     }
-    
-  
-    
+
+
+
     public Object visitProgram(Program prog)
     {
-        // Don't need to visit types, only streams.  Assume *something*
-        // will change.
-        List newStreams = new ArrayList();
+    	List newStreams = new ArrayList();
         for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
             newStreams.add(((FENode)(iter.next())).accept(this));
-        return new Program(prog.getContext(), newStreams, prog.getStructs());
+
+        // XXX/cgjones: we assume that the struct type itself won't change,
+        // only the types of fields within.  This code is a bit of a hack.
+        for (Iterator iter = prog.getStructs ().iterator (); iter.hasNext ();) {
+        	TypeStruct ts = (TypeStruct) iter.next ();
+
+        	for (int i = 0; i < ts.getNumFields (); ++i) {
+        		String f = ts.getField (i);
+        		Type oldType = ts.getType (f);
+        		Type newType = (Type) oldType.accept (this);
+
+        		if (newType != oldType) {
+
+        			System.out.println ("CHANGING TYPE OF "+ f +" from "+ oldType +" to "+ newType);
+
+        			ts.setType (f, newType);
+        		}
+        	}
+        }
+
+        return new Program(prog.getContext(), newStreams, prog.getStructs ());
     }
-    
+
     public Object visitSCAnon(SCAnon creator)
     {
         StreamSpec newSpec = (StreamSpec)creator.getSpec().accept(this);
@@ -336,7 +354,7 @@ public class FEReplacer implements FEVisitor
         return new SCAnon(creator.getContext(), newSpec,
                           creator.getPortals());
     }
-    
+
     public Object visitSCSimple(SCSimple creator)
     {
         List<Expression> newParams = new ArrayList<Expression>();
@@ -361,7 +379,7 @@ public class FEReplacer implements FEVisitor
         return new SCSimple(creator.getContext(), creator.getName(),
                             creator.getTypes(), newParams, newPortals);
     }
-    
+
     public Object visitSJDuplicate(SJDuplicate sj) { return sj; }
 
     public Object visitSJRoundRobin(SJRoundRobin sj)
@@ -370,7 +388,7 @@ public class FEReplacer implements FEVisitor
         if (newWeight == sj.getWeight()) return sj;
         return new SJRoundRobin(sj.getContext(), newWeight);
     }
-    
+
     public Object visitSJWeightedRR(SJWeightedRR sj)
     {
         boolean changed = false;
@@ -385,7 +403,7 @@ public class FEReplacer implements FEVisitor
         if (!changed) return sj;
         return new SJWeightedRR(sj.getContext(), newWeights);
     }
-        
+
     public Object visitStmtAdd(StmtAdd stmt)
     {
         StreamCreator newCreator =
@@ -393,7 +411,7 @@ public class FEReplacer implements FEVisitor
         if (newCreator == stmt.getCreator()) return stmt;
         return new StmtAdd(stmt.getContext(), newCreator);
     }
-    
+
     public Object visitStmtAssign(StmtAssign stmt)
     {
         Expression newLHS = doExpression(stmt.getLHS());
@@ -403,7 +421,7 @@ public class FEReplacer implements FEVisitor
         return new StmtAssign(stmt.getContext(), newLHS, newRHS,
                               stmt.getOp());
     }
-    
+
     public Object visitStmtBlock(StmtBlock stmt)
     {
         List<Statement> oldStatements = newStatements;
@@ -426,7 +444,7 @@ public class FEReplacer implements FEVisitor
         newStatements = oldStatements;
         return result;
     }
-    
+
     public Object visitStmtBody(StmtBody stmt)
     {
         StreamCreator newCreator =
@@ -446,7 +464,7 @@ public class FEReplacer implements FEVisitor
             return stmt;
         return new StmtDoWhile(stmt.getContext(), newBody, newCond);
     }
-    
+
     public Object visitStmtEmpty(StmtEmpty stmt) { return null; }
 
     public Object visitStmtEnqueue(StmtEnqueue stmt)
@@ -455,7 +473,7 @@ public class FEReplacer implements FEVisitor
         if (newValue == stmt.getValue()) return stmt;
         return new StmtEnqueue(stmt.getContext(), newValue);
     }
-    
+
     public Object visitStmtExpr(StmtExpr stmt)
     {
         Expression newExpr = doExpression(stmt.getExpression());
@@ -466,7 +484,7 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtFor(StmtFor stmt)
     {
-    	
+
         Statement newInit = null;
         if(stmt.getInit() != null){
         	newInit = (Statement)stmt.getInit().accept(this);
@@ -483,7 +501,7 @@ public class FEReplacer implements FEVisitor
         return new StmtFor(stmt.getContext(), newInit, newCond, newIncr,
                            newBody);
     }
-    
+
     public Object visitStmtIfThen(StmtIfThen stmt)
     {
         Expression newCond = doExpression(stmt.getCond());
@@ -496,7 +514,7 @@ public class FEReplacer implements FEVisitor
             return stmt;
         return new StmtIfThen(stmt.getContext(), newCond, newCons, newAlt);
     }
-    
+
     public Object visitStmtJoin(StmtJoin stmt)
     {
         SplitterJoiner newJoiner =
@@ -504,7 +522,7 @@ public class FEReplacer implements FEVisitor
         if (newJoiner == stmt.getJoiner()) return stmt;
         return new StmtJoin(stmt.getContext(), newJoiner);
     }
-        
+
     public Object visitStmtLoop(StmtLoop stmt)
     {
         Expression newIter = doExpression(stmt.getIter());
@@ -531,7 +549,7 @@ public class FEReplacer implements FEVisitor
         if (newValue == stmt.getValue()) return stmt;
         return new StmtPush(stmt.getContext(), newValue);
     }
-    
+
     public Object visitStmtReturn(StmtReturn stmt)
     {
         Expression newValue = stmt.getValue() == null ? null :
@@ -539,7 +557,7 @@ public class FEReplacer implements FEVisitor
         if (newValue == stmt.getValue()) return stmt;
         return new StmtReturn(stmt.getContext(), newValue);
     }
-    
+
     public Object visitStmtAssert(StmtAssert stmt)
     {
         Expression newValue = stmt.getCond() == null ? null :
@@ -547,7 +565,7 @@ public class FEReplacer implements FEVisitor
         if (newValue == stmt.getCond()) return stmt;
         return new StmtAssert(stmt.getContext(), newValue);
     }
-    
+
     public Object visitStmtSendMessage(StmtSendMessage stmt)
     {
         boolean hasChanged = false;
@@ -596,7 +614,7 @@ public class FEReplacer implements FEVisitor
         return new StmtVarDecl(stmt.getContext(), newTypes,
                                stmt.getNames(), newInits);
     }
-    
+
     public Object visitStmtWhile(StmtWhile stmt)
     {
         Expression newCond = doExpression(stmt.getCond());
@@ -605,26 +623,26 @@ public class FEReplacer implements FEVisitor
             return stmt;
         return new StmtWhile(stmt.getContext(), newCond, newBody);
     }
-    
+
     StreamSpec sspec;
 
     public Function getFuncNamed(String name){
     	return sspec.getFuncNamed(name);
     }
-    
+
     public Object visitStreamSpec(StreamSpec spec)
     {
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
         StreamType newST = null;
         StreamSpec oldSS = sspec;
-        sspec = spec;        
+        sspec = spec;
         if (spec.getStreamType() != null)
             newST = (StreamType)spec.getStreamType().accept(this);
         List newVars = new ArrayList();
         List newFuncs = new ArrayList();
         boolean changed = false;
-        
+
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
         {
             FieldDecl oldVar = (FieldDecl)iter.next();
@@ -644,9 +662,9 @@ public class FEReplacer implements FEVisitor
         return new StreamSpec(spec.getContext(), spec.getType(),
                               newST, spec.getName(), spec.getParams(),
                               newVars, newFuncs);
-        
+
     }
-    
+
     public Object visitStreamType(StreamType type) { return type; }
     public Object visitOther(FENode node) { return node; }
 
@@ -685,20 +703,34 @@ public class FEReplacer implements FEVisitor
 		if(!change) return exp;
 		return new ExprArrayRange(newBase,newList);
 	}
-	
+
 	public Object visitType(Type t) {
-		return t; 
+		return t;
 	}
     public Object visitTypePrimitive(TypePrimitive t) {
-    	return t; 
+    	return t;
     }
     public Object visitTypeArray(TypeArray t) {
     	Type nbase = (Type)t.getBase().accept(this);
     	Expression nlen = (Expression)t.getLength().accept(this);
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-    	return new TypeArray(nbase, nlen); 
+    	return new TypeArray(nbase, nlen);
     }
-	
+
+    public Object visitTypeStruct (TypeStruct ts) {
+    	for (int i = 0; i < ts.getNumFields (); ++i) {
+    		String f = ts.getField (i);
+    		Type oldType = ts.getType (f);
+    		Type newType = (Type) oldType.accept (this);
+
+    		if (newType != oldType) {
+    			ts.setType (f, newType);
+    		}
+    	}
+
+    	return ts;
+    }
+
     public Object visitParameter(Parameter par){
     	Type t = (Type) par.getType().accept(this);
     	if( t == par.getType()){

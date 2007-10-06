@@ -19,7 +19,6 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
@@ -107,7 +106,8 @@ public class EliminateStructs extends SymbolTableVisitor {
         StmtBlock newBody = new StmtBlock (oldBody.getCx (), newBodyStmts);
 
         return new Function (func2.getCx (), func2.getCls (), func2.getName (),
-        		func2.getReturnType (), func2.getParams (), newBody);
+        			func2.getReturnType (), func2.getParams (),
+        			func2.getSpecification (), newBody);
 	}
 
 	/**
@@ -144,42 +144,9 @@ public class EliminateStructs extends SymbolTableVisitor {
     	return struct.makeAllocation (expNew.getCx ());
     }
 
-    /**
-     * Rewrite struct types into int types.
-     */
-    public Object visitFieldDecl (FieldDecl decl) {
-    	for (int i = 0; i < decl.getNumFields (); i++) {
-    		Type t = decl.getType (i);
-
-    		if (t.isStruct ()) {
-    			decl.setType (i, TypePrimitive.inttype);
-    		}
-    	}
-
-    	return decl;
-    }
-
-    /**
-     * Rewrite struct types into integer types.
-     */
-    public Object visitStmtVarDecl (StmtVarDecl decl) {
-    	// Update the symbol table
-    	super.visitStmtVarDecl (decl);
-
-    	for (int i = 0; i < decl.getNumVars (); i++) {
-    		Type t = decl.getType (i);
-
-    		if (t.isStruct ()) {
-    			decl.setType (i, TypePrimitive.inttype);
-    		}
-
-    		FENode init = decl.getInit (i);
-    		if (null != init) {
-    			decl.setInit (i, (Expression) init.accept (this));
-    		}
-    	}
-
-    	return decl;
+    /** Rewrite variables of type 'struct' into ones of type 'int'. */
+    public Object visitTypeStruct (TypeStruct ts) {
+    	return TypePrimitive.inttype;
     }
 
     /**
@@ -210,7 +177,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	struct = struct_;
 	    	cx = cx_;
 	    	nextInstancePointer =
-	    		new ExprVar (cx, varGen.nextVar (struct.getName () +"_"+ "nextInstace"));
+	    		new ExprVar (cx, varGen.nextVar (struct.getName () +"_"+ "nextInstance"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
 	    	for (int i = 0; i < struct.getNumFields (); ++i) {
@@ -324,7 +291,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return
 	     */
 	    private Type typeofFieldArr (String field) {
-	    	return new TypeArray (struct.getType (field), getNumInstsExpr (cx));
+	    	Type fieldType = struct.getType (field);
+	    	return new TypeArray (
+	    		fieldType.isStruct () ? TypePrimitive.inttype : fieldType,
+	    		getNumInstsExpr (cx));
 	    }
 	}
 
