@@ -30,6 +30,9 @@ public abstract class Type
     /** @return true iff this type is a struct type. */
     public boolean isStruct () { return false; }
 
+    /** @return true iff this type is an array type. */
+    public boolean isArray () { return false; }
+
     /**
      * Check if this type can be promoted to some other type.
      * Returns true if a value of this type can be assigned to

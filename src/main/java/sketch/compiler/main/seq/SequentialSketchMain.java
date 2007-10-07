@@ -57,7 +57,9 @@ import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateAnyorder;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
+import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.EliminateNestedArrAcc;
+import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -226,13 +228,15 @@ public class ToSBit
 	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		dump (prog, "MBB:");
-		//prog = (Program)prog.accept(new EliminateStructs(varGen));
+		//dump (prog, "MBB:");
+		prog = (Program)prog.accept(new EliminateStructs(varGen));
 		//dump (prog, "After eliminating structs:");
+		prog = (Program)prog.accept(new EliminateMultiDimArrays());
+		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
-		dump (prog, "SeparateInitializers:");
+		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 
@@ -273,19 +277,19 @@ public class ToSBit
 
 	protected Program preprocessProgram(Program prog) {
 		//invoke post-parse passes
-		
-		dump (prog, "before:");
+
+		//dump (prog, "before:");
 		prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
-		dump (prog, "fpe:");
+		//dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
-		dump (prog, "tifs:");
+		//dump (prog, "tifs:");
+		prog = (Program) prog.accept (new EliminateMultiDimArrays ());
+		//dump (prog, "After first elimination of multi-dim arrays:");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );
-		//System.out.println("=============================================================");
-		dump (prog, "aftpp");
-		//System.out.println("=============================================================");
+		//dump (prog, "aftpp");
 		return prog;
 	}
 
@@ -565,9 +569,9 @@ public class ToSBit
 	public void run()
 	{
 		parseProgram();
-		
+
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
-		prog.accept(new SimpleCodePrinter());
+		//dump (prog, "After replacing constants:");
 		if (!SemanticChecker.check(prog))
 			throw new IllegalStateException("Semantic check failed");
 

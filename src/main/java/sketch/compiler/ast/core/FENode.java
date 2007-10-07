@@ -34,21 +34,21 @@ public abstract class FENode
      *
      * @param context  file and line number for the node
      */
-    
+
     public FENode(FENode node){
     	context = node.context;
     	isNonDet = node.isNonDet;
     	tag = node.tag;
     }
-    
+
     public FENode(FEContext context)
     {
         this.context = context;
     }
-    
+
     public Object getTag(){ return tag; }
     public void setTag(Object tag){ this.tag = tag; }
-    
+
     /**
      * Returns the context associated with this node.
      *
@@ -58,11 +58,11 @@ public abstract class FENode
     {
         return context;
     }
-    
+
     public FEContext getCx(){
     	return context;
     }
-    
+
 
     /**
      * Calls an appropriate method in a visitor object with this as
@@ -73,4 +73,13 @@ public abstract class FENode
      *           this type in the visitor object
      */
     abstract public Object accept(FEVisitor v);
+
+    /**
+     * Report an error related to this AST node.
+     *
+     * @param errorMsg
+     */
+    public void report (String errorMsg) {
+    	System.err.println(getCx () + ": " + errorMsg);
+    }
 }

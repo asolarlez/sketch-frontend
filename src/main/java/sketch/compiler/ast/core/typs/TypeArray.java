@@ -17,6 +17,7 @@
 package streamit.frontend.nodes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -31,7 +32,8 @@ public class TypeArray extends Type
 {
     private Type base;
     private Expression length;
-    
+    private List<Expression> dims;
+
     /** Creates an array type of the specified base type with the
      * specified length. */
     public TypeArray(Type base, Expression length)
@@ -39,13 +41,30 @@ public class TypeArray extends Type
         this.base = base;
         this.length = length;
     }
-    
+
+    /**
+     * Create an array with the given base type, length, and dimensions.
+     *
+     * It is assumed, but not checked, that \product{dims} = length.
+     *
+     * @param base		base type of the array
+     * @param length	number of elements of the base type
+     * @param dims		the "virtual dimensions" of the array
+     */
+    public TypeArray (Type base, Expression length, Collection<Expression> dims) {
+    	this.base = base;
+    	this.length = length;
+    	this.dims = new ArrayList<Expression> (dims);
+    }
+
+    public boolean isArray () { return true; }
+
     /** Gets the base type of this. */
     public Type getBase()
     {
         return base;
     }
-    
+
     /** Gets the length of this. */
     public Expression getLength()
     {
@@ -56,7 +75,7 @@ public class TypeArray extends Type
     {
         return base + "[" + length + "]";
     }
-    
+
     public boolean promotesTo(Type other)
     {
         if (super.promotesTo(other))
@@ -77,8 +96,8 @@ public class TypeArray extends Type
 //            return false;
         return true;
     }
-    
-    
+
+
     public boolean equals(Object other)
     {
         if (!(other instanceof TypeArray))
@@ -95,15 +114,17 @@ public class TypeArray extends Type
             return false;
         return true;
     }
-    
+
     public int hashCode()
     {
         return base.hashCode() ^ length.hashCode();
     }
-    
-    
-    
+
     public List<Expression> getDimensions() {
+    	// XXX/cgjones: shortcut for flattened multi-dimension arrays
+    	if (null != dims)
+    		return new ArrayList<Expression> (dims);
+
     	List<Expression> ret=new ArrayList<Expression>();
     	Type t=this;
     	while(t instanceof TypeArray) {
@@ -113,6 +134,12 @@ public class TypeArray extends Type
     	}
     	return ret;
     }
+
+    /** Get the i'th dimension of this array.  Counts from 0. */
+    public Expression getDimension (int i) {
+    	return getDimensions ().get (i);
+    }
+
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypeArray(this);
     }

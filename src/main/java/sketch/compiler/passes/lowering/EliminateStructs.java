@@ -18,7 +18,6 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
@@ -116,7 +115,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	public Object visitExprField (ExprField ef) {
 		Type t = getType (ef.getLeft ());
 		if (false == t.isStruct ()) {
-			report (ef, "Trying to read field of non-struct variable.");
+			ef.report ("Trying to read field of non-struct variable.");
 			throw new RuntimeException ("reading field of non-struct");
 		}
 
@@ -132,8 +131,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 */
     public Object visitExprNew (ExprNew expNew){
     	if (false == expNew.getTypeToConstruct().isStruct()) {
-    		report (expNew,
-    				"Sorry, only structs are supported in 'new' statements.");
+    		expNew.report ("Sorry, only structs are supported in 'new' statements.");
     		throw new RuntimeException ("unsupported type in 'new' statement.");
     	}
 
@@ -296,25 +294,5 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    		fieldType.isStruct () ? TypePrimitive.inttype : fieldType,
 	    		getNumInstsExpr (cx));
 	    }
-	}
-
-    /**
-     * TODO: copied from SemanticChecker.  Needs to be refactored into utility
-     * class.
-     * @param node
-     * @param message
-     */
-	protected void report(FENode node, String message) {
-		report(node.getContext(), message);
-	}
-
-	/**
-	 * TODO: copied from SemanticChecker.  Needs to be refactored into utility
-	 * class.
-	 * @param ctx
-	 * @param message
-	 */
-	protected void report(FEContext ctx, String message) {
-		System.err.println(ctx + ": " + message);
 	}
 }

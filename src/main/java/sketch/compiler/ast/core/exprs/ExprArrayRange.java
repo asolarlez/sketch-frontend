@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package streamit.frontend.nodes;
 
@@ -8,13 +8,13 @@ import java.util.*;
 /**
  * An array-range reference. A[0:2] means the first 3 elements of A, and
  * A[0:1,4:6] means elements 0,1,4,5,6 of A, and A[4::2] means elements 4 and 5
- * of A. 
- * 
+ * of A.
+ *
  * @author liviu
  */
 public class ExprArrayRange extends Expression  implements ExprArray
 {
-	public static class Range 
+	public static class Range
 	{
 		private final Expression start,end;
 		public Range(Expression start, Expression end)
@@ -29,7 +29,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		public Expression start() {return start;}
 		public Expression end() {return end;}
 	}
-	public static class RangeLen 
+	public static class RangeLen
 	{
 		private final Expression start;
 		private final int len;
@@ -46,7 +46,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		}
 		public RangeLen(Expression start, Expression len)
 		{
-			this.start=start;			
+			this.start=start;
 			Integer i = len.getIValue();
 			if(i!= null){
 				this.len = i;
@@ -59,7 +59,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		public Expression start() {return start;}
 		public int len()
 		{
-			if(lenExpr!=null) throw new IllegalStateException("RangeLen len parameter has not been resolved to an int"); 
+			if(lenExpr!=null) throw new IllegalStateException("RangeLen len parameter has not been resolved to an int");
 			return len;
 		}
 		public Expression getLenExpression() {return lenExpr;}
@@ -91,27 +91,27 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	{
 		this(base, Collections.singletonList(new RangeLen(offset)));
 	}
-	
+
 	public ExprArrayRange(FEContext context, Expression base, Expression offset)
 	{
-		this(base, Collections.singletonList(new RangeLen(offset)));		
+		this(base, Collections.singletonList(new RangeLen(offset)));
 	}
 	public ExprArrayRange(FEContext context, Expression base, RangeLen rl)
 	{
-		this(base, Collections.singletonList(rl));		
+		this(base, Collections.singletonList(rl));
 	}
 	public ExprArrayRange(FEContext context, Expression base, RangeLen rl, boolean unchecked)
 	{
-		this(base, Collections.singletonList(rl), unchecked);		
+		this(base, Collections.singletonList(rl), unchecked);
 	}
-	
+
 	public ExprArrayRange(FEContext context, Expression base, Expression offset, boolean unchecked)
 	{
-		this(base, Collections.singletonList(new RangeLen(offset)));		
+		this(base, Collections.singletonList(new RangeLen(offset)));
 		setUnchecked(unchecked);
 	}
-	
-	
+
+
 	public Expression getOffset(){
 		assert members.size() == 1;
 		assert members.get(0) instanceof RangeLen;
@@ -119,8 +119,8 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		assert rl.len == 1;
 		return rl.start;
 	}
-	
-	
+
+
 	/**
 	 * Construct a new array range Expression. "members" must be a
 	 * list containing Range and RangeLen objects.
@@ -140,11 +140,11 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		if(members.isEmpty()) throw new IllegalArgumentException();
 		setUnchecked(unchecked);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see streamit.frontend.nodes.FENode#accept(streamit.frontend.nodes.FEVisitor)
 	 */
-	public Object accept(FEVisitor v) 
+	public Object accept(FEVisitor v)
 	{
 		return v.visitExprArrayRange(this);
 	}
@@ -165,15 +165,32 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		ret.append(members.get(0));
 		for(int i=1;i<members.size();i++)
 		{
-			ret.append(','); 
+			ret.append(',');
 			ret.append(members.get(i));
 		}
 		ret.append(']');
 		return ret.toString();
 	}
 
-	
-	
+	public List<RangeLen> getArraySelections () {
+		List<RangeLen> sels = new ArrayList<RangeLen> ();
+		List memb = getMembers ();
+
+		Expression base = getBase ();
+		if (base instanceof ExprArrayRange) {
+			sels.addAll (((ExprArrayRange) base).getArraySelections ());
+		}
+
+		if (memb.size () > 1) {
+			report ("sorry, mult-index (e.g., a[1, 2]) is not supported");
+			assert false;
+		}
+
+		sels.add ((RangeLen) memb.get (0));
+
+		return sels;
+	}
+
 	public List<Expression> getArrayIndices() {
         List<Expression> indices = new ArrayList<Expression>();
         Expression base= getBase();
@@ -188,26 +205,35 @@ public class ExprArrayRange extends Expression  implements ExprArray
         indices.add(rl.start());
         return indices;
     }
-	
-	
-	
+
+
+
 	public ExprVar getAbsoluteBase(){
 		Expression base= getBase();
-		if(base instanceof ExprArrayRange) {
+		if (base instanceof ExprArrayRange) {
         	return ((ExprArrayRange)base).getAbsoluteBase();
-        }
-		if(base instanceof ExprVar) {
+        } else if (base instanceof ExprVar) {
         	return ((ExprVar)base);
+        } else {
+        	report ("unexpected array base: "+ this + ", of type");
+        	throw new RuntimeException ();
         }
-		throw new RuntimeException("This should not happen");		
 	}
 
-	
-	
+	/**
+	 * @return the bottom-level object being indexed; e.g:
+	 *   "x.f[2][2]".getAbsoluteBaseExpr () --> "x.f"
+	 */
+	public Expression getAbsoluteBaseExpr () {
+		return (getBase () instanceof ExprArrayRange) ?
+					((ExprArrayRange)getBase ()).getAbsoluteBaseExpr ()
+					: getBase ();
+	}
+
 	public Expression getBase() {
 		return base;
 	}
-	
+
 	public Expression getSingleIndex() {
 		if(members.size()!=1) return null;
 		Object o=members.get(0);
@@ -216,9 +242,9 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		if(r.len!=1) return null;
 		return r.start;
 	}
-	
+
 	public boolean hasSingleIndex() {
 		return getSingleIndex()!=null;
 	}
-	
+
 }
