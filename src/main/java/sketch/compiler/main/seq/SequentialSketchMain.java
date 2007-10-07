@@ -54,10 +54,10 @@ import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateAnyorder;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.EliminateNestedArrAcc;
-import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -277,6 +277,7 @@ public class ToSBit
 		dump (prog, "before:");
 		prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
+		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
 		dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
@@ -370,7 +371,7 @@ public class ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
-		//beforeUnvectorizing.accept( new SimpleCodePrinter() );
+		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl(), true ));
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
