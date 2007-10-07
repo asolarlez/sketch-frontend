@@ -1,0 +1,19 @@
+
+int spec(int in){
+	int tmp = 0;
+	
+	tmp = in;
+	tmp = tmp + 1;
+	tmp = tmp * 2;
+	return tmp;		
+}
+
+int sketch(int in) implements spec{
+	int tmp = 0;
+	anyorder{
+		tmp = tmp * 2;
+		tmp = in;
+		tmp = tmp + 1;		
+	}
+	return tmp;
+}
