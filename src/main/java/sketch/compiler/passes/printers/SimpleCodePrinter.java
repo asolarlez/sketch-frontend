@@ -9,7 +9,7 @@ public class SimpleCodePrinter extends FEReplacer
 	private static final int tabWidth=2;
 	private final PrintWriter out;
 	private int indent=0;
-	
+
 	public SimpleCodePrinter() {
 		this(System.out);
 	}
@@ -32,7 +32,7 @@ public class SimpleCodePrinter extends FEReplacer
 		printTab();
 		out.println(s);
 	}
-	
+
 	private void printIndentedStatement(Statement s) {
 		if(s==null) return;
 		if(s instanceof StmtBlock)
@@ -43,7 +43,7 @@ public class SimpleCodePrinter extends FEReplacer
 			indent--;
 		}
 	}
-	
+
 	public Object visitFunction(Function func)
 	{
 		printTab(); out.println(func.toString());
@@ -225,12 +225,18 @@ public class SimpleCodePrinter extends FEReplacer
 		printLine(field.toString());
 		return super.visitFieldDecl(field);
 	}
-	
+
 	public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
 		printLine("anyorder");
 		block.getBlock().accept(this);
 		return block;
 	}
-	
+
+	public Object visitStmtAtomicBlock(StmtAtomicBlock block){
+		printLine("atomic");
+		visitStmtBlock (block);
+		return block;
+	}
+
 
 }

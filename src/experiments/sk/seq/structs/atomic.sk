@@ -1,0 +1,16 @@
+bit foo (bit z) {
+    return z;
+}
+
+bit bar (bit y) implements foo {
+    bit x = 0;
+
+    anyorder {
+        atomic {
+            x = x ^ !x;
+        }
+        y = y;
+    }
+
+    return y;
+}

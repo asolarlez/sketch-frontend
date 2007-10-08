@@ -38,13 +38,13 @@ options {
 
 {
 	private List processedIncludes=new ArrayList();
-	
+
 	public StreamItParserFE(StreamItLex lexer, List includes)
 	{
 		this(lexer);
 		processedIncludes=includes;
 	}
-	
+
 	public static void main(String[] args)
 	{
 		try
@@ -126,7 +126,7 @@ program	 returns [Program p]
 		// Can get away with no context here.
 		{
 			 StreamSpec ss=new StreamSpec(null, StreamSpec.STREAM_FILTER,
- 				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN", 
+ 				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN",
  				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
 				 if (!hasError) p = new Program(null, Collections.singletonList(ss), structs); }
@@ -205,6 +205,7 @@ statement returns [Statement s] { s = null; }
 	|	s=enqueue_statement SEMI
 	|	s=push_statement SEMI
 	|	s=anyorder_block
+	|	s=atomic_block
 	|	s=block
 	|	(data_type ID) => s=variable_decl SEMI!
 	|	(expr_statement) => s=expr_statement SEMI!
@@ -223,7 +224,7 @@ loop_statement returns [Statement s] { s = null; Expression exp; Statement b;}
 	: t:TK_loop LPAREN exp=right_expr RPAREN b=pseudo_block
 	{ s = new StmtLoop(getContext(t), exp, b); }
 	;
-	
+
 
 ploop_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
 	: t:TK_ploop LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block
@@ -253,13 +254,13 @@ splitter_or_joiner returns [SplitterJoiner sj]
 	| td:TK_duplicate (LPAREN RPAREN)?
 		{ sj = new SJDuplicate(getContext(td)); }
 	| tag: ID (LPAREN RPAREN)?
-		{ 	
+		{
 			if( tag.getText().equals("xor") ){
-				sj = new SJDuplicate(getContext(tag), SJDuplicate.XOR ); 
+				sj = new SJDuplicate(getContext(tag), SJDuplicate.XOR );
 			}else if( tag.getText().equals("or") ){
-				sj = new SJDuplicate(getContext(tag), SJDuplicate.OR ); 
+				sj = new SJDuplicate(getContext(tag), SJDuplicate.OR );
 			}else if( tag.getText().equals("and") ){
-				sj = new SJDuplicate(getContext(tag), SJDuplicate.AND ); 
+				sj = new SJDuplicate(getContext(tag), SJDuplicate.AND );
 			}else{
 				assert false: tag.getText()+ " is not a valid splitter";
 			}
@@ -292,7 +293,7 @@ primitive_type returns [Type t] { t = null; }
 	|	TK_complex { t = new TypePrimitive(TypePrimitive.TYPE_COMPLEX); }
 	;
 
-variable_decl returns [Statement s] { s = null; Type t; Expression x = null; 
+variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
 	List xs = new ArrayList(); FEContext ctx = null; }
 	:	t=data_type
@@ -312,13 +313,13 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 
 function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; }
 	:	rt=return_type
-	id:ID 
-	l=param_decl_list 
-	(TK_implements impl:ID)? 
+	id:ID
+	l=param_decl_list
+	(TK_implements impl:ID)?
 	s=block
 	{
-			f = Function.newHelper(getContext(id), id.getText(), rt, l, 
-				impl==null?null:impl.getText(), s); 
+			f = Function.newHelper(getContext(id), id.getText(), rt, l,
+				impl==null?null:impl.getText(), s);
 	}
 	;
 
@@ -348,16 +349,21 @@ block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
 	:	t:LCURLY ( s=statement { l.add(s); } )* RCURLY
 		{ sb = new StmtBlock(getContext(t), l); }
 	;
-	
-	
+
+
 
 anyorder_block returns [StmtAnyOrderBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
 	:	TK_anyorder t:LCURLY ( s=statement { l.add(s); } )* RCURLY
 		{ sb = new StmtAnyOrderBlock(getContext(t), l); }
 	;
 
+atomic_block returns [StmtAtomicBlock ab] { ab=null; StmtBlock b = null; }
+	:   t:TK_atomic b=block
+		{ ab = new StmtAtomicBlock (getContext (t), b.getStmts ()); }
+	;
+
 pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
-	:	 s=statement { l.add(s); } 
+	:	 s=statement { l.add(s); }
 		{ sb = new StmtBlock(s.getContext(), l); }
 	;
 
@@ -451,7 +457,7 @@ var_initializer returns [Expression x] { x = null; }
 | 	x=right_expr
 	;
 
-arr_initializer returns [Expression x] { ArrayList l = new ArrayList(); 
+arr_initializer returns [Expression x] { ArrayList l = new ArrayList();
                                          x = null;
                                          Expression y; }
     : lc:LCURLY
@@ -459,7 +465,7 @@ arr_initializer returns [Expression x] { ArrayList l = new ArrayList();
             (COMMA y=var_initializer { l.add(y); })*
       )?
       RCURLY
-        { x = new ExprArrayInit(getContext(lc), l); } 
+        { x = new ExprArrayInit(getContext(lc), l); }
     ;
 
 ternaryExpr returns [Expression x] { x = null; Expression b, c; }
@@ -541,7 +547,7 @@ multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 
 castExpr returns [Expression x] { x = null; Expression bound; Type t=null; }
 	:	(LPAREN primitive_type) =>
-		  (l:LPAREN t=primitive_type 
+		  (l:LPAREN t=primitive_type
 		  		(sq:LSQUARE bound=right_expr { t = new TypeArray(t, bound); } 			RSQUARE		)*
 		  RPAREN) x=inc_dec_expr
 		{ x = new ExprTypeCast(getContext(l), t, x); }
@@ -578,7 +584,7 @@ incOrDec returns [Expression x] { x = null; }
 	;
 
 value_expr returns [Expression x] { x = null; boolean neg = false; }
-	:	
+	:
 x=ndvalue {}
 |	(	(m:MINUS { neg = true; })?
 		(x=minic_value_expr | x=streamit_value_expr)
@@ -588,8 +594,8 @@ x=ndvalue {}
 
 ndvalue returns [Expression x] { x=null; }
 :
-	t:NDVAL {x=new ExprStar(getContext(t));} 
-| 	t2:NDVAL2 {x=new ExprStar(getContext(t2));} 
+	t:NDVAL {x=new ExprStar(getContext(t));}
+| 	t2:NDVAL2 {x=new ExprStar(getContext(t2));}
 | 	t3:LCURLY STAR n:NUMBER RCURLY {x=new ExprStar(getContext(t3),Integer.parseInt(n.getText()));}
 ;
 
@@ -615,7 +621,7 @@ constructor_expr returns [Expression x] { x = null; Type t; List l;}
 value returns [Expression x] { x = null; List rlist; }
 	:	name:ID { x = new ExprVar(getContext(name), name.getText()); }
 		(	DOT field:ID 			{ x = new ExprField(x.getContext(), x, field.getText()); }
-		|	l:LSQUARE 
+		|	l:LSQUARE
 					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
 			RSQUARE
 		)*
@@ -627,20 +633,20 @@ array_range_list returns [List l] { l=new ArrayList(); Object r;}
 
 array_range returns [Object x] { x=null; Expression start,end,l; }
 :start=right_expr {x=new ExprArrayRange.RangeLen(start);}
-(COLON 
+(COLON
 (end=right_expr {x=new ExprArrayRange.Range(start,end);}
-|COLON 
+|COLON
 ((NUMBER) => len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
 |l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
-))? 
+))?
 ;
 
 constantExpr returns [Expression x] { x = null; }
 	:	h:HQUAN
 			{  String tmp = h.getText().substring(2);
 			   Integer iti = new Integer(
-	 (int ) ( ( Long.parseLong(tmp, 16) - (long) Integer.MIN_VALUE ) 
-		  % ( (long)Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1) 
+	 (int ) ( ( Long.parseLong(tmp, 16) - (long) Integer.MIN_VALUE )
+		  % ( (long)Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1)
 		  + Integer.MIN_VALUE) );
 				x = ExprConstant.createConstant(getContext(h), iti.toString() ); }
 	| 	n:NUMBER

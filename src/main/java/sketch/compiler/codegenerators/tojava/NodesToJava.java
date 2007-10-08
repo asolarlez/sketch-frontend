@@ -1272,7 +1272,7 @@ public class NodesToJava implements FEVisitor
 	public Object visitStmtPloop(StmtPloop loop){
 		throw new UnsupportedOperationException();
 	}
-	
+
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		Expression base=exp.getBase();
 		List ranges=exp.getMembers();
@@ -1296,4 +1296,5 @@ public class NodesToJava implements FEVisitor
     public Object visitParameter(Parameter par){ return null; }
     public Object visitTypeStruct(TypeStruct ts){return null;}
     public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){return null;}
+    public Object visitStmtAtomicBlock(StmtAtomicBlock block){return null;}
 }

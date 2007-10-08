@@ -6,9 +6,9 @@ import streamit.frontend.nodes.*;
 
 /**
  * FORTRAN 77 code generator.
- * TODO: need a pass before this to "pull up" declarations and break apart 
+ * TODO: need a pass before this to "pull up" declarations and break apart
  * assignments from complex initializers (note: exclude loop index vars)
- * 
+ *
  * @author liviu
  */
 public class SNodesToFortran implements FEVisitor {
@@ -41,38 +41,38 @@ public class SNodesToFortran implements FEVisitor {
         	return null;
         }
 	}
-	
+
 	private static final int MAX_LINE_LEN=72;
-	
+
 	private final String filename;
 	/** line prefix (6 spaces) */
 	private String lp="      ";
 	private String cline="c     ";
 	private String indentStr="";
 	private int lineCounter;
-	
+
 	private Function curFunc;
 	private Map<String,Type> varTypes;
 	private String outvar;
 	private boolean returnsArray;
 	private boolean isProcedure;
 	private int indent=0;
-	
+
 	public SNodesToFortran(String filename) {
 		this.filename=filename;
 		lineCounter=1;
 		varTypes=new HashMap<String,Type>();
 	}
-	
+
 	protected int getNewLabel() {
 		return (lineCounter++)*10;
 	}
-	
+
 	protected String labeledLP(int lbl) {
 		String ret=" "+lbl;
 		return ret+lp.substring(ret.length());
 	}
-	
+
 	private String getIndent() {
 		if(indent*2!=indentStr.length()) {
 			indentStr="";
@@ -81,8 +81,8 @@ public class SNodesToFortran implements FEVisitor {
 		}
 		return indentStr;
 	}
-	
-	/** 
+
+	/**
 	 * Takes in a line of code (without \n at the end) and returns
 	 * either the same line (with \n appended) or a concatenation of
 	 * several lines capped at 72 characters as per Fortran spec.
@@ -92,36 +92,36 @@ public class SNodesToFortran implements FEVisitor {
 			return s+"\n";
 		return s.substring(0,MAX_LINE_LEN)+"\n"+lineSplit("     +"+s.substring(MAX_LINE_LEN));
 	}
-	
-	/** 
-	 * Returns Fortran-formatted code for the statement encoded in s. 
+
+	/**
+	 * Returns Fortran-formatted code for the statement encoded in s.
 	 * Indentation is added based on the value of the indent field.
 	 */
 	protected String line(String s) {
 		return lineSplit(lp+getIndent()+s);
 	}
 
-	/** 
-	 * Returns Fortran-formatted code for the statement encoded in s and 
-	 * labeled with lbl. 
+	/**
+	 * Returns Fortran-formatted code for the statement encoded in s and
+	 * labeled with lbl.
 	 * Indentation is added based on the value of the indent field.
 	 */
 	protected String line(int lbl,String s) {
 		return lineSplit(labeledLP(lbl)+getIndent()+s);
 	}
-	
+
 	protected String newline() {
 		return "\n";
 	}
-	
+
 	protected String getDefaultReturnVar() {
 		return "out_";
 	}
-	
+
 	protected String getArrayDataType() {
 		return "real";
 	}
-	
+
 	public Object visitProgram(Program prog)
 	{
 		String ret=line("program "+filename);
@@ -136,12 +136,12 @@ public class SNodesToFortran implements FEVisitor {
 		String ret = "";
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
-            Function func = (Function)iter.next();            
-            ret += (String)func.accept(this);            
+            Function func = (Function)iter.next();
+            ret += (String)func.accept(this);
         }
         return ret;
 	}
-	
+
 	private void doFindSizeParams(Type t, List<String> list) {
 		if(t instanceof TypeArray) {
 			VarCollector vc=new VarCollector(list);
@@ -160,7 +160,7 @@ public class SNodesToFortran implements FEVisitor {
 		}
 		return ret;
 	}
-	
+
 	protected String getReturnVar(Function f) {
 		ReturnFinder rf=new ReturnFinder();
 		f.getBody().accept(rf);
@@ -168,7 +168,7 @@ public class SNodesToFortran implements FEVisitor {
 		if(ret!=null) return ret;
 		return getDefaultReturnVar();
 	}
-	
+
 	private String makeParamCSL(List<Parameter> list) {
 		String ret="";
 		boolean first=true;
@@ -178,9 +178,9 @@ public class SNodesToFortran implements FEVisitor {
 		}
 		return ret;
 	}
-	
+
 	protected String makeDeclaration(Type type, String name) {
-		
+
 		String bounds="";
 		String typestr;
 		if(type instanceof TypeArray) {
@@ -197,7 +197,7 @@ public class SNodesToFortran implements FEVisitor {
 		}
 		return line(typestr+" "+name+bounds);
 	}
-	
+
 	protected String declareParams(List<Parameter> list) {
 		String ret="";
 		for(Parameter p: list) {
@@ -205,7 +205,7 @@ public class SNodesToFortran implements FEVisitor {
 		}
 		return ret;
 	}
-	
+
 	public Object visitFunction(Function func)
     {
 		curFunc=func;
@@ -213,7 +213,7 @@ public class SNodesToFortran implements FEVisitor {
 		isProcedure=returnsArray || (func.getReturnType()==TypePrimitive.voidtype);
 		outvar=getReturnVar(func);
 		String ret="";
-		
+
 		List<Parameter> params=new ArrayList<Parameter>();
 		for(Iterator it=func.getParams().iterator();it.hasNext();) {
 			Parameter p=(Parameter)it.next();
@@ -241,7 +241,7 @@ public class SNodesToFortran implements FEVisitor {
 		ret+=newline();
         return ret;
     }
-	
+
 
 	public Object visitStmtBlock(StmtBlock stmt) {
 		String ret="";
@@ -255,25 +255,25 @@ public class SNodesToFortran implements FEVisitor {
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
     	assert stmt.getNumVars()==1:"multiple variable declarations are not allowed "+stmt+" "+stmt.getContext();
-    	
+
     	Type type = stmt.getType(0);
         String name=stmt.getName(0);
         assert (stmt.getInit(0)==null):"declaration initializers are not allowed "+stmt+" "+stmt.getContext();
         varTypes.put(name, type);
-        
+
         //don't declare the output variable again (it is an argument to the function)
         if(name.equals(outvar)) return "";
-        
+
         return makeDeclaration(type, name);
     }
-	
+
 	public Object visitExprFunCall(ExprFunCall exp)
     {
 		assert false: "function calls not supported yet"; //TODO
 		return null;
     }
-	
-	
+
+
     public Object visitStmtLoop(StmtLoop stmt)
     {
 		assert false: "loop construct not supported yet"; //TODO
@@ -283,7 +283,7 @@ public class SNodesToFortran implements FEVisitor {
     private ExprVar genLoopVar(int idx) {
     	return new ExprVar(null,"i_"+idx);
     }
-    
+
     private String generateZeroCode(String name,TypeArray type) {
     	String ret="";
     	List<Expression> dims=type.getDimensions();
@@ -303,7 +303,7 @@ public class SNodesToFortran implements FEVisitor {
     	}
     	return (String) body.accept(this);
     }
-    
+
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
 		while(stmt.getLHS() instanceof ExprVar) {
@@ -333,19 +333,19 @@ public class SNodesToFortran implements FEVisitor {
 		String op;
         switch(stmt.getOp())
         {
-	        case 0: 
+	        case 0:
 	        	return line(lhs+" = "+rhs);
 	        case ExprBinary.BINOP_ADD: op="+"; break;
 	        case ExprBinary.BINOP_SUB: op="-"; break;
 	        case ExprBinary.BINOP_MUL: op="*"; break;
 	        case ExprBinary.BINOP_DIV: op="/"; break;
-	        
+
 	        case ExprBinary.BINOP_BOR:
 	        case ExprBinary.BINOP_BAND:
 	        case ExprBinary.BINOP_BXOR:
 	        	assert false;
 	        	return null;
-	        default: 
+	        default:
 	        	throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
         }
         return line(lhs+" = "+lhs+" "+op+" "+rhs);
@@ -393,14 +393,14 @@ public class SNodesToFortran implements FEVisitor {
 
 	        case ExprBinary.BINOP_AND: op = ".AND."; break;
 	        case ExprBinary.BINOP_OR:  op = ".OR."; break;
-	        
+
 	        case ExprBinary.BINOP_EQ:  op = ".EQ."; break;
 	        case ExprBinary.BINOP_NEQ: op = ".NE."; break;
 	        case ExprBinary.BINOP_LT:  op = ".LT."; break;
 	        case ExprBinary.BINOP_LE:  op = ".LE."; break;
 	        case ExprBinary.BINOP_GT:  op = ".GT."; break;
 	        case ExprBinary.BINOP_GE:  op = ".GE."; break;
-	        
+
 	        //special conversions
 	        case ExprBinary.BINOP_BAND: op = "*"; break;
 	        case ExprBinary.BINOP_BXOR: op = "+"; break;
@@ -411,11 +411,11 @@ public class SNodesToFortran implements FEVisitor {
 	    		String rhs=(String) exp.getRight().accept(this);
 	    	    return "mod("+lhs+","+rhs+")";
 	        }
-	        
+
 	        case ExprBinary.BINOP_BOR:
 	        case ExprBinary.BINOP_RSHIFT:
 	        case ExprBinary.BINOP_LSHIFT:
-	        default: 
+	        default:
 	        	assert false: "unsupported binary operator in "+exp;
 	        	return null;
 		}
@@ -426,19 +426,19 @@ public class SNodesToFortran implements FEVisitor {
 
 	public Object visitStmtFor(StmtFor stmt) {
 		assert stmt.getInit() instanceof StmtVarDecl;
-		
+
 		StmtVarDecl decl=(StmtVarDecl) stmt.getInit();
 		assert decl.getNumVars()==1;
-		
+
 		String indexVar=decl.getName(0);
 		Expression start=decl.getInit(0);
 		assert start!=null;
 		assert stmt.getCond() instanceof ExprBinary;
-		
+
 		ExprBinary cond=(ExprBinary) stmt.getCond();
 		assert cond.getLeft() instanceof ExprVar;
 		assert ((ExprVar)cond.getLeft()).getName().equals(indexVar);
-		
+
 		Expression finish=null;
 		switch(cond.getOp()) {
 			case ExprBinary.BINOP_LT:
@@ -456,7 +456,7 @@ public class SNodesToFortran implements FEVisitor {
 			default:
 				assert false:"unsupported for loop termination condition";
 		}
-		
+
 		Expression stride=null;
 		if(stmt.getIncr() instanceof StmtExpr) {
 			StmtExpr se=(StmtExpr) stmt.getIncr();
@@ -491,7 +491,7 @@ public class SNodesToFortran implements FEVisitor {
 		} else {
 			assert false:"unsupported loop increment";
 		}
-		
+
 		String startstr=(String) start.accept(this);
 		String finishstr=(String) finish.accept(this);
 		String stridestr=(String) stride.accept(this);
@@ -549,7 +549,7 @@ public class SNodesToFortran implements FEVisitor {
 	    return null;
     }
 
-	public Object visitExprConstFloat(ExprConstFloat exp) {	    
+	public Object visitExprConstFloat(ExprConstFloat exp) {
 	    return ""+exp.getVal();
     }
 
@@ -731,7 +731,8 @@ public class SNodesToFortran implements FEVisitor {
     public Object visitStmtPloop(StmtPloop loop){
 		throw new UnsupportedOperationException();
 	}
-    
+
     public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){throw new UnsupportedOperationException();}
+    public Object visitStmtAtomicBlock(StmtAtomicBlock block){throw new UnsupportedOperationException();}
     public Object visitTypeStruct(TypeStruct ts){throw new UnsupportedOperationException();}
 }

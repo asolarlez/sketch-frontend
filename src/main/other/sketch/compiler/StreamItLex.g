@@ -40,6 +40,7 @@ tokens {
 	"ploop";
 	"new";
 	"anyorder";
+	"atomic";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
 	// Complicated types:
@@ -67,8 +68,8 @@ WS	:	(' '
 	;
 
 
-SL_COMMENT : 
-	"//" 
+SL_COMMENT :
+	"//"
 	(~'\n')* '\n'
 	{ _ttype = Token.SKIP; newline(); }
 	;
@@ -184,7 +185,7 @@ DIGIT
 	;
 
 HQUAN
-	:	 "0x" ( (DIGIT) | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f')+ 
+	:	 "0x" ( (DIGIT) | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f')+
 	;
 
 NUMBER

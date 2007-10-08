@@ -31,7 +31,7 @@ package streamit.frontend.nodes;
  * @version $Id$
  */
 public interface FEVisitor
-{    
+{
     public Object visitExprArrayInit(ExprArrayInit exp);
     public Object visitExprArrayRange(ExprArrayRange exp);
     public Object visitExprBinary(ExprBinary exp);
@@ -62,6 +62,7 @@ public interface FEVisitor
     public Object visitSJWeightedRR(SJWeightedRR sj);
     public Object visitStmtAdd(StmtAdd stmt);
     public Object visitStmtAssign(StmtAssign stmt);
+    public Object visitStmtAtomicBlock(StmtAtomicBlock stmt);
     public Object visitStmtBlock(StmtBlock stmt);
     public Object visitStmtBody(StmtBody stmt);
     public Object visitStmtBreak(StmtBreak stmt);
