@@ -230,6 +230,7 @@ public class ToSBit
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
+		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		//dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
