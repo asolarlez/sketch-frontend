@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
 
 abstract public class varState {	
 	private int maxSize = -1;
@@ -58,6 +59,21 @@ abstract public class varState {
 		init(absVal);
 		this.t = t;
 	}
+	
+	protected abstractValue typeSize(Type t, abstractValueType vtype){
+		if( t instanceof TypeArray ){
+			TypeArray tarr = (TypeArray) t;
+			abstractValue av = (abstractValue) tarr.getLength().accept( vtype.eval );
+			if(tarr.getBase() instanceof TypeArray){
+				return vtype.times(av, typeSize(tarr.getBase(), vtype));
+			}else{
+				return av;
+			}
+		}else{
+			return vtype.CONST(1);
+		}
+	}
+	
 	public varState(int size, Type t){
 		init(size);
 		this.t = t;

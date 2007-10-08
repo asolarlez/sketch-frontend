@@ -23,7 +23,7 @@ public class IntState extends varState {
 		
 		if( t instanceof TypeArray  ){
 			TypeArray tarr = (TypeArray) t;
-			abstractValue av = (abstractValue) tarr.getLength().accept( vtype.eval );
+			abstractValue av = typeSize(tarr, vtype); 
 			if( av.hasIntVal() ){
 				int arrsz = av.getIntVal();
 				init( arrsz );
