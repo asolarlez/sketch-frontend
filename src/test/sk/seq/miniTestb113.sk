@@ -1,0 +1,17 @@
+bit test(int i, int j){
+	bit[2][3] T = 0;
+	T[2][1] = 1;
+	if(j<2 && i < 3){
+		return T[i][j];
+	}
+	return T[2][1];		
+}
+
+bit testSK(int i, int j) implements test{
+	bit[2][3] T = 0;
+	T[2][1] = 1;
+	if(j<2 && i < 3){
+		return T[i][j];
+	}
+	return T[2][1];		
+}
