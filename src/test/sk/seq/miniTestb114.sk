@@ -1,0 +1,42 @@
+Node NULL = -1;
+int N = 1;
+
+struct Queue{
+	Node head;
+	Node tail;	
+}
+
+struct Node{
+	int val;
+	Node next;	
+}
+
+Queue newQueue(){
+	Queue q = new Queue();
+	q.head = NULL;
+	q.tail = NULL;
+	return q;	
+}
+
+Node newNode(int i){
+	Node n = new Node();
+	n.val = i;
+	n.next = NULL;
+	return n;
+}
+
+
+
+
+int test(int in){
+	Queue q  = newQueue();
+	q.head = newNode(5);
+	return q.head.val + in;
+}
+
+int[N] rest(int in) implements test{
+	Queue q  = newQueue();
+	q.head = newNode(??);
+	return q.head.val + in;
+}
+
