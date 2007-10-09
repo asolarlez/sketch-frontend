@@ -227,11 +227,16 @@ public class ToSBit
 	 */
 	public void lowerIRToJava()
 	{
+		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
+
+		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
+		beforeUnvectorizing = prog;
+		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		//dump (prog, "MBB:");
+		dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
-		//dump (prog, "After eliminating structs:");
+		dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
@@ -239,10 +244,6 @@ public class ToSBit
 		prog = (Program)prog.accept(new SeparateInitializers());
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
-		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
-
-		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
-		beforeUnvectorizing = prog;
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
 		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
@@ -280,7 +281,7 @@ public class ToSBit
 		//invoke post-parse passes
 
 		//dump (prog, "before:");
-		prog = (Program)prog.accept(new NoRefTypes());
+		// prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
 		//dump (prog, "fpe:");
@@ -383,7 +384,7 @@ public class ToSBit
 
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		//finalCode.accept( new SimpleCodePrinter() );
+		finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode());
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
@@ -420,7 +421,7 @@ public class ToSBit
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		if(!params.hasFlag("outputcode")){
-			//finalCode.accept( new SimpleCodePrinter() );
+			finalCode.accept( new SimpleCodePrinter() );
 			//System.out.println(hcode);
 			System.out.println(ccode);
 		}else{
@@ -573,14 +574,15 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		//dump (prog, "After replacing constants:");
-		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed");
+		//if (!SemanticChecker.check(prog))
+		//	throw new IllegalStateException("Semantic check failed");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed");
+		//if (!SemanticChecker.check(prog))
+		//	throw new IllegalStateException("Semantic check failed");
+		
 		if (prog == null)
 			throw new IllegalStateException();
 
