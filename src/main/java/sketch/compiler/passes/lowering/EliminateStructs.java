@@ -30,6 +30,7 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 
 /**
  * Does three things:
@@ -136,7 +137,7 @@ public class EliminateStructs extends SymbolTableVisitor {
     	}
 
     	StructTracker struct =
-    		structs.get (((TypeStruct) expNew.getTypeToConstruct ()).getName ());
+    		structs.get (((TypeStructRef) expNew.getTypeToConstruct ()).getName ());
 
     	this.addStatement (struct.makeAllocationGuard (expNew.getCx ()));
     	return struct.makeAllocation (expNew.getCx ());

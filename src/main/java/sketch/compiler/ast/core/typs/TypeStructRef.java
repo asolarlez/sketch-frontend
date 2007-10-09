@@ -60,6 +60,8 @@ public class TypeStructRef extends Type
         return false;
     }
     
+    public boolean isStruct () { return true; }
+    
     public int hashCode()
     {
         return name.hashCode();

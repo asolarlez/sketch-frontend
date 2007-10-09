@@ -207,7 +207,7 @@ public class GetExprType extends FENullVisitor
         // If the base is a complex type, a field of it is float.
         if (base.isComplex())
             return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
-        else if (base.isStruct ())
+        else if (base instanceof TypeStruct)
             return ((TypeStruct)base).getType(exp.getName());
         else if (base instanceof TypeStructRef)
         {

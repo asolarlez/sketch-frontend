@@ -145,6 +145,9 @@ public class TypePrimitive extends Type
         	if(that instanceof TypeArray){
         		return this.promotesTo(((TypeArray)that).getBase());
         	}else{
+        		if(this.type == TYPE_BIT && (that instanceof TypeStructRef || that instanceof TypeStruct ) ) 
+        			return true;
+        		
         		return false;
         	}
         }

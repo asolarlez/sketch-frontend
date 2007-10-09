@@ -82,20 +82,20 @@ public class NoRefTypes extends FEReplacer
         List newStructs = new java.util.ArrayList();
         for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
         {
-            TypeStruct struct = (TypeStruct)iter.next();
-            List newNames = new java.util.ArrayList();
-            List newTypes = new java.util.ArrayList();
-            for (int i = 0; i < struct.getNumFields(); i++)
-            {
-                String name = struct.getField(i);
-                Type type = remapType(struct.getType(name));
-                newNames.add(name);
-                newTypes.add(type);
-            }
-            struct = new TypeStruct(struct.getContext(), struct.getName(),
-                                    newNames, newTypes);
+            TypeStruct struct = (TypeStruct)iter.next();           
             newStructs.add(struct);
             structs.put(struct.getName(), struct);
+        }
+        
+        for (Iterator iter = newStructs.iterator(); iter.hasNext(); )
+        {
+            TypeStruct struct = (TypeStruct)iter.next();            
+            for (int i = 0; i < struct.getNumFields(); i++)
+            {           
+            	String name = struct.getField(i);
+                Type type = remapType(struct.getType(name));
+                struct.setType(name, type);
+            }           
         }
         prog = new Program(prog.getContext(), prog.getStreams(), newStructs);
         return super.visitProgram(prog);
