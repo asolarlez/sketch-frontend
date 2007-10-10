@@ -656,7 +656,7 @@ public class FEReplacer implements FEVisitor
         return new StmtWhile(stmt.getContext(), newCond, newBody);
     }
 
-    StreamSpec sspec;
+    protected StreamSpec sspec;
 
     public Function getFuncNamed(String name){
     	return sspec.getFuncNamed(name);
