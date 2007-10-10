@@ -34,7 +34,7 @@ public class ExprFunCall extends Expression
     
     /** Creates a new function call with the specified name and
      * parameter list. */
-    public ExprFunCall(FEContext context, String name, List params)
+    public ExprFunCall(FEContext context, String name, List<Expression> params)
     {
         super(context);
         this.name = name;
