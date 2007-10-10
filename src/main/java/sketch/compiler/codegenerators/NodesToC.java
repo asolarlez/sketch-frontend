@@ -416,7 +416,11 @@ public class NodesToC extends NodesToJava {
 	@Override
 	public String convertType(Type type)
 	{
-		assert type instanceof TypePrimitive;
+		assert type instanceof TypePrimitive || type instanceof TypeStructRef;
+		if(type instanceof TypeStructRef){
+			return type.toString();
+		}
+		
 		if(type instanceof TypePrimitive) {
 			switch(((TypePrimitive)type).getType()) {
 				case TypePrimitive.TYPE_INT8:  return "unsigned char";
