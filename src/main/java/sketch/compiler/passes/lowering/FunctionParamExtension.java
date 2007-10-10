@@ -159,7 +159,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			if(func.getReturnType().isStruct()){			
 				defaultValue = ExprNullPtr.nullPtr;
 			}else{
-				defaultValue = new ExprConstInt(0);
+				defaultValue = ExprConstInt.zero;
 			}			
 			stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), defaultValue));
 		}

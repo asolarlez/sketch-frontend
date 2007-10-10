@@ -258,7 +258,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	    			/* System.out.println("        Stopped recursion:  " + fun.getName());
 	    			funcsToAnalyze.add(fun);	    			
 	    			return super.visitExprFunCall(exp); */
-	    			StmtAssert sas = new StmtAssert(exp.getCx(), new ExprConstInt(0));
+	    			StmtAssert sas = new StmtAssert(exp.getCx(), ExprConstInt.zero);
 	    			sas.setMsg( (exp.getCx()!=null?exp.getCx().toString() : "" ) + exp.getName()  );
 	    			sas.accept(this); 
 	    		}

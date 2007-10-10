@@ -140,7 +140,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index,  new ExprConstInt(1) )
 				,
 				 exp,
-				new ExprConstInt(0));
+				ExprConstInt.zero);
 		}
 		
 		
@@ -154,11 +154,11 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 							ExprTernary.TEROP_COND, 
 							new ExprBinary(exp.getCx(),ExprBinary.BINOP_AND,
 									new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index, arrLen ),
-									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, new ExprConstInt(0) )
+									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, ExprConstInt.zero )
 							)
 							,
 							new ExprArrayRange(exp.getContext(), exp, index, true),
-							new ExprConstInt(0));
+							ExprConstInt.zero);
 				}
 			}else{
 				if( len.getIValue()== 1 ){
@@ -166,7 +166,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				}else{
 					return new ExprTernary(exp.getCx(),
 							ExprTernary.TEROP_COND, 
-							new ExprBinary(exp.getCx(), ExprBinary.BINOP_EQ, index, new ExprConstInt(0) ), exp, new ExprConstInt(0));
+							new ExprBinary(exp.getCx(), ExprBinary.BINOP_EQ, index, ExprConstInt.zero ), exp, ExprConstInt.zero);
 					
 				}
 			}
@@ -186,11 +186,11 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 							ExprTernary.TEROP_COND, 
 							new ExprBinary(exp.getCx(),ExprBinary.BINOP_AND,
 									new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index, arrLen ),
-									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, new ExprConstInt(0) )
+									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, ExprConstInt.zero )
 							)
 							,
 							new ExprArrayRange(exp.getContext(), ns, index, true),
-							new ExprConstInt(0));
+							ExprConstInt.zero);
 				}
 			}else{
 				assert len.getIValue()== 1 : "This can't be happening!!";				
@@ -430,7 +430,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     		if( irhs != null && irhs == 0 ){
     			
     			List<Statement> mainLst = new ArrayList<Statement>();				
-				zeroOut(lhs, new ExprConstInt(0), ltlen, mainLst);				
+				zeroOut(lhs, ExprConstInt.zero, ltlen, mainLst);				
 				Statement mainBody =
 				new StmtBlock(null,    mainLst);
 				// Now generate the loop, we have all the parts.

@@ -26,7 +26,10 @@ package streamit.frontend.nodes;
  */
 public class ExprConstInt extends Expression
 {
-    private int val;
+    private final int val;
+    
+    public static final ExprConstInt zero = new ExprConstInt(0);
+    public static final ExprConstInt one = new ExprConstInt(1);
     
     /** Create a new ExprConstInt with a specified value. */
     public ExprConstInt(FEContext context, int val)

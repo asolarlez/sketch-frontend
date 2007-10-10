@@ -171,7 +171,7 @@ public class StmtMax extends Statement{
 			}else{
 				ExprArrayRange ea = new ExprArrayRange(base, new ExprConstInt(i));	
 				// lhsvar[i] =  0;
-				StmtAssign ass = new StmtAssign(null, ea, new ExprConstInt(0));
+				StmtAssign ass = new StmtAssign(null, ea, ExprConstInt.zero);
 				statements.add(ass);
 				
 				assert rmax.meArr[i].size() > 1;

@@ -109,7 +109,7 @@ class loopHist{
 					}
 			}
 		}else{
-			highPlusOne = new ExprConstInt(0);
+			highPlusOne = ExprConstInt.zero;
 		}
 	}
 	loopHist(String var, Expression low, Expression high){
@@ -675,7 +675,7 @@ class ProcessStencil extends FEReplacer {
 	    		}	    		
 	    		rval = new StmtReturn(ccontext, new ExprFunCall(null, prevFun.getFullName() , params) );
 	    	}else{
-	    		rval = new StmtReturn(ccontext, new ExprConstInt(0) );
+	    		rval = new StmtReturn(ccontext, ExprConstInt.zero );
 	    	}	    	
 	    	return new StmtIfThen(ccontext, cond, rval, null); 
 	    	//   "if( max_idx == null ) return prevFun;" 
@@ -745,7 +745,7 @@ class ProcessStencil extends FEReplacer {
 		    	{
 		    		int stage0 = this.ptree.getRoot().getStage(); 		    			
 		    		ExprConstInt val = new ExprConstInt( stage0);
-		    		ExprArrayRange ear = new ExprArrayRange(ccontext, new ExprVar(ccontext, newVar), new ExprConstInt(0));
+		    		ExprArrayRange ear = new ExprArrayRange(ccontext, new ExprVar(ccontext, newVar), ExprConstInt.zero);
 		    		Expression cindex = new ExprBinary(ccontext, ExprBinary.BINOP_EQ, ear, val);
 		    		cindex = (Expression)cindex.accept(new ArrReplacer(idxi));
 		    		smax.primC.add(cindex);
@@ -828,10 +828,10 @@ class ProcessStencil extends FEReplacer {
 			
 			StmtAssign as2 = new StmtAssign(ccontext, v1, v2);
 			List<Statement> lst = new ArrayList<Statement>(3+id);
-			StmtAssign as0 = new StmtAssign(ccontext, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(0));
+			StmtAssign as0 = new StmtAssign(ccontext, new ExprVar(null, ArrFunction.IND_VAR), ExprConstInt.zero);
 			lst.add(as0);
 			for(int i=0; i<id; ++i){
-				StmtAssign as = new StmtAssign(ccontext, new ExprVar(null, ArrFunction.IND_VAR+i), new ExprConstInt(0));
+				StmtAssign as = new StmtAssign(ccontext, new ExprVar(null, ArrFunction.IND_VAR+i), ExprConstInt.zero);
 				lst.add(as);
 			}
 			StmtAssign as1 = new StmtAssign(ccontext, new ExprVar(null, ArrFunction.IND_VAR+id), new ExprConstInt(1));

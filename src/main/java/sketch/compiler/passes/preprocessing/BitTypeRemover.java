@@ -518,7 +518,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 		cond = cond && (smodInt != null && smodInt.intValue() == 0);		
 		if(cond){
 			if( len == rhws ){
-			Expression zero = new ExprConstInt(0);
+			Expression zero = ExprConstInt.zero;
 			Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(zero))); ;// lhs[0];			
 			Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, rhws) );
 			Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(sdivRWS))); ; // rhs[start/rhsws];
@@ -554,7 +554,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 		Integer smodInt = smodRWS.getIValue();
 		cond = cond && (smodInt != null && smodInt.intValue() == 0);
 		if(cond){
-			Expression zero = new ExprConstInt(0);
+			Expression zero = ExprConstInt.zero;
 			Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, ws) );
 			Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(sdivRWS))); ;// lhs[0];						
 			Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(zero))); ; // rhs[start/rhsws];
@@ -700,7 +700,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 							}
 							
 							
-							Expression zero = new ExprConstInt(0);
+							Expression zero = ExprConstInt.zero;
 							Expression newLhs = lhs;
 							{								
 								if(isArrayLHS) {
@@ -746,7 +746,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 							);
 							return makeForLoop(var,lengthLHS,body);
 						}else{		
-							return callSK_bitArrayCopyInv(stmt.getLHS(), new ExprConstInt(0), lengthpRHS, stmt.getRHS(), ws, rhws, lengthpLHS);							
+							return callSK_bitArrayCopyInv(stmt.getLHS(), ExprConstInt.zero, lengthpRHS, stmt.getRHS(), ws, rhws, lengthpLHS);							
 						}
 					}else{				
 						assert false : "NYI";					
@@ -921,7 +921,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 							);
 							return makeForLoop(var,lengthLHS,body);
 						}else{			
-							return callSK_bitArrayCopyInv(stmt.getLHS(), new ExprConstInt(0),lengthpRHS, rhsNewCast, ws, rhws, lengthpLHS);
+							return callSK_bitArrayCopyInv(stmt.getLHS(), ExprConstInt.zero,lengthpRHS, rhsNewCast, ws, rhws, lengthpLHS);
 						}
 					}else{				
 						assert false : "NYI";					

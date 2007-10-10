@@ -186,7 +186,7 @@ public class SpinPreprocessor extends FEReplacer {
     	assert decl.getNumVars() == 1;
     	assert decl.getType(0).equals(TypePrimitive.inttype);
     	String ivname = decl.getName(0);
-    	StmtVarDecl ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, new ExprConstInt(0));
+    	StmtVarDecl ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, ExprConstInt.zero);
     	ExprVar ivar = new ExprVar(cx, ivname);
     	Expression cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
     	Statement incr = new StmtAssign(cx, ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));

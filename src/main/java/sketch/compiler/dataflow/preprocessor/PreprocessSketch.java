@@ -126,7 +126,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 		    		
 		    		rcontrol.popFunCall(exp);
 	    		}else{
-	    			StmtAssert sas = new StmtAssert(exp.getContext(), new ExprConstInt(0));
+	    			StmtAssert sas = new StmtAssert(exp.getContext(), ExprConstInt.zero);
 	    			addStatement(sas);    			    		
 	    		}
 	    		exprRV = null;

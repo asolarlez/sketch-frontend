@@ -52,12 +52,12 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 			List<Expression> ilist = new ArrayList<Expression>();
 			int N = ((TypeArray)type).getLength().getIValue();
 			for(int i=0; i<N; ++i){
-				ilist.add( new ExprConstInt(0) );
+				ilist.add( ExprConstInt.zero );
 			}
 			init = new ExprArrayInit(e.getCx(), ilist);
 		}else{
 			
-			init = new ExprConstInt(0);
+			init = ExprConstInt.zero;
 		}
 		
 		StmtVarDecl svd = new StmtVarDecl(e.getContext(), type, tmp, init );
@@ -217,12 +217,12 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 						List<Expression> ilist = new ArrayList<Expression>();
 						int N = ((TypeArray)type).getLength().getIValue();
 						for(int s=0; s<N; ++s){
-							ilist.add( new ExprConstInt(0) );
+							ilist.add( ExprConstInt.zero );
 						}
 						init = new ExprArrayInit(stmt.getCx(), ilist);
 					}else{
 						
-						init = new ExprConstInt(0);
+						init = ExprConstInt.zero;
 					}
 					StmtVarDecl decl=new StmtVarDecl(stmt.getContext(),stmt.getType(i),name,init);
 					decl=(StmtVarDecl) super.visitStmtVarDecl(decl);

@@ -38,7 +38,7 @@ public class EliminateAnyorder extends FEReplacer {
 		Statement s = iter.next();
 		FEContext cx = s.getCx();
 		Expression var = new ExprArrayRange(cx, new ExprVar(cx, iname), new ExprConstInt(i));		
-		Statement set = new StmtAssign(cx, var, new ExprConstInt(1));
+		Statement set = new StmtAssign(cx, var,  ExprConstInt.one);
 		List<Statement> slist = new ArrayList<Statement>(2);
 		s = (Statement)s.accept(this);
 		if( s != null ){
@@ -64,10 +64,10 @@ public class EliminateAnyorder extends FEReplacer {
 		 assert len > 0;
 		 FEContext cx = s.getCx();
 		 Expression elen = new ExprConstInt(len);
-		 StmtVarDecl svd = new StmtVarDecl(cx, new TypeArray(TypePrimitive.bittype, elen), name, new ExprConstInt(0) );
+		 StmtVarDecl svd = new StmtVarDecl(cx, new TypeArray(TypePrimitive.bittype, elen), name, ExprConstInt.zero );
 		 StmtLoop sloop = new StmtLoop(cx, elen, s);		 
 		 Expression var = new ExprVar(cx, name);
-		 Expression fex = new ExprArrayRange(cx, var, new ExprConstInt(0));
+		 Expression fex = new ExprArrayRange(cx, var, ExprConstInt.zero);
 		 for(int i=1; i<len; ++i){
 			 fex = new ExprBinary(cx, ExprBinary.BINOP_AND,  fex  , new ExprArrayRange(cx, var, new ExprConstInt(i)));
 		 }		 

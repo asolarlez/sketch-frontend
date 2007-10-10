@@ -78,12 +78,12 @@ public class AssembleInitializers extends FEReplacer
 									List<Expression> ilist = new ArrayList<Expression>();
 									int N = ((TypeArray)type).getLength().getIValue();
 									for(int k=0; k<N; ++k){
-										ilist.add( new ExprConstInt(0) );
+										ilist.add( ExprConstInt.zero );
 									}
 									init = new ExprArrayInit(decl.getCx(), ilist);
 								}else{
 									
-									init = new ExprConstInt(0);
+									init = ExprConstInt.zero;
 								}
 	                		}
 	                		newInits.add(init);
@@ -114,12 +114,12 @@ public class AssembleInitializers extends FEReplacer
 									List<Expression> ilist = new ArrayList<Expression>();
 									int N = ((TypeArray)type).getLength().getIValue();
 									for(int k=0; k<N; ++k){
-										ilist.add( new ExprConstInt(0) );
+										ilist.add( ExprConstInt.zero );
 									}
 									init = new ExprArrayInit(decl.getCx(), ilist);
 								}else{
 									
-									init = new ExprConstInt(0);
+									init = ExprConstInt.zero;
 								}
 	                		}
 	                		newInits.add(init);
