@@ -231,9 +231,9 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-		
+
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		dump (prog, "MBB:");
+		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		dump (prog, "After eliminating structs:");
@@ -583,7 +583,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		if (!SemanticChecker.check(prog))
 			throw new IllegalStateException("Semantic check failed");
-		
+
 		if (prog == null)
 			throw new IllegalStateException();
 

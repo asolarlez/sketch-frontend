@@ -1,17 +1,48 @@
-package streamit.frontend.stencilSK;
+/**
+ *
+ */
+package streamit.frontend.tospin;
 
-import java.io.*;
+import java.io.OutputStream;
 
-import streamit.frontend.nodes.*;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEmpty;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtSendMessage;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
 import streamit.frontend.passes.CodePrinter;
 
-public class SimpleCodePrinter extends CodePrinter
-{
-	public SimpleCodePrinter() {
-		this(System.out);
+/**
+ * @author Chris Jones
+ */
+public class PromelaCodePrinter extends CodePrinter {
+	public PromelaCodePrinter() {
+		this (System.out);
 	}
 
-	public SimpleCodePrinter(OutputStream os) {
+	public PromelaCodePrinter (OutputStream os) {
 		super (os);
 	}
 
@@ -88,8 +119,8 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtAdd(StmtAdd stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtAdd(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
@@ -137,8 +168,8 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtEnqueue(StmtEnqueue stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtEnqueue(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
@@ -151,36 +182,36 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtJoin(StmtJoin stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtJoin(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
 	public Object visitStmtPush(StmtPush stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtPush(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
 	public Object visitStmtReturn(StmtReturn stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtReturn(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
 	public Object visitStmtSendMessage(StmtSendMessage stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtSendMessage(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
 	public Object visitStmtSplit(StmtSplit stmt)
 	{
-		printLine(stmt.toString());
-		return super.visitStmtSplit(stmt);
+		assertEliminated (stmt);
+		return null;
 	}
 
 	@Override
@@ -210,4 +241,8 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 
+	protected void assertEliminated (FENode node) {
+		node.report ("internal error; I should have been eliminated.");
+		throw new RuntimeException ();
+	}
 }
