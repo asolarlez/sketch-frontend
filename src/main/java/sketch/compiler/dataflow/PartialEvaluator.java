@@ -537,12 +537,21 @@ public class PartialEvaluator extends FEReplacer {
 	        			}
 	        		}
 	        	}
+        	}else{
+        		assignmentToField(lhsName, rhs);
         	}
     		break;
         }
         return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
     }
 
+    
+    protected void assignmentToField(String lhsName, abstractValue rhs){
+    	
+    }
+    
+    
+    
     public Object visitStmtBlock(StmtBlock stmt)
     {
         // Put context label at the start of the block, too.

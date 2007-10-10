@@ -7,6 +7,7 @@ import java.util.List;
 
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.abstractValueType;
+import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
@@ -67,7 +68,19 @@ public class EliminateDeadCode extends BackwardDataflow {
 		return super.visitStmtAssign(stmt);
     }
 	
+	@Override
+	protected void assignmentToField(String lhsName, abstractValue rhs){
+		abstractValue lhsv = state.varValue(lhsName);		
+		lhsv = vtype.plus(rhs, lhsv);
+		state.setVarValue(lhsName, lhsv);
+    }
 	
+	public Object visitExprField(ExprField exp) {
+		abstractValue leftav = (abstractValue)exp.getLeft().accept(this);
+		 Expression left = exprRV;		 
+		 if(isReplacer) exprRV = new ExprField(exp.getContext(), left, exp.getName());
+	     return leftav;
+	}
 	
 	 public Object visitFunction(Function func)
 	    {
