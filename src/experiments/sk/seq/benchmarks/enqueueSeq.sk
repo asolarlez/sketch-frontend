@@ -1,0 +1,88 @@
+int N = 5;
+
+struct Queue{
+	Node head;
+	Node tail;	
+}
+
+struct Node{
+	int val;
+	Node next;	
+}
+
+int enqueue(Queue q, int i){
+	Node n = new Node();
+	n.val = i;
+	n.next = null;
+	if(q.tail != null){
+		assert q.tail.next == null;
+		q.tail.next = n;
+		q.tail = n;
+	}else{
+		assert q.head == null;
+		q.tail = n;
+		q.head = n;
+	}
+	return 1;
+}
+
+int dequeue(Queue q){
+	Node n;
+	n = q.head;	
+	assert q.head != null;
+	if(q.head.next == null){
+		assert q.head == q.tail;
+		q.head = null;
+		q.tail = null;	
+	}else{
+		q.head = q.head.next;
+	}
+	return n.val;
+}
+
+
+int[N] test(int[N] in, bit[N] ctrl){
+	int [N] out =0;
+	int [N] tmp=0;
+	int head = 0;
+	int tail = 0; 
+	int i=0;
+	loop(N){
+		if(ctrl[i]){
+			tmp[tail] = in[i];
+			tail = tail+1;			
+			out[i] = -1;
+		}else{
+			if(head != tail){
+				out[i] = tmp[head];
+				head = head + 1;
+			}else{
+				out[i] = -1;	
+			}
+		}	
+		++i;	
+	}
+	return out;
+}
+
+int[N] rest(int[N] in, bit[N] ctrl) implements test{
+	int [N] out=0;
+	Queue q = new Queue();
+	q.head = null;
+	q.tail = null;
+	int i=0;
+	loop(N){
+		if(ctrl[i]){
+			enqueue(q, in[i]);
+			out[i] = -1;
+		}else{
+			if(q.head != null){
+				out[i] = dequeue(q);  
+			}else{
+				out[i] = -1;	
+			}
+		}	
+		++i;	
+	}
+	return out;
+}
