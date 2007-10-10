@@ -661,6 +661,8 @@ constantExpr returns [Expression x] { x = null; }
 			{ x = new ExprConstBoolean(getContext(t), true); }
 	|	f:TK_false
 			{ x = new ExprConstBoolean(getContext(f), false); }
+	|   TK_null
+			{ x = ExprNullPtr.nullPtr; }
 	;
 
 struct_decl returns [TypeStruct ts]

@@ -173,6 +173,10 @@ public class GetExprType extends FENullVisitor
     		return TypePrimitive.bittype;
     	}
     }
+    
+    public Object visitExprNullPtr(ExprNullPtr exp){
+    	return TypePrimitive.nulltype;
+    }
 
     public Object visitExprConstChar(ExprConstChar exp)
     {

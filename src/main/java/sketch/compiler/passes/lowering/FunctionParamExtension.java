@@ -153,7 +153,15 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			Parameter outParam = (Parameter)func.getParams().get( func.getParams().size()-1);
 			String outParamName  = outParam.getName();
 			assert outParam.isParameterOutput();
-			stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), new ExprConstInt(0)));
+			
+			Expression defaultValue = null;
+			
+			if(func.getReturnType().isStruct()){			
+				defaultValue = ExprNullPtr.nullPtr;
+			}else{
+				defaultValue = new ExprConstInt(0);
+			}			
+			stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), defaultValue));
 		}
 		func=new Function(func.getContext(),func.getCls(),func.getName(),
 				TypePrimitive.voidtype, func.getParams(),

@@ -193,7 +193,8 @@ public class FEReplacer implements FEVisitor
     public Object visitExprConstInt(ExprConstInt exp) { return exp; }
     public Object visitExprConstStr(ExprConstStr exp) { return exp; }
     public Object visitExprLiteral(ExprLiteral exp) { return exp; }
-
+    public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
+    
     public Object visitExprField(ExprField exp)
     {
         Expression left = doExpression(exp.getLeft());

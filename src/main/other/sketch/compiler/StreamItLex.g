@@ -41,6 +41,7 @@ tokens {
 	"new";
 	"anyorder";
 	"atomic";
+	"null";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
 	// Complicated types:

@@ -46,6 +46,9 @@ public class TypePrimitive extends Type
     /** Type constant for signed integers. */
     public static final int TYPE_SIGINT = 14;
     
+    /** Type constant for signed integers. */
+    public static final int TYPE_NULLPTR = 15;
+    
     /** Type object for boolean types. */
     public static final TypePrimitive booltype =
         new TypePrimitive(TYPE_BOOLEAN);
@@ -67,7 +70,8 @@ public class TypePrimitive extends Type
     /** Type object for void types. */
     public static final TypePrimitive voidtype =
         new TypePrimitive(TYPE_VOID);
-    
+    public static final TypePrimitive nulltype =
+        new TypePrimitive(TYPE_NULLPTR);
     
     private int type;
 
@@ -145,7 +149,7 @@ public class TypePrimitive extends Type
         	if(that instanceof TypeArray){
         		return this.promotesTo(((TypeArray)that).getBase());
         	}else{
-        		if(this.type == TYPE_BIT && (that instanceof TypeStructRef || that instanceof TypeStruct ) ) 
+        		if(this.type == TYPE_NULLPTR && (that instanceof TypeStructRef || that instanceof TypeStruct ) ) 
         			return true;
         		
         		return false;

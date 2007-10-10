@@ -1297,4 +1297,5 @@ public class NodesToJava implements FEVisitor
     public Object visitTypeStruct(TypeStruct ts){return null;}
     public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){return null;}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){return null;}
+    public Object visitExprNullPtr(ExprNullPtr nptr){ return "null"; }
 }

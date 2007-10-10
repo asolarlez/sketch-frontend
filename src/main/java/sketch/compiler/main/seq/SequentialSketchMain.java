@@ -282,16 +282,17 @@ public class ToSBit
 
 		//dump (prog, "before:");
 		// prog = (Program)prog.accept(new NoRefTypes());
+		dump (prog, "bef fpe:");
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
-		//dump (prog, "fpe:");
+		dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
-		//dump (prog, "tifs:");
+		dump (prog, "tifs:");
 		prog = (Program) prog.accept (new EliminateMultiDimArrays ());
-		//dump (prog, "After first elimination of multi-dim arrays:");
+		dump (prog, "After first elimination of multi-dim arrays:");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );
-		//dump (prog, "aftpp");
+		dump (prog, "aftpp");
 		return prog;
 	}
 
@@ -574,14 +575,14 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		//dump (prog, "After replacing constants:");
-		//if (!SemanticChecker.check(prog))
-		//	throw new IllegalStateException("Semantic check failed");
+		if (!SemanticChecker.check(prog))
+			throw new IllegalStateException("Semantic check failed");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-		//if (!SemanticChecker.check(prog))
-		//	throw new IllegalStateException("Semantic check failed");
+		if (!SemanticChecker.check(prog))
+			throw new IllegalStateException("Semantic check failed");
 		
 		if (prog == null)
 			throw new IllegalStateException();

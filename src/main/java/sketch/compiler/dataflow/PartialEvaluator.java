@@ -20,6 +20,7 @@ import streamit.frontend.nodes.ExprConstStr;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNew;
+import streamit.frontend.nodes.ExprNullPtr;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprTypeCast;
@@ -168,6 +169,11 @@ public class PartialEvaluator extends FEReplacer {
 	public Object visitExprConstInt(ExprConstInt exp) {
 		exprRV = exp;
 		return vtype.CONST(  exp.getVal() );			
+	}
+	
+	public Object visitExprNullPtr(ExprNullPtr nptr){
+		exprRV = nptr;
+		return vtype.CONST(  -1 );	
 	}
 
 	public Object visitExprConstStr(ExprConstStr exp) {

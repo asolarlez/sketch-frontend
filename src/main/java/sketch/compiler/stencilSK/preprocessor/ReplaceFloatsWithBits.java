@@ -49,7 +49,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 			name = fName(fl);			
 			floatConstants.put(fl, newFloatFunction(name));			
 		}
-		return new ExprFunCall(fexp.getCx(), name, new ArrayList<Parameter>(0) );
+		return new ExprFunCall(fexp.getCx(), name, new ArrayList<Expression>(0) );
 	}
 	
 	

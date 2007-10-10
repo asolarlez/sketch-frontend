@@ -91,4 +91,5 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprNew(ExprNew expNew){ return null; }
     public Object visitStmtPloop(StmtPloop loop){ return null; }
     public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){return null;}
+    public Object visitExprNullPtr(ExprNullPtr nptr){ return null; }
 }
