@@ -13,5 +13,5 @@ int test(int i){
 
 int rest(int i) implements test{
 	
-	return 0;
+	return i;
 }

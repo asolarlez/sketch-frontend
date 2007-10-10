@@ -1,4 +1,3 @@
-Node NULL = -1;
 int N = 1;
 
 struct Queue{
@@ -13,15 +12,15 @@ struct Node{
 
 Queue newQueue(){
 	Queue q = new Queue();
-	q.head = NULL;
-	q.tail = NULL;
+	q.head = null;
+	q.tail = null;
 	return q;	
 }
 
 Node newNode(int i){
 	Node n = new Node();
 	n.val = i;
-	n.next = NULL;
+	n.next = null;
 	return n;
 }
 
@@ -34,7 +33,7 @@ int test(int in){
 	return q.head.val + in;
 }
 
-int[N] rest(int in) implements test{
+int rest(int in) implements test{
 	Queue q  = newQueue();
 	q.head = newNode(??);
 	return q.head.val + in;
