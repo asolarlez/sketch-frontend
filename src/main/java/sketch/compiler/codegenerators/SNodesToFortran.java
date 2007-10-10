@@ -291,11 +291,11 @@ public class SNodesToFortran implements FEVisitor {
     	for(int i=0;i<dims.size();i++) {
     		arr=new ExprArrayRange(arr,genLoopVar(i));
     	}
-    	Statement body=new StmtAssign(null,arr,new ExprConstInt(0));
+    	Statement body=new StmtAssign(null,arr,ExprConstInt.zero);
     	for(int i=dims.size()-1;i>=0;i--) {
     		ExprVar loopVar=genLoopVar(i);
     		body=new StmtFor(null,
-    			new StmtVarDecl(null, TypePrimitive.inttype, loopVar.getName(), new ExprConstInt(0)),
+    			new StmtVarDecl(null, TypePrimitive.inttype, loopVar.getName(), ExprConstInt.zero),
     			new ExprBinary(null, ExprBinary.BINOP_LT, loopVar, dims.get(i)),
     			new StmtExpr(new ExprUnary(null, ExprUnary.UNOP_POSTINC, loopVar)),
     			body
