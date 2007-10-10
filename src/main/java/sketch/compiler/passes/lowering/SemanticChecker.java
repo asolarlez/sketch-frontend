@@ -1204,9 +1204,9 @@ public class SemanticChecker
 				for (int i = 0; i < stmt.getNumVars(); i++)
 				{
 					String name = stmt.getName(i);
-					if (isStreamParam(name))
+					/*if (isStreamParam(name))
 						report(stmt,
-						"local variable shadows stream parameter");
+						"local variable shadows stream parameter");*/
 				}
 				return super.visitStmtVarDecl(stmt);
 			}
