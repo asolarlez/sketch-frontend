@@ -672,7 +672,7 @@ public class PartialEvaluator extends FEReplacer {
         			rv =(Statement) stmt.getCons().accept(this);	
         			rcontrol.doneWithBlock(stmt.getCons());
         		}else{
-        			StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+        			StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
         			sa.setMsg( rcontrol.debugMsg() );
 					rv = (Statement)( sa ).accept(this);
 				}
@@ -684,7 +684,7 @@ public class PartialEvaluator extends FEReplacer {
         				rv =(Statement)stmt.getAlt().accept(this);
         				rcontrol.doneWithBlock(stmt.getAlt());
         			}else{
-        				StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+        				StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
         				sa.setMsg( rcontrol.debugMsg() );
         				rv =(Statement)( sa ).accept(this);
 					}
@@ -710,14 +710,14 @@ public class PartialEvaluator extends FEReplacer {
 	        	//and push in a clean one, so the rest of the function thinks that nothing at all was written in this branch.
 	        	state.popChangeTracker();
 	        	state.pushChangeTracker (vcond, false);
-	        	nvtrue = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+	        	nvtrue = (Statement)( new StmtAssert(stmt.getContext(), ExprConstInt.zero) ).accept(this);
 	        }catch(RuntimeException e){
 	        	state.popChangeTracker();
 	        	throw e;
 	        }
 	        rcontrol.doneWithBlock(stmt.getCons());
         }else{
-        	StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+        	StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
         	sa.setMsg( rcontrol.debugMsg() );
 			nvtrue = (Statement)( sa ).accept(this);
 		}	        
@@ -734,14 +734,14 @@ public class PartialEvaluator extends FEReplacer {
 	        	}catch(ArrayIndexOutOfBoundsException e){	        		
 		        	state.popChangeTracker();
 		        	state.pushChangeTracker (vcond, true);
-		        	nvfalse = (Statement)( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+		        	nvfalse = (Statement)( new StmtAssert(stmt.getContext(), ExprConstInt.zero) ).accept(this);
 		        }catch(RuntimeException e){
 		        	state.popChangeTracker();
 		        	throw e;
 		        }
 	        	rcontrol.doneWithBlock(stmt.getAlt());
             }else{
-            	StmtAssert sa = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+            	StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
             	sa.setMsg( rcontrol.debugMsg() );
             	nvfalse = (Statement)( sa ).accept(this);
 			}
@@ -1101,7 +1101,15 @@ public class PartialEvaluator extends FEReplacer {
     	    	Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
     	    	addStatement((Statement)varDecl);
     		}else{
-    			Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), new ExprConstInt(0));
+    			Expression initVal = null;
+    			
+    			if(type.isStruct()){
+    				initVal = ExprNullPtr.nullPtr;
+    			}else{
+    				initVal = ExprConstInt.zero;
+    			}
+    			
+    			Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), initVal);
     	    	addStatement((Statement)varDecl);
     		}
         }
