@@ -75,6 +75,17 @@ public abstract class FENode
     abstract public Object accept(FEVisitor v);
 
     /**
+     * Assert that COND must be true for this node.  If it is false,
+     * an appropriate error is printed and a runtime exception is thrown.
+     */
+    public void assertTrue (boolean cond, String msg) {
+    	if (!cond) {
+    		report (msg);
+    		throw new RuntimeException ();
+    	}
+    }
+
+    /**
      * Report an error related to this AST node.
      *
      * @param errorMsg

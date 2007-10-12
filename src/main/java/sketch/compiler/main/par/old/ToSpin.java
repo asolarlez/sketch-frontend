@@ -28,9 +28,11 @@ public class ToSpin extends ToSBit {
 		//if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
 
+		lowerIRToJava ();
+
 		prog = (Program)prog.accept(new SpinPreprocessor(varGen));
 
-		dump (prog, "After everything constants:");
+		//dump (prog, "After everything constants:");
 
 		generateCode ();
 

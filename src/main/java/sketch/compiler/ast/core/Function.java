@@ -41,16 +41,17 @@ public class Function extends FENode
     public static final int FUNC_PHASE = 7;
     public static final int FUNC_PREWORK = 8;
     public static final int FUNC_UNINTERP = 9;
-    
-    
+    public static final int FUNC_ASYNC = 10;
+
+
     private int cls;
     private String name; // or null
     private Type returnType;
     private List<Parameter> params;
     private Statement body;
-    
+
     private String fImplements=null;
-    
+
     /** Internal constructor to create a new Function from all parts.
      * This is public so that visitors that want to create new objects
      * can, but you probably want one of the other creator functions. */
@@ -69,7 +70,7 @@ public class Function extends FENode
         	}
         }
     }
-    
+
     public Function(FEContext context, int cls, String name,
             Type returnType, List<Parameter> params, String fImplements, Statement body)
 	{
@@ -81,15 +82,15 @@ public class Function extends FENode
 		this.body = body;
 		this.fImplements = fImplements;
 	}
-    
+
     public static Function newUninterp(String name, List<Parameter> params){
     	return new Function(null, FUNC_UNINTERP, name,new TypePrimitive(TypePrimitive.TYPE_VOID), params, null);
     }
-    
+
     public static Function newUninterp(String name, Type rettype, List<Parameter> params){
     	return new Function(null, FUNC_UNINTERP, name,rettype, params, null);
     }
-    
+
     /** Create a new init function given its body. */
     public static Function newInit(FEContext context, Statement body)
     {
@@ -107,7 +108,7 @@ public class Function extends FENode
                             new TypePrimitive(TypePrimitive.TYPE_VOID),
                             params, body);
     }
-    
+
     /** Create a new helper function given its parts. */
     public static Function newHelper(FEContext context, String name,
                                      Type returnType, List<Parameter> params,
@@ -128,44 +129,44 @@ public class Function extends FENode
         return f;
     }
 
-    
+
     public boolean isUninterp(){
     	return cls == FUNC_UNINTERP;
     }
-    
-    
+
+
     /** Returns the class of this function as an integer. */
-    public int getCls() 
+    public int getCls()
     {
         return cls;
     }
-    
+
     /** Returns the name of this function, or null if it is anonymous. */
     public String getName()
     {
         return name;
     }
-    
+
     /** Returns the parameters of this function, as a List of Parameter
      * objects. */
     public List<Parameter> getParams()
     {
         return Collections.unmodifiableList(params);
     }
-    
+
     /** Returns the return type of this function. */
     public Type getReturnType()
     {
         return returnType;
     }
-    
+
     /** Returns the body of this function, as a single statement
      * (likely a StmtBlock). */
     public Statement getBody()
     {
         return body;
     }
-    
+
     /**
      * Returns the specification for this function. May be null, meaning this is
      * a spec or an unbound sketch.
@@ -174,13 +175,13 @@ public class Function extends FENode
     {
     	return fImplements;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
         return v.visitFunction(this);
     }
-    
+
     public String toString()
     {
     	return returnType+" "+name+"("+params+")"+(fImplements!=null? " implements "+fImplements:"");
