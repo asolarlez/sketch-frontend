@@ -29,6 +29,10 @@ public class CodePrinter extends FEReplacer {
 		out.print(pad);
 	}
 
+	protected void print (String s) {
+		out.print (s);
+	}
+
 	protected void printLine (String s) {
 		printTab();
 		out.println(s);
