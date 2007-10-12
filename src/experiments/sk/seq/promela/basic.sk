@@ -3,9 +3,17 @@ bit spec () { return 1; }
 bit sketch () implements spec {
     int x = 0;
 
-    if (x) {
-        return 0;
+    for (int i = 0; i < 10; ++i) {
+        x = x + i;
+    }
+
+    if (x > 2) {
+        x = 3;
     } else {
-        return 1;
+        x = 1;
+    }
+
+    while (x > 0) {
+        x--;
     }
 }

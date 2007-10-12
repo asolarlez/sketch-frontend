@@ -4,10 +4,13 @@
 package streamit.frontend.tospin;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
 import streamit.frontend.nodes.StmtAnyOrderBlock;
 import streamit.frontend.nodes.StmtAssert;
@@ -38,6 +41,8 @@ import streamit.frontend.passes.CodePrinter;
  * @author Chris Jones
  */
 public class PromelaCodePrinter extends CodePrinter {
+	protected boolean sawInit = false;
+
 	public PromelaCodePrinter() {
 		this (System.out);
 	}
@@ -48,36 +53,68 @@ public class PromelaCodePrinter extends CodePrinter {
 
 	public Object visitFunction(Function func)
 	{
+		if (Function.FUNC_ASYNC == func.getCls ())
+			return emitProcess (func);
+		else {
+			// XXX: PLEASE uncomment this once full preprocessing is completed
+			//func.assertTrue (!sawInit, "internal error: multiple 'init()' functions");
+			sawInit = true;
+			return emitInit (func);
+		}
+	}
+
+	protected Object emitProcess (Function func) {
 		printTab(); out.println(func.toString());
 		super.visitFunction(func);
 		out.flush();
 		return func;
 	}
 
+	protected Object emitInit (Function func) {
+		printTab(); out.println("init");
+		printIndentedStatement (func.getBody ());
+		out.flush();
+		return func;
+	}
+
 	public Object visitStmtFor(StmtFor stmt)
 	{
-		printLine("for("+stmt.getInit()+";"+stmt.getCond()+";"+stmt.getIncr()+")");
-		printIndentedStatement(stmt.getBody());
+		List<Statement> newStmts =
+			new ArrayList<Statement> (((StmtBlock) stmt.getBody ()).getStmts ());
+		newStmts.add (stmt.getIncr ());
+		StmtBlock newBody = new StmtBlock (stmt.getBody ().getCx (), newStmts);
+
+		stmt.getInit ().accept (this);
+		printLine ("do");
+		printLine (":: !("+ stmt.getCond () +") -> break");
+		printLine (":: else");
+		printIndentedStatement (newBody);
+		printLine ("od;");
 		return stmt;
 	}
 
 	@Override
 	public Object visitStmtIfThen(StmtIfThen stmt)
 	{
-    	printLine("if(" + stmt.getCond() + ")");
-    	printIndentedStatement(stmt.getCons());
-    	if(stmt.getAlt() != null){
-    		printLine("else");
-    		printIndentedStatement(stmt.getAlt());
-    	}
+		printLine ("if");
+		printLine ("::"+ stmt.getCond () +" -> ");
+		printIndentedStatement (stmt.getCons ());
+		if (null != stmt.getAlt ()) {
+			printLine (":: else");
+			printIndentedStatement (stmt.getAlt ());
+		}
+		printLine ("fi;");
 		return stmt;
 	}
 
 	@Override
 	public Object visitStmtWhile(StmtWhile stmt)
 	{
-    	printLine("while(" + stmt.getCond() + ")");
+		printLine ("do");
+		printLine (":: !("+ stmt.getCond () +") -> break;");
+		printLine (":: else");
     	printIndentedStatement(stmt.getBody());
+    	printLine ("od;");
 		return stmt;
 	}
 
@@ -93,9 +130,7 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtLoop(StmtLoop stmt)
 	{
-    	printLine("loop(" + stmt.getIter() + ")");
-    	printIndentedStatement(stmt.getBody());
-		return stmt;
+		return assertEliminated (stmt);
 	}
 	@Override
 	public Object visitStmtPloop(StmtPloop stmt)
@@ -241,8 +276,8 @@ public class PromelaCodePrinter extends CodePrinter {
 	}
 
 
-	protected void assertEliminated (FENode node) {
-		node.report ("internal error; I should have been eliminated.");
-		throw new RuntimeException ();
+	protected Object assertEliminated (FENode node) {
+		node.assertTrue (false, "internal error; I should have been eliminated.");
+		return null;
 	}
 }
