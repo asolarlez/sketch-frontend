@@ -25,57 +25,57 @@ import streamit.frontend.passes.SymbolTableVisitor;
 /**
  * This visitor distinguishes between int stars and bit stars, and labels each star with its
  * appropriate type.
- * 
- * 
+ *
+ *
  * @author asolar
  *
  */
 public class TypeInferenceForStars extends SymbolTableVisitor {
-	
+
 	public TypeInferenceForStars(){
 		super(null);
 	}
 
     public Object visitStmtIfThen(StmtIfThen stmt){
     	Expression ie = stmt.getCond();
-    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );   
+    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
     	return super.visitStmtIfThen(stmt);
     }
-    
-    
+
+
     public Object visitStmtFor(StmtFor stmt)
     {
     	if( stmt.getCond() != null){
     		stmt.getCond().accept( new UpgradeStarToInt(this, TypePrimitive.bittype)  );
-    	}    	
+    	}
        return super.visitStmtFor(stmt);
     }
-    
-    public Object visitStmtLoop(StmtLoop stmt){    	
+
+    public Object visitStmtLoop(StmtLoop stmt){
     	Expression ie = stmt.getIter();
-    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );    	
-    	return super.visitStmtLoop(stmt);    	
+    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );
+    	return super.visitStmtLoop(stmt);
     }
 
-    private Type matchTypes(Statement stmt,String lhsn, Type lt, Type rt){    	
+    private Type matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
 //    	if((lt != null && rt != null && !rt.promotesTo(lt)))
 //    	{
 //        	if((lt != null && rt != null && !rt.promotesTo(lt)))
 //        		System.out.println("CRAP");
 //    	}
-    	assert !(lt != null && rt != null &&
-                !(rt.promotesTo(lt))) : (stmt.getContext() +
-                       "  Type missmatch " + lt +" !>= " + rt);
-    	
-        assert !( lt == null || rt == null):(stmt.getContext() +
-            ": BUG, this should never happen " + lt + "   " + rt);
+    	stmt.assertTrue (
+    			!(lt != null && rt != null && !(rt.promotesTo(lt))),
+    			"Type missmatch " + lt +" !>= " + rt);
+    	stmt.assertTrue (
+    			!( lt == null || rt == null),
+    			"internal error: " + lt + "   " + rt);
         return lt;
     }
     public void upgradeStarToInt(Expression exp, Type ftype){
      	   exp.accept(new UpgradeStarToInt(this, ftype) );
     }
 	public Object visitStmtAssign(StmtAssign stmt)
-    {    	
+    {
 	   Type lt = getType(stmt.getLHS());
        Type rt = getType(stmt.getRHS());
        String lhsn = null;
@@ -95,11 +95,11 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     }
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-    	Object result = super.visitStmtVarDecl(stmt); 
+    	Object result = super.visitStmtVarDecl(stmt);
         for (int i = 0; i < stmt.getNumVars(); i++){
         	Expression ie = stmt.getInit(i);
         	if(ie != null){
-        		Type rt = getType(ie);        		
+        		Type rt = getType(ie);
         		Type ftype = matchTypes(stmt, stmt.getName(i), actualType(stmt.getType(i)), rt);
         		upgradeStarToInt(ie, ftype);
         	}
@@ -111,18 +111,18 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 class UpgradeStarToInt extends FEReplacer{
 	private final SymbolTableVisitor stv;
 	Type type;
-	UpgradeStarToInt(SymbolTableVisitor stv, Type type){		
+	UpgradeStarToInt(SymbolTableVisitor stv, Type type){
 		this.stv = stv;
 		this.type = type;
 	}
-	
+
 	public Object visitExprStar(ExprStar star) {
-		
+
 		star.setType(type);
-		
+
 		return star;
 	}
-	
+
     public Object visitExprTernary(ExprTernary exp)
     {
     	Type oldType = type;
@@ -137,7 +137,7 @@ class UpgradeStarToInt extends FEReplacer{
             return new ExprTernary(exp.getContext(), exp.getOp(), a, b, c);
     }
     public Object visitExprBinary(ExprBinary exp)
-    {		
+    {
 		switch(exp.getOp()){
         case ExprBinary.BINOP_GE:
         case ExprBinary.BINOP_GT:
@@ -157,7 +157,7 @@ class UpgradeStarToInt extends FEReplacer{
         case ExprBinary.BINOP_RSHIFT:{
         	Expression left = doExpression(exp.getLeft());
         	Type oldType = type;
-        	type = TypePrimitive.inttype;        	
+        	type = TypePrimitive.inttype;
             Expression right = doExpression(exp.getRight());
             type = oldType;
             if (left == exp.getLeft() && right == exp.getRight())
@@ -179,24 +179,24 @@ class UpgradeStarToInt extends FEReplacer{
             else
                 return new ExprBinary(exp.getContext(), exp.getOp(), left, right,  exp.getAlias());
         }
-            
-            
+
+
         default:
         	return super.visitExprBinary(exp);
-		}		
+		}
     }
     public Object visitStmtLoop(StmtLoop stmt)
     {
     	Type oldType = type;
     	type = TypePrimitive.inttype;
         Expression newIter = doExpression(stmt.getIter());
-        type = oldType;      
+        type = oldType;
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newIter == stmt.getIter() && newBody == stmt.getBody())
             return stmt;
         return new StmtLoop(stmt.getContext(), newIter, newBody);
     }
-    
+
 
     public Object visitExprArrayRange(ExprArrayRange exp){
     	boolean change=false;
@@ -210,17 +210,17 @@ class UpgradeStarToInt extends FEReplacer{
 				Expression newStart = null;
 				Expression newEnd = null;
 				Range range=(Range) obj;
-				{				
+				{
 					Type oldType = type;
 					type = TypePrimitive.inttype;
 					newStart=doExpression(range.start());
-					type = oldType;   
+					type = oldType;
 				}
-				{					
+				{
 					Type oldType = type;
 					type = TypePrimitive.inttype;
 			    	newEnd=doExpression(range.end());
-			    	type = oldType; 
+			    	type = oldType;
 				}
 				newList.add(new Range(newStart,newEnd));
 				if(newStart!=range.start()) change=true;
@@ -229,7 +229,7 @@ class UpgradeStarToInt extends FEReplacer{
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
 				Expression newStart = null;
-				{				
+				{
 					Type oldType = type;
 					type = TypePrimitive.inttype;
 			    	newStart=doExpression(range.start());

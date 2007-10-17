@@ -95,7 +95,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtAssert(StmtAssert stmt)
 	{
-		printLine(stmt.toString());
+		printLine(stmt.toString() + ";");
 		return super.visitStmtAssert(stmt);
 	}
 

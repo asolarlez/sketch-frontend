@@ -53,6 +53,7 @@ import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.ConvertVoidReturnTypesToBit;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateAnyorder;
 import streamit.frontend.passes.EliminateArrayRange;
@@ -231,7 +232,7 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-		
+
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
@@ -282,6 +283,8 @@ public class ToSBit
 
 		//dump (prog, "before:");
 		// prog = (Program)prog.accept(new NoRefTypes());
+		prog = (Program) prog.accept (new ConvertVoidReturnTypesToBit ());
+		//dump (prog, "After converting 'void' returns to 'bit':");
 		//dump (prog, "bef fpe:");
 		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
@@ -584,7 +587,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		if (!SemanticChecker.check(prog))
 			throw new IllegalStateException("Semantic check failed");
-		
+
 		if (prog == null)
 			throw new IllegalStateException();
 

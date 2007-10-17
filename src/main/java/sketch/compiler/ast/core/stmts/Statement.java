@@ -28,4 +28,6 @@ abstract public class Statement extends FENode
     {
         super(context);
     }
+
+    public boolean isBlock () { return false; }
 }

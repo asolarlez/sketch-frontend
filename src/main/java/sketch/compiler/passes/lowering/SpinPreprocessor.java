@@ -1,6 +1,7 @@
 package streamit.frontend.passes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,10 +19,13 @@ import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.SJRoundRobin;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtJoin;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
@@ -161,6 +165,12 @@ public class SpinPreprocessor extends FEReplacer {
 		this.varGen = varGen;
 	}
 
+	/**
+	 * Converts unary prefix increment/decrement expressions to postfix
+	 * increments/decrements.  This is to work around a quirk of SPIN.
+	 *
+	 * WARNING: this change is not safe.  It can seriously break semantics.
+	 */
 	public Object visitExprUnary (ExprUnary eu) {
 		if (ExprUnary.UNOP_PREDEC == eu.getOp ()
 			|| ExprUnary.UNOP_PREINC == eu.getOp ()) {
@@ -181,18 +191,19 @@ public class SpinPreprocessor extends FEReplacer {
     	List<Parameter> pars = new ArrayList<Parameter>(vars.size());
     	List<Expression> actuals = new ArrayList<Expression>(vars.size());
     	FEContext cx = loop.getCx();
-    	for(Iterator<String> it = vars.iterator(); it.hasNext(); ){
-    		String pname = it.next();
+    	for (String pname : vars) {
     		Parameter par = new Parameter(varTypes.get(pname), pname);
     		pars.add(par);
     		actuals.add(new ExprVar(cx, pname));
     	}
     	Statement body = (Statement) loop.getBody().accept(this);
-    	String fname = varGen.nextVar();
+    	String fname = varGen.nextVar ("_ploop_thread_");
     	Function fun = new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
 
     	generatedFuncs.add(fun);
 
+    	// XXX/cgjones: hack.  Should handle thread ID better.
+    	actuals.add (0, new ExprVar (cx, decl.getName (0)));
     	ExprFunCall fcall = new ExprFunCall(cx, fname, actuals);
     	Expression niter = (Expression) loop.getIter().accept(this);
     	assert decl.getNumVars() == 1;
@@ -202,7 +213,24 @@ public class SpinPreprocessor extends FEReplacer {
     	ExprVar ivar = new ExprVar(cx, ivname);
     	Expression cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
     	Statement incr = new StmtAssign(cx, ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
-    	return new StmtFor(cx, ndecl, cmp, incr, new StmtExpr(fcall));
+    	List<Statement> forBody = new ArrayList<Statement> ();
+    	forBody.add (new StmtExpr (fcall));
+    	StmtFor spawnLoop = new StmtFor(cx, ndecl, cmp, incr, new StmtBlock (fcall.getCx (), forBody));
+
+    	// Create loop to join spawned threads
+    	niter = (Expression) loop.getIter().accept(this);
+    	ivname = decl.getName(0) + "_2_";	// cheap!
+    	ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, ExprConstInt.zero);
+    	ivar = new ExprVar(cx, ivname);
+    	cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
+    	incr = new StmtAssign(cx, ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
+    	List<StmtJoin> joinBody =
+    		Collections.singletonList (new StmtJoin (cx, new SJRoundRobin (cx, new ExprVar (cx, ivname))));
+    	StmtFor joinLoop = new StmtFor (cx, ndecl, cmp, incr, new StmtBlock (cx, joinBody));
+
+    	addStatement (spawnLoop);
+
+    	return joinLoop;
     }
 
 
@@ -228,7 +256,7 @@ public class SpinPreprocessor extends FEReplacer {
         }
         if(newInits.size() > 0)
         	return new StmtVarDecl(stmt.getContext(), newTypes,
-        			stmt.getNames(), newInits);
+        			newNames, newInits);
         else
         	return null;
     }
@@ -265,8 +293,8 @@ public class SpinPreprocessor extends FEReplacer {
         	String vtd = it.next();
         	FieldDecl newVar = new FieldDecl(spec.getCx(), viploops.varTypes.get(vtd), vtd, null);
         	newVars.add(newVar);
+        	changed = true;
         }
-
 
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
@@ -275,6 +303,7 @@ public class SpinPreprocessor extends FEReplacer {
             if (oldFunc != newFunc) changed = true;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
+        changed |= generatedFuncs.size () > 0;
         newFuncs.addAll(generatedFuncs);
         sspec = oldSS;
         if (!changed && newST == spec.getStreamType()) return spec;

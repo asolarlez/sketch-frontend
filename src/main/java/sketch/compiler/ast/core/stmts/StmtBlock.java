@@ -32,7 +32,7 @@ public class StmtBlock extends Statement
 {
     protected List<Statement> stmts;
     // Should this also have a symbol table?  --dzm
-    
+
     /** Create a new StmtBlock with the specified ordered list of
      * statements. */
     public StmtBlock(FEContext context, List stmts)
@@ -40,13 +40,15 @@ public class StmtBlock extends Statement
         super(context);
         this.stmts = Collections.unmodifiableList(stmts);
     }
-    
+
+    public boolean isBlock () { return true; }
+
     /** Returns the list of statements of this. */
     public List<Statement> getStmts()
     {
         return stmts;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {

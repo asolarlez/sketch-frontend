@@ -3,6 +3,7 @@
  */
 package streamit.frontend.passes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -131,10 +132,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 * Rewrite the 'new' expression into a guarded pointer increment.
 	 */
     public Object visitExprNew (ExprNew expNew){
-    	if (false == expNew.getTypeToConstruct().isStruct()) {
-    		expNew.report ("Sorry, only structs are supported in 'new' statements.");
-    		throw new RuntimeException ("unsupported type in 'new' statement.");
-    	}
+    	expNew.assertTrue (expNew.getTypeToConstruct().isStruct(),
+    			"Sorry, only structs are supported in 'new' statements.");
 
     	StructTracker struct =
     		structs.get (((TypeStructRef) expNew.getTypeToConstruct ()).getName ());
@@ -146,6 +145,10 @@ public class EliminateStructs extends SymbolTableVisitor {
     /** Rewrite variables of type 'struct' into ones of type 'int'. */
     public Object visitTypeStruct (TypeStruct ts) {
     	return TypePrimitive.inttype;
+    }
+
+    public Object visitType (Type t) {
+    	return (t instanceof TypeStructRef) ? TypePrimitive.inttype : t;
     }
 
     /**
@@ -160,7 +163,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    private ExprVar nextInstancePointer;
 	    private Map<String, ExprVar> fieldArrays;
 
-	    private final static int NUM_INSTANCES = 100;
+	    private final static int NUM_INSTANCES = 20;
 
 	    /**
 	     * Create a tracker of the variables used to eliminate allocs and
@@ -176,14 +179,14 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	struct = struct_;
 	    	cx = cx_;
 	    	nextInstancePointer =
-	    		new ExprVar (cx, varGen.nextVar (struct.getName () +"_"+ "nextInstance"));
+	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
 	    	for (int i = 0; i < struct.getNumFields (); ++i) {
 	    		String field = struct.getField (i);
 	    		fieldArrays.put (field,
 	    				new ExprVar (cx,
-	    						varGen.nextVar (struct.getName () +"_"+ field)));
+	    						varGen.nextVar ("_"+struct.getName () +"_"+ field +"_")));
 	    	}
 	    }
 
