@@ -1,0 +1,59 @@
+int N = 8;
+
+struct Node {
+    Node next;
+    int value;
+    int taken;
+}
+
+struct Queue {
+    Node head;
+    Node tail;
+}
+
+void enqueue (Queue q, int v) {
+    Node oldTail = null;
+    Node n = null;
+
+    n = new Node ();
+    n.next = null;
+    n.value = v;
+    n.taken = 0;
+    atomic {    // atomic swap
+        oldTail = q.tail;
+        q.tail = n;
+    }
+    oldTail.next = n;
+
+    return 0;
+}
+
+void verify (Queue q) {
+    assert q.head.taken == 1;
+    assert q.head.value == -1;
+    assert q.head.next != null;
+    assert q.head.next.value == 1;
+    assert q.head.next.taken == 0;
+    assert q.head.next.next != null;
+    assert q.head.next.next.value == 1;
+    assert q.head.next.next.taken == 0;
+    assert q.head.next.next.next == null;
+    assert q.tail == q.head.next.next;
+
+    return 1;
+}
+
+bit main () implements main {
+    Queue q = new Queue ();
+    q.head = new Node ();
+    q.head.value = -1;
+    q.head.taken = 1;
+    q.head.next = null;
+    q.tail = q.head;
+
+    ploop (int i; 2) {
+        enqueue (q, 1);
+    }
+
+    verify (q);
+}
