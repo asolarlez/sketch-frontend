@@ -424,7 +424,9 @@ public class FEReplacer implements FEVisitor
     {
         List<Statement> oldStatements = newStatements;
         newStatements = new ArrayList<Statement>();
-        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
+        boolean changed = false;
+        int i=0;
+        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext();++i )
         {
             Statement s = (Statement)iter.next();
             // completely ignore null statements, causing them to
@@ -433,10 +435,21 @@ public class FEReplacer implements FEVisitor
                 continue;
             try{
             	doStatement(s);
+            	if(!(newStatements.size() == i+1 && newStatements.get(i) == s)){
+            		changed = true;
+            	}
+            	/*
+            	Statement tmpres = (Statement)s.accept(this);
+                if (tmpres != null)
+                    addStatement(tmpres);*/
             }catch(RuntimeException e){
             	newStatements = oldStatements;
             	throw e;
             }
+        }
+        if(!changed){
+        	newStatements = oldStatements;
+        	return stmt;
         }
         Statement result = new StmtBlock(stmt.getContext(), newStatements);
         newStatements = oldStatements;
@@ -635,15 +648,22 @@ public class FEReplacer implements FEVisitor
     {
         List<Expression> newInits = new ArrayList<Expression>();
         List<Type> newTypes = new ArrayList<Type>();
+        boolean changed = false;
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
-            Expression init = stmt.getInit(i);
-            if (init != null)
-                init = doExpression(init);
-            Type t = (Type) stmt.getType(i).accept(this);
+            Expression oinit = stmt.getInit(i);
+            Expression init = null;
+            if (oinit != null)
+                init = doExpression(oinit);
+            Type ot = stmt.getType(i);
+            Type t = (Type) ot.accept(this);
+            if(ot != t || oinit != init){ 
+            	changed = true;
+            }
             newInits.add(init);
             newTypes.add(t);
         }
+        if(!changed){ return stmt; }
         return new StmtVarDecl(stmt.getContext(), newTypes,
                                stmt.getNames(), newInits);
     }
@@ -663,6 +683,8 @@ public class FEReplacer implements FEVisitor
     	return sspec.getFuncNamed(name);
     }
 
+    protected List<Function> newFuncs;
+    
     public Object visitStreamSpec(StreamSpec spec)
     {
         // Oof, there's a lot here.  At least half of it doesn't get
@@ -673,7 +695,9 @@ public class FEReplacer implements FEVisitor
         if (spec.getStreamType() != null)
             newST = (StreamType)spec.getStreamType().accept(this);
         List newVars = new ArrayList();
-        List newFuncs = new ArrayList();
+        List<Function> oldNewFuncs = newFuncs; 
+        newFuncs = new ArrayList();
+        
         boolean changed = false;
 
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -683,18 +707,28 @@ public class FEReplacer implements FEVisitor
             if (oldVar != newVar) changed = true;
             if(newVar!=null) newVars.add(newVar);
         }
-        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
+        int nonNull = 0;
+        for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
             Function oldFunc = (Function)iter.next();
             Function newFunc = (Function)oldFunc.accept(this);
             if (oldFunc != newFunc) changed = true;
+            if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
+        
+        if(newFuncs.size() != nonNull){
+        	changed = true;
+        }
+        
         sspec = oldSS;
+        
+        List<Function> nf = newFuncs;
+        newFuncs = oldNewFuncs;
         if (!changed && newST == spec.getStreamType()) return spec;
         return new StreamSpec(spec.getContext(), spec.getType(),
                               newST, spec.getName(), spec.getParams(),
-                              newVars, newFuncs);
+                              newVars, nf);
 
     }
 
