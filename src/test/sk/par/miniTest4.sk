@@ -1,0 +1,24 @@
+
+
+int N = 2;
+
+bit test(bit[N] in){	
+	return 1;
+}
+
+bit testSK(bit[N] in) implements test{
+	bit[N] out = 0;
+	ploop(int i; N){
+		out[i] = in[i];
+	}
+	
+	bit rv = 1;
+	for(int i=0; i<N; ++i){
+		rv = rv && (out[i] == in[i]);
+	}
+	
+	return rv;
+}
+
+
+
