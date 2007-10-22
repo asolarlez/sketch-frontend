@@ -44,6 +44,20 @@ public class StmtFor extends Statement
         this.body = body;
     }
     
+    /** Creates a for loop of the form for(int iterName=0; iterName &lt; upperBound; ++iterName){body} */
+    public StmtFor(String iterName, Expression upperBound, Statement body)
+    {    	
+        super(upperBound.getCx());
+        FEContext cx = upperBound.getCx();
+        this.init = new StmtVarDecl(cx, TypePrimitive.inttype, iterName, ExprConstInt.zero);
+        Expression iterVar = new ExprVar(cx, iterName);
+        this.cond = new ExprBinary(cx, ExprBinary.BINOP_LT, iterVar, upperBound);
+        this.incr = new StmtAssign(cx, iterVar,  new ExprBinary(cx, ExprBinary.BINOP_ADD, iterVar, ExprConstInt.one));
+        this.body = body;
+    }
+    
+    
+    
     /** Return the initialization statement of this. */
     public Statement getInit()
     {
