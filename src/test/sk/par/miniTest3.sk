@@ -1,0 +1,29 @@
+
+
+int N = 4;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int x = 0;
+	{
+		int y = 1;
+		x = in;
+		ploop(int i; 2){
+			int local;
+			local = x;
+			local = local + y;
+			x = local;		
+			y = y + 1;
+		}
+		y = x + 1;
+		x = y;
+	}
+	
+	return (x == in + ??) || (x == in + ??) || (x == in+2);
+}
+
+
+
