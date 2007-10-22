@@ -48,6 +48,10 @@ public class IntVtype extends abstractValueType {
 		return new IntAbsValue(v); 
 	}
 	
+	public abstractValue NULL(){
+		return BOTTOM("null"); 
+	}
+	
 	public abstractValue CONST(boolean v){
 		return new IntAbsValue(v); 
 	}

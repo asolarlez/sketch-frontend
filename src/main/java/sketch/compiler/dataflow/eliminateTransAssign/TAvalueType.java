@@ -30,6 +30,9 @@ public class TAvalueType extends abstractValueType {
 	public abstractValue BOTTOM() {		
 		return bottom;
 	}
+	public abstractValue NULL() {		
+		return bottom;
+	}
 
 	@Override
 	public abstractValue BOTTOM(Type t) {

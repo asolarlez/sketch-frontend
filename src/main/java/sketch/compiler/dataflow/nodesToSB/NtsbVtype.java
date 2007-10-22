@@ -87,8 +87,13 @@ public class NtsbVtype extends IntVtype {
 		assert false;
 		return null;
 	}
+	
 	public abstractValue CONST(int v){
 		return new NtsbValue(v); 
+	}
+	
+	public abstractValue NULL(){
+		return CONST(-1); 
 	}
 	
 	public abstractValue CONST(boolean v){

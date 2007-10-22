@@ -27,7 +27,7 @@ public abstract class abstractValueType{
 	abstract public varState cleanState(String var, Type t, MethodState mstate);
 	abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);
-	
+	abstract public abstractValue NULL();
 	
 	abstract public abstractValue plus(abstractValue v1, abstractValue v2);
 	abstract public abstractValue minus(abstractValue v1, abstractValue v2);
@@ -56,7 +56,7 @@ public abstract class abstractValueType{
 	abstract public abstractValue cast(abstractValue v1, Type t);
 	
 	abstract public abstractValue not(abstractValue v1);
-	abstract public abstractValue neg(abstractValue v1);
+	abstract public abstractValue neg(abstractValue v1);	
 	
 	abstract public abstractValue ternary(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
 	

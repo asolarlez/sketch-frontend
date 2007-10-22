@@ -63,6 +63,10 @@ public class LiveVariableVType extends abstractValueType {
 	public abstractValue CONST(int v) {
 		return BOTTOM();
 	}
+	public abstractValue NULL() {
+		return BOTTOM();
+	}
+	
 
 	@Override
 	public abstractValue STAR(FENode star) {

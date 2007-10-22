@@ -173,7 +173,7 @@ public class PartialEvaluator extends FEReplacer {
 	
 	public Object visitExprNullPtr(ExprNullPtr nptr){
 		exprRV = nptr;
-		return vtype.CONST(  -1 );	
+		return vtype.NULL();
 	}
 
 	public Object visitExprConstStr(ExprConstStr exp) {
