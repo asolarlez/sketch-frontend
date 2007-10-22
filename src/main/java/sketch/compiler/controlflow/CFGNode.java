@@ -17,6 +17,7 @@
 package streamit.frontend.controlflow;
 
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.Statement;
 
 /**
@@ -38,6 +39,7 @@ public class CFGNode
     private boolean empty;
     private Statement stmt;
     private Expression expr;
+    private int id;
     
     // can't both be empty and have an expression.
     private CFGNode(Statement stmt, Expression expr, boolean empty)
@@ -129,6 +131,15 @@ public class CFGNode
         return expr;
     }
     
+    
+    public FEContext getCx(){
+    	if(expr != null)
+    		return expr.getCx();
+    	if(stmt != null)
+    		return stmt.getCx();
+    	return null;
+    }
+    
     /**
      * Get the statement associated with a node.  Every node has
      * a statement associated with it: for a placeholder node,
@@ -142,4 +153,31 @@ public class CFGNode
     {
         return stmt;
     }
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+	
+	public String toString(){
+		if(expr != null){
+			return id + ":" + expr.toString();
+		}else{
+			if(!empty && stmt != null){
+				return id + ":" + stmt.toString();
+			}else{
+				return id + ": empty";
+			}
+		}
+	}
+	
 }

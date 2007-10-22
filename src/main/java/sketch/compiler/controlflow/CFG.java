@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public class CFG
 {
-    private List nodes;
+    private List<CFGNode> nodes;
     private CFGNode entry, exit;
-    private Map edges;
+    private Map<CFGNode, List<CFGNode>> edges;
     
     /**
      * Create a new control-flow graph (or fraction thereof).
@@ -49,7 +49,7 @@ public class CFG
      * @param edges  mapping of from-node to to-node making up
      *               edges in the graph
      */
-    public CFG(List nodes, CFGNode entry, CFGNode exit, Map edges)
+    public CFG(List<CFGNode> nodes, CFGNode entry, CFGNode exit, Map<CFGNode, List<CFGNode>> edges)
     {
         this.nodes = nodes;
         this.entry = entry;
@@ -62,9 +62,13 @@ public class CFG
      *
      * @return  list of nodes
      */
-    public List getNodes()
+    public List<CFGNode> getNodes()
     {
         return nodes;
+    }
+    
+    public int size(){
+    	return nodes.size();
     }
     
     /**
@@ -93,9 +97,9 @@ public class CFG
      * @param node  node to query
      * @return      list of {@link CFGNode} exiting that node
      */
-    public List getSuccessors(CFGNode node)
+    public List<CFGNode> getSuccessors(CFGNode node)
     {
-        List result = (List)edges.get(node);
+        List<CFGNode> result = edges.get(node);
         if (result == null) result = Collections.EMPTY_LIST;
         return result;
     }
@@ -123,6 +127,15 @@ public class CFG
         return result;
     }
 
+    public void setNodeIDs(){
+    	int i=0;
+    	for(Iterator<CFGNode> it = nodes.iterator(); it.hasNext(); ++i){
+    		CFGNode n = it.next();
+    		n.setId(i);
+    	}
+    }
+    
+    
     /**
      * Get a dot(1) representation of a CFG.  The output can be processed
      * by the graphviz toolset, including dot, dotty, lefty, etc.

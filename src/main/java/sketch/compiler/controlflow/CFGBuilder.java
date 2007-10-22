@@ -59,7 +59,7 @@ public class CFGBuilder extends FENullVisitor
     }
 
     // Visitors return this:
-    private static class CFGNodePair
+    protected static class CFGNodePair
     {
         public CFGNode start;
         public CFGNode end;
@@ -71,13 +71,13 @@ public class CFGBuilder extends FENullVisitor
     }
     
     // Where to go for particular statements:
-    private CFGNode nodeReturn, nodeBreak, nodeContinue;
+    protected CFGNode nodeReturn, nodeBreak, nodeContinue;
     // What edges exist (map from start node to list of end node):
-    private Map edges;
+    protected Map<CFGNode, List<CFGNode>> edges;
     // Every node:
-    private List nodes;
+    protected List<CFGNode> nodes;
     
-    private CFGBuilder()
+    protected CFGBuilder()
     {
         nodeReturn = null;
         nodeBreak = null;
@@ -86,21 +86,21 @@ public class CFGBuilder extends FENullVisitor
         nodes = new ArrayList();
     }
 
-    private void addEdge(CFGNode from, CFGNode to)
+    protected void addEdge(CFGNode from, CFGNode to)
     {
-        List target;
+        List<CFGNode> target;
         if (edges.containsKey(from))
-            target = (List)edges.get(from);
+            target = edges.get(from);
         else
         {
-            target = new ArrayList();
+            target = new ArrayList<CFGNode>();
             edges.put(from, target);
         }
-        if (!target.contains(to))
-            target.add(to);
+        //if (!target.contains(to))
+        target.add(to);
     }
 
-    private CFGNodePair visitStatement(Statement stmt)
+    protected CFGNodePair visitStatement(Statement stmt)
     {
         // If the visitor works, use its result.
         CFGNodePair pair = (CFGNodePair)stmt.accept(this);
