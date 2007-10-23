@@ -71,6 +71,58 @@ public class ExprBinary extends Expression
         this.right = right;
         alias = this;
     }
+    
+    
+    public ExprBinary(Expression left, String sop, Expression right)
+{
+	super(left.getCx());
+	this.left = left;
+	this.right = right;
+	int lop = -1;
+	
+	if(sop.equals("+")){
+		lop = BINOP_ADD;
+	}else if(sop.equals("-")){
+		lop = BINOP_SUB;
+	}else if(sop.equals("*")){
+		lop = BINOP_MUL;
+	}else if(sop.equals("/")){
+		lop = BINOP_DIV;
+	}else if(sop.equals("%")){
+		lop = BINOP_MOD;
+	}else if(sop.equals("&&")){
+		lop = BINOP_AND;
+	}else if(sop.equals("||")){
+		lop = BINOP_OR;
+	}else if(sop.equals("==")){
+		lop = BINOP_EQ;
+	}else if(sop.equals("!=")){
+		lop = BINOP_NEQ;
+	}else if(sop.equals("<")){
+		lop = BINOP_LT;
+	}else if(sop.equals("<=")){
+		lop = BINOP_LE;
+	}else if(sop.equals(">")){
+		lop = BINOP_GT;
+	}else if(sop.equals(">=")){
+		lop = BINOP_GE;
+	}else if(sop.equals("&")){
+		lop = BINOP_BAND;
+	}else if(sop.equals("|")){
+		lop = BINOP_BOR;
+	}else if(sop.equals("^")){
+		lop = BINOP_BXOR;
+	}else if(sop.equals("xor")){
+		lop = BINOP_BXOR;
+	}else {
+		throw new RuntimeException("What is this operator??!!");
+	}
+	
+	this.op = lop;
+	alias = this;
+}
+    
+    
 
     public ExprBinary(FEContext context,
     		int op, Expression left, Expression right, ExprBinary alias)
