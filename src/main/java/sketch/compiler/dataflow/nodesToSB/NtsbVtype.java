@@ -106,6 +106,11 @@ public class NtsbVtype extends IntVtype {
 	
 	
 	public void Assert(abstractValue val, String msg){
+		 if( val.hasIntVal() ){
+			 if(val.getIntVal() == 0){
+				 throw new RuntimeException( "Assertion failure: " + msg);
+			 }
+		 }
 		 out.print ("assert (" + val + ") : \"" + msg + "\" ;\n");
 	}
 	

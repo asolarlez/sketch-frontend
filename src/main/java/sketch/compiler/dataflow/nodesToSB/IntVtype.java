@@ -59,7 +59,9 @@ public class IntVtype extends abstractValueType {
 
 	public void Assert(abstractValue val, String msg){
 		 if( val.hasIntVal() ){
-			 assert val.getIntVal() != 0 : "Assertion failure: " + msg;
+			 if(val.getIntVal() == 0){
+				 throw new RuntimeException( "Assertion failure: " + msg);
+			 }
 		 }
 	}
 	
