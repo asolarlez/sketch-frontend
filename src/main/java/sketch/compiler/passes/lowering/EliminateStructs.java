@@ -102,6 +102,10 @@ public class EliminateStructs extends SymbolTableVisitor {
         Function func2 = (Function) super.visitFunction(func);
         symtab = oldSymTab;
 
+        if(func.isUninterp()){
+        	return func2;
+        }
+        
         Statement oldBody = func2.getBody ();
         newBodyStmts.add (oldBody);
         StmtBlock newBody = new StmtBlock (oldBody.getCx (), newBodyStmts);
