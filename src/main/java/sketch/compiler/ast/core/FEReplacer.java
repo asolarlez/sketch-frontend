@@ -694,9 +694,9 @@ public class FEReplacer implements FEVisitor
         sspec = spec;
         if (spec.getStreamType() != null)
             newST = (StreamType)spec.getStreamType().accept(this);
-        List newVars = new ArrayList();
+        List<FieldDecl> newVars = new ArrayList<FieldDecl>();
         List<Function> oldNewFuncs = newFuncs; 
-        newFuncs = new ArrayList();
+        newFuncs = new ArrayList<Function>();
         
         boolean changed = false;
 
