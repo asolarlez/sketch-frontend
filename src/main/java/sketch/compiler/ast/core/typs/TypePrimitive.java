@@ -49,6 +49,9 @@ public class TypePrimitive extends Type
     /** Type constant for signed integers. */
     public static final int TYPE_NULLPTR = 15;
     
+    /** For internal use only. This type can be cast to anything, and anything can be cast to it.*/
+    public static final int TYPE_ANYTYPE = 16;
+    
     /** Type object for boolean types. */
     public static final TypePrimitive booltype =
         new TypePrimitive(TYPE_BOOLEAN);
@@ -72,6 +75,9 @@ public class TypePrimitive extends Type
         new TypePrimitive(TYPE_VOID);
     public static final TypePrimitive nulltype =
         new TypePrimitive(TYPE_NULLPTR);
+    
+    public static final TypePrimitive anytype =
+        new TypePrimitive(TYPE_ANYTYPE);
     
     private int type;
 
@@ -125,6 +131,9 @@ public class TypePrimitive extends Type
         case TYPE_BOOLEAN:
             return "boolean";
 
+        case TYPE_ANYTYPE:
+        	return "any";
+        	
         case TYPE_SIGINT:
         	return "int";
         default:
@@ -160,6 +169,8 @@ public class TypePrimitive extends Type
         int t1 = this.type;
         int t2 = ((TypePrimitive)that).type;
         
+        if(t2 == TYPE_ANYTYPE) return true;
+        
         // want: "t1 < t2", more or less
         switch(t1)
         {
@@ -183,6 +194,8 @@ public class TypePrimitive extends Type
         case TYPE_INT8:
         case TYPE_INT64:
         	return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
+        case TYPE_ANYTYPE:
+        	return true;
         default:
             assert false : t1;
             return false;
