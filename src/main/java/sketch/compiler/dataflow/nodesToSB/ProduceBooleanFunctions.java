@@ -242,7 +242,19 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 			    			inParameterSetter(exp.getCx() ,formalParams, actualParams, false);
 			    		}
-			    		Statement body = (Statement) fun.getBody().accept(this);
+			    		Statement body = null;
+			    		try{
+			    			try{
+			    			System.out.println(this.state.varValue("__sPC8_p_57L5"));
+			    			}catch(AssertionError e){
+			    				
+			    			}
+			    			body = (Statement) fun.getBody().accept(this);
+			    		}catch(RuntimeException ex){
+			    			state.popLevel(); // This is to compensate for a pushLevel in inParamSetter. 
+			    			// Under normal circumstances, this gets offset by a popLevel in outParamSetter, but not in the pressence of exceptions.
+			    			throw ex;
+			    		}
 			    		addStatement(body);
 			    		{
 			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
