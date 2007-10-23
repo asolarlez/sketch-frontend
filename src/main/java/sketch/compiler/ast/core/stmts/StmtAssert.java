@@ -54,7 +54,14 @@ public class StmtAssert extends Statement
 
     /** Output to string. */
     public String toString () {
-        String result = "assert (" + this.cond + ")\n";
+        String result = "assert (" + this.cond + ")";
+        
+        if(msg != null){
+        	result += ": \"" + msg + "\"";
+        }
+        
+        result += "\n";
+        
         return result;
     }
 
