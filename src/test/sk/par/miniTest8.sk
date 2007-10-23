@@ -1,0 +1,32 @@
+
+
+struct Box {
+	int val;	
+}
+
+Box newBox(int i){
+	Box b = new Box();
+	b.val = i;
+	return b;	
+}
+
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	Box global = newBox(in);
+	int out;
+	ploop(int i; 2){
+		int local = global.val;
+		local = local + 1;
+		out = local;
+			
+	}
+	return out == in + 1;
+}
+
+
+

@@ -1,0 +1,40 @@
+
+
+int N = 5;
+
+bit test(bit[N] in){	
+	return 1;
+}
+
+bit testSK(bit[N] in) implements test{
+	bit[N] out = 0;
+	bit chan = 0;
+	bit queueFull = 0;
+	ploop(int i; 2){
+		if(i==0){
+			for(int t=0; t<N; ++t){
+				atomic(!queueFull){
+					chan = in[t];
+					queueFull = 1;	
+				}
+			}
+		}else{
+			for(int t=0; t<N; ++t){
+				atomic(queueFull){
+					out[t] = chan;
+					queueFull = 0;
+				}
+			}
+		}
+	}
+	
+	bit rv = 1;
+	for(int i=0; i<N; ++i){
+		rv = rv && (out[i] == in[i]);
+	}
+	
+	return rv;
+}
+
+
+
