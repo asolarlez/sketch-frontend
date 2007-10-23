@@ -54,6 +54,7 @@ public class ProduceParallelModel extends FEReplacer {
 
 	TempVarGen varGen;
 	Expression SchedLen;
+	Expression LockLen;
 	Function restFunction = null;
 	
 	///The following are names that will be used in the generated function.
@@ -63,10 +64,14 @@ public class ProduceParallelModel extends FEReplacer {
 	static final String STEP = "_step";
 	static final String FUN_NAME_BASE = "rest";
 	static final String INV_SCHEDULE = "_invalidSchedule";
-	public ProduceParallelModel(TempVarGen varGen, int schedLen){
+	static final String locksName = "_locks";
+	static final ExprVar locksVar = new ExprVar(null, locksName);
+	
+	public ProduceParallelModel(TempVarGen varGen, int schedLen, int locklen){
 		super();
 		this.varGen = varGen;
 		this.SchedLen = new ExprConstInt(schedLen);
+		this.LockLen =  new ExprConstInt(locklen);
 	}
 	
 
@@ -96,12 +101,108 @@ public class ProduceParallelModel extends FEReplacer {
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * Performs the following replacements:
+	 * lock(i) becomes:
+	 * if(locks[i] == 0 || locks[i] == threadID+1){
+	 * 		locks[i] = threadID+1;
+	 * }else{
+	 * 		//lock is taken by someone else. This thread shouldn't have been scheduled.
+	 * 		invalidSchedule[threadID] = 1;
+	 * }
+	 * 
+	 * A statement of the form unlock(i) will translate into:
+	 * 
+	 * assert locks[i] == threadID+1; //no unlocking locks you don't hold.
+	 * locks[i] = 0;
+	 * 
+	 * 
+	 * 
+	 * @author asolar
+	 *
+	 */
+	
+	public static class EliminateLockUnlock extends FEReplacer{
+		
+		
+		public Expression loopVar = null;
+		public Expression lockLen = null;
+		EliminateLockUnlock(Expression loopVar, Expression lockLen){
+			this.loopVar = loopVar;
+			this.lockLen = lockLen;
+		}
+		 
+		 public Object visitStmtExpr(StmtExpr stmt)
+		    {
+			 	if(stmt.getExpression() instanceof ExprFunCall){
+			 		Object o = stmt.getExpression().accept(this);
+			 		if(o instanceof Expression){
+			 			if( o == null) return null;
+				        if (o == stmt.getExpression()) return stmt;
+				        return new StmtExpr(stmt.getContext(), (Expression)o);
+			 		}else{
+			 			assert o instanceof Statement;
+			 			return o;
+			 		}
+			 	}
+			 	
+		        Expression newExpr = doExpression(stmt.getExpression());
+		        if( newExpr == null) return null;
+		        if (newExpr == stmt.getExpression()) return stmt;
+		        return new StmtExpr(stmt.getContext(), newExpr);
+		    }
+		
+		
+		 public Object visitExprFunCall(ExprFunCall exp)
+		    {
+			 
+			 
+			 if(exp.getName().equals("lock")){
+				 assert exp.getParams().size() == 1;
+				 Expression p = exp.getParams().get(0);
+				 List<Statement> bodyL = new ArrayList<Statement>();
+/** This is the code we are producing here.
+  	 * if(locks[i] == 0 || locks[i] == threadID+1){
+	 * 		locks[i] = threadID+1;
+	 * }else{
+	 * 		//lock is taken by someone else. This thread shouldn't have been scheduled.
+	 * 		invalidSchedule[threadID] = 1;
+	 * }
+ */
+				 bodyL.add(new StmtAssert(exp.getCx(), new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds."));
+				 StmtAssign getLock = new StmtAssign(exp.getCx(), new ExprArrayRange(locksVar, p),  new ExprBinary(loopVar, "+", ExprConstInt.one));
+				 
+				 Statement sleep = new StmtAssign(exp.getCx(), new ExprArrayRange(new ExprVar(null, INV_SCHEDULE), loopVar), ExprConstInt.one);
+				 
+				 Expression cond = new ExprBinary( new ExprBinary(new ExprArrayRange(locksVar, p), "==", ExprConstInt.zero), "||",
+						 			new ExprBinary(new ExprArrayRange(locksVar, p), "==", new ExprBinary(loopVar, "+", ExprConstInt.one) ));
+				 bodyL.add(new StmtIfThen(exp.getCx(), cond, getLock, sleep));
+				 return new StmtBlock(exp.getCx(), bodyL);
+			 }else  if(exp.getName().equals("unlock")){
+				 assert exp.getParams().size() == 1;
+				 Expression p = exp.getParams().get(0);
+				 List<Statement> bodyL = new ArrayList<Statement>();
+				 bodyL.add(new StmtAssert(exp.getCx(), new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds."));
+				 bodyL.add(new StmtAssert(exp.getCx(), new ExprBinary(new ExprArrayRange(locksVar, p), "==", new ExprBinary(loopVar, "+", ExprConstInt.one) ), "You can't release a lock you don't own"));
+				 bodyL.add(new StmtAssign(exp.getCx(),new ExprArrayRange(locksVar, p), ExprConstInt.zero ));
+				 return new StmtBlock(exp.getCx(), bodyL);
+				 
+			 }
+			 return exp;
+		    }
+		    
+	}
+	
+	
+	
 	/**
 	 * 
 	 * This method produces a function with the following skeleton:
 	 * T restFun(globals, [NT]locals, int[NSTEPS] sched, int t){
-	 *    forall i : globals'[i] = globals;
-	 *    forall i : locals'[i] = locals;
+	 *    forall i<NT : globals'[i] = globals;
+	 *    forall i<NT : locals'[i] = locals;
 	 *    bool done = true;
 	 *    bit[NTHREADS] invalidSchedule;
 	 *    for(int i=0; i<NT; ++i){
@@ -122,6 +223,8 @@ public class ProduceParallelModel extends FEReplacer {
 	 *    if(done){
 	 *    	return postpar;
 	 *    }else{
+	 *    
+	 *      assert t < sched.length : "You need to inline more";
 	 *      T[NT] out;
 	 *      bit noDeadlock = 0;
 	 *      for(int i=0; i<NT; ++i){
@@ -132,14 +235,14 @@ public class ProduceParallelModel extends FEReplacer {
 	 *      		noDeadlock = 1;
 	 *      	} 
 	 *      }
-	 *      if(noDeadlock)
-	 *    		return out[sched[t]];
-	 *      else
-	 *      	return 0;
+	 *      
+	 *      assert noDeadlock : "Your program has deadlock";
+	 *    	return out[sched[t]];
+	 *      
 	 *    }
 	 * }
 	 * 
-	 * T Fun(inputs){
+	 * T Fun(inputs, sched){
 	 * 	 declare globals;
 	 *   prepar;
 	 *   
@@ -155,8 +258,8 @@ public class ProduceParallelModel extends FEReplacer {
 	 * 
 	 * Thus, a statement of the form lock(i) will translate into:
 	 * 
-	 * if(locks[i] == -1 || locks[i] == threadID){
-	 * 		locks[i] = threadID;
+	 * if(locks[i] == 0 || locks[i] == threadID+1){
+	 * 		locks[i] = threadID+1;
 	 * }else{
 	 * 		//lock is taken by someone else. This thread shouldn't have been scheduled.
 	 * 		invalidSchedule[i] = 1;
@@ -164,8 +267,9 @@ public class ProduceParallelModel extends FEReplacer {
 	 * 
 	 * A statement of the form unlock(i) will translate into:
 	 * 
-	 * assert locks[i] == threadID; //no unlocking locks you don't hold.
-	 * locks[i] = -1;
+	 * assert locks[i] == threadID+1; //no unlocking locks you don't hold.
+	 * locks[i] = 0;
+	 * 
 	 * 
 	 * 
 	 * 
@@ -190,6 +294,9 @@ public class ProduceParallelModel extends FEReplacer {
 				globals.add( new StmtVarDecl(null, p.getType(), p.getName(), null) );
 			}
 		}
+		
+		globals.add( new StmtVarDecl(null, new TypeArray(TypePrimitive.inttype, LockLen), this.locksName, null) );
+		
 		
 		Type sType; ///This is the type of the schedule. If only two threads, schedule is bit. Otherwise it's int.
 		Integer nT = nthreads.getIValue();
@@ -244,13 +351,15 @@ public class ProduceParallelModel extends FEReplacer {
 			String idxNmb = varGen.nextVar();
 			Expression idxb = new ExprVar(null, idxNmb);
 			
+			
+			EliminateLockUnlock luelim = new EliminateLockUnlock(idxb, this.LockLen);
 			VarSetReplacer vrepl = new VarSetReplacer();
 			populateVarReplacerLocal(locals.iterator(), idxb, vrepl);
 			populateVarReplacer(globals.iterator(), idxb, vrepl);
 			parcfg.setNodeIDs();
 			for(Iterator<CFGNode> itnode = parcfg.getNodes().iterator(); itnode.hasNext(); ){
 				CFGNode node = itnode.next();
-				condForNode(parcfg, node, idxb, pcVar, vrepl, conditCF);
+				condForNode(parcfg, node, idxb, pcVar, vrepl, luelim, conditCF);
 			}
 			Statement idxbDecl = new StmtVarDecl(null, TypePrimitive.inttype, idxNmb, ExprConstInt.zero);
 			Expression idxbCond = new ExprBinary(null, ExprBinary.BINOP_LT, idxb, nthreads);
@@ -342,7 +451,7 @@ public class ProduceParallelModel extends FEReplacer {
 				if(pcname.equals(name)){
 					actuals.add(ExprConstInt.zero);
 				}else{
-					if(name.equals(STEP)){
+					if(name.equals(STEP) || name.equals(locksName)){
 						actuals.add(ExprConstInt.zero);
 					}else{						
 						actuals.add(new ExprVar(null, name));
@@ -540,7 +649,7 @@ public class ProduceParallelModel extends FEReplacer {
 	 * @param vrepl
 	 * @param conditCF
 	 */
-	public void condForNode(CFG cfg, CFGNode node, Expression idx, ExprVar pcVar, VarSetReplacer vrepl, List<Statement>/*out*/ conditCF){
+	public void condForNode(CFG cfg, CFGNode node, Expression idx, ExprVar pcVar, VarSetReplacer vrepl, EliminateLockUnlock luelim ,List<Statement>/*out*/ conditCF){
 		
 		FEContext cx = node.getCx();
 		Expression lhsPC = new ExprVar(cx, pcVar.getName() + "_p");
@@ -550,7 +659,27 @@ public class ProduceParallelModel extends FEReplacer {
 		Expression cond = new ExprBinary(cx, ExprBinary.BINOP_EQ, new ExprArrayRange(cx, pcVar, idx), new ExprConstInt(node.getId()) );
 		
 		if(node.isStmt()){
-			Statement newStmt = (Statement)node.getStmt().accept(vrepl);
+			Statement newStmt = (Statement)node.getStmt().accept(luelim);
+			newStmt = (Statement)newStmt.accept(new FEReplacer(){
+				public Object visitStmtVarDecl(StmtVarDecl svd){
+					List<Statement> bodyL = new ArrayList<Statement>();
+					for(int i=0; i<svd.getNumVars(); ++i){
+						if(svd.getInit(i) != null){
+							bodyL.add(new StmtAssign(svd.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i) ));
+						}
+					}
+					if(bodyL.size() > 1){
+						return new StmtBlock(svd.getCx(), bodyL);
+					}else{
+						if(bodyL.size() == 1){
+							return bodyL.get(0);
+						}else{
+							return null;
+						}
+					}
+				}
+			});
+			newStmt = (Statement)newStmt.accept(vrepl);
 			List<CFGNode> succ = cfg.getSuccessors(node);
 			assert succ.size() == 1;
 			

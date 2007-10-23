@@ -1,6 +1,7 @@
 package streamit.frontend.parallelEncoder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,9 +10,11 @@ import java.util.Map;
 import java.util.Set;
 
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -45,7 +48,12 @@ public class ExtractPreParallelSection extends FEReplacer {
 	        if(oldStatements == null){
 	        	for(Iterator<String> it = undecld.iterator(); it.hasNext(); ){
 	        		String name = it.next();
-	        		newStatements.add(decls.get(name));
+	        		if(decls.containsKey(name)){
+		        		StmtVarDecl svd = decls.get(name);
+		        		ArrayList<Expression> inits = new ArrayList<Expression>(svd.getNumVars());	        		
+		        		for(int i=0; i<svd.getNumVars(); ++i) inits.add(null);
+		        		newStatements.add(new StmtVarDecl(svd.getCx(), svd.getTypes(), svd.getNames(), inits));
+	        		}
 	        	}
 	        }
 	        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
@@ -63,7 +71,21 @@ public class ExtractPreParallelSection extends FEReplacer {
 	            			break;
 	            		}
 	            	}
-	            	if(found) continue;
+	            	if(found){
+	            		for(int i=0; i<svd.getNumVars(); ++i){
+		            		if( svd.getInit(i) != null ){
+		            			s = new StmtAssign(s.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i));
+		            			try{
+		            			doStatement(s);
+		            			}catch(RuntimeException e){
+		        	            	newStatements = oldStatements;
+		        	            	throw e;
+		        	            }
+		            		}
+		            	}
+	            		
+	            		continue;
+	            	}
 	            }
 	            if (s == null)
 	                continue;
@@ -92,6 +114,9 @@ public class ExtractPreParallelSection extends FEReplacer {
 	        {
 				decls.put(decl.getName(i), decl);
 				alldecls.put(decl.getName(i), decl);
+				if(decl.getInit(i) != null){
+					decl.getInit(i).accept(this);
+				}
 	        }
 			return decl;
 		}
