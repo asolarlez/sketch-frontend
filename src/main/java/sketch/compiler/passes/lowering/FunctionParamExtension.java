@@ -129,7 +129,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		for(Function fun: (List<Function>)spec.getFuncs()) {
 			Type retType=fun.getReturnType();
 			List<Parameter> params=new ArrayList<Parameter>(fun.getParams());
-			params.add(new Parameter(retType,getOutParamName(),true));
+			if(!retType.equals(TypePrimitive.voidtype)){
+				params.add(new Parameter(retType,getOutParamName(),true));
+			}
 			funs.add(new Function(fun.getContext(), fun.getCls(), fun.getName(), fun.getReturnType(),
 				params, fun.getSpecification(), fun.getBody()));
 		}
@@ -245,7 +247,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		List existingArgs=exp.getParams();
 		for(int i=0;i<existingArgs.size();i++) {
 			Expression oldArg=(Expression) existingArgs.get(i);
-			if(oldArg instanceof ExprVar)
+			if(oldArg instanceof ExprVar || oldArg instanceof ExprConstInt)
 				args.add(oldArg);
 			else {
 				Parameter param=(Parameter) fun.getParams().get(i);
@@ -266,6 +268,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		
 		// replace the original function call with an instance of the temp variable
 		// (which stores the return value)
+		if(tempNames.length == 0){
+			return null;
+		}
 		assert tempNames.length==1; //TODO handle the case when it's >1
 		return new ExprVar(exp.getContext(),tempNames[0]);
 	}
