@@ -111,7 +111,7 @@ public class PromelaCodePrinter extends CodePrinter {
 		printPrelude ();
 
 		// Declare the globals
-		for (FENode n : (List<FENode>) ss.getVars ())
+		for (FENode n : (List<FieldDecl>) ss.getVars ())
 			n.accept (this);
 		printLine ("");
 
