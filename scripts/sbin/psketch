@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Set classpath, solver path, and source path; adjust for Cygwin as necessary
+#
+TMPCLASSPATH="$FRONTEND/antlr.jar|$FRONTEND/bin|."
+TMPSBITPATH="$SOLVER/"
+TMPSOURCEPATH="${0%/*}"
+TMPSOURCEPATH="${TMPSOURCEPATH%/*}"
+if [ $OSTYPE == cygwin ]; then
+  TMPCLASSPATH=${TMPCLASSPATH//\//\\}
+  TMPCLASSPATH=${TMPCLASSPATH//|/;}
+  TMPSBITPATH=${TMPSBITPATH//\//\\}
+  TMPSBITPATH=${TMPSBITPATH//|/;}
+  TMPSOURCEPATH=${TMPSOURCEPATH//\//\\}
+  TMPSOURCEPATH=${TMPSOURCEPATH//|/;}
+else
+  TMPCLASSPATH=${TMPCLASSPATH//|/:}
+  TMPSBITPATH=${TMPSBITPATH//|/:}
+  TMPSOURCEPATH=${TMPSOURCEPATH//|/:}
+fi
+
+# Get the last command-line argument as INFILE
+#
+ARGS=
+LASTARG=
+
+for INFILE; do
+	ARGS="${ARGS} ${LASTARG}";
+	LASTARG="$INFILE";
+done
+
+CPPTEMP="${INFILE}.cpp"
+ARGS="${ARGS} ${CPPTEMP}"
+
+#
+# Preprocess the input file
+#
+cpp -Wno-trigraphs "$INFILE" | sed s/#.*// > "$CPPTEMP"
+
+# Launch
+#
+java -ea \
+  -classpath "$TMPCLASSPATH" \
+  streamit.frontend.ToPSbit --output "${CPPTEMP}.tmp" \
+  --sbitpath "$TMPSBITPATH" $ARGS
+
+
+  
