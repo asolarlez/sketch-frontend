@@ -50,13 +50,13 @@ bit testSK(int in) implements test{
 	enqueue(q, 5);
 	ploop(int i; 2){
 		if(i==0){
-			//atomic{
+			atomic{
 				enqueue(q, 6);
-			//}
+			}
 		}else{
-			//atomic{
+			atomic{
 				enqueue(q, 7);
-			//}
+			}
 		}
 	}
 	int i1 = dequeue(q);
