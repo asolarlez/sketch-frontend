@@ -42,6 +42,11 @@ public class BaseRControl extends RecursionControl {
 	        return decInlineCounter (funcName, 1);
 	    }
 	}
+	
+	public boolean leaveCallsBehind(){
+		return false;
+	}
+	
 	public InlineCounter icount = new InlineCounter();	
 	private int MAX_INLINE;
 	
