@@ -218,6 +218,10 @@ public class AdvancedRControl extends RecursionControl {
 		fi.rdepth++;
 	}
 
+	public boolean leaveCallsBehind(){
+		return false;
+	}
+	
 	public String debugMsg(){
 		return "Function " +  debugMsg + " was not inlined enough. Increase inlining with --inlineamnt flag.";
 	}
@@ -258,10 +262,12 @@ public class AdvancedRControl extends RecursionControl {
 
 	public boolean testCall(ExprFunCall fc) {
 		FunInfo fi = funmap.get(fc.getName());		
-		//System.out.println("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);
+		System.out.print("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);
 		if( fi.rdepth < MAX_INLINE ){
+			System.out.println(" succeed");
 			return true;
 		}else{
+			System.out.println(" fail");
 			return false;
 		}		
 	}

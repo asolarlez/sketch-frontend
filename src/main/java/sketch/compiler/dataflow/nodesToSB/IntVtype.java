@@ -1,6 +1,7 @@
 package streamit.frontend.experimental.nodesToSB;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -304,7 +305,14 @@ public class IntVtype extends abstractValueType {
 		}
 		
 		
-		if(v1.isVect() && type instanceof TypeArray ){
+		if(type instanceof TypeArray ){
+			
+			if(!v1.isVect()){
+				List<abstractValue> vls = new ArrayList<abstractValue>(1);
+				vls.add(v1);
+				v1 = ARR(vls);
+			}
+			
 			TypeArray t =  (TypeArray) type;
 			Integer len = t.getLength().getIValue();
 			if(len != null){

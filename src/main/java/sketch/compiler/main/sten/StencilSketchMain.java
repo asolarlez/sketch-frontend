@@ -89,7 +89,7 @@ public class ToStencilSK extends ToSBit
 	
 	
 	
-    public RecursionControl newRControl(){
+    public RecursionControl visibleRControl(){
     	// return new DelayedInlineRControl(params.inlineAmt, params.branchingFactor);
     	return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog); 
     }
@@ -145,7 +145,7 @@ public class ToStencilSK extends ToSBit
                 
     	
     	Program tmp = (Program) prog.accept( 
-    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  params.flagValue("unrollamnt"), newRControl() ){
+    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  params.flagValue("unrollamnt"), visibleRControl() ){
     				protected List<Function> functionsToAnalyze(StreamSpec spec){
     				    return new LinkedList<Function>(spec.getFuncs());
     			    }
@@ -176,7 +176,7 @@ public class ToStencilSK extends ToSBit
 	public void eliminateStar(){
 		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));
 		
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), newRControl() ));
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
     	finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());

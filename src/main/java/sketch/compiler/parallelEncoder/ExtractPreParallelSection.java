@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
@@ -51,7 +52,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 	        		if(decls.containsKey(name)){
 		        		StmtVarDecl svd = decls.get(name);
 		        		ArrayList<Expression> inits = new ArrayList<Expression>(svd.getNumVars());	        		
-		        		for(int i=0; i<svd.getNumVars(); ++i) inits.add(null);
+		        		for(int i=0; i<svd.getNumVars(); ++i) inits.add(ExprConstInt.zero);
 		        		newStatements.add(new StmtVarDecl(svd.getCx(), svd.getTypes(), svd.getNames(), inits));
 	        		}
 	        	}

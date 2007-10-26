@@ -267,12 +267,15 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 		    		}
 		    		rcontrol.popFunCall(exp);
 	    		}else{
-	    			/* System.out.println("        Stopped recursion:  " + fun.getName());
-	    			funcsToAnalyze.add(fun);	    			
-	    			return super.visitExprFunCall(exp); */
-	    			StmtAssert sas = new StmtAssert(exp.getCx(), ExprConstInt.zero);
-	    			sas.setMsg( (exp.getCx()!=null?exp.getCx().toString() : "" ) + exp.getName()  );
-	    			sas.accept(this); 
+	    			if(rcontrol.leaveCallsBehind()){
+	    				System.out.println("        Stopped recursion:  " + fun.getName());
+	 	    			funcsToAnalyze.add(fun);	    			
+	 	    			return super.visitExprFunCall(exp); 
+	    			}else{
+	    				StmtAssert sas = new StmtAssert(exp.getCx(), ExprConstInt.zero);
+		    			sas.setMsg( (exp.getCx()!=null?exp.getCx().toString() : "" ) + exp.getName()  );
+		    			sas.accept(this);
+	    			}	    			 
 	    		}
 	    		exprRV = exp;
 	    		return vtype.BOTTOM();

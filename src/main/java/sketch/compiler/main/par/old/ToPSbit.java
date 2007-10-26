@@ -1,5 +1,7 @@
 package streamit.frontend;
 
+import java.util.List;
+
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.MakeBodiesBlocks;
@@ -20,12 +22,32 @@ import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import streamit.frontend.tosbit.recursionCtrl.ZeroInlineRControl;
 
 public class ToPSbit extends ToSBit {
 
 	public ToPSbit(String[] args) {
 		super(args);
 		// TODO Auto-generated constructor stub
+	}
+	
+	
+	/**
+	 * This function produces a recursion control that is used by all transformations that are not user visible. 
+	 * In particular, the conversion to boolean.
+	 * @return
+	 */
+	public RecursionControl internalRControl(){		
+		return new ZeroInlineRControl();
+	}
+	
+	
+	protected void backendParameters(List<String> commandLineOptions){
+		super.backendParameters(commandLineOptions);
+		commandLineOptions.add("-inlineamnt");
+		commandLineOptions.add( "" + (params.flagValue("schedlen")+1) );
+		
 	}
 	
 	
@@ -45,17 +67,17 @@ public class ToPSbit extends ToSBit {
 		prog = (Program) prog.accept(ppm);
 		dump (prog, "After producing parallel model:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
-		dump (prog, "After second elimination of multi-dim arrays:");
+		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
-		dump (prog, "SeparateInitializers:");
+		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
 		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
-		dump (prog, "After lowerIR:");
+		//dump (prog, "After lowerIR:");
 	}
 	
 	
@@ -96,11 +118,11 @@ public class ToPSbit extends ToSBit {
 				"10", null) );
 		
 		params.setAllowedParam("locklen", new POpts(POpts.NUMBER,
-				"--locklen  n \t This is another one of those parameters that have to do with the way" +
-				"             \t things are implemented. The locks array has to be of a static size. " +
-				"             \t When you lock on a pointer, the pointer is transformed based on some " +
-				"             \t strange function, and the resulting value is used to index the lock array. " +
-				"             \t If that index is out of bounds, your sketch will not resolve, so you use this " +
+				"--locklen  n \t This is another one of those parameters that have to do with the way\n" +
+				"             \t things are implemented. The locks array has to be of a static size. \n" +
+				"             \t When you lock on a pointer, the pointer is transformed based on some \n" +
+				"             \t strange function, and the resulting value is used to index the lock array. \n" +
+				"             \t If that index is out of bounds, your sketch will not resolve, so you use this \n" +
 				"             \t parameter to make that lock array larger.",
 				"50", null) );
 	}

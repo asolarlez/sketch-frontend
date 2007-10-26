@@ -136,7 +136,7 @@ public class PartialEvaluator extends FEReplacer {
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
 		abstractValue newStart = (abstractValue) rl.start().accept(this);
-		Expression nstart = exprRV;		
+		Expression nstart = exprRV;
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
 		Expression nbase = exprRV;
 		if(isReplacer ){
@@ -367,7 +367,23 @@ public class PartialEvaluator extends FEReplacer {
     		}else{
     			abstractValue av = (abstractValue)actual.accept(this);
     			nparams.add(exprRV);
-    			avlist.add(av);
+    			
+    			if(param.getType() instanceof TypeArray ){
+    				TypeArray ta = (TypeArray) param.getType();
+    				if(av.isVect()){
+    					List<abstractValue> lv = av.getVectValue();
+    					if(lv.size() == ta.getLength().getIValue()){
+    						avlist.add(av);
+    					}else{
+    						avlist.add(vtype.cast(av, ta));
+    					}
+    				}else{
+    					avlist.add(vtype.cast(av, ta));
+    				}
+    			}else{
+    				assert !av.isVect() || av.getVectValue().size() == 1;
+    				avlist.add(av);
+    			}
     		}
     	}
     	List<abstractValue> outSlist = new ArrayList<abstractValue>();    	
@@ -1075,6 +1091,7 @@ public class PartialEvaluator extends FEReplacer {
 		while(actualParamIterator.hasNext()){
     		Expression actualParam = actualParamIterator.next();
     		abstractValue actualParamValue = (abstractValue) actualParam.accept(this);
+    		System.out.println("act=" + actualParam + ", " + actualParamValue);
     		actualParam = exprRV;
         	actualsList.add(actualParam);
         	actualsValList.add(actualParamValue);
