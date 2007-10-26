@@ -53,7 +53,6 @@ import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.ConvertVoidReturnTypesToBit;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateAnyorder;
 import streamit.frontend.passes.EliminateArrayRange;
@@ -133,10 +132,23 @@ public class ToSBit
 
 
 
-
-	public RecursionControl newRControl(){
+/**
+ * This function produces a recursion control that is used by all the user visible transformations.
+ * @return
+ */
+	public RecursionControl visibleRControl(){
 		// return new BaseRControl(params.inlineAmt);
 		return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog);
+	}
+
+	/**
+	 * This function produces a recursion control that is used by all transformations that are not user visible. 
+	 * In particular, the conversion to boolean. By default it is the same as the visibleRControl.
+	 * @return
+	 */
+	public RecursionControl internalRControl(){
+		
+		return visibleRControl();
 	}
 
 
@@ -154,7 +166,7 @@ public class ToSBit
 		// Complex structure type:
 		List<String> fields = new java.util.ArrayList<String>();
 		List<Type> ftypes = new java.util.ArrayList<Type>();
-		Type floattype = new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+		Type floattype = TypePrimitive.floattype ;
 		fields.add("real");
 		ftypes.add(floattype);
 		fields.add("imag");
@@ -232,7 +244,7 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-
+		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
@@ -283,18 +295,16 @@ public class ToSBit
 
 		//dump (prog, "before:");
 		// prog = (Program)prog.accept(new NoRefTypes());
-		prog = (Program) prog.accept (new ConvertVoidReturnTypesToBit ());
-		//dump (prog, "After converting 'void' returns to 'bit':");
 		//dump (prog, "bef fpe:");
-		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
+		prog = (Program)prog.accept(new FunctionParamExtension(true));		
 		//dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
 		//dump (prog, "tifs:");
 		prog = (Program) prog.accept (new EliminateMultiDimArrays ());
 		//dump (prog, "After first elimination of multi-dim arrays:");
-		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl() ) );
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		//dump (prog, "aftpp");
 		return prog;
 	}
@@ -321,7 +331,7 @@ public class ToSBit
 					new PrintStream(outStream)
 				//	System.out
 				,
-				params.flagValue("unrollamnt"), newRControl());
+				params.flagValue("unrollamnt"), internalRControl());
 			/*
              ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,
@@ -382,7 +392,7 @@ public class ToSBit
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
 		//finalCode.accept( new SimpleCodePrinter() );
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), newRControl(), true ));
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 
@@ -585,9 +595,9 @@ public class ToSBit
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed");
-
+		// if (!SemanticChecker.check(prog))
+		//	throw new IllegalStateException("Semantic check failed");
+		
 		if (prog == null)
 			throw new IllegalStateException();
 
@@ -599,6 +609,19 @@ public class ToSBit
 		System.out.println("DONE");
 
 	}
+	
+	
+	protected void backendParameters(List<String> commandLineOptions){
+		if( params.hasFlag("inbits") ){
+			commandLineOptions.add("-overrideInputs");
+			commandLineOptions.add( "" + params.flagValue("inbits") );
+		}
+		if( params.hasFlag("seed") ){
+			commandLineOptions.add("-seed");
+			commandLineOptions.add( "" + params.flagValue("seed") );
+		}
+	}
+	
 
 	private boolean solve(ValueOracle oracle){
 		TimeoutThread stopper=null;
@@ -609,14 +632,7 @@ public class ToSBit
 		}
 		List<String> commandLineOptions = params.commandLineOptions;
 
-		if( params.hasFlag("inbits") ){
-			commandLineOptions.add("-overrideInputs");
-			commandLineOptions.add( "" + params.flagValue("inbits") );
-		}
-		if( params.hasFlag("seed") ){
-			commandLineOptions.add("-seed");
-			commandLineOptions.add( "" + params.flagValue("seed") );
-		}
+		backendParameters(commandLineOptions);
 
 		System.out.println("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
