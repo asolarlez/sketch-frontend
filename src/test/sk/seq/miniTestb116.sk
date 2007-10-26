@@ -1,0 +1,25 @@
+
+struct Node{
+	int val;
+	Node next;
+	bit taken;	
+}
+
+int testSK(int i) implements test{
+	
+	Node n = null;
+	int x = 0;
+	if(??){
+		x = n.val;
+	}else{
+		n = new Node();
+		n.val = i;	
+	}
+	
+	return n.val;		
+}
+
+int test(int i){	
+	return i;		
+}
+
