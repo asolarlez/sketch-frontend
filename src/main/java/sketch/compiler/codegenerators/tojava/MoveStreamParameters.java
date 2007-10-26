@@ -82,7 +82,7 @@ public class MoveStreamParameters extends InitMunger
             new StmtBlock(context, Collections.singletonList(stmtSuper));
         Function fn =
             Function.newHelper(context, name,
-                               new TypePrimitive(TypePrimitive.TYPE_VOID),
+            					TypePrimitive.voidtype,
                                params, stmtBlock);
         return fn;
     }

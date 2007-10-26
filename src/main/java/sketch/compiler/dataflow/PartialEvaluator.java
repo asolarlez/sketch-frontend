@@ -815,7 +815,7 @@ public class PartialEvaluator extends FEReplacer {
         String nvar = varGen.nextVar ();
         StmtVarDecl nvarDecl =
             new StmtVarDecl (nvarContext,
-                             new TypePrimitive (TypePrimitive.TYPE_INT),
+            				 TypePrimitive.inttype,
                              nvar,
                              stmt.getIter ());
         Statement tmpstmt = (Statement) nvarDecl.accept (this);

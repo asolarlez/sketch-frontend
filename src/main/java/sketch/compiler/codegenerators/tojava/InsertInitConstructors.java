@@ -133,7 +133,7 @@ public class InsertInitConstructors extends InitMunger
                 Expression varExp = new ExprVar(ctx, tempVar);
                 Statement decl =
                     new StmtVarDecl(ctx,
-                                    new TypePrimitive(TypePrimitive.TYPE_INT),
+                    				TypePrimitive.inttype,
                                     tempVar,
                                     new ExprConstInt(ctx, 0));
                 Expression cond =

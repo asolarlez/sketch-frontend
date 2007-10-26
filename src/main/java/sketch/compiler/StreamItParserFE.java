@@ -526,7 +526,7 @@ inputState.guessing--;
 			{
 				match(TK_void);
 				if ( inputState.guessing==0 ) {
-					t = new TypePrimitive(TypePrimitive.TYPE_VOID);
+					t =  TypePrimitive.voidtype;
 				}
 				break;
 			}
@@ -2132,7 +2132,7 @@ inputState.guessing--;
 			{
 				match(TK_boolean);
 				if ( inputState.guessing==0 ) {
-					t = new TypePrimitive(TypePrimitive.TYPE_BOOLEAN);
+					t = TypePrimitive.booltype;
 				}
 				break;
 			}
@@ -2140,7 +2140,7 @@ inputState.guessing--;
 			{
 				match(TK_bit);
 				if ( inputState.guessing==0 ) {
-					t = new TypePrimitive(TypePrimitive.TYPE_BIT);
+					t = TypePrimitive.bittype;
 				}
 				break;
 			}
@@ -2148,7 +2148,7 @@ inputState.guessing--;
 			{
 				match(TK_int);
 				if ( inputState.guessing==0 ) {
-					t = new TypePrimitive(TypePrimitive.TYPE_INT);
+					t = TypePrimitive.inttype;
 				}
 				break;
 			}
@@ -2156,7 +2156,7 @@ inputState.guessing--;
 			{
 				match(TK_float);
 				if ( inputState.guessing==0 ) {
-					t = new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+					t = TypePrimitive.floattype;
 				}
 				break;
 			}
@@ -2164,7 +2164,7 @@ inputState.guessing--;
 			{
 				match(TK_double);
 				if ( inputState.guessing==0 ) {
-					t =  new TypePrimitive(TypePrimitive.TYPE_DOUBLE);
+					t = TypePrimitive.doubletype;
 				}
 				break;
 			}
@@ -2172,7 +2172,7 @@ inputState.guessing--;
 			{
 				match(TK_complex);
 				if ( inputState.guessing==0 ) {
-					t = new TypePrimitive(TypePrimitive.TYPE_COMPLEX);
+					t = TypePrimitive.cplxtype;
 				}
 				break;
 			}
@@ -2198,7 +2198,7 @@ inputState.guessing--;
 		
 		Token  id = null;
 		List l; Statement s; f = null;
-		Type t = new TypePrimitive(TypePrimitive.TYPE_VOID);
+		Type t = TypePrimitive.voidtype; 
 		int cls = Function.FUNC_HANDLER;
 		
 		try {      // for error handling

@@ -279,18 +279,18 @@ data_type returns [Type t] { t = null; Expression x; }
 			)
 			RSQUARE
 		)*
-	|	TK_void { t = new TypePrimitive(TypePrimitive.TYPE_VOID); }
+	|	TK_void { t =  TypePrimitive.voidtype; }
 	|	TK_portal LESS_THAN pn:ID MORE_THAN
 		{ t = new TypePortal(pn.getText()); }
 	;
 
 primitive_type returns [Type t] { t = null; }
-	:	TK_boolean { t = new TypePrimitive(TypePrimitive.TYPE_BOOLEAN); }
-	|	TK_bit { t = new TypePrimitive(TypePrimitive.TYPE_BIT); }
-	|	TK_int { t = new TypePrimitive(TypePrimitive.TYPE_INT); }
-	|	TK_float { t = new TypePrimitive(TypePrimitive.TYPE_FLOAT); }
-	|	TK_double { t =  new TypePrimitive(TypePrimitive.TYPE_DOUBLE); }
-	|	TK_complex { t = new TypePrimitive(TypePrimitive.TYPE_COMPLEX); }
+	:	TK_boolean { t = TypePrimitive.booltype; }
+	|	TK_bit { t = TypePrimitive.bittype;  }
+	|	TK_int { t = TypePrimitive.inttype;  }
+	|	TK_float { t = TypePrimitive.floattype;  }
+	|	TK_double { t = TypePrimitive.doubletype; }
+	|	TK_complex { t = TypePrimitive.cplxtype; }
 	;
 
 variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
@@ -328,7 +328,7 @@ return_type returns [Type t] { t=null; }
 	;
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
-Type t = new TypePrimitive(TypePrimitive.TYPE_VOID);
+Type t = TypePrimitive.voidtype; 
 int cls = Function.FUNC_HANDLER; }
 	:	TK_handler id:ID l=param_decl_list s=block
 		{ f = new Function(getContext(id), cls, id.getText(), t, l, s); }

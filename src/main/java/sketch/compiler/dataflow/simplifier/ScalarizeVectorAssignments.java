@@ -338,7 +338,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 	private void zeroOut(Expression lhs, Expression beg, Expression end, List<Statement> mainLst){
 		String indexName = varGen.nextVar();
         ExprVar index = new ExprVar(null, indexName);
-        Type intType = new TypePrimitive(TypePrimitive.TYPE_INT);        
+        Type intType =  TypePrimitive.inttype;         
         Statement init =
             new StmtVarDecl(null, intType, indexName,
                             beg);
@@ -449,7 +449,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // view, the array bounds may not be constant.
         String indexName = varGen.nextVar();
         ExprVar index = new ExprVar(null, indexName);
-        Type intType = new TypePrimitive(TypePrimitive.TYPE_INT);        
+        Type intType = TypePrimitive.inttype;        
         Statement init =
             new StmtVarDecl(null, intType, indexName,
                             new ExprConstInt(null, 0));

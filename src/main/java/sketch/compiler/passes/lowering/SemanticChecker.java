@@ -497,9 +497,9 @@ public class SemanticChecker
 				if (ot != null)
 				{
 					Type inttype =
-						new TypePrimitive(TypePrimitive.TYPE_INT);
+						TypePrimitive.inttype;
 					Type bittype =
-						new TypePrimitive(TypePrimitive.TYPE_BIT);
+						TypePrimitive.bittype;
 
 					switch(expr.getOp())
 					{
@@ -627,13 +627,13 @@ public class SemanticChecker
 						ct = lt;
 					}
 					Type inttype =
-						new TypePrimitive(TypePrimitive.TYPE_INT);
+						TypePrimitive.inttype;
 					Type bittype =
-						new TypePrimitive(TypePrimitive.TYPE_BIT);
+						TypePrimitive.bittype;
 					Type cplxtype =
-						new TypePrimitive(TypePrimitive.TYPE_COMPLEX);
+						TypePrimitive.cplxtype;
 					Type floattype =
-						new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+						TypePrimitive.floattype;
 					if (ct == null)
 					{
 						report (expr,
@@ -820,7 +820,7 @@ public class SemanticChecker
 				if (ot != null)
 				{
 					if (!ot.promotesTo
-							(new TypePrimitive(TypePrimitive.TYPE_INT)))
+							(TypePrimitive.inttype))
 						report(expr, "array index must be an int");
 				}else{
 					report(expr, "array index must be an int");
@@ -982,7 +982,7 @@ public class SemanticChecker
 
 				// check that the associated condition is promotable to a boolean
 				Type ct = getType(stmt.getCond());
-				Type bt = new TypePrimitive(TypePrimitive.TYPE_BIT);
+				Type bt = TypePrimitive.bittype;
 
 				if (!ct.promotesTo(bt))
 					report (stmt, "assert must be passed a boolean");
@@ -996,7 +996,7 @@ public class SemanticChecker
 			{
 				// check the condition
 				Type cond = getType(stmt.getCond());
-				if (!cond.promotesTo(new TypePrimitive(TypePrimitive.TYPE_BIT)))
+				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a promotable to a bit");
 
 				// should really also check whether any variables are modified in the loop body
@@ -1013,7 +1013,7 @@ public class SemanticChecker
 				}
 				
 				Type cond = getType(stmt.getCond());
-				if (!cond.promotesTo(new TypePrimitive(TypePrimitive.TYPE_BIT)))
+				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
 				// also need to check that the variable is incremented by 1
@@ -1035,7 +1035,7 @@ public class SemanticChecker
 			{
 				// check the condition
 				Type cond = getType(stmt.getCond());
-				if (!cond.promotesTo(new TypePrimitive(TypePrimitive.TYPE_BIT)))
+				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
 				return super.visitStmtIfThen(stmt);
@@ -1045,7 +1045,7 @@ public class SemanticChecker
 			{
 				// variable in loop should promote to an int
 				Type cond = getType(stmt.getIter());
-				if (!cond.promotesTo(new TypePrimitive(TypePrimitive.TYPE_INT)))
+				if (!cond.promotesTo(TypePrimitive.inttype))
 					report (stmt, "Iteration count is not convertable to an integer");
 
 				return super.visitStmtLoop(stmt);
@@ -1055,7 +1055,7 @@ public class SemanticChecker
 			{
 				// check the condition
 				Type cond = getType(stmt.getCond());
-				if (!cond.promotesTo(new TypePrimitive(TypePrimitive.TYPE_BIT)))
+				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
 				return super.visitStmtWhile(stmt);

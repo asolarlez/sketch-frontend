@@ -1080,7 +1080,7 @@ public class NodesToSBit extends PartialEvaluator{
             String nvar = varGen.nextVar ();
             StmtVarDecl nvarDecl =
                 new StmtVarDecl (nvarContext,
-                                 new TypePrimitive (TypePrimitive.TYPE_INT),
+                					TypePrimitive.inttype,
                                  nvar,
                                  stmt.getIter ());
             nvarDecl.accept (this);

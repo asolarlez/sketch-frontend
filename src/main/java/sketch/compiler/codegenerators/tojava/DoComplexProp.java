@@ -113,7 +113,7 @@ public class DoComplexProp extends SymbolTableVisitor
         // ignore the type parameter.
         String tempVar = varGen.nextVar();
         Expression exprVar = new ExprVar(expr.getContext(), tempVar);
-        Type type = new TypePrimitive(TypePrimitive.TYPE_COMPLEX);
+        Type type = TypePrimitive.cplxtype;
         addStatement(new StmtVarDecl(expr.getContext(), type, tempVar, null));
         symtab.registerVar(tempVar, type);
         addStatement(new StmtAssign(expr.getContext(),

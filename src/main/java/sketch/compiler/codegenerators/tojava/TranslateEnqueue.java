@@ -109,7 +109,7 @@ public class TranslateEnqueue extends FEReplacer
         }
         else if (tp.getType() == TypePrimitive.TYPE_INT)
         {
-            returnType = new TypePrimitive(TypePrimitive.TYPE_INT);
+            returnType = TypePrimitive.inttype;
             name = "initPathInt";
             stmts.add(new StmtReturn(context,
                                      new ExprConstInt(context, 0)));
@@ -127,7 +127,7 @@ public class TranslateEnqueue extends FEReplacer
                                             "stream's input type is " + tp);
         }
         Parameter param =
-            new Parameter(new TypePrimitive(TypePrimitive.TYPE_INT), "n");
+            new Parameter(TypePrimitive.inttype, "n");
         return Function.newHelper(context, name, returnType,
                                   Collections.singletonList(param), body);
     }

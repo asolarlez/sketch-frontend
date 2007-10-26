@@ -126,7 +126,7 @@ public class GetExprType extends FENullVisitor
         case ExprBinary.BINOP_LE:
         case ExprBinary.BINOP_GT:
         case ExprBinary.BINOP_GE:
-            return new TypePrimitive(TypePrimitive.TYPE_BOOLEAN);
+            return TypePrimitive.booltype;
         }
         Type tl = (Type)exp.getLeft().accept(this);
     	Type tr = (Type)exp.getRight().accept(this);
@@ -158,12 +158,12 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprComplex(ExprComplex exp)
     {
-        return new TypePrimitive(TypePrimitive.TYPE_COMPLEX);
+        return TypePrimitive.cplxtype;
     }
 
     public Object visitExprConstBoolean(ExprConstBoolean exp)
     {
-        return new TypePrimitive(TypePrimitive.TYPE_BOOLEAN);
+        return TypePrimitive.booltype;
     }
 
     public Object visitExprStar(ExprStar exp){
@@ -186,16 +186,16 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprConstFloat(ExprConstFloat exp)
     {
-        return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+        return TypePrimitive.floattype;
     }
 
     public Object visitExprConstInt(ExprConstInt exp)
     {
 	// return a bit type if the value is 0 or 1
 	if (exp.getVal()==0 || exp.getVal()==1) {
-	    return new TypePrimitive(TypePrimitive.TYPE_BIT);
+	    return TypePrimitive.bittype;
 	} else {
-	    return new TypePrimitive(TypePrimitive.TYPE_INT);
+	    return TypePrimitive.inttype;
 	}
     }
 
@@ -210,7 +210,7 @@ public class GetExprType extends FENullVisitor
         Type base = (Type)exp.getLeft().accept(this);
         // If the base is a complex type, a field of it is float.
         if (base.isComplex())
-            return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+            return TypePrimitive.floattype;
         else if (base instanceof TypeStruct)
             return ((TypeStruct)base).getType(exp.getName());
         else if (base instanceof TypeStructRef)
@@ -243,7 +243,7 @@ public class GetExprType extends FENullVisitor
 	// exactly sure which ones have a constant return type and
 	// which ones are polymorphic.  --BFT
 	if (exp.getName().equals("abs")) {
-	    return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+	    return TypePrimitive.floattype;
 	}
 
         // Otherwise, we can assume that the only function calls are
@@ -257,7 +257,7 @@ public class GetExprType extends FENullVisitor
         // argument; otherwise, return float as a default.
         List params = exp.getParams();
         if (params.isEmpty()) {
-            return new TypePrimitive(TypePrimitive.TYPE_FLOAT);
+            return TypePrimitive.floattype;
 	}
         return ((Expression)params.get(0)).accept(this);
     }

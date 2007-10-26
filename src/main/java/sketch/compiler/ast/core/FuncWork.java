@@ -40,7 +40,7 @@ public class FuncWork extends Function
                     Expression peek, Expression pop, Expression push)
     {
         super(context, cls, name,
-              new TypePrimitive(TypePrimitive.TYPE_VOID),
+        		TypePrimitive.voidtype,
               Collections.EMPTY_LIST, body);
         peekRate = peek;
         popRate = pop;

@@ -67,6 +67,8 @@ public class TypePrimitive extends Type
     /** Type object for float types. */
     public static final TypePrimitive floattype =
         new TypePrimitive(TYPE_FLOAT);
+    public static final TypePrimitive doubletype =
+        new TypePrimitive(TYPE_DOUBLE);
     /** Type object for complex primitive types. */
     public static final TypePrimitive cplxtype =
         new TypePrimitive(TYPE_COMPLEX);
@@ -82,11 +84,14 @@ public class TypePrimitive extends Type
     private int type;
 
     /**
-     * Create a new primitive type.
+     * Create a new primitive type. It's private, because we 
+     * don't want other classes creating their own primitive types. 
+     * They should use only the ones we have defined statically above.
      *
+     * This allows us to compare primitive types with simple pointer equality, without having to call the equals operator.
      * @param type  integer type number, one of the TYPE_* constants
      */
-    public TypePrimitive(int type)
+    private TypePrimitive(int type)
     {
         this.type = type;
     }

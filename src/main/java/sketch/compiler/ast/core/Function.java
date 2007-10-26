@@ -84,7 +84,7 @@ public class Function extends FENode
 	}
 
     public static Function newUninterp(String name, List<Parameter> params){
-    	return new Function(null, FUNC_UNINTERP, name,new TypePrimitive(TypePrimitive.TYPE_VOID), params, null);
+    	return new Function(null, FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
     }
 
     public static Function newUninterp(String name, Type rettype, List<Parameter> params){
@@ -95,7 +95,7 @@ public class Function extends FENode
     public static Function newInit(FEContext context, Statement body)
     {
         return new Function(context, FUNC_INIT, null,
-                            new TypePrimitive(TypePrimitive.TYPE_VOID),
+        					TypePrimitive.voidtype,
                             Collections.EMPTY_LIST, body);
     }
 
@@ -105,7 +105,7 @@ public class Function extends FENode
                                       List<Parameter> params, Statement body)
     {
         return new Function(context, FUNC_HANDLER, name,
-                            new TypePrimitive(TypePrimitive.TYPE_VOID),
+        					TypePrimitive.voidtype,
                             params, body);
     }
 
