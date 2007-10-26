@@ -61,6 +61,14 @@ public abstract class RecursionControl{
 	 * @return return true if this call should be inlined.
 	 */
 	public abstract boolean testCall(ExprFunCall fc);
+	/**
+	 * This function tells the caller whether the recursion control wishes to leave un-inlined functions behind as function calls or whether
+	 * they should be replaced by assertions.
+	 * 
+	 * @return
+	 */
+	public abstract boolean leaveCallsBehind();
+	
 	public String debugMsg(){
 		return "";
 	}
