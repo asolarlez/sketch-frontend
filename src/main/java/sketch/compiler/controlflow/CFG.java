@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import streamit.frontend.controlflow.CFGNode.EdgePair;
 
 /**
  * A control-flow graph.  This has a set of nodes and a set of edges.
@@ -38,7 +41,6 @@ public class CFG
 {
     private List<CFGNode> nodes;
     private CFGNode entry, exit;
-    private Map<CFGNode, List<CFGNode>> edges;
     
     /**
      * Create a new control-flow graph (or fraction thereof).
@@ -49,12 +51,27 @@ public class CFG
      * @param edges  mapping of from-node to to-node making up
      *               edges in the graph
      */
-    public CFG(List<CFGNode> nodes, CFGNode entry, CFGNode exit, Map<CFGNode, List<CFGNode>> edges)
+    public CFG(List<CFGNode> nodes, CFGNode entry, CFGNode exit, Map<CFGNode, List<CFGNode.EdgePair>> edges)
     {
         this.nodes = nodes;
         this.entry = entry;
         this.exit = exit;
-        this.edges = edges;
+        
+        for(Iterator<CFGNode> nit = nodes.iterator(); nit.hasNext(); ){
+        	CFGNode n = nit.next();
+        	n.getSuccs().clear();
+        	n.getPreds().clear();
+        }
+        
+        for(Iterator<Entry<CFGNode, List<CFGNode.EdgePair>>> edgeIt = edges.entrySet().iterator(); edgeIt.hasNext(); ){
+        	Entry<CFGNode, List<CFGNode.EdgePair>> elist = edgeIt.next();        	
+        	elist.getKey().addSuccs(elist.getValue());
+        	
+        	for(Iterator<CFGNode.EdgePair> succIt = elist.getValue().iterator(); succIt.hasNext();  ){
+        		CFGNode succ  = succIt.next().node;
+        		succ.addPred(succ);
+        	}        	
+        }        
     }
 
     /**
@@ -97,11 +114,9 @@ public class CFG
      * @param node  node to query
      * @return      list of {@link CFGNode} exiting that node
      */
-    public List<CFGNode> getSuccessors(CFGNode node)
-    {
-        List<CFGNode> result = edges.get(node);
-        if (result == null) result = Collections.EMPTY_LIST;
-        return result;
+    public List<EdgePair> getSuccessors(CFGNode node)
+    {        
+        return node.getSuccs();
     }
 
     /**
@@ -110,21 +125,9 @@ public class CFG
      * @param node  node to query
      * @return      list of {@link CFGNode} entering that node
      */
-    public List getPredecessors(CFGNode node)
+    public List<CFGNode> getPredecessors(CFGNode node)
     {
-        // Do a search through the list of forward edges.
-        // If this winds up being a performance bottleneck,
-        // we can precompute the list of backwards edges.
-        // This implementation is O(n) in the number of nodes.
-        List result = new ArrayList();
-        for (Iterator iter = edges.keySet().iterator(); iter.hasNext(); )
-        {
-            CFGNode other = (CFGNode)iter.next();
-            List targets = (List)edges.get(other);
-            if (targets.contains(node))
-                result.add(other);
-        }
-        return result;
+      return node.getPreds();
     }
 
     public void setNodeIDs(){
@@ -177,20 +180,22 @@ public class CFG
             }
             result.append(name + " [ label=\"" + label + "\", shape=" +
                           shape + " ]\n");
+            
+            
             seq++;
         }
-        // Next, go through all the edges.
-        for (Iterator fiter = edges.keySet().iterator(); fiter.hasNext(); )
+        
+        for (Iterator iter = nodes.iterator(); iter.hasNext(); )
         {
-            CFGNode from = (CFGNode)fiter.next();
-            List targets = (List)edges.get(from);
-            for (Iterator titer = targets.iterator(); titer.hasNext(); )
+        	CFGNode node = (CFGNode)iter.next();
+        	for (Iterator<EdgePair> titer = node.getSuccs().iterator(); titer.hasNext(); )
             {
-                CFGNode to = (CFGNode)titer.next();
-                result.append(nodeName.get(from) + " -> " +
+                CFGNode to = titer.next().node;
+                result.append(nodeName.get(node) + " -> " +
                               nodeName.get(to) + "\n");
             }
         }
+        
         // All done.
         result.append("}\n");
         return result.toString();
