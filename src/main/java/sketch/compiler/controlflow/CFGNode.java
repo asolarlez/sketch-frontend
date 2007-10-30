@@ -16,9 +16,14 @@
 
 package streamit.frontend.controlflow;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.Statement;
+
+
 
 /**
  * A single-statement or single-expression node in a control flow graph.
@@ -36,10 +41,24 @@ import streamit.frontend.nodes.Statement;
  */
 public class CFGNode
 {
+	public static class EdgePair{
+		public final CFGNode node;
+		public final Integer label;
+		public EdgePair(CFGNode node, Integer label){
+			this.node = node;
+			this.label = label;
+		}
+		public String toString(){
+			return "->" + node.toString() + ((label == null)?"": "[" + label + "]");
+		}
+	}
+	
     private boolean empty;
     private Statement stmt;
     private Expression expr;
     private int id;
+    private List<CFGNode> preds = new ArrayList<CFGNode>();
+    private List<EdgePair> succs = new ArrayList<EdgePair>();
     
     // can't both be empty and have an expression.
     private CFGNode(Statement stmt, Expression expr, boolean empty)
@@ -178,6 +197,38 @@ public class CFGNode
 				return id + ": empty";
 			}
 		}
+	}
+
+	/**
+	 * @param preds the preds to set
+	 */
+	public void addPreds(List<CFGNode> preds) {
+		this.preds.addAll(preds);
+	}
+	
+	public void addPred(CFGNode pred) {
+		this.preds.add(pred);
+	}
+
+	/**
+	 * @return the preds
+	 */
+	public List<CFGNode> getPreds() {
+		return preds;
+	}
+
+	/**
+	 * @param succs the succs to set
+	 */
+	public void addSuccs(List<EdgePair> succs) {
+		this.succs.addAll(succs);
+	}
+
+	/**
+	 * @return the succs
+	 */
+	public List<EdgePair> getSuccs() {
+		return succs;
 	}
 	
 }
