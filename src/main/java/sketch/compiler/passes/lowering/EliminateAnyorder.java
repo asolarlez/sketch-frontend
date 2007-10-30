@@ -17,6 +17,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAnyOrderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
@@ -25,6 +26,13 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 
+/**
+ * 
+ * Replaces the Anyorder nodes with basic integer holes.
+ * 
+ * @author asolar
+ *
+ */
 public class EliminateAnyorder extends FEReplacer {
 
 	private TempVarGen varGen;	
@@ -47,10 +55,10 @@ public class EliminateAnyorder extends FEReplacer {
 		slist.add(set);
 		Statement elsebranch = recursiveCondGenerator(iter, iname, i+1);
 		if(elsebranch == null){
-			return new StmtBlock(cx, slist);
+			return new StmtAtomicBlock(cx, slist);
 		}else{
 			Expression cond = new ExprBinary(cx, ExprBinary.BINOP_AND, new ExprStar(cx), new ExprUnary(cx, ExprUnary.UNOP_NOT,var));
-			return new StmtIfThen(cx, cond, new StmtBlock(cx, slist), elsebranch);
+			return new StmtIfThen(cx, cond, new StmtAtomicBlock(cx, slist), elsebranch);
 		}
 	}
 

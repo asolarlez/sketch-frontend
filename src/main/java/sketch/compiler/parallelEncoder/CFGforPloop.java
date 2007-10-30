@@ -9,6 +9,7 @@ import java.util.Map;
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
 import streamit.frontend.controlflow.CFGNode;
+import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtPloop;
@@ -18,13 +19,15 @@ public class CFGforPloop extends CFGBuilder {
 
 	
 	public static CFG cleanCFG(CFG cfg){
-		Map<CFGNode, List<CFGNode>> edges = new HashMap<CFGNode, List<CFGNode>>();
+		Map<CFGNode, List<EdgePair>> edges = new HashMap<CFGNode, List<EdgePair>>();
 	    List<CFGNode> nodes = new ArrayList<CFGNode>();
 		Map<CFGNode, CFGNode> equiv = new HashMap<CFGNode, CFGNode>();
 	    for(Iterator<CFGNode> it = cfg.getNodes().iterator(); it.hasNext(); ){
 	    	CFGNode n = it.next();
 	    	if( n.isEmpty() && cfg.getSuccessors(n).size() == 1 ){
-	    		equiv.put(n, cfg.getSuccessors(n).get(0));
+	    		EdgePair ep = cfg.getSuccessors(n).get(0);
+	    		assert ep.label == null : "The nodes must be connected by an unconditional edge";
+	    		equiv.put(n, ep.node);
 	    	}
 	    }
 	    
@@ -41,20 +44,21 @@ public class CFGforPloop extends CFGBuilder {
 	    		if(n != entry){
 	    			nodes.add(n);
 	    		}
-	    		for(Iterator<CFGNode> suc = cfg.getSuccessors(n).iterator(); suc.hasNext(); ){
-	    			CFGNode sn = suc.next();
+	    		for(Iterator<EdgePair> suc = cfg.getSuccessors(n).iterator(); suc.hasNext(); ){
+	    			EdgePair sep = suc.next();
+	    			CFGNode sn = sep.node;
 	    			while(equiv.containsKey(sn)){
 	    				sn = equiv.get(sn);
 	    			}
-	    			List<CFGNode> target;
+	    			List<EdgePair> target;
 	    		    if (edges.containsKey(n))
 	    		            target = edges.get(n);
     		        else
     		        {
-    		            target = new ArrayList<CFGNode>();
+    		            target = new ArrayList<EdgePair>();
     		            edges.put(n, target);
     		        }
-    		        target.add(sn);
+    		        target.add(new EdgePair(sn, sep.label));
 	    		}
 	    	}
 	    }
@@ -86,7 +90,7 @@ public class CFGforPloop extends CFGBuilder {
 	    			 entry = tmp;
 	    			 last = tmp;
 	    		 }else{
-	    			 addEdge(last, tmp);
+	    			 addEdge(last, tmp, null);
 	    			 last = tmp;
 	    		 }
 	    	 }

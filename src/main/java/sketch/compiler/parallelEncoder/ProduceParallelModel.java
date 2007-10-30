@@ -10,6 +10,7 @@ import java.util.Set;
 
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGNode;
+import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
@@ -680,10 +681,10 @@ public class ProduceParallelModel extends FEReplacer {
 				}
 			});
 			newStmt = (Statement)newStmt.accept(vrepl);
-			List<CFGNode> succ = cfg.getSuccessors(node);
+			List<EdgePair> succ = cfg.getSuccessors(node);
 			assert succ.size() == 1;
-			
-			Expression rhs = new ExprConstInt( succ.get(0).getId() );
+			assert succ.get(0).label == null;
+			Expression rhs = new ExprConstInt( succ.get(0).node.getId() );
 			Statement pcassign = new StmtAssign(cx, lhsPC, rhs);
 			
 			List<Statement> bodyL = new ArrayList<Statement>(2);
@@ -695,13 +696,28 @@ public class ProduceParallelModel extends FEReplacer {
 		
 		if(node.isExpr()){			
 			Expression expr = (Expression)node.getExpr().accept(vrepl);
-			List<CFGNode> succ = cfg.getSuccessors(node);
+			List<EdgePair> succ = cfg.getSuccessors(node);
 			assert succ.size() == 2;			
 			
-			Expression rhsT = new ExprConstInt( succ.get(0).getId() );
+			int tid;
+			int fid;
+			if(succ.get(0).label == 0){
+				fid = succ.get(0).node.getId();
+				assert succ.get(1).label == 1;
+				tid = succ.get(1).node.getId();
+			}else{
+				assert succ.get(0).label == 1;
+				tid = succ.get(0).node.getId();
+				assert succ.get(1).label == 0;
+				fid = succ.get(1).node.getId();
+				
+			}
+			
+			
+			Expression rhsT = new ExprConstInt( tid );
 			Statement pcassignT = new StmtAssign(cx, lhsPC, rhsT);
 			
-			Expression rhsF = new ExprConstInt( succ.get(1).getId() );
+			Expression rhsF = new ExprConstInt( fid );
 			Statement pcassignF = new StmtAssign(cx, lhsPC, rhsF);
 			
 			StmtIfThen body = new StmtIfThen(cx, expr, pcassignT, pcassignF);
@@ -710,10 +726,11 @@ public class ProduceParallelModel extends FEReplacer {
 		}
 	
 		if(node.isEmpty()){
-			List<CFGNode> succ = cfg.getSuccessors(node);
+			List<EdgePair> succ = cfg.getSuccessors(node);
 			
 			if(succ.size() == 1){
-				Expression rhs = new ExprConstInt( succ.get(0).getId() );
+				assert succ.get(0).label == null;
+				Expression rhs = new ExprConstInt( succ.get(0).node.getId() );
 				Statement pcassign = new StmtAssign(cx, lhsPC, rhs);
 				conditCF.add(new StmtIfThen(cx, cond, pcassign, null));
 			}else{

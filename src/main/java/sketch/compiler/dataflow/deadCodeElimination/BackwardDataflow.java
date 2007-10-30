@@ -13,6 +13,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -133,6 +134,31 @@ public class BackwardDataflow extends DataflowWithFixpoint {
         return rs;
     }
 	
+    
+    public Object visitStmtPloop(StmtPloop loop){
+		/// When preprocessing ploops, we must assume that any variable touched by 
+		/// the ploop will be potentially modified. So any variable that could be touched
+		/// by the ploop body will be wiped out by the procChangeTrackersConservative.
+		state.pushLevel();
+		
+		varDecl(loop.getLoopVarDecl());
+		
+		
+		abstractValue viter = (abstractValue) loop.getIter().accept(this);
+        Expression niter = exprRV;
+        Statement nbody = null;
+        StmtVarDecl ndecl = null; 
+        try{ 
+        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
+        	processBlockWithCrazyEffects(loop.getBody());
+	        nbody = (Statement)loop.getBody().accept(this);
+        }finally{
+    		state.popLevel();	        	
+    	}
+        return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
+	}
+    
+    
     
     public Object visitStmtFor(StmtFor stmt)
     {
