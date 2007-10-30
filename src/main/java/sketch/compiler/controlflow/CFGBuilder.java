@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.FENullVisitor;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
@@ -73,7 +74,7 @@ public class CFGBuilder extends FENullVisitor
     // Where to go for particular statements:
     protected CFGNode nodeReturn, nodeBreak, nodeContinue;
     // What edges exist (map from start node to list of end node):
-    protected Map<CFGNode, List<CFGNode>> edges;
+    protected Map<CFGNode, List<EdgePair>> edges;
     // Every node:
     protected List<CFGNode> nodes;
     
@@ -86,18 +87,18 @@ public class CFGBuilder extends FENullVisitor
         nodes = new ArrayList();
     }
 
-    protected void addEdge(CFGNode from, CFGNode to)
+    protected void addEdge(CFGNode from, CFGNode to, Integer label)
     {
-        List<CFGNode> target;
+        List<EdgePair> target;
         if (edges.containsKey(from))
             target = edges.get(from);
         else
         {
-            target = new ArrayList<CFGNode>();
+            target = new ArrayList<EdgePair>();
             edges.put(from, target);
         }
         //if (!target.contains(to))
-        target.add(to);
+        target.add(new EdgePair(to, label));
     }
 
     protected CFGNodePair visitStatement(Statement stmt)
@@ -139,7 +140,7 @@ public class CFGBuilder extends FENullVisitor
             // somewhere").  This could lead to a node with no
             // forward path to it, but that's okay.
             if (current != null)
-                addEdge(current, pair.start);
+                addEdge(current, pair.start, null);
             // Make the end of the pair current.  That could be null if
             // the statement was a break, continue, or return statement
             // that doesn't have an interesting outgoing edge.
@@ -150,7 +151,7 @@ public class CFGBuilder extends FENullVisitor
         // a current node.  (For example, current could be null if the
         // last statement in a function is a return, but that's fine.)
         if (current != null)
-            addEdge(current, exit);
+            addEdge(current, exit, null);
         
         return new CFGNodePair(entry, exit);
     }
@@ -169,9 +170,9 @@ public class CFGBuilder extends FENullVisitor
         CFGNodePair pairIncr = visitStatement(stmt.getIncr());
         // Things we know are connected:
         // (claim that pairInit and pairIncr don't have null ends.)
-        addEdge(pairInit.end, cond);
-        addEdge(pairIncr.end, cond);
-        addEdge(cond, exit);
+        addEdge(pairInit.end, cond, null);
+        addEdge(pairIncr.end, cond, null);
+        addEdge(cond, exit, 0);
         // Also, continue statements go to incr, breaks to exit.
         CFGNode lastContinue = nodeContinue;
         CFGNode lastBreak = nodeBreak;
@@ -183,9 +184,9 @@ public class CFGBuilder extends FENullVisitor
         nodeContinue = lastContinue;
         nodeBreak = lastBreak;
         // Connect body.
-        addEdge(cond, pairBody.start);
+        addEdge(cond, pairBody.start, 1);
         if (pairBody.end != null)
-            addEdge(pairBody.end, pairIncr.start);
+            addEdge(pairBody.end, pairIncr.start, null);
         // And return the pair.
         return new CFGNodePair(entry, exit);
     }
@@ -201,25 +202,25 @@ public class CFGBuilder extends FENullVisitor
         if (stmt.getCons() != null)
         {
             CFGNodePair pair = visitStatement(stmt.getCons());
-            addEdge(entry, pair.start);
+            addEdge(entry, pair.start, 1);
             if (pair.end != null)
-                addEdge(pair.end, exit);
+                addEdge(pair.end, exit, null);
         }
         else
         {
-            addEdge(entry, exit);
+            addEdge(entry, exit, 1);
         }
 
         if (stmt.getAlt() != null)
         {
             CFGNodePair pair = visitStatement(stmt.getAlt());
-            addEdge(entry, pair.start);
+            addEdge(entry, pair.start, 0);
             if (pair.end != null)
-                addEdge(pair.end, exit);
+                addEdge(pair.end, exit, null);
         }
         else
         {
-            addEdge(entry, exit);
+            addEdge(entry, exit, 0);
         }
         
         return new CFGNodePair(entry, exit);
@@ -243,11 +244,11 @@ public class CFGBuilder extends FENullVisitor
         nodeContinue = lastContinue;
         nodeBreak = lastBreak;
         // Connect body.
-        addEdge(entry, pairBody.start);
+        addEdge(entry, pairBody.start, 1);
         if (pairBody.end != null)
-            addEdge(pairBody.end, entry);
+            addEdge(pairBody.end, entry, null);
         // Conditional can be false.
-        addEdge(entry, exit);
+        addEdge(entry, exit, 0);
         // And return the pair.
         return new CFGNodePair(entry, exit);        
     }
@@ -273,12 +274,12 @@ public class CFGBuilder extends FENullVisitor
         nodeContinue = lastContinue;
         nodeBreak = lastBreak;
         // Connect body.
-        addEdge(entry, pairBody.start);
+        addEdge(entry, pairBody.start, null);
         if (pairBody.end != null)
-            addEdge(pairBody.end, cond);
+            addEdge(pairBody.end, cond, null);
         // Also connect up loop and exit from cond.
-        addEdge(cond, pairBody.start);
-        addEdge(cond, exit);
+        addEdge(cond, pairBody.start, 1);
+        addEdge(cond, exit, 0);
         // And return the pair.
         return new CFGNodePair(entry, exit);        
     }
@@ -289,7 +290,7 @@ public class CFGBuilder extends FENullVisitor
         CFGNode node = new CFGNode(stmt);
         nodes.add(node);
         // but explicitly connect it to the current loop break node.
-        addEdge(node, nodeBreak);
+        addEdge(node, nodeBreak, null);
         // Return an edge pair pointing to null.
         return new CFGNodePair(node, null);
     }
@@ -298,7 +299,7 @@ public class CFGBuilder extends FENullVisitor
     {
         CFGNode node = new CFGNode(stmt);
         nodes.add(node);
-        addEdge(node, nodeContinue);
+        addEdge(node, nodeContinue, null);
         return new CFGNodePair(node, null);
     }
 
@@ -306,7 +307,7 @@ public class CFGBuilder extends FENullVisitor
     {
         CFGNode node = new CFGNode(stmt);
         nodes.add(node);
-        addEdge(node, nodeReturn);
+        addEdge(node, nodeReturn, null);
         return new CFGNodePair(node, null);
     }
 }
