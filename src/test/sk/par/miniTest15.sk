@@ -1,0 +1,24 @@
+//Needs schedlen 18.
+
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in;
+	ploop(int i; 2){
+		int local;
+		anyorder{
+			lock(1);
+			unlock(1);
+			local = global + 1;
+			global = local;	
+		}
+	}
+	return global == in + 2;
+}
+
+
+

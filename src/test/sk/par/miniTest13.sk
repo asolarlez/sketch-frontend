@@ -1,0 +1,22 @@
+
+
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in;
+	ploop(int i; 2){
+		int local;
+		if(??){ lock(1); } 
+		if(??){ local = global + 1;}	
+		global = local;
+		unlock(1);	
+	}
+	return global == in + 2;
+}
+
+
+
