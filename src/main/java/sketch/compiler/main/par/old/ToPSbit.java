@@ -3,11 +3,17 @@ package streamit.frontend;
 import java.util.List;
 
 import streamit.frontend.CommandLineParamManager.POpts;
+import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
+import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
+import streamit.frontend.experimental.preprocessor.PreprocessSketch;
+import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.parallelEncoder.ProduceParallelModel;
+import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
@@ -19,6 +25,7 @@ import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
@@ -31,6 +38,19 @@ public class ToPSbit extends ToSBit {
 		super(args);
 		// TODO Auto-generated constructor stub
 	}
+	
+	public void eliminateStar(){
+		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
+		dump(finalCode, "after elim star");
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+		dump(finalCode, "after postproc");
+		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
+		dump(finalCode, "after flattening");		
+		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
+		finalCode = (Program)finalCode.accept(new AssembleInitializers());
+		
+	}
+	
 	
 	
 	/**
@@ -47,7 +67,7 @@ public class ToPSbit extends ToSBit {
 		super.backendParameters(commandLineOptions);
 		commandLineOptions.add("-inlineamnt");
 		commandLineOptions.add( "" + (params.flagValue("schedlen")+1) );
-		
+		commandLineOptions.add("-mergeFunctions");
 	}
 	
 	

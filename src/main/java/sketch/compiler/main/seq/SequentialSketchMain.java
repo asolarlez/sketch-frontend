@@ -391,11 +391,11 @@ public class ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
-		//finalCode.accept( new SimpleCodePrinter() );
+		dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-		//finalCode.accept( new SimpleCodePrinter() );
+		dump(finalCode, "after postproc");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-
+		dump(finalCode, "after flattening");
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		// dump(finalCode, "Before DCE");
