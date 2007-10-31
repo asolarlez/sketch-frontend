@@ -1,0 +1,90 @@
+struct Node{
+	int val;
+	Node next;
+}
+
+struct Queue{
+	Node prevHead;
+	Node tail;	
+}
+
+
+Queue newQueue(){
+	Queue q = new Queue();
+	q.prevHead = new Node();
+	q.prevHead.next = null;
+	q.tail = q.prevHead;	
+	return q;
+}
+
+Node baseQ(Queue q){
+	if(??){
+		return q.tail;	
+	}else{
+		return q.prevHead;
+	}
+	return null;	
+}
+
+Node someNext(Node n){
+	if(??){
+		return n;	
+	}else{
+		Node t= someNext(n);
+		return t.next;	
+	}
+	return null;
+}
+
+Node gen(Queue q){
+	Node n = baseQ(q);
+	return someNext(n);	
+}
+
+void enqueue(Queue q, int i){
+	Node n = null;
+	atomic{
+		n = new Node();
+	}
+	n.val = i;
+	n.next = null;
+	Node ot = null;
+	anyorder{
+		ot.next = n;
+		atomic{
+			ot = gen(q);
+			q.tail = n; 
+		}		
+	}
+}
+
+int dequeue(Queue q){
+	Node n = q.prevHead;
+	if(n.next != null){
+		q.prevHead = n.next;
+		return q.prevHead.val;	
+	}else{
+		return -1;	
+	}
+}
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	Queue q = newQueue();
+	enqueue(q, 5);
+	ploop(int i; 2){
+		if(i==0){
+				enqueue(q, 6);
+		}else{
+				enqueue(q, 7);
+		}
+	}
+	int i1 = dequeue(q);
+	int i2 = dequeue(q);
+	int i3 = dequeue(q);
+	return i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6));
+}
+
