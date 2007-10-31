@@ -2,9 +2,11 @@ package streamit.frontend.parallelEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
@@ -17,6 +19,7 @@ import streamit.frontend.nodes.StmtVarDecl;
 
 public class CFGforPloop extends CFGBuilder {
 
+	Set<String> locals = new HashSet<String>();
 	
 	public static CFG cleanCFG(CFG cfg){
 		Map<CFGNode, List<EdgePair>> edges = new HashMap<CFGNode, List<EdgePair>>();
@@ -74,8 +77,14 @@ public class CFGforPloop extends CFGBuilder {
     {
         CFGforPloop builder = new CFGforPloop();
         CFGNodePair pair = (CFGNodePair)ploop.getBody().accept(builder); 
-        
-        return cleanCFG(new CFG(builder.nodes, pair.start, pair.end, builder.edges));
+        CFG rv =cleanCFG(new CFG(builder.nodes, pair.start, pair.end, builder.edges));
+        builder.locals.add(ploop.getLoopVarName());
+        CFGSimplifier sym = new CFGSimplifier(builder.locals);
+        System.out.println("**** was " + rv.size() );
+        rv = sym.mergeConsecutiveLocals(rv);
+        System.out.println("**** became " + rv.size() );
+        rv.setNodeIDs();
+        return rv; 
     }
 	
 	public Object visitStmtVarDecl(StmtVarDecl svd){
@@ -83,6 +92,7 @@ public class CFGforPloop extends CFGBuilder {
 		 CFGNode entry = null;
 		 CFGNode last = null;
 	     for(int i=0; i<svd.getNumVars(); ++i){
+	    	 locals.add(svd.getName(i));
 	    	 if(svd.getInit(i) != null){
 	    		 CFGNode tmp = new CFGNode( new StmtAssign(svd.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i)));
     			 this.nodes.add(tmp);

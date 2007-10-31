@@ -16,6 +16,7 @@
 
 package streamit.frontend.nodes;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -35,11 +36,22 @@ public class StmtBlock extends Statement
 
     /** Create a new StmtBlock with the specified ordered list of
      * statements. */
-    public StmtBlock(FEContext context, List stmts)
+    public StmtBlock(FEContext context, List<Statement> stmts)
     {
         super(context);
         this.stmts = Collections.unmodifiableList(stmts);
     }
+    
+    /** Create a new StmtBlock for a pair of statements. */
+    public StmtBlock(Statement stmt1, Statement stmt2)
+    {
+        super(stmt1.getCx());
+        List<Statement> lst = new ArrayList<Statement>(2);
+        lst.add(stmt1);
+        lst.add(stmt2);
+        this.stmts = Collections.unmodifiableList(lst);
+    }
+    
 
     public boolean isBlock () { return true; }
 

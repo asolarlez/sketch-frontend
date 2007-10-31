@@ -55,10 +55,10 @@ public class EliminateAnyorder extends FEReplacer {
 		slist.add(set);
 		Statement elsebranch = recursiveCondGenerator(iter, iname, i+1);
 		if(elsebranch == null){
-			return new StmtAtomicBlock(cx, slist);
+			return new StmtBlock(cx, slist);
 		}else{
 			Expression cond = new ExprBinary(cx, ExprBinary.BINOP_AND, new ExprStar(cx), new ExprUnary(cx, ExprUnary.UNOP_NOT,var));
-			return new StmtIfThen(cx, cond, new StmtAtomicBlock(cx, slist), elsebranch);
+			return new StmtIfThen(cx, cond, new StmtBlock(cx, slist), elsebranch);
 		}
 	}
 

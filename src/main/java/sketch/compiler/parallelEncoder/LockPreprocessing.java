@@ -8,6 +8,7 @@ import java.util.Map;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FieldDecl;
@@ -32,6 +33,7 @@ public class LockPreprocessing extends SymbolTableVisitor {
 			List<Expression>  pars = exp.getParams();
 			assert pars.size() == 1 : "Lock and unlock should have exactly one argument";
 			Expression par = pars.get(0); 
+			par = new ExprTypeCast(par.getCx(), TypePrimitive.inttype, par);
 			Type t = getType(par);
 			String tname = t.toString();
 			if(!lockedTypes.containsKey(tname)){
@@ -49,8 +51,8 @@ public class LockPreprocessing extends SymbolTableVisitor {
 		StreamSpec sspec = (StreamSpec)super.visitStreamSpec(spec);
 		
 		sspec.getVars().add(new FieldDecl(spec.getCx(), TypePrimitive.inttype, NTYPES.getName(), new ExprConstInt(lockedTypes.size())));
-		sspec.getFuncs().add(Function.newUninterp("lock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.anytype, "mem"))));
-		sspec.getFuncs().add(Function.newUninterp("unlock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.anytype, "mem"))));
+		sspec.getFuncs().add(Function.newUninterp("lock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.inttype, "mem"))));
+		sspec.getFuncs().add(Function.newUninterp("unlock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.inttype, "mem"))));
 		
 		return sspec;
     }

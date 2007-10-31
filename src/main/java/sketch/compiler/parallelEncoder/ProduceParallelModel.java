@@ -283,6 +283,7 @@ public class ProduceParallelModel extends FEReplacer {
 		
 		Expression nthreads = ploop.getIter();
 		Set<StmtVarDecl> locals = (new FindLocals(nthreads)).getLocals(ploop);
+		System.out.println(" locals = " + locals.size());
 		Set<StmtVarDecl> oriGlobals = new HashSet<StmtVarDecl>(globals);
 		Parameter outputParam = null;
 		//All the input parameters of the function must be added as globals.
@@ -632,6 +633,33 @@ public class ProduceParallelModel extends FEReplacer {
 	}
 	
 	
+	
+	private Statement transformStmt(Statement newStmt, VarSetReplacer vrepl, EliminateLockUnlock luelim){
+		newStmt = (Statement)newStmt.accept(luelim);
+		newStmt = (Statement)newStmt.accept(new FEReplacer(){
+			public Object visitStmtVarDecl(StmtVarDecl svd){
+				List<Statement> bodyL = new ArrayList<Statement>();
+				for(int i=0; i<svd.getNumVars(); ++i){
+					if(svd.getInit(i) != null){
+						bodyL.add(new StmtAssign(svd.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i) ));
+					}
+				}
+				if(bodyL.size() > 1){
+					return new StmtBlock(svd.getCx(), bodyL);
+				}else{
+					if(bodyL.size() == 1){
+						return bodyL.get(0);
+					}else{
+						return null;
+					}
+				}
+			}
+		});
+		newStmt = (Statement)newStmt.accept(vrepl);
+		
+		return newStmt;
+	}
+	
 	/**
 	 * Produces an AST node of the form:
 	 *		if(pc[idx] == 0){
@@ -660,27 +688,7 @@ public class ProduceParallelModel extends FEReplacer {
 		Expression cond = new ExprBinary(cx, ExprBinary.BINOP_EQ, new ExprArrayRange(cx, pcVar, idx), new ExprConstInt(node.getId()) );
 		
 		if(node.isStmt()){
-			Statement newStmt = (Statement)node.getStmt().accept(luelim);
-			newStmt = (Statement)newStmt.accept(new FEReplacer(){
-				public Object visitStmtVarDecl(StmtVarDecl svd){
-					List<Statement> bodyL = new ArrayList<Statement>();
-					for(int i=0; i<svd.getNumVars(); ++i){
-						if(svd.getInit(i) != null){
-							bodyL.add(new StmtAssign(svd.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i) ));
-						}
-					}
-					if(bodyL.size() > 1){
-						return new StmtBlock(svd.getCx(), bodyL);
-					}else{
-						if(bodyL.size() == 1){
-							return bodyL.get(0);
-						}else{
-							return null;
-						}
-					}
-				}
-			});
-			newStmt = (Statement)newStmt.accept(vrepl);
+			Statement newStmt = transformStmt(node.getStmt(), vrepl, luelim);
 			List<EdgePair> succ = cfg.getSuccessors(node);
 			assert succ.size() == 1;
 			assert succ.get(0).label == null;
@@ -720,9 +728,18 @@ public class ProduceParallelModel extends FEReplacer {
 			Expression rhsF = new ExprConstInt( fid );
 			Statement pcassignF = new StmtAssign(cx, lhsPC, rhsF);
 			
-			StmtIfThen body = new StmtIfThen(cx, expr, pcassignT, pcassignF);
+			StmtIfThen condTransfer = new StmtIfThen(cx, expr, pcassignT, pcassignF);
 			
-			conditCF.add(new StmtIfThen(cx, cond, body, null));
+			List<Statement> bodyL = new ArrayList<Statement>(2);
+			
+			if(node.getPreStmt() != null){
+				bodyL.add(transformStmt(node.getPreStmt(), vrepl, luelim));
+			}
+			
+			bodyL.add(condTransfer);
+			
+			
+			conditCF.add(new StmtIfThen(cx, cond, new StmtBlock(cx, bodyL), null));
 		}
 	
 		if(node.isEmpty()){
@@ -807,6 +824,7 @@ public class ProduceParallelModel extends FEReplacer {
 		
 			CFG cfg = CFGforPloop.buildCFG(parts.ploop);
 			
+			System.out.println(" globals = " + parts.globalDecls.size());
 			Function rest = constructRestFunction(cfg, parts.postpar, parts.prepar, parts.ploop, parts.globalDecls, fun);
 			
 			///Then, we build a function to represent the postParallelism section.

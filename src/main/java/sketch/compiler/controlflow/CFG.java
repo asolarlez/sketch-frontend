@@ -69,11 +69,19 @@ public class CFG
         	
         	for(Iterator<CFGNode.EdgePair> succIt = elist.getValue().iterator(); succIt.hasNext();  ){
         		CFGNode succ  = succIt.next().node;
-        		succ.addPred(succ);
+        		succ.addPred(elist.getKey());
         	}        	
         }        
     }
 
+    public CFG(List<CFGNode> nodes, CFGNode entry, CFGNode exit)
+    {
+        this.nodes = nodes;
+        this.entry = entry;
+        this.exit = exit;
+    }
+    
+    
     /**
      * Get the list of nodes.
      *

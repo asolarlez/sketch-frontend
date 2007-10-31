@@ -28,6 +28,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -138,13 +139,33 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         // this reason.  Do visit the init statement (any code it
         // adds gets put before the loop, which is fine) and the
         // body (which should always be a StmtBlock).
+    	
+    	//Armando: as a cheap hack, I will pattern match the increment
+    	//so that x++ or ++x becomes -> x = x + 1; and x-- or --x becomes x = x - 1;
+    	
+    	Statement inc = stmt.getIncr();
+    	if(inc instanceof StmtExpr){
+    		Expression incre = ((StmtExpr) inc).getExpression();
+    		if(incre instanceof ExprUnary){
+    			ExprUnary unop = (ExprUnary) incre;
+    			if(unop.getOp() == ExprUnary.UNOP_POSTINC || 
+    					unop.getOp() == ExprUnary.UNOP_PREINC){
+    				inc = new StmtAssign(unop.getCx(), unop.getExpr(), new ExprBinary(unop.getExpr(), "+", ExprConstInt.one));
+    			}
+    			if(unop.getOp() == ExprUnary.UNOP_POSTDEC || 
+    					unop.getOp() == ExprUnary.UNOP_PREDEC){
+    				inc = new StmtAssign(unop.getCx(), unop.getExpr(), new ExprBinary(unop.getExpr(), "-", ExprConstInt.one));
+    			}
+    		}
+    	}
+    	
         Statement newBody = (Statement)stmt.getBody().accept(this);
         successors = new java.util.ArrayList();
         Statement newInit = (Statement)stmt.getInit().accept(this);
-        if (newInit == stmt.getInit() && newBody == stmt.getBody())
+        if (newInit == stmt.getInit() && newBody == stmt.getBody() && inc == stmt.getIncr())
             return stmt;
         return new StmtFor(stmt.getContext(), newInit, stmt.getCond(),
-                           stmt.getIncr(), newBody);
+                           inc, newBody);
     }
 
     public Object visitStmtIfThen(StmtIfThen stmt)

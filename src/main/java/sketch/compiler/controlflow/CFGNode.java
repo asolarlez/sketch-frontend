@@ -53,12 +53,35 @@ public class CFGNode
 		}
 	}
 	
-    private boolean empty;
+    private final boolean empty;
     private Statement stmt;
+    private Statement preStmt = null;
     private Expression expr;
     private int id;
-    private List<CFGNode> preds = new ArrayList<CFGNode>();
-    private List<EdgePair> succs = new ArrayList<EdgePair>();
+    private final List<CFGNode> preds = new ArrayList<CFGNode>();
+    private final List<EdgePair> succs = new ArrayList<EdgePair>();
+    
+    
+    
+    
+    public void changeStmt(Statement stmt){
+    	assert isStmt();
+    	this.stmt = stmt;    	
+    }
+    
+    public void changeExpr(Expression expr){
+    	assert !isEmpty();
+    	this.expr = expr;
+    }
+    
+    
+    public void setPreStmt(Statement s){
+    	preStmt = s;
+    }
+    
+    public Statement getPreStmt(){
+    	return preStmt;
+    }
     
     // can't both be empty and have an expression.
     private CFGNode(Statement stmt, Expression expr, boolean empty)
@@ -189,7 +212,12 @@ public class CFGNode
 	
 	public String toString(){
 		if(expr != null){
-			return id + ":" + expr.toString();
+			String rv = id + ":" ;
+			if(preStmt != null){
+				rv += preStmt.toString();
+			}
+			rv += "[" + expr.toString() +"]";
+			return rv;
 		}else{
 			if(!empty && stmt != null){
 				return id + ":" + stmt.toString();
@@ -208,6 +236,24 @@ public class CFGNode
 	
 	public void addPred(CFGNode pred) {
 		this.preds.add(pred);
+	}
+		
+	
+	public void changePred(CFGNode oldS ,CFGNode newS){		
+		for(int i=0; i<preds.size(); ++i){
+			if(preds.get(i) == oldS){
+				preds.set(i, newS);
+			}
+		}
+	}
+	
+	public void changeSucc(CFGNode oldS ,CFGNode newS){		
+		for(int i=0; i<succs.size(); ++i){
+			EdgePair ep = succs.get(i);
+			if(ep.node == oldS){
+				succs.set(i, new EdgePair(newS, ep.label));				
+			}			
+		}		
 	}
 
 	/**

@@ -139,14 +139,17 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return super.visitStreamSpec(spec);
 	}
 
-	public Object visitFunction(Function func) {
-		if(func.getReturnType()==TypePrimitive.voidtype) return func;
+	public Object visitFunction(Function func) {		
 		if(func.isUninterp() ) return func;
+		
 		currentFunction=func;
 			outCounter=0;
 			inCpCounter=0;
 			func=(Function) super.visitFunction(func);
 		currentFunction=null;
+		
+		if(func.getReturnType()==TypePrimitive.voidtype) return func;
+		
 		func=(Function)func.accept(paramCopyRes);
 		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
 		//add a declaration for the "return flag"
