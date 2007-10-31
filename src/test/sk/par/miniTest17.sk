@@ -1,0 +1,27 @@
+
+struct Lock{
+	int lid;	
+}
+
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in;
+	Lock lk = new Lock();
+	ploop(int i; 2){
+		int local;
+		lock(lk);
+		local = global;
+		local = local + 1;
+		global = local;
+		unlock(lk);
+	}
+	return global == in + 2;
+}
+
+
+
