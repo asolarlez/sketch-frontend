@@ -12,14 +12,17 @@ import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
 import streamit.frontend.controlflow.CFGNode;
 import streamit.frontend.controlflow.CFGNode.EdgePair;
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.passes.VariableDeclarationMover;
 
 public class CFGforPloop extends CFGBuilder {
 
 	Set<String> locals = new HashSet<String>();
+	Map<String, StmtVarDecl> localDecls = new HashMap<String, StmtVarDecl>();
 	
 	public static CFG cleanCFG(CFG cfg){
 		Map<CFGNode, List<EdgePair>> edges = new HashMap<CFGNode, List<EdgePair>>();
@@ -72,16 +75,32 @@ public class CFGforPloop extends CFGBuilder {
 	}
 	
 	
-	
-	public static CFG buildCFG(StmtPloop ploop)
+	/**
+	 * 
+	 * Create a CFG for the parallel program where each node corresponds to an atomic step
+	 * in the execution.
+	 * 
+	 * The locals array will contain those local variables that span multiple blocks, and therefore have to be communicated
+	 * through the interface of the rest function.
+	 * 
+	 * @param ploop
+	 * @param locals
+	 * @return
+	 */
+	public static CFG buildCFG(StmtPloop ploop, Set<StmtVarDecl>/*out*/ locals)
     {
         CFGforPloop builder = new CFGforPloop();
         CFGNodePair pair = (CFGNodePair)ploop.getBody().accept(builder); 
         CFG rv =cleanCFG(new CFG(builder.nodes, pair.start, pair.end, builder.edges));
         builder.locals.add(ploop.getLoopVarName());
+        builder.localDecls.put(ploop.getLoopVarName(), ploop.getLoopVarDecl());
         CFGSimplifier sym = new CFGSimplifier(builder.locals);
         System.out.println("**** was " + rv.size() );
+        rv = sym.moo(rv);
         rv = sym.mergeConsecutiveLocals(rv);
+        rv = sym.mergeBranches(rv);
+        rv = sym.cleanLocalState(rv, builder.localDecls, ploop.getLoopVarDecl());
+        locals.addAll(builder.localDecls.values());
         System.out.println("**** became " + rv.size() );
         rv.setNodeIDs();
         return rv; 
@@ -92,9 +111,11 @@ public class CFGforPloop extends CFGBuilder {
 		 CFGNode entry = null;
 		 CFGNode last = null;
 	     for(int i=0; i<svd.getNumVars(); ++i){
-	    	 locals.add(svd.getName(i));
+	    	 String name = svd.getName(i);
+	    	 locals.add(name);
+	    	 localDecls.put(name, new StmtVarDecl(svd.getCx(), svd.getType(i), name, ExprConstInt.zero));
 	    	 if(svd.getInit(i) != null){
-	    		 CFGNode tmp = new CFGNode( new StmtAssign(svd.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i)));
+	    		 CFGNode tmp = new CFGNode( new StmtAssign(svd.getCx(), new ExprVar(null, name), svd.getInit(i)));
     			 this.nodes.add(tmp);
 	    		 if(entry == null){	    			 
 	    			 entry = tmp;

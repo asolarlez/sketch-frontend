@@ -239,6 +239,19 @@ public class CFGNode
 	}
 		
 	
+	public void removePred(CFGNode oldP){
+		this.preds.remove(oldP);
+	}
+	
+	public void removeSucc(CFGNode oldS){
+		for(int i=0; i<succs.size(); ++i){
+			EdgePair ep = succs.get(i);
+			if(ep.node == oldS){
+				succs.remove(i);				
+			}			
+		}	
+	}
+	
 	public void changePred(CFGNode oldS ,CFGNode newS){		
 		for(int i=0; i<preds.size(); ++i){
 			if(preds.get(i) == oldS){
@@ -268,6 +281,12 @@ public class CFGNode
 	 */
 	public void addSuccs(List<EdgePair> succs) {
 		this.succs.addAll(succs);
+	}
+	/**
+	 * @param succs the succs to set
+	 */
+	public void addSucc(EdgePair succ) {
+		this.succs.add(succ);
 	}
 
 	/**

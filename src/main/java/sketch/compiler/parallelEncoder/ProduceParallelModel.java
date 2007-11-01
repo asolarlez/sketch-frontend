@@ -275,15 +275,14 @@ public class ProduceParallelModel extends FEReplacer {
 	 * 
 	 * 
 	 */
-	public Function constructRestFunction(CFG parcfg, Statement postpar, Statement prepar, StmtPloop ploop,Set<StmtVarDecl> globals, Function fun){
+	public Function constructRestFunction(CFG parcfg, Statement postpar, Statement prepar, StmtPloop ploop,Set<StmtVarDecl> globals, Set<StmtVarDecl> locals, Function fun){
 		
 		String funName = fun.getName() + FUN_NAME_BASE; 
 		
 		List<Statement> bodyL = new ArrayList<Statement>();
 		
 		Expression nthreads = ploop.getIter();
-		Set<StmtVarDecl> locals = (new FindLocals(nthreads)).getLocals(ploop);
-		System.out.println(" locals = " + locals.size());
+
 		Set<StmtVarDecl> oriGlobals = new HashSet<StmtVarDecl>(globals);
 		Parameter outputParam = null;
 		//All the input parameters of the function must be added as globals.
@@ -635,26 +634,7 @@ public class ProduceParallelModel extends FEReplacer {
 	
 	
 	private Statement transformStmt(Statement newStmt, VarSetReplacer vrepl, EliminateLockUnlock luelim){
-		newStmt = (Statement)newStmt.accept(luelim);
-		newStmt = (Statement)newStmt.accept(new FEReplacer(){
-			public Object visitStmtVarDecl(StmtVarDecl svd){
-				List<Statement> bodyL = new ArrayList<Statement>();
-				for(int i=0; i<svd.getNumVars(); ++i){
-					if(svd.getInit(i) != null){
-						bodyL.add(new StmtAssign(svd.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i) ));
-					}
-				}
-				if(bodyL.size() > 1){
-					return new StmtBlock(svd.getCx(), bodyL);
-				}else{
-					if(bodyL.size() == 1){
-						return bodyL.get(0);
-					}else{
-						return null;
-					}
-				}
-			}
-		});
+		newStmt = (Statement)newStmt.accept(luelim);		
 		newStmt = (Statement)newStmt.accept(vrepl);
 		
 		return newStmt;
@@ -810,6 +790,20 @@ public class ProduceParallelModel extends FEReplacer {
 	}
 	
 	
+	public void vectorizeLocals(Set<StmtVarDecl> locals, Expression nthreads){
+		List<StmtVarDecl> newLocals = new ArrayList<StmtVarDecl>(locals.size());
+		for(Iterator<StmtVarDecl> it = locals.iterator(); it.hasNext(); ){
+			StmtVarDecl svd = it.next();
+			List<Type> newTypes = new ArrayList<Type>(svd.getNumVars());
+			for(int i=0; i<svd.getNumVars(); ++i){
+				newTypes.add(new TypeArray(svd.getType(i) , nthreads));
+			}
+			newLocals.add(new StmtVarDecl(svd.getCx(), newTypes, svd.getNames(), svd.getInits()));
+		}
+		locals.clear();
+		locals.addAll(newLocals);
+	}
+	
 	public Function produceParallelModel(Function fun){		
 		/// First, we divide into pre and post parallelism sections.
 		fun = (Function)fun.accept(new ExtractPreParallelSection());
@@ -822,10 +816,14 @@ public class ProduceParallelModel extends FEReplacer {
 		
 		if(parts.ploop != null){
 		
-			CFG cfg = CFGforPloop.buildCFG(parts.ploop);
+			Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
+			CFG cfg = CFGforPloop.buildCFG(parts.ploop, locals);
+			
+			vectorizeLocals(locals, parts.ploop.getIter());
 			
 			System.out.println(" globals = " + parts.globalDecls.size());
-			Function rest = constructRestFunction(cfg, parts.postpar, parts.prepar, parts.ploop, parts.globalDecls, fun);
+			System.out.println(" locals = " + locals.size());
+			Function rest = constructRestFunction(cfg, parts.postpar, parts.prepar, parts.ploop, parts.globalDecls, locals, fun);
 			
 			///Then, we build a function to represent the postParallelism section.
 			if(restFunction != null)

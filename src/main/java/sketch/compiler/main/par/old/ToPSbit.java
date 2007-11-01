@@ -85,16 +85,18 @@ public class ToPSbit extends ToSBit {
 		//dump (prog, "After eliminating structs:");
 		ProduceParallelModel ppm = new ProduceParallelModel(this.varGen, params.flagValue("schedlen"), params.flagValue("locklen") );
 		prog = (Program) prog.accept(ppm);
+		prog = (Program) prog.accept(new FlattenStmtBlocks());
 		dump (prog, "After producing parallel model:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		prog = (Program)prog.accept(new SeparateInitializers());
-		//dump (prog, "SeparateInitializers:");
+		dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
-		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
+		//if( params.hasFlag("showpartial")  ) 
+			prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");

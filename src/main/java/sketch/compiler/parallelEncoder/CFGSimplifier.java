@@ -1,17 +1,25 @@
 package streamit.frontend.parallelEncoder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGNode;
 import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtVarDecl;
 
 public class CFGSimplifier {
 	Set<String> locals;
@@ -42,7 +50,10 @@ public class CFGSimplifier {
 		}
 		if(node.isStmt()){
 			node.getStmt().accept(alloc);
-		}		
+		}
+		if(node.isEmpty()){
+			return false;
+		}
 		return alloc.allLocs;
 	}
 	
@@ -100,7 +111,418 @@ public class CFGSimplifier {
 		
 	}
 	
-	CFG mergeConsecutiveLocals(CFG cfg){
+	
+	public CFG cleanLocalState(CFG cfg, final Map<String, StmtVarDecl> locals, StmtVarDecl pidVar){
+		final Set<String> usedOnceVariables = new HashSet<String>();
+		final Set<String> usedAlotVariables = new HashSet<String>();
+		usedAlotVariables.add(pidVar.getName(0)); // The ploop vari corresponding to the pid can not be
+		usedOnceVariables.add(pidVar.getName(0));//in the usedOnce set, even if it is used only once. Remember later we'll do usedOnce = usedOnce - usedAlot;
+		final Map<CFGNode, Set<String> > varsforNode = new HashMap<CFGNode, Set<String>>();
+		
+		for(Iterator<CFGNode> nodeIt = cfg.getNodes().iterator(); nodeIt.hasNext(); ){
+			CFGNode node = nodeIt.next();
+			final Set<String> nodeLocals = new HashSet<String>();
+			FEReplacer lfind = new FEReplacer(){
+				public Object visitExprVar(ExprVar exp){
+					if(locals.containsKey(exp.getName())){
+						nodeLocals.add(exp.getName()); 
+					}
+					return exp;
+				}
+			};
+			
+			if(node.isStmt()){
+				node.getStmt().accept(lfind);
+			}
+			if(node.isExpr()){
+				if(node.getPreStmt() != null){
+					node.getPreStmt().accept(lfind);
+				}
+				node.getExpr().accept(lfind);
+			}
+			
+			for(Iterator<String> lit = nodeLocals.iterator(); lit.hasNext(); ){
+				String name = lit.next();
+				if( usedOnceVariables.contains(name) ){
+					usedAlotVariables.add(name);
+				}else{
+					usedOnceVariables.add(name);
+				}
+			}
+			varsforNode.put(node, nodeLocals);
+		}
+		int oldSz = usedOnceVariables.size();
+		System.out.println("*** #locals before " + locals.size());
+		usedOnceVariables.removeAll(usedAlotVariables);
+		assert usedOnceVariables.size() + usedAlotVariables.size() == oldSz;
+		assert oldSz <= locals.size();
+		//The used alot variables are going to be the state that gets passed around, while the used once
+		//variables can just be declared in the node where they are used, and we don't have to worry about passing them around.
+		
+		for(Iterator<CFGNode> nodeIt = cfg.getNodes().iterator(); nodeIt.hasNext(); ){
+			CFGNode node = nodeIt.next();
+			final Set<String> nodeLocals = varsforNode.get(node);
+			for(Iterator<String> it = nodeLocals.iterator(); it.hasNext(); ){
+				String name = it.next();
+				if( usedOnceVariables.contains(name) ){
+					assert locals.containsKey(name);
+					if(node.isStmt()){						
+						node.changeStmt(new StmtBlock( locals.get(name), node.getStmt() ) );
+					}
+					if(node.isExpr()){
+						if(node.getPreStmt() != null){
+							node.setPreStmt(new StmtBlock(locals.get(name), node.getPreStmt() ));
+						}else{
+							node.setPreStmt(locals.get(name));
+						}
+					}
+					locals.remove(name);
+				}
+			}
+		}
+		
+		return cfg;
+	}
+		
+	
+	
+	public CFG moo(CFG cfg){
+		
+		Stack<CFGNode> ccstack = new Stack<CFGNode>();
+		Stack<CFGNode> stack = new Stack<CFGNode>();
+		stack.push(cfg.getEntry());
+		
+		Set<CFGNode> visited = new HashSet<CFGNode>();
+		///Connected components of nodes containing all local variables.
+		List<List<CFGNode>> localCCs = new ArrayList<List<CFGNode>>();
+		Set<CFGNode> newNodes = new HashSet<CFGNode>();
+		
+		List<CFGNode> currentCC = null;
+		CFGNode head = cfg.getEntry();
+		int headLoc = -1;
+		while(stack.size() > 0 || ccstack.size() > 0){
+			if(ccstack.size()>0){
+				CFGNode n = ccstack.pop();
+				if(visited.contains(n)){
+					continue;
+				}
+				visited.add(n);
+				if(currentCC == null){
+					currentCC = new ArrayList<CFGNode>();
+				}
+				
+				if(n == head){
+					headLoc = localCCs.size();
+				}
+				
+				currentCC.add(n);
+				
+				List<EdgePair> suc = n.getSuccs();
+				for(int i=0; i<suc.size(); ++i){
+					if(allLocals(suc.get(i).node)){
+						ccstack.push(suc.get(i).node);
+					}else{
+						stack.push(suc.get(i).node );
+					}
+				}			
+			}else{
+				if(currentCC != null){
+					localCCs.add(currentCC);
+					currentCC = null;
+				}				
+				CFGNode n = stack.pop();
+				if(visited.contains(n)){
+					continue;
+				}
+				if(allLocals(n)){
+					ccstack.push(n);
+					continue;
+				}
+				visited.add(n);
+				List<EdgePair> suc = n.getSuccs();
+				for(int i=0; i<suc.size(); ++i){
+					if(!visited.contains(suc.get(i).node)){
+						stack.push(suc.get(i).node);
+					}					
+				}
+			}
+		}
+		if(currentCC != null){
+			localCCs.add(currentCC);
+			currentCC = null;
+		}	
+		///At this point, all nodes are either in newNodes or in one of the localCCs.
+		///Each localcc is a list of topologically sorted nodes containing all local 
+		///variables that form a connected component in the dag.
+		
+		for(int i=0; i<localCCs.size(); ++i){
+			CFGNode tmp = processCC(localCCs.get(i));
+			if(headLoc == i){
+				head = tmp;
+			}
+		}
+		assert stack.size() == 0;
+		visited.clear();
+		stack.push(head);
+		while(stack.size() > 0){
+			CFGNode n = stack.pop();
+			if(visited.contains(n)){
+				continue;
+			}
+			visited.add(n);
+			newNodes.add(n);
+			List<EdgePair> suc = n.getSuccs();
+			for(int i=0; i<suc.size(); ++i){
+				if(!visited.contains(suc.get(i).node)){
+					stack.push(suc.get(i).node);
+				}					
+			}			
+		}
+		newNodes.remove(head);
+		List<CFGNode> lst = new ArrayList<CFGNode>(newNodes.size() + 1);
+		lst.add(head);
+		lst.addAll(newNodes);
+		return new CFG(lst, head, cfg.getExit());
+	}
+	
+	
+	public void changeSucc(CFGNode n, CFGNode oldS, CFGNode newS){
+		if(oldS != newS){
+			n.changeSucc(oldS, newS);
+			newS.addPred(n);
+			oldS.removePred(n);
+		}
+	}
+	
+	private CFGNode simplifyNode(CFGNode n, Set<CFGNode> ccset, Set<CFGNode> visited){
+		if(visited.contains(n)){System.out.println(" already visited " + n); return n;}
+		System.out.println("visiting node " + n);
+		visited.add(n);
+		List<EdgePair> succ = n.getSuccs();		
+		if(n.isExpr()){
+			assert succ.size() == 2;
+			CFGNode sf = succ.get(0).node;
+			CFGNode st = succ.get(1).node;
+			
+			if(succ.get(0).label == 1){
+				assert succ.get(1).label == 0;
+				sf = st;
+				st = succ.get(0).node;
+			}else{
+				assert succ.get(0).label == 0;
+				assert succ.get(1).label == 1;
+			}
+			boolean simplST = false;
+			boolean simplSF = false;
+			if( ccset.contains(sf) && ccset.contains(st) ){
+				CFGNode nsf = simplifyNode(sf, ccset, visited);
+				CFGNode nst = simplifyNode(st, ccset, visited);
+				changeSucc(n, st, nst);
+				changeSucc(n, sf, nsf);
+				simplST = true;
+				simplSF = true;
+				sf = nsf;
+				st = nst;
+				if(nst.isStmt() && nsf.isStmt() ){
+					Statement s = new StmtIfThen(null, n.getExpr(), st.getStmt(), sf.getStmt() );
+					if(n.getPreStmt() == null){
+						n.setPreStmt(s);
+					}else{
+						n.setPreStmt(new StmtBlock(s, n.getPreStmt()));
+					}
+					assert st.getSuccs().size() == 1 && sf.getSuccs().size() == 1; 
+					if(st.getSuccs().get(0).node != sf.getSuccs().get(0).node){
+						changeSucc(n, st, st.getSuccs().get(0).node);
+						changeSucc(n, sf, sf.getSuccs().get(0).node);						
+					}else{
+						n.changeExpr(null);
+						n.changeStmt(n.getPreStmt());
+						n.removeSucc(st);
+						n.removeSucc(sf);
+						CFGNode newSuc = st.getSuccs().get(0).node;
+						n.addSucc(new EdgePair(newSuc, null));
+						st.removePred(n);
+						sf.removePred(n);
+						newSuc.addPred(n);						
+					}
+					return n;
+				}
+			}
+			if( ccset.contains(st) ){
+				if(!simplST){
+					CFGNode nst = simplifyNode(st, ccset, visited);
+					changeSucc(n, st, nst);
+					st = nst;
+				}
+				if(st.isStmt()){
+					Statement s = new StmtIfThen(null, n.getExpr(), st.getStmt(), null);
+					if(n.getPreStmt() == null){
+						n.setPreStmt(s);
+					}else{
+						n.setPreStmt(new StmtBlock(s, n.getPreStmt()));
+					}
+					
+					assert st.getSuccs().size() == 1 ; 
+					if(st.getSuccs().get(0).node != sf){
+						changeSucc(n, st,  st.getSuccs().get(0).node);
+						return n;
+					}else{
+						n.changeExpr(null);
+						n.changeStmt(n.getPreStmt());						
+						n.removeSucc(st);
+						n.removeSucc(sf);
+						
+						CFGNode newSuc = st.getSuccs().get(0).node;
+						n.addSucc(new EdgePair(newSuc, null));
+						st.removePred(n);
+						sf.removePred(n);
+						newSuc.addPred(n);	
+						return simplifyNode(n, ccset, visited);
+						
+					}
+				}
+			}
+			
+			if( ccset.contains(sf) ){
+				if(!simplSF){
+					CFGNode nsf = simplifyNode(sf, ccset, visited);
+					changeSucc(n, sf, nsf);
+					sf = nsf;
+				}
+				if(sf.isStmt()){
+					Statement s = new StmtIfThen(null, new ExprUnary(null, ExprUnary.UNOP_NOT, n.getExpr()), sf.getStmt(), null);
+					if(n.getPreStmt() == null){
+						n.setPreStmt(s);
+					}else{
+						n.setPreStmt(new StmtBlock(s, n.getPreStmt()));
+					}
+					
+					assert sf.getSuccs().size() == 1 ; 
+					if(sf.getSuccs().get(0).node != st){
+						changeSucc(n, sf, sf.getSuccs().get(0).node);
+						return n;
+					}else{
+						n.changeStmt(n.getPreStmt());
+						n.changeExpr(null);
+						n.removeSucc(st);
+						n.removeSucc(sf);
+						
+						CFGNode newSuc = sf.getSuccs().get(0).node;
+						n.addSucc(new EdgePair(newSuc, null));
+						st.removePred(n);
+						sf.removePred(n);
+						newSuc.addPred(n);	
+						return simplifyNode(n, ccset, visited);
+						
+					}
+				}
+			}
+			
+		}
+		
+		if(n.isStmt()){
+			assert succ.size() == 1; 
+			CFGNode s1 = succ.get(0).node;
+			if( ccset.contains(s1) ){
+				CFGNode ns1 = simplifyNode(s1, ccset, visited);
+				changeSucc(n, s1, ns1);
+				s1 = ns1;
+				if(s1.getPreds().size() <= 2){
+					if(s1.isStmt()){
+						n.changeStmt(new StmtBlock(n.getStmt(), s1.getStmt() ));
+						assert s1.getSuccs().size() == 1;
+						changeSucc(n, s1, s1.getSuccs().get(0).node);
+						return n;
+					}
+					if(s1.isExpr() && s1.getPreds().size() == 1){
+						Statement s;
+						if( s1.getPreStmt()== null ){
+							s = n.getStmt();
+						}else{
+							s = new StmtBlock(n.getStmt(), s1.getPreStmt());
+						}
+						
+						n.changeExpr(s1.getExpr());
+						n.setPreStmt(s);
+						n.removeSucc(s1);
+						for(Iterator<EdgePair> it = s1.getSuccs().iterator(); it.hasNext(); ){
+							n.addSucc(it.next());
+						}
+						return n;						
+					}
+				}
+			}			
+		}	
+		return n;
+	}
+	
+	CFGNode processCC(List<CFGNode> cc){
+		Set<CFGNode> ccset = new HashSet<CFGNode>(cc);
+		Set<CFGNode> in = new HashSet<CFGNode>();
+		Set<CFGNode> out = new HashSet<CFGNode>();
+		assert cc.size() > 0;
+		CFGNode head = cc.get(0);
+		head = simplifyNode(head, ccset, new HashSet<CFGNode>());
+		return head;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	public void foo(CFGNode node, Set<CFGNode> visited){
+		if(!node.isExpr() || visited.contains(node)){
+			return;
+		}
+		visited.add(node);
+		if(!allLocals(node)){
+			return;
+		}
+		List<EdgePair> suc = node.getSuccs();
+		for(int i=0; i<suc.size(); ++i){
+			foo(suc.get(i).node, visited);			
+		}
+		if(suc.size() == 2){
+			EdgePair s1 = suc.get(0);
+			EdgePair s2 = suc.get(1);
+			List<EdgePair> suc1 = s1.node.getSuccs();
+			List<EdgePair> suc2 = s2.node.getSuccs();
+			if(suc1.size() == 1 && suc1.get(0).node == s2.node ){
+				if(allLocals(s2.node)){
+					// merge node and s1.node, and make it a Stmt node pointing to 
+					
+					return;
+				}								
+			}
+			
+			
+			
+		}
+		
+	}
+	
+	
+	public CFG mergeBranches(CFG cfg){
+		List<CFGNode> newNodes = new ArrayList<CFGNode>();
+		for(Iterator<CFGNode> nodeIt = cfg.getNodes().iterator(); nodeIt.hasNext(); ){
+			CFGNode node = nodeIt.next();			
+			if(node.isExpr() &&  allLocals(node)){
+				
+				
+				
+			}
+			newNodes.add(node);
+		}
+		
+		return new CFG(newNodes, cfg.getEntry(), cfg.getExit());
+	}
+	
+	
+	
+	public CFG mergeConsecutiveLocals(CFG cfg){
 		List<CFGNode> newNodes = new ArrayList<CFGNode>();
 		
 		CFGNode newHead = cfg.getEntry();

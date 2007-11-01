@@ -274,6 +274,11 @@ public class IntVtype extends abstractValueType {
 	}
 
 	public abstractValue cast(abstractValue v1, Type type) {
+		
+		if(type.equals(TypePrimitive.inttype) && !v1.isVect()){
+			return v1;
+		}
+		
 		if(v1.isVect() && type.equals( TypePrimitive.inttype ) ){
 			//Casting a bit-vector into an integer.
 			List<abstractValue> lst = v1.getVectValue();
