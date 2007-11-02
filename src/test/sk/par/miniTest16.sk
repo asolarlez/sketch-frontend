@@ -68,11 +68,11 @@ int dequeue(Queue q){
 	}
 }
 
-bit test(int in){	
+bit test(bit in){	
 	return 1;
 }
 
-bit testSK(int in) implements test{
+bit testSK(bit in) implements test{
 	Queue q = newQueue();
 	enqueue(q, 5);
 	ploop(int i; 2){

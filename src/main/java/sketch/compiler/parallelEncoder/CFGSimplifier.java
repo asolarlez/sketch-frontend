@@ -59,8 +59,11 @@ public class CFGSimplifier {
 	
 	
 	void addNodeToPreds(CFGNode node, CFGNode pred){
+		System.out.println(" adding " + node.getId() + " to pred " + pred.getId());
+		//node.checkNeighbors();
 		assert pred != node;
-		assert pred.isStmt() : "this is weird"; 
+		assert pred.isStmt() : "this is weird";
+		assert !node.isEmpty();
 		if(node.isStmt()){
 			pred.changeStmt(new StmtBlock(pred.getStmt(), node.getStmt() ));
 		}else{
@@ -75,6 +78,7 @@ public class CFGSimplifier {
 			}			
 		}
 		
+		
 		List<EdgePair> psuccs = pred.getSuccs();
 		assert psuccs.size() == 1;
 		assert psuccs.get(0).node == node;
@@ -85,12 +89,15 @@ public class CFGSimplifier {
 		for(Iterator<EdgePair> it = node.getSuccs().iterator(); it.hasNext(); ){
 			EdgePair ep = it.next();			
 			psuccs.add(ep);
-			ep.node.changePred(node, pred);
+			ep.node.addPred(pred);
 		}
+		pred.checkNeighbors();
 	}
 	
 	void addNodeToSucc(CFGNode node, CFGNode succ){
+		System.out.println(" adding " + node.getId() + " to succ " + succ.getId());
 		assert node.isStmt();
+		assert succ.getPreds().size() == 1 : "succ should have a single predecessor, and that's node";
 		if(succ.isStmt()){
 			succ.changeStmt(new StmtBlock(node.getStmt(), succ.getStmt() ));						
 		}else{
@@ -101,7 +108,7 @@ public class CFGSimplifier {
 				succ.setPreStmt(new StmtBlock(node.getStmt(), succ.getPreStmt()) );
 			}			
 		}
-		
+		succ.getPreds().clear();
 		//Now we need to change all the predecessors of the node to be predecessors of succ.
 		for(Iterator<CFGNode> it = node.getPreds().iterator(); it.hasNext(); ){
 			CFGNode p = it.next();
@@ -186,7 +193,7 @@ public class CFGSimplifier {
 		
 	
 	
-	public CFG moo(CFG cfg){
+	public CFG simplifyAcrossBranches(CFG cfg){
 		
 		Stack<CFGNode> ccstack = new Stack<CFGNode>();
 		Stack<CFGNode> stack = new Stack<CFGNode>();
@@ -195,9 +202,16 @@ public class CFGSimplifier {
 		Set<CFGNode> visited = new HashSet<CFGNode>();
 		///Connected components of nodes containing all local variables.
 		List<List<CFGNode>> localCCs = new ArrayList<List<CFGNode>>();
-		Set<CFGNode> newNodes = new HashSet<CFGNode>();
 		
 		List<CFGNode> currentCC = null;
+		//The set of extras is a set of nodes that do have
+		//globals, but that get appended to the current CC because
+		//it is safe to do so.
+		//The key rule about adding extras one extra can not
+		//be a successor of another extra, because if that
+		//were to happen, you could execute two statements with
+		//globals in the same step, which is ilegal.
+		Set<CFGNode> extras = new HashSet<CFGNode>();
 		CFGNode head = cfg.getEntry();
 		int headLoc = -1;
 		while(stack.size() > 0 || ccstack.size() > 0){
@@ -209,6 +223,7 @@ public class CFGSimplifier {
 				visited.add(n);
 				if(currentCC == null){
 					currentCC = new ArrayList<CFGNode>();
+					extras.clear();
 				}
 				
 				if(n == head){
@@ -219,10 +234,25 @@ public class CFGSimplifier {
 				
 				List<EdgePair> suc = n.getSuccs();
 				for(int i=0; i<suc.size(); ++i){
-					if(allLocals(suc.get(i).node)){
-						ccstack.push(suc.get(i).node);
+					CFGNode snode = suc.get(i).node;
+					if(allLocals(snode)){
+						ccstack.push(snode);
 					}else{
-						stack.push(suc.get(i).node );
+						stack.push( snode );
+						if(!extras.contains(snode)){
+							//If none of the predecessors of snode is in extras, we can make snode an extra.
+							boolean allgood = true;
+							for(Iterator<CFGNode> it = snode.getPreds().iterator(); it.hasNext(); ){
+								if(extras.contains(it.next())){
+									allgood = false;
+									break;
+								}
+							}
+							if(allgood){
+								extras.add(snode);
+								currentCC.add(snode);
+							}
+						}
 					}
 				}			
 			}else{
@@ -264,13 +294,17 @@ public class CFGSimplifier {
 		assert stack.size() == 0;
 		visited.clear();
 		stack.push(head);
+		List<CFGNode> newNodes = new ArrayList<CFGNode>();
+		newNodes.add(head);
 		while(stack.size() > 0){
 			CFGNode n = stack.pop();
 			if(visited.contains(n)){
 				continue;
 			}
 			visited.add(n);
-			newNodes.add(n);
+			if(n != head){
+				newNodes.add(n);
+			}
 			List<EdgePair> suc = n.getSuccs();
 			for(int i=0; i<suc.size(); ++i){
 				if(!visited.contains(suc.get(i).node)){
@@ -278,11 +312,8 @@ public class CFGSimplifier {
 				}					
 			}			
 		}
-		newNodes.remove(head);
-		List<CFGNode> lst = new ArrayList<CFGNode>(newNodes.size() + 1);
-		lst.add(head);
-		lst.addAll(newNodes);
-		return new CFG(lst, head, cfg.getExit());
+		
+		return new CFG(newNodes, head, cfg.getExit());
 	}
 	
 	
@@ -290,7 +321,10 @@ public class CFGSimplifier {
 		if(oldS != newS){
 			n.changeSucc(oldS, newS);
 			newS.addPred(n);
-			oldS.removePred(n);
+			boolean tmp = oldS.removePred(n);
+			if(tmp){
+				oldS.removeFromChildren();
+			}
 		}
 	}
 	
@@ -462,7 +496,7 @@ public class CFGSimplifier {
 		Set<CFGNode> out = new HashSet<CFGNode>();
 		assert cc.size() > 0;
 		CFGNode head = cc.get(0);
-		head = simplifyNode(head, ccset, new HashSet<CFGNode>());
+		//head = simplifyNode(head, ccset, new HashSet<CFGNode>());
 		return head;
 	}
 	
@@ -473,52 +507,8 @@ public class CFGSimplifier {
 	
 	
 	
-	public void foo(CFGNode node, Set<CFGNode> visited){
-		if(!node.isExpr() || visited.contains(node)){
-			return;
-		}
-		visited.add(node);
-		if(!allLocals(node)){
-			return;
-		}
-		List<EdgePair> suc = node.getSuccs();
-		for(int i=0; i<suc.size(); ++i){
-			foo(suc.get(i).node, visited);			
-		}
-		if(suc.size() == 2){
-			EdgePair s1 = suc.get(0);
-			EdgePair s2 = suc.get(1);
-			List<EdgePair> suc1 = s1.node.getSuccs();
-			List<EdgePair> suc2 = s2.node.getSuccs();
-			if(suc1.size() == 1 && suc1.get(0).node == s2.node ){
-				if(allLocals(s2.node)){
-					// merge node and s1.node, and make it a Stmt node pointing to 
-					
-					return;
-				}								
-			}
-			
-			
-			
-		}
-		
-	}
 	
 	
-	public CFG mergeBranches(CFG cfg){
-		List<CFGNode> newNodes = new ArrayList<CFGNode>();
-		for(Iterator<CFGNode> nodeIt = cfg.getNodes().iterator(); nodeIt.hasNext(); ){
-			CFGNode node = nodeIt.next();			
-			if(node.isExpr() &&  allLocals(node)){
-				
-				
-				
-			}
-			newNodes.add(node);
-		}
-		
-		return new CFG(newNodes, cfg.getEntry(), cfg.getExit());
-	}
 	
 	
 	
@@ -548,6 +538,11 @@ public class CFGSimplifier {
 					// add to pred.
 					for(Iterator<CFGNode> predIt = preds.iterator(); predIt.hasNext(); ){
 						addNodeToPreds(node, predIt.next());
+					}
+					preds.clear();
+					for(Iterator<EdgePair> it = node.getSuccs().iterator(); it.hasNext(); ){
+						EdgePair ep = it.next();
+						ep.node.removeAllPred(node);
 					}
 					continue;
 				}else{

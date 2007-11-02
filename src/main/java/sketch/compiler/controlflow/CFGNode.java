@@ -17,6 +17,7 @@
 package streamit.frontend.controlflow;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import streamit.frontend.nodes.Expression;
@@ -238,9 +239,67 @@ public class CFGNode
 		this.preds.add(pred);
 	}
 		
+	public void removeFromChildren(){
+		for(Iterator<EdgePair> eit = succs.iterator(); eit.hasNext(); ){
+			EdgePair ep = eit.next();
+			ep.node.removePred(this);
+		}
+	}
 	
-	public void removePred(CFGNode oldP){
+	public void checkNeighbors(){
+		CFGNode n = this;
+		List<CFGNode> preds = n.getPreds();
+		for(int i=0; i<preds.size(); ++i){
+			CFGNode p = preds.get(i);
+			List<EdgePair> psuc = p.getSuccs();
+			boolean found  =false;
+			for(int t=0; t<psuc.size(); ++t){
+				if( psuc.get(t).node == n ){
+					found = true;
+					break;
+				}
+			}
+			assert found : "I am not a successor of my predecessor";
+		}
+		
+		List<EdgePair> succs = n.getSuccs();
+		for(int i=0; i<succs.size(); ++i){
+			CFGNode s = succs.get(i).node;
+			if(succs.get(i).label == null){
+				assert n.isStmt();
+			}else{
+				assert n.isExpr();
+				assert succs.get(i).label == 0 || succs.get(i).label == 1;
+			}
+			List<CFGNode> spred = s.getPreds();
+			boolean found  =false;
+			for(int t=0; t<spred.size(); ++t){
+				if(spred.get(t) == n){
+					found = true;
+					break;
+				}
+			}
+			assert found : "I am not a predecessor of my successor";
+		}
+		
+	}
+	
+	
+	/**
+	 * Returns true if this node has become unreachable.
+	 * @param oldP
+	 * @return
+	 */
+	public boolean removePred(CFGNode oldP){
+		int sz = preds.size();
 		this.preds.remove(oldP);
+		return sz > 0 && preds.size() == 0;
+	}
+	
+	public boolean removeAllPred(CFGNode oldP){
+		int sz = preds.size();
+		while(this.preds.remove(oldP)){};
+		return sz > 0 && preds.size() == 0;
 	}
 	
 	public void removeSucc(CFGNode oldS){

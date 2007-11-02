@@ -66,6 +66,7 @@ public class ProduceParallelModel extends FEReplacer {
 	static final String FUN_NAME_BASE = "rest";
 	static final String INV_SCHEDULE = "_invalidSchedule";
 	static final String locksName = "_locks";
+	static final String COUNTER = "_counts";
 	static final ExprVar locksVar = new ExprVar(null, locksName);
 	
 	public ProduceParallelModel(TempVarGen varGen, int schedLen, int locklen){
@@ -377,6 +378,7 @@ public class ProduceParallelModel extends FEReplacer {
 		buildParsFromDecls(locals.iterator(), parList);
 		parList.add(new Parameter(new TypeArray(sType, SchedLen),SCHEDULE));
 		parList.add(new Parameter(TypePrimitive.inttype,STEP));
+		parList.add(new Parameter(new TypeArray(TypePrimitive.inttype, nthreads), COUNTER));
 		parList.add(outputParam);
 		
 		
@@ -452,7 +454,7 @@ public class ProduceParallelModel extends FEReplacer {
 				if(pcname.equals(name)){
 					actuals.add(ExprConstInt.zero);
 				}else{
-					if(name.equals(STEP) || name.equals(locksName)){
+					if(name.equals(STEP) || name.equals(locksName) || name.equals(COUNTER)){
 						actuals.add(ExprConstInt.zero);
 					}else{						
 						actuals.add(new ExprVar(null, name));
@@ -532,6 +534,8 @@ public class ProduceParallelModel extends FEReplacer {
 				rtype = t;
 				rName = name;
 				actuals.add(new ExprVar(null, tmpOut));
+			}else if(name.equals(COUNTER)){				
+				actuals.add(new ExprVar(null, COUNTER+ "_tmp"));
 			}else{
 				Expression e = new ExprVar(null, name + "_p");
 				e = new ExprArrayRange(null, e, idx);
@@ -544,6 +548,8 @@ public class ProduceParallelModel extends FEReplacer {
 		
 		ExprFunCall fc = new ExprFunCall(null, funName, actuals);
 		List<Statement> ctrL = new ArrayList<Statement>();
+		ctrL.add(new StmtVarDecl(null, new TypeArray(TypePrimitive.inttype, nthreads), COUNTER + "_tmp", new ExprVar(null,  COUNTER) ));
+		ctrL.add(new StmtAssign(null, new ExprArrayRange(new ExprVar(null, COUNTER+ "_tmp"), idx),  new ExprBinary(new ExprArrayRange(new ExprVar(null, COUNTER+ "_tmp"), idx)  , "+", ExprConstInt.one ) ));
 		ctrL.add(new StmtExpr(fc));
 		ctrL.add(new StmtAssign(null, new ExprVar(null, noDeadlock), ExprConstInt.one));
 		StmtBlock callToRest = new StmtBlock(null, ctrL) ;
