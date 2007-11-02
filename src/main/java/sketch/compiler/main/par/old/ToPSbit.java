@@ -146,7 +146,7 @@ public class ToPSbit extends ToSBit {
 				"             \t strange function, and the resulting value is used to index the lock array. \n" +
 				"             \t If that index is out of bounds, your sketch will not resolve, so you use this \n" +
 				"             \t parameter to make that lock array larger.",
-				"50", null) );
+				"10", null) );
 	}
 	
 	
