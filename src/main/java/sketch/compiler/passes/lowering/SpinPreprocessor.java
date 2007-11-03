@@ -224,8 +224,8 @@ public class SpinPreprocessor extends FEReplacer {
     	ivar = new ExprVar(cx, ivname);
     	cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
     	incr = new StmtAssign(cx, ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
-    	List<StmtJoin> joinBody =
-    		Collections.singletonList (new StmtJoin (cx, new SJRoundRobin (cx, new ExprVar (cx, ivname))));
+    	List<Statement> joinBody =
+    		Collections.singletonList ((Statement) new StmtJoin (cx, new SJRoundRobin (cx, new ExprVar (cx, ivname))));
     	StmtFor joinLoop = new StmtFor (cx, ndecl, cmp, incr, new StmtBlock (cx, joinBody));
 
     	addStatement (spawnLoop);
