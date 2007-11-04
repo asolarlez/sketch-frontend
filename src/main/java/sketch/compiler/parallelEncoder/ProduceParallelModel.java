@@ -667,9 +667,10 @@ public class ProduceParallelModel extends FEReplacer {
 	public void condForNode(CFG cfg, CFGNode node, Expression idx, ExprVar pcVar, VarSetReplacer vrepl, EliminateLockUnlock luelim ,List<Statement>/*out*/ conditCF){
 		
 		FEContext cx = node.getCx();
-		Expression lhsPC = new ExprVar(cx, pcVar.getName() + "_p");
-		lhsPC = new ExprArrayRange(lhsPC, idx);
-		lhsPC = new ExprArrayRange(lhsPC, idx);
+		Expression tmpPC = new ExprVar(cx, pcVar.getName() + "_p");
+		tmpPC = new ExprArrayRange(tmpPC, idx);
+		tmpPC = new ExprArrayRange(tmpPC, idx);
+		final Expression lhsPC = tmpPC;
 
 		Expression cond = new ExprBinary(cx, ExprBinary.BINOP_EQ, new ExprArrayRange(cx, pcVar, idx), new ExprConstInt(node.getId()) );
 		
@@ -688,7 +689,7 @@ public class ProduceParallelModel extends FEReplacer {
 			conditCF.add(new StmtIfThen(cx, cond, new StmtBlock(cx, bodyL), null));
 		}
 		
-		if(node.isExpr()){			
+		if(node.isExpr() && ! node.isSpecial() ){			
 			Expression expr = (Expression)node.getExpr().accept(vrepl);
 			List<EdgePair> succ = cfg.getSuccessors(node);
 			assert succ.size() == 2;			
@@ -726,6 +727,33 @@ public class ProduceParallelModel extends FEReplacer {
 			
 			
 			conditCF.add(new StmtIfThen(cx, cond, new StmtBlock(cx, bodyL), null));
+		}
+		
+		
+		if(node.isExpr() && node.isSpecial() ){
+			List<EdgePair> succ = cfg.getSuccessors(node);
+			final int trans[] = new int[succ.size()];
+			for(int i=0; i<trans.length; ++i){
+				EdgePair ep = succ.get(i);
+				trans[ep.label] = ep.node.getId();
+			}
+			Statement s =  transformStmt(node.getPreStmt(), vrepl, luelim);
+			final ExprVar next = (ExprVar)node.getExpr();
+			
+			FEReplacer repl = new FEReplacer(){
+				@Override
+				public Object visitStmtAssign(StmtAssign stmt){
+					if(stmt.getLHS() == next){
+						assert stmt.getRHS() instanceof ExprConstInt;
+						ExprConstInt id = (ExprConstInt) stmt.getRHS();
+						return new StmtAssign(stmt.getCx(),lhsPC, new ExprConstInt(trans[id.getVal()]) );
+					}else{
+						return stmt;
+					}
+				}
+			};
+			s = (Statement) s.accept(repl);
+			conditCF.add(new StmtIfThen(cx, cond,s, null));
 		}
 	
 		if(node.isEmpty()){

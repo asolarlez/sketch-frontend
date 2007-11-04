@@ -95,11 +95,11 @@ public class CFGforPloop extends CFGBuilder {
         builder.locals.add(ploop.getLoopVarName());
         builder.localDecls.put(ploop.getLoopVarName(), ploop.getLoopVarDecl());
         CFGSimplifier sym = new CFGSimplifier(builder.locals);
-        System.out.println("**** was " + rv.size() );
+        System.out.println("**** was " + rv.size() );        
+        //rv.repOK();
+        //rv = sym.mergeConsecutiveLocals(rv);
         rv.repOK();
         rv = sym.simplifyAcrossBranches(rv);
-        rv.repOK();
-        rv = sym.mergeConsecutiveLocals(rv);
         rv.repOK();
         rv = sym.cleanLocalState(rv, builder.localDecls, ploop.getLoopVarDecl());
         rv.repOK();

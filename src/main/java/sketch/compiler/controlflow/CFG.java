@@ -107,7 +107,6 @@ public class CFG
     				assert n.isStmt();
     			}else{
     				assert n.isExpr();
-    				assert succs.get(i).label == 0 || succs.get(i).label == 1;
     			}
     			assert nset.contains(s) : "The successor is not part of the graph";
     			List<CFGNode> spred = s.getPreds();

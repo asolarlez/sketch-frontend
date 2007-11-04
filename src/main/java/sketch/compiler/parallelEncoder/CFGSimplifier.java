@@ -12,14 +12,17 @@ import java.util.Stack;
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGNode;
 import streamit.frontend.controlflow.CFGNode.EdgePair;
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.TypePrimitive;
 
 public class CFGSimplifier {
 	Set<String> locals;
@@ -193,104 +196,301 @@ public class CFGSimplifier {
 		
 	
 	
-	public CFG simplifyAcrossBranches(CFG cfg){
-		
-		Stack<CFGNode> ccstack = new Stack<CFGNode>();
-		Stack<CFGNode> stack = new Stack<CFGNode>();
-		stack.push(cfg.getEntry());
-		
-		Set<CFGNode> visited = new HashSet<CFGNode>();
-		///Connected components of nodes containing all local variables.
-		List<List<CFGNode>> localCCs = new ArrayList<List<CFGNode>>();
-		
-		List<CFGNode> currentCC = null;
-		//The set of extras is a set of nodes that do have
-		//globals, but that get appended to the current CC because
-		//it is safe to do so.
-		//The key rule about adding extras one extra can not
-		//be a successor of another extra, because if that
-		//were to happen, you could execute two statements with
-		//globals in the same step, which is ilegal.
-		Set<CFGNode> extras = new HashSet<CFGNode>();
+
+	/**
+	 * Invariants:
+	 * <li> Each cluster has a single entry point.
+	 * <li> Every path from the entry to the exit contains only a single global block.
+	 * <li> The entry point is not global.
+	 * @author asolar
+	 *
+	 */
+	private static class Cluster{
+		final CFGNode head;
+		final Set<CFGNode> rest = new HashSet<CFGNode>();
+		Cluster(CFGNode head){
+			this.head = head;
+		}
+		public boolean contains(CFGNode c){
+			if(head == c){ return true; }
+			return rest.contains(c);
+		}
+		public void add(CFGNode n){
+			rest.add(n);
+		}
+	}
+	
+	
+	
+	/**
+	 * This routine creates clusters from the CFG by the following rules. 
+	 * The cluster gets started by putting the root in the cstack.
+	 * 
+	 * Each entry in the Cstack has a bit that says whether the path to it has been tainted or not.
+	 * The tainted label is set by the following rules:
+	 * <li> If the parent is global, all its children are tainted.
+	 * <li> If the parent is tainted, all its children are tainted.
+	 * 
+	 * Because a cluster can have only a single entry point, nodes with multiple parents can not be 
+	 * added to the cluster until we know all its parents belong to the cluster.
+	 * When you reach a node with multiple parents, you check if all parents are in a cluster. If not,
+	 * you put it in a waitlist with one of the following tags:
+	 * <li> global: The node is global. If it is reached by a tainted parent, it should be removed from the 
+	 * waitlist and added to the outer stack and marked as visited.
+	 * <li> tainted: One of its parents is tainted. When all the parents have been visited, it should 
+	 * be added to the cstack as tainted.
+	 * <li> local: None of its parents are tainted. When all parents have been visited, it should be added
+	 * to the cstack as untainted.  
+	 * 
+	 * 
+	 * @param cfg
+	 * @param clusters
+	 */
+	public int createClusters(CFG cfg, List<Cluster>/*out*/ clusters){
+		final int T/*tainted*/ = 0;final int U/*untainted*/ = 1;
+		final int G = 2;
+		/**
+		 * labeled node.
+		 */
+		final class lNode{
+			final CFGNode n;
+			final int label;
+			public lNode(CFGNode n, int l){ this.n = n; this.label = l; }	
+			public String toString(){
+				return n + " " + (label == T ? "T" : (label==U? "U" : "G"));
+			}
+		}
 		CFGNode head = cfg.getEntry();
+		Stack<lNode> ccstack = new Stack<lNode>();
+		Stack<CFGNode> stack = new Stack<CFGNode>();
+		stack.push(head);
+		Set<CFGNode> visited = new HashSet<CFGNode>();
+		visited.add(head);
+		
+		List<Cluster> localCCs = clusters;
+		Cluster currentcc = null;
+		Map<CFGNode, Integer> waitlist = new HashMap<CFGNode, Integer>();
+		
 		int headLoc = -1;
-		while(stack.size() > 0 || ccstack.size() > 0){
+		while(stack.size() > 0 || ccstack.size() > 0 || waitlist.size() > 0){
 			if(ccstack.size()>0){
-				CFGNode n = ccstack.pop();
-				if(visited.contains(n)){
-					continue;
+				lNode currentLn = ccstack.pop();
+				if(currentcc == null){
+					//If current cc is new, we add as head.
+					//System.out.println("Cluster begin:");
+					currentcc = new Cluster(currentLn.n);
+					assert waitlist.size() == 0;
+					if(currentLn.n == head){
+						headLoc = localCCs.size();
+					}
+				}else{
+					currentcc.add(currentLn.n);					
 				}
-				visited.add(n);
-				if(currentCC == null){
-					currentCC = new ArrayList<CFGNode>();
-					extras.clear();
-				}
-				
-				if(n == head){
-					headLoc = localCCs.size();
-				}
-				
-				currentCC.add(n);
-				
-				List<EdgePair> suc = n.getSuccs();
-				for(int i=0; i<suc.size(); ++i){
-					CFGNode snode = suc.get(i).node;
-					if(allLocals(snode)){
-						ccstack.push(snode);
-					}else{
-						stack.push( snode );
-						if(!extras.contains(snode)){
-							//If none of the predecessors of snode is in extras, we can make snode an extra.
-							boolean allgood = true;
-							for(Iterator<CFGNode> it = snode.getPreds().iterator(); it.hasNext(); ){
-								if(extras.contains(it.next())){
-									allgood = false;
+				//System.out.println(currentLn);
+				List<EdgePair> succList = currentLn.n.getSuccs();
+				for(int i=0; i<succList.size(); ++i){
+					CFGNode succOfCurr = succList.get(i).node;
+					if(!visited.contains(succOfCurr)){
+						List<CFGNode> predsOfSucc = succOfCurr.getPreds();
+						boolean succIsLocal = allLocals(succOfCurr);
+						
+						if(succOfCurr.isEmpty()){
+							stack.push(succOfCurr);
+							visited.add(succOfCurr);
+							continue;
+						}
+						
+						if(predsOfSucc.size() == 1){
+							if(succIsLocal){
+								ccstack.push(new lNode(succOfCurr, currentLn.label )); // if it's local, we simply preserve the label.
+							}else{
+								if(currentLn.label == T){
+									//If the path was already tainted, we can't add a non-local.
+									stack.push(succOfCurr);
+								}else{
+									//If the path was not tainted, we add it, but taint the path.
+									ccstack.push(new lNode(succOfCurr, T ));
+								}
+							}
+							visited.add(succOfCurr);
+						}else{
+							boolean allInSet = true;
+							for(Iterator<CFGNode> it = predsOfSucc.iterator(); it.hasNext();   ){
+								CFGNode sp = it.next();
+								if(!currentcc.contains(sp) && sp != currentLn.n){
+									allInSet = false;
 									break;
 								}
 							}
-							if(allgood){
-								extras.add(snode);
-								currentCC.add(snode);
-							}
-						}
+							if(allInSet){
+								assert waitlist.containsKey(succOfCurr);
+								int label = waitlist.get(succOfCurr);
+								waitlist.remove(succOfCurr);
+								if(label == G ){ // means succOfCurr is global, but all prev paths had been untainted.
+									if(currentLn.label == U){ // If this path is untainted too, put in as tainted.
+										ccstack.push(new lNode(succOfCurr, T ));
+									}else{
+										stack.push(succOfCurr);
+									}
+								}else{
+									if(label == T){ // succOfCurr was local, but some path to it was tainted.
+										ccstack.push(new lNode(succOfCurr, T ));
+									}else{// succOfCurr was local and all paths to it so far have been local.
+										assert label == U;
+										ccstack.push(new lNode(succOfCurr, currentLn.label ));
+									}
+								}
+								visited.add(succOfCurr);
+							}else{
+								//Not all predecessors are in CC yet
+								if( waitlist.containsKey(succOfCurr) ){
+									//If already in the waitlist.
+									int label = waitlist.get(succOfCurr);
+									if(label == G && currentLn.label == T){
+										//If it was global and the current label is tainted, we remove from waitlist and add to stack.
+										waitlist.remove(succOfCurr);
+										stack.push(succOfCurr);
+										visited.add(succOfCurr);
+									}
+									if(label == U && currentLn.label == T){
+										waitlist.put(succOfCurr, T);
+									}
+								}else{
+									if(succIsLocal){
+										waitlist.put(succOfCurr, currentLn.label);
+									}else{
+										if(currentLn.label == T){
+											//If the path was already tainted, we can't add a non-local.
+											stack.push(succOfCurr);
+											visited.add(succOfCurr);
+										}else{
+											//If the path was not tainted, we add it, but taint the path.
+											waitlist.put(succOfCurr, T);
+										}
+									}
+								}
+							}//if(allInSet) else
+						}// if(predsOfSucc.size() == 1) else
 					}
-				}			
-			}else{
-				if(currentCC != null){
-					localCCs.add(currentCC);
-					currentCC = null;
+				}
+				
+			}else{ // if(ccstack.size()>0)
+				if(currentcc != null){
+					localCCs.add(currentcc);
+					currentcc = null;
+					for(Iterator<CFGNode> it = waitlist.keySet().iterator(); it.hasNext(); ){
+						CFGNode wn = it.next();
+						stack.push(wn);
+						visited.add(wn);
+					}
+					waitlist.clear();
 				}				
 				CFGNode n = stack.pop();
-				if(visited.contains(n)){
-					continue;
-				}
 				if(allLocals(n)){
-					ccstack.push(n);
+					ccstack.push(new lNode(n, U));
 					continue;
+				}else{
+					if(!n.isEmpty()){
+						ccstack.push(new lNode(n, T));
+						continue;
+					}
 				}
-				visited.add(n);
+				/*
 				List<EdgePair> suc = n.getSuccs();
 				for(int i=0; i<suc.size(); ++i){
-					if(!visited.contains(suc.get(i).node)){
-						stack.push(suc.get(i).node);
-					}					
+					CFGNode s = suc.get(i).node;
+					if(!visited.contains(s)){
+						stack.push(s);
+						visited.add(s);
+					}
 				}
+				*/
 			}
 		}
-		if(currentCC != null){
-			localCCs.add(currentCC);
-			currentCC = null;
+		if(currentcc != null){
+			localCCs.add(currentcc);
+			currentcc = null;
+			waitlist.clear();
 		}	
-		///At this point, all nodes are either in newNodes or in one of the localCCs.
-		///Each localcc is a list of topologically sorted nodes containing all local 
-		///variables that form a connected component in the dag.
+		return headLoc;
+	}
+	
+	
+	
+	public Statement stmtForNode(CFGNode n, CFGNode pred ,Cluster c, ExprVar ind, List<EdgePair> lst){
+		if(!c.contains(n)){ 
+			int sz = lst.size(); 
+			Statement t = new StmtAssign(null, ind, new ExprConstInt(lst.size()) );
+			lst.add(new EdgePair(n, sz));
+			n.changePred(pred, c.head);
+			return t; 
+		}
+		if(n.isStmt()){
+			assert n.getSuccs().size() == 1;
+			CFGNode succ = n.getSuccs().get(0).node;
+			Statement s = stmtForNode(succ, n, c, ind, lst);
+			s = new StmtBlock(n.getStmt(), s);
+			return s;
+		}
+		if(n.isExpr()){			
+			assert n.getPreStmt() == null;
+			
+			EdgePair ep1 = n.getSuccs().get(0);
+			EdgePair ep2 = n.getSuccs().get(1);
+			
+			CFGNode suc[] = new CFGNode[2];
+			suc[ep1.label] = ep1.node;
+			suc[ep2.label] = ep2.node;
+			
+			Statement sf = stmtForNode(suc[0], n, c, ind, lst);
+			Statement st = stmtForNode(suc[1], n, c, ind, lst);
+			
+			return new StmtIfThen(null, n.getExpr(), st, sf);
+		}
+		return null;
+	}
+	
+	
+	public CFGNode processCluster(Cluster c,  ExprVar ind){
+		List<EdgePair> lst = new ArrayList<EdgePair>();
+		Statement s = stmtForNode(c.head, null, c, ind, lst);
+		s = new StmtBlock(new StmtVarDecl(null, TypePrimitive.inttype, ind.getName(), ExprConstInt.zero ), s);
+		assert lst.size() > 0;
+		CFGNode n = c.head;
+		if(lst.size() == 1){
+			n.setPreStmt(null);
+			n.changeExpr(null);
+			n.changeStmt(s);
+			n.getSuccs().clear();
+			n.getSuccs().add(new EdgePair(lst.get(0).node, null));
+		}else{
+			n.setPreStmt(s);
+			n.changeExpr(ind);
+			n.getSuccs().clear();
+			n.getSuccs().addAll(lst);
+			n.makeSpecial();
+		}
+		return n;
+	}
+	
+	
+	
+	
+	
+	public CFG simplifyAcrossBranches(CFG cfg){
+		List<Cluster> clusters = new ArrayList<Cluster>();
+		CFGNode head = cfg.getEntry();
+		int headLoc = this.createClusters(cfg, clusters);
 		
-		for(int i=0; i<localCCs.size(); ++i){
-			CFGNode tmp = processCC(localCCs.get(i));
+		for(int i=0; i<clusters.size(); ++i){
+			CFGNode tmp = processCluster(clusters.get(i), new ExprVar(null, "_ind"));			
 			if(headLoc == i){
 				head = tmp;
 			}
 		}
+		
+		Stack<CFGNode> stack = new Stack<CFGNode>();
+		Set<CFGNode> visited = new HashSet<CFGNode>();
 		assert stack.size() == 0;
 		visited.clear();
 		stack.push(head);
@@ -312,6 +512,7 @@ public class CFGSimplifier {
 				}					
 			}			
 		}
+		
 		
 		return new CFG(newNodes, head, cfg.getExit());
 	}
@@ -353,6 +554,7 @@ public class CFGSimplifier {
 				CFGNode nst = simplifyNode(st, ccset, visited);
 				changeSucc(n, st, nst);
 				changeSucc(n, sf, nsf);
+				n.checkNeighbors();
 				simplST = true;
 				simplSF = true;
 				sf = nsf;
@@ -367,7 +569,8 @@ public class CFGSimplifier {
 					assert st.getSuccs().size() == 1 && sf.getSuccs().size() == 1; 
 					if(st.getSuccs().get(0).node != sf.getSuccs().get(0).node){
 						changeSucc(n, st, st.getSuccs().get(0).node);
-						changeSucc(n, sf, sf.getSuccs().get(0).node);						
+						changeSucc(n, sf, sf.getSuccs().get(0).node);	
+						n.checkNeighbors();
 					}else{
 						n.changeExpr(null);
 						n.changeStmt(n.getPreStmt());
@@ -377,7 +580,8 @@ public class CFGSimplifier {
 						n.addSucc(new EdgePair(newSuc, null));
 						st.removePred(n);
 						sf.removePred(n);
-						newSuc.addPred(n);						
+						newSuc.addPred(n);	
+						n.checkNeighbors();
 					}
 					return n;
 				}
@@ -399,6 +603,7 @@ public class CFGSimplifier {
 					assert st.getSuccs().size() == 1 ; 
 					if(st.getSuccs().get(0).node != sf){
 						changeSucc(n, st,  st.getSuccs().get(0).node);
+						n.checkNeighbors();
 						return n;
 					}else{
 						n.changeExpr(null);
@@ -411,6 +616,7 @@ public class CFGSimplifier {
 						st.removePred(n);
 						sf.removePred(n);
 						newSuc.addPred(n);	
+						n.checkNeighbors();
 						return simplifyNode(n, ccset, visited);
 						
 					}
@@ -434,6 +640,7 @@ public class CFGSimplifier {
 					assert sf.getSuccs().size() == 1 ; 
 					if(sf.getSuccs().get(0).node != st){
 						changeSucc(n, sf, sf.getSuccs().get(0).node);
+						n.checkNeighbors();
 						return n;
 					}else{
 						n.changeStmt(n.getPreStmt());
@@ -445,7 +652,8 @@ public class CFGSimplifier {
 						n.addSucc(new EdgePair(newSuc, null));
 						st.removePred(n);
 						sf.removePred(n);
-						newSuc.addPred(n);	
+						newSuc.addPred(n);
+						n.checkNeighbors();
 						return simplifyNode(n, ccset, visited);
 						
 					}
@@ -460,12 +668,14 @@ public class CFGSimplifier {
 			if( ccset.contains(s1) ){
 				CFGNode ns1 = simplifyNode(s1, ccset, visited);
 				changeSucc(n, s1, ns1);
+				n.checkNeighbors();
 				s1 = ns1;
 				if(s1.getPreds().size() <= 2){
 					if(s1.isStmt()){
 						n.changeStmt(new StmtBlock(n.getStmt(), s1.getStmt() ));
 						assert s1.getSuccs().size() == 1;
 						changeSucc(n, s1, s1.getSuccs().get(0).node);
+						n.checkNeighbors();
 						return n;
 					}
 					if(s1.isExpr() && s1.getPreds().size() == 1){
@@ -480,8 +690,11 @@ public class CFGSimplifier {
 						n.setPreStmt(s);
 						n.removeSucc(s1);
 						for(Iterator<EdgePair> it = s1.getSuccs().iterator(); it.hasNext(); ){
-							n.addSucc(it.next());
+							EdgePair ep = it.next();
+							n.addSucc(ep);
+							ep.node.changePred(s1, n);
 						}
+						n.checkNeighbors();
 						return n;						
 					}
 				}
@@ -491,17 +704,12 @@ public class CFGSimplifier {
 	}
 	
 	CFGNode processCC(List<CFGNode> cc){
-		Set<CFGNode> ccset = new HashSet<CFGNode>(cc);
-		Set<CFGNode> in = new HashSet<CFGNode>();
-		Set<CFGNode> out = new HashSet<CFGNode>();
+		Set<CFGNode> ccset = new HashSet<CFGNode>(cc);		
 		assert cc.size() > 0;
 		CFGNode head = cc.get(0);
-		//head = simplifyNode(head, ccset, new HashSet<CFGNode>());
+		head = simplifyNode(head, ccset, new HashSet<CFGNode>());
 		return head;
 	}
-	
-	
-	
 	
 	
 	

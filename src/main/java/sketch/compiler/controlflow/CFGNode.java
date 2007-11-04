@@ -59,10 +59,16 @@ public class CFGNode
     private Statement preStmt = null;
     private Expression expr;
     private int id;
+    private boolean special = false;
     private final List<CFGNode> preds = new ArrayList<CFGNode>();
     private final List<EdgePair> succs = new ArrayList<EdgePair>();
     
-    
+    public void makeSpecial(){
+    	special = true;
+    }
+    public boolean isSpecial(){
+    	return special;
+    }
     
     
     public void changeStmt(Statement stmt){
