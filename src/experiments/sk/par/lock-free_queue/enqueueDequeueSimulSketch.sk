@@ -57,34 +57,11 @@ bit alwaysTrue () {
 
 bit verify (Queue q, int[2] popped) {
     Node next = q.prevHead;
-    int taken = 1;
-    int nfree = 0;
+    for (int i = 0; next != null; ++i)
+        assert next.taken == 1;
 
-    assert q.prevHead.taken == 1;
-    for (int i = 0; next != null; ++i) {
-        if (0 == taken) {
-            assert next.taken == 0;
-            ++nfree;
-        } else if (0 == next.taken) {
-            taken = 0;
-            nfree = 1;
-        }
-        next = next.next;
-    }
-
-    if (nfree == 0) {
-        assert (popped[0] == 1 && popped[1] == 2)
-               || (popped[0] == 2 && popped[1] == 1);
-    } else if (nfree == 1) {
-        assert (popped[0] == 1 && popped[1] == -1)
-               || (popped[0] == -1 && popped[1] == 1)
-               || (popped[0] == 2 && popped[1] == -1)
-               || (popped[0] == -1 && popped[1] == 2);
-    } else if (nfree == 2) {
-        assert (popped[0] == -1 && popped[1] == -1);
-    } else {
-        assert 0;
-    }
+    assert (popped[0] == 1 && popped[1] == 2)
+           || (popped[0] == 2 && popped[1] == 1);
 
     return 1;
 }
@@ -99,11 +76,9 @@ bit dequeueTest () implements alwaysTrue {
 
     int[2] popped = 0;
 
-    ploop (int i; 4) {
-        if (0 == i%2)
-            enqueue (q, i/2 + 1);
-        else
-            popped[i/2] = dequeue (q);
+    ploop (int i; 2) {
+        enqueue (q, i + 1);
+        popped[i] = dequeue (q);
     }
 
     return verify (q, popped);
