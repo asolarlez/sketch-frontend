@@ -25,27 +25,29 @@ void enqueue (Queue q, int val) {
 }
 
 int dequeue (Queue q) {
-    Node next = q.prevHead.next;
+    Node tmp = null;
     int wasTaken = 1;
 
-    for (int i = 0; (next != null && 1 == wasTaken); ++i) {
-        // wasTaken = AtomicSwap (next.taken, 1)
-        atomic {
-            wasTaken = next.taken;
-            next.taken = 1;
+    for (int i = 0; wasTaken != 0; ++i) {
+        anyorder {
+            tmp = ?? ? q.prevHead :
+                       (?? ? q.prevHead.next : q.prevHead.next.next);
+            if (null == tmp)  return -1;
+
+            q.prevHead = ?? ? tmp :
+                              (?? ? tmp.next :
+                                    (?? ? q.prevHead : q.prevHead.next));
+            if (tmp.taken != 1) {
+                // wasTaken = AtomicSwap (tmp.taken, 1);
+                atomic {
+                    wasTaken = tmp.taken;
+                    tmp.taken = 1;
+                }
+            }
         }
-        if (1 == wasTaken)  next = next.next;
     }
 
-    if (null == next) return -1;
-
-    int stored = next.val;
-    for (int i = 0; (null != next && 1 == next.taken); ++i) {
-        q.prevHead = next;
-        next = next.next;
-    }
-
-    return stored;
+    return tmp.val;
 }
 
 bit alwaysTrue () {
