@@ -107,7 +107,7 @@ public class SemanticChecker
 	 * @returns     <code>true</code> if no errors are detected
 	 */
 	public static boolean check(Program prog)
-	{    	
+	{
 		SemanticChecker checker = new SemanticChecker();
 		Map streamNames = checker.checkStreamNames(prog);
 		checker.checkDupFieldNames(prog, streamNames);
@@ -300,17 +300,17 @@ public class SemanticChecker
 			private StreamSpec spec = null;
 			private Function func = null;
 
-			
+
 			public Object visitStmtFor(StmtFor stmt)
 			{
 				// check the condition
-				
+
 				if( stmt.getInit() == null){
 					report(stmt, "For loops without initializer not supported." );
 				}
 				return super.visitStmtFor(stmt);
 			}
-			
+
 			public Object visitStreamSpec(StreamSpec ss)
 			{
 				//System.out.println("checkStatementPlacement::visitStreamSpec");
@@ -325,7 +325,7 @@ public class SemanticChecker
 			}
 
 			public Object visitFunction(Function func2)
-			{	
+			{
 				Function oldFunc = func;
 				func = func2;
 				Object result = super.visitFunction(func2);
@@ -509,7 +509,7 @@ public class SemanticChecker
 						// literals always count as bits.
 						// However, the resulting negation will be
 						// an int.
-						if (!bittype.promotesTo(ot)) 
+						if (!bittype.promotesTo(ot))
 							report(expr, "cannot negate " + ot);
 						break;
 
@@ -532,13 +532,13 @@ public class SemanticChecker
 
 				return super.visitExprUnary(expr);
 			}
-			
+
 			private Type currentFunctionReturn = null;
-			
+
 			public Object visitFunction(Function func)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction: " + func.getName());
-				
+
 				currentFunctionReturn = func.getReturnType();
 
 				if(func.getSpecification() != null){
@@ -575,13 +575,13 @@ public class SemanticChecker
 						return super.visitFunction(func);
 					}
 				}
-				
+
 				return super.visitFunction(func);
 			}
 
 
 			public Object visitExprFunCall(ExprFunCall exp)
-			{                    
+			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
 
 				Function fun = this.symtab.lookupFn(exp.getName());
@@ -621,7 +621,7 @@ public class SemanticChecker
 					isRightArr=true;
 				}
 				if (lt != null && rt != null)
-				{                        
+				{
 					Type ct = lt.leastCommonPromotion(rt);
 					if(expr.getOp() == ExprBinary.BINOP_LSHIFT || expr.getOp() == ExprBinary.BINOP_RSHIFT){
 						ct = lt;
@@ -736,7 +736,7 @@ public class SemanticChecker
 				}
 
 				if (bt != null && ct != null)
-				{                        
+				{
 					Type xt = bt.leastCommonPromotion(ct);
 					if (xt == null)
 						report(expr,
@@ -815,7 +815,7 @@ public class SemanticChecker
 					report(expr, "Ranges are not yet supported");
 					return super.visitExprArrayRange(expr);
 				}
-				RangeLen rl = (RangeLen)idx;                	
+				RangeLen rl = (RangeLen)idx;
 				Type ot = getType(rl.start());
 				if (ot != null)
 				{
@@ -868,14 +868,14 @@ public class SemanticChecker
 						for (int i=1; i<elems.size(); i++) {
 							ExprArrayInit other = (ExprArrayInit)elems.get(i);
 							if (firstArr.getDims() != other.getDims()) {
-								report(expr, 
+								report(expr,
 										"non-uniform number of array " +
 								"dimensions in array initializer");
 							}
 							if (firstArr.getElements().size() != other.getElements().size()) {
-								report(expr, 
-										"two rows of a multi-dimensional " +  
-										"array are initialized to different " + 
+								report(expr,
+										"two rows of a multi-dimensional " +
+										"array are initialized to different " +
 								"lengths (arrays must be rectangular)");
 							}
 						}
@@ -884,7 +884,7 @@ public class SemanticChecker
 						// element should be an array
 						for (int i=1; i<elems.size(); i++) {
 							if (elems.get(i) instanceof ExprArrayInit) {
-								report(expr, 
+								report(expr,
 										"non-uniform number of array " +
 								"dimensions in array initializer");
 							}
@@ -914,7 +914,7 @@ public class SemanticChecker
 							if (lengthExpr instanceof ExprConstInt) {
 								int length = ((ExprConstInt)lengthExpr).getVal();
 								if (length != ((ExprArrayInit)init).getElements().size()) {
-									report(field, 
+									report(field,
 											"declared array length does not match " +
 									"array initializer");
 								}
@@ -927,7 +927,7 @@ public class SemanticChecker
 			}
 
 			public void matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
-				
+
 
 
 				if (lt != null && rt != null &&
@@ -955,7 +955,7 @@ public class SemanticChecker
 				}
 				if(lhsExp instanceof ExprVar){
 					lhsn = ( (ExprVar) lhsExp).getName();
-				}                    
+				}
 				matchTypes(stmt, lhsn, lt, rt);
 				return super.visitStmtAssign(stmt);
 			}
@@ -964,7 +964,7 @@ public class SemanticChecker
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtVarDecl");
 
-				Object result = super.visitStmtVarDecl(stmt); 
+				Object result = super.visitStmtVarDecl(stmt);
 				for (int i = 0; i < stmt.getNumVars(); i++){
 					Expression ie = stmt.getInit(i);
 					if(ie != null){
@@ -991,7 +991,7 @@ public class SemanticChecker
 			}
 
 			// Control Statements
-			
+
 			public Object visitStmtDoWhile(StmtDoWhile stmt)
 			{
 				// check the condition
@@ -1007,23 +1007,25 @@ public class SemanticChecker
 			public Object visitStmtFor(StmtFor stmt)
 			{
 				// check the condition
-				
+
 				if( stmt.getInit() == null){
 					report(stmt, "For loops without initializer not supported." );
 				}
-				
+
 				Type cond = getType(stmt.getCond());
 				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
 				// also need to check that the variable is incremented by 1
+				stmt.getIncr ().assertTrue (stmt.getIncr () instanceof StmtExpr,
+					"Sorry, we only support increment /expressions/");
 				StmtExpr incr = (StmtExpr)stmt.getIncr();
-				ExprUnary incrExpr = (ExprUnary) incr.getExpression();	
+				ExprUnary incrExpr = (ExprUnary) incr.getExpression();
 
-				if (incrExpr.getOp() != ExprUnary.UNOP_POSTINC && 
-						incrExpr.getOp() != ExprUnary.UNOP_POSTDEC &&
-						incrExpr.getOp() != ExprUnary.UNOP_PREINC && 
-						incrExpr.getOp() != ExprUnary.UNOP_PREDEC )
+				if (incrExpr.getOp() != ExprUnary.UNOP_POSTINC &&
+					incrExpr.getOp() != ExprUnary.UNOP_POSTDEC &&
+					incrExpr.getOp() != ExprUnary.UNOP_PREINC &&
+					incrExpr.getOp() != ExprUnary.UNOP_PREDEC )
 					report (stmt, "Increment expression should be of the form (var){++,--}: " + incrExpr);
 
 				// again, should check for variable usage
@@ -1060,20 +1062,20 @@ public class SemanticChecker
 
 				return super.visitStmtWhile(stmt);
 			}
-			
+
 			public Object visitStmtReturn(StmtReturn stmt)
 			{
 				// Check that the return value can be promoted to the
 				// function return type
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtReturn");
 				//System.out.println("Return values: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
-				
+
 				if (! getType(stmt.getValue()).promotesTo(currentFunctionReturn))
 					report (stmt, "Return value incompatible with declared function return value: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
-				
+
 				return super.visitStmtReturn(stmt);
 			}
-			
+
 		});
 	}
 

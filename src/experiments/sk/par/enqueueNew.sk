@@ -19,9 +19,8 @@ void enqueue (Queue q, int val) {
     // What this is doing:
     //   oldTail = AtomicSwap (q.tail, n);
     atomic {
-        oldTail = ?? ? q.tail : n;
-        if (??)  q.tail = n;
-        else     n = q.tail;
+        oldTail = q.tail;
+        q.tail = n;
     }
     oldTail.next = n;
 }

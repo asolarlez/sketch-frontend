@@ -23,6 +23,7 @@ import streamit.frontend.passes.EliminateNestedArrAcc;
 import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
+import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.stencilSK.EliminateStarStatic;
@@ -38,48 +39,49 @@ public class ToPSbit extends ToSBit {
 		super(args);
 		// TODO Auto-generated constructor stub
 	}
-	
+
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
 		dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
 		dump(finalCode, "after postproc");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-		dump(finalCode, "after flattening");		
+		dump(finalCode, "after flattening");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
-		
+
 	}
-	
-	
-	
+
+
+
 	/**
-	 * This function produces a recursion control that is used by all transformations that are not user visible. 
+	 * This function produces a recursion control that is used by all transformations that are not user visible.
 	 * In particular, the conversion to boolean.
 	 * @return
 	 */
-	public RecursionControl internalRControl(){		
+	public RecursionControl internalRControl(){
 		return new ZeroInlineRControl();
 	}
-	
-	
+
+
 	protected void backendParameters(List<String> commandLineOptions){
 		super.backendParameters(commandLineOptions);
 		commandLineOptions.add("-inlineamnt");
 		commandLineOptions.add( "" + (params.flagValue("schedlen")+1) );
 		commandLineOptions.add("-mergeFunctions");
 	}
-	
-	
+
+
 	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-		
+
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
+		prog = (Program)prog.accept(new MakeAllocsAtomic(varGen));
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		//dump (prog, "After eliminating structs:");
@@ -95,18 +97,18 @@ public class ToPSbit extends ToSBit {
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
-		if( params.hasFlag("showpartial")  ) 
+		if( params.hasFlag("showpartial")  )
 			prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");
 	}
-	
-	
+
+
 	public void run()
 	{
 		parseProgram();
-		
+
 		prog = (Program)prog.accept(new LockPreprocessing());
 		dump(prog, "first");
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
@@ -119,7 +121,7 @@ public class ToPSbit extends ToSBit {
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-		
+
 		if (prog == null)
 			throw new IllegalStateException();
 
@@ -131,14 +133,14 @@ public class ToPSbit extends ToSBit {
 		System.out.println("DONE");
 
 	}
-	
-	
+
+
 	protected void setCommandLineParams(){
 		super.setCommandLineParams();
 		params.setAllowedParam("schedlen", new POpts(POpts.NUMBER,
 				"--schedlen  n \t Sets the length of the schedule for the parallel sections to n.",
 				"10", null) );
-		
+
 		params.setAllowedParam("locklen", new POpts(POpts.NUMBER,
 				"--locklen  n \t This is another one of those parameters that have to do with the way\n" +
 				"             \t things are implemented. The locks array has to be of a static size. \n" +
@@ -148,8 +150,8 @@ public class ToPSbit extends ToSBit {
 				"             \t parameter to make that lock array larger.",
 				"10", null) );
 	}
-	
-	
+
+
 	public static void main(String[] args)
 	{
 		new ToPSbit(args).run();
