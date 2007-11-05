@@ -359,6 +359,9 @@ public class ProduceParallelModel extends FEReplacer {
 			populateVarReplacerLocal(locals.iterator(), idxb, vrepl);
 			populateVarReplacer(globals.iterator(), idxb, vrepl);
 			parcfg.setNodeIDs();
+			Statement tmp = new StmtAssign(null, pcVar, new ExprConstInt(parcfg.getExit().getId()));
+			tmp = (Statement)tmp.accept(vrepl);
+			conditCF.add(tmp);
 			for(Iterator<CFGNode> itnode = parcfg.getNodes().iterator(); itnode.hasNext(); ){
 				CFGNode node = itnode.next();
 				condForNode(parcfg, node, idxb, pcVar, vrepl, luelim, conditCF);
