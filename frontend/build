@@ -4,4 +4,9 @@ javac -classpath antlr.jar:. -d bin "$@" streamit/frontend/ToSBit.java
 if [[ -f streamit/frontend/ToStencilSK.java ]]; then
   javac -classpath antlr.jar:. -d bin "$@" streamit/frontend/ToStencilSK.java
 fi
+
+if [[ -f streamit/frontend/ToPSbit.java ]]; then
+  javac -classpath antlr.jar:. -d bin "$@" streamit/frontend/ToPSbit.java
+fi
+
 echo "...done"
