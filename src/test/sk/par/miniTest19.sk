@@ -32,7 +32,7 @@ Set newSet(){
 
 void setInit(Set s){
 	int key1 = 0;
-	int key2 = 5;
+	int key2 = 9;
 	Node n1 = newNode(key1);
 	Node n2 = newNode(key2);
 	n1.next = n2;
@@ -87,10 +87,12 @@ void setAdd(Set s, int key){
 			Node lk = null;
 			lk = pred.next;
 			lock(lk);
+			atomic{
 			if(pred.next == cur){
 				 n.next = cur;
 				 pred.next = n;
 				 outMore = 0;
+			}
 			}
 			unlock(lk);
 		}
@@ -98,12 +100,12 @@ void setAdd(Set s, int key){
 }
 
 
-bit test(int in){	
+bit test(bit in){	
 	return 1;
 }
 
 
-bit testSK(int in) implements test{
+bit testSK(bit in) implements test{
 	Set q = newSet();
 	setInit(q);
 	ploop(int i; 2){
@@ -119,7 +121,7 @@ bit testSK(int in) implements test{
 	Node n2 = n1.next;
 	Node n3 = n2.next;
 	Node n4 = n3.next;
-	return n1.val == 0 && n2.val == 5 && ( (n3.val == 6 && n4.val == 7) || (n3.val == 7 && n4.val == 6));
+	return n1.val == 0 && n2.val == 6 && n3.val == 7 && n4.val == 9;
 }
 
 
