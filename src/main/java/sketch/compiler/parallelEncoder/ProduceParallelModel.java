@@ -854,13 +854,14 @@ public class ProduceParallelModel extends FEReplacer {
 		if(parts.ploop != null){
 		
 			Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
-			CFG cfg = CFGforPloop.buildCFG(parts.ploop, locals);
+			StmtPloop ploop = (StmtPloop) parts.ploop.accept(new AtomizeConditionals(varGen));
+			CFG cfg = CFGforPloop.buildCFG(ploop, locals);
 			
-			vectorizeLocals(locals, parts.ploop.getIter());
+			vectorizeLocals(locals, ploop.getIter());
 			
 			System.out.println(" globals = " + parts.globalDecls.size());
 			System.out.println(" locals = " + locals.size());
-			Function rest = constructRestFunction(cfg, parts.postpar, parts.prepar, parts.ploop, parts.globalDecls, locals, fun);
+			Function rest = constructRestFunction(cfg, parts.postpar, parts.prepar, ploop, parts.globalDecls, locals, fun);
 			
 			///Then, we build a function to represent the postParallelism section.
 			if(restFunction != null)

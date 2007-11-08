@@ -558,6 +558,10 @@ public class FEReplacer implements FEVisitor
         if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
             newAlt == stmt.getAlt())
             return stmt;
+        if(newCons == null && newAlt == null){
+        	return new StmtExpr(stmt.getCx(), newCond);
+        }
+        
         return new StmtIfThen(stmt.getContext(), newCond, newCons, newAlt);
     }
 
