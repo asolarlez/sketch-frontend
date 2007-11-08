@@ -1,0 +1,33 @@
+struct Node{
+	int val;
+	Node next;
+}
+
+Node newNode(int v){
+	Node n = new Node();
+	n.val = v;
+	n.next = null;	
+}
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int bit) implements test{
+	Node n = newNode(0);
+	n.next = newNode(1);
+	n.next.next = newNode(2);
+	ploop(int i; 2){
+		Node l = n;
+		for(int i=0; i<3; ++i){
+			lock(l);
+			l.val = l.val + 1;
+			unlock(l);
+			l = l.next;
+		}
+	}
+	return  n.val == 2 && n.next.val == 3 && n.next.next.val = 4;
+}
+
+
+

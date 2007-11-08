@@ -1,0 +1,139 @@
+//This doesn't deserve to be a miniTest. This is the mother of all sketches.
+//If this sketch works, we have a paper!! So cross your fingers.
+
+struct Node{
+	int val;
+	Node next;
+}
+
+Node newNode(int i){
+	Node n = null;
+	atomic{ 
+		n = new Node();
+	}
+	n.val = i;
+	n.next = null;	
+	return n;
+}
+
+struct Set{
+	Node head;	
+}
+
+Set newSet(){
+	Set s = null;
+	atomic{
+		s = new Set();
+	}
+	s.head = null;
+	return s;	
+}
+
+
+void setInit(Set s){
+	int key1 = 0;
+	int key2 = 9;
+	Node n1 = newNode(key1);
+	Node n2 = newNode(key2);
+	n1.next = n2;
+	s.head = n1;
+}
+
+
+
+Node someNext(Node n){
+	if(??){
+		return n;	
+	}else{
+		Node t= someNext(n);
+		assert t != null;
+		return t.next;	
+	}
+	return null;
+}
+
+Node gen(Node a, Node b, Node c){
+	Node t = null;
+	atomic{
+	if(??){
+		if(??){
+			t = a;	
+		}else{
+			t = b;
+		}	
+	}else{
+		if(??){ t = c; }
+	}
+	}
+	return someNext(t);
+}
+
+void setAdd(Set s, int key){
+	Node n = newNode(key);
+	bit outMore = 1;
+	for(int i=0; i<2; ++i){		
+			Node cur = null; 
+			Node pred = null;
+			
+			if(outMore){ cur = s.head; }
+			if(outMore){ pred = null; }
+			bit more = 1;
+
+			for(int j=0; j<3; ++j){
+				bit tmp = more && cur.val < key;
+					if(?? & outMore && tmp){ pred = cur;	}
+					if(?? & outMore && tmp){cur = cur.next; }
+					if(?? & outMore && tmp){cur.next = pred; }
+					if(?? & outMore && tmp){cur.next = pred.next; }
+					if(?? & outMore && tmp){pred.next = cur; }
+					if(?? & outMore && !tmp){ more = 0;	}
+				
+			}
+			// Node lk = null;
+			//if(outMore){ lk = pred.next; }
+			//if(outMore){ atomic{ lock(lk); } }
+			if(outMore){ 
+				atomic{
+					if(pred.next == cur){
+				 		n.next = cur;
+				 		pred.next = n;
+				 		outMore = 0;
+					}
+				}
+			}
+
+			//if(outMore){atomic{  unlock(lk);  }}
+		
+	}
+}
+
+
+bit test(bit in){	
+	return 1;
+}
+
+
+bit testSK(bit in) implements test{
+	Set q = newSet();
+	setInit(q);
+	ploop(int i; 2){
+		int val = 0;
+		if(i==0){
+			val = 6;
+		}else{
+			val = 7;
+		}		
+		setAdd(q, val);
+		
+	}
+	Node n1 = q.head;
+	Node n2 = n1.next;
+	Node n3 = n2.next;
+	Node n4 = n3.next;
+	return n1.val == 0 && n2.val == 6 && n3.val == 7 && n4.val == 9;
+}
+
+
+
+
+
