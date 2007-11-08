@@ -1,0 +1,55 @@
+struct Node{
+	int val;
+	Node next;
+}
+
+Node newNode(int v){
+	Node n = new Node();
+	n.val = v;
+	n.next = null;	
+	return n;
+}
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in;
+	bit c = 0;
+	ploop(int i; 2){
+		int t = 0;
+		atomic{
+			if(c){
+				t = 1;
+			}else{
+				t = 0;
+				c = 1;
+			}
+		}
+		
+		if(t==0){
+			atomic{lock(0);}	
+		}
+		if(t == 0){
+			global = global + 1;	
+		}
+		if(t==0){
+			atomic{ unlock(0); }	
+		}
+		
+		if(t==1){
+			atomic{ lock(0); }	
+		}
+		if(t == 1){
+			global = global + 1;	
+		}
+		if(t==1){
+			atomic{ unlock(0); }	
+		}
+	}
+	return  global == in + 2;
+}
+
+
+
