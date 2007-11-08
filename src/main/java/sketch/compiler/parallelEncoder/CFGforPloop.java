@@ -13,8 +13,16 @@ import streamit.frontend.controlflow.CFGBuilder;
 import streamit.frontend.controlflow.CFGNode;
 import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.passes.VariableDeclarationMover;
@@ -90,13 +98,16 @@ public class CFGforPloop extends CFGBuilder {
 	public static CFG buildCFG(StmtPloop ploop, Set<StmtVarDecl>/*out*/ locals)
     {
         CFGforPloop builder = new CFGforPloop();
-        CFGNodePair pair = (CFGNodePair)ploop.getBody().accept(builder); 
-        CFG rv =cleanCFG(new CFG(builder.nodes, pair.start, pair.end, builder.edges));
+        
         builder.locals.add(ploop.getLoopVarName());
         builder.localDecls.put(ploop.getLoopVarName(), ploop.getLoopVarDecl());
+        
+        CFGNodePair pair = (CFGNodePair)ploop.getBody().accept(builder); 
+        CFG rv =cleanCFG(new CFG(builder.nodes, pair.start, pair.end, builder.edges));
+        
         CFGSimplifier sym = new CFGSimplifier(builder.locals);
         System.out.println("**** was " + rv.size() );        
-        //rv.repOK();
+        rv.repOK();
         //rv = sym.mergeConsecutiveLocals(rv);
         rv.repOK();
         rv = sym.simplifyAcrossBranches(rv);
@@ -137,6 +148,100 @@ public class CFGforPloop extends CFGBuilder {
 	    	 return new CFGNodePair(entry, last);
 	     }
 	}
+	
+	
+	
+	boolean isSingleStmt(Statement s){
+		
+		if(s instanceof StmtAssign) return true;
+		if(s instanceof StmtAtomicBlock){
+			return true;
+		}
+		if(s instanceof StmtBlock){
+			StmtBlock sb = (StmtBlock) s;
+			if(sb.getStmts().size() != 1){ return false; }
+			return isSingleStmt(sb.getStmts().get(0));
+		}
+		if(s instanceof StmtExpr){
+			return true;
+		}		
+		return false;
+	}
+	
+	
+	class AllLocals extends FEReplacer{
+		boolean allLocs = true;
+		@Override
+		public Object visitExprVar(ExprVar exp){
+			if(!locals.contains(exp.getName())){
+				allLocs = false;
+			}
+			return exp;
+		}
+		public Object visitExprFunCall(ExprFunCall exp){
+			allLocs = false;
+			return exp;
+		}
+	}
+	
+	boolean allLocals(FENode s ){
+		AllLocals al = new AllLocals();
+		s.accept(al);
+		return al.allLocs;
+	}
+			
+			
+    public Object visitStmtIfThen(StmtIfThen stmt)
+    {
+    	
+    	if( allLocals(stmt.getCond()) ){
+    		if( isSingleStmt(stmt.getCons()) ){
+    			if(stmt.getAlt() == null){
+    				return null;
+    			}
+    			if(isSingleStmt(stmt.getAlt()) ){
+    				return null;
+    			}
+    		}
+    	}
+    	
+    	
+        // Entry node is the condition; exit is artificial.
+        CFGNode entry = new CFGNode(stmt, stmt.getCond());
+        nodes.add(entry);
+        CFGNode exit = new CFGNode(stmt, true);
+        nodes.add(exit);
+        // Check both branches.
+        if (stmt.getCons() != null)
+        {
+            CFGNodePair pair = visitStatement(stmt.getCons());
+            addEdge(entry, pair.start, 1);
+            if (pair.end != null)
+                addEdge(pair.end, exit, null);
+        }
+        else
+        {
+            addEdge(entry, exit, 1);
+        }
+
+        if (stmt.getAlt() != null)
+        {
+            CFGNodePair pair = visitStatement(stmt.getAlt());
+            addEdge(entry, pair.start, 0);
+            if (pair.end != null)
+                addEdge(pair.end, exit, null);
+        }
+        else
+        {
+            addEdge(entry, exit, 0);
+        }
+        
+        return new CFGNodePair(entry, exit);
+    }
+	
+	
+	
+	
 	
 	protected CFGforPloop(){
 		super();
