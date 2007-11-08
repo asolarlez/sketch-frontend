@@ -706,7 +706,7 @@ public class ToSBit
 			BufferedReader errBr = new BufferedReader(errStr);
 			String line = null;
 			while ( (line = br.readLine()) != null){
-				if(line.length() > 4){
+				if(line.length() > 2){
 					System.out.println(i + "  " + line);
 				}
 			}
