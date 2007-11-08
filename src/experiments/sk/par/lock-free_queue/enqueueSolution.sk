@@ -50,7 +50,7 @@ bit main () implements alwaysTrue {
     q.head = new Node ();
     q.head.val = -1;
     q.head.taken = 1;
-    q.head.next = q.head;
+    q.head.next = null;
     q.tail = q.head;
 
     int[2] vals = { 5, 6 };
