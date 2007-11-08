@@ -7,6 +7,7 @@ Node newNode(int v){
 	Node n = new Node();
 	n.val = v;
 	n.next = null;	
+	return n;
 }
 
 bit test(bit in){	
