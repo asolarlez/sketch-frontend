@@ -28,21 +28,34 @@ int dequeue (Queue q) {
     Node next = q.prevHead.next;
     int wasTaken = 1;
 
-    for (int i = 0; (next != null && 1 == wasTaken); ++i) {
-        // wasTaken = AtomicSwap (next.taken, 1)
-        atomic {
-            wasTaken = next.taken;
-            next.taken = 1;
+    bit more = 1;
+    for (int i = 0; i < 3; ++i) {
+        if (more && (next != null && 1 == wasTaken)) {
+            // wasTaken = AtomicSwap (next.taken, 1)
+            atomic {
+                wasTaken = next.taken;
+                next.taken = 1;
+            }
+            next = (1 == wasTaken) ? next.next : next;
         }
-        if (1 == wasTaken)  next = next.next;
+        else {
+            more = 0;
+        }
     }
 
     if (null == next) return -1;
 
     int stored = next.val;
-    for (int i = 0; (null != next && 1 == next.taken); ++i) {
-        q.prevHead = next;
-        next = next.next;
+
+    bit more2 = 1;
+    for (int i = 0; i < 3; ++i) {
+        if (more2 && (null != next && 1 == next.taken)) {
+            q.prevHead = next;
+            next = next.next;
+        }
+        else {
+            more2 = 0;
+        }
     }
 
     return stored;
@@ -54,9 +67,16 @@ bit alwaysTrue () {
 
 bit verify (Queue q, int[2] popped) {
     Node next = q.prevHead;
-    for (int i = 0; next != null; ++i) {
-        assert next.taken == 1;
-        next = next.next;
+
+    bit more = 0;
+    for (int i = 0; i < 4; ++i) {
+        if (more && next != null) {
+            assert next.taken == 1;
+            next = next.next;
+        }
+        else {
+            more = 0;
+        }
     }
 
     assert (popped[0] == 1 && popped[1] == 2)
