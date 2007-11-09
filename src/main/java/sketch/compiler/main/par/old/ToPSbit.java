@@ -127,7 +127,7 @@ public class ToPSbit extends ToSBit {
 
 		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
 		partialEvalAndSolve();
-		//eliminateStar();
+		eliminateStar();
 
 		//generateCode();
 		System.out.println("DONE");

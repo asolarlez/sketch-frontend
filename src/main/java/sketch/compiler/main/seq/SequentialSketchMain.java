@@ -364,7 +364,7 @@ public class ToSBit
 			}
 		}
 
-		if(!worked){
+		if(!worked && !params.hasFlag("forcecodegen")){
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
 
@@ -550,6 +550,11 @@ public class ToSBit
 
 		params.setAllowedParam("showpartial", new POpts(POpts.FLAG,
 				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
+				null, null) );
+		
+		params.setAllowedParam("forcecodegen", new POpts(POpts.FLAG,
+				"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, " +
+				"                \t this flag will force the synthesizer to produce code from the latest known control values.",
 				null, null) );
 
 		params.setAllowedParam("keeptmpfiles", new POpts(POpts.FLAG,

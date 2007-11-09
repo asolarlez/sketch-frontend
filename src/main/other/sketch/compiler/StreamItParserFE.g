@@ -83,7 +83,7 @@ options {
 		super.reportError(s);
 	}
 
-public void handleInclude(String name, List funcs, List vars)
+public void handleInclude(String name, List funcs, List vars, List structs)
 {
 	name=name.substring(1,name.length()-1);
 	if(processedIncludes.contains(name)) return;
@@ -109,6 +109,7 @@ throw new IllegalStateException(e);
 		StreamSpec ss=(StreamSpec) p.getStreams().get(0);
 		funcs.addAll(ss.getFuncs());
 		vars.addAll(ss.getVars());
+		structs.addAll(p.getStructs());
 }
 
 }// end of ANTLR header block
@@ -120,7 +121,7 @@ program	 returns [Program p]
 	:	( (return_type ID LPAREN) => f=function_decl { funcs.add(f); } |
 	   fd=field_decl SEMI { vars.add(fd); } |
 	   ts=struct_decl { structs.add(ts); } |
-	   INCLUDE st:STRING_LITERAL { handleInclude(st.getText(),funcs,vars); }
+	   INCLUDE st:STRING_LITERAL { handleInclude(st.getText(),funcs,vars, structs); }
 )*
 		EOF
 		// Can get away with no context here.

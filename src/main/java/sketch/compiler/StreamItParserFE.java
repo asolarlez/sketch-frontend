@@ -73,7 +73,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 		super.reportError(s);
 	}
 
-public void handleInclude(String name, List funcs, List vars)
+public void handleInclude(String name, List funcs, List vars, List structs)
 {
 	name=name.substring(1,name.length()-1);
 	if(processedIncludes.contains(name)) return;
@@ -99,6 +99,7 @@ throw new IllegalStateException(e);
 		StreamSpec ss=(StreamSpec) p.getStreams().get(0);
 		funcs.addAll(ss.getFuncs());
 		vars.addAll(ss.getVars());
+		structs.addAll(p.getStructs());
 }
 
 
@@ -152,7 +153,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					st = LT(1);
 					match(STRING_LITERAL);
 					if ( inputState.guessing==0 ) {
-						handleInclude(st.getText(),funcs,vars);
+						handleInclude(st.getText(),funcs,vars, structs);
 					}
 					break;
 				}
