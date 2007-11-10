@@ -126,8 +126,16 @@ public class ToPSbit extends ToSBit {
 			throw new IllegalStateException();
 
 		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
-		partialEvalAndSolve();
-		eliminateStar();
+		boolean solved = partialEvalAndSolve();
+		if (!solved)  System.out.println ("Backend timed out; controls may be synthesized, though.");
+		try {
+			eliminateStar();
+		} catch (Throwable t) {
+			if (!solved) System.err.println ("Controls probably weren't synthesized");
+			throw new RuntimeException (t);
+		}
+
+
 
 		//generateCode();
 		System.out.println("DONE");

@@ -80,33 +80,6 @@ public class PromelaCodePrinter extends CodePrinter {
 		printLine ("");
 	}
 
-	protected String declToString (Type t, String name) {
-		if (t.isArray ()) {
-			TypeArray ta = (TypeArray) t;
-			return ta.getBase () +" "+ name +"["+ ta.getLength () +"]";
-		} else
-			return t +" "+ name;
-	}
-
-	protected String paramsToString (List<Parameter> params) {
-		String pms = "";
-		for (Parameter p : params) {
-			if (pms.length () > 0)
-				pms += "; ";
-			pms += declToString (p.getType (), p.getName ());
-		}
-		return pms;
-	}
-
-	protected void printVarDecl (Type t, String name, Expression init) {
-		String decl = declToString (t, name);
-
-		if (null != init)
-			printLine (decl +" = "+ init +";");
-		else
-			printLine (decl +";");
-	}
-
 	public Object visitStreamSpec (StreamSpec ss) {
 		printPrelude ();
 
@@ -381,6 +354,32 @@ public class PromelaCodePrinter extends CodePrinter {
 		return block;
 	}
 
+	protected String declToString (Type t, String name) {
+		if (t.isArray ()) {
+			TypeArray ta = (TypeArray) t;
+			return ta.getBase () +" "+ name +"["+ ta.getLength () +"]";
+		} else
+			return t +" "+ name;
+	}
+
+	protected String paramsToString (List<Parameter> params) {
+		String pms = "";
+		for (Parameter p : params) {
+			if (pms.length () > 0)
+				pms += "; ";
+			pms += declToString (p.getType (), p.getName ());
+		}
+		return pms;
+	}
+
+	protected void printVarDecl (Type t, String name, Expression init) {
+		String decl = declToString (t, name);
+
+		if (null != init)
+			printLine (decl +" = "+ init +";");
+		else
+			printLine (decl +";");
+	}
 
 	protected Object assertEliminated (FENode node) {
 		node.assertTrue (false, "internal error; I should have been eliminated.");

@@ -94,16 +94,24 @@ public class ToSBit
 		public void close() throws IOException {}
 		public void write(int arg0) throws IOException {}
 	}
-	private static class TimeoutThread extends Thread {
+
+	private static class ProcessKillerThread extends Thread {
 		private final long fTimeout;
+		private final Process proc;
 		private volatile boolean aborted=false;
-		public TimeoutThread(int timeoutMinutes) {
+		private boolean killed = false;
+
+		public ProcessKillerThread(Process p, int timeoutMinutes) {
+			proc = p;
 			fTimeout=((long)timeoutMinutes)*60*1000;
 			setDaemon(true);
 		}
 		public void abort() {
 			aborted=true;
 			interrupt();
+		}
+		public boolean didKill () {
+			return killed;
 		}
 		public void run()
 		{
@@ -114,10 +122,10 @@ public class ToSBit
 			}
 			if(aborted) return;
 			System.out.println("Time limit exceeded!");
-			System.exit(1);
+			killed = true;
+			proc.destroy ();
 		}
-
-	};
+	}
 
 	// protected final CommandLineParams params;
 	protected Program beforeUnvectorizing=null;
@@ -142,12 +150,12 @@ public class ToSBit
 	}
 
 	/**
-	 * This function produces a recursion control that is used by all transformations that are not user visible. 
+	 * This function produces a recursion control that is used by all transformations that are not user visible.
 	 * In particular, the conversion to boolean. By default it is the same as the visibleRControl.
 	 * @return
 	 */
 	public RecursionControl internalRControl(){
-		
+
 		return visibleRControl();
 	}
 
@@ -244,7 +252,7 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-		
+
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
@@ -257,7 +265,8 @@ public class ToSBit
 		prog = (Program)prog.accept(new SeparateInitializers());
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
-		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
+		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
+
 		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
@@ -297,7 +306,7 @@ public class ToSBit
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
-		prog = (Program)prog.accept(new FunctionParamExtension(true));		
+		prog = (Program)prog.accept(new FunctionParamExtension(true));
 		//dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
@@ -309,7 +318,7 @@ public class ToSBit
 		return prog;
 	}
 
-	public void partialEvalAndSolve(){
+	public boolean partialEvalAndSolve(){
 		lowerIRToJava();
 		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		//prog.accept(new SimpleCodePrinter());
@@ -387,6 +396,7 @@ public class ToSBit
 			throw new RuntimeException(e);
 		}
 
+		return worked;
 	}
 
 	public void eliminateStar(){
@@ -551,7 +561,7 @@ public class ToSBit
 		params.setAllowedParam("showpartial", new POpts(POpts.FLAG,
 				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
 				null, null) );
-		
+
 		params.setAllowedParam("forcecodegen", new POpts(POpts.FLAG,
 				"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, " +
 				"                \t this flag will force the synthesizer to produce code from the latest known control values.",
@@ -602,7 +612,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-		
+
 		if (prog == null)
 			throw new IllegalStateException();
 
@@ -614,8 +624,8 @@ public class ToSBit
 		System.out.println("DONE");
 
 	}
-	
-	
+
+
 	protected void backendParameters(List<String> commandLineOptions){
 		if( params.hasFlag("inbits") ){
 			commandLineOptions.add("-overrideInputs");
@@ -626,15 +636,9 @@ public class ToSBit
 			commandLineOptions.add( "" + params.flagValue("seed") );
 		}
 	}
-	
+
 
 	private boolean solve(ValueOracle oracle){
-		TimeoutThread stopper=null;
-		if(params.hasFlag("timeout")) {
-			System.out.println("Timing out after " + params.flagValue("timeout") + " minutes.");
-			stopper=new TimeoutThread( params.flagValue("timeout") );
-			stopper.start();
-		}
 		List<String> commandLineOptions = params.commandLineOptions;
 
 		backendParameters(commandLineOptions);
@@ -667,7 +671,6 @@ public class ToSBit
 			if(!isSolved){
 				System.out.println("The sketch can not be resolved");
 				System.err.println(solverErrorStr);
-				if(stopper!=null) stopper.abort();
 				return false;
 			}
 			System.out.println("Succeded with " + bits + " bits for integers");
@@ -684,11 +687,9 @@ public class ToSBit
 			if(!ret){
 				System.out.println("The sketch can not be resolved");
 				System.err.println(solverErrorStr);
-				if(stopper!=null) stopper.abort();
 				return false;
 			}
 		}
-		if(stopper!=null) stopper.abort();
 		return true;
 	}
 
@@ -700,9 +701,16 @@ public class ToSBit
 		System.out.println("");
 
 		Runtime rt = Runtime.getRuntime();
+		ProcessKillerThread stopper=null;
 		try
 		{
 			Process proc = rt.exec(commandLine);
+			if(params.hasFlag("timeout")) {
+				System.out.println("Timing out after " + params.flagValue("timeout") + " minutes.");
+				stopper = new ProcessKillerThread (proc, params.flagValue ("timeout"));
+				stopper.start();
+			}
+
 			InputStream output = proc.getInputStream();
 			InputStream stdErr = proc.getErrorStream();
 			InputStreamReader isr = new InputStreamReader(output);
@@ -726,13 +734,22 @@ public class ToSBit
 		}
 		catch (java.io.IOException e)
 		{
-			//e.printStackTrace(System.err);
-			throw new RuntimeException(e);
+			if (stopper != null && stopper.didKill ()) {
+				System.err.println ("Warning: lost some output from backend because of timeout.");
+				return false;
+			} else {
+				//e.printStackTrace(System.err);
+				throw new RuntimeException(e);
+			}
 		}
 		catch (InterruptedException e)
 		{
 			//e.printStackTrace(System.err);
 			throw new RuntimeException(e);
+		}
+		finally {
+			if (stopper != null)
+				stopper.abort ();
 		}
 		return true;
 	}

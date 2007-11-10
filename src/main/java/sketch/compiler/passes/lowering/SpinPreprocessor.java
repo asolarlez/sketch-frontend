@@ -66,13 +66,21 @@ class IdentifyModifiedVars extends FEReplacer {
 
 
 	public Object visitExprArrayRange(ExprArrayRange exp) {
+		boolean tmpLeft = isLeft;
+
+		// This is weird, but arrays can't be parameters to functions in
+		// Promela.  So we'll be conservative and always treat them as
+		// LHS expressions.
+		isLeft = true;
 		doExpression(exp.getBase());
+		isLeft = tmpLeft;
+
 		final List l=exp.getMembers();
 		for(int i=0;i<l.size();i++) {
 			Object obj=l.get(i);
 			if(obj instanceof Range) {
 				Range range=(Range) obj;
-				boolean tmpLeft = isLeft;
+				tmpLeft = isLeft;
 			 	isLeft = false;
 				doExpression(range.start());
 				doExpression(range.end());
@@ -80,7 +88,7 @@ class IdentifyModifiedVars extends FEReplacer {
 			}
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
-				boolean tmpLeft = isLeft;
+				tmpLeft = isLeft;
 			 	isLeft = false;
 				doExpression(range.start());
 				isLeft = tmpLeft;

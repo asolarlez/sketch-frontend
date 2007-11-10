@@ -1,0 +1,94 @@
+struct Queue {
+    Node tail;
+    Node prevHead;
+}
+
+struct Node {
+    int val;
+    Node next;
+    bit taken;
+}
+
+void enqueue (Queue q, int val) {
+    Node n = new Node ();
+    n.val = val;
+    n.taken = 0;
+    n.next = null;
+
+    Node oldTail = null;
+    // oldTail = AtomicSwap (q.tail, n);
+    atomic {
+        oldTail = q.tail;
+        q.tail = n;
+    }
+    oldTail.next = n;
+}
+
+int dequeue (Queue q) {
+    Node tmp = null;
+    int wasTaken = 1;
+    int ret = -1;
+
+    bit more = 1;
+    for (int i = 0; i < 4; ++i) {
+        if (more) {
+            tmp = q.prevHead.next;
+
+            if (null == tmp) {
+                more = 0;
+                return -1;
+            }
+            q.prevHead = tmp;
+
+            if (tmp.taken != 1) {
+                atomic {
+                    wasTaken = tmp.taken;
+                    tmp.taken = 1;
+                }
+                more = (wasTaken == 1);
+            }
+        }
+    }
+
+    return tmp.val;
+}
+
+bit verify (Queue q, int[2] popped) {
+    Node next = q.prevHead;
+
+    bit more = 1;
+    for (int i = 0; i < 4; ++i) {
+        if (more && next != null) {
+            assert next.taken == 1;
+            next = next.next;
+        }
+        else {
+            more = 0;
+        }
+    }
+
+    assert (popped[0] == 1 && popped[1] == 2)
+           || (popped[0] == 2 && popped[1] == 1);
+
+    return 1;
+}
+
+bit main () implements main {
+    Queue q = new Queue ();
+    q.prevHead = new Node ();
+    q.prevHead.val = -1;
+    q.prevHead.taken = 1;
+    q.prevHead.next = null;
+    q.tail = q.prevHead;
+
+    enqueue (q, 1);
+    enqueue (q, 2);
+
+    int[2] popped = 0;
+
+    ploop (int i; 2) {
+        popped[i] = dequeue (q);
+    }
+
+    verify (q, popped);
+}
