@@ -1,7 +1,9 @@
 package streamit.frontend.parallelEncoder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import streamit.frontend.nodes.ExprBinary;
@@ -20,7 +22,6 @@ import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 
 public class AtomizeConditionals extends FEReplacer {
@@ -49,8 +50,40 @@ public class AtomizeConditionals extends FEReplacer {
 	 * Accumulated conditionals.
 	 */
 	Stack<Expression> accumCondit = new Stack<Expression>();
+	Set<String> freeVars = new HashSet<String>();
+	List<Statement> decls = new ArrayList<Statement>();
+	ExprVar getVar(){
+		String nm;
+		if(freeVars.size() > 0){
+			nm = freeVars.iterator().next();
+			freeVars.remove(nm);
+		}else{
+			nm = varGen.nextVar();
+			decls.add(new StmtVarDecl(null, TypePrimitive.bittype, nm, null ));
+		}
+		return new ExprVar(null, nm);
+		
+	}
+	
+	boolean firstTime = true;
+	
+	public Object visitStmtBlock(StmtBlock stmt)
+    {
+		Object rv ;
+		if(firstTime){		
+			firstTime = false;
+			rv = super.visitStmtBlock(stmt);			
+			decls.add((Statement)rv);
+			rv = new StmtBlock(stmt.getCx(), decls);
+			decls = new ArrayList<Statement>();
+			firstTime = true;			
+		}else{
+			rv = super.visitStmtBlock(stmt);
+		}
+		return rv;		
+    }
+	
 	void pushCondit(Expression e){
-		String nm = varGen.nextVar();
 		Expression cond;
 		if(accumCondit.size() == 0){
 			cond = e;
@@ -58,11 +91,14 @@ public class AtomizeConditionals extends FEReplacer {
 			cond = accumCondit.peek();
 			cond = new ExprBinary(cond, "&&", e);			
 		}
-		addStatement(new StmtVarDecl(e.getCx(), TypePrimitive.bittype, nm, cond ) );
-		accumCondit.push( new ExprVar(e.getCx(), nm) );
+		ExprVar v = getVar();		
+		addStatement(new StmtAssign(e.getCx(), v, cond ) );
+		accumCondit.push( v );
 	}
+	
 	void popCondit(){
-		accumCondit.pop();
+		Expression e = accumCondit.pop();
+		freeVars.add(((ExprVar)e).getName());
 	}
 	
 	public Statement fixStmt(Statement stmt){
