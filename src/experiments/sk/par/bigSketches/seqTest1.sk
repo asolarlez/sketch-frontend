@@ -1,0 +1,17 @@
+#include "parTest/bigSketches/llset.skh"
+
+bit test(bit in){	
+	return 1;
+}
+
+bit testSK(bit in) implements test{
+	Set s = newSet();
+	setAddSeq(s, 3);
+	setAddSeq(s, 4);
+	
+	int[MAXSZ] rv = 0;
+	rv = toArray(s);
+	
+	return rv[0] == -1 && rv[1] == ?? && rv[2] == ?? && rv[3] == ??;	
+}
+
