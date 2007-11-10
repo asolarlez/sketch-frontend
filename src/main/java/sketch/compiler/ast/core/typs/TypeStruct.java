@@ -16,6 +16,8 @@
 
 package streamit.frontend.nodes;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +107,11 @@ public class TypeStruct extends Type
     public String getField(int n)
     {
         return fields.get(n);
+    }
+
+    public Collection<String> getFields ()
+    {
+    	return Collections.unmodifiableCollection (fields);
     }
 
     /**

@@ -136,6 +136,24 @@ public class ToPSbit extends ToSBit {
 		}
 
 
+		solved = false;
+
+
+		if (!solved) {
+			// We have controls, but they are not verified.  Give the user the
+			// chance to check them in SPIN.
+			System.out.println ("-----------------------------------------------------------------------------");
+			System.out.println (" Holes were filled, but not verified; generating SPIN code for verification.");
+			System.out.println ("-----------------------------------------------------------------------------");
+
+			dump (finalCode, "final code");
+
+			ToSpin ts = new ToSpin (new String[0]);
+			ts.prog = finalCode;
+			ts.lowerIRToJava ();
+			ts.spinPreprocess ();
+			ts.generateCode ();
+		}
 
 		//generateCode();
 		System.out.println("DONE");

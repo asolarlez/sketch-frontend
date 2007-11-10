@@ -91,7 +91,7 @@ public class PromelaCodePrinter extends CodePrinter {
 		for (Function f : (List<Function>) ss.getFuncs ()) {
 			if (Function.FUNC_ASYNC == f.getCls ())
 				emitProcess (f);
-			else {
+			else if (null != f.getSpecification ()) {
 				f.assertTrue (!sawInit, "sorry, only one 'main()' function allowed");
 				sawInit = true;
 				emitInit (f);

@@ -40,6 +40,9 @@ public class ToSpin extends ToSBit {
 	 */
 	public void lowerIRToJava()
 	{
+		prog = (Program)prog.accept (new MakeAllocsAtomic (varGen));
+		//dump (prog, "After making allocations atomic");
+
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
@@ -65,6 +68,13 @@ public class ToSpin extends ToSBit {
 		//dump (prog, "After lowerIR:");
 	}
 
+	/**
+	 * Prepare the AST for Promela code generation.
+	 */
+	public void spinPreprocess () {
+		prog = (Program)prog.accept(new SpinPreprocessor(varGen));
+		//dump (prog, "After everything constants:");
+	}
 
 	public void run()
 	{
@@ -81,19 +91,8 @@ public class ToSpin extends ToSBit {
 		//if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
 
-		// XXX: For SPIN code, we want to make allocations atomic.  The
-		// following pass really belongs in lowerIRToJava (), but since we
-		// don't care about this in ToSBit(), it's pulled into this
-		// awkward spot.
-		prog = (Program)prog.accept (new MakeAllocsAtomic (varGen));
-		//dump (prog, "After making allocations atomic");
-
 		lowerIRToJava ();
-
-		prog = (Program)prog.accept(new SpinPreprocessor(varGen));
-
-		//dump (prog, "After everything constants:");
-
+		spinPreprocess ();
 		generateCode ();
 
 		System.out.println("DONE");

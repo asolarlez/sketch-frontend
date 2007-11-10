@@ -194,7 +194,7 @@ public class FEReplacer implements FEVisitor
     public Object visitExprConstStr(ExprConstStr exp) { return exp; }
     public Object visitExprLiteral(ExprLiteral exp) { return exp; }
     public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
-    
+
     public Object visitExprField(ExprField exp)
     {
         Expression left = doExpression(exp.getLeft());
@@ -326,23 +326,21 @@ public class FEReplacer implements FEVisitor
         for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
             newStreams.add(((FENode)(iter.next())).accept(this));
 
-        // XXX/cgjones: we assume that the struct type itself won't change,
-        // only the types of fields within.  This code is a bit of a hack.
+        List newStructs = new ArrayList ();
         for (Iterator iter = prog.getStructs ().iterator (); iter.hasNext ();) {
+        	// XXX: we assume the field names won't change
         	TypeStruct ts = (TypeStruct) iter.next ();
+        	List<Type> newFieldTypes = new ArrayList<Type> ();
 
-        	for (int i = 0; i < ts.getNumFields (); ++i) {
-        		String f = ts.getField (i);
-        		Type oldType = ts.getType (f);
-        		Type newType = (Type) oldType.accept (this);
+        	for (int i = 0; i < ts.getNumFields (); ++i)
+        		newFieldTypes.add ((Type) ts.getType (ts.getField (i)).accept (this));
 
-        		if (newType != oldType) {
-        			ts.setType (f, newType);
-        		}
-        	}
+        	newStructs.add (new TypeStruct (ts.getContext (), ts.getName (),
+        					new ArrayList<String> (ts.getFields ()),
+        					newFieldTypes));
         }
 
-        return new Program(prog.getContext(), newStreams, prog.getStructs());
+        return new Program(prog.getContext(), newStreams, newStructs);
     }
 
     public Object visitSCAnon(SCAnon creator)
@@ -561,7 +559,7 @@ public class FEReplacer implements FEVisitor
         if(newCons == null && newAlt == null){
         	return new StmtExpr(stmt.getCx(), newCond);
         }
-        
+
         return new StmtIfThen(stmt.getContext(), newCond, newCons, newAlt);
     }
 
@@ -661,7 +659,7 @@ public class FEReplacer implements FEVisitor
                 init = doExpression(oinit);
             Type ot = stmt.getType(i);
             Type t = (Type) ot.accept(this);
-            if(ot != t || oinit != init){ 
+            if(ot != t || oinit != init){
             	changed = true;
             }
             newInits.add(init);
@@ -688,7 +686,7 @@ public class FEReplacer implements FEVisitor
     }
 
     protected List<Function> newFuncs;
-    
+
     public Object visitStreamSpec(StreamSpec spec)
     {
         // Oof, there's a lot here.  At least half of it doesn't get
@@ -699,9 +697,9 @@ public class FEReplacer implements FEVisitor
         if (spec.getStreamType() != null)
             newST = (StreamType)spec.getStreamType().accept(this);
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
-        List<Function> oldNewFuncs = newFuncs; 
+        List<Function> oldNewFuncs = newFuncs;
         newFuncs = new ArrayList<Function>();
-        
+
         boolean changed = false;
 
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -720,13 +718,13 @@ public class FEReplacer implements FEVisitor
             if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
-        
+
         if(newFuncs.size() != nonNull){
         	changed = true;
         }
-        
+
         sspec = oldSS;
-        
+
         List<Function> nf = newFuncs;
         newFuncs = oldNewFuncs;
         if (!changed && newST == spec.getStreamType()) return spec;
