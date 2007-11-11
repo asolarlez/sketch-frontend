@@ -32,7 +32,7 @@ public class StmtAssert extends Statement
         super(context);
         this.cond = cond;
     }
-    
+
     public StmtAssert(FEContext context, Expression cond, String msg)
     {
         super(context);
@@ -45,7 +45,7 @@ public class StmtAssert extends Statement
     {
         return cond;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -55,13 +55,20 @@ public class StmtAssert extends Statement
     /** Output to string. */
     public String toString () {
         String result = "assert (" + this.cond + ")";
-        
+
+        /*
+         * XXX/cgjones: this is being cut out because asserts need to be
+         * printed in the Promela code generator, but Promela doesn't support
+         * the 'assert cond : message' syntax.  This can be added back in if
+         * we revise the way the code generators work (all printing done within
+         * the visitors).
+         *
         if(msg != null){
         	result += ": \"" + msg + "\"";
         }
-        
+        */
         result += "\n";
-        
+
         return result;
     }
 
@@ -76,7 +83,7 @@ public class StmtAssert extends Statement
 	 * @return the msg
 	 */
 	public String getMsg() {
-		if(msg == null && getCx() != null) return getCx().toString(); 
+		if(msg == null && getCx() != null) return getCx().toString();
 		return msg;
 	}
 }
