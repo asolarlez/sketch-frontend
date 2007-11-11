@@ -1,5 +1,7 @@
 package streamit.frontend;
 
+import java.io.OutputStream;
+
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
@@ -21,8 +23,10 @@ import streamit.frontend.tospin.PromelaCodePrinter;
 
 public class ToSpin extends ToSBit {
 
+	protected OutputStream out;
+
 	public void generateCode () {
-		prog.accept (new PromelaCodePrinter (varGen));
+		prog.accept (new PromelaCodePrinter (out, varGen));
 	}
 
 
@@ -50,7 +54,7 @@ public class ToSpin extends ToSBit {
 		beforeUnvectorizing = prog;
 
 		prog = (Program)prog.accept(new EliminateConditionals(varGen));
-		dump (prog, "After eliminating conditionals");
+		//dump (prog, "After eliminating conditionals");
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
@@ -101,9 +105,22 @@ public class ToSpin extends ToSBit {
 		System.out.println("DONE");
 	}
 
+	protected ToSpin (String[] args) { this (args, System.out);	}
 
-	protected ToSpin(String[] args){
+	protected ToSpin(String[] args, OutputStream _out){
 		super(args);
+		out = _out;
+	}
+
+	public static void printCode (Program p) { printCode (p, System.out); }
+
+	public static void printCode (Program p, OutputStream os) {
+		ToSpin ts = new ToSpin (new String[0], os);
+		ts.prog = p;
+
+		ts.lowerIRToJava ();
+		ts.spinPreprocess ();
+		ts.generateCode ();
 	}
 
 	public static void main(String[] args)

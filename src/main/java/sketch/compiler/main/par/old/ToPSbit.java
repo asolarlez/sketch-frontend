@@ -3,8 +3,6 @@ package streamit.frontend;
 import java.util.List;
 
 import streamit.frontend.CommandLineParamManager.POpts;
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
@@ -32,6 +30,7 @@ import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 import streamit.frontend.tosbit.recursionCtrl.ZeroInlineRControl;
+import streamit.frontend.tospin.SpinVerifier;
 
 public class ToPSbit extends ToSBit {
 
@@ -135,31 +134,30 @@ public class ToPSbit extends ToSBit {
 			throw new RuntimeException (t);
 		}
 
-
-		solved = false;
-
-
 		if (!solved) {
 			// We have controls, but they are not verified.  Give the user the
 			// chance to check them in SPIN.
 			System.out.println ("-----------------------------------------------------------------------------");
-			System.out.println (" Holes were filled, but not verified; generating SPIN code for verification.");
+			System.out.println (" Holes were filled, but not verified; trying to verify with SPIN");
 			System.out.println ("-----------------------------------------------------------------------------");
 
-			dump (finalCode, "final code");
+			SpinVerifier sv = SpinVerifier.makeVerifier (finalCode);
+			solved = sv.verify ();
 
-			ToSpin ts = new ToSpin (new String[0]);
-			ts.prog = finalCode;
-			ts.lowerIRToJava ();
-			ts.spinPreprocess ();
-			ts.generateCode ();
+			if (solved) {
+				System.out.println ("The program successfully verifies!");
+			} else {
+				System.err.println ("UH-OH!  The synthesized controls are not valid.");
+				System.err.println ("Spin says:");
+				System.err.println (sv.getSpinOut ());
+				System.out.println ("Try manually checking the following code with 'xspin'");
+				ToSpin.printCode (finalCode);
+			}
 		}
 
 		//generateCode();
 		System.out.println("DONE");
-
 	}
-
 
 	protected void setCommandLineParams(){
 		super.setCommandLineParams();

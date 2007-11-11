@@ -17,7 +17,6 @@ import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.SJRoundRobin;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
 import streamit.frontend.nodes.StmtAnyOrderBlock;

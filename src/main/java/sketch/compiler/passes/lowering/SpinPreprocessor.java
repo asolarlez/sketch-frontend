@@ -126,6 +126,7 @@ class FindModifiedVarsInPloops extends FEReplacer {
 	public HashSet<String> lhsVars = new HashSet<String>();
 	public HashSet<String> rhsVars = new HashSet<String>();
 	public HashMap<String, Type> varTypes = new HashMap<String, Type>();
+	public HashMap<String, Expression> varInits = new HashMap<String, Expression> ();
 	public HashMap<StmtPloop, HashSet<String> > varsPerLoop = new HashMap<StmtPloop, HashSet<String> >();
 
 	public Object visitParameter(Parameter par){
@@ -143,6 +144,7 @@ class FindModifiedVarsInPloops extends FEReplacer {
                 init = doExpression(init);
             Type t = (Type) stmt.getType(i).accept(this);
             varTypes.put(stmt.getName(i), t);
+            varInits.put (stmt.getName (i), init);
         }
         return stmt;
     }
@@ -248,7 +250,6 @@ public class SpinPreprocessor extends FEReplacer {
         List<Type> newTypes = new ArrayList<Type>();
         List<String> newNames = new ArrayList<String>();
 
-
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             Expression init = stmt.getInit(i);
@@ -260,6 +261,8 @@ public class SpinPreprocessor extends FEReplacer {
 	            newInits.add(init);
 	            newTypes.add(t);
 	            newNames.add(name);
+            } else {
+
             }
         }
         if(newInits.size() > 0)
@@ -299,7 +302,7 @@ public class SpinPreprocessor extends FEReplacer {
 
         for(Iterator<String> it = lhsVars.iterator(); it.hasNext(); ){
         	String vtd = it.next();
-        	FieldDecl newVar = new FieldDecl(spec.getCx(), viploops.varTypes.get(vtd), vtd, null);
+        	FieldDecl newVar = new FieldDecl(spec.getCx(), viploops.varTypes.get(vtd), vtd, viploops.varInits.get (vtd));
         	newVars.add(newVar);
         	changed = true;
         }
