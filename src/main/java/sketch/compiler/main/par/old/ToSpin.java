@@ -7,6 +7,7 @@ import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
+import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.EliminateNestedArrAcc;
 import streamit.frontend.passes.EliminateStructs;
@@ -48,6 +49,8 @@ public class ToSpin extends ToSBit {
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
 
+		prog = (Program)prog.accept(new EliminateConditionals(varGen));
+		dump (prog, "After eliminating conditionals");
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));

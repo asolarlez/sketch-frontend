@@ -63,7 +63,6 @@ import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
-import streamit.frontend.passes.NoRefTypes;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.stencilSK.EliminateStarStatic;
