@@ -313,6 +313,26 @@ public class MethodState {
 	}
 	
 	
+	
+	public abstractValue pathCondition(){
+		abstractValue val = null;
+		for (ChangeTracker tmpTracker = changeTracker;
+				tmpTracker != null; tmpTracker = tmpTracker.kid )
+		{
+		    if (! tmpTracker.hasCondVal ())
+		        continue;
+		    abstractValue nestCond = tmpTracker.getCondVal ();
+		    if(val != null){
+		    	val = vtype.and(val, nestCond );
+		    }else{
+		    	val = nestCond;
+		    }
+		}
+		if(val == null){ return vtype.CONST(1); }
+		return val;
+	}
+	
+	
 	public void Assert(abstractValue val, String msg){
         /* Compose complex expression by walking all nesting conditionals. */        
         for (ChangeTracker tmpTracker = changeTracker;
