@@ -35,10 +35,12 @@ Node sel(Node n1, Node n2, Node n3){
 
 bit comp(Node n1, Node n2, Node n3){
 	bit t= 0;
+	Node t1 = sel(n1, n2, n3);
+	Node t2 = sel(n1, n2, n3);
 	if(??){
-		t = sel(n1, n2, n3) == sel(n1, n2, n3);	
+		t = t1 == t2;
 	}else{
-		t = sel(n1, n2, n3) != sel(n1, n2, n3);
+		t = t1 != t2;
 	}
 	return t;
 }
@@ -53,7 +55,7 @@ bit comp(Node n1, Node n2, Node n3){
 void hhRemove(Set s, int in){
 	if(in > LOW && in< HIGH){
 		Node cur = s.head;
-		if(?? && comp(cur, null, null)){ lock(sel(cur, null, null)); }
+		lock(sel(cur, null, null));
 		Node prev = null;
 		bit more = 1;
 		for(int i=0; i<5; ++i){
@@ -73,8 +75,8 @@ void hhRemove(Set s, int in){
 		if(cur.val == in){
 			prev.next = cur.next;			
 		}
-		if(?? && comp(cur, prev, null)){ unlock(sel(cur, prev, null)); }
-		if(?? && comp(cur, prev, null)){ unlock(sel(cur, prev, null)); }
+		unlock(sel(cur, prev, null)); 
+		unlock(sel(cur, prev, null)); 
 	}	
 }
 
