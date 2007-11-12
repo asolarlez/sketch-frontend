@@ -374,10 +374,9 @@ public class PromelaCodePrinter extends CodePrinter {
 	protected void printVarDecl (Type t, String name, Expression init) {
 		String decl = declToString (t, name);
 
+		printLine (decl +";");
 		if (null != init)
-			printLine (decl +" = "+ init +";");
-		else
-			printLine (decl +";");
+			printLine (name +" = "+ init +";");
 	}
 
 	protected Object assertEliminated (FENode node) {

@@ -35,8 +35,10 @@ public class SpinVerifier {
 	protected String spinOut;
 	protected String spinErr;
 
-	public SpinVerifier (Program _prog, File _promelaCode,
-						 File verifierProg, boolean _doCleanup, boolean _debug) {
+	public SpinVerifier (Program _prog,
+						 File _promelaCode,
+						 File verifierProg,
+						 boolean _doCleanup, boolean _debug) {
 		sourceProg = _prog;
 		promelaCode = _promelaCode;
 		prog = verifierProg;
