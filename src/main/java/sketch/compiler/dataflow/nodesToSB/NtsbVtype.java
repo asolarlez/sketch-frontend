@@ -197,7 +197,7 @@ public class NtsbVtype extends IntVtype {
 	}
 	
 	
-	public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist){
+	public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond){
 		Iterator<abstractValue> actualParams = avlist.iterator();
 		String name = fun.getName();
 		String plist = "";
@@ -219,9 +219,9 @@ public class NtsbVtype extends IntVtype {
     		Parameter param = formalParams.next();    	
     		if( param.isParameterOutput()){
     			if( fun.isUninterp() ){
-    			outSlist.add(BOTTOM(name+ "_" + param.getName() + "[" + param.getType() + "]( "+ plist +"  )"));
+    			outSlist.add(BOTTOM(name+ "_" + param.getName() + "[" + param.getType() + "]( "+ plist +"  )(" + pathCond + ")"));
     			}else{
-    				outSlist.add(BOTTOM(name + "[" + param.getType() + "]( "+ plist +"  )"));
+    				outSlist.add(BOTTOM(name + "[" + param.getType() + "]( "+ plist +"  )(" + pathCond + ")"));
     			}
     		}
     	}

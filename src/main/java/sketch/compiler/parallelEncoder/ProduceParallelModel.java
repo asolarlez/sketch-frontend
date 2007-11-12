@@ -15,6 +15,7 @@ import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
@@ -551,31 +552,33 @@ public class ProduceParallelModel extends FEReplacer {
 		
 		ExprFunCall fc = new ExprFunCall(null, funName, actuals);
 		List<Statement> ctrL = new ArrayList<Statement>();
+		
 		ctrL.add(new StmtVarDecl(null, new TypeArray(TypePrimitive.inttype, nthreads), COUNTER + "_tmp", new ExprVar(null,  COUNTER) ));
 		ctrL.add(new StmtAssign(null, new ExprArrayRange(new ExprVar(null, COUNTER+ "_tmp"), idx),  new ExprBinary(new ExprArrayRange(new ExprVar(null, COUNTER+ "_tmp"), idx)  , "+", ExprConstInt.one ) ));
-		ctrL.add(new StmtExpr(fc));
-		ctrL.add(new StmtAssign(null, new ExprVar(null, noDeadlock), ExprConstInt.one));
+		Expression localDone =  new ExprArrayRange(new ExprVar(null,INV_SCHEDULE), idx);
+		Expression execCond = new ExprBinary(new ExprArrayRange(null, new ExprVar(null, SCHEDULE), new ExprVar(null, STEP)  ), "==", idx);
+		
+		Statement s = new StmtIfThen(null, execCond, new StmtExpr(fc), null);
+		Statement bbb = new StmtBlock(s, new StmtAssign(null, new ExprVar(null, noDeadlock), ExprConstInt.one));
+		s = new StmtIfThen(null, new ExprUnary(null, ExprUnary.UNOP_NOT, localDone), bbb, null);
+		ctrL.add(s);
 		StmtBlock callToRest = new StmtBlock(null, ctrL) ;
 		
 		
-		bodyL.add( new StmtVarDecl(null, new TypeArray(rtype, nthreads), fullOut, ExprConstInt.zero) );
+		bodyL.add( new StmtVarDecl(null, rtype, tmpOut, ExprConstInt.one) );
 		bodyL.add( new StmtVarDecl(null, TypePrimitive.bittype, noDeadlock, ExprConstInt.zero) );
 		
 		
 		List<Statement> forBody = new ArrayList<Statement>();		
-		forBody.add(new StmtVarDecl(null, rtype, tmpOut, ExprConstInt.zero));
-		Expression localDone =  new ExprArrayRange(new ExprVar(null,INV_SCHEDULE), idx);
-		StmtIfThen checkIfDone = new StmtIfThen(null, localDone, new StmtAssign(null, new ExprVar(null, tmpOut), ExprConstInt.one), callToRest);		
-		forBody.add(checkIfDone);
-		Expression fullOutVar  = new ExprVar(null, fullOut);
-		forBody.add(new StmtAssign(null, new ExprArrayRange(fullOutVar, idx), new ExprVar(null, tmpOut)));
+		forBody.add(callToRest);
+		
 		Statement forInit = new StmtVarDecl(null, TypePrimitive.inttype, idx.getName(), ExprConstInt.zero );
 		Statement forIncr = new StmtAssign(null, idx, new ExprBinary(null, ExprBinary.BINOP_ADD, idx, ExprConstInt.one));
 		Expression forCond = new ExprBinary(null,  ExprBinary.BINOP_LT, idx, nthreads);
 		bodyL.add(new StmtFor(null, forInit, forCond, forIncr, new StmtBlock(null, forBody)));
 		bodyL.add(new StmtAssert(null, new ExprVar(null, noDeadlock), "There is a possible deadlock in the code."));
 		bodyL.add(new StmtAssert(null, new ExprBinary(null, ExprBinary.BINOP_LT, new ExprVar(null, STEP), SchedLen) , "The schedule is too short. Not all threads had time to terminate."));
-		bodyL.add(new StmtAssign( null, rExpr, new ExprArrayRange(null, fullOutVar, new ExprArrayRange(null, new ExprVar(null, SCHEDULE), new ExprVar(null, STEP)  ))  ));
+		bodyL.add(new StmtAssign( null, rExpr, new ExprVar(null, tmpOut ) ));
 				
 		return new StmtBlock(null, bodyL);
 	}

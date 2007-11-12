@@ -451,6 +451,22 @@ public class CFGSimplifier {
 	}
 	
 	
+	
+	
+	public Statement eliminateConsecutiveIfs(Statement s){
+		//TODO fill in the body of this function.
+		return s;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public CFGNode processCluster(Cluster c,  ExprVar ind){
 		List<EdgePair> lst = new ArrayList<EdgePair>();
 		Statement s = stmtForNode(c.head, null, c, ind, lst);
