@@ -1,0 +1,21 @@
+#ifndef __PRIMITIVES_SKH_
+#define __PRIMITIVES_SKH_ 1
+
+
+#define CAS(ret, addr, oldVal, newVal)  \
+    atomic {                            \
+        if ((addr) == (oldVal)) {       \
+            addr = newVal;              \
+            ret = 1;                    \
+        } else {                        \
+            ret = 0;                    \
+        }                               \
+    }
+
+#define AtomicSwap(ret, addr, newVal)   \
+    atomic {                            \
+        ret = addr;                     \
+        addr = newVal;                  \
+    }
+
+#endif  /* __PRIMITIVES_SKH_ */
