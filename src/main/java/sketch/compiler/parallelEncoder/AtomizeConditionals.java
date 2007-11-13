@@ -1,6 +1,7 @@
 package streamit.frontend.parallelEncoder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
@@ -61,7 +62,29 @@ public class AtomizeConditionals extends FEReplacer {
 		addStatement(new StmtVarDecl(e.getCx(), TypePrimitive.bittype, nm, cond ) );
 		accumCondit.push( new ExprVar(e.getCx(), nm) );
 	}
+	
+	
+	Statement invertCondit(){
+		Expression ic = accumCondit.pop();
+		Statement s;
+		if(accumCondit.size() == 0){
+			s = new StmtAssign(null, ic, 
+					 new ExprUnary(null, ExprUnary.UNOP_NOT, ic));
+			
+		}else{
+			Expression t = accumCondit.peek();
+			s = new StmtAssign(null, ic, 
+					new ExprBinary(t, "&&", new ExprUnary(null, ExprUnary.UNOP_NOT, ic)));
+		}
+		accumCondit.push(ic);
+		return s;
+	}
+	
+	
 	void popCondit(){
+		if(accumCondit.size() == 0){
+			System.out.print("I found it");
+		}
 		accumCondit.pop();
 	}
 	
@@ -133,22 +156,28 @@ public class AtomizeConditionals extends FEReplacer {
 	    {
 	    	
 	    	if( isSingleStmt(stmt.getCons()) ){
+	    		Statement rv = null;
 	    		if(stmt.getAlt() == null){
-	    			return stmt;
+	    			rv= fixStmt(stmt);
+	    		}else if(isSingleStmt(stmt.getAlt()) ){
+	    			rv = fixStmt(stmt);
 	    		}
-	    		if(isSingleStmt(stmt.getAlt()) ){
-	    			return stmt;
+	    		if(rv != null){	    			
+	    			return new StmtAtomicBlock(stmt.getCx(), Collections.singletonList(rv) );	    			
 	    		}
 	    	}
 	    	
 	    	pushCondit(stmt.getCond());
 	    	Statement s1 = (Statement) stmt.getCons().accept(this);
-	    	popCondit();
+	    	
 	    	if(stmt.getAlt() != null){
-	    		pushCondit(new ExprUnary(stmt.getCx(), ExprUnary.UNOP_NOT, stmt.getCond()));
+	    		Statement si = invertCondit();
 	    		Statement s2 = (Statement) stmt.getAlt().accept(this);
 	    		popCondit();
-	    		s1 = new StmtBlock(s1, s2);
+	    		s1 = new StmtBlock(s1, new StmtBlock(si, s2));
+	    	}else{
+	    		popCondit();
+	    		
 	    	}
 	    	return s1;
 	    }
