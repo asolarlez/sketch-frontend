@@ -858,6 +858,11 @@ public class ProduceParallelModel extends FEReplacer {
 		
 			Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
 			StmtPloop ploop = (StmtPloop) parts.ploop.accept(new AtomizeConditionals(varGen));
+			System.out.println("%%%%%%%%%%%%%%%%%%%%%%");
+			ploop.accept(new SimpleCodePrinter());
+			//ploop = (StmtPloop) ploop.accept(new MinimizeLocals());
+			System.out.println("$$$$$$$$$$$$$$$$$$$$$$");
+			ploop.accept(new SimpleCodePrinter());
 			CFG cfg = CFGforPloop.buildCFG(ploop, locals);
 			
 			vectorizeLocals(locals, ploop.getIter());
