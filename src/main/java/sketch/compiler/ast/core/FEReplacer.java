@@ -18,6 +18,7 @@ package streamit.frontend.nodes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -194,7 +195,7 @@ public class FEReplacer implements FEVisitor
     public Object visitExprConstStr(ExprConstStr exp) { return exp; }
     public Object visitExprLiteral(ExprLiteral exp) { return exp; }
     public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
-
+    
     public Object visitExprField(ExprField exp)
     {
         Expression left = doExpression(exp.getLeft());
@@ -480,13 +481,19 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
-    	StmtBlock sb = (StmtBlock) visitStmtBlock (ab);
-    	if (sb == null)
-    		return null;
-    	else if (sb != ab)
-    		return new StmtAtomicBlock (sb.getCx (), sb.getStmts ());
-    	else
+    	Statement tmp = (Statement)visitStmtBlock (ab);
+    	if (tmp == null){
+    		return null;  
+    	}else if (tmp != ab){
+    		if(tmp instanceof StmtBlock){
+    			StmtBlock sb = (StmtBlock) tmp;
+    			return new StmtAtomicBlock (sb.getCx (), sb.getStmts ());
+    		}else{
+    			return new StmtAtomicBlock(ab.getCx(), Collections.singletonList(tmp));    			
+    		}
+    	}else{
     		return ab;
+    	}
     }
 
     public Object visitStmtBody(StmtBody stmt)
@@ -559,7 +566,7 @@ public class FEReplacer implements FEVisitor
         if(newCons == null && newAlt == null){
         	return new StmtExpr(stmt.getCx(), newCond);
         }
-
+        
         return new StmtIfThen(stmt.getContext(), newCond, newCons, newAlt);
     }
 
@@ -659,7 +666,7 @@ public class FEReplacer implements FEVisitor
                 init = doExpression(oinit);
             Type ot = stmt.getType(i);
             Type t = (Type) ot.accept(this);
-            if(ot != t || oinit != init){
+            if(ot != t || oinit != init){ 
             	changed = true;
             }
             newInits.add(init);
@@ -686,7 +693,7 @@ public class FEReplacer implements FEVisitor
     }
 
     protected List<Function> newFuncs;
-
+    
     public Object visitStreamSpec(StreamSpec spec)
     {
         // Oof, there's a lot here.  At least half of it doesn't get
@@ -697,9 +704,9 @@ public class FEReplacer implements FEVisitor
         if (spec.getStreamType() != null)
             newST = (StreamType)spec.getStreamType().accept(this);
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
-        List<Function> oldNewFuncs = newFuncs;
+        List<Function> oldNewFuncs = newFuncs; 
         newFuncs = new ArrayList<Function>();
-
+        
         boolean changed = false;
 
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -718,13 +725,13 @@ public class FEReplacer implements FEVisitor
             if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
-
+        
         if(newFuncs.size() != nonNull){
         	changed = true;
         }
-
+        
         sspec = oldSS;
-
+        
         List<Function> nf = newFuncs;
         newFuncs = oldNewFuncs;
         if (!changed && newST == spec.getStreamType()) return spec;

@@ -82,6 +82,7 @@ public class SimpleCodePrinter extends CodePrinter
 		super.visitStmtBlock(stmt);
 		indent--;
 		printLine("}");
+		out.flush();
 		return stmt;
 	}
 
