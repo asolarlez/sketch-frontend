@@ -1,0 +1,82 @@
+// typedef bit[3] id_t;
+// XXX: this causes an error
+//#define id_t  bit[3]
+
+#define id_t bit
+
+#define MAX_IT (4)
+
+// XXX: doesn't compose!!!
+#define while_true                      \
+    bit more = 1;                       \
+    for (int i = 0; i < MAX_IT; ++i) {  \
+        if (more)
+
+#define end_while_true  } assert more == 0
+
+#define break_while_true  more = 0
+
+
+struct Page {
+    int addr;
+    Page next;
+    id_t id;
+}
+
+struct List {
+    id_t id;
+    Page head;
+    Page tail;
+}
+
+struct Memory {
+    List free;
+    List alloc;
+}
+
+
+Page newPage (int addr, Page next, id_t id) {
+    Page n = new Page ();
+    n.addr = addr;
+    n.next = next;
+    n.id = id;
+    return n;
+}
+
+List newList (id_t id) {
+    List L = new List ();
+    L.id = id;
+    L.head = newPage (-1, null, id);
+    L.tail = L.head;
+    return L;
+}
+
+Memory newMemory () {
+    Memory M = new Memory ();
+    M.free = newList (0);
+    M.alloc = newList (1);
+    return M;
+}
+
+bit containsAddrSeq (List L, int addr) {
+    Page n = L.head;
+    while_true {
+        if (n == null) {
+            break_while_true;
+            return 0;
+        } else if (n.addr == addr && n.id == L.id) {
+            break_while_true;
+            return 1;
+        } else {
+            n = n.next;
+        }
+    } end_while_true;
+}
+
+bit isFree (Memory M, int addr) {
+    return containsAddrSeq (M.free, addr) && !containsAddrSeq (M.alloc, addr);
+}
+
+bit isAllocated (Memory M, int addr) {
+    return !isFree (M, addr);
+}
