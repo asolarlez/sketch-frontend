@@ -417,18 +417,25 @@ public class CFGSimplifier {
 	
 	
 	
-	public Statement stmtForNode(CFGNode n, CFGNode pred ,Cluster c, ExprVar ind, List<EdgePair> lst){
-		if(!c.contains(n)){ 
+	public Statement stmtForNode(CFGNode n, CFGNode pred ,Cluster c, ExprVar ind, List<EdgePair> lst, Set<CFGNode> visited){
+		if(!c.contains(n) || visited.contains(n)){ 
 			int sz = lst.size(); 
 			Statement t = new StmtAssign(null, ind, new ExprConstInt(lst.size()) );
-			lst.add(new EdgePair(n, sz));
-			n.changePred(pred, c.head);
+			if(!visited.contains(n)){
+				lst.add(new EdgePair(n, sz));
+				n.changePred(pred, c.head);
+			}else{
+				lst.add(new EdgePair(c.head, sz));
+				n.removePred(pred);
+				c.head.addPred(c.head);
+			}
 			return t; 
 		}
+		visited.add(n);
 		if(n.isStmt()){
 			assert n.getSuccs().size() == 1;
 			CFGNode succ = n.getSuccs().get(0).node;
-			Statement s = stmtForNode(succ, n, c, ind, lst);
+			Statement s = stmtForNode(succ, n, c, ind, lst, visited);
 			s = new StmtBlock(n.getStmt(), s);
 			return s;
 		}
@@ -441,9 +448,12 @@ public class CFGSimplifier {
 			CFGNode suc[] = new CFGNode[2];
 			suc[ep1.label] = ep1.node;
 			suc[ep2.label] = ep2.node;
-			
-			Statement sf = stmtForNode(suc[0], n, c, ind, lst);
-			Statement st = stmtForNode(suc[1], n, c, ind, lst);
+			HashSet<CFGNode> hn = new HashSet<CFGNode>();
+			hn.addAll(visited);
+			Statement sf = stmtForNode(suc[0], n, c, ind, lst, hn);
+			hn.clear();
+			hn.addAll(visited);
+			Statement st = stmtForNode(suc[1], n, c, ind, lst, hn);
 			
 			return new StmtIfThen(null, n.getExpr(), st, sf);
 		}
@@ -469,7 +479,7 @@ public class CFGSimplifier {
 	
 	public CFGNode processCluster(Cluster c,  ExprVar ind){
 		List<EdgePair> lst = new ArrayList<EdgePair>();
-		Statement s = stmtForNode(c.head, null, c, ind, lst);
+		Statement s = stmtForNode(c.head, null, c, ind, lst, new HashSet<CFGNode>());
 		s = new StmtBlock(new StmtVarDecl(null, TypePrimitive.inttype, ind.getName(), ExprConstInt.zero ), s);
 		assert lst.size() > 0;
 		CFGNode n = c.head;
