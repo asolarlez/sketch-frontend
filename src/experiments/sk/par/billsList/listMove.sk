@@ -1,0 +1,182 @@
+#include "../primitives.skh"
+#include "list.skh"
+
+
+/**
+ *-----------------------------------------------------------------------------
+ * Interface to the Memory system
+ *
+ * XXX: According to Bill, only the equivalent of the 'free()' function below
+ * would be called during concurrent GC.  So technically, that's all we need
+ * to synthesize.  But it would be nice to get the other functions working for
+ * the concurrent case too, since this is likely what would be necessary in a
+ * good concurrent VM.
+ */
+
+Page malloc (Memory M) {
+    Page f = pop (M.free);
+    if (f != null)
+        push (M.alloc, f);
+    return f;
+}
+
+void free (Memory M, Page p) {
+    move (M.alloc, M.free, p);
+}
+
+Page sbrk (Memory M, int addr) {
+    Page p = newPage (addr, null, M.alloc.id);
+    push (M.alloc, p);
+    return p;
+}
+
+
+/**
+ *-----------------------------------------------------------------------------
+ * Implementation
+ */
+
+/** @return true :- yes, moved; false :- maybe */
+bit move (List oldL, List newL, Page p) {
+    assert newL.id < oldL.id;   // only move into lower circles of hell
+
+    // This function has been artificially rewritten to make tracking PCs
+    // easier.  It is less efficient than it could be.
+
+    id_t id = p.id;
+    bit goodCAS1 = 0;
+    if (id == oldL.id) {
+        if (??) {
+            CAS (goodCAS1, p.id, id, newL.id);
+        } else {
+            p.id = newL.id;
+        }
+    }
+
+    Page prev = null;
+    bit goodCAS2 = 0;
+    while_true {
+        prev = findPrevOf (oldL, p);
+        if (goodCAS1) {
+            if (prev == null)
+                break_while_true;
+            else {
+                CAS (goodCAS2, prev.next, p, p.next);
+                if (goodCAS2)
+                    break_while_true;
+            }
+        }
+    } end_while_true;
+
+    if (goodCAS2)
+        push (newL, p);
+
+    return 0;
+}
+
+void push (List L, Page p) {
+    assert p.id == L.id;
+    p.next = null;
+
+    Page tmp = L.tail;
+    Page old = tmp;
+    bit goodCAS = 0;
+    while_true {
+        tmp = findTailFrom (L, tmp);
+        // tmp = {| ... |}
+        // CAS ({| ... |}, {| ... |}, {| ... |});
+        CAS (goodCAS, tmp.next, null, p);
+        if (goodCAS)
+            break_while_true;
+    } end_while_true;
+    CAS (goodCAS, L.tail, old, p);
+}
+
+Page pop (List L) {
+    // NYI
+    return null;
+}
+
+/** This is what we want to speed up with a doubly-linked list */
+Page findTailFrom (List L, Page p) {
+    if (p.id != L.id)
+        p = L.head;
+    while_true {
+        if (p == null)
+            p = L.head; // restart
+        else if (p.next == null)
+            break_while_true;
+        else
+            p = p.next;
+    } end_while_true;
+    return p;
+}
+
+/** This is what we want to speed up with a doubly-linked list */
+Page findPrevOf (List L, Page p) {
+    Page prev = L.head;
+
+    while_true {
+        if (prev.next == null) {
+            break_while_true;
+            return null;
+        } else if (prev.next == p) {
+            break_while_true;
+            return prev;
+        } else {
+            prev = prev.next;
+        }
+    } end_while_true;
+}
+
+
+/**
+ *=============================================================================
+ * Test driver and verifier
+ */
+
+bit verifier () { return 1; }
+bit main () implements verifier {
+    bit ret = 1;
+
+    // Sequential verification
+    Memory seq = newMemory ();
+    //   test 1: sbrk + free
+    Page sp1 = sbrk (seq, 1);
+    assert isAllocated (seq, 2);
+    free (seq, sp1);
+    assert isFree (seq, 1);
+    //   test 2: 2 x sbrk + 2 x free
+    sp1 = sbrk (seq, 2);
+    assert isFree (seq, 1);
+    assert isAllocated (seq, 2);
+    Page sp2 = sbrk (seq, 3);
+    assert isFree (seq, 1);
+    assert isAllocated (seq, 2);
+    assert isAllocated (seq, 3);
+    free (seq, sp1);
+    assert isFree (seq, 1);
+    assert isFree (seq, 2);
+    assert isAllocated (seq, 3);
+    free (seq, sp2);
+    assert isFree (seq, 1);
+    assert isFree (seq, 2);
+    assert isFree (seq, 3);
+
+///*
+    // Concurrent verification
+    Memory par = newMemory ();
+    Page pp1 = sbrk (par, 1);
+    Page pp2 = null;
+    ploop (int i; 2) {
+        if (i == 0)
+            pp2 = sbrk (par, 2);
+        else
+            free (par, pp1);
+    }
+    assert isFree (par, 1);
+    assert isAllocated (par, 2);
+//*/
+
+    return ret;
+}

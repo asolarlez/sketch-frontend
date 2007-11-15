@@ -1,0 +1,62 @@
+#include "../primitives.skh"
+#include "list.skh"
+
+Page findTailFrom (Page p) {
+    while_true {
+        if (p.next == null)
+            break_while_true;
+        else
+            p = p.next;
+    } end_while_true;
+    return p;
+}
+
+void push (List L, Page p) {
+    assert p.id == L.id;
+    p.next = null;
+
+    Page tmp = L.tail;
+    Page old = tmp;
+    bit goodCAS = 0;
+    while_true {
+        tmp = findTailFrom (tmp);
+        // tmp = {| ... |}
+        // CAS ({| ... |}, {| ... |}, {| ... |});
+        CAS (goodCAS, tmp.next, null, p);
+        if (goodCAS)
+            break_while_true;
+    } end_while_true;
+
+    CAS (goodCAS, L.tail, old, p);
+}
+
+Page sbrk (Memory M, int addr) {
+    Page p = newPage (addr, null, M.alloc.id);
+    push (M.alloc, p);
+    return p;
+}
+
+bit verify (Memory M) {
+    assert containsAddrSeq (M.alloc, 1);
+    assert containsAddrSeq (M.alloc, 2);
+
+    return 1;
+}
+
+bit verifier () { return 1; }
+bit main () implements verifier {
+    bit ret = 1;
+
+    Memory seq = newMemory ();
+    sbrk (seq, 1);
+    sbrk (seq, 2);
+    ret = ret && verify (seq);
+
+    Memory par = newMemory ();
+    ploop (int i; 2) {
+        sbrk (par, i+1);
+    }
+    ret = ret && verify (par);
+
+    return ret;
+}
