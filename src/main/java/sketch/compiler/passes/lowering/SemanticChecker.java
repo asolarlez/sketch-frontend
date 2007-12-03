@@ -1010,6 +1010,8 @@ public class SemanticChecker
 
 				if( stmt.getInit() == null){
 					report(stmt, "For loops without initializer not supported." );
+				}else{
+					stmt.getInit().accept(this);					
 				}
 
 				Type cond = getType(stmt.getCond());

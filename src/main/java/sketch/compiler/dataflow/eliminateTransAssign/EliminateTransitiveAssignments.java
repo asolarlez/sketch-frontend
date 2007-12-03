@@ -1,7 +1,9 @@
 package streamit.frontend.experimental.eliminateTransAssign;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
 import streamit.frontend.nodes.ExprVar;
@@ -25,7 +27,11 @@ public class EliminateTransitiveAssignments extends DataflowWithFixpoint {
 		transAssignAbsValue oval = val;
 		String nm = vname;
 		while(val.varIamEqualTo != null){
+			String oldNm = nm;
 			nm = state.untransName(val.varIamEqualTo);
+			if(oldNm.equals(nm)){
+				break;
+			}
 			val = (transAssignAbsValue)state.varValue(nm);
 		}
 		if(isReplacer){

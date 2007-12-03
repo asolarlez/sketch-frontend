@@ -295,12 +295,16 @@ public class PartialEvaluator extends FEReplacer {
     	abstractValue left = (abstractValue) exp.getLeft().accept(this);
     	Expression nleft =   exprRV;
 
-        abstractValue right = (abstractValue) exp.getRight().accept(this);
-        Expression nright =   exprRV;
-
+        abstractValue right = null;
+        Expression nright =   null;
+        int op = exp.getOp();
+        if(op != ExprBinary.BINOP_BAND && op != ExprBinary.BINOP_BOR && op != ExprBinary.BINOP_AND && op != ExprBinary.BINOP_OR){
+        	right = (abstractValue) exp.getRight().accept(this);
+        	nright =   exprRV;
+        }        
         abstractValue rv = null;
-
-
+        
+        
 
         switch (exp.getOp())
         {
@@ -308,17 +312,38 @@ public class PartialEvaluator extends FEReplacer {
         	case ExprBinary.BINOP_SUB: rv = vtype.minus(left, right); break;
         	case ExprBinary.BINOP_MUL: rv = vtype.times(left, right); break;
         	case ExprBinary.BINOP_DIV: rv = vtype.over(left, right); break;
-        	case ExprBinary.BINOP_MOD: rv = vtype.mod(left, right); break;
-        	case ExprBinary.BINOP_AND: rv = vtype.and(left, right); break;
-        	case ExprBinary.BINOP_OR:  rv = vtype.or(left, right); break;
+        	case ExprBinary.BINOP_MOD: rv = vtype.mod(left, right); break;        	
         	case ExprBinary.BINOP_EQ:  rv = vtype.eq(left, right); break;
         	case ExprBinary.BINOP_NEQ: rv = vtype.not(vtype.eq(left, right)); break;
         	case ExprBinary.BINOP_LT: rv = vtype.lt(left, right); break;
         	case ExprBinary.BINOP_LE: rv = vtype.le(left, right); break;
         	case ExprBinary.BINOP_GT: rv = vtype.gt(left, right); break;
         	case ExprBinary.BINOP_GE: rv = vtype.ge(left, right); break;
-        	case ExprBinary.BINOP_BAND: rv = vtype.and(left, right); break;
-        	case ExprBinary.BINOP_BOR: rv = vtype.or(left, right); break;
+        	
+        	case ExprBinary.BINOP_AND: 
+        	case ExprBinary.BINOP_BAND:{ 
+        		if(left.hasIntVal() && left.getIntVal() == 0){
+        				rv = vtype.CONST(0);
+        		}else{
+	        		right = (abstractValue) exp.getRight().accept(this);
+	        		nright =   exprRV;
+	        		rv = vtype.and(left, right); 
+        		}
+        		break;
+        	}
+        	
+        	case ExprBinary.BINOP_OR:     	
+        	case ExprBinary.BINOP_BOR:{ 
+        		if(left.hasIntVal() && left.getIntVal() == 1){
+    				rv = vtype.CONST(1);
+	    		}else{
+	        		right = (abstractValue) exp.getRight().accept(this);
+	        		nright =   exprRV;
+	        		rv = vtype.or(left, right); 
+	    		}
+	    		break;
+	    	}
+        	
         	case ExprBinary.BINOP_BXOR: rv = vtype.xor(left, right); break;
         	case ExprBinary.BINOP_SELECT:
         		abstractValue choice = vtype.STAR(exp);
@@ -514,19 +539,19 @@ public class PartialEvaluator extends FEReplacer {
         switch(stmt.getOp())
         {
         case ExprBinary.BINOP_ADD:
-        	assert rlen == 1 && !isFieldAcc;
+        	assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt.getCx();
         	state.setVarValue(lhsName, lhsIdx, vtype.plus((abstractValue) lhs.accept(this), rhs));
         	break;
         case ExprBinary.BINOP_SUB:
-        	assert rlen == 1 && !isFieldAcc;
+        	assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt.getCx();
         	state.setVarValue(lhsName, lhsIdx, vtype.minus((abstractValue) lhs.accept(this), rhs));
         	break;
         case ExprBinary.BINOP_MUL:
-        	assert rlen == 1 && !isFieldAcc;
+        	assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt.getCx();
         	state.setVarValue(lhsName, lhsIdx, vtype.times((abstractValue) lhs.accept(this), rhs));
         	break;
         case ExprBinary.BINOP_DIV:
-        	assert rlen == 1 && !isFieldAcc;
+        	assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt.getCx();
         	state.setVarValue(lhsName, lhsIdx, vtype.over((abstractValue) lhs.accept(this), rhs));
         	break;
         default:
@@ -681,6 +706,35 @@ public class PartialEvaluator extends FEReplacer {
 	        	vcond = (abstractValue) stmt.getCond().accept(this);
 		        report(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getContext());
 	        }
+	        
+	        if(vcond.isBottom()){
+	        	int remIters = this.MAX_UNROLL - iters;
+	        	if(remIters > 0){
+	        		String doneNm = this.varGen.nextVar("done");
+	        		ExprVar doneVar = new ExprVar(null, doneNm);
+	        		StmtVarDecl svd = new StmtVarDecl(null, TypePrimitive.bittype, doneNm, ExprConstInt.zero);
+	        		Expression cond = new ExprBinary(stmt.getCond(), "&&", new ExprUnary("!", doneVar));
+	        		Statement setDone = new StmtAssign(null, doneVar, ExprConstInt.one);
+	        		
+	        		Statement body = stmt.getBody();
+	        		if (stmt.getIncr() != null){
+	        			body = new StmtBlock(body, stmt.getIncr());
+    	        	}
+	        		
+	        		Statement condIter = new StmtIfThen(stmt.getCx(), cond, body, setDone);
+	        		svd.accept(this);
+	        		
+	        		for(int i=0; i<remIters; ++i){
+	        			condIter.accept(this);	        			
+	        		}
+	        		StmtAssert as = new StmtAssert(stmt.getCx(),new ExprBinary(new ExprUnary("!", stmt.getCond()), "||", doneVar) , "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.");
+	        		as.accept(this);
+	        	}else{
+	        		StmtAssert as = new StmtAssert(stmt.getCx(), new ExprUnary("!", stmt.getCond()), "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.");
+	        		as.accept(this);
+	        	}
+	        }
+	        
     	}finally{
     		state.popLevel();
     	}

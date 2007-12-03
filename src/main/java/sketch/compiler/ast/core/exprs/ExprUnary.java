@@ -72,6 +72,23 @@ public class ExprUnary extends Expression
         this.expr = expr;
     }
     
+    
+    /** Creates a new ExprUnary applying the specified operator to the
+     * specified expression. */
+    public ExprUnary(String op, Expression expr)
+    {
+        super(expr.getCx());
+        if(op.equals("!")){
+        	this.op = ExprUnary.UNOP_NOT;
+        }else if(op.equals("-")){
+        	this.op = ExprUnary.UNOP_NOT;
+        }else{
+        	throw new RuntimeException("Constructor not supported for this type of operator: " + op);
+        }
+        this.expr = expr;
+    }
+    
+    
     /** Returns the operator of this. */
     public int getOp() { return op; }
     

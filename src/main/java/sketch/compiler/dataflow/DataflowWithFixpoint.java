@@ -90,35 +90,37 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        boolean goOn = true;
 	        int iters = 0;	
 	        while(goOn){
-	        	state.pushChangeTracker(null, false);
-	        	
-	        	ChangeTracker ct = null;
-	        	
-	        	boolean lisReplacer = isReplacer;
-	        	isReplacer = false;
-	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);	        	
-	        	if(vcond.hasIntVal() && vcond.getIntVal() == 0){
-	        		isReplacer = lisReplacer;	
-	        		state.popChangeTracker();
-	        		break;
-	        	}	        	
+	        	ChangeTracker changed;
 	        	try{
-	        		state.pushChangeTracker(vcond, false);
-	        		Object ka =stmt.getBody().accept(this);	        	
-		        	if (stmt.getIncr() != null){
-			        	stmt.getIncr().accept(this);
+		        	state.pushChangeTracker(null, false);
+		        	
+		        	ChangeTracker ct = null;
+		        	
+		        	boolean lisReplacer = isReplacer;
+		        	isReplacer = false;
+		        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);	        	
+		        	if(vcond.hasIntVal() && vcond.getIntVal() == 0){
+		        		isReplacer = lisReplacer;	
+		        		state.popChangeTracker();
+		        		break;
+		        	}	        	
+		        	try{
+		        		state.pushChangeTracker(vcond, false);
+		        		Object ka =stmt.getBody().accept(this);	        	
+			        	if (stmt.getIncr() != null){
+				        	stmt.getIncr().accept(this);
+			        	}
+		        	}catch(RuntimeException e){
+		        		state.popChangeTracker();
+		        		throw e;
+		        	}finally{
+		        		ct = state.popChangeTracker();	
+		        		isReplacer = lisReplacer;
 		        	}
-	        	}catch(RuntimeException e){
-	        		state.popChangeTracker();
-	        		throw e;
-	        		//Should also pop the other change tracker.
+		        	state.procChangeTrackers(ct);	 
 	        	}finally{
-	        		ct = state.popChangeTracker();	
-	        		isReplacer = lisReplacer;
+	        		changed = state.popChangeTracker();
 	        	}
-	        	state.procChangeTrackers(ct);	 
-
-	        	ChangeTracker changed = state.popChangeTracker();
 	        	state.pushChangeTracker(null, false);	        	
 	        	ChangeTracker orig = state.popChangeTracker();
 	        	goOn = !state.compareChangeTrackers(changed, orig);
