@@ -1,0 +1,27 @@
+int W = 4;
+
+int trailing_zero_bits(bit[W] in)
+{
+	int i = 0;
+
+	for( i = 0; (i < W) & !in[i] ; ++i)
+		i = i;
+
+	return i;
+}
+
+
+int trailing_zero_bits_sketch(bit[W] in) implements trailing_zero_bits
+{
+	int i = 0;
+
+	loop (W) {
+		if (!in[i]) {
+			i = i+1;
+		} else {
+			return i;
+		}
+	}
+
+	return i;
+}
