@@ -13,9 +13,11 @@ public class CommandLineParamManager{
 		static final int FLAG = 0;
 		static final int NUMBER = 1;
 		static final int TOKEN = 2;
-		static final int STRING = 3;
+		static final int STRING = 3;		
+		static final int MULTISTRING = 5;
 		static final int VVAL = 4;
 		Map<String, String> tokenDescriptions;
+		
 		String description;	
 		String defVal;
 		int type;
@@ -29,6 +31,7 @@ public class CommandLineParamManager{
 		public String toString(){
 			switch(type){
 				case STRING:
+				case MULTISTRING:
 				case FLAG:
 				case NUMBER:{
 					String msg = description;
@@ -59,7 +62,7 @@ public class CommandLineParamManager{
 	Map<String, POpts> allowedParameters;
 	Map<String, Object> passedParameters;
 	List<String> inputFiles = new ArrayList<String>();
-	public List<String> commandLineOptions = new ArrayList<String>();
+	public List<String> backendOptions = new ArrayList<String>();
 	
 	CommandLineParamManager(){
 		allowedParameters = new HashMap<String, POpts>();
@@ -75,10 +78,10 @@ public class CommandLineParamManager{
 					i+= readParameter(args[i], i+1< args.length ? args[i+1] : "", i+2< args.length ?args[i+2]:"");					
 					
 				}else{
-					commandLineOptions.add(args[i]);
+					backendOptions.add(args[i]);
 					if( args[i+1].charAt(0) != '-' ){						
 						System.out.println("BACKEND FLAG " + args[i] + " " + args[i+1]);
-						commandLineOptions.add(args[i+1]);
+						backendOptions.add(args[i+1]);
 						i+= 2;
 					}else{
 						System.out.println("BACKEND FLAG " + args[i] );
@@ -137,7 +140,16 @@ public class CommandLineParamManager{
 					passedParameters.put(argn, argnp1);
 					return 2;
 				}
-			
+				case POpts.MULTISTRING:{
+					if(passedParameters.containsKey(argn)){
+						List<String> ls = (List<String>)passedParameters.get(argn);
+						ls.add(argnp1);
+					}else{
+						List<String> ls = new ArrayList<String>();
+						passedParameters.put(argn, ls);
+						ls.add(argnp1);
+					}
+				}
 				case POpts.TOKEN:{
 					if(argnp1.length() < 1){ throw new RuntimeException("Flag " + argn + " requires an additional argument. \n" + argInfo); }
 					if( !argInfo.tokenDescriptions.containsKey(argnp1) ){
@@ -174,8 +186,19 @@ public class CommandLineParamManager{
 	
 	public boolean hasFlag(String flag){
 		checkFlagAllowed(flag);
-		return passedParameters.containsKey(flag);		
+		return passedParameters.containsKey(flag);
 	}
+	
+	
+	public List<String> listValue(String flag){
+		checkFlagAllowed(flag);
+		List<String> val = null;
+		if(passedParameters.containsKey(flag)){
+			val = (List)passedParameters.get(flag);			
+		}
+		return val;
+	}
+	
 	
 	public String sValue(String flag){
 		checkFlagAllowed(flag);
@@ -190,14 +213,7 @@ public class CommandLineParamManager{
 	}
 	
 	public int flagValue(String flag){
-		checkFlagAllowed(flag);
-		String val = null;
-		if(passedParameters.containsKey(flag)){
-			val = (String)passedParameters.get(flag);			
-		}else{
-			
-			val = allowedParameters.get(flag).defVal;
-		}
+		String val = sValue(flag);
 		Integer i = Integer.decode(val);
 		return i;		
 	}
