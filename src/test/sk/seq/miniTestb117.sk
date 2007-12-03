@@ -1,0 +1,23 @@
+int N = 3;
+
+int test(bit[N] in){
+	int x = 0;
+	for(int i=0; i<N && in[i]; ++i){
+		++x;
+	}	
+	return x;	
+}
+
+
+int sketch(bit[N] in) implements test{
+	int x = 0;
+	bit done = false;
+	for(int i=0; i<N ; ++i){
+		if(in[i] && !done){
+			++x;
+		}else{
+			done = true;	
+		}
+	}
+	return x;	
+}
