@@ -117,12 +117,12 @@ public class ToSBit
 	}
 
 	/**
-	 * This function produces a recursion control that is used by all transformations that are not user visible.
+	 * This function produces a recursion control that is used by all transformations that are not user visible. 
 	 * In particular, the conversion to boolean. By default it is the same as the visibleRControl.
 	 * @return
 	 */
 	public RecursionControl internalRControl(){
-
+		
 		return visibleRControl();
 	}
 
@@ -219,7 +219,7 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-
+		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen));
@@ -273,7 +273,7 @@ public class ToSBit
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
 		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
-		prog = (Program)prog.accept(new FunctionParamExtension(true));
+		prog = (Program)prog.accept(new FunctionParamExtension(true));		
 		//dump (prog, "fpe:");
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		prog = (Program)prog.accept(new TypeInferenceForStars());
@@ -403,6 +403,8 @@ public class ToSBit
 			resultFile=resultFile.substring(resultFile.lastIndexOf("\\")+1);
 		if(resultFile.lastIndexOf(".")>=0)
 			resultFile=resultFile.substring(0,resultFile.lastIndexOf("."));
+		if(resultFile.lastIndexOf(".sk")>=0)
+			resultFile=resultFile.substring(0,resultFile.lastIndexOf(".sk"));
 		return resultFile;
 	}
 
@@ -528,7 +530,7 @@ public class ToSBit
 		params.setAllowedParam("showpartial", new POpts(POpts.FLAG,
 				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
 				null, null) );
-
+		
 		params.setAllowedParam("forcecodegen", new POpts(POpts.FLAG,
 				"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, " +
 				"                \t this flag will force the synthesizer to produce code from the latest known control values.",
@@ -579,7 +581,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-
+		
 		if (prog == null)
 			throw new IllegalStateException();
 
@@ -591,8 +593,8 @@ public class ToSBit
 		System.out.println("DONE");
 
 	}
-
-
+	
+	
 	protected void backendParameters(List<String> commandLineOptions){
 		if( params.hasFlag("inbits") ){
 			commandLineOptions.add("-overrideInputs");
@@ -603,10 +605,10 @@ public class ToSBit
 			commandLineOptions.add( "" + params.flagValue("seed") );
 		}
 	}
-
+	
 
 	private boolean solve(ValueOracle oracle){
-		List<String> commandLineOptions = params.commandLineOptions;
+		List<String> commandLineOptions = params.backendOptions;
 
 		backendParameters(commandLineOptions);
 

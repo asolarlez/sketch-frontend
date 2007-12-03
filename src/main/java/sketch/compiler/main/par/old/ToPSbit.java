@@ -128,7 +128,7 @@ public class ToPSbit extends ToSBit {
 		boolean solved = partialEvalAndSolve();
 		if (!solved)  System.out.println ("Backend timed out; controls may be synthesized, though.");
 		try {
-			eliminateStar();
+		eliminateStar();
 		} catch (Throwable t) {
 			if (!solved) System.err.println ("Controls probably weren't synthesized");
 			throw new RuntimeException (t);
@@ -154,10 +154,11 @@ public class ToPSbit extends ToSBit {
 				ToSpin.printCode (finalCode);
 			}
 		}
-
 		//generateCode();
 		System.out.println("DONE");
+
 	}
+
 
 	protected void setCommandLineParams(){
 		super.setCommandLineParams();
