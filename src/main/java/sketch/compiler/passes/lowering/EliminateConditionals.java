@@ -3,9 +3,16 @@
  */
 package streamit.frontend.passes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
@@ -26,14 +33,29 @@ public class EliminateConditionals extends SymbolTableVisitor {
 	}
 
 	public Object visitExprTernary (ExprTernary et) {
+		FEContext cx = et.getCx ();
 		ExprVar tmpVar =
-			new ExprVar (et.getCx (), varGen.nextVar ("_tmp_ternary_elim_"));
+			new ExprVar (cx, varGen.nextVar ("_tmp_ternary_elim_"));
 		StmtVarDecl tmpDecl =
-			new StmtVarDecl (et.getCx (), getType (et), tmpVar.getName (), null);
-		StmtAssign thenAssn = new StmtAssign (et.getCx (), tmpVar, et.getB ());
-		StmtAssign elseAssn = new StmtAssign (et.getCx (), tmpVar, et.getC ());
+			new StmtVarDecl (cx, getType (et), tmpVar.getName (), null);
+
+		List<Statement> oldStatements = newStatements;
+
+		newStatements = new ArrayList<Statement> ();
+		newStatements.add (
+				new StmtAssign (cx, tmpVar, (Expression)et.getB ().accept (this)));
+		Statement thenBlock = new StmtBlock (cx, newStatements);
+
+		newStatements = new ArrayList<Statement> ();
+		newStatements.add (
+				new StmtAssign (cx, tmpVar, (Expression)et.getC ().accept (this)));
+		Statement elseBlock = new StmtBlock (cx, newStatements);
+
+		newStatements = oldStatements;
+
 		StmtIfThen condReplace =
-			new StmtIfThen (et.getCx (), et.getA (), thenAssn, elseAssn);
+			new StmtIfThen (cx, (Expression) et.getA ().accept (this),
+							thenBlock, elseBlock);
 
 		addStatement (tmpDecl);
 		addStatement (condReplace);
