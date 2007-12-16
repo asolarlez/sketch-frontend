@@ -93,7 +93,10 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			}
 		}
     	if (fun != null) {   
-    		if( fun.isUninterp()  ){    			
+    		if( fun.isUninterp()  || fun.isStatic() ){    	
+    			if(fun.isStatic()){
+    				funcsToAnalyze.add(fun);
+    			}
     			return super.visitExprFunCall(exp);
     		}else{
 	    		if (rcontrol.testCall(exp)) {

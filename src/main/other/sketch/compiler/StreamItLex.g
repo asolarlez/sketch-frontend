@@ -53,8 +53,9 @@ tokens {
 	//"pi";
 	"true"; "false";
 	//sketching stuff
-	"implements"; //"overrides";
+	"implements"; 
 	"assert";
+	"static";
 }
 
 INCLUDE :"#include" ;

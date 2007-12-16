@@ -266,23 +266,23 @@ public class ToSBit
 
 	}
 
-	protected Program preprocessProgram(Program prog) {
+	protected Program preprocessProgram(Program lprog) {
 		//invoke post-parse passes
 
 		//dump (prog, "before:");
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
-		prog = (Program)prog.accept(new EliminateAnyorder(varGen));
-		prog = (Program)prog.accept(new FunctionParamExtension(true));		
+		lprog = (Program)lprog.accept(new EliminateAnyorder(varGen));
+		lprog = (Program)lprog.accept(new FunctionParamExtension(true));		
 		//dump (prog, "fpe:");
-		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
-		prog = (Program)prog.accept(new TypeInferenceForStars());
+		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
+		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 		//dump (prog, "tifs:");
-		prog = (Program) prog.accept (new EliminateMultiDimArrays ());
+		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
 		//dump (prog, "After first elimination of multi-dim arrays:");
-		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
+		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		//dump (prog, "aftpp");
-		return prog;
+		return lprog;
 	}
 
 	public boolean partialEvalAndSolve(){
@@ -415,7 +415,7 @@ public class ToSBit
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		if(!params.hasFlag("outputcode")){
-			finalCode.accept( new SimpleCodePrinter() );
+			//finalCode.accept( new SimpleCodePrinter() );
 			//System.out.println(hcode);
 			System.out.println(ccode);
 		}else{

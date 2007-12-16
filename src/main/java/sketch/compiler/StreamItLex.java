@@ -57,6 +57,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("implements", this), new Integer(30));
 	literals.put(new ANTLRHashString("continue", this), new Integer(26));
 	literals.put(new ANTLRHashString("null", this), new Integer(9));
+	literals.put(new ANTLRHashString("static", this), new Integer(32));
 	literals.put(new ANTLRHashString("while", this), new Integer(20));
 	literals.put(new ANTLRHashString("anyorder", this), new Integer(7));
 	literals.put(new ANTLRHashString("break", this), new Integer(25));
