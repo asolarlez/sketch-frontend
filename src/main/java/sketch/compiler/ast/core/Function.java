@@ -42,6 +42,7 @@ public class Function extends FENode
     public static final int FUNC_PREWORK = 8;
     public static final int FUNC_UNINTERP = 9;
     public static final int FUNC_ASYNC = 10;
+    public static final int FUNC_STATIC = 11;
 
 
     private int cls;
@@ -118,6 +119,10 @@ public class Function extends FENode
                             params, body);
     }
 
+    
+    
+    
+    
     /** Create a new helper function given its parts. */
     public static Function newHelper(FEContext context, String name,
                                      Type returnType, List<Parameter> params,
@@ -129,9 +134,29 @@ public class Function extends FENode
         return f;
     }
 
+    
+    
+    /** Create a new helper function given its parts. */
+    public static Function newStatic(FEContext context, String name,
+                                     Type returnType, List<Parameter> params,
+                                     String impl, Statement body)
+    {
+        Function f=new Function(context, FUNC_STATIC, name, returnType,
+                            params, body);
+        f.fImplements=impl;
+        return f;
+    }
+
+    
+    
+    
 
     public boolean isUninterp(){
     	return cls == FUNC_UNINTERP;
+    }
+
+    public boolean isStatic(){
+    	return cls == FUNC_STATIC;
     }
 
 
