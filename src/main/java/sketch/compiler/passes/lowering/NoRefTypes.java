@@ -115,7 +115,7 @@ public class NoRefTypes extends FEReplacer
         {
             Parameter param = (Parameter)iter.next();
             Type type = remapType(param.getType());
-            param = new Parameter(type, param.getName(), param.isParameterOutput());
+            param = new Parameter(type, param.getName(), param.getPtype());
             newParams.add(param);
         }
         return super.visitStreamSpec(new StreamSpec(ss.getContext(),

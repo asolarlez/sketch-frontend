@@ -193,17 +193,17 @@ public class AbstractArray {
 	}
 	
 	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
-		return makeParams(ls,false);
+		return makeParams(ls,Parameter.IN);
 	}
-	private static final List<Parameter> makeParams(List<StmtVarDecl> ls, boolean isOut) {
-		return makeParams(ls.iterator(),isOut);
+	private static final List<Parameter> makeParams(List<StmtVarDecl> ls, int ptype) {
+		return makeParams(ls.iterator(),ptype);
 	}
-	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it, boolean isOut) {
+	private static final List<Parameter> makeParams(Iterator<StmtVarDecl> it, int ptype) {
 		List<Parameter> ret=new ArrayList<Parameter>();
 		while(it.hasNext()) {
 			StmtVarDecl var=it.next();
 			for(int i=0;i<var.getNumVars();i++)
-				ret.add(new Parameter(var.getType(i),var.getName(i),isOut));
+				ret.add(new Parameter(var.getType(i),var.getName(i),ptype));
 		}
 		return ret;
 	}

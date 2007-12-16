@@ -113,7 +113,7 @@ public class ComplexToStruct extends FEReplacer
         {
             Parameter param = (Parameter)iter.next();
             Type type = remapType(param.getType());
-            param = new Parameter(type, param.getName(), param.isParameterOutput());
+            param = new Parameter(type, param.getName(), param.getPtype());
             newParams.add(param);
         }
         Type returnType = remapType(func.getReturnType());
@@ -143,7 +143,7 @@ public class ComplexToStruct extends FEReplacer
         {
             Parameter param = (Parameter)iter.next();
             Type type = remapType(param.getType());
-            param = new Parameter(type, param.getName(), param.isParameterOutput());
+            param = new Parameter(type, param.getName(), param.getPtype());
             newParams.add(param);
         }
         return super.visitStreamSpec(new StreamSpec(ss.getContext(),

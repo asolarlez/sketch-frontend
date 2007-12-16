@@ -103,13 +103,13 @@ public class MoveStreamParameters extends InitMunger
             Expression lhs = new ExprVar(context, param.getName());
             Expression rhs = new ExprVar(context, pName);
             Type type = param.getType();
-            param = new Parameter(type, pName, param.isParameterOutput());
+            param = new Parameter(type, pName, param.getPtype());
             while (type instanceof TypeArray)
                 type = ((TypeArray)type).getBase();
             if (type instanceof TypeStruct)
             {
                 rhs = new ExprTypeCast(context, param.getType(), rhs);
-                param = new Parameter(objectType, pName, param.isParameterOutput());
+                param = new Parameter(objectType, pName, param.getPtype());
             }
             Statement stmt = new StmtAssign(context, lhs, rhs);
             body.add(stmt);
@@ -151,7 +151,7 @@ public class MoveStreamParameters extends InitMunger
                     new ExprTypeCast(context, param.getType(), rhs);
                 body.add(new StmtVarDecl(context, param.getType(),
                                          param.getName(), cast));
-                param = new Parameter(objectType, newName, param.isParameterOutput());
+                param = new Parameter(objectType, newName, param.getPtype());
             }
             newParams.add(param);
         }

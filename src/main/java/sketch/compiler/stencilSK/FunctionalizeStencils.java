@@ -294,7 +294,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			driverParams.addAll(makeParams(outf.idxParams));
 			driverParams.addAll(makeParams(outf.othParams));
 			driverParams.addAll(makeParams(outf.inputParams));
-			driverParams.add(new Parameter(outpType,outp.getName(),true));
+			driverParams.add(new Parameter(outpType,outp.getName(),Parameter.OUT));
 			
 			List<Expression> callArgs=new ArrayList<Expression>();
 			callArgs.addAll(makeRefs(outf.idxParams));

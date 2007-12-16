@@ -50,7 +50,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				if(param.isParameterOutput()) continue;
 				if(!unmodifiedParams.containsValue(param)) {
 					String newName=getNewInCpID(param.getName());
-					Parameter newPar=new Parameter(param.getType(),newName,param.isParameterOutput());
+					Parameter newPar=new Parameter(param.getType(),newName,param.getPtype());
 					parameters.set(i,newPar);
 					func=addVarCopy(func,param,newName);
 				}
@@ -130,7 +130,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			Type retType=fun.getReturnType();
 			List<Parameter> params=new ArrayList<Parameter>(fun.getParams());
 			if(!retType.equals(TypePrimitive.voidtype)){
-				params.add(new Parameter(retType,getOutParamName(),true));
+				params.add(new Parameter(retType,getOutParamName(),Parameter.OUT));
 			}
 			funs.add(new Function(fun.getContext(), fun.getCls(), fun.getName(), fun.getReturnType(),
 				params, fun.getSpecification(), fun.getBody()));

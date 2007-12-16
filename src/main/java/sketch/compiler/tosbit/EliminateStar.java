@@ -436,7 +436,7 @@ public class EliminateStar extends CodePEval {
 	        	for (Iterator iter = func.getParams().iterator(); iter.hasNext(); )
 	    	    {
 	    	        Parameter param = (Parameter)iter.next();
-	    	        Parameter newparam = new Parameter(param.getType(), state.transName(param.getName()), param.isParameterOutput());
+	    	        Parameter newparam = new Parameter(param.getType(), state.transName(param.getName()), param.getPtype());
 	    	        newParams.add(newparam);
 	    	    }
 	        	
