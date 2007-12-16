@@ -144,7 +144,7 @@ public class ConstantReplacer extends FEReplacer {
 				Expression len=arr.getLength();
 				Expression newlen=(Expression) len.accept(this);
 				if(newlen!=len) {
-					params.set(i,new Parameter(new TypeArray(arr.getBase(),newlen),par.getName(), par.isParameterOutput()));
+					params.set(i,new Parameter(new TypeArray(arr.getBase(),newlen),par.getName(), par.getPtype()));
 					changed=true;
 				}
 			}

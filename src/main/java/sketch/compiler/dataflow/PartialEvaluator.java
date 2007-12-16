@@ -633,7 +633,7 @@ public class PartialEvaluator extends FEReplacer {
     		state.varDeclare(param.getName() , param.getType());
     		if( isReplacer){
     			Type ntype = (Type)param.getType().accept(this);
-    			nparams.add( new Parameter(ntype, transName(param.getName()), param.isParameterOutput()));
+    			nparams.add( new Parameter(ntype, transName(param.getName()), param.getPtype()));
     		}
     	}
 

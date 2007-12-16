@@ -27,25 +27,33 @@ package streamit.frontend.nodes;
  */
 public class Parameter
 {
-    private Type type;
-    private String name;
-    private boolean isOutput;
+	public static int IN = 0;
+	public static int OUT = 1;
+	public static int REF = 2;
+	
+    private final Type type;
+    private final String name;
+    private final int partype;
     
     /** Creates a new Parameter with the specified type and name. */
     public Parameter(Type type, String name)
     {
-    	this(type,name,false);
+    	this(type,name,IN);
     }
     
-    public Parameter(Type type, String name, boolean isOutput)
+    public Parameter(Type type, String name, int ptype)
     {
         this.type = type;
         this.name = name;
-        this.isOutput = isOutput;
+        this.partype = ptype;
+    }
+    
+    public int getPtype(){
+    	return partype;
     }
     
     public boolean isParameterOutput(){
-    	return isOutput;
+    	return partype == OUT;
     }
     
     /** Returns the type of this. */
@@ -63,7 +71,7 @@ public class Parameter
     public String toString()
     {
     	
-    	return (isOutput? "!":"") +  type.toString()+" "+name;
+    	return (partype==OUT? "!":"") +  type.toString()+" "+name;
     }
     
     public Object accept(FEVisitor v){
