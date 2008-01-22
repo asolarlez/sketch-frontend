@@ -453,7 +453,10 @@ public class PartialEvaluator extends FEReplacer {
     	public Object visitExprField(ExprField exp)
         {
     		isFieldAcc = true;
-    		return super.visitExprField(exp);
+    		super.visitExprField(exp);
+    		PartialEvaluator.this.visitExprField(exp);
+    		return PartialEvaluator.this.exprRV;
+    		//return super.visitExprField(exp);
         }
 
 
@@ -584,7 +587,7 @@ public class PartialEvaluator extends FEReplacer {
 	        		}
 	        	}
         	}else{
-        		assignmentToField(lhsName, rhs);
+        		return assignmentToField(lhsName,stmt, rhs, nlhs, nrhs);
         	}
     		break;
         }
@@ -592,8 +595,8 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
-    protected void assignmentToField(String lhsName, abstractValue rhs){
-
+    protected Object assignmentToField(String lhsName, StmtAssign stmt, abstractValue rhs, Expression nlhs, Expression nrhs){
+    	return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
     }
 
 
