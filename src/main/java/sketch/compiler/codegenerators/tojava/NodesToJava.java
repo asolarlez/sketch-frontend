@@ -19,8 +19,79 @@ package streamit.frontend.tojava;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.nodes.ExprArrayRange.*;
+import streamit.frontend.nodes.ExprArrayInit;
+import streamit.frontend.nodes.ExprArrayRange;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprComplex;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstChar;
+import streamit.frontend.nodes.ExprConstFloat;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstStr;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprLiteral;
+import streamit.frontend.nodes.ExprNew;
+import streamit.frontend.nodes.ExprNullPtr;
+import streamit.frontend.nodes.ExprPeek;
+import streamit.frontend.nodes.ExprPop;
+import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprTypeCast;
+import streamit.frontend.nodes.ExprUnary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FieldDecl;
+import streamit.frontend.nodes.FuncWork;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.GetExprType;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.SCAnon;
+import streamit.frontend.nodes.SCSimple;
+import streamit.frontend.nodes.SJDuplicate;
+import streamit.frontend.nodes.SJRoundRobin;
+import streamit.frontend.nodes.SJWeightedRR;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtBody;
+import streamit.frontend.nodes.StmtBreak;
+import streamit.frontend.nodes.StmtContinue;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtEmpty;
+import streamit.frontend.nodes.StmtEnqueue;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtJoin;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtPhase;
+import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtSendMessage;
+import streamit.frontend.nodes.StmtSplit;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
+import streamit.frontend.nodes.StreamCreator;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePortal;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.passes.SymbolTableVisitor;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link
@@ -31,7 +102,7 @@ import streamit.frontend.nodes.ExprArrayRange.*;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class NodesToJava implements FEVisitor
+public class NodesToJava extends SymbolTableVisitor
 {
     protected StreamSpec ss;
     /**
@@ -64,6 +135,7 @@ public class NodesToJava implements FEVisitor
 
     public NodesToJava(boolean libraryFormat, TempVarGen varGen, boolean printSourceLines)
     {
+    	super(null);
         this.ss = null;
         this.indent = "";
         this.libraryFormat = libraryFormat;
@@ -251,6 +323,10 @@ public class NodesToJava implements FEVisitor
         for (Iterator iter = params.iterator(); iter.hasNext(); )
         {
             Parameter param = (Parameter)iter.next();
+            symtab.registerVar(param.getName(),
+                    actualType(param.getType()),
+                    param,
+                    SymbolTable.KIND_FUNC_PARAM);
             if (!first) result += ", ";
             if (prefix != null) result += prefix + " ";
             result += convertType(param.getType());
@@ -515,6 +591,10 @@ public class NodesToJava implements FEVisitor
         String result = indent + convertType(field.getType(0)) + " ";
         for (int i = 0; i < field.getNumFields(); i++)
         {
+        	symtab.registerVar(field.getName(i),
+                    actualType(field.getType(i)),
+                    field,
+                    SymbolTable.KIND_FIELD);
             if (i > 0) result += ", ";
             result += field.getName(i);
             if (field.getInit(i) != null)
@@ -529,6 +609,9 @@ public class NodesToJava implements FEVisitor
 
     public Object visitFunction(Function func)
     {
+    	SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        
         String result = indent + "public ";
         if (!func.getName().equals(ss.getName()))
             result += convertType(func.getReturnType()) + " ";
@@ -537,7 +620,8 @@ public class NodesToJava implements FEVisitor
         if (func.getCls() == Function.FUNC_INIT) prefix = "final";
         result += doParams(func.getParams(), prefix) + " ";
         result += (String)func.getBody().accept(this);
-        result += "\n";
+        result += "\n";        
+        symtab = oldSymTab;
         return result;
     }
 
@@ -547,26 +631,35 @@ public class NodesToJava implements FEVisitor
         return visitFunction(func);
     }
 
+    
+    public String outputStructure(TypeStruct struct){
+    	String result = "";
+    	result += indent + "class " + struct.getName() +
+        " extends Structure {\n";
+    	addIndent();
+    	for (int i = 0; i < struct.getNumFields(); i++)
+    	{
+    		String name = struct.getField(i);
+    		Type type = struct.getType(name);
+    		result += indent + convertType(type) + " " + name + ";\n";
+    	}
+    	unIndent();
+    	result += indent + "}\n";
+    	return result;
+    }
+    
+    
     public Object visitProgram(Program prog)
     {
         // Nothing special here either.  Just accumulate all of the
         // structures and streams.
         String result = "";
-//        for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-//        {
-//            TypeStruct struct = (TypeStruct)iter.next();
-//            result += indent + "class " + struct.getName() +
-//                " extends Structure {\n";
-//            addIndent();
-//            for (int i = 0; i < struct.getNumFields(); i++)
-//            {
-//                String name = struct.getField(i);
-//                Type type = struct.getType(name);
-//                result += indent + convertType(type) + " " + name + ";\n";
-//            }
-//            unIndent();
-//            result += indent + "}\n";
-//        }
+        for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
+        {
+            TypeStruct struct = (TypeStruct)iter.next();
+            result += outputStructure(struct);
+            structsByName.put(struct.getName(), struct);
+        }
         for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
             result += (String)((StreamSpec)iter.next()).accept(this);
         return result;
@@ -694,6 +787,10 @@ public class NodesToJava implements FEVisitor
 
     public Object visitStmtBlock(StmtBlock stmt)
     {
+    	
+    	SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+    	
         // Put context label at the start of the block, too.
         String result = "{";
         if (printSourceLines && stmt.getContext() != null)
@@ -717,6 +814,7 @@ public class NodesToJava implements FEVisitor
         }
         unIndent();
         result += indent + "}";
+        symtab = oldSymTab;
         return result;
     }
 
@@ -903,6 +1001,8 @@ public class NodesToJava implements FEVisitor
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
+    	
+    	
         String result = "";
         // Hack: if the first variable name begins with "_final_", the
         // variable declaration should be final.
@@ -911,6 +1011,10 @@ public class NodesToJava implements FEVisitor
         result += convertType(stmt.getType(0)) + " ";
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
+        	symtab.registerVar(stmt.getName(i),
+                    actualType(stmt.getType(i)),
+                    stmt,
+                    SymbolTable.KIND_LOCAL);
             if (i > 0)
                 result += ", ";
             result += stmt.getName(i);
@@ -1083,6 +1187,27 @@ public class NodesToJava implements FEVisitor
 
     public Object visitStreamSpec(StreamSpec spec)
     {
+    	
+    	
+    	
+    	StreamType oldStreamType = streamType;
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        streamType = spec.getStreamType();
+	// register parameters
+        for (Iterator iter = spec.getParams().iterator(); iter.hasNext(); )
+        {
+            Parameter param = (Parameter)iter.next();
+            symtab.registerVar(param.getName(),
+                               actualType(param.getType()),
+                               param,
+                               SymbolTable.KIND_STREAM_PARAM);
+        }
+    	
+    	
+    	
+    	
+    	
         String result = "";
         // Anonymous classes look different from non-anonymous ones.
         // This appears in two places: (a) as a top-level (named)
@@ -1195,8 +1320,11 @@ public class NodesToJava implements FEVisitor
         }
 
         // Output method definitions:
-        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
-            result += (String)(((Function)iter.next()).accept(this));
+        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
+        	Function func = (Function)iter.next();
+		    symtab.registerFn(func);		    
+            result += (String)((func).accept(this));
+        }
 
         ss = oldSS;
         unIndent();
