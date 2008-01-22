@@ -69,10 +69,11 @@ public class EliminateDeadCode extends BackwardDataflow {
     }
 	
 	@Override
-	protected void assignmentToField(String lhsName, abstractValue rhs){
+	protected Object assignmentToField(String lhsName, StmtAssign stmt, abstractValue rhs, Expression nlhs, Expression nrhs){
 		abstractValue lhsv = state.varValue(lhsName);		
 		lhsv = vtype.plus(rhs, lhsv);
 		state.setVarValue(lhsName, lhsv);
+    	return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
     }
 	
 	public Object visitExprField(ExprField exp) {

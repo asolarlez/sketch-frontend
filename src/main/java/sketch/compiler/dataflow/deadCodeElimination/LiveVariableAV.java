@@ -8,6 +8,7 @@ import streamit.frontend.experimental.abstractValue;
 public class LiveVariableAV extends abstractValue {
 	static final int DEAD=0;
 	static final int LIVE=1;
+	static final int HBLDEAD=2;
 	final String name;
 	private int liveness;
 	private boolean beenLive = false;
@@ -92,8 +93,13 @@ public class LiveVariableAV extends abstractValue {
 	 * @param liveness the liveness to set
 	 */
 	private void setLiveness(int liveness) {
-		if(liveness == LIVE){ beenLive = true; }
+		if(liveness == LIVE || liveness == HBLDEAD){ beenLive = true; }
 		this.liveness = liveness;
+		if(liveness == LIVE){
+			this.liveness =LIVE;
+		}else{
+			this.liveness = DEAD;			
+		}		
 	}
 
 

@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
+import streamit.frontend.experimental.abstractValue;
+import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
 
@@ -39,5 +43,15 @@ public class EliminateTransitiveAssignments extends DataflowWithFixpoint {
 		}
 		return 	oval;
 	}
+	
+	/*
+    protected Object assignmentToField(String lhsName, StmtAssign stmt, abstractValue rhs, Expression nlhs, Expression nrhs){
+    	ExprField ef = (ExprField) nlhs; 
+    	while(ef.getLeft() instanceof ExprField){
+    		
+    	}
+    	return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
+    }
+    */
 	
 }

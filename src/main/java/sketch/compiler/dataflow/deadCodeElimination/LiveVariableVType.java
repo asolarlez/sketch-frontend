@@ -189,9 +189,13 @@ public class LiveVariableVType extends abstractValueType {
 		}
 		
 		assert vtrue instanceof LiveVariableAV && vfalse instanceof LiveVariableAV ;
-		
-		if( ((LiveVariableAV)vtrue).getLiveness() == LiveVariableAV.DEAD && 
-			 ((LiveVariableAV)vfalse).getLiveness() == LiveVariableAV.DEAD){
+		LiveVariableAV vt = ((LiveVariableAV)vtrue);
+		LiveVariableAV vf = ((LiveVariableAV)vfalse);
+		if( vt.getLiveness() == LiveVariableAV.DEAD && 
+			 vf.getLiveness() == LiveVariableAV.DEAD){
+			if(vt.hasBeenLive() || vf.hasBeenLive()){
+				return new joinAV(LiveVariableAV.HBLDEAD);	
+			}
 			return new joinAV(LiveVariableAV.DEAD);
 		}else{
 			return new joinAV(LiveVariableAV.LIVE);
