@@ -1,0 +1,12 @@
+int spec(int i){
+	return i;
+}
+
+int sketch(int i) implements spec{
+	int nv = i;
+	if(i > 2){
+		nv = i + 1;
+		assert nv > i;	
+	}
+	return i;	
+}

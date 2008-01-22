@@ -1,0 +1,22 @@
+struct FA{
+	bit x;		
+}
+
+
+bit spec(bit i){
+	return i;	
+}
+
+
+bit sk(bit i) implements spec{
+	FA r = new FA();
+	FA t ;
+	FA y ;
+	FA u ;
+		
+	t = r;
+	y = t;
+	y.x = i;
+	u = y;
+	return u.x;	
+}

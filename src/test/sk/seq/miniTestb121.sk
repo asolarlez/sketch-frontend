@@ -1,0 +1,30 @@
+
+
+int foo(int a, int b){
+	return a + b + a + b;		
+}
+
+
+static int op(int a, int b){
+	if(??){
+		return a + b;	
+	}
+	if(??){
+		return a * 2;	
+	}
+	if(??){
+		return a;	
+	}
+    return a;
+}
+
+
+int moo(int a, int b) implements foo{
+	int rv = 0;
+	
+	rv = op(a, b);
+	rv = op(rv, a);
+	rv = op(rv, b);
+	
+	return rv;	
+}

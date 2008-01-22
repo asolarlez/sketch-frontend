@@ -1,0 +1,26 @@
+/* returns 0 for deny, 1 for accept */
+int router(int dest_port)
+{
+   /* each rule is of the form:
+    * if (blah) return (0|1);
+    * we use default deny.
+    */
+
+   /* deny 192.168.*.* */
+   if (dest_port == 22) return 1;
+
+   /* default deny */
+   return 0;
+
+
+}
+
+int SKrouter (int dest_port) implements router
+{
+   int port1 = ??;
+
+   if (dest_port == port1) return 1;
+
+   return 0;
+
+}
