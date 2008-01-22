@@ -5,16 +5,33 @@ import java.util.*;
 import streamit.frontend.nodes.*;
 import streamit.frontend.tojava.NodesToJava;
 
-public class NodesToH extends NodesToJava {
+public class NodesToH extends NodesToC {
 
 	private NodesToC _converter;
 	private String filename; 
 	
 	public NodesToH(String filename) {
-		super(false,null);
+		super(null,filename);
 		_converter=new NodesToC(null,filename);
 		this.filename=filename;
+		this.addIncludes = false;
 	}
+	
+	public String outputStructure(TypeStruct struct){
+    	String result = "";
+    	result += indent + "class " + struct.getName() + "{\n  public:";
+    	addIndent();
+    	for (int i = 0; i < struct.getNumFields(); i++)
+    	{
+    		String name = struct.getField(i);
+    		Type type = struct.getType(name);
+    		result += indent + convertType(type) + " " + name + ";\n";
+    	}
+    	unIndent();
+    	result += indent + "};\n";
+    	return result;
+    }
+	
 	
 	@Override
 	public Object visitProgram(Program prog)
@@ -25,6 +42,13 @@ public class NodesToH extends NodesToJava {
 		ret+="#define "+defname+"\n\n";
 		ret+="#include \"bitvec.h\"\n";
 		ret+="#include \"fixedarr.h\"\n";
+		
+		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
+        {
+            TypeStruct struct = (TypeStruct)iter.next();
+            ret += "class " + struct.getName() + "; \n";            
+        }
+		
 		ret+=super.visitProgram(prog);
 		ret+="\n#endif\n";
 		return ret;
