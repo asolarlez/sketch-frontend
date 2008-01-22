@@ -99,6 +99,7 @@ public class AssembleInitializers extends FEReplacer
                 // check that the LHS of the next statement is
                 // a simple variable
                 Expression lhs = ((StmtAssign)nst).getLHS();
+                Expression rhs = ((StmtAssign)nst).getRHS();
                 if (!(lhs instanceof ExprVar)){                	
                 	StmtVarDecl decl = (StmtVarDecl)stmt;
                 	if(decl.getInit(0) == null){
@@ -140,7 +141,7 @@ public class AssembleInitializers extends FEReplacer
                 {
                     Expression init = decl.getInit(i);
                     if (decl.getName(i).equals(varName) &&
-                        init == null)
+                        !lhs.toString().equals(rhs.toString()))
                     {
                         init = ((StmtAssign)nst).getRHS();
                         found = true;
