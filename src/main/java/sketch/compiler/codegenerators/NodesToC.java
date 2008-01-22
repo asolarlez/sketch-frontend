@@ -10,6 +10,7 @@ public class NodesToC extends NodesToJava {
 
 	private String filename; 	
 	private boolean isBool = true;
+	protected boolean addIncludes = true;
 	
 	public NodesToC(TempVarGen varGen, String filename) {
 		super(false, varGen);
@@ -210,28 +211,50 @@ public class NodesToC extends NodesToJava {
 	{
 		String ret=(String)super.visitProgram(prog);
 		StringBuffer preamble=new StringBuffer();
+		if(addIncludes){
 		preamble.append("#include <cstdio>\n");
 		preamble.append("#include <assert.h>\n");
 		preamble.append("#include \"");
 		preamble.append(filename);
 		preamble.append(".h\"\n");
+		}
 		preamble.append(ret);
 		return preamble.toString();
 	}
 
+	public String outputStructure(TypeStruct struct){
+    	return "";
+    }
+	
+	
+	
 	public Object visitStreamSpec(StreamSpec spec){
+		
+		StreamType oldStreamType = streamType;
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        streamType = spec.getStreamType();
+		
 		String result = "";
 		ss = spec;
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
-            Function oldFunc = (Function)iter.next();            
+            Function oldFunc = (Function)iter.next();  
+            symtab.registerFn(oldFunc);
             result += (String)oldFunc.accept(this);            
         }
+        
+        symtab = oldSymTab;
+        streamType = oldStreamType;
         return result;
 	}
 	
 	public Object visitFunction(Function func)
     {
+		SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+		
+		
         String result = indent ;
         if (!func.getName().equals(ss.getName()))
             result += convertType(func.getReturnType()) + " ";
@@ -240,6 +263,9 @@ public class NodesToC extends NodesToJava {
         result += doParams(func.getParams(), prefix) + " ";
         result += (String)func.getBody().accept(this);
         result += "\n";
+        
+        symtab = oldSymTab;
+        
         return result;
     }
 	
@@ -254,6 +280,12 @@ public class NodesToC extends NodesToJava {
             Parameter param = (Parameter)iter.next();
             Type type = param.getType();
             
+            if(symtab != null){
+	            symtab.registerVar(param.getName(),
+	                    actualType(param.getType()),
+	                    param,
+	                    SymbolTable.KIND_FUNC_PARAM);
+            }
             
             if (!first) result += ", ";
             if (prefix != null) result += prefix + " ";
@@ -303,6 +335,10 @@ public class NodesToC extends NodesToJava {
         String result = "";        
         for (int i = 0; i < stmt.getNumVars(); i++)
         {            
+        	symtab.registerVar(stmt.getName(i),
+                    actualType(stmt.getType(i)),
+                    stmt,
+                    SymbolTable.KIND_LOCAL);
             Type type = stmt.getType(i);
             if(type instanceof TypeArray){
 	            if( ((TypeArray)type).getBase().equals( TypePrimitive.inttype )){
@@ -387,7 +423,10 @@ public class NodesToC extends NodesToJava {
 		{
 			RangeLen range=(RangeLen) o;
 			if(isLHS) {
-				return base.accept(this)+"["+range.start().accept(this)+"]"; 
+				isLHS = false;
+				String tmp = (String) range.start().accept(this);
+				isLHS = true;
+				return base.accept(this)+"["+tmp+"]"; 
 			}else{
 				return base.accept(this)+ ".sub<" + range.len() + ">("+range.start().accept(this) + ")";	
 			}
@@ -395,6 +434,14 @@ public class NodesToC extends NodesToJava {
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
 	}
 	
+	public Object visitExprField(ExprField exp)
+    {
+        String result = "";
+        result += (String)exp.getLeft().accept(this);
+        result += "->";
+        result += (String)exp.getName();
+        return result;
+    }
 	
 	public Object visitExprTypeCast(ExprTypeCast exp)
     {
@@ -418,7 +465,7 @@ public class NodesToC extends NodesToJava {
 	{
 		assert type instanceof TypePrimitive || type instanceof TypeStructRef;
 		if(type instanceof TypeStructRef){
-			return type.toString();
+			return type.toString() + "*";
 		}
 		
 		if(type instanceof TypePrimitive) {
@@ -434,5 +481,12 @@ public class NodesToC extends NodesToJava {
 		}		
 		return super.convertType(type);
 	}
-
+	public Object visitExprNullPtr(ExprNullPtr nptr){ return "NULL"; }
+	public Object visitExprConstBoolean(ExprConstBoolean exp)
+    {
+        if (exp.getVal())
+            return "1U";
+        else
+            return "0U";
+    }
 }
