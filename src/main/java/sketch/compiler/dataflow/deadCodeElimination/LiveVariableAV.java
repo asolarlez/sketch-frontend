@@ -65,9 +65,16 @@ public class LiveVariableAV extends abstractValue {
 		return false;
 	}
 
+	
+	@Override
+	public void makeVolatile(){
+		super.makeVolatile();
+		setLiveness(LIVE);
+	}
+	
 	@Override
 	public void update(abstractValue v) {
-		setLiveness(DEAD);
+		if(!isVolatile){ setLiveness(DEAD); }
 		if( v instanceof LiveVariableAV){
 			LiveVariableAV lv = (LiveVariableAV) v;	
 			if(lv.mstate != null  ){
