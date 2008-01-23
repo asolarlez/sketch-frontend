@@ -45,6 +45,7 @@ public class NtsbValue extends IntAbsValue {
 		this.obj = n.obj;
 		this.type = n.type;
 		this.name = n.name;
+		this.isVolatile = n.isVolatile;
 	}
 	
 	public NtsbValue(String label){
@@ -106,6 +107,7 @@ public class NtsbValue extends IntAbsValue {
 		return "NULL";
 	}
 	public void update(abstractValue v){
+		assert !isVolatile : "NtsbValue does not support volatility."; 
 		assert lhsIdx != null;
 		isAXPB=false;
 		X = null;
