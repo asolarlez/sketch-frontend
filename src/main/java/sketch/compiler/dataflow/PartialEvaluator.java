@@ -686,9 +686,25 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
-    public Object visitStmtPloop(StmtPloop loop){
-    	report( false , "Ploop not yet supported by the partial evaluator.");
-    	return null;
+    public Object visitStmtPloop(StmtPloop loop){    	
+    	state.pushParallelSection();
+    	Statement nbody = null;
+        StmtVarDecl ndecl = null;
+        Expression niter = null;
+    	try{
+	    	state.pushLevel();
+			abstractValue viter = (abstractValue) loop.getIter().accept(this);
+	        niter = exprRV;	        
+	        try{ 
+	        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
+		        nbody = (Statement)loop.getBody().accept(this);
+	        }finally{
+	    		state.popLevel();	        	
+	    	}
+    	}finally{
+    		state.popParallelSection();
+    	}
+        return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
     }
 
     public Object visitStmtFor(StmtFor stmt)

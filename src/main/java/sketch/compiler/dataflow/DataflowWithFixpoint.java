@@ -58,25 +58,6 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	}
 	
 	
-	public Object visitStmtPloop(StmtPloop loop){
-		/// When preprocessing ploops, we must assume that any variable touched by 
-		/// the ploop will be potentially modified. So any variable that could be touched
-		/// by the ploop body will be wiped out by the procChangeTrackersConservative.
-		state.pushLevel();
-		abstractValue viter = (abstractValue) loop.getIter().accept(this);
-        Expression niter = exprRV;
-        Statement nbody = null;
-        StmtVarDecl ndecl = null; 
-        try{ 
-        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
-        	processBlockWithCrazyEffects(loop.getBody());
-	        nbody = (Statement)loop.getBody().accept(this);
-        }finally{
-    		state.popLevel();	        	
-    	}
-        return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
-	}
-	
 	public Object visitStmtFor(StmtFor stmt)
     {
     	state.pushLevel();

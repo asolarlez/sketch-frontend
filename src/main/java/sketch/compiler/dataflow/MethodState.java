@@ -56,7 +56,8 @@ public class MethodState {
 			return tmp;
 		}
 		*/
-		public void setVarValue(String var, abstractValue val){
+		
+		public varState addToDeltas(String var){
 			varState current = null;
 			if( !deltas.containsKey(var) ){
 				current = UTvarState(var);
@@ -65,18 +66,16 @@ public class MethodState {
 			}else{
 				current = deltas.get(var);
 			}
+			return current;
+		}
+		
+		public void setVarValue(String var, abstractValue val){
+			varState current = addToDeltas(var);			
 			current.update(val, vtype);
 		}
 		
 		public void setVarValue(String var, abstractValue idx, abstractValue val){
-			varState current = null;
-			if( !deltas.containsKey(var) ){
-				current =  UTvarState(var);
-				current = current.getDeltaClone(vtype);
-				deltas.put(var, current );				
-			}else{
-				current = deltas.get(var);
-			}
+			varState current = addToDeltas(var);
 			current.update(idx, val, vtype);
 		}
 		
@@ -217,6 +216,9 @@ public class MethodState {
 	
 	
 	
+	
+	
+	
 	public void procChangeTrackers (ChangeTracker ch1){
 		Iterator<Entry<String, varState>> it2 = ch1.deltas.entrySet().iterator();
 		while(it2.hasNext()){
@@ -234,6 +236,7 @@ public class MethodState {
 			}
 		}
 	}
+	
 	public void procChangeTrackers (ChangeTracker ch1, ChangeTracker ch2){
 		Iterator<Entry<String, varState>> it = ch1.deltas.entrySet().iterator();
 		while(it.hasNext()){
@@ -364,6 +367,35 @@ public class MethodState {
 	
 	
 	
+	public void pushParallelSection(){
+		pushChangeTracker(null, false);
+		for(Iterator<String> it = vars.keySet().iterator(); it.hasNext(); ){
+			varState vs = changeTracker.addToDeltas(it.next());
+			vs.makeVolatile();
+		}
+	}
+	
+	public void popParallelSection(){
+		ChangeTracker ch1 = popChangeTracker();
+		{
+			Iterator<Entry<String, varState>> it2 = ch1.deltas.entrySet().iterator();
+			while(it2.hasNext()){
+				Entry<String, varState> me =  it2.next();
+				varState merged = me.getValue();				
+				if( merged.isArr() ){
+					for(Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext(); ){
+						Entry<Integer, abstractValue> tmp  = ttt.next();
+						this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),  tmp.getValue() );
+					}
+				}else{
+					this.UTsetVarValue(me.getKey(),   merged.state(vtype) );					
+				}
+			}
+		}
+		
+	}
+	
+	
 	public void pushChangeTracker (abstractValue cond, boolean isNegated){	
 		/* Add new change tracker layer, including nesting conditional
 		 * expression and value. */
@@ -382,7 +414,8 @@ public class MethodState {
 		varState	tv = vtype.cleanState(newname, t, this);
 		vars.put(newname, tv);
 	}
-
+	
+	
 	public abstractValue varValue(String var){
 		assert var != null : "NOO!!";
 		var = this.transName(var);
