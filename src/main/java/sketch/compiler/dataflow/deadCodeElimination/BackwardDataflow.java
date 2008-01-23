@@ -136,24 +136,29 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	
     
     public Object visitStmtPloop(StmtPloop loop){
-		/// When preprocessing ploops, we must assume that any variable touched by 
-		/// the ploop will be potentially modified. So any variable that could be touched
-		/// by the ploop body will be wiped out by the procChangeTrackersConservative.
-		state.pushLevel();
-		
-		varDecl(loop.getLoopVarDecl());
-		
-		
-		abstractValue viter = (abstractValue) loop.getIter().accept(this);
-        Expression niter = exprRV;
-        Statement nbody = null;
-        StmtVarDecl ndecl = null; 
-        try{ 
-        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
-        	processBlockWithCrazyEffects(loop.getBody());
-	        nbody = (Statement)loop.getBody().accept(this);
-        }finally{
-    		state.popLevel();	        	
+    	
+    	state.pushParallelSection();
+    	Statement nbody = null;
+        StmtVarDecl ndecl = null;
+        Expression niter = null;
+    	try{
+	    	state.pushLevel();	    	
+	    	varDecl(loop.getLoopVarDecl());
+	    					        
+	        try{ 
+	        	nbody = (Statement)loop.getBody().accept(this);
+	        	abstractValue viter = (abstractValue) loop.getIter().accept(this);
+	        	niter = exprRV;
+	        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);		
+	        	if(ndecl == null){
+	        		ndecl = loop.getLoopVarDecl();
+	        	}
+	        }finally{
+	    		state.popLevel();	        	
+	    	}
+	        
+    	}finally{
+    		state.popParallelSection();
     	}
         return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
 	}
