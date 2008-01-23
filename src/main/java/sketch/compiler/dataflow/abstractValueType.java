@@ -19,6 +19,7 @@ public abstract class abstractValueType{
 	abstract public abstractValue BOTTOM(Type t);	
 	/**
 	 * Called by varDeclare. Used to create the state that goes on the left hand side.
+	 * Usually ends up calling newLHSState();
 	 * @param var the name of the variable we are declaring.
 	 * @param t the type.
 	 * @param mstate TODO
