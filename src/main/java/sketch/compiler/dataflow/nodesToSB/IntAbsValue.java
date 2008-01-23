@@ -15,6 +15,8 @@ public class IntAbsValue extends abstractValue {
 
 	
 	
+	
+	
 	public boolean equals(Object obj){
 		if( !(obj instanceof IntAbsValue) ) return false;
 		IntAbsValue v2 = (IntAbsValue) obj;
@@ -47,6 +49,7 @@ public class IntAbsValue extends abstractValue {
 	public IntAbsValue(IntAbsValue n){
 		this.obj = n.obj;
 		this.type = n.type;
+		this.isVolatile = n.isVolatile;
 	}
 	
 	public IntAbsValue(String label){
@@ -102,7 +105,15 @@ public class IntAbsValue extends abstractValue {
 		return type == INT;
 	}
 
+	@Override
+	public void makeVolatile(){
+		super.makeVolatile();
+		this.obj = null;
+		this.type = BOTTOM;
+	}
+	
 	public void update(abstractValue v){
+		if(isVolatile){ return; }// If the variable is volatile, the update has no effect.
 		assert v instanceof IntAbsValue;
 		IntAbsValue ntsv = ((IntAbsValue)v);
 		assert ntsv.type == type  || ntsv.type == BOTTOM || type == BOTTOM : "Updating with incompatible values " +  v + " <> " + this;
