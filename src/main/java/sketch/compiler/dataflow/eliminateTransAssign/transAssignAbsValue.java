@@ -73,8 +73,28 @@ public class transAssignAbsValue extends abstractValue {
 		return false;
 	}
 
+
+	@Override
+	public void makeVolatile(){
+		/**
+		 * This method assumes that it will be called on all live variables.
+		 * Otherwise, the data-structure will become inconsistent.
+		 */
+		super.makeVolatile();
+		varIamEqualTo = null;
+		varsEqToMe.clear();
+	}
+	
+	
+	
 	@Override
 	public void update(abstractValue v) {
+		if(isVolatile){ assert varIamEqualTo == null && varsEqToMe.isEmpty(); }
+		if(!isVolatile && v.isVolatile()){ 
+			varIamEqualTo = null;
+			varsEqToMe.clear();
+			return;
+		}
 		final int ADD = taUpdater.ADD;
 		final int REMOVE = taUpdater.REMOVE;
 		final int CLEAR = taUpdater.CLEAR;
@@ -126,8 +146,10 @@ public class transAssignAbsValue extends abstractValue {
 				if(varIamEqualTo != null ){
 					ms.setVarValue(ms.untransName(varIamEqualTo), new  taUpdater(REMOVE, me)  );
 				}
-				varIamEqualTo = ta.me;
-				ms.setVarValue(ms.untransName( ta.me ), new  taUpdater(ADD, me) );			
+				if(!isVolatile && !ta.isVolatile){
+					varIamEqualTo = ta.me;
+					ms.setVarValue(ms.untransName( ta.me ), new  taUpdater(ADD, me) );
+				}
 			}
 			if(v instanceof TAsupperBottom  ){
 				if(varIamEqualTo != null ){
