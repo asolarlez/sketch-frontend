@@ -3,6 +3,8 @@ package streamit.frontend;
 import java.util.List;
 
 import streamit.frontend.CommandLineParamManager.POpts;
+import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
@@ -46,6 +48,10 @@ public class ToPSbit extends ToSBit {
 		dump(finalCode, "after postproc");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		dump(finalCode, "after flattening");
+		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
+		//System.out.println("=========  After ElimTransAssign  =========");
+		//dump(finalCode, "Before DCE");
+		finalCode = (Program)finalCode.accept(new EliminateDeadCode());
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 
@@ -116,6 +122,7 @@ public class ToPSbit extends ToSBit {
 			throw new IllegalStateException("Semantic check failed");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
+		dump (prog, "After preprocessing:");
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
