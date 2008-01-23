@@ -277,7 +277,8 @@ public class ProduceParallelModel extends FEReplacer {
 	 * 
 	 * 
 	 */
-	public Function constructRestFunction(CFG parcfg, Statement postpar, Statement prepar, StmtPloop ploop,Set<StmtVarDecl> globals, Set<StmtVarDecl> locals, Function fun){
+	public Function constructRestFunction(CFG parcfg, Statement postpar, Statement prepar, StmtPloop ploop,
+										   Set<StmtVarDecl> globals, Set<StmtVarDecl> locals, Function fun){
 		
 		String funName = fun.getName() + FUN_NAME_BASE; 
 		
@@ -297,6 +298,8 @@ public class ProduceParallelModel extends FEReplacer {
 				globals.add( new StmtVarDecl(null, p.getType(), p.getName(), null) );
 			}
 		}
+		
+		bodyL.add(new StmtAssign(null, new ExprVar(null, outputParam.getName()), ExprConstInt.zero));
 		
 		globals.add( new StmtVarDecl(null, new TypeArray(TypePrimitive.inttype, LockLen), this.locksName, null) );
 		
@@ -419,7 +422,9 @@ public class ProduceParallelModel extends FEReplacer {
 	 * @param oldPar
 	 */
 	
-	public Function buildMainFunction(Set<StmtVarDecl> oriGlobals, Set<StmtVarDecl> locals, StmtVarDecl loopIdx, Expression nthreads, Statement prepar, String funName, String oriName, List<Parameter> parList, List<Parameter> oldPar, Type sType, String pcname, String specName){
+	public Function buildMainFunction(Set<StmtVarDecl> oriGlobals, Set<StmtVarDecl> locals, StmtVarDecl loopIdx, 
+										Expression nthreads, Statement prepar, String funName, String oriName, 
+										List<Parameter> parList, List<Parameter> oldPar, Type sType, String pcname, String specName){
 		List<Statement> bodyL = new ArrayList<Statement>();
 		for(Iterator<StmtVarDecl> it = oriGlobals.iterator(); it.hasNext(); ){
 			StmtVarDecl svd = it.next();
@@ -481,9 +486,7 @@ public class ProduceParallelModel extends FEReplacer {
 		}
 		formals.add(new Parameter(new TypeArray(sType, SchedLen),SCHEDULE));
 		formals.add(outPar);
-		
-		
-		
+		bodyL.add(0, new StmtAssign(null, new ExprVar(null, outPar.getName()), ExprConstInt.zero));				
 		return Function.newHelper(null, oriName, TypePrimitive.voidtype, formals, specName, new StmtBlock(null, bodyL));
 	}
 	
