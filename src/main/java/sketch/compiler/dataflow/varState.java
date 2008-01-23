@@ -165,6 +165,18 @@ abstract public class varState {
 		}
 	}
 	
+	
+	public void makeVolatile(){
+		if(arrElems == null){
+			absVal.makeVolatile();
+		}else{
+			for(Iterator<Entry<Integer, abstractValue>> it = arrElems.entrySet().iterator(); it.hasNext(); ){
+				it.next().getValue().makeVolatile();
+			}						
+		}		
+	}
+	
+	
 	public void update(abstractValue idx, abstractValue val, abstractValueType vtype){
 		//assert arrElems != null;
 		if(arrElems == null){
