@@ -54,6 +54,8 @@ public class SymbolTable
     private SymbolTable parent;
     private List includedFns;
 
+    private boolean makeShared = false;
+    
     private static class VarInfo
     {
         public VarInfo(Type type, Object origin, int kind)
@@ -76,6 +78,19 @@ public class SymbolTable
         this.parent = parent;
         this.includedFns = null;
     }
+    
+   
+    /** Creates a new symbol table with the specified parent (possibly
+     * null). */
+    public SymbolTable(SymbolTable parent, boolean makeShared)
+    {
+        vars = new HashMap();
+        fns = new HashMap();
+        this.parent = parent;
+        this.includedFns = null;
+        this.makeShared = makeShared;
+    }
+    
     
     /**
      * This function will upgrade the type of a variable to a new 
@@ -159,6 +174,24 @@ public class SymbolTable
         throw new UnrecognizedVariableException(name);
     }
 
+    
+    public boolean isVarShared(String name){
+    	
+    	return isVarShared(name, false);
+    	
+    	
+    }
+    
+    public boolean isVarShared(String name, boolean isShared){    	
+    	   VarInfo info = (VarInfo)vars.get(name);
+           if (info != null)
+               return isShared;
+           if (parent != null)
+               return parent.isVarShared(name, makeShared || isShared);
+           throw new UnrecognizedVariableException(name);
+    }
+    
+    
     /**
      * Looks up the type for a variable expression.  If the named
      * symbol is not in the current symbol table, search in the
