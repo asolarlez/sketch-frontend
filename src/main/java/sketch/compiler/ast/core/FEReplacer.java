@@ -59,10 +59,6 @@ import streamit.frontend.nodes.ExprArrayRange.*;
 public class FEReplacer implements FEVisitor
 {
 
-	final public Object visitExprArray(ExprArrayInit exp){
-		return null;
-	}
-
     /**
      * Mutable list of statements to be added to the current block.
      * This is only usefully defined within a call to
