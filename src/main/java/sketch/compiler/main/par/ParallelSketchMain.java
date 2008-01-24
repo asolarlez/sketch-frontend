@@ -13,6 +13,7 @@ import java.util.Map;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
@@ -36,6 +37,13 @@ public class ToPSbitII extends ToSBit {
 	public ValueOracle randomOracle(Program p){
 		return null;
 	}
+	
+	public void lowerIRToJava()
+	{
+		super.lowerIRToJava();
+		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));		
+	}
+	
 	
 	public void synthVerifyLoop(){
 		lowerIRToJava();
