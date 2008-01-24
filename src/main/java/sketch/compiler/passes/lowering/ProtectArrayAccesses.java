@@ -28,7 +28,7 @@ import streamit.frontend.nodes.TypePrimitive;
  */
 public class ProtectArrayAccesses extends SymbolTableVisitor {
 
-	TempVarGen vargen;
+	private TempVarGen vargen;
 	public ProtectArrayAccesses(TempVarGen vargen){
 		super(null);
 		this.vargen = vargen;
@@ -64,7 +64,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			Expression sz = ((TypeArray)getType(ear.getBase())).getLength();
 			Expression cond = new ExprBinary(new ExprBinary(ev, ">", ExprConstInt.zero), "&&",
 											 new ExprBinary(ev, "<", sz));
-			Expression near = new ExprArrayRange(ear.getBase(), ev); 					
+			Expression base = (Expression) ear.getBase().accept(this);
+			Expression near = new ExprArrayRange(base, ev); 					
 			return new StmtIfThen(stmt.getCx(), cond, new StmtAssign(stmt.getCx(), near, (Expression)stmt.getRHS().accept(this)), null);
 		}else{
 			return super.visitStmtAssign(stmt);

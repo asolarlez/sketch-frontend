@@ -126,6 +126,21 @@ public class SymbolTableVisitor extends FEReplacer
     }
     
     
+    public boolean isGlobal(Expression exp){    	
+    	class checker extends FEReplacer{
+    		boolean isglobal = false;
+    		public Object visitExprVar(ExprVar ev){
+    			isglobal = isglobal || isGlobal(ev);
+    			return ev;
+    		}    		
+    	};    	
+    	checker c = new checker();
+    	exp.accept(c);
+    	return c.isglobal;    	    	
+    }
+    
+    
+    
     /**
      * Add a variable declaration and register the variable in the
      * symbol table.  This creates a {@link

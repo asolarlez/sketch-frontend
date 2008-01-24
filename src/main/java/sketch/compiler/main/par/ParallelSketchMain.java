@@ -12,7 +12,10 @@ import java.util.Map;
 
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.EliminateMultiDimArrays;
+import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.solvers.Synthesizer;
@@ -41,9 +44,15 @@ public class ToPSbitII extends ToSBit {
 	public void lowerIRToJava()
 	{
 		super.lowerIRToJava();
-		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));		
+		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+		prog = (Program) prog.accept(new NumberStatements());
 	}
 	
+	protected Program preprocessProgram(Program lprog) {
+		lprog = super.preprocessProgram(lprog);
+		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
+		return lprog;
+	}
 	
 	public void synthVerifyLoop(){
 		lowerIRToJava();
