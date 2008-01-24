@@ -5,7 +5,7 @@ import streamit.frontend.tosbit.ValueOracle;
 
 public abstract class Synthesizer {
 	
-	public abstract ValueOracle nextCandidate(Program couterExample);
+	public abstract ValueOracle nextCandidate(CounterExample couterExample);
 	
 	
 

@@ -18,6 +18,7 @@ import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
 import streamit.frontend.tosbit.ValueOracle;
@@ -64,7 +65,7 @@ public class ToPSbitII extends ToSBit {
 		boolean success = false;
 		do{
 			
-			Program cex = verif.verify( ora );
+			CounterExample cex = verif.verify( ora );
 			if(cex == null){
 				success = true;
 				break;
