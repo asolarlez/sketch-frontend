@@ -19,6 +19,7 @@ package streamit.frontend.passes;
 import java.util.Iterator;
 import java.util.Map;
 
+import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FEReplacer;
@@ -30,6 +31,7 @@ import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
@@ -114,7 +116,16 @@ public class SymbolTableVisitor extends FEReplacer
         Type type = (Type)expr.accept(get);
         return actualType(type);
     }
-
+    
+    public boolean isGlobal(ExprVar ev){
+    	return symtab.isVarShared(ev.getName());
+    }
+    
+    public boolean isGlobal(String name){
+    	return symtab.isVarShared(name);
+    }
+    
+    
     /**
      * Add a variable declaration and register the variable in the
      * symbol table.  This creates a {@link
@@ -208,6 +219,17 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
         return result;
     }
+    
+    @Override
+    public Object visitStmtPloop(StmtPloop ploop){
+    	SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab, true);
+        Object result = super.visitStmtPloop(ploop);
+        symtab = oldSymTab;
+        return result;
+    }
+    
+    
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
