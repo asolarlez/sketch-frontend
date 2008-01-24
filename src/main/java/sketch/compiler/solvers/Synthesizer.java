@@ -3,9 +3,9 @@ package streamit.frontend.solvers;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.tosbit.ValueOracle;
 
-public abstract class Synthesizer {
+public interface Synthesizer {
 	
-	public abstract ValueOracle nextCandidate(CounterExample couterExample);
+	public ValueOracle nextCandidate(CounterExample couterExample);
 	
 	
 

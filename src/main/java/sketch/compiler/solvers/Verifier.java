@@ -2,8 +2,8 @@ package streamit.frontend.solvers;
 
 import streamit.frontend.tosbit.ValueOracle;
 
-public abstract class Verifier {
+public interface Verifier {
 
-	public abstract CounterExample verify(ValueOracle oracle);
+	public CounterExample verify(ValueOracle oracle);
 	
 }
