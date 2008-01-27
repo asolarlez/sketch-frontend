@@ -1,0 +1,32 @@
+struct foo{
+	int x;
+	int y;	
+}
+
+
+bit spec(int i){
+	
+	return 1;	
+}
+
+
+void moo(foo x){
+	
+	if(x.y == 3){
+		return;	
+	}
+	
+	x.y = 5;
+}
+
+
+bit sketch(int i) implements spec{
+	
+	foo x = new foo();
+	x.x = i;
+	x.y = ??;
+	moo(x);
+	assert x.y == 3;
+	return 1;	
+}
+
