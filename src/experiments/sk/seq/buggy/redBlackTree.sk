@@ -1,0 +1,195 @@
+int N=5;
+
+struct node{
+
+	int val;
+	node left;
+	node right;
+	node father;
+	bit red;	
+}
+
+struct tree{
+	node root;	
+}
+
+
+node newNode(int v){
+	node n = new node();
+	n.val = v;
+	n.left = null;
+	n.right = null;
+	n.father = null;
+	n.red = 0;
+	return n;
+}
+
+static node insert(node n, node p){ // returns the inserted node.
+	if(p.val < n.val){
+		if(p.right == null){
+			p.right = n;
+			return n;	
+		}else{
+			return insert(n, p.right);	
+		}
+	}else{
+		if(p.val == n.val){
+			// delete n;
+			p.red = 1;		
+			return p;
+		}else{
+			if(p.left == null){
+				p.left = n;
+				return n;
+			}else{
+				return insert(n, p.left);	
+			}
+		}
+	}	
+}
+
+
+
+void recolor( node n1, node n2, node n3){
+	bit[4] c;
+	c[0] = n1.red;
+	c[1] = n2.red;
+	c[2] = n3.red;
+	c[3] = 1;
+	
+	n1.red = ?? ? c[??] : !c[??];
+	n2.red = ?? ? c[??] : !c[??];
+	n3.red = ?? ? c[??] : !c[??]; 	
+}
+
+void rotate(node n1, node n2, node n3, node n4){
+	node[12] ch;
+	ch[0] = n1;
+	ch[1] = n1.right;
+	ch[2] = n1.left;
+	
+	ch[3] = n2;
+	ch[4] = n2.right;
+	ch[5] = n2.left;
+	
+	ch[6] = n3;
+	ch[7] = n3.right;
+	ch[8] = n3.left;
+	
+	ch[9] = n4;
+	ch[10] = n4.right;
+	ch[11] = n4.left;
+	
+	n1.left = ch[??];
+	n1.right = ch[??];
+	
+	n2.left = ch[??];
+	n2.right = ch[??];
+	
+	n3.left = ch[??];
+	n3.right = ch[??];
+	
+	n4.left = ch[??];
+	n4.right = ch[??];
+	
+}
+
+
+
+static void fixNodes(node c, node father, node gp){
+		// case 1:
+		if(father == null){
+			c.red = 0;
+			return;	
+		}else
+		// case 2:
+		if(!father.red){
+			return;
+		}else{
+			assert gp != null;
+			node uncle = gp.left;
+			if(uncle == father){ uncle = gp.right; }
+			assert uncle != father;
+		// case 3:
+		if(father.red && uncle.red){
+			recolor(father, uncle, gp);
+			fixNodes(gp, gp.father, (gp.father == null)? null : gp.father.father);
+		}else{
+			if(father.red && !uncle.red){
+				rotate(c, father, uncle, gp);	
+				node t1 = c;
+				node t2 = father;
+				node t3 = uncle;
+				c = ?? ? t1 : (?? ? t2 : t3);
+				father = ?? ? t1 : (?? ? t2 : t3);
+				uncle = ?? ? t1 : (?? ? t2 : t3);
+			}
+		
+			rotate(c, father, uncle, gp);
+			node t1 = c;
+			node t2 = father;
+			node t3 = uncle;
+			c = ?? ? t1 : (?? ? t2 : t3);
+			fixNodes(gp, gp.father, (gp.father == null)? null : gp.father.father);			
+		}
+
+		}
+}
+
+void setAdd(int v, tree t){
+	node n = newNode(v);
+	if(t.root == null){
+		//case 1:
+		t.root = n;
+	}else{
+		n.red = 1;
+		node c = t.root;
+		n = insert(n, c);
+		node father = n.father;
+		node gp = null;
+		if(father != null){ gp = father.father; }		
+		fixNodes(n, father, gp);
+	}
+}
+
+
+void checkH(node n, int ch, int th){
+	if(n == null){
+		assert ch == th;	
+	}else{
+		if(!n.red){ ++ch; }
+		checkH(n.left, ch, th);
+		checkH(n.right, ch, th);	
+	}	
+}
+
+void check(tree t){
+	node c = t.root;
+	if(c != null){ assert !c.red; }	
+	int h = 0;
+	// first compute the black height.	
+	for(int i=0; i<N; ++i){
+		if(c != null){
+			if(!c.red){ ++h; }
+			else{ assert !c.father.red;  }
+			c = c.left;
+		}
+	}
+	// then make sure it's the same on all paths.
+	checkH(t.root, 0, h);
+}
+
+
+bit testHarness(int[5] in) implements one{
+	tree t = new tree();
+	t.root = null;
+	for(int i=0; i<N; ++i){
+		setAdd(in[i], t);			
+	}
+	check(t);
+	return 1;
+}
+
+bit one(int[5] in){
+	return 1;	
+}
