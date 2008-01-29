@@ -1,0 +1,14 @@
+int spec(int i){	
+	return i;		
+}
+
+void foo(int i, ref int x){
+	x = i;	
+}
+
+int sketch(int i) implements spec{
+	
+	int x = 1;
+	foo(i, x);	
+	return x;
+}
