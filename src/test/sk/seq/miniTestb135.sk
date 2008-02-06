@@ -1,0 +1,22 @@
+struct voo{
+	int x;	
+	voo next;
+	voo prev;
+}
+
+
+int spec(int i){	
+	return i+1;		
+}
+
+static int foo(voo x, int i){	
+	x.x = i;
+	return i;
+}
+
+int sketch(int i) implements spec{
+	int j = i+1;	
+	voo t = new voo();
+	foo(t, j);
+	return t.x;
+}

@@ -1,0 +1,23 @@
+int spec(int i){	
+	return i;		
+}
+
+void foo(ref int a, ref int b, int x1, int x2){
+	int tmp = ?? ? x1 : x2;
+	if(??){
+		a = tmp;
+		return;	
+	}
+	
+	if(??){
+		b = tmp;
+		return;	
+	}
+}
+
+int sketch(int i) implements spec{
+	
+	int x=0, y=0;
+	foo(x, y, i, 5);	
+	return x;
+}

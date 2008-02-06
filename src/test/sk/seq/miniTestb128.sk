@@ -1,0 +1,18 @@
+int spec(int i){	
+	return i;		
+}
+
+void foo(int i, ref int x){
+	if(x > 2){
+		x = i;
+		return;	
+	}
+	x = 0;
+}
+
+int sketch(int i) implements spec{
+	
+	int x = 3;
+	foo(i, x);	
+	return x;
+}
