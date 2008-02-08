@@ -254,11 +254,11 @@ public class SNodesToFortran implements FEVisitor {
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-    	assert stmt.getNumVars()==1:"multiple variable declarations are not allowed "+stmt+" "+stmt.getContext();
+    	assert stmt.getNumVars()==1:"multiple variable declarations are not allowed "+stmt+" "+stmt.getCx();
 
     	Type type = stmt.getType(0);
         String name=stmt.getName(0);
-        assert (stmt.getInit(0)==null):"declaration initializers are not allowed "+stmt+" "+stmt.getContext();
+        assert (stmt.getInit(0)==null):"declaration initializers are not allowed "+stmt+" "+stmt.getCx();
         varTypes.put(name, type);
 
         //don't declare the output variable again (it is an argument to the function)
