@@ -1,6 +1,5 @@
-int moo(int x){
-	/* Uninterpreted function.*/
-}
+int moo(int x); 	/* Uninterpreted function.*/
+
 
 int foo(int x){
 	return moo(x + x + x);		
