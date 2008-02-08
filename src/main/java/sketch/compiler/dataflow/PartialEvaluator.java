@@ -109,7 +109,7 @@ public class PartialEvaluator extends FEReplacer {
 	protected void report(boolean t, String s) {
 		if(!t){
 			System.err.println(s);
-			System.err.println( ss.getContext() );
+			System.err.println( ss.getCx() );
 			throw new RuntimeException(s);
 		}
 	}
@@ -140,7 +140,7 @@ public class PartialEvaluator extends FEReplacer {
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
 		Expression nbase = exprRV;
 		if(isReplacer ){
-			exprRV = new ExprArrayRange(exp.getContext(), nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
+			exprRV = new ExprArrayRange(exp.getCx(), nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
 		}
 
 		try{
@@ -184,7 +184,7 @@ public class PartialEvaluator extends FEReplacer {
 	public Object visitExprField(ExprField exp) {
 		abstractValue useless = (abstractValue)exp.getLeft().accept(this);
 		 Expression left = exprRV;
-		 if(isReplacer) exprRV = new ExprField(exp.getContext(), left, exp.getName());
+		 if(isReplacer) exprRV = new ExprField(exp.getCx(), left, exp.getName());
 	     return vtype.BOTTOM();
 	}
 
@@ -204,7 +204,7 @@ public class PartialEvaluator extends FEReplacer {
 	    		if (cond.hasIntVal ())
 	    			exprRV = (cond.getIntVal () == 0) ? nvfalse : nvtrue;
 	    		else
-	    			exprRV = new ExprTernary(exp.getContext(), exp.getOp(), ncond, nvtrue, nvfalse);
+	    			exprRV = new ExprTernary(exp.getCx(), exp.getOp(), ncond, nvtrue, nvfalse);
 	    	}
 			return vtype.ternary(cond, vtrue, vfalse);
 	    }
@@ -215,7 +215,7 @@ public class PartialEvaluator extends FEReplacer {
 	public Object visitExprTypeCast(ExprTypeCast exp) {
 		abstractValue childExp = (abstractValue) exp.getExpr().accept(this);
 		Expression narg = exprRV;
-		if(isReplacer) exprRV = new ExprTypeCast(exp.getContext(), exp.getType(), exprRV );
+		if(isReplacer) exprRV = new ExprTypeCast(exp.getCx(), exp.getType(), exprRV );
 	    return vtype.cast(childExp, exp.getType());
 	}
 
@@ -240,7 +240,7 @@ public class PartialEvaluator extends FEReplacer {
 
 		abstractValue childExp = (abstractValue) exp.getExpr().accept(this);
 		Expression nexp =   exprRV;
-		if(isReplacer) exprRV = new ExprUnary(exp.getContext(), exp.getOp(), nexp);
+		if(isReplacer) exprRV = new ExprUnary(exp.getCx(), exp.getOp(), nexp);
 		switch(exp.getOp())
 	    {
 	    	case ExprUnary.UNOP_NOT:
@@ -360,7 +360,7 @@ public class PartialEvaluator extends FEReplacer {
         	if(rv.hasIntVal() ){
         		exprRV = new ExprConstInt(rv.getIntVal());
         	}else{
-        		exprRV = new ExprBinary(exp.getContext(), exp.getOp(), nleft, nright);
+        		exprRV = new ExprBinary(exp.getCx(), exp.getOp(), nleft, nright);
         	}
         }
 
@@ -379,7 +379,7 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitExprFunCall(ExprFunCall exp)
     {
     	String name = exp.getName();
-    	Iterator actualParams = exp.getParams().iterator();
+    	Iterator<Expression> actualParams = exp.getParams().iterator();
     	List<abstractValue> avlist = new ArrayList<abstractValue>(exp.getParams().size());
     	List<String> outNmList = new ArrayList<String>(exp.getParams().size());
     	List<Expression> nparams = new ArrayList<Expression>(exp.getParams().size());
@@ -387,17 +387,22 @@ public class PartialEvaluator extends FEReplacer {
     	assert fun != null : " The function " + name + " does not exist!! funcall: " + exp;
     	Iterator<Parameter> formalParams = fun.getParams().iterator();
     	while(actualParams.hasNext()){
-    		Expression actual = (Expression) actualParams.next();
-    		Parameter param = (Parameter) formalParams.next();
+    		Expression actual = actualParams.next();
+    		Parameter param = formalParams.next();
+    		boolean addedAlready = false;
     		if( param.isParameterOutput()){
+    			
     			assert actual instanceof ExprVar;
     			String pnm = ((ExprVar)actual).getName();
     			outNmList.add(pnm);
     			nparams.add(new ExprVar(exp.getCx(),  transName(pnm)  ));
-    		}else{
+    			addedAlready = true;
+    		}
+    		if(param.isParameterInput()){
     			abstractValue av = (abstractValue)actual.accept(this);
-    			nparams.add(exprRV);
-
+    			if(!addedAlready){
+    				nparams.add(exprRV);
+    			}
     			if(param.getType() instanceof TypeArray ){
     				TypeArray ta = (TypeArray) param.getType();
     				if(av.isVect()){
@@ -647,7 +652,7 @@ public class PartialEvaluator extends FEReplacer {
 
     	state.endFunction();
 
-        return isReplacer? new Function(func.getContext(), func.getCls(),
+        return isReplacer? new Function(func.getCx(), func.getCls(),
                             func.getName(), func.getReturnType(),
                             nparams, func.getSpecification(), newBody) : null;
 
@@ -723,7 +728,7 @@ public class PartialEvaluator extends FEReplacer {
 		        	stmt.getIncr().accept(this);
 	        	}
 	        	vcond = (abstractValue) stmt.getCond().accept(this);
-		        report(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getContext());
+		        report(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getCx());
 	        }
 	        
 	        if(vcond.isBottom()){
@@ -775,7 +780,7 @@ public class PartialEvaluator extends FEReplacer {
         			rv =(Statement) stmt.getCons().accept(this);
         			rcontrol.doneWithBlock(stmt.getCons());
         		}else{
-        			StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
+        			StmtAssert sa = new StmtAssert(stmt.getCx(), ExprConstInt.zero);
         			sa.setMsg( rcontrol.debugMsg() );
 					rv = (Statement)( sa ).accept(this);
 				}
@@ -787,7 +792,7 @@ public class PartialEvaluator extends FEReplacer {
         				rv =(Statement)stmt.getAlt().accept(this);
         				rcontrol.doneWithBlock(stmt.getAlt());
         			}else{
-        				StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
+        				StmtAssert sa = new StmtAssert(stmt.getCx(), ExprConstInt.zero);
         				sa.setMsg( rcontrol.debugMsg() );
         				rv =(Statement)( sa ).accept(this);
 					}
@@ -813,14 +818,14 @@ public class PartialEvaluator extends FEReplacer {
 	        	//and push in a clean one, so the rest of the function thinks that nothing at all was written in this branch.
 	        	state.popChangeTracker();
 	        	state.pushChangeTracker (vcond, false);
-	        	nvtrue = (Statement)( new StmtAssert(stmt.getContext(), ExprConstInt.zero) ).accept(this);
+	        	nvtrue = (Statement)( new StmtAssert(stmt.getCx(), ExprConstInt.zero) ).accept(this);
 	        }catch(RuntimeException e){
 	        	state.popChangeTracker();
 	        	throw e;
 	        }
 	        rcontrol.doneWithBlock(stmt.getCons());
         }else{
-        	StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
+        	StmtAssert sa = new StmtAssert(stmt.getCx(), ExprConstInt.zero);
         	sa.setMsg( rcontrol.debugMsg() );
 			nvtrue = (Statement)( sa ).accept(this);
 		}
@@ -837,14 +842,14 @@ public class PartialEvaluator extends FEReplacer {
 	        	}catch(ArrayIndexOutOfBoundsException e){
 		        	state.popChangeTracker();
 		        	state.pushChangeTracker (vcond, true);
-		        	nvfalse = (Statement)( new StmtAssert(stmt.getContext(), ExprConstInt.zero) ).accept(this);
+		        	nvfalse = (Statement)( new StmtAssert(stmt.getCx(), ExprConstInt.zero) ).accept(this);
 		        }catch(RuntimeException e){
 		        	state.popChangeTracker();
 		        	throw e;
 		        }
 	        	rcontrol.doneWithBlock(stmt.getAlt());
             }else{
-            	StmtAssert sa = new StmtAssert(stmt.getContext(), ExprConstInt.zero);
+            	StmtAssert sa = new StmtAssert(stmt.getCx(), ExprConstInt.zero);
             	sa.setMsg( rcontrol.debugMsg() );
             	nvfalse = (Statement)( sa ).accept(this);
 			}
@@ -880,7 +885,7 @@ public class PartialEvaluator extends FEReplacer {
         String msg = null;
         msg = stmt.getMsg();
         state.Assert(vcond, msg);
-        return isReplacer ?  new StmtAssert(stmt.getContext(), ncond, stmt.getMsg())  : stmt;
+        return isReplacer ?  new StmtAssert(stmt.getCx(), ncond, stmt.getMsg())  : stmt;
     }
 
     public Object visitStmtLoop(StmtLoop stmt)
@@ -889,7 +894,7 @@ public class PartialEvaluator extends FEReplacer {
 
     	List<Statement> slist = isReplacer? new ArrayList<Statement>() : null;
 
-        FEContext nvarContext = stmt.getContext ();
+        FEContext nvarContext = stmt.getCx ();
         String nvar = varGen.nextVar ();
         StmtVarDecl nvarDecl =
             new StmtVarDecl (nvarContext,
@@ -1068,8 +1073,8 @@ public class PartialEvaluator extends FEReplacer {
             state.varDeclare(lhs, field.getType(i));
             Expression nexpr = null;
             if (field.getInit(i) != null){
-				(new StmtAssign(field.getContext(),
-						new ExprVar(field.getContext(), lhs),
+				(new StmtAssign(field.getCx(),
+						new ExprVar(field.getCx(), lhs),
 						field.getInit(i))).accept(this);
 				nexpr = exprRV; //This may be a bit risky, but will work for now.
             }else{
@@ -1151,7 +1156,7 @@ public class PartialEvaluator extends FEReplacer {
 
         //assert preFil.size() == 0 : "This should never happen";
 
-        return isReplacer? new StreamSpec(spec.getContext(), spec.getType(),
+        return isReplacer? new StreamSpec(spec.getCx(), spec.getType(),
                 newST, spec.getName(), spec.getParams(),
                 newVars, newFuncs) : spec;
     }
@@ -1200,22 +1205,29 @@ public class PartialEvaluator extends FEReplacer {
         	Type type = (Type) formalParam.getType().accept(this);
 
         	state.varDeclare(formalParamName, type);
-    		if( !formalParam.isParameterOutput() ){
-    			state.setVarValue(formalParamName, actualParamValue);
-    	    	Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
-    	    	addStatement((Statement)varDecl);
-    		}else{
-    			Expression initVal = null;
-
-    			if(type.isStruct()){
-    				initVal = ExprNullPtr.nullPtr;
-    			}else{
-    				initVal = ExprConstInt.zero;
-    			}
-
-    			Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), initVal);
-    	    	addStatement((Statement)varDecl);
-    		}
+        	
+        	switch(formalParam.getPtype()){
+	        	case Parameter.REF:
+	        	case Parameter.IN:{
+		        		state.setVarValue(formalParamName, actualParamValue);
+		    	    	Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
+		    	    	addStatement((Statement)varDecl);
+		        		break;
+		        	}
+	        	case Parameter.OUT:{
+		        		Expression initVal = null;
+		
+		    			if(type.isStruct()){
+		    				initVal = ExprNullPtr.nullPtr;
+		    			}else{
+		    				initVal = ExprConstInt.zero;
+		    			}
+		
+		    			Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), initVal);
+		    	    	addStatement((Statement)varDecl);
+		        	}
+        	}
+        	
         }
     }
 
