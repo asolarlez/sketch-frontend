@@ -1,0 +1,21 @@
+
+
+
+
+bit[4] test(bit a, bit b, bit c, bit d, bit e, bit f, bit g, bit h, bit i, bit j, bit k, bit l, bit m){
+	bit [4] rv;
+	rv[0] = (a & b) & ((f & (g & h)) & c & d) & e;
+	rv[1] = (c & d & (h & (i & j) & k)) & (e & f & g  & l & m);
+	rv[2] = (e & h) & (i & g) & (j & f) ;
+	rv[3] = (i & h) & (g & f); 	
+	return rv;	
+}
+
+bit[4] sk(bit a, bit b, bit c, bit d, bit e, bit f, bit g, bit h, bit i, bit j, bit k, bit l, bit m) implements test{
+	bit[4] rv;
+	rv[0] = a & (b & c) & ((d & e) & f & g & h);
+	rv[1] = (c & d & (e & f)) & g & (h & i) & j & (k & l) & m;
+	rv[2] = (i & f) & (g & h) & (j & e);
+	rv[3] = ((f & h) & g) & i ;
+	return rv;	
+}
