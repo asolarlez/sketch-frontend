@@ -15,22 +15,15 @@
  */
 
 package streamit.frontend;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.codegenerators.NodesToC;
@@ -40,7 +33,6 @@ import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
-import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.MakeBodiesBlocks;
@@ -230,7 +222,8 @@ public class ToSBit
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 
-		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
+		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
+		
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");
@@ -277,13 +270,17 @@ public class ToSBit
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
 		//dump (prog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
-		//dump (prog, "aftpp");
+		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
+		
 		return lprog;
 	}
 
 	public boolean partialEvalAndSolve(){
 		lowerIRToJava();
 		SATBackend solver = new SATBackend(params, internalRControl(), varGen);
+		if(params.hasFlag("trace")){
+			solver.activateTracing();
+		}
 		boolean tmp = solver.partialEvalAndSolve(prog);
 		oracle =solver.getOracle();
 		return tmp;
@@ -291,28 +288,20 @@ public class ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
-		dump(finalCode, "after elim star");
+		//dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-		dump(finalCode, "after postproc");
+		
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-		dump(finalCode, "after flattening");
+		if(params.flagEquals("showphase", "postproc")) dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		dump(finalCode, "Before DCE");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
-		dump(finalCode, "after DCE");
+		if(params.flagEquals("showphase", "taelim")) dump(finalCode, "After Eliminating transitive assignments.");
+		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		//finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
-		/*
-    	 finalCode =
-             (Program) beforeUnvectorizing.accept (
-                 new EliminateStar(oracle, params.unrollAmt, newRControl(),3));
-         finalCode =
-             (Program) finalCode.accept (
-                 new EliminateStar(oracle, params.unrollAmt, newRControl(), 3));
-		 */
+		if(params.flagEquals("showphase", "final")) dump(finalCode, "After Dead Code elimination.");
 	}
 
 	protected String getOutputFileName() {
@@ -461,9 +450,7 @@ public class ToSBit
 				"\n \t\t is already set by the sketch script, so don't try to set it yourself.",
 				null, null) );
 
-		params.setAllowedParam("showpartial", new POpts(POpts.FLAG,
-				"--showpartial  \t Show the preprocessed sketch before it is sent to the solver.",
-				null, null) );
+		
 		
 		params.setAllowedParam("forcecodegen", new POpts(POpts.FLAG,
 				"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, " +
@@ -481,6 +468,22 @@ public class ToSBit
 		params.setAllowedParam("inbits", new POpts(POpts.NUMBER,
 				"--inbits n      \t Specify the number of bits to use for integer inputs.",
 				"5", null) );
+		
+		
+		params.setAllowedParam("trace", new POpts(POpts.FLAG,
+				"--trace  \t Show a trace of the symbolic execution. Useful for debugging purposes.",
+				null, null) );
+		
+		
+		Map<String, String> phases = new HashMap<String, String>();
+		phases.put("preproc", " After preprocessing.");
+		phases.put("lowering", " Previous to Symbolic execution.");
+		phases.put("postproc", " After partially evaluating the generated code (ugly).");
+		phases.put("taelim", " After eliminating transitive assignments (before cse, ugly).");
+		phases.put("final", " After all optimizations.");
+		params.setAllowedParam("showphase", new POpts(POpts.TOKEN,
+				"--showphase OPT\t Show the partially evaluated code after the indicated phase of pre or post processing.",
+				"5", phases) );
 
 	}
 
@@ -515,7 +518,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-		dump (prog, "After preprocess program:");
+		
 		if (prog == null)
 			throw new IllegalStateException();
 

@@ -172,9 +172,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		currentFunction=null;
 		
 		//if(func.getReturnType()==TypePrimitive.voidtype) return func;
-		func.accept(new SimpleCodePrinter());
+
 		func=(Function)func.accept(paramCopyRes);
-		func.accept(new SimpleCodePrinter());
+
 		
 		
 		

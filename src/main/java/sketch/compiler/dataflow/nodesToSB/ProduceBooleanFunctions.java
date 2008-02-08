@@ -43,9 +43,14 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
  * @author asolar
  */
 public class ProduceBooleanFunctions extends PartialEvaluator {
+	boolean tracing = false;
 	public ProduceBooleanFunctions(TempVarGen varGen, 
-			ValueOracle oracle, PrintStream out, int maxUnroll, RecursionControl rcontrol){
-		super(new NtsbVtype(oracle, out), varGen, false, maxUnroll, rcontrol);		
+			ValueOracle oracle, PrintStream out, int maxUnroll, RecursionControl rcontrol, boolean tracing){
+		super(new NtsbVtype(oracle, out), varGen, false, maxUnroll, rcontrol);
+		this.tracing = tracing;
+		if(tracing){
+			rcontrol.activateTracing();
+		}
 	}
 	
 	private String convertType(Type type) {
@@ -174,7 +179,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	
 	public Object visitFunction(Function func)
     {
-		System.out.println("Analyzing " + func.getName());
+		if(tracing)
+			System.out.println("Analyzing " + func.getName());
 		
 		((NtsbVtype)this.vtype).out.print(func.getName());
     	if( func.getSpecification() != null ){
@@ -286,9 +292,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	private Object tmp=null;
 	@Override
 	public Object visitStmtAssign(StmtAssign s){
-		if(s.getCx() != tmp && s.getCx() != null){
-			System.out.println(s.getCx());
-			tmp = s.getCx();
+		if(tracing){
+			if(s.getCx() != tmp && s.getCx() != null){
+				System.out.println(s.getCx());
+				tmp = s.getCx();
+			}
 		}
 		return super.visitStmtAssign(s);
 		

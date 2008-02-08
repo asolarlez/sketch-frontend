@@ -34,7 +34,7 @@ public class SATBackend {
 	final RecursionControl rcontrol;
 	final TempVarGen varGen;
 	private ValueOracle oracle;
-	
+	private boolean tracing = false;
 	
 	public SATBackend(CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		this.params = params;
@@ -42,7 +42,9 @@ public class SATBackend {
 		this.varGen = varGen;
 	}
 	
-	
+	public void activateTracing(){
+		tracing = true;
+	}
 	
 	
 	public boolean partialEvalAndSolve(Program prog){
@@ -67,7 +69,7 @@ public class SATBackend {
 					new PrintStream(outStream)
 				//	System.out
 				,
-				params.flagValue("unrollamnt"), rcontrol);
+				params.flagValue("unrollamnt"), rcontrol, tracing);
 			/*
              ProduceBooleanFunctions partialEval =
                 new ProduceBooleanFunctions (null, varGen, oracle,

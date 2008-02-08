@@ -209,7 +209,7 @@ public class AdvancedRControl extends RecursionControl {
 
 	public void pushFunCall(ExprFunCall fc, Function fun) {
 		FunInfo fi = funmap.get(fc.getName());
-		if( ! fi.isTerminal ){
+		if( tracing && ! fi.isTerminal ){
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
 			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  /*+ "  "  +  fc.hashCode()*/ + "  " + fc.getCx()); //DEBUGGING INFO
 		}
@@ -252,22 +252,30 @@ public class AdvancedRControl extends RecursionControl {
 			 * 
 			 */		
 			boolean recurse = bfactorTest(bfactor);
-			if(!recurse) System.out.println("BRANCHING FACTOR EXCEEDED  " + (bfactor*bfStack.peek()) + ">=" + this.branchingTheshold + "  " + bfactor + "  prevented " + check.callsContained);
+			if(tracing && !recurse) System.out.println("BRANCHING FACTOR EXCEEDED  " + (bfactor*bfStack.peek()) + ">=" + this.branchingTheshold + "  " + bfactor + "  prevented " + check.callsContained);
 			return 	recurse;
 		}
-		System.out.println("ITERATION DEPTH EXCEEDED  prevented " + check.callsContained);
+		if(tracing){
+			System.out.println("ITERATION DEPTH EXCEEDED  prevented " + check.callsContained);
+		}
 		return false;
 	}
 
 
 	public boolean testCall(ExprFunCall fc) {
-		FunInfo fi = funmap.get(fc.getName());		
-		System.out.print("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);
+		FunInfo fi = funmap.get(fc.getName());	
+		if(tracing){
+			System.out.print("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);
+		}
 		if( fi.rdepth < MAX_INLINE ){
-			System.out.println(" succeed");
+			if(tracing){
+				System.out.println(" succeed");
+			}
 			return true;
 		}else{
-			System.out.println(" fail");
+			if(tracing){
+				System.out.println(" fail");
+			}
 			return false;
 		}		
 	}

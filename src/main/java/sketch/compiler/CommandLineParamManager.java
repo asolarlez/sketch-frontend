@@ -10,9 +10,19 @@ import java.util.Map.Entry;
 
 public class CommandLineParamManager{
 	public static class POpts{
+		/**
+		 * A flag is of the form --flag with no extra parameters.
+		 */
 		static final int FLAG = 0;
+		/**
+		 * A number is a flag of the form --flag n where n is a number.
+		 */
 		static final int NUMBER = 1;
+		
 		static final int TOKEN = 2;
+		/**
+		 * A string is a flag of the form --flag s where s is a string.
+		 */
 		static final int STRING = 3;		
 		static final int MULTISTRING = 5;
 		static final int VVAL = 4;
@@ -42,11 +52,11 @@ public class CommandLineParamManager{
 				}
 				case TOKEN:{
 					String msg = description;
-					msg += "OPT can be:";
+					msg += "\n\tOPT can be:";
 					
 					for(Iterator<Entry<String, String> > it = tokenDescriptions.entrySet().iterator(); it.hasNext();  ){
 						Entry<String, String> en = it.next();
-						msg += "\n\t\t" + en.getKey() + " : " + en.getValue();
+						msg += "\n\t " + en.getKey() + " : \t" + en.getValue();
 					}
 					return msg;					
 				}
