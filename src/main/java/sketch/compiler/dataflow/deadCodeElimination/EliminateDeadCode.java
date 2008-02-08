@@ -6,8 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
 import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
@@ -15,32 +15,39 @@ import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class EliminateDeadCode extends BackwardDataflow {
-
-	public EliminateDeadCode(){
+	final private boolean keepAsserts;
+	public EliminateDeadCode(boolean keepAsserts){
 		super(LiveVariableVType.vtype, null, true, -1,(new BaseRControl(10)));
+		this.keepAsserts = keepAsserts;
 	}
 	
 	
 	public Object visitStmtIfThen(StmtIfThen stmt)
     {
+		
 		Object obj = super.visitStmtIfThen(stmt);
-		
-		
-		
 		return obj;
     }
-	
+	public Object visitStmtBlock(StmtBlock sb){
+		Object obj = super.visitStmtBlock(sb);
+		if(obj instanceof StmtBlock){
+			if(((StmtBlock)obj).getStmts().size() == 0){
+				return null;
+			}
+		}
+		return obj;
+	}
 	
 	public Object visitStmtAssert (StmtAssert stmt) {
+		if(!keepAsserts){ return null; }
 		Expression exp = stmt.getCond();
 		Integer ival = exp.getIValue();
 		if(ival != null){
@@ -79,7 +86,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 	public Object visitExprField(ExprField exp) {
 		abstractValue leftav = (abstractValue)exp.getLeft().accept(this);
 		 Expression left = exprRV;		 
-		 if(isReplacer) exprRV = new ExprField(exp.getContext(), left, exp.getName());
+		 if(isReplacer) exprRV = new ExprField(exp.getCx(), left, exp.getName());
 	     return leftav;
 	}
 	
@@ -106,7 +113,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 	    	
 	    	state.endFunction();
 
-	        return isReplacer? new Function(func.getContext(), func.getCls(),
+	        return isReplacer? new Function(func.getCx(), func.getCls(),
 	                            func.getName(), func.getReturnType(),
 	                            nparams, func.getSpecification(), newBody) : null;
 	    	
@@ -137,5 +144,24 @@ public class EliminateDeadCode extends BackwardDataflow {
 	        	return null;
 	        }
 	    }
+	 @Override
+	 public Object visitExprFunCall(ExprFunCall exp){
+		 Iterator actualParams = exp.getParams().iterator();
+		 while(actualParams.hasNext()){
+	    		Expression actual = (Expression) actualParams.next();
+	    		if(actual instanceof ExprVar){
+	    			String name = ((ExprVar)actual).getName();
+	    			state.setVarValue(name, new joinAV( LiveVariableAV.LIVE));
+	    		}
+		 }
+		 Object obj = super.visitExprFunCall(exp);
+		 return obj;
+	 }
+		 
+		 
+		 
+	    
+	 
+	 
 	
 }

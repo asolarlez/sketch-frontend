@@ -121,7 +121,8 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	        for(int i=newStatements.size()-1; i>=0; --i){
     	        	newBlockBody.add(newStatements.get(i));
     	        }    	        
-    	        Statement result = new StmtBlock(stmt.getContext(), newBlockBody);
+    	       
+    	        Statement result = new StmtBlock(stmt.getCx(), newBlockBody);
     	        newStatements = oldStatements;
     	        rs = result;
     	    }
@@ -233,7 +234,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	}finally{
     		state.popLevel();	        	
     	}
-    	if(nbody == null) return stmt;
+    	if(nbody == null && ninit == null && nincr == null) return null;
     	return new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody);
     }
 
