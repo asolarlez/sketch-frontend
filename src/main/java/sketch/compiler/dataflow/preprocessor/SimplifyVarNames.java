@@ -38,7 +38,7 @@ public class SimplifyVarNames extends FEReplacer {
 	
 	public Object visitExprVar(ExprVar exp) {
 		String name = exp.getName();		
-		 return new ExprVar(exp.getContext(), transName(name)); 
+		 return new ExprVar(exp.getCx(), transName(name)); 
 	}
 	
     public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -55,7 +55,7 @@ public class SimplifyVarNames extends FEReplacer {
                 init = doExpression(init);
             newInits.add(init);
         }
-        return new StmtVarDecl(stmt.getContext(), newTypes,
+        return new StmtVarDecl(stmt.getCx(), newTypes,
                                newNames, newInits);
     }
     
@@ -80,7 +80,7 @@ public class SimplifyVarNames extends FEReplacer {
     	Statement newBody = (Statement)func.getBody().accept(this);
     	    	
 
-        return  new Function(func.getContext(), func.getCls(),
+        return  new Function(func.getCx(), func.getCls(),
                             func.getName(), func.getReturnType(),
                             nparams, func.getSpecification(), newBody);
     	

@@ -96,7 +96,7 @@ public class FlattenStmtBlocks extends FEReplacer {
 	        isWithinBlock = oldIsWithinBlock;
 	        
 	        if(!isWithinBlock){
-		        Statement result = new StmtBlock(stmt.getContext(), newStatements);
+		        Statement result = new StmtBlock(stmt.getCx(), newStatements);
 		        newStatements = oldStatements;
 		        return result;
 	        }
