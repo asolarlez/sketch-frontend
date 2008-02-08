@@ -12,6 +12,7 @@ public class NodesToC extends NodesToJava {
 	private boolean isBool = true;
 	protected boolean addIncludes = true;
 	
+	
 	public NodesToC(TempVarGen varGen, String filename) {
 		super(false, varGen);
 		this.filename=filename;		
@@ -27,8 +28,42 @@ public class NodesToC extends NodesToJava {
         String op = null;
         if(binOpLevel>0) result.append("(");
         binOpLevel++;
+        Type tmptype = null;
+        switch (exp.getOp())
+        {
+        case ExprBinary.BINOP_NEQ:
+        case ExprBinary.BINOP_EQ:
+        	Type t1 = getType(exp.getLeft());
+        	Type t2 = getType(exp.getRight());
+        	while(t1 instanceof TypeArray){ t1 = ((TypeArray)t1).getBase();}
+        	while(t2 instanceof TypeArray){ t2 = ((TypeArray)t2).getBase();}
+        	if(t1 == TypePrimitive.inttype || t2 == TypePrimitive.inttype){
+        		tmptype = ctype;
+            	ctype = TypePrimitive.inttype;   
+        	}else{
+        		tmptype = ctype;
+            	ctype = t1;
+        	}
+        	
+        	break;
+        case ExprBinary.BINOP_LT: 
+        case ExprBinary.BINOP_LE:  
+        case ExprBinary.BINOP_GT:  
+        case ExprBinary.BINOP_GE:  
+        	tmptype = ctype;
+        	ctype = TypePrimitive.inttype;        
+        }
         String left = (String)exp.getLeft().accept(this);
-        String right = (String)exp.getRight().accept(this);
+        
+        if(exp.getOp()== ExprBinary.BINOP_LSHIFT || exp.getOp()== ExprBinary.BINOP_RSHIFT){
+        	tmptype = ctype;
+        	ctype = TypePrimitive.inttype;   
+        }
+        String right = (String)exp.getRight().accept(this);        
+        if(tmptype != null){
+        	ctype = tmptype;
+        }
+        
         
         switch (exp.getOp())
         {
@@ -53,28 +88,28 @@ public class NodesToC extends NodesToJava {
 	        case ExprBinary.BINOP_AND: op = "&&"; break;
 	        case ExprBinary.BINOP_OR:  op = "||"; break;
 	        case ExprBinary.BINOP_EQ:  op = "=="; 
-	        left = "((unsigned)" + left + ")";
-	        right = "((unsigned)" + right + ")";
+	        left = "(" + left + ")";
+	        right = "(" + right + ")";
 	        break;
 	        case ExprBinary.BINOP_NEQ: op = "!="; 
-	        left = "((unsigned)" + left + ")";
-	        right = "((unsigned)" + right + ")";
+	        left = "(" + left + ")";
+	        right = "(" + right + ")";
 	        break;
 	        case ExprBinary.BINOP_LT:  op = "<"; 
-	        left = "((unsigned)" + left + ")";
-	        right = "((unsigned)" + right + ")";
+	        left = "(" + left + ")";
+	        right = "(" + right + ")";
 	        break;
 	        case ExprBinary.BINOP_LE:  op = "<="; 
-	        left = "((unsigned)" + left + ")";
-	        right = "((unsigned)" + right + ")";
+	        left = "(" + left + ")";
+	        right = "(" + right + ")";
 	        break;
 	        case ExprBinary.BINOP_GT:  op = ">"; 
-	        left = "((unsigned)" + left + ")";
-	        right = "((unsigned)" + right + ")";
+	        left = "(" + left + ")";
+	        right = "(" + right + ")";
 	        break;
 	        case ExprBinary.BINOP_GE:  op = ">="; 
-	        left = "((unsigned)" + left + ")";
-	        right = "((unsigned)" + right + ")";
+	        left = "(" + left + ")";
+	        right = "(" + right + ")";
 	        break;
 	        case ExprBinary.BINOP_BAND:op = "&";
 	        if(exp.getLeft() instanceof ExprConstInt){
@@ -97,10 +132,10 @@ public class NodesToC extends NodesToJava {
 	        break;
 	        case ExprBinary.BINOP_BOR: op = "|"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
-	        	left = "bitvec<1>(" + left + ")";
+	        	left = "bitvec<1>((unsigned)" + left + ")";
 	        }
 	        if(exp.getRight() instanceof ExprConstInt){
-	        	right = "bitvec<1>(" + right + ")";
+	        	right = "bitvec<1>((unsigned)" + right + ")";
 	        }
 	        if(exp.getLeft() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
@@ -116,42 +151,44 @@ public class NodesToC extends NodesToJava {
 	        break;
 	        case ExprBinary.BINOP_BXOR:op = "^"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
-	        	left = "bitvec<1>(" + left + ")";
+	        	left = "bitvec<1>((unsigned)" + left + ")";
 	        }
 	        if(exp.getRight() instanceof ExprConstInt){
-	        	right = "bitvec<1>(" + right + ")";
+	        	right = "bitvec<1>((unsigned)" + right + ")";
 	        }
 	        if(exp.getLeft() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
 	        	int sz = eai.getElements().size();
-	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        	left = "bitvec<" + sz + ">((unsigned)" + left + ")";
 	        }
 	        
 	        if(exp.getRight() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getRight();
 	        	int sz = eai.getElements().size();
-	        	right = "bitvec<" + sz + ">(" + right + ")";
+	        	right = "bitvec<" + sz + ">((unsigned)" + right + ")";
 	        }
 	        break;
 	        case ExprBinary.BINOP_RSHIFT: op = ">>"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
-	        	left = "bitvec<1>(" + left + ")";
+	        	left = "bitvec<1>((unsigned)" + left + ")";
 	        }
 	        if(exp.getLeft() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
 	        	int sz = eai.getElements().size();
-	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        	left = "bitvec<" + sz + ">((unsigned)" + left + ")";
 	        }
+	        right = "(unsigned)" + right;
 	        break;
 	        case ExprBinary.BINOP_LSHIFT: op = "<<"; 
 	        if(exp.getLeft() instanceof ExprConstInt){
-	        	left = "bitvec<1>(" + left + ")";
+	        	left = "bitvec<1>((unsigned)" + left + ")";
 	        }
 	        if(exp.getLeft() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
 	        	int sz = eai.getElements().size();
-	        	left = "bitvec<" + sz + ">(" + left + ")";
+	        	left = "bitvec<" + sz + ">((unsigned)" + left + ")";
 	        }
+	        right = "(unsigned)" + right;
 	        break;
 	        default: assert false : exp; break;
         }
@@ -167,7 +204,11 @@ public class NodesToC extends NodesToJava {
 	
 	public Object visitExprConstInt(ExprConstInt exp)
     {
-        return exp.getVal()+"U";
+		if(ctype == TypePrimitive.bittype){
+			return "bitvec<1>("+ exp.getVal() +"U)" ;
+		}else{
+			return exp.getVal() + "";
+		}
     }
 	
 	public Object visitExprArrayInit(ExprArrayInit exp)
@@ -187,7 +228,7 @@ public class NodesToC extends NodesToJava {
 		}else{
 			StringBuffer sb = new StringBuffer();
 			List elems = exp.getElements();
-			sb.append("fixedarr<unsigned int," + elems.size() + ">()");
+			sb.append("fixedarr< int," + elems.size() + ">()");
 			for (int i=0; i<elems.size(); i++) {
 			    sb.append(".v(" + i + ","+elems.get(i)+")");
 			}			
@@ -346,6 +387,10 @@ public class NodesToC extends NodesToJava {
 	            }
             }
             result += typeForDecl(type,   stmt.getName(i));
+            ctype = type;
+            while(ctype instanceof TypeArray){
+            	ctype = ((TypeArray)ctype).getBase();
+            }
             if (stmt.getInit(i) != null)
                 result += " = " + (String)stmt.getInit(i).accept(this);
             //result += ";\n";
@@ -403,6 +448,12 @@ public class NodesToC extends NodesToJava {
 	        default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
         }
         // Assume both sides are the right type.
+        
+        ctype = getType(stmt.getLHS());
+        while(ctype instanceof TypeArray){
+        	ctype = ((TypeArray)ctype).getBase();
+        }
+        
         isLHS = true;
         String lhs = (String)stmt.getLHS().accept(this);
         isLHS = false;
@@ -424,11 +475,18 @@ public class NodesToC extends NodesToJava {
 			RangeLen range=(RangeLen) o;
 			if(isLHS) {
 				isLHS = false;
+				Type tmptype = ctype;
+				ctype = TypePrimitive.inttype;
 				String tmp = (String) range.start().accept(this);
+				ctype = tmptype;
 				isLHS = true;
 				return base.accept(this)+"["+tmp+"]"; 
 			}else{
-				return base.accept(this)+ ".sub<" + range.len() + ">("+range.start().accept(this) + ")";	
+				Type tmptype = ctype;
+				ctype = TypePrimitive.inttype;
+				String tmp = (String) range.start().accept(this);
+				ctype = tmptype;
+				return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";	
 			}
 		}
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
@@ -472,7 +530,7 @@ public class NodesToC extends NodesToJava {
 			switch(((TypePrimitive)type).getType()) {
 				case TypePrimitive.TYPE_INT8:  return "unsigned char";
 				case TypePrimitive.TYPE_INT16: return "unsigned short int";
-				case TypePrimitive.TYPE_INT32: return "unsigned int";
+				case TypePrimitive.TYPE_INT32: return "int";
 				case TypePrimitive.TYPE_INT64: return "unsigned long long";
 	            case TypePrimitive.TYPE_BOOLEAN:
 				case TypePrimitive.TYPE_BIT:   return "bitvec<1>";
@@ -485,8 +543,8 @@ public class NodesToC extends NodesToJava {
 	public Object visitExprConstBoolean(ExprConstBoolean exp)
     {
         if (exp.getVal())
-            return "1U";
+            return "bitvec<1>(1U)";
         else
-            return "0U";
+            return "bitvec<1>(0U)";
     }
 }
