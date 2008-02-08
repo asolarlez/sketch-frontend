@@ -64,12 +64,7 @@ public class Function extends FENode
         this.name = name;
         this.returnType = returnType;
         this.params = params;
-        this.body = body;
-        if(body instanceof StmtBlock){
-        	if(((StmtBlock) body ).getStmts().size() == 0){
-        		this.cls = this.FUNC_UNINTERP;
-        	}
-        }
+        this.body = body;        
     }
 
     public Function(FEContext context, int cls, String name,
@@ -90,6 +85,9 @@ public class Function extends FENode
 
     public static Function newUninterp(String name, Type rettype, List<Parameter> params){
     	return new Function(null, FUNC_UNINTERP, name,rettype, params, null);
+    }
+    public static Function newUninterp(FEContext cx, String name, Type rettype, List<Parameter> params){
+    	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
     }
 
     /** Create a new init function given its body. */

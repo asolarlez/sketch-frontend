@@ -33,6 +33,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 
 	protected boolean foundploop = false;	
 	public StmtPloop ploop = null;
+	public Function parfun = null;
 	
 	static class MoveMisplacedDeclarations extends FEReplacer{
 		final Map<String, StmtVarDecl> decls;
@@ -97,7 +98,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 	            	throw e;
 	            }
 	        }
-	        Statement result = new StmtBlock(stmt.getContext(), newStatements);
+	        Statement result = new StmtBlock(stmt.getCx(), newStatements);
 	        newStatements = oldStatements;
 	        return result;
 	    }
@@ -161,7 +162,11 @@ public class ExtractPreParallelSection extends FEReplacer {
 		
 		///And now, we do the change of the declarations.
 		MoveMisplacedDeclarations mmd = new MoveMisplacedDeclarations(mdv.alldecls, mdv.undecld);
-		func = (Function)func.accept(mmd);		
+		func = (Function)func.accept(mmd);	
+		
+		if(foundploop){
+			parfun = func;
+		}		
     	return func;
     }
 	
@@ -190,7 +195,7 @@ public class ExtractPreParallelSection extends FEReplacer {
             	 Statement result = (Statement)s.accept(this);
             	 if(foundploop && preblock == null){
             		 assert result != null;
-            		 preblock = new StmtBlock(stmt.getContext(), newStatements);
+            		 preblock = new StmtBlock(stmt.getCx(), newStatements);
             		 newStatements = new ArrayList<Statement>();
             		 oldStatements.add(preblock);
             		 addStatement(result);
@@ -208,7 +213,7 @@ public class ExtractPreParallelSection extends FEReplacer {
         Statement result = null;
         if(newStatements.size() > 0){
         	if(newStatements.size() > 1){
-        		result = new StmtBlock(stmt.getContext(), newStatements);
+        		result = new StmtBlock(stmt.getCx(), newStatements);
         	}else{
         		result = newStatements.get(0);
         	}

@@ -34,7 +34,7 @@ public class MakeBodiesBlocks extends FEReplacer
     {
         if (stmt instanceof StmtBlock) return stmt;
         List body = Collections.singletonList(stmt);
-        return new StmtBlock(stmt.getContext(), body);
+        return new StmtBlock(stmt.getCx(), body);
     }
 
     public Object visitFunction(Function func)
@@ -43,7 +43,7 @@ public class MakeBodiesBlocks extends FEReplacer
         Statement newBody = (Statement)func.getBody().accept(this);
         newBody = buildBlock(newBody);
         if (newBody == func.getBody()) return func;
-        return new Function(func.getContext(), func.getCls(),
+        return new Function(func.getCx(), func.getCls(),
                             func.getName(), func.getReturnType(),
                             func.getParams(),  func.getSpecification(),newBody);
     }
@@ -54,7 +54,7 @@ public class MakeBodiesBlocks extends FEReplacer
         newBody = buildBlock(newBody);
         if (newBody == func.getBody())
             return func;
-        return new FuncWork(func.getContext(), func.getCls(), func.getName(),
+        return new FuncWork(func.getCx(), func.getCls(), func.getName(),
                             newBody, func.getPeekRate(), func.getPopRate(),
                             func.getPushRate());
     }
@@ -65,7 +65,7 @@ public class MakeBodiesBlocks extends FEReplacer
         newBody = buildBlock(newBody);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtDoWhile(stmt.getContext(), newBody, stmt.getCond());
+        return new StmtDoWhile(stmt.getCx(), newBody, stmt.getCond());
     }
     
     public Object visitStmtFor(StmtFor stmt)
@@ -77,7 +77,7 @@ public class MakeBodiesBlocks extends FEReplacer
         newBody = buildBlock(newBody);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getContext(), stmt.getInit(), stmt.getCond(),
+        return new StmtFor(stmt.getCx(), stmt.getInit(), stmt.getCond(),
                            stmt.getIncr(), newBody);
     }
 
@@ -97,7 +97,7 @@ public class MakeBodiesBlocks extends FEReplacer
         }
         if (newCons == stmt.getCons() && newAlt == stmt.getAlt())
             return stmt;
-        return new StmtIfThen(stmt.getContext(), stmt.getCond(),
+        return new StmtIfThen(stmt.getCx(), stmt.getCond(),
                               newCons, newAlt);
     }
 
@@ -107,6 +107,6 @@ public class MakeBodiesBlocks extends FEReplacer
         newBody = buildBlock(newBody);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtWhile(stmt.getContext(), stmt.getCond(), newBody);
+        return new StmtWhile(stmt.getCx(), stmt.getCond(), newBody);
     }
 }

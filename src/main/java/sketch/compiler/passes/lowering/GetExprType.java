@@ -46,7 +46,7 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
-    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getContext();
+    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getCx();
     	Type base = (Type)exp.getBase().accept(this);
 
 		List l=exp.getMembers();
@@ -58,10 +58,10 @@ public class GetExprType extends FENullVisitor
 				Type start = (Type)((Range) obj).start().accept(this);
 				Type end = (Type)((Range) obj).end().accept(this);
 				if(expr == null){
-					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start());
+					expr = new ExprBinary(exp.getCx(), ExprBinary.BINOP_SUB, range.end(), range.start());
 				}else{
-					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr,
-							new ExprBinary(exp.getContext(), ExprBinary.BINOP_SUB, range.end(), range.start())
+					expr = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, expr,
+							new ExprBinary(exp.getCx(), ExprBinary.BINOP_SUB, range.end(), range.start())
 					);
 				}
 			}
@@ -71,7 +71,7 @@ public class GetExprType extends FENullVisitor
 				if(expr == null){
 					expr = new ExprConstInt(range.len());
 				}else{
-					expr = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
+					expr = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
 				}
 			}
 		}

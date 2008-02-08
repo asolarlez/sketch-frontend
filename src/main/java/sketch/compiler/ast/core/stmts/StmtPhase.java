@@ -42,7 +42,7 @@ public class StmtPhase extends Statement
      * that call's context as our own. */
     public StmtPhase(ExprFunCall fc)
     {
-        this(fc.getContext(), fc);
+        this(fc.getCx(), fc);
     }
     
     /** Gets the function call associated with the phase invocation. */

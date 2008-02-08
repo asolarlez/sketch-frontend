@@ -67,7 +67,7 @@ public class MinimizeLocals extends FEReplacer {
         if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
             newIncr == stmt.getIncr() && newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getContext(), newInit, newCond, newIncr,
+        return new StmtFor(stmt.getCx(), newInit, newCond, newIncr,
                            newBody);
     }
 	

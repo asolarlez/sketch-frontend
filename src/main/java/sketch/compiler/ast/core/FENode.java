@@ -50,19 +50,32 @@ public abstract class FENode
     public void setTag(Object tag){ this.tag = tag; }
 
     /**
+	     * Returns the context associated with this node.
+	     *
+	     * @return context object with file and line number
+	     * @deprecated Use {@link #getCx()} instead
+	     * 
+	     */
+	    public FEContext getContext()
+	    {
+			return getCx();
+		}
+	/*
+	    public FEContext getCx(){
+	    	return context;
+	    }
+	*/
+
+	/**
      * Returns the context associated with this node.
      *
      * @return context object with file and line number
+     * 
      */
-    public FEContext getContext()
+    public FEContext getCx()
     {
         return context;
     }
-
-    public FEContext getCx(){
-    	return context;
-    }
-
 
     /**
      * Calls an appropriate method in a visitor object with this as

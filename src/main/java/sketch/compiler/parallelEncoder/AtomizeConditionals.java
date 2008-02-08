@@ -134,7 +134,7 @@ public class AtomizeConditionals extends FEReplacer {
 	            newInits.add(null);
 	        }
 	        if(!changed){ return stmt; }
-	        this.addStatement( new StmtVarDecl(stmt.getContext(), stmt.getTypes(),
+	        this.addStatement( new StmtVarDecl(stmt.getCx(), stmt.getTypes(),
                     stmt.getNames(), newInits) );	        
 	        return new StmtBlock(stmt.getCx(), post);
 	    }
@@ -147,7 +147,7 @@ public class AtomizeConditionals extends FEReplacer {
 	        Statement newBody = (Statement)stmt.getBody().accept(this);
 	        if (newBody == stmt.getBody())
 	            return stmt;
-	        return new StmtFor(stmt.getContext(), stmt.getInit(), stmt.getCond(), stmt.getIncr(),
+	        return new StmtFor(stmt.getCx(), stmt.getInit(), stmt.getCond(), stmt.getIncr(),
 	                           newBody);
 	    }
 	

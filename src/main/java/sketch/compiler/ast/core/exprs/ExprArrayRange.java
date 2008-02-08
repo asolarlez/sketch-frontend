@@ -127,14 +127,14 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	 */
 	public ExprArrayRange(Expression base, List members)
 	{
-		super(base.getContext());
+		super(base.getCx());
 		this.base=base;
 		this.members=members;
 		if(members.isEmpty()) throw new IllegalArgumentException();
 	}
 	public ExprArrayRange(Expression base, List members, boolean unchecked)
 	{
-		super(base.getContext());
+		super(base.getCx());
 		this.base=base;
 		this.members=members;
 		if(members.isEmpty()) throw new IllegalArgumentException();

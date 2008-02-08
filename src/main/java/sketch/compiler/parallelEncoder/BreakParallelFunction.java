@@ -12,12 +12,23 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
 
+
+/**
+ * 
+ * Takes a parallel function and extracts the ploop, the pre-parallel section, and the post-parallel section.
+ * It also collects all declarations of global variables.
+ * 
+ * This class depends on {@link ExtractPreParallelSection}. 
+ * 
+ * @author asolar
+ *
+ */
 public class BreakParallelFunction extends FEReplacer {
 
-	Set<StmtVarDecl> globalDecls = new HashSet<StmtVarDecl>();
-	StmtPloop ploop = null;
-	Statement prepar = null;
-	Statement postpar = null;
+	public Set<StmtVarDecl> globalDecls = new HashSet<StmtVarDecl>();
+	public StmtPloop ploop = null;
+	public Statement prepar = null;
+	public Statement postpar = null;
 	boolean foundploop = false;
 	
 	static final int STAGE_DECL=0;
@@ -83,7 +94,7 @@ public class BreakParallelFunction extends FEReplacer {
             	throw e;
             }
         }        
-        Statement result = new StmtBlock(stmt.getContext(), newStatements);
+        Statement result = new StmtBlock(stmt.getCx(), newStatements);
         newStatements = oldStatements;
         return result;
     }

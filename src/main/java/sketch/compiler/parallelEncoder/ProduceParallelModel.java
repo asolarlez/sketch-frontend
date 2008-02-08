@@ -144,7 +144,7 @@ public class ProduceParallelModel extends FEReplacer {
 			 		if(o instanceof Expression){
 			 			if( o == null) return null;
 				        if (o == stmt.getExpression()) return stmt;
-				        return new StmtExpr(stmt.getContext(), (Expression)o);
+				        return new StmtExpr(stmt.getCx(), (Expression)o);
 			 		}else{
 			 			assert o instanceof Statement;
 			 			return o;
@@ -154,7 +154,7 @@ public class ProduceParallelModel extends FEReplacer {
 		        Expression newExpr = doExpression(stmt.getExpression());
 		        if( newExpr == null) return null;
 		        if (newExpr == stmt.getExpression()) return stmt;
-		        return new StmtExpr(stmt.getContext(), newExpr);
+		        return new StmtExpr(stmt.getCx(), newExpr);
 		    }
 		
 		
@@ -292,6 +292,7 @@ public class ProduceParallelModel extends FEReplacer {
 		for(Iterator<Parameter> it = fun.getParams().iterator(); it.hasNext(); ){
 			Parameter p = it.next();
 			if(p.isParameterOutput()){
+				assert !p.isParameterInput() : "Reference parameters not allowed in interface functions: " + funName ;
 				assert outputParam == null;
 				outputParam = p;
 			}else{
@@ -478,6 +479,7 @@ public class ProduceParallelModel extends FEReplacer {
 		for(Iterator<Parameter> it = oldPar.iterator(); it.hasNext(); ){
 			Parameter p = it.next();
 			if(p.isParameterOutput()){
+				assert !p.isParameterInput(): "Reference parameters not allowed in interface functions: " + funName;
 				assert outPar == null;
 				outPar = p;
 			}else{
@@ -538,6 +540,7 @@ public class ProduceParallelModel extends FEReplacer {
 				e = new ExprBinary(null, ExprBinary.BINOP_ADD, e, ExprConstInt.one);
 				actuals.add(e);
 			}else if(par.isParameterOutput()){
+				assert !par.isParameterInput() : "Reference parameters not yet allowed in interface functions.";
 				rtype = t;
 				rName = name;
 				actuals.add(new ExprVar(null, tmpOut));

@@ -25,12 +25,30 @@ import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtPloop;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.passes.CollectStmtTags;
 import streamit.frontend.passes.VariableDeclarationMover;
 
 public class CFGforPloop extends CFGBuilder {
 
 	Set<String> locals = new HashSet<String>();
 	Map<String, StmtVarDecl> localDecls = new HashMap<String, StmtVarDecl>();
+	
+	
+	
+	
+	public static Map<CFGNode, Set<Object>> tagSets(CFG cfg){
+		Map<CFGNode, Set<Object>> map = new HashMap<CFGNode, Set<Object>>();				
+		for(Iterator<CFGNode> it = cfg.getNodes().iterator(); it.hasNext(); ){
+			CFGNode n = it.next();
+			CollectStmtTags tag = new CollectStmtTags();
+			if(n.isStmt()){
+				n.getStmt().accept(tag);
+			}
+			map.put(n, tag.oset);						
+		}		
+		return map;
+	}
+	
 	
 	public static CFG cleanCFG(CFG cfg){
 		Map<CFGNode, List<EdgePair>> edges = new HashMap<CFGNode, List<EdgePair>>();

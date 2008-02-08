@@ -49,7 +49,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
     public String addNewDeclaration(Type type,  Expression exp){
     	String newVarName = varGen.nextVar();
-		StmtVarDecl rhsDecl = new StmtVarDecl(exp.getContext(),type, newVarName, exp );
+		StmtVarDecl rhsDecl = new StmtVarDecl(exp.getCx(),type, newVarName, exp );
 		symtab.registerVar(newVarName, type, null, SymbolTable.KIND_LOCAL);
 		this.doStatement(rhsDecl);
 		return newVarName;
@@ -154,7 +154,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			if ( getType(exp) instanceof TypeArray){
 				Expression arrLen = typeLen(getType(exp));
 				if( arrLen.equals(len) || !isRHS){
-					return new ExprArrayRange(exp.getContext(), exp, index, true);
+					return new ExprArrayRange(exp.getCx(), exp, index, true);
 				}else{
 					return new ExprTernary(exp.getCx(),
 							ExprTernary.TEROP_COND,
@@ -163,7 +163,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, ExprConstInt.zero )
 							)
 							,
-							new ExprArrayRange(exp.getContext(), exp, index, true),
+							new ExprArrayRange(exp.getCx(), exp, index, true),
 							ExprConstInt.zero);
 				}
 			}else{
@@ -186,7 +186,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				// ns.setType( ((TypeArray)exp.getType()).getBase()  );
 				Expression arrLen = typeLen(getType(exp));
 				if( arrLen.equals(len) || !isRHS){
-					return new ExprArrayRange(exp.getContext(), ns, index, true);
+					return new ExprArrayRange(exp.getCx(), ns, index, true);
 				}else{
 					return new ExprTernary(exp.getCx(),
 							ExprTernary.TEROP_COND,
@@ -195,7 +195,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, ExprConstInt.zero )
 							)
 							,
-							new ExprArrayRange(exp.getContext(), ns, index, true),
+							new ExprArrayRange(exp.getCx(), ns, index, true),
 							ExprConstInt.zero);
 				}
 			}else{
@@ -220,10 +220,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			Expression tl = typeLen(t);
 			Integer itl = tl.getIValue();
 			if( itl != null && itl <= 1  ){
-				Expression compIndex = new ExprBinary(exp.getContext(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(ScalarizeVectorAssignments.this));
-				return new ExprArrayRange(exp.getContext(), exp.getBase(), compIndex);
+				Expression compIndex = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(ScalarizeVectorAssignments.this));
+				return new ExprArrayRange(exp.getCx(), exp.getBase(), compIndex);
 			}else{
-				return new ExprArrayRange(exp.getContext(), exp, index);
+				return new ExprArrayRange(exp.getCx(), exp, index);
 			}
 	    }
 
@@ -237,7 +237,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				Expression result;
 				if(true){
 					//This branch just assumes that an out of bounds access doesn't
-					FEContext context = exp.getContext();
+					FEContext context = exp.getCx();
 					String newVarName = addNewDeclaration(TypePrimitive.inttype, exp.getRight());
 					ExprVar oldRHS = new ExprVar(context, newVarName);
 					Expression newIdx = null;
@@ -253,7 +253,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 					result = newVal;
 				}else{
 					//In this branch, we actually emmit a test that explicitly returns zero if the array goes out of bounds.
-					FEContext context = exp.getContext();
+					FEContext context = exp.getCx();
 					String newVarName = addNewDeclaration(TypePrimitive.inttype, exp.getRight());
 					ExprVar oldRHS = new ExprVar(context, newVarName);
 					Expression newIdx = null;
@@ -302,7 +302,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				return this.handleBitShift(exp);
 			}
 			if(exp.getOp() == ExprBinary.BINOP_ADD){
-				FEContext context = exp.getContext();
+				FEContext context = exp.getCx();
 				Type lType = getType(exp.getLeft());
 				if(lType instanceof TypeArray ){
 					lType = ((TypeArray)lType).getBase();

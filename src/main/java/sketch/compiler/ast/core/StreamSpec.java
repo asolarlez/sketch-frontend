@@ -105,7 +105,7 @@ public class StreamSpec extends FENode
                       String name, List params, Statement init)
     {
         this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.newInit(init.getContext(),
+             Collections.singletonList(Function.newInit(init.getCx(),
                                                         init)));
     }
 

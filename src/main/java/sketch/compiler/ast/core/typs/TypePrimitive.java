@@ -135,6 +135,8 @@ public class TypePrimitive extends Type
             return "void";
         case TYPE_BOOLEAN:
             return "boolean";
+        case TYPE_NULLPTR:
+        	return "null ptr";
 
         case TYPE_ANYTYPE:
         	return "any";
@@ -201,6 +203,8 @@ public class TypePrimitive extends Type
         	return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
         case TYPE_ANYTYPE:
         	return true;
+        case TYPE_NULLPTR:
+        	return t2 == TYPE_NULLPTR;
         default:
             assert false : t1;
             return false;

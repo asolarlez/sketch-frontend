@@ -67,7 +67,7 @@ public class ExprComplex extends Expression
     {
         if (real != null)
             return real;
-        return new ExprConstFloat(this.getContext(), 0.0f);
+        return new ExprConstFloat(this.getCx(), 0.0f);
     }
 
     /**
@@ -89,7 +89,7 @@ public class ExprComplex extends Expression
     {
         if (imag != null)
             return imag;
-        return new ExprConstFloat(this.getContext(), 0.0f);
+        return new ExprConstFloat(this.getCx(), 0.0f);
     }
 
     /** Accept a front-end visitor. */

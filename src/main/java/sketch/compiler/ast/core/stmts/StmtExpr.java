@@ -40,7 +40,7 @@ public class StmtExpr extends Statement
      */
     public StmtExpr(Expression expr)
     {
-        this(expr.getContext(), expr);
+        this(expr.getCx(), expr);
     }
 
     public Expression getExpression()
