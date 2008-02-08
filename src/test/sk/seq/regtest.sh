@@ -1,4 +1,15 @@
-for x in `ls *.sk`
+
+SATSOLVER=$1;
+
+if [ $SATSOLVER=="" ]; then
+
+SATSOLVER="MINI"
+
+fi
+
+echo "USING SATSOLVER " $SATSOLVER;
+
+time for x in `ls *.sk`
 do 
 
 echo "RUNNING $x  $d";
@@ -9,7 +20,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash sketch   -synth MINI -verif MINI  --incremental 6  ${x} &> ${x}.output ;
+bash sketch   -synth $SATSOLVER -verif $SATSOLVER  --incremental 6  ${x} &> ${x}.output ;
 
 done;
 
