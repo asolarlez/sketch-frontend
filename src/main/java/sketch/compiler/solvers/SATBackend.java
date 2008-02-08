@@ -137,6 +137,13 @@ public class SATBackend {
 		if( params.hasFlag("seed") ){
 			commandLineOptions.add("-seed");
 			commandLineOptions.add( "" + params.flagValue("seed") );
+		}		
+		if( params.hasFlag("cex")){
+			commandLineOptions.add("-showinputs");
+		}
+		if( params.hasFlag("verbosity") ){
+			commandLineOptions.add("-verbosity");
+			commandLineOptions.add( "" + params.flagValue("verbosity") );
 		}
 	}
 	
@@ -222,7 +229,9 @@ public class SATBackend {
 			String line = null;
 			while ( (line = br.readLine()) != null){
 				if(line.length() > 2){
-					System.out.println(i + "  " + line);
+					if(!(line.charAt(0) == '-' && line.contains("->"))){
+						System.out.println(i + "  " + line);
+					}
 				}
 			}
 			solverErrorStr = "";

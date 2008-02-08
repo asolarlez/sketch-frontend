@@ -415,6 +415,14 @@ public class ToSBit
 		params.setAllowedParam("seed", new POpts(POpts.NUMBER,
 				"--seed s       \t Seeds the random number generator with s.",
 				null, null) );
+		
+		params.setAllowedParam("verbosity", new POpts(POpts.NUMBER,
+				"--verbosity n       \t Sets the level of verbosity for the output. 0 is quite mode 5 is the most verbose.",
+				"0", null) );
+		
+		params.setAllowedParam("cex", new POpts(POpts.FLAG,
+				"--cex       \t Show the counterexample inputs produced by the solver (Equivalend to backend flag -showinputs).",
+				null, null) );
 
 		params.setAllowedParam("outputcode", new POpts(POpts.FLAG,
 				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
