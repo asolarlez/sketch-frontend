@@ -292,6 +292,8 @@ public class NodesToC extends NodesToJava {
 	
 	public Object visitFunction(Function func)
     {
+				
+		
 		SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 		
@@ -302,7 +304,23 @@ public class NodesToC extends NodesToJava {
         result += func.getName();
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";
-        result += (String)func.getBody().accept(this);
+        
+        if(func.isUninterp()){ 
+        	List<Parameter> l = func.getParams();
+        	result += "{ \n";
+   		 	result += "\t/* This was defined as an uninterpreted function. " +
+   		 			"\n\t   Add your own body here. */ \n";
+   		 	for(Iterator<Parameter> it = l.iterator(); it.hasNext(); ){
+   		 		Parameter p = it.next();
+   		 		if(p.isParameterOutput()){
+   		 			Statement r = new StmtAssign(func.getCx(), new ExprVar(func.getCx(), p.getName()), ExprConstInt.zero);
+   		 			result += "\t" + (String) r.accept(this) + ";\n";
+   		 		}
+   		 	}   		 
+   		 	result += "\n}";
+		}else{
+			result += (String)func.getBody().accept(this);
+		}
         result += "\n";
         
         symtab = oldSymTab;
