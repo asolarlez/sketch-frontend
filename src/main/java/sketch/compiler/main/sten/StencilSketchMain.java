@@ -75,7 +75,7 @@ public class ToStencilSK extends ToSBit
     	prog= (Program)prog.accept(new EliminateTransitiveAssignments());
     	prog= (Program)prog.accept(new PropagateFinals());    	
     	//System.out.println("=========  After ElimTransAssign  =========");
-    	prog = (Program)prog.accept(new EliminateDeadCode());
+    	prog = (Program)prog.accept(new EliminateDeadCode(true));
     	System.out.println("=============================================================");
     	prog.accept( new SimpleCodePrinter() );
     	
@@ -157,7 +157,7 @@ public class ToStencilSK extends ToSBit
         tmp = (Program)tmp.accept(new FlattenStmtBlocks());
     	tmp = (Program)tmp.accept(new EliminateTransitiveAssignments());
     	//System.out.println("=========  After ElimTransAssign  =========");
-    	tmp = (Program)tmp.accept(new EliminateDeadCode());
+    	tmp = (Program)tmp.accept(new EliminateDeadCode(true));
     	//System.out.println("=========  After ElimDeadCode  =========");
     	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
         tmp.accept(new SimpleCodePrinter());
@@ -182,7 +182,7 @@ public class ToStencilSK extends ToSBit
     	finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	//finalCode.accept( new SimpleCodePrinter() );
-    	finalCode = (Program)finalCode.accept(new EliminateDeadCode());
+    	finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
     	//System.out.println("=========  After ElimDeadCode  =========");
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new SimplifyVarNames());

@@ -57,7 +57,7 @@ public class ToSpin extends ToSBit {
 		//dump (prog, "After eliminating conditionals");
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
-		prog = (Program)prog.accept(new EliminateStructs(varGen));
+		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		//dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
