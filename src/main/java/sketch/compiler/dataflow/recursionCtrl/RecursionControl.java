@@ -73,4 +73,9 @@ public abstract class RecursionControl{
 		return "";
 	}
 	
+	boolean tracing = false;
+	public void activateTracing(){
+		tracing = true;
+	}
+	
 }
