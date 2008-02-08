@@ -253,8 +253,9 @@ public:
     template <size_t Ntag> const bitvec<Ntag> sub (size_t offset) const;
 
 
-	inline operator unsigned (void) const {
-		return v[0];
+
+	inline operator int (void) const {
+		return (int) v[0];
     }
 
     /*

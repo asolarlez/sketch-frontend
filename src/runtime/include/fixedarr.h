@@ -38,6 +38,7 @@ public:
    }
    fixedarr(unsigned i){
       arr[0] = i;
+      for(int t=1; t<N; ++t){ arr[t] = 0; }
    }
 
    fixedarr(const fixedarr<T, N>& ar){
@@ -48,10 +49,10 @@ public:
 
    template <size_t Ntag> const fixedarr<T,Ntag> sub (size_t offset) const{
       fixedarr<T, Ntag> tmp;
-      assert (offset + Ntag <= N);
-      for(int i=0; i<Ntag; ++i){
-              tmp.arr[i] = arr[i+offset];
-      }      
+      
+	  for(int i=0; i<Ntag; ++i){
+	         tmp.arr[i] = i+offset < N ? arr[i+offset] : 0;
+	  }
       return tmp;
    }
    
@@ -61,8 +62,9 @@ public:
    }
    
    inline fixedarrRef<T> operator[] (const size_t i) const{
-   	    assert ( i < N);
-   		return fixedarrRef<T>((unsigned int*)&arr[i], N-i);
+   		//cout<<"  i = "<<i<<"  N="<<N<<endl;
+   	    assert ( i < N);   	    
+   		return fixedarrRef<T>((T*)&arr[i], N-i);
    }
 
     inline const T first() const{
