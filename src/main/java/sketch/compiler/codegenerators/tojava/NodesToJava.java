@@ -890,10 +890,14 @@ public class NodesToJava extends SymbolTableVisitor
         assert stmt.getCond() != null;
         ctype = TypePrimitive.bittype;
         String result = "if (" + (String)stmt.getCond().accept(this) + ") ";
-        result += (String)stmt.getCons().accept(this);
-        if(! (stmt.getCons() instanceof StmtBlock ) ){
-        	result += ";";
-        }
+        if(stmt.getCons() == null){
+        	result += "{}\n";
+        }else{
+        	result += (String)stmt.getCons().accept(this);
+        	 if(! (stmt.getCons() instanceof StmtBlock ) ){
+             	result += ";";
+             }
+        }       
         if (stmt.getAlt() != null){
             result += " else " + (String)stmt.getAlt().accept(this);
             if(! (stmt.getAlt() instanceof StmtBlock ) ){
