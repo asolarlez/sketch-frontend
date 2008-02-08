@@ -14,6 +14,7 @@ import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
@@ -113,6 +114,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	        	assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
 	        	int sz = tmp.getIntVal();
 	        	if(param.isParameterOutput()){
+	        		assert !param.isParameterInput() : "Reference parameters not yet supported for interface functions.";
 	        		opsizes.add(sz);
 	        	}
 	        	for(int tt=0; tt<sz; ++tt){	        		
@@ -244,11 +246,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 			    		}
 			    		Statement body = null;
 			    		try{
-			    			try{
-			    			System.out.println(this.state.varValue("__sPC8_p_57L5"));
-			    			}catch(AssertionError e){
-			    				
-			    			}
+			    			
 			    			body = (Statement) fun.getBody().accept(this);
 			    		}catch(RuntimeException ex){
 			    			state.popLevel(); // This is to compensate for a pushLevel in inParamSetter. 
@@ -284,5 +282,18 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     	exprRV = null;
     	return vtype.BOTTOM();    	
     }
+	
+	private Object tmp=null;
+	@Override
+	public Object visitStmtAssign(StmtAssign s){
+		if(s.getCx() != tmp && s.getCx() != null){
+			System.out.println(s.getCx());
+			tmp = s.getCx();
+		}
+		return super.visitStmtAssign(s);
+		
+	}
+	
+	
 	
 }
