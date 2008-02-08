@@ -1,24 +1,14 @@
 package streamit.frontend;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Map;
-
+import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
 import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.solvers.CounterExample;
+import streamit.frontend.solvers.SATSynthesizer;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
 import streamit.frontend.tosbit.ValueOracle;
@@ -31,7 +21,7 @@ public class ToPSbitII extends ToSBit {
 	
 	
 	public Synthesizer createSynth(Program p){
-		return null;
+		return new SATSynthesizer(p, params, internalRControl(), varGen );
 	}
 	
 	public Verifier createVerif(Program p){
@@ -65,13 +55,13 @@ public class ToPSbitII extends ToSBit {
 		boolean success = false;
 		do{
 			
-			CounterExample cex = verif.verify( ora );
+			CounterExample cex = null;/*verif.verify( ora );
 			if(cex == null){
 				success = true;
 				break;
 				//we are done;
 			}
-			
+			*/
 			ora = synth.nextCandidate(cex);
 			if(ora == null){
 				success = false;
@@ -111,6 +101,26 @@ public class ToPSbitII extends ToSBit {
 		System.out.println("DONE");
 
 	}
+	
+
+
+	protected void setCommandLineParams(){
+		super.setCommandLineParams();
+		params.setAllowedParam("schedlen", new POpts(POpts.NUMBER,
+				"--schedlen  n \t Sets the length of the schedule for the parallel sections to n.",
+				"10", null) );
+
+		params.setAllowedParam("locklen", new POpts(POpts.NUMBER,
+				"--locklen  n \t This is another one of those parameters that have to do with the way\n" +
+				"             \t things are implemented. The locks array has to be of a static size. \n" +
+				"             \t When you lock on a pointer, the pointer is transformed based on some \n" +
+				"             \t strange function, and the resulting value is used to index the lock array. \n" +
+				"             \t If that index is out of bounds, your sketch will not resolve, so you use this \n" +
+				"             \t parameter to make that lock array larger.",
+				"10", null) );
+	}
+
+	
 	
 	
 	public ToPSbitII(String[] args){

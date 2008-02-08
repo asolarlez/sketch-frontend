@@ -218,7 +218,7 @@ public class ToSBit
 		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
-		prog = (Program)prog.accept(new EliminateStructs(varGen));
+		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		//dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
@@ -270,7 +270,7 @@ public class ToSBit
 		//dump (prog, "bef fpe:");
 		lprog = (Program)lprog.accept(new EliminateAnyorder(varGen));
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));		
-		//dump (prog, "fpe:");
+		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 		//dump (prog, "tifs:");
@@ -298,12 +298,12 @@ public class ToSBit
 		dump(finalCode, "after flattening");
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		// dump(finalCode, "Before DCE");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode());
-		// dump(finalCode, "after DCE");
+		dump(finalCode, "Before DCE");
+		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		dump(finalCode, "after DCE");
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
-		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
+		//finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 		/*
     	 finalCode =
@@ -393,6 +393,11 @@ public class ToSBit
 				"--inlineamnt n \t Bounds inlining to n levels of recursion, so" +
 				"\n\t\t each function can appear at most n times in the stack.",
 				"5", null) );
+		
+		params.setAllowedParam("heapsize", new POpts(POpts.NUMBER,
+				"--heapsize n \t Size of the heap for each object. This is the maximum" +
+				"\n\t\t number of objects of a given type that the program may allocate.",
+				"11", null) );
 
 		params.setAllowedParam("branchamnt", new POpts(POpts.NUMBER,
 				"--branchamnt n \t This flag is also used for recursion control. " +
@@ -424,6 +429,12 @@ public class ToSBit
 
 		params.setAllowedParam("outputcode", new POpts(POpts.FLAG,
 				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
+				null, null) );
+		
+		params.setAllowedParam("keepasserts", new POpts(POpts.FLAG,
+				"--keepasserts   \t The synthesizer guarantees that all asserts will succeed." +
+				"\n \t\t For this reason, all asserts are removed from generated code by default. However, " +
+				"\n \t\t sometimes it is useful for debugging purposes to keep the assertions around.",
 				null, null) );
 
 		params.setAllowedParam("outputtest", new POpts(POpts.FLAG,
@@ -504,7 +515,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-		
+		dump (prog, "After preprocess program:");
 		if (prog == null)
 			throw new IllegalStateException();
 

@@ -51,7 +51,7 @@ public class ToPSbit extends ToSBit {
 		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		//dump(finalCode, "Before DCE");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode());
+		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 
@@ -87,7 +87,7 @@ public class ToPSbit extends ToSBit {
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new MakeAllocsAtomic(varGen));
-		prog = (Program)prog.accept(new EliminateStructs(varGen));
+		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		//dump (prog, "After eliminating structs:");
 		ProduceParallelModel ppm = new ProduceParallelModel(this.varGen, params.flagValue("schedlen"), params.flagValue("locklen") );
