@@ -320,7 +320,7 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
 	id:ID
 	l=param_decl_list
 	(TK_implements impl:ID)?
-	s=block
+	( s=block
 	{
 			if(isStatic){
 				f = Function.newStatic(getContext(id), id.getText(), rt, l,
@@ -330,6 +330,7 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
 					impl==null?null:impl.getText(), s);
 			}
 	}
+	| SEMI  { f = Function.newUninterp(getContext(id),id.getText(), rt, l);   })
 	;
 
 return_type returns [Type t] { t=null; }
@@ -350,8 +351,8 @@ param_decl_list returns [List l] { l = new ArrayList(); Parameter p; }
 		RPAREN
 	;
 
-param_decl returns [Parameter p] { Type t; p = null; }
-	:	t=data_type id:ID { p = new Parameter(t, id.getText()); }
+param_decl returns [Parameter p] { Type t; p = null; boolean isRef=false; }
+	: 	(TK_ref { isRef=true;} )?	 t=data_type id:ID { p = new Parameter(t, id.getText(), isRef? Parameter.REF : Parameter.IN); }
 	;
 
 block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
