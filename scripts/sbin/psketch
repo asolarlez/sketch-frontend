@@ -30,18 +30,14 @@ for INFILE; do
 done
 
 CPPTEMP="${INFILE}.cpp"
-ARGS="${ARGS} ${CPPTEMP}"
+ARGS="${ARGS} ${INFILE}"
 
-#
-# Preprocess the input file
-#
-cpp -Wno-trigraphs "$INFILE" | sed s/#.*// > "$CPPTEMP"
 
 # Launch
 #
 java -ea \
   -classpath "$TMPCLASSPATH" \
-  streamit.frontend.ToPSbit --output "${CPPTEMP}.tmp" \
+  streamit.frontend.ToPSbit --output "${INFILE}.tmp" \
   --sbitpath "$TMPSBITPATH" $ARGS
 
 
