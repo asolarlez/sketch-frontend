@@ -197,15 +197,23 @@ public class NodesToCTest extends NodesToJava {
     	String line=name;
     	if(isArr) line+="[i]";
     	if(random) {
-	    	line+="=rand()";
-	    	for(int s=16;s<ws;s+=16) {
-	    		line+="+(rand()<<"+s+")";
-	    	}
+    		if(isIntType(t)){
+    			line+="=abs(rand()";
+		    	for(int s=16;s<ws;s+=16) {
+		    		line+="+(rand()<<"+s+"))";
+		    	}
+        	}else{
+		    	line+="=rand()";
+		    	for(int s=16;s<ws;s+=16) {
+		    		line+="+(rand()<<"+s+")";
+		    	}
+        	}
     	}
     	else
     		line+="=0U";
     	line+=";";
     	writeLine(line);
+    	
     	if(isArr) {
     		unIndent();
     		writeLine("}");
@@ -213,6 +221,16 @@ public class NodesToCTest extends NodesToJava {
     	// padVar(name, t);
     }
 
+    private boolean isIntType(Type t){
+    	if(t instanceof TypePrimitive){
+    		return t == TypePrimitive.inttype;
+    	}
+    	if(t instanceof TypeArray){
+    		return isIntType(((TypeArray)t).getBase());
+    	}
+    	return false;
+    }
+    
     private void outputVar(String name, Type t) 
     {
     	
