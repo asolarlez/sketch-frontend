@@ -1,5 +1,8 @@
-for x in `ls *.sk`
+
+echo "" > runoutput;
+for x in `ls miniTest*.sk`
 do 
+
 
 echo "RUNNING $x  $d";
 
@@ -9,17 +12,18 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash sketch --outputtest  --outputcode -synth ABC -verif ABC  --incremental 6 --seed 10 ${x} &> ${x}.output ;
-bash script;
+bash sketch --outputtest  --outputcode --keepasserts -synth ABC -verif ABC  --incremental 6 --seed 10 ${x} &> ${x}.output ;
+bash script >> runoutput;
 done;
 
 rm *.tmp;
 
-grep -n '[0-9]' *.cpp | cpp | sed 's/:[0-9]*:/::/' > current.output;
 
-# diff -w current.output reference;
-grep 'CORRECT' *.output | tr ':' ' ' | awk '{ print $1; }' > cur
+cat runoutput;
+grep 'Automated testing passed' runoutput | awk '{ print $5".sk.output"; }' > cur
+cat cur;
 echo "LISTED BELOW ARE THE FAILED TESTS (IF ANY)"
 diff  -w cur ref 
 echo "END OF LIST"
 rm cur
+rm runoutput
