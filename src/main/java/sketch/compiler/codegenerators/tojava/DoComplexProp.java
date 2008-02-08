@@ -112,16 +112,16 @@ public class DoComplexProp extends SymbolTableVisitor
         // the path tojava.TempVarGen was written for, so we can
         // ignore the type parameter.
         String tempVar = varGen.nextVar();
-        Expression exprVar = new ExprVar(expr.getContext(), tempVar);
+        Expression exprVar = new ExprVar(expr.getCx(), tempVar);
         Type type = TypePrimitive.cplxtype;
-        addStatement(new StmtVarDecl(expr.getContext(), type, tempVar, null));
+        addStatement(new StmtVarDecl(expr.getCx(), type, tempVar, null));
         symtab.registerVar(tempVar, type);
-        addStatement(new StmtAssign(expr.getContext(),
-                                    new ExprField(expr.getContext(),
+        addStatement(new StmtAssign(expr.getCx(),
+                                    new ExprField(expr.getCx(),
                                                   exprVar, "real"),
                                     cplx.getRealExpr()));
-        addStatement(new StmtAssign(expr.getContext(),
-                                    new ExprField(expr.getContext(),
+        addStatement(new StmtAssign(expr.getCx(),
+                                    new ExprField(expr.getCx(),
                                                   exprVar, "imag"),
                                     cplx.getImagExpr()));
         return exprVar;
@@ -135,9 +135,9 @@ public class DoComplexProp extends SymbolTableVisitor
     private Expression makeAnyTemporary(Expression expr)
     {
         String tempVar = varGen.nextVar();
-        Expression exprVar = new ExprVar(expr.getContext(), tempVar);
+        Expression exprVar = new ExprVar(expr.getCx(), tempVar);
         Type type = getType(expr);
-        addStatement(new StmtVarDecl(expr.getContext(), type, tempVar, expr));
+        addStatement(new StmtVarDecl(expr.getCx(), type, tempVar, expr));
         symtab.registerVar(tempVar, type);
         return exprVar;
     }
@@ -148,9 +148,9 @@ public class DoComplexProp extends SymbolTableVisitor
      */
     private static Expression makeComplexPair(Expression exp)
     {
-        Expression real = new ExprField(exp.getContext(), exp, "real");
-        Expression imag = new ExprField(exp.getContext(), exp, "imag");
-        return new ExprComplex(exp.getContext(), real, imag);
+        Expression real = new ExprField(exp.getCx(), exp, "real");
+        Expression imag = new ExprField(exp.getCx(), exp, "imag");
+        return new ExprComplex(exp.getCx(), real, imag);
     }
 
     /**
@@ -222,7 +222,7 @@ public class DoComplexProp extends SymbolTableVisitor
         // Run propagation, but insert temporaries for any
         // complex variables that are left.
         creator = (SCSimple)super.visitSCSimple(creator);
-        return new SCSimple(creator.getContext(), creator.getName(),
+        return new SCSimple(creator.getCx(), creator.getName(),
                             creator.getTypes(),
                             createListTemporaries(creator.getParams()),
                             creator.getPortals());
@@ -235,13 +235,13 @@ public class DoComplexProp extends SymbolTableVisitor
         if (rhs instanceof ExprComplex)
         {
             ExprComplex cplx = (ExprComplex)rhs;
-            addStatement(new StmtAssign(stmt.getContext(),
-                                        new ExprField(lhs.getContext(),
+            addStatement(new StmtAssign(stmt.getCx(),
+                                        new ExprField(lhs.getCx(),
                                                       lhs, "real"),
                                         cplx.getRealExpr(),
                                         stmt.getOp()));
-            addStatement(new StmtAssign(stmt.getContext(),
-                                        new ExprField(lhs.getContext(),
+            addStatement(new StmtAssign(stmt.getCx(),
+                                        new ExprField(lhs.getCx(),
                                                       lhs, "imag"),
                                         cplx.getImagExpr(),
                                         stmt.getOp()));
@@ -249,21 +249,21 @@ public class DoComplexProp extends SymbolTableVisitor
         }
         else if (getType(lhs).isComplex() && !(getType(rhs).isComplex()))
         {
-            addStatement(new StmtAssign(stmt.getContext(),
-                                        new ExprField(lhs.getContext(),
+            addStatement(new StmtAssign(stmt.getCx(),
+                                        new ExprField(lhs.getCx(),
                                                      lhs, "real"),
                                         rhs,
                                         stmt.getOp()));
-            addStatement(new StmtAssign(stmt.getContext(),
-                                        new ExprField(lhs.getContext(),
+            addStatement(new StmtAssign(stmt.getCx(),
+                                        new ExprField(lhs.getCx(),
                                                       lhs, "imag"),
-                                        new ExprConstInt(lhs.getContext(),
+                                        new ExprConstInt(lhs.getCx(),
                                                          0),
                                         stmt.getOp()));
             return null;
         }
         else if (rhs != stmt.getRHS())
-            return new StmtAssign(stmt.getContext(), lhs, rhs, stmt.getOp());
+            return new StmtAssign(stmt.getCx(), lhs, rhs, stmt.getOp());
         else
             return stmt;
     }
@@ -273,7 +273,7 @@ public class DoComplexProp extends SymbolTableVisitor
         Expression value = stmt.getValue();
         value = doExprProp(value);
         value = makeComplexTemporary(value);
-        return new StmtEnqueue(stmt.getContext(), value);
+        return new StmtEnqueue(stmt.getCx(), value);
     }
 
     public Object visitStmtExpr(StmtExpr stmt)
@@ -282,13 +282,13 @@ public class DoComplexProp extends SymbolTableVisitor
         if (newExpr instanceof ExprComplex)
         {
             ExprComplex cplx = (ExprComplex)newExpr;
-            addStatement(new StmtExpr(stmt.getContext(), cplx.getRealExpr()));
-            addStatement(new StmtExpr(stmt.getContext(), cplx.getImagExpr()));
+            addStatement(new StmtExpr(stmt.getCx(), cplx.getRealExpr()));
+            addStatement(new StmtExpr(stmt.getCx(), cplx.getImagExpr()));
             return null;
         }
         if (newExpr == stmt.getExpression())
             return stmt;
-        return new StmtExpr(stmt.getContext(), newExpr);
+        return new StmtExpr(stmt.getCx(), newExpr);
     }
 
     public Object visitStmtPush(StmtPush stmt)
@@ -296,7 +296,7 @@ public class DoComplexProp extends SymbolTableVisitor
         Expression value = stmt.getValue();
         value = doExprProp(value);
         value = makeComplexTemporary(value);
-        return new StmtPush(stmt.getContext(), value);
+        return new StmtPush(stmt.getCx(), value);
     }
 
     public Object visitStmtReturn(StmtReturn stmt)
@@ -305,7 +305,7 @@ public class DoComplexProp extends SymbolTableVisitor
         if (value == null) return stmt;
         value = doExprProp(value);
         value = makeComplexTemporary(value);
-        return new StmtReturn(stmt.getContext(), value);
+        return new StmtReturn(stmt.getCx(), value);
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -313,7 +313,7 @@ public class DoComplexProp extends SymbolTableVisitor
         stmt = (StmtVarDecl)super.visitStmtVarDecl(stmt);
 
         // Save the context, we'll need it later.
-        FEContext ctx = stmt.getContext();
+        FEContext ctx = stmt.getCx();
         // Go ahead and do propagation:
         List newTypes = new java.util.ArrayList();
         List newNames = new java.util.ArrayList();

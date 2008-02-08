@@ -61,7 +61,7 @@ public class AtomizeStatements extends SymbolTableVisitor {
         if (left == exp.getLeft() && right == exp.getRight())
             return exp;
         else
-            return new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
+            return new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
     }
 	
 

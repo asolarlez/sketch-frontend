@@ -27,7 +27,7 @@ public class EliminateNestedArrAcc extends FEReplacer {
 			Expression nstart = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, baserl.start(), newStart  );
 			return new ExprArrayRange(exp.getCx(), baserange.getBase(), new RangeLen(nstart, nlen), exp.isUnchecked());
 		}
-		return new ExprArrayRange(exp.getContext(), newBase, new RangeLen(newStart, rl.len()), exp.isUnchecked());
+		return new ExprArrayRange(exp.getCx(), newBase, new RangeLen(newStart, rl.len()), exp.isUnchecked());
 	}
 	
 	

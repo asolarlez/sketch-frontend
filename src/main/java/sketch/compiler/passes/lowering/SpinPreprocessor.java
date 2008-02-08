@@ -266,7 +266,7 @@ public class SpinPreprocessor extends FEReplacer {
             }
         }
         if(newInits.size() > 0)
-        	return new StmtVarDecl(stmt.getContext(), newTypes,
+        	return new StmtVarDecl(stmt.getCx(), newTypes,
         			newNames, newInits);
         else
         	return null;
@@ -318,7 +318,7 @@ public class SpinPreprocessor extends FEReplacer {
         newFuncs.addAll(generatedFuncs);
         sspec = oldSS;
         if (!changed && newST == spec.getStreamType()) return spec;
-        return new StreamSpec(spec.getContext(), spec.getType(),
+        return new StreamSpec(spec.getCx(), spec.getType(),
                               newST, spec.getName(), spec.getParams(),
                               newVars, newFuncs);
 

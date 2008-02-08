@@ -298,7 +298,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        		}
 	        		state.pushVStack(new valueClass(rval));	        		
 	        		if(this.isReplacer && (left != exp.getLeft() || right != exp.getRight())){
-	        			rvalE = new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
+	        			rvalE = new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
 	        		}  	        		
 	        		return rvalE;
 	        	}
@@ -328,7 +328,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            	TypeArray ta = (TypeArray) field.getType(i);
 	            	ta.getLength().accept(this);
 	            	valueClass tmp = state.popVStack();
-	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + field.getContext());
+	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + field.getCx());
 	            	state.makeArray(lhs, tmp.getIntValue());
 	            	for(int tt=0; tt<tmp.getIntValue(); ++tt){
 	            		String nnm = lhs + "_idx_" + tt;
@@ -339,8 +339,8 @@ public class NodesToSBit extends PartialEvaluator{
 	         
 	            if (field.getInit(i) != null){	
 	            	additInit.
-					add(new StmtAssign(field.getContext(),
-							new ExprVar(field.getContext(), lhs),
+					add(new StmtAssign(field.getCx(),
+							new ExprVar(field.getCx(), lhs),
 							field.getInit(i)));   
 	            }else{	            	
 	            	//Assert(false, "Vars should be initialized");
@@ -348,8 +348,8 @@ public class NodesToSBit extends PartialEvaluator{
 	        }
 	        result += ";";
 	        result = "";
-	        if (field.getContext() != null)
-	            result += " // " + field.getContext();
+	        if (field.getCx() != null)
+	            result += " // " + field.getCx();
 	        result += "\n";
 	        return result;	        
 	    }
@@ -375,7 +375,7 @@ public class NodesToSBit extends PartialEvaluator{
 
                 if (!rcontrol.testCall(exp)) {
                     /* Cannot inline further, plant an assertion. */
-                    FEContext exprContext = exp.getContext ();
+                    FEContext exprContext = exp.getCx ();
                     StmtAssert inlineAssert =
                         new StmtAssert (exprContext,
                                         new ExprConstBoolean (
@@ -500,7 +500,7 @@ public class NodesToSBit extends PartialEvaluator{
 		        	}else{
 		        		out.print("output_RATE = 0;\n");	        	
 		        	}	        	
-		        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func.getContext() );
+		        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func.getCx() );
 		        	func.getBody().accept(this);
 		        	out.print(finalizeWork());
 	        	}finally{
@@ -864,8 +864,8 @@ public class NodesToSBit extends PartialEvaluator{
 			            if (!(s instanceof StmtIfThen)) {
 			            	out.print(";");
 			            }
-			            if (s.getContext() != null)
-			            	out.print(" \t\t\t// " + s.getContext());
+			            if (s.getCx() != null)
+			            	out.print(" \t\t\t// " + s.getCx());
 			            out.print("\n");
 		            }
 		        }
@@ -945,7 +945,7 @@ public class NodesToSBit extends PartialEvaluator{
 		        	}
 		        	stmt.getCond().accept(this);
 			        vcond = state.popVStack();
-			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getContext());
+			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getCx());
 		        }
 		        
 		        loopmap.popLoop();
@@ -968,7 +968,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        			stmt.getCons().accept(this);	
 	        			rcontrol.doneWithBlock(stmt.getCons());
 	        		}else{
-						( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+						( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
 					}
 	        	}else{
 	        		if (stmt.getAlt() != null){
@@ -976,7 +976,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        				stmt.getAlt().accept(this);
 	        				rcontrol.doneWithBlock(stmt.getAlt());
 	        			}else{
-							( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+							( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
 						}
 	        		}
 	        	}
@@ -995,7 +995,7 @@ public class NodesToSBit extends PartialEvaluator{
 		        }
 		        rcontrol.doneWithBlock(stmt.getCons());
 	        }else{
-				( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+				( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
 			}	        
 	        ChangeStack ipms = state.popChangeTracker();
 	        
@@ -1012,7 +1012,7 @@ public class NodesToSBit extends PartialEvaluator{
 			        }
 		        	rcontrol.doneWithBlock(stmt.getAlt());
                 }else{
-    				( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) ).accept(this);
+    				( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
     			}
 	            epms = state.popChangeTracker();
 	        }
@@ -1076,7 +1076,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    public Object visitStmtLoop(StmtLoop stmt)
 	    {
             /* Generate a new variable, initialized with loop expression. */
-            FEContext nvarContext = stmt.getContext ();
+            FEContext nvarContext = stmt.getCx ();
             String nvar = varGen.nextVar ();
             StmtVarDecl nvarDecl =
                 new StmtVarDecl (nvarContext,
@@ -1174,7 +1174,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        ExprFunCall fc = stmt.getFunCall();
 	        // ASSERT: the target is always a phase function.
 	        FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
-	        StmtExpr call = new StmtExpr(stmt.getContext(), fc);
+	        StmtExpr call = new StmtExpr(stmt.getCx(), fc);
 	        String peek, pop, push;
 	        if (target.getPeekRate() == null)
 	            peek = "0";
@@ -1285,7 +1285,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            	TypeArray at = (TypeArray)vt;
 	            	at.getLength().accept(this);
 	            	valueClass tmp = state.popVStack();
-	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getContext());
+	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getCx());
 	            	state.makeArray(nm, tmp.getIntValue());
 	            	//this.state.markVectorStack();
 	            	if( stmt.getInit(i) != null){
@@ -1357,7 +1357,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		    PrintStream tmpout = out; out = new PrintStream( baos );
-	    	out.print( "// " + spec.getContext() + "\n" ); 
+	    	out.print( "// " + spec.getCx() + "\n" ); 
 	    	
 	    	// Anonymous classes look different from non-anonymous ones.
 	    	// This appears in two places: (a) as a top-level (named)
@@ -1567,7 +1567,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            	result += io.getName() + "_RATE="+
 	                (String)io.getRate1().accept(this) + ";\n";
 	            	valueClass iv = state.popVStack();
-	            	Assert( iv.hasValue(), "The compiler must be able to determine the IO rate at compile time. \n" + io.getContext() );
+	            	Assert( iv.hasValue(), "The compiler must be able to determine the IO rate at compile time. \n" + io.getCx() );
 	            }
 	            if (io.getRate2() != null){
 	                //result += "\n "+ io.getName() + "_RATE2=" + (String)io.getRate2().accept(this)+ ";\n";

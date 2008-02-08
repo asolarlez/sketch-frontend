@@ -79,7 +79,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
             // Assume that the child expression of expr is a valid
             // left-hand side; it can usefully be a field, array
             // reference, or local variable.
-            FEContext ctx = expr.getContext();
+            FEContext ctx = expr.getCx();
             Expression lhs = expr.getExpr();
             int bop = ExprBinary.BINOP_ADD;
             if (op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_POSTDEC)
@@ -104,7 +104,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     private Object visitPeekOrPop(Expression expr)
     {
         // Create a temporary variable...
-        FEContext ctx = expr.getContext();
+        FEContext ctx = expr.getCx();
         String name = varGen.nextVar();
         Type type = getType(expr);
         addStatement(new StmtVarDecl(ctx, type, name, null));
@@ -164,7 +164,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         Statement newInit = (Statement)stmt.getInit().accept(this);
         if (newInit == stmt.getInit() && newBody == stmt.getBody() && inc == stmt.getIncr())
             return stmt;
-        return new StmtFor(stmt.getContext(), newInit, stmt.getCond(),
+        return new StmtFor(stmt.getCx(), newInit, stmt.getCond(),
                            inc, newBody);
     }
 
@@ -181,7 +181,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
             newAlt == stmt.getAlt() &&
             newCond == stmt.getCond())
             return stmt;
-        return new StmtIfThen(stmt.getContext(), newCond, newCons, newAlt);
+        return new StmtIfThen(stmt.getCx(), newCond, newCons, newAlt);
     }
 
     public Object visitStmtWhile(StmtWhile stmt)
@@ -194,6 +194,6 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         successors = new java.util.ArrayList();
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtWhile(stmt.getContext(), stmt.getCond(), newBody);
+        return new StmtWhile(stmt.getCx(), stmt.getCond(), newBody);
     }
 }

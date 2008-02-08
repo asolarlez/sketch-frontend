@@ -49,7 +49,7 @@ class VarReplacer extends FEReplacer{
                 continue;
             doStatement(s);
         }
-        Statement result = new StmtBlock(stmt.getContext(), newStatements);
+        Statement result = new StmtBlock(stmt.getCx(), newStatements);
         newStatements = oldStatements;
         return result;
     }
@@ -98,7 +98,7 @@ class VarReplacer extends FEReplacer{
             newNames.add(name);
         }
         if( !changed ) return stmt;
-        return new StmtVarDecl(stmt.getContext(), stmt.getTypes(),
+        return new StmtVarDecl(stmt.getCx(), stmt.getTypes(),
                                stmt.getNames(), newInits);
     }
 	

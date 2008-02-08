@@ -111,7 +111,7 @@ public class SemanticChecker
 		SemanticChecker checker = new SemanticChecker();
 		Map streamNames = checker.checkStreamNames(prog);
 		checker.checkDupFieldNames(prog, streamNames);
-		checker.checkStatementPlacement(prog);
+		//checker.checkStatementPlacement(prog);
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
 		checker.checkStatementCounts(prog);
@@ -123,7 +123,7 @@ public class SemanticChecker
 
 	protected void report(FENode node, String message)
 	{
-		report(node.getContext(), message);
+		report(node.getCx(), message);
 	}
 
 	protected void report(FEContext ctx, String message)
@@ -160,7 +160,7 @@ public class SemanticChecker
 		for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
 		{
 			StreamSpec spec = (StreamSpec)iter.next();
-			checkAStreamName(names, spec.getName(), spec.getContext());
+			checkAStreamName(names, spec.getName(), spec.getCx());
 		}
 
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
@@ -208,14 +208,14 @@ public class SemanticChecker
 			{
 				Parameter param = (Parameter)i2.next();
 				checkADupFieldName(localNames, streamNames,
-						param.getName(), spec.getContext());
+						param.getName(), spec.getCx());
 			}
 			for (i2 = spec.getVars().iterator(); i2.hasNext(); )
 			{
 				FieldDecl field = (FieldDecl)i2.next();
 				for (int i = 0; i < field.getNumFields(); i++)
 					checkADupFieldName(localNames, streamNames,
-							field.getName(i), field.getContext());
+							field.getName(i), field.getCx());
 			}
 			for (i2 = spec.getFuncs().iterator(); i2.hasNext(); )
 			{
@@ -245,7 +245,7 @@ public class SemanticChecker
 				}
 				if (name != null)
 					checkADupFieldName(localNames, streamNames,
-							name, func.getContext());
+							name, func.getCx());
 			}
 		}
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
@@ -488,7 +488,7 @@ public class SemanticChecker
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprUnary");
 
-				Type ot = getType(expr.getExpr());
+				Type ot = getType((Expression)expr.getExpr().accept(this));
 				boolean isArr = false;
 				if(ot instanceof TypeArray){
 					ot = ((TypeArray)ot).getBase();
@@ -530,7 +530,7 @@ public class SemanticChecker
 					}
 				}
 
-				return super.visitExprUnary(expr);
+				return expr;
 			}
 
 			private Type currentFunctionReturn = null;
@@ -576,10 +576,16 @@ public class SemanticChecker
 					}
 				}
 
-				return super.visitFunction(func);
+				hasReturn = false;
+				Object tmp = super.visitFunction(func);
+				if(!hasReturn && !func.getReturnType().equals(TypePrimitive.voidtype) && !func.isUninterp()){
+					report(func, "The function " + func.getName() + " doesn't have any return statements. It should return an " + func.getReturnType());
+				}
+				return tmp;
 			}
 
-
+			public boolean hasReturn;
+			
 			public Object visitExprFunCall(ExprFunCall exp)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
@@ -610,8 +616,8 @@ public class SemanticChecker
 
 				boolean isLeftArr = false;
 				boolean isRightArr = false;
-				Type lt = getType(expr.getLeft());
-				Type rt = getType(expr.getRight());
+				Type lt = getType((Expression)expr.getLeft().accept(this));
+				Type rt = getType((Expression)expr.getRight().accept(this));
 				if(lt instanceof TypeArray){
 					lt = ((TypeArray)lt).getBase();
 					isLeftArr = true;
@@ -713,7 +719,7 @@ public class SemanticChecker
 					//return expr;
 				}
 
-				return super.visitExprBinary(expr);
+				return (expr);
 			}
 
 
@@ -722,9 +728,9 @@ public class SemanticChecker
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprTernary");
 
-				Type at = getType(expr.getA());
-				Type bt = getType(expr.getB());
-				Type ct = getType(expr.getC());
+				Type at = getType((Expression)expr.getA().accept(this));
+				Type bt = getType((Expression)expr.getB().accept(this));
+				Type ct = getType((Expression)expr.getC().accept(this));
 
 				if (at != null)
 				{
@@ -744,14 +750,14 @@ public class SemanticChecker
 						"in ternary expression");
 				}
 
-				return super.visitExprTernary(expr);
+				return (expr);
 			}
 
 			public Object visitExprField(ExprField expr)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprField");
 
-				Type lt = getType(expr.getLeft());
+				Type lt = getType((Expression)expr.getLeft().accept(this));
 
 				// Either lt is complex, or it's a structure
 				// type, or it's null, or it's an error.
@@ -791,13 +797,13 @@ public class SemanticChecker
 					"field reference of a non-structure type");
 				}
 
-				return super.visitExprField(expr);
+				return (expr);
 			}
 
 			public Object visitExprArrayRange(ExprArrayRange expr){
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprArrayRange");
 
-				Type bt = getType(expr.getBase());
+				Type bt = getType((Expression)expr.getBase().accept(this));
 				if (bt != null)
 				{
 					if (!(bt instanceof TypeArray))
@@ -816,7 +822,7 @@ public class SemanticChecker
 					return super.visitExprArrayRange(expr);
 				}
 				RangeLen rl = (RangeLen)idx;
-				Type ot = getType(rl.start());
+				Type ot = getType((Expression)rl.start().accept(this));
 				if (ot != null)
 				{
 					if (!ot.promotesTo
@@ -825,7 +831,7 @@ public class SemanticChecker
 				}else{
 					report(expr, "array index must be an int");
 				}
-				return super.visitExprArrayRange(expr);
+				return (expr);
 			}
 
 			/*			public Object visitExprArray(ExprArray expr)
@@ -943,8 +949,8 @@ public class SemanticChecker
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
 
-				Type lt = getType(stmt.getLHS());
-				Type rt = getType(stmt.getRHS());
+				Type lt = getType((Expression)stmt.getLHS().accept(this));
+				Type rt = getType((Expression)stmt.getRHS().accept(this));
 				String lhsn = null;
 				Expression lhsExp = stmt.getLHS();
 				if(lhsExp instanceof ExprArray){
@@ -957,7 +963,7 @@ public class SemanticChecker
 					lhsn = ( (ExprVar) lhsExp).getName();
 				}
 				matchTypes(stmt, lhsn, lt, rt);
-				return super.visitStmtAssign(stmt);
+				return (stmt);
 			}
 
 			public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -995,19 +1001,20 @@ public class SemanticChecker
 			public Object visitStmtDoWhile(StmtDoWhile stmt)
 			{
 				// check the condition
+				stmt = (StmtDoWhile) super.visitStmtDoWhile(stmt);
 				Type cond = getType(stmt.getCond());
 				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a promotable to a bit");
 
 				// should really also check whether any variables are modified in the loop body
 
-				return super.visitStmtDoWhile(stmt);
+				return stmt;
 			}
 
 			public Object visitStmtFor(StmtFor stmt)
 			{
 				// check the condition
-
+				stmt = (StmtFor) super.visitStmtFor(stmt);
 				if( stmt.getInit() == null){
 					report(stmt, "For loops without initializer not supported." );
 				}else{
@@ -1032,37 +1039,40 @@ public class SemanticChecker
 
 				// again, should check for variable usage
 
-				return super.visitStmtFor(stmt);
+				return (stmt);
 			}
 
 			public Object visitStmtIfThen(StmtIfThen stmt)
 			{
 				// check the condition
+				stmt = (StmtIfThen)super.visitStmtIfThen(stmt);
 				Type cond = getType(stmt.getCond());
 				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
-				return super.visitStmtIfThen(stmt);
+				return stmt;
 			}
 
 			public Object visitStmtLoop(StmtLoop stmt)
 			{
 				// variable in loop should promote to an int
+				stmt = (StmtLoop) super.visitStmtLoop(stmt);
 				Type cond = getType(stmt.getIter());
 				if (!cond.promotesTo(TypePrimitive.inttype))
 					report (stmt, "Iteration count is not convertable to an integer");
 
-				return super.visitStmtLoop(stmt);
+				return (stmt);
 			}
 
 			public Object visitStmtWhile(StmtWhile stmt)
 			{
 				// check the condition
+				stmt = (StmtWhile)super.visitStmtWhile(stmt);
 				Type cond = getType(stmt.getCond());
 				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
-				return super.visitStmtWhile(stmt);
+				return stmt;
 			}
 
 			public Object visitStmtReturn(StmtReturn stmt)
@@ -1072,10 +1082,11 @@ public class SemanticChecker
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtReturn");
 				//System.out.println("Return values: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
 
+				stmt = (StmtReturn)super.visitStmtReturn(stmt);
 				if (! getType(stmt.getValue()).promotesTo(currentFunctionReturn))
 					report (stmt, "Return value incompatible with declared function return value: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
-
-				return super.visitStmtReturn(stmt);
+				hasReturn = true;
+				return (stmt);
 			}
 
 		});

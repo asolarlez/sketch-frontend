@@ -74,11 +74,11 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 					arng = new ExprArrayRange(newBase, lst);
 				}
 				String newName = varGen.nextVar();
-				StmtVarDecl decl = new StmtVarDecl(arng.getContext(), type, newName, null);
+				StmtVarDecl decl = new StmtVarDecl(arng.getCx(), type, newName, null);
 				addStatement(decl);	
-				Statement assign = new StmtAssign(arng.getContext(), new ExprVar(arng.getContext(), newName), newRHS);
+				Statement assign = new StmtAssign(arng.getCx(), new ExprVar(arng.getCx(), newName), newRHS);
 				addStatement(assign);
-				return new StmtAssign(stmt.getContext(), arng, new ExprVar(stmt.getContext(), newName), stmt.getOp());				
+				return new StmtAssign(stmt.getCx(), arng, new ExprVar(stmt.getCx(), newName), stmt.getOp());				
 			}else{
 				newLHS = doExpression(stmt.getLHS());
 			}
@@ -88,7 +88,7 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 				                
         if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
             return stmt;
-        return new StmtAssign(stmt.getContext(), newLHS, newRHS,
+        return new StmtAssign(stmt.getCx(), newLHS, newRHS,
                               stmt.getOp());
     }
 	
@@ -100,7 +100,7 @@ public class EliminateArrayRange extends SymbolTableVisitor {
     	if( rl.len() == 1 ){
     		Expression newBase=doExpression(exp.getBase());
     		Expression newIndex = doExpression(rl.start());	
-    		return new ExprArrayRange(exp.getContext(), newBase, newIndex);
+    		return new ExprArrayRange(exp.getCx(), newBase, newIndex);
     	}else{    			
 			TypeArray arrType = (TypeArray) getType(exp.getBase());
 			Type baseType = arrType.getBase();				
@@ -114,11 +114,11 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 				exp = new ExprArrayRange(newBase, lst);
 			}		
 			String newName = varGen.nextVar();
-			StmtVarDecl decl = new StmtVarDecl(exp.getContext(), type, newName, null);
+			StmtVarDecl decl = new StmtVarDecl(exp.getCx(), type, newName, null);
 			this.addStatement(decl);
-			Statement assign = new StmtAssign(exp.getContext(), new ExprVar(exp.getContext(), newName), exp);
+			Statement assign = new StmtAssign(exp.getCx(), new ExprVar(exp.getCx(), newName), exp);
 			this.addStatement(assign);
-			return new ExprVar(exp.getContext(), newName);						
+			return new ExprVar(exp.getCx(), newName);						
     	}
     }
 }

@@ -36,7 +36,7 @@ public class MatchParamNames extends FEReplacer {
     		}    		
     	}
         if (newBody == func.getBody()) return func;
-        return new Function(func.getContext(), func.getCls(),
+        return new Function(func.getCx(), func.getCls(),
                             func.getName(), func.getReturnType(),
                             newParams, func.getSpecification(), newBody);
     }

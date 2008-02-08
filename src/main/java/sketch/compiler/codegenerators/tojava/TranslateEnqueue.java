@@ -81,7 +81,7 @@ public class TranslateEnqueue extends FEReplacer
      * <code>vals</code>. */
     private Function makeInitPath(StreamSpec ss)
     {
-        FEContext context = ss.getContext();
+        FEContext context = ss.getCx();
         List stmts = new ArrayList();
         Expression n = new ExprVar(context, "n");
         int i = 0;
@@ -142,7 +142,7 @@ public class TranslateEnqueue extends FEReplacer
         {
             List fns = new ArrayList(ssNew.getFuncs());
             fns.add(makeInitPath(ss));
-            ssNew = new StreamSpec(ssNew.getContext(), ssNew.getType(),
+            ssNew = new StreamSpec(ssNew.getCx(), ssNew.getType(),
                                    ssNew.getStreamType(), ssNew.getName(),
                                    ssNew.getParams(), ssNew.getVars(), fns);
         }
@@ -162,16 +162,16 @@ public class TranslateEnqueue extends FEReplacer
         // case anyways.
         if (!vals.isEmpty())
         {
-            Expression count = new ExprConstInt(fn.getContext(), vals.size());
+            Expression count = new ExprConstInt(fn.getCx(), vals.size());
             Expression delay =
-                new ExprFunCall(fn.getContext(), "setDelay", count);
+                new ExprFunCall(fn.getCx(), "setDelay", count);
             Statement call = new StmtExpr(delay);
             // Now add the statement to the function.
             StmtBlock body = (StmtBlock)fnNew.getBody();
             List stmts = new ArrayList(body.getStmts());
             stmts.add(call);
-            body = new StmtBlock(body.getContext(), stmts);
-            fnNew = new Function(fnNew.getContext(), fnNew.getCls(),
+            body = new StmtBlock(body.getCx(), stmts);
+            fnNew = new Function(fnNew.getCx(), fnNew.getCls(),
                                  fnNew.getName(), fnNew.getReturnType(),
                                  fnNew.getParams(),  fnNew.getSpecification(),body);
         }

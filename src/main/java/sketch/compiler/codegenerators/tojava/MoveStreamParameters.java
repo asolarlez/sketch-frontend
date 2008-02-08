@@ -89,7 +89,7 @@ public class MoveStreamParameters extends InitMunger
 
     private Function addInitParams(Function init, List params)
     {
-        FEContext context = init.getContext();
+        FEContext context = init.getCx();
         
         // The init function should have no parameters coming in;
         // completely replace its parameter list with params.  This
@@ -117,7 +117,7 @@ public class MoveStreamParameters extends InitMunger
         }
         StmtBlock oldBody = (StmtBlock)init.getBody();
         body.addAll(oldBody.getStmts());
-        Statement newBody = new StmtBlock(oldBody.getContext(), body);
+        Statement newBody = new StmtBlock(oldBody.getCx(), body);
         
         // Too many parts here, don't use Function.newInit().
         return new Function(context, init.getCls(), init.getName(),
@@ -128,7 +128,7 @@ public class MoveStreamParameters extends InitMunger
     // parameter list, doing no special work.
     private Function addInitParamsOnly(Function init, List params)
     {
-        FEContext context = init.getContext();
+        FEContext context = init.getCx();
 
         // As before.  We do actually need to make changes here,
         // if there are stream parameters that are Object type.
@@ -157,7 +157,7 @@ public class MoveStreamParameters extends InitMunger
         }
         StmtBlock oldBody = (StmtBlock)init.getBody();
         body.addAll(oldBody.getStmts());
-        Statement newBody = new StmtBlock(oldBody.getContext(), body);
+        Statement newBody = new StmtBlock(oldBody.getCx(), body);
         
         return new Function(context, init.getCls(), init.getName(),
                             init.getReturnType(), newParams, init.getSpecification(), newBody);
@@ -173,7 +173,7 @@ public class MoveStreamParameters extends InitMunger
             List newVars = new ArrayList(spec.getVars());
 
             // Create a constructor:
-            Function constructor = makeConstructor(spec.getContext(),
+            Function constructor = makeConstructor(spec.getCx(),
                                                    spec.getName(),
                                                    spec.getParams());
             newFuncs.add(constructor);
@@ -189,7 +189,7 @@ public class MoveStreamParameters extends InitMunger
                      iter.hasNext(); )
                 {
                     Parameter param = (Parameter)iter.next();
-                    FieldDecl field = new FieldDecl(spec.getContext(),
+                    FieldDecl field = new FieldDecl(spec.getCx(),
                                                     param.getType(),
                                                     param.getName(),
                                                     null);
@@ -197,7 +197,7 @@ public class MoveStreamParameters extends InitMunger
                 }
             
                 // Rewrite the init function:
-                Function init = findInit(spec.getContext(), spec.getFuncs());
+                Function init = findInit(spec.getCx(), spec.getFuncs());
                 newFuncs.remove(init);
                 init = addInitParams(init, spec.getParams());
                 newFuncs.add(init);
@@ -207,14 +207,14 @@ public class MoveStreamParameters extends InitMunger
                 // Composite stream; the stream parameters only exist
                 // within the context of the init function, no need to
                 // create fields.  (In fact, this actively hurts.)
-                Function init = findInit(spec.getContext(), spec.getFuncs());
+                Function init = findInit(spec.getCx(), spec.getFuncs());
                 newFuncs.remove(init);
                 init = addInitParamsOnly(init, spec.getParams());
                 newFuncs.add(init);
             }
 
             // And create the new stream spec.
-            spec = new StreamSpec(spec.getContext(), spec.getType(),
+            spec = new StreamSpec(spec.getCx(), spec.getType(),
                                   spec.getStreamType(), spec.getName(),
                                   Collections.EMPTY_LIST, newVars, newFuncs);
         }

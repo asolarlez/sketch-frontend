@@ -180,7 +180,7 @@ public class InsertInitConstructors extends InitMunger
                 Object ob = field.getInit(i);
                 if (needsConstructor(type) && ob == null)
                 {
-                    FEContext ctx = field.getContext();
+                    FEContext ctx = field.getCx();
                     Expression lhs = new ExprVar(ctx, field.getName(i));
                     newStmts.addAll(stmtsForConstructor(ctx, lhs, type, true));
                 }
@@ -193,10 +193,10 @@ public class InsertInitConstructors extends InitMunger
         
         // Okay.  Prepend the new statements to the init function.
         List newFuncs = new ArrayList(spec.getFuncs());
-        newFuncs = replaceInitWithPrepended(spec.getContext(), newFuncs,
+        newFuncs = replaceInitWithPrepended(spec.getCx(), newFuncs,
                                             newStmts);
         
-        return new StreamSpec(spec.getContext(), spec.getType(),
+        return new StreamSpec(spec.getCx(), spec.getType(),
                               spec.getStreamType(), spec.getName(),
                               spec.getParams(), spec.getVars(),
                               newFuncs);
@@ -230,7 +230,7 @@ public class InsertInitConstructors extends InitMunger
             Type type = decl.getType(i);
             if (needsConstructor(type))
             {
-                FEContext ctx = decl.getContext();
+                FEContext ctx = decl.getCx();
                 Expression lhs = new ExprVar(ctx, decl.getName(i));
                 if( decl.getInit(i)== null)
                 	addStatements(stmtsForConstructor(ctx, lhs, type, true));

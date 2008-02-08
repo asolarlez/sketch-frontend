@@ -18,11 +18,11 @@ public class EliminateCompoundAssignments extends FEReplacer {
 	        Expression newLHS = doExpression(stmt.getLHS());
 	        Expression newRHS = doExpression(stmt.getRHS());
 	        if( stmt.getOp() != 0){
-	        	newRHS = new ExprBinary(stmt.getContext(), stmt.getOp(), newLHS, newRHS);
+	        	newRHS = new ExprBinary(stmt.getCx(), stmt.getOp(), newLHS, newRHS);
 	        }
 	        if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
 	            return stmt;
-	        return new StmtAssign(stmt.getContext(), newLHS, newRHS,
+	        return new StmtAssign(stmt.getCx(), newLHS, newRHS,
 	                              stmt.getOp());
 	    }
 }

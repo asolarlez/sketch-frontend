@@ -88,7 +88,7 @@ public class AssembleInitializers extends FEReplacer
 	                		}
 	                		newInits.add(init);
 	                     }
-	                	 stmt = new StmtVarDecl(decl.getContext(),
+	                	 stmt = new StmtVarDecl(decl.getCx(),
 	                             decl.getTypes(),
 	                             decl.getNames(),
 	                             newInits);
@@ -125,7 +125,7 @@ public class AssembleInitializers extends FEReplacer
 	                		}
 	                		newInits.add(init);
 	                     }
-	                	 stmt = new StmtVarDecl(decl.getContext(),
+	                	 stmt = new StmtVarDecl(decl.getCx(),
 	                             decl.getTypes(),
 	                             decl.getNames(),
 	                             newInits);
@@ -140,8 +140,10 @@ public class AssembleInitializers extends FEReplacer
                 for (int i = 0; i < decl.getNumVars(); i++)
                 {
                     Expression init = decl.getInit(i);
+                    int ttt = rhs.toString().indexOf(lhs.toString());
                     if (decl.getName(i).equals(varName) &&
-                        !lhs.toString().equals(rhs.toString()))
+                        ttt  == -1
+                        )
                     {
                         init = ((StmtAssign)nst).getRHS();
                         found = true;
@@ -154,14 +156,14 @@ public class AssembleInitializers extends FEReplacer
                 // So, if we've made it here, then newInits
                 // is different from stmt's initializer list,
                 // and we want to iterate.  Reassign stmt.
-                stmt = new StmtVarDecl(decl.getContext(),
+                stmt = new StmtVarDecl(decl.getCx(),
                                        decl.getTypes(),
                                        decl.getNames(),
                                        newInits);
             }
             addStatement((Statement)stmt.accept(this));
         }   
-        Statement result = new StmtBlock(block.getContext(), newStatements);
+        Statement result = new StmtBlock(block.getCx(), newStatements);
         newStatements = oldStatements;
         return result;
     }

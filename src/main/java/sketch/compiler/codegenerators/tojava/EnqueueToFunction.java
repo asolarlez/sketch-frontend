@@ -83,9 +83,9 @@ public class EnqueueToFunction extends FEReplacer
         }
         else
             fnName = "enqueueObject";
-        Expression theFn = new ExprFunCall(stmt.getContext(), fnName,
+        Expression theFn = new ExprFunCall(stmt.getCx(), fnName,
                                            stmt.getValue());
-        Statement result = new StmtExpr(stmt.getContext(), theFn);
+        Statement result = new StmtExpr(stmt.getCx(), theFn);
         return result;
     }
 }

@@ -467,7 +467,7 @@ public class FunctionalizeStencils extends FEReplacer {
             }
             newInits.add(init);
         }
-        return new FieldDecl(field.getContext(), field.getTypes(),
+        return new FieldDecl(field.getCx(), field.getTypes(),
                              field.getNames(), newInits);
     }
 }
@@ -512,7 +512,7 @@ class ProcessStencil extends FEReplacer {
 		 
 		public Object visitStmtFor(StmtFor stmt)
 		{
-			FEContext context = stmt.getContext();
+			FEContext context = stmt.getCx();
 			assert stmt.getInit() instanceof StmtVarDecl;
 			StmtVarDecl init = (StmtVarDecl) stmt.getInit();
 			assert init.getNumVars() == 1;
@@ -581,13 +581,13 @@ class ProcessStencil extends FEReplacer {
 	 
 	    public Object visitStmtIfThen(StmtIfThen stmt)
 	    {
-	    	ccontext = stmt.getContext();
+	    	ccontext = stmt.getCx();
 	        Expression cond = stmt.getCond();
 	        conds.push(cond);
 	        stmt.getCons().accept(this);
 	        cond = conds.pop();
 	        if( stmt.getAlt() != null){
-	        	cond = new ExprUnary(stmt.getContext(), ExprUnary.UNOP_NOT, cond);
+	        	cond = new ExprUnary(stmt.getCx(), ExprUnary.UNOP_NOT, cond);
 	        	conds.push(cond);
 	        	stmt.getAlt().accept(this);
 	        	conds.pop();
@@ -628,7 +628,7 @@ class ProcessStencil extends FEReplacer {
 	    
 	    public Object visitStmtVarDecl(StmtVarDecl stmt)
 	    {	        
-	    	ccontext = stmt.getContext();
+	    	ccontext = stmt.getCx();
 	        for (int i = 0; i < stmt.getNumVars(); i++)
 	        {
 	        	if( stmt.getType(i) instanceof TypeArray ){
@@ -1005,7 +1005,7 @@ class ProcessStencil extends FEReplacer {
 	    	}
 //	    	 rhs[ arr[i] -> arr_fun(i, idxi) ]; 
 	    	Expression retV = (Expression)rhs.accept(new ArrReplacer(idxi));	    	
-	    	return new StmtIfThen(rhs.getContext(), indvar, new StmtReturn(ccontext, retV), null); 
+	    	return new StmtIfThen(rhs.getCx(), indvar, new StmtReturn(ccontext, retV), null); 
 	    }
 	   
 	    
@@ -1040,7 +1040,7 @@ class ProcessStencil extends FEReplacer {
 	    
 	    public Object visitStmtAssign(StmtAssign stmt)
 	    {
-	    	ccontext = stmt.getContext();
+	    	ccontext = stmt.getCx();
 	        Expression lhs = stmt.getLHS();
 	        Expression rhs = stmt.getRHS();
 	        if( lhs instanceof ExprArrayRange ){
@@ -1061,8 +1061,8 @@ class ProcessStencil extends FEReplacer {
 	 
 	 public Object visitStmtFor(StmtFor stmt)
 	    {
-		 	ccontext = stmt.getContext();
-		 	FEContext context = stmt.getContext();
+		 	ccontext = stmt.getCx();
+		 	FEContext context = stmt.getCx();
 		 	assert stmt.getInit() instanceof StmtVarDecl;
 		 	StmtVarDecl init = (StmtVarDecl) stmt.getInit();
 		 	assert init.getNumVars() == 1;

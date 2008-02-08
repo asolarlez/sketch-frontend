@@ -85,7 +85,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
         if (left == exp.getLeft() && right == exp.getRight() && newOp == exp.getOp())
             return exp;
         else
-            return new ExprBinary(exp.getContext(), newOp, left, right, exp.getAlias());
+            return new ExprBinary(exp.getCx(), newOp, left, right, exp.getAlias());
     }
 	
 	public Object visitStreamSpec(StreamSpec spec)

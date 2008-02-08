@@ -44,7 +44,7 @@ public class NameAnonymousFunctions extends FEReplacer
         case Function.FUNC_HELPER: return func;
         default: return func;
         }
-        return new Function(func.getContext(), func.getCls(),
+        return new Function(func.getCx(), func.getCls(),
                             name, func.getReturnType(),
                             func.getParams(), func.getSpecification(), func.getBody());
     }
@@ -60,7 +60,7 @@ public class NameAnonymousFunctions extends FEReplacer
         case Function.FUNC_PREWORK: name = "prework"; break;
         default: return func;
         }
-        return new FuncWork(func.getContext(), func.getCls(), name,
+        return new FuncWork(func.getCx(), func.getCls(), name,
                             func.getBody(), func.getPeekRate(),
                             func.getPopRate(), func.getPushRate());
     }

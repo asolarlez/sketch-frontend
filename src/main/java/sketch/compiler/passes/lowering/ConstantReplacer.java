@@ -80,14 +80,14 @@ public class ConstantReplacer extends FEReplacer {
 			}
 		}
 		if(types.isEmpty()) return null;
-		return new FieldDecl(field.getContext(),types,names,inits);
+		return new FieldDecl(field.getCx(),types,names,inits);
 	}
 
 	
 	public Object visitExprVar(ExprVar exp) {
 		Integer val=constants.get(exp.getName());
 		if(val==null) return exp;
-		return new ExprConstInt(exp.getContext(),val);
+		return new ExprConstInt(exp.getCx(),val);
 	}
 
 	public Object visitExprBinary(ExprBinary exp) {
@@ -108,7 +108,7 @@ public class ConstantReplacer extends FEReplacer {
 				case ExprBinary.BINOP_RSHIFT: v=l>>r; break;
 				default: return exp;
 			}
-			return new ExprConstInt(exp.getContext(),v);
+			return new ExprConstInt(exp.getCx(),v);
 		}
 		return exp;
 	}
@@ -129,7 +129,7 @@ public class ConstantReplacer extends FEReplacer {
         if (expr == exp.getExpr() && newType == exp.getType())
             return exp;
         else
-            return new ExprTypeCast(exp.getContext(), newType, expr);
+            return new ExprTypeCast(exp.getCx(), newType, expr);
     }
 
 	public Object visitFunction(Function func) {
@@ -150,7 +150,7 @@ public class ConstantReplacer extends FEReplacer {
 			}
 		}
 		if(changed)
-			func=new Function(func.getContext(),func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
+			func=new Function(func.getCx(),func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
 		return super.visitFunction(func);
 	}
 

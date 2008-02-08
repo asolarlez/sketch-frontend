@@ -462,10 +462,10 @@ public class NodesToNative extends  NodesToJava
             if (field.getInit(i) != null)
                 result += " = " + (String)field.getInit(i).accept(this);
             result += "; ";
-            result += "// " + field.getContext() + "\n";
+            result += "// " + field.getCx() + "\n";
         }        
-        if (field.getContext() != null)
-            result += " // " + field.getContext();
+        if (field.getCx() != null)
+            result += " // " + field.getCx();
         result += "\n";
         return result;
     }
@@ -490,11 +490,11 @@ public class NodesToNative extends  NodesToJava
         
         if(func.getCls() == Function.FUNC_WORK){
         	result += "WORK()\n";
-        	result += "// " + func.getContext() + "\n";
+        	result += "// " + func.getCx() + "\n";
         	assert( func.getParams().size() == 0 ) : ( "");        	
         	result += "{\n";        	
         	result += "###NATIVE_CODE_BEGIN\n";
-        	assert(((StmtBlock)func.getBody()).getStmts().size()>0) : ( "You can not have empty functions! \n" + func.getContext());
+        	assert(((StmtBlock)func.getBody()).getStmts().size()>0) : ( "You can not have empty functions! \n" + func.getCx());
         	result += (String)func.getBody().accept(this);
         	result += "###NATIVE_CODE_END\n";
         	if( ((FuncWork)func).getPopRate() != null)
@@ -599,8 +599,8 @@ public class NodesToNative extends  NodesToJava
         // Put context label at the start of the block, too.
     	vstack = vstack.pushscope();
         String result = "{";
-        if (stmt.getContext() != null)
-            result += " // " + stmt.getContext();
+        if (stmt.getCx() != null)
+            result += " // " + stmt.getCx();
         result += "\n";
         addIndent();
         for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
@@ -611,8 +611,8 @@ public class NodesToNative extends  NodesToJava
 	    if (!(s instanceof StmtIfThen)) {
 		line += ";";
 	    }
-            if (s.getContext() != null)
-                line += " // " + s.getContext();
+            if (s.getCx() != null)
+                line += " // " + s.getCx();
             line += "\n";
             result += line;
         }
@@ -683,7 +683,7 @@ public class NodesToNative extends  NodesToJava
         ExprFunCall fc = stmt.getFunCall();
         // ASSERT: the target is always a phase function.
         FuncWork target = (FuncWork)getSs().getFuncNamed(fc.getName());
-        StmtExpr call = new StmtExpr(stmt.getContext(), fc);
+        StmtExpr call = new StmtExpr(stmt.getCx(), fc);
         String peek, pop, push;
         if (target.getPeekRate() == null)
             peek = "0";
@@ -764,7 +764,7 @@ public class NodesToNative extends  NodesToJava
     
     public Object visitStreamSpec(StreamSpec spec)
     {        
-        String result = "// " + spec.getContext() + "\n";
+        String result = "// " + spec.getCx() + "\n";
         // Anonymous classes look different from non-anonymous ones.
         // This appears in two places: (a) as a top-level (named)
         // stream; (b) in an anonymous stream creator (SCAnon).

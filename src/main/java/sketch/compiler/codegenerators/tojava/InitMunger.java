@@ -64,8 +64,8 @@ abstract public class InitMunger extends FEReplacer
         StmtBlock oldBody = (StmtBlock)init.getBody();
         List newStmts = new ArrayList(stmts);
         newStmts.addAll(oldBody.getStmts());
-        Statement newBody = new StmtBlock(oldBody.getContext(), newStmts);
-        init = new Function(init.getContext(), init.getCls(),
+        Statement newBody = new StmtBlock(oldBody.getCx(), newStmts);
+        init = new Function(init.getCx(), init.getCls(),
                             init.getName(), init.getReturnType(),
                             init.getParams(), newBody);
         fns.add(init);

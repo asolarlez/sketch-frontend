@@ -61,7 +61,7 @@ public class SeparateInitializers extends FEReplacer
 		newInits.add(null);
 	    }
 	}
-        Statement newDecl = new StmtVarDecl(stmt.getContext(),
+        Statement newDecl = new StmtVarDecl(stmt.getCx(),
                                             stmt.getTypes(),
                                             stmt.getNames(),
                                             newInits);
@@ -78,8 +78,8 @@ public class SeparateInitializers extends FEReplacer
             if (init != null && !(init instanceof ExprArrayInit))
             {
                 Statement assign =
-                    new StmtAssign(stmt.getContext(),
-                                   new ExprVar(stmt.getContext(), name),
+                    new StmtAssign(stmt.getCx(),
+                                   new ExprVar(stmt.getCx(), name),
                                    init);
                 addStatement(assign);
             }
@@ -107,7 +107,7 @@ public class SeparateInitializers extends FEReplacer
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getContext(), stmt.getInit(),
+        return new StmtFor(stmt.getCx(), stmt.getInit(),
                            stmt.getCond(), stmt.getIncr(), newBody);
     }
 }

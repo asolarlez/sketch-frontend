@@ -105,6 +105,8 @@ import streamit.frontend.passes.SymbolTableVisitor;
 public class NodesToJava extends SymbolTableVisitor
 {
     protected StreamSpec ss;
+    protected Type ctype;
+    
     /**
 	 * @param ss The ss to set.
 	 */
@@ -350,8 +352,8 @@ public class NodesToJava extends SymbolTableVisitor
         Type lhsType = (Type)lhs.accept(eType);
         if (lhsType.isComplex())
         {
-            Expression real = new ExprField(lhs.getContext(), lhs, "real");
-            Expression imag = new ExprField(lhs.getContext(), lhs, "imag");
+            Expression real = new ExprField(lhs.getCx(), lhs, "real");
+            Expression imag = new ExprField(lhs.getCx(), lhs, "imag");
             // If the right hand side is complex too (at this point
             // just test the run-time type of the expression), then we
             // should do field copies; otherwise we only have a real part.
@@ -601,8 +603,8 @@ public class NodesToJava extends SymbolTableVisitor
                 result += " = " + (String)field.getInit(i).accept(this);
         }
         result += ";";
-        if (printSourceLines && field.getContext() != null)
-            result += " // " + field.getContext();
+        if (printSourceLines && field.getCx() != null)
+            result += " // " + field.getCx();
         result += "\n";
         return result;
     }
@@ -793,8 +795,8 @@ public class NodesToJava extends SymbolTableVisitor
     	
         // Put context label at the start of the block, too.
         String result = "{";
-        if (printSourceLines && stmt.getContext() != null)
-            result += " // " + stmt.getContext();
+        if (printSourceLines && stmt.getCx() != null)
+            result += " // " + stmt.getCx();
         result += "\n";
         addIndent();
         for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
@@ -807,8 +809,8 @@ public class NodesToJava extends SymbolTableVisitor
 		         s instanceof StmtWhile)) {
 		    	line += ";";
 		    }
-            if (printSourceLines && s.getContext() != null)
-                line += " // " + s.getContext();
+            if (printSourceLines && s.getCx() != null)
+                line += " // " + s.getCx();
             line += "\n";
             result += line;
         }
@@ -870,8 +872,10 @@ public class NodesToJava extends SymbolTableVisitor
         if (stmt.getInit() != null)
             result += (String)stmt.getInit().accept(this);
         result += "; ";
-        if (stmt.getCond() != null)
+        if (stmt.getCond() != null){
+        	ctype = TypePrimitive.bittype;
             result += (String)stmt.getCond().accept(this);
+        }
         result += "; ";
         if (stmt.getIncr() != null)
             result += (String)stmt.getIncr().accept(this);
@@ -884,6 +888,7 @@ public class NodesToJava extends SymbolTableVisitor
     {
         // must have an if part...
         assert stmt.getCond() != null;
+        ctype = TypePrimitive.bittype;
         String result = "if (" + (String)stmt.getCond().accept(this) + ") ";
         result += (String)stmt.getCons().accept(this);
         if(! (stmt.getCons() instanceof StmtBlock ) ){
@@ -916,7 +921,7 @@ public class NodesToJava extends SymbolTableVisitor
         ExprFunCall fc = stmt.getFunCall();
         // ASSERT: the target is always a phase function.
         FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
-        StmtExpr call = new StmtExpr(stmt.getContext(), fc);
+        StmtExpr call = new StmtExpr(stmt.getCx(), fc);
         String peek, pop, push;
         if (target.getPeekRate() == null)
             peek = "0";
@@ -1237,8 +1242,8 @@ public class NodesToJava extends SymbolTableVisitor
             {
                 result += "public class " + spec.getName() +
                     " extends StreamIt" + spec.getTypeString() + ifaces;
-                if(printSourceLines && spec.getContext()!=null)
-                	result += " // " + spec.getContext();
+                if(printSourceLines && spec.getCx()!=null)
+                	result += " // " + spec.getCx();
                 result += "\n";
                 result += indent + "{\n";
                 addIndent();
@@ -1278,8 +1283,8 @@ public class NodesToJava extends SymbolTableVisitor
                         break;
                     }
                 result += ifaces;
-                if(printSourceLines && spec.getContext()!=null)
-                	result += " // " + spec.getContext();
+                if(printSourceLines && spec.getCx()!=null)
+                	result += " // " + spec.getCx();
                 result += "\n";
                 result += indent + "{\n";
                 addIndent();

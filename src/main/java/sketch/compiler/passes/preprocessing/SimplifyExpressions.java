@@ -78,7 +78,7 @@ public class SimplifyExpressions extends FEReplacer {
 		if(!isGoodOp(exp.getOp())) return super.visitExprBinary(exp);		
 		Expression left = doExpression(exp.getLeft());
         Expression right = doExpression(exp.getRight());
-        FEContext context = exp.getContext();
+        FEContext context = exp.getCx();
         if( left instanceof ExprBinary ){
         	ExprBinary bleft = (ExprBinary) left;
         	Expression lbleft = bleft.getLeft();
@@ -122,7 +122,7 @@ public class SimplifyExpressions extends FEReplacer {
         if (left == exp.getLeft() && right == exp.getRight())
             return exp;
         else
-            return new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
+            return new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
 	}
 	
 }

@@ -36,7 +36,7 @@ public class ExtractRightShifts extends SymbolTableVisitor {
     {
 		if(exp.getOp() == ExprBinary.BINOP_RSHIFT || exp.getOp() == ExprBinary.BINOP_LSHIFT){
 			Type t = this.getType(exp);
-			FEContext context = exp.getContext();
+			FEContext context = exp.getCx();
 			String tmpName = varGen.nextVar();
 			Expression lexp = this.doExpression(exp.getLeft());
 			Expression rexp = this.doExpression(exp.getRight());			

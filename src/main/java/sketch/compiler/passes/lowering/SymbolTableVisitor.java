@@ -37,6 +37,7 @@ import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
 
@@ -111,6 +112,8 @@ public class SymbolTableVisitor extends FEReplacer
      */
     public Type getType(Expression expr)
     {
+    	if(expr == null){ return TypePrimitive.voidtype; }
+    	
         // To think about: should we cache GetExprType objects?
         GetExprType get = new GetExprType(symtab, streamType, structsByName);
         Type type = (Type)expr.accept(get);

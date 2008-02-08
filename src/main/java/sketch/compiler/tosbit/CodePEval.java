@@ -174,11 +174,11 @@ public class CodePEval extends PartialEvaluator {
             return stmt;
 		}
 		if(stmt.getOp() == 0){
-			return new StmtAssign(stmt.getContext(), lvalue, right,
+			return new StmtAssign(stmt.getCx(), lvalue, right,
                     stmt.getOp());
 		}else{
-	        return new StmtAssign(stmt.getContext(), lvalue, 
-	        		new ExprBinary(stmt.getContext(), stmt.getOp(), left, right));
+	        return new StmtAssign(stmt.getCx(), lvalue, 
+	        		new ExprBinary(stmt.getCx(), stmt.getOp(), left, right));
 		}
 	}
 	
@@ -197,7 +197,7 @@ public class CodePEval extends PartialEvaluator {
 						addStatement(cons);	 
 					rcontrol.doneWithBlock(stmt.getCons());
 				}else{
-					addStatement( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) );
+					addStatement( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) );
 				}
 			}else{
 				if (stmt.getAlt() != null){
@@ -207,7 +207,7 @@ public class CodePEval extends PartialEvaluator {
 							addStatement(alt);
 						rcontrol.doneWithBlock(stmt.getAlt());
 					}else{
-						addStatement( new StmtAssert(stmt.getContext(), new ExprConstInt(0)) );
+						addStatement( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) );
 					}
 				}
 			}
@@ -227,7 +227,7 @@ public class CodePEval extends PartialEvaluator {
 	        }
 			rcontrol.doneWithBlock(stmt.getCons());
 		}else{
-			newCons = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+			newCons = new StmtAssert(stmt.getCx(), new ExprConstInt(0));
 		}
 		
 		ChangeStack ipms = state.popChangeTracker();
@@ -247,7 +247,7 @@ public class CodePEval extends PartialEvaluator {
 		        }
 				rcontrol.doneWithBlock(stmt.getAlt());
 			}else{
-				newAlt = new StmtAssert(stmt.getContext(), new ExprConstInt(0));
+				newAlt = new StmtAssert(stmt.getCx(), new ExprConstInt(0));
 			}
 			
 			epms = state.popChangeTracker();
@@ -261,7 +261,7 @@ public class CodePEval extends PartialEvaluator {
         if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
             newAlt == stmt.getAlt())
             return stmt;
-        return new StmtIfThen(stmt.getContext(), newCond, newCons, newAlt);
+        return new StmtIfThen(stmt.getCx(), newCond, newCons, newAlt);
 	}
 	
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -279,7 +279,7 @@ public class CodePEval extends PartialEvaluator {
 				valueClass arrSizeVal = state.popVStack();
 				
 				if(arrSizeVal.hasValue() || isComplete ){
-					Assert(arrSizeVal.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getContext());
+					Assert(arrSizeVal.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getCx());
 					state.makeArray(nm, arrSizeVal.getIntValue());
 					//this.state.markVectorStack();
 					if( stmt.getInit(i) != null){
@@ -320,7 +320,7 @@ public class CodePEval extends PartialEvaluator {
 							}	
 							//if(val != null) continue;
 						}
-						addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
 								state.transName(nm), init) );
 					}else{
 						for(int tt=0; tt<arrSizeVal.getIntValue(); ++tt){
@@ -328,17 +328,17 @@ public class CodePEval extends PartialEvaluator {
 							state.varDeclare(nnm);
 							state.varGetLHSName(nnm);		            		
 						}
-						addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
 								state.transName(nm), null) );
 					}
 				}else{
 					if( stmt.getInit(i) != null){
 						Expression init = (Expression)stmt.getInit(i).accept(this);
 						valueClass vclass = state.popVStack();
-						addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
 								state.transName(nm), init) );
 					}else{
-						addStatement( new StmtVarDecl(stmt.getContext(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
 								state.transName(nm), null) );
 					}
 				}
@@ -349,13 +349,13 @@ public class CodePEval extends PartialEvaluator {
 					String asgn = lhsn + " = " + tmp + "; \n";		                
 					if(tmp.hasValue()){
 						state.setVarValue(nm, tmp.getIntValue());
-						return ( new StmtVarDecl(stmt.getContext(), vt, state.transName(nm), new ExprConstInt(tmp.getIntValue())) );
+						return ( new StmtVarDecl(stmt.getCx(), vt, state.transName(nm), new ExprConstInt(tmp.getIntValue())) );
 					}else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
 						result += asgn;
-						addStatement( new StmtVarDecl(stmt.getContext(), vt, state.transName(nm), init) );
+						addStatement( new StmtVarDecl(stmt.getCx(), vt, state.transName(nm), init) );
 					} 	                
 				}else{
-					addStatement( new StmtVarDecl(stmt.getContext(), vt, state.transName(nm), null) );
+					addStatement( new StmtVarDecl(stmt.getCx(), vt, state.transName(nm), null) );
 				}
 			}
 		}
@@ -391,7 +391,7 @@ public class CodePEval extends PartialEvaluator {
                     newStatements = new ArrayList<Statement> ();
                     if (madeSubstitution) {
                         ExprFunCall exp2 =
-                            new ExprFunCall (exp.getContext(), fun.getName(),
+                            new ExprFunCall (exp.getCx(), fun.getName(),
                                              exp.getParams());
                         super.visitExprFunCall(exp2);
                     } else {
@@ -415,7 +415,7 @@ public class CodePEval extends PartialEvaluator {
                             && newParam instanceof ExprArrayInit)
                         {
                             Expression renamedParam =
-                                new ExprVar (exp.getContext (),
+                                new ExprVar (exp.getCx (),
                                              state.transName (
                                                  ((ExprVar) param).getName()));
                             newParams.add (renamedParam);
@@ -426,7 +426,7 @@ public class CodePEval extends PartialEvaluator {
                             hasChanged = true;
                     }
                     if (hasChanged)
-                        return new ExprFunCall (exp.getContext(), exp.getName(),
+                        return new ExprFunCall (exp.getCx(), exp.getName(),
                                                 newParams);
                 }// if (rcontrol.testCall(exp))
                 // If the if rcontrol.testCall(exp) returns false, then this call better not be made ever, 
@@ -456,7 +456,7 @@ public class CodePEval extends PartialEvaluator {
 		    			Iterator formalParams = fun.getParams().iterator();
 		    			outParameterSetter(formalParams, actualParams, false);
 		    		}
-		    		result = new StmtBlock(exp.getContext(), newStatements);
+		    		result = new StmtBlock(exp.getCx(), newStatements);
 	    		}finally{
 	    			state.popLevel();
 	    			newStatements = oldNewStatements;
@@ -466,7 +466,7 @@ public class CodePEval extends PartialEvaluator {
 	    		
 	    		rcontrol.popFunCall(exp);
     		}else{
-    			StmtAssert sas = new StmtAssert(exp.getContext(), new ExprConstInt(0));
+    			StmtAssert sas = new StmtAssert(exp.getCx(), new ExprConstInt(0));
     			addStatement(sas);    		
 	    		state.pushVStack( new valueClass(sas.toString()) );
     		}

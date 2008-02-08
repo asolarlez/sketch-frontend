@@ -97,7 +97,7 @@ public class NoRefTypes extends FEReplacer
                 struct.setType(name, type);
             }           
         }
-        prog = new Program(prog.getContext(), prog.getStreams(), newStructs);
+        prog = new Program(prog.getCx(), prog.getStreams(), newStructs);
         return super.visitProgram(prog);
     }
 
@@ -118,7 +118,7 @@ public class NoRefTypes extends FEReplacer
             param = new Parameter(type, param.getName(), param.getPtype());
             newParams.add(param);
         }
-        return super.visitStreamSpec(new StreamSpec(ss.getContext(),
+        return super.visitStreamSpec(new StreamSpec(ss.getCx(),
                                                     ss.getType(),
                                                     ss.getStreamType(),
                                                     ss.getName(),
@@ -129,7 +129,7 @@ public class NoRefTypes extends FEReplacer
 
     public Object visitStreamType(StreamType st)
     {
-        return new StreamType(st.getContext(),
+        return new StreamType(st.getCx(),
                               remapType(st.getIn()),
                               remapType(st.getOut()),
                               remapType(st.getLoop()));

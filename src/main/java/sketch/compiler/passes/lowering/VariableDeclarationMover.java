@@ -34,9 +34,9 @@ public class VariableDeclarationMover extends FEReplacer
 		bodyStmts.addAll(bodyBlock.getStmts());
 		variables.clear();
 		varTypes.clear();
-		return new Function(func.getContext(), func.getCls(), func.getName(),
+		return new Function(func.getCx(), func.getCls(), func.getName(),
 			func.getReturnType(), func.getParams(), func.getSpecification(), 
-			new StmtBlock(bodyBlock.getContext(), bodyStmts));
+			new StmtBlock(bodyBlock.getCx(), bodyStmts));
 	}
 
 	public Object visitStmtFor(StmtFor stmt)
@@ -45,7 +45,7 @@ public class VariableDeclarationMover extends FEReplacer
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if(newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getContext(), stmt.getInit(), stmt.getCond(), 
+        return new StmtFor(stmt.getCx(), stmt.getInit(), stmt.getCond(), 
         	stmt.getIncr(), newBody);
 	}
 
@@ -57,11 +57,11 @@ public class VariableDeclarationMover extends FEReplacer
 				variables.add(name);
 				varTypes.put(name,stmt.getType(i));
 				if(stmt.getInit(i)!=null) {
-					addStatement(new StmtAssign(stmt.getContext(),
+					addStatement(new StmtAssign(stmt.getCx(),
 						new ExprVar(null,name), stmt.getInit(i)));
 				}
 			} else {
-				assert false: "duplicate variable declaration for"+name+": "+stmt+" at "+stmt.getContext();
+				assert false: "duplicate variable declaration for"+name+": "+stmt+" at "+stmt.getCx();
 			}
 		}
 		return null;

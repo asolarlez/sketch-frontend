@@ -100,7 +100,7 @@ public class FindFreeVariables extends SymbolTableVisitor
                             catch (UnrecognizedVariableException e)
                             {
                                 if (expr.getName().equals(was))
-                                    return new ExprVar(expr.getContext(),
+                                    return new ExprVar(expr.getCx(),
                                                        wrapped);
                                 // else fall through
                             }
@@ -115,7 +115,7 @@ public class FindFreeVariables extends SymbolTableVisitor
                 // contain the wrapped variable.
                 if (!(symtab.hasVar(wrapped)))
                 {
-                    FEContext context = ((FENode)result).getContext();
+                    FEContext context = ((FENode)result).getCx();
                     addVarDecl(context, type, wrapped);
                     addStatement(new StmtAssign(context,
                                                 new ExprVar(context, wrapped),

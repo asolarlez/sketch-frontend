@@ -3,6 +3,7 @@ package streamit.frontend.passes;
 import java.util.*;
 
 import streamit.frontend.nodes.*;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 
 /**
  * Converts function that return something to functions that take
@@ -13,6 +14,13 @@ import streamit.frontend.nodes.*;
 public class FunctionParamExtension extends SymbolTableVisitor 
 {
 
+	/**
+	 * 
+	 * 
+	 * 
+	 * @author asolar
+	 *
+	 */
 	private class ParameterCopyResolver extends SymbolTableVisitor 
 	{
 		private HashMap<String,Parameter> unmodifiedParams;
@@ -25,14 +33,14 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		private Function addVarCopy(Function func, Parameter param, String newName)
 		{
 			StmtBlock body=(StmtBlock) func.getBody();
-			StmtVarDecl decl=new StmtVarDecl(func.getContext(),param.getType(),param.getName(),
-					new ExprVar(func.getContext(),newName));
+			StmtVarDecl decl=new StmtVarDecl(func.getCx(),param.getType(),param.getName(),
+					new ExprVar(func.getCx(),newName));
 			List stmts=new ArrayList(body.getStmts().size()+2);
 			stmts.add(decl);
 			stmts.addAll(body.getStmts());
-			return new Function(func.getContext(),func.getCls(),func.getName(),func.getReturnType(),
+			return new Function(func.getCx(),func.getCls(),func.getName(),func.getReturnType(),
 				func.getParams(),func.getSpecification(),
-				new StmtBlock(body.getContext(),stmts));
+				new StmtBlock(body.getCx(),stmts));
 		}
 		@Override
 		public Object visitFunction(Function func)
@@ -55,7 +63,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					func=addVarCopy(func,param,newName);
 				}
 			}
-			return new Function(func.getContext(), func.getCls(), func.getName(),
+			return new Function(func.getCx(), func.getCls(), func.getName(),
 				func.getReturnType(), parameters, func.getSpecification(), func.getBody());
 		}
 		public Object visitStmtAssign(StmtAssign stmt)
@@ -118,7 +126,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	private List getOutputParams(Function f) {
 		List params=f.getParams();
 		for(int i=0;i<params.size();i++)
-			if(((Parameter)params.get(i)).isParameterOutput())
+			if(((Parameter)params.get(i)).getPtype() == Parameter.OUT)
 				return params.subList(i,params.size());
 		return Collections.EMPTY_LIST;
 	}
@@ -132,15 +140,30 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			if(!retType.equals(TypePrimitive.voidtype)){
 				params.add(new Parameter(retType,getOutParamName(),Parameter.OUT));
 			}
-			funs.add(new Function(fun.getContext(), fun.getCls(), fun.getName(), fun.getReturnType(),
+			funs.add(new Function(fun.getCx(), fun.getCls(), fun.getName(), fun.getReturnType(),
 				params, fun.getSpecification(), fun.getBody()));
 		}
-		spec=new StreamSpec(spec.getContext(), spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
+		spec=new StreamSpec(spec.getCx(), spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
 		return super.visitStreamSpec(spec);
 	}
 
+	
+	Set<String> currentRefParams = new HashSet<String>();
+	
 	public Object visitFunction(Function func) {		
 		if(func.isUninterp() ) return func;
+		
+		{
+			currentRefParams.clear();
+			List<Parameter> lp = func.getParams();
+			for(Iterator<Parameter> it = lp.iterator(); it.hasNext(); ){
+				Parameter p = it.next();
+				if(p.isParameterOutput()){
+					currentRefParams.add(p.getName());
+				}
+			}
+		}
+		
 		
 		currentFunction=func;
 			outCounter=0;
@@ -148,29 +171,40 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			func=(Function) super.visitFunction(func);
 		currentFunction=null;
 		
-		if(func.getReturnType()==TypePrimitive.voidtype) return func;
-		
+		//if(func.getReturnType()==TypePrimitive.voidtype) return func;
+		func.accept(new SimpleCodePrinter());
 		func=(Function)func.accept(paramCopyRes);
+		func.accept(new SimpleCodePrinter());
+		
+		
+		
 		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
 		//add a declaration for the "return flag"
-		stmts.add(0,new StmtVarDecl(func.getBody().getContext(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(null,0)));
+		stmts.add(0,new StmtVarDecl(func.getBody().getCx(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(null,0)));
 		if(initOutputs){
-			Parameter outParam = (Parameter)func.getParams().get( func.getParams().size()-1);
-			String outParamName  = outParam.getName();
-			assert outParam.isParameterOutput();
 			
-			Expression defaultValue = null;
-			
-			if(func.getReturnType().isStruct()){			
-				defaultValue = ExprNullPtr.nullPtr;
-			}else{
-				defaultValue = ExprConstInt.zero;
-			}			
-			stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), defaultValue));
+			List<Parameter> lp = func.getParams();
+			for(Iterator<Parameter> it = lp.iterator(); it.hasNext(); ){
+				Parameter p = it.next();
+				if(p.getPtype() == Parameter.OUT){
+					Parameter outParam = p;
+					String outParamName  = outParam.getName();
+					assert outParam.isParameterOutput();
+					
+					Expression defaultValue = null;
+					
+					if(func.getReturnType().isStruct()){			
+						defaultValue = ExprNullPtr.nullPtr;
+					}else{
+						defaultValue = ExprConstInt.zero;
+					}			
+					stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), defaultValue));
+				}
+			}
 		}
-		func=new Function(func.getContext(),func.getCls(),func.getName(),
+		func=new Function(func.getCx(),func.getCls(),func.getName(),
 				TypePrimitive.voidtype, func.getParams(),
-				func.getSpecification(), new StmtBlock(func.getContext(),stmts));
+				func.getSpecification(), new StmtBlock(func.getCx(),stmts));
 		return func;
 	}
 
@@ -180,11 +214,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		Statement cons=stmt.getCons();
 		Statement alt=stmt.getAlt();
 		if(cons!=null && !(cons instanceof StmtBlock))
-			cons=new StmtBlock(stmt.getContext(),Collections.singletonList(cons));
+			cons=new StmtBlock(stmt.getCx(),Collections.singletonList(cons));
 		if(alt!=null && !(alt instanceof StmtBlock))
-			alt=new StmtBlock(stmt.getContext(),Collections.singletonList(alt));
+			alt=new StmtBlock(stmt.getCx(),Collections.singletonList(alt));
 		if(cons!=stmt.getCons() || alt!=stmt.getAlt())
-			stmt=new StmtIfThen(stmt.getContext(),stmt.getCond(),cons,alt);
+			stmt=new StmtIfThen(stmt.getCx(),stmt.getCond(),cons,alt);
 		return super.visitStmtIfThen(stmt);
 	}
 
@@ -193,9 +227,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	{
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
-			body=new StmtBlock(stmt.getContext(),Collections.singletonList(body));
+			body=new StmtBlock(stmt.getCx(),Collections.singletonList(body));
 		if(body!=stmt.getBody())
-			stmt=new StmtDoWhile(stmt.getContext(),body,stmt.getCond());
+			stmt=new StmtDoWhile(stmt.getCx(),body,stmt.getCond());
 		return super.visitStmtDoWhile(stmt);
 	}
 
@@ -204,9 +238,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	{
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
-			body=new StmtBlock(stmt.getContext(),Collections.singletonList(body));
+			body=new StmtBlock(stmt.getCx(),Collections.singletonList(body));
 		if(body!=stmt.getBody())
-			stmt=new StmtFor(stmt.getContext(),stmt.getInit(),stmt.getCond(),stmt.getIncr(),body);
+			stmt=new StmtFor(stmt.getCx(),stmt.getInit(),stmt.getCond(),stmt.getIncr(),body);
 		return super.visitStmtFor(stmt);
 	}
 
@@ -215,9 +249,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	{
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
-			body=new StmtBlock(stmt.getContext(),Collections.singletonList(body));
+			body=new StmtBlock(stmt.getCx(),Collections.singletonList(body));
 		if(body!=stmt.getBody())
-			stmt=new StmtLoop(stmt.getContext(),stmt.getIter(),body);
+			stmt=new StmtLoop(stmt.getCx(),stmt.getIter(),body);
 		return super.visitStmtLoop(stmt);
 	}
 
@@ -233,53 +267,130 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			throw new UnrecognizedVariableException(exp.getCx() + ": Function name " + e.getMessage() + " not found"  );
 		}
 		// now we create a temp (or several?) to store the result
-		List outParams=getOutputParams(fun);
-		String tempNames[]=new String[outParams.size()];
-		for(int i=0;i<outParams.size();i++) {
-			Parameter param=(Parameter) outParams.get(i);
-			tempNames[i]=getNewOutID();
-			Statement decl=new StmtVarDecl(exp.getContext(),
-					Collections.singletonList(param.getType()),
-					Collections.singletonList(tempNames[i]),
-					Collections.singletonList(null)
-				);
-			addStatement(decl);
-		}
-		// modify the function call and re-issue it as a statement
-		List args=new ArrayList(fun.getParams().size());
-		List existingArgs=exp.getParams();
-		for(int i=0;i<existingArgs.size();i++) {
-			Expression oldArg=(Expression) existingArgs.get(i);
-			if(oldArg instanceof ExprVar || oldArg instanceof ExprConstInt)
+		
+		
+		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
+		List<Expression> existingArgs=exp.getParams();
+		
+		List<Parameter> params=fun.getParams();
+		
+		List<Expression> tempVars = new ArrayList<Expression>();
+		List<Statement> refAssigns = new ArrayList<Statement>();
+		
+		int psz = 0;
+		for(int i=0;i<params.size();i++){
+			Parameter p = params.get(i);
+			int ptype = p.getPtype();
+			Expression oldArg=null;
+			if(ptype == Parameter.REF || ptype == Parameter.IN){
+				oldArg=(Expression) existingArgs.get(psz);
+				++psz;
+			}
+			if(oldArg != null && oldArg instanceof ExprVar || oldArg instanceof ExprConstInt){
 				args.add(oldArg);
-			else {
-				Parameter param=(Parameter) fun.getParams().get(i);
-				String tempVar=getNewOutID();
-				Statement decl=new StmtVarDecl(exp.getContext(),
-						Collections.singletonList(param.getType()),
-						Collections.singletonList(tempVar),
-						Collections.singletonList(oldArg)
-					);
+			}else{
+				String tempVar = getNewOutID();
+				Statement decl = new StmtVarDecl(exp.getCx(), p.getType(), tempVar, oldArg);
+				ExprVar ev =new ExprVar(exp.getCx(),tempVar); 
+				args.add(ev);
 				addStatement(decl);
-				args.add(new ExprVar(exp.getContext(),tempVar));
+				if(ptype == Parameter.OUT){
+					tempVars.add(ev);
+				}
+				if(ptype == Parameter.REF){
+					refAssigns.add(new StmtAssign(exp.getCx(), oldArg, ev  ));
+				}
 			}
 		}
-		for(int i=0;i<outParams.size();i++)
-			args.add(new ExprVar(exp.getContext(),tempNames[i]));
-		ExprFunCall newcall=new ExprFunCall(exp.getContext(),exp.getName(),args);
+		
+		ExprFunCall newcall=new ExprFunCall(exp.getCx(),exp.getName(),args);
 		addStatement(new StmtExpr(newcall));
+		addStatements(refAssigns);
 		
 		// replace the original function call with an instance of the temp variable
 		// (which stores the return value)
-		if(tempNames.length == 0){
+		if(tempVars.size() == 0){
 			return null;
 		}
-		assert tempNames.length==1; //TODO handle the case when it's >1
-		return new ExprVar(exp.getContext(),tempNames[0]);
+		assert tempVars.size()==1; //TODO handle the case when it's >1
+		return tempVars.get(0);
 	}
 
+	@Override
+	public Object visitStmtAssert(StmtAssert sa){
+		FEContext cx=sa.getCx();
+		Statement s = (Statement) super.visitStmtAssert(sa);
+		Statement ret=new StmtIfThen(cx,
+				new ExprBinary(cx, ExprBinary.BINOP_EQ, 
+					new ExprVar(cx, getReturnFlag()), 
+					new ExprConstInt(cx, 0)),
+				s,
+				null);
+		return ret;
+	}
+	
+	
+	private boolean globalEffects(Statement s){
+		if(s instanceof StmtAssert){
+			return true;
+		}
+		
+		if(s instanceof StmtAssign){
+			StmtAssign sa = (StmtAssign) s;
+			
+			Expression left = sa.getLHS();
+			
+			class findge extends FEReplacer{
+				public boolean ge = false;
+				public Object visitExprField(ExprField ef){
+					ge = true;
+					return ef;
+				}
+				@Override
+				public Object visitExprArrayRange(ExprArrayRange exp){
+					exp.getBase().accept(this);
+					return exp;
+				}
+				
+				@Override
+				public Object visitExprVar(ExprVar ev){
+					if(currentRefParams.contains(ev.getName())){
+						ge = true;
+					}
+					return ev;
+				}
+			}
+			findge f = new findge();
+			left.accept(f);
+			return f.ge;
+		}
+		
+		return false;
+	}
+	
+	
+	@Override
+	public Object visitStmtAssign(StmtAssign stmt){
+		Statement s = (Statement) super.visitStmtAssign(stmt);
+		if(globalEffects(s)){
+			FEContext cx=stmt.getCx();
+			Statement ret=new StmtIfThen(cx,
+					new ExprBinary(cx, ExprBinary.BINOP_EQ, 
+						new ExprVar(cx, getReturnFlag()), 
+						new ExprConstInt(cx, 0)),
+					s,
+					null);
+			return ret;
+		}else{
+			return s;
+		}
+	}
+	
+	
+	
+	@Override
 	public Object visitStmtReturn(StmtReturn stmt) {
-		FEContext cx=stmt.getContext();
+		FEContext cx=stmt.getCx();
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);
 		List stmts=new ArrayList();
 		List params=getOutputParams(currentFunction);

@@ -61,7 +61,7 @@ public class NoticePhasedFilters extends FEReplacer
             newFuncs.add(fw.accept(this));
 
             StreamSpec newSpec =
-                new StreamSpec(spec.getContext(),
+                new StreamSpec(spec.getCx(),
                                StreamSpec.STREAM_FILTER,
                                spec.getStreamType(),
                                spec.getName(),
@@ -88,6 +88,6 @@ public class NoticePhasedFilters extends FEReplacer
         Function target = ss.getFuncNamed(fc.getName());
         if (target.getCls() != Function.FUNC_PHASE)
             return stmt;
-        return new StmtPhase(stmt.getContext(), fc);
+        return new StmtPhase(stmt.getCx(), fc);
     }
 }

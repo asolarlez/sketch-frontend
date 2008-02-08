@@ -520,7 +520,7 @@ public class ResolveMax {
 	        if (left == exp.getLeft() && right == exp.getRight())
 	            return exp;
 	        else
-	            return new ExprBinary(exp.getContext(), exp.getOp(), left, right, exp.getAlias());
+	            return new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
 	    }
 		
 		 public Object visitExprUnary(ExprUnary exp)
@@ -532,7 +532,7 @@ public class ResolveMax {
 	        if (expr == exp.getExpr())
 	            return exp;
 	        else
-	            return new ExprUnary(exp.getContext(), exp.getOp(), expr);
+	            return new ExprUnary(exp.getCx(), exp.getOp(), expr);
 	    }
 				
 		
