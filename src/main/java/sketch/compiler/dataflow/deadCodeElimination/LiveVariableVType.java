@@ -250,8 +250,8 @@ public class LiveVariableVType extends abstractValueType {
     			outSlist.add(lv);
     			hasOP = true;
     		}
-    	}
-    	assert hasOP : "This is dangerous.";
+    	}    	
+    	lv.enliven();
 	}
 
 	@Override
