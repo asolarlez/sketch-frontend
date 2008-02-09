@@ -156,7 +156,7 @@ public class ToPSbit extends ToSBit {
 			} else {
 				System.err.println ("UH-OH!  The synthesized controls are not valid.");
 				System.err.println ("Spin says:");
-				System.err.println (sv.getOutput ());
+				//System.err.println (sv.getOutput ());
 				System.out.println ("Try manually checking the following code with 'xspin'");
 				ToSpin.printCode (finalCode);
 			}
