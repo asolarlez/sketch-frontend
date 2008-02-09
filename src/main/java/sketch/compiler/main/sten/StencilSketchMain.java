@@ -24,7 +24,7 @@ import streamit.frontend.codegenerators.SNodesToC;
 import streamit.frontend.codegenerators.SNodesToFortran;
 import streamit.frontend.experimental.DataflowWithFixpoint;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.nodesToSB.IntVtype;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
@@ -72,7 +72,7 @@ public class ToStencilSK extends ToSBit
         originalProg = prog;    	
     	System.out.println("=============================================================");    	
     	prog = (Program)prog.accept(new FlattenStmtBlocks());    	
-    	prog= (Program)prog.accept(new EliminateTransitiveAssignments());
+    	prog= (Program)prog.accept(new EliminateTransAssns());
     	prog= (Program)prog.accept(new PropagateFinals());    	
     	//System.out.println("=========  After ElimTransAssign  =========");
     	prog = (Program)prog.accept(new EliminateDeadCode(true));
@@ -155,7 +155,7 @@ public class ToStencilSK extends ToSBit
     			});    	
         //Program tmp = (Program) prog.accept( new PreprocessSketch(varGen, params.unrollAmt, newRControl()));
         tmp = (Program)tmp.accept(new FlattenStmtBlocks());
-    	tmp = (Program)tmp.accept(new EliminateTransitiveAssignments());
+    	tmp = (Program)tmp.accept(new EliminateTransAssns());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	tmp = (Program)tmp.accept(new EliminateDeadCode(true));
     	//System.out.println("=========  After ElimDeadCode  =========");
@@ -179,7 +179,7 @@ public class ToStencilSK extends ToSBit
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-    	finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
+    	finalCode = (Program)finalCode.accept(new EliminateTransAssns());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));

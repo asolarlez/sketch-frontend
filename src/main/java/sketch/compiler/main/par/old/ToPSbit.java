@@ -4,7 +4,7 @@ import java.util.List;
 
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
@@ -48,7 +48,7 @@ public class ToPSbit extends ToSBit {
 		dump(finalCode, "after postproc");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		dump(finalCode, "after flattening");
-		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
+		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		//dump(finalCode, "Before DCE");
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
@@ -156,7 +156,7 @@ public class ToPSbit extends ToSBit {
 			} else {
 				System.err.println ("UH-OH!  The synthesized controls are not valid.");
 				System.err.println ("Spin says:");
-				System.err.println (sv.getSpinOut ());
+				System.err.println (sv.getOutput ());
 				System.out.println ("Try manually checking the following code with 'xspin'");
 				ToSpin.printCode (finalCode);
 			}

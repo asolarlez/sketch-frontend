@@ -15,13 +15,13 @@ import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
 
-public class EliminateTransitiveAssignments extends DataflowWithFixpoint {
+public class EliminateTransAssns extends DataflowWithFixpoint {
 
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
 	    return new LinkedList<Function>(spec.getFuncs());
     }
 	
-	public EliminateTransitiveAssignments(){
+	public EliminateTransAssns(){
 		super(TAvalueType.vtype, null, true, 0, (new BaseRControl(10)));
 	}
 	

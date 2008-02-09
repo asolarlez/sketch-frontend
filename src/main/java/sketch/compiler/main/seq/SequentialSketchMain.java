@@ -30,7 +30,7 @@ import streamit.frontend.codegenerators.NodesToC;
 import streamit.frontend.codegenerators.NodesToCTest;
 import streamit.frontend.codegenerators.NodesToH;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransitiveAssignments;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
@@ -293,7 +293,7 @@ public class ToSBit
 		
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) dump(finalCode, "After partially evaluating generated code.");
-		finalCode = (Program)finalCode.accept(new EliminateTransitiveAssignments());
+		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(finalCode, "After Eliminating transitive assignments.");
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
