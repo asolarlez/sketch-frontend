@@ -9,8 +9,11 @@ import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
+import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
+import streamit.frontend.stencilSK.StaticHoleTracker;
+import streamit.frontend.tosbit.RandomValueOracle;
 import streamit.frontend.tosbit.ValueOracle;
 
 
@@ -18,62 +21,70 @@ import streamit.frontend.tosbit.ValueOracle;
 public class ToPSbitII extends ToSBit {
 
 
-	
-	
+
+
 	public Synthesizer createSynth(Program p){
 		return new SATSynthesizer(p, params, internalRControl(), varGen );
 	}
-	
+
 	public Verifier createVerif(Program p){
-		return null;
+		boolean debug = params.flagValue ("verbosity") >= 3;
+		boolean cleanup = !params.hasFlag ("keeptmpfiles");
+		return new SpinVerifier (p, debug, cleanup);
 	}
-	
+
 	public ValueOracle randomOracle(Program p){
-		return null;
+		return new RandomValueOracle (new StaticHoleTracker(varGen));
 	}
-	
+
 	public void lowerIRToJava()
 	{
 		super.lowerIRToJava();
 		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
 		prog = (Program) prog.accept(new NumberStatements());
 	}
-	
+
 	protected Program preprocessProgram(Program lprog) {
 		lprog = super.preprocessProgram(lprog);
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 		return lprog;
 	}
-	
+
 	public void synthVerifyLoop(){
 		lowerIRToJava();
-	
+
 		Synthesizer synth = createSynth(prog);
 		Verifier verif = createVerif(prog);
-		
+
 		ValueOracle ora = randomOracle(prog);
 		boolean success = false;
 		do{
-			
-			CounterExample cex = null;/*verif.verify( ora );
+			CounterExample cex = verif.verify( ora );
 			if(cex == null){
 				success = true;
 				break;
 				//we are done;
 			}
-			*/
+
 			ora = synth.nextCandidate(cex);
 			if(ora == null){
 				success = false;
 				break;
 			}
 		}while(true);
-		
+
+		if (!success) {
+			System.err.println ("Whoops -- couldn't synthesize sketch.");
+			// TODO: real error message
+		} else {
+			System.out.println ("Successfully synthesized sketch!");
+		}
+
 		oracle = ora;
-		
+
 	}
-	
-	
+
+
 	public void run()
 	{
 		parseProgram();
@@ -88,20 +99,20 @@ public class ToPSbitII extends ToSBit {
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-		
+
 		if (prog == null)
 			throw new IllegalStateException();
 
-		
+
 		synthVerifyLoop();
-						
-		
-		eliminateStar();
-		generateCode();
+
+
+		//eliminateStar();
+		//generateCode();
 		System.out.println("DONE");
 
 	}
-	
+
 
 
 	protected void setCommandLineParams(){
@@ -120,15 +131,15 @@ public class ToPSbitII extends ToSBit {
 				"10", null) );
 	}
 
-	
-	
-	
+
+
+
 	public ToPSbitII(String[] args){
 		super(args);
 	}
-	
-	
-	
+
+
+
 	public static void main(String[] args)
 	{
 		new ToPSbitII (args).run();

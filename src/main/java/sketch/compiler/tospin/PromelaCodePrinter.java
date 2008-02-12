@@ -104,7 +104,13 @@ public class PromelaCodePrinter extends CodePrinter {
 		func.assertTrue (null == func.getSpecification (),
 						 "internal error: sketches should be gone");
 
-		printLine ("proctype "+ func.getName () +"(int __this; "+ paramsToString (func.getParams ()) + ")");
+		List<Parameter> params = func.getParams ();
+
+		printLine ("proctype "
+				+ func.getName ()
+				+"(int __this"
+				+ ((params.size () == 0) ? "" : ("; "+ paramsToString (params)))
+				+ ")");
 		printLine ("{");
 		func.getBody ().accept (this);
 		++indent; printLine (syncChan +" ! done;  /* return */"); --indent;

@@ -69,7 +69,7 @@ public class ToSpin extends ToSBit {
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 
-		if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
+		//if( params.hasFlag("showpartial")  ) prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");
