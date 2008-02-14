@@ -86,7 +86,7 @@ bit main () implements main {
 
     int[2] popped = 0;
 
-    ploop (int i; 2) {
+    fork (int i; 2) {
         popped[i] = dequeue (q);
     }
 

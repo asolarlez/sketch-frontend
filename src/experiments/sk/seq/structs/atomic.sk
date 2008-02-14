@@ -5,7 +5,7 @@ bit foo (bit z) {
 bit bar (bit y) implements foo {
     bit x = 0;
 
-    anyorder {
+    reorder {
         atomic {
             x = x ^ !x;
         }

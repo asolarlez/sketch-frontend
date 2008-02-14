@@ -51,7 +51,7 @@ bit main () implements main {
     q.head.next = null;
     q.tail = q.head;
 
-    ploop (int i; 2) {
+    fork (int i; 2) {
         enqueue (q, 1);
     }
 

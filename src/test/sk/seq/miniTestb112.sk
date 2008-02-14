@@ -10,7 +10,7 @@ int spec(int in){
 
 int sketch(int in) implements spec{
 	int tmp = 0;
-	anyorder{
+	reorder{
 		tmp = tmp * 2;
 		tmp = in;
 		tmp = tmp + 1;		
