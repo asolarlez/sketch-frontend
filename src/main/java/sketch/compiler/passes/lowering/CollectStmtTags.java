@@ -12,7 +12,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 
 public class CollectStmtTags extends FEReplacer {
@@ -33,8 +33,8 @@ public class CollectStmtTags extends FEReplacer {
     	return collectTag(o);
     }
 	@Override
-    public Object visitStmtPloop(StmtPloop loop){    	
-    	Object o = super.visitStmtPloop(loop);    	
+    public Object visitStmtFork(StmtFork loop){    	
+    	Object o = super.visitStmtFork(loop);    	
     	return collectTag(o);
     }
 	@Override
