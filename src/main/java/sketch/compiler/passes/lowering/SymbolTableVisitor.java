@@ -31,7 +31,7 @@ import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
@@ -239,10 +239,10 @@ public class SymbolTableVisitor extends FEReplacer
     }
     
     @Override
-    public Object visitStmtPloop(StmtPloop ploop){
+    public Object visitStmtFork(StmtFork ploop){
     	SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab, true);
-        Object result = super.visitStmtPloop(ploop);
+        Object result = super.visitStmtFork(ploop);
         symtab = oldSymTab;
         return result;
     }

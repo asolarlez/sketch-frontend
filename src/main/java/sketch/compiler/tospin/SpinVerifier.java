@@ -13,9 +13,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 
-import streamit.frontend.ProcessKillerThread;
 import streamit.frontend.ToSpin;
 import streamit.frontend.nodes.Program;
+import streamit.misc.ProcessKillerThread;
 
 /**
  * A class to verify a program using SPIN.

@@ -19,7 +19,7 @@ import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
-import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
@@ -35,7 +35,7 @@ import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtJoin;
 import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtSendMessage;
@@ -228,7 +228,7 @@ public class PromelaCodePrinter extends CodePrinter {
 		return assertEliminated (stmt);
 	}
 	@Override
-	public Object visitStmtPloop(StmtPloop stmt)
+	public Object visitStmtFork(StmtFork stmt)
 	{
 		//return assertEliminated (stmt);
 		return null;
@@ -349,7 +349,7 @@ public class PromelaCodePrinter extends CodePrinter {
 		return null;
 	}
 
-	public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+	public Object visitStmtReorderBlock(StmtReorderBlock block){
 		return assertEliminated (block);
 	}
 

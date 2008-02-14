@@ -67,7 +67,7 @@ public class SimpleCodePrinter extends CodePrinter
 		return stmt;
 	}
 	@Override
-	public Object visitStmtPloop(StmtPloop stmt)
+	public Object visitStmtFork(StmtFork stmt)
 	{
     	printLine("ploop(" +  stmt.getLoopVarDecl() + "; "  + stmt.getIter() + ")");
     	printIndentedStatement(stmt.getBody());
@@ -198,7 +198,7 @@ public class SimpleCodePrinter extends CodePrinter
 		return super.visitFieldDecl(field);
 	}
 
-	public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+	public Object visitStmtReorderBlock(StmtReorderBlock block){
 		printLine("anyorder");
 		block.getBlock().accept(this);
 		return block;

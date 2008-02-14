@@ -55,7 +55,7 @@ import streamit.frontend.nodes.SJRoundRobin;
 import streamit.frontend.nodes.SJWeightedRR;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
-import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
@@ -72,7 +72,7 @@ import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtJoin;
 import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPhase;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtSendMessage;
@@ -1406,7 +1406,7 @@ public class NodesToJava extends SymbolTableVisitor
 		return null;
 	}
 
-	public Object visitStmtPloop(StmtPloop loop){
+	public Object visitStmtFork(StmtFork loop){
 		throw new UnsupportedOperationException();
 	}
 
@@ -1432,7 +1432,7 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitTypeArray(TypeArray t) { return null; }
     public Object visitParameter(Parameter par){ return null; }
     public Object visitTypeStruct(TypeStruct ts){return null;}
-    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){return null;}
+    public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return "null"; }
 }

@@ -14,12 +14,12 @@ import java.io.PrintStream;
 import java.util.List;
 
 import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.ProcessKillerThread;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import streamit.misc.ProcessKillerThread;
 
 public class SATBackend {
 
