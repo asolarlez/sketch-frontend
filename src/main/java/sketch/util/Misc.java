@@ -16,6 +16,12 @@
 
 package streamit.misc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 public class Misc extends AssertedClass
 {
     public static int MAX (int a, int b)
@@ -27,4 +33,27 @@ public class Misc extends AssertedClass
     {
         return (a < b ? a : b);
     }
+
+	/** Read all of IN into a string and return the string. */
+	public static String readStream (InputStream in) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream ();
+		Misc.dumpStreamTo (in, out);
+		return out.toString ();
+	}
+
+	/** Dump the stream IN to the stream _OUT. */
+	public static void dumpStreamTo (InputStream in, OutputStream _out) {
+		dumpStreamTo (in, _out, false);
+	}
+
+	/** Dump the stream IN to the stream _OUT, optionally with line numbers. */
+	public static void dumpStreamTo (InputStream in, OutputStream _out,
+									 boolean withLineNumbers) {
+		int lineno = 0;
+		PrintStream out = new PrintStream (_out);
+		for (String line : new LineReader (in)) {
+			if (withLineNumbers)  out.print ("["+ (++lineno) +"] ");
+			out.println (line);
+		}
+	}
 }
