@@ -23,10 +23,10 @@ package streamit.frontend.nodes;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprConstFloat extends Expression
+public class ExprConstFloat extends ExprConstant
 {
     private double val;
-    
+
     /**
      * Create a new ExprConstFloat with a specified value.
      *
@@ -48,7 +48,7 @@ public class ExprConstFloat extends Expression
     {
         this(null, val);
     }
-    
+
     /**
      * Parse a string as a double, and create a new ExprConstFloat
      * from the result.
@@ -60,7 +60,7 @@ public class ExprConstFloat extends Expression
     {
         this(context, Double.parseDouble(str));
     }
-    
+
     /**
      * Returns the value of this.
      *
@@ -73,7 +73,7 @@ public class ExprConstFloat extends Expression
     {
         return v.visitExprConstFloat(this);
     }
-    
+
     public String toString(){
     	return Double.toString(getVal());
     }

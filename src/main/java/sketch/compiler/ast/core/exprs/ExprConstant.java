@@ -26,11 +26,15 @@ package streamit.frontend.nodes;
 abstract public class ExprConstant extends Expression
 {
     // Go Java go!  If we don't have this, the compiler complains:
-    public ExprConstant(FEContext context) 
+    public ExprConstant(FEContext context)
     {
         super(context);
     }
-    
+
+    public boolean isConstant () {
+    	return true;
+    }
+
     /**
      * Create a new constant-valued expression corresponding to a
      * String value.  val must be a valid real number, according to
@@ -39,7 +43,7 @@ abstract public class ExprConstant extends Expression
      * integer if possible, and a real-valued expression if possible;
      * however, it may also create an ExprComplex with a zero (null)
      * real part.  Eexpressions like "3+4i" need to be parsed into
-     * separate expressions. 
+     * separate expressions.
      *
      * @param context  file and line number for the string
      * @param val      string containing the constant to create

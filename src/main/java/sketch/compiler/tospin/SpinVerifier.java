@@ -3,30 +3,21 @@
  */
 package streamit.frontend.tospin;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-
-import streamit.frontend.ToSpin;
 import streamit.frontend.nodes.Program;
-import streamit.misc.ProcessKillerThread;
 
 /**
  * A class to verify a program using SPIN.
  *
+ * TODO: refactor code that uses this class
+ *
+ * @deprecated	Use the streamit.solvers.SpinVerifier instead
  * @author Chris Jones
  */
 public class SpinVerifier {
-	protected SpinExecuter spin;
+	protected streamit.frontend.solvers.SpinVerifier verif;
 
 	public SpinVerifier (Program prog) {
-		spin = SpinExecuter.makeExecuter (prog);
+		verif = new streamit.frontend.solvers.SpinVerifier (prog);
 	}
 
 	/**
@@ -34,19 +25,13 @@ public class SpinVerifier {
 	 * possible executions.
 	 */
 	public boolean verify () { return verify (0); }
-	public boolean verify (int timeoutMins) {
-		try { spin.run (timeoutMins); } catch (IOException ioe) {
-			throw new RuntimeException (ioe);
-		}
-		return !hasErrors ();
-	}
 
-	protected boolean hasErrors () {
-		return -1 == spin.getOutput ().indexOf ("errors: 0");
+	public boolean verify (int timeoutMins) {
+		return null == verif.verify (null);
 	}
 
 	public String getOutput () {
-		return spin.getOutput ();
+		return verif.getOutput ();
 	}
 
 	public static SpinVerifier makeVerifier (Program prog) {

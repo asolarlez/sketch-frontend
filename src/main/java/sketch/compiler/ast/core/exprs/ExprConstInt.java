@@ -24,13 +24,13 @@ package streamit.frontend.nodes;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprConstInt extends Expression
+public class ExprConstInt extends ExprConstant
 {
     private final int val;
-    
+
     public static final ExprConstInt zero = new ExprConstInt(0);
     public static final ExprConstInt one = new ExprConstInt(1);
-    
+
     /** Create a new ExprConstInt with a specified value. */
     public ExprConstInt(FEContext context, int val)
     {
@@ -43,14 +43,14 @@ public class ExprConstInt extends Expression
     {
         this(null, val);
     }
-    
+
     /** Parse a string as an integer, and create a new ExprConstInt
      * from the result. */
     public ExprConstInt(FEContext context, String str)
     {
         this(context, Integer.parseInt(str));
     }
-    
+
     /** Returns the value of this. */
     public int getVal() { return val; }
 
@@ -69,12 +69,12 @@ public class ExprConstInt extends Expression
             return false;
         return val == ((ExprConstInt)other).getVal();
     }
-    
+
     public int hashCode()
     {
         return new Integer(val).hashCode();
     }
-    
+
     public String toString()
     {
         return Integer.toString(val);

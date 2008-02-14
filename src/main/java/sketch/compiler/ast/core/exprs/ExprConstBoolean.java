@@ -24,10 +24,10 @@ package streamit.frontend.nodes;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprConstBoolean extends Expression
+public class ExprConstBoolean extends ExprConstant
 {
     private boolean val;
-    
+
     /**
      * Create a new ExprConstBoolean with a specified value.
      *
@@ -51,7 +51,7 @@ public class ExprConstBoolean extends Expression
     {
         this(null, val);
     }
-    
+
     /** Returns the value of this. */
     public boolean getVal() { return val; }
 

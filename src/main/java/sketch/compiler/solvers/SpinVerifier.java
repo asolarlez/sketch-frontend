@@ -8,7 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import streamit.frontend.nodes.Program;
-import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tospin.SpinExecuter;
 
@@ -20,6 +19,8 @@ public class SpinVerifier implements Verifier {
 	protected boolean debug, cleanup;
 	protected static final String STEP_REGEX =
 		"^\\s*\\d+:\\s*proc\\s+(\\d+)[^\\[]+\\[_ = (\\d+)\\]$";
+
+	private String output;
 
 	public SpinVerifier (Program p) { this (p, false, true); }
 	public SpinVerifier (Program p, boolean _debug, boolean _cleanup) {
@@ -34,6 +35,10 @@ public class SpinVerifier implements Verifier {
 		try { spin.run (); } catch (IOException ioe) {
 			throw new RuntimeException ("Fatal error invoking spin", ioe);
 		}
+
+		//TODO: get rid of this
+		output = spin.getOutput ();
+
 		String trail = spin.getTrail ();
 		return (trail.length () > 0) ? parseTrace (trail) : null;
 	}
@@ -45,9 +50,19 @@ public class SpinVerifier implements Verifier {
 		while (m.find ()) {
 			int thread = Integer.parseInt (m.group (1));
 			int stmt = Integer.parseInt (m.group (2));
-			cex.steps.add (new step (thread, stmt));
+			cex.addStep (thread, stmt);
 		}
 
+		assert cex.steps.size () > 0 : "Uh-oh!  No steps in counterexample";
+
 		return cex;
+	}
+
+	/**
+	 * @deprecated
+	 * @see streamit.frontend.tospin.SpinVerifier
+	 */
+	public String getOutput () {
+		return output;
 	}
 }

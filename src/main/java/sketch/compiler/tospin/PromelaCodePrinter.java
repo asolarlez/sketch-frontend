@@ -177,6 +177,8 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtIfThen(StmtIfThen stmt)
 	{
+		assertThreadLocal (stmt.getCond ());
+
 		printLine ("if");
 		printLine ("::"+ stmt.getCond () +" -> ");
 		stmt.getCons ().accept (this);
@@ -193,6 +195,8 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtWhile(StmtWhile stmt)
 	{
+		assertThreadLocal (stmt.getCond ());
+
 		printLine ("do");
 		printLine (":: !("+ stmt.getCond () +") -> break;");
 		printLine (":: else");
@@ -204,6 +208,8 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtDoWhile(StmtDoWhile stmt)
 	{
+		assertThreadLocal (stmt.getCond ());
+
 		FEContext cx = stmt.getCx ();
 		String first = vargen.nextVar ("do_while_first_iter");
 		List<Statement> newStmts =
@@ -230,8 +236,8 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtFork(StmtFork stmt)
 	{
-		//return assertEliminated (stmt);
-		return null;
+		return assertEliminated (stmt);
+		//return null;
 	}
 
 	@Override
@@ -254,14 +260,14 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtAssert(StmtAssert stmt)
 	{
-		printLine(stmt.toString() +";");
+		printNumberedStmt (stmt);
 		return super.visitStmtAssert(stmt);
 	}
 
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
-		printLine(stmt.toString()  + ';');
+		printNumberedStmt (stmt);
 		return super.visitStmtAssign(stmt);
 	}
 
@@ -275,21 +281,21 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtBreak(StmtBreak stmt)
 	{
-		printLine(stmt.toString());
+		printNumberedStmt (stmt);
 		return super.visitStmtBreak(stmt);
 	}
 
 	@Override
 	public Object visitStmtContinue(StmtContinue stmt)
 	{
-		printLine(stmt.toString());
+		printNumberedStmt (stmt);
 		return super.visitStmtContinue(stmt);
 	}
 
 	@Override
 	public Object visitStmtEmpty(StmtEmpty stmt)
 	{
-		printLine(stmt.toString());
+		//printLine(stmt.toString());
 		return super.visitStmtEmpty(stmt);
 	}
 
@@ -302,6 +308,7 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtExpr(StmtExpr stmt)
 	{
+		printStmtNumber (stmt);
 		Expression expr = stmt.getExpression ();
 		if (expr instanceof ExprFunCall)
 			expr.accept (this);
@@ -354,10 +361,13 @@ public class PromelaCodePrinter extends CodePrinter {
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block){
+		printStmtNumber (block);
 		printLine("atomic");
 		visitStmtBlock (block);
 		return block;
 	}
+
+	/* === HELPER METHODS === */
 
 	protected String declToString (Type t, String name) {
 		if (t.isArray ()) {
@@ -383,6 +393,28 @@ public class PromelaCodePrinter extends CodePrinter {
 		printLine (decl +";");
 		if (null != init)
 			printLine (name +" = "+ init +";");
+	}
+
+	protected void printNumberedStmt (Statement stmt) {
+		printStmtNumber (stmt);
+		printLine(stmt.toString() +";");
+	}
+
+	protected void printStmtNumber (Statement stmt) {
+		stmt.assertTrue (null != stmt.getTag (), "Unnumbered statement: "+ stmt);
+
+		printLine ("_ = "+ stmt.getTag ()+ ";");
+	}
+
+	/**
+	 * Assert that this statement is thread local; namely, a constant
+	 * or read from a local variable (register).
+	 */
+	protected void assertThreadLocal (Expression e) {
+		// TODO: if e isn't constant, we should ensure that it's actually a
+		// a local variable.
+		e.assertTrue (e.isConstant () || (e instanceof ExprVar),
+					  "Non-local expression in condition: "+ e);
 	}
 
 	protected Object assertEliminated (FENode node) {

@@ -23,24 +23,24 @@ package streamit.frontend.nodes;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprConstChar extends Expression
+public class ExprConstChar extends ExprConstant
 {
     private char val;
-    
+
     /** Create a new ExprConstChar for a particular character. */
     public ExprConstChar(FEContext context, char val)
     {
         super(context);
         this.val = val;
     }
-    
+
     /** Create a new ExprConstChar containing the first character of a
      * String. */
     public ExprConstChar(FEContext context, String str)
     {
         this(context, str.charAt(0));
     }
-    
+
     /** Returns the value of this. */
     public char getVal() { return val; }
 

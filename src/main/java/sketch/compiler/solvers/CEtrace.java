@@ -1,5 +1,6 @@
 package streamit.frontend.solvers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CEtrace extends CounterExample {
@@ -11,5 +12,14 @@ public class CEtrace extends CounterExample {
 			this.stmt = stmt;
 		}
 	}
-	public List<step> steps; 
+
+	public List<step> steps;
+
+	public CEtrace () {
+		steps = new ArrayList<step> ();
+	}
+
+	public void addStep (int thread, int stmt) {
+		steps.add (new step (thread, stmt));
+	}
 }

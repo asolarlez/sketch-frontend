@@ -143,20 +143,16 @@ public class SpinExecuter {
 		err = status.err;
 		trail = "";
 
-		trailFile = new File (promelaCode.getName () + ".trail");
+		trailFile = new File (promelaCode.getCanonicalPath () + ".trail");
 		if (trailFile.exists ()) {
 			status = execDebug (spinWorkDir, 0,
 					prog.getCanonicalPath (), "-r",	trailFile.getCanonicalPath ());
 			assert 0 == status.exitCode;
 			trail = status.out;
 		} else {
-			// If we didn't get a Cex trace, there had better not have been
+			// If we didn't get a cex trace, there had better not have been
 			// other errors.
 			assert !hasErrors ();
-		}
-		if (trail.length () > 0) {
-			log ("Counterexample trail:");
-			log (trail);
 		}
 	}
 
@@ -179,7 +175,7 @@ public class SpinExecuter {
 		ProcessStatus status;
 
 		try {
-			String args = "";  for (String a : cmdLine)  args += a;
+			String args = "";  for (String a : cmdLine)  args += a +" ";
 			log ("Launching:\t\t" + args);
 			log ("In working directory:\t" + workDir);
 

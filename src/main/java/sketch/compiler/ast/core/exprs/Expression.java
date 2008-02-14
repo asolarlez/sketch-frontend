@@ -25,7 +25,7 @@ package streamit.frontend.nodes;
  */
 abstract public class Expression extends FENode
 {
-	
+
 	public Expression(Expression exp){
 		super(exp);
 	}
@@ -47,9 +47,16 @@ abstract public class Expression extends FENode
     {
         return false;
     }
+
     public Integer getIValue(){
     	return null;
     }
+
+    /** Returns true iff this expression is a constant. */
+    public boolean isConstant () {
+    	return false;
+    }
+
     public boolean equals(Object o){
     	if(! (o instanceof Expression) ){
     		return false;

@@ -25,10 +25,10 @@ package streamit.frontend.nodes;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprConstStr extends Expression
+public class ExprConstStr extends ExprConstant
 {
     private String val;
-    
+
     /**
      * Create a new ExprConstStr.
      *
@@ -40,7 +40,7 @@ public class ExprConstStr extends Expression
         super(context);
         this.val = val;
     }
-    
+
     /**
      * Returns the value of this.  The returned string will be in
      * the format it appeared in in the original source file,
