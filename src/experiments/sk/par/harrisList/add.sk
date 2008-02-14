@@ -42,7 +42,7 @@ bit verifier () { return 1; }
 bit main () implements verifier {
     List L = newList ();
 
-    ploop (int i; 2) {
+    fork (int i; 2) {
         add (L, i+1);
     }
 

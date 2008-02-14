@@ -68,7 +68,7 @@ void hhRemove(Set s, int in){
 		bit more = 1;
 		for(int i=0; i<5; ++i){
 			if(more && cur.val < in){
-				anyorder{
+				reorder{
 					atomic{
 					if(?? && comp(cur, prev, null)){ lock(sel(cur, prev, null)); }  // 6 * 36 =
 					}
@@ -106,7 +106,7 @@ bit testSK(bit a, bit b) implements test{
 	setAddSeq(s, 4);
 	setAddSeq(s, 5);
 	
-	ploop(int i; 2){
+	fork(int i; 2){
 		int t = 3;
 		if(i==0 && a){ t = 4; }
 		if(i==1 && b){ t = 5; }	

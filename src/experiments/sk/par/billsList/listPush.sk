@@ -53,7 +53,7 @@ bit main () implements verifier {
     ret = ret && verify (seq);
 
     Memory par = newMemory ();
-    ploop (int i; 2) {
+    fork (int i; 2) {
         sbrk (par, i+1);
     }
     ret = ret && verify (par);

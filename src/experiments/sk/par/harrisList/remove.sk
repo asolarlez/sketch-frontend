@@ -79,7 +79,7 @@ bit main () implements verifier {
 
     add (L, 1);
     add (L, 2);
-    ploop (int i; 2) {
+    fork (int i; 2) {
         assert (i+1) == remove (L, i+1);
     }
 

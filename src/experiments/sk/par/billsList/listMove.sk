@@ -168,7 +168,7 @@ bit main () implements verifier {
     Memory par = newMemory ();
     Page pp1 = sbrk (par, 1);
     Page pp2 = null;
-    ploop (int i; 2) {
+    fork (int i; 2) {
         if (i == 0)
             pp2 = sbrk (par, 2);
         else
