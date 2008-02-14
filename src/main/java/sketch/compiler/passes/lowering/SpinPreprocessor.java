@@ -26,7 +26,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtJoin;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
@@ -127,7 +127,7 @@ class FindModifiedVarsInPloops extends FEReplacer {
 	public HashSet<String> rhsVars = new HashSet<String>();
 	public HashMap<String, Type> varTypes = new HashMap<String, Type>();
 	public HashMap<String, Expression> varInits = new HashMap<String, Expression> ();
-	public HashMap<StmtPloop, HashSet<String> > varsPerLoop = new HashMap<StmtPloop, HashSet<String> >();
+	public HashMap<StmtFork, HashSet<String> > varsPerLoop = new HashMap<StmtFork, HashSet<String> >();
 
 	public Object visitParameter(Parameter par){
     	Type t = (Type) par.getType().accept(this);
@@ -149,7 +149,7 @@ class FindModifiedVarsInPloops extends FEReplacer {
         return stmt;
     }
 
-	public Object visitStmtPloop(StmtPloop loop){
+	public Object visitStmtFork(StmtFork loop){
     	IdentifyModifiedVars imv = new IdentifyModifiedVars();
     	loop.getLoopVarDecl().accept(this);
     	loop.getBody().accept(imv);
@@ -166,7 +166,7 @@ class FindModifiedVarsInPloops extends FEReplacer {
 public class SpinPreprocessor extends FEReplacer {
 	public HashSet<String> lhsVars;
 	public HashSet<String> rhsVars;
-	public HashMap<StmtPloop, HashSet<String> > varsPerLoop;
+	public HashMap<StmtFork, HashSet<String> > varsPerLoop;
 	public HashMap<String, Type> varTypes;
 	List<Function> generatedFuncs = new ArrayList<Function>();
 	private TempVarGen varGen;
@@ -194,7 +194,7 @@ public class SpinPreprocessor extends FEReplacer {
 		}
 	}
 
-    public Object visitStmtPloop(StmtPloop loop){
+    public Object visitStmtFork(StmtFork loop){
     	HashSet<String> vars = varsPerLoop.get(loop);
     	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
 

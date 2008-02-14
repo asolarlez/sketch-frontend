@@ -32,7 +32,7 @@ int dequeue (Queue q) {
     bit more = 1;
     for (int i = 0; i < 4; ++i) {
         if (more) {
-            anyorder {
+            reorder {
                 tmp = ?? ? q.prevHead :
                            (?? ? q.prevHead.next : q.prevHead.next.next);
                 if (null == tmp) {
@@ -93,7 +93,7 @@ bit dequeueTest () implements alwaysTrue {
 
     int[2] popped = 0;
 
-    ploop (int i; 2) {
+    fork (int i; 2) {
         popped[i] = dequeue (q);
     }
 

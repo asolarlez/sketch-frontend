@@ -8,9 +8,9 @@ bit test(int in){
 
 bit testSK(int in) implements test{
 	int global = in;
-	ploop(int i; 2){
+	fork(int i; 2){
 		int local;
-		anyorder{
+		reorder{
 		lock(1);
 		local = global + 1;
 		}	

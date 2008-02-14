@@ -3,10 +3,10 @@ package streamit.frontend.experimental;
 import streamit.frontend.experimental.MethodState.ChangeTracker;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
@@ -17,10 +17,10 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 		super(vtype, varGen, isReplacer, maxUnroll, rcontrol);
 	}	
 	
-	public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+	public Object visitStmtReorderBlock(StmtReorderBlock block){
 		processBlockWithCrazyEffects(block.getBlock());
 		StmtBlock newBlock = (StmtBlock) block.getBlock().accept(this);
-		return isReplacer ? new StmtAnyOrderBlock(block.getCx(), newBlock.getStmts() ) : block;		
+		return isReplacer ? new StmtReorderBlock(block.getCx(), newBlock.getStmts() ) : block;		
 	}
 	
 	

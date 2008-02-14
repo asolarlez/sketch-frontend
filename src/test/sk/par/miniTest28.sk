@@ -18,7 +18,7 @@ bit testSK(int in) implements test{
 	int global = in;
 	int c = 0;
 	bit[2] out = 0;
-	ploop(int i; 2){
+	fork(int i; 2){
 		int t = i;
 		bit more = 1;
 		for(int j=0; j<3; ++j){

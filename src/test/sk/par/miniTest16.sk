@@ -49,7 +49,7 @@ void enqueue(Queue q, int i){
 	n.val = i;
 	n.next = null;
 	Node ot = null;
-	anyorder{
+	reorder{
 		ot.next = n;
 		atomic{
 			ot = gen(q);
@@ -75,7 +75,7 @@ bit test(bit in){
 bit testSK(bit in) implements test{
 	Queue q = newQueue();
 	enqueue(q, 5);
-	ploop(int i; 2){
+	fork(int i; 2){
 		if(i==0){
 				enqueue(q, 6);
 		}else{

@@ -12,7 +12,7 @@ bit test(int in){
 bit testSK(int in) implements test{
 	int global = in;
 	Lock lk = new Lock();
-	ploop(int i; 2){
+	fork(int i; 2){
 		int local;
 		lock(lk);
 		local = global;

@@ -18,7 +18,7 @@ bit test(int in){
 
 bit testSK(int in) implements test{
 	Box global = newBox(in);
-	ploop(int i; 2){
+	fork(int i; 2){
 		int local;
 		lock(1);
 		local = global.val;

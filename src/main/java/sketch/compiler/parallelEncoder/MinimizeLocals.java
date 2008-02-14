@@ -16,7 +16,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.Type;
 
@@ -39,14 +39,14 @@ public class MinimizeLocals extends FEReplacer {
 	
 	
 	
-	public Object visitStmtPloop(StmtPloop loop){
+	public Object visitStmtFork(StmtFork loop){
     	StmtVarDecl decl = loop.getLoopVarDecl();
     	Expression niter = (Expression) loop.getIter().accept(this);
     	Statement body = (Statement) loop.getBody().accept(this);
     	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
     		return loop;
     	}
-    	return new StmtPloop(loop.getCx(), decl, niter, body);
+    	return new StmtFork(loop.getCx(), decl, niter, body);
     }
 	
 	

@@ -37,9 +37,9 @@ options {
 
 tokens {
 	"loop"; //"enqueue";
-	"ploop";
+	"fork";
 	"new";
-	"anyorder";
+	"reorder";
 	"atomic";
 	"null";
 	// Basic types:
@@ -54,7 +54,7 @@ tokens {
 	//"pi";
 	"true"; "false";
 	//sketching stuff
-	"implements"; 
+	"implements";
 	"assert";
 	"static";
 }

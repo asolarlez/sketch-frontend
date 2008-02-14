@@ -92,7 +92,7 @@ public interface FEVisitor
     public Object visitTypeStruct(TypeStruct ts);
     public Object visitParameter(Parameter par);
     public Object visitExprNew(ExprNew expNew);
-    public Object visitStmtPloop(StmtPloop loop);
-    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block);
+    public Object visitStmtFork(StmtFork loop);
+    public Object visitStmtReorderBlock(StmtReorderBlock block);
     public Object visitExprNullPtr(ExprNullPtr nptr);
 }

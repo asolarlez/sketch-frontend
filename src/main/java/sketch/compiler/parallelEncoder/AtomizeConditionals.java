@@ -18,7 +18,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -29,13 +29,13 @@ public class AtomizeConditionals extends FEReplacer {
 	TempVarGen varGen;
 	
 	
-	  public Object visitStmtPloop(StmtPloop loop){	    	
+	  public Object visitStmtFork(StmtFork loop){	    	
 	    	
 	    	Statement body = (Statement) loop.getBody().accept(this);
 	    	if(body == loop.getBody()){
 	    		return loop;
 	    	}
-	    	return new StmtPloop(loop.getCx(), loop.getLoopVarDecl(), loop.getIter(), body);
+	    	return new StmtFork(loop.getCx(), loop.getLoopVarDecl(), loop.getIter(), body);
 	    }
 	
 	

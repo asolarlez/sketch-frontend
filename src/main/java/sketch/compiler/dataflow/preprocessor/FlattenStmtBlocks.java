@@ -13,7 +13,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 
 public class FlattenStmtBlocks extends FEReplacer {
@@ -30,10 +30,10 @@ public class FlattenStmtBlocks extends FEReplacer {
 	}
 	
 
-    public Object visitStmtPloop(StmtPloop loop){
+    public Object visitStmtFork(StmtFork loop){
     	boolean oldIsWithinBlock = isWithinBlock;
 		 isWithinBlock = false;
-		 Object o = super.visitStmtPloop(loop);
+		 Object o = super.visitStmtFork(loop);
 		 isWithinBlock = oldIsWithinBlock;
 		 return o;
     }

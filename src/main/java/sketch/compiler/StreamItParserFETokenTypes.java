@@ -14,9 +14,9 @@ public interface StreamItParserFETokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;
 	int TK_loop = 4;
-	int TK_ploop = 5;
+	int TK_fork = 5;
 	int TK_new = 6;
-	int TK_anyorder = 7;
+	int TK_reorder = 7;
 	int TK_atomic = 8;
 	int TK_null = 9;
 	int TK_boolean = 10;

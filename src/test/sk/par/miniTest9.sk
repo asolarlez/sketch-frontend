@@ -48,7 +48,7 @@ bit test(int in){
 bit testSK(int in) implements test{
 	Queue q = newQueue();
 	enqueue(q, 5);
-	ploop(int i; 2){
+	fork(int i; 2){
 		if(i==0){
 			atomic{
 				enqueue(q, 6);

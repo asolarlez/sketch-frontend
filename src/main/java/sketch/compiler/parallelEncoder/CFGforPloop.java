@@ -23,7 +23,7 @@ import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.passes.CollectStmtTags;
 import streamit.frontend.passes.VariableDeclarationMover;
@@ -113,7 +113,7 @@ public class CFGforPloop extends CFGBuilder {
 	 * @param locals
 	 * @return
 	 */
-	public static CFG buildCFG(StmtPloop ploop, Set<StmtVarDecl>/*out*/ locals)
+	public static CFG buildCFG(StmtFork ploop, Set<StmtVarDecl>/*out*/ locals)
     {
         CFGforPloop builder = new CFGforPloop();
         

@@ -1085,9 +1085,9 @@ inputState.guessing--;
 				s=loop_statement();
 				break;
 			}
-			case TK_ploop:
+			case TK_fork:
 			{
-				s=ploop_statement();
+				s=fork_statement();
 				break;
 			}
 			case TK_split:
@@ -1114,9 +1114,9 @@ inputState.guessing--;
 				match(SEMI);
 				break;
 			}
-			case TK_anyorder:
+			case TK_reorder:
 			{
-				s=anyorder_block();
+				s=reorder_block();
 				break;
 			}
 			case TK_atomic:
@@ -1278,7 +1278,7 @@ inputState.guessing--;
 		return s;
 	}
 	
-	public final Statement  ploop_statement() throws RecognitionException, TokenStreamException {
+	public final Statement  fork_statement() throws RecognitionException, TokenStreamException {
 		Statement s;
 		
 		Token  t = null;
@@ -1286,7 +1286,7 @@ inputState.guessing--;
 		
 		try {      // for error handling
 			t = LT(1);
-			match(TK_ploop);
+			match(TK_fork);
 			match(LPAREN);
 			ivar=variable_decl();
 			match(SEMI);
@@ -1294,7 +1294,7 @@ inputState.guessing--;
 			match(RPAREN);
 			b=pseudo_block();
 			if ( inputState.guessing==0 ) {
-				s = new StmtPloop(getContext(t), (StmtVarDecl) ivar, exp, b);
+				s = new StmtFork(getContext(t), (StmtVarDecl) ivar, exp, b);
 			}
 		}
 		catch (RecognitionException ex) {
@@ -1383,14 +1383,14 @@ inputState.guessing--;
 		return s;
 	}
 	
-	public final StmtAnyOrderBlock  anyorder_block() throws RecognitionException, TokenStreamException {
-		StmtAnyOrderBlock sb;
+	public final StmtReorderBlock  reorder_block() throws RecognitionException, TokenStreamException {
+		StmtReorderBlock sb;
 		
 		Token  t = null;
 		sb=null; Statement s; List l = new ArrayList();
 		
 		try {      // for error handling
-			match(TK_anyorder);
+			match(TK_reorder);
 			t = LT(1);
 			match(LCURLY);
 			{
@@ -1410,7 +1410,7 @@ inputState.guessing--;
 			}
 			match(RCURLY);
 			if ( inputState.guessing==0 ) {
-				sb = new StmtAnyOrderBlock(getContext(t), l);
+				sb = new StmtReorderBlock(getContext(t), l);
 			}
 		}
 		catch (RecognitionException ex) {
@@ -2280,7 +2280,7 @@ inputState.guessing--;
 		
 		Token  id = null;
 		List l; Statement s; f = null;
-		Type t = TypePrimitive.voidtype; 
+		Type t = TypePrimitive.voidtype;
 		int cls = Function.FUNC_HANDLER;
 		
 		try {      // for error handling
@@ -4021,9 +4021,9 @@ inputState.guessing--;
 		"<2>",
 		"NULL_TREE_LOOKAHEAD",
 		"\"loop\"",
-		"\"ploop\"",
+		"\"fork\"",
 		"\"new\"",
-		"\"anyorder\"",
+		"\"reorder\"",
 		"\"atomic\"",
 		"\"null\"",
 		"\"boolean\"",

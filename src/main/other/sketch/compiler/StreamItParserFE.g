@@ -201,12 +201,12 @@ push_statement returns [Statement s] { s = null; Expression x; }
 
 statement returns [Statement s] { s = null; }
 	:	s=loop_statement
-	|   s=ploop_statement
+	|   s=fork_statement
 	|	s=split_statement SEMI
 	|	s=join_statement SEMI
 	|	s=enqueue_statement SEMI
 	|	s=push_statement SEMI
-	|	s=anyorder_block
+	|	s=reorder_block
 	|	s=atomic_block
 	|	s=block
 	|	(data_type ID) => s=variable_decl SEMI!
@@ -228,9 +228,9 @@ loop_statement returns [Statement s] { s = null; Expression exp; Statement b;}
 	;
 
 
-ploop_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
-	: t:TK_ploop LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block
-	{ s = new StmtPloop(getContext(t), (StmtVarDecl) ivar, exp, b); }
+fork_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
+	: t:TK_fork LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block
+	{ s = new StmtFork(getContext(t), (StmtVarDecl) ivar, exp, b); }
 	;
 
 split_statement returns [Statement s] { s = null; SplitterJoiner sj; }
@@ -314,7 +314,7 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	;
 
 function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isStatic=false; }
-	:	
+	:
 	(TK_static { isStatic=true;} )?
 	rt=return_type
 	id:ID
@@ -338,7 +338,7 @@ return_type returns [Type t] { t=null; }
 	;
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
-Type t = TypePrimitive.voidtype; 
+Type t = TypePrimitive.voidtype;
 int cls = Function.FUNC_HANDLER; }
 	:	TK_handler id:ID l=param_decl_list s=block
 		{ f = new Function(getContext(id), cls, id.getText(), t, l, s); }
@@ -362,9 +362,9 @@ block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
 
 
 
-anyorder_block returns [StmtAnyOrderBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
-	:	TK_anyorder t:LCURLY ( s=statement { l.add(s); } )* RCURLY
-		{ sb = new StmtAnyOrderBlock(getContext(t), l); }
+reorder_block returns [StmtReorderBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
+	:	TK_reorder t:LCURLY ( s=statement { l.add(s); } )* RCURLY
+		{ sb = new StmtReorderBlock(getContext(t), l); }
 	;
 
 atomic_block returns [StmtAtomicBlock ab] { ab=null; StmtBlock b = null; }

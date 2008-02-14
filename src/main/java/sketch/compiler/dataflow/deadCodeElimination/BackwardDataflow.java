@@ -13,7 +13,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -136,7 +136,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     }
 	
     
-    public Object visitStmtPloop(StmtPloop loop){
+    public Object visitStmtFork(StmtFork loop){
     	
     	state.pushParallelSection();
     	Statement nbody = null;
@@ -161,7 +161,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	}finally{
     		state.popParallelSection();
     	}
-        return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
+        return isReplacer?  new StmtFork(loop.getCx(), ndecl, niter, nbody) : loop;
 	}
     
     

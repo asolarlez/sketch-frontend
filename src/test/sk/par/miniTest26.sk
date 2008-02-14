@@ -17,7 +17,7 @@ bit test(int in){
 bit testSK(int in) implements test{
 	int global = in;
 	bit c = 0;
-	ploop(int i; 2){
+	fork(int i; 2){
 		int t = 0;
 		atomic{
 			if(c){

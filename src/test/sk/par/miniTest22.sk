@@ -85,7 +85,7 @@ void setAdd(Set s, int key){
 				}
 			}
 			Node lk = null;
-			anyorder{
+			reorder{
 				lk = gen(n, cur, pred);
 				lock(lk);
 				unlock(lk);
@@ -106,7 +106,7 @@ bit test(int in){
 bit testSK(int in) implements test{
 	Set q = newSet();
 	setInit(q);
-	ploop(int i; 2){
+	fork(int i; 2){
 		int val = 0;
 		if(i==0){
 			val = 6;

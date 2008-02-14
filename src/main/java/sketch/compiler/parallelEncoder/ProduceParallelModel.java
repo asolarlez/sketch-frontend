@@ -29,7 +29,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -277,7 +277,7 @@ public class ProduceParallelModel extends FEReplacer {
 	 * 
 	 * 
 	 */
-	public Function constructRestFunction(CFG parcfg, Statement postpar, Statement prepar, StmtPloop ploop,
+	public Function constructRestFunction(CFG parcfg, Statement postpar, Statement prepar, StmtFork ploop,
 										   Set<StmtVarDecl> globals, Set<StmtVarDecl> locals, Function fun){
 		
 		String funName = fun.getName() + FUN_NAME_BASE; 
@@ -863,7 +863,7 @@ public class ProduceParallelModel extends FEReplacer {
 		if(parts.ploop != null){
 		
 			Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
-			StmtPloop ploop = (StmtPloop) parts.ploop.accept(new AtomizeConditionals(varGen));
+			StmtFork ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
 			System.out.println("%%%%%%%%%%%%%%%%%%%%%%");
 			ploop.accept(new SimpleCodePrinter());
 			//ploop = (StmtPloop) ploop.accept(new MinimizeLocals());

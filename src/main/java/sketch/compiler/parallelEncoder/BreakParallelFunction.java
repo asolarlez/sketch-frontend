@@ -9,7 +9,7 @@ import java.util.Set;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 
 
@@ -26,7 +26,7 @@ import streamit.frontend.nodes.StmtVarDecl;
 public class BreakParallelFunction extends FEReplacer {
 
 	public Set<StmtVarDecl> globalDecls = new HashSet<StmtVarDecl>();
-	public StmtPloop ploop = null;
+	public StmtFork ploop = null;
 	public Statement prepar = null;
 	public Statement postpar = null;
 	boolean foundploop = false;
@@ -36,7 +36,7 @@ public class BreakParallelFunction extends FEReplacer {
 	static final int STAGE_POSTPAR=2;
 	
 	
-	public Object visitStmtPloop(StmtPloop loop){		
+	public Object visitStmtFork(StmtFork loop){		
 		foundploop = true;
 		ploop = loop;
 		return null;

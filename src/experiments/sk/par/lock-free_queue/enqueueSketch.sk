@@ -54,7 +54,7 @@ bit main () implements alwaysTrue {
     q.head.next = null;
     q.tail = q.head;
 
-    ploop (int i; 2) {
+    fork (int i; 2) {
         enqueue (q, i+1);
     }
 

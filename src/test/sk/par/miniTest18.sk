@@ -21,9 +21,9 @@ int gen(int i, int j){
 
 bit testSK(int in) implements test{
 	int global = in;
-	ploop(int i; 2){
+	fork(int i; 2){
 		int local;
-		anyorder{
+		reorder{
 			lock(1);
 			unlock(1);
 			local = gen(local, global) + 1;

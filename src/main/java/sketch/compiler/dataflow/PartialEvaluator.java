@@ -33,7 +33,7 @@ import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -44,7 +44,7 @@ import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StmtWhile;
@@ -626,7 +626,7 @@ public class PartialEvaluator extends FEReplacer {
         return s;
     }
 
-    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){
+    public Object visitStmtReorderBlock(StmtReorderBlock block){
     	throw new UnsupportedOperationException();
     }
 
@@ -691,7 +691,7 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
-    public Object visitStmtPloop(StmtPloop loop){    	
+    public Object visitStmtFork(StmtFork loop){    	
     	state.pushParallelSection();
     	Statement nbody = null;
         StmtVarDecl ndecl = null;
@@ -709,7 +709,7 @@ public class PartialEvaluator extends FEReplacer {
     	}finally{
     		state.popParallelSection();
     	}
-        return isReplacer?  new StmtPloop(loop.getCx(), ndecl, niter, nbody) : loop;
+        return isReplacer?  new StmtFork(loop.getCx(), ndecl, niter, nbody) : loop;
     }
 
     public Object visitStmtFor(StmtFor stmt)

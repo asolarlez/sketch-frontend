@@ -8,7 +8,7 @@ bit test(bit[N] in){
 
 bit testSK(bit[N] in) implements test{
 	bit[N] out = 0;
-	ploop(int i; N){
+	fork(int i; N){
 		out[i] = in[i];
 	}
 	

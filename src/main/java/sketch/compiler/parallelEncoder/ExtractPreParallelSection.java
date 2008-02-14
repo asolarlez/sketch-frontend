@@ -17,7 +17,7 @@ import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtPloop;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 
 /***
@@ -32,7 +32,7 @@ import streamit.frontend.nodes.StmtVarDecl;
 public class ExtractPreParallelSection extends FEReplacer {
 
 	protected boolean foundploop = false;	
-	public StmtPloop ploop = null;
+	public StmtFork ploop = null;
 	public Function parfun = null;
 	
 	static class MoveMisplacedDeclarations extends FEReplacer{
@@ -232,7 +232,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 	
 	
 	
-	public Object visitStmtPloop(StmtPloop loop){		
+	public Object visitStmtFork(StmtFork loop){		
 		foundploop = true;
 		ploop = loop;
 		return loop;

@@ -2,7 +2,7 @@
 
 int N = 4;
 
-bit test(int in){	
+bit test(int in){
 	return 1;
 }
 
@@ -11,16 +11,16 @@ bit testSK(int in) implements test{
 	{
 		int y;
 		x = in;
-		ploop(int i; 2){
+		fork(int i; 2){
 			int local;
 			local = x;
 			local = local + 1;
-			x = local;		
+			x = local;
 		}
 		y = x + 1;
 		x = y;
 	}
-	
+
 	return (x == in + 3) || (x == in+2);
 }
 

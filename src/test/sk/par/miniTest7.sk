@@ -10,7 +10,7 @@ bit testSK(bit[N] in) implements test{
 	bit[N] out = 0;
 	bit chan = 0;
 	bit queueFull = 0;
-	ploop(int i; 2){
+	fork(int i; 2){
 		if(i==0){
 			for(int t=0; t<N; ++t){
 				atomic(!queueFull){

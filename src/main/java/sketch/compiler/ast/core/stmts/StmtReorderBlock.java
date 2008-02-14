@@ -1,35 +1,34 @@
 package streamit.frontend.nodes;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class StmtAnyOrderBlock extends Statement {
-	
+public class StmtReorderBlock extends Statement {
+
 	StmtBlock block;
 	 /** Create a new StmtBlock with the specified ordered list of
      * statements. */
-    public StmtAnyOrderBlock(FEContext context, List stmts)
+    public StmtReorderBlock(FEContext context, List stmts)
     {
     	super(context);
-    	block = new StmtBlock(context, stmts);        
+    	block = new StmtBlock(context, stmts);
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
-        return v.visitStmtAnyOrderBlock(this);
+        return v.visitStmtReorderBlock(this);
     }
-    
+
     public List<Statement> getStmts()
     {
         return block.getStmts();
-    } 
-    
-    public StmtBlock getBlock(){    	
+    }
+
+    public StmtBlock getBlock(){
     	return block;
     }
-    
+
     public String toString(){
     	String result = "anyorder{\n";
     	Iterator it = block.getStmts().iterator();

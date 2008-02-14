@@ -452,7 +452,7 @@ public class FEReplacer implements FEVisitor
     }
 
 
-    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock stmt){
+    public Object visitStmtReorderBlock(StmtReorderBlock stmt){
 
     	List<Statement> oldStatements = newStatements;
         newStatements = new ArrayList<Statement>();
@@ -470,7 +470,7 @@ public class FEReplacer implements FEVisitor
             	throw e;
             }
         }
-        Statement result = new StmtAnyOrderBlock(stmt.getCx(), newStatements);
+        Statement result = new StmtReorderBlock(stmt.getCx(), newStatements);
         newStatements = oldStatements;
         return result;
 
@@ -812,14 +812,14 @@ public class FEReplacer implements FEVisitor
     	}
     }
 
-    public Object visitStmtPloop(StmtPloop loop){
+    public Object visitStmtFork(StmtFork loop){
     	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
     	Expression niter = (Expression) loop.getIter().accept(this);
     	Statement body = (Statement) loop.getBody().accept(this);
     	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
     		return loop;
     	}
-    	return new StmtPloop(loop.getCx(), decl, niter, body);
+    	return new StmtFork(loop.getCx(), decl, niter, body);
     }
 
 }

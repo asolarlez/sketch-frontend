@@ -728,11 +728,11 @@ public class SNodesToFortran implements FEVisitor {
     	assert false :"No alloc in fortran.";
     	return null;
     }
-    public Object visitStmtPloop(StmtPloop loop){
+    public Object visitStmtFork(StmtFork loop){
 		throw new UnsupportedOperationException();
 	}
 
-    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){throw new UnsupportedOperationException();}
+    public Object visitStmtReorderBlock(StmtReorderBlock block){throw new UnsupportedOperationException();}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){throw new UnsupportedOperationException();}
     public Object visitTypeStruct(TypeStruct ts){throw new UnsupportedOperationException();}
     public Object visitExprNullPtr(ExprNullPtr nptr){ throw new UnsupportedOperationException(); }

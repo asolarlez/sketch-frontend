@@ -89,7 +89,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitTypeStruct(TypeStruct t) { return null; }
     public Object visitParameter(Parameter par){ return null; }
     public Object visitExprNew(ExprNew expNew){ return null; }
-    public Object visitStmtPloop(StmtPloop loop){ return null; }
-    public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock block){return null;}
+    public Object visitStmtFork(StmtFork loop){ return null; }
+    public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return null; }
 }

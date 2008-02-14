@@ -111,7 +111,7 @@ bit test(bit in){
 bit testSK(bit in) implements test{
 	Set q = newSet();
 	setInit(q);
-	ploop(int i; 2){
+	fork(int i; 2){
 		int val = 0;
 		if(i==0){
 			val = 6;

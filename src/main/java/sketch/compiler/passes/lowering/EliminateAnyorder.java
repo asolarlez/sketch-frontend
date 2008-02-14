@@ -14,7 +14,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAnyOrderBlock;
+import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
@@ -62,7 +62,7 @@ public class EliminateAnyorder extends FEReplacer {
 		}
 	}
 
-	 public Object visitStmtAnyOrderBlock(StmtAnyOrderBlock stmt){
+	 public Object visitStmtReorderBlock(StmtReorderBlock stmt){
 	    
 		 Iterator<Statement> iter = stmt.getStmts().iterator();
 		 String name = varGen.nextVar();
