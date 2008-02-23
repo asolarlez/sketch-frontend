@@ -14,6 +14,7 @@ import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
@@ -32,52 +33,52 @@ import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class EliminateStar extends CodePEval {
-	private ValueOracle oracle;	
+	private ValueOracle oracle;
 	private HasStars starCheck;
-	
+
 	/**
 	 * 0 means to visit only things that have stars. </br>
 	 * 1 means visit all functions, but only unroll their loops and inline their functions if they have stars </br>
 	 * 2 visit all functions that have specs, unroll their loops </br>
 	 * 3 visit all functions that have specs, unroll their loops inline their calls. </br>
 	 */
-	
-	
-	public class ChangeNames extends FEReplacer{		
-		public Object visitExprVar(ExprVar exp) { return new ExprVar(exp.getCx(), state.transName(exp.getName()) ); }		
+
+
+	public class ChangeNames extends FEReplacer{
+		public Object visitExprVar(ExprVar exp) { return new ExprVar(exp, state.transName(exp.getName()) ); }
 	}
-	
+
 	public static class HasStars extends FEReplacer{
 		private StreamSpec ss;
-		boolean hasUnknown=false;		
-		private Set<Function> visitedFunctions = new HashSet<Function>();;		
+		boolean hasUnknown=false;
+		private Set<Function> visitedFunctions = new HashSet<Function>();;
 		public HasStars(StreamSpec ss) {
-			this.ss=ss;			
+			this.ss=ss;
 		}
 		public Object visitExprFunCall(ExprFunCall exp)
-	    {	
+	    {
 			Function fun = ss.getFuncNamed(exp.getName());
 			assert fun != null : "Calling undefined function!!";
 			Object obj = super.visitExprFunCall(exp);
 			if(!visitedFunctions.contains(fun)){
 				visitedFunctions.add(fun);
-				fun.accept(this);			
+				fun.accept(this);
 			}
 			return obj;
 	    }
-		
+
 		public Object visitExprBinary(ExprBinary exp)
 	    {
 			if(exp.getOp() == ExprBinary.BINOP_SELECT){
 				hasUnknown = true;
 			}
-			return super.visitExprBinary(exp);	        
-	    }		
+			return super.visitExprBinary(exp);
+	    }
 		public Object visitExprStar(ExprStar star) {
 			hasUnknown = true;
 			return star;
 		}
-		public boolean testNode(FENode node){			
+		public boolean testNode(FENode node){
 			this.visitedFunctions.clear();
 			hasUnknown = false;
 			node.accept(this);
@@ -91,35 +92,35 @@ public class EliminateStar extends CodePEval {
 		super(maxUnroll, rcontrol, inlineLevel);
 		this.oracle = oracle;
 		oracle.initCurrentVals();
-		this.state = new MethodState();		
+		this.state = new MethodState();
 	}
 
-	
+
 	public EliminateStar(ValueOracle oracle, int maxUnroll, RecursionControl rcontrol)
     {
         this (oracle, maxUnroll, rcontrol, 0);
 	}
-		
+
 	public boolean askIfPEval(Function node){
 		switch( inlineLevel ){
 		case 0: return starCheck.testNode(node);
 		case 1: return true;
-		case 2: 
+		case 2:
 		case 3:
 			return node.getSpecification()!= null;
 		default :
 			return false;
 		}
 	}
-	
+
 	public boolean askIfPEval(ExprFunCall exp)
-	{   
-		
+	{
+
 		String name = exp.getName();
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
 		if( fun == null ) return false;
-		
+
 		switch( inlineLevel ){
 		case 0:{
 			if( fun.getSpecification() != null) return false;
@@ -133,20 +134,20 @@ public class EliminateStar extends CodePEval {
 			return false;
 		}
 	}
-	
-	public boolean askIfPEval(FENode node){	
+
+	public boolean askIfPEval(FENode node){
 		switch( inlineLevel ){
 		case 0: return starCheck.testNode(node);
 		case 1: return false;
 		case 2: return true;
-		case 3: return true;			
+		case 3: return true;
 		default :
 			return false;
 		}
 	}
-	
 
-	
+
+
 	public Object visitStmtBlock(StmtBlock stmt)
 	{
 		// Put context label at the start of the block, too.
@@ -159,30 +160,30 @@ public class EliminateStar extends CodePEval {
 		}
 		return rval;
 	}
-	
-	
+
+
 	public Object visitStmtExpr(StmtExpr stmt)
 	{
 		Expression exp = stmt.getExpression();
 		Expression newExpr = (Expression)exp.accept(this);
-		valueClass vc = state.popVStack();	
+		valueClass vc = state.popVStack();
 		if(newExpr == null) return null;
 		if(vc.hasValue()) return null;
         if (newExpr == stmt.getExpression()) return stmt;
-        return new StmtExpr(stmt.getCx(), newExpr);
+        return new StmtExpr(stmt, newExpr);
 	}
-	
-	
+
+
 	public Object visitStmtFor(StmtFor stmt)
 	{
-		
+
 		List<Statement>  oldNewStatements = newStatements;
 		newStatements = new ArrayList<Statement> ();
-		
+
 		state.pushLevel();
 		try{
 			if (stmt.getInit() != null)
-				stmt.getInit().accept(this);		
+				stmt.getInit().accept(this);
 			Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
 			stmt.getCond().accept(this);
 			valueClass vcond = state.popVStack();
@@ -190,7 +191,7 @@ public class EliminateStar extends CodePEval {
 			while(vcond.hasValue() && vcond.getIntValue() > 0){
 				++iters;
 				Statement body = (Statement) stmt.getBody().accept(this);
-				addStatement(body);			
+				addStatement(body);
 				if (stmt.getIncr() != null)
 					stmt.getIncr().accept(this);
 				stmt.getCond().accept(this);
@@ -200,100 +201,100 @@ public class EliminateStar extends CodePEval {
 		}finally{
 			state.popLevel();
 		}
-		
+
 		if(!askIfPEval(stmt)){
 			newStatements = oldNewStatements;
 			return stmt.accept(new ChangeNames());
 		}else{
-			oldNewStatements.add(new StmtBlock(stmt.getCx(), newStatements));
+			oldNewStatements.add(new StmtBlock(stmt, newStatements));
 			//oldNewStatements.addAll(newStatements);
 			newStatements = oldNewStatements;
 			return null;
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	public void loopHelper(StmtLoop stmt, int i, Expression cond){
 		List<Statement> oldStatements = newStatements;
-		StmtIfThen ifStmt;			
-        newStatements = new ArrayList<Statement> ();        
+		StmtIfThen ifStmt;
+        newStatements = new ArrayList<Statement> ();
 
         /* Generate unrolling condition to go with change tracker. */
         Expression guard =
-            new ExprBinary (stmt.getCx (),
+            new ExprBinary (stmt,
                             ExprBinary.BINOP_GT,
                             cond,
-                            new ExprConstInt (stmt.getCx (), MAX_UNROLL - i));
+                            new ExprConstInt (stmt, MAX_UNROLL - i));
         guard.accept (this);
         valueClass vguard = state.popVStack ();
 
         state.pushChangeTracker(guard, vguard, false);
         try{
         	addStatement((Statement)stmt.getBody().accept(this));
-		}catch(ArrayIndexOutOfBoundsException er){			        	
+		}catch(ArrayIndexOutOfBoundsException er){
 			state.popChangeTracker();
-			newStatements = oldStatements;  
+			newStatements = oldStatements;
 			return;
 		}
         if((i-1)>0)
         	loopHelper(stmt, i-1, cond);
         ChangeStack ms1 = state.popChangeTracker();
         state.procChangeTrackers(ms1, " ");
-        Statement result = new StmtBlock(stmt.getCx(), newStatements);
-        ifStmt = new StmtIfThen(stmt.getCx(), 
-        		new ExprBinary(stmt.getCx(), ExprBinary.BINOP_GT, cond, new ExprConstInt(MAX_UNROLL - i) ), result, null);
-        newStatements = oldStatements;    
+        Statement result = new StmtBlock(stmt, newStatements);
+        ifStmt = new StmtIfThen(stmt,
+        		new ExprBinary(stmt, ExprBinary.BINOP_GT, cond, new ExprConstInt(MAX_UNROLL - i) ), result, null);
+        newStatements = oldStatements;
         addStatement(ifStmt);
 	}
-	
+
 	public Object visitStmtLoop(StmtLoop stmt)
 	{
 		List<Statement>  oldNewStatements = newStatements;
 		newStatements = new ArrayList<Statement> ();
-		
+
 		Expression newIter = (Expression)stmt.getIter().accept(this);
 		valueClass vcond = state.popVStack();
-		
-		if(!vcond.hasValue()){			
+
+		if(!vcond.hasValue()){
 			String nvar = state.varDeclare();
 			state.varGetLHSName(nvar);
-	        this.addStatement( new StmtVarDecl(stmt.getCx(),TypePrimitive.inttype, nvar, newIter));	        
-			loopHelper(stmt, MAX_UNROLL, new ExprVar(stmt.getCx(), nvar) );			
-		}else{			
+	        this.addStatement( new StmtVarDecl(stmt,TypePrimitive.inttype, nvar, newIter));
+			loopHelper(stmt, MAX_UNROLL, new ExprVar(stmt, nvar) );
+		}else{
 			for(int i=0; i<vcond.getIntValue(); ++i){
-				addStatement( (Statement)stmt.getBody().accept(this) );				
+				addStatement( (Statement)stmt.getBody().accept(this) );
 			}
 		}
-		
+
 		if(!askIfPEval(stmt.getBody())){
 			newStatements = oldNewStatements;
 			if(newIter == stmt.getIter())
 				return stmt.accept(new ChangeNames());
-			return new StmtLoop(stmt.getCx(), newIter, (Statement)stmt.getBody().accept(new ChangeNames()));
+			return new StmtLoop(stmt, newIter, (Statement)stmt.getBody().accept(new ChangeNames()));
 		}else{
 			oldNewStatements.addAll(newStatements);
 			newStatements = oldNewStatements;
 			return null;
 		}
 	}
-	
-	
+
+
 	protected Object handleBinarySelect(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
-		Expression rvalE = exp;			
-		boolean hasv = lhs.hasValue() && rhs.hasValue();		        
+		Expression rvalE = exp;
+		boolean hasv = lhs.hasValue() && rhs.hasValue();
 		if(hasv && lhs.getIntValue() == rhs.getIntValue()){
-			int newv=0;	        		
+			int newv=0;
 			newv = lhs.getIntValue();
-			state.pushVStack(new valueClass(newv));			        	
+			state.pushVStack(new valueClass(newv));
 			if( this.isReplacer ){
 				rvalE = new ExprConstInt(newv);
 			}
 			return rvalE;
 		}else{
 			hasv = false;
-			ExprConstInt newExp = (ExprConstInt) oracle.popValueForNode(exp.getAlias());			
+			ExprConstInt newExp = (ExprConstInt) oracle.popValueForNode(exp.getAlias());
 			if(newExp.getVal() == 1){
 				if(lhs.hasValue()){
 					rvalE = new ExprConstInt(lhs.getIntValue());
@@ -311,9 +312,9 @@ public class EliminateStar extends CodePEval {
 			return rvalE;
 		}
 	}
-	
-	
-	
+
+
+
 	protected Object handleVectorBinarySelect(ExprBinary exp, Expression left, List<valueClass> lhsVect, Expression right, List<valueClass> rhsVect){
 		Iterator<valueClass> lhsIt = lhsVect.iterator();
 		Iterator<valueClass> rhsIt = rhsVect.iterator();
@@ -326,11 +327,11 @@ public class EliminateStar extends CodePEval {
         	valueClass rhs = rhsIt.next();
         	boolean hasv = lhs.hasValue() && rhs.hasValue();
         	if(hasv && lhs.getIntValue() == rhs.getIntValue()){
-    			int newv=0;	        		
-    			newv = lhs.getIntValue();    
+    			int newv=0;
+    			newv = lhs.getIntValue();
     			vals.add(new ExprConstInt(lhs.getIntValue()));
     			orac.add(new ExprConstInt(0));
-    		}else{    			
+    		}else{
     			ExprConstInt newExp = (ExprConstInt)oracle.popValueForNode(exp.getAlias());
     			orac.add(newExp);
     			if(newExp.getVal() == 1){
@@ -345,26 +346,26 @@ public class EliminateStar extends CodePEval {
     				}else{
     					globalHasV = false;
     				}
-    			}    			
+    			}
     		}
-        }        
+        }
         state.pushVStack(new valueClass(" "));
         if(globalHasV){
-        	return new ExprArrayInit(exp.getCx(), vals);
+        	return new ExprArrayInit(exp, vals);
         }else{
-        	ExprArrayInit oracExp = new ExprArrayInit(exp.getCx(), orac);
-        	ExprBinary lres = new ExprBinary(exp.getCx(), ExprBinary.BINOP_BAND, left, oracExp, exp.getAlias());
-        	ExprBinary rres = new ExprBinary(exp.getCx(), ExprBinary.BINOP_BAND, right, new ExprUnary(exp.getCx(), ExprUnary.UNOP_BNOT, oracExp), exp.getAlias());
-        	return new ExprBinary(exp.getCx(), ExprBinary.BINOP_BOR, lres, rres, exp.getAlias());
-        }		
+        	ExprArrayInit oracExp = new ExprArrayInit(exp, orac);
+        	ExprBinary lres = new ExprBinary(exp, ExprBinary.BINOP_BAND, left, oracExp, exp.getAlias());
+        	ExprBinary rres = new ExprBinary(exp, ExprBinary.BINOP_BAND, right, new ExprUnary(exp, ExprUnary.UNOP_BNOT, oracExp), exp.getAlias());
+        	return new ExprBinary(exp, ExprBinary.BINOP_BOR, lres, rres, exp.getAlias());
+        }
 	}
-	
+
 	public Object visitExprBinary(ExprBinary exp)
 	{
-		
+
 		if( exp.getOp() == ExprBinary.BINOP_LSHIFT ||  exp.getOp() == ExprBinary.BINOP_RSHIFT){
-			Expression left = (Expression) exp.getLeft().accept(this); 	        
-	        valueClass lhs = state.popVStack();	       
+			Expression left = (Expression) exp.getLeft().accept(this);
+	        valueClass lhs = state.popVStack();
 	        Integer tmpInt = this.currentSize;
 	        currentSize = null;
 	        Expression right = (Expression) exp.getRight().accept(this);
@@ -373,14 +374,14 @@ public class EliminateStar extends CodePEval {
 	        return this.ExprBinaryHelper(exp, left, lhs, right, rhs);
 		}else{
 			return super.visitExprBinary(exp);
-		}	
+		}
 	}
-		
-	
-	
 
-	
-	public Object visitExprStar(ExprStar star) {							
+
+
+
+
+	public Object visitExprStar(ExprStar star) {
 		state.pushVStack(new valueClass("{*}"));
 		if(currentSize == null || currentSize <=1){
 			return oracle.popValueForNode(star);
@@ -390,32 +391,32 @@ public class EliminateStar extends CodePEval {
 			for(int i=0; i<N; ++i){
 				newElements.add(oracle.popValueForNode(star));
 			}
-			return new ExprArrayInit(star.getCx(), newElements);
+			return new ExprArrayInit(star, newElements);
 		}
 	}
-	
-	
+
+
 	 public String postDoParams(List params, List<Statement> stmts){
-	    	String result = "";	        
+	    	String result = "";
 	        for (Iterator iter = params.iterator(); iter.hasNext(); )
 	        {
 	            Parameter param = (Parameter)iter.next();
 	            if(param.isParameterOutput()){
 	            	String lhs = param.getName();
 		            if( param.getType() instanceof TypeArray ){
-		            	stmts.add(new StmtAssign(null, new ExprVar(null, "_p_"+lhs), new ExprVar(null, lhs)));
-		            }else{		            	
+		            	stmts.add(new StmtAssign(new ExprVar((FEContext) null, "_p_"+lhs), new ExprVar((FEContext) null, lhs)));
+		            }else{
 		            	if(state.varHasValue(lhs)){
-		            		stmts.add(new StmtAssign(null, new ExprVar(null, "_p_"+lhs), new ExprConstInt(state.varValue(lhs))));
+		            		stmts.add(new StmtAssign(new ExprVar((FEContext) null, "_p_"+lhs), new ExprConstInt(state.varValue(lhs))));
 		            	}else{
-		            		stmts.add(new StmtAssign(null, new ExprVar(null, "_p_"+lhs), new ExprVar(null, lhs)));
+		            		stmts.add(new StmtAssign(new ExprVar((FEContext) null, "_p_"+lhs), new ExprVar((FEContext) null, lhs)));
 		            	}
 		            }
 	            }
 	        }
 	        return result;
 	    }
-	
+
 	public Object visitFunction(Function func)
     {
 		if( newFuns.containsKey(func.getName()) ){
@@ -425,26 +426,26 @@ public class EliminateStar extends CodePEval {
 	        if(func.getCls() != Function.FUNC_INIT && func.getCls() != Function.FUNC_WORK && func.getSpecification() != null ){
 	        	doParams(func.getParams(), "");
 	        	Statement body = null;
-	        	this.state.pushLevel();   
+	        	this.state.pushLevel();
 	        	try{
 	        		body = (Statement)func.getBody().accept(this);
 	        	}finally{
 	        		this.state.popLevel();
 	        	}
-	        	
-	        	List<Parameter> newParams = new ArrayList<Parameter>(); 
+
+	        	List<Parameter> newParams = new ArrayList<Parameter>();
 	        	for (Iterator iter = func.getParams().iterator(); iter.hasNext(); )
 	    	    {
 	    	        Parameter param = (Parameter)iter.next();
 	    	        Parameter newparam = new Parameter(param.getType(), state.transName(param.getName()), param.getPtype());
 	    	        newParams.add(newparam);
 	    	    }
-	        	
+
 //	        	List<Statement> theList = new ArrayList<Statement>(func.getParams().size() + 1);
 //	        	theList.add(body);
 //	        	postDoParams(func.getParams(), theList);
-//	        	body = new StmtBlock(func.getContext(), theList);
-	        	func = new Function(func.getCx(), func.getCls(),
+//	        	body = new StmtBlock(func, theList);
+	        	func = new Function(func, func.getCls(),
                         func.getName(), func.getReturnType(),
                         newParams, func.getSpecification(), body);
 	        }
@@ -473,5 +474,5 @@ public class EliminateStar extends CodePEval {
 	public int getInlineLevel() {
 		return inlineLevel;
 	}
-	
+
 }
