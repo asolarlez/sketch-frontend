@@ -32,24 +32,24 @@ public class CFGforPloop extends CFGBuilder {
 
 	Set<String> locals = new HashSet<String>();
 	Map<String, StmtVarDecl> localDecls = new HashMap<String, StmtVarDecl>();
-	
-	
-	
-	
+
+
+
+
 	public static Map<CFGNode, Set<Object>> tagSets(CFG cfg){
-		Map<CFGNode, Set<Object>> map = new HashMap<CFGNode, Set<Object>>();				
+		Map<CFGNode, Set<Object>> map = new HashMap<CFGNode, Set<Object>>();
 		for(Iterator<CFGNode> it = cfg.getNodes().iterator(); it.hasNext(); ){
 			CFGNode n = it.next();
 			CollectStmtTags tag = new CollectStmtTags();
 			if(n.isStmt()){
 				n.getStmt().accept(tag);
 			}
-			map.put(n, tag.oset);						
-		}		
+			map.put(n, tag.oset);
+		}
 		return map;
 	}
-	
-	
+
+
 	public static CFG cleanCFG(CFG cfg){
 		Map<CFGNode, List<EdgePair>> edges = new HashMap<CFGNode, List<EdgePair>>();
 	    List<CFGNode> nodes = new ArrayList<CFGNode>();
@@ -62,14 +62,14 @@ public class CFGforPloop extends CFGBuilder {
 	    		equiv.put(n, ep.node);
 	    	}
 	    }
-	    
-	    CFGNode entry = cfg.getEntry();	    
+
+	    CFGNode entry = cfg.getEntry();
 	    while(equiv.containsKey(entry)){
 	    	entry = equiv.get(entry);
 		}
-	    
+
 	    nodes.add(entry);
-	    
+
 	    for(Iterator<CFGNode> it = cfg.getNodes().iterator(); it.hasNext(); ){
 	    	CFGNode n = it.next();
 	    	if(!equiv.containsKey(n)){
@@ -94,21 +94,21 @@ public class CFGforPloop extends CFGBuilder {
 	    		}
 	    	}
 	    }
-	    
+
 	    CFG newCFG = new CFG(nodes, entry , cfg.getExit() , edges);
-	    newCFG.setNodeIDs();	    
+	    newCFG.setNodeIDs();
 		return newCFG;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * Create a CFG for the parallel program where each node corresponds to an atomic step
 	 * in the execution.
-	 * 
+	 *
 	 * The locals array will contain those local variables that span multiple blocks, and therefore have to be communicated
 	 * through the interface of the rest function.
-	 * 
+	 *
 	 * @param ploop
 	 * @param locals
 	 * @return
@@ -116,17 +116,17 @@ public class CFGforPloop extends CFGBuilder {
 	public static CFG buildCFG(StmtFork ploop, Set<StmtVarDecl>/*out*/ locals)
     {
         CFGforPloop builder = new CFGforPloop();
-        
+
         builder.locals.add(ploop.getLoopVarName());
         builder.localDecls.put(ploop.getLoopVarName(), ploop.getLoopVarDecl());
-        
-        
-        
-        CFGNodePair pair = (CFGNodePair)ploop.getBody().accept(builder); 
+
+
+
+        CFGNodePair pair = (CFGNodePair)ploop.getBody().accept(builder);
         CFG rv =cleanCFG(new CFG(builder.nodes, pair.start, pair.end, builder.edges));
-        
+
         CFGSimplifier sym = new CFGSimplifier(builder.locals);
-        System.out.println("**** was " + rv.size() );        
+        System.out.println("**** was " + rv.size() );
         rv.repOK();
         //rv = sym.mergeConsecutiveLocals(rv);
         rv.repOK();
@@ -137,21 +137,21 @@ public class CFGforPloop extends CFGBuilder {
         locals.addAll(builder.localDecls.values());
         System.out.println("**** became " + rv.size() );
         rv.setNodeIDs();
-        return rv; 
+        return rv;
     }
-	
+
 	public Object visitStmtVarDecl(StmtVarDecl svd){
-		
+
 		 CFGNode entry = null;
 		 CFGNode last = null;
 	     for(int i=0; i<svd.getNumVars(); ++i){
 	    	 String name = svd.getName(i);
 	    	 locals.add(name);
-	    	 localDecls.put(name, new StmtVarDecl(svd.getCx(), svd.getType(i), name, ExprConstInt.zero));
+	    	 localDecls.put(name, new StmtVarDecl(svd, svd.getType(i), name, ExprConstInt.zero));
 	    	 if(svd.getInit(i) != null){
-	    		 CFGNode tmp = new CFGNode( new StmtAssign(svd.getCx(), new ExprVar(null, name), svd.getInit(i)));
+	    		 CFGNode tmp = new CFGNode( new StmtAssign(new ExprVar(svd, name), svd.getInit(i)));
     			 this.nodes.add(tmp);
-	    		 if(entry == null){	    			 
+	    		 if(entry == null){
 	    			 entry = tmp;
 	    			 last = tmp;
 	    		 }else{
@@ -168,11 +168,11 @@ public class CFGforPloop extends CFGBuilder {
 	    	 return new CFGNodePair(entry, last);
 	     }
 	}
-	
-	
-	
+
+
+
 	boolean isSingleStmt(Statement s){
-		
+
 		if(s instanceof StmtAssign) return true;
 		if(s instanceof StmtAtomicBlock){
 			return true;
@@ -184,11 +184,11 @@ public class CFGforPloop extends CFGBuilder {
 		}
 		if(s instanceof StmtExpr){
 			return true;
-		}		
+		}
 		return false;
 	}
-	
-	
+
+
 	class AllLocals extends FEReplacer{
 		boolean allLocs = true;
 		@Override
@@ -203,17 +203,17 @@ public class CFGforPloop extends CFGBuilder {
 			return exp;
 		}
 	}
-	
+
 	boolean allLocals(FENode s ){
 		AllLocals al = new AllLocals();
 		s.accept(al);
 		return al.allLocs;
 	}
-			
-			
+
+
     public Object visitStmtIfThen(StmtIfThen stmt)
     {
-    	
+
     	if( allLocals(stmt.getCond()) ){
     		if( isSingleStmt(stmt.getCons()) ){
     			if(stmt.getAlt() == null){
@@ -224,8 +224,8 @@ public class CFGforPloop extends CFGBuilder {
     			}
     		}
     	}
-    	
-    	
+
+
         // Entry node is the condition; exit is artificial.
         CFGNode entry = new CFGNode(stmt, stmt.getCond());
         nodes.add(entry);
@@ -255,18 +255,18 @@ public class CFGforPloop extends CFGBuilder {
         {
             addEdge(entry, exit, 0);
         }
-        
+
         return new CFGNodePair(entry, exit);
     }
-	
-	
-	
-	
-	
+
+
+
+
+
 	protected CFGforPloop(){
 		super();
-		
+
 	}
-	
-	
+
+
 }
