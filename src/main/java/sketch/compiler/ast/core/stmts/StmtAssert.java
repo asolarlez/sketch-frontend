@@ -26,13 +26,48 @@ public class StmtAssert extends Statement
 {
     Expression cond;
     private String msg = null;
+
     /** Creates a new assert statement with the specified conditional. */
+    public StmtAssert(FENode context, Expression cond)
+    {
+    	this (context, cond, null);
+    }
+
+    /** Creates a new assert statement with the specified conditional. */
+    public StmtAssert(Expression cond)
+    {
+    	this (cond, cond, null);
+    }
+
+    /** Creates a new assert statement with the specified conditional.
+     * @deprecated
+     */
     public StmtAssert(FEContext context, Expression cond)
+    {
+    	this (context, cond, null);
+    }
+
+    /**
+     *
+     */
+    public StmtAssert(FENode context, Expression cond, String msg)
     {
         super(context);
         this.cond = cond;
+        this.msg = msg;
     }
 
+    /**
+     *
+     */
+    public StmtAssert(Expression cond, String msg)
+    {
+    	this (cond, cond, msg);
+    }
+
+    /**
+     * @deprecated
+     */
     public StmtAssert(FEContext context, Expression cond, String msg)
     {
         super(context);

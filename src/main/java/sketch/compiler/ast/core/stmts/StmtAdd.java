@@ -27,20 +27,20 @@ package streamit.frontend.nodes;
 public class StmtAdd extends Statement
 {
     private StreamCreator sc;
-    
+
     /** Creates a new add statement for a specified child. */
-    public StmtAdd(FEContext context, StreamCreator sc)
+    public StmtAdd(FENode context, StreamCreator sc)
     {
         super(context);
         this.sc = sc;
     }
-    
+
     /** Returns the child stream creator. */
     public StreamCreator getCreator()
     {
         return sc;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -48,4 +48,4 @@ public class StmtAdd extends Statement
     }
 }
 
-    
+
