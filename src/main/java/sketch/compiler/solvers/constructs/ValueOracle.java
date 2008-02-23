@@ -95,7 +95,7 @@ public class ValueOracle {
 			if(star.getSize() == 1){
 				Boolean val = valMap.get(var);
 				if(val != null){
-					return(new ExprConstInt(node.getCx(), val.booleanValue()?1:0));
+					return(new ExprConstInt(node, val.booleanValue()?1:0));
 				}
 			}else{
 				int v = 0;
@@ -122,15 +122,15 @@ public class ValueOracle {
 						v = (val?1:0);
 					}
 				}
-				return(new ExprConstInt(node.getCx(), v));
+				return(new ExprConstInt(node, v));
 			}
 		}else{
 			Boolean val = valMap.get(var);
 			if(val != null){
-				return(new ExprConstInt(node.getCx(), val.booleanValue()?1:0));
+				return(new ExprConstInt(node, val.booleanValue()?1:0));
 			}
 		}
-		return new ExprConstInt(node.getCx(), -1);
+		return new ExprConstInt(node, -1);
 	}
 	
 
