@@ -24,6 +24,16 @@ package streamit.frontend.nodes;
  */
 abstract public class Statement extends FENode
 {
+    public Statement(FENode context)
+    {
+        super(context);
+    }
+
+    /**
+     *
+     * @param context
+     * @deprecated
+     */
     public Statement(FEContext context)
     {
         super(context);
