@@ -10,6 +10,7 @@ import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -33,7 +34,7 @@ public class EliminateConditionals extends SymbolTableVisitor {
 	}
 
 	public Object visitExprTernary (ExprTernary et) {
-		FEContext cx = et.getCx ();
+		FENode cx = et;
 		ExprVar tmpVar =
 			new ExprVar (cx, varGen.nextVar ("_tmp_ternary_elim_"));
 		StmtVarDecl tmpDecl =
@@ -43,12 +44,12 @@ public class EliminateConditionals extends SymbolTableVisitor {
 
 		newStatements = new ArrayList<Statement> ();
 		newStatements.add (
-				new StmtAssign (cx, tmpVar, (Expression)et.getB ().accept (this)));
+				new StmtAssign (tmpVar, (Expression)et.getB ().accept (this)));
 		Statement thenBlock = new StmtBlock (cx, newStatements);
 
 		newStatements = new ArrayList<Statement> ();
 		newStatements.add (
-				new StmtAssign (cx, tmpVar, (Expression)et.getC ().accept (this)));
+				new StmtAssign (tmpVar, (Expression)et.getC ().accept (this)));
 		Statement elseBlock = new StmtBlock (cx, newStatements);
 
 		newStatements = oldStatements;
