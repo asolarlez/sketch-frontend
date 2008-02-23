@@ -6,15 +6,15 @@ import streamit.frontend.nodes.*;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tosbit.EliminateStar.HasStars;
 
-public class BitVectorPreprocessor extends SymbolTableVisitor 
+public class BitVectorPreprocessor extends SymbolTableVisitor
 {
 	private TempVarGen varGen;
-	private HasStars starCheck;	
+	private HasStars starCheck;
 	public BitVectorPreprocessor(TempVarGen varGen) {
 		super(null);
 		this.varGen=varGen;
 	}
-	
+
 	private static boolean isBitType(Type t)
     {
     	return t instanceof TypePrimitive && ((TypePrimitive)t).getType()==TypePrimitive.TYPE_BIT;
@@ -45,7 +45,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 
 	private Expression makeTempExpr(Expression e, Type type)
 	{
-		final FEContext ct=e.getCx();
+		final FENode ct=e;
 		final String tmp=varGen.nextVar();
 		Expression init = null;
 		if( type instanceof TypeArray ){
@@ -54,15 +54,15 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 			for(int i=0; i<N; ++i){
 				ilist.add( ExprConstInt.zero );
 			}
-			init = new ExprArrayInit(e.getCx(), ilist);
+			init = new ExprArrayInit(e, ilist);
 		}else{
-			
+
 			init = ExprConstInt.zero;
 		}
-		
-		StmtVarDecl svd = new StmtVarDecl(e.getCx(), type, tmp, init );
+
+		StmtVarDecl svd = new StmtVarDecl(e, type, tmp, init );
 		addStatement((Statement)super.visitStmtVarDecl(svd));
-		StmtAssign assign=new StmtAssign(ct,new ExprVar(ct,tmp),e);
+		StmtAssign assign=new StmtAssign(new ExprVar(ct,tmp),e);
 		assign=(StmtAssign) visitStmtAssign(assign);
 		addStatement(assign);
 		return new ExprVar(ct,tmp);
@@ -76,7 +76,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		}
 		assert false;
 		return -1;
-		
+
 	}
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
@@ -105,10 +105,10 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 					case ExprBinary.BINOP_RSHIFT:
 					case ExprBinary.BINOP_SELECT:
 					case ExprBinary.BINOP_SUB:
-						int sz = bitLength(lhsType); 					
+						int sz = bitLength(lhsType);
 						List<Expression> lst=new ArrayList<Expression>();
 						for(int i=0; i<sz; ++i){ lst.add(left); }
-						left= new ExprArrayInit(stmt.getCx(), lst);
+						left= new ExprArrayInit(stmt, lst);
 						break;
 					}
 				}
@@ -125,10 +125,10 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 					case ExprBinary.BINOP_OR:
 					case ExprBinary.BINOP_SELECT:
 					case ExprBinary.BINOP_SUB:
-						int sz = bitLength(lhsType);					
+						int sz = bitLength(lhsType);
 						List<Expression> lst=new ArrayList<Expression>();
 						for(int i=0; i<sz; ++i){ lst.add(right); }
-						right= new ExprArrayInit(stmt.getCx(), lst);
+						right= new ExprArrayInit(stmt, lst);
 						break;
 					}
 				}
@@ -140,14 +140,14 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 				}
 				left=(Expression) left.accept(this);
 				right=(Expression) right.accept(this);
-				
+
 				if(left!=rhs.getLeft() || right!=rhs.getRight()) {
-					Expression newExpr=new ExprBinary(rhs.getCx(),rhs.getOp(),left,right);
+					Expression newExpr=new ExprBinary(rhs,rhs.getOp(),left,right);
 					newExpr=(Expression) newExpr.accept(this);
-					return new StmtAssign(stmt.getCx(),lhs,newExpr);
+					return new StmtAssign(lhs,newExpr);
 				}
 			}
-		}		
+		}
 /*		if( isBitArrayType(lhsType)){
 			if(stmt.getRHS() instanceof ExprBinary)
 			{
@@ -155,23 +155,23 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 				Expression left=rhs.getLeft();
 				Expression right=rhs.getRight();
 				if(left instanceof ExprConstInt){
-					int sz = ((TypeArray) lhsType).getLength().getIValue();					
+					int sz = ((TypeArray) lhsType).getLength().getIValue();
 					List<Expression> lst=new ArrayList<Expression>();
 					for(int i=0; i<sz; ++i){ lst.add(left); }
-					left= new ExprArrayInit(stmt.getContext(), lst);						
+					left= new ExprArrayInit(stmt, lst);
 				}
 				if(right instanceof ExprConstInt && !(rhs.getOp() == ExprBinary.BINOP_LSHIFT || rhs.getOp() == ExprBinary.BINOP_RSHIFT)) {
-					int sz = ((TypeArray) lhsType).getLength().getIValue();					
+					int sz = ((TypeArray) lhsType).getLength().getIValue();
 					List<Expression> lst=new ArrayList<Expression>();
 					for(int i=0; i<sz; ++i){ lst.add(right); }
-					right= new ExprArrayInit(stmt.getContext(), lst);	
-				}			
+					right= new ExprArrayInit(stmt, lst);
+				}
 				left=(Expression) left.accept(this);
-				right=(Expression) right.accept(this);				
+				right=(Expression) right.accept(this);
 				if(left!=rhs.getLeft() || right!=rhs.getRight()) {
-					Expression newExpr=new ExprBinary(rhs.getContext(),rhs.getOp(),left,right);
+					Expression newExpr=new ExprBinary(rhs,rhs.getOp(),left,right);
 					newExpr=(Expression) newExpr.accept(this);
-					return new StmtAssign(stmt.getContext(),stmt.getLHS(),newExpr);
+					return new StmtAssign(stmt,stmt.getLHS(),newExpr);
 				}
 			}
 		}*/
@@ -183,9 +183,9 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 	public Object visitExprBinary(ExprBinary exp)
 	{
 		if(exp.getOp()==ExprBinary.BINOP_LSHIFT)
-			exp=new ExprBinary(exp.getCx(),ExprBinary.BINOP_LSHIFT,exp.getLeft(),exp.getRight());
+			exp=new ExprBinary(exp,ExprBinary.BINOP_LSHIFT,exp.getLeft(),exp.getRight());
 		else if(exp.getOp()==ExprBinary.BINOP_RSHIFT)
-			exp=new ExprBinary(exp.getCx(),ExprBinary.BINOP_RSHIFT,exp.getLeft(),exp.getRight());
+			exp=new ExprBinary(exp,ExprBinary.BINOP_RSHIFT,exp.getLeft(),exp.getRight());
 		return super.visitExprBinary(exp);
 	}
 
@@ -198,7 +198,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		int na=0;
 		for(int i=0;i<n;i++) if(isBitArrayType(stmt.getType(i))) na++;
 		if(na==0) return super.visitStmtVarDecl(stmt);
-		
+
 		List types=new ArrayList(3);
 		List names=new ArrayList(3);
 		List inits=new ArrayList(3);
@@ -206,11 +206,11 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		for(int i=0;i<n;i++) {
 			if(isBitArrayType(stmt.getType(i))) {
 				String name=stmt.getName(i);
-				
+
 				Expression initExpr=stmt.getInit(i);
 				if(false && initExpr==null && !name.startsWith("__"))
-					initExpr=new ExprConstInt(stmt.getCx(),0);
-				if(initExpr!=null && !(initExpr instanceof ExprArrayInit)) { 
+					initExpr=new ExprConstInt(stmt,0);
+				if(initExpr!=null && !(initExpr instanceof ExprArrayInit)) {
 					Expression init = null;
 					Type type = stmt.getType(i);
 					if( type instanceof TypeArray ){
@@ -219,18 +219,18 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 						for(int s=0; s<N; ++s){
 							ilist.add( ExprConstInt.zero );
 						}
-						init = new ExprArrayInit(stmt.getCx(), ilist);
+						init = new ExprArrayInit(stmt, ilist);
 					}else{
-						
+
 						init = ExprConstInt.zero;
 					}
-					StmtVarDecl decl=new StmtVarDecl(stmt.getCx(),stmt.getType(i),name,init);
+					StmtVarDecl decl=new StmtVarDecl(stmt,stmt.getType(i),name,init);
 					decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
 					statements.add(decl);
-					StmtAssign let=new StmtAssign(stmt.getCx(),new ExprVar(stmt.getCx(),name),initExpr);
+					StmtAssign let=new StmtAssign(new ExprVar(stmt,name),initExpr);
 					statements.add((Statement)let.accept(this));
 				}else{
-					StmtVarDecl decl=new StmtVarDecl(stmt.getCx(),stmt.getType(i),name,initExpr);
+					StmtVarDecl decl=new StmtVarDecl(stmt,stmt.getType(i),name,initExpr);
 					decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
 					statements.add(decl);
 				}
@@ -242,15 +242,15 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 			}
 		}
 		if(n-na>0) {
-			StmtVarDecl decl=new StmtVarDecl(stmt.getCx(),types,names,inits);
+			StmtVarDecl decl=new StmtVarDecl(stmt,types,names,inits);
 			decl=(StmtVarDecl) super.visitStmtVarDecl(decl);
 			addStatement(decl);
 		}
 		addStatements(statements);
 		return null;
 	}
-	
-	
+
+
 	public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;
@@ -273,10 +273,10 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
             if (param != newParam) hasChanged = true;
         }
         if (!hasChanged) return exp;
-        return new ExprFunCall(exp.getCx(), exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams);
     }
-	
-	
+
+
 	@Override
 	public Object visitStreamSpec(StreamSpec spec)
 	{
@@ -291,5 +291,5 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 			return null;
 		return super.visitFunction(func);
 	}
-	
+
 }
