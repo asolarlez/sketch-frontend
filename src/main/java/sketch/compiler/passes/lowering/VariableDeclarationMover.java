@@ -6,15 +6,15 @@ import streamit.frontend.nodes.*;
 
 /**
  * Collects all variable declarations from a function (except for loop vars)
- * and moves them to the top of that function. 
- * It's a good idea to run VariableDisambiguator beforehand to avoid duplicate 
+ * and moves them to the top of that function.
+ * It's a good idea to run VariableDisambiguator beforehand to avoid duplicate
  * variable names.
  */
 public class VariableDeclarationMover extends FEReplacer
 {
 	private List<String> variables;
     private Map<String,Type> varTypes;
-    
+
     public VariableDeclarationMover()
     {
     	variables=new ArrayList<String>();
@@ -28,15 +28,15 @@ public class VariableDeclarationMover extends FEReplacer
 		func=(Function) super.visitFunction(func);
 		List bodyStmts=new ArrayList();
 		for(String name: variables) {
-			bodyStmts.add(new StmtVarDecl(null, varTypes.get(name), name, null));
+			bodyStmts.add(new StmtVarDecl(func, varTypes.get(name), name, null));
 		}
 		StmtBlock bodyBlock=(StmtBlock) func.getBody();
 		bodyStmts.addAll(bodyBlock.getStmts());
 		variables.clear();
 		varTypes.clear();
-		return new Function(func.getCx(), func.getCls(), func.getName(),
-			func.getReturnType(), func.getParams(), func.getSpecification(), 
-			new StmtBlock(bodyBlock.getCx(), bodyStmts));
+		return new Function(func, func.getCls(), func.getName(),
+			func.getReturnType(), func.getParams(), func.getSpecification(),
+			new StmtBlock(bodyBlock, bodyStmts));
 	}
 
 	public Object visitStmtFor(StmtFor stmt)
@@ -45,7 +45,7 @@ public class VariableDeclarationMover extends FEReplacer
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if(newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getCx(), stmt.getInit(), stmt.getCond(), 
+        return new StmtFor(stmt, stmt.getInit(), stmt.getCond(),
         	stmt.getIncr(), newBody);
 	}
 
@@ -57,11 +57,11 @@ public class VariableDeclarationMover extends FEReplacer
 				variables.add(name);
 				varTypes.put(name,stmt.getType(i));
 				if(stmt.getInit(i)!=null) {
-					addStatement(new StmtAssign(stmt.getCx(),
-						new ExprVar(null,name), stmt.getInit(i)));
+					addStatement(new StmtAssign(
+						new ExprVar(stmt,name), stmt.getInit(i)));
 				}
 			} else {
-				assert false: "duplicate variable declaration for"+name+": "+stmt+" at "+stmt.getCx();
+				assert false: "duplicate variable declaration for"+name+": "+stmt+" at "+stmt;
 			}
 		}
 		return null;

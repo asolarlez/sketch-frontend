@@ -65,7 +65,7 @@ public class VariableDisambiguator extends FEReplacer
 			}
 		}
 		if(change) {
-			stmt=new StmtVarDecl(stmt.getCx(),stmt.getTypes(),names,stmt.getInits());
+			stmt=new StmtVarDecl(stmt,stmt.getTypes(),names,stmt.getInits());
 		}
 		return stmt;
 	}
@@ -76,7 +76,7 @@ public class VariableDisambiguator extends FEReplacer
         expr = (ExprVar) super.visitExprVar(expr);
         String newName=renameMap.get(expr.getName());
         if(newName!=null) {
-        	expr=new ExprVar(expr.getCx(),newName);
+        	expr=new ExprVar(expr,newName);
         }
         return expr;
     }
