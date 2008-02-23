@@ -26,6 +26,13 @@ package streamit.frontend.nodes;
 public class StmtBreak extends Statement
 {
     /** Creates a new break statement. */
+    public StmtBreak(FENode context)
+    {
+        super(context);
+    }
+    /** Creates a new break statement.
+     * @deprecated
+     */
     public StmtBreak(FEContext context)
     {
         super(context);
@@ -50,7 +57,7 @@ public class StmtBreak extends Statement
         // No state, so...
         return 17;
     }
-    
+
     public String toString()
     {
         return "break";

@@ -27,6 +27,14 @@ package streamit.frontend.nodes;
 public class StmtContinue extends Statement
 {
     /** Creates a new continue statement. */
+    public StmtContinue(FENode context)
+    {
+        super(context);
+    }
+
+    /** Creates a new continue statement.
+     * @deprecated
+     */
     public StmtContinue(FEContext context)
     {
         super(context);
@@ -51,7 +59,7 @@ public class StmtContinue extends Statement
         // No state, so...
         return 17;
     }
-    
+
     public String toString()
     {
         return "continue";
