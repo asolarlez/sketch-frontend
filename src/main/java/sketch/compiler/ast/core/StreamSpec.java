@@ -53,7 +53,7 @@ public class StreamSpec extends FENode
     public static final int STREAM_FEEDBACKLOOP = 4;
     /** Stream type constant for a table loop. */
     public static final int STREAM_TABLE = 5;
-    
+
     /**
      * Creates a new stream specification given its name, a list of
      * variables, and a list of functions.
@@ -72,6 +72,37 @@ public class StreamSpec extends FENode
      * @param funcs    list of <code>Function</code> that are member
      *                 functions of the stream object
      */
+    public StreamSpec(FENode context, int type, StreamType st,
+                      String name, List params, List vars, List funcs)
+    {
+        super(context);
+        this.type = type;
+        this.st = st;
+        this.name = name;
+        this.params = params;
+        this.vars = vars;
+        this.funcs = funcs;
+    }
+
+    /**
+     * Creates a new stream specification given its name, a list of
+     * variables, and a list of functions.
+     *
+     * @param context  front-end context indicating file and line
+     *                 number for the specification
+     * @param type     STREAM_* constant indicating the type of
+     *                 stream object
+     * @param st       stream type giving input and output types of
+     *                 the stream object
+     * @param name     string name of the object
+     * @param params   list of <code>Parameter</code> that are formal
+     *                 parameters to the stream object
+     * @param vars     list of <code>StmtVarDecl</code> that are
+     *                 fields of a filter stream
+     * @param funcs    list of <code>Function</code> that are member
+     *                 functions of the stream object
+     * @deprecated
+     */
     public StreamSpec(FEContext context, int type, StreamType st,
                       String name, List params, List vars, List funcs)
     {
@@ -83,7 +114,7 @@ public class StreamSpec extends FENode
         this.vars = vars;
         this.funcs = funcs;
     }
-    
+
     /**
      * Creates a new stream specification given its name and the text
      * of its init function.  Useful for composite streams that have
@@ -101,11 +132,37 @@ public class StreamSpec extends FENode
      * @param init     statement containing initialization code for
      *                 the object
      */
+    public StreamSpec(FENode context, int type, StreamType st,
+                      String name, List params, Statement init)
+    {
+        this(context, type, st, name, params, Collections.EMPTY_LIST,
+             Collections.singletonList(Function.newInit(init,
+                                                        init)));
+    }
+
+    /**
+     * Creates a new stream specification given its name and the text
+     * of its init function.  Useful for composite streams that have
+     * no other functions.
+     *
+     * @param context  front-end context indicating file and line
+     *                 number for the specification
+     * @param type     STREAM_* constant indicating the type of
+     *                 stream object
+     * @param st       stream type giving input and output types of
+     *                 the stream object
+     * @param name     string name of the object
+     * @param params   list of <code>Parameter</code> that are formal
+     *                 parameters to the stream object
+     * @param init     statement containing initialization code for
+     *                 the object
+     * @deprecated
+     */
     public StreamSpec(FEContext context, int type, StreamType st,
                       String name, List params, Statement init)
     {
         this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.newInit(init.getCx(),
+             Collections.singletonList(Function.newInit(init,
                                                         init)));
     }
 
@@ -169,7 +226,7 @@ public class StreamSpec extends FENode
     {
         return params;
     }
-    
+
     /**
      * Returns the field variables declared in this, as a list of
      * Statements.  Each of the statements will probably be a
@@ -181,7 +238,7 @@ public class StreamSpec extends FENode
     {
         return vars;
     }
-    
+
     /**
      * Returns the functions declared in this, as a list of Functions.
      *

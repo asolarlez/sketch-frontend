@@ -27,7 +27,7 @@ public class UnrecognizedVariableException extends RuntimeException
 {
     public UnrecognizedVariableException(FENode node, String var)
     {
-        this("Unrecognized variable: " + var + " at " + node.getCx());
+        this("Unrecognized variable: " + var + " at " + node);
     }
     
     public UnrecognizedVariableException(ExprVar var)

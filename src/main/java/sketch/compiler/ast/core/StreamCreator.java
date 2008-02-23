@@ -34,7 +34,7 @@ import java.util.List;
 public abstract class StreamCreator extends FENode
 {
     private List portals;
-    
+
     /**
      * Create a new stream creator with a list of portals.
      *
@@ -42,7 +42,7 @@ public abstract class StreamCreator extends FENode
      * @param portals  list of <code>Expression</code> giving the portals
      *                 to register the new stream with
      */
-    public StreamCreator(FEContext context, List portals)
+    public StreamCreator(FENode context, List portals)
     {
         super(context);
         if (portals == null)

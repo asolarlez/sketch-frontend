@@ -37,7 +37,7 @@ package streamit.frontend.nodes;
 public class StreamType extends FENode
 {
     private Type in, out, loop;
-    
+
     /**
      * Creates a new StreamType with the specified input and output
      * types.  The loop type is the same as the input type.
@@ -45,6 +45,23 @@ public class StreamType extends FENode
      * @param context  file and line number for this declaration
      * @param in       input and loop type
      * @param out      output type
+     */
+    public StreamType(FENode context, Type in, Type out)
+    {
+        super(context);
+        this.in = in;
+        this.out = out;
+        this.loop = in;
+    }
+
+    /**
+     * Creates a new StreamType with the specified input and output
+     * types.  The loop type is the same as the input type.
+     *
+     * @param context  file and line number for this declaration
+     * @param in       input and loop type
+     * @param out      output type
+     * @deprecated
      */
     public StreamType(FEContext context, Type in, Type out)
     {
@@ -63,6 +80,24 @@ public class StreamType extends FENode
      * @param out      output type
      * @param loop     loop type
      */
+    public StreamType(FENode context, Type in, Type out, Type loop)
+    {
+        super(context);
+        this.in = in;
+        this.out = out;
+        this.loop = loop;
+    }
+
+    /**
+     * Creates a new StreamType with the specified input, output, and
+     * loop types.
+     *
+     * @param context  file and line number for this declaration
+     * @param in       input type
+     * @param out      output type
+     * @param loop     loop type
+     * @deprecated
+     */
     public StreamType(FEContext context, Type in, Type out, Type loop)
     {
         super(context);
@@ -80,7 +115,7 @@ public class StreamType extends FENode
     {
         return in;
     }
-    
+
     /**
      * Returns the output type of the stream.
      *
