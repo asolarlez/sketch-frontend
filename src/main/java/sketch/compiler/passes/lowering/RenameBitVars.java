@@ -45,7 +45,7 @@ public class RenameBitVars extends SymbolTableVisitor
         Type type = symtab.lookupVar(var);
         if ((type instanceof TypePrimitive) &&
             (((TypePrimitive)type).getType() == TypePrimitive.TYPE_BIT))
-            return new ExprVar(var.getCx(), "_bit_" + var.getName());
+            return new ExprVar(var, "_bit_" + var.getName());
         return var;
     }
 
@@ -67,7 +67,7 @@ public class RenameBitVars extends SymbolTableVisitor
             }
             newNames.add(name);
         }
-        return new StmtVarDecl(stmt.getCx(), stmt.getTypes(),
+        return new StmtVarDecl(stmt, stmt.getTypes(),
                                newNames, stmt.getInits());
     }
 }
