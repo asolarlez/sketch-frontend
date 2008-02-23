@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TypePrimitive;
@@ -15,7 +16,7 @@ import streamit.frontend.nodes.TypePrimitive;
 public class ParamTree{
 
 	public static int MAX_POS = 2000;
-	
+
 	private Map<FENode, treeNode> tnMap = new HashMap<FENode, treeNode>();
 	public treeNode getTNode(FENode node){
 		return tnMap.get(node);
@@ -28,17 +29,17 @@ public class ParamTree{
 		private List<treeNode> children = new ArrayList<treeNode>();
 		private int pos = -1;
 		private int level = -1;
-		
-		
+
+
 		public int getStage(){
 			return lh.stage;
 		}
-		
+
 		public void incrStage(){
-			++lh.stage; 
+			++lh.stage;
 			assert lh.stage < MAX_POS : "The maximum number of statements is not set to a high enough value.";
 		}
-		
+
 		public int nchildren(){
 			return children.size();
 		}
@@ -55,7 +56,7 @@ public class ParamTree{
 			this.lh = lh;
 			if( lh != null){
 				this.vdecl = lh.newVD();
-				this.posParam = new StmtVarDecl(null, TypePrimitive.inttype, ArrFunction.PPPREFIX + vdecl.getName(0), new ExprConstInt(MAX_POS));
+				this.posParam = new StmtVarDecl((FEContext) null, TypePrimitive.inttype, ArrFunction.PPPREFIX + vdecl.getName(0), new ExprConstInt(MAX_POS));
 			}
 			this.father = father;
 		}
@@ -65,22 +66,22 @@ public class ParamTree{
 			children.add(tn);
 		}
 		public PathIterator pathIter(){
-			PathIterator pi = new PathIterator(true);			
+			PathIterator pi = new PathIterator(true);
 			return pi;
 		}
 
 		public PathIterator limitedPathIter(){
-			PathIterator pi = new PathIterator(false);			
+			PathIterator pi = new PathIterator(false);
 			return pi;
 		}
-		
+
 		public class PathIterator implements Iterator<StmtVarDecl>{
 			private int[] path;
 			private int step;
 			private treeNode tn;
 			/**
 			 * If withPos is true, then the iterator also returns
-			 * varDecls for the position parameters. Otherwise, 
+			 * varDecls for the position parameters. Otherwise,
 			 * it only returns them for the inductionVar parameters.
 			 */
 			private boolean withPos;
@@ -89,7 +90,7 @@ public class ParamTree{
 			 * Flips from true to false. True means
 			 * that next() returns a position parameter.
 			 * False means next() returns an indVar parameter.
-			 * 
+			 *
 			 */
 			private boolean wpState;
 			public PathIterator(boolean withPos){
@@ -104,72 +105,72 @@ public class ParamTree{
 					path[ii] = ltn.pos;
 					ltn = ltn.father;
 					--ii;
-				}		
+				}
 				assert ii==-1;
 			}
-			public StmtVarDecl next(){	
+			public StmtVarDecl next(){
 				if( withPos ){
 					if(wpState ){
 						wpState = false;
 						return tn.posParam;
 					}else{
 						wpState = true;
-						treeNode tmp = tn.child(path[step]);		
+						treeNode tmp = tn.child(path[step]);
 						tn = tmp;
 						++step;
 						return tmp.vdecl;
 					}
 				}else{
-					treeNode tmp = tn.child(path[step]);		
+					treeNode tmp = tn.child(path[step]);
 					tn = tmp;
 					++step;
 					return tmp.vdecl;
 				}
 			}
-			
-			public loopHist lhNext(){	
+
+			public loopHist lhNext(){
 				assert !withPos ;
-				treeNode tmp = tn.child(path[step]);		
+				treeNode tmp = tn.child(path[step]);
 				tn = tmp;
 				++step;
 				return tmp.lh;
 			}
-			
+
 			public void makeUnlimited(){
 				assert !withPos ;
 				withPos = true;
 				wpState = true;
 			}
-			
-			public treeNode tnNext(){	
+
+			public treeNode tnNext(){
 				assert !withPos ;
-				treeNode tmp = tn.child(path[step]);		
+				treeNode tmp = tn.child(path[step]);
 				tn = tmp;
 				++step;
 				return tmp;
 			}
-			
+
 			public boolean hasNext(){
 				if(withPos){
 					return step != path.length || wpState;
 				}else{
-					return step != path.length;	
+					return step != path.length;
 				}
-				
+
 			}
 			public void remove(){
 				assert false;
 			}
-			
+
 		}
 	}
-	
-	
+
+
 	public class FullIterator implements Iterator<StmtVarDecl>{
 		private treeNode tn;
 		/**
 		 * If withPos is true, then the iterator also returns
-		 * varDecls for the position parameters. Otherwise, 
+		 * varDecls for the position parameters. Otherwise,
 		 * it only returns them for the inductionVar parameters.
 		 */
 		private final boolean withPos;
@@ -178,17 +179,17 @@ public class ParamTree{
 		 * Flips from true to false. True means
 		 * that next() returns a position parameter.
 		 * False means next() returns an indVar parameter.
-		 * 
+		 *
 		 */
 		private boolean wpState;
-		
+
 		/**
-		 * 
+		 *
 		 * @param withPos make true if you want the iterator
 		 * to include possition parameters.
 		 */
-		FullIterator(boolean withPos){			
-			tn = root;		
+		FullIterator(boolean withPos){
+			tn = root;
 			this.withPos = withPos;
 			if(withPos){
 				wpState = true;
@@ -196,11 +197,11 @@ public class ParamTree{
 				if(hasNext()) next();
 			}
 		}
-		
+
 		private void advanceTN(){
-			treeNode curr = tn;	
+			treeNode curr = tn;
 			if( tn.nchildren() > 0 ){
-				tn = tn.child(0);				
+				tn = tn.child(0);
 			}else{
 				int pos = tn.pos;
 				tn = tn.father;
@@ -212,9 +213,9 @@ public class ParamTree{
 				tn = tn.child(pos+1);
 			}
 		}
-		
-		public StmtVarDecl next(){			
-			treeNode curr = tn;	
+
+		public StmtVarDecl next(){
+			treeNode curr = tn;
 			if( withPos ){
 				if( wpState ){
 					wpState = false;
@@ -228,23 +229,23 @@ public class ParamTree{
 				advanceTN();
 				return curr.vdecl;
 			}
-		}		
+		}
 		public boolean hasNext(){
-			return tn != null; 
+			return tn != null;
 		}
 		public void remove(){
 			assert false;
 		}
 	}
-	
+
 	public FullIterator iterator(){
 		return new FullIterator(true);
 	}
-	
+
 	public FullIterator limitedIterator(){
 		return new FullIterator(false);
 	}
-	
+
 	public String toString(){
 		String rv = " ";
 		for(FullIterator it = iterator(); it.hasNext(); ){
@@ -252,7 +253,7 @@ public class ParamTree{
 		}
 		return rv;
 	}
-	
+
 	private treeNode cnode;
 	private treeNode root;
 	private int depth;
@@ -261,7 +262,7 @@ public class ParamTree{
 		root.level = 0;
 		cnode = root;
 	}
-	
+
 	public treeNode beginLevel(loopHist lh, FENode node){
 		treeNode tmp = beginLevel(lh);
 		this.tnMap.put(node, tmp);
@@ -274,13 +275,13 @@ public class ParamTree{
 		cnode = tmp;
 		return tmp;
 	}
-	
+
 	public treeNode getRoot(){
 		return root;
 	}
 	public void endLevel(){
 		cnode = cnode.father;
-	}	
-	
-	
+	}
+
+
 }
