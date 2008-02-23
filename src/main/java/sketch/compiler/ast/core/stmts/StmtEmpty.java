@@ -25,16 +25,27 @@ package streamit.frontend.nodes;
  */
 public class StmtEmpty extends Statement
 {
-    /** 
+    /**
      * Creates a new empty statement.
      *
      * @param context   File and line number the statement corresponds to
+     */
+    public StmtEmpty(FENode context)
+    {
+        super(context);
+    }
+
+    /**
+     * Creates a new empty statement.
+     *
+     * @param context   File and line number the statement corresponds to
+     * @deprecated
      */
     public StmtEmpty(FEContext context)
     {
         super(context);
     }
-    
+
     public Object accept(FEVisitor v)
     {
         return v.visitStmtEmpty(this);
