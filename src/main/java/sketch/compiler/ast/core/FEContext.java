@@ -29,13 +29,13 @@ public class FEContext
     private String fileName;
     private int lineNumber, columnNumber;
     private String file;
-    
+
     /** Create a new context object with no location information. */
     public FEContext()
     {
         this(null);
     }
-    
+
     /** Create a new context object with a known filename but no
      * line information.
      *
@@ -45,7 +45,7 @@ public class FEContext
     {
         this(fileName, -1);
     }
-    
+
     /** Create a new context object with a known filename and line
      * number but no column number.
      *
@@ -56,7 +56,7 @@ public class FEContext
     {
         this(fileName, line, -1);
     }
-    
+
     /** Create a new context object with known filename, line number,
      * and column number.
      *
@@ -69,7 +69,7 @@ public class FEContext
         this.fileName = fileName;
         lineNumber = line;
         columnNumber = col;
-        
+
         String lfile = fileName;
         if (lfile == null){
         	lfile = "<unknown>";
@@ -92,21 +92,21 @@ public class FEContext
         	file = lfile;
         }
     }
-    
+
     /** Get the name of the file this node appears in, or null if it is
      * unavailable. */
-    public String getFileName() 
+    public String getFileName()
     {
         return fileName;
     }
-    
+
     /** Get the line number this node begins on, or -1 if it is
      * unavailable. */
     public int getLineNumber()
     {
         return lineNumber;
     }
-    
+
     /** Get the column number this node begins on, or -1 if it is
      * unavailable. */
     public int getColumnNumber()
@@ -118,7 +118,7 @@ public class FEContext
      * "filename.str:line".  Omits the line number if it is unavailable,
      * and uses a default filename it that is unavilable. */
     public String getLocation()
-    {    	
+    {
         return file;
     }
 
