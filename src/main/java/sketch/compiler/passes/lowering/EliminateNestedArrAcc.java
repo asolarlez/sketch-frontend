@@ -13,8 +13,8 @@ import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 public class EliminateNestedArrAcc extends FEReplacer {
 
-	
-	
+
+
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
@@ -24,11 +24,11 @@ public class EliminateNestedArrAcc extends FEReplacer {
 			ExprArrayRange baserange = (ExprArrayRange) newBase;
 			RangeLen baserl = (RangeLen)baserange.getMembers().get(0);
 			int nlen = rl.len() > baserl.len() ? baserl.len() : rl.len();
-			Expression nstart = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, baserl.start(), newStart  );
-			return new ExprArrayRange(exp.getCx(), baserange.getBase(), new RangeLen(nstart, nlen), exp.isUnchecked());
+			Expression nstart = new ExprBinary(exp, ExprBinary.BINOP_ADD, baserl.start(), newStart  );
+			return new ExprArrayRange(exp, baserange.getBase(), new RangeLen(nstart, nlen), exp.isUnchecked());
 		}
-		return new ExprArrayRange(exp.getCx(), newBase, new RangeLen(newStart, rl.len()), exp.isUnchecked());
+		return new ExprArrayRange(exp, newBase, new RangeLen(newStart, rl.len()), exp.isUnchecked());
 	}
-	
-	
+
+
 }

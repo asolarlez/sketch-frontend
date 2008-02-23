@@ -12,6 +12,7 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
@@ -46,7 +47,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
 			dims.add (ta.getLength ());
 			return new TypeArray (base.getBase (),
-				new ExprBinary (base.getLength ().getCx (),
+				new ExprBinary (base.getLength (),
 								ExprBinary.BINOP_MUL,
 								base.getLength (),
 								ta.getLength ()),
@@ -73,7 +74,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 		List<Expression> dims =
 			((TypeArray) getType (ear.getAbsoluteBaseExpr ())).getDimensions ();
 		if (1 == dims.size ()) {
-			return new ExprArrayRange (ear.getCx (), base, indices.get (0));
+			return new ExprArrayRange (ear, base, indices.get (0));
 		}
 
 		// And then flatten indexes involving multi-dim arrays
@@ -82,24 +83,24 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 			throw new RuntimeException ();
 		}
 
-		Expression idx = ExprConstant.createConstant (ear.getCx (), "0");
+		Expression idx = ExprConstant.createConstant (ear, "0");
 		for (RangeLen rl : indices) {
 			dims.remove (dims.size ()-1);
-			idx = new ExprBinary (idx.getCx (), ExprBinary.BINOP_ADD,
+			idx = new ExprBinary (idx, ExprBinary.BINOP_ADD,
 					idx,
-					new ExprBinary (idx.getCx (),
+					new ExprBinary (idx,
 									ExprBinary.BINOP_MUL,
-					 	  		    product (dims, idx.getCx ()),
+					 	  		    product (dims, idx),
 					 	  		    rl.start ()));
 		}
 
 		Expression size =
-			new ExprBinary (idx.getCx (), ExprBinary.BINOP_MUL,
-					new ExprConstInt (idx.getCx (), indices.get (indices.size ()-1).len ()),
-					product (dims, idx.getCx ()));
+			new ExprBinary (idx, ExprBinary.BINOP_MUL,
+					new ExprConstInt (idx, indices.get (indices.size ()-1).len ()),
+					product (dims, idx));
 		RangeLen flatRl = new RangeLen (idx, size);
 
-		return new ExprArrayRange (ear.getCx (), base, flatRl);
+		return new ExprArrayRange (ear, base, flatRl);
 	}
 
 	/**
@@ -107,10 +108,10 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	 *
 	 * TODO: refactor to somewhere else
 	 */
-	private Expression product (List<Expression> exprs, FEContext cx) {
+	private Expression product (List<Expression> exprs, FENode cx) {
 		Expression prod = ExprConstant.createConstant (cx, "1");
 		for (Expression e : exprs)
-			prod = new ExprBinary (prod.getCx (), ExprBinary.BINOP_MUL, prod, e);
+			prod = new ExprBinary (prod, ExprBinary.BINOP_MUL, prod, e);
 		return prod;
 	}
 
