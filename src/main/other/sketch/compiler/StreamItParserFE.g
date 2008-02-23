@@ -127,8 +127,8 @@ program	 returns [Program p]
 		EOF
 		// Can get away with no context here.
 		{
-			 StreamSpec ss=new StreamSpec(null, StreamSpec.STREAM_FILTER,
- 				new StreamType(null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN",
+			 StreamSpec ss=new StreamSpec((FEContext) null, StreamSpec.STREAM_FILTER,
+ 				new StreamType((FEContext) null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN",
  				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
 				 if (!hasError) p = new Program(null, Collections.singletonList(ss), structs); }
@@ -206,6 +206,7 @@ statement returns [Statement s] { s = null; }
 	|	s=join_statement SEMI
 	|	s=enqueue_statement SEMI
 	|	s=push_statement SEMI
+	|	s=insert_block
 	|	s=reorder_block
 	|	s=atomic_block
 	|	s=block
@@ -297,9 +298,9 @@ primitive_type returns [Type t] { t = null; }
 
 variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
-	List xs = new ArrayList(); FEContext ctx = null; }
+	List xs = new ArrayList(); }
 	:	t=data_type
-		id:ID { ctx = getContext(id); }
+		id:ID
 		(ASSIGN x=var_initializer)?
 		{ ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
@@ -307,10 +308,7 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 			COMMA id2:ID (ASSIGN x=var_initializer)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
-		{ s = new StmtVarDecl(ctx, ts, ns, xs); }
-		// NB: we'd use the context of t, except Type doesn't include
-		// a context.  This is probably okay in the grand scheme of things.
-		// We explicitly use the context of the first identifier.
+		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
 function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isStatic=false; }
@@ -360,6 +358,12 @@ block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
 		{ sb = new StmtBlock(getContext(t), l); }
 	;
 
+insert_block returns [StmtInsertBlock ib]
+    { ib=null; Statement s; List<Statement> insert = new ArrayList<Statement> (), into = new ArrayList<Statement> (); }
+	:	t:TK_insert LCURLY ( s=statement { insert.add(s); } )* RCURLY
+		TK_into   LCURLY ( s=statement { into.add(s); } )* RCURLY
+		{ ib = new StmtInsertBlock(getContext(t), insert, into); }
+	;
 
 
 reorder_block returns [StmtReorderBlock sb] { sb=null; Statement s; List l = new ArrayList(); }
@@ -414,12 +418,12 @@ for_statement returns [Statement s]
 for_init_statement returns [Statement s] { s = null; }
 	:	(variable_decl) => s=variable_decl
 	|	(expr_statement) => s=expr_statement
-	|   (SEMI) /* empty */ => { s = new StmtEmpty(null); }
+	|   (t:SEMI) /* empty */ => { s = new StmtEmpty(getContext(t)); }
 	;
 
 for_incr_statement returns [Statement s] { s = null; }
 	:	s=expr_statement
-	|   /* empty */ { s = new StmtEmpty(null); }
+	|   /* empty */ { s = new StmtEmpty((FEContext) null); }
 	;
 
 expr_statement returns [Statement s] { s = null; Expression x; }
@@ -438,7 +442,7 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 		|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
 		)
 		r=right_expr
-		{ s = new StmtAssign(l.getContext(), l, r, o); }
+		{ s = new StmtAssign(l, r, o); }
 	;
 
 func_call returns [Expression x] { x = null; List l; }
@@ -481,7 +485,7 @@ arr_initializer returns [Expression x] { ArrayList l = new ArrayList();
 ternaryExpr returns [Expression x] { x = null; Expression b, c; }
 	:	x=logicOrExpr
 		(QUESTION b=ternaryExpr COLON c=ternaryExpr
-			{ x = new ExprTernary(x.getContext(), ExprTernary.TEROP_COND,
+			{ x = new ExprTernary(x, ExprTernary.TEROP_COND,
 					x, b, c); }
 		)?
 	;
@@ -489,14 +493,14 @@ ternaryExpr returns [Expression x] { x = null; Expression b, c; }
 logicOrExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	:	x=logicAndExpr
 		(LOGIC_OR r=logicAndExpr
-			{ x = new ExprBinary(x.getContext(), ExprBinary.BINOP_OR, x, r); }
+			{ x = new ExprBinary(ExprBinary.BINOP_OR, x, r); }
 		)*
 	;
 
 logicAndExpr returns [Expression x] { x = null; Expression r; }
 	:	x=bitwiseExpr
 		(LOGIC_AND r=bitwiseExpr
-			{ x = new ExprBinary(x.getContext(), ExprBinary.BINOP_AND, x, r); }
+			{ x = new ExprBinary(ExprBinary.BINOP_AND, x, r); }
 		)*
 	;
 
@@ -507,7 +511,7 @@ bitwiseExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 			| BITWISE_XOR { o = ExprBinary.BINOP_BXOR; }
 			)
 			r=equalExpr
-			{ x = new ExprBinary(x.getContext(), o, x, r); }
+			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
 
@@ -517,7 +521,7 @@ equalExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 			| NOT_EQUAL { o = ExprBinary.BINOP_NEQ; }
 			)
 			r = compareExpr
-			{ x = new ExprBinary(x.getContext(), o, x, r); }
+			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
 
@@ -529,7 +533,7 @@ compareExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 			| MORE_EQUAL { o = ExprBinary.BINOP_GE; }
 			)
 			r = addExpr
-			{ x = new ExprBinary(x.getContext(), o, x, r); }
+			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
 
@@ -540,7 +544,7 @@ addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 			| SELECT { o = ExprBinary.BINOP_SELECT; }
 			)
 			r=multExpr
-			{ x = new ExprBinary(x.getContext(), o, x, r); }
+			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
 
@@ -551,7 +555,7 @@ multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 			| MOD  { o = ExprBinary.BINOP_MOD; }
 			)
 			r=castExpr
-			{ x = new ExprBinary(x.getContext(), o, x, r); }
+			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
 
@@ -569,7 +573,7 @@ shiftExpr returns [Expression x] { x=null; Expression r; Type t=null; int op=0; 
 (
 	(LSHIFT {op=ExprBinary.BINOP_LSHIFT;} | RSHIFT {op=ExprBinary.BINOP_RSHIFT;})
 	r=inc_dec_expr
-	{x=new ExprBinary(x.getContext(), op, x, r);}
+	{x=new ExprBinary(op, x, r);}
 )*
 ;
 
@@ -630,7 +634,7 @@ constructor_expr returns [Expression x] { x = null; Type t; List l;}
 	;
 value returns [Expression x] { x = null; List rlist; }
 	:	name:ID { x = new ExprVar(getContext(name), name.getText()); }
-		(	DOT field:ID 			{ x = new ExprField(x.getContext(), x, field.getText()); }
+		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
 		|	l:LSQUARE
 					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
 			RSQUARE

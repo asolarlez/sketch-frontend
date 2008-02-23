@@ -254,11 +254,11 @@ public class SNodesToFortran implements FEVisitor {
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-    	assert stmt.getNumVars()==1:"multiple variable declarations are not allowed "+stmt+" "+stmt.getCx();
+    	assert stmt.getNumVars()==1:"multiple variable declarations are not allowed "+stmt+" "+stmt;
 
     	Type type = stmt.getType(0);
         String name=stmt.getName(0);
-        assert (stmt.getInit(0)==null):"declaration initializers are not allowed "+stmt+" "+stmt.getCx();
+        assert (stmt.getInit(0)==null):"declaration initializers are not allowed "+stmt+" "+stmt;
         varTypes.put(name, type);
 
         //don't declare the output variable again (it is an argument to the function)
@@ -281,23 +281,23 @@ public class SNodesToFortran implements FEVisitor {
     }
 
     private ExprVar genLoopVar(int idx) {
-    	return new ExprVar(null,"i_"+idx);
+    	return new ExprVar((FEContext) null,"i_"+idx);
     }
 
     private String generateZeroCode(String name,TypeArray type) {
     	String ret="";
     	List<Expression> dims=type.getDimensions();
-    	Expression arr=new ExprVar(null,name);
+    	Expression arr=new ExprVar((FEContext) null,name);
     	for(int i=0;i<dims.size();i++) {
     		arr=new ExprArrayRange(arr,genLoopVar(i));
     	}
-    	Statement body=new StmtAssign(null,arr,ExprConstInt.zero);
+    	Statement body=new StmtAssign(arr,ExprConstInt.zero);
     	for(int i=dims.size()-1;i>=0;i--) {
     		ExprVar loopVar=genLoopVar(i);
-    		body=new StmtFor(null,
-    			new StmtVarDecl(null, TypePrimitive.inttype, loopVar.getName(), ExprConstInt.zero),
-    			new ExprBinary(null, ExprBinary.BINOP_LT, loopVar, dims.get(i)),
-    			new StmtExpr(new ExprUnary(null, ExprUnary.UNOP_POSTINC, loopVar)),
+    		body=new StmtFor((FEContext) null,
+    			new StmtVarDecl((FEContext) null, TypePrimitive.inttype, loopVar.getName(), ExprConstInt.zero),
+    			new ExprBinary(loopVar, "<", dims.get(i)),
+    			new StmtExpr(new ExprUnary(loopVar, ExprUnary.UNOP_POSTINC, loopVar)),
     			body
     		);
     	}
@@ -366,7 +366,7 @@ public class SNodesToFortran implements FEVisitor {
 			assert stmt.getValue()==null;
 		} else {
 			//function: set the return value (assign to function name)
-			StmtAssign assign=new StmtAssign(null,new ExprVar(null,curFunc.getName()),stmt.getValue());
+			StmtAssign assign=new StmtAssign(new ExprVar((FEContext) null,curFunc.getName()),stmt.getValue());
 			ret+=assign.accept(this);
 		}
 		ret+=line("return");
@@ -483,7 +483,7 @@ public class SNodesToFortran implements FEVisitor {
 					stride=assign.getRHS();
 					break;
 				case ExprBinary.BINOP_SUB:
-					stride=new ExprUnary(null,ExprUnary.UNOP_NEG,assign.getRHS());
+					stride=new ExprUnary(assign.getRHS(),ExprUnary.UNOP_NEG,assign.getRHS());
 					break;
 				default:
 					assert false:"unsupported loop increment";
@@ -734,6 +734,7 @@ public class SNodesToFortran implements FEVisitor {
 
     public Object visitStmtReorderBlock(StmtReorderBlock block){throw new UnsupportedOperationException();}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){throw new UnsupportedOperationException();}
+    public Object visitStmtInsertBlock(StmtInsertBlock block){throw new UnsupportedOperationException();}
     public Object visitTypeStruct(TypeStruct ts){throw new UnsupportedOperationException();}
     public Object visitExprNullPtr(ExprNullPtr nptr){ throw new UnsupportedOperationException(); }
 }

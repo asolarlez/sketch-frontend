@@ -163,7 +163,7 @@ public class PromelaCodePrinter extends CodePrinter {
 		List<Statement> newStmts =
 			new ArrayList<Statement> (((StmtBlock) stmt.getBody ()).getStmts ());
 		newStmts.add (stmt.getIncr ());
-		StmtBlock newBody = new StmtBlock (stmt.getBody ().getCx (), newStmts);
+		StmtBlock newBody = new StmtBlock (stmt.getBody (), newStmts);
 
 		stmt.getInit ().accept (this);
 		printLine ("do");
@@ -210,13 +210,13 @@ public class PromelaCodePrinter extends CodePrinter {
 	{
 		assertThreadLocal (stmt.getCond ());
 
-		FEContext cx = stmt.getCx ();
+		FENode cx = stmt;
 		String first = vargen.nextVar ("do_while_first_iter");
 		List<Statement> newStmts =
 			new ArrayList<Statement> (((StmtBlock) stmt.getBody ()).getStmts ());
-		newStmts.add (new StmtAssign (cx, new ExprVar (cx, first),
+		newStmts.add (new StmtAssign (new ExprVar (cx, first),
 									  ExprConstant.createConstant (cx, "0")));
-		StmtBlock newBody = new StmtBlock (stmt.getBody ().getCx (), newStmts);
+		StmtBlock newBody = new StmtBlock (stmt.getBody (), newStmts);
 
 		printLine ("hidden bool "+ first +" = 1;");
 		printLine ("do");
@@ -243,6 +243,15 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtBlock(StmtBlock stmt)
 	{
+
+		System.out.println ("   "+ stmt);
+
+		return (stmt instanceof StmtAtomicBlock) ?
+				visitStmtAtomicBlock( (StmtAtomicBlock)stmt)
+				: doStmtBlock (stmt);
+	}
+
+	public Object doStmtBlock (StmtBlock stmt) {
 		printLine("{");
 		indent++;
 		super.visitStmtBlock(stmt);
@@ -267,6 +276,10 @@ public class PromelaCodePrinter extends CodePrinter {
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
+
+		System.out.println ("ASSN STMT: "+ stmt.getTag () +", "+ stmt);
+
+
 		printNumberedStmt (stmt);
 		return super.visitStmtAssign(stmt);
 	}
@@ -360,10 +373,14 @@ public class PromelaCodePrinter extends CodePrinter {
 		return assertEliminated (block);
 	}
 
+	protected int nAtomics;
+
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block){
 		printStmtNumber (block);
 		printLine("atomic");
-		visitStmtBlock (block);
+		nAtomics++;
+		doStmtBlock (block);
+		nAtomics--;
 		return block;
 	}
 
@@ -401,9 +418,14 @@ public class PromelaCodePrinter extends CodePrinter {
 	}
 
 	protected void printStmtNumber (Statement stmt) {
-		stmt.assertTrue (null != stmt.getTag (), "Unnumbered statement: "+ stmt);
+		if (nAtomics == 0) {
+			Integer num = (Integer) stmt.getTag ();
 
-		printLine ("_ = "+ stmt.getTag ()+ ";");
+			stmt.assertTrue (null != num, "Unnumbered statement ("+ stmt.hashCode () +"): "+ stmt);
+			stmt.assertTrue (num >= 0, "Invalid statement number");
+
+			printLine ("_ = "+ num +";");
+		}
 	}
 
 	/**
@@ -413,8 +435,8 @@ public class PromelaCodePrinter extends CodePrinter {
 	protected void assertThreadLocal (Expression e) {
 		// TODO: if e isn't constant, we should ensure that it's actually a
 		// a local variable.
-		e.assertTrue (e.isConstant () || (e instanceof ExprVar),
-					  "Non-local expression in condition: "+ e);
+		//e.assertTrue (e.isConstant () || (e instanceof ExprVar),
+		//			  "Non-local expression in condition: "+ e);
 	}
 
 	protected Object assertEliminated (FENode node) {

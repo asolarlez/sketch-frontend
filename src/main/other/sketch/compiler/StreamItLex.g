@@ -36,12 +36,14 @@ options {
 }
 
 tokens {
-	"loop"; //"enqueue";
-	"fork";
-	"new";
-	"reorder";
 	"atomic";
+	"fork";
+	"insert";
+	"into";
+	"loop"; //"enqueue";
+	"new";
 	"null";
+	"reorder";
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
 	// Complicated types:

@@ -7,6 +7,7 @@ import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SpinPreprocessor;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
 import streamit.frontend.solvers.SpinVerifier;
@@ -30,7 +31,7 @@ public class ToPSbitII extends ToSBit {
 	public Verifier createVerif(Program p){
 		boolean debug = params.flagValue ("verbosity") >= 3;
 		boolean cleanup = !params.hasFlag ("keeptmpfiles");
-		return new SpinVerifier (p, debug, cleanup);
+		return new SpinVerifier (varGen, p, debug, cleanup);
 	}
 
 	public ValueOracle randomOracle(Program p){
@@ -41,6 +42,7 @@ public class ToPSbitII extends ToSBit {
 	{
 		super.lowerIRToJava();
 		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+		//prog = (Program) prog.accept(new SpinPreprocessor(varGen));
 		prog = (Program) prog.accept(new NumberStatements());
 	}
 

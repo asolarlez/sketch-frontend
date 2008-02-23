@@ -113,6 +113,8 @@ public interface StreamItParserFETokenTypes {
 	int TK_enqueue = 101;
 	int TK_portal = 102;
 	int TK_handler = 103;
-	int TK_do = 104;
-	int TK_pi = 105;
+	int TK_insert = 104;
+	int TK_into = 105;
+	int TK_do = 106;
+	int TK_pi = 107;
 }

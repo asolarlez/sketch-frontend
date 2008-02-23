@@ -8,9 +8,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import streamit.frontend.ToSpin;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.passes.SpinPreprocessor;
 import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
 import streamit.misc.ProcessStatus;
@@ -20,6 +22,8 @@ import streamit.misc.SynchronousTimedProcess;
  * @author Chris Jones
  */
 public class SpinExecuter {
+	protected TempVarGen 	varGen;
+
 	protected Program		sourceProg;
 	protected ValueOracle	holeVals;
 	protected File			promelaCode;
@@ -37,8 +41,9 @@ public class SpinExecuter {
 	protected String		err;
 	protected String		trail;
 
-	public SpinExecuter (Program _prog, ValueOracle _holeVals,
+	public SpinExecuter (TempVarGen _varGen, Program _prog, ValueOracle _holeVals,
 			boolean _doCleanup, boolean _debug) {
+		varGen = _varGen;
 		sourceProg = _prog;
 		holeVals = _holeVals;
 		doCleanup = _doCleanup;
@@ -100,8 +105,8 @@ public class SpinExecuter {
 
 	protected void generatePromelaCode () throws IOException {
 		log ("Generating Promela code");
-		Program filledProg = preprocessSketch ();
-		ToSpin.printCode (filledProg, new FileOutputStream (promelaCode));
+		preprocessSketch ().accept (new PromelaCodePrinter (
+				new FileOutputStream (promelaCode), varGen));
 		dump ("Promela code", promelaCode, true);
 	}
 
@@ -157,9 +162,15 @@ public class SpinExecuter {
 	}
 
 	protected Program preprocessSketch () {
+		sourceProg.accept (new SimpleCodePrinter ());
+		System.exit (0);
+
+		Program p = (Program) sourceProg.accept(new SpinPreprocessor(varGen));
+
 		// TODO: might need other passes to make SPIN verification more
 		// efficient
-		return (Program) sourceProg.accept (new EliminateStarStatic (holeVals));
+		p = (Program) p.accept (new EliminateStarStatic (holeVals));
+		return p;
 	}
 
 	protected ProcessStatus execDebug (String... cmdLine) {
@@ -218,19 +229,20 @@ public class SpinExecuter {
 	public static final String	SPIN	= "spin";
 	public static final String	CC		= "gcc";
 
-	public static SpinExecuter makeExecuter (Program _prog) {
-		return makeExecuter (_prog, null, false);
+	public static SpinExecuter makeExecuter (TempVarGen _varGen, Program _prog) {
+		return makeExecuter (_varGen, _prog, null, false);
 	}
-	public static SpinExecuter makeExecuter (Program _prog, ValueOracle _oracle) {
-		return makeExecuter (_prog, _oracle, false);
+	public static SpinExecuter makeExecuter (TempVarGen _varGen, Program _prog,
+			ValueOracle _oracle) {
+		return makeExecuter (_varGen, _prog, _oracle, false);
 	}
-	public static SpinExecuter makeExecuter (Program _prog,
+	public static SpinExecuter makeExecuter (TempVarGen _varGen, Program _prog,
 			ValueOracle _oracle, boolean _debug) {
-		return makeExecuter (_prog, _oracle, _debug, true);
+		return makeExecuter (_varGen, _prog, _oracle, _debug, true);
 	}
 
-	public static SpinExecuter makeExecuter (Program _prog,
+	public static SpinExecuter makeExecuter (TempVarGen _varGen, Program _prog,
 			ValueOracle _oracle, boolean _debug, boolean _cleanup) {
-		return new SpinExecuter (_prog, _oracle, _cleanup, _debug);
+		return new SpinExecuter (_varGen, _prog, _oracle, _cleanup, _debug);
 	}
 }

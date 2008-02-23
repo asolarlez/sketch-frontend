@@ -15,13 +15,13 @@ import streamit.frontend.tosbit.ValueOracle;
 public class EliminateStarStatic extends FEReplacer {
 
 	ValueOracle oracle;
-	
+
 	public EliminateStarStatic(ValueOracle oracle){
 		assert oracle.getHoleNamer() instanceof StaticHoleTracker;
 		this.oracle = oracle;
 		oracle.initCurrentVals();
 	}
-	
+
 	public Object visitExprStar(ExprStar star) {
 		Type t = star.getType();
 		int ssz = 1;
@@ -31,14 +31,14 @@ public class EliminateStarStatic extends FEReplacer {
 			ssz = iv;
 			List<ExprConstInt> lst = new ArrayList<ExprConstInt>(ssz);
 			for(int i=0; i<ssz; ++i){
-				lst.add(oracle.popValueForNode(star.getDepObject(i)));				
+				lst.add(oracle.popValueForNode(star.getDepObject(i)));
 			}
-			
-			ExprArrayInit ainit = new ExprArrayInit(star.getCx(), lst);
-			return ainit;			
+
+			ExprArrayInit ainit = new ExprArrayInit(star, lst);
+			return ainit;
 		}else{
 			return oracle.popValueForNode(star.getDepObject(0));
 		}
 	}
-	
+
 }
