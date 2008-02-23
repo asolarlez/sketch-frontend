@@ -64,7 +64,7 @@ public class AssembleInitializers extends FEReplacer
                 iter.previous();
                 if (!(nst instanceof StmtAssign)){
                 	StmtVarDecl decl = (StmtVarDecl)stmt;
-                	
+
                 	if(decl.getInit(0) == null){
 	                	List newInits = new java.util.ArrayList();
 	                	 for (int i = 0; i < decl.getNumVars(); i++)
@@ -72,7 +72,7 @@ public class AssembleInitializers extends FEReplacer
 	                		Expression init = null;
 	                		Type type = decl.getType(i);
 	                		if(decl.getInit(i) != null){
-	                			init =decl.getInit(i); 
+	                			init =decl.getInit(i);
 	                		}else{
 								if( type instanceof TypeArray ){
 									List<Expression> ilist = new ArrayList<Expression>();
@@ -80,27 +80,27 @@ public class AssembleInitializers extends FEReplacer
 									for(int k=0; k<N; ++k){
 										ilist.add( ExprConstInt.zero );
 									}
-									init = new ExprArrayInit(decl.getCx(), ilist);
+									init = new ExprArrayInit(decl, ilist);
 								}else{
-									
+
 									init = ExprConstInt.zero;
 								}
 	                		}
 	                		newInits.add(init);
 	                     }
-	                	 stmt = new StmtVarDecl(decl.getCx(),
+	                	 stmt = new StmtVarDecl(decl,
 	                             decl.getTypes(),
 	                             decl.getNames(),
 	                             newInits);
                 	}
-                    break;                
+                    break;
                 }
-                
+
                 // check that the LHS of the next statement is
                 // a simple variable
                 Expression lhs = ((StmtAssign)nst).getLHS();
                 Expression rhs = ((StmtAssign)nst).getRHS();
-                if (!(lhs instanceof ExprVar)){                	
+                if (!(lhs instanceof ExprVar)){
                 	StmtVarDecl decl = (StmtVarDecl)stmt;
                 	if(decl.getInit(0) == null){
 	                	List newInits = new java.util.ArrayList();
@@ -109,7 +109,7 @@ public class AssembleInitializers extends FEReplacer
 	                		Expression init = null;
 	                		Type type = decl.getType(i);
 	                		if(decl.getInit(i) != null){
-	                			init =decl.getInit(i); 
+	                			init =decl.getInit(i);
 	                		}else{
 								if( type instanceof TypeArray ){
 									List<Expression> ilist = new ArrayList<Expression>();
@@ -117,15 +117,15 @@ public class AssembleInitializers extends FEReplacer
 									for(int k=0; k<N; ++k){
 										ilist.add( ExprConstInt.zero );
 									}
-									init = new ExprArrayInit(decl.getCx(), ilist);
+									init = new ExprArrayInit(decl, ilist);
 								}else{
-									
+
 									init = ExprConstInt.zero;
 								}
 	                		}
 	                		newInits.add(init);
 	                     }
-	                	 stmt = new StmtVarDecl(decl.getCx(),
+	                	 stmt = new StmtVarDecl(decl,
 	                             decl.getTypes(),
 	                             decl.getNames(),
 	                             newInits);
@@ -156,14 +156,14 @@ public class AssembleInitializers extends FEReplacer
                 // So, if we've made it here, then newInits
                 // is different from stmt's initializer list,
                 // and we want to iterate.  Reassign stmt.
-                stmt = new StmtVarDecl(decl.getCx(),
+                stmt = new StmtVarDecl(decl,
                                        decl.getTypes(),
                                        decl.getNames(),
                                        newInits);
             }
             addStatement((Statement)stmt.accept(this));
-        }   
-        Statement result = new StmtBlock(block.getCx(), newStatements);
+        }
+        Statement result = new StmtBlock(block, newStatements);
         newStatements = oldStatements;
         return result;
     }
