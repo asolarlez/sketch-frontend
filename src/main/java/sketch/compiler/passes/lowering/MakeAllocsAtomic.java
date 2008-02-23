@@ -7,6 +7,7 @@ import java.util.Collections;
 
 import streamit.frontend.nodes.ExprNew;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -52,14 +53,16 @@ public class MakeAllocsAtomic extends SymbolTableVisitor {
 	public Object visitExprNew (ExprNew e) {
 		e.assertTrue (getType (e).isStruct (), "fatal internal error");
 
+		FENode cx = e;
+
 		TypeStruct struct = (TypeStruct) getType (e);
 		ExprVar tmpVar =
-			new ExprVar (e.getCx (), varGen.nextVar ("_tmp_new_"+ struct.getName () +"_"));
+			new ExprVar (cx, varGen.nextVar ("_tmp_new_"+ struct.getName () +"_"));
 		StmtVarDecl tmpDecl =
-			new StmtVarDecl (e.getCx (), struct, tmpVar.getName (), nullPtr);
+			new StmtVarDecl (cx, struct, tmpVar.getName (), nullPtr);
 		StmtAtomicBlock atomicAlloc =
-			new StmtAtomicBlock (e.getCx (),
-					Collections.singletonList (new StmtAssign (e.getCx (), tmpVar, e)));
+			new StmtAtomicBlock (cx,
+					Collections.singletonList (new StmtAssign (tmpVar, e)));
 
 		addStatement (tmpDecl);
 		addStatement (atomicAlloc);

@@ -8,20 +8,20 @@ import streamit.frontend.stencilSK.SimpleCodePrinter;
 /**
  * Converts function that return something to functions that take
  * extra output parameters. Also fixes all function calls.
- *  
+ *
  * @author liviu
  */
-public class FunctionParamExtension extends SymbolTableVisitor 
+public class FunctionParamExtension extends SymbolTableVisitor
 {
 
 	/**
-	 * 
-	 * 
-	 * 
+	 *
+	 *
+	 *
 	 * @author asolar
 	 *
 	 */
-	private class ParameterCopyResolver extends SymbolTableVisitor 
+	private class ParameterCopyResolver extends SymbolTableVisitor
 	{
 		private HashMap<String,Parameter> unmodifiedParams;
 
@@ -29,18 +29,18 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		{
 			super(null);
 		}
-		
+
 		private Function addVarCopy(Function func, Parameter param, String newName)
 		{
 			StmtBlock body=(StmtBlock) func.getBody();
-			StmtVarDecl decl=new StmtVarDecl(func.getCx(),param.getType(),param.getName(),
-					new ExprVar(func.getCx(),newName));
+			StmtVarDecl decl=new StmtVarDecl(func,param.getType(),param.getName(),
+					new ExprVar(func,newName));
 			List stmts=new ArrayList(body.getStmts().size()+2);
 			stmts.add(decl);
 			stmts.addAll(body.getStmts());
-			return new Function(func.getCx(),func.getCls(),func.getName(),func.getReturnType(),
+			return new Function(func,func.getCls(),func.getName(),func.getReturnType(),
 				func.getParams(),func.getSpecification(),
-				new StmtBlock(body.getCx(),stmts));
+				new StmtBlock(body,stmts));
 		}
 		@Override
 		public Object visitFunction(Function func)
@@ -63,7 +63,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					func=addVarCopy(func,param,newName);
 				}
 			}
-			return new Function(func.getCx(), func.getCls(), func.getName(),
+			return new Function(func, func.getCls(), func.getName(),
 				func.getReturnType(), parameters, func.getSpecification(), func.getBody());
 		}
 		public Object visitStmtAssign(StmtAssign stmt)
@@ -86,18 +86,18 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			return super.visitStmtVarDecl(stmt);
 		}
 	}
-	
+
 	private int inCpCounter;
 	private int outCounter;
 	private Function currentFunction;
 	private ParameterCopyResolver paramCopyRes;
 	public boolean initOutputs=false;
-	
-	public FunctionParamExtension(boolean io) {		
+
+	public FunctionParamExtension(boolean io) {
 		this(null);
 		initOutputs = io;
 	}
-	
+
 	public FunctionParamExtension() {
 		this(null);
 	}
@@ -107,20 +107,20 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		paramCopyRes=new ParameterCopyResolver();
 	}
 
-	private String getOutParamName() { 
-		return "_out"; 
-	}
-	
-	private String getNewOutID() {
-		return "_ret_"+(outCounter++); 
+	private String getOutParamName() {
+		return "_out";
 	}
 
-	private String getReturnFlag() { 
+	private String getNewOutID() {
+		return "_ret_"+(outCounter++);
+	}
+
+	private String getReturnFlag() {
 		return "_has_out_";
 	}
-	
+
 	private String getNewInCpID(String oldName) {
-		return oldName+"_"+(inCpCounter++); 
+		return oldName+"_"+(inCpCounter++);
 	}
 
 	private List getOutputParams(Function f) {
@@ -130,7 +130,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				return params.subList(i,params.size());
 		return Collections.EMPTY_LIST;
 	}
-	
+
 	public Object visitStreamSpec(StreamSpec spec) {
 		// before we continue, we must add parameters to all the functions
 		List<Function> funs=new ArrayList<Function>();
@@ -140,19 +140,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			if(!retType.equals(TypePrimitive.voidtype)){
 				params.add(new Parameter(retType,getOutParamName(),Parameter.OUT));
 			}
-			funs.add(new Function(fun.getCx(), fun.getCls(), fun.getName(), fun.getReturnType(),
+			funs.add(new Function(fun, fun.getCls(), fun.getName(), fun.getReturnType(),
 				params, fun.getSpecification(), fun.getBody()));
 		}
-		spec=new StreamSpec(spec.getCx(), spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
+		spec=new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
 		return super.visitStreamSpec(spec);
 	}
 
-	
+
 	Set<String> currentRefParams = new HashSet<String>();
-	
-	public Object visitFunction(Function func) {		
+
+	public Object visitFunction(Function func) {
 		if(func.isUninterp() ) return func;
-		
+
 		{
 			currentRefParams.clear();
 			List<Parameter> lp = func.getParams();
@@ -163,26 +163,26 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				}
 			}
 		}
-		
-		
+
+
 		currentFunction=func;
 			outCounter=0;
 			inCpCounter=0;
 			func=(Function) super.visitFunction(func);
 		currentFunction=null;
-		
+
 		//if(func.getReturnType()==TypePrimitive.voidtype) return func;
 
 		func=(Function)func.accept(paramCopyRes);
 
-		
-		
-		
+
+
+
 		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
 		//add a declaration for the "return flag"
-		stmts.add(0,new StmtVarDecl(func.getBody().getCx(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(null,0)));
+		stmts.add(0,new StmtVarDecl(func.getBody(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(0)));
 		if(initOutputs){
-			
+
 			List<Parameter> lp = func.getParams();
 			for(Iterator<Parameter> it = lp.iterator(); it.hasNext(); ){
 				Parameter p = it.next();
@@ -190,21 +190,21 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					Parameter outParam = p;
 					String outParamName  = outParam.getName();
 					assert outParam.isParameterOutput();
-					
+
 					Expression defaultValue = null;
-					
-					if(func.getReturnType().isStruct()){			
+
+					if(func.getReturnType().isStruct()){
 						defaultValue = ExprNullPtr.nullPtr;
 					}else{
 						defaultValue = ExprConstInt.zero;
-					}			
-					stmts.add(0, new StmtAssign(null, new ExprVar(null, outParamName), defaultValue));
+					}
+					stmts.add(0, new StmtAssign(new ExprVar((FEContext) null, outParamName), defaultValue));
 				}
 			}
 		}
-		func=new Function(func.getCx(),func.getCls(),func.getName(),
+		func=new Function(func,func.getCls(),func.getName(),
 				TypePrimitive.voidtype, func.getParams(),
-				func.getSpecification(), new StmtBlock(func.getCx(),stmts));
+				func.getSpecification(), new StmtBlock(func,stmts));
 		return func;
 	}
 
@@ -214,11 +214,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		Statement cons=stmt.getCons();
 		Statement alt=stmt.getAlt();
 		if(cons!=null && !(cons instanceof StmtBlock))
-			cons=new StmtBlock(stmt.getCx(),Collections.singletonList(cons));
+			cons=new StmtBlock(stmt,Collections.singletonList(cons));
 		if(alt!=null && !(alt instanceof StmtBlock))
-			alt=new StmtBlock(stmt.getCx(),Collections.singletonList(alt));
+			alt=new StmtBlock(stmt,Collections.singletonList(alt));
 		if(cons!=stmt.getCons() || alt!=stmt.getAlt())
-			stmt=new StmtIfThen(stmt.getCx(),stmt.getCond(),cons,alt);
+			stmt=new StmtIfThen(stmt,stmt.getCond(),cons,alt);
 		return super.visitStmtIfThen(stmt);
 	}
 
@@ -227,9 +227,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	{
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
-			body=new StmtBlock(stmt.getCx(),Collections.singletonList(body));
+			body=new StmtBlock(stmt,Collections.singletonList(body));
 		if(body!=stmt.getBody())
-			stmt=new StmtDoWhile(stmt.getCx(),body,stmt.getCond());
+			stmt=new StmtDoWhile(stmt,body,stmt.getCond());
 		return super.visitStmtDoWhile(stmt);
 	}
 
@@ -238,9 +238,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	{
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
-			body=new StmtBlock(stmt.getCx(),Collections.singletonList(body));
+			body=new StmtBlock(stmt,Collections.singletonList(body));
 		if(body!=stmt.getBody())
-			stmt=new StmtFor(stmt.getCx(),stmt.getInit(),stmt.getCond(),stmt.getIncr(),body);
+			stmt=new StmtFor(stmt,stmt.getInit(),stmt.getCond(),stmt.getIncr(),body);
 		return super.visitStmtFor(stmt);
 	}
 
@@ -249,9 +249,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	{
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
-			body=new StmtBlock(stmt.getCx(),Collections.singletonList(body));
+			body=new StmtBlock(stmt,Collections.singletonList(body));
 		if(body!=stmt.getBody())
-			stmt=new StmtLoop(stmt.getCx(),stmt.getIter(),body);
+			stmt=new StmtLoop(stmt,stmt.getIter(),body);
 		return super.visitStmtLoop(stmt);
 	}
 
@@ -264,19 +264,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		try{
 		fun =symtab.lookupFn(exp.getName());
 		}catch(UnrecognizedVariableException e){
-			throw new UnrecognizedVariableException(exp.getCx() + ": Function name " + e.getMessage() + " not found"  );
+			throw new UnrecognizedVariableException(exp + ": Function name " + e.getMessage() + " not found"  );
 		}
 		// now we create a temp (or several?) to store the result
-		
-		
+
+
 		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
 		List<Expression> existingArgs=exp.getParams();
-		
+
 		List<Parameter> params=fun.getParams();
-		
+
 		List<Expression> tempVars = new ArrayList<Expression>();
 		List<Statement> refAssigns = new ArrayList<Statement>();
-		
+
 		int psz = 0;
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
@@ -290,23 +290,23 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				args.add(oldArg);
 			}else{
 				String tempVar = getNewOutID();
-				Statement decl = new StmtVarDecl(exp.getCx(), p.getType(), tempVar, oldArg);
-				ExprVar ev =new ExprVar(exp.getCx(),tempVar); 
+				Statement decl = new StmtVarDecl(exp, p.getType(), tempVar, oldArg);
+				ExprVar ev =new ExprVar(exp,tempVar);
 				args.add(ev);
 				addStatement(decl);
 				if(ptype == Parameter.OUT){
 					tempVars.add(ev);
 				}
 				if(ptype == Parameter.REF){
-					refAssigns.add(new StmtAssign(exp.getCx(), oldArg, ev  ));
+					refAssigns.add(new StmtAssign(oldArg, ev  ));
 				}
 			}
 		}
-		
-		ExprFunCall newcall=new ExprFunCall(exp.getCx(),exp.getName(),args);
+
+		ExprFunCall newcall=new ExprFunCall(exp,exp.getName(),args);
 		addStatement(new StmtExpr(newcall));
 		addStatements(refAssigns);
-		
+
 		// replace the original function call with an instance of the temp variable
 		// (which stores the return value)
 		if(tempVars.size() == 0){
@@ -318,28 +318,28 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 	@Override
 	public Object visitStmtAssert(StmtAssert sa){
-		FEContext cx=sa.getCx();
+		FENode cx=sa;
 		Statement s = (Statement) super.visitStmtAssert(sa);
 		Statement ret=new StmtIfThen(cx,
-				new ExprBinary(cx, ExprBinary.BINOP_EQ, 
-					new ExprVar(cx, getReturnFlag()), 
+				new ExprBinary(cx, ExprBinary.BINOP_EQ,
+					new ExprVar(cx, getReturnFlag()),
 					new ExprConstInt(cx, 0)),
 				s,
 				null);
 		return ret;
 	}
-	
-	
+
+
 	private boolean globalEffects(Statement s){
 		if(s instanceof StmtAssert){
 			return true;
 		}
-		
+
 		if(s instanceof StmtAssign){
 			StmtAssign sa = (StmtAssign) s;
-			
+
 			Expression left = sa.getLHS();
-			
+
 			class findge extends FEReplacer{
 				public boolean ge = false;
 				public Object visitExprField(ExprField ef){
@@ -351,7 +351,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					exp.getBase().accept(this);
 					return exp;
 				}
-				
+
 				@Override
 				public Object visitExprVar(ExprVar ev){
 					if(currentRefParams.contains(ev.getName())){
@@ -364,19 +364,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			left.accept(f);
 			return f.ge;
 		}
-		
+
 		return false;
 	}
-	
-	
+
+
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt){
 		Statement s = (Statement) super.visitStmtAssign(stmt);
 		if(globalEffects(s)){
-			FEContext cx=stmt.getCx();
+			FENode cx=stmt;
 			Statement ret=new StmtIfThen(cx,
-					new ExprBinary(cx, ExprBinary.BINOP_EQ, 
-						new ExprVar(cx, getReturnFlag()), 
+					new ExprBinary(cx, ExprBinary.BINOP_EQ,
+						new ExprVar(cx, getReturnFlag()),
 						new ExprConstInt(cx, 0)),
 					s,
 					null);
@@ -385,25 +385,25 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			return s;
 		}
 	}
-	
-	
-	
+
+
+
 	@Override
 	public Object visitStmtReturn(StmtReturn stmt) {
-		FEContext cx=stmt.getCx();
+		FENode cx=stmt;
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);
 		List stmts=new ArrayList();
 		List params=getOutputParams(currentFunction);
 		for(int i=0;i<params.size();i++) {
 			Parameter param=(Parameter) params.get(i);
-			String name=param.getName(); 
+			String name=param.getName();
 			Statement assignRet=new StmtAssign(cx, new ExprVar(cx, name), stmt.getValue(), 0);
 			stmts.add(assignRet);
 		}
 		stmts.add(new StmtAssign(cx, new ExprVar(cx, getReturnFlag()), new ExprConstInt(cx, 1), 0));
 		Statement ret=new StmtIfThen(cx,
-			new ExprBinary(cx, ExprBinary.BINOP_EQ, 
-				new ExprVar(cx, getReturnFlag()), 
+			new ExprBinary(cx, ExprBinary.BINOP_EQ,
+				new ExprVar(cx, getReturnFlag()),
 				new ExprConstInt(cx, 0)),
 			new StmtBlock(cx,stmts),
 			null);
