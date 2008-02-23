@@ -29,15 +29,15 @@ import streamit.frontend.ToSBit;
  * @version $Id$
  */
 public class ExprStar extends Expression
-{		
+{
 	private int size;
 	public Expression vectorSize;
 	Vector<FENode> depObjects;
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
-	
-	
+
+
 	public ExprStar(ExprStar old)
     {
         super(old);
@@ -47,7 +47,45 @@ public class ExprStar extends Expression
         INT_SIZE = old.INT_SIZE;
         vectorSize = old.vectorSize;
     }
-	
+
+    /** Create a new ExprConstInt with a specified value. */
+    public ExprStar(FENode context)
+    {
+        super(context);
+        size = 1;
+        isFixed = false;
+    }
+
+    /** Create a new ExprConstInt with a specified value.
+     * @deprecated
+     */
+    public ExprStar(FEContext context)
+    {
+        super(context);
+        size = 1;
+        isFixed = false;
+    }
+
+    /**
+     *
+     */
+    public ExprStar(FENode context, int size)
+    {
+        super(context);
+        this.size = size;
+        isFixed = true;
+    }
+
+    /**
+     * @deprecated
+     */
+    public ExprStar(FEContext context, int size)
+    {
+        super(context);
+        this.size = size;
+        isFixed = true;
+    }
+
 	public FENode getDepObject(int i){
 		Type t = type;
 		if(type instanceof TypePrimitive){
@@ -56,36 +94,21 @@ public class ExprStar extends Expression
 			assert type instanceof TypeArray;
 			t = ((TypeArray)type).getBase();
 		}
-		
+
 		if(depObjects == null){
 			depObjects = new Vector<FENode>();
-			depObjects.setSize(i+1);			
+			depObjects.setSize(i+1);
 		}
 		if(depObjects.size() <= i){
-			depObjects.setSize(i+1);			
+			depObjects.setSize(i+1);
 		}
 		if(depObjects.get(i) == null){
 			ExprStar es = new ExprStar(this);
 			es.type = t;
-			depObjects.set(i, es);			
+			depObjects.set(i, es);
 		}
 		return depObjects.get(i);
 	}
-	
-    /** Create a new ExprConstInt with a specified value. */
-    public ExprStar(FEContext context)
-    {
-        super(context);
-        size = 1;
-        isFixed = false;
-    }
-    
-    public ExprStar(FEContext context, int size)
-    {
-        super(context);
-        this.size = size;
-        isFixed = true;
-    }
 
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
@@ -99,7 +122,7 @@ public class ExprStar extends Expression
             return false;
         return true;
     }
-    
+
     public String toString()
     {
     	if(getType() != null)
@@ -140,7 +163,7 @@ public class ExprStar extends Expression
 	 */
 	public void setType(Type type) {
 		this.type = type;
-		
+
 		Type tt = type;
 		while(tt instanceof TypeArray){
 			tt = ((TypeArray)tt).getBase();
@@ -156,5 +179,5 @@ public class ExprStar extends Expression
 	public Type getType() {
 		return type;
 	}
-	
+
 }

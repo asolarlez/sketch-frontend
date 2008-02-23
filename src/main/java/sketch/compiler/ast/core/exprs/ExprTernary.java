@@ -29,17 +29,34 @@ public class ExprTernary extends Expression
 {
     // Operators: (for consistency, really)
     public static final int TEROP_COND = 1;
-    
+
     private int op;
     private Expression a, b, c;
-    
+
     /** Creates a new ExprTernary with the specified operation and
      * child expressions. */
-    public ExprTernary(FEContext context,
+    public ExprTernary(FENode context,
                        int op, Expression a, Expression b, Expression c)
     {
         super(context);
         this.op = op;
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
+
+    /** Creates a new ExprTernary with the specified operation and
+     * child expressions. */
+    public ExprTernary(String op, Expression a, Expression b, Expression c)
+    {
+        super(a);
+
+        int opCode = -1;
+        if ("?:".equals (op))      opCode = TEROP_COND;
+        else
+        	a.assertTrue (false, "Unknown ternary operator '"+ op +"'");
+
+        this.op = opCode;
         this.a = a;
         this.b = b;
         this.c = c;
