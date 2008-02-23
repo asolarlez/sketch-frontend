@@ -134,7 +134,7 @@ class UpgradeStarToInt extends FEReplacer{
         if (a == exp.getA() && b == exp.getB() && c == exp.getC())
             return exp;
         else
-            return new ExprTernary(exp.getCx(), exp.getOp(), a, b, c);
+            return new ExprTernary(exp, exp.getOp(), a, b, c);
     }
     public Object visitExprBinary(ExprBinary exp)
     {
@@ -151,7 +151,7 @@ class UpgradeStarToInt extends FEReplacer{
             if (left == exp.getLeft() && right == exp.getRight())
                 return exp;
             else
-                return new ExprBinary(exp.getCx(), exp.getOp(), left, right,  exp.getAlias());
+                return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
         }
         case ExprBinary.BINOP_LSHIFT:
         case ExprBinary.BINOP_RSHIFT:{
@@ -163,7 +163,7 @@ class UpgradeStarToInt extends FEReplacer{
             if (left == exp.getLeft() && right == exp.getRight())
                 return exp;
             else
-                return new ExprBinary(exp.getCx(), exp.getOp(), left, right,  exp.getAlias());
+                return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
         }
         case ExprBinary.BINOP_EQ:{
         	Type tleft = stv.getType(exp.getLeft());
@@ -177,7 +177,7 @@ class UpgradeStarToInt extends FEReplacer{
             if (left == exp.getLeft() && right == exp.getRight())
                 return exp;
             else
-                return new ExprBinary(exp.getCx(), exp.getOp(), left, right,  exp.getAlias());
+                return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
         }
 
 
@@ -194,7 +194,7 @@ class UpgradeStarToInt extends FEReplacer{
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newIter == stmt.getIter() && newBody == stmt.getBody())
             return stmt;
-        return new StmtLoop(stmt.getCx(), newIter, newBody);
+        return new StmtLoop(stmt, newIter, newBody);
     }
 
 

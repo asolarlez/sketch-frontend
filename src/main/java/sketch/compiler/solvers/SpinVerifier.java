@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tospin.SpinExecuter;
 
@@ -15,6 +16,7 @@ import streamit.frontend.tospin.SpinExecuter;
  * @author Chris Jones
  */
 public class SpinVerifier implements Verifier {
+	protected TempVarGen varGen;
 	protected Program prog;
 	protected boolean debug, cleanup;
 	protected static final String STEP_REGEX =
@@ -22,8 +24,9 @@ public class SpinVerifier implements Verifier {
 
 	private String output;
 
-	public SpinVerifier (Program p) { this (p, false, true); }
-	public SpinVerifier (Program p, boolean _debug, boolean _cleanup) {
+	public SpinVerifier (TempVarGen v, Program p) { this (v, p, false, true); }
+	public SpinVerifier (TempVarGen v, Program p, boolean _debug, boolean _cleanup) {
+		varGen = v;
 		prog = p;
 		debug = _debug;
 		cleanup = _cleanup;
@@ -31,7 +34,7 @@ public class SpinVerifier implements Verifier {
 
 	public CounterExample verify(ValueOracle oracle) {
 		//SpinExecuter spin = SpinExecuter.makeExecuter (prog, oracle);
-		SpinExecuter spin = SpinExecuter.makeExecuter (prog, oracle, debug, cleanup);
+		SpinExecuter spin = SpinExecuter.makeExecuter (varGen, prog, oracle, debug, cleanup);
 		try { spin.run (); } catch (IOException ioe) {
 			throw new RuntimeException ("Fatal error invoking spin", ioe);
 		}

@@ -49,7 +49,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
     public String addNewDeclaration(Type type,  Expression exp){
     	String newVarName = varGen.nextVar();
-		StmtVarDecl rhsDecl = new StmtVarDecl(exp.getCx(),type, newVarName, exp );
+		StmtVarDecl rhsDecl = new StmtVarDecl(exp,type, newVarName, exp );
 		symtab.registerVar(newVarName, type, null, SymbolTable.KIND_LOCAL);
 		this.doStatement(rhsDecl);
 		return newVarName;
@@ -141,9 +141,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			if( iv != null && iv <= 1  ){
 				return exp;
 			}
-			return new ExprTernary(exp.getCx(),
+			return new ExprTernary(exp,
 				ExprTernary.TEROP_COND,
-				new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index,  new ExprConstInt(1) )
+				new ExprBinary(exp, ExprBinary.BINOP_LT, index,  new ExprConstInt(1) )
 				,
 				 exp,
 				ExprConstInt.zero);
@@ -154,25 +154,25 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			if ( getType(exp) instanceof TypeArray){
 				Expression arrLen = typeLen(getType(exp));
 				if( arrLen.equals(len) || !isRHS){
-					return new ExprArrayRange(exp.getCx(), exp, index, true);
+					return new ExprArrayRange(exp, exp, index, true);
 				}else{
-					return new ExprTernary(exp.getCx(),
+					return new ExprTernary(exp,
 							ExprTernary.TEROP_COND,
-							new ExprBinary(exp.getCx(),ExprBinary.BINOP_AND,
-									new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index, arrLen ),
-									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, ExprConstInt.zero )
+							new ExprBinary(exp,ExprBinary.BINOP_AND,
+									new ExprBinary(exp, ExprBinary.BINOP_LT, index, arrLen ),
+									new ExprBinary(exp, ExprBinary.BINOP_GE, index, ExprConstInt.zero )
 							)
 							,
-							new ExprArrayRange(exp.getCx(), exp, index, true),
+							new ExprArrayRange(exp, exp, index, true),
 							ExprConstInt.zero);
 				}
 			}else{
 				if( len.getIValue()== 1 ){
 					return exp;
 				}else{
-					return new ExprTernary(exp.getCx(),
+					return new ExprTernary(exp,
 							ExprTernary.TEROP_COND,
-							new ExprBinary(exp.getCx(), ExprBinary.BINOP_EQ, index, ExprConstInt.zero ), exp, ExprConstInt.zero);
+							new ExprBinary(exp, ExprBinary.BINOP_EQ, index, ExprConstInt.zero ), exp, ExprConstInt.zero);
 
 				}
 			}
@@ -180,22 +180,22 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
 
 		public Object visitExprStar(ExprStar exp){
-			ExprStar ns = exp; //new ExprStar(exp.getContext(), exp.getSize());
+			ExprStar ns = exp; //new ExprStar(exp, exp.getSize());
 
 			if( exp.getType() instanceof TypeArray  ){
 				// ns.setType( ((TypeArray)exp.getType()).getBase()  );
 				Expression arrLen = typeLen(getType(exp));
 				if( arrLen.equals(len) || !isRHS){
-					return new ExprArrayRange(exp.getCx(), ns, index, true);
+					return new ExprArrayRange(exp, ns, index, true);
 				}else{
-					return new ExprTernary(exp.getCx(),
+					return new ExprTernary(exp,
 							ExprTernary.TEROP_COND,
-							new ExprBinary(exp.getCx(),ExprBinary.BINOP_AND,
-									new ExprBinary(exp.getCx(), ExprBinary.BINOP_LT, index, arrLen ),
-									new ExprBinary(exp.getCx(), ExprBinary.BINOP_GE, index, ExprConstInt.zero )
+							new ExprBinary(exp,ExprBinary.BINOP_AND,
+									new ExprBinary(exp, ExprBinary.BINOP_LT, index, arrLen ),
+									new ExprBinary(exp, ExprBinary.BINOP_GE, index, ExprConstInt.zero )
 							)
 							,
-							new ExprArrayRange(exp.getCx(), ns, index, true),
+							new ExprArrayRange(exp, ns, index, true),
 							ExprConstInt.zero);
 				}
 			}else{
@@ -220,10 +220,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			Expression tl = typeLen(t);
 			Integer itl = tl.getIValue();
 			if( itl != null && itl <= 1  ){
-				Expression compIndex = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(ScalarizeVectorAssignments.this));
-				return new ExprArrayRange(exp.getCx(), exp.getBase(), compIndex);
+				Expression compIndex = new ExprBinary(exp, ExprBinary.BINOP_ADD, index, (Expression)(rl.start()).accept(ScalarizeVectorAssignments.this));
+				return new ExprArrayRange(exp, exp.getBase(), compIndex);
 			}else{
-				return new ExprArrayRange(exp.getCx(), exp, index);
+				return new ExprArrayRange(exp, exp, index);
 			}
 	    }
 
@@ -237,7 +237,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				Expression result;
 				if(true){
 					//This branch just assumes that an out of bounds access doesn't
-					FEContext context = exp.getCx();
+					FENode context = exp;
 					String newVarName = addNewDeclaration(TypePrimitive.inttype, exp.getRight());
 					ExprVar oldRHS = new ExprVar(context, newVarName);
 					Expression newIdx = null;
@@ -253,7 +253,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 					result = newVal;
 				}else{
 					//In this branch, we actually emmit a test that explicitly returns zero if the array goes out of bounds.
-					FEContext context = exp.getCx();
+					FENode context = exp;
 					String newVarName = addNewDeclaration(TypePrimitive.inttype, exp.getRight());
 					ExprVar oldRHS = new ExprVar(context, newVarName);
 					Expression newIdx = null;
@@ -289,11 +289,11 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		public Object visitExprTernary(ExprTernary exp){
 			assert exp.getOp() == ExprTernary.TEROP_COND : "Strange operator I've never seen  " + exp + "!?";
 			Integer condlen = typeLen(getType(exp.getA())).getIValue();
-			assert condlen == 1 : "The type of the predicate for a conditional must be a scalar. " + exp + ": " + exp.getCx();
+			assert condlen == 1 : "The type of the predicate for a conditional must be a scalar. " + exp + ": " + exp;
 			Expression expB = (Expression) exp.getB().accept(this);
 			Expression expC = (Expression) exp.getC().accept(this);
 
-			return new ExprTernary(exp.getCx(), exp.getOp(), exp.getA(), expB, expC );
+			return new ExprTernary(exp, exp.getOp(), exp.getA(), expB, expC );
 		}
 
 		public Object visitExprBinary(ExprBinary exp)
@@ -302,7 +302,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				return this.handleBitShift(exp);
 			}
 			if(exp.getOp() == ExprBinary.BINOP_ADD){
-				FEContext context = exp.getCx();
+				FENode context = exp;
 				Type lType = getType(exp.getLeft());
 				if(lType instanceof TypeArray ){
 					lType = ((TypeArray)lType).getBase();
@@ -318,8 +318,8 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
 				Expression left = doExpression(exp.getLeft());
 				Expression right = doExpression(exp.getRight());
-				StmtAssign lassign = new StmtAssign(context,new ExprVar(context, ldecl), left );
-				StmtAssign rassign = new StmtAssign(context,new ExprVar(context, rdecl), right );
+				StmtAssign lassign = new StmtAssign(new ExprVar(context, ldecl), left );
+				StmtAssign rassign = new StmtAssign(new ExprVar(context, rdecl), right );
 				this.preStmts.add(rassign);
 				this.preStmts.add(lassign);
 				left = new ExprVar(context, ldecl);
@@ -331,7 +331,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				Expression newCarry2 = new ExprBinary(context, ExprBinary.BINOP_BOR, left , new ExprVar(context, carry), exp.getAlias());
 				Expression newCarry3 = new ExprBinary(context, ExprBinary.BINOP_BAND, right , newCarry2, exp.getAlias());
 				Expression newCarry4 = new ExprBinary(context, ExprBinary.BINOP_BOR, newCarry3 , newCarry1, exp.getAlias());
-				Statement newStmt = new StmtAssign(context,new ExprVar(context, carry), newCarry4);
+				Statement newStmt = new StmtAssign(new ExprVar(context, carry), newCarry4);
 				postStmts.add(newStmt);
 				return newExp;
 			}
@@ -343,38 +343,34 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
 	private void zeroOut(Expression lhs, Expression beg, Expression end, List<Statement> mainLst){
 		String indexName = varGen.nextVar();
-        ExprVar index = new ExprVar(null, indexName);
+        ExprVar index = new ExprVar((FEContext) null, indexName);
         Type intType =  TypePrimitive.inttype;
         Statement init =
-            new StmtVarDecl(null, intType, indexName,
-                            beg);
+            new StmtVarDecl(beg, intType, indexName, beg);
         symtab.registerVar(indexName, intType, null, SymbolTable.KIND_LOCAL);
         Expression cond =
             new ExprBinary(null, ExprBinary.BINOP_LT, index, end);
         Statement incr =
-            new StmtAssign(null, index,
-                           new ExprBinary(null, ExprBinary.BINOP_ADD,
-                                          index, new ExprConstInt(null, 1)));
+            new StmtAssign(index, new ExprBinary(index, "+", new ExprConstInt(1)));
         // Need to make a deep copy.  Existing machinery uses
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Expression fel =  new ExprConstInt(null, 0);
+        Expression fel =  new ExprConstInt(0);
         Indexify indexifier2 = new Indexify(index,  end, false);
         Expression tel = (Expression) lhs.accept(indexifier2);
         List<Statement> bodyLst = new ArrayList<Statement>();
         bodyLst.addAll(indexifier2.preStmts);
-        bodyLst.add(new StmtAssign(null,
+        bodyLst.add(new StmtAssign(
                 tel,
                 fel));
         bodyLst.addAll(indexifier2.postStmts);
 
-        Statement body =
-            new StmtBlock(null,    bodyLst);
+        Statement body = new StmtBlock(lhs, bodyLst);
         body = (Statement)body.accept(this);
 
         // Now generate the loop, we have all the parts.
-        mainLst.add(new StmtFor(null, init, cond, incr, body));
+        mainLst.add(new StmtFor(init, init, cond, incr, body));
 
 		return;
 	}
@@ -411,8 +407,8 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     	if( ltlen.equals(rtlen)  ){
     		return ltlen;
     	}
-    	Expression comp = new ExprBinary(ltlen.getCx(), ExprBinary.BINOP_LE, ltlen, rtlen );
-    	return new ExprTernary(ltlen.getCx(), ExprTernary.TEROP_COND, comp, ltlen, rtlen );
+    	Expression comp = new ExprBinary(ltlen, ExprBinary.BINOP_LE, ltlen, rtlen );
+    	return new ExprTernary(ltlen, ExprTernary.TEROP_COND, comp, ltlen, rtlen );
 	}
 
 	/**
@@ -438,7 +434,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     			List<Statement> mainLst = new ArrayList<Statement>();
 				zeroOut(lhs, ExprConstInt.zero, ltlen, mainLst);
 				Statement mainBody =
-				new StmtBlock(null,    mainLst);
+				new StmtBlock(lhs, mainLst);
 				// Now generate the loop, we have all the parts.
 				addStatement(mainBody);
 
@@ -454,18 +450,16 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // We need to generate a for loop, since from our point of
         // view, the array bounds may not be constant.
         String indexName = varGen.nextVar();
-        ExprVar index = new ExprVar(null, indexName);
+        ExprVar index = new ExprVar((FEContext) null, indexName);
         Type intType = TypePrimitive.inttype;
         Statement init =
-            new StmtVarDecl(null, intType, indexName,
-                            new ExprConstInt(null, 0));
+            new StmtVarDecl(index, intType, indexName,
+                            new ExprConstInt(0));
         symtab.registerVar(indexName, intType, null, SymbolTable.KIND_LOCAL);
         Expression cond =
-            new ExprBinary(null, ExprBinary.BINOP_LT, index, minLen);
+            new ExprBinary(index, "<", minLen);
         Statement incr =
-            new StmtAssign(null, index,
-                           new ExprBinary(null, ExprBinary.BINOP_ADD,
-                                          index, new ExprConstInt(null, 1)));
+            new StmtAssign(index, new ExprBinary(index, "+", new ExprConstInt(1)));
         // Need to make a deep copy.  Existing machinery uses
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
@@ -477,29 +471,25 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         List<Statement> bodyLst = new ArrayList<Statement>();
         bodyLst.addAll(indexifier.preStmts);
         bodyLst.addAll(indexifier2.preStmts);
-        bodyLst.add(new StmtAssign(null,
-                tel,
-                fel));
+        bodyLst.add(new StmtAssign(tel, fel));
         bodyLst.addAll(indexifier.postStmts);
         bodyLst.addAll(indexifier2.postStmts);
 
 
 
-        Statement body =
-            new StmtBlock(null,    bodyLst);
+        Statement body = new StmtBlock(lhs, bodyLst);
         body = (Statement)body.accept(this);
 
 
         List<Statement> mainLst = new ArrayList<Statement>();
 
-        mainLst.add(new StmtFor(null, init, cond, incr, body));
+        mainLst.add(new StmtFor(init, init, cond, incr, body));
 
 
         if( minLen !=  ltlen){
         	zeroOut(lhs, minLen, ltlen, mainLst);
         }
-        Statement mainBody =
-            new StmtBlock(null,    mainLst);
+        Statement mainBody = new StmtBlock(lhs, mainLst);
 
 
         // Now generate the loop, we have all the parts.
