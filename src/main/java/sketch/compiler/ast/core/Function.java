@@ -56,18 +56,32 @@ public class Function extends FENode
     /** Internal constructor to create a new Function from all parts.
      * This is public so that visitors that want to create new objects
      * can, but you probably want one of the other creator functions. */
+    public Function(FENode context, int cls, String name,
+                    Type returnType, List<Parameter> params, Statement body)
+    {
+    	this (context, cls, name, returnType, params, null, body);
+    }
+
+    /** Internal constructor to create a new Function from all parts.
+     * This is public so that visitors that want to create new objects
+     * can, but you probably want one of the other creator functions.
+     * @deprecated
+     */
     public Function(FEContext context, int cls, String name,
                     Type returnType, List<Parameter> params, Statement body)
     {
-        super(context);
-        this.cls = cls;
-        this.name = name;
-        this.returnType = returnType;
-        this.params = params;
-        this.body = body;        
+		super(context);
+		this.cls = cls;
+		this.name = name;
+		this.returnType = returnType;
+		this.params = params;
+		this.body = body;
     }
 
-    public Function(FEContext context, int cls, String name,
+    /**
+     *
+     */
+    public Function(FENode context, int cls, String name,
             Type returnType, List<Parameter> params, String fImplements, Statement body)
 	{
 		super(context);
@@ -80,17 +94,39 @@ public class Function extends FENode
 	}
 
     public static Function newUninterp(String name, List<Parameter> params){
-    	return new Function(null, FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
+    	return new Function((FEContext) null, FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
     }
 
     public static Function newUninterp(String name, Type rettype, List<Parameter> params){
-    	return new Function(null, FUNC_UNINTERP, name,rettype, params, null);
+    	return new Function((FEContext) null, FUNC_UNINTERP, name,rettype, params, null);
     }
+    public static Function newUninterp(FENode cx, String name, Type rettype, List<Parameter> params){
+    	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
+    }
+    /**
+     *
+     * @param cx
+     * @param name
+     * @param rettype
+     * @param params
+     * @return
+     * @deprecated
+     */
     public static Function newUninterp(FEContext cx, String name, Type rettype, List<Parameter> params){
     	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
     }
 
     /** Create a new init function given its body. */
+    public static Function newInit(FENode context, Statement body)
+    {
+        return new Function(context, FUNC_INIT, null,
+        					TypePrimitive.voidtype,
+                            Collections.EMPTY_LIST, body);
+    }
+
+    /** Create a new init function given its body.
+     * @deprecated
+     */
     public static Function newInit(FEContext context, Statement body)
     {
         return new Function(context, FUNC_INIT, null,
@@ -100,7 +136,7 @@ public class Function extends FENode
 
     /** Create a new message handler given its name (not null), parameters,
      * and body. */
-    public static Function newHandler(FEContext context, String name,
+    public static Function newHandler(FENode context, String name,
                                       List<Parameter> params, Statement body)
     {
         return new Function(context, FUNC_HANDLER, name,
@@ -109,6 +145,17 @@ public class Function extends FENode
     }
 
     /** Create a new helper function given its parts. */
+    public static Function newHelper(FENode context, String name,
+                                     Type returnType, List<Parameter> params,
+                                     Statement body)
+    {
+        return new Function(context, FUNC_HELPER, name, returnType,
+                            params, body);
+    }
+
+    /** Create a new helper function given its parts.
+     * @deprecated
+     */
     public static Function newHelper(FEContext context, String name,
                                      Type returnType, List<Parameter> params,
                                      Statement body)
@@ -117,11 +164,24 @@ public class Function extends FENode
                             params, body);
     }
 
-    
-    
-    
-    
+
+
+
+
     /** Create a new helper function given its parts. */
+    public static Function newHelper(FENode context, String name,
+                                     Type returnType, List<Parameter> params,
+                                     String impl, Statement body)
+    {
+        Function f=new Function(context, FUNC_HELPER, name, returnType,
+                            params, body);
+        f.fImplements=impl;
+        return f;
+    }
+
+    /** Create a new helper function given its parts.
+     * @deprecated
+     */
     public static Function newHelper(FEContext context, String name,
                                      Type returnType, List<Parameter> params,
                                      String impl, Statement body)
@@ -132,9 +192,22 @@ public class Function extends FENode
         return f;
     }
 
-    
-    
+
+
     /** Create a new helper function given its parts. */
+    public static Function newStatic(FENode context, String name,
+                                     Type returnType, List<Parameter> params,
+                                     String impl, Statement body)
+    {
+        Function f=new Function(context, FUNC_STATIC, name, returnType,
+                            params, body);
+        f.fImplements=impl;
+        return f;
+    }
+
+    /** Create a new helper function given its parts.
+     * @deprecated
+     */
     public static Function newStatic(FEContext context, String name,
                                      Type returnType, List<Parameter> params,
                                      String impl, Statement body)
@@ -145,9 +218,9 @@ public class Function extends FENode
         return f;
     }
 
-    
-    
-    
+
+
+
 
     public boolean isUninterp(){
     	return cls == FUNC_UNINTERP;

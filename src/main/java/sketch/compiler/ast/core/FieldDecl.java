@@ -55,6 +55,36 @@ public class FieldDecl extends FENode
      *                  <code>null</code>) containing initializers of
      *                  the fields declared here
      */
+    public FieldDecl(FENode node, List types, List names,
+                     List inits)
+    {
+        super(node);
+        // TODO: check for validity, including types of object
+        // in the lists and that all three are the same length.
+        this.types = new java.util.ArrayList(types);
+        this.names = new java.util.ArrayList(names);
+        this.inits = new java.util.ArrayList(inits);
+    }
+
+    /**
+     * Create a new field declaration with corresponding lists of
+     * types, names, and initialization values.  The three lists
+     * passed in are duplicated, and may be mutated after calling this
+     * constructor without changing the value of this object.  The
+     * types and names must all be non-null; if a particular field is
+     * uninitialized, the corresponding initializer value may be null.
+     *
+     * @param  context  Context indicating what line and file this
+     *                  field is created at
+     * @param  types    List of <code>Type</code> of the fields
+     *                  declared here
+     * @param  names    List of <code>String</code> of the names of the
+     *                  fields declared here
+     * @param  inits    List of <code>Expression</code> (or
+     *                  <code>null</code>) containing initializers of
+     *                  the fields declared here
+     * @deprecated
+     */
     public FieldDecl(FEContext context, List types, List names,
                      List inits)
     {
@@ -78,10 +108,10 @@ public class FieldDecl extends FENode
      * @param  init     Expression initializing the field, or
      *                  <code>null</code> if the field is uninitialized
      */
-    public FieldDecl(FEContext context, Type type, String name,
+    public FieldDecl(FENode node, Type type, String name,
                      Expression init)
     {
-        this(context,
+        this(node,
              Collections.singletonList(type),
              Collections.singletonList(name),
              Collections.singletonList(init));

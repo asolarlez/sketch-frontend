@@ -31,10 +31,27 @@ import java.util.Collections;
 public class FuncWork extends Function
 {
     private Expression peekRate, popRate, pushRate;
-    
+
     /** Creates a new work function given its name (or null), body,
      * and I/O rates.  The I/O rates may be null if declarations are
      * omitted from the original source. */
+    public FuncWork(FENode context, int cls,
+                    String name, Statement body,
+                    Expression peek, Expression pop, Expression push)
+    {
+        super(context, cls, name,
+        		TypePrimitive.voidtype,
+              Collections.EMPTY_LIST, body);
+        peekRate = peek;
+        popRate = pop;
+        pushRate = push;
+    }
+
+    /** Creates a new work function given its name (or null), body,
+     * and I/O rates.  The I/O rates may be null if declarations are
+     * omitted from the original source.
+     * @deprecated
+     */
     public FuncWork(FEContext context, int cls,
                     String name, Statement body,
                     Expression peek, Expression pop, Expression push)
@@ -48,23 +65,23 @@ public class FuncWork extends Function
     }
 
     /** Gets the peek rate of this. */
-    public Expression getPeekRate() 
+    public Expression getPeekRate()
     {
         return peekRate;
     }
-    
+
     /** Gets the pop rate of this. */
     public Expression getPopRate()
     {
         return popRate;
     }
-    
+
     /** Gets the push rate of this. */
     public Expression getPushRate()
     {
         return pushRate;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
