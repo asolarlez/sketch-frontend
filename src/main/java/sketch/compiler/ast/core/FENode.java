@@ -27,7 +27,6 @@ package streamit.frontend.nodes;
 public abstract class FENode
 {
     private FEContext context;
-    public boolean isNonDet=false;
     private Object tag = null;
     /**
      * Create a new node with the specified context.
@@ -36,14 +35,20 @@ public abstract class FENode
      */
 
     public FENode(FENode node){
-    	context = node.context;
-    	isNonDet = node.isNonDet;
-    	tag = node.tag;
+    	if (null != node) {
+    		context = node.context;
+    		tag = node.tag;
+    	}
     }
 
-    public FENode(FEContext context)
-    {
-        this.context = context;
+    /**
+     * Create a new node with the specified context.
+     *
+     * @param cx
+     * @deprecated
+     */
+    public FENode (FEContext cx) {
+    	context = cx;
     }
 
     public Object getTag(){ return tag; }
@@ -54,23 +59,18 @@ public abstract class FENode
 	     *
 	     * @return context object with file and line number
 	     * @deprecated Use {@link #getCx()} instead
-	     * 
+	     *
 	     */
 	    public FEContext getContext()
 	    {
 			return getCx();
 		}
-	/*
-	    public FEContext getCx(){
-	    	return context;
-	    }
-	*/
 
 	/**
      * Returns the context associated with this node.
      *
      * @return context object with file and line number
-     * 
+     *
      */
     public FEContext getCx()
     {

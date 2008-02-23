@@ -73,6 +73,7 @@ public interface FEVisitor
     public Object visitStmtExpr(StmtExpr stmt);
     public Object visitStmtFor(StmtFor stmt);
     public Object visitStmtIfThen(StmtIfThen stmt);
+    public Object visitStmtInsertBlock (StmtInsertBlock stmt);
     public Object visitStmtJoin(StmtJoin stmt);
     public Object visitStmtLoop(StmtLoop stmt);
     public Object visitStmtPhase(StmtPhase stmt);
