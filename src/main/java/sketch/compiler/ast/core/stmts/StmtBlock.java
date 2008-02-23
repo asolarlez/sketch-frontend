@@ -36,22 +36,38 @@ public class StmtBlock extends Statement
 
     /** Create a new StmtBlock with the specified ordered list of
      * statements. */
+    public StmtBlock(FENode context, List<Statement> stmts)
+    {
+        super(context);
+        this.stmts = Collections.unmodifiableList(stmts);
+    }
+
+    /** Create a new StmtBlock with the specified ordered list of
+     * statements.
+     * @deprecated
+     */
     public StmtBlock(FEContext context, List<Statement> stmts)
     {
         super(context);
         this.stmts = Collections.unmodifiableList(stmts);
     }
-    
+
     /** Create a new StmtBlock for a pair of statements. */
     public StmtBlock(Statement stmt1, Statement stmt2)
     {
-        super(stmt1.getCx());
+        super(stmt1);
         List<Statement> lst = new ArrayList<Statement>(2);
         lst.add(stmt1);
         lst.add(stmt2);
         this.stmts = Collections.unmodifiableList(lst);
     }
-    
+
+    /** Create a new StmtBlock for a single statement. */
+    public StmtBlock(Statement stmt)
+    {
+    	this (stmt, Collections.singletonList (stmt));
+    }
+
 
     public boolean isBlock () { return true; }
 

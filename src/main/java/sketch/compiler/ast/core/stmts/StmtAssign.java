@@ -35,10 +35,10 @@ public class StmtAssign extends Statement
 {
     private Expression lhs, rhs;
     private int op;
-    
+
     /** Creates a new assignment statement with the specified left-
      * and right-hand sides and operation (0 for none). */
-    public StmtAssign(FEContext context, Expression lhs, Expression rhs,
+    public StmtAssign(FENode context, Expression lhs, Expression rhs,
                       int op)
     {
         super(context);
@@ -49,23 +49,30 @@ public class StmtAssign extends Statement
 
     /** Creates a new assignment statement with the specified left-
      * and right-hand sides and no operation (i.e., 'lhs=rhs;'). */
-    public StmtAssign(FEContext context, Expression lhs, Expression rhs)
+    public StmtAssign(Expression lhs, Expression rhs, int op)
     {
-        this(context, lhs, rhs, 0);
+        this(lhs, lhs, rhs, op);
     }
-    
+
+    /** Creates a new assignment statement with the specified left-
+     * and right-hand sides and no operation (i.e., 'lhs=rhs;'). */
+    public StmtAssign(Expression lhs, Expression rhs)
+    {
+        this(lhs, lhs, rhs, 0);
+    }
+
     /** Returns the left-hand side of this. */
     public Expression getLHS()
     {
         return lhs;
     }
-    
+
     /** Returns the right-hand side of this. */
     public Expression getRHS()
     {
         return rhs;
     }
-    
+
     /** Returns the operation for this.  This will be one of the constants
      * in ExprBinary or 0 if this is a simple assignment. */
     public int getOp()

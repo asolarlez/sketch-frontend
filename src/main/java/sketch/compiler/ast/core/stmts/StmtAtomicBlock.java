@@ -15,6 +15,15 @@ public class StmtAtomicBlock extends StmtBlock {
 	 * @param context
 	 * @param stmts
 	 */
+	public StmtAtomicBlock (FENode context, List stmts) {
+		super (context, stmts);
+	}
+
+	/**
+	 * @param context
+	 * @param stmts
+	 * @deprecated
+	 */
 	public StmtAtomicBlock (FEContext context, List stmts) {
 		super (context, stmts);
 	}
