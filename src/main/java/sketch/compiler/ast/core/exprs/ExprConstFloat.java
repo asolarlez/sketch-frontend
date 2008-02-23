@@ -33,6 +33,19 @@ public class ExprConstFloat extends ExprConstant
      * @param context  file and line number for the expression
      * @param val      value of the constant
      */
+    public ExprConstFloat(FENode context, double val)
+    {
+        super(context);
+        this.val = val;
+    }
+
+    /**
+     * Create a new ExprConstFloat with a specified value.
+     *
+     * @param context  file and line number for the expression
+     * @param val      value of the constant
+     * @deprecated
+     */
     public ExprConstFloat(FEContext context, double val)
     {
         super(context);
@@ -46,7 +59,7 @@ public class ExprConstFloat extends ExprConstant
      */
     public ExprConstFloat(double val)
     {
-        this(null, val);
+        this((FEContext) null, val);
     }
 
     /**
@@ -56,7 +69,7 @@ public class ExprConstFloat extends ExprConstant
      * @param context  file and line number for the expression
      * @param str      string representing the value of the constant
      */
-    public ExprConstFloat(FEContext context, String str)
+    public ExprConstFloat(FENode context, String str)
     {
         this(context, Double.parseDouble(str));
     }
