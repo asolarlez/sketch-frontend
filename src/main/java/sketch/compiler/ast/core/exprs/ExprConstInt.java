@@ -32,6 +32,16 @@ public class ExprConstInt extends ExprConstant
     public static final ExprConstInt one = new ExprConstInt(1);
 
     /** Create a new ExprConstInt with a specified value. */
+    public ExprConstInt(FENode context, int val)
+    {
+        super(context);
+        this.val = val;
+    }
+
+    /**
+     * Create a new ExprConstInt with a specified value.
+     * @deprecated
+     */
     public ExprConstInt(FEContext context, int val)
     {
         super(context);
@@ -41,12 +51,12 @@ public class ExprConstInt extends ExprConstant
     /** Create a new ExprConstInt with a specified value but no context. */
     public ExprConstInt(int val)
     {
-        this(null, val);
+        this((FEContext) null, val);
     }
 
     /** Parse a string as an integer, and create a new ExprConstInt
      * from the result. */
-    public ExprConstInt(FEContext context, String str)
+    public ExprConstInt(FENode context, String str)
     {
         this(context, Integer.parseInt(str));
     }

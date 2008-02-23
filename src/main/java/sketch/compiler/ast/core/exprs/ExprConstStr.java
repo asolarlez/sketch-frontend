@@ -35,6 +35,19 @@ public class ExprConstStr extends ExprConstant
      * @param context  file and line number in the source file
      * @param val      source-format representation of the string
      */
+    public ExprConstStr(FENode context, String val)
+    {
+        super(context);
+        this.val = val;
+    }
+
+    /**
+     * Create a new ExprConstStr.
+     *
+     * @param context  file and line number in the source file
+     * @param val      source-format representation of the string
+     * @deprecated
+     */
     public ExprConstStr(FEContext context, String val)
     {
         super(context);
