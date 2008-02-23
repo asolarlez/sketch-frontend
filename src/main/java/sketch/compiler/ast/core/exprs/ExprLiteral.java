@@ -6,19 +6,19 @@ package streamit.frontend.nodes;
  * be emitted by processing passes just prior to output.
  * This class can be used, for example, to store a hexadecimal
  * constant.
- * 
+ *
  * @author liviu
  */
 public class ExprLiteral extends ExprConstant
 {
 	private String value;
-	
-	public ExprLiteral(FEContext context, String value)
+
+	public ExprLiteral(FENode context, String value)
 	{
 		super(context);
 		this.value=value;
 	}
-	
+
 	public String getValue()
 	{
 		return value;

@@ -31,9 +31,20 @@ public class ExprFunCall extends Expression
 {
     private final String name;
     private final List<Expression> params;
-    
+
     /** Creates a new function call with the specified name and
      * parameter list. */
+    public ExprFunCall(FENode context, String name, List<Expression> params)
+    {
+        super(context);
+        this.name = name;
+        this.params = Collections.unmodifiableList(params);
+    }
+
+    /** Creates a new function call with the specified name and
+     * parameter list.
+     * @deprecated
+     */
     public ExprFunCall(FEContext context, String name, List<Expression> params)
     {
         super(context);
@@ -43,23 +54,17 @@ public class ExprFunCall extends Expression
 
     /** Creates a new function call with the specified name and
      * specified single parameter. */
-    public ExprFunCall(FEContext context, String name, Expression param)
+    public ExprFunCall(FENode context, String name, Expression param)
     {
-        super(context);
-        this.name = name;
-        List tmp = Collections.singletonList(param);
-        this.params = Collections.unmodifiableList(tmp);
+    	this (context, name, Collections.singletonList (param));
     }
 
     /** Creates a new function call with the specified name and
      * two specified parameters. */
-    public ExprFunCall(FEContext context, String name,
+    public ExprFunCall(FENode context, String name,
                        Expression p1, Expression p2)
     {
-        super(context);
-        this.name = name;
-        List tmp = Arrays.asList(new Object[] {p1,p2});
-        this.params = Collections.unmodifiableList(tmp);
+    	this (context, name, Arrays.asList(new Expression[] {p1,p2}));
     }
 
     /** Returns the name of the function being called. */
@@ -67,20 +72,20 @@ public class ExprFunCall extends Expression
     {
         return name;
     }
-    
+
     /** Returns the parameters of the function call, as an unmodifiable
      * list. */
     public List<Expression> getParams()
     {
         return params;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
         return v.visitExprFunCall(this);
     }
-    
+
     public String toString()
     {
     	return name+"("+params+")";

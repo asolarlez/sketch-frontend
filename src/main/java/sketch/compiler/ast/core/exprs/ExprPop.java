@@ -31,11 +31,21 @@ public class ExprPop extends Expression
      *
      * @param context  file and line number of the expression
      */
+    public ExprPop(FENode context)
+    {
+        super(context);
+    }
+    /**
+     * Creates a new pop expression.
+     *
+     * @param context  file and line number of the expression
+     * @deprecated
+     */
     public ExprPop(FEContext context)
     {
         super(context);
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -55,7 +65,7 @@ public class ExprPop extends Expression
         // No state, so...
         return 17;
     }
-    
+
     public String toString()
     {
         return "pop()";

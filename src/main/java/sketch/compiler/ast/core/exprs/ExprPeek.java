@@ -28,12 +28,25 @@ package streamit.frontend.nodes;
 public class ExprPeek extends Expression
 {
     private Expression expr;
-    
+
     /**
      * Creates a new peek expression.
      *
      * @param context  file and line number of the expression
      * @param expr     position on the tape to peek at
+     */
+    public ExprPeek(FENode context, Expression expr)
+    {
+        super(context);
+        this.expr = expr;
+    }
+
+    /**
+     * Creates a new peek expression.
+     *
+     * @param context  file and line number of the expression
+     * @param expr     position on the tape to peek at
+     * @deprecated
      */
     public ExprPeek(FEContext context, Expression expr)
     {
@@ -50,7 +63,7 @@ public class ExprPeek extends Expression
     {
         return expr;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -71,7 +84,7 @@ public class ExprPeek extends Expression
     {
         return expr.hashCode();
     }
-    
+
     public String toString()
     {
         return "peek(" + expr + ")";

@@ -4,14 +4,14 @@ public class ExprNullPtr extends Expression {
 
 	public static ExprNullPtr nullPtr = new ExprNullPtr();
 	public ExprNullPtr(){
-        super((FEContext)null);
+        super((FENode)null);
     }
-	
+
 	@Override
-	public Object accept(FEVisitor v) {		
+	public Object accept(FEVisitor v) {
 		return v.visitExprNullPtr(this);
 	}
-	
+
 	public String toString(){
 		return "null";
 	}
