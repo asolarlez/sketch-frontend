@@ -47,7 +47,7 @@ public class PropagateFinals extends FEReplacer {
      if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
          newIncr == stmt.getIncr() && newBody == stmt.getBody())
          return stmt;
-     return new StmtFor(stmt.getCx(), newInit, newCond, newIncr,
+     return new StmtFor(stmt, newInit, newCond, newIncr,
                         newBody);	 
     }
 	
@@ -79,7 +79,7 @@ public class PropagateFinals extends FEReplacer {
             newInits.add(init);
             newTypes.add(t);
         }
-        return new StmtVarDecl(stmt.getCx(), newTypes,
+        return new StmtVarDecl(stmt, newTypes,
                                stmt.getNames(), newInits);
     }
 }
