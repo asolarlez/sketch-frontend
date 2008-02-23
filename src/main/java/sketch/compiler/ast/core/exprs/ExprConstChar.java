@@ -28,6 +28,16 @@ public class ExprConstChar extends ExprConstant
     private char val;
 
     /** Create a new ExprConstChar for a particular character. */
+    public ExprConstChar(FENode context, char val)
+    {
+        super(context);
+        this.val = val;
+    }
+
+    /**
+     * Create a new ExprConstChar for a particular character.
+     * @deprecated
+     */
     public ExprConstChar(FEContext context, char val)
     {
         super(context);
@@ -36,6 +46,15 @@ public class ExprConstChar extends ExprConstant
 
     /** Create a new ExprConstChar containing the first character of a
      * String. */
+    public ExprConstChar(FENode context, String str)
+    {
+        this(context, str.charAt(0));
+    }
+
+    /** Create a new ExprConstChar containing the first character of a
+     * String.
+     * @deprecated
+     * */
     public ExprConstChar(FEContext context, String str)
     {
         this(context, str.charAt(0));
