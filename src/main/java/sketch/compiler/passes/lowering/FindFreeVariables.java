@@ -45,7 +45,7 @@ import streamit.frontend.nodes.UnrecognizedVariableException;
 public class FindFreeVariables extends SymbolTableVisitor
 {
     List freeVars;
-    
+
     public FindFreeVariables()
     {
         super(null);
@@ -67,7 +67,7 @@ public class FindFreeVariables extends SymbolTableVisitor
         // Skip all of this if the spec is named.
         if (spec.getName() != null)
             return super.visitStreamSpec(spec);
-        
+
         List oldFreeVars = freeVars;
         freeVars = new java.util.ArrayList();
         // Wrap this in an empty symbol table.
@@ -100,7 +100,7 @@ public class FindFreeVariables extends SymbolTableVisitor
                             catch (UnrecognizedVariableException e)
                             {
                                 if (expr.getName().equals(was))
-                                    return new ExprVar(expr.getCx(),
+                                    return new ExprVar(expr,
                                                        wrapped);
                                 // else fall through
                             }
@@ -115,10 +115,9 @@ public class FindFreeVariables extends SymbolTableVisitor
                 // contain the wrapped variable.
                 if (!(symtab.hasVar(wrapped)))
                 {
-                    FEContext context = ((FENode)result).getCx();
+                    FENode context = ((FENode)result);
                     addVarDecl(context, type, wrapped);
-                    addStatement(new StmtAssign(context,
-                                                new ExprVar(context, wrapped),
+                    addStatement(new StmtAssign(new ExprVar(context, wrapped),
                                                 new ExprVar(context, name)));
                 }
             }

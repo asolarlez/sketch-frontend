@@ -5,6 +5,7 @@ import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.SymbolTable;
@@ -23,13 +24,13 @@ public class ExtractVectorsInCasts extends SymbolTableVisitor {
 		super(symtab, st);
 		this.varGen = varGen;
 	}
-	
+
 
     public Object visitExprTypeCast(ExprTypeCast exp)
     {
     	if(!(exp.getExpr() instanceof ExprVar)){
     		Type t = this.getType(exp.getExpr());
-			FEContext context = exp.getCx();
+			FENode context = exp;
 			String tmpName = varGen.nextVar();
 			Expression lexp = this.doExpression(exp.getExpr());
 			StmtVarDecl decl = new StmtVarDecl(context, t, tmpName, lexp);
@@ -38,5 +39,5 @@ public class ExtractVectorsInCasts extends SymbolTableVisitor {
     	}
         return super.visitExprTypeCast(exp);
     }
-	
+
 }

@@ -41,7 +41,7 @@ public class FlattenStmtBlocks extends FEReplacer {
 	public Object visitStmtBlock(StmtBlock sb){
 		List<Statement> news = new ArrayList<Statement>();
 		addStmts(sb.getStmts(), news);
-		return super.visitStmtBlock(new StmtBlock(sb.getCx(), news));				
+		return super.visitStmtBlock(new StmtBlock(sb, news));				
 	}
 	
 }

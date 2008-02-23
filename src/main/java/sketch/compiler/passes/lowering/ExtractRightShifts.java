@@ -5,6 +5,7 @@ import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.SymbolTable;
@@ -30,25 +31,25 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 		super(symtab, st);
 		this.varGen = varGen;
 	}
-	
-	
+
+
 	public Object visitExprBinary(ExprBinary exp)
     {
 		if(exp.getOp() == ExprBinary.BINOP_RSHIFT || exp.getOp() == ExprBinary.BINOP_LSHIFT){
 			Type t = this.getType(exp);
-			FEContext context = exp.getCx();
+			FENode context = exp;
 			String tmpName = varGen.nextVar();
 			Expression lexp = this.doExpression(exp.getLeft());
-			Expression rexp = this.doExpression(exp.getRight());			
+			Expression rexp = this.doExpression(exp.getRight());
 			StmtVarDecl decl = new StmtVarDecl(context, t, tmpName, lexp);
 			this.addStatement(decl);
-			
-			
-			return new ExprBinary(context, exp.getOp(), new ExprVar(null, tmpName), rexp, exp.getAlias());
+
+
+			return new ExprBinary(context, exp.getOp(), new ExprVar(exp, tmpName), rexp, exp.getAlias());
 		}else{
 			return super.visitExprBinary(exp);
-		}        
+		}
     }
-	
+
 
 }
