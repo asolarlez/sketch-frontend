@@ -7,23 +7,24 @@ import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 
-public class ExpandBinMax {	
+public class ExpandBinMax {
 
 	public ExpandBinMax() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	
-	
+
+
 	public Expression comp(int pos, int dim, ExprVar v1, ExprVar v2){
-		ExprArrayRange ear1 = new ExprArrayRange(null, v1, new ExprConstInt(pos));
-		ExprArrayRange ear2 = new ExprArrayRange(null, v2, new ExprConstInt(pos));
+		ExprArrayRange ear1 = new ExprArrayRange(v1, new ExprConstInt(pos));
+		ExprArrayRange ear2 = new ExprArrayRange(v2, new ExprConstInt(pos));
 		Expression tmp = new ExprBinary(null,ExprBinary.BINOP_LT, ear1, ear2);
 		Expression eq =  new ExprBinary(null,ExprBinary.BINOP_EQ, ear1, ear2);
 		Expression out;
@@ -35,26 +36,26 @@ public class ExpandBinMax {
 			out = tmp;
 		// out = tmp;
 		}
-		return out;		
+		return out;
 	}
-	
-	
+
+
 	public Statement processMax(int dim, ExprVar v1, ExprVar v2, String gv2, int id){
-		Expression cond1 = new ExprVar(null, gv2);
+		Expression cond1 = new ExprVar(v1, gv2);
 		Expression cond2 = comp(0, dim, v1, v2);
-		
-		StmtAssign as1 = new StmtAssign(null, new ExprVar(null, ArrFunction.IND_VAR), new ExprConstInt(id+1));
-		StmtAssign as2 = new StmtAssign(null, v1, v2);
+
+		StmtAssign as1 = new StmtAssign(new ExprVar(v1, ArrFunction.IND_VAR), new ExprConstInt(id+1));
+		StmtAssign as2 = new StmtAssign(v1, v2);
 		List<Statement> lst = new ArrayList<Statement>(2);
 		lst.add(as1);
 		lst.add(as2);
-		
-		StmtIfThen if2 = new StmtIfThen(null, cond2,  new StmtBlock(null, lst), null);
-		StmtIfThen if1 = new StmtIfThen(null, cond1,  if2, null);		
+
+		StmtIfThen if2 = new StmtIfThen(cond2, cond2,  new StmtBlock((FEContext) null, lst), null);
+		StmtIfThen if1 = new StmtIfThen(cond1, cond1,  if2, null);
 		return if1;
 	}
-	
 
-	
-	
+
+
+
 }

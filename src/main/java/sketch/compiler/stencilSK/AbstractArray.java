@@ -5,17 +5,17 @@ import java.util.*;
 import streamit.frontend.nodes.*;
 
 /**
- * 
+ *
  * This class represents an abstracted dense array.
  * We are assuming that output out[idx] is computed from
  * inputs { in[ex1(idx)], in[ex2(idx)]...,in[exn(idx)] }.
  * The expressions are stored in the idxArr class.
- * 
+ *
  * The function will have parameters in the following order.
  * ( index parameters, outIndexParameters, symbolic parameters, otherParams, globalParameters).
  * There are exactly dim index parameters.
  * The global parameters include the global index parameters.
- * 
+ *
  * @author asolar
  *
  */
@@ -30,39 +30,39 @@ public class AbstractArray {
 	String arrName;
 	String suffix;
 	int dim;
-	
+
 	/**
-	 * This class represents the different expressions that can index this array in the 
+	 * This class represents the different expressions that can index this array in the
 	 * spec.
 	 */
 	List<Expression[] > idxArr;
-	
-	
+
+
 	/**
 	 * They correspond to the current index of the output.
 	 * These are here because remember we are looking for indices relative
-	 * to the output indices, so we need to know what the output indices are.  
+	 * to the output indices, so we need to know what the output indices are.
 	 */
 	List<StmtVarDecl> outIndexParameters;
-	
+
 	/**
-	 * Other parameters used in the expressions.  
+	 * Other parameters used in the expressions.
 	 */
-	List<StmtVarDecl> otherParams; 
-	
+	List<StmtVarDecl> otherParams;
+
 	/**
-	 * Global parameters used in the expressions.  
+	 * Global parameters used in the expressions.
 	 */
-	List<StmtVarDecl> globalParams; 
-	
+	List<StmtVarDecl> globalParams;
+
 	public void addAssignStruct(AssignStruct ass, List<Expression> indices){
 		/*
 		 * I need to get the output indices from the assign structure,
 		 * and then replace them with the outIndexParameters in each
-		 * of the indices. 
+		 * of the indices.
 		 */
-		
-		assert indices.size() == this.dim;		
+
+		assert indices.size() == this.dim;
 		assert ass.indices.size() == outIndexParameters.size() : " This is because we require the lhs to be equal tou out[i,j,k]";
 		Expression[] expr = new Expression[dim];
 		int i=0;
@@ -71,18 +71,18 @@ public class AbstractArray {
 			Iterator<StmtVarDecl> outIdxNewIt = outIndexParameters.iterator();
 			for(Iterator<Expression> outIdxOldIt = ass.indices.iterator(); outIdxOldIt.hasNext(); ){
 				Expression outIdxOld = outIdxOldIt.next();
-				assert outIdxOld instanceof ExprVar : "Currently, it is assumed that the spec only has assignments of the form " 
+				assert outIdxOld instanceof ExprVar : "Currently, it is assumed that the spec only has assignments of the form "
 														+ "out[i,j,k] = blah; so the ori indices must be single variables.";
 				ExprVar outIdxOldVar = (ExprVar) outIdxOld;
 				StmtVarDecl svd = outIdxNewIt.next();
 
-				inIdx = (Expression)  inIdx.accept(new VarReplacer(outIdxOldVar.getName(), new ExprVar(null, svd.getName(0))));
+				inIdx = (Expression)  inIdx.accept(new VarReplacer(outIdxOldVar.getName(), new ExprVar(svd, svd.getName(0))));
 			}
 			expr[i] = inIdx;
 		}
 		for(int t=0; t<idxArr.size(); ++t){
 			Expression[] e1 = idxArr.get(t);
-			Expression[] e2 = expr;						
+			Expression[] e2 = expr;
 			if( e1.length ==  e2.length ){
 				int eqn = 0;
 				for(int tt=0; tt< e1.length; ++tt ){
@@ -95,9 +95,9 @@ public class AbstractArray {
 				}
 			}
 		}
-		idxArr.add(expr);		
+		idxArr.add(expr);
 	}
-	
+
 	public void makeDefault(int vars){
 		for(int i=0; i<vars; ++i){
 			Expression[] expr = new Expression[dim];
@@ -105,15 +105,15 @@ public class AbstractArray {
 			String vname = symParamName(i);
 			for(int j=0; j<dim; ++j){
 				String lvn = vname + "_" + j;
-				StmtVarDecl op = new StmtVarDecl(null, TypePrimitive.inttype, lvn , null);
+				StmtVarDecl op = new StmtVarDecl((FEContext) null, TypePrimitive.inttype, lvn , null);
 				otherParams.add(op);
 				//Note that we are adding stuff to the global parameters.
-				expr[ j ] = new ExprVar(null ,lvn);
+				expr[ j ] = new ExprVar((FEContext) null ,lvn);
 			}
 		}
 	}
-	
-	
+
+
 	AbstractArray(String arrName, Type arrType, String suffix, int dim, List<StmtVarDecl> globalParams, List<StmtVarDecl> outIdxParams){
 		this.arrName = arrName;
 		this.suffix = suffix;
@@ -124,48 +124,48 @@ public class AbstractArray {
 		this.otherParams = new ArrayList<StmtVarDecl>();
 		this.arrType = arrType;
 	}
-	
-	
+
+
 	public void addParamsToFunction(List<StmtVarDecl> svd){
-		
+
 		for(int i=0; i<numSymParams(); ++i){
-			StmtVarDecl obj = new StmtVarDecl(null, this.arrType, symParamName(i) , null) ;
+			StmtVarDecl obj = new StmtVarDecl((FEContext) null, this.arrType, symParamName(i) , null) ;
 			svd.add(obj);
 		}
 		for(Iterator<StmtVarDecl> it = otherParams.iterator(); it.hasNext(); ){
-			svd.add(  it.next() );			
+			svd.add(  it.next() );
 		}
 	}
-	
+
 	public String getFullName(){
 		return arrName + "_" + suffix;
 	}
-	
+
 	public String symParamName(int i){
 		return getFullName() + "_" + i;
 	}
-	
+
 	protected String idxParamName(int i){
 		return IDXNAME + i;
 	}
-	
+
 	public int numSymParams(){
 		return idxArr.size();
 	}
-	
+
 	public String toString(){
 		String s = getFullName() + "( ";
 		String body="";
 		//( index parameters, outIndexParameters, symbolic parameters, otherParams, globalParameters).
 		for(int i=0; i<dim; ++i){
-			s += "int " + idxParamName(i) + ", ";			
+			s += "int " + idxParamName(i) + ", ";
 		}
-		
+
 		for(Iterator<StmtVarDecl> it = outIndexParameters.iterator(); it.hasNext(); ){
-			s +=  it.next() + ", ";	
+			s +=  it.next() + ", ";
 		}
-		
-		
+
+
 		int i=0;
 		for(Iterator<Expression[]> it = idxArr.iterator(); it.hasNext(); ++i ){
 			String spname = symParamName(i);
@@ -177,21 +177,21 @@ public class AbstractArray {
 				body += idxParamName(j) + "==" + earr[j];
 				if( j != dim-1) body += " && ";
 			}
-			body += ") return "  + spname + "; \n";			
+			body += ") return "  + spname + "; \n";
 		}
-		
+
 		for(Iterator<StmtVarDecl> it = otherParams.iterator(); it.hasNext(); ){
-			s += it.next() + ", ";	
+			s += it.next() + ", ";
 		}
-		
+
 		for(Iterator<StmtVarDecl> it = globalParams.iterator(); it.hasNext(); ){
-			s += it.next() + ", ";	
+			s += it.next() + ", ";
 		}
-		
-		s += "){ \n" + body + "}\n"; 		
+
+		s += "){ \n" + body + "}\n";
 		return s;
 	}
-	
+
 	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
 		return makeParams(ls,Parameter.IN);
 	}
@@ -210,12 +210,12 @@ public class AbstractArray {
 	private final Expression aggregateExp(Expression[] exprs, int s, int f) {
 		assert 0<=s && s<f && f<=exprs.length;
 		if(s==f-1) return new ExprBinary(null,ExprBinary.BINOP_EQ,
-			new ExprVar(null,idxParamName(s)), exprs[s]);
+			new ExprVar((FEContext) null,idxParamName(s)), exprs[s]);
 		return new ExprBinary(null,ExprBinary.BINOP_AND,
 			aggregateExp(exprs,s,s+1),
 			aggregateExp(exprs,s+1,f));
 	}
-	
+
 	public Function toAST() {
 		List<Parameter> params=new ArrayList<Parameter>();
 		{
@@ -236,13 +236,13 @@ public class AbstractArray {
 				String spname = symParamName(i);
 				Expression[] earr = idxArr.get(i);
 				Expression condition=aggregateExp(earr,0,dim);
-				Statement retStmt=new StmtReturn(null,new ExprVar(null,spname));
-				Statement ifStmt=new StmtIfThen(null,condition,retStmt,null);
+				Statement retStmt=new StmtReturn((FEContext) null,new ExprVar((FEContext) null,spname));
+				Statement ifStmt=new StmtIfThen((FEContext) null,condition,retStmt,null);
 				stmts.add(ifStmt);
 			}
 		}
-		Statement body=new StmtBlock(null,stmts);
-		Function ret=Function.newHelper(null,getFullName(),arrType,params,body);
+		Statement body=new StmtBlock((FEContext) null,stmts);
+		Function ret=Function.newHelper(body,getFullName(),arrType,params,body);
 		return ret;
 	}
 

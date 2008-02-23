@@ -52,7 +52,7 @@ public class StencilPreprocessor extends CodePEval{
 	        //TODO, need a real convergence test.
 	        }while(i<3);
 	        
-	        return new StmtFor(stmt.getCx(), newInit, newCond, newIncr,
+	        return new StmtFor(stmt, newInit, newCond, newIncr,
 	                           newBody);
 	    }
 	
