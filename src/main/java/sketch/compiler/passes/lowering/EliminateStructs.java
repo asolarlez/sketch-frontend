@@ -22,6 +22,7 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
@@ -91,7 +92,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 			isMain = true;
 	        SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
-	
+
 	        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); ) {
 	            Parameter param = (Parameter)iter.next();
 	            symtab.registerVar(param.getName(),
@@ -99,33 +100,33 @@ public class EliminateStructs extends SymbolTableVisitor {
 	                               param,
 	                               SymbolTable.KIND_FUNC_PARAM);
 	        }
-	        
+
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
 	        for (String name : structsByName.keySet ()) {
 				StructTracker tracker =
-					new StructTracker (structsByName.get (name), func.getCx (), varGen, heapsize);
+					new StructTracker (structsByName.get (name), func, varGen, heapsize);
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
 				structs.put (name, tracker);
 			}
-	
+
 	        Function func2 = (Function) super.visitFunction(func);
 	        symtab = oldSymTab;
-	
+
 	        if(func.isUninterp()){
 	        	return func2;
 	        }
-	        
+
 	        Statement oldBody = func2.getBody ();
 	        newBodyStmts.add (oldBody);
-	        StmtBlock newBody = new StmtBlock (oldBody.getCx (), newBodyStmts);
-	
-	        return new Function (func2.getCx (), func2.getCls (), func2.getName (),
+	        StmtBlock newBody = new StmtBlock (oldBody, newBodyStmts);
+
+	        return new Function (func2, func2.getCls (), func2.getName (),
 	        			func2.getReturnType (), func2.getParams (),
 	        			func2.getSpecification (), newBody);
 		}
-		
-		
+
+
 		if(calledFunctions.contains(func.getName())){
 			SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
@@ -138,11 +139,11 @@ public class EliminateStructs extends SymbolTableVisitor {
 	                               param,
 	                               SymbolTable.KIND_FUNC_PARAM);
 	        }
-	        
+
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
 	        for (String name : structsByName.keySet ()) {
 				StructTracker tracker =
-					new StructTracker (structsByName.get (name), func.getCx (), varGen, heapsize);
+					new StructTracker (structsByName.get (name), func, varGen, heapsize);
 				tracker.registerAsParameters(symtab);
 				tracker.addParams(newParams);
 				structs.put (name, tracker);
@@ -154,47 +155,47 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        if(func.isUninterp()){
 	        	return func2;
 	        }
-	        
+
 	        Statement oldBody = func2.getBody ();
 	        newBodyStmts.add (oldBody);
-	        StmtBlock newBody = new StmtBlock (oldBody.getCx (), newBodyStmts);
+	        StmtBlock newBody = new StmtBlock (oldBody, newBodyStmts);
 
 	        String newName = func.getName();
-	        
+
 	        if(isMain){
 	        	newName = newName + "_2";
 	        }
-	        
-	        return new Function (func2.getCx (), func2.getCls (), newName,
+
+	        return new Function (func2, func2.getCls (), newName,
 	        			func2.getReturnType (), newParams,
 	        			func2.getSpecification (), newBody);
         }
 		return null;
 	}
-	
+
 	@Override
 	public Object visitExprFunCall(ExprFunCall fc){
-		
+
 		String newName = fc.getName();
-		
+
 		List<Expression> newplist = new ArrayList<Expression>(fc.getParams());
-		
-		
+
+
 		for (String name : structsByName.keySet ()) {
 			structs.get(name).addActualParams(newplist);
 		}
-		
+
 		if(mainFunctions.contains(newName)){
 			newName = newName + "_2";
 		}
-		
-		return new ExprFunCall(fc.getCx(),newName, newplist);
+
+		return new ExprFunCall(fc,newName, newplist);
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 
 	/**
 	 * Rewrite field accesses of the form '((Foo)foo).bar' into 'Foo_bar[foo]'.
@@ -223,8 +224,8 @@ public class EliminateStructs extends SymbolTableVisitor {
     	StructTracker struct =
     		structs.get (((TypeStructRef) expNew.getTypeToConstruct ()).getName ());
 
-    	this.addStatement (struct.makeAllocationGuard (expNew.getCx ()));
-    	return struct.makeAllocation (expNew.getCx ());
+    	this.addStatement (struct.makeAllocationGuard (expNew));
+    	return struct.makeAllocation (expNew);
     }
 
     /** Rewrite variables of type 'struct' into ones of type 'int'. */
@@ -236,12 +237,12 @@ public class EliminateStructs extends SymbolTableVisitor {
     	return (t instanceof TypeStructRef) ? TypePrimitive.inttype : t;
     }
 
-    
-    
+
+
     final Set<String> calledFunctions = new HashSet<String>();
     final Set<String> mainFunctions = new HashSet<String>();
-    
-    
+
+
     public Object visitStreamSpec(StreamSpec spec)
     {
     	calledFunctions.clear();
@@ -252,7 +253,7 @@ public class EliminateStructs extends SymbolTableVisitor {
     			mainFunctions.add(func.getName());
     			mainFunctions.add(func.getSpecification());
     		}
-    		
+
     		func.accept(new FEReplacer(){
     			@Override
     			public Object visitExprFunCall(ExprFunCall exp){
@@ -263,12 +264,12 @@ public class EliminateStructs extends SymbolTableVisitor {
         }
     	return super.visitStreamSpec(spec);
     }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     /**
 	 * Tracks variables used by structs when we eliminate 'new' expressions
 	 * and field accesses.  Also provides convenience expression generators.
@@ -277,10 +278,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 */
 	private class StructTracker {
 		private TypeStruct struct;
-		private FEContext cx;
+		private FENode cx;
 	    private ExprVar nextInstancePointer;
 	    private Map<String, ExprVar> fieldArrays;
-	    
+
 	    private final int heapsize;
 
 	    /**
@@ -292,9 +293,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param varGen	Generator for new variable names
 	     */
 	    public StructTracker (TypeStruct struct_,
-	    					  FEContext cx_,
+	    					  FENode cx_,
 	    					  TempVarGen varGen, int heapsize) {
-	    	
+
 	    	this.heapsize = heapsize;
 	    	struct = struct_;
 	    	cx = cx_;
@@ -310,50 +311,50 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	}
 	    }
 
-	    
+
 	    public void addParams(List<Parameter> newParams){
-	    	
+
 	    	newParams.add(new Parameter(TypePrimitive.inttype, nextInstancePointer.getName (), Parameter.REF));
-	    	
+
 	    	for (String field : fieldArrays.keySet ()) {
-	    		newParams.add(new Parameter(typeofFieldArr (field) , fieldArrays.get (field).getName (), Parameter.REF ));	    		
+	    		newParams.add(new Parameter(typeofFieldArr (field) , fieldArrays.get (field).getName (), Parameter.REF ));
 	    	}
 	    }
-	    
+
 	    public void addActualParams(List<Expression> params){
 	    	params.add(nextInstancePointer);
 	    	for (String field : fieldArrays.keySet ()) {
 	    		params.add(fieldArrays.get(field));
 	    	}
 	    }
-	    
-	    public void registerAsParameters(SymbolTable symtab){	    	
+
+	    public void registerAsParameters(SymbolTable symtab){
 	    	String nip = nextInstancePointer.getName ();
 	    	symtab.registerVar(nip,
                     TypePrimitive.inttype,
                     nextInstancePointer,
                     SymbolTable.KIND_FUNC_PARAM);
-	    	
+
 	    	/*symtab.registerVar(nip + "_out",
                     TypePrimitive.inttype,
                     nextInstancePointer,
                     SymbolTable.KIND_FUNC_PARAM);*/
-	    	
+
 	    	for (String field : fieldArrays.keySet ()) {
 	    		symtab.registerVar (fieldArrays.get (field).getName (),
 	    				typeofFieldArr (field), fieldArrays.get(field), SymbolTable.KIND_FUNC_PARAM);
-	    		
+
 	    		/* symtab.registerVar (fieldArrays.get (field).getName () + "_out",
 	    				typeofFieldArr (field), fieldArrays.get(field), SymbolTable.KIND_FUNC_PARAM); */
 	    	}
-	    	
-	    	
-	    	
-	    	
+
+
+
+
 	    }
-	    
-	    
-	    
+
+
+
 	    /**
 	     * Register the variables used by this struct with the symbol table.
 	     *
@@ -407,7 +408,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param cx  the context of the allocation site
 	     * @return    an allocation expression
 	     */
-	    public Expression makeAllocation (FEContext cx) {
+	    public Expression makeAllocation (FENode cx) {
 	    	return new ExprUnary (cx, ExprUnary.UNOP_PREINC, nextInstancePointer);
 	    }
 
@@ -424,7 +425,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param cx  The context of the 'new' statement to guard
 	     * @return    An allocation guard
 	     */
-	    public StmtAssert makeAllocationGuard (FEContext cx) {
+	    public StmtAssert makeAllocationGuard (FENode cx) {
 	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx));
 	    }
 
@@ -432,7 +433,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return an expression to check for allocation safety.  Essentially,
 	     * <code>(Foo_nextPointer + 1) &lt; len (Foo_instances)</code>.
 	     */
-	    public Expression getAllocationSafetyCheck (FEContext cx) {
+	    public Expression getAllocationSafetyCheck (FENode cx) {
 	    	ExprBinary next =
 	    		new ExprBinary (cx, ExprBinary.BINOP_ADD, nextInstancePointer,
 	    				ExprConstant.createConstant (cx, "1"));
@@ -446,7 +447,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param cx  Context where the Expression will be used.
 	     * @return
 	     */
-	    public Expression getNumInstsExpr (FEContext cx) {
+	    public Expression getNumInstsExpr (FENode cx) {
 	    	return ExprConstant.createConstant (cx, ""+ heapsize);
 	    }
 
