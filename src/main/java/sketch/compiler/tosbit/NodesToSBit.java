@@ -1,7 +1,7 @@
 /*
  * Created on Jun 22, 2004
  *
- * 
+ *
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 package streamit.frontend.tosbit;
@@ -75,12 +75,12 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
  * The purpose of this class is to generate streamBit friendly input from a filter description.
  * @author asolar
  *
- *  
- * 
+ *
+ *
  */
 
 public class NodesToSBit extends PartialEvaluator{
-    // A string consisting of an even number of spaces.    
+    // A string consisting of an even number of spaces.
     private TempVarGen varGen;
     //private boolean isLHS;
     private NodesToNative nativeGenerator;
@@ -90,15 +90,15 @@ public class NodesToSBit extends PartialEvaluator{
     private ValueOracle oracle;
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
-    
-    
+
+
 	    public NodesToSBit (StreamSpec ss, TempVarGen varGen,
                             ValueOracle oracle, PrintStream out,
                             int maxUnroll, RecursionControl rcontrol)
 	    {
 	    	super(false, maxUnroll, rcontrol);
-	        this.ss = ss;	        
-	        this.varGen = varGen;	         
+	        this.ss = ss;
+	        this.varGen = varGen;
 	        this.state = new MethodState();
 	        this.oracle = oracle;
 	        funsWParams = new HashMap<String, StreamSpec>();
@@ -107,28 +107,28 @@ public class NodesToSBit extends PartialEvaluator{
 	        this.out = out;
 	    }
 	    public String finalizeWork(){
-	    	String result = "";	    	
+	    	String result = "";
 	    	int noutputs = state.varValue("PUSH_POS");
 	    	for(int i=0; i< noutputs; ++i){
 	    		String nm = "OUTPUT_" + i;
-	    		result += nm + " = ";	    		
+	    		result += nm + " = ";
 	    		result += state.varGetRHSName(nm) + "; \n";
 	    		state.unsetVarValue(nm);
-	    	}	    	
+	    	}
 	    	return result;
 	    }
-	    
-	    public void initializeWork(){	    
+
+	    public void initializeWork(){
 	        state.varDeclare("POP_POS");
 	    	state.varDeclare("PUSH_POS");
-	    	
+
 	    	state.varGetLHSName("POP_POS");
 	        state.varGetLHSName("PUSH_POS");
-	    	
+
 	        state.setVarValue("POP_POS", 0 );
 	        state.setVarValue("PUSH_POS", 0 );
 	    }
-	    // Add two spaces to the indent.	    
+	    // Add two spaces to the indent.
 
 	    // Do the same conversion, but including array dimensions.
 	    public String convertTypeFull(Type type)
@@ -137,7 +137,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        {
 	            TypeArray array = (TypeArray)type;
 	            array.getLength().accept(this);
-	            int i = state.popVStack().getIntValue();	            
+	            int i = state.popVStack().getIntValue();
 	            return convertTypeFull(array.getBase()) + "[" + i + "]";
 	        }
 	        return convertType(type);
@@ -189,17 +189,17 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        return annotatedFunction("output.push", st.getOut());
 	    }
-	    
+
 	    public  String popFunction(StreamType st)
 	    {
 	        return annotatedFunction("input.pop", st.getIn());
 	    }
-	    
+
 	    public  String peekFunction(StreamType st)
 	    {
 	        return annotatedFunction("input.peek", st.getIn());
 	    }
-	    
+
 	    private  String annotatedFunction(String name, Type type)
 	    {
 	        String prefix = "", suffix = "";
@@ -236,9 +236,9 @@ public class NodesToSBit extends PartialEvaluator{
 	        return prefix + name + suffix;
 	    }
 
-	    
+
 	    public String postDoParams(List params){
-	    	String result = "";	        
+	    	String result = "";
 	        for (Iterator iter = params.iterator(); iter.hasNext(); )
 	        {
 	            Parameter param = (Parameter)iter.next();
@@ -248,9 +248,9 @@ public class NodesToSBit extends PartialEvaluator{
 		            	TypeArray ta = (TypeArray) param.getType();
 		            	ta.getLength().accept(this);
 		            	valueClass tmp = state.popVStack();
-		            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" );		            	
+		            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" );
 		            	for(int tt=0; tt<tmp.getIntValue(); ++tt){
-		            		String nnm = lhs + "_idx_" + tt;		            		
+		            		String nnm = lhs + "_idx_" + tt;
 			            	result += state.varGetRHSName("_p_"+nnm) + " = " + state.varGetRHSName(nnm) + ";\n";
 			            	//NOTE: This is not a bug. I call getRHSName for _p_nnm even though it is in the LHS
 			            	//because we need to get the same value that we got when we declared it.
@@ -263,22 +263,22 @@ public class NodesToSBit extends PartialEvaluator{
 	        }
 	        return result;
 	    }
-	    
+
 	    public Object visitExprBinary(ExprBinary exp)
 	    {
-	    	if(exp.getOp() == ExprBinary.BINOP_SELECT ){	
+	    	if(exp.getOp() == ExprBinary.BINOP_SELECT ){
 	    		Expression rvalE = exp;
 		        Expression left = (Expression)exp.getLeft().accept(this);
-		        valueClass lhs = state.popVStack();	        
-		        
+		        valueClass lhs = state.popVStack();
+
 		        Expression right = (Expression) exp.getRight().accept(this);
 		        valueClass rhs = state.popVStack();
-		        
-		        boolean hasv = lhs.hasValue() && rhs.hasValue();		        
+
+		        boolean hasv = lhs.hasValue() && rhs.hasValue();
 	        	if(hasv && lhs.getIntValue() == rhs.getIntValue()){
-	        		int newv=0;	        		
+	        		int newv=0;
 	        		newv = lhs.getIntValue();
-		        	state.pushVStack(new valueClass(newv));			        	
+		        	state.pushVStack(new valueClass(newv));
 		        	if( this.isReplacer ){
 		        		rvalE = new ExprConstInt(newv);
 		        	}
@@ -296,18 +296,18 @@ public class NodesToSBit extends PartialEvaluator{
 	        		}else{
 	        			rval =  "( <" + cvar +"> ? " + lhs + " : " + rhs + ")";
 	        		}
-	        		state.pushVStack(new valueClass(rval));	        		
+	        		state.pushVStack(new valueClass(rval));
 	        		if(this.isReplacer && (left != exp.getLeft() || right != exp.getRight())){
-	        			rvalE = new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
-	        		}  	        		
+	        			rvalE = new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
+	        		}
 	        		return rvalE;
 	        	}
 	    	}else{
 	    		return super.visitExprBinary(exp);
-	    	}	        
+	    	}
 	    }
 
-	    
+
 
 
 	    public Object visitFieldDecl(FieldDecl field)
@@ -315,12 +315,12 @@ public class NodesToSBit extends PartialEvaluator{
 	        // Assume all of the fields have the same type.
 	    	//Assert(false, "We don't allow filters to have state! Sorry.");
 	    	//return "//We don't allow filters to have state. \n";
-	    	
+
 	        String result =  convertType(field.getType(0)) + " ";
 	        for (int i = 0; i < field.getNumFields(); ++i)
 	        {
 	            if (i > 0) result += ", ";
-	            
+
 	            String lhs = field.getName(i);
 	            state.varDeclare(lhs);
 	            state.varGetLHSName(lhs);
@@ -328,7 +328,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            	TypeArray ta = (TypeArray) field.getType(i);
 	            	ta.getLength().accept(this);
 	            	valueClass tmp = state.popVStack();
-	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + field.getCx());
+	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + field);
 	            	state.makeArray(lhs, tmp.getIntValue());
 	            	for(int tt=0; tt<tmp.getIntValue(); ++tt){
 	            		String nnm = lhs + "_idx_" + tt;
@@ -336,33 +336,32 @@ public class NodesToSBit extends PartialEvaluator{
 	            		state.varGetLHSName(nnm);
 	            	}
 	            }
-	         
-	            if (field.getInit(i) != null){	
+
+	            if (field.getInit(i) != null){
 	            	additInit.
-					add(new StmtAssign(field.getCx(),
-							new ExprVar(field.getCx(), lhs),
-							field.getInit(i)));   
-	            }else{	            	
+					add(new StmtAssign(new ExprVar(field, lhs),
+									   field.getInit(i)));
+	            }else{
 	            	//Assert(false, "Vars should be initialized");
 	            }
 	        }
 	        result += ";";
 	        result = "";
-	        if (field.getCx() != null)
-	            result += " // " + field.getCx();
+	        if (field != null)
+	            result += " // " + field;
 	        result += "\n";
-	        return result;	        
+	        return result;
 	    }
-	    
+
 	    public Object visitExprFunCall(ExprFunCall exp)
-	    {	    	
+	    {
 	    	//String result = " ";
 	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	    	PrintStream ps = new PrintStream(baos);
 	    	String name = exp.getName();
             Function fun = ss.getFuncNamed (name);
 	    	// Local function?
-	    	if (fun != null) {        	
+	    	if (fun != null) {
                 String spec = fun.getSpecification ();
 	    		if (spec != null) {
                     fun = ss.getFuncNamed (spec);
@@ -375,7 +374,7 @@ public class NodesToSBit extends PartialEvaluator{
 
                 if (!rcontrol.testCall(exp)) {
                     /* Cannot inline further, plant an assertion. */
-                    FEContext exprContext = exp.getCx ();
+                    FENode exprContext = exp;
                     StmtAssert inlineAssert =
                         new StmtAssert (exprContext,
                                         new ExprConstBoolean (
@@ -390,7 +389,7 @@ public class NodesToSBit extends PartialEvaluator{
                     ps.print ("// MAX INLINED: END " + fun.getName () + " (" +
                     		rcontrol.inlineLevel(exp) + ")\n");
 
-                    Iterator actualParams = exp.getParams().iterator();	        		        	       	
+                    Iterator actualParams = exp.getParams().iterator();
                     Iterator formalParams = fun.getParams().iterator();
                     String tmp =
                         outParameterSetterArbitrary (formalParams,
@@ -399,9 +398,9 @@ public class NodesToSBit extends PartialEvaluator{
                     ps.print (tmp);
                 } else {
                     /* Increment inline counter, unfold another level. */
-                	rcontrol.pushFunCall(exp, fun);                    
+                	rcontrol.pushFunCall(exp, fun);
 
-                    Iterator actualParams = exp.getParams().iterator();	        		        	       	
+                    Iterator actualParams = exp.getParams().iterator();
                     Iterator formalParams = fun.getParams().iterator();
                     String tmp = inParameterSetter(formalParams, actualParams, false);
                     ps.print(tmp);
@@ -409,24 +408,24 @@ public class NodesToSBit extends PartialEvaluator{
                     ps.print("// BEGIN CALL " + fun.getName() +
                              " (" + rcontrol.inlineLevel(exp) + ")\n");
 
-                    PrintStream tmpout = out; out = new PrintStream( baos );	    		
-                    fun.getBody().accept(this);	    		
-                    //result += baos.toString();	    		
+                    PrintStream tmpout = out; out = new PrintStream( baos );
+                    fun.getBody().accept(this);
+                    //result += baos.toString();
                     out = tmpout;
 
                     ps.print("// END CALL " + fun.getName() +
                              " (" + rcontrol.inlineLevel(exp) +  ")\n");
 
-                    actualParams = exp.getParams().iterator();	        		        	       	
+                    actualParams = exp.getParams().iterator();
                     formalParams = fun.getParams().iterator();
                     tmp =  outParameterSetter(formalParams, actualParams, false);
                     ps.print(tmp);
-                    
+
 
                     /* Decrement inline counter. */
-                    rcontrol.popFunCall(exp);                    
+                    rcontrol.popFunCall(exp);
                 }
-	    	}else{ 
+	    	}else{
 	    		// look for print and println statements; assume everything
 	    		// else is a math function
 	    		if (name.equals("print")) {
@@ -440,7 +439,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    			//result = "";
 	    		} else if (name.equals("setDelay")) {
 	    			//result = "";
-	    		} else if (name.startsWith("enqueue")) {	        	
+	    		} else if (name.startsWith("enqueue")) {
 	    			//result = "";
 	    		} else {
 	    			Assert(false, "The streamBit compiler currently doesn't allow bit->bit filters to call other functions. You are trying to call the function" + name);
@@ -451,20 +450,20 @@ public class NodesToSBit extends PartialEvaluator{
 	    		}
 	    	}
 	    	state.pushVStack( new valueClass(baos.toString()) );
-	    	return exp;    	
+	    	return exp;
 	    }
 
 
 	    public Object visitFunction(Function func)
 	    {
-	        
+
 	        if (!func.getName().equals(ss.getName()));
-	        
+
 	        if(func.getCls() == Function.FUNC_INIT){
 	        	out.print("INIT()");
 	        	//result += doParams(func.getParams(), "") + "\n";
 	        	out.print("{\n");
-	        	this.state.pushLevel();  
+	        	this.state.pushLevel();
 	        	try{
 	        		func.getBody().accept(this);
 	        	}finally{
@@ -478,10 +477,10 @@ public class NodesToSBit extends PartialEvaluator{
 	        	}
 	        	this.additInit.clear();
 	        	out = tmpout;
-	        	out.print("}\n");	        	
+	        	out.print("}\n");
 	        }else if(func.getCls() == Function.FUNC_WORK){
 	        	out.print("WORK()\n");
-	        	Assert( func.getParams().size() == 0 , "");	        	
+	        	Assert( func.getParams().size() == 0 , "");
 	        	out.print("{\n");
 	        	this.state.pushLevel();
 	        	try{
@@ -498,9 +497,9 @@ public class NodesToSBit extends PartialEvaluator{
 		        		popr.accept(this);
 		        		out.print("output_RATE = " + state.popVStack() + ";\n");
 		        	}else{
-		        		out.print("output_RATE = 0;\n");	        	
-		        	}	        	
-		        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func.getCx() );
+		        		out.print("output_RATE = 0;\n");
+		        	}
+		        	Assert(((StmtBlock)func.getBody()).getStmts().size()>0, "You can not have empty functions!\n" + func );
 		        	func.getBody().accept(this);
 		        	out.print(finalizeWork());
 	        	}finally{
@@ -510,18 +509,18 @@ public class NodesToSBit extends PartialEvaluator{
 	        }else{
 	        	out.print(func.getName());
 	        	if( func.getSpecification() != null ){
-	        		out.print(" SKETCHES " + func.getSpecification()); 
+	        		out.print(" SKETCHES " + func.getSpecification());
 	        	}
 	        	out.print(doParams(func.getParams(), "") + "\n");
 	        	out.print("{\n");
-	        	this.state.pushLevel();  
+	        	this.state.pushLevel();
 	        	try{
 	        		func.getBody().accept(this);
 	        	}finally{
 	        		this.state.popLevel();
 	        	}
 	        	out.print(postDoParams(func.getParams()));
-	        	
+
 	        	PrintStream tmpout = out; out = new PrintStream( new ByteArrayOutputStream() );
 	        	Iterator it = this.additInit.iterator();
 	        	while(it.hasNext()){
@@ -530,15 +529,15 @@ public class NodesToSBit extends PartialEvaluator{
 	        	}
 	        	this.additInit.clear();
 	        	out = tmpout;
-	        	
-	        	out.print("}\n");	
+
+	        	out.print("}\n");
 	        	//state.pushVStack(new valueClass((String)null) );
 	        }
-	        
+
 	        out.print("\n");
 	        return null;
 	    }
-	    
+
 	    public Object visitFuncWork(FuncWork func)
 	    {
 	        // Nothing special here; we get to ignore the I/O rates.
@@ -549,12 +548,12 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        // Nothing special here either.  Just accumulate all of the
 	        // structures and streams.
-	    	
+
 	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	    	PrintStream tmpout = out; out = new PrintStream( baos );	    	
+	    	PrintStream tmpout = out; out = new PrintStream( baos );
 	        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); ){
-	        	StreamSpec sp = (StreamSpec)iter.next();	        	
-	        	funsWParams.put(sp.getName(), sp);	        		        	
+	        	StreamSpec sp = (StreamSpec)iter.next();
+	        	funsWParams.put(sp.getName(), sp);
 	        }
 	        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); ){
 	        	StreamSpec sp = (StreamSpec)iter.next();
@@ -564,20 +563,20 @@ public class NodesToSBit extends PartialEvaluator{
 	        	}else{
 		        	if(finit.getParams().size() > 0){
 		        		//funsWParams.put(sp.getName(), sp);
-		        	}else{	        		
+		        	}else{
 		        		sp.accept(this);
-		        	}	
+		        	}
 	        	}
 	        }
 	        out = tmpout;
 	        String tmpstr = "";
 	        while( preFil.size() > 0){
 	        	String otherFil = (String) preFil.pop();
-	        	tmpstr = otherFil + tmpstr;	        	
+	        	tmpstr = otherFil + tmpstr;
 	        }
 	        out.print(tmpstr);
 	        out.print(baos);
-	        
+
 	        return null;
 	    }
 
@@ -585,10 +584,10 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        return creator.getSpec().accept(this);
 	    }
-	    
+
 	    public Object visitSCSimple(SCSimple creator)
 	    {
-	    	
+
 	    	if( creator.getParams().size() == 0){
 		        out.print("new " + creator.getName() + "(");
 		        boolean first = true;
@@ -613,19 +612,19 @@ public class NodesToSBit extends PartialEvaluator{
 	    		String nm = creator.getName();
 	    		out.print( "new " );
 	    		String fullnm = nm;
-	    		
+
 		        for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
 		        {
-		        	
+
 		            Expression param = (Expression)iter.next();
 		            fullnm += "_";
 		            //this.state.markVectorStack();
-		            param.accept(this);	
+		            param.accept(this);
 		            valueClass paramVal = state.popVStack();
                 	if(paramVal.isVect()){
                 		List<valueClass> l = paramVal.getVectValue();
                 		int xx=0;
-                		int xpon=1;                		                		
+                		int xpon=1;
                 		for(Iterator it = l.iterator(); it.hasNext(); ){
                 			Integer i = (Integer)it.next();
                 			xx += xpon *  i.intValue();
@@ -633,10 +632,10 @@ public class NodesToSBit extends PartialEvaluator{
                 		}
                 		fullnm +=  xx;
                 	}else{
-                		int pv = paramVal.getIntValue();                		
+                		int pv = paramVal.getIntValue();
                 		fullnm += "" + pv;
                 	}
-		        }	    				        
+		        }
 		        fullnm += "___";
 		        out.print( fullnm + "()" );
 		        if( funsWParams.get(fullnm) == null){
@@ -649,19 +648,19 @@ public class NodesToSBit extends PartialEvaluator{
 				        Iterator formalParamIterator = finit.getParams().iterator();
 				        Iterator actualParamIterator = creator.getParams().iterator();
 				        Assert(finit.getParams().size() == creator.getParams().size() , nm + " The number of formal parameters doesn't match the number of actual parameters!!");
-				        
+
 				        inParameterSetter(formalParamIterator,actualParamIterator, true);
-				        
+
 				        Object obj = preFil.pop();
-				        String tmp = obj == null?"" : (String)obj; 
-				        
+				        String tmp = obj == null?"" : (String)obj;
+
 				        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				    	PrintStream tmpout = out; out = new PrintStream( baos );
-				        
+
 				    	sp.accept(this);
-				    	
+
 				        preFil.push( tmp + baos.toString() );
-				        
+
 				        out = tmpout;
 			        }finally{
 			        	state.popLevel();
@@ -671,7 +670,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        return null;
 	    }
 
-        
+
 	    public Object visitSJDuplicate(SJDuplicate sj)
 	    {
 	    	switch(sj.getType()){
@@ -705,21 +704,21 @@ public class NodesToSBit extends PartialEvaluator{
 	            first = false;
 	        }
 	        result += ")";
-	        return result;	        
+	        return result;
 	    }
 
 	    public Object doStreamCreator(String how, StreamCreator sc)
-	    {	    	
+	    {
 	        // If the stream creator involves registering with a portal,
 	        // we need a temporary variable.
 	        List portals = sc.getPortals();
-	        if (portals.isEmpty()){	        	
+	        if (portals.isEmpty()){
 	        	if( sc instanceof SCSimple){
 	        		String nm = ((SCSimple)sc).getName();
-	        		if( nm.equals("IntToBit") || nm.equals("BitToInt")){	        			
+	        		if( nm.equals("IntToBit") || nm.equals("BitToInt")){
 	        			return "";
 	        		}
-	        	} 	
+	        	}
 	            return how + "(" + (String)sc.accept(this) + ")";
 	        }
 	        String tempVar = varGen.nextVar();
@@ -741,59 +740,59 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        return "";
 	    }
-	    
+
 	    public Object visitStmtAdd(StmtAdd stmt)
 	    {
 	        return doStreamCreator("add", stmt.getCreator());
 	    }
-	    
+
 	    public Object visitStmtAssign(StmtAssign stmt)
 	    {
-	    	
+
 	        String op;
-	        //this.state.markVectorStack();	        
+	        //this.state.markVectorStack();
 	        stmt.getRHS().accept(this);
 	        valueClass vrhsVal = state.popVStack();
 	        List<valueClass> rhsLst = null;
-	        	
+
 	        if( vrhsVal.isVect() ){
 	        	rhsLst= vrhsVal.getVectValue();
 	        }
-	        
+
 	        LHSvisitor lhsvisitor = new LHSvisitor();
 	        String lhs = (String)stmt.getLHS().accept( lhsvisitor );
-	        
-	        stmt.getLHS(); 
+
+	        stmt.getLHS();
 			valueClass vlhsVal = null;
 			if(stmt.getOp() != 0){
 				stmt.getLHS().accept(this);
 				vlhsVal = state.popVStack();
 			}
-	        
+
 	        String lhsnm = null;
-	        
-	        
+
+
 	        boolean isArr = false;
 	        int arrSize = -1;
 	        if(! lhsvisitor.isNDArracc()){
 	        	lhsnm = state.varGetLHSName(lhs);
 	        	arrSize = state.checkArray(lhs);
-		        isArr = arrSize > 0;	
+		        isArr = arrSize > 0;
 	        }
-	                
-	        
+
+
 	        boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue() && !lhsvisitor.isNDArracc();
-	        
+
 	        switch(stmt.getOp())
 	        {
-	        case ExprBinary.BINOP_ADD: 	        	
+	        case ExprBinary.BINOP_ADD:
 	        	op = " = " + vlhsVal + "+";
 	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 	        	if(hv){
 	        		state.setVarValue(lhs, vlhsVal.getIntValue() + vrhsVal.getIntValue());
 	        	}
 	        break;
-	        case ExprBinary.BINOP_SUB: 
+	        case ExprBinary.BINOP_SUB:
 	        	op = " = "+ vlhsVal + "-";
 	        	assert !isArr : "Operation not yet defined for arrays:" + op;
 		        if(hv){
@@ -827,12 +826,12 @@ public class NodesToSBit extends PartialEvaluator{
 		    		}
 		    		return "";
 		    	}else if(hv){
-	        		state.setVarValue(lhs, vrhsVal.getIntValue());	
+	        		state.setVarValue(lhs, vrhsVal.getIntValue());
 	        		return "";
 	        	}
 	        }
 	        // Assume both sides are the right type.
-	        if(hv) 
+	        if(hv)
 	        	return "";
 	        else{
 	        	if(lhsvisitor.isNDArracc()){
@@ -849,23 +848,23 @@ public class NodesToSBit extends PartialEvaluator{
 	    public Object visitStmtBlock(StmtBlock stmt)
 	    {
 	        // Put context label at the start of the block, too.
-	    	state.pushLevel();	    	
+	    	state.pushLevel();
 	    	try{
 //		        result.append("// {");
-//		        if (stmt.getContext() != null)
-//		            result.append(" \t\t\t// " + stmt.getContext());
+//		        if (stmt != null)
+//		            result.append(" \t\t\t// " + stmt);
 //		        result.append("\n");
 		        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
 		        {
 		            Statement s = (Statement)iter.next();
-		            out.print(" ");		            	
+		            out.print(" ");
 		            s.accept(this);
 		            if(true){
 			            if (!(s instanceof StmtIfThen)) {
 			            	out.print(";");
 			            }
-			            if (s.getCx() != null)
-			            	out.print(" \t\t\t// " + s.getCx());
+			            if (s != null)
+			            	out.print(" \t\t\t// " + s);
 			            out.print("\n");
 		            }
 		        }
@@ -880,13 +879,13 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	        return doStreamCreator("setBody", stmt.getCreator());
 	    }
-	    
+
 	    public Object visitStmtBreak(StmtBreak stmt)
 	    {
 	    	assert false :"NYI";
 	        return "break";
 	    }
-	    
+
 	    public Object visitStmtContinue(StmtContinue stmt)
 	    {
 	    	assert false :"NYI";
@@ -909,33 +908,33 @@ public class NodesToSBit extends PartialEvaluator{
 	        return "/* enqueue(" + (String)stmt.getValue().accept(this) +
 	            ") */";
 	    }
-	    
+
 	    public Object visitStmtExpr(StmtExpr stmt)
 	    {
 	    	Expression exp = stmt.getExpression();
 	    	exp.accept(this);
 	    	String result = state.popVStack().toString();
 	    	out.print(result);
-		    return null;	    	
+		    return null;
 	    }
 
 	    public Object visitStmtFor(StmtFor stmt)
 	    {
-	    	state.pushLevel();	    	
+	    	state.pushLevel();
 	    	try{
-		        loopmap.pushLoop(0);		        
+		        loopmap.pushLoop(0);
 		        if (stmt.getInit() != null)
 		            stmt.getInit().accept(this);
-		        
+
 		        Assert( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
 		        stmt.getCond().accept(this);
 		        valueClass vcond = state.popVStack();
-		        int iters = 0;		       
+		        int iters = 0;
 		        while(vcond.hasValue() && vcond.getIntValue() > 0){
 		        	++iters;
 
 		        	stmt.getBody().accept(this);
-		        			        	
+
 		        	loopmap.nextIter();
 		        	if (stmt.getIncr() != null){
 		        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -945,12 +944,12 @@ public class NodesToSBit extends PartialEvaluator{
 		        	}
 		        	stmt.getCond().accept(this);
 			        vcond = state.popVStack();
-			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt.getCx());
+			        Assert(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt);
 		        }
-		        
+
 		        loopmap.popLoop();
 	    	}finally{
-	    		state.popLevel();	        	
+	    		state.popLevel();
 	    	}
 	    	return null;
 	    }
@@ -958,17 +957,17 @@ public class NodesToSBit extends PartialEvaluator{
 	    public Object visitStmtIfThen(StmtIfThen stmt)
 	    {
 	        // must have an if part...
-	    		        
+
             Expression cond = stmt.getCond();
 	        cond.accept(this);
 	        valueClass vcond = state.popVStack();
 	        if(vcond.hasValue()){
 	        	if(vcond.getIntValue() > 0){
 	        		if( rcontrol.testBlock(stmt.getCons()) ){
-	        			stmt.getCons().accept(this);	
+	        			stmt.getCons().accept(this);
 	        			rcontrol.doneWithBlock(stmt.getCons());
 	        		}else{
-						( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
+						( new StmtAssert(stmt, new ExprConstInt(0)) ).accept(this);
 					}
 	        	}else{
 	        		if (stmt.getAlt() != null){
@@ -976,16 +975,16 @@ public class NodesToSBit extends PartialEvaluator{
 	        				stmt.getAlt().accept(this);
 	        				rcontrol.doneWithBlock(stmt.getAlt());
 	        			}else{
-							( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
+							( new StmtAssert(stmt, new ExprConstInt(0)) ).accept(this);
 						}
 	        		}
 	        	}
-	        	return null;   	
+	        	return null;
 	        }
 
             /* Attach conditional to change tracker. */
 	        state.pushChangeTracker (cond, vcond, false);
-            
+
 	        if( rcontrol.testBlock(stmt.getCons()) ){
 		        try{
 		        	stmt.getCons().accept(this);
@@ -995,11 +994,11 @@ public class NodesToSBit extends PartialEvaluator{
 		        }
 		        rcontrol.doneWithBlock(stmt.getCons());
 	        }else{
-				( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
-			}	        
+				( new StmtAssert(stmt, new ExprConstInt(0)) ).accept(this);
+			}
 	        ChangeStack ipms = state.popChangeTracker();
-	        
-	        ChangeStack epms = null;	        
+
+	        ChangeStack epms = null;
 	        if (stmt.getAlt() != null){
                 /* Attach inverse conditional to change tracker. */
                 state.pushChangeTracker (cond, vcond, true);
@@ -1012,7 +1011,7 @@ public class NodesToSBit extends PartialEvaluator{
 			        }
 		        	rcontrol.doneWithBlock(stmt.getAlt());
                 }else{
-    				( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) ).accept(this);
+    				( new StmtAssert(stmt, new ExprConstInt(0)) ).accept(this);
     			}
 	            epms = state.popChangeTracker();
 	        }
@@ -1020,7 +1019,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        	String tmpVar = varGen.nextVar();
 	        	out.print(tmpVar + " = " + vcond.toString() + "; \n");
 	        	out.print(state.procChangeTrackers(ipms, epms, tmpVar));
-	        }else{	        	
+	        }else{
 	        	String tmpVar = varGen.nextVar();
 	        	out.print(tmpVar + " = " + vcond.toString() + "; \n");
 	        	out.print(state.procChangeTrackers(ipms, tmpVar));
@@ -1072,11 +1071,11 @@ public class NodesToSBit extends PartialEvaluator{
 	    	assert false : "NYI";
 	        return "setJoiner(" + (String)stmt.getJoiner().accept(this) + ")";
 	    }
-	    
+
 	    public Object visitStmtLoop(StmtLoop stmt)
 	    {
             /* Generate a new variable, initialized with loop expression. */
-            FEContext nvarContext = stmt.getCx ();
+            FENode nvarContext = stmt;
             String nvar = varGen.nextVar ();
             StmtVarDecl nvarDecl =
                 new StmtVarDecl (nvarContext,
@@ -1086,7 +1085,7 @@ public class NodesToSBit extends PartialEvaluator{
             nvarDecl.accept (this);
 
             /* Generate and visit an expression consisting of the new variable. */
-            ExprVar nvarExp = 
+            ExprVar nvarExp =
                 new ExprVar (nvarContext,
                              nvar);
             nvarExp.accept (this);
@@ -1127,8 +1126,8 @@ public class NodesToSBit extends PartialEvaluator{
 			        	stmt.getBody().accept(this);
 			        }catch(ArrayIndexOutOfBoundsException er){
 			        	//If this happens, it means that we statically determined that unrolling by (iters+1) leads to an out
-			        	//of bounds error. Thus, we will put a new assertion on the loop condition. 
-			        	state.popChangeTracker();			        	
+			        	//of bounds error. Thus, we will put a new assertion on the loop condition.
+			        	state.popChangeTracker();
 			        	out = tmpout;
 			        	StmtAssert nvarAssert2 =
 		                    new StmtAssert (nvarContext,
@@ -1142,17 +1141,17 @@ public class NodesToSBit extends PartialEvaluator{
 		    		}
 			        loopmap.nextIter();
 			        out = tmpout;
-			        out.print(baos);			        
+			        out.print(baos);
 	    		}
-	    		
+
 	    		for(int i=iters-1; i>=0; --i){
 
 	    			String cond = "(" + nvarFull + ")>" + i;
 	    			// I thought this would be more efficient, but it wasn't.
 //	    			String tmpVar = varGen.nextVar();
-	    			//result += tmpVar + " = " + cond + "; \n";		        		    			
+	    			//result += tmpVar + " = " + cond + "; \n";
 	    			ChangeStack ipms = state.popChangeTracker();
-	    			
+
 	    			out.print(state.procChangeTrackers(ipms, cond));
 	    		}
 	    		loopmap.popLoop();
@@ -1174,7 +1173,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        ExprFunCall fc = stmt.getFunCall();
 	        // ASSERT: the target is always a phase function.
 	        FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
-	        StmtExpr call = new StmtExpr(stmt.getCx(), fc);
+	        StmtExpr call = new StmtExpr(stmt, fc);
 	        String peek, pop, push;
 	        if (target.getPeekRate() == null)
 	            peek = "0";
@@ -1188,7 +1187,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            push = "0";
 	        else
 	            push = (String)target.getPushRate().accept(this);
-	        
+
 	        return "phase(new WorkFunction(" + peek + "," + pop + "," + push +
 	            ") { public void work() { " + call.accept(this) + "; } })";
 	    }
@@ -1197,10 +1196,10 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	    	String val = (String)stmt.getValue().accept(this);
 	    	valueClass ival = state.popVStack();
-	    	 
+
 	    	int pos = state.varValue("PUSH_POS");
 	    	state.setVarValue("PUSH_POS", pos+1);
-	    	String otpt = "OUTPUT_" + pos;	    	
+	    	String otpt = "OUTPUT_" + pos;
 			String lhs =  state.varGetLHSName(otpt);
 	    	if(ival.hasValue()){
 	    		state.setVarValue(otpt, ival.getIntValue());
@@ -1209,7 +1208,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    	}else{
 	    		out.print(lhs + " = " + val);
 	    		return null;
-	    	}	    	
+	    	}
 	        //return pushFunction(ss.getStreamType()) + "(" +
 	        //    (String)stmt.getValue().accept(this) + ")";
 	    }
@@ -1244,12 +1243,12 @@ public class NodesToSBit extends PartialEvaluator{
 	            if (max == null)
 	                max = new ExprBinary(null, ExprBinary.BINOP_MUL,
 	                                     stmt.getMinLatency(),
-	                                     new ExprConstInt(null, 100));
+	                                     new ExprConstInt(100));
 	            result += receiver + ".setLatency(" +
 	                (String)stmt.getMinLatency().accept(this) + ", " +
 	                (String)max.accept(this) + ")";
 	        }
-	        
+
 	        result += ";\n" + receiver + "." + stmt.getName() + "(";
 	        boolean first = true;
 	        for (Iterator iter = stmt.getParams().iterator(); iter.hasNext(); )
@@ -1271,10 +1270,10 @@ public class NodesToSBit extends PartialEvaluator{
 
 	    public Object visitStmtVarDecl(StmtVarDecl stmt)
 	    {
-	    	
+
 	        // Hack: if the first variable name begins with "_final_", the
 	        // variable declaration should be final.
-	        	        
+
 	        for (int i = 0; i < stmt.getNumVars(); i++)
 	        {
 	            String nm = stmt.getName(i);
@@ -1285,7 +1284,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            	TypeArray at = (TypeArray)vt;
 	            	at.getLength().accept(this);
 	            	valueClass tmp = state.popVStack();
-	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getCx());
+	            	Assert(tmp.hasValue(), "The array size must be a compile time constant !! \n" + stmt);
 	            	state.makeArray(nm, tmp.getIntValue());
 	            	//this.state.markVectorStack();
 	            	if( stmt.getInit(i) != null){
@@ -1325,20 +1324,20 @@ public class NodesToSBit extends PartialEvaluator{
 	            		for(int tt=0; tt<tmp.getIntValue(); ++tt){
 		            		String nnm = nm + "_idx_" + tt;
 		            		state.varDeclare(nnm);
-		            		state.varGetLHSName(nnm);		            		
+		            		state.varGetLHSName(nnm);
 		            	}
 	            	}
 	            }else{
-		            
-		            if (stmt.getInit(i) != null){     
+
+		            if (stmt.getInit(i) != null){
 		            	stmt.getInit(i).accept(this);
 		            	valueClass tmp = state.popVStack();
-		                String asgn = lhsn + " = " + tmp + "; \n";		                
+		                String asgn = lhsn + " = " + tmp + "; \n";
 		                if(tmp.hasValue()){
 		                	state.setVarValue(nm, tmp.getIntValue());
 		                }else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
-		                	out.print(asgn);	
-		                } 	                
+		                	out.print(asgn);
+		                }
 		            }
 	            }
 	        }
@@ -1357,24 +1356,24 @@ public class NodesToSBit extends PartialEvaluator{
 	    {
 	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		    PrintStream tmpout = out; out = new PrintStream( baos );
-	    	out.print( "// " + spec.getCx() + "\n" ); 
-	    	
+	    	out.print( "// " + spec + "\n" );
+
 	    	// Anonymous classes look different from non-anonymous ones.
 	    	// This appears in two places: (a) as a top-level (named)
 	    	// stream; (b) in an anonymous stream creator (SCAnon).
 	    	//StreamType st = spec.getStreamType();
-	    	
+
 	    	//Assert( ((TypePrimitive)st.getOut()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
 	    	//Assert( ((TypePrimitive)st.getIn()).getType() == TypePrimitive.TYPE_BIT, "Only bit types for now.");
 	    	StreamType st = spec.getStreamType();
-	    	
-	    	if( st != null && 
-	    			( ( 
+
+	    	if( st != null &&
+	    			( (
 	    					(  ((TypePrimitive)st.getIn()).getType() !=
 	    						TypePrimitive.TYPE_BIT &&
 	    						((TypePrimitive)st.getIn()).getType() !=
-	    							TypePrimitive.TYPE_VOID	
-	    					)|| 
+	    							TypePrimitive.TYPE_VOID
+	    					)||
 	    					((TypePrimitive)st.getOut()).getType() !=
 	    						TypePrimitive.TYPE_BIT ) &&   spec.getType() == StreamSpec.STREAM_FILTER ) ){
 	    		state.pushLevel();
@@ -1387,19 +1386,19 @@ public class NodesToSBit extends PartialEvaluator{
 	    		out.print( baos.toString() );
 	    		return null;
 	    	}
-	    	
+
 	    	state.pushLevel();
 	    	try{
 	    		if (spec.getName() != null)
-	    		{	            
+	    		{
 	    			// This is only public if it's the top-level stream,
-	    			// meaning it has type void->void.	             
+	    			// meaning it has type void->void.
 	    			if (false)
 	    			{
-	    				out.print( spec.getTypeString() + " " + spec.getName() +";\n" );	                
+	    				out.print( spec.getTypeString() + " " + spec.getName() +";\n" );
 	    			}
 	    			else
-	    			{	                
+	    			{
 	    				if (spec.getType() == StreamSpec.STREAM_FILTER)
 	    				{
 	    					// Need to notice now if this is a phased filter.
@@ -1432,12 +1431,12 @@ public class NodesToSBit extends PartialEvaluator{
 	    				Iterator it = f.getParams().iterator();
 	    				while(it.hasNext()){
 	    					Parameter p = (Parameter) it.next();
-	    					
+
 	    					int sz = state.checkArray(p.getName());
 	    					if(sz > 0){
 	    						//if( p.getType() instanceof TypeArray){
-	    						//	((TypeArray)p.getType()).getLength().accept(this);	                		
-	    						//	int sz = state.popVStack().intValue(); 
+	    						//	((TypeArray)p.getType()).getLength().accept(this);
+	    						//	int sz = state.popVStack().intValue();
 	    						int xx=0;
 	    						int xpon=1;
 	    						for(int i=0; i<sz; ++i){
@@ -1446,7 +1445,7 @@ public class NodesToSBit extends PartialEvaluator{
 	    						}
 	    						nm += "_" + xx;
 	    					}else{
-	    						int i = state.varValue(p.getName());	                	
+	    						int i = state.varValue(p.getName());
 	    						nm += "_" + i;
 	    					}
 	    				}
@@ -1474,16 +1473,16 @@ public class NodesToSBit extends PartialEvaluator{
 	    			}
 	    			out.print("() \n" );
 	    		}
-	    		
-	    		
-	    		
-	    		
+
+
+
+
 	    		if(spec.getType() == StreamSpec.STREAM_TABLE){
 	    			/**
 	    			 * TODO: Implement Tables properly. This is a kludge, but it will
 	    			 * allow me to implement AES.
-	    			 */	        	
-	    			
+	    			 */
+
 	    			//NodesToTable ntt = new NodesToTable(spec, this.varGen);
 	    			Function f = spec.getFuncNamed("init");
 	    			f.getBody().accept(this.nativeGenerator);
@@ -1491,18 +1490,18 @@ public class NodesToSBit extends PartialEvaluator{
 		    		out.print( baos.toString() );
 	    			return null;
 	    		}
-	    		
+
 	    		// At this point we get to ignore wholesale the stream type, except
 	    		// that we want to save it.
-	    		
+
 	    		StreamSpec oldSS = ss;
 	    		ss = spec;
-	    		out.print("{\n"); 
+	    		out.print("{\n");
 	    		// Output field definitions:
-	    		
-	    		
+
+
 	    		additInit = new LinkedList<Statement>();
-	    		
+
 	    		for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
 	    		{
 	    			FieldDecl varDecl = (FieldDecl)iter.next();
@@ -1513,12 +1512,12 @@ public class NodesToSBit extends PartialEvaluator{
 	    		Function f = spec.getFuncNamed("init");
 	    		if( f!= null)
 	    			f.accept(this);
-	    		
+
 	    		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
 	    			f = (Function)iter.next();
 	    			if( ! f.getName().equals("init") ){
 	    				f.accept(this);
-	    			}	        	
+	    			}
 	    		}
 //	    		TODO: DOTHIS      if( spec.getType() == StreamSpec.STREAM_TABLE ){
 //	    		outputTable=;
@@ -1528,33 +1527,33 @@ public class NodesToSBit extends PartialEvaluator{
 	    	}finally{
 	    		state.popLevel();
 	    	}
-	    	
-	    	out = tmpout;    		
-	    	
+
+	    	out = tmpout;
+
 	    	if (spec.getName() != null){
 	    		String tmpstr = "";
 	    		while( preFil.size() > 0){
 	    			String otherFil = (String) preFil.pop();
-	    			tmpstr = otherFil + tmpstr;	    			
+	    			tmpstr = otherFil + tmpstr;
 	    		}
 	    		out.print(tmpstr);
 	    	}
 	    	out.print( baos.toString() );
 	    	return null;
 	    }
-	    
+
 	    public Object visitStreamType(StreamType type)
 	    {
 	        // Nothing to do here.
 	        return "";
 	    }
-	    
+
 	    public Object visitOther(FENode node)
 	    {
 	        if (node instanceof ExprJavaConstructor)
 	        {
 	            ExprJavaConstructor jc = (ExprJavaConstructor)node;
-	            String rval = makeConstructor(jc.getType()); 
+	            String rval = makeConstructor(jc.getType());
 	            state.pushVStack(new valueClass(rval));
 	            return rval;
 	        }
@@ -1567,7 +1566,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            	result += io.getName() + "_RATE="+
 	                (String)io.getRate1().accept(this) + ";\n";
 	            	valueClass iv = state.popVStack();
-	            	Assert( iv.hasValue(), "The compiler must be able to determine the IO rate at compile time. \n" + io.getCx() );
+	            	Assert( iv.hasValue(), "The compiler must be able to determine the IO rate at compile time. \n" + io );
 	            }
 	            if (io.getRate2() != null){
 	                //result += "\n "+ io.getName() + "_RATE2=" + (String)io.getRate2().accept(this)+ ";\n";
@@ -1599,7 +1598,7 @@ public class NodesToSBit extends PartialEvaluator{
 	            return result;
 	        }
 	        if (node instanceof StmtSetTypes)
-	        {	        	
+	        {
 	            StmtSetTypes sst = (StmtSetTypes)node;
 	            out.print( "setIOTypes(" + typeToClass(sst.getInType()) +
 		                ", " + typeToClass(sst.getOutType()) + ")" );
@@ -1607,7 +1606,7 @@ public class NodesToSBit extends PartialEvaluator{
 	        }
 	        return "";
 	    }
-		public Object visitExprStar(ExprStar star) {			
+		public Object visitExprStar(ExprStar star) {
 			String cvar = oracle.addBinding(star);
 			String isFixed = star.isFixed()? " *" : "";
 			String rval;
