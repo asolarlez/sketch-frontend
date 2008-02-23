@@ -38,6 +38,6 @@ public class RandomValueOracle extends ValueOracle {
 		int bitWidth = ((ExprStar) node).getSize ();
 		int val = rand.nextInt (bitWidth);
 
-		return (ExprConstInt) ExprConstant.createConstant (node.getCx (), ""+val);
+		return (ExprConstInt) ExprConstant.createConstant (node, ""+val);
 	}
 }
