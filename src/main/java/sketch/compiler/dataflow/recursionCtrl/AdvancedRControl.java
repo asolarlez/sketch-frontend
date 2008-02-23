@@ -97,7 +97,7 @@ public class AdvancedRControl extends RecursionControl {
 				altName = func.getName();
 				Function tmp = ss.getFuncNamed(func.getSpecification());
 				if(tmp == null){					
-					throw new RuntimeException("The function " + func.getSpecification() + " does not exist.\n\t" + func.getCx());
+					throw new RuntimeException("The function " + func.getSpecification() + " does not exist.\n\t" + func);
 				}
 				func = tmp; 
 			}
@@ -211,7 +211,7 @@ public class AdvancedRControl extends RecursionControl {
 		FunInfo fi = funmap.get(fc.getName());
 		if( tracing && ! fi.isTerminal ){
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
-			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  /*+ "  "  +  fc.hashCode()*/ + "  " + fc.getCx()); //DEBUGGING INFO
+			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  /*+ "  "  +  fc.hashCode()*/ + "  " + fc); //DEBUGGING INFO
 		}
 		debugMsg = fc.getName();
 		++tt;
