@@ -53,7 +53,7 @@ public class CFGNode
 			return "->" + node.toString() + ((label == null)?"": "[" + label + "]");
 		}
 	}
-	
+
     private final boolean empty;
     private Statement stmt;
     private Statement preStmt = null;
@@ -62,34 +62,34 @@ public class CFGNode
     private boolean special = false;
     private final List<CFGNode> preds = new ArrayList<CFGNode>();
     private final List<EdgePair> succs = new ArrayList<EdgePair>();
-    
+
     public void makeSpecial(){
     	special = true;
     }
     public boolean isSpecial(){
     	return special;
     }
-    
-    
+
+
     public void changeStmt(Statement stmt){
     	assert isStmt();
-    	this.stmt = stmt;    	
+    	this.stmt = stmt;
     }
-    
+
     public void changeExpr(Expression expr){
     	assert !isEmpty();
     	this.expr = expr;
     }
-    
-    
+
+
     public void setPreStmt(Statement s){
     	preStmt = s;
     }
-    
+
     public Statement getPreStmt(){
     	return preStmt;
     }
-    
+
     // can't both be empty and have an expression.
     private CFGNode(Statement stmt, Expression expr, boolean empty)
     {
@@ -119,7 +119,7 @@ public class CFGNode
     {
         this(stmt, null /* expr */, empty);
     }
-    
+
     /**
      * Create an expression node.
      *
@@ -130,7 +130,7 @@ public class CFGNode
     {
         this(stmt, expr, false /* empty */);
     }
-    
+
     /**
      * Determine if this node is a placeholder node.
      * If so, the statement associated with the node identifies a
@@ -156,7 +156,7 @@ public class CFGNode
     {
         return expr != null;
     }
-    
+
     /**
      * Determine if this node is a statement node.
      *
@@ -166,7 +166,7 @@ public class CFGNode
     {
         return !empty && expr == null;
     }
-    
+
     /**
      * Get the expression associated with an expression node.
      * Returns <code>null</code> if this is not an expression
@@ -179,16 +179,16 @@ public class CFGNode
     {
         return expr;
     }
-    
-    
+
+
     public FEContext getCx(){
     	if(expr != null)
-    		return expr.getCx();
+    		return expr.getCx ();
     	if(stmt != null)
-    		return stmt.getCx();
+    		return stmt.getCx ();
     	return null;
     }
-    
+
     /**
      * Get the statement associated with a node.  Every node has
      * a statement associated with it: for a placeholder node,
@@ -216,7 +216,7 @@ public class CFGNode
 	public int getId() {
 		return id;
 	}
-	
+
 	public String toString(){
 		if(expr != null){
 			String rv = id + ":" ;
@@ -240,18 +240,18 @@ public class CFGNode
 	public void addPreds(List<CFGNode> preds) {
 		this.preds.addAll(preds);
 	}
-	
+
 	public void addPred(CFGNode pred) {
 		this.preds.add(pred);
 	}
-		
+
 	public void removeFromChildren(){
 		for(Iterator<EdgePair> eit = succs.iterator(); eit.hasNext(); ){
 			EdgePair ep = eit.next();
 			ep.node.removePred(this);
 		}
 	}
-	
+
 	public void checkNeighbors(){
 		CFGNode n = this;
 		List<CFGNode> preds = n.getPreds();
@@ -267,7 +267,7 @@ public class CFGNode
 			}
 			assert found : "I am not a successor of my predecessor";
 		}
-		
+
 		List<EdgePair> succs = n.getSuccs();
 		for(int i=0; i<succs.size(); ++i){
 			CFGNode s = succs.get(i).node;
@@ -287,10 +287,10 @@ public class CFGNode
 			}
 			assert found : "I am not a predecessor of my successor";
 		}
-		
+
 	}
-	
-	
+
+
 	/**
 	 * Returns true if this node has become unreachable.
 	 * @param oldP
@@ -301,37 +301,37 @@ public class CFGNode
 		this.preds.remove(oldP);
 		return sz > 0 && preds.size() == 0;
 	}
-	
+
 	public boolean removeAllPred(CFGNode oldP){
 		int sz = preds.size();
 		while(this.preds.remove(oldP)){};
 		return sz > 0 && preds.size() == 0;
 	}
-	
+
 	public void removeSucc(CFGNode oldS){
 		for(int i=0; i<succs.size(); ++i){
 			EdgePair ep = succs.get(i);
 			if(ep.node == oldS){
-				succs.remove(i);				
-			}			
-		}	
+				succs.remove(i);
+			}
+		}
 	}
-	
-	public void changePred(CFGNode oldS ,CFGNode newS){		
+
+	public void changePred(CFGNode oldS ,CFGNode newS){
 		for(int i=0; i<preds.size(); ++i){
 			if(preds.get(i) == oldS){
 				preds.set(i, newS);
 			}
 		}
 	}
-	
-	public void changeSucc(CFGNode oldS ,CFGNode newS){		
+
+	public void changeSucc(CFGNode oldS ,CFGNode newS){
 		for(int i=0; i<succs.size(); ++i){
 			EdgePair ep = succs.get(i);
 			if(ep.node == oldS){
-				succs.set(i, new EdgePair(newS, ep.label));				
-			}			
-		}		
+				succs.set(i, new EdgePair(newS, ep.label));
+			}
+		}
 	}
 
 	/**
@@ -360,5 +360,5 @@ public class CFGNode
 	public List<EdgePair> getSuccs() {
 		return succs;
 	}
-	
+
 }
