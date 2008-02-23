@@ -28,14 +28,23 @@ package streamit.frontend.nodes;
 public class ExprVar extends Expression
 {
     private String name;
-    
+
     /** Create a new ExprVar for a particular named variable. */
+    public ExprVar(FENode context, String name)
+    {
+        super(context);
+        this.name = name;
+    }
+
+    /** Create a new ExprVar for a particular named variable.
+     * @deprecated
+     */
     public ExprVar(FEContext context, String name)
     {
         super(context);
         this.name = name;
     }
-    
+
     /** Return the name of the variable referenced. */
     public String getName() { return name; }
 
@@ -67,7 +76,7 @@ public class ExprVar extends Expression
     {
         return name.hashCode();
     }
-    
+
     public boolean equals(Object o)
     {
         if (!(o instanceof ExprVar))
