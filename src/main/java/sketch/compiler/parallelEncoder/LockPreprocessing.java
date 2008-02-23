@@ -11,6 +11,7 @@ import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
@@ -23,17 +24,17 @@ public class LockPreprocessing extends SymbolTableVisitor {
 	public LockPreprocessing(){
 		super(null);
 	}
-	static final ExprVar NTYPES = new ExprVar(null,"NTYPES"); 
-	
+	static final ExprVar NTYPES = new ExprVar((FEContext) null,"NTYPES");
+
 	Map<String, ExprConstInt> lockedTypes = new HashMap<String, ExprConstInt>();
-	
+
 	public Object visitExprFunCall(ExprFunCall exp)
     {
 		if(exp.getName().equals("lock") || exp.getName().equals("unlock") ){
 			List<Expression>  pars = exp.getParams();
 			assert pars.size() == 1 : "Lock and unlock should have exactly one argument";
-			Expression par = pars.get(0); 
-			par = new ExprTypeCast(par.getCx(), TypePrimitive.inttype, par);
+			Expression par = pars.get(0);
+			par = new ExprTypeCast(par, TypePrimitive.inttype, par);
 			Type t = getType(par);
 			String tname = t.toString();
 			if(!lockedTypes.containsKey(tname)){
@@ -41,20 +42,20 @@ public class LockPreprocessing extends SymbolTableVisitor {
 			}
 			ExprConstInt offset = lockedTypes.get(tname);
 			ExprBinary newPar = new ExprBinary(new ExprBinary(par, "*", NTYPES ), "+" , offset );
-			return new ExprFunCall(exp.getCx(), exp.getName(), newPar);
+			return new ExprFunCall(exp, exp.getName(), newPar);
 		}
 		return exp;
     }
-	
+
 	public Object visitStreamSpec(StreamSpec spec)
     {
 		StreamSpec sspec = (StreamSpec)super.visitStreamSpec(spec);
-		
-		sspec.getVars().add(new FieldDecl(spec.getCx(), TypePrimitive.inttype, NTYPES.getName(), new ExprConstInt(lockedTypes.size())));
+
+		sspec.getVars().add(new FieldDecl(spec, TypePrimitive.inttype, NTYPES.getName(), new ExprConstInt(lockedTypes.size())));
 		sspec.getFuncs().add(Function.newUninterp("lock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.inttype, "mem"))));
 		sspec.getFuncs().add(Function.newUninterp("unlock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.inttype, "mem"))));
-		
+
 		return sspec;
     }
-	
+
 }

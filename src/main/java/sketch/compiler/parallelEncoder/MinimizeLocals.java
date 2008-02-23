@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
@@ -29,16 +30,16 @@ public class MinimizeLocals extends FEReplacer {
 	boolean outermost = true;
 	public void wlAdd(Type t, String s){
 		if(waitlist.containsKey(s)){
-			waitlist.get(t).push(s);			
+			waitlist.get(t).push(s);
 		}else{
 			Stack<String> tmp = new Stack<String>();
 			tmp.push(s);
 			waitlist.put(t, tmp);
 		}
 	}
-	
-	
-	
+
+
+
 	public Object visitStmtFork(StmtFork loop){
     	StmtVarDecl decl = loop.getLoopVarDecl();
     	Expression niter = (Expression) loop.getIter().accept(this);
@@ -46,11 +47,11 @@ public class MinimizeLocals extends FEReplacer {
     	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
     		return loop;
     	}
-    	return new StmtFork(loop.getCx(), decl, niter, body);
+    	return new StmtFork(loop, decl, niter, body);
     }
-	
-	
-	
+
+
+
 	public Object visitStmtFor(StmtFor stmt)
     {
 
@@ -67,24 +68,24 @@ public class MinimizeLocals extends FEReplacer {
         if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
             newIncr == stmt.getIncr() && newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getCx(), newInit, newCond, newIncr,
+        return new StmtFor(stmt, newInit, newCond, newIncr,
                            newBody);
     }
-	
-	
+
+
 	public Object visitStmtBlock(StmtBlock b){
 		boolean ot = outermost;
 		outermost = false;
-		
+
 		Map<Type, Stack<String>>  tmpWL = waitlist;
 		waitlist = new HashMap<Type, Stack<String>>();
-		
-		
+
+
 		Statement o = (Statement)super.visitStmtBlock(b);
-		
+
 		if(ot){
 			decls.add(o);
-			o = new StmtBlock(b.getCx(), decls);
+			o = new StmtBlock(b, decls);
 			decls = new ArrayList<Statement>();
 		}else{
 			for(Iterator<Entry<Type, Stack<String>>> it = waitlist.entrySet().iterator(); it.hasNext(); ){
@@ -98,22 +99,22 @@ public class MinimizeLocals extends FEReplacer {
 			waitlist = tmpWL;
 		}
 		outermost = ot;
-		return o;		
+		return o;
 	}
-	
-	
-	
+
+
+
 	public Object visitExprVar(ExprVar ev){
 		if(replMap.containsKey(ev.getName())){
-			return new ExprVar(ev.getCx(), replMap.get(ev.getName()));
+			return new ExprVar(ev, replMap.get(ev.getName()));
 		}else{
 			return ev;
 		}
 	}
-	
+
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-		FEContext cx = stmt.getCx();
+		FENode cx = stmt;
         List<Statement> ls = new ArrayList<Statement>();
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
@@ -123,7 +124,7 @@ public class MinimizeLocals extends FEReplacer {
         		s = freeList.get(t);
         	}else{
         		s = new Stack<String>();
-        		freeList.put(t, s);        		
+        		freeList.put(t, s);
         	}
         	if(s.size() > 0){
         		//There is a free variable of the same type.
@@ -138,15 +139,15 @@ public class MinimizeLocals extends FEReplacer {
         	//waitlist.put(key, value);
             Expression oinit = stmt.getInit(i);
             if (oinit != null){
-            	ls.add(new StmtAssign(cx, new ExprVar(cx, stmt.getName(i)), oinit));
-            	
+            	ls.add(new StmtAssign(new ExprVar(cx, stmt.getName(i)), oinit));
+
             }
-        }     
+        }
         if(ls.size() == 0) return null;
         return new StmtBlock(cx, ls).accept(this);
     }
-	
-	
-	
-	
+
+
+
+
 }

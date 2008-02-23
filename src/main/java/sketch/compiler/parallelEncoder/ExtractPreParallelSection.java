@@ -21,20 +21,20 @@ import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 
 /***
- * 
- * The purpose of this class is to divide all functions into 
+ *
+ * The purpose of this class is to divide all functions into
  * a pre-parallel section and a post-parallel section.
- * 
+ *
  * @author asolar
  *
  */
 
 public class ExtractPreParallelSection extends FEReplacer {
 
-	protected boolean foundploop = false;	
+	protected boolean foundploop = false;
 	public StmtFork ploop = null;
 	public Function parfun = null;
-	
+
 	static class MoveMisplacedDeclarations extends FEReplacer{
 		final Map<String, StmtVarDecl> decls;
 		final Set<String> undecld;
@@ -42,9 +42,9 @@ public class ExtractPreParallelSection extends FEReplacer {
 			this.decls = decls;
 			this.undecld = undecld;
 		}
-		
+
 		public Object visitStmtBlock(StmtBlock stmt)
-	    {			
+	    {
 	        List<Statement> oldStatements = newStatements;
 	        newStatements = new ArrayList<Statement>();
 	        if(oldStatements == null){
@@ -52,9 +52,9 @@ public class ExtractPreParallelSection extends FEReplacer {
 	        		String name = it.next();
 	        		if(decls.containsKey(name)){
 		        		StmtVarDecl svd = decls.get(name);
-		        		ArrayList<Expression> inits = new ArrayList<Expression>(svd.getNumVars());	        		
+		        		ArrayList<Expression> inits = new ArrayList<Expression>(svd.getNumVars());
 		        		for(int i=0; i<svd.getNumVars(); ++i) inits.add(ExprConstInt.zero);
-		        		newStatements.add(new StmtVarDecl(svd.getCx(), svd.getTypes(), svd.getNames(), inits));
+		        		newStatements.add(new StmtVarDecl(svd, svd.getTypes(), svd.getNames(), inits));
 	        		}
 	        	}
 	        }
@@ -63,7 +63,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 	            Statement s = (Statement)iter.next();
 	            // completely ignore null statements, causing them to
 	            // be dropped in the output
-	            
+
 	            if(s instanceof StmtVarDecl){
 	            	StmtVarDecl svd = (StmtVarDecl)s;
 	            	boolean found = false;
@@ -76,7 +76,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 	            	if(found){
 	            		for(int i=0; i<svd.getNumVars(); ++i){
 		            		if( svd.getInit(i) != null ){
-		            			s = new StmtAssign(s.getCx(), new ExprVar(null, svd.getName(i)), svd.getInit(i));
+		            			s = new StmtAssign(new ExprVar(svd, svd.getName(i)), svd.getInit(i));
 		            			try{
 		            			doStatement(s);
 		            			}catch(RuntimeException e){
@@ -85,7 +85,7 @@ public class ExtractPreParallelSection extends FEReplacer {
 		        	            }
 		            		}
 		            	}
-	            		
+
 	            		continue;
 	            	}
 	            }
@@ -98,16 +98,16 @@ public class ExtractPreParallelSection extends FEReplacer {
 	            	throw e;
 	            }
 	        }
-	        Statement result = new StmtBlock(stmt.getCx(), newStatements);
+	        Statement result = new StmtBlock(stmt, newStatements);
 	        newStatements = oldStatements;
 	        return result;
 	    }
-		
-		
+
+
 	}
-	
+
 	static class FindMisdeclaredVars extends FEReplacer{
-		
+
 		Map<String, StmtVarDecl> decls = new HashMap<String, StmtVarDecl>();
 		Map<String, StmtVarDecl> alldecls = new HashMap<String, StmtVarDecl>();
 		Set<String> undecld = new HashSet<String>();
@@ -137,19 +137,19 @@ public class ExtractPreParallelSection extends FEReplacer {
 				undecld.add(name);
 			}
 			return exp;
-		}	
+		}
 	}
-	
-	
-	public Object visitExprVar(ExprVar exp){		
+
+
+	public Object visitExprVar(ExprVar exp){
 		return exp;
 	}
-	
+
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl decl){
 		return decl;
 	}
-	
+
 	public Object visitFunction(Function func)
     {
 		foundploop = false;
@@ -159,24 +159,24 @@ public class ExtractPreParallelSection extends FEReplacer {
 		///are in the wrong place, and then we move the declarations.
 		FindMisdeclaredVars mdv = new FindMisdeclaredVars();
 		func = (Function)func.accept(mdv);
-		
+
 		///And now, we do the change of the declarations.
 		MoveMisplacedDeclarations mmd = new MoveMisplacedDeclarations(mdv.alldecls, mdv.undecld);
-		func = (Function)func.accept(mmd);	
-		
+		func = (Function)func.accept(mmd);
+
 		if(foundploop){
 			parfun = func;
-		}		
+		}
     	return func;
     }
-	
+
 	public Object visitStmtBlock(StmtBlock stmt)
     {
 		if(stmt.getStmts().size() == 0){
 			return null;
-		}		
+		}
         List<Statement> oldStatements = newStatements;
-        
+
         boolean buildSuperBlock = false;
         if(oldStatements == null){
         	buildSuperBlock = true;
@@ -191,15 +191,15 @@ public class ExtractPreParallelSection extends FEReplacer {
             // be dropped in the output
             if (s == null)
                 continue;
-            try{            	
+            try{
             	 Statement result = (Statement)s.accept(this);
             	 if(foundploop && preblock == null){
             		 assert result != null;
-            		 preblock = new StmtBlock(stmt.getCx(), newStatements);
+            		 preblock = new StmtBlock(stmt, newStatements);
             		 newStatements = new ArrayList<Statement>();
             		 oldStatements.add(preblock);
             		 addStatement(result);
-            		 
+
             	 }else{
             		 if (result != null)
             			 addStatement(result);
@@ -209,33 +209,33 @@ public class ExtractPreParallelSection extends FEReplacer {
             	throw e;
             }
         }
-        
+
         Statement result = null;
         if(newStatements.size() > 0){
         	if(newStatements.size() > 1){
-        		result = new StmtBlock(stmt.getCx(), newStatements);
+        		result = new StmtBlock(stmt, newStatements);
         	}else{
         		result = newStatements.get(0);
         	}
         }
         if(foundploop && buildSuperBlock){
         	assert oldStatements.size() == 1;
-        	List<Statement> slist =new ArrayList<Statement>(2);        	
-        	slist.add(preblock);        	
-        	slist.add(result);        	
-        	result = new StmtBlock(stmt.getCx(), slist);        	
+        	List<Statement> slist =new ArrayList<Statement>(2);
+        	slist.add(preblock);
+        	slist.add(result);
+        	result = new StmtBlock(stmt, slist);
         }else{
         	newStatements = oldStatements;
         }
         return result;
     }
-	
-	
-	
-	public Object visitStmtFork(StmtFork loop){		
+
+
+
+	public Object visitStmtFork(StmtFork loop){
 		foundploop = true;
 		ploop = loop;
 		return loop;
     }
-	
+
 }
