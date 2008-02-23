@@ -6,12 +6,23 @@ import java.util.List;
 public class StmtReorderBlock extends Statement {
 
 	StmtBlock block;
+
 	 /** Create a new StmtBlock with the specified ordered list of
      * statements. */
-    public StmtReorderBlock(FEContext context, List stmts)
+    public StmtReorderBlock(FENode context, List stmts)
     {
     	super(context);
     	block = new StmtBlock(context, stmts);
+    }
+
+	 /** Create a new StmtBlock with the specified ordered list of
+	  * statements.
+	  * @deprecated
+	  */
+    public StmtReorderBlock(FEContext context, List stmts)
+    {
+   	super(context);
+   	block = new StmtBlock(context, stmts);
     }
 
     /** Accepts a front-end visitor. */
