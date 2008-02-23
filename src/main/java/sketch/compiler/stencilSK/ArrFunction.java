@@ -6,6 +6,7 @@ import java.util.List;
 
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
@@ -30,9 +31,9 @@ public class ArrFunction{
 	public static final String GUARD_VAR = "gv_";
 	public static final String IND_VAR = "_ii_";
 	public static final String PPPREFIX = "pp_";
-	public static final ExprVar NULL = new ExprVar(null, "null");
+	public static final ExprVar NULL = new ExprVar((FEContext) null, "null");
 	////////////////////////////////////////////////////////////////
-	
+
 	String arrName;
 	String suffix;
 	Type arrType;
@@ -46,63 +47,63 @@ public class ArrFunction{
 	 * These parameters correspond to the loop iteration that we care about.
 	 * They have default values corresponding to the last iteration of the loop.
 	 */
-	ParamTree iterParams;	
+	ParamTree iterParams;
 	/**
 	 * These are other parameters to the function which may be used to compute the
 	 * value of the loop.
 	 */
 	List<StmtVarDecl> othParams;
-	
+
 	ParamTree.treeNode declarationSite;
 	int condsPos = -1;
-	
+
 	List<StmtVarDecl> inputParams;
-	
-	
+
+
 	private List<StmtMax> idxAss;
-	private List<Statement> maxAss;	
+	private List<Statement> maxAss;
 	private List<Statement> retStmts;
-	
+
 	public void addIdxAss(StmtMax sm){
 		idxAss.add(sm);
 		if(sm.dim > max_size) max_size = sm.dim;
 	}
-	
+
 	public void addMaxAss(Statement ma){
 		maxAss.add(ma);
 	}
-	
+
 	public void addRetStmt(Statement rs){
 		retStmts.add(rs);
 	}
-	
+
 	public int size(){
 		return idxAss.size();
 	}
-	
+
 	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt, ParamTree.treeNode declarationSite, int condsPos){
 		this.arrName = arrName;
 		idxParams = new ArrayList<StmtVarDecl>();
-		iterParams = pt;		
+		iterParams = pt;
 		othParams = new ArrayList<StmtVarDecl>();
 		idxAss = new ArrayList<StmtMax>();
 		maxAss = new ArrayList<Statement>();
-		retStmts = new ArrayList<Statement>();	
+		retStmts = new ArrayList<Statement>();
 		this.suffix = suffix;
 		this.arrType = arrType;
 		this.declarationSite = declarationSite;
 		this.condsPos = condsPos;
 	}
-	
+
 	public String getFullName(){
 		return arrName + suffix;
 	}
-	
+
 	public void close(){
 		//This method signals that from here on,
 		//the function will not be modified again.
 	}
-	
+
 	public String toString(){
 		String rv = getFullName();
 		rv += "(" + idxParams + ", " + iterParams + ", " + othParams +  ", " + inputParams +  "){\n";
@@ -114,14 +115,14 @@ public class ArrFunction{
 		for(Iterator<Statement> it = maxAss.iterator(); it.hasNext(); ){
 			rv += it.next().toString() + ";\n";
 		}
-		
+
 		for(Iterator<Statement> it = retStmts.iterator(); it.hasNext(); ){
 			rv += it.next().toString() + ";\n";
 		}
 		rv += "}";
-		return rv;	
+		return rv;
 	}
-	
+
 	private static final List<Parameter> makeParams(List<StmtVarDecl> ls) {
 		return makeParams(ls.iterator());
 	}
@@ -134,7 +135,7 @@ public class ArrFunction{
 		}
 		return ret;
 	}
-	
+
 	public Function toAST() {
 		List<Parameter> params=new ArrayList<Parameter>();
 		{
@@ -154,26 +155,26 @@ public class ArrFunction{
 				else
 					stmts.add(stmt);
 			}
-			stmts.add(new StmtVarDecl(null, 
-				new TypeArray(TypePrimitive.inttype, new ExprConstInt(null, max_size)),
-				MAX_VAR, new ExprConstInt(null, 0)));
-			stmts.add(new StmtVarDecl(null, 
+			stmts.add(new StmtVarDecl((FEContext) null,
+				new TypeArray(TypePrimitive.inttype, new ExprConstInt(max_size)),
+				MAX_VAR, new ExprConstInt(0)));
+			stmts.add(new StmtVarDecl((FEContext) null,
 					TypePrimitive.bittype,
-					IND_VAR, new ExprConstInt(null, 1)));
+					IND_VAR, new ExprConstInt(1)));
 			for(int i=0; i<maxAss.size(); ++i){
-				stmts.add(new StmtVarDecl(null, 
+				stmts.add(new StmtVarDecl((FEContext) null,
 						TypePrimitive.bittype,
-						IND_VAR+i, new ExprConstInt(null, 0)));
+						IND_VAR+i, new ExprConstInt(0)));
 			}
 			stmts.addAll(maxAss);
 			stmts.addAll(retStmts);
 		}
-		Statement body=new StmtBlock(null,stmts);
-		
-		Function ret=Function.newHelper(null,getFullName(), arrType,params,body);
+		Statement body=new StmtBlock((FEContext) null,stmts);
+
+		Function ret=Function.newHelper(body,getFullName(), arrType,params,body);
 		return ret;
 	}
-	
+
 	/**
 	 * This method runs the symbolic solver on the max statements in the
 	 * ArrFunction to replace them with sequences of guarded assignments.
