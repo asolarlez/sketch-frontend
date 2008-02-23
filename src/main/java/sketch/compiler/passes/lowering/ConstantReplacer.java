@@ -11,13 +11,13 @@ import streamit.frontend.nodes.ExprArrayRange.RangeLen;
  * inlines their definition throughout the program. Also removes
  * the constant definition.
  * Should run AFTER FunctionParamExtension, but before all other passes.
- * 
+ *
  * @author liviu
  */
 public class ConstantReplacer extends FEReplacer {
 
 	private HashMap<String,Integer> constants;
-	
+
 	public ConstantReplacer(Map subs) {
 		constants=new HashMap<String,Integer>();
 		if(subs != null){
@@ -35,9 +35,9 @@ public class ConstantReplacer extends FEReplacer {
 		}
 		return false;
 	}
-	
+
 	@Override
-	public Object visitExprArrayRange(ExprArrayRange exp) 
+	public Object visitExprArrayRange(ExprArrayRange exp)
 	{
 		List newMembers=new ArrayList(exp.getMembers().size()+1);
 		boolean change=false;
@@ -54,7 +54,7 @@ public class ConstantReplacer extends FEReplacer {
 				}
 				newMembers.add(range);
 			}
-			else 
+			else
 				newMembers.add(m);
 		}
 		if(change) exp=new ExprArrayRange(exp.getBase(),newMembers);
@@ -80,14 +80,14 @@ public class ConstantReplacer extends FEReplacer {
 			}
 		}
 		if(types.isEmpty()) return null;
-		return new FieldDecl(field.getCx(),types,names,inits);
+		return new FieldDecl(field,types,names,inits);
 	}
 
-	
+
 	public Object visitExprVar(ExprVar exp) {
 		Integer val=constants.get(exp.getName());
 		if(val==null) return exp;
-		return new ExprConstInt(exp.getCx(),val);
+		return new ExprConstInt(exp,val);
 	}
 
 	public Object visitExprBinary(ExprBinary exp) {
@@ -99,7 +99,7 @@ public class ConstantReplacer extends FEReplacer {
 			int r=((ExprConstInt)exp.getRight()).getVal();
 			final int v;
 			switch(exp.getOp()) {
-				case ExprBinary.BINOP_ADD: v=l+r; break; 
+				case ExprBinary.BINOP_ADD: v=l+r; break;
 				case ExprBinary.BINOP_SUB: v=l-r; break;
 				case ExprBinary.BINOP_MUL: v=l*r; break;
 				case ExprBinary.BINOP_DIV: v=l/r; break;
@@ -108,14 +108,14 @@ public class ConstantReplacer extends FEReplacer {
 				case ExprBinary.BINOP_RSHIFT: v=l>>r; break;
 				default: return exp;
 			}
-			return new ExprConstInt(exp.getCx(),v);
+			return new ExprConstInt(exp,v);
 		}
 		return exp;
 	}
-	
+
 	 public Object visitExprTypeCast(ExprTypeCast exp)
-    {		 
-		 
+    {
+
 		Expression expr = doExpression(exp.getExpr());
 		Type newType = exp.getType();
         if(exp.getType()instanceof TypeArray){
@@ -129,7 +129,7 @@ public class ConstantReplacer extends FEReplacer {
         if (expr == exp.getExpr() && newType == exp.getType())
             return exp;
         else
-            return new ExprTypeCast(exp.getCx(), newType, expr);
+            return new ExprTypeCast(exp, newType, expr);
     }
 
 	public Object visitFunction(Function func) {
@@ -150,7 +150,7 @@ public class ConstantReplacer extends FEReplacer {
 			}
 		}
 		if(changed)
-			func=new Function(func.getCx(),func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
+			func=new Function(func,func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
 		return super.visitFunction(func);
 	}
 
