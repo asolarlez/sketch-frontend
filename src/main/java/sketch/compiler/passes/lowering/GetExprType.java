@@ -46,7 +46,7 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
-    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp.getCx();
+    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp;
     	Type base = (Type)exp.getBase().accept(this);
 
 		List l=exp.getMembers();
@@ -58,10 +58,10 @@ public class GetExprType extends FENullVisitor
 				Type start = (Type)((Range) obj).start().accept(this);
 				Type end = (Type)((Range) obj).end().accept(this);
 				if(expr == null){
-					expr = new ExprBinary(exp.getCx(), ExprBinary.BINOP_SUB, range.end(), range.start());
+					expr = new ExprBinary(exp, ExprBinary.BINOP_SUB, range.end(), range.start());
 				}else{
-					expr = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, expr,
-							new ExprBinary(exp.getCx(), ExprBinary.BINOP_SUB, range.end(), range.start())
+					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr,
+							new ExprBinary(exp, ExprBinary.BINOP_SUB, range.end(), range.start())
 					);
 				}
 			}
@@ -71,7 +71,7 @@ public class GetExprType extends FENullVisitor
 				if(expr == null){
 					expr = new ExprConstInt(range.len());
 				}else{
-					expr = new ExprBinary(exp.getCx(), ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
+					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
 				}
 			}
 		}
@@ -222,7 +222,7 @@ public class GetExprType extends FENullVisitor
         }
         else
         {
-            assert false : "You are trying to do a field access on a " + base + " in expr " + exp + " . " + exp.getCx();
+            assert false : "You are trying to do a field access on a " + base + " in expr " + exp + " . " + exp;
             return null;
         }
     }
@@ -325,7 +325,7 @@ public class GetExprType extends FENullVisitor
     	try{
     		t = symTab.lookupVar(exp.getName());
     	}catch(UnrecognizedVariableException e){
-    		throw new UnrecognizedVariableException(exp.getCx() + ": The variable " + e.getMessage() + " has not been defined.");
+    		throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
     	}
         return t;
     }
