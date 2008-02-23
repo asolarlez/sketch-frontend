@@ -25,19 +25,32 @@ package streamit.frontend.nodes;
 public class StmtJoin extends Statement
 {
     private SplitterJoiner sj;
-    
+
     /**
      * Creates a new join statement with the specified joiner type.
      *
      * @param context  file and line number this statement corresponds to
      * @param splitter type of splitter for this stream
      */
+    public StmtJoin(FENode context, SplitterJoiner joiner)
+    {
+        super(context);
+        sj = joiner;
+    }
+
+    /**
+     * Creates a new join statement with the specified joiner type.
+     *
+     * @param context  file and line number this statement corresponds to
+     * @param splitter type of splitter for this stream
+     * @deprecated
+     */
     public StmtJoin(FEContext context, SplitterJoiner joiner)
     {
         super(context);
         sj = joiner;
     }
-    
+
     /**
      * Returns the joiner type for this.
      *
@@ -47,7 +60,7 @@ public class StmtJoin extends Statement
     {
         return sj;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -60,12 +73,12 @@ public class StmtJoin extends Statement
             return false;
         return ((StmtJoin)other).sj.equals(sj);
     }
-    
+
     public int hashCode()
     {
         return sj.hashCode();
     }
-    
+
     public String toString()
     {
         return "join " + sj;

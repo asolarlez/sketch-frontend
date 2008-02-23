@@ -17,43 +17,53 @@
 package streamit.frontend.nodes;
 
 /**
- * A loop that executes its body a specified number of times. 
+ * A loop that executes its body a specified number of times.
  */
 public class StmtLoop extends Statement
 {
     private Expression iter;
     private Statement body;
-    
+
     /** Creates a new loop. */
+    public StmtLoop(FENode context, Expression iter, Statement body)
+    {
+        super(context);
+        this.iter = iter;
+        this.body = body;
+    }
+
+    /** Creates a new loop.
+     * @deprecated
+     */
     public StmtLoop(FEContext context, Expression iter, Statement body)
     {
         super(context);
         this.iter = iter;
         this.body = body;
     }
-    
+
     /** Return the number of iterations. */
     public Expression getIter()
     {
         return iter;
     }
-    
+
     /** Return the loop body of this. */
     public Statement getBody()
     {
         return body;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
         return v.visitStmtLoop(this);
     }
-    
+
     public String toString()
     {
     	return "loop("+iter+")";
     }
 }
 
-    
+

@@ -28,8 +28,17 @@ package streamit.frontend.nodes;
 public class StmtPush extends Statement
 {
     Expression value;
-    
+
     /** Creates a new push statement with the specified value. */
+    public StmtPush(FENode context, Expression value)
+    {
+        super(context);
+        this.value = value;
+    }
+
+    /** Creates a new push statement with the specified value.
+     * @deprecated
+     */
     public StmtPush(FEContext context, Expression value)
     {
         super(context);
@@ -41,20 +50,20 @@ public class StmtPush extends Statement
     {
         return value;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
         return v.visitStmtPush(this);
     }
-    
+
     public boolean equals(Object other)
     {
         if (!(other instanceof StmtPush))
             return false;
         return value.equals(((StmtPush)other).getValue());
     }
-    
+
     public int hashCode()
     {
         return value.hashCode();

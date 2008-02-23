@@ -30,27 +30,27 @@ package streamit.frontend.nodes;
 public class StmtPhase extends Statement
 {
     private ExprFunCall fc;
-    
+
     /** Creates a new phase statement that calls the specified function. */
-    public StmtPhase(FEContext context, ExprFunCall fc)
+    public StmtPhase(FENode context, ExprFunCall fc)
     {
         super(context);
         this.fc = fc;
     }
-    
+
     /** Create a phase statement using the specified function call, using
      * that call's context as our own. */
     public StmtPhase(ExprFunCall fc)
     {
-        this(fc.getCx(), fc);
+        this(fc, fc);
     }
-    
+
     /** Gets the function call associated with the phase invocation. */
     public ExprFunCall getFunCall()
     {
         return fc;
     }
-    
+
     public Object accept(FEVisitor v)
     {
         return v.visitStmtPhase(this);
