@@ -30,28 +30,28 @@ import java.util.List;
 public class Program extends FENode
 {
     private List streams, structs;
-    
+
     /** Creates a new StreamIt program, given lists of streams and
      * structures. */
-    public Program(FEContext context, List streams, List structs)
+    public Program(FENode context, List streams, List structs)
     {
         super(context);
         this.streams = streams;
         this.structs = structs;
     }
-    
+
     /** Returns the list of streams declared in this. */
     public List getStreams()
     {
         return streams;
     }
-    
+
     /** Returns the list of structures declared in this. */
     public List getStructs()
     {
         return structs;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
