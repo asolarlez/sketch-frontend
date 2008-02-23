@@ -26,6 +26,7 @@ import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
@@ -54,7 +55,7 @@ import streamit.frontend.nodes.TypeStruct;
 public class MoveStreamParameters extends InitMunger
 {
     private Type objectType;
-    
+
     public MoveStreamParameters()
     {
         super();
@@ -62,8 +63,8 @@ public class MoveStreamParameters extends InitMunger
                                     Collections.EMPTY_LIST,
                                     Collections.EMPTY_LIST);
     }
-    
-    private Function makeConstructor(FEContext context, String name,
+
+    private Function makeConstructor(FENode context, String name,
                                      List params)
     {
         // Create a helper function with a call to super().
@@ -87,10 +88,42 @@ public class MoveStreamParameters extends InitMunger
         return fn;
     }
 
+    /**
+     *
+     * @param context
+     * @param name
+     * @param params
+     * @return
+     * @deprecated
+     */
+/* TODO:    private Function makeConstructor(FEContext context, String name,
+                                     List params)
+    {
+        // Create a helper function with a call to super().
+        // Work from the bottom up.  Create the parameter list to the
+        // call:
+        List superParams = new ArrayList();
+        for (Iterator iter = params.iterator(); iter.hasNext(); )
+        {
+            Parameter param = (Parameter)iter.next();
+            Expression sp = new ExprVar(context, param.getName());
+            superParams.add(sp);
+        }
+        Expression funCall = new ExprFunCall(context, "super", superParams);
+        Statement stmtSuper = new StmtExpr(context, funCall);
+        Statement stmtBlock =
+            new StmtBlock(context, Collections.singletonList(stmtSuper));
+        Function fn =
+            Function.newHelper(context, name,
+            					TypePrimitive.voidtype,
+                               params, stmtBlock);
+        return fn;
+    }*/
+
     private Function addInitParams(Function init, List params)
     {
-        FEContext context = init.getCx();
-        
+        FENode context = init;
+
         // The init function should have no parameters coming in;
         // completely replace its parameter list with params.  This
         // means we just need to replace the body.
@@ -111,14 +144,14 @@ public class MoveStreamParameters extends InitMunger
                 rhs = new ExprTypeCast(context, param.getType(), rhs);
                 param = new Parameter(objectType, pName, param.getPtype());
             }
-            Statement stmt = new StmtAssign(context, lhs, rhs);
+            Statement stmt = new StmtAssign(lhs, rhs);
             body.add(stmt);
             newParams.add(param);
         }
         StmtBlock oldBody = (StmtBlock)init.getBody();
         body.addAll(oldBody.getStmts());
-        Statement newBody = new StmtBlock(oldBody.getCx(), body);
-        
+        Statement newBody = new StmtBlock(oldBody, body);
+
         // Too many parts here, don't use Function.newInit().
         return new Function(context, init.getCls(), init.getName(),
                             init.getReturnType(), newParams, init.getSpecification(), newBody);
@@ -128,7 +161,7 @@ public class MoveStreamParameters extends InitMunger
     // parameter list, doing no special work.
     private Function addInitParamsOnly(Function init, List params)
     {
-        FEContext context = init.getCx();
+        FENode context = init;
 
         // As before.  We do actually need to make changes here,
         // if there are stream parameters that are Object type.
@@ -157,8 +190,8 @@ public class MoveStreamParameters extends InitMunger
         }
         StmtBlock oldBody = (StmtBlock)init.getBody();
         body.addAll(oldBody.getStmts());
-        Statement newBody = new StmtBlock(oldBody.getCx(), body);
-        
+        Statement newBody = new StmtBlock(oldBody, body);
+
         return new Function(context, init.getCls(), init.getName(),
                             init.getReturnType(), newParams, init.getSpecification(), newBody);
     }
@@ -166,18 +199,18 @@ public class MoveStreamParameters extends InitMunger
     public Object visitStreamSpec(StreamSpec spec)
     {
         spec = (StreamSpec)super.visitStreamSpec(spec);
-        
+
         if (spec.getParams().size() > 0)
         {
             List newFuncs = new ArrayList(spec.getFuncs());
             List newVars = new ArrayList(spec.getVars());
 
             // Create a constructor:
-            Function constructor = makeConstructor(spec.getCx(),
+            Function constructor = makeConstructor(spec,
                                                    spec.getName(),
                                                    spec.getParams());
             newFuncs.add(constructor);
-            
+
             if (spec.getType() == StreamSpec.STREAM_FILTER)
             {
                 // Okay, we have some parameters.  We need to add this
@@ -189,15 +222,15 @@ public class MoveStreamParameters extends InitMunger
                      iter.hasNext(); )
                 {
                     Parameter param = (Parameter)iter.next();
-                    FieldDecl field = new FieldDecl(spec.getCx(),
+                    FieldDecl field = new FieldDecl(spec,
                                                     param.getType(),
                                                     param.getName(),
                                                     null);
                     newVars.add(field);
                 }
-            
+
                 // Rewrite the init function:
-                Function init = findInit(spec.getCx(), spec.getFuncs());
+                Function init = findInit(spec, spec.getFuncs());
                 newFuncs.remove(init);
                 init = addInitParams(init, spec.getParams());
                 newFuncs.add(init);
@@ -207,14 +240,14 @@ public class MoveStreamParameters extends InitMunger
                 // Composite stream; the stream parameters only exist
                 // within the context of the init function, no need to
                 // create fields.  (In fact, this actively hurts.)
-                Function init = findInit(spec.getCx(), spec.getFuncs());
+                Function init = findInit(spec, spec.getFuncs());
                 newFuncs.remove(init);
                 init = addInitParamsOnly(init, spec.getParams());
                 newFuncs.add(init);
             }
 
             // And create the new stream spec.
-            spec = new StreamSpec(spec.getCx(), spec.getType(),
+            spec = new StreamSpec(spec, spec.getType(),
                                   spec.getStreamType(), spec.getName(),
                                   Collections.EMPTY_LIST, newVars, newFuncs);
         }

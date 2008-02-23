@@ -106,7 +106,7 @@ public class NodesToJava extends SymbolTableVisitor
 {
     protected StreamSpec ss;
     protected Type ctype;
-    
+
     /**
 	 * @param ss The ss to set.
 	 */
@@ -352,8 +352,8 @@ public class NodesToJava extends SymbolTableVisitor
         Type lhsType = (Type)lhs.accept(eType);
         if (lhsType.isComplex())
         {
-            Expression real = new ExprField(lhs.getCx(), lhs, "real");
-            Expression imag = new ExprField(lhs.getCx(), lhs, "imag");
+            Expression real = new ExprField(lhs, lhs, "real");
+            Expression imag = new ExprField(lhs, lhs, "imag");
             // If the right hand side is complex too (at this point
             // just test the run-time type of the expression), then we
             // should do field copies; otherwise we only have a real part.
@@ -603,8 +603,8 @@ public class NodesToJava extends SymbolTableVisitor
                 result += " = " + (String)field.getInit(i).accept(this);
         }
         result += ";";
-        if (printSourceLines && field.getCx() != null)
-            result += " // " + field.getCx();
+        if (printSourceLines && field != null)
+            result += " // " + field;
         result += "\n";
         return result;
     }
@@ -613,7 +613,7 @@ public class NodesToJava extends SymbolTableVisitor
     {
     	SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-        
+
         String result = indent + "public ";
         if (!func.getName().equals(ss.getName()))
             result += convertType(func.getReturnType()) + " ";
@@ -622,7 +622,7 @@ public class NodesToJava extends SymbolTableVisitor
         if (func.getCls() == Function.FUNC_INIT) prefix = "final";
         result += doParams(func.getParams(), prefix) + " ";
         result += (String)func.getBody().accept(this);
-        result += "\n";        
+        result += "\n";
         symtab = oldSymTab;
         return result;
     }
@@ -633,7 +633,7 @@ public class NodesToJava extends SymbolTableVisitor
         return visitFunction(func);
     }
 
-    
+
     public String outputStructure(TypeStruct struct){
     	String result = "";
     	result += indent + "class " + struct.getName() +
@@ -649,8 +649,8 @@ public class NodesToJava extends SymbolTableVisitor
     	result += indent + "}\n";
     	return result;
     }
-    
-    
+
+
     public Object visitProgram(Program prog)
     {
         // Nothing special here either.  Just accumulate all of the
@@ -789,14 +789,14 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitStmtBlock(StmtBlock stmt)
     {
-    	
+
     	SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-    	
+
         // Put context label at the start of the block, too.
         String result = "{";
-        if (printSourceLines && stmt.getCx() != null)
-            result += " // " + stmt.getCx();
+        if (printSourceLines && stmt != null)
+            result += " // " + stmt;
         result += "\n";
         addIndent();
         for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
@@ -809,8 +809,8 @@ public class NodesToJava extends SymbolTableVisitor
 		         s instanceof StmtWhile)) {
 		    	line += ";";
 		    }
-            if (printSourceLines && s.getCx() != null)
-                line += " // " + s.getCx();
+            if (printSourceLines && s != null)
+                line += " // " + s;
             line += "\n";
             result += line;
         }
@@ -897,7 +897,7 @@ public class NodesToJava extends SymbolTableVisitor
         	 if(! (stmt.getCons() instanceof StmtBlock ) ){
              	result += ";";
              }
-        }       
+        }
         if (stmt.getAlt() != null){
             result += " else " + (String)stmt.getAlt().accept(this);
             if(! (stmt.getAlt() instanceof StmtBlock ) ){
@@ -925,7 +925,7 @@ public class NodesToJava extends SymbolTableVisitor
         ExprFunCall fc = stmt.getFunCall();
         // ASSERT: the target is always a phase function.
         FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
-        StmtExpr call = new StmtExpr(stmt.getCx(), fc);
+        StmtExpr call = new StmtExpr(stmt, fc);
         String peek, pop, push;
         if (target.getPeekRate() == null)
             peek = "0";
@@ -983,7 +983,7 @@ public class NodesToJava extends SymbolTableVisitor
             if (max == null)
                 max = new ExprBinary(null, ExprBinary.BINOP_MUL,
                                      stmt.getMinLatency(),
-                                     new ExprConstInt(null, 100));
+                                     new ExprConstInt(100));
             result += receiver + ".setLatency(" +
                 (String)stmt.getMinLatency().accept(this) + ", " +
                 (String)max.accept(this) + ")";
@@ -1010,8 +1010,8 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-    	
-    	
+
+
         String result = "";
         // Hack: if the first variable name begins with "_final_", the
         // variable declaration should be final.
@@ -1196,9 +1196,9 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitStreamSpec(StreamSpec spec)
     {
-    	
-    	
-    	
+
+
+
     	StreamType oldStreamType = streamType;
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -1212,11 +1212,11 @@ public class NodesToJava extends SymbolTableVisitor
                                param,
                                SymbolTable.KIND_STREAM_PARAM);
         }
-    	
-    	
-    	
-    	
-    	
+
+
+
+
+
         String result = "";
         // Anonymous classes look different from non-anonymous ones.
         // This appears in two places: (a) as a top-level (named)
@@ -1246,8 +1246,8 @@ public class NodesToJava extends SymbolTableVisitor
             {
                 result += "public class " + spec.getName() +
                     " extends StreamIt" + spec.getTypeString() + ifaces;
-                if(printSourceLines && spec.getCx()!=null)
-                	result += " // " + spec.getCx();
+                if(printSourceLines && spec!=null)
+                	result += " // " + spec;
                 result += "\n";
                 result += indent + "{\n";
                 addIndent();
@@ -1287,8 +1287,8 @@ public class NodesToJava extends SymbolTableVisitor
                         break;
                     }
                 result += ifaces;
-                if(printSourceLines && spec.getCx()!=null)
-                	result += " // " + spec.getCx();
+                if(printSourceLines && spec!=null)
+                	result += " // " + spec;
                 result += "\n";
                 result += indent + "{\n";
                 addIndent();
@@ -1331,7 +1331,7 @@ public class NodesToJava extends SymbolTableVisitor
         // Output method definitions:
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ){
         	Function func = (Function)iter.next();
-		    symtab.registerFn(func);		    
+		    symtab.registerFn(func);
             result += (String)((func).accept(this));
         }
 

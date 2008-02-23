@@ -18,6 +18,7 @@ package streamit.frontend.tojava;
 
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEVisitor;
 import streamit.frontend.nodes.FuncWork;
 import streamit.frontend.nodes.Statement;
@@ -37,7 +38,7 @@ public class StmtAddPhase extends Statement
     private boolean init;
     private Expression peek, pop, push;
     private String name;
-    
+
     /**
      * Create a phase-adding statement from explicit I/O rates and a function
      * name.  A null peek rate implies the same rate as the pop rate;
@@ -50,7 +51,7 @@ public class StmtAddPhase extends Statement
      * @param push     Push rate of the phase, or null
      * @param name     Name of the phase function
      */
-    public StmtAddPhase(FEContext context, boolean init,
+    public StmtAddPhase(FENode context, boolean init,
                         Expression peek, Expression pop,
                         Expression push, String name)
     {
@@ -69,7 +70,7 @@ public class StmtAddPhase extends Statement
      * @param init     true if the phase is an init phase
      * @param work     Work function constituting the phase
      */
-    public StmtAddPhase(FEContext context, boolean init, FuncWork work)
+    public StmtAddPhase(FENode context, boolean init, FuncWork work)
     {
         super(context);
         this.init = init;
@@ -83,7 +84,7 @@ public class StmtAddPhase extends Statement
         else
             this.name = "work";
     }
-    
+
     /** Returns true if the phase is an init phase, false if the phase
      * is a steady-state phase. */
     public boolean isInit()
@@ -96,13 +97,13 @@ public class StmtAddPhase extends Statement
     {
         return peek;
     }
-    
+
     /** Returns the pop rate of the phase. */
     public Expression getPop()
     {
         return pop;
     }
-    
+
     /** Returns the push rate of the phase. */
     public Expression getPush()
     {

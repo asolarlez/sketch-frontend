@@ -60,7 +60,7 @@ public class ComplexToStruct extends FEReplacer
     {
         cplxType = null;
     }
-    
+
     public Object visitProgram(Program prog)
     {
         // Go through the list of structures, and notice them all.
@@ -87,11 +87,11 @@ public class ComplexToStruct extends FEReplacer
                 newNames.add(name);
                 newTypes.add(type);
             }
-            struct = new TypeStruct(struct.getContext(), struct.getName(),
+            struct = new TypeStruct(struct.getContext (), struct.getName(),
                                     newNames, newTypes);
             newStructs.add(struct);
         }
-        prog = new Program(prog.getCx(), prog.getStreams(), newStructs);
+        prog = new Program(prog, prog.getStreams(), newStructs);
         return super.visitProgram(prog);
     }
 
@@ -100,7 +100,7 @@ public class ComplexToStruct extends FEReplacer
         List newTypes = new java.util.ArrayList();
         for (int i = 0; i < field.getNumFields(); i++)
             newTypes.add(remapType(field.getType(i)));
-        return new FieldDecl(field.getCx(), newTypes,
+        return new FieldDecl(field, newTypes,
                              field.getNames(), field.getInits());
     }
 
@@ -117,7 +117,7 @@ public class ComplexToStruct extends FEReplacer
             newParams.add(param);
         }
         Type returnType = remapType(func.getReturnType());
-        return super.visitFunction(new Function(func.getCx(),
+        return super.visitFunction(new Function(func,
                                                 func.getCls(),
                                                 func.getName(),
                                                 returnType,
@@ -130,7 +130,7 @@ public class ComplexToStruct extends FEReplacer
         List newTypes = new java.util.ArrayList();
         for (int i = 0; i < stmt.getNumVars(); i++)
             newTypes.add(remapType(stmt.getType(i)));
-        return new StmtVarDecl(stmt.getCx(), newTypes,
+        return new StmtVarDecl(stmt, newTypes,
                                stmt.getNames(), stmt.getInits());
     }
 
@@ -146,7 +146,7 @@ public class ComplexToStruct extends FEReplacer
             param = new Parameter(type, param.getName(), param.getPtype());
             newParams.add(param);
         }
-        return super.visitStreamSpec(new StreamSpec(ss.getCx(),
+        return super.visitStreamSpec(new StreamSpec(ss,
                                                     ss.getType(),
                                                     ss.getStreamType(),
                                                     ss.getName(),
@@ -157,7 +157,7 @@ public class ComplexToStruct extends FEReplacer
 
     public Object visitStreamType(StreamType st)
     {
-        return new StreamType(st.getCx(),
+        return new StreamType(st,
                               remapType(st.getIn()),
                               remapType(st.getOut()),
                               remapType(st.getLoop()));

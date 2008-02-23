@@ -17,6 +17,7 @@
 package streamit.frontend.tojava;
 
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEVisitor;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StreamType;
@@ -37,7 +38,7 @@ import streamit.frontend.nodes.Type;
 public class StmtSetTypes extends Statement
 {
     private Type inType, outType;
-    
+
     /**
      * Creates a new I/O type declaration from the input and output types.
      *
@@ -45,7 +46,7 @@ public class StmtSetTypes extends Statement
      * @param inType   Input type of the stream
      * @param outType  Output type of the stream
      */
-    public StmtSetTypes(FEContext context, Type inType, Type outType)
+    public StmtSetTypes(FENode context, Type inType, Type outType)
     {
         super(context);
         this.inType = inType;
@@ -58,7 +59,7 @@ public class StmtSetTypes extends Statement
      * @param context  Context this statement appears in
      * @param st       I/O types of the stream
      */
-    public StmtSetTypes(FEContext context, StreamType st)
+    public StmtSetTypes(FENode context, StreamType st)
     {
         super(context);
         this.inType = st.getIn();
@@ -70,13 +71,13 @@ public class StmtSetTypes extends Statement
     {
         return inType;
     }
-    
+
     /** Returns the output type of the stream this declaration is in. */
     public Type getOutType()
     {
         return outType;
     }
-    
+
     public Object accept(FEVisitor v)
     {
         return v.visitOther(this);

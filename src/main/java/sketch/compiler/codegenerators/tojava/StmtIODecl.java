@@ -18,6 +18,7 @@ package streamit.frontend.tojava;
 
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEVisitor;
 import streamit.frontend.nodes.Type;
 
@@ -36,7 +37,7 @@ public class StmtIODecl extends streamit.frontend.nodes.Statement
     private String name;
     private Type type;
     private Expression rate1, rate2;
-    
+
     /**
      * Creates a new I/O rate declaration.  The name should be either
      * "input" or "output".  If it is "output", <code>rate1</code> is the
@@ -51,7 +52,7 @@ public class StmtIODecl extends streamit.frontend.nodes.Statement
      * @param rate1    Push or pop rate
      * @param rate2    Peek rate or null
      */
-    public StmtIODecl(FEContext context, String name, Type type,
+    public StmtIODecl(FENode context, String name, Type type,
                       Expression rate1, Expression rate2)
     {
         super(context);
@@ -60,7 +61,7 @@ public class StmtIODecl extends streamit.frontend.nodes.Statement
         this.rate1 = rate1;
         this.rate2 = rate2;
     }
-    
+
     /**
      * Creates a new I/O rate declaration with a single rate.
      *
@@ -69,30 +70,30 @@ public class StmtIODecl extends streamit.frontend.nodes.Statement
      * @param type     Type of objects on this channel
      * @param rate     Push or pop rate
      */
-    public StmtIODecl(FEContext context, String name, Type type,
+    public StmtIODecl(FENode context, String name, Type type,
                       Expression rate)
     {
         this(context, name, type, rate, null);
     }
-    
+
     /** Returns the name of the channel being declared. */
     public String getName()
     {
         return name;
     }
-    
+
     /** Returns the type of items on the channel. */
     public Type getType()
     {
         return type;
     }
-    
+
     /** Returns the pop or push rate of the stream. */
     public Expression getRate1()
     {
         return rate1;
     }
-    
+
     /** Returns the peek rate of the stream.  Returns null if this is an
      * output channel or if the peek rate is undeclared and implicitly
      * equal to the pop rate. */
@@ -100,7 +101,7 @@ public class StmtIODecl extends streamit.frontend.nodes.Statement
     {
         return rate2;
     }
-    
+
     public Object accept(FEVisitor v)
     {
         return v.visitOther(this);

@@ -30,6 +30,7 @@ import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.InvalidControlFlowException;
@@ -60,7 +61,7 @@ import streamit.frontend.nodes.TypePrimitive;
  * of control flow, and only statements that enqueue a literal value.
  * This is probably enough to handle most simple cases of feedback
  * loops, though.
- * 
+ *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
@@ -81,7 +82,7 @@ public class TranslateEnqueue extends FEReplacer
      * <code>vals</code>. */
     private Function makeInitPath(StreamSpec ss)
     {
-        FEContext context = ss.getCx();
+        FENode context = ss;
         List stmts = new ArrayList();
         Expression n = new ExprVar(context, "n");
         int i = 0;
@@ -142,7 +143,7 @@ public class TranslateEnqueue extends FEReplacer
         {
             List fns = new ArrayList(ssNew.getFuncs());
             fns.add(makeInitPath(ss));
-            ssNew = new StreamSpec(ssNew.getCx(), ssNew.getType(),
+            ssNew = new StreamSpec(ssNew, ssNew.getType(),
                                    ssNew.getStreamType(), ssNew.getName(),
                                    ssNew.getParams(), ssNew.getVars(), fns);
         }
@@ -162,16 +163,16 @@ public class TranslateEnqueue extends FEReplacer
         // case anyways.
         if (!vals.isEmpty())
         {
-            Expression count = new ExprConstInt(fn.getCx(), vals.size());
+            Expression count = new ExprConstInt(fn, vals.size());
             Expression delay =
-                new ExprFunCall(fn.getCx(), "setDelay", count);
+                new ExprFunCall(fn, "setDelay", count);
             Statement call = new StmtExpr(delay);
             // Now add the statement to the function.
             StmtBlock body = (StmtBlock)fnNew.getBody();
             List stmts = new ArrayList(body.getStmts());
             stmts.add(call);
-            body = new StmtBlock(body.getCx(), stmts);
-            fnNew = new Function(fnNew.getCx(), fnNew.getCls(),
+            body = new StmtBlock(body, stmts);
+            fnNew = new Function(fnNew, fnNew.getCls(),
                                  fnNew.getName(), fnNew.getReturnType(),
                                  fnNew.getParams(),  fnNew.getSpecification(),body);
         }

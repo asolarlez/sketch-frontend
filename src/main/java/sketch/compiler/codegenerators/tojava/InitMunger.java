@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
@@ -38,7 +39,7 @@ import streamit.frontend.nodes.StmtBlock;
  */
 abstract public class InitMunger extends FEReplacer
 {
-    public static Function findInit(FEContext context, List fns)
+    public static Function findInit(FENode context, List fns)
     {
         for (Iterator iter = fns.iterator(); iter.hasNext(); )
         {
@@ -46,17 +47,20 @@ abstract public class InitMunger extends FEReplacer
             if (fn.getCls() == Function.FUNC_INIT)
                 return fn;
         }
-        
+
         // No init function; create an empty one.
         return Function.newInit(context,
                                 new StmtBlock(context,
                                               Collections.EMPTY_LIST));
     }
 
-    // Finds an init function in fns, or creates one using context.
-    // Removes it from fns, and replaces it with an equivalent function
-    // with stmts at the start of its body.  Returns fns.
-    public static List replaceInitWithPrepended(FEContext context,
+    /**
+     * Finds an init function in fns, or creates one using context.
+     * Removes it from fns, and replaces it with an equivalent function
+     * with stmts at the start of its body.  Returns fns.
+     * @deprecated
+     */
+    public static List replaceInitWithPrepended(FENode context,
                                                 List fns, List stmts)
     {
         Function init = findInit(context, fns);
@@ -64,8 +68,8 @@ abstract public class InitMunger extends FEReplacer
         StmtBlock oldBody = (StmtBlock)init.getBody();
         List newStmts = new ArrayList(stmts);
         newStmts.addAll(oldBody.getStmts());
-        Statement newBody = new StmtBlock(oldBody.getCx(), newStmts);
-        init = new Function(init.getCx(), init.getCls(),
+        Statement newBody = new StmtBlock(oldBody, newStmts);
+        init = new Function(init, init.getCls(),
                             init.getName(), init.getReturnType(),
                             init.getParams(), newBody);
         fns.add(init);

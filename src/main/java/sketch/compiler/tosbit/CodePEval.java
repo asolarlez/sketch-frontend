@@ -34,22 +34,22 @@ public class CodePEval extends PartialEvaluator {
 	 * 3 visit all functions that have specs, unroll their loops inline their calls. </br>
 	 */
 	protected int inlineLevel;   /* Default value given by constructor. */
-	protected Integer currentSize = null;	
+	protected Integer currentSize = null;
 	public Map<String, Function> newFuns;
-	
-	public boolean askIfPEval(FENode node){	
+
+	public boolean askIfPEval(FENode node){
 		switch( inlineLevel ){
 		case 0: return false;
 		case 1: return false;
 		case 2: return true;
-		case 3: return true;			
+		case 3: return true;
 		default :
 			return false;
 		}
 	}
-	
+
 	public CodePEval(int maxUnroll, RecursionControl rcontrol, int inlineLevel){
-		super(true, maxUnroll, rcontrol);		
+		super(true, maxUnroll, rcontrol);
 		this.state = new MethodState();
 		this.newFuns = new HashMap<String, Function>();
 		this.inlineLevel = inlineLevel;
@@ -65,53 +65,53 @@ public class CodePEval extends PartialEvaluator {
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
 		String op;
-		
-		currentSize =  (new CheckSize()).checkSize(stmt.getLHS()); 
-		
+
+		currentSize =  (new CheckSize()).checkSize(stmt.getLHS());
+
 		Expression right = (Expression)stmt.getRHS().accept(this);
 		valueClass vrhsVal = state.popVStack();
-		List<valueClass> rhsLst = null;		
+		List<valueClass> rhsLst = null;
 		if( vrhsVal.isVect() ){
 			rhsLst= vrhsVal.getVectValue();
 		}
-		
-		
-		Expression left = stmt.getLHS(); 
+
+
+		Expression left = stmt.getLHS();
 		valueClass vlhsVal = null;
 		if(stmt.getOp() != 0){
 			left =(Expression)stmt.getLHS().accept(this);
 			vlhsVal = state.popVStack();
 		}
-		
+
 		LHSvisitor lhsvisit = new LHSvisitor();
 		String lhs = (String)stmt.getLHS().accept( lhsvisit);
 		Expression lvalue = lhsvisit.lhsExp;
-		
-		
+
+
 		int arrSize = -1;
-		boolean isArr = false;		
+		boolean isArr = false;
 		if(! lhsvisit.isNDArracc()){
 			state.varGetLHSName(lhs);
 			arrSize = state.checkArray(lhs);
 			isArr = arrSize > 0;
 		}
-		
-		
+
+
 		currentSize = null;
-		
-		
+
+
 		boolean hv = (vlhsVal == null || vlhsVal.hasValue()) && vrhsVal.hasValue() && !lhsvisit.isNDArracc();
-		
+
 		switch(stmt.getOp())
 		{
-		case ExprBinary.BINOP_ADD: 	        	
+		case ExprBinary.BINOP_ADD:
 			op = " = " + vlhsVal + "+";
 			assert !isArr : "Operation not yet defined for arrays:" + op;
 			if(hv){
 				state.setVarValue(lhs, vlhsVal.getIntValue() + vrhsVal.getIntValue());
 			}
 			break;
-		case ExprBinary.BINOP_SUB: 
+		case ExprBinary.BINOP_SUB:
 			op = " = "+ vlhsVal + "-";
 			assert !isArr : "Operation not yet defined for arrays:" + op;
 			if(hv){
@@ -133,14 +133,14 @@ public class CodePEval extends PartialEvaluator {
 			}
 			break;
 		default: op = " = ";
-		if( rhsLst != null ){			
+		if( rhsLst != null ){
 			List<valueClass> lst= rhsLst;
 			Iterator<valueClass>  it = lst.iterator();
-			
-			
+
+
 			for(int idx = 0; idx<arrSize; ++idx){
 				if( it.hasNext() ){
-					valueClass val = it.next(); 
+					valueClass val = it.next();
 					if(val.hasValue()){
 						int i = val.getIntValue();
 						state.setVarValue(lhs + "_idx_" + idx, i);
@@ -150,8 +150,8 @@ public class CodePEval extends PartialEvaluator {
 					}
 				}else{
 					state.setVarValue(lhs + "_idx_" + idx, 0);
-				}				
-			}			
+				}
+			}
 		}else if(hv){
 			if(isArr){
 				for(int i=0; i<arrSize; ++i){
@@ -174,30 +174,30 @@ public class CodePEval extends PartialEvaluator {
             return stmt;
 		}
 		if(stmt.getOp() == 0){
-			return new StmtAssign(stmt.getCx(), lvalue, right,
+			return new StmtAssign(stmt, lvalue, right,
                     stmt.getOp());
 		}else{
-	        return new StmtAssign(stmt.getCx(), lvalue, 
-	        		new ExprBinary(stmt.getCx(), stmt.getOp(), left, right));
+	        return new StmtAssign(lvalue,
+	        		new ExprBinary(stmt, stmt.getOp(), left, right));
 		}
 	}
-	
+
 	public Object visitStmtIfThen(StmtIfThen stmt)
 	{
-		// must have an if part...		
+		// must have an if part...
 		Expression newCond = (Expression) stmt.getCond().accept(this);
 		valueClass vcond = state.popVStack();
 		if(vcond.hasValue()){
-			
-			
+
+
 			if(vcond.getIntValue() != 0){
 				if( rcontrol.testBlock(stmt.getCons()) ){
 					Statement cons = (Statement)stmt.getCons().accept(this);
 					if(cons != null)
-						addStatement(cons);	 
+						addStatement(cons);
 					rcontrol.doneWithBlock(stmt.getCons());
 				}else{
-					addStatement( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) );
+					addStatement( new StmtAssert(stmt, new ExprConstInt(0)) );
 				}
 			}else{
 				if (stmt.getAlt() != null){
@@ -207,17 +207,17 @@ public class CodePEval extends PartialEvaluator {
 							addStatement(alt);
 						rcontrol.doneWithBlock(stmt.getAlt());
 					}else{
-						addStatement( new StmtAssert(stmt.getCx(), new ExprConstInt(0)) );
+						addStatement( new StmtAssert(stmt, new ExprConstInt(0)) );
 					}
 				}
 			}
-			
-			
+
+
 			return null;
 		}
 		state.pushChangeTracker(newCond, vcond, false);
 		Statement newCons = null;
-		
+
 		if( rcontrol.testBlock(stmt.getCons()) ){
 			try{
 				newCons =  (Statement) stmt.getCons().accept(this);
@@ -227,17 +227,17 @@ public class CodePEval extends PartialEvaluator {
 	        }
 			rcontrol.doneWithBlock(stmt.getCons());
 		}else{
-			newCons = new StmtAssert(stmt.getCx(), new ExprConstInt(0));
+			newCons = new StmtAssert(stmt, new ExprConstInt(0));
 		}
-		
+
 		ChangeStack ipms = state.popChangeTracker();
-		
-		
+
+
 		Statement newAlt = null;
-		ChangeStack epms = null;				
+		ChangeStack epms = null;
 		if (stmt.getAlt() != null){
 			state.pushChangeTracker(newCond, vcond, true);
-			
+
 			if( rcontrol.testBlock(stmt.getAlt()) ){
 				try{
 					newAlt = (Statement) stmt.getAlt().accept(this);
@@ -247,23 +247,23 @@ public class CodePEval extends PartialEvaluator {
 		        }
 				rcontrol.doneWithBlock(stmt.getAlt());
 			}else{
-				newAlt = new StmtAssert(stmt.getCx(), new ExprConstInt(0));
+				newAlt = new StmtAssert(stmt, new ExprConstInt(0));
 			}
-			
+
 			epms = state.popChangeTracker();
-		}	        
-		if(epms != null){		
+		}
+		if(epms != null){
 			state.procChangeTrackers(ipms, epms, vcond.toString());
 		}else{
 			state.procChangeTrackers(ipms, vcond.toString());
 		}
-		
+
         if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
             newAlt == stmt.getAlt())
             return stmt;
-        return new StmtIfThen(stmt.getCx(), newCond, newCons, newAlt);
+        return new StmtIfThen(stmt, newCond, newCons, newAlt);
 	}
-	
+
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
 		String result = "";
@@ -277,9 +277,9 @@ public class CodePEval extends PartialEvaluator {
 				TypeArray at = (TypeArray)vt;
 				Expression arLen = (Expression) at.getLength().accept(this);
 				valueClass arrSizeVal = state.popVStack();
-				
+
 				if(arrSizeVal.hasValue() || isComplete ){
-					Assert(arrSizeVal.hasValue(), "The array size must be a compile time constant !! \n" + stmt.getCx());
+					Assert(arrSizeVal.hasValue(), "The array size must be a compile time constant !! \n" + stmt);
 					state.makeArray(nm, arrSizeVal.getIntValue());
 					//this.state.markVectorStack();
 					if( stmt.getInit(i) != null){
@@ -298,12 +298,12 @@ public class CodePEval extends PartialEvaluator {
 									state.setVarValue(nnm, ival.getIntValue());
 								}
 								++tt;
-							} 
+							}
 							for(; tt<arrSizeVal.getIntValue(); ++tt){
 								String nnm = nm + "_idx_" + tt;
 								state.varDeclare(nnm);
-								state.varGetLHSName(nnm);	
-								state.setVarValue(nnm,0);						
+								state.varGetLHSName(nnm);
+								state.setVarValue(nnm,0);
 							}
 							//continue;
 						}else{
@@ -317,51 +317,51 @@ public class CodePEval extends PartialEvaluator {
 								if(val != null){
 									state.setVarValue(nnm, val.intValue());
 								}
-							}	
+							}
 							//if(val != null) continue;
 						}
-						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt, new TypeArray(at.getBase(), arLen),
 								state.transName(nm), init) );
 					}else{
 						for(int tt=0; tt<arrSizeVal.getIntValue(); ++tt){
 							String nnm = nm + "_idx_" + tt;
 							state.varDeclare(nnm);
-							state.varGetLHSName(nnm);		            		
+							state.varGetLHSName(nnm);
 						}
-						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt, new TypeArray(at.getBase(), arLen),
 								state.transName(nm), null) );
 					}
 				}else{
 					if( stmt.getInit(i) != null){
 						Expression init = (Expression)stmt.getInit(i).accept(this);
 						valueClass vclass = state.popVStack();
-						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt, new TypeArray(at.getBase(), arLen),
 								state.transName(nm), init) );
 					}else{
-						addStatement( new StmtVarDecl(stmt.getCx(), new TypeArray(at.getBase(), arLen),
+						addStatement( new StmtVarDecl(stmt, new TypeArray(at.getBase(), arLen),
 								state.transName(nm), null) );
 					}
 				}
-			}else{				
-				if (stmt.getInit(i) != null){     
+			}else{
+				if (stmt.getInit(i) != null){
 					Expression init = (Expression) stmt.getInit(i).accept(this);
 					valueClass tmp = state.popVStack();
-					String asgn = lhsn + " = " + tmp + "; \n";		                
+					String asgn = lhsn + " = " + tmp + "; \n";
 					if(tmp.hasValue()){
 						state.setVarValue(nm, tmp.getIntValue());
-						return ( new StmtVarDecl(stmt.getCx(), vt, state.transName(nm), new ExprConstInt(tmp.getIntValue())) );
+						return ( new StmtVarDecl(stmt, vt, state.transName(nm), new ExprConstInt(tmp.getIntValue())) );
 					}else{//Because the variable is new, we don't have to unset it if it is null. It must already be unset.
 						result += asgn;
-						addStatement( new StmtVarDecl(stmt.getCx(), vt, state.transName(nm), init) );
-					} 	                
+						addStatement( new StmtVarDecl(stmt, vt, state.transName(nm), init) );
+					}
 				}else{
-					addStatement( new StmtVarDecl(stmt.getCx(), vt, state.transName(nm), null) );
+					addStatement( new StmtVarDecl(stmt, vt, state.transName(nm), null) );
 				}
 			}
 		}
 		return null;
 	}
-	
+
 	public Object visitExprFunCall(ExprFunCall exp)
 	{
     	String name = exp.getName();
@@ -378,12 +378,12 @@ public class CodePEval extends PartialEvaluator {
 			}
 			madeSubstitution=true;
 		}
-    	if (fun != null) {    		
+    	if (fun != null) {
     		if(!askIfPEval(exp)){
-                /* Check inline counters. */                
+                /* Check inline counters. */
                 if (rcontrol.testCall(exp)) {
                     /* Increment inline counter. */
-                	rcontrol.pushFunCall(exp, fun);                    
+                	rcontrol.pushFunCall(exp, fun);
 
                     // if the called function contains no stars, keep the call
                     // but run the partial evaluator
@@ -391,7 +391,7 @@ public class CodePEval extends PartialEvaluator {
                     newStatements = new ArrayList<Statement> ();
                     if (madeSubstitution) {
                         ExprFunCall exp2 =
-                            new ExprFunCall (exp.getCx(), fun.getName(),
+                            new ExprFunCall (exp, fun.getName(),
                                              exp.getParams());
                         super.visitExprFunCall(exp2);
                     } else {
@@ -401,7 +401,7 @@ public class CodePEval extends PartialEvaluator {
 
                     /* Decrement inline counter. */
                     rcontrol.popFunCall(exp);
-                    
+
 
                     //return exp;
                     boolean hasChanged = false;
@@ -415,7 +415,7 @@ public class CodePEval extends PartialEvaluator {
                             && newParam instanceof ExprArrayInit)
                         {
                             Expression renamedParam =
-                                new ExprVar (exp.getCx (),
+                                new ExprVar (exp,
                                              state.transName (
                                                  ((ExprVar) param).getName()));
                             newParams.add (renamedParam);
@@ -426,54 +426,54 @@ public class CodePEval extends PartialEvaluator {
                             hasChanged = true;
                     }
                     if (hasChanged)
-                        return new ExprFunCall (exp.getCx(), exp.getName(),
+                        return new ExprFunCall (exp, exp.getName(),
                                                 newParams);
                 }// if (rcontrol.testCall(exp))
-                // If the if rcontrol.testCall(exp) returns false, then this call better not be made ever, 
-                // so it really doesn't matter what we return. 
+                // If the if rcontrol.testCall(exp) returns false, then this call better not be made ever,
+                // so it really doesn't matter what we return.
                 return exp;
     		}
 			//....else inline the called function
     		if (rcontrol.testCall(exp)) {
                 /* Increment inline counter. */
-            	rcontrol.pushFunCall(exp, fun);  
-    		
+            	rcontrol.pushFunCall(exp, fun);
+
 				List<Statement>  oldNewStatements = newStatements;
 				newStatements = new ArrayList<Statement> ();
 				Statement result = null;
 				state.pushLevel();
 				try{
 		    		{
-		    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+		    			Iterator actualParams = exp.getParams().iterator();
 		    			Iterator formalParams = fun.getParams().iterator();
 		    			inParameterSetter(formalParams, actualParams, false);
 		    		}
-		    		
+
 		    		Statement body = (Statement) fun.getBody().accept(this);
 		    		addStatement(body);
 		    		{
-		    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+		    			Iterator actualParams = exp.getParams().iterator();
 		    			Iterator formalParams = fun.getParams().iterator();
 		    			outParameterSetter(formalParams, actualParams, false);
 		    		}
-		    		result = new StmtBlock(exp.getCx(), newStatements);
+		    		result = new StmtBlock(exp, newStatements);
 	    		}finally{
 	    			state.popLevel();
 	    			newStatements = oldNewStatements;
 	    		}
-	            addStatement(result);    		
+	            addStatement(result);
 	    		state.pushVStack( new valueClass(exp.toString()) );
-	    		
+
 	    		rcontrol.popFunCall(exp);
     		}else{
-    			StmtAssert sas = new StmtAssert(exp.getCx(), new ExprConstInt(0));
-    			addStatement(sas);    		
+    			StmtAssert sas = new StmtAssert(exp, new ExprConstInt(0));
+    			addStatement(sas);
 	    		state.pushVStack( new valueClass(sas.toString()) );
     		}
     		return null;
     	}
     	state.pushVStack( new valueClass(exp.toString()));
-    	return exp;    	
+    	return exp;
     }
-	
+
 }

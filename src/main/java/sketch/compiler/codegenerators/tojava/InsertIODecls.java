@@ -105,12 +105,12 @@ public class InsertIODecls extends InitMunger
         List fns = new ArrayList(spec.getFuncs());
         StreamType st = spec.getStreamType();
         List newStmts = new ArrayList();
-        newStmts.add(new StmtSetTypes(spec.getCx(), st));
+        newStmts.add(new StmtSetTypes(spec, st));
         translateWork(spec, (FuncWork)findWork(fns, true), true, newStmts);
         translateWork(spec, (FuncWork)findWork(fns, false), false, newStmts);
-        fns = replaceInitWithPrepended(spec.getCx(), fns, newStmts);
+        fns = replaceInitWithPrepended(spec, fns, newStmts);
         
-        return new StreamSpec(spec.getCx(), spec.getType(),
+        return new StreamSpec(spec, spec.getType(),
                               spec.getStreamType(), spec.getName(),
                               spec.getParams(), spec.getVars(), fns);
     }
@@ -143,12 +143,12 @@ public class InsertIODecls extends InitMunger
                 
                 // Now add the phase.
                 newStmts.add
-                    (new StmtAddPhase(work.getCx(), init, phase));
+                    (new StmtAddPhase(work, init, phase));
             }
         }
         else
             // Add the work function as the only phase.
-            newStmts.add(new StmtAddPhase(work.getCx(), init, work));
+            newStmts.add(new StmtAddPhase(work, init, work));
 
     }
 
@@ -164,14 +164,14 @@ public class InsertIODecls extends InitMunger
         // all null I/O rates.  In that case, use the setIOTypes
         // call to set the types.
         if (work.getPopRate() == null && work.getPushRate() == null)
-            newStmts.add(new StmtSetTypes(work.getCx(), st));
+            newStmts.add(new StmtSetTypes(work, st));
         else
         {
             if (!(st.getIn() instanceof TypePrimitive) ||
                 ((TypePrimitive)st.getIn()).getType() !=
                 TypePrimitive.TYPE_VOID)
             {
-                newStmts.add(new StmtIODecl(work.getCx(), "input",
+                newStmts.add(new StmtIODecl(work, "input",
                                             st.getIn(), work.getPopRate(),
                                             work.getPeekRate()));
             }
@@ -179,7 +179,7 @@ public class InsertIODecls extends InitMunger
                 ((TypePrimitive)st.getOut()).getType() !=
                 TypePrimitive.TYPE_VOID)
             {
-                newStmts.add(new StmtIODecl(work.getCx(), "output",
+                newStmts.add(new StmtIODecl(work, "output",
                                             st.getOut(), work.getPushRate()));
             }
         }
@@ -187,9 +187,9 @@ public class InsertIODecls extends InitMunger
         if (newStmts.isEmpty())
             return spec;
         
-        fns = replaceInitWithPrepended(spec.getCx(), fns, newStmts);
+        fns = replaceInitWithPrepended(spec, fns, newStmts);
         
-        return new StreamSpec(spec.getCx(), spec.getType(),
+        return new StreamSpec(spec, spec.getType(),
                               spec.getStreamType(), spec.getName(),
                               spec.getParams(), spec.getVars(), fns);
     }

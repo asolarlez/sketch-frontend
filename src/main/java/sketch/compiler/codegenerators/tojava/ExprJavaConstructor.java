@@ -18,6 +18,7 @@ package streamit.frontend.tojava;
 
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEVisitor;
 import streamit.frontend.nodes.Type;
 
@@ -34,22 +35,22 @@ import streamit.frontend.nodes.Type;
 public class ExprJavaConstructor extends Expression
 {
     private Type type;
-    
-    public ExprJavaConstructor(FEContext context, Type type)
+
+    public ExprJavaConstructor(FENode context, Type type)
     {
         super(context);
         this.type = type;
     }
-    
+
     public Type getType()
     {
         return type;
     }
-    
+
     public Object accept(FEVisitor v)
     {
         return v.visitOther(this);
     }
 }
 
-    
+
