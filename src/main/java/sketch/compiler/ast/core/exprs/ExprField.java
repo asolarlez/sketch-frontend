@@ -28,18 +28,18 @@ public class ExprField extends Expression
 {
     private Expression left;
     private String name;
-    
+
     /** Creates a new field-reference expression, referencing the
      * named field of the specified expression. */
-    public ExprField(FEContext context, Expression left, String name)
+    public ExprField(FENode context, Expression left, String name)
     {
         super(context);
         this.left = left;
         this.name = name;
     }
-    
+
     /** Returns the expression we're taking a field from. */
-    public Expression getLeft() { return left; }  
+    public Expression getLeft() { return left; }
 
     /** Returns the name of the field. */
     public String getName() { return name; }
@@ -65,7 +65,7 @@ public class ExprField extends Expression
     {
         return left + "." + name;
     }
-    
+
     public boolean equals(Object other)
     {
         if (!(other instanceof ExprField))
@@ -77,7 +77,7 @@ public class ExprField extends Expression
             return false;
         return true;
     }
-    
+
     public int hashCode()
     {
         return left.hashCode() ^ name.hashCode();
