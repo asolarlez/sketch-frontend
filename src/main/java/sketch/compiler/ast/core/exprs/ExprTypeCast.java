@@ -28,7 +28,7 @@ public class ExprTypeCast extends Expression
 {
     private Type type;
     private Expression expr;
-    
+
     /**
      * Create a new ExprTypeCast with a specified type and child
      * expression.
@@ -38,13 +38,30 @@ public class ExprTypeCast extends Expression
      * @param type     Type the expression is being cast to
      * @param expr     Expression being cast
      */
+    public ExprTypeCast(FENode context, Type type, Expression expr)
+    {
+        super(context);
+        this.type = type;
+        this.expr = expr;
+    }
+
+    /**
+     * Create a new ExprTypeCast with a specified type and child
+     * expression.
+     *
+     * @param context  Context indicating file and line number
+     *                 this expression was created in
+     * @param type     Type the expression is being cast to
+     * @param expr     Expression being cast
+     * @deprecated
+     */
     public ExprTypeCast(FEContext context, Type type, Expression expr)
     {
         super(context);
         this.type = type;
         this.expr = expr;
     }
-    
+
     /**
      * Get the type the expression is being cast to.
      *
@@ -54,7 +71,7 @@ public class ExprTypeCast extends Expression
     {
         return type;
     }
-    
+
     /**
      * Get the expression being cast.
      *
@@ -64,7 +81,7 @@ public class ExprTypeCast extends Expression
     {
         return expr;
     }
-    
+
     /**
      * Accept a front-end visitor.
      */
@@ -84,12 +101,12 @@ public class ExprTypeCast extends Expression
             return false;
         return true;
     }
-    
+
     public int hashCode()
     {
         return type.hashCode() ^ expr.hashCode();
     }
-    
+
     public String toString()
     {
         return "((" + type + ")" + expr + ")";
