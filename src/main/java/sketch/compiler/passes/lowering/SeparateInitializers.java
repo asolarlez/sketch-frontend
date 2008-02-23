@@ -61,7 +61,7 @@ public class SeparateInitializers extends FEReplacer
 		newInits.add(null);
 	    }
 	}
-        Statement newDecl = new StmtVarDecl(stmt.getCx(),
+        Statement newDecl = new StmtVarDecl(stmt,
                                             stmt.getTypes(),
                                             stmt.getNames(),
                                             newInits);
@@ -77,10 +77,7 @@ public class SeparateInitializers extends FEReplacer
 	    // illegal syntax
             if (init != null && !(init instanceof ExprArrayInit))
             {
-                Statement assign =
-                    new StmtAssign(stmt.getCx(),
-                                   new ExprVar(stmt.getCx(), name),
-                                   init);
+                Statement assign = new StmtAssign(new ExprVar(stmt, name), init);
                 addStatement(assign);
             }
         }
@@ -94,20 +91,20 @@ public class SeparateInitializers extends FEReplacer
 //    	 Only recurse into the body.
     	StmtVarDecl decl = loop.getLoopVarDecl();
     	Expression niter = loop.getIter();
-    	Statement body = (Statement) loop.getBody().accept(this);    	
+    	Statement body = (Statement) loop.getBody().accept(this);
     	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
     		return loop;
-    	}    	
-    	return new StmtFork(loop.getCx(), decl, niter, body);
+    	}
+    	return new StmtFork(loop, decl, niter, body);
     }
-    
+
     public Object visitStmtFor(StmtFor stmt)
     {
         // Only recurse into the body.
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt.getCx(), stmt.getInit(),
+        return new StmtFor(stmt, stmt.getInit(),
                            stmt.getCond(), stmt.getIncr(), newBody);
     }
 }

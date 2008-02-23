@@ -31,6 +31,7 @@ import streamit.frontend.controlflow.DataFlow;
 import streamit.frontend.controlflow.Lattice;
 import streamit.frontend.controlflow.StatementCounter;
 import streamit.frontend.controlflow.StrictTypeLattice;
+import streamit.frontend.nodes.DummyFENode;
 import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprArrayRange;
@@ -123,7 +124,7 @@ public class SemanticChecker
 
 	protected void report(FENode node, String message)
 	{
-		report(node.getCx(), message);
+		report(node, message);
 	}
 
 	protected void report(FEContext ctx, String message)
@@ -160,18 +161,25 @@ public class SemanticChecker
 		for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
 		{
 			StreamSpec spec = (StreamSpec)iter.next();
-			checkAStreamName(names, spec.getName(), spec.getCx());
+			checkAStreamName(names, spec.getName(), spec);
 		}
 
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
 		{
 			TypeStruct ts = (TypeStruct)iter.next();
-			checkAStreamName(names, ts.getName(), ts.getContext());
+			checkAStreamName(names, ts.getName(),
+							 new DummyFENode (ts.getContext ()));
 		}
 		return names;
 	}
 
-	private void checkAStreamName(Map map, String name, FEContext ctx)
+	/**
+	 *
+	 * @param map
+	 * @param name
+	 * @param ctx
+	 */
+	private void checkAStreamName(Map map, String name, FENode ctx)
 	{
 		if (map.containsKey(name))
 		{
@@ -184,6 +192,27 @@ public class SemanticChecker
 			map.put(name, ctx);
 		}
 	}
+
+	/**
+	 *
+	 * @param map
+	 * @param name
+	 * @param ctx
+	 * @deprecated
+	 */
+/* TODO:	private void checkAStreamName(Map map, String name, FEContext ctx)
+	{
+		if (map.containsKey(name))
+		{
+			FEContext octx = (FEContext)map.get(name);
+			report(ctx, "Multiple declarations of '" + name + "'");
+			report(octx, "as a stream or structure");
+		}
+		else
+		{
+			map.put(name, ctx);
+		}
+	}*/
 
 	/**
 	 * Checks that no structures have duplicated field names.  In
@@ -208,14 +237,14 @@ public class SemanticChecker
 			{
 				Parameter param = (Parameter)i2.next();
 				checkADupFieldName(localNames, streamNames,
-						param.getName(), spec.getCx());
+						param.getName(), spec);
 			}
 			for (i2 = spec.getVars().iterator(); i2.hasNext(); )
 			{
 				FieldDecl field = (FieldDecl)i2.next();
 				for (int i = 0; i < field.getNumFields(); i++)
 					checkADupFieldName(localNames, streamNames,
-							field.getName(i), field.getCx());
+							field.getName(i), field);
 			}
 			for (i2 = spec.getFuncs().iterator(); i2.hasNext(); )
 			{
@@ -245,7 +274,7 @@ public class SemanticChecker
 				}
 				if (name != null)
 					checkADupFieldName(localNames, streamNames,
-							name, func.getCx());
+							name, func);
 			}
 		}
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
@@ -254,12 +283,19 @@ public class SemanticChecker
 			Map localNames = new HashMap();
 			for (int i = 0; i < ts.getNumFields(); i++)
 				checkADupFieldName(localNames, streamNames,
-						ts.getField(i), ts.getContext());
+						ts.getField(i), new DummyFENode (ts.getContext ()));
 		}
 	}
 
+	/**
+	 *
+	 * @param localNames
+	 * @param streamNames
+	 * @param name
+	 * @param ctx
+	 */
 	private void checkADupFieldName(Map localNames, Map streamNames,
-			String name, FEContext ctx)
+			String name, FENode ctx)
 	{
 		if (localNames.containsKey(name))
 		{
@@ -278,6 +314,34 @@ public class SemanticChecker
 			}
 		}
 	}
+	/**
+	 *
+	 * @param localNames
+	 * @param streamNames
+	 * @param name
+	 * @param ctx
+	 * @deprecated
+	 */
+/* TODO:	private void checkADupFieldName(Map localNames, Map streamNames,
+			String name, FEContext ctx)
+	{
+		if (localNames.containsKey(name))
+		{
+			FEContext octx = (FEContext)localNames.get(name);
+			report(ctx, "Duplicate declaration of '" + name + "'");
+			report(octx, "(also declared here)");
+		}
+		else
+		{
+			localNames.put(name, ctx);
+			if (streamNames.containsKey(name))
+			{
+				FEContext octx = (FEContext)streamNames.get(name);
+				report(ctx, "'" + name + "' has the same name as");
+				report(octx, "a stream or structure");
+			}
+		}
+	}*/
 
 	/**
 	 * Checks that statements exist in valid contexts for the type of
@@ -585,7 +649,7 @@ public class SemanticChecker
 			}
 
 			public boolean hasReturn;
-			
+
 			public Object visitExprFunCall(ExprFunCall exp)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
@@ -1018,7 +1082,7 @@ public class SemanticChecker
 				if( stmt.getInit() == null){
 					report(stmt, "For loops without initializer not supported." );
 				}else{
-					stmt.getInit().accept(this);					
+					stmt.getInit().accept(this);
 				}
 
 				Type cond = getType(stmt.getCond());

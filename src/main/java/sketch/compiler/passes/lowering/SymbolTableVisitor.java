@@ -22,6 +22,7 @@ import java.util.Map;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.FuncWork;
@@ -113,37 +114,37 @@ public class SymbolTableVisitor extends FEReplacer
     public Type getType(Expression expr)
     {
     	if(expr == null){ return TypePrimitive.voidtype; }
-    	
+
         // To think about: should we cache GetExprType objects?
         GetExprType get = new GetExprType(symtab, streamType, structsByName);
         Type type = (Type)expr.accept(get);
         return actualType(type);
     }
-    
+
     public boolean isGlobal(ExprVar ev){
     	return symtab.isVarShared(ev.getName());
     }
-    
+
     public boolean isGlobal(String name){
     	return symtab.isVarShared(name);
     }
-    
-    
-    public boolean isGlobal(Expression exp){    	
+
+
+    public boolean isGlobal(Expression exp){
     	class checker extends FEReplacer{
     		boolean isglobal = false;
     		public Object visitExprVar(ExprVar ev){
     			isglobal = isglobal || isGlobal(ev);
     			return ev;
-    		}    		
-    	};    	
+    		}
+    	};
     	checker c = new checker();
     	exp.accept(c);
-    	return c.isglobal;    	    	
+    	return c.isglobal;
     }
-    
-    
-    
+
+
+
     /**
      * Add a variable declaration and register the variable in the
      * symbol table.  This creates a {@link
@@ -155,12 +156,31 @@ public class SymbolTableVisitor extends FEReplacer
      * @param type     type of the variable
      * @param name     name of the variable
      */
-    protected void addVarDecl(FEContext context, Type type, String name)
+    protected void addVarDecl(FENode context, Type type, String name)
     {
         Statement stmt = new StmtVarDecl(context, type, name, null);
         addStatement(stmt);
         symtab.registerVar(name, type, stmt, SymbolTable.KIND_LOCAL);
     }
+
+    /**
+     * Add a variable declaration and register the variable in the
+     * symbol table.  This creates a {@link
+     * streamit.frontend.nodes.StmtVarDecl} for the specified type and
+     * name, and adds that statement using {@link addStatement}.  It
+     * also registers the new variable in the current symbol table.
+     *
+     * @param context  file and line number the statement belongs to
+     * @param type     type of the variable
+     * @param name     name of the variable
+     * @deprecated
+     */
+/* TODO:    protected void addVarDecl(FEContext context, Type type, String name)
+    {
+        Statement stmt = new StmtVarDecl(context, type, name, null);
+        addStatement(stmt);
+        symtab.registerVar(name, type, stmt, SymbolTable.KIND_LOCAL);
+    }*/
 
     /**
      * Get the actual type for a type.  In particular, if we have a
@@ -237,7 +257,7 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
         return result;
     }
-    
+
     @Override
     public Object visitStmtFork(StmtFork ploop){
     	SymbolTable oldSymTab = symtab;
@@ -246,8 +266,8 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
         return result;
     }
-    
-    
+
+
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
