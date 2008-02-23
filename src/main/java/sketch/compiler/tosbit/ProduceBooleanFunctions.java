@@ -29,7 +29,7 @@ public class ProduceBooleanFunctions extends NodesToSBit {
 	
     public Object visitStreamSpec(StreamSpec spec)
     {    	
-        out.print("// " + spec.getCx() + "\n"); 
+        out.print("// " + spec + "\n"); 
                         
         state.pushLevel();
         if (spec.getName() != null)
