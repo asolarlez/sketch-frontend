@@ -6,6 +6,11 @@ public class DummyFENode extends FENode {
 		super(node);
 	}
 
+	/**
+	 *
+	 * @param context
+	 * @deprecated
+	 */
 	public DummyFENode(FEContext context) {
 		super(context);
 	}

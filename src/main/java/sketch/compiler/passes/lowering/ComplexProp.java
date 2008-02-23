@@ -56,7 +56,7 @@ public class ComplexProp extends FEReplacer
     private static ExprComplex makeComplex(Expression exp)
     {
         if (!(exp instanceof ExprComplex))
-            return new ExprComplex(exp.getCx(), exp, new ExprConstFloat(0.0));
+            return new ExprComplex(exp, exp, new ExprConstFloat(0.0));
         ExprComplex cplx = (ExprComplex)exp;
         if (cplx.getReal() != null && cplx.getImag() != null)
             return cplx;
@@ -65,14 +65,14 @@ public class ComplexProp extends FEReplacer
         if (real == null) real = new ExprConstFloat(0.0);
         imag = cplx.getImag();
         if (imag == null) imag = new ExprConstFloat(0.0);
-        return new ExprComplex(exp.getCx(), real, imag);
+        return new ExprComplex(exp, real, imag);
     }
 
     public Object visitExprBinary(ExprBinary exp)
     {
         Expression left = (Expression)exp.getLeft().accept(this);
         Expression right = (Expression)exp.getRight().accept(this);
-        FEContext ctx = exp.getCx();
+        FENode ctx = exp;
         // We need at least one side to be complex to care.
         if ((left instanceof ExprComplex) || (right instanceof ExprComplex))
         {
@@ -103,7 +103,7 @@ public class ComplexProp extends FEReplacer
 
             // Expressions to be used for returning values:
             Expression real, imag;
-            
+
             // Decide what to do based on the operation:
             switch (exp.getOp())
             {
@@ -115,14 +115,14 @@ public class ComplexProp extends FEReplacer
                     real = lr;
                 else
                     real = new ExprBinary(ctx, exp.getOp(), lr, rr);
-                
+
                 if (li == null)
                     imag = ri;
                 else if (ri == null)
                     imag = li;
                 else
                     imag = new ExprBinary(ctx, exp.getOp(), li, ri);
-                
+
                 return new ExprComplex(ctx, real, imag);
 
             case ExprBinary.BINOP_SUB:
@@ -132,14 +132,14 @@ public class ComplexProp extends FEReplacer
                     real = lr;
                 else
                     real = new ExprBinary(ctx, exp.getOp(), lr, rr);
-                
+
                 if (li == null)
                     imag = new ExprUnary(ctx, ExprUnary.UNOP_NEG, ri);
                 else if (ri == null)
                     imag = li;
                 else
                     imag = new ExprBinary(ctx, exp.getOp(), li, ri);
-                
+
                 return new ExprComplex(ctx, real, imag);
 
                 // Complex multiply:
@@ -155,17 +155,17 @@ public class ComplexProp extends FEReplacer
                 if (li == null) li = new ExprConstFloat(0.0);
                 if (rr == null) rr = new ExprConstFloat(0.0);
                 if (ri == null) ri = new ExprConstFloat(0.0);
-                
+
                 ar = new ExprBinary(ctx, ExprBinary.BINOP_MUL, lr, rr);
                 br = new ExprBinary(ctx, ExprBinary.BINOP_MUL, li, ri);
                 real = new ExprBinary(ctx, ExprBinary.BINOP_SUB, ar, br);
-                
+
                 ai = new ExprBinary(ctx, ExprBinary.BINOP_MUL, lr, ri);
                 bi = new ExprBinary(ctx, ExprBinary.BINOP_MUL, li, rr);
                 imag = new ExprBinary(ctx, ExprBinary.BINOP_ADD, ai, bi);
-                
+
                 return new ExprComplex(ctx, real, imag);
-                
+
                 // Complex divide:
             case ExprBinary.BINOP_DIV:
                 // This works out to
@@ -181,19 +181,19 @@ public class ComplexProp extends FEReplacer
                 ar = new ExprBinary(ctx, ExprBinary.BINOP_MUL, rr, rr);
                 br = new ExprBinary(ctx, ExprBinary.BINOP_MUL, ri, ri);
                 denom = new ExprBinary(ctx, ExprBinary.BINOP_ADD, ar, br);
-                
+
                 ar = new ExprBinary(ctx, ExprBinary.BINOP_MUL, lr, rr);
                 br = new ExprBinary(ctx, ExprBinary.BINOP_MUL, li, ri);
                 real = new ExprBinary(ctx, ExprBinary.BINOP_ADD, ar, br);
                 real = new ExprBinary(ctx, ExprBinary.BINOP_DIV, real, denom);
-                
+
                 ai = new ExprBinary(ctx, ExprBinary.BINOP_MUL, li, rr);
                 bi = new ExprBinary(ctx, ExprBinary.BINOP_MUL, lr, ri);
                 imag = new ExprBinary(ctx, ExprBinary.BINOP_SUB, ai, bi);
                 imag = new ExprBinary(ctx, ExprBinary.BINOP_DIV, imag, denom);
-                
+
                 return new ExprComplex(ctx, real, imag);
-                
+
                 // Direct comparisons need to get translated to
                 // piecewise comparisons, but the result is a single
                 // real-valued expression.
@@ -220,7 +220,7 @@ public class ComplexProp extends FEReplacer
                 left = new ExprBinary(ctx, ExprBinary.BINOP_NEQ, lr, rr);
                 right = new ExprBinary(ctx, ExprBinary.BINOP_NEQ, li, ri);
                 return new ExprBinary(ctx, ExprBinary.BINOP_OR, left, right);
-                
+
                 // Anything else is wrong; punt on the problem.
             default:
             }
@@ -237,7 +237,7 @@ public class ComplexProp extends FEReplacer
         if (left == exp.getLeft() && right == exp.getRight())
             return exp;
         else
-            return new ExprBinary(exp.getCx(), exp.getOp(), left, right);
+            return new ExprBinary(exp, exp.getOp(), left, right);
     }
 
     public Object visitExprTernary(ExprTernary exp)
@@ -246,7 +246,7 @@ public class ComplexProp extends FEReplacer
         Expression a = (Expression)exp.getA().accept(this);
         Expression b = (Expression)exp.getB().accept(this);
         Expression c = (Expression)exp.getC().accept(this);
-        FEContext ctx = exp.getCx();
+        FENode ctx = exp;
 
         if (a == exp.getA() && b == exp.getB() && c == exp.getC())
             return exp;
@@ -259,7 +259,7 @@ public class ComplexProp extends FEReplacer
         // Otherwise, force both b and c to be complex.
         ExprComplex bc = makeComplex(b);
         ExprComplex cc = makeComplex(c);
-        
+
         // Now create the pair of ternary expressions.
         Expression real = new ExprTernary(ctx, exp.getOp(), a,
                                           bc.getReal(), cc.getReal());
@@ -277,11 +277,11 @@ public class ComplexProp extends FEReplacer
         Expression expr = (Expression)exp.getExpr().accept(this);
         int op = exp.getOp();
         if (!(expr instanceof ExprComplex))
-            return new ExprUnary(exp.getCx(), op, expr);
+            return new ExprUnary(exp, op, expr);
         ExprComplex cplx = makeComplex(expr);
-        Expression real = new ExprUnary(exp.getCx(), op, cplx.getReal());
-        Expression imag = new ExprUnary(exp.getCx(), op, cplx.getImag());
-        return new ExprComplex(exp.getCx(), real, imag);
+        Expression real = new ExprUnary(exp, op, cplx.getReal());
+        Expression imag = new ExprUnary(exp, op, cplx.getImag());
+        return new ExprComplex(exp, real, imag);
     }
 
     public Object visitExprFunCall(ExprFunCall exp)
@@ -294,7 +294,7 @@ public class ComplexProp extends FEReplacer
             Expression expr = (Expression)iter.next();
             params.add(expr.accept(this));
         }
-        
+
         // Lots of special cases here.  We care about a function if
         // it matches the conditions in isEligibleFunCall().
         if (isEligibleFunCall(exp, params, "abs", 1))
@@ -321,8 +321,8 @@ public class ComplexProp extends FEReplacer
             return fcSqrt(exp, (ExprComplex)params.get(0));
         if (exp.getName().equals("csqrt"))
             return fcCSqrt(exp, (Expression)params.get(0));
-        
-        return new ExprFunCall(exp.getCx(), exp.getName(), params);
+
+        return new ExprFunCall(exp, exp.getName(), params);
     }
 
     private boolean isEligibleFunCall(ExprFunCall exp, List params, String fn,
@@ -350,10 +350,10 @@ public class ComplexProp extends FEReplacer
         // sqrt(a^2 + b^2) -- always real
         Expression a = param.getReal();
         Expression b = param.getImag();
-        Expression a2 = new ExprBinary(a.getCx(), ExprBinary.BINOP_MUL, a, a);
-        Expression b2 = new ExprBinary(b.getCx(), ExprBinary.BINOP_MUL, b, b);
-        Expression a2b2 = new ExprBinary(a2.getCx(), ExprBinary.BINOP_ADD, a2, b2);
-        Expression result = new ExprFunCall(fc.getCx(), "sqrt", a2b2);
+        Expression a2 = new ExprBinary(a, ExprBinary.BINOP_MUL, a, a);
+        Expression b2 = new ExprBinary(b, ExprBinary.BINOP_MUL, b, b);
+        Expression a2b2 = new ExprBinary(a2, ExprBinary.BINOP_ADD, a2, b2);
+        Expression result = new ExprFunCall(fc, "sqrt", a2b2);
         return result;
     }
 
@@ -362,7 +362,7 @@ public class ComplexProp extends FEReplacer
         // atan(b/a) -- always real
         // The C and Java libraries both supply atan2(), which
         // performs this function and gives us the correct angle.
-        return new ExprFunCall(fc.getCx(),
+        return new ExprFunCall(fc,
                                "atan2", param.getImag(), param.getReal());
     }
 
@@ -371,29 +371,29 @@ public class ComplexProp extends FEReplacer
         // e^(a+bi)
         // e^a e^bi
         // e^a cis b
-        Expression eToA = new ExprFunCall(param.getCx(),
+        Expression eToA = new ExprFunCall(param,
                                           "exp", param.getReal());
-        Expression cosB = new ExprFunCall(param.getCx(),
+        Expression cosB = new ExprFunCall(param,
                                           "cos", param.getImag());
-        Expression sinB = new ExprFunCall(param.getCx(),
+        Expression sinB = new ExprFunCall(param,
                                           "sin", param.getImag());
-        
-        Expression real = new ExprBinary(eToA.getCx(), ExprBinary.BINOP_MUL, eToA, cosB);
-        Expression imag = new ExprBinary(eToA.getCx(), ExprBinary.BINOP_MUL, eToA, sinB);
-        return new ExprComplex(fc.getCx(), real, imag);
+
+        Expression real = new ExprBinary(eToA, ExprBinary.BINOP_MUL, eToA, cosB);
+        Expression imag = new ExprBinary(eToA, ExprBinary.BINOP_MUL, eToA, sinB);
+        return new ExprComplex(fc, real, imag);
     }
 
     public Expression fcLog(ExprFunCall fc, ExprComplex param)
     {
         // log |z| + i arg(z)
-        Expression absZ = new ExprFunCall(param.getCx(), "abs", param);
+        Expression absZ = new ExprFunCall(param, "abs", param);
         absZ = (Expression)absZ.accept(this);
-        Expression logAbsZ = new ExprFunCall(absZ.getCx(), "log", absZ);
-        
-        Expression argZ = new ExprFunCall(param.getCx(), "arg", param);
+        Expression logAbsZ = new ExprFunCall(absZ, "log", absZ);
+
+        Expression argZ = new ExprFunCall(param, "arg", param);
         argZ = (Expression)argZ.accept(this);
-        
-        return new ExprComplex(fc.getCx(), logAbsZ, argZ);
+
+        return new ExprComplex(fc, logAbsZ, argZ);
     }
 
     public Expression fcSin(ExprFunCall fc, ExprComplex param)
@@ -402,63 +402,63 @@ public class ComplexProp extends FEReplacer
         // (e^-b+e^b)/2 sin a + i(e^b-e^-b)/2 cos a
         Expression a = param.getReal();
         Expression b = param.getImag();
-        Expression minusB = new ExprUnary(b.getCx(),
+        Expression minusB = new ExprUnary(b,
                                           ExprUnary.UNOP_NEG, b);
-        Expression eB = new ExprFunCall(b.getCx(), "exp", b);
-        Expression eMinusB = new ExprFunCall(minusB.getCx(),
+        Expression eB = new ExprFunCall(b, "exp", b);
+        Expression eMinusB = new ExprFunCall(minusB,
                                              "exp", minusB);
-        Expression sinA = new ExprFunCall(a.getCx(), "sin", a);
-        Expression cosA = new ExprFunCall(a.getCx(), "cos", a);
-        
-        Expression rNum = new ExprBinary(eB.getCx(),
+        Expression sinA = new ExprFunCall(a, "sin", a);
+        Expression cosA = new ExprFunCall(a, "cos", a);
+
+        Expression rNum = new ExprBinary(eB,
                                          ExprBinary.BINOP_ADD, eB, eMinusB);
-        Expression rMag = new ExprBinary(rNum.getCx(),
+        Expression rMag = new ExprBinary(rNum,
                                          ExprBinary.BINOP_DIV, rNum,
                                          new ExprConstInt(2));
-        Expression real = new ExprBinary(rMag.getCx(),
+        Expression real = new ExprBinary(rMag,
                                          ExprBinary.BINOP_MUL, rMag, sinA);
-        
-        Expression iNum = new ExprBinary(eB.getCx(),
+
+        Expression iNum = new ExprBinary(eB,
                                          ExprBinary.BINOP_SUB, eB, eMinusB);
-        Expression iMag = new ExprBinary(iNum.getCx(),
+        Expression iMag = new ExprBinary(iNum,
                                          ExprBinary.BINOP_DIV, iNum,
                                          new ExprConstInt(2));
-        Expression imag = new ExprBinary(iMag.getCx(),
+        Expression imag = new ExprBinary(iMag,
                                          ExprBinary.BINOP_MUL, iMag, cosA);
-        
-        return new ExprComplex(fc.getCx(), real, imag);
+
+        return new ExprComplex(fc, real, imag);
     }
-    
+
     public Expression fcCos(ExprFunCall fc, ExprComplex param)
     {
         // (e^(iz)+e^(-iz))/(2)
         // (e^-b+e^b)/2 cos a + i(e^-b-e^b)/2 sin a
         Expression a = param.getReal();
         Expression b = param.getImag();
-        Expression minusB = new ExprUnary(b.getCx(), ExprUnary.UNOP_NEG, b);
-        Expression eB = new ExprFunCall(b.getCx(), "exp", b);
-        Expression eMinusB = new ExprFunCall(minusB.getCx(),
+        Expression minusB = new ExprUnary(b, ExprUnary.UNOP_NEG, b);
+        Expression eB = new ExprFunCall(b, "exp", b);
+        Expression eMinusB = new ExprFunCall(minusB,
                                              "exp", minusB);
-        Expression sinA = new ExprFunCall(a.getCx(), "sin", a);
-        Expression cosA = new ExprFunCall(a.getCx(), "cos", a);
-        
-        Expression rNum = new ExprBinary(eMinusB.getCx(),
+        Expression sinA = new ExprFunCall(a, "sin", a);
+        Expression cosA = new ExprFunCall(a, "cos", a);
+
+        Expression rNum = new ExprBinary(eMinusB,
                                          ExprBinary.BINOP_ADD, eMinusB, eB);
-        Expression rMag = new ExprBinary(rNum.getCx(),
+        Expression rMag = new ExprBinary(rNum,
                                          ExprBinary.BINOP_DIV, rNum,
                                          new ExprConstInt(2));
-        Expression real = new ExprBinary(rMag.getCx(),
+        Expression real = new ExprBinary(rMag,
                                          ExprBinary.BINOP_MUL, rMag, cosA);
-        
-        Expression iNum = new ExprBinary(eMinusB.getCx(),
+
+        Expression iNum = new ExprBinary(eMinusB,
                                          ExprBinary.BINOP_SUB, eMinusB, eB);
-        Expression iMag = new ExprBinary(iNum.getCx(),
+        Expression iMag = new ExprBinary(iNum,
                                          ExprBinary.BINOP_DIV, iNum,
                                          new ExprConstInt(2));
-        Expression imag = new ExprBinary(iMag.getCx(),
+        Expression imag = new ExprBinary(iMag,
                                          ExprBinary.BINOP_MUL, iMag, sinA);
-        
-        return new ExprComplex(fc.getCx(), real, imag);
+
+        return new ExprComplex(fc, real, imag);
     }
 
     public Expression fcPow(ExprFunCall fc, Expression base, Expression exp)
@@ -466,11 +466,11 @@ public class ComplexProp extends FEReplacer
 	// In general, base^exp = e^(exp*ln(base)).  This is easy enough
 	// to do here, solves all of the nasty corner cases, and might
 	// have a prayer of being efficient.
-	Expression lnBase = new ExprFunCall(base.getCx(), "log", base);
-	Expression newExp = new ExprBinary(exp.getCx(),
+	Expression lnBase = new ExprFunCall(base, "log", base);
+	Expression newExp = new ExprBinary(exp,
 					   ExprBinary.BINOP_MUL,
 					   exp, lnBase);
-	Expression result = new ExprFunCall(fc.getCx(), "exp", newExp);
+	Expression result = new ExprFunCall(fc, "exp", newExp);
 	result = (Expression)result.accept(this);
 	return result;
     }
@@ -484,39 +484,39 @@ public class ComplexProp extends FEReplacer
         // real and imaginary parts having the same sign if im(z) is
         // positive and opposite signs if negative.  Set this up using
         // a ternary conditional based on the sign of im(z).
-        Expression absZ = new ExprFunCall(param.getCx(), "abs", param);
+        Expression absZ = new ExprFunCall(param, "abs", param);
         absZ = (Expression)absZ.accept(this);
         // NB: absZ is positive and real.
-        Expression sqrtAbsZ = new ExprFunCall(absZ.getCx(), "sqrt", absZ);
+        Expression sqrtAbsZ = new ExprFunCall(absZ, "sqrt", absZ);
         Expression a = param.getReal();
-        Expression minusA = new ExprUnary(a.getCx(),
+        Expression minusA = new ExprUnary(a,
                                           ExprUnary.UNOP_NEG, a);
 
-        Expression real = new ExprBinary(a.getCx(),
+        Expression real = new ExprBinary(a,
                                          ExprBinary.BINOP_ADD, a, sqrtAbsZ);
-        real = new ExprBinary(real.getCx(), ExprBinary.BINOP_DIV,
+        real = new ExprBinary(real, ExprBinary.BINOP_DIV,
                               real, new ExprConstInt(2));
-        real = new ExprFunCall(real.getCx(), "sqrt", real);
-        
-        Expression imag = new ExprBinary(minusA.getCx(),
+        real = new ExprFunCall(real, "sqrt", real);
+
+        Expression imag = new ExprBinary(minusA,
                                          ExprBinary.BINOP_ADD,
                                          minusA, sqrtAbsZ);
-        imag = new ExprBinary(imag.getCx(), ExprBinary.BINOP_DIV,
+        imag = new ExprBinary(imag, ExprBinary.BINOP_DIV,
                               imag, new ExprConstInt(2));
-        imag = new ExprFunCall(imag.getCx(), "sqrt", imag);
-        
+        imag = new ExprFunCall(imag, "sqrt", imag);
+
         // Need to include logic to test the sign of the imaginary
         // part:
-        Expression minusReal = new ExprUnary(real.getCx(),
+        Expression minusReal = new ExprUnary(real,
                                              ExprUnary.UNOP_NEG, real);
-        Expression imagPos = new ExprBinary(param.getImag().getCx(),
+        Expression imagPos = new ExprBinary(param.getImag(),
                                             ExprBinary.BINOP_GT,
                                             param.getImag(),
                                             new ExprConstInt(0));
-        real = new ExprTernary(imagPos.getCx(), ExprTernary.TEROP_COND,
+        real = new ExprTernary(imagPos, ExprTernary.TEROP_COND,
                                imagPos, real, minusReal);
-        
-        return new ExprComplex(fc.getCx(), real, imag);
+
+        return new ExprComplex(fc, real, imag);
     }
 
     public Expression fcCSqrt(ExprFunCall fc, Expression param)
