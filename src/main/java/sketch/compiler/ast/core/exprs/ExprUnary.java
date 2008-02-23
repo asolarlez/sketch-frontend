@@ -27,7 +27,7 @@ public class ExprUnary extends Expression
 {
     // Operators:
 	/**	negation (!x) */
-    public static final int UNOP_NOT = 1;  
+    public static final int UNOP_NOT = 1;
 	/**	bitwise negation (~x) */
     public static final int UNOP_BNOT = 2;
 	/**	arithmetic negation (-x) */
@@ -39,11 +39,11 @@ public class ExprUnary extends Expression
 	/**	--x */
     public static final int UNOP_PREDEC = 6;
 	/**	x-- */
-    public static final int UNOP_POSTDEC = 7; 
-    
+    public static final int UNOP_POSTDEC = 7;
+
     private int op;
     private Expression expr;
-    
+
     public Integer getIValue(){
     	Integer iVal = expr.getIValue();
     	if(iVal != null){
@@ -60,24 +60,34 @@ public class ExprUnary extends Expression
     		}
     	}
     	return null;
-    	
+
     }
-    
+
     /** Creates a new ExprUnary applying the specified operator to the
      * specified expression. */
+    public ExprUnary(FENode context, int op, Expression expr)
+    {
+        super(context);
+        this.op = op;
+        this.expr = expr;
+    }
+
+    /** Creates a new ExprUnary applying the specified operator to the
+     * specified expression.
+     * @deprecated
+     */
     public ExprUnary(FEContext context, int op, Expression expr)
     {
         super(context);
         this.op = op;
         this.expr = expr;
     }
-    
-    
+
     /** Creates a new ExprUnary applying the specified operator to the
      * specified expression. */
     public ExprUnary(String op, Expression expr)
     {
-        super(expr.getCx());
+        super(expr);
         if(op.equals("!")){
         	this.op = ExprUnary.UNOP_NOT;
         }else if(op.equals("-")){
@@ -87,14 +97,14 @@ public class ExprUnary extends Expression
         }
         this.expr = expr;
     }
-    
-    
+
+
     /** Returns the operator of this. */
     public int getOp() { return op; }
-    
+
     /** Returns the expression this modifies. */
     public Expression getExpr() { return expr; }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -112,12 +122,12 @@ public class ExprUnary extends Expression
             return false;
         return true;
     }
-    
+
     public int hashCode()
     {
         return new Integer(op).hashCode() ^ expr.hashCode();
     }
-    
+
     public String toString()
     {
         String preOp = "", postOp = "";
