@@ -92,20 +92,24 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		this(base, Collections.singletonList(new RangeLen(offset)));
 	}
 
-	public ExprArrayRange(FEContext context, Expression base, Expression offset)
+	/*
+	 * TODO: why do all these methods take FENode parameters that are never
+	 * used???
+	 */
+	public ExprArrayRange(FENode node, Expression base, Expression offset)
 	{
 		this(base, Collections.singletonList(new RangeLen(offset)));
 	}
-	public ExprArrayRange(FEContext context, Expression base, RangeLen rl)
+	public ExprArrayRange(FENode node, Expression base, RangeLen rl)
 	{
 		this(base, Collections.singletonList(rl));
 	}
-	public ExprArrayRange(FEContext context, Expression base, RangeLen rl, boolean unchecked)
+	public ExprArrayRange(FENode node, Expression base, RangeLen rl, boolean unchecked)
 	{
 		this(base, Collections.singletonList(rl), unchecked);
 	}
 
-	public ExprArrayRange(FEContext context, Expression base, Expression offset, boolean unchecked)
+	public ExprArrayRange(FENode node, Expression base, Expression offset, boolean unchecked)
 	{
 		this(base, Collections.singletonList(new RangeLen(offset)));
 		setUnchecked(unchecked);
@@ -127,14 +131,14 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	 */
 	public ExprArrayRange(Expression base, List members)
 	{
-		super(base.getCx());
+		super(base);
 		this.base=base;
 		this.members=members;
 		if(members.isEmpty()) throw new IllegalArgumentException();
 	}
 	public ExprArrayRange(Expression base, List members, boolean unchecked)
 	{
-		super(base.getCx());
+		super(base);
 		this.base=base;
 		this.members=members;
 		if(members.isEmpty()) throw new IllegalArgumentException();

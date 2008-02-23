@@ -27,11 +27,11 @@ import java.util.List;
  * NOTE that the current implementation (first checkin) assumes that
  * all of the literals are specified in the array initialization.  It
  * does not currently allow symbolic arrays as members -- for example,
- * 
+ *
  * <code>
  * A[1] = { 1 );  B[1][1] = { A };
  * </code>
- * 
+ *
  * If this behavior is going to be supported, you'll need to adjust
  * (at least) the constructor of this class, as well as the semantic
  * checker and GenerateCopies.
@@ -43,7 +43,7 @@ public class ExprArrayInit extends Expression
 {
     /** list of Expressions that are the initial elements of the array */
     private List elements;
-    
+
     /** number of dimensions that are initialized in this.  If all the
      * <elements> are plain Expressions, then dims=1.  If the elements
      * are also array initializers, then dims=1+elem.dims (where
@@ -51,7 +51,26 @@ public class ExprArrayInit extends Expression
      */
     private int dims;
 
-    /** Creates a new ExprArrayInit with the specified elements. */
+    public ExprArrayInit(FENode node, List elements)
+    {
+        super(node);
+        this.elements = elements;
+	// determine dims based on first element.  That the elements
+	// are uniform will be checked in semantic checker.
+	if (elements.size()==0) {
+	    dims = 1;
+	} else if (elements.get(0) instanceof ExprArrayInit) {
+	    dims = 1 + ((ExprArrayInit)elements.get(0)).dims;
+	} else {
+	    // assumes all literals in array are specified
+	    dims = 1;
+	}
+    }
+
+    /**
+     * Creates a new ExprArrayInit with the specified elements.
+     * @deprecated
+     */
     public ExprArrayInit(FEContext context, List elements)
     {
         super(context);
@@ -67,7 +86,7 @@ public class ExprArrayInit extends Expression
 	    dims = 1;
 	}
     }
-    
+
     /** Returns the components of this.  The returned list is a list
      * of expressions.  */
     public List getElements() { return elements; }
@@ -106,7 +125,7 @@ public class ExprArrayInit extends Expression
 	sb.append("}");
         return sb.toString();
     }
-    
+
     public boolean equals(Object o)
     {
         if (!(o instanceof ExprArrayInit))

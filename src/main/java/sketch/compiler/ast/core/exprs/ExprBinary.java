@@ -44,42 +44,55 @@ public class ExprBinary extends Expression
     public static final int BINOP_BAND = 14;
     public static final int BINOP_BOR = 15;
     public static final int BINOP_BXOR = 16;
-    
+
     public static final int BINOP_LSHIFT = 17;
     public static final int BINOP_RSHIFT = 18;
     public static final int BINOP_SELECT = 19;
-    
+
     private int op;
     private Expression left, right;
     private ExprBinary alias;
+
     /**
      * Create a new binary expression given the operation and the
      * left and right child nodes.  Requires that op is a valid
-     * operator code and that left and right are non-null. 
+     * operator code and that left and right are non-null.
      *
      * @param context  file and line number this expression corresponds to
      * @param op       BINOP_ operator combining the two expressions
      * @param left     expression on the left of the operator
      * @param right    expression on the right of the operator
      */
-    public ExprBinary(FEContext context,
+    public ExprBinary(FENode node,
                       int op, Expression left, Expression right)
     {
-        super(context);
+        super(node);
         this.op = op;
         this.left = left;
         this.right = right;
         alias = this;
     }
-    
-    
+
+    /**
+     * Create a new binary expression given the operation and the
+     * left and right child nodes.  Requires that op is a valid
+     * operator code and that left and right are non-null.
+     *
+     * @param op       BINOP_ operator combining the two expressions
+     * @param left     expression on the left of the operator
+     * @param right    expression on the right of the operator
+     */
+    public ExprBinary (int op, Expression left, Expression right) {
+    	this (left, op, left, right);
+    }
+
     public ExprBinary(Expression left, String sop, Expression right)
 {
-	super(left.getCx());
+	super(left);
 	this.left = left;
 	this.right = right;
 	int lop = -1;
-	
+
 	if(sop.equals("+")){
 		lop = BINOP_ADD;
 	}else if(sop.equals("-")){
@@ -115,33 +128,32 @@ public class ExprBinary extends Expression
 	}else if(sop.equals("xor")){
 		lop = BINOP_BXOR;
 	}else {
-		throw new RuntimeException("What is this operator??!!");
+		throw new RuntimeException("What is this operator: "+ sop +" ??!!");
 	}
-	
+
 	this.op = lop;
 	alias = this;
 }
-    
-    
 
-    public ExprBinary(FEContext context,
+    public ExprBinary(FENode node,
     		int op, Expression left, Expression right, ExprBinary alias)
     {
-    	super(context);
+    	super(node);
     	this.op = op;
     	this.left = left;
     	this.right = right;
     	this.alias = alias;
     }
-    
+
+    /** */
     public ExprBinary getAlias(){ return alias; }
-    
+
     /**
      * Returns the operator of this.
      *
      * @return BINOP_ operator code for this expression
      */
-    public int getOp() { return op; }   
+    public int getOp() { return op; }
 
     /**
      * Returns the left child expression of this.
@@ -176,13 +188,13 @@ public class ExprBinary extends Expression
             return false;
         return true;
     }
-    
+
     public int hashCode()
     {
         return left.hashCode() ^ right.hashCode() ^ new Integer(op).hashCode();
     }
 
-    public Integer getIValue(){  
+    public Integer getIValue(){
     	Integer ivI = getLeft().getIValue();
     	Integer rvI = getRight().getIValue();
     	if( ivI!= null && rvI!= null){
@@ -191,8 +203,8 @@ public class ExprBinary extends Expression
     		switch (op)
             {
             case ExprBinary.BINOP_ADD: return new Integer(lv + rv);
-            case ExprBinary.BINOP_SUB: return new Integer(lv - rv);            
-            case ExprBinary.BINOP_DIV: return new Integer(lv / rv);            
+            case ExprBinary.BINOP_SUB: return new Integer(lv - rv);
+            case ExprBinary.BINOP_DIV: return new Integer(lv / rv);
             case ExprBinary.BINOP_AND: return new Integer((lv==1 && rv==1)?1:0);
             case ExprBinary.BINOP_OR: return new Integer((lv==1 || rv==1)?1:0);
             case ExprBinary.BINOP_EQ: return new Integer((lv== rv)?1:0);
@@ -208,8 +220,8 @@ public class ExprBinary extends Expression
             case ExprBinary.BINOP_RSHIFT: return new Integer((lv >> rv));
             case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
             case ExprBinary.BINOP_MOD: return new Integer(lv % rv);
-            
-            }    	
+
+            }
     	}
     	if( op == ExprBinary.BINOP_MOD && rvI != null){
     		if( getLeft() instanceof ExprBinary ){
@@ -226,7 +238,7 @@ public class ExprBinary extends Expression
     	}
     	return null;
     }
-    
+
     public String getOpString(){
     	String theOp;
     	switch (op)
@@ -254,10 +266,10 @@ public class ExprBinary extends Expression
         }
     	return theOp;
     }
-    
+
     public String toString()
     {
-        String theOp = getOpString();        
+        String theOp = getOpString();
         return "(" + left.toString() + ")" + theOp +
             "(" + right.toString() + ")";
     }

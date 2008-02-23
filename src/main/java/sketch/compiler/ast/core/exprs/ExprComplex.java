@@ -31,7 +31,7 @@ package streamit.frontend.nodes;
 public class ExprComplex extends Expression
 {
     private Expression real, imag;
-    
+
     /**
      * Create a new ExprComplex with the specified real and imaginary
      * parts.  Either of real or imag may be null, for a purely real
@@ -41,20 +41,20 @@ public class ExprComplex extends Expression
      * @param real     real part of the complex expression, or null
      * @param imag     imaginary part of the complex expression or null
      */
-    public ExprComplex(FEContext context, Expression real, Expression imag)
+    public ExprComplex(FENode context, Expression real, Expression imag)
     {
         super(context);
         this.real = real;
         this.imag = imag;
     }
-    
+
     /**
      * Returns the real part of this.  May return null if this is a
      * purely imaginary expression.
      *
      * @return the real part of the expression, or null
      */
-    public Expression getReal() { return real; }  
+    public Expression getReal() { return real; }
 
     /**
      * Returns a non-null expression for the real part of this.  If
@@ -67,7 +67,7 @@ public class ExprComplex extends Expression
     {
         if (real != null)
             return real;
-        return new ExprConstFloat(this.getCx(), 0.0f);
+        return new ExprConstFloat(this, 0.0f);
     }
 
     /**
@@ -89,7 +89,7 @@ public class ExprComplex extends Expression
     {
         if (imag != null)
             return imag;
-        return new ExprConstFloat(this.getCx(), 0.0f);
+        return new ExprConstFloat(this, 0.0f);
     }
 
     /** Accept a front-end visitor. */
@@ -102,7 +102,7 @@ public class ExprComplex extends Expression
     {
         return "((" + real + ")+(" + imag + ")i)";
     }
-    
+
     public boolean equals(Object other)
     {
         if (!(other instanceof ExprComplex))
@@ -114,7 +114,7 @@ public class ExprComplex extends Expression
             return false;
         return true;
     }
-    
+
     public int hashCode()
     {
         return real.hashCode() ^ imag.hashCode();

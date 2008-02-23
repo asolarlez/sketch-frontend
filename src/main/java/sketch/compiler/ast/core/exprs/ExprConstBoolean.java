@@ -35,6 +35,20 @@ public class ExprConstBoolean extends ExprConstant
      *                 constant was created in
      * @param val      Value of the constant
      */
+    public ExprConstBoolean(FENode context, boolean val)
+    {
+        super(context);
+        this.val = val;
+    }
+
+    /**
+     * Create a new ExprConstBoolean with a specified value.
+     *
+     * @param context  Context indicating file and line number this
+     *                 constant was created in
+     * @param val      Value of the constant
+     * @deprecated
+     */
     public ExprConstBoolean(FEContext context, boolean val)
     {
         super(context);
@@ -49,7 +63,7 @@ public class ExprConstBoolean extends ExprConstant
      */
     public ExprConstBoolean(boolean val)
     {
-        this(null, val);
+        this((FEContext) null, val);
     }
 
     /** Returns the value of this. */
