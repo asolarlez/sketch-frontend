@@ -49,7 +49,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 			name = fName(fl);			
 			floatConstants.put(fl, newFloatFunction(name));			
 		}
-		return new ExprFunCall(fexp.getCx(), name, new ArrayList<Expression>(0) );
+		return new ExprFunCall(fexp, name, new ArrayList<Expression>(0) );
 	}
 	
 	
@@ -85,7 +85,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
         if (left == exp.getLeft() && right == exp.getRight() && newOp == exp.getOp())
             return exp;
         else
-            return new ExprBinary(exp.getCx(), newOp, left, right, exp.getAlias());
+            return new ExprBinary(exp, newOp, left, right, exp.getAlias());
     }
 	
 	public Object visitStreamSpec(StreamSpec spec)
