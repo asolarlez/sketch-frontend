@@ -25,19 +25,32 @@ package streamit.frontend.nodes;
 public class StmtSplit extends Statement
 {
     private SplitterJoiner sj;
-    
+
     /**
      * Creates a new split statement with the specified splitter type.
      *
      * @param context  file and line number this statement corresponds to
      * @param splitter type of splitter for this stream
      */
+    public StmtSplit(FENode context, SplitterJoiner splitter)
+    {
+        super(context);
+        sj = splitter;
+    }
+
+    /**
+     * Creates a new split statement with the specified splitter type.
+     *
+     * @param context  file and line number this statement corresponds to
+     * @param splitter type of splitter for this stream
+     * @deprecated
+     */
     public StmtSplit(FEContext context, SplitterJoiner splitter)
     {
         super(context);
         sj = splitter;
     }
-    
+
     /**
      * Returns the splitter type for this.
      *
@@ -47,7 +60,7 @@ public class StmtSplit extends Statement
     {
         return sj;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
@@ -60,12 +73,12 @@ public class StmtSplit extends Statement
             return false;
         return ((StmtSplit)other).sj.equals(sj);
     }
-    
+
     public int hashCode()
     {
         return sj.hashCode();
     }
-    
+
     public String toString()
     {
         return "split " + sj;

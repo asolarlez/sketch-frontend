@@ -29,9 +29,19 @@ package streamit.frontend.nodes;
 public class StmtReturn extends Statement
 {
     Expression value;
-    
+
     /** Creates a new return statement, with the specified return value
      * (or null). */
+    public StmtReturn(FENode context, Expression value)
+    {
+        super(context);
+        this.value = value;
+    }
+
+    /** Creates a new return statement, with the specified return value
+     * (or null).
+     * @deprecated
+     */
     public StmtReturn(FEContext context, Expression value)
     {
         super(context);
@@ -44,7 +54,7 @@ public class StmtReturn extends Statement
     {
         return value;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {

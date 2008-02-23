@@ -35,7 +35,7 @@ public class StmtSendMessage extends Statement
     private String name;
     private List params;
     private Expression minLatency, maxLatency;
-    
+
     /**
      * Creates a message-sending statement.
      *
@@ -51,7 +51,7 @@ public class StmtSendMessage extends Statement
      *                 items before the message is delivered, or
      *                 <code>null</code>
      */
-    public StmtSendMessage(FEContext context, Expression receiver,
+    public StmtSendMessage(FENode context, Expression receiver,
                            String name, List params,
                            Expression minLatency, Expression maxLatency)
     {
@@ -82,7 +82,7 @@ public class StmtSendMessage extends Statement
     {
         return name;
     }
-    
+
     /**
      * Get the parameter list of the message.
      *
@@ -92,7 +92,7 @@ public class StmtSendMessage extends Statement
     {
         return params;
     }
-    
+
     /**
      * Get the minimum latency of the message.  This is the number of
      * items that can be received or sent by this filter before the
