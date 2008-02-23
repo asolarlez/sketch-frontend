@@ -30,7 +30,7 @@ import java.util.List;
 public class SCAnon extends StreamCreator
 {
     private StreamSpec spec;
-    
+
     /**
      * Creates a new anonymous stream given its specification.
      *
@@ -39,12 +39,12 @@ public class SCAnon extends StreamCreator
      * @param portals  list of <code>Expression</code> giving the
      *                 portals to register the new stream with
      */
-    public SCAnon(FEContext context, StreamSpec spec, List portals)
+    public SCAnon(FENode context, StreamSpec spec, List portals)
     {
         super(context, portals);
         this.spec = spec;
     }
-    
+
     /**
      * Creates a new anonymous stream given the type of stream and
      * its init function.
@@ -56,13 +56,13 @@ public class SCAnon extends StreamCreator
      * @param portals  list of <code>Expression</code> giving the
      *                 portals to register the new stream with
      */
-    public SCAnon(FEContext context, int type, Statement init, List portals)
+    public SCAnon(FENode context, int type, Statement init, List portals)
     {
         super(context, portals);
         this.spec = new StreamSpec(context, type, null, null,
                                    Collections.EMPTY_LIST, init);
     }
-    
+
     /**
      * Returns the stream specification this creates.
      *
@@ -72,7 +72,7 @@ public class SCAnon extends StreamCreator
     {
         return spec;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {

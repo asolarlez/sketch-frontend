@@ -29,9 +29,19 @@ import java.util.List;
 public class SJWeightedRR extends SplitterJoiner
 {
     private List weights;
-    
+
     /** Creates a new round-robin splitter or joiner with the specified
      * weights. */
+    public SJWeightedRR(FENode context, List weights)
+    {
+        super(context);
+        this.weights = weights;
+    }
+
+    /** Creates a new round-robin splitter or joiner with the specified
+     * weights.
+     * @deprecated
+     */
     public SJWeightedRR(FEContext context, List weights)
     {
         super(context);
@@ -43,7 +53,7 @@ public class SJWeightedRR extends SplitterJoiner
     {
         return weights;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {

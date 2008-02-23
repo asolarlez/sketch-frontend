@@ -25,26 +25,46 @@ package streamit.frontend.nodes;
 public class SJDuplicate extends SplitterJoiner
 {
 	private int type;
-	
+
 	public static final int DUP=0;
 	public static final int XOR=1;
 	public static final int AND=2;
 	public static final int OR=3;
-	
+
     /** Creates a new duplicating splitter. */
+    public SJDuplicate(FENode context)
+    {
+        super(context);
+        type = 0;
+    }
+
+    /** Creates a new duplicating splitter.
+     * @deprecated
+     */
     public SJDuplicate(FEContext context)
     {
         super(context);
         type = 0;
     }
-    
+
+    /**
+     *
+     */
+    public SJDuplicate(FENode context, int type)
+    {
+        super(context);
+        this.type = type;
+    }
+
+    /**
+     * @deprecated
+     */
     public SJDuplicate(FEContext context, int type)
     {
         super(context);
         this.type = type;
     }
-    
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {

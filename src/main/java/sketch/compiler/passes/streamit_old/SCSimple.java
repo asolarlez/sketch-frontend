@@ -31,7 +31,7 @@ public class SCSimple extends StreamCreator
     private String name;
     private List types;
     private List params;
-    
+
     /**
      * Create a stream object given its name and a parameter list.
      *
@@ -44,7 +44,7 @@ public class SCSimple extends StreamCreator
      * @param portals  list of <code>Expression</code> giving the
      *                 portals to register the new stream with
      */
-    public SCSimple(FEContext context, String name, List types, List params,
+    public SCSimple(FENode context, String name, List types, List params,
                     List portals)
     {
         super(context, portals);
@@ -52,7 +52,7 @@ public class SCSimple extends StreamCreator
         this.types = types;
         this.params = params;
     }
-    
+
 
     /** Return the name of the stream created by this. */
     public String getName()
@@ -71,7 +71,7 @@ public class SCSimple extends StreamCreator
     {
         return types;
     }
-    
+
     /**
      * Return the parameter list of the stream.
      *
@@ -81,7 +81,7 @@ public class SCSimple extends StreamCreator
     {
         return params;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {

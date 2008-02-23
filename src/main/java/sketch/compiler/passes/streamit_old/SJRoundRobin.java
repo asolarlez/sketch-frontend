@@ -27,9 +27,19 @@ package streamit.frontend.nodes;
 public class SJRoundRobin extends SplitterJoiner
 {
     private Expression weight;
-    
+
     /** Creates a new round-robin splitter or joiner with the specified
      * weight. */
+    public SJRoundRobin(FENode context, Expression weight)
+    {
+        super(context);
+        this.weight = weight;
+    }
+
+    /** Creates a new round-robin splitter or joiner with the specified
+     * weight.
+     * @deprecated
+     */
     public SJRoundRobin(FEContext context, Expression weight)
     {
         super(context);
@@ -37,6 +47,15 @@ public class SJRoundRobin extends SplitterJoiner
     }
 
     /** Creates a new round-robin splitter or joiner with weight 1. */
+    public SJRoundRobin(FENode context)
+    {
+        this(context, new ExprConstInt(context, 1));
+    }
+
+    /**
+     * Creates a new round-robin splitter or joiner with weight 1.
+     * @deprecated
+     */
     public SJRoundRobin(FEContext context)
     {
         this(context, new ExprConstInt(context, 1));
@@ -47,7 +66,7 @@ public class SJRoundRobin extends SplitterJoiner
     {
         return weight;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {

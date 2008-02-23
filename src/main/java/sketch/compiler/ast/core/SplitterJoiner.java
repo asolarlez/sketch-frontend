@@ -24,6 +24,16 @@ package streamit.frontend.nodes;
  */
 abstract public class SplitterJoiner extends FENode
 {
+    public SplitterJoiner(FENode context)
+    {
+        super(context);
+    }
+
+    /**
+     *
+     * @param context
+     * @deprecated
+     */
     public SplitterJoiner(FEContext context)
     {
         super(context);
