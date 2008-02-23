@@ -30,8 +30,17 @@ package streamit.frontend.nodes;
 public class StmtEnqueue extends Statement
 {
     Expression value;
-    
+
     /** Creates a new enqueue statement with the specified value. */
+    public StmtEnqueue(FENode context, Expression value)
+    {
+        super(context);
+        this.value = value;
+    }
+
+    /** Creates a new enqueue statement with the specified value.
+     * @deprecated
+     */
     public StmtEnqueue(FEContext context, Expression value)
     {
         super(context);
@@ -43,7 +52,7 @@ public class StmtEnqueue extends Statement
     {
         return value;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {

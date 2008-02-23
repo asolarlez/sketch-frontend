@@ -27,27 +27,27 @@ package streamit.frontend.nodes;
 public class StmtExpr extends Statement
 {
     private Expression expr;
-    
-    public StmtExpr(FEContext context, Expression expr)
+
+    public StmtExpr(FENode context, Expression expr)
     {
         super(context);
         this.expr = expr;
     }
-    
+
     /**
      * Create an expression statement corresponding to a single expression,
      * using that expression's context as our own.
      */
     public StmtExpr(Expression expr)
     {
-        this(expr.getCx(), expr);
+        this(expr, expr);
     }
 
     public Expression getExpression()
     {
         return expr;
     }
-    
+
     public Object accept(FEVisitor v)
     {
         return v.visitStmtExpr(this);
@@ -59,12 +59,12 @@ public class StmtExpr extends Statement
             return false;
         return expr.equals(((StmtExpr)other).getExpression());
     }
-    
+
     public int hashCode()
     {
         return expr.hashCode();
     }
-    
+
     public String toString()
     {
         return expr.toString();

@@ -32,8 +32,21 @@ public class StmtFor extends Statement
 {
     private Expression cond;
     private Statement init, incr, body;
-    
+
     /** Creates a new for loop. */
+    public StmtFor(FENode context, Statement init, Expression cond,
+                   Statement incr, Statement body)
+    {
+        super(context);
+        this.init = init;
+        this.cond = cond;
+        this.incr = incr;
+        this.body = body;
+    }
+
+    /** Creates a new for loop.
+     * @deprecated
+     */
     public StmtFor(FEContext context, Statement init, Expression cond,
                    Statement incr, Statement body)
     {
@@ -43,51 +56,50 @@ public class StmtFor extends Statement
         this.incr = incr;
         this.body = body;
     }
-    
+
     /** Creates a for loop of the form for(int iterName=0; iterName &lt; upperBound; ++iterName){body} */
     public StmtFor(String iterName, Expression upperBound, Statement body)
-    {    	
-        super(upperBound.getCx());
-        FEContext cx = upperBound.getCx();
-        this.init = new StmtVarDecl(cx, TypePrimitive.inttype, iterName, ExprConstInt.zero);
-        Expression iterVar = new ExprVar(cx, iterName);
-        this.cond = new ExprBinary(cx, ExprBinary.BINOP_LT, iterVar, upperBound);
-        this.incr = new StmtAssign(cx, iterVar,  new ExprBinary(cx, ExprBinary.BINOP_ADD, iterVar, ExprConstInt.one));
+    {
+        super(upperBound);
+        this.init = new StmtVarDecl(upperBound, TypePrimitive.inttype, iterName, ExprConstInt.zero);
+        Expression iterVar = new ExprVar(upperBound, iterName);
+        this.cond = new ExprBinary(upperBound, ExprBinary.BINOP_LT, iterVar, upperBound);
+        this.incr = new StmtAssign(iterVar,  new ExprBinary(upperBound, ExprBinary.BINOP_ADD, iterVar, ExprConstInt.one));
         this.body = body;
     }
-    
-    
-    
+
+
+
     /** Return the initialization statement of this. */
     public Statement getInit()
     {
         return init;
     }
-    
+
     /** Return the loop condition of this. */
     public Expression getCond()
     {
         return cond;
     }
-    
+
     /** Return the increment statement of this. */
     public Statement getIncr()
     {
         return incr;
     }
-    
+
     /** Return the loop body of this. */
     public Statement getBody()
     {
         return body;
     }
-    
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
         return v.visitStmtFor(this);
     }
-    
+
     public String toString(){
     		String result = "for(...){\n";
     		result += this.body + "}\n";
