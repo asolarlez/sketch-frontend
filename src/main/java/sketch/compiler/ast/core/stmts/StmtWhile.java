@@ -29,27 +29,37 @@ public class StmtWhile extends Statement
 {
     Expression cond;
     Statement body;
-    
+
     /** Creates a new while loop. */
+    public StmtWhile(FENode context, Expression cond, Statement body)
+    {
+        super(context);
+        this.cond = cond;
+        this.body = body;
+    }
+
+    /** Creates a new while loop.
+     * @deprecated
+     */
     public StmtWhile(FEContext context, Expression cond, Statement body)
     {
         super(context);
         this.cond = cond;
         this.body = body;
     }
-    
+
     /** Returns the loop condition. */
     public Expression getCond()
     {
         return cond;
     }
-    
+
     /** Returns the loop body. */
     public Statement getBody()
     {
         return body;
     }
-    
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {

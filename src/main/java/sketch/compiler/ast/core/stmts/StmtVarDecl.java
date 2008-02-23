@@ -50,6 +50,37 @@ public class StmtVarDecl extends Statement
      *                  <code>null</code>) containing initializers of
      *                  the variables declared here
      */
+    public StmtVarDecl(FENode context, List types, List names,
+                       List inits)
+    {
+        super(context);
+        // TODO: check for validity, including types of object
+        // in the lists and that all three are the same length.
+        this.types = new java.util.ArrayList(types);
+        this.names = new java.util.ArrayList(names);
+        this.inits = new java.util.ArrayList(inits);
+    }
+
+    /**
+     * Create a new variable declaration with corresponding lists of
+     * types, names, and initialization values.  The three lists
+     * passed in are duplicated, and may be mutated after calling this
+     * constructor without changing the value of this object.  The
+     * types and names must all be non-null; if a particular variable
+     * is uninitialized, the corresponding initializer value may be
+     * null.
+     *
+     * @param  context  Context indicating what line and file this
+     *                  statement is created at
+     * @param  types    List of <code>Type</code> of the variables
+     *                  declared here
+     * @param  names    List of <code>String</code> of the names of the
+     *                  variables declared here
+     * @param  inits    List of <code>Expression</code> (or
+     *                  <code>null</code>) containing initializers of
+     *                  the variables declared here
+     * @deprecated
+     */
     public StmtVarDecl(FEContext context, List types, List names,
                        List inits)
     {
@@ -72,6 +103,28 @@ public class StmtVarDecl extends Statement
      * @param  name     Name of the variable
      * @param  init     Expression initializing the variable, or
      *                  <code>null</code> if the variable is uninitialized
+     */
+    public StmtVarDecl(FENode context, Type type, String name,
+                       Expression init)
+    {
+        this(context,
+             Collections.singletonList(type),
+             Collections.singletonList(name),
+             Collections.singletonList(init));
+    }
+
+    /**
+     * Create a new variable declaration with exactly one variable
+     * in it.  If the variable is uninitialized, the initializer may
+     * be <code>null</code>.
+     *
+     * @param  context  Context indicating what line and file this
+     *                  statement is created at
+     * @param  type     Type of the variable
+     * @param  name     Name of the variable
+     * @param  init     Expression initializing the variable, or
+     *                  <code>null</code> if the variable is uninitialized
+     * @deprecated
      */
     public StmtVarDecl(FEContext context, Type type, String name,
                        Expression init)
