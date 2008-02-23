@@ -15,6 +15,7 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
@@ -185,7 +186,7 @@ public class SpinPreprocessor extends FEReplacer {
 		if (ExprUnary.UNOP_PREDEC == eu.getOp ()
 			|| ExprUnary.UNOP_PREINC == eu.getOp ()) {
 			eu.report ("WARNING: converting prefix incr/decr to postfix");
-			return new ExprUnary (eu.getCx (),
+			return new ExprUnary (eu,
 					ExprUnary.UNOP_PREDEC == eu.getOp () ? ExprUnary.UNOP_POSTDEC
 														 : ExprUnary.UNOP_POSTINC,
 								  (Expression) eu.getExpr ().accept (this));
@@ -200,7 +201,7 @@ public class SpinPreprocessor extends FEReplacer {
 
     	List<Parameter> pars = new ArrayList<Parameter>(vars.size());
     	List<Expression> actuals = new ArrayList<Expression>(vars.size());
-    	FEContext cx = loop.getCx();
+    	FENode cx = loop;
     	for (String pname : vars) {
     		Parameter par = new Parameter(varTypes.get(pname), pname);
     		pars.add(par);
@@ -221,11 +222,11 @@ public class SpinPreprocessor extends FEReplacer {
     	String ivname = decl.getName(0);
     	StmtVarDecl ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, ExprConstInt.zero);
     	ExprVar ivar = new ExprVar(cx, ivname);
-    	Expression cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
-    	Statement incr = new StmtAssign(cx, ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
+    	Expression cmp = new ExprBinary(ivar, "<", niter);
+    	Statement incr = new StmtAssign(ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
     	List<Statement> forBody = new ArrayList<Statement> ();
     	forBody.add (new StmtExpr (fcall));
-    	StmtFor spawnLoop = new StmtFor(cx, ndecl, cmp, incr, new StmtBlock (fcall.getCx (), forBody));
+    	StmtFor spawnLoop = new StmtFor(cx, ndecl, cmp, incr, new StmtBlock (fcall, forBody));
 
     	// Create loop to join spawned threads
     	niter = (Expression) loop.getIter().accept(this);
@@ -233,7 +234,7 @@ public class SpinPreprocessor extends FEReplacer {
     	ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, ExprConstInt.zero);
     	ivar = new ExprVar(cx, ivname);
     	cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
-    	incr = new StmtAssign(cx, ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
+    	incr = new StmtAssign(ivar, new ExprBinary(ivar, "+", new ExprConstInt(1)));
     	List<Statement> joinBody =
     		Collections.singletonList ((Statement) new StmtJoin (cx, new SJRoundRobin (cx, new ExprVar (cx, ivname))));
     	StmtFor joinLoop = new StmtFor (cx, ndecl, cmp, incr, new StmtBlock (cx, joinBody));
@@ -266,7 +267,7 @@ public class SpinPreprocessor extends FEReplacer {
             }
         }
         if(newInits.size() > 0)
-        	return new StmtVarDecl(stmt.getCx(), newTypes,
+        	return new StmtVarDecl(stmt, newTypes,
         			newNames, newInits);
         else
         	return null;
@@ -302,7 +303,7 @@ public class SpinPreprocessor extends FEReplacer {
 
         for(Iterator<String> it = lhsVars.iterator(); it.hasNext(); ){
         	String vtd = it.next();
-        	FieldDecl newVar = new FieldDecl(spec.getCx(), viploops.varTypes.get(vtd), vtd, viploops.varInits.get (vtd));
+        	FieldDecl newVar = new FieldDecl(spec, viploops.varTypes.get(vtd), vtd, viploops.varInits.get (vtd));
         	newVars.add(newVar);
         	changed = true;
         }
@@ -318,7 +319,7 @@ public class SpinPreprocessor extends FEReplacer {
         newFuncs.addAll(generatedFuncs);
         sspec = oldSS;
         if (!changed && newST == spec.getStreamType()) return spec;
-        return new StreamSpec(spec.getCx(), spec.getType(),
+        return new StreamSpec(spec, spec.getType(),
                               newST, spec.getName(), spec.getParams(),
                               newVars, newFuncs);
 

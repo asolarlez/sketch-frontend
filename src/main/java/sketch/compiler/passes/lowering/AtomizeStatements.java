@@ -40,8 +40,8 @@ public class AtomizeStatements extends SymbolTableVisitor {
 	public Expression replWithLocal(Expression exp){
 		
 		String nname = varGen.nextVar();
-		addStatement(new StmtVarDecl(exp.getCx(), TypePrimitive.inttype, nname,  exp));
-		ExprVar ev = new ExprVar(exp.getCx(), nname);
+		addStatement(new StmtVarDecl(exp, TypePrimitive.inttype, nname,  exp));
+		ExprVar ev = new ExprVar(exp, nname);
 		return ev;
 	}
 	
@@ -61,7 +61,7 @@ public class AtomizeStatements extends SymbolTableVisitor {
         if (left == exp.getLeft() && right == exp.getRight())
             return exp;
         else
-            return new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
+            return new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
     }
 	
 
