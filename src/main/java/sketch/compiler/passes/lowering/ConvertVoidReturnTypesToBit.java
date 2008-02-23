@@ -19,7 +19,7 @@ public class ConvertVoidReturnTypesToBit extends SymbolTableVisitor {
 
 	public Object visitFunction (Function f) {
 		return !(f.getReturnType ().equals (TypePrimitive.voidtype)) ? f :
-			new Function (f.getCx (), f.getCls (), f.getName (),
+			new Function (f, f.getCls (), f.getName (),
 					TypePrimitive.bittype, f.getParams (), f.getBody ());
 	}
 }

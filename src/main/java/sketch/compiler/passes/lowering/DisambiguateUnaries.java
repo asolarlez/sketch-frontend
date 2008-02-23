@@ -26,6 +26,7 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtExpr;
@@ -50,13 +51,13 @@ public class DisambiguateUnaries extends SymbolTableVisitor
 {
     private TempVarGen varGen;
     private List successors;
-    
+
     public DisambiguateUnaries(TempVarGen varGen)
     {
         super(null);
         this.varGen = varGen;
     }
-    
+
     protected void doStatement(Statement stmt)
     {
         List<Statement> oldSuccessors = successors;
@@ -79,7 +80,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
             // Assume that the child expression of expr is a valid
             // left-hand side; it can usefully be a field, array
             // reference, or local variable.
-            FEContext ctx = expr.getCx();
+            FENode ctx = expr;
             Expression lhs = expr.getExpr();
             int bop = ExprBinary.BINOP_ADD;
             if (op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_POSTDEC)
@@ -104,7 +105,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     private Object visitPeekOrPop(Expression expr)
     {
         // Create a temporary variable...
-        FEContext ctx = expr.getCx();
+        FENode ctx = expr;
         String name = varGen.nextVar();
         Type type = getType(expr);
         addStatement(new StmtVarDecl(ctx, type, name, null));
@@ -139,32 +140,32 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         // this reason.  Do visit the init statement (any code it
         // adds gets put before the loop, which is fine) and the
         // body (which should always be a StmtBlock).
-    	
+
     	//Armando: as a cheap hack, I will pattern match the increment
     	//so that x++ or ++x becomes -> x = x + 1; and x-- or --x becomes x = x - 1;
-    	
+
     	Statement inc = stmt.getIncr();
     	if(inc instanceof StmtExpr){
     		Expression incre = ((StmtExpr) inc).getExpression();
     		if(incre instanceof ExprUnary){
     			ExprUnary unop = (ExprUnary) incre;
-    			if(unop.getOp() == ExprUnary.UNOP_POSTINC || 
+    			if(unop.getOp() == ExprUnary.UNOP_POSTINC ||
     					unop.getOp() == ExprUnary.UNOP_PREINC){
-    				inc = new StmtAssign(unop.getCx(), unop.getExpr(), new ExprBinary(unop.getExpr(), "+", ExprConstInt.one));
+    				inc = new StmtAssign(unop.getExpr(), new ExprBinary(unop.getExpr(), "+", ExprConstInt.one));
     			}
-    			if(unop.getOp() == ExprUnary.UNOP_POSTDEC || 
+    			if(unop.getOp() == ExprUnary.UNOP_POSTDEC ||
     					unop.getOp() == ExprUnary.UNOP_PREDEC){
-    				inc = new StmtAssign(unop.getCx(), unop.getExpr(), new ExprBinary(unop.getExpr(), "-", ExprConstInt.one));
+    				inc = new StmtAssign(unop.getExpr(), new ExprBinary(unop.getExpr(), "-", ExprConstInt.one));
     			}
     		}
     	}
-    	
+
         Statement newBody = (Statement)stmt.getBody().accept(this);
         successors = new java.util.ArrayList();
         Statement newInit = (Statement)stmt.getInit().accept(this);
         if (newInit == stmt.getInit() && newBody == stmt.getBody() && inc == stmt.getIncr())
             return stmt;
-        return new StmtFor(stmt.getCx(), newInit, stmt.getCond(),
+        return new StmtFor(stmt, newInit, stmt.getCond(),
                            inc, newBody);
     }
 
@@ -181,7 +182,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
             newAlt == stmt.getAlt() &&
             newCond == stmt.getCond())
             return stmt;
-        return new StmtIfThen(stmt.getCx(), newCond, newCons, newAlt);
+        return new StmtIfThen(stmt, newCond, newCons, newAlt);
     }
 
     public Object visitStmtWhile(StmtWhile stmt)
@@ -194,6 +195,6 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         successors = new java.util.ArrayList();
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtWhile(stmt.getCx(), stmt.getCond(), newBody);
+        return new StmtWhile(stmt, stmt.getCond(), newBody);
     }
 }

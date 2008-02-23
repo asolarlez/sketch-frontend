@@ -50,10 +50,10 @@ public class CreateInitFunctions extends FEReplacer
         {
             List newFuncs = new java.util.ArrayList();
             newFuncs.addAll(ss.getFuncs());
-            Statement body = new StmtBlock(ss.getCx(),
+            Statement body = new StmtBlock(ss,
                                            Collections.EMPTY_LIST);
-            newFuncs.add(Function.newInit(ss.getCx(), body));
-            ss = new StreamSpec(ss.getCx(), ss.getType(),
+            newFuncs.add(Function.newInit(ss, body));
+            ss = new StreamSpec(ss, ss.getType(),
                                 ss.getStreamType(), ss.getName(),
                                 ss.getParams(), ss.getVars(), newFuncs);
         }
