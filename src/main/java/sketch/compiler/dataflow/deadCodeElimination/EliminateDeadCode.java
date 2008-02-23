@@ -80,13 +80,13 @@ public class EliminateDeadCode extends BackwardDataflow {
 		abstractValue lhsv = state.varValue(lhsName);		
 		lhsv = vtype.plus(rhs, lhsv);
 		state.setVarValue(lhsName, lhsv);
-    	return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
+    	return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
     }
 	
 	public Object visitExprField(ExprField exp) {
 		abstractValue leftav = (abstractValue)exp.getLeft().accept(this);
 		 Expression left = exprRV;		 
-		 if(isReplacer) exprRV = new ExprField(exp.getCx(), left, exp.getName());
+		 if(isReplacer) exprRV = new ExprField(exp, left, exp.getName());
 	     return leftav;
 	}
 	
@@ -113,7 +113,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 	    	
 	    	state.endFunction();
 
-	        return isReplacer? new Function(func.getCx(), func.getCls(),
+	        return isReplacer? new Function(func, func.getCls(),
 	                            func.getName(), func.getReturnType(),
 	                            nparams, func.getSpecification(), newBody) : null;
 	    	
@@ -139,7 +139,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 	            }
 	        }
 	        if(types.size() > 0){
-	        	return super.visitStmtVarDecl(new StmtVarDecl(stmt.getCx(), types, names, inits));
+	        	return super.visitStmtVarDecl(new StmtVarDecl(stmt, types, names, inits));
 	        }else{
 	        	return null;
 	        }

@@ -20,7 +20,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	public Object visitStmtReorderBlock(StmtReorderBlock block){
 		processBlockWithCrazyEffects(block.getBlock());
 		StmtBlock newBlock = (StmtBlock) block.getBlock().accept(this);
-		return isReplacer ? new StmtReorderBlock(block.getCx(), newBlock.getStmts() ) : block;		
+		return isReplacer ? new StmtReorderBlock(block, newBlock.getStmts() ) : block;		
 	}
 	
 	
@@ -52,7 +52,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        	state.procChangeTrackers(changed, orig);
 	        	++iters;
 	        	if(iters > 5000){
-	        		throw new RuntimeException("Infinite loop detected: " + stmt +":" + stmt.getCx());
+	        		throw new RuntimeException("Infinite loop detected: " + stmt +":" + stmt);
 	        	}
 	        }		
 	}
@@ -125,6 +125,6 @@ public class DataflowWithFixpoint extends PartialEvaluator {
     		state.popLevel();	        	
     	}
     	if(nbody == null) return null;
-    	return isReplacer?  new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody) : stmt;
+    	return isReplacer?  new StmtFor(stmt, ninit, ncond, nincr, nbody) : stmt;
     }
 }

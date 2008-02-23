@@ -248,7 +248,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 			    		{
 			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
-			    			inParameterSetter(exp.getCx() ,formalParams, actualParams, false);
+			    			inParameterSetter(exp ,formalParams, actualParams, false);
 			    		}
 			    		Statement body = null;
 			    		try{
@@ -276,8 +276,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	 	    			funcsToAnalyze.add(fun);	    			
 	 	    			return super.visitExprFunCall(exp); 
 	    			}else{
-	    				StmtAssert sas = new StmtAssert(exp.getCx(), ExprConstInt.zero);
-		    			sas.setMsg( (exp.getCx()!=null?exp.getCx().toString() : "" ) + exp.getName()  );
+	    				StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero);
+		    			sas.setMsg( (exp!=null?exp.getCx().toString() : "" ) + exp.getName()  );
 		    			sas.accept(this);
 	    			}	    			 
 	    		}
@@ -293,9 +293,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	@Override
 	public Object visitStmtAssign(StmtAssign s){
 		if(tracing){
-			if(s.getCx() != tmp && s.getCx() != null){
-				System.out.println(s.getCx());
-				tmp = s.getCx();
+			if(s != tmp && s.getCx() != null){
+				System.out.println(s);
+				tmp = s;
 			}
 		}
 		return super.visitStmtAssign(s);

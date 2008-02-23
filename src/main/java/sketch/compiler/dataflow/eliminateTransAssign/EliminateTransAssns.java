@@ -39,7 +39,7 @@ public class EliminateTransAssns extends DataflowWithFixpoint {
 			val = (transAssignAbsValue)state.varValue(nm);
 		}
 		if(isReplacer){
-			exprRV = new ExprVar(exp.getCx(), transName(nm));
+			exprRV = new ExprVar(exp, transName(nm));
 		}
 		return 	oval;
 	}
@@ -50,7 +50,7 @@ public class EliminateTransAssns extends DataflowWithFixpoint {
     	while(ef.getLeft() instanceof ExprField){
     		
     	}
-    	return isReplacer?  new StmtAssign(stmt.getCx(), nlhs, nrhs, stmt.getOp())  : stmt;
+    	return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
     }
     */
 	

@@ -55,7 +55,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
             	inits.add(ninit);
             }
         }
-        return isReplacer? new StmtVarDecl(stmt.getCx(), types, names, inits) : stmt;
+        return isReplacer? new StmtVarDecl(stmt, types, names, inits) : stmt;
     }
     
     /**
@@ -122,7 +122,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	        	newBlockBody.add(newStatements.get(i));
     	        }    	        
     	       
-    	        Statement result = new StmtBlock(stmt.getCx(), newBlockBody);
+    	        Statement result = new StmtBlock(stmt, newBlockBody);
     	        newStatements = oldStatements;
     	        rs = result;
     	    }
@@ -161,7 +161,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	}finally{
     		state.popParallelSection();
     	}
-        return isReplacer?  new StmtFork(loop.getCx(), ndecl, niter, nbody) : loop;
+        return isReplacer?  new StmtFork(loop, ndecl, niter, nbody) : loop;
 	}
     
     
@@ -235,7 +235,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     		state.popLevel();	        	
     	}
     	if(nbody == null && ninit == null && nincr == null) return null;
-    	return new StmtFor(stmt.getCx(), ninit, ncond, nincr, nbody);
+    	return new StmtFor(stmt, ninit, ncond, nincr, nbody);
     }
 
 }
