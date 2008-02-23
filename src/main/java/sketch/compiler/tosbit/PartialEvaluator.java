@@ -9,16 +9,16 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
 	protected MethodState state;
-	public final boolean isReplacer;	
+	public final boolean isReplacer;
 	protected boolean isComplete = true;
 	protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
     protected int MAX_UNROLL = 0;
-   
+
 
 	public class CheckSize extends FENullVisitor{
 		int size = -1;
-		 public Object visitExprVar(ExprVar exp) { 
+		 public Object visitExprVar(ExprVar exp) {
 			 if(isComplete || state.knowsVar(exp.getName())){
 				 size = state.checkArray(exp.getName());
 			 }else{
@@ -27,8 +27,8 @@ public class PartialEvaluator extends FEReplacer {
 			 return exp.getName();
 		 }
 		 public Object visitExprArrayRange(ExprArrayRange exp)
- 	    {	 	    	
- 	    	String vname =  (String) exp.getBase().accept(this);	 	    	
+ 	    {
+ 	    	String vname =  (String) exp.getBase().accept(this);
  		    vname = vname + "_idx_" + 0;
  		    if(isComplete || state.knowsVar(vname)){
  		    	size = state.checkArray(vname);
@@ -43,7 +43,7 @@ public class PartialEvaluator extends FEReplacer {
 			return size;
 		}
 	}
-	
+
     public class LHSvisitor extends FENullVisitor{
     	public Expression lhsExp=null;
     	private List<String> lhsVals=null;
@@ -52,60 +52,60 @@ public class PartialEvaluator extends FEReplacer {
     	public String offset = null;
     	public String base = null;
     	private boolean NDArracc=false;
-    	
+
     	public boolean isNDArracc(){
     		return NDArracc;
     	}
-    	
+
     	public void unset(){
     		if( names != null){
 	    		for(Iterator<String> it = names.iterator(); it.hasNext(); ){
 	    			String lnm = it.next();
 	    			if( isComplete || state.knowsVar(lnm)){
-	    				state.unsetVarValue(lnm);	
+	    				state.unsetVarValue(lnm);
 	    			}
 	    		}
     		}
     	}
-    	
+
     	public String getLHSString(){
     		assert NDArracc;
-    		String rval = "$";    		
+    		String rval = "$";
     		for(Iterator<String> it = lhsVals.iterator(); it.hasNext(); ){
-    			rval += " " + it.next();    			
+    			rval += " " + it.next();
     		}
     		rval += "$$";
     		for(Iterator<String> it = oldVals.iterator(); it.hasNext(); ){
-    			rval += " " + it.next();    			
+    			rval += " " + it.next();
     		}
-    		rval += "$[" + offset + "]";    		
-    		return rval;    		
+    		rval += "$[" + offset + "]";
+    		return rval;
     	}
-    	
- 
-    	
+
+
+
     	public Object visitExprArrayRange(ExprArrayRange exp) {
     		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
     		RangeLen rl = (RangeLen)exp.getMembers().get(0);
     		Expression newStart = (Expression) rl.start().accept(PartialEvaluator.this);
-    		valueClass startVal = state.popVStack();    		
-    		String vname = (String) exp.getBase().accept(this);    			
-    		assert startVal.hasValue() || rl.len() == 1 : "For now, we require all array range expressions to have a computable start index.";		
+    		valueClass startVal = state.popVStack();
+    		String vname = (String) exp.getBase().accept(this);
+    		assert startVal.hasValue() || rl.len() == 1 : "For now, we require all array range expressions to have a computable start index.";
     		if(startVal.hasValue()){
     			lhsVals = new ArrayList<String>(rl.len());
  	    		oldVals = new ArrayList<String>(rl.len());
  	    		names = new ArrayList<String>(rl.len());
- 	    		int start = startVal.getIntValue(); 	    		
+ 	    		int start = startVal.getIntValue();
  	    		for(int i=0; i<rl.len(); ++i){
  	    			int ofst = start + i;
  	    			String nm = vname + "_idx_" + ofst;
  	    			if( isComplete || state.knowsVar(nm) ){
  	    				oldVals.add(state.varGetRHSName(nm));
- 	 	    			lhsVals.add(state.varGetLHSName(nm));	
+ 	 	    			lhsVals.add(state.varGetLHSName(nm));
  	    			}else{
  	    				oldVals.add("null");
- 	 	    			lhsVals.add("null");	
- 	    			} 	    			
+ 	 	    			lhsVals.add("null");
+ 	    			}
  	    			names.add(nm);
  	    		}
  	    		NDArracc = true;
@@ -128,15 +128,15 @@ public class PartialEvaluator extends FEReplacer {
      		    	int size = state.checkArray(vname);
      		    	if(ofstV >= size || ofstV < 0){
      		    		if(!exp.isUnchecked())
-     		    			throw new ArrayIndexOutOfBoundsException(exp.getCx() + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
+     		    			throw new ArrayIndexOutOfBoundsException(exp + ": ARRAY OUT OF BOUNDS !(0<=" + startVal.getIntValue() + " < " + size);
      					state.pushVStack( new valueClass(0) );
      					return null;
-     		    	} 		    	
+     		    	}
      		    	vname = vname + "_idx_" + ofstV;
      		    	String rval = vname;
      		    	if(isReplacer){
      		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
-     		    			lhsExp = new ExprArrayRange(exp.getCx(), lhsExp, newStart);
+     		    			lhsExp = new ExprArrayRange(exp, lhsExp, newStart);
      		    		}else{
      		    			lhsExp = exp;
      		    		}
@@ -156,10 +156,10 @@ public class PartialEvaluator extends FEReplacer {
 	     	    			oldVals.add(state.varGetRHSName(nm));
 	     	    			lhsVals.add(state.varGetLHSName(nm));
 	     	    			names.add(nm);
-	     	    		}	     	    		
+	     	    		}
 	     	    		if(isReplacer){
 	     		    		if(newStart != exp.getOffset() || lhsExp != exp.getBase()){
-	     		    			lhsExp = new ExprArrayRange(exp.getCx(), lhsExp, newStart);
+	     		    			lhsExp = new ExprArrayRange(exp, lhsExp, newStart);
 	     		    		}else{
 	     		    			lhsExp = exp;
 	     		    		}
@@ -169,37 +169,37 @@ public class PartialEvaluator extends FEReplacer {
      	    		}else{
      	    			if(isReplacer){
 	     		    		if(newStart != exp.getOffset()|| lhsExp != exp.getBase()){
-	     		    			lhsExp = new ExprArrayRange(exp.getCx(), lhsExp, newStart);
+	     		    			lhsExp = new ExprArrayRange(exp, lhsExp, newStart);
 	     		    		}else{
 	     		    			lhsExp = exp;
 	     		    		}
 	     		    	}else{
 	     		    		lhsExp = exp;
-	     		    	}	
+	     		    	}
      	    		}
      	    	}
-    			
+
     		}
     		return vname;
     	}
-    	
+
 	    public Object visitExprVar(ExprVar exp)
-	    {		   
+	    {
 	    	if(isReplacer){
-	    		lhsExp = new ExprVar(exp.getCx(), state.transName(exp.getName())); //exp;
+	    		lhsExp = new ExprVar(exp, state.transName(exp.getName())); //exp;
 	    	}else{
 	    		lhsExp = exp;
 	    	}
-	    	return exp.getName();		    	
-	    }	    	
+	    	return exp.getName();
+	    }
     }
-	
-	
+
+
 	public PartialEvaluator(boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
 		super();
 		this.isReplacer = isReplacer;
         this.MAX_UNROLL = maxUnroll;
-        this.rcontrol = rcontrol;        
+        this.rcontrol = rcontrol;
 	}
 
 	protected boolean intToBool(int v) {
@@ -212,53 +212,53 @@ public class PartialEvaluator extends FEReplacer {
 	protected void Assert(boolean t, String s) {
 		if(!t){
 			System.err.println(s);
-			System.err.println( ss.getCx() );
+			System.err.println( ss );
 			throw new RuntimeException(s);
 		}
 	}
 
-	protected int boolToInt(boolean b) {	    	
+	protected int boolToInt(boolean b) {
 		if(b)
 			return 1;
-		else 
+		else
 			return 0;
 	}
 
 	public Object visitExprArrayInit(ExprArrayInit exp) {
-		
+
 		List elems = exp.getElements();
-		
+
 		List<valueClass> intelems = new ArrayList<valueClass>(elems.size());
-		
-		List<Expression> newElements = null; 
-		
+
+		List<Expression> newElements = null;
+
 		if(isReplacer) newElements = new ArrayList<Expression>(elems.size());
-		
+
 		boolean hasChanged = false;
-		for (int i=0; i<elems.size(); i++) {			
+		for (int i=0; i<elems.size(); i++) {
 			Expression element = ((Expression)elems.get(i));
 			Expression newElement = (Expression) element.accept(this);
 			valueClass vrhs =  state.popVStack();
-			
-			if(isReplacer) newElements.add(newElement);			
+
+			if(isReplacer) newElements.add(newElement);
 			if(isReplacer) if (element != newElement) hasChanged = true;
-            
+
 	    	intelems.add(vrhs);
 		}
-		state.pushVStack(new valueClass(intelems));		
+		state.pushVStack(new valueClass(intelems));
 		if (!hasChanged || !isReplacer) return exp;
-        return new ExprArrayInit(exp.getCx(), newElements);		
+        return new ExprArrayInit(exp, newElements);
 	}
 
-	
+
 	public Object visitExprArrayRange(ExprArrayRange exp) {
 		assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
 		RangeLen rl = (RangeLen)exp.getMembers().get(0);
 		Expression newStart = (Expression) rl.start().accept(this);
 		valueClass startVal = state.popVStack();
-		
+
 		Expression newBase = (Expression) exp.getBase().accept(this);
-		valueClass baseVal = state.popVStack();				
+		valueClass baseVal = state.popVStack();
 		if(startVal.hasValue()){
 			if( baseVal.isVect()  || isComplete ){
 				assert baseVal.isVect() :"This has to be a vector, otherwise, something went wrong.";
@@ -268,15 +268,15 @@ public class PartialEvaluator extends FEReplacer {
 				state.pushVStack( new valueClass(newLst));
 				if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
 					if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
-						Expression renamedBase = new ExprVar(exp.getCx(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
+						Expression renamedBase = new ExprVar(exp, state.transName(  ((ExprVar)exp.getBase()).getName()  ));
 		        		List nlst = new ArrayList();
 						nlst.add( new RangeLen(newStart, rl.len()) );
-						return new ExprArrayRange( renamedBase, nlst);		        		
+						return new ExprArrayRange( renamedBase, nlst);
 		        	}else{
 		        		List nlst = new ArrayList();
 						nlst.add( new RangeLen(newStart, rl.len()) );
-						return new ExprArrayRange(newBase, nlst);	        		
-		        	}				
+						return new ExprArrayRange(newBase, nlst);
+		        	}
 				}else{
 					return exp;
 				}
@@ -285,7 +285,7 @@ public class PartialEvaluator extends FEReplacer {
 				if(this.isReplacer && (rl.start() != newStart || exp.getBase() != newBase )){
 					List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
-					return new ExprArrayRange(newBase, nlst);	        		
+					return new ExprArrayRange(newBase, nlst);
 				}else{
 					return exp;
 				}
@@ -296,16 +296,16 @@ public class PartialEvaluator extends FEReplacer {
 	        	if( exp.getBase() instanceof ExprVar && newBase instanceof ExprArrayInit){
 	        		List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
-					Expression renamedBase = new ExprVar(exp.getCx(), state.transName(  ((ExprVar)exp.getBase()).getName()  ));
-					return new ExprArrayRange( renamedBase, nlst);		        		
+					Expression renamedBase = new ExprVar(exp, state.transName(  ((ExprVar)exp.getBase()).getName()  ));
+					return new ExprArrayRange( renamedBase, nlst);
 	        	}else{
 	        		List nlst = new ArrayList();
 					nlst.add( new RangeLen(newStart, rl.len()) );
-					return new ExprArrayRange(newBase, nlst);	        		
+					return new ExprArrayRange(newBase, nlst);
 	        	}
 			}else{
 				return exp;
-			}	
+			}
 		}
 	}
 
@@ -326,14 +326,14 @@ public class PartialEvaluator extends FEReplacer {
 	    if (real == exp.getReal() && imag == exp.getImag())
 	        return exp;
 	    else
-	        return new ExprComplex(exp.getCx(), real, imag);
+	        return new ExprComplex(exp, real, imag);
 	}
 
 	public Object visitExprConstBoolean(ExprConstBoolean exp) {
 	    if (exp.getVal()){
-	    	state.pushVStack(new valueClass(1));	        
+	    	state.pushVStack(new valueClass(1));
 	    }else{
-	    	state.pushVStack(new valueClass(0));	        
+	    	state.pushVStack(new valueClass(0));
 	    }
 	    return exp;
 	}
@@ -354,44 +354,44 @@ public class PartialEvaluator extends FEReplacer {
 	}
 
 	public Object visitExprField(ExprField exp) {
-		Assert(false, "NYS");	    
+		Assert(false, "NYS");
 	    return exp;
 	}
 
 	public Object visitExprPeek(ExprPeek exp) {
 		int poppos = state.varValue("POP_POS");
 	    exp.getExpr().accept(this);
-	    valueClass arg = state.popVStack();	        
+	    valueClass arg = state.popVStack();
 	    Assert(arg.hasValue(), "I can not tell at compile time where you are peeking. " + arg);
 	    String result = "INPUT_" + (arg.getIntValue()+poppos);
-	    state.pushVStack(new valueClass(result));	    
+	    state.pushVStack(new valueClass(result));
 	    if(this.isReplacer)
-			return new ExprVar(exp.getCx(), result);
+			return new ExprVar(exp, result);
 		else
 			return exp;
 	}
 
 	public Object visitExprPop(ExprPop exp) {
 		int poppos = state.varValue("POP_POS");
-		String result = "INPUT_" +  poppos; 
+		String result = "INPUT_" +  poppos;
 		state.setVarValue("POP_POS", poppos+1);
 		state.pushVStack(new valueClass(result));
 		if(this.isReplacer)
-			return new ExprVar(exp.getCx(), result);
+			return new ExprVar(exp, result);
 		else
 			return exp;
 	}
 
 	public Object visitExprTernary(ExprTernary exp) {
 		Expression expA = (Expression) exp.getA().accept(this);
-	    valueClass aval = state.popVStack();	        
+	    valueClass aval = state.popVStack();
 	    switch (exp.getOp())
 	    {
-	    case ExprTernary.TEROP_COND:	        	
+	    case ExprTernary.TEROP_COND:
 			if(aval.hasValue()){
 				if( intToBool(aval.getIntValue()) ){
 					Expression expret = (Expression) exp.getB().accept(this);
-					valueClass bval = state.popVStack();        		        
+					valueClass bval = state.popVStack();
 					state.pushVStack(bval);
 					return expret;
 				}else{
@@ -404,13 +404,13 @@ public class PartialEvaluator extends FEReplacer {
 				Expression expB = (Expression) exp.getB().accept(this);
 		        valueClass bval = state.popVStack();
 		        Expression expC = (Expression)exp.getC().accept(this);
-		        valueClass cval = state.popVStack();        			
+		        valueClass cval = state.popVStack();
 				String rval = "(" + aval + " ? " + bval + " : " + cval + ")";
 				state.pushVStack( new valueClass(rval) );
 				if (!isReplacer ||(expA == exp.getA() && expB == exp.getB() && expC == exp.getC()))
 		            return exp;
 		        else
-		            return new ExprTernary(exp.getCx(), exp.getOp(), expA, expB, expC);
+		            return new ExprTernary(exp, exp.getOp(), expA, expB, expC);
 			}
 	    }
 		state.pushVStack(new valueClass((String)null));
@@ -434,7 +434,7 @@ public class PartialEvaluator extends FEReplacer {
 		if( rhsVal.isVect() ){
 			String result = "( $$";
 			List<valueClass> rhsLst;
-	    	rhsLst= rhsVal.getVectValue();	        	
+	    	rhsLst= rhsVal.getVectValue();
 	    	Iterator<valueClass> it = rhsLst.iterator();
 	    	int i = 0;
 	    	int val=0;
@@ -442,14 +442,14 @@ public class PartialEvaluator extends FEReplacer {
 	    	boolean hasValue=true;
 	    	while(it.hasNext()){
 	    		valueClass o = it.next();
-	    		if(!o.hasValue()){	        			
+	    		if(!o.hasValue()){
 	    			result += " " + o;
 	    			hasValue = false;
-	    		}else{	        			
+	    		}else{
 	    			int curv =  o.getIntValue();
 	    			result += " " + o.getIntValue();
 	    			Assert(curv == 1 || curv == 0, "Only boolean arrays please!!");
-	    			if( curv == 1 ) val += t; 
+	    			if( curv == 1 ) val += t;
 	    			t = t*2;
 	    		}
 	    		++i;
@@ -461,28 +461,28 @@ public class PartialEvaluator extends FEReplacer {
 	    		result = " " + val;
 	    	}else{
 	    		state.pushVStack(new valueClass(result));
-	    		if(isReplacer && param != exp.getExpr())  rval = new ExprTypeCast(exp.getCx(), exp.getType(), param);
+	    		if(isReplacer && param != exp.getExpr())  rval = new ExprTypeCast(exp, exp.getType(), param);
 	    	}
 	    	return rval;
-	    }else{	        	
+	    }else{
 	    	Assert(false, "We only allow casting of array expressions");
 	    }
 	    return null;
 	}
-	
+
 	public Object visitExprVar(ExprVar exp) {
 		String vname =  exp.getName();
 		valueClass intValue;
-		
+
 		if( !isComplete ){
 			if( ! state.knowsVar(vname) ){
 				state.pushVStack( new valueClass(vname) );
 				return exp;
 			}
 		}
-		
+
 		if( state.varHasValue( vname ) ){
-			intValue = new valueClass(state.varValue(vname)) ;	    		
+			intValue = new valueClass(state.varValue(vname)) ;
 		}else{
 			intValue = new valueClass(state.varGetRHSName( exp.getName() ));
 		}
@@ -505,20 +505,20 @@ public class PartialEvaluator extends FEReplacer {
 			}
 			state.pushVStack( new valueClass(nlist) );
 			if(this.isReplacer && isAllValues){
-				return new ExprArrayInit(exp.getCx(), olist);
+				return new ExprArrayInit(exp, olist);
 			}else{
-				return new ExprVar(exp.getCx(), state.transName(exp.getName()));
+				return new ExprVar(exp, state.transName(exp.getName()));
 			}
 		}else{
 			state.pushVStack(intValue);
 			if(this.isReplacer && intValue.hasValue()){
 				return new ExprConstInt(intValue.getIntValue());
 			}else{
-				return new ExprVar(exp.getCx(), state.transName(exp.getName()));
+				return new ExprVar(exp, state.transName(exp.getName()));
 			}
 		}
 	}
-	
+
 	public Object visitExprConstChar(ExprConstChar exp)
     {
     	Assert(false, "NYS");
@@ -526,17 +526,17 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 	public Object visitExprUnary(ExprUnary exp) {
-		
+
 		Expression childExp = (Expression) exp.getExpr().accept(this);
 	    valueClass vchild = state.popVStack();
 	    String child = vchild.toString();
 	    Expression returnVal=exp;
-	    boolean hv = vchild.hasValue(); 	
+	    boolean hv = vchild.hasValue();
 	    boolean isV = vchild.isVect();
 	    assert !isV || (exp.getOp()== ExprUnary.UNOP_NOT ||exp.getOp()== ExprUnary.UNOP_BNOT) : "Vector unary currently only supported for not";
 	    switch(exp.getOp())
 	    {
-	    case ExprUnary.UNOP_NOT: 
+	    case ExprUnary.UNOP_NOT:
 	    	if( isV ){
 	    		List<valueClass> lst0 = vchild.getVectValue();
 	    		List <valueClass> lst = new ArrayList<valueClass>();
@@ -549,23 +549,23 @@ public class PartialEvaluator extends FEReplacer {
 	    			}
 	    		}
 	    		state.pushVStack( new valueClass(lst) );
-	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getCx(), exp.getOp(), childExp );
+	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp, exp.getOp(), childExp );
 	    		return returnVal;
 	    	}else{
-	    		if( hv ){ 
+	    		if( hv ){
 		    		state.pushVStack(new valueClass(1-vchild.getIntValue()));
 		    		if(this.isReplacer) returnVal = new ExprConstInt(1-vchild.getIntValue());
 		    	}else{
 		    		state.pushVStack( new valueClass("!" + child) );
-		    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getCx(), exp.getOp(), childExp );
-		    	}	
+		    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp, exp.getOp(), childExp );
+		    	}
 	    	}
 	    return returnVal;
-	    case ExprUnary.UNOP_BNOT: 
-	    	if( hv ){ 
+	    case ExprUnary.UNOP_BNOT:
+	    	if( hv ){
 	    		if(vchild.isVect()){
 	    			List<valueClass> lst = vchild.getVectValue();
-	    			
+
 	    			List<valueClass> lst2 = new ArrayList<valueClass>();
 	    			for(Iterator<valueClass> it = lst.iterator(); it.hasNext();  ){
 	    				valueClass vc = it.next();
@@ -582,7 +582,7 @@ public class PartialEvaluator extends FEReplacer {
 	    		}
 	    	}else{
 	    		state.pushVStack( new valueClass("!" + child) );
-	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getCx(), exp.getOp(), childExp );
+	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp, exp.getOp(), childExp );
 	    	}
 	    return returnVal;
 	    case ExprUnary.UNOP_NEG:
@@ -591,85 +591,85 @@ public class PartialEvaluator extends FEReplacer {
 	    		if(this.isReplacer) returnVal = new ExprConstInt(-vchild.getIntValue());
 	    	}else{
 	    		state.pushVStack(new valueClass("-" + child));
-	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getCx(), exp.getOp(), childExp );
+	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp, exp.getOp(), childExp );
 	    	}
 	    return returnVal;
-	    case ExprUnary.UNOP_PREINC:  
-	    	if( hv ){    		
+	    case ExprUnary.UNOP_PREINC:
+	    	if( hv ){
 	    		String childb = (String)exp.getExpr().accept( new LHSvisitor());
 	    		state.pushVStack(new valueClass(vchild.getIntValue()+1));
-	    		state.setVarValue(childb, vchild.getIntValue()+1 );	    		
+	    		state.setVarValue(childb, vchild.getIntValue()+1 );
 	    		if(this.isReplacer){
-	    			//this.addStatement(new StmtExpr(exp.getContext(), exp));
+	    			//this.addStatement(new StmtExpr(exp, exp));
 	    			returnVal = new ExprConstInt(vchild.getIntValue()+1);
 	    		}
 	    		return returnVal;
 	    	}else{
 	    		String newName = state.varGetLHSName(child);
 	    		state.pushVStack(new valueClass("( "  + newName + " = " + child + " + 1 )"));
-	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getCx(), exp.getOp(), childExp );
+	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp, exp.getOp(), childExp );
 	    	}
 	    	return returnVal;
 	    case ExprUnary.UNOP_POSTINC:
-	    	if( hv ){ 	        		
+	    	if( hv ){
 	    		String childb = (String)exp.getExpr().accept( new LHSvisitor());
 	    		exp.getExpr().accept(this);
 	    		vchild = state.popVStack();
 	    		state.pushVStack(new valueClass(vchild.getIntValue()));
 	    		state.setVarValue(childb, vchild.getIntValue()+1 );
-	    		return null; 
+	    		return null;
 	    		//TODO NYI;
 	    	}else{
 	    		state.pushVStack(new valueClass(child + "++"));
 	    	}
 	    	return null;
-	    case ExprUnary.UNOP_PREDEC:  
-	    	if( hv ){    		
+	    case ExprUnary.UNOP_PREDEC:
+	    	if( hv ){
 	    		String childb = (String)exp.getExpr().accept( new LHSvisitor());
 	    		state.pushVStack(new valueClass(vchild.getIntValue()-1));
-	    		state.setVarValue(childb, vchild.getIntValue()-1 );	    		
+	    		state.setVarValue(childb, vchild.getIntValue()-1 );
 	    		if(this.isReplacer){
-	    			//this.addStatement(new StmtExpr(exp.getContext(), exp));
+	    			//this.addStatement(new StmtExpr(exp, exp));
 	    			returnVal = new ExprConstInt(vchild.getIntValue()-1);
 	    		}
 	    		return returnVal;
 	    	}else{
 	    		String newName = state.varGetLHSName(child);
 	    		state.pushVStack(new valueClass("( "  + newName + " = " + child + " - 1 )"));
-	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp.getCx(), exp.getOp(), childExp );
+	    		if(this.isReplacer && childExp != exp.getExpr()) returnVal = new ExprUnary(exp, exp.getOp(), childExp );
 	    	}
 	    	return returnVal;
-	    case ExprUnary.UNOP_POSTDEC: 
-	    	if( hv ){ 
+	    case ExprUnary.UNOP_POSTDEC:
+	    	if( hv ){
 	    		String childb = (String)exp.getExpr().accept( new LHSvisitor() );
 	    		exp.getExpr().accept(this);
 	    		vchild = state.popVStack();
 	    		state.pushVStack(new valueClass(vchild.getIntValue()));
 	    		state.setVarValue(childb, vchild.getIntValue()-1 );
-	    		return null; 
+	    		return null;
 	    		//TODO NYI;
 	    	}else{
 	    		state.pushVStack(new valueClass(child + "--"));
 	    	}
-	    	return null; 
+	    	return null;
     		//TODO NYI;
 	    }
 	    assert false : "This should not happen";
 	    return null;
 	}
-	
+
 	protected valueClass doOps(ExprBinary exp, valueClass lhs,valueClass rhs){
 		valueClass newv=null;
 		boolean hasv = lhs.hasValue() && rhs.hasValue();
 		switch (exp.getOp())
-        {                
+        {
         case ExprBinary.BINOP_AND:  if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue()))); break;
         case ExprBinary.BINOP_OR:   if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()))); break;
         case ExprBinary.BINOP_EQ:   if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() == rhs.getIntValue())); break;
         case ExprBinary.BINOP_NEQ:  if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() != rhs.getIntValue())); break;
         case ExprBinary.BINOP_BAND: if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue()))); break;
         case ExprBinary.BINOP_BOR:  if(hasv) newv = new valueClass(boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()))); break;
-        case ExprBinary.BINOP_BXOR:  if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() != rhs.getIntValue())); break;        
+        case ExprBinary.BINOP_BXOR:  if(hasv) newv = new valueClass(boolToInt(lhs.getIntValue() != rhs.getIntValue())); break;
         default: assert false : exp; break;
         }
 		if(newv == null){
@@ -677,8 +677,8 @@ public class PartialEvaluator extends FEReplacer {
 		}
 		return newv;
 	}
-	
-	
+
+
 	protected Object ExprVectorBinaryHelper(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
 		List<valueClass> lhsList=null;
 		List<valueClass> rhsList=null;
@@ -686,52 +686,52 @@ public class PartialEvaluator extends FEReplacer {
 			lhsList = lhs.getVectValue();
 		}else{
 			int N = rhs.getVectValue().size();
-			lhsList = new ArrayList<valueClass>(N);			
+			lhsList = new ArrayList<valueClass>(N);
 			for(int i=0; i<N; ++i){
 				lhsList.add(lhs);
 			}
 		}
 		if(rhs.isVect()){
-			rhsList = rhs.getVectValue();	
+			rhsList = rhs.getVectValue();
 		}else{
 			int N = lhsList.size();
-			rhsList = new ArrayList<valueClass>(N);			
+			rhsList = new ArrayList<valueClass>(N);
 			for(int i=0; i<N; ++i){
 				rhsList.add(rhs);
 			}
-		}		
-		
+		}
+
 		while(rhsList.size() < lhsList.size()){
 			rhsList.add(new valueClass(0));
 		}
-		
+
 		while(lhsList.size() < rhsList.size()){
 			lhsList.add(new valueClass(0));
 		}
-		
+
 		assert rhsList.size() == lhsList.size() : "NYI : List sizes " + rhsList.size() + " and " + lhsList.size();
-		
+
 		List<valueClass> result = new ArrayList<valueClass>(lhsList.size());	;
-		
+
 		switch (exp.getOp())
-        {        
-        case ExprBinary.BINOP_AND: 
-        case ExprBinary.BINOP_OR:          
-        case ExprBinary.BINOP_BAND: 
-        case ExprBinary.BINOP_BOR:  
+        {
+        case ExprBinary.BINOP_AND:
+        case ExprBinary.BINOP_OR:
+        case ExprBinary.BINOP_BAND:
+        case ExprBinary.BINOP_BOR:
         case ExprBinary.BINOP_BXOR:{
         	Iterator<valueClass> rhsIt = rhsList.iterator();
         	Iterator<valueClass> lhsIt = lhsList.iterator();
         	for(int i=0; rhsIt.hasNext(); ++i){
         		result.add(this.doOps(exp, lhsIt.next(), rhsIt.next()));
-        	}      
+        	}
         } break;
-        
+
         case ExprBinary.BINOP_RSHIFT:{
         	Iterator<valueClass> lhsIt = lhsList.iterator();
         	int N = lhsList.size();
         	if(rhs.hasValue()){
-        		int shamt = rhs.getIntValue();        		
+        		int shamt = rhs.getIntValue();
         		int i;
         		for(i=0; i<shamt; ++i){
         			lhsIt.next();
@@ -748,26 +748,26 @@ public class PartialEvaluator extends FEReplacer {
         		}
         	}
         } break;
-        
+
         case ExprBinary.BINOP_LSHIFT:{
         	Iterator<valueClass> lhsIt = lhsList.iterator();
         	int N = lhsList.size();
         	if(rhs.hasValue()){
-        		int shamt = rhs.getIntValue();        		
+        		int shamt = rhs.getIntValue();
         		int i;
         		for(i=0; i<shamt; ++i){
         			result.add( new valueClass(0));
         		}
         		for( ; i<N; ++i){
         			result.add(lhsIt.next());
-        		}        		
+        		}
         	}else{
         		for(int i=0; i<N; ++i){
         			result.add(new valueClass());
         		}
         	}
         } break;
-        
+
         case ExprBinary.BINOP_ADD:{
         	Iterator<valueClass> rhsIt = rhsList.iterator();
         	Iterator<valueClass> lhsIt = lhsList.iterator();
@@ -783,19 +783,19 @@ public class PartialEvaluator extends FEReplacer {
         			carry = new valueClass( (op1v + op2v +c ) >1 ? 1 : 0  );
         		}else{
         			carry = new valueClass();
-        			result.add(carry);        			
+        			result.add(carry);
         		}
         	}
         }break;
         case ExprBinary.BINOP_SELECT:{
         	return this.handleVectorBinarySelect(exp, left, lhsList, right, rhsList);
         }
-        case ExprBinary.BINOP_EQ: 
+        case ExprBinary.BINOP_EQ:
         case ExprBinary.BINOP_NEQ:
-        case ExprBinary.BINOP_LT: 
-        case ExprBinary.BINOP_LE: 
-        case ExprBinary.BINOP_GT: 
-        case ExprBinary.BINOP_GE: 
+        case ExprBinary.BINOP_LT:
+        case ExprBinary.BINOP_LE:
+        case ExprBinary.BINOP_GT:
+        case ExprBinary.BINOP_GE:
         case ExprBinary.BINOP_SUB:
         case ExprBinary.BINOP_MUL:
         case ExprBinary.BINOP_DIV:
@@ -806,22 +806,22 @@ public class PartialEvaluator extends FEReplacer {
 		if (left == exp.getLeft() && right == exp.getRight())
             return exp;
         else
-            return new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());		
+            return new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
 	}
-	
+
 	protected Object handleVectorBinarySelect(ExprBinary exp, Expression left, List<valueClass> lhsVect, Expression right, List<valueClass> rhsVect){
 		Iterator<valueClass> lhsIt = lhsVect.iterator();
 		Iterator<valueClass> rhsIt = rhsVect.iterator();
-		
+
         Expression rval = exp;
-        
+
         boolean globalHasV = true;
         List<valueClass> results = new ArrayList<valueClass>();
         List<ExprConstInt> vals =   new ArrayList<ExprConstInt>();
         for( ; lhsIt.hasNext(); ){
         	valueClass lhs = lhsIt.next();
         	valueClass rhs = rhsIt.next();
-        	boolean hasv = lhs.hasValue() && rhs.hasValue();                    
+        	boolean hasv = lhs.hasValue() && rhs.hasValue();
     		if(hasv && lhs.getIntValue() == rhs.getIntValue()){
         		results.add( lhs );
         		if( this.isReplacer ){
@@ -831,11 +831,11 @@ public class PartialEvaluator extends FEReplacer {
         		hasv = false;
         		globalHasV = false;
         	}
-        }    
+        }
 		if(globalHasV){
         	state.pushVStack(new valueClass(results));
         	if( this.isReplacer ){
-        		rval = new ExprArrayInit(exp.getCx(), vals);
+        		rval = new ExprArrayInit(exp, vals);
         	}
         }else{
         	state.pushVStack(new valueClass(""));
@@ -843,13 +843,13 @@ public class PartialEvaluator extends FEReplacer {
         }
         return rval;
 	}
-	
+
 	protected Object handleBinarySelect(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
 		String result;
         Expression rval = exp;
         String op = exp.getOpString();
         result = "(";
-        boolean hasv = lhs.hasValue() && rhs.hasValue();        
+        boolean hasv = lhs.hasValue() && rhs.hasValue();
         int newv=0;
 		if(hasv && lhs.getIntValue() == rhs.getIntValue()){
     		newv = lhs.getIntValue();
@@ -867,29 +867,29 @@ public class PartialEvaluator extends FEReplacer {
         	state.pushVStack(new valueClass(result));
         	if( this.isReplacer ){
         		if(left != exp.getLeft() || right != exp.getRight()){
-        			rval = new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
-        		}        		
+        			rval = new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
+        		}
         	}
         }
         return rval;
 	}
-	
-	
+
+
 	protected Object ExprBinaryHelper(ExprBinary exp, Expression left, valueClass lhs, Expression right, valueClass rhs){
 		String result;
         Expression rval = exp;
         String op = exp.getOpString();
         result = "(";
-	        
+
         if(lhs.isVect() || rhs.isVect()){
         	return ExprVectorBinaryHelper(exp, left, lhs, right, rhs);
         }
-        
-        boolean hasv = lhs.hasValue() && rhs.hasValue();	        
-        
+
+        boolean hasv = lhs.hasValue() && rhs.hasValue();
+
         int newv=0;
-               
-        
+
+
         switch (exp.getOp())
         {
         case ExprBinary.BINOP_ADD:  if(hasv) newv = lhs.getIntValue() + rhs.getIntValue(); break;
@@ -897,9 +897,9 @@ public class PartialEvaluator extends FEReplacer {
         case ExprBinary.BINOP_MUL:  if(hasv) newv = lhs.getIntValue() * rhs.getIntValue(); break;
         case ExprBinary.BINOP_DIV:  if(hasv) newv = lhs.getIntValue() / rhs.getIntValue(); break;
         case ExprBinary.BINOP_MOD:  if(hasv) newv = lhs.getIntValue() % rhs.getIntValue(); break;
-        
+
         case ExprBinary.BINOP_AND:{
-        	if(hasv){        
+        	if(hasv){
         		newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue()));
         	}else{
         		if( lhs.hasValue() && !intToBool(lhs.getIntValue())){
@@ -913,9 +913,9 @@ public class PartialEvaluator extends FEReplacer {
         	}
         	break;
         }
-        case ExprBinary.BINOP_OR:{   
+        case ExprBinary.BINOP_OR:{
         	if(hasv){
-	        	newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue())); 
+	        	newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()));
 	        }else{
 	    		if( lhs.hasValue() && intToBool(lhs.getIntValue())){
 	    			hasv = true;
@@ -937,61 +937,61 @@ public class PartialEvaluator extends FEReplacer {
         case ExprBinary.BINOP_BAND: if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) && intToBool(rhs.getIntValue())); break;
         case ExprBinary.BINOP_BOR:  if(hasv) newv = boolToInt( intToBool(lhs.getIntValue()) || intToBool(rhs.getIntValue()));; break;
         case ExprBinary.BINOP_BXOR: if(hasv) newv = boolToInt(lhs.getIntValue() != rhs.getIntValue()); break;
-        case ExprBinary.BINOP_SELECT:{        	
+        case ExprBinary.BINOP_SELECT:{
         	return handleBinarySelect(exp, left, lhs, right, rhs);
         }
         default: assert false : exp; break;
-        }               
+        }
         if(hasv){
         	state.pushVStack(new valueClass(newv));
         	if( this.isReplacer ){
         		rval = new ExprConstInt(newv);
         	}
         }else{
-        	result += lhs + " " + op + " " + rhs + ")";            
+        	result += lhs + " " + op + " " + rhs + ")";
         	state.pushVStack(new valueClass(result));
         	if( this.isReplacer ){
         		if(left != exp.getLeft() || right != exp.getRight()){
-        			rval = new ExprBinary(exp.getCx(), exp.getOp(), left, right, exp.getAlias());
-        		}        		
+        			rval = new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
+        		}
         	}
         }
         return rval;
 	}
-	
-	
+
+
     public Object visitExprBinary(ExprBinary exp)
     {
-       
-        Expression left = (Expression) exp.getLeft().accept(this); 	        
-        valueClass lhs = state.popVStack();	       
-        
+
+        Expression left = (Expression) exp.getLeft().accept(this);
+        valueClass lhs = state.popVStack();
+
         Expression right = (Expression) exp.getRight().accept(this);
         valueClass rhs = state.popVStack();
         return this.ExprBinaryHelper(exp, left, lhs, right, rhs);
-        
+
     }
-    public Object visitExprStar(ExprStar star) {    	
+    public Object visitExprStar(ExprStar star) {
 		state.pushVStack(new valueClass());
 		return star;
 	}
-    
+
     private void addParamCopyDecl(Parameter param, Expression expr)
     {
 		//if(expr instanceof ExprVar && param.getName().equals(((ExprVar)expr).getName()))
-		//	return;		
-    	Statement varDecl=new StmtVarDecl(expr.getCx(),param.getType(),state.transName(param.getName()),expr);
+		//	return;
+    	Statement varDecl=new StmtVarDecl(expr,param.getType(),state.transName(param.getName()),expr);
     	addStatement(varDecl);
     }
     private void addParamCopyDecl(Parameter param)
     {
-    	Statement varDecl=new StmtVarDecl(null,param.getType(),state.transName(param.getName()),null);
+    	Statement varDecl=new StmtVarDecl((FEContext) null,param.getType(),state.transName(param.getName()),null);
     	addStatement(varDecl);
     }
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
-    String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){    	
+    String inParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
     	List<Expression> actualsList = new ArrayList<Expression>();
     	List<valueClass> actualsValList = new ArrayList<valueClass>();
     	while(actualParamIterator.hasNext()){
@@ -1001,40 +1001,40 @@ public class PartialEvaluator extends FEReplacer {
         	actualsList.add(actualParam);
         	actualsValList.add(actualParamValue);
     	}
-    	
+
     	state.pushLevel();
-    	
+
     	StringBuffer result = new StringBuffer();
     	Iterator<Expression> actualIterator = actualsList.iterator();
     	Iterator<valueClass> actualValIterator = actualsValList.iterator();
-    	
-        while(actualIterator.hasNext()){	        	
-        	Expression actualParam = (Expression)actualIterator.next();			        	
+
+        while(actualIterator.hasNext()){
+        	Expression actualParam = (Expression)actualIterator.next();
         	Parameter formalParam = (Parameter) formalParamIterator.next();
-        	        	
+
         	valueClass actualParamValue = actualValIterator.next();
-    		
-        	if( actualParamValue.isVect() ){	
+
+        	if( actualParamValue.isVect() ){
         		List<valueClass> lst= actualParamValue.getVectValue();
         		assert formalParam.getType() instanceof TypeArray : "This should never happen!!";
         		((TypeArray)formalParam.getType()).getLength().accept(this);
         		valueClass sizeInt = state.popVStack();
         		Assert(sizeInt.hasValue(), "I must know array bounds for parameters at compile time");
-        		int size = sizeInt.getIntValue();	        			        		
-        		
+        		int size = sizeInt.getIntValue();
+
         		if(lst.size()<size){
         			while(lst.size()<size){
-        				lst.add(new valueClass(0));	        				
+        				lst.add(new valueClass(0));
         			}
         			assert lst.size() == size :"Just to make sure";
         		}
-        		
+
         		String formalParamName = formalParam.getName();
 	        	state.varDeclare(formalParamName);
 	    		String lhsname = state.varGetLHSName(formalParamName);
-	    		
-	    		
-	    		Iterator<valueClass> actualParamValueIt = lst.iterator();		    		
+
+
+	    		Iterator<valueClass> actualParamValueIt = lst.iterator();
 	    		int idx = 0;
 	    		state.makeArray(formalParamName, lst.size());
 	    		result.ensureCapacity( result.length() +  lst.size()*10 );
@@ -1042,7 +1042,7 @@ public class PartialEvaluator extends FEReplacer {
 	    			valueClass currentVal =  actualParamValueIt.next();
 	    			String currentName = formalParamName + "_idx_" + idx;
 	    			state.varDeclare(currentName);
-		    		lhsname = state.varGetLHSName(currentName);			    		
+		    		lhsname = state.varGetLHSName(currentName);
 		    		if( !formalParam.isParameterOutput() ){
 			    		if(!currentVal.hasValue()){
 			    			result.append(lhsname + " = " + currentVal + ";\n");
@@ -1060,7 +1060,7 @@ public class PartialEvaluator extends FEReplacer {
 	    	}else{
 	    		String formalParamName = formalParam.getName();
 	        	state.varDeclare(formalParamName);
-	    		String lhsname = state.varGetLHSName(formalParamName);		    		
+	    		String lhsname = state.varGetLHSName(formalParamName);
 	    		Assert(actualParamValue.hasValue() || !checkError, "I must be able to determine the values of the parameters at compile time.");
 	    		if( !formalParam.isParameterOutput() ){
 		    		if(!actualParamValue.hasValue()){
@@ -1072,7 +1072,7 @@ public class PartialEvaluator extends FEReplacer {
 		    			int value = actualParamValue.getIntValue();
 		    			state.setVarValue(formalParamName, value);
 		    			if(isReplacer){
-		    				addParamCopyDecl(formalParam,new ExprConstInt(actualParam.getCx(),value));
+		    				addParamCopyDecl(formalParam,new ExprConstInt(actualParam,value));
 		    			}
 		    		}
 	    		}else{
@@ -1084,24 +1084,24 @@ public class PartialEvaluator extends FEReplacer {
         }
         return result.toString();
     }
-    
-    
+
+
     String outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
     	String result = "";
-    	FEContext context = null;
+    	FENode context = null;
     	List<valueClass> formalList = new ArrayList<valueClass>();
     	List<String> formalTransNames = new ArrayList<String>();
     	while(formalParamIterator.hasNext()){
     		Parameter formalParam = (Parameter) formalParamIterator.next();
     		if( formalParam.isParameterOutput() ){
-    			String formalParamName = formalParam.getName();    			    			
+    			String formalParamName = formalParam.getName();
     			formalTransNames.add(state.transName(formalParamName));
-    			
+
 	        	int sz = state.checkArray(formalParamName);
 	        	if( sz > 0 ){
 	        		List<valueClass> tmplst = new ArrayList<valueClass>();
 	        		for(int i=0; i<sz; ++i){
-	        			String formalName = formalParamName + "_idx_" + i;		        			
+	        			String formalName = formalParamName + "_idx_" + i;
         				if(state.varHasValue(formalName)){
         					valueClass vv = new valueClass(state.varValue(formalName));
         					tmplst.add(vv);
@@ -1109,7 +1109,7 @@ public class PartialEvaluator extends FEReplacer {
         					String rhsname = state.varGetRHSName(formalName);
         					valueClass vv = new valueClass(rhsname);
         					tmplst.add(vv);
-        				}				    		
+        				}
 	        		}
 	        		valueClass vv = new valueClass(tmplst);
 	        		formalList.add(vv);
@@ -1129,44 +1129,44 @@ public class PartialEvaluator extends FEReplacer {
     			formalTransNames.add(null);
     		}
     	}
-    	
+
     	state.popLevel();
     	Iterator<valueClass> vcIt = formalList.iterator();
-    	Iterator<String> fTransNamesIt = formalTransNames.iterator(); 
-        while(actualParamIterator.hasNext()){	        	
-        	Expression actualParam = (Expression)actualParamIterator.next();			        	        	
+    	Iterator<String> fTransNamesIt = formalTransNames.iterator();
+        while(actualParamIterator.hasNext()){
+        	Expression actualParam = (Expression)actualParamIterator.next();
         	valueClass formal = vcIt.next();
         	String fTransName = fTransNamesIt.next();
         	if( formal != null ){
         		LHSvisitor lhsvisit =  new LHSvisitor();
-            	String apnm = (String) actualParam.accept(lhsvisit);	        			        	
-	        	
+            	String apnm = (String) actualParam.accept(lhsvisit);
+
 	        	if( formal.isVect() ){
 	        		List<valueClass> elems = formal.getVectValue();
 	        		int sz = elems.size();
-	        		
+
 	        		for(int i=0; i<sz; ++i){
 	        			valueClass elemValue = elems.get(i);
         				if(elemValue.hasValue()){
         					state.setVarValue(apnm+"_idx_"+i, elemValue.getIntValue());
-        				}else{        					
+        				}else{
 			    			result += state.varGetLHSName(apnm+"_idx_"+i) + " = " + elemValue.toString() + ";\n";
-        				}				    		
+        				}
 	        		}
 	        		if(this.isReplacer){
-	        			addStatement(new StmtAssign(context, lhsvisit.lhsExp, new ExprVar(context, fTransName) ));
+	        			addStatement(new StmtAssign(lhsvisit.lhsExp, new ExprVar(context, fTransName) ));
 	        		}
 		    	}else{
 	    			if(formal.hasValue()){
 	    				int val = formal.getIntValue();
     					state.setVarValue(apnm, val);
     					if(this.isReplacer){
-    	        			addStatement(new StmtAssign(context, lhsvisit.lhsExp, new ExprConstInt(context, val) ));
+    	        			addStatement(new StmtAssign(lhsvisit.lhsExp, new ExprConstInt(context, val) ));
     	        		}
-    				}else{    					
+    				}else{
 		    			result += state.varGetLHSName(apnm) + " = " + formal.toString() + ";\n";
 		    			if(this.isReplacer){
-		        			addStatement(new StmtAssign(context, lhsvisit.lhsExp, new ExprVar(context, fTransName) ));
+		        			addStatement(new StmtAssign(lhsvisit.lhsExp, new ExprVar(context, fTransName) ));
 		        		}
     				}
 		    	}
@@ -1174,7 +1174,7 @@ public class PartialEvaluator extends FEReplacer {
         }
         return result;
     }
-    
+
     /* Set output parameters to arbitrary values (i.e. 0).
      * This is needed when we don't really care for the computation done
      * inside a function, but do want to preserve the dependences between
@@ -1185,12 +1185,12 @@ public class PartialEvaluator extends FEReplacer {
                                         boolean checkError)
     {
         String result = "";
-        while(actualParamIterator.hasNext()){	        	
-            Expression actualParam = (Expression)actualParamIterator.next();			        	
+        while(actualParamIterator.hasNext()){
+            Expression actualParam = (Expression)actualParamIterator.next();
             Parameter formalParam = (Parameter) formalParamIterator.next();
 
             LHSvisitor lhsvisit =  new LHSvisitor();
-            String apnm = (String) actualParam.accept(lhsvisit);	        	
+            String apnm = (String) actualParam.accept(lhsvisit);
             if( formalParam.isParameterOutput() ){
                 String formalParamName = formalParam.getName();
                 int sz = state.checkArray(formalParamName);
@@ -1199,46 +1199,46 @@ public class PartialEvaluator extends FEReplacer {
                         state.setVarValue(apnm+"_idx_"+i, 0);
                     }
                     if(this.isReplacer){
-                        addStatement(new StmtAssign(actualParam.getCx(), lhsvisit.lhsExp, new ExprConstInt(actualParam.getCx(), 0) ));
+                        addStatement(new StmtAssign(lhsvisit.lhsExp, new ExprConstInt(actualParam, 0) ));
                     }
                 }else{
                     state.setVarValue(apnm, 0);
                     if(this.isReplacer){
-                        addStatement(new StmtAssign(actualParam.getCx(), lhsvisit.lhsExp, new ExprConstInt(actualParam.getCx(), 0) ));
+                        addStatement(new StmtAssign(lhsvisit.lhsExp, new ExprConstInt(actualParam, 0) ));
                     }
                 }
             }
         }
         return result;
     }
-    
-    
-    
+
+
+
     public Object visitExprFunCall(ExprFunCall exp)
-    {	    	
+    {
     	String result = " ";
     	String name = exp.getName();
     	// Local function?
-    	if (ss.getFuncNamed(name) != null) {        	
+    	if (ss.getFuncNamed(name) != null) {
     		state.pushLevel();
-    		Function fun = ss.getFuncNamed(name);	 
+    		Function fun = ss.getFuncNamed(name);
     		{
-    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+    			Iterator actualParams = exp.getParams().iterator();
     			Iterator formalParams = fun.getParams().iterator();
     			result += inParameterSetter(formalParams, actualParams, false);
     		}
     		result += "// BEGIN CALL " + fun.getName() + "\n";
     		Object obj = fun.getBody().accept(this);
     		if(obj instanceof String)
-    			result += (String) obj; 
+    			result += (String) obj;
     		result += "// END CALL " + fun.getName() + "\n";
     		{
-    			Iterator actualParams = exp.getParams().iterator();	        		        	       	
+    			Iterator actualParams = exp.getParams().iterator();
     			Iterator formalParams = fun.getParams().iterator();
     			result += outParameterSetter(formalParams, actualParams, false);
     		}
     		state.popLevel();
-    	}else{ 
+    	}else{
     		// look for print and println statements; assume everything
     		// else is a math function
     		if (name.equals("print")) {
@@ -1252,7 +1252,7 @@ public class PartialEvaluator extends FEReplacer {
     			result = "";
     		} else if (name.equals("setDelay")) {
     			result = "";
-    		} else if (name.startsWith("enqueue")) {	        	
+    		} else if (name.startsWith("enqueue")) {
     			result = "";
     		} else {
     			Assert(false, "The streamBit compiler currently doesn't allow bit->bit filters to call other functions. You are trying to call the function" + name);
@@ -1263,7 +1263,7 @@ public class PartialEvaluator extends FEReplacer {
     		}
     	}
     	state.pushVStack( new valueClass(result) );
-    	return exp;    	
+    	return exp;
     }
 
 	public String convertType(Type type) {
@@ -1273,7 +1273,7 @@ public class PartialEvaluator extends FEReplacer {
 	        TypeArray array = (TypeArray)type;
 	        String base = convertType(array.getBase());
 	        array.getLength().accept(this);
-	        int i = state.popVStack().getIntValue();	            
+	        int i = state.popVStack().getIntValue();
 	        return base + "[" + i + "]";
 	    }
 	    else if (type instanceof TypeStruct)
@@ -1311,16 +1311,16 @@ public class PartialEvaluator extends FEReplacer {
 	    {
 	        Parameter param = (Parameter)iter.next();
 	        if (!first) result += ", ";
-	        
+
 	        if(param.isParameterOutput()) result += "! ";
-	        
+
 	        if (prefix != null) result += prefix + " ";
 	        result += convertType(param.getType());
 	        result += " ";
-	
+
 	        String lhs = param.getName();
 	        state.varDeclare(lhs);
-	        String lhsn = state.varGetLHSName(lhs);	            
+	        String lhsn = state.varGetLHSName(lhs);
 	        if( param.getType() instanceof TypeArray ){
 	        	TypeArray ta = (TypeArray) param.getType();
 	        	ta.getLength().accept(this);
@@ -1354,7 +1354,7 @@ public class PartialEvaluator extends FEReplacer {
 	    result += ")";
 	    return result;
 	}
-	
+
 	public Object visitStreamSpec(StreamSpec spec)
     {
 		ss = spec;
