@@ -111,7 +111,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			    		{
 			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
-			    			inParameterSetter(exp.getCx(), formalParams, actualParams, false);
+			    			inParameterSetter(exp, formalParams, actualParams, false);
 			    		}
 			    		Statement body = (Statement) fun.getBody().accept(this);
 			    		addStatement(body);
@@ -120,7 +120,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 			    			outParameterSetter(formalParams, actualParams, false);
 			    		}
-			    		result = new StmtBlock(exp.getCx(), newStatements);
+			    		result = new StmtBlock(exp, newStatements);
 		    		}finally{
 		    			state.popLevel();
 		    			newStatements = oldNewStatements;
@@ -129,7 +129,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 		    		
 		    		rcontrol.popFunCall(exp);
 	    		}else{
-	    			StmtAssert sas = new StmtAssert(exp.getCx(), ExprConstInt.zero);
+	    			StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero);
 	    			addStatement(sas);    			    		
 	    		}
 	    		exprRV = null;
