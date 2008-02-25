@@ -18,11 +18,12 @@ import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
-import streamit.misc.ProcessKillerThread;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;import streamit.misc.ProcessKillerThread;
 
 public class SATBackend {
 
+	
+	
 	private static class NullStream extends OutputStream {
 		public void flush() throws IOException {}
 		public void close() throws IOException {}
@@ -35,11 +36,14 @@ public class SATBackend {
 	final TempVarGen varGen;
 	private ValueOracle oracle;
 	private boolean tracing = false;
+	public final List<String> commandLineOptions;
+	
 	
 	public SATBackend(CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		this.params = params;
 		this.rcontrol =rcontrol;
 		this.varGen = varGen;
+		commandLineOptions = params.backendOptions;
 	}
 	
 	public void activateTracing(){
@@ -129,29 +133,16 @@ public class SATBackend {
 	}
 
 	
-	protected void backendParameters(List<String> commandLineOptions){
-		if( params.hasFlag("inbits") ){
-			commandLineOptions.add("-overrideInputs");
-			commandLineOptions.add( "" + params.flagValue("inbits") );
-		}
-		if( params.hasFlag("seed") ){
-			commandLineOptions.add("-seed");
-			commandLineOptions.add( "" + params.flagValue("seed") );
-		}		
-		if( params.hasFlag("cex")){
-			commandLineOptions.add("-showinputs");
-		}
-		if( params.hasFlag("verbosity") ){
-			commandLineOptions.add("-verbosity");
-			commandLineOptions.add( "" + params.flagValue("verbosity") );
-		}
+	public void addToBackendParams(List<String> params){		
+		commandLineOptions.addAll(params);
 	}
 	
 	
-	private boolean solve(ValueOracle oracle){
-		List<String> commandLineOptions = params.backendOptions;
+	
+	
+	private boolean solve(ValueOracle oracle){		
 
-		backendParameters(commandLineOptions);
+		
 
 		System.out.println("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
