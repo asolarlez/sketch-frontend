@@ -102,7 +102,7 @@ public class ToPSbit extends ToSBit {
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
-		if( params.hasFlag("showpartial")  )
+		if(params.flagEquals("showphase", "preproc"))
 			prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
