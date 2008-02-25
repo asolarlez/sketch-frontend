@@ -106,12 +106,12 @@ public class ToSBit
 	}
 
 	/**
-	 * This function produces a recursion control that is used by all transformations that are not user visible.
+	 * This function produces a recursion control that is used by all transformations that are not user visible. 
 	 * In particular, the conversion to boolean. By default it is the same as the visibleRControl.
 	 * @return
 	 */
 	public RecursionControl internalRControl(){
-
+		
 		return visibleRControl();
 	}
 
@@ -208,7 +208,7 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-
+		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
@@ -224,7 +224,7 @@ public class ToSBit
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
-
+		
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");
@@ -263,7 +263,7 @@ public class ToSBit
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
 		lprog = (Program)lprog.accept(new EliminateAnyorder(varGen));
-		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
+		lprog = (Program)lprog.accept(new FunctionParamExtension(true));		
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
@@ -272,7 +272,7 @@ public class ToSBit
 		//dump (prog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
-
+		
 		return lprog;
 	}
 
@@ -282,6 +282,7 @@ public class ToSBit
 		if(params.hasFlag("trace")){
 			solver.activateTracing();
 		}
+		backendParameters(solver.commandLineOptions);
 		boolean tmp = solver.partialEvalAndSolve(prog);
 		oracle =solver.getOracle();
 		return tmp;
@@ -291,13 +292,13 @@ public class ToSBit
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
 		//dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-
+		
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(finalCode, "After Eliminating transitive assignments.");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
@@ -383,7 +384,7 @@ public class ToSBit
 				"--inlineamnt n \t Bounds inlining to n levels of recursion, so" +
 				"\n\t\t each function can appear at most n times in the stack.",
 				"5", null) );
-
+		
 		params.setAllowedParam("heapsize", new POpts(POpts.NUMBER,
 				"--heapsize n \t Size of the heap for each object. This is the maximum" +
 				"\n\t\t number of objects of a given type that the program may allocate.",
@@ -416,11 +417,11 @@ public class ToSBit
 		params.setAllowedParam("seed", new POpts(POpts.NUMBER,
 				"--seed s       \t Seeds the random number generator with s.",
 				null, null) );
-
+		
 		params.setAllowedParam("verbosity", new POpts(POpts.NUMBER,
-				"--verbosity n       \t Sets the level of verbosity for the output. 0 is quiet mode 5 is the most verbose.",
+				"--verbosity n       \t Sets the level of verbosity for the output. 0 is quite mode 5 is the most verbose.",
 				"0", null) );
-
+		
 		params.setAllowedParam("cex", new POpts(POpts.FLAG,
 				"--cex       \t Show the counterexample inputs produced by the solver (Equivalend to backend flag -showinputs).",
 				null, null) );
@@ -428,7 +429,7 @@ public class ToSBit
 		params.setAllowedParam("outputcode", new POpts(POpts.FLAG,
 				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
 				null, null) );
-
+		
 		params.setAllowedParam("keepasserts", new POpts(POpts.FLAG,
 				"--keepasserts   \t The synthesizer guarantees that all asserts will succeed." +
 				"\n \t\t For this reason, all asserts are removed from generated code by default. However, " +
@@ -458,8 +459,8 @@ public class ToSBit
 				"--sbitpath path\t Path where the SBitII solver can be found.",
 				"", null) );
 
-
-
+		
+		
 		params.setAllowedParam("forcecodegen", new POpts(POpts.FLAG,
 				"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, " +
 				"                \t this flag will force the synthesizer to produce code from the latest known control values.",
@@ -476,13 +477,13 @@ public class ToSBit
 		params.setAllowedParam("inbits", new POpts(POpts.NUMBER,
 				"--inbits n      \t Specify the number of bits to use for integer inputs.",
 				"5", null) );
-
-
+		
+		
 		params.setAllowedParam("trace", new POpts(POpts.FLAG,
 				"--trace  \t Show a trace of the symbolic execution. Useful for debugging purposes.",
 				null, null) );
-
-
+		
+		
 		Map<String, String> phases = new HashMap<String, String>();
 		phases.put("preproc", " After preprocessing.");
 		phases.put("lowering", " Previous to Symbolic execution.");
@@ -526,7 +527,7 @@ public class ToSBit
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
 		//	throw new IllegalStateException("Semantic check failed");
-
+		
 		if (prog == null)
 			throw new IllegalStateException();
 
@@ -538,8 +539,8 @@ public class ToSBit
 		System.out.println("DONE");
 
 	}
-
-
+	
+	
 	protected void backendParameters(List<String> commandLineOptions){
 		if( params.hasFlag("inbits") ){
 			commandLineOptions.add("-overrideInputs");
@@ -549,8 +550,15 @@ public class ToSBit
 			commandLineOptions.add("-seed");
 			commandLineOptions.add( "" + params.flagValue("seed") );
 		}
+		if( params.hasFlag("cex")){
+			commandLineOptions.add("-showinputs");
+		}
+		if( params.hasFlag("verbosity") ){
+			commandLineOptions.add("-verbosity");
+			commandLineOptions.add( "" + params.flagValue("verbosity") );
+		}
 	}
-
+	
 
 
 
