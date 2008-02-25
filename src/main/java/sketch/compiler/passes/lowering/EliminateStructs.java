@@ -178,6 +178,11 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 		String newName = fc.getName();
 
+		Function fun = this.sspec.getFuncNamed(newName) ;
+		if( fun.isUninterp() ){			
+			return super.visitExprFunCall(fc);
+		}
+		
 		List<Expression> newplist = new ArrayList<Expression>(fc.getParams());
 
 
