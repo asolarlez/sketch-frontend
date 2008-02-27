@@ -11,6 +11,7 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
@@ -40,6 +41,12 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     	Expression ie = stmt.getCond();
     	ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
     	return super.visitStmtIfThen(stmt);
+    }
+
+    @Override
+    public Object visitStmtAssert(StmtAssert a){
+    	a.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+    	return a;
     }
 
 
