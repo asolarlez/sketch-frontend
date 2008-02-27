@@ -25,7 +25,7 @@ package streamit.frontend.nodes;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class Parameter
+public class Parameter extends FENode
 {
 	public final static int IN = 0;
 	public final static int OUT = 1;
@@ -43,6 +43,7 @@ public class Parameter
     
     public Parameter(Type type, String name, int ptype)
     {
+    	super((FENode)null);
         this.type = type;
         this.name = name;
         this.partype = ptype;
