@@ -1,0 +1,9 @@
+
+int test(int in){	
+	return in;	
+}
+
+int sk(int in) implements test{
+	assert in + ?? == in + 2 - ??;	
+	return in;	
+}
