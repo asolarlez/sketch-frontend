@@ -1,6 +1,5 @@
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
@@ -68,12 +67,6 @@ public class NumberStatements extends FEReplacer {
 	@Override
 	public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
 		Object o = super.visitStmtAtomicBlock (ab);
-
-
-		System.out.println ("NUMBERED ATOMIC BLOCK("+ ab.hashCode () +"): "+ ab);
-		System.out.println ("WITH INDEX: "+ idx);
-
-
     	return number(o);
 	}
 

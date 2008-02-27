@@ -48,7 +48,7 @@ public class SpinVerifier implements Verifier {
 
 	public CounterExample parseTrace (String trace) {
 		CEtrace cex = new CEtrace ();
-		Matcher m = Pattern.compile (STEP_REGEX).matcher (trace);
+		Matcher m = Pattern.compile (STEP_REGEX, Pattern.MULTILINE).matcher (trace);
 
 		while (m.find ()) {
 			int thread = Integer.parseInt (m.group (1));
