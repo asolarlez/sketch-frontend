@@ -298,13 +298,13 @@ public class ProduceParallelModel extends FEReplacer {
 				assert outputParam == null;
 				outputParam = p;
 			}else{
-				globals.add( new StmtVarDecl((FEContext) null, p.getType(), p.getName(), null) );
+				globals.add( new StmtVarDecl(p, p.getType(), p.getName(), null) );
 			}
 		}
 
-		bodyL.add(new StmtAssign(new ExprVar((FEContext) null, outputParam.getName()), ExprConstInt.zero));
+		bodyL.add(new StmtAssign(new ExprVar(outputParam, outputParam.getName()), ExprConstInt.zero));
 
-		globals.add( new StmtVarDecl((FEContext) null, new TypeArray(TypePrimitive.inttype, LockLen), this.locksName, null) );
+		globals.add( new StmtVarDecl(fun, new TypeArray(TypePrimitive.inttype, LockLen), this.locksName, null) );
 
 
 		Type sType; ///This is the type of the schedule. If only two threads, schedule is bit. Otherwise it's int.
@@ -318,8 +318,8 @@ public class ProduceParallelModel extends FEReplacer {
 
 		//In addition to the current locals, we need a local to correspond to the PC for each thread.
 		String pcname = varGen.nextVar(PCbase);
-		locals.add(new StmtVarDecl((FEContext) null, new TypeArray(TypePrimitive.inttype, nthreads), pcname, ExprConstInt.zero));
-		ExprVar pcVar = new ExprVar((FEContext) null, pcname);
+		locals.add(new StmtVarDecl(fun, new TypeArray(TypePrimitive.inttype, nthreads), pcname, ExprConstInt.zero));
+		ExprVar pcVar = new ExprVar(fun, pcname);
 		{
 /**/		List<StmtVarDecl> localpDecl = new ArrayList<StmtVarDecl>();
 /**/		List<StmtVarDecl> globalpDecl = new ArrayList<StmtVarDecl>();
@@ -334,10 +334,10 @@ public class ProduceParallelModel extends FEReplacer {
 		{
 			List<Statement> assignments = new ArrayList<Statement>();
 			String idxNm = varGen.nextVar();
-			Expression idx = new ExprVar((FEContext) null, idxNm);
+			Expression idx = new ExprVar(fun, idxNm);
 			indexedAssignments(locals.iterator(), idx,  assignments);
 			indexedAssignments(globals.iterator(), idx, assignments);
-			StmtVarDecl idxDecl = new StmtVarDecl((FEContext) null, TypePrimitive.inttype, idxNm, ExprConstInt.zero);
+			StmtVarDecl idxDecl = new StmtVarDecl(fun, TypePrimitive.inttype, idxNm, ExprConstInt.zero);
 			StmtAssign idxIncr = new StmtAssign(idx, new ExprBinary(idx, "+", ExprConstInt.one));
 			Expression comp = new ExprBinary(null, ExprBinary.BINOP_LT, idx, nthreads);
 /**/		StmtFor assign = new StmtFor(idxDecl, idxDecl, comp, idxIncr, new StmtBlock((FEContext) null, assignments));
@@ -346,8 +346,8 @@ public class ProduceParallelModel extends FEReplacer {
 		}
 
 		{// Declaration of rest-local variables.
-/**/		StmtVarDecl doneVar = new StmtVarDecl((FEContext) null, TypePrimitive.bittype, DONE, ExprConstInt.one);
-/**/		StmtVarDecl invalidScheduleVar = new StmtVarDecl((FEContext) null, new TypeArray(TypePrimitive.bittype, nthreads), INV_SCHEDULE, ExprConstInt.zero);
+/**/		StmtVarDecl doneVar = new StmtVarDecl(fun, TypePrimitive.bittype, DONE, ExprConstInt.one);
+/**/		StmtVarDecl invalidScheduleVar = new StmtVarDecl(fun, new TypeArray(TypePrimitive.bittype, nthreads), INV_SCHEDULE, ExprConstInt.zero);
 
 			bodyL.add(doneVar);
 			bodyL.add(invalidScheduleVar);
@@ -358,7 +358,7 @@ public class ProduceParallelModel extends FEReplacer {
 /**/ 		List<Statement> conditCF = new ArrayList<Statement>();
 
 			String idxNmb = varGen.nextVar();
-			Expression idxb = new ExprVar((FEContext) null, idxNmb);
+			Expression idxb = new ExprVar(fun, idxNmb);
 
 
 			EliminateLockUnlock luelim = new EliminateLockUnlock(idxb, this.LockLen);
@@ -373,7 +373,7 @@ public class ProduceParallelModel extends FEReplacer {
 				CFGNode node = itnode.next();
 				condForNode(parcfg, node, idxb, pcVar, vrepl, luelim, conditCF);
 			}
-			Statement idxbDecl = new StmtVarDecl((FEContext) null, TypePrimitive.inttype, idxNmb, ExprConstInt.zero);
+			Statement idxbDecl = new StmtVarDecl(fun, TypePrimitive.inttype, idxNmb, ExprConstInt.zero);
 			Expression idxbCond = new ExprBinary(idxb, "<", nthreads);
 			Statement idxbIncr = new StmtAssign(idxb, new ExprBinary(idxb, "+", ExprConstInt.one));
 			bodyL.add(new StmtFor(idxbDecl, idxbDecl, idxbCond, idxbIncr, new StmtBlock((FEContext) null, conditCF)));
@@ -679,7 +679,7 @@ public class ProduceParallelModel extends FEReplacer {
 	 * @param conditCF
 	 */
 	public void condForNode(CFG cfg, CFGNode node, Expression idx, ExprVar pcVar, VarSetReplacer vrepl, EliminateLockUnlock luelim ,List<Statement>/*out*/ conditCF){
-		DummyFENode cx = new DummyFENode (node.getCx ());
+		DummyFENode cx = new DummyFENode (node.getStmt());
 
 		Expression tmpPC = new ExprVar(cx, pcVar.getName() + "_p");
 		tmpPC = new ExprArrayRange(tmpPC, idx);
