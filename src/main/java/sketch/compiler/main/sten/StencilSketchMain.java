@@ -30,12 +30,17 @@ import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.PropagateFinals;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
+import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.BackendCleanup;
+import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateAnyorder;
+import streamit.frontend.passes.EliminateMultiDimArrays;
+import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.VariableDeclarationMover;
 import streamit.frontend.passes.VariableDisambiguator;
@@ -67,8 +72,18 @@ public class ToStencilSK extends ToSBit
 	
 	
 	
-    protected Program preprocessProgram(Program prog) {    	
-        prog = super.preprocessProgram(prog);
+    protected Program preprocessProgram(Program prog) {
+    	Program lprog = prog;
+    	lprog = (Program)lprog.accept(new EliminateAnyorder(varGen));
+		lprog = (Program)lprog.accept(new FunctionParamExtension(true));		
+		//dump (lprog, "fpe:");
+		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
+		lprog = (Program)lprog.accept(new TypeInferenceForStars());
+		
+		//dump (prog, "After first elimination of multi-dim arrays:");
+		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
+		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
+		prog = lprog;
         originalProg = prog;    	
     	System.out.println("=============================================================");    	
     	prog = (Program)prog.accept(new FlattenStmtBlocks());    	
@@ -128,6 +143,7 @@ public class ToStencilSK extends ToSBit
         FunctionalizeStencils fs = new FunctionalizeStencils();
         
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
+        
         prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
         //fs.printFuns();
         System.out.println("After running transformation.");
