@@ -12,13 +12,16 @@ import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.SpinPreprocessor;
 import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
 import streamit.misc.ProcessStatus;
 import streamit.misc.SynchronousTimedProcess;
 
 /**
+ * Warning: this assumes that all files generated go into the same working
+ * directory, the system temporary directory.  This is to hack around
+ * deficiencies in Windows and SPIN.
+ *
  * @author Chris Jones
  */
 public class SpinExecuter {
@@ -84,6 +87,7 @@ public class SpinExecuter {
 	}
 
 	protected void init () throws IOException {
+		// Assumes File.createTempFile is going to use java.io.tmpdir
 		promelaCode = File.createTempFile ("promelaCode", ".pml");
 		prog = File.createTempFile ("verifier", ".exe");
 		spinWorkDir = System.getProperty ("java.io.tmpdir");
@@ -116,7 +120,7 @@ public class SpinExecuter {
 		assert promelaCode != null && promelaCode.canRead ();
 
 		ProcessStatus status = execDebug (spinWorkDir, 0,
-				SPIN, "-a", "-v", promelaCode.getCanonicalPath ());
+				SPIN, "-a", "-v", promelaCode.getName ());
 		assert 0 == status.exitCode : "Error compiling Promela code";
 
 		File panC = new File (spinWorkDir, "pan.c");
@@ -142,8 +146,8 @@ public class SpinExecuter {
 		log ("Running the verifier");
 		assert prog.canRead ();
 
-		ProcessStatus status = execDebug (spinWorkDir, timeoutMins, prog
-				.getCanonicalPath (), "-v", "-m10000", "-w19", "-n", "-c1");
+		ProcessStatus status = execDebug (spinWorkDir, timeoutMins,
+				prog.getCanonicalPath (), "-v", "-m10000", "-w19", "-n", "-c1");
 		out = status.out;
 		err = status.err;
 		trail = "";
@@ -151,7 +155,7 @@ public class SpinExecuter {
 		trailFile = new File (promelaCode.getCanonicalPath () + ".trail");
 		if (trailFile.exists ()) {
 			status = execDebug (spinWorkDir, 0,
-					prog.getCanonicalPath (), "-r",	trailFile.getCanonicalPath ());
+					prog.getCanonicalPath (), "-r",	trailFile.getName ());
 			assert 0 == status.exitCode;
 			trail = status.out;
 		} else {
