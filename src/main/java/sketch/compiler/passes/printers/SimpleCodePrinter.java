@@ -7,6 +7,13 @@ import streamit.frontend.passes.CodePrinter;
 
 public class SimpleCodePrinter extends CodePrinter
 {
+	boolean outtags = false;
+	public SimpleCodePrinter outputTags(){
+		
+		outtags = true;
+		return this;
+	}
+	
 	public SimpleCodePrinter() {
 		this(System.out);
 	}
@@ -17,6 +24,7 @@ public class SimpleCodePrinter extends CodePrinter
 
 	public Object visitFunction(Function func)
 	{
+		if(outtags && func.getTag() != null){ out.println("T="+func.getTag()); }
 		printTab(); out.println(func.toString());
 		super.visitFunction(func);
 		out.flush();
@@ -25,6 +33,7 @@ public class SimpleCodePrinter extends CodePrinter
 
 	public Object visitStmtFor(StmtFor stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine("for("+stmt.getInit()+";"+stmt.getCond()+";"+stmt.getIncr()+")");
 		printIndentedStatement(stmt.getBody());
 		return stmt;
@@ -33,6 +42,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtIfThen(StmtIfThen stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
     	printLine("if(" + stmt.getCond() + ")");
     	printIndentedStatement(stmt.getCons());
     	if(stmt.getAlt() != null){
@@ -45,6 +55,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtWhile(StmtWhile stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
     	printLine("while(" + stmt.getCond() + ")");
     	printIndentedStatement(stmt.getBody());
 		return stmt;
@@ -53,6 +64,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtDoWhile(StmtDoWhile stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine("do");
 		printIndentedStatement(stmt.getBody());
     	printLine("while(" + stmt.getCond() + ")");
@@ -62,6 +74,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtLoop(StmtLoop stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
     	printLine("loop(" + stmt.getIter() + ")");
     	printIndentedStatement(stmt.getBody());
 		return stmt;
@@ -69,6 +82,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtFork(StmtFork stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
     	printLine("fork(" +  stmt.getLoopVarDecl() + "; "  + stmt.getIter() + ")");
     	printIndentedStatement(stmt.getBody());
 		return stmt;
@@ -77,6 +91,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtBlock(StmtBlock stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine("{");
 		indent++;
 		super.visitStmtBlock(stmt);
@@ -96,6 +111,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtAssert(StmtAssert stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine(stmt.toString() + ";");
 		return super.visitStmtAssert(stmt);
 	}
@@ -103,6 +119,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine(stmt.toString()  + ';');
 		return super.visitStmtAssign(stmt);
 	}
@@ -145,6 +162,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtExpr(StmtExpr stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine(stmt.toString());
 		return super.visitStmtExpr(stmt);
 	}
@@ -187,6 +205,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
 		printLine(stmt.toString() + ';');
 		return super.visitStmtVarDecl(stmt);
 	}
@@ -205,6 +224,7 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block){
+		if(outtags && block.getTag() != null){ out.println("T="+block.getTag()); }
 		printLine("atomic");
 		visitStmtBlock (block);
 		return block;
