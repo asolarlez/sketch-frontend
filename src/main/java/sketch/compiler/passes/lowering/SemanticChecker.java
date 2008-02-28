@@ -124,7 +124,7 @@ public class SemanticChecker
 
 	protected void report(FENode node, String message)
 	{
-		report(node, message);
+		report(node.getCx(), message);
 	}
 
 	protected void report(FEContext ctx, String message)
