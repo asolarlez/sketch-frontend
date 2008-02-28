@@ -117,7 +117,7 @@ public class SpinExecuter {
 
 		ProcessStatus status = execDebug (spinWorkDir, 0,
 				SPIN, "-a", "-v", promelaCode.getCanonicalPath ());
-		assert 0 == status.exitCode;
+		assert 0 == status.exitCode : "Error compiling Promela code";
 
 		File panC = new File (spinWorkDir, "pan.c");
 		assert panC.canRead ();
@@ -162,8 +162,8 @@ public class SpinExecuter {
 	}
 
 	protected Program preprocessSketch () {
-		sourceProg.accept (new SimpleCodePrinter ());
-		System.exit (0);
+		//sourceProg.accept (new SimpleCodePrinter ());
+		//System.exit (0);
 
 		Program p = (Program) sourceProg.accept(new SpinPreprocessor(varGen));
 
