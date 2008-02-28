@@ -22,9 +22,11 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -148,16 +150,26 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 		
 		if(s != null){
-			addStatement(s);			
+			pushBlock();
+			addStatement(s);
+			popBlock();
 		}		
 	}
 	
-	public CFGNode addBlock(step cur, CFGNode lastNode){
+	
+	public Statement addAssume(CFGNode lastNode, EdgePair ep){
+		/**
+		 * This is overly conservative. Need a better implementation of this.
+		 */
+		return new StmtAssert( new ExprBinary(lastNode.getExpr(), "!=", new ExprConstInt(ep.label.intValue())) );
+	}
+	
+	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
 		
 		
-		assert invNodeMap.containsKey(cur.stmt);
+		assert invNodeMap.containsKey(stmt);
 		
-		CFGNode node = invNodeMap.get( cur.stmt );
+		CFGNode node = invNodeMap.get( stmt );
 		
 		if( node == lastNode  ){
 			//Haven't advanced nodes, so I should stay here.
@@ -167,10 +179,11 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		
 		if(node != cfg.getEntry() && lastNode == null){
 			lastNode = cfg.getEntry();
-			addNode(lastNode, cur.thread);
+			addNode(lastNode, thread);
 		} 
 		
 		do{
+			if(lastNode == null){ break; }
 			if(lastNode.isExpr()){
 				List<EdgePair> eplist = lastNode.getSuccs();
 				List<Statement> assertStmts = new ArrayList<Statement>();
@@ -180,7 +193,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					if(ep.node == node){
 						goodSucc = true;
 					}else{					
-						assertStmts.add(new StmtAssert( new ExprBinary(lastNode.getExpr(), "==", new ExprConstInt(ep.label.intValue())) ));
+						assertStmts.add(addAssume(lastNode, ep));
 					}							
 				}
 				assert goodSucc : "None of the successors matched";
@@ -200,12 +213,12 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				}
 				lastNode = succ.node;
 				
-				addNode(lastNode, cur.thread);
+				addNode(lastNode, thread);
 				
 			}
 		}while(true);
 		
-		addNode(node, cur.thread);
+		addNode(node, thread);
 		
 		return node;
 	}
@@ -228,16 +241,31 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	@SuppressWarnings("unchecked")
 	public void closeCurrent(){
 		
+		
+		List<Parameter> outPar = new ArrayList<Parameter>();
+		String opname = null;
 		List<Statement> lst = new ArrayList<Statement>();
+		
+		for(Iterator<Parameter> it = parfun.getParams().iterator(); it.hasNext(); ){			
+			Parameter p = it.next();
+			if(p.isParameterOutput()){
+				outPar.add(p);
+				opname = p.getName();
+			}else{
+				lst.add(new StmtVarDecl(p, p.getType(), p.getName(), ExprConstInt.zero ));	
+			}
+		}
+		
+		
 		lst.addAll(bodyl);
-		lst.add( new StmtReturn(current, ExprConstInt.one) );
+		lst.add( new StmtAssign(new ExprVar(current, opname), ExprConstInt.one) );
 		
 		Statement body = new StmtBlock(current, lst);
 		
-		Function spec = Function.newHelper(current, "spec", TypePrimitive.inttype ,Collections.EMPTY_LIST, new StmtReturn(current, ExprConstInt.one));
+		Function spec = Function.newHelper(current, "spec", TypePrimitive.inttype ,outPar, new StmtAssign(new ExprVar(current, opname), ExprConstInt.one));
 		
 		Function sketch = Function.newHelper(current, "sketch", TypePrimitive.inttype ,
-				Collections.EMPTY_LIST, "spec", body);
+				outPar, "spec", body);
 		
 		List<Function> funcs = new ArrayList<Function>();
 		
@@ -276,7 +304,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	
 	
 	public void mergeWithCurrent(CEtrace trace){
-		prog.accept(new SimpleCodePrinter());
+		prog.accept(new SimpleCodePrinter().outputTags());
 		pushBlock();
 		addStatement(parts.prepar);	
 		
@@ -286,25 +314,19 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		Iterator<step> sit = l.iterator();
 		step cur;
 		
-		final int PRE=0, PAR=1, POST=2;
-		int state = PRE;
+		
 		CFGNode[] lastNode = new CFGNode[nthreads];
 		
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				state = PAR;				
-				lastNode[cur.thread] = addBlock(cur, lastNode[cur.thread]);				
-			}else{
-				if(state == PRE){
-				}else{
-					state = POST;
-				}
+				lastNode[cur.thread-1] = addBlock(cur.stmt, cur.thread-1, lastNode[cur.thread-1]);				
 			}
 		}
 		addStatement(parts.postpar);
 		popBlock();
 		closeCurrent();
+		current.accept(new SimpleCodePrinter());
 	}
 	
 	

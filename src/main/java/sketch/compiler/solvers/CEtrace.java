@@ -11,6 +11,9 @@ public class CEtrace extends CounterExample {
 			this.thread = thread;
 			this.stmt = stmt;
 		}
+		public String toString(){
+			return "(" + thread + ", " + stmt + ")";
+		}
 	}
 
 	public List<step> steps;
@@ -21,5 +24,8 @@ public class CEtrace extends CounterExample {
 
 	public void addStep (int thread, int stmt) {
 		steps.add (new step (thread, stmt));
+	}
+	public String toString(){
+		return "(t,s)" + steps.toString();
 	}
 }
