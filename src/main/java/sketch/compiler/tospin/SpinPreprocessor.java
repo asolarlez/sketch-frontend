@@ -1,4 +1,4 @@
-package streamit.frontend.passes;
+package streamit.frontend.tospin;
 
 import java.util.ArrayList;
 import java.util.Collections;

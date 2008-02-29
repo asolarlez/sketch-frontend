@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.passes.SpinPreprocessor;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
@@ -140,7 +139,8 @@ public class SpinExecuter {
 		ProcessStatus status = execDebug (
 				CC, "-w", "-o", prog.getCanonicalPath (),
 				"-D_POSIX_SOURCE", "-DMEMLIM=128", "-DSAFETY", "-DNOCLAIM",
-				"-DXUSAFE", "-DNOFAIR", code.getCanonicalPath ());
+				"-DXUSAFE", "-DNOFAIR", "-DVECTORSZ=1500",
+				code.getCanonicalPath ());
 		assert 0 == status.exitCode;
 		log ("Compilation successful");
 	}
