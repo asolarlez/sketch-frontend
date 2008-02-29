@@ -1,0 +1,24 @@
+
+int moo(int i){
+	assert i > i-1;
+	return i;		
+}
+
+int voo(int i){
+	assert i < i - 1;
+	return i;	
+}
+
+
+int spec(int i) {
+	return i;	
+}
+
+int foo(int i) implements spec{
+
+	if(i < i + 1){
+		return moo(i);
+	}
+	
+	return voo(i);	
+}
