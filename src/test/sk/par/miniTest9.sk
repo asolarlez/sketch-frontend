@@ -5,7 +5,7 @@ struct Node{
 
 struct Queue{
 	Node prevHead;
-	Node tail;	
+	Node tail;
 }
 
 
@@ -13,7 +13,7 @@ Queue newQueue(){
 	Queue q = new Queue();
 	q.prevHead = new Node();
 	q.prevHead.next = null;
-	q.tail = q.prevHead;	
+	q.tail = q.prevHead;
 	return q;
 }
 
@@ -34,14 +34,14 @@ int dequeue(Queue q){
 	Node n = q.prevHead;
 	if(n.next != null){
 		q.prevHead = n.next;
-		return q.prevHead.val;	
+		return q.prevHead.val;
 	}else{
-		return -1;	
+		return -1;
 	}
-	
+
 }
 
-bit test(int in){	
+bit test(int in){
 	return 1;
 }
 
@@ -62,6 +62,7 @@ bit testSK(int in) implements test{
 	int i1 = dequeue(q);
 	int i2 = dequeue(q);
 	int i3 = dequeue(q);
-	return i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6));
+    assert (i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6)));
+	return 1;
 }
 
