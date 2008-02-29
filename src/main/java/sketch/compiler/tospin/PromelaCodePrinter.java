@@ -41,6 +41,7 @@ import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
+import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.passes.CodePrinterVisitor;
 
@@ -176,7 +177,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		print (") -> ");
 		et.getB ().accept (this);
 		print (" : ");
-		et.getB ().accept (this);
+		et.getC ().accept (this);
 		print (")");
 
 		return et;
@@ -386,6 +387,14 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
     	stmt.getBody().accept (this);
     	printlnIndent ("od;");
 		return stmt;
+	}
+
+	public Object visitTypePrimitive (TypePrimitive tp) {
+		if (TypePrimitive.TYPE_BOOLEAN == tp.getType ()) {
+			print ("bool");
+			return tp;
+		} else
+			return super.visitTypePrimitive (tp);
 	}
 
 	public Object visitTypeStruct (TypeStruct ts) {
