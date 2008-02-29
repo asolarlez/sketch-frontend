@@ -92,6 +92,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
 		cfg = CFGforPloop.buildCFG(parts.ploop, locals);
+		nthreads = parts.ploop.getIter().getIValue();
+		
+		locals.add( new StmtVarDecl(prog, TypePrimitive.inttype, "_ind", null) );
 		nodeMap = CFGforPloop.tagSets(cfg);
 		invNodeMap = new HashMap<Object, CFGNode>();
 		for(Iterator<Entry<CFGNode, Set<Object>>> it = nodeMap.entrySet().iterator(); it.hasNext(); ){
@@ -102,7 +105,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 		bodyl.addAll(parts.globalDecls);
 
-		nthreads = parts.ploop.getIter().getIValue();
+		
 
 		localRepl = new VarSetReplacer[nthreads];
 		for(int i=0; i<nthreads; ++i){
@@ -132,8 +135,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
-	public Statement parametrizeLocals(Statement s, int thread){
-		return (Statement) s.accept(localRepl[thread]);
+	public FENode parametrizeLocals(FENode s, int thread){
+		return (FENode) s.accept(localRepl[thread]);
 	}
 
 
@@ -142,11 +145,11 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		Statement s = null;
 
 		if(node.isExpr()){
-			s = parametrizeLocals(node.getPreStmt(), thread);
+			s = (Statement) parametrizeLocals(node.getPreStmt(), thread);
 		}
 
 		if(node.isStmt()){
-			s = parametrizeLocals(node.getStmt(), thread);
+			s = (Statement) parametrizeLocals(node.getStmt(), thread);
 		}
 
 		if(s != null){
@@ -157,11 +160,11 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
-	public Statement addAssume(CFGNode lastNode, EdgePair ep){
+	public Statement addAssume(CFGNode lastNode, int thread, EdgePair ep){
 		/**
 		 * This is overly conservative. Need a better implementation of this.
 		 */
-		return new StmtAssert( new ExprBinary(lastNode.getExpr(), "!=", new ExprConstInt(ep.label.intValue())) );
+		return new StmtAssert(   new ExprBinary( new ExprArrayRange(new ExprVar(lastNode.getExpr(), "_ind_p"), new ExprConstInt(thread)), "!=", new ExprConstInt(ep.label.intValue())) );
 	}
 
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
@@ -193,7 +196,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					if(ep.node == node){
 						goodSucc = true;
 					}else{
-						assertStmts.add(addAssume(lastNode, ep));
+						assertStmts.add(addAssume(lastNode, thread, ep));
 					}
 				}
 				assert goodSucc : "None of the successors matched";
@@ -311,6 +314,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 		declArrFromScalars(locals.iterator(), new ExprConstInt(nthreads));
 
+		for(int i=0; i<nthreads; ++i){
+			Expression idx = new ExprConstInt(i) ;
+			Expression ilhs = new ExprArrayRange( new ExprVar(idx, parts.ploop.getLoopVarName()  +"_p")  , idx  );
+			addStatement(new StmtAssign(ilhs, idx ) );			
+		}
+		
+		
 		List<step> l = trace.steps;
 		Iterator<step> sit = l.iterator();
 		step cur;
