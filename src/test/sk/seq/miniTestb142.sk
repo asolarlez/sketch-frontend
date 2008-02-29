@@ -1,0 +1,31 @@
+struct Box{
+	int v;	
+}
+
+
+Box moo(Box i){
+	assert i.v > i.v-1;
+	return i;		
+}
+
+Box voo(Box i){
+	assert i.v < i.v - 1;
+	return i;	
+}
+
+
+int spec(int i) {
+	return i;	
+}
+
+int foo(int i) implements spec{
+	Box t = new Box();
+	t.v = i;
+	if(i < i + 1){
+		Box m = moo(t);
+		return m.v;
+	}
+	
+	Box m = voo(t);
+	return m.v;	
+}
