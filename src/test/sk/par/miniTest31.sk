@@ -1,0 +1,27 @@
+
+
+int N = 4;
+
+bit test(int in){
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int x = in;
+	
+	fork(int i; 2){
+		for(int t=0; t<2; ++t){
+			int l = x;
+			x = l + 1;	
+			
+		}
+		
+	}		
+
+
+	assert (x == in +4) || x == in + ?? || x == in + ??;
+	return 1;
+}
+
+
+
