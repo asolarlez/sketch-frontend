@@ -266,12 +266,13 @@ public class ToSBit
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));		
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
+		//dump (lprog, "tifs:");
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
-		//dump (prog, "tifs:");
+		//dump (lprog, "tifs:");
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
-		//dump (prog, "After first elimination of multi-dim arrays:");
+		//dump (lprog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
-		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
+		if(params.flagEquals("showphase", "preproc")) dump (lprog, "After Preprocessing");
 		
 		return lprog;
 	}
