@@ -106,6 +106,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 					List<Statement>  oldNewStatements = newStatements;
 					newStatements = new ArrayList<Statement> ();
 					Statement result = null;
+					int level = state.getLevel();
+			    	int ctlevel = state.getCTlevel();
 					state.pushLevel();
 					try{
 			    		{
@@ -113,9 +115,10 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 			    			inParameterSetter(exp, formalParams, actualParams, false);
 			    		}
-			    		Statement body = (Statement) fun.getBody().accept(this);
-			    		addStatement(body);
-			    		{
+			    		try{
+			    			Statement body = (Statement) fun.getBody().accept(this);
+			    			addStatement(body);
+			    		}finally{
 			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 			    			outParameterSetter(formalParams, actualParams, false);
@@ -123,6 +126,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			    		result = new StmtBlock(exp, newStatements);
 		    		}finally{
 		    			state.popLevel();
+		    			assert level == state.getLevel() : "Somewhere we lost a level!!";
+		        		assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
 		    			newStatements = oldNewStatements;
 		    		}
 		            addStatement(result);
