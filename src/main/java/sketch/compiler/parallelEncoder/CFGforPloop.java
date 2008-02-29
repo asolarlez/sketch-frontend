@@ -44,6 +44,9 @@ public class CFGforPloop extends CFGBuilder {
 			if(n.isStmt()){
 				n.getStmt().accept(tag);
 			}
+			if(n.isExpr()){
+				n.getPreStmt().accept(tag);
+			}
 			map.put(n, tag.oset);
 		}
 		return map;
