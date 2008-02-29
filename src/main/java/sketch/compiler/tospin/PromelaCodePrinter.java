@@ -116,8 +116,14 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 			   +" (int __this"+ ((params.size () == 0) ? "" : "; "));
 
 		for (int i = 0; i < params.size (); ++i) {
+			Parameter param = params.get (i);
+
 			print ((i != 0) ? "; " : "");
-			params.get (i).accept (this);
+			param.accept (this);
+			symtab.registerVar(param.getName(),
+	                           actualType(param.getType()),
+	                           param,
+	                           SymbolTable.KIND_FUNC_PARAM);
 		}
 
 		println (") {");
@@ -326,7 +332,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		printlnIndent ("if");
 		printTab ();  print ("::");
 		stmt.getCond ().accept (this);
-		print (" -> ");
+		println (" -> ");
 		stmt.getCons ().accept (this);
 		printlnIndent (":: else");
 		if (null != stmt.getAlt ()) {
