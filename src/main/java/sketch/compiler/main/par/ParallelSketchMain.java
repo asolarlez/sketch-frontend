@@ -9,6 +9,7 @@ import streamit.frontend.nodes.Program;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
@@ -94,9 +95,11 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public void lowerIRToJava() {
+		prog = (Program) prog.accept (new MakeAllocsAtomic (varGen));
+
 		super.lowerIRToJava();
+
 		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
-		//prog = (Program) prog.accept(new SpinPreprocessor(varGen));
 		prog = (Program) prog.accept(new NumberStatements());
 	}
 
