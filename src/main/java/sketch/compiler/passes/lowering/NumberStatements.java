@@ -6,6 +6,7 @@ import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
@@ -84,5 +85,10 @@ public class NumberStatements extends FEReplacer {
 		return number(o);
 	}
 
+	@Override
+	public Object visitStmtExpr(StmtExpr stmt){
+		Object o = super.visitStmtExpr(stmt);
+		return number(o);
+	}
 
 }
