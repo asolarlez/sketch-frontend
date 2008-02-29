@@ -281,12 +281,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
 			int ptype = p.getPtype();
-			Expression oldArg=null;
+			Expression oldArg= (p.getType() instanceof TypeStruct) ? new ExprNullPtr() : ExprConstInt.zero ;
 			if(ptype == Parameter.REF || ptype == Parameter.IN){
 				oldArg=(Expression) existingArgs.get(psz);
 				++psz;
 			}
-			if(oldArg != null && oldArg instanceof ExprVar || oldArg instanceof ExprConstInt){
+			if(oldArg != null && oldArg instanceof ExprVar || (oldArg instanceof ExprConstInt && !p.isParameterOutput())){
 				args.add(oldArg);
 			}else{
 				String tempVar = getNewOutID();
@@ -304,7 +304,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		}
 
 		ExprFunCall newcall=new ExprFunCall(exp,exp.getName(),args);
-		addStatement(new StmtExpr(newcall));
+		addStatement( conditionWrap(new StmtExpr(newcall)));
 		addStatements(refAssigns);
 
 		// replace the original function call with an instance of the temp variable
@@ -317,17 +317,24 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	}
 
 	@Override
-	public Object visitStmtAssert(StmtAssert sa){
-		FENode cx=sa;
+	public Object visitStmtAssert(StmtAssert sa){		
 		Statement s = (Statement) super.visitStmtAssert(sa);
-		Statement ret=new StmtIfThen(cx,
-				new ExprBinary(cx, ExprBinary.BINOP_EQ,
-					new ExprVar(cx, getReturnFlag()),
-					new ExprConstInt(cx, 0)),
+		return conditionWrap(s);		
+	}
+	
+	
+	
+	public Statement conditionWrap(Statement s){
+		Statement ret=new StmtIfThen(s,
+				new ExprBinary(s, ExprBinary.BINOP_EQ,
+					new ExprVar(s, getReturnFlag()),
+					new ExprConstInt(s, 0)),
 				s,
 				null);
 		return ret;
 	}
+	
+	
 
 
 	private boolean globalEffects(Statement s){
@@ -358,6 +365,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 						ge = true;
 					}
 					return ev;
+				}
+				
+				@Override
+				public Object visitExprFunCall(ExprFunCall exp){
+					ge = true;
+					return exp;
 				}
 			}
 			findge f = new findge();
