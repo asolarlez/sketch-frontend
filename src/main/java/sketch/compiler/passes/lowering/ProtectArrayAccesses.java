@@ -17,11 +17,11 @@ import streamit.frontend.nodes.TypePrimitive;
 /**
  * The purpose of this class is to replace right-hand-side array
  * accesses of the form A[x] into expressions of the form:
- * (x>0 && x < N) ? A[x] : 0;
+ * (x>=0 && x < N) ? A[x] : 0;
  *
  * Similarly, Left hand side A[x] gets replaced with
  *
- * if(x>0 && x < N){ A[x] = rhs; }
+ * if(x>=0 && x < N){ A[x] = rhs; }
  *
  * @author asolar
  *
@@ -48,7 +48,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		Expression cond = new ExprBinary(new ExprBinary(ev, ">=", ExprConstInt.zero), "&&",
 										 new ExprBinary(ev, "<", sz));
 		Expression near = new ExprArrayRange(ear.getBase(), ev);
-		Expression tern = new ExprTernary(ear, ExprTernary.TEROP_COND, cond, near, ExprConstInt.zero);
+		Expression tern = new ExprTernary("?:", cond, near, ExprConstInt.zero);
 		return tern;
 	}
 
@@ -62,7 +62,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			addStatement(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset));
 			ExprVar ev = new ExprVar(ear, nname);
 			Expression sz = ((TypeArray)getType(ear.getBase())).getLength();
-			Expression cond = new ExprBinary(new ExprBinary(ev, ">", ExprConstInt.zero), "&&",
+			Expression cond = new ExprBinary(new ExprBinary(ev, ">=", ExprConstInt.zero), "&&",
 											 new ExprBinary(ev, "<", sz));
 			Expression base = (Expression) ear.getBase().accept(this);
 			Expression near = new ExprArrayRange(base, ev);

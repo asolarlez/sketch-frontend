@@ -102,6 +102,26 @@ public class ExprUnary extends Expression
     /** Returns the operator of this. */
     public int getOp() { return op; }
 
+    /**
+     * Populate PREPOSTOP with ["", OP_STR] for postfix operators, and
+     * [OP_STR, ""] for prefix operators.
+     *
+     * @param inout prePostOp
+     */
+    public void fillPrePostOpStr (/* inout */String[] prePostOp) {
+        prePostOp[0] = "";  prePostOp[1] = "";
+        switch(op) {
+        case UNOP_NOT: prePostOp[0] = "!"; break;
+        case UNOP_BNOT: prePostOp[0] = "~"; break;
+        case UNOP_NEG: prePostOp[0] = "-"; break;
+        case UNOP_PREINC: prePostOp[0] = "++"; break;
+        case UNOP_POSTINC: prePostOp[1] = "++"; break;
+        case UNOP_PREDEC: prePostOp[0] = "--"; break;
+        case UNOP_POSTDEC: prePostOp[1] = "--"; break;
+        default: prePostOp[0] = "?(" + op + ")"; break;
+        }
+    }
+
     /** Returns the expression this modifies. */
     public Expression getExpr() { return expr; }
 
@@ -130,18 +150,8 @@ public class ExprUnary extends Expression
 
     public String toString()
     {
-        String preOp = "", postOp = "";
-        switch(op)
-        {
-        case UNOP_NOT: preOp = "!"; break;
-        case UNOP_BNOT: preOp = "~"; break;
-        case UNOP_NEG: preOp = "-"; break;
-        case UNOP_PREINC: preOp = "++"; break;
-        case UNOP_POSTINC: postOp = "++"; break;
-        case UNOP_PREDEC: preOp = "--"; break;
-        case UNOP_POSTDEC: postOp = "--"; break;
-        default: preOp = "?(" + op + ")"; break;
-        }
-        return preOp + "(" + expr.toString() + ")" + postOp;
+    	String[] prePostOp = new String[2];
+    	fillPrePostOpStr (prePostOp);
+        return prePostOp[0] + "(" + expr.toString() + ")" + prePostOp[1];
     }
 }

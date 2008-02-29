@@ -52,45 +52,45 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	 */
 	Program prog;
 	/**
-	 * 
+	 *
 	 * Function containing parallel sections. We assume this is the sketch.
 	 */
 	Function parfun;
-	
+
 	Program current;
 	BreakParallelFunction parts;
 	Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
-	
+
 	/**
 	 * Control flow graph
 	 */
 	CFG cfg;
 	/**
-	 * 
+	 *
 	 * For each node in the control flow graph, it specifies the tags for all the statements contained in that node.
 	 */
 	Map<CFGNode, Set<Object>> nodeMap;
 	/**
-	 * Inverse of the nodeMap. 
+	 * Inverse of the nodeMap.
 	 */
 	Map<Object, CFGNode> invNodeMap;
-	
+
 	List<Statement> bodyl = new ArrayList<Statement>();
 	Stack<List<Statement> > bodyStack = new Stack<List<Statement>>();
 
-	
+
 	VarSetReplacer[] localRepl;
-	
+
 	int nthreads;
-	
+
 	public SATSynthesizer(Program prog, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		super(params, rcontrol, varGen);
 		this.prog = prog;
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
-		parfun = ps.parfun;		
+		parfun = ps.parfun;
 		parts = new BreakParallelFunction();
-		parfun.accept(parts);		
+		parfun.accept(parts);
 		cfg = CFGforPloop.buildCFG(parts.ploop, locals);
 		nodeMap = CFGforPloop.tagSets(cfg);
 		invNodeMap = new HashMap<Object, CFGNode>();
@@ -100,18 +100,18 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				invNodeMap.put(oit.next(), e.getKey());
 			}
 		}
-		bodyl.addAll(parts.globalDecls);	
-		
+		bodyl.addAll(parts.globalDecls);
+
 		nthreads = parts.ploop.getIter().getIValue();
-		
+
 		localRepl = new VarSetReplacer[nthreads];
 		for(int i=0; i<nthreads; ++i){
 			localRepl[i] = new VarSetReplacer();
 			populateVarReplacer(locals.iterator(), new ExprConstInt(i), localRepl[i]);
-		}		
+		}
 	}
-	
-	
+
+
 	/**
 	 * Populates the VarSetReplacer with replacement rules of the form:
 	 * X -> X_p[idx].
@@ -130,58 +130,58 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 		}
 	}
-	
-	
+
+
 	public Statement parametrizeLocals(Statement s, int thread){
-		return (Statement) s.accept(localRepl[thread]);		
+		return (Statement) s.accept(localRepl[thread]);
 	}
-	
-	
+
+
 	public void addNode(CFGNode node, int thread){
 
 		Statement s = null;
-		
+
 		if(node.isExpr()){
 			s = parametrizeLocals(node.getPreStmt(), thread);
 		}
-		
+
 		if(node.isStmt()){
 			s = parametrizeLocals(node.getStmt(), thread);
 		}
-		
+
 		if(s != null){
 			pushBlock();
 			addStatement(s);
 			popBlock();
-		}		
+		}
 	}
-	
-	
+
+
 	public Statement addAssume(CFGNode lastNode, EdgePair ep){
 		/**
 		 * This is overly conservative. Need a better implementation of this.
 		 */
 		return new StmtAssert( new ExprBinary(lastNode.getExpr(), "!=", new ExprConstInt(ep.label.intValue())) );
 	}
-	
+
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
-		
-		
+
+
 		assert invNodeMap.containsKey(stmt);
-		
+
 		CFGNode node = invNodeMap.get( stmt );
-		
+
 		if( node == lastNode  ){
 			//Haven't advanced nodes, so I should stay here.
 			return lastNode;
 		}
-			
-		
+
+
 		if(node != cfg.getEntry() && lastNode == null){
 			lastNode = cfg.getEntry();
 			addNode(lastNode, thread);
-		} 
-		
+		}
+
 		do{
 			if(lastNode == null){ break; }
 			if(lastNode.isExpr()){
@@ -192,40 +192,40 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					EdgePair ep = it.next();
 					if(ep.node == node){
 						goodSucc = true;
-					}else{					
+					}else{
 						assertStmts.add(addAssume(lastNode, ep));
-					}							
+					}
 				}
 				assert goodSucc : "None of the successors matched";
 				for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
 					addStatement(it.next());
 				}
-				
+
 				break;
 			}
-			
+
 			if(lastNode.isStmt()){
 				List<EdgePair> eplist = lastNode.getSuccs();
 				EdgePair succ = eplist.get(0);
-				
+
 				if(succ.node == node){
 					break;
 				}
 				lastNode = succ.node;
-				
+
 				addNode(lastNode, thread);
-				
+
 			}
 		}while(true);
-		
+
 		addNode(node, thread);
-		
+
 		return node;
 	}
-	
-	
+
+
 	public void pushBlock(){
-		
+
 		bodyStack.push(bodyl);
 		bodyl = new ArrayList<Statement>();
 	}
@@ -237,48 +237,48 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	public void addStatement(Statement s){
 		bodyl.add(s);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void closeCurrent(){
-		
-		
+
+
 		List<Parameter> outPar = new ArrayList<Parameter>();
 		String opname = null;
 		List<Statement> lst = new ArrayList<Statement>();
-		
-		for(Iterator<Parameter> it = parfun.getParams().iterator(); it.hasNext(); ){			
+
+		for(Iterator<Parameter> it = parfun.getParams().iterator(); it.hasNext(); ){
 			Parameter p = it.next();
 			if(p.isParameterOutput()){
 				outPar.add(p);
 				opname = p.getName();
 			}else{
-				lst.add(new StmtVarDecl(p, p.getType(), p.getName(), ExprConstInt.zero ));	
+				lst.add(new StmtVarDecl(p, p.getType(), p.getName(), ExprConstInt.zero ));
 			}
 		}
-		
-		
+
+
 		lst.addAll(bodyl);
 		lst.add( new StmtAssign(new ExprVar(current, opname), ExprConstInt.one) );
-		
+
 		Statement body = new StmtBlock(current, lst);
-		
+
 		Function spec = Function.newHelper(current, "spec", TypePrimitive.inttype ,outPar, new StmtAssign(new ExprVar(current, opname), ExprConstInt.one));
-		
+
 		Function sketch = Function.newHelper(current, "sketch", TypePrimitive.inttype ,
 				outPar, "spec", body);
-		
+
 		List<Function> funcs = new ArrayList<Function>();
-		
+
 		funcs.add(spec);
 		funcs.add(sketch);
-		
+
 		List<StreamSpec> streams = Collections.singletonList(
 				new StreamSpec(current, StreamSpec.STREAM_FILTER, null, "MAIN",Collections.EMPTY_LIST , Collections.EMPTY_LIST ,funcs));
 		current = new Program(current,streams, Collections.EMPTY_LIST);
-		
-		
+
+
 	}
-	
+
 
 	/**
 	 * The input collection contains variable declarations, and the output collection contains variable' declarations such that
@@ -301,42 +301,48 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 		}
 	}
-	
-	
+
+
 	public void mergeWithCurrent(CEtrace trace){
-		prog.accept(new SimpleCodePrinter().outputTags());
+		if (verbose ())
+			prog.accept(new SimpleCodePrinter().outputTags());
 		pushBlock();
-		addStatement(parts.prepar);	
-		
+		addStatement(parts.prepar);
+
 		declArrFromScalars(locals.iterator(), new ExprConstInt(nthreads));
-		
+
 		List<step> l = trace.steps;
 		Iterator<step> sit = l.iterator();
 		step cur;
-		
-		
+
+
 		CFGNode[] lastNode = new CFGNode[nthreads];
-		
+
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				lastNode[cur.thread-1] = addBlock(cur.stmt, cur.thread-1, lastNode[cur.thread-1]);				
+				lastNode[cur.thread-1] = addBlock(cur.stmt, cur.thread-1, lastNode[cur.thread-1]);
 			}
 		}
 		addStatement(parts.postpar);
 		popBlock();
 		closeCurrent();
-		current.accept(new SimpleCodePrinter());
+		if (verbose ())
+			current.accept(new SimpleCodePrinter());
 	}
-	
-	
+
+
 	public ValueOracle nextCandidate(CounterExample counterExample) {
-		
+
 		mergeWithCurrent((CEtrace)counterExample);
-		
+
 		boolean tmp = partialEvalAndSolve(current);
-		
+
 		return tmp ? getOracle() : null;
+	}
+
+	protected boolean verbose () {
+		return params.flagValue ("verbosity") >= 3;
 	}
 
 }

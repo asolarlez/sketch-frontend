@@ -30,17 +30,17 @@ public class Parameter extends FENode
 	public final static int IN = 0;
 	public final static int OUT = 1;
 	public final static int REF = 2;
-	
+
     private final Type type;
     private final String name;
     private final int partype;
-    
+
     /** Creates a new Parameter with the specified type and name. */
     public Parameter(Type type, String name)
     {
     	this(type,name,IN);
     }
-    
+
     public Parameter(Type type, String name, int ptype)
     {
     	super((FENode)null);
@@ -48,11 +48,11 @@ public class Parameter extends FENode
         this.name = name;
         this.partype = ptype;
     }
-    
+
     /**
-     * 
-     * Whether the parameter is an input parameter (IN), output parameter (OUT) or a reference parameter (REF). 
-     * 
+     *
+     * Whether the parameter is an input parameter (IN), output parameter (OUT) or a reference parameter (REF).
+     *
      * @return
      */
     public int getPtype(){
@@ -67,36 +67,41 @@ public class Parameter extends FENode
     public boolean isParameterOutput(){
     	return partype == OUT || partype == REF;
     }
-    
+
     /**
-     * Whether this parameter is an input parameter. 
+     * Whether this parameter is an input parameter.
      * The reference parameters are implicitly input parameters.
      * @return
      */
     public boolean isParameterInput(){
     	return partype == IN || partype == REF;
     }
-    
+
+    /** Is this parameter a reference parameter? */
+    public boolean isParameterReference () {
+    	return partype == REF;
+    }
+
     /** Returns the type of this. */
     public Type getType()
     {
         return type;
     }
-    
+
     /** Returns the name of this. */
     public String getName()
     {
         return name;
     }
-    
+
     public String toString()
     {
-    	
+
     	return (partype==OUT? "!":"") +  type.toString()+" "+name;
     }
-    
+
     public Object accept(FEVisitor v){
     	return v.visitParameter(this);
     }
-    
+
 }

@@ -108,9 +108,12 @@ public class SpinExecuter {
 	}
 
 	protected void generatePromelaCode () throws IOException {
+		FileOutputStream pout = new FileOutputStream (promelaCode);
+
 		log ("Generating Promela code");
-		preprocessSketch ().accept (new PromelaCodePrinter (
-				new FileOutputStream (promelaCode), varGen));
+		preprocessSketch ().accept (new PromelaCodePrinter (pout, varGen));
+		pout.flush ();
+		pout.close ();
 		dump ("Promela code", promelaCode, true);
 	}
 

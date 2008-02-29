@@ -21,15 +21,12 @@ import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNew;
 import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
@@ -55,10 +52,12 @@ import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StmtWhile;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.StreamType;
+import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
+import streamit.misc.NullStream;
 
 /**
  * A parent class for code printers that strictly adhere to the visitor pattern.
@@ -73,7 +72,7 @@ import streamit.frontend.nodes.TypeStructRef;
  */
 abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	protected PrintWriter currOut;
-	protected Stack<PrintWriter> savedOuts;
+	protected Stack<PrintWriter> savedOuts = new Stack<PrintWriter> ();
 	protected int currIndent;
 
 	protected final String tab = "  ";
@@ -84,6 +83,7 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 
 	public CodePrinterVisitor (PrintWriter out) {
 		super (null);
+		assert null != out;
 		currOut = out;
 	}
 
@@ -92,6 +92,7 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	 * the new writer to which to print code.
 	 */
 	public void pushWriter (PrintWriter newOut) {
+		assert null != newOut;
 		savedOuts.push (currOut);
 		currOut = newOut;
 	}
@@ -99,8 +100,23 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	/**
 	 * Restore the last-saved writer, to which subsequent code will be printed.
 	 */
-	public void popWriter () {
+	public PrintWriter popWriter () {
+		PrintWriter lastOut = currOut;
 		currOut = savedOuts.pop ();
+		return lastOut;
+	}
+
+	protected static PrintWriter devNull = new PrintWriter (NullStream.INSTANCE);
+
+	/** Set the output stream to /dev/null. */
+	public void quiet () {
+		pushWriter (devNull);
+	}
+
+	/** Undoes the most recent quiet() operation. */
+	public void unquiet () {
+		assert devNull == currOut;
+		popWriter ();
 	}
 
 	public void indent () {
@@ -123,14 +139,14 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	}
 
 	/** Print S followed by a line terminator. */
-	public void printLine (String s) {
+	public void println (String s) {
 		currOut.println(s);
 	}
 
 	/** Print S, indented to the current depth, followed by a line terminator. */
-	public void printIndentedLine (String s) {
+	public void printlnIndent (String s) {
 		printTab();
-		printLine (s);
+		println (s);
 	}
 
 	public void printIndentedStatement (Statement s) {
@@ -158,9 +174,8 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 		List<Expression> elems = eai.getElements ();
 
 		print ("{ ");
-		elems.get (0).accept (this);
-		for (int i = 1; i < elems.size (); ++i) {
-			print (", ");
+		for (int i = 0; i < elems.size (); ++i) {
+			print ((i != 0) ? ", " : "");
 			elems.get (i).accept (this);
 		}
 		print (" }");
@@ -175,9 +190,8 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 		print ("[");
 		// TODO: this doesn't properly visit the Range and RangeLen children
 		// of the array range
-		print (""+ members.get (0));
-		for (int i = 1; i < members.size (); ++i)
-			print (", "+ members.get (i));
+		for (int i = 0; i < members.size (); ++i)
+			print (((i != 0) ? ", " : "") + members.get (i));
 		print ("]");
 
 		return ear;
@@ -233,10 +247,8 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 		List<Expression> params = efc.getParams ();
 
 		print (efc.getName ()+ "(");
-		if (params.size () > 0)
-			params.get (0).accept (this);
-		for (int i = 1; i < params.size (); ++i) {
-			print (", ");
+		for (int i = 0; i < params.size (); ++i) {
+			print ((i != 0) ? ", " : "");
 			params.get (i).accept (this);
 		}
 
@@ -302,6 +314,8 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	// === STATEMENTS ETC. ===
 
 	public Object visitFieldDecl (FieldDecl fd) {
+		quiet ();  super.visitFieldDecl (fd);  unquiet ();
+
 		for (int i = 0; i < fd.getNumFields (); ++i) {
 			Expression init = fd.getInit (i);
 
@@ -312,30 +326,35 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 				print (" = ");
 				init.accept (this);
 			}
-			printLine (";");
+			println (";");
 		}
 		return fd;
 	}
 
 	public Object visitFunction (Function f) {
+		SymbolTable oldSymtab = symtab;
+		symtab = new SymbolTable (symtab);
+
 		List<Parameter> params = f.getParams ();
 
 		printTab ();
 		f.getReturnType ().accept (this);
 		print (" ("+ f.getName ());
-		if (params.size () > 0)
-			params.get (0).accept (this);
 		for (int i = 0; i < params.size (); ++i) {
-			print (", ");
+			print ((i != 0) ? ", " : "");
 			params.get (i).accept (this);
 		}
 		print (")");
 		f.getBody ().accept (this);
 
+		symtab = oldSymtab;
+
 		return f;
 	}
 
 	public Object visitParameter (Parameter p) {
+		quiet ();  super.visitParameter (p);  unquiet ();
+
 		if (p.isParameterReference ())
 			print ("ref ");
 		p.getType ().accept (this);
@@ -344,10 +363,16 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	}
 
 	public Object visitProgram (Program p) {
+		SymbolTable oldSymtab = symtab;
+		symtab = new SymbolTable (symtab);
+
 		for (TypeStruct s : (List<TypeStruct>) p.getStructs ())
 			s.accept (this);
 		for (StreamSpec s : (List<StreamSpec>) p.getStreams ())
 			s.accept (this);
+
+		symtab = oldSymtab;
+
 		return p;
 	}
 
@@ -359,7 +384,7 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 		sa.getCond ().accept (this);
 		if (null != msg)
 			print (": "+ msg);
-		printLine (";");
+		println (";");
 
 		return sa;
 	}
@@ -369,122 +394,234 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 		sa.getLHS ().accept (this);
 		print (" = ");
 		sa.getRHS ().accept (this);
-		printLine (";");
+		println (";");
 		return sa;
 	}
 
 	public Object visitStmtAtomicBlock (StmtAtomicBlock sab) {
-		printIndentedLine ("atomic");
+		printlnIndent ("atomic");
 		visitStmtBlock (sab);
 		return sab;
 	}
 
 	public Object visitStmtBlock (StmtBlock sb) {
-		printIndentedLine ("{");
+		SymbolTable oldSymtab = symtab;
+		symtab = new SymbolTable (symtab);
+
+		printlnIndent ("{");
 		indent ();
 		for (Statement s : sb.getStmts ())
 			s.accept (this);
 		dedent ();
-		printIndentedLine ("}");
+		printlnIndent ("}");
+
+		symtab = oldSymtab;
+
 		return sb;
 	}
 
 	public Object visitStmtBreak (StmtBreak sb) {
-		printIndentedLine ("break;");
+		printlnIndent ("break;");
 		return sb;
 	}
 
 	public Object visitStmtContinue (StmtContinue sc) {
-		printIndentedLine ("continue;");
+		printlnIndent ("continue;");
 		return sc;
 	}
 
 	public Object visitStmtDoWhile (StmtDoWhile sdw) {
-		printIndentedLine ("do");
+		printlnIndent ("do");
 		sdw.getBody ().accept (this);
 		print ("while (");
 		sdw.getCond ().accept (this);
-		printLine (");");
+		println (");");
 		return sdw;
 	}
 
 	public Object visitStmtEmpty (StmtEmpty se) {
-		printIndentedLine (";");
+		printlnIndent (";");
 		return se;
 	}
 
 	public Object visitStmtExpr (StmtExpr se) {
 		printTab ();
-		se.accept (this);
-		printLine (";");
+		se.getExpression ().accept (this);
+		println (";");
 		return se;
 	}
 
 	public Object visitStmtFor (StmtFor sf) {
+		SymbolTable oldSymtab = symtab;
+		symtab = new SymbolTable (symtab);
+
 		printTab ();
-		printLine ("for (");
+		println ("for (");
 		indent ();
 		sf.getInit ().accept (this);
-		printTab ();  sf.getCond ().accept (this);  printLine (";");
+		printTab ();  sf.getCond ().accept (this);  println (";");
 		sf.getIncr ().accept (this);
 		dedent ();
+		printlnIndent (")");
 		sf.getBody ().accept (this);
+
+		symtab = oldSymtab;
+
 		return sf;
 	}
 
 	public Object visitStmtFork (StmtFork sf) {
-		return null;  // TODO
+		SymbolTable oldSymtab = symtab;
+		symtab = new SymbolTable (symtab);
+
+		printTab ();
+		println ("fork (");
+		indent ();
+		sf.getLoopVarDecl ().accept (this);
+		printTab (); sf.getIter ().accept (this);
+		dedent ();
+		printlnIndent (")");
+		sf.getBody ().accept (this);
+
+		symtab = oldSymtab;
+
+		return sf;
 	}
 
 	public Object visitStmtIfThen (StmtIfThen sit) {
-		return null;  // TODO
+		printTab ();
+		print ("if (");
+		sit.getCond ().accept (this);
+		println (")");
+		sit.getCons ().accept (this);
+		if (null != sit.getAlt ()) {
+			print ("else");
+			sit.getAlt ().accept (this);
+		}
+		return sit;
 	}
 
 	public Object visitStmtInsertBlock (StmtInsertBlock sib) {
-		return null;  // TODO
+		printTab ();
+		println ("insert");
+		sib.getInsertStmt ().accept (this);
+		printlnIndent ("into");
+		sib.getIntoBlock ().accept (this);
+		return sib;
 	}
 
 	public Object visitStmtLoop (StmtLoop sl) {
-		return null;  // TODO
+		printTab ();
+		print ("loop (");
+		sl.getIter ().accept (this);
+		println (")");
+		sl.getBody ().accept (this);
+		return sl;
 	}
 
 	public Object visitStmtReorderBlock (StmtReorderBlock srb) {
-		return null;  // TODO
+		printTab ();
+		println ("reorder");
+		srb.getBlock ().accept (this);
+		return srb;
 	}
 
 	public Object visitStmtReturn (StmtReturn sr) {
-		return null;  // TODO
+		Expression val = sr.getValue ();
+
+		printTab ();
+		print ("return");
+		if (null != val) {
+			print (" ");
+			val.accept (this);
+		}
+		println (";");
+
+		return sr;
 	}
 
 	public Object visitStmtVarDecl (StmtVarDecl svd) {
-		return null;  // TODO
+		quiet ();  super.visitStmtVarDecl (svd);  unquiet ();
+
+		for (int i = 0; i < svd.getNumVars (); ++i) {
+			Expression init = svd.getInit (i);
+
+			printTab ();
+			svd.getType (i).accept (this);
+			print (" "+ svd.getName (i));
+			if (null != init) {
+				print (" = ");
+				init.accept (this);
+			}
+			println (";");
+		}
+		return svd;
 	}
 
 	public Object visitStmtWhile (StmtWhile sw) {
-		return null;  // TODO
+		printTab ();
+		print ("while (");
+		sw.getCond ().accept (this);
+		print (")");
+		sw.getBody ().accept (this);
+		return sw;
 	}
 
 	public Object visitStreamSpec (StreamSpec ss) {
-		return null;  // TODO
+        SymbolTable oldSymtab = symtab;
+        symtab = new SymbolTable (symtab);
+
+		// TODO: doesn't fully visit the stream spec
+		for (FieldDecl f : ss.getVars ())
+			f.accept (this);
+		if (null != ss.getInitFunc ())
+			ss.getInitFunc ().accept (this);
+		for (Function f : ss.getFuncs ())
+			f.accept (this);
+
+		symtab = oldSymtab;
+
+		return ss;
 	}
 
 	public Object visitStreamType (StreamType st) {
-		return null;  // TODO
+		print ("/* Stream type: in ");
+		st.getIn ().accept (this);
+		print (", out ");
+		st.getOut ().accept (this);
+		print ("*/");
+		return st;
 	}
 
 	public Object visitTypeArray (TypeArray ta) {
-		return null;  // TODO
+		ta.getBase ().accept (this);
+		print ("[");
+		ta.getLength ().accept (this);
+		print ("]");
+		return ta;
 	}
 
 	public Object visitTypePrimitive (TypePrimitive tp) {
-		return null;  // TODO
+		print (""+ tp);
+		return tp;
 	}
 
 	public Object visitTypeStruct (TypeStruct ts) {
-		return null;  // TODO
+		printlnIndent ("struct "+ ts.getName ()+ " {");
+		indent ();
+		for (int i = 0; i < ts.getNumFields (); ++i) {
+			String f = ts.getField (i);
+			printTab ();
+			ts.getType (f).accept (this);
+			println (" "+ f +";");
+		}
+		dedent ();
+		printlnIndent ("}");
+		return ts;
 	}
 
 	public Object visitTypeStructRef (TypeStructRef tsr) {
-		return null;  // TODO
+		print (tsr.getName ());
+		return tsr;
 	}
 }

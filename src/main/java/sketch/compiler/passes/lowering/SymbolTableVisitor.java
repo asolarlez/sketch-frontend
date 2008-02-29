@@ -21,7 +21,6 @@ import java.util.Map;
 
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
@@ -164,25 +163,6 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
     /**
-     * Add a variable declaration and register the variable in the
-     * symbol table.  This creates a {@link
-     * streamit.frontend.nodes.StmtVarDecl} for the specified type and
-     * name, and adds that statement using {@link addStatement}.  It
-     * also registers the new variable in the current symbol table.
-     *
-     * @param context  file and line number the statement belongs to
-     * @param type     type of the variable
-     * @param name     name of the variable
-     * @deprecated
-     */
-/* TODO:    protected void addVarDecl(FEContext context, Type type, String name)
-    {
-        Statement stmt = new StmtVarDecl(context, type, name, null);
-        addStatement(stmt);
-        symtab.registerVar(name, type, stmt, SymbolTable.KIND_LOCAL);
-    }*/
-
-    /**
      * Get the actual type for a type.  In particular, if we have a
      * structure-reference type and the name of the reference is
      * registered, then the actual type is the corresponding
@@ -266,8 +246,6 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
         return result;
     }
-
-
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {

@@ -1,18 +1,24 @@
 package streamit.frontend;
 
 import streamit.frontend.CommandLineParamManager.POpts;
+import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
+import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
+import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
-import streamit.frontend.passes.SpinPreprocessor;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
 import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
+import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.RandomValueOracle;
 import streamit.frontend.tosbit.ValueOracle;
@@ -21,35 +27,32 @@ import streamit.frontend.tosbit.ValueOracle;
 
 public class ToPSbitII extends ToSBit {
 
-
-
-
-	public Synthesizer createSynth(Program p){
-		return new SATSynthesizer(p, params, internalRControl(), varGen );
+	public ToPSbitII(String[] args){
+		super(args);
 	}
 
-	public Verifier createVerif(Program p){
-		boolean debug = params.flagValue ("verbosity") >= 3;
-		boolean cleanup = !params.hasFlag ("keeptmpfiles");
-		return new SpinVerifier (varGen, p, debug, cleanup);
-	}
+	public void run() {
+		parseProgram();
 
-	public ValueOracle randomOracle(Program p){
-		return new RandomValueOracle (new StaticHoleTracker(varGen));
-	}
+		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
+		//dump (prog, "After replacing constants:");
+		if (!SemanticChecker.check(prog))
+			throw new IllegalStateException("Semantic check failed");
 
-	public void lowerIRToJava()
-	{
-		super.lowerIRToJava();
-		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
-		//prog = (Program) prog.accept(new SpinPreprocessor(varGen));
-		prog = (Program) prog.accept(new NumberStatements());
-	}
+		prog=preprocessProgram(prog); // perform prereq transformations
+		//dump (prog, "After preprocessing");
+		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
+		// if (!SemanticChecker.check(prog))
+		//	throw new IllegalStateException("Semantic check failed");
 
-	protected Program preprocessProgram(Program lprog) {
-		lprog = super.preprocessProgram(lprog);
-		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
-		return lprog;
+		if (prog == null)
+			throw new IllegalStateException();
+
+		synthVerifyLoop();
+		finalCode = postprocessProgram (prog);
+		generateCode(finalCode);
+
+		System.out.println("[PSKETCH] DONE!");
 	}
 
 	public void synthVerifyLoop(){
@@ -77,45 +80,57 @@ public class ToPSbitII extends ToSBit {
 
 		if (!success) {
 			System.err.println ("Whoops -- couldn't synthesize sketch.");
+			System.exit (1);
 			// TODO: real error message
-		} else {
-			System.out.println ("Successfully synthesized sketch!");
 		}
 
 		oracle = ora;
-
 	}
 
-
-	public void run()
-	{
-		parseProgram();
-
-		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
-		//dump (prog, "After replacing constants:");
-		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed");
-
-		prog=preprocessProgram(prog); // perform prereq transformations
-		//prog.accept(new SimpleCodePrinter());
-		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-		// if (!SemanticChecker.check(prog))
-		//	throw new IllegalStateException("Semantic check failed");
-
-		if (prog == null)
-			throw new IllegalStateException();
-
-
-		synthVerifyLoop();
-
-
-		//eliminateStar();
-		//generateCode();
-		System.out.println("DONE");
-
+	protected Program preprocessProgram(Program lprog) {
+		lprog = super.preprocessProgram(lprog);
+		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
+		return lprog;
 	}
 
+	public void lowerIRToJava() {
+		super.lowerIRToJava();
+		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+		//prog = (Program) prog.accept(new SpinPreprocessor(varGen));
+		prog = (Program) prog.accept(new NumberStatements());
+	}
 
+	public Program postprocessProgram (Program p) {
+		p = (Program) p.accept (new EliminateStarStatic (oracle));
+
+		// TODO: these passes may not be semantically valid under concurrency
+
+		p = (Program)p.accept(new FlattenStmtBlocks());
+		p = (Program)p.accept(new EliminateTransAssns());
+		//p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		p = (Program)p.accept(new SimplifyVarNames());
+		p = (Program)p.accept(new AssembleInitializers());
+
+		return p;
+	}
+
+	public void generateCode (Program p) {
+		p.accept (new SimpleCodePrinter ());
+	}
+
+	public Synthesizer createSynth(Program p){
+		return new SATSynthesizer(p, params, internalRControl(), varGen );
+	}
+
+	public Verifier createVerif(Program p){
+		boolean debug = params.flagValue ("verbosity") >= 3;
+		boolean cleanup = !params.hasFlag ("keeptmpfiles");
+		return new SpinVerifier (varGen, p, debug, cleanup);
+	}
+
+	public ValueOracle randomOracle(Program p){
+		return new RandomValueOracle (new StaticHoleTracker(varGen));
+	}
 
 	protected void setCommandLineParams(){
 		super.setCommandLineParams();
@@ -132,15 +147,6 @@ public class ToPSbitII extends ToSBit {
 				"             \t parameter to make that lock array larger.",
 				"10", null) );
 	}
-
-
-
-
-	public ToPSbitII(String[] args){
-		super(args);
-	}
-
-
 
 	public static void main(String[] args)
 	{

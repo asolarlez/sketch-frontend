@@ -221,9 +221,9 @@ public class SpinPreprocessor extends FEReplacer {
     	assert decl.getType(0).equals(TypePrimitive.inttype);
     	String ivname = decl.getName(0);
     	StmtVarDecl ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, ExprConstInt.zero);
-    	ExprVar ivar = new ExprVar(cx, ivname);
+    	ExprVar ivar = new ExprVar (cx, ivname);
     	Expression cmp = new ExprBinary(ivar, "<", niter);
-    	Statement incr = new StmtAssign(ivar, new ExprBinary(cx, ExprBinary.BINOP_ADD, ivar, new ExprConstInt(1)));
+    	Statement incr = new StmtAssign(ivar, new ExprBinary(ivar, "+", new ExprConstInt(1)));
     	List<Statement> forBody = new ArrayList<Statement> ();
     	forBody.add (new StmtExpr (fcall));
     	StmtFor spawnLoop = new StmtFor(cx, ndecl, cmp, incr, new StmtBlock (fcall, forBody));
