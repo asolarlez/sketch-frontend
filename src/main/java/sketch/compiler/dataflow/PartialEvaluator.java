@@ -773,13 +773,23 @@ public class PartialEvaluator extends FEReplacer {
 
         Expression cond = stmt.getCond();
         abstractValue vcond = (abstractValue)cond.accept(this);
+        Statement cons = stmt.getCons();        
+        if(cons != null && !(cons instanceof StmtBlock)){
+        	cons = new StmtBlock(cons);
+        }
+        
+        Statement alt = stmt.getAlt();
+        if(alt != null && !(alt instanceof StmtBlock)){
+        	alt = new StmtBlock(alt);
+        }
+        
         Expression ncond  = exprRV;
         if(vcond.hasIntVal()){
         	if(vcond.getIntVal() != 0){ // vtrue
         		Statement rv ;
-        		if( rcontrol.testBlock(stmt.getCons()) ){
-        			rv =(Statement) stmt.getCons().accept(this);
-        			rcontrol.doneWithBlock(stmt.getCons());
+        		if( rcontrol.testBlock(cons) ){
+        			rv =(Statement) cons.accept(this);
+        			rcontrol.doneWithBlock(cons);
         		}else{
         			StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
         			sa.setMsg( rcontrol.debugMsg() );
@@ -787,11 +797,11 @@ public class PartialEvaluator extends FEReplacer {
 				}
         		return rv;
         	}else{
-        		if (stmt.getAlt() != null){
+        		if (alt != null){
         			Statement rv ;
-        			if( rcontrol.testBlock(stmt.getAlt()) ){
-        				rv =(Statement)stmt.getAlt().accept(this);
-        				rcontrol.doneWithBlock(stmt.getAlt());
+        			if( rcontrol.testBlock(alt) ){
+        				rv =(Statement)alt.accept(this);
+        				rcontrol.doneWithBlock(alt);
         			}else{
         				StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
         				sa.setMsg( rcontrol.debugMsg() );
@@ -808,9 +818,9 @@ public class PartialEvaluator extends FEReplacer {
         state.pushChangeTracker (vcond, false);
         Statement nvtrue = null;
         Statement nvfalse = null;
-        if( rcontrol.testBlock(stmt.getCons()) ){
+        if( rcontrol.testBlock(cons) ){
 	        try{
-	        	nvtrue  = (Statement) stmt.getCons().accept(this);
+	        	nvtrue  = (Statement) cons.accept(this);
 	        }catch(ArrayIndexOutOfBoundsException e){
 	        	//IF the body throws this exception, it means that no matter what the input,
 	        	//if this branch runs, it will cause the exception, so we can just assert that this
@@ -824,7 +834,7 @@ public class PartialEvaluator extends FEReplacer {
 	        	state.popChangeTracker();
 	        	throw e;
 	        }
-	        rcontrol.doneWithBlock(stmt.getCons());
+	        rcontrol.doneWithBlock(cons);
         }else{
         	StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
         	sa.setMsg( rcontrol.debugMsg() );
@@ -834,12 +844,12 @@ public class PartialEvaluator extends FEReplacer {
         assert state.getCTlevel() == ctlevel : "Somewhere we lost a ctlevel!! " + ctlevel + " != " + state.getCTlevel();
 
         ChangeTracker epms = null;
-        if (stmt.getAlt() != null){
+        if (alt != null){
             /* Attach inverse conditional to change tracker. */
             state.pushChangeTracker (vcond, true);
-            if( rcontrol.testBlock(stmt.getAlt()) ){
+            if( rcontrol.testBlock(alt) ){
 	        	try{
-	        		nvfalse = (Statement) stmt.getAlt().accept(this);
+	        		nvfalse = (Statement) alt.accept(this);
 	        	}catch(ArrayIndexOutOfBoundsException e){
 		        	state.popChangeTracker();
 		        	state.pushChangeTracker (vcond, true);
@@ -848,7 +858,7 @@ public class PartialEvaluator extends FEReplacer {
 		        	state.popChangeTracker();
 		        	throw e;
 		        }
-	        	rcontrol.doneWithBlock(stmt.getAlt());
+	        	rcontrol.doneWithBlock(alt);
             }else{
             	StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
             	sa.setMsg( rcontrol.debugMsg() );
