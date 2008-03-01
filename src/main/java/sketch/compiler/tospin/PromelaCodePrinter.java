@@ -112,8 +112,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		List<Parameter> params = func.getParams ();
 
 		printTab ();
-		print ("proctype "+ func.getName ()
-			   +" (int __this"+ ((params.size () == 0) ? "" : "; "));
+		print ("proctype "+ func.getName ()+" (");
 
 		for (int i = 0; i < params.size (); ++i) {
 			Parameter param = params.get (i);

@@ -195,6 +195,34 @@ public class SpinPreprocessor extends FEReplacer {
 		}
 	}
 
+    public Object visitFunction(Function func) {
+    	List<Parameter> newParam = new ArrayList<Parameter>();
+    	Iterator<Parameter> it = func.getParams().iterator();
+    	boolean samePars = true;
+    	while(it.hasNext()){
+    		Parameter par = it.next();
+    		Parameter newPar = (Parameter) par.accept(this) ;
+    		boolean isLHS = lhsVars.contains (newPar.getName ());
+
+    		if(par != newPar || isLHS)
+    			samePars = false;
+    		if (!isLHS)
+    			newParam.add( newPar );
+    	}
+
+    	Type rtype = (Type)func.getReturnType().accept(this);
+
+    	if( func.getBody() == null  ){
+    		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
+    		return func;
+    	}
+        Statement newBody = (Statement)func.getBody().accept(this);
+        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
+        return new Function(func, func.getCls(),
+                            func.getName(), rtype,
+                            newParam, func.getSpecification(), newBody);
+    }
+
     public Object visitStmtFork(StmtFork loop){
     	HashSet<String> vars = varsPerLoop.get(loop);
     	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
@@ -213,8 +241,6 @@ public class SpinPreprocessor extends FEReplacer {
 
     	generatedFuncs.add(fun);
 
-    	// XXX/cgjones: hack.  Should handle thread ID better.
-    	actuals.add (0, new ExprVar (cx, decl.getName (0)));
     	ExprFunCall fcall = new ExprFunCall(cx, fname, actuals);
     	Expression niter = (Expression) loop.getIter().accept(this);
     	assert decl.getNumVars() == 1;
@@ -233,7 +259,7 @@ public class SpinPreprocessor extends FEReplacer {
     	ivname = decl.getName(0) + "_2_";	// cheap!
     	ndecl = new StmtVarDecl(cx, decl.getType(0), ivname, ExprConstInt.zero);
     	ivar = new ExprVar(cx, ivname);
-    	cmp = new ExprBinary(cx, ExprBinary.BINOP_LT, ivar, niter);
+    	cmp = new ExprBinary(ivar, "<", niter);
     	incr = new StmtAssign(ivar, new ExprBinary(ivar, "+", new ExprConstInt(1)));
     	List<Statement> joinBody =
     		Collections.singletonList ((Statement) new StmtJoin (cx, new SJRoundRobin (cx, new ExprVar (cx, ivname))));
