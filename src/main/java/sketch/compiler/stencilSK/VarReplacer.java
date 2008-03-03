@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
@@ -14,16 +15,16 @@ import streamit.frontend.nodes.StmtVarDecl;
 
 
 
-class VarReplacer extends FEReplacer{
+public class VarReplacer extends FEReplacer{
 	String oldName;
 	Expression newName;
 
-	VarReplacer(String oldName, String newName){
+	public VarReplacer(String oldName, String newName){
 		this.oldName = oldName;
 		this.newName = new ExprVar((FEContext) null, newName);
 	}
 
-	VarReplacer(String oldName, Expression newName){
+	public VarReplacer(String oldName, Expression newName){
 		this.oldName = oldName;
 		this.newName = newName;
 	}
@@ -85,12 +86,14 @@ class VarReplacer extends FEReplacer{
             		assert false : "This has not yet been implemented. Please implemented.";
             	}
             }else{
-            	//In this case, we have to search through all the variables that appear
-            	//in newName, and if any of them match name, we must rename this variable
-            	//with a fresh name.
-            	assert false : "Not yet implemented";
-            	if( name.equals(oldName) ){
-            		assert false : "This has not been implemented";
+            	if(!(newName instanceof ExprConstInt)){
+//            		In this case, we have to search through all the variables that appear
+                	//in newName, and if any of them match name, we must rename this variable
+                	//with a fresh name.
+                	assert false : "Not yet implemented";
+                	if( name.equals(oldName) ){
+                		assert false : "This has not been implemented";
+                	}	
             	}
             }
 
