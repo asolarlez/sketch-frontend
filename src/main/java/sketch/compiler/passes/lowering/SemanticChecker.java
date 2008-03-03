@@ -83,6 +83,7 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 import streamit.frontend.nodes.UnrecognizedVariableException;
 import streamit.frontend.nodes.ExprArrayRange.Range;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
@@ -991,6 +992,11 @@ public class SemanticChecker
 							}
 						}
 					}
+					
+					if(type instanceof TypeStruct || type instanceof TypeStructRef){
+						report(field, "You can not have global pointers. Globals can only be constant integers.");
+					}
+					
 				}
 
 				return super.visitFieldDecl(field);

@@ -5,8 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Map.Entry;
@@ -18,6 +20,7 @@ import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprNullPtr;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
@@ -40,6 +43,8 @@ import streamit.frontend.parallelEncoder.BreakParallelFunction;
 import streamit.frontend.parallelEncoder.CFGforPloop;
 import streamit.frontend.parallelEncoder.ExtractPreParallelSection;
 import streamit.frontend.parallelEncoder.VarSetReplacer;
+import streamit.frontend.passes.CollectGlobalTags;
+import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
@@ -60,6 +65,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	Program current;
 	BreakParallelFunction parts;
 	Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
+	Set<Object> globalTags;
 
 	/**
 	 * Control flow graph
@@ -80,6 +86,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 	VarSetReplacer[] localRepl;
+	Queue<step>[] stepQueues;
 
 	int nthreads;
 
@@ -105,12 +112,16 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 		bodyl.addAll(parts.globalDecls);
 
-		
+		CollectGlobalTags gtags = new CollectGlobalTags(parts.globalDecls);
+		parts.ploop.accept(gtags);
+		globalTags = gtags.oset;
 
 		localRepl = new VarSetReplacer[nthreads];
+		stepQueues = new Queue[nthreads];
 		for(int i=0; i<nthreads; ++i){
 			localRepl[i] = new VarSetReplacer();
 			populateVarReplacer(locals.iterator(), new ExprConstInt(i), localRepl[i]);
+			stepQueues[i] = new LinkedList<step>();
 		}
 	}
 
@@ -300,11 +311,23 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				//assert svd.getInit(i) == null : "At this stage, declarations shouldn't have initializers";
 				String nname = oname + "_p";
 				Type nt = new TypeArray(ot, nthreads);
-				addStatement(new StmtVarDecl(cx, nt, nname, null));
+				Expression init ;
+				
+				Type base = nt;
+				while(base instanceof TypeArray){
+					base = ((TypeArray)base).getBase();
+				}
+				if(base instanceof TypePrimitive){
+					init = ExprConstInt.zero;
+				}else{
+					init = ExprNullPtr.nullPtr;
+				}
+				addStatement(new StmtVarDecl(cx, nt, nname, init));
 			}
 		}
 	}
 
+	
 
 	public void mergeWithCurrent(CEtrace trace){
 		if (verbose ())
@@ -331,7 +354,18 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				lastNode[cur.thread-1] = addBlock(cur.stmt, cur.thread-1, lastNode[cur.thread-1]);
+				int thread = cur.thread-1;
+				stepQueues[thread].add(cur);
+				
+				if( globalTags.contains(cur.stmt)  ){
+					Queue<step> qs = stepQueues[thread];					
+					while( qs.size() > 0  ){
+						step tmp = qs.remove();
+						lastNode[thread] = addBlock(tmp.stmt, thread, lastNode[thread]);
+					}
+				}
+				
+				
 			}
 		}
 		addStatement(parts.postpar);
@@ -346,6 +380,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 		mergeWithCurrent((CEtrace)counterExample);
 
+		current = (Program)current.accept(new EliminateMultiDimArrays());
 		boolean tmp = partialEvalAndSolve(current);
 
 		return tmp ? getOracle() : null;

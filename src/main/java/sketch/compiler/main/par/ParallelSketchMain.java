@@ -4,6 +4,7 @@ import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
+import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.passes.AssembleInitializers;
@@ -13,6 +14,7 @@ import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SimpleLoopUnroller;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
 import streamit.frontend.solvers.SpinVerifier;
@@ -100,20 +102,27 @@ public class ToPSbitII extends ToSBit {
 		super.lowerIRToJava();
 
 		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+		prog = (Program) prog.accept(new SimpleLoopUnroller());
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		prog = (Program) prog.accept(new NumberStatements());
 	}
 
 	public Program postprocessProgram (Program p) {
 		p = (Program) p.accept (new EliminateStarStatic (oracle));
 
-		// TODO: these passes may not be semantically valid under concurrency
-
+		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+				
 		p = (Program)p.accept(new FlattenStmtBlocks());
+		if(params.flagEquals("showphase", "postproc")) dump(p, "After partially evaluating generated code.");
 		p = (Program)p.accept(new EliminateTransAssns());
-		//p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		//System.out.println("=========  After ElimTransAssign  =========");
+		if(params.flagEquals("showphase", "taelim")) dump(p, "After Eliminating transitive assignments.");
+		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
+		//System.out.println("=========  After ElimDeadCode  =========");
+		//finalCode.accept( new SimpleCodePrinter() );
 		p = (Program)p.accept(new SimplifyVarNames());
 		p = (Program)p.accept(new AssembleInitializers());
-
+		if(params.flagEquals("showphase", "final")) dump(p, "After Dead Code elimination.");
 		return p;
 	}
 
