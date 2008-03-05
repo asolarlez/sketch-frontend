@@ -15,7 +15,8 @@ bit testSK(int in) implements test{
 			global = local;	
 		}
 	}
-	return global == in + 1 || global == in + 2;
+	assert global == in + 1 || global == in + 2;
+	return 1;
 }
 
 

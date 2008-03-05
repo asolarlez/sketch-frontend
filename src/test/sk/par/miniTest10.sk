@@ -32,7 +32,8 @@ bit testSK(int in) implements test{
 		}
 			
 	}
-	return out == in + 1;
+	assert out == in + 1;
+	return 1;
 }
 
 

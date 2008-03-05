@@ -60,6 +60,7 @@ bit testSK(bit in) implements test{
 	int i1 = dequeue(q);
 	int i2 = dequeue(q);
 	int i3 = dequeue(q);
-	return i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6));
+	assert i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6));
+	return 1;
 }
 

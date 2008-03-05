@@ -146,7 +146,12 @@ public class ResolveMax {
 	}
 
 
-
+	/**
+	 * 
+	 * 
+	 * @author asolar
+	 *
+	 */
 	class CollectConstraints extends FENullVisitor{
 
 		boolean isRoot=true;
