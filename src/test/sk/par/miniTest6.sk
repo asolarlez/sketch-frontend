@@ -22,11 +22,12 @@ bit testSK(int in) implements test{
 		int local;
 		lock(1);
 		local = global.val;
-		local = local + 1;
+		local = local + ??;
 		global.val = local;
 		unlock(1);		
 	}
-	return global.val == in + 2;
+	assert global.val == in + 2;
+	return 1;
 }
 
 

@@ -22,7 +22,8 @@ bit testSK(int in) implements test{
 		x = y;
 	}
 	
-	return (x == in + ??) || (x == in + ??) || (x == in+2);
+	assert (x == in + ??) || (x == in + ??) || (x == in+2);
+	return 1;
 }
 
 

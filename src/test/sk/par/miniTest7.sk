@@ -33,7 +33,8 @@ bit testSK(bit[N] in) implements test{
 		rv = rv && (out[i] == in[i]);
 	}
 	
-	return rv;
+	assert rv;
+	return 1;
 }
 
 

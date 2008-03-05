@@ -12,7 +12,7 @@ bit testSK() implements test{
 	{
 		int y;
 		x = in;
-		ploop(int i; 2){
+		fork(int i; 2){
 			int local;
 			local = x;
 			local = local + 1;
@@ -22,7 +22,8 @@ bit testSK() implements test{
 		x = y;
 	}
 	
-	return (x == in + 3) || (x == in+2);
+	assert (x == in + 3) || (x == in+2);
+	return 1;
 }
 
 
