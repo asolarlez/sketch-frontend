@@ -27,7 +27,8 @@ bit testSK(bit in) implements test{
 			l = l.next;
 		}
 	}
-	return  n.val == 2 && n.next.val == 3 && n.next.next.val == 4;
+	assert  n.val == 2 && n.next.val == 3 && n.next.next.val == 4;
+	return 1;
 }
 
 
