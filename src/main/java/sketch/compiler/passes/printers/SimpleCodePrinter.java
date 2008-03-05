@@ -225,8 +225,12 @@ public class SimpleCodePrinter extends CodePrinter
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block){
 		if(outtags && block.getTag() != null){ out.println("T="+block.getTag()); }
-		printLine("atomic");
-		visitStmtBlock (block);
+		if(block.isCond()){
+			printLine("atomic(" + block.getCond().accept(this) + ")");
+		}else{
+			printLine("atomic");
+		}
+		visitStmtBlock (block.getBlock());
 		return block;
 	}
 

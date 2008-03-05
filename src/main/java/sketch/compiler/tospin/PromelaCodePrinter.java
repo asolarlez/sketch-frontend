@@ -231,7 +231,11 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		indent ();
 		printStmtNumber (block);
 		enterAtomic ();
-		visitStmtBlock (block);
+		if(block.isCond()){ 
+			block.getCond().accept(this); 
+			printlnIndent("->"); 
+		}
+		visitStmtBlock (block.getBlock());
 		leaveAtomic ();
 		dedent ();
 		printlnIndent ("}");
@@ -338,7 +342,8 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 			stmt.getAlt ().accept (this);
 		} else {
 			indent ();
-			printlnIndent ("skip;");
+			printStmtNumber (stmt);
+			//printlnIndent ("skip;");
 			dedent ();
 		}
 		printlnIndent ("fi;");
@@ -371,9 +376,20 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	public Object visitStmtVarDecl (StmtVarDecl svd) {
 		quiet ();  super.visitStmtVarDecl (svd);  unquiet ();
 		for (int i = 0; i < svd.getNumVars (); ++i) {
+			
 			printTab ();
-			printDecl (svd.getType (i), svd.getName (i), svd.getInit (i));
+			printDecl (svd.getType (i), svd.getName (i), /*svd.getInit (i)*/ null);
 			println (";");
+			if(svd.getInit(i)!= null){
+				enterNumberedStmt(svd);
+				printTab ();
+				print(svd.getName(i));
+				print (" = ");
+				svd.getInit(i).accept (this);
+				println (";");				
+				leaveNumberedStmt(svd);
+			}
+			
 		}
 		return svd;
 
