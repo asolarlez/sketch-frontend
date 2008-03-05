@@ -72,23 +72,25 @@ void setAdd(Set s, int key){
 	Node n = newNode(key);
 	bit outMore = 1;
 	for(int i=0; i<2; ++i){		
+		if(outMore){
 			Node cur = null; 
-			Node pred = null;
-			
-			if(outMore){ cur = s.head; }
-			if(outMore){ pred = null; }
+			Node pred = null;			
+			cur = s.head;
+			pred = null; 
 			bit more = 1;
 
 			for(int j=0; j<3; ++j){
 				bit tmp = more && cur.val < key;
-				if(outMore && tmp){ pred = cur;	}
-				if(outMore && tmp){cur = cur.next; }
-				if(outMore && !tmp){ more = 0;	}
+				if(tmp){
+					pred = cur;	
+					cur = cur.next;
+				}else{
+					more = 0;
+				}
 			}
 			// Node lk = null;
 			//if(outMore){ lk = pred.next; }
-			if(outMore){ atomic{ lock(0); } }
-			if(outMore){ 
+			lock(0); 
 				atomic{
 					if(pred.next == cur){
 				 		n.next = cur;
@@ -96,8 +98,8 @@ void setAdd(Set s, int key){
 				 		outMore = 0;
 					}
 				}
-			}
-			if(outMore){atomic{  unlock(0);  }}
+			unlock(0);
+		}
 		
 	}
 }
@@ -125,7 +127,8 @@ bit testSK(bit in) implements test{
 	Node n2 = n1.next;
 	Node n3 = n2.next;
 	Node n4 = n3.next;
-	return n1.val == 0 && n2.val == 6 && n3.val == 7 && n4.val == 9;
+	assert n1.val == 0 && n2.val == 6 && n3.val == 7 && n4.val == 9;	
+	return 1;
 }
 
 
