@@ -8,6 +8,7 @@ import java.util.Collections;
 import streamit.frontend.nodes.ExprNew;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtVarDecl;
