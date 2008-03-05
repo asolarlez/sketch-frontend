@@ -98,20 +98,20 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	 */
 	public ExprArrayRange(FENode node, Expression base, Expression offset)
 	{
-		this(base, Collections.singletonList(new RangeLen(offset)));
+		this(node, base, Collections.singletonList(new RangeLen(offset)));
 	}
 	public ExprArrayRange(FENode node, Expression base, RangeLen rl)
 	{
-		this(base, Collections.singletonList(rl));
+		this(node, base, Collections.singletonList(rl));
 	}
 	public ExprArrayRange(FENode node, Expression base, RangeLen rl, boolean unchecked)
 	{
-		this(base, Collections.singletonList(rl), unchecked);
+		this(node, base, Collections.singletonList(rl), unchecked);
 	}
 
 	public ExprArrayRange(FENode node, Expression base, Expression offset, boolean unchecked)
 	{
-		this(base, Collections.singletonList(new RangeLen(offset)));
+		this(node, base, Collections.singletonList(new RangeLen(offset)));
 		setUnchecked(unchecked);
 	}
 
@@ -125,6 +125,27 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	}
 
 
+	/**
+	 * Construct a new array range Expression. "members" must be a
+	 * list containing Range and RangeLen objects.
+	 */
+	public ExprArrayRange(FENode cx, Expression base, List members)
+	{
+		super(cx);
+		this.base=base;
+		this.members=members;
+		if(members.isEmpty()) throw new IllegalArgumentException();
+	}
+	public ExprArrayRange(FENode cx, Expression base, List members, boolean unchecked)
+	{
+		super(cx);
+		this.base=base;
+		this.members=members;
+		if(members.isEmpty()) throw new IllegalArgumentException();
+		setUnchecked(unchecked);
+	}
+	
+	
 	/**
 	 * Construct a new array range Expression. "members" must be a
 	 * list containing Range and RangeLen objects.
