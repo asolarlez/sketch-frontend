@@ -7,9 +7,11 @@ import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.EliminateLockUnlock;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
@@ -37,6 +39,7 @@ public class ToPSbitII extends ToSBit {
 	public void run() {
 		parseProgram();
 
+		prog = (Program)prog.accept(new LockPreprocessing());
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		//dump (prog, "After replacing constants:");
 		if (!SemanticChecker.check(prog))
@@ -65,9 +68,12 @@ public class ToPSbitII extends ToSBit {
 		Verifier verif = createVerif(prog);
 
 		ValueOracle ora = randomOracle(prog);
+		
 		boolean success = false;
 		do{
+			
 			CounterExample cex = verif.verify( ora );
+			
 			if(cex == null){
 				success = true;
 				break;
@@ -103,6 +109,8 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
+		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
+		//dump(prog, "After elim locks");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		prog = (Program) prog.accept(new NumberStatements());
 	}
