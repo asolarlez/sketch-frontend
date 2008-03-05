@@ -119,7 +119,8 @@ bit testSK(int in) implements test{
 	Node n2 = n1.next;
 	Node n3 = n2.next;
 	Node n4 = n3.next;
-	return n1.val == 0 && n2.val == 5 && ( (n3.val == 6 && n4.val == 7) || (n3.val == 7 && n4.val == 6));
+	assert n1.val == 0 && n2.val == 5 && ( (n3.val == 6 && n4.val == 7) || (n3.val == 7 && n4.val == 6));
+	return 1;
 }
 
 
