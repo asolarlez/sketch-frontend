@@ -20,17 +20,24 @@ import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNullPtr;
+import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
@@ -50,6 +57,9 @@ import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
+
+
+
 public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	/**
@@ -67,6 +77,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
 	Set<Object> globalTags;
 
+	ExprVar assumeFlag = new ExprVar((FENode)null, "_AF"); 
+	
 	/**
 	 * Control flow graph
 	 */
@@ -84,6 +96,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	List<Statement> bodyl = new ArrayList<Statement>();
 	Stack<List<Statement> > bodyStack = new Stack<List<Statement>>();
 
+	Set<StmtVarDecl> globalDecls;
 
 	VarSetReplacer[] localRepl;
 	Queue<step>[] stepQueues;
@@ -95,9 +108,11 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		this.prog = prog;
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
+		this.prog.accept(new SimpleCodePrinter().outputTags());
 		parfun = ps.parfun;
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
+		this.prog.accept(new SimpleCodePrinter().outputTags());
 		cfg = CFGforPloop.buildCFG(parts.ploop, locals);
 		nthreads = parts.ploop.getIter().getIValue();
 		
@@ -110,8 +125,14 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				invNodeMap.put(oit.next(), e.getKey());
 			}
 		}
-		bodyl.addAll(parts.globalDecls);
-
+		globalDecls = new HashSet<StmtVarDecl>();
+		globalDecls.addAll(parts.globalDecls);
+		globalDecls.add(new StmtVarDecl(prog, TypePrimitive.bittype, assumeFlag.getName(), ExprConstInt.one));
+		
+		
+		bodyl.addAll(globalDecls);
+		
+		
 		CollectGlobalTags gtags = new CollectGlobalTags(parts.globalDecls);
 		parts.ploop.accept(gtags);
 		globalTags = gtags.oset;
@@ -169,13 +190,17 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			popBlock();
 		}
 	}
+	
+	
+	public Statement addAssume(Expression cond){
+		return new StmtIfThen( cond, cond, new StmtAssign(assumeFlag, ExprConstInt.zero), null );		
+	}
+	
 
 
 	public Statement addAssume(CFGNode lastNode, int thread, EdgePair ep){
-		/**
-		 * This is overly conservative. Need a better implementation of this.
-		 */
-		return new StmtAssert(   new ExprBinary( new ExprArrayRange(new ExprVar(lastNode.getExpr(), "_ind_p"), new ExprConstInt(thread)), "!=", new ExprConstInt(ep.label.intValue())) );
+		Expression cond = new ExprBinary( new ExprArrayRange(new ExprVar(lastNode.getExpr(), "_ind_p"), new ExprConstInt(thread)), "==", new ExprConstInt(ep.label.intValue()));
+		return addAssume(cond);		
 	}
 
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
@@ -248,8 +273,27 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		tmpl.add( new StmtBlock((FENode)null, bodyl));
 		bodyl = tmpl;
 	}
+	
+	
 	public void addStatement(Statement s){
-		bodyl.add(s);
+		class PreprocStmt extends FEReplacer{
+			@Override
+			public Object visitStmtAssert(StmtAssert stmt){
+				return new StmtIfThen(stmt, assumeFlag, stmt, null);
+			}
+			
+			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
+				if(stmt.isCond()){
+					Statement s = addAssume(new ExprUnary("!", stmt.getCond()));
+					Statement s2 = (Statement)super.visitStmtAtomicBlock(stmt);
+					return new StmtBlock(s, s2);
+				}else{
+					return super.visitStmtAtomicBlock(stmt);
+				}
+			}
+			
+		};
+		bodyl.add(s.doStatement(new PreprocStmt()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -333,6 +377,18 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		if (verbose ())
 			prog.accept(new SimpleCodePrinter().outputTags());
 		pushBlock();
+		
+		if(current != null){
+			for(Iterator<StmtVarDecl> it = globalDecls.iterator(); it.hasNext(); ){
+				StmtVarDecl svd = it.next();
+				for(int i=0; i<svd.getNumVars(); ++i){
+					if(svd.getInit(i)!= null){
+						addStatement(new StmtAssign(new ExprVar(svd, svd.getName(i)), svd.getInit(i)));
+					}
+				}
+			}
+		}
+		
 		addStatement(parts.prepar);
 
 		declArrFromScalars(locals.iterator(), new ExprConstInt(nthreads));
@@ -368,7 +424,26 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				
 			}
 		}
-		addStatement(parts.postpar);
+		
+		boolean allEnd = true;
+		for(int thread=0; thread<nthreads; ++thread){
+			Queue<step> qs = stepQueues[thread];					
+			while( qs.size() > 0  ){
+				step tmp = qs.remove();
+				lastNode[thread] = addBlock(tmp.stmt, thread, lastNode[thread]);
+			}
+			
+			if(lastNode[thread] != cfg.getExit()){
+				EdgePair ep = lastNode[thread].getSuccs().get(0);
+				if(ep.node != cfg.getExit() || !ep.node.isEmpty()){				
+					allEnd = false;
+				}
+			}
+		}
+		
+		if(allEnd){
+			addStatement(parts.postpar);
+		}
 		popBlock();
 		closeCurrent();
 		if (verbose ())
@@ -389,5 +464,5 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	protected boolean verbose () {
 		return params.flagValue ("verbosity") >= 3;
 	}
-
+	
 }
