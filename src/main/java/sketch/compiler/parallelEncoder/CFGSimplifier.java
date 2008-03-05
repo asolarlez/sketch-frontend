@@ -226,6 +226,7 @@ public class CFGSimplifier {
 	/**
 	 * This routine creates clusters from the CFG by the following rules.
 	 * The cluster gets started by putting the root in the cstack.
+	 * The cstack is the stack for the current cluster.
 	 *
 	 * Each entry in the Cstack has a bit that says whether the path to it has been tainted or not.
 	 * The tainted label is set by the following rules:
@@ -365,8 +366,8 @@ public class CFGSimplifier {
 											stack.push(succOfCurr);
 											visited.add(succOfCurr);
 										}else{
-											//If the path was not tainted, we add it, but taint the path.
-											waitlist.put(succOfCurr, T);
+											//If the path was not tainted, we add it to the waitlist, but mark it as global.
+											waitlist.put(succOfCurr, G);
 										}
 									}
 								}
@@ -456,7 +457,7 @@ public class CFGSimplifier {
 			hn.addAll(visited);
 			Statement st = stmtForNode(suc[1], n, c, ind, lst, hn);
 
-			return new StmtIfThen(n.getExpr(), n.getExpr(), st, sf);
+			return new StmtIfThen(n.getStmt(), n.getExpr(), st, sf);
 		}
 		return null;
 	}
