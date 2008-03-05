@@ -400,7 +400,7 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 
 	public Object visitStmtAtomicBlock (StmtAtomicBlock sab) {
 		printlnIndent ("atomic");
-		visitStmtBlock (sab);
+		visitStmtBlock (sab.getBlock());
 		return sab;
 	}
 
