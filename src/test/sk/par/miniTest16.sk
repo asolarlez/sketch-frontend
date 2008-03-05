@@ -37,24 +37,22 @@ Node someNext(Node n){
 }
 
 Node gen(Queue q){
-	Node n = baseQ(q);
-	return someNext(n);	
+	Node n = baseQ(q); // -> ( q.tail | q.prevHead );
+	return someNext(n);	// ( q.tail | q.prevHead)(.next)*
 }
 
 void enqueue(Queue q, int i){
-	Node n = null;
-	atomic{
-		n = new Node();
-	}
+	Node n =new Node(); 	
 	n.val = i;
 	n.next = null;
+	
 	Node ot = null;
 	reorder{
 		ot.next = n;
 		atomic{
 			ot = gen(q);
-			q.tail = n; 
-		}		
+			q.tail = n;
+		}
 	}
 }
 
@@ -85,6 +83,7 @@ bit testSK(bit in) implements test{
 	int i1 = dequeue(q);
 	int i2 = dequeue(q);
 	int i3 = dequeue(q);
-	return i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6));
+	assert i1 == 5 && ( (i2 == 6 && i3 == 7) || (i2 == 7 && i3 == 6));
+	return 1;
 }
 
