@@ -121,7 +121,8 @@ bit testSK(bit in) implements test{
 	Node n2 = n1.next;
 	Node n3 = n2.next;
 	Node n4 = n3.next;
-	return n1.val == 0 && n2.val == 6 && n3.val == 7 && n4.val == 9;
+	assert n1.val == 0 && n2.val == 6 && n3.val == 7 && n4.val == 9;
+	return 1;
 }
 
 
