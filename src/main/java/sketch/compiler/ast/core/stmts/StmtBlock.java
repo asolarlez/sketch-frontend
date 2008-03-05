@@ -36,7 +36,7 @@ public class StmtBlock extends Statement
 
     /** Create a new StmtBlock with the specified ordered list of
      * statements. */
-    public StmtBlock(FENode context, List<Statement> stmts)
+    public StmtBlock(FENode context, List<? extends Statement> stmts)
     {
         super(context);
         this.stmts = Collections.unmodifiableList(stmts);
@@ -46,7 +46,7 @@ public class StmtBlock extends Statement
      * statements.
      * @deprecated
      */
-    public StmtBlock(FEContext context, List<Statement> stmts)
+    public StmtBlock(FEContext context, List<? extends Statement> stmts)
     {
         super(context);
         this.stmts = Collections.unmodifiableList(stmts);
