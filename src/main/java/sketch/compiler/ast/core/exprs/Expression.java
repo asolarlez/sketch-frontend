@@ -76,4 +76,8 @@ abstract public class Expression extends FENode
     	}
     	return super.equals(o);
     }
+    
+    public Expression doExpr(FEVisitor visit){
+    	return (Expression) this.accept(visit);
+    }
 }

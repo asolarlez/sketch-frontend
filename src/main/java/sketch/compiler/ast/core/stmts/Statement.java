@@ -40,4 +40,8 @@ abstract public class Statement extends FENode
     }
 
     public boolean isBlock () { return false; }
+    
+    public Statement doStatement(FEVisitor visit){
+    	return (Statement) this.accept(visit);
+    }
 }
