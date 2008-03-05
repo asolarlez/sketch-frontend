@@ -48,7 +48,8 @@ bit testSK(int in) implements test{
 			atomic{ unlock(0); }	
 		}
 	}
-	return  global == in + 2;
+	assert  global == in + 2;
+	return 1;
 }
 
 
