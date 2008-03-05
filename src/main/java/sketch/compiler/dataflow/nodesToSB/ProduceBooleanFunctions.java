@@ -293,9 +293,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	@Override
 	public Object visitStmtAssign(StmtAssign s){
 		if(tracing){
-			if(s != tmp && s.getCx() != null){
-				System.out.println(s);
-				tmp = s;
+			if(s.getCx() != tmp && s.getCx() != null){
+				System.out.println(s.getCx()+ " : \t" + s);
+				tmp = s.getCx();
 			}
 		}
 		return super.visitStmtAssign(s);
