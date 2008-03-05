@@ -215,7 +215,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 		StructTracker struct = structs.get (((TypeStruct)t).getName ());
 		String field = ef.getName ();
 
-		return new ExprArrayRange (struct.getFieldArray (field),
+		return new ExprArrayRange (ef, struct.getFieldArray (field),
 				(Expression) ef.getLeft ().accept (this));
 	}
 
