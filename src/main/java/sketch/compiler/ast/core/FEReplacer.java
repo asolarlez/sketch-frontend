@@ -493,15 +493,19 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
-    	Statement tmp = (Statement)visitStmtBlock (ab);
+    	Statement tmp = ab.getBlock().doStatement(this);
+    	Expression exp = ab.getCond();
+    	if(ab.isCond()){
+    		exp = exp.doExpr(this);
+    	}
     	if (tmp == null){
     		return null;
-    	}else if (tmp != ab){
+    	}else if (tmp != ab.getBlock() || exp != ab.getCond()){
     		if(tmp instanceof StmtBlock){
     			StmtBlock sb = (StmtBlock) tmp;
-    			return new StmtAtomicBlock (sb, sb.getStmts ());
+    			return new StmtAtomicBlock (ab, sb, exp, ab.isCond());
     		}else{
-    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp));
+    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp, ab.isCond());
     		}
     	}else{
     		return ab;
