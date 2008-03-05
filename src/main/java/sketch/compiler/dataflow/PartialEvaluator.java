@@ -2,6 +2,7 @@ package streamit.frontend.experimental;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,7 @@ import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
@@ -147,7 +149,7 @@ public class PartialEvaluator extends FEReplacer {
 		try{
 			return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked() || uncheckedArrays);
 		}catch(ArrayIndexOutOfBoundsException e){
-			throw new ArrayIndexOutOfBoundsException( e.getMessage() + ":" + exp );
+			throw new ArrayIndexOutOfBoundsException( exp.getCx() + ":"  + e.getMessage() + ":" + exp );
 		}
 	}
 
@@ -1107,6 +1109,30 @@ public class PartialEvaluator extends FEReplacer {
 	    return funSelector.selectFunctions(spec);
     }
 
+    
+    public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
+    	Statement tmp = ab.getBlock().doStatement(this);
+    	Expression exp = ab.getCond();
+    	if(ab.isCond()){
+    		abstractValue av =(abstractValue) exp.accept(this);
+    		if(isReplacer){
+    			exp = exprRV;
+    		}
+    	}
+    	if(!isReplacer) return ab;
+    	if (tmp == null){
+    		return null;
+    	}else if (tmp != ab.getBlock() || exp != ab.getCond()){
+    		if(tmp instanceof StmtBlock){
+    			StmtBlock sb = (StmtBlock) tmp;
+    			return new StmtAtomicBlock (sb, sb.getStmts (), exp, ab.isCond());
+    		}else{
+    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp, ab.isCond());
+    		}
+    	}else{
+    		return ab;
+    	}
+    }
 
 
 
