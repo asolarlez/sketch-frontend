@@ -192,18 +192,28 @@ public class SymbolTableVisitor extends FEReplacer
         return super.visitFieldDecl(field);
     }
 
+    
+	@Override
+	public Object visitParameter(Parameter par){
+		Type t = (Type) par.getType().accept(this);
+
+		symtab.registerVar(par.getName(),
+                actualType(t),
+                par,
+                SymbolTable.KIND_FUNC_PARAM);
+		
+		if( t == par.getType()){
+    		return par;
+    	}else{
+    		return new Parameter(t, par.getName(), par.getPtype() );
+    	}
+	}
+    
+    
     public Object visitFunction(Function func)
     {
         SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);
-        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); )
-        {
-            Parameter param = (Parameter)iter.next();
-            symtab.registerVar(param.getName(),
-                               actualType(param.getType()),
-                               param,
-                               SymbolTable.KIND_FUNC_PARAM);
-        }
+        symtab = new SymbolTable(symtab);        
         Object result = super.visitFunction(func);
         symtab = oldSymTab;
         return result;
