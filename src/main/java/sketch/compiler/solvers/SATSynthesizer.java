@@ -108,7 +108,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		this.prog = prog;
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
-		this.prog.accept(new SimpleCodePrinter().outputTags());
+		//this.prog.accept(new SimpleCodePrinter().outputTags());
 		parfun = ps.parfun;
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
@@ -410,6 +410,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
+				System.out.print(cur);
 				int thread = cur.thread-1;
 				stepQueues[thread].add(cur);
 				
@@ -424,6 +425,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				
 			}
 		}
+		System.out.println("");
 		
 		boolean allEnd = true;
 		for(int thread=0; thread<nthreads; ++thread){
@@ -433,11 +435,14 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				lastNode[thread] = addBlock(tmp.stmt, thread, lastNode[thread]);
 			}
 			
-			if(lastNode[thread] != cfg.getExit()){
+			if(lastNode[thread]!= null && lastNode[thread] != cfg.getExit()){
 				EdgePair ep = lastNode[thread].getSuccs().get(0);
 				if(ep.node != cfg.getExit() || !ep.node.isEmpty()){				
 					allEnd = false;
 				}
+			}
+			if(lastNode[thread] == null){
+				allEnd = false;
 			}
 		}
 		
