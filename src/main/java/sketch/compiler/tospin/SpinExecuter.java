@@ -139,7 +139,7 @@ public class SpinExecuter {
 		ProcessStatus status = execDebug (
 				CC, "-w", "-o", prog.getCanonicalPath (),
 				"-D_POSIX_SOURCE", "-DMEMLIM=128", "-DSAFETY", "-DNOCLAIM",
-				"-DXUSAFE", "-DNOFAIR", "-DVECTORSZ=1500",
+				"-DXUSAFE", "-DNOFAIR", "-DVECTORSZ=30500",
 				code.getCanonicalPath ());
 		assert 0 == status.exitCode;
 		log ("Compilation successful");
