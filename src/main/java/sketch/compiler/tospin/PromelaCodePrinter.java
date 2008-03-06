@@ -11,6 +11,7 @@ import java.util.List;
 import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
@@ -163,6 +164,10 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		return func;
 	}
 
+
+	
+	
+	
 	public Object visitExprFunCall (ExprFunCall call) {
 		List<Expression> params = call.getParams ();
 
@@ -410,6 +415,20 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		return stmt;
 	}
 
+	
+	public Object visitExprTypeCast (ExprTypeCast etc) {
+		
+		Type t = getType(etc.getExpr());
+		if(t.equals(etc.getType())){
+			print ("(");
+			etc.getExpr ().accept (this);
+			print (")");
+		}else{
+			assert false : "CASTS NOT YET IMPLEMENTED;";
+		}		
+		return etc;
+	}
+	
 	public Object visitTypePrimitive (TypePrimitive tp) {
 		if (TypePrimitive.TYPE_BOOLEAN == tp.getType ()) {
 			print ("bool");
