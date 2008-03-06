@@ -90,6 +90,25 @@ public class ConstantReplacer extends FEReplacer {
 		return new ExprConstInt(exp,val);
 	}
 
+	
+	public Object visitExprUnary(ExprUnary exp){
+		exp = (ExprUnary) super.visitExprUnary(exp);
+		
+		if(exp.getExpr() instanceof ExprConstInt){
+			int or = ((ExprConstInt)exp.getExpr()).getVal();
+			final int v;
+			switch(exp.getOp()){
+			case ExprUnary.UNOP_NEG : v = -or; break;
+			case ExprUnary.UNOP_NOT : v = 1 - or; break;
+				default: return exp;
+			}
+			return new ExprConstInt(exp,v);
+		}
+		return exp;
+		
+	}
+	
+	@Override
 	public Object visitExprBinary(ExprBinary exp) {
 		//first call "recursively" to handle substitutions
 		exp=(ExprBinary) super.visitExprBinary(exp);
