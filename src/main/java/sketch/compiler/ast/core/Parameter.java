@@ -42,8 +42,9 @@ public class Parameter extends FENode
     }
 
     public Parameter(Type type, String name, int ptype)
-    {
+    {    	
     	super((FENode)null);
+    	assert type != null;
         this.type = type;
         this.name = name;
         this.partype = ptype;
