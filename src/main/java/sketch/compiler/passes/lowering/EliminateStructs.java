@@ -83,6 +83,17 @@ public class EliminateStructs extends SymbolTableVisitor {
 		varGen = varGen_;
 	}
 
+	@Override
+	public Object visitParameter(Parameter par){
+		Type t = (Type) par.getType().accept(this);
+    	if( t == par.getType()){
+    		return par;
+    	}else{
+    		return new Parameter(t, par.getName(), par.getPtype() );
+    	}
+	}
+	
+	
 	/**
 	 * Add variable declarations to the body of 'func', and rewrite its body.
 	 */
@@ -431,7 +442,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return    An allocation guard
 	     */
 	    public StmtAssert makeAllocationGuard (FENode cx) {
-	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx));
+	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx), "Heap is too small. Make it bigger with the --heapsize flag");
 	    }
 
 	    /**
