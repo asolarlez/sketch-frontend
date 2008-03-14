@@ -9,32 +9,41 @@ import java.util.regex.Pattern;
 
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.passes.LowerLoopsToWhileLoops;
+import streamit.frontend.spin.Configuration;
+import streamit.frontend.spin.Executer;
+import streamit.frontend.spin.Preprocessor;
+import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tospin.SpinExecuter;
 
 /**
  * @author Chris Jones
  */
 public class SpinVerifier implements Verifier {
-	protected TempVarGen varGen;
 	protected Program prog;
+	protected Configuration config;
+	protected TempVarGen varGen;
 	protected boolean debug, cleanup;
 	protected static final String STEP_REGEX =
 		"^\\s*\\d+:\\s*proc\\s+(\\d+)[^\\[]+\\[_ = (\\d+)\\]$";
 
 	private String output;
 
-	public SpinVerifier (TempVarGen v, Program p) { this (v, p, false, true); }
-	public SpinVerifier (TempVarGen v, Program p, boolean _debug, boolean _cleanup) {
+	public SpinVerifier (TempVarGen v, Program p) {
+		this (v, p, new Configuration (), false, true);
+	}
+	public SpinVerifier (TempVarGen v, Program p, Configuration c,
+			boolean _debug, boolean _cleanup) {
 		varGen = v;
 		prog = p;
+		config = c;
 		debug = _debug;
 		cleanup = _cleanup;
 	}
 
 	public CounterExample verify(ValueOracle oracle) {
 		//SpinExecuter spin = SpinExecuter.makeExecuter (prog, oracle);
-		SpinExecuter spin = SpinExecuter.makeExecuter (varGen, prog, oracle, debug, cleanup);
+		Executer spin = Executer.makeExecuter (spinify (oracle), config, debug, cleanup);
 		try { spin.run (); } catch (IOException ioe) {
 			throw new RuntimeException ("Fatal error invoking spin", ioe);
 		}
@@ -59,6 +68,21 @@ public class SpinVerifier implements Verifier {
 		assert cex.steps.size () > 0 : "Uh-oh!  No steps in counterexample";
 
 		return cex;
+	}
+
+	/**
+	 * Insert the hole values in HOLEVALS into PROG, and return the
+	 * program resulting from this and other preprocessing steps.
+	 */
+	protected Program spinify (ValueOracle holeVals) {
+		Program p = (Program) prog.accept(new Preprocessor(varGen));
+
+		p = (Program) p.accept (new EliminateStarStatic (holeVals));
+		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
+		// TODO: might need other passes to make SPIN verification more
+		// efficient
+
+		return p;
 	}
 
 	/**

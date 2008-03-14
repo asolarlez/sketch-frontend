@@ -22,6 +22,7 @@ import streamit.frontend.solvers.SATSynthesizer;
 import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
+import streamit.frontend.spin.Configuration;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
@@ -68,12 +69,12 @@ public class ToPSbitII extends ToSBit {
 		Verifier verif = createVerif(prog);
 
 		ValueOracle ora = randomOracle(prog);
-		
+
 		boolean success = false;
 		do{
-			
+
 			CounterExample cex = verif.verify( ora );
-			
+
 			if(cex == null){
 				success = true;
 				break;
@@ -119,13 +120,13 @@ public class ToPSbitII extends ToSBit {
 		p = (Program) p.accept (new EliminateStarStatic (oracle));
 
 		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-				
+
 		p = (Program)p.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) dump(p, "After partially evaluating generated code.");
 		p = (Program)p.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(p, "After Eliminating transitive assignments.");
-		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
+		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		p = (Program)p.accept(new SimplifyVarNames());
@@ -145,7 +146,14 @@ public class ToPSbitII extends ToSBit {
 	public Verifier createVerif(Program p){
 		boolean debug = params.flagValue ("verbosity") >= 3;
 		boolean cleanup = !params.hasFlag ("keeptmpfiles");
-		return new SpinVerifier (varGen, p, debug, cleanup);
+		Configuration config = new Configuration ();
+
+		// Limit verification to safety properties only
+		config.detectCycles (false);
+
+		// can pass along command-line params to 'config' here
+
+		return new SpinVerifier (varGen, p, config, debug, cleanup);
 	}
 
 	public ValueOracle randomOracle(Program p){
