@@ -5,6 +5,8 @@ package streamit.misc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -24,6 +26,11 @@ public class SynchronousTimedProcess {
 
 	public SynchronousTimedProcess (String workDir, int _timeoutMins,
 			String... cmdLine) throws IOException {
+		this (workDir, _timeoutMins, Arrays.asList (cmdLine));
+	}
+
+	public SynchronousTimedProcess (String workDir, int _timeoutMins,
+				List<String> cmdLine) throws IOException {
 		ProcessBuilder pb = new ProcessBuilder (cmdLine);
 		pb.directory (new File (workDir));
 		proc = pb.start ();
