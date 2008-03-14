@@ -26,13 +26,13 @@ import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 import streamit.frontend.tosbit.recursionCtrl.ZeroInlineRControl;
-import streamit.frontend.tospin.SpinVerifier;
 
 public class ToPSbit extends ToSBit {
 
@@ -148,8 +148,8 @@ public class ToPSbit extends ToSBit {
 			System.out.println (" Holes were filled, but not verified; trying to verify with SPIN");
 			System.out.println ("-----------------------------------------------------------------------------");
 
-			SpinVerifier sv = SpinVerifier.makeVerifier (finalCode);
-			solved = sv.verify ();
+			SpinVerifier sv = new SpinVerifier (varGen, finalCode);
+			solved = null == sv.verify (oracle);
 
 			if (solved) {
 				System.out.println ("The program successfully verifies!");
