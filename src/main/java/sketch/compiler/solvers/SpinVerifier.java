@@ -27,7 +27,7 @@ public class SpinVerifier implements Verifier {
 	protected static final String STEP_REGEX =
 		"^\\s*\\d+:\\s*proc\\s+(\\d+)[^\\[]+\\[_ = (\\d+)\\]$";
 
-	private String output;
+	protected int vectorSize = 2048;	// bytes
 
 	public SpinVerifier (TempVarGen v, Program p) {
 		this (v, p, new Configuration (), false, true);
@@ -39,20 +39,29 @@ public class SpinVerifier implements Verifier {
 		config = c;
 		debug = _debug;
 		cleanup = _cleanup;
+
+		config.vectorSizeBytes (vectorSize);
 	}
 
 	public CounterExample verify(ValueOracle oracle) {
-		//SpinExecuter spin = SpinExecuter.makeExecuter (prog, oracle);
-		Executer spin = Executer.makeExecuter (spinify (oracle), config, debug, cleanup);
-		try { spin.run (); } catch (IOException ioe) {
-			throw new RuntimeException ("Fatal error invoking spin", ioe);
+		while (true) {
+			//SpinExecuter spin = SpinExecuter.makeExecuter (prog, oracle);
+			Executer spin = Executer.makeExecuter (spinify (oracle), config, debug, cleanup);
+			try { spin.run (); } catch (IOException ioe) {
+				throw new RuntimeException ("Fatal error invoking spin", ioe);
+			}
+
+			String trail = spin.getTrail ();
+			if (vectorSizeTooSmall (trail)) {
+				vectorSize *= 2;
+				config.vectorSizeBytes (vectorSize);
+				log ("VECTORSZ too small, increased to "+ vectorSize);
+			} else if (trail.length () == 0) {
+				return null;	// success!
+			} else {
+				return parseTrace (trail);
+			}
 		}
-
-		//TODO: get rid of this
-		output = spin.getOutput ();
-
-		String trail = spin.getTrail ();
-		return (trail.length () > 0) ? parseTrace (trail) : null;
 	}
 
 	public CounterExample parseTrace (String trace) {
@@ -86,10 +95,14 @@ public class SpinVerifier implements Verifier {
 	}
 
 	/**
-	 * @deprecated
-	 * @see streamit.frontend.tospin.SpinVerifier
+	 * Return true iff SPIN tells us that the vector size was too small to
+	 * complete verification.
 	 */
-	public String getOutput () {
-		return output;
+	protected boolean vectorSizeTooSmall (String out) {
+		return 0 <= out.indexOf ("VECTORSZ too small");
+	}
+
+	protected void log (String msg) {
+		if (debug)  System.out.println ("[SPINVERIF][DEBUG] "+ msg);
 	}
 }

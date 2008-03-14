@@ -23,6 +23,7 @@ import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
 import streamit.frontend.spin.Configuration;
+import streamit.frontend.spin.Configuration.StateCompressionPolicy;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
@@ -148,8 +149,9 @@ public class ToPSbitII extends ToSBit {
 		boolean cleanup = !params.hasFlag ("keeptmpfiles");
 		Configuration config = new Configuration ();
 
-		// Limit verification to safety properties only
 		config.detectCycles (false);
+		config.stateCompressionPolicy (StateCompressionPolicy.LOSSLESS_COLLAPSE);
+		config.checkChannelAssertions (false);
 
 		// can pass along command-line params to 'config' here
 

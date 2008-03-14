@@ -72,6 +72,7 @@ public class Configuration {
 		toggle (compileParams, !yes, "-DXUSAFE");
 	}
 
+	/** If disabled, only safety properties will be verified. */
 	public void detectCycles (boolean yes) {
 		toggle (compileParams, !yes, "-DSAFETY");
 	}
