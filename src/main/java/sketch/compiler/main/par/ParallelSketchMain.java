@@ -1,5 +1,7 @@
 package streamit.frontend;
 
+import java.util.List;
+
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
@@ -37,6 +39,27 @@ public class ToPSbitII extends ToSBit {
 	public ToPSbitII(String[] args){
 		super(args);
 	}
+	
+
+	protected void backendParameters(List<String> commandLineOptions){
+		if( params.hasFlag("inbits") ){
+			commandLineOptions.add("-overrideInputs");
+			commandLineOptions.add( "" + params.flagValue("inbits") );
+		}
+		if( params.hasFlag("seed") ){
+			commandLineOptions.add("-seed");
+			commandLineOptions.add( "" + params.flagValue("seed") );
+		}
+		if( params.hasFlag("cex")){
+			commandLineOptions.add("-showinputs");
+		}
+		if( params.hasFlag("verbosity") ){
+			commandLineOptions.add("-verbosity");
+			commandLineOptions.add( "" + params.flagValue("verbosity") );
+		}
+	}
+	
+	
 
 	public void run() {
 		parseProgram();
@@ -70,14 +93,14 @@ public class ToPSbitII extends ToSBit {
 		Verifier verif = createVerif(prog);
 
 		ValueOracle ora = randomOracle(prog);
-
+		
 		int loopCount = 0;
 		boolean success = false;
 		do{
 			System.out.println ("Loop "+ loopCount++);
-
+			
 			CounterExample cex = verif.verify( ora );
-
+			
 			if(cex == null){
 				success = true;
 				break;
@@ -123,13 +146,13 @@ public class ToPSbitII extends ToSBit {
 		p = (Program) p.accept (new EliminateStarStatic (oracle));
 
 		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-
+				
 		p = (Program)p.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) dump(p, "After partially evaluating generated code.");
 		p = (Program)p.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(p, "After Eliminating transitive assignments.");
-		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		p = (Program)p.accept(new SimplifyVarNames());
@@ -143,7 +166,9 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public Synthesizer createSynth(Program p){
-		return new SATSynthesizer(p, params, internalRControl(), varGen );
+		SATSynthesizer syn = new SATSynthesizer(p, params, internalRControl(), varGen );
+		backendParameters(syn.commandLineOptions);
+		return syn;
 	}
 
 	public Verifier createVerif(Program p){
