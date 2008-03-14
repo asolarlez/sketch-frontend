@@ -1,0 +1,22 @@
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in + ??;
+	assert global <4;
+	fork(int i; 2){
+		int local;
+		lock(1);
+		local = global + 1;
+		global = local;
+		if(??){ unlock(1); }		
+	}
+	assert global == in + 4;
+	return 1;
+}
+
+
+

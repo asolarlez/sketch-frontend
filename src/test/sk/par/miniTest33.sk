@@ -1,0 +1,39 @@
+//Needs schedlen 18.
+
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+int gen(int i, int j){
+	if(??){
+		if(??){
+			return i;
+		}else{
+			return j;	
+		}	
+	}else{		
+		return gen(i,j) + ??;		
+	}
+	
+}
+
+bit testSK(int in) implements test{
+	int global = gen(in, 1) + ??;
+	assert global <4;
+	fork(int i; 2){
+		int local;
+		reorder{
+			lock(1);
+			unlock(1);
+			local = gen(local, global) + 1;
+			global = local;	
+		}
+	}
+	assert global == in + 4;
+	return 1;
+}
+
+
+
