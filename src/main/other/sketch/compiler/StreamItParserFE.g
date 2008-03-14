@@ -371,9 +371,9 @@ reorder_block returns [StmtReorderBlock sb] { sb=null; Statement s; List l = new
 		{ sb = new StmtReorderBlock(getContext(t), l); }
 	;
 
-atomic_block returns [StmtAtomicBlock ab] { ab=null; StmtBlock b = null; }
-	:   t:TK_atomic b=block
-		{ ab = new StmtAtomicBlock (getContext (t), b.getStmts ()); }
+atomic_block returns [StmtAtomicBlock ab] { ab=null; Expression c = null; StmtBlock b = null; }
+	:   t:TK_atomic (LPAREN c=right_expr RPAREN)? b=block
+		{ ab = new StmtAtomicBlock (getContext (t), b.getStmts (), c); }
 	;
 
 pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }

@@ -154,6 +154,8 @@ public class ToPSbitII extends ToSBit {
 		config.detectCycles (false);
 		config.stateCompressionPolicy (StateCompressionPolicy.LOSSLESS_COLLAPSE);
 		config.checkChannelAssertions (false);
+		// we enforce bounds
+		config.checkArrayBounds (false);
 
 		return new SpinVerifier (varGen, p, config, debug, cleanup,
 								 params.flagValue ("vectorszGuess"));

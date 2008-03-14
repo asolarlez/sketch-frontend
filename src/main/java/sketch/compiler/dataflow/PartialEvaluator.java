@@ -775,16 +775,16 @@ public class PartialEvaluator extends FEReplacer {
 
         Expression cond = stmt.getCond();
         abstractValue vcond = (abstractValue)cond.accept(this);
-        Statement cons = stmt.getCons();        
+        Statement cons = stmt.getCons();
         if(cons != null && !(cons instanceof StmtBlock)){
         	cons = new StmtBlock(cons);
         }
-        
+
         Statement alt = stmt.getAlt();
         if(alt != null && !(alt instanceof StmtBlock)){
         	alt = new StmtBlock(alt);
         }
-        
+
         Expression ncond  = exprRV;
         if(vcond.hasIntVal()){
         	if(vcond.getIntVal() != 0){ // vtrue
@@ -1109,7 +1109,7 @@ public class PartialEvaluator extends FEReplacer {
 	    return funSelector.selectFunctions(spec);
     }
 
-    
+
     public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
     	Statement tmp = ab.getBlock().doStatement(this);
     	Expression exp = ab.getCond();
@@ -1125,9 +1125,9 @@ public class PartialEvaluator extends FEReplacer {
     	}else if (tmp != ab.getBlock() || exp != ab.getCond()){
     		if(tmp instanceof StmtBlock){
     			StmtBlock sb = (StmtBlock) tmp;
-    			return new StmtAtomicBlock (sb, sb.getStmts (), exp, ab.isCond());
+    			return new StmtAtomicBlock (sb, sb.getStmts (), exp);
     		}else{
-    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp, ab.isCond());
+    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp);
     		}
     	}else{
     		return ab;

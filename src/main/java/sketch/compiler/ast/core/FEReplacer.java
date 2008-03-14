@@ -503,9 +503,9 @@ public class FEReplacer implements FEVisitor
     	}else if (tmp != ab.getBlock() || exp != ab.getCond()){
     		if(tmp instanceof StmtBlock){
     			StmtBlock sb = (StmtBlock) tmp;
-    			return new StmtAtomicBlock (ab, sb, exp, ab.isCond());
+    			return new StmtAtomicBlock (ab, sb, exp);
     		}else{
-    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp, ab.isCond());
+    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp);
     		}
     	}else{
     		return ab;
