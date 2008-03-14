@@ -224,14 +224,17 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block) {
 		printlnIndent ("atomic {");
 		indent ();
-		printStmtNumber (block);
-		enterAtomic ();
-		if(block.isCond()){
-			block.getCond().accept(this);
-			printlnIndent("->");
+
+		printTab ();
+		if (block.isCond ()) {
+			block.getCond ().accept (this);
+			print (" -> ");
 		}
-		visitStmtBlock (block.getBlock());
+		println ("_ = "+ block.getTag () +";");
+		enterAtomic ();
+		visitStmtBlock (block.getBlock ());
 		leaveAtomic ();
+
 		dedent ();
 		printlnIndent ("}");
 		return block;

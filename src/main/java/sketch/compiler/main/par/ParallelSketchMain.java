@@ -71,8 +71,10 @@ public class ToPSbitII extends ToSBit {
 
 		ValueOracle ora = randomOracle(prog);
 
+		int loopCount = 0;
 		boolean success = false;
 		do{
+			System.out.println ("Loop "+ loopCount++);
 
 			CounterExample cex = verif.verify( ora );
 
@@ -153,9 +155,8 @@ public class ToPSbitII extends ToSBit {
 		config.stateCompressionPolicy (StateCompressionPolicy.LOSSLESS_COLLAPSE);
 		config.checkChannelAssertions (false);
 
-		// can pass along command-line params to 'config' here
-
-		return new SpinVerifier (varGen, p, config, debug, cleanup);
+		return new SpinVerifier (varGen, p, config, debug, cleanup,
+								 params.flagValue ("vectorszGuess"));
 	}
 
 	public ValueOracle randomOracle(Program p){
@@ -176,6 +177,13 @@ public class ToPSbitII extends ToSBit {
 				"             \t If that index is out of bounds, your sketch will not resolve, so you use this \n" +
 				"             \t parameter to make that lock array larger.",
 				"10", null) );
+
+		params.setAllowedParam("vectorszGuess", new POpts(POpts.NUMBER,
+				"--vectorszGuess  n \t An initial guess for how many bytes SPIN should use for its\n" +
+				"             \t automaton state vector.  The vector size is automatically increased\n" +
+				"             \t as necessary, but a good initial guess can reduce the number of calls\n" +
+				"             \t to SPIN.",
+				""+ SpinVerifier.VECTORSZ_GUESS, null) );
 	}
 
 	public static void main(String[] args)

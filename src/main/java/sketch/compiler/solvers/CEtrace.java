@@ -28,4 +28,6 @@ public class CEtrace extends CounterExample {
 	public String toString(){
 		return "(t,s)" + steps.toString();
 	}
+
+	public boolean deadlocked () { return false; }
 }

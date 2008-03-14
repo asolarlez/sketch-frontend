@@ -71,9 +71,18 @@ import streamit.misc.NullStream;
  * @see CodePrinter
  */
 abstract public class CodePrinterVisitor extends SymbolTableVisitor {
-	protected PrintWriter currOut;
-	protected Stack<PrintWriter> savedOuts = new Stack<PrintWriter> ();
-	protected int currIndent;
+	private static final class PrinterState {
+		PrintWriter out;
+		int line;
+		PrinterState (PrintWriter _out, int _line) { out = _out; line = _line; }
+	}
+
+	private static final String NL = System.getProperty ("line.separator");
+
+	private PrintWriter currOut;
+	private Stack<PrinterState> savedOuts = new Stack<PrinterState> ();
+	private int currIndent;
+	private int line = 1;
 
 	protected final String tab = "  ";
 
@@ -93,7 +102,7 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	 */
 	public void pushWriter (PrintWriter newOut) {
 		assert null != newOut;
-		savedOuts.push (currOut);
+		savedOuts.push (new PrinterState (currOut, line));
 		currOut = newOut;
 	}
 
@@ -102,7 +111,9 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	 */
 	public PrintWriter popWriter () {
 		PrintWriter lastOut = currOut;
-		currOut = savedOuts.pop ();
+		PrinterState savedState = savedOuts.pop ();
+		currOut = savedState.out;
+		line = savedState.line;
 		return lastOut;
 	}
 
@@ -127,6 +138,11 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 		currIndent--;
 	}
 
+	/** Return the current line number being printed. */
+	public int getLineNumber () {
+		return line;
+	}
+
 	public void printTab () {
 		String t = "";
 		for (int i = currIndent; i > 0; --i)
@@ -136,16 +152,19 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 
 	public void print (String s) {
 		currOut.print (s);
+		updateLineCount (s);
 	}
 
 	/** Print S followed by a line terminator. */
 	public void println (String s) {
-		currOut.println(s);
+		currOut.println (s);
+		updateLineCount (s);
+		++line;
 	}
 
 	/** Print S, indented to the current depth, followed by a line terminator. */
 	public void printlnIndent (String s) {
-		printTab();
+		printTab ();
 		println (s);
 	}
 
@@ -158,6 +177,10 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 			s.accept (this);
 			dedent ();
 		}
+	}
+
+	protected void updateLineCount (String s) {
+		for (int i = s.indexOf (NL, 0); i >= 0; ++line, i = s.indexOf (NL, i+1));
 	}
 
 	// === EXPRESSIONS ===
@@ -200,7 +223,7 @@ abstract public class CodePrinterVisitor extends SymbolTableVisitor {
 	public Object visitExprBinary (ExprBinary eb) {
 		print ("(");
 		eb.getLeft ().accept (this);
-		print (eb.getOpString ());
+		print (" "+ eb.getOpString ()+" ");
 		eb.getRight ().accept (this);
 		print (")");
 
