@@ -17,16 +17,15 @@ import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.SpinPreprocessor;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.tospin.PromelaCodePrinter;
+import streamit.frontend.spin.Preprocessor;
+import streamit.frontend.spin.PromelaCodePrinter;
 
 public class ToSpin extends ToSBit {
 
 	protected OutputStream out;
 
 	public void generateCode () {
-		prog.accept (new PromelaCodePrinter (out, varGen));
+		prog.accept (new PromelaCodePrinter (out));
 	}
 
 
@@ -79,7 +78,7 @@ public class ToSpin extends ToSBit {
 	 * Prepare the AST for Promela code generation.
 	 */
 	public void spinPreprocess () {
-		prog = (Program)prog.accept(new SpinPreprocessor(varGen));
+		prog = (Program)prog.accept(new Preprocessor(varGen));
 		//dump (prog, "After everything constants:");
 	}
 
