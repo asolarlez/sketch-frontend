@@ -32,19 +32,22 @@ public class SpinVerifier implements Verifier {
 	protected Program prog;
 	protected Configuration config;
 	protected TempVarGen varGen;
-	protected boolean debug, cleanup;
+	protected boolean cleanup;
+	protected int verbosity;
 	protected int vectorSize;	// bytes
 	protected Map<Integer, Integer> lineToStmtnum;
 
+	protected SpinSolutionStatistics currStats;
+
 	public SpinVerifier (TempVarGen v, Program p) {
-		this (v, p, new Configuration (), false, true, VECTORSZ_GUESS);
+		this (v, p, new Configuration (), 0, true, VECTORSZ_GUESS);
 	}
 	public SpinVerifier (TempVarGen v, Program p, Configuration c,
-			boolean _debug, boolean _cleanup, int initVectorSize) {
+			int _verbosity, boolean _cleanup, int initVectorSize) {
 		varGen = v;
 		prog = preprocess (p, varGen);
 		config = c;
-		debug = _debug;
+		verbosity = _verbosity;
 		cleanup = _cleanup;
 		vectorSize = initVectorSize;
 
@@ -57,29 +60,58 @@ public class SpinVerifier implements Verifier {
 
 	public CounterExample verify(ValueOracle oracle) {
 		while (true) {
-			Executer spin = Executer.makeExecuter (spinify (oracle), config, debug, cleanup);
+			Executer spin = Executer.makeExecuter (
+					spinify (oracle), config, reallyVerbose (), cleanup);
 			try { spin.run (); } catch (IOException ioe) {
 				throw new RuntimeException ("Fatal error invoking spin", ioe);
 			}
+
+			// XXX: here we assume that the amount of memory used by the
+			// SPIN code generator and the C compiler are strictly less than
+			// the amount used by the model checker, and therefore can safely
+			// be ignored.
+			currStats = new SpinSolutionStatistics ();
+			currStats.cgenTimeMs = spin.getCodegenTimeMs ();
+			currStats.compilerTimeMs = spin.getCompileTimeMs ();
+
 			String out = spin.getOutput ();
 			String trail = spin.getTrail ();
 
 			if (vectorSizeTooSmall (out)) {
 				vectorSize *= 2;
 				config.vectorSizeBytes (vectorSize);
-				log ("VECTORSZ too small, increased to "+ vectorSize);
-			} else if (deadlock (out)) {
-				CounterExample cex = parseDeadlockTrace (trail);
-				log ("counterexample from deadlock: "+ cex);
-				return cex;
-			} else if (trail.length () == 0) {
-				return null;	// success!
-			} else {
-				CounterExample cex = parseTrace (trail);
-				log ("counterexample: "+ cex);
-				return cex;
+				printVectorszNotice ();
+				continue;
+			}
+
+			addSpinStats (currStats, out);
+
+			try {
+				if (deadlock (out)) {
+					CounterExample cex = parseDeadlockTrace (trail);
+					log (5, "counterexample from deadlock: "+ cex);
+					return cex;
+				} else if (trail.length () == 0) {
+					currStats.success = true;
+					return null;	// success!
+				} else {
+					CounterExample cex = parseTrace (trail);
+					log (5, "counterexample: "+ cex);
+					return cex;
+				}
+			} finally {
+				log (3, "Stats for last run:\n"+ currStats);
 			}
 		}
+	}
+
+	public SolutionStatistics getLastSolutionStats () {  return currStats;  }
+
+	protected void printVectorszNotice () {
+		log (3, "VECTORSZ too small, increased to "+ vectorSize);
+		log (0,
+"WARNING: The vector size guess was too small for this model.  Stats will be\n"+
+"  inaccurate.  Next time, set the vectorszGuess to at least "+ vectorSize +".");
 	}
 
 	/**
@@ -138,7 +170,7 @@ public class SpinVerifier implements Verifier {
 			int line = Integer.parseInt (m.group (2));
 			String stmt = m.group (3);
 
-			log ("  parsed step:  thread "+ thread +", line "+ line +", stmt \""+ stmt +"\"");
+			log (5, "  parsed step:  thread "+ thread +", line "+ line +", stmt \""+ stmt +"\"");
 
 			if (stmt.startsWith ("_ = "))
 				cex.addStep (thread, Integer.parseInt (stmt.substring (4)));
@@ -146,7 +178,7 @@ public class SpinVerifier implements Verifier {
 				Integer stmtNum = lineToStmtnum.get (line);
 				if (null != stmtNum) {
 					cex.addStep (thread, stmtNum);
-					log ("    (conditional atomic step)");
+					log (5, "    (conditional atomic step)");
 				}
 			}
 		}
@@ -156,91 +188,44 @@ public class SpinVerifier implements Verifier {
 		return cex;
 	}
 
-/*
-	protected void addSpinStats (SpinSolutionStatistics s, String trace) {
+	protected void addSpinStats (SpinSolutionStatistics s, String out) {
 		List<String> res;
 
-		res = search (trace, "pan: elapsed time (\\d+(?:\\.\\d+)?)");
-		if (null != res)
-			s.spinTimeMs = (long) (1000.0 * Float.parseFloat (res.get (0)));
+		res = search (out, "pan: elapsed time (\\d+(?:\\.\\d+)?)");
+		assert null != res;
+		s.spinTimeMs = (long) (1000.0 * Float.parseFloat (res.get (0)));
 
-		res = search (trace, "(\\d+) states, stored");
-		if (null != res)  s.spinNumStates = Long.parseLong (res.get (0));
+		res = search (out, "(\\d+) states, stored");
+		assert null != res;
+		s.spinNumStates = Long.parseLong (res.get (0));
 
-		res = search (trace,
-				"(\\d+\\.\\d+)\\s+equivalent memory usage.*$.*"+
-				"(\\d+\\.\\d+)\\s+actual memory usage.*$.*");
+		res = search (out,
+				"(\\d+\\.\\d+)\\s+equivalent memory usage.*(?:\\r\\n|\\n|\\r).*"+
+				"(\\d+\\.\\d+)\\s+actual memory usage for states");
 		if (null != res) {
+			// full state memory stats
 			s.spinEquivStateMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
 			s.spinActualStateMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (1)));
+			s.spinStateCompressionPct = 100.0f *
+				((float) s.spinActualStateMemBytes) / (float) s.spinEquivStateMemBytes;
 
-			//res =
+			res = search (out, "(\\d+\\.\\d+)\\s+total actual memory usage");
+			assert null != res;
+			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
+
+			res = search (out, "pan: rate\\s+(\\d+) states/second");
+			assert null != res;
+			s.spinStateExplorationRate = Long.parseLong (res.get (0));
 		}
+		else {
+			// lite memory stats
+			log (5, "SPIN only produced 'lite' memory stats");
 
-
-		/*
-		=====  Full Version  =====
-		---------------------------
-		(Spin Version 5.1.4 -- 27 January 2008)
-		Warning: Search not completed
-			+ Partial Order Reduction
-			+ Compression
-
-		Full statespace search for:
-			never claim         	- (none specified)
-			assertion violations	+
-			cycle checks       	- (disabled by -DSAFETY)
-			invalid end states	+
-
-		State-vector 9772 byte, depth reached 488, errors: 1
-		      471 states, stored
-		        0 states, matched
-		      471 transitions (= stored+matched)
-		       18 atomic steps
-		hash conflicts:         0 (resolved)
-
-		Stats on memory usage (in Megabytes):
-		    4.397	equivalent memory usage for states (stored*(State-vector + overhead))
-		    3.111	actual memory usage for states (compression: 70.76%)
-		         	state-vector as stored = 6910 byte + 16 byte overhead
-		    2.000	memory used for hash table (-w19)
-		    0.305	memory used for DFS stack (-m10000)
-		    5.125	total actual memory usage
-		nr of templates: [ globals chans procs ]
-		collapse counts: [ 23 393 80 ]
-
-		pan: elapsed time 0.02 seconds
-		pan: rate     23550 states/second
-
-
-		===== Lite =====
-
-		(Spin Version 5.1.4 -- 27 January 2008)
-		Warning: Search not completed
-			+ Partial Order Reduction
-			+ Compression
-
-		Full statespace search for:
-			never claim         	- (none specified)
-			assertion violations	+
-			cycle checks       	- (disabled by -DSAFETY)
-			invalid end states	+
-
-		State-vector 2488 byte, depth reached 423, errors: 1
-		      335 states, stored
-		        0 states, matched
-		      335 transitions (= stored+matched)
-		       89 atomic steps
-		hash conflicts:         0 (resolved)
-
-		    5.125	memory usage (Mbyte)
-
-		nr of templates: [ globals chans procs ]
-		collapse counts: [ 22 266 70 ]
-
-		pan: elapsed time 0.01 seconds
+			res = search (out, "(\\d+\\.\\d+)\\s+memory usage \\(Mbyte\\)");
+			assert null != res;
+			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
+		}
 	}
-*/
 
 	protected Program preprocess (Program p, TempVarGen varGen) {
 		p = (Program) p.accept(new Preprocessor(varGen));
@@ -268,8 +253,12 @@ public class SpinVerifier implements Verifier {
 		return info.condMap;
 	}
 
-	protected void log (String msg) {
-		if (debug)  System.out.println ("[SPINVERIF][DEBUG] "+ msg);
+	protected boolean reallyVerbose () {  return verbosity >= 5;  }
+
+	protected void log (String msg) {  log (3, msg);  }
+	protected void log (int minVerbosity, String msg) {
+		if (verbosity >= minVerbosity)
+			System.out.println ("[SPINVERIF]["+ verbosity +"] "+ msg);
 	}
 
 	/** Returns null if the pattern wasn't found, otherwise returns a list

@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
@@ -18,18 +17,11 @@ import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;import streamit.misc.ProcessKillerThread;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;import streamit.misc.NullStream;
+import streamit.misc.ProcessKillerThread;
 
 public class SATBackend {
 
-	
-	
-	private static class NullStream extends OutputStream {
-		public void flush() throws IOException {}
-		public void close() throws IOException {}
-		public void write(int arg0) throws IOException {}
-	}
-	
 	final CommandLineParamManager params;
 	String solverErrorStr;
 	final RecursionControl rcontrol;
@@ -37,20 +29,20 @@ public class SATBackend {
 	private ValueOracle oracle;
 	private boolean tracing = false;
 	public final List<String> commandLineOptions;
-	
-	
+
+
 	public SATBackend(CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		this.params = params;
 		this.rcontrol =rcontrol;
 		this.varGen = varGen;
 		commandLineOptions = params.backendOptions;
 	}
-	
+
 	public void activateTracing(){
 		tracing = true;
 	}
-	
-	
+
+
 	public boolean partialEvalAndSolve(Program prog){
 		oracle = new ValueOracle( new StaticHoleTracker(varGen) );
 		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -60,7 +52,7 @@ public class SATBackend {
 		{
 			OutputStream outStream;
 			if(params.hasFlag("fakesolver"))
-				outStream = new NullStream();
+				outStream = NullStream.INSTANCE;
 			else if(params.sValue("output") != null)
 				outStream = new FileOutputStream(params.sValue("output"));
 			else
@@ -132,17 +124,17 @@ public class SATBackend {
 		return worked;
 	}
 
-	
-	public void addToBackendParams(List<String> params){		
+
+	public void addToBackendParams(List<String> params){
 		commandLineOptions.addAll(params);
 	}
-	
-	
-	
-	
-	private boolean solve(ValueOracle oracle){		
 
-		
+
+
+
+	private boolean solve(ValueOracle oracle){
+
+
 
 		System.out.println("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
@@ -193,7 +185,7 @@ public class SATBackend {
 		}
 		return true;
 	}
-	
+
 
 	private boolean runSolver(String[] commandLine, int i){
 		for(int k=0;k<commandLine.length;k++)

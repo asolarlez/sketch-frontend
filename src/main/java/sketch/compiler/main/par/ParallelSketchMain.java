@@ -19,8 +19,10 @@ import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SimpleLoopUnroller;
+import streamit.frontend.solvers.CompilationStatistics;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
+import streamit.frontend.solvers.SolverStatistics;
 import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
@@ -32,14 +34,16 @@ import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.RandomValueOracle;
 import streamit.frontend.tosbit.ValueOracle;
 
-
-
 public class ToPSbitII extends ToSBit {
+
+	protected CompilationStatistics stats;
+	protected boolean success = false;
 
 	public ToPSbitII(String[] args){
 		super(args);
+		stats = new CompilationStatistics (createSynthStats (), createVerifStats ());
 	}
-	
+
 
 	protected void backendParameters(List<String> commandLineOptions){
 		if( params.hasFlag("inbits") ){
@@ -62,28 +66,40 @@ public class ToPSbitII extends ToSBit {
 	
 
 	public void run() {
-		parseProgram();
+		try {
+			parseProgram();
 
-		prog = (Program)prog.accept(new LockPreprocessing());
-		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
-		//dump (prog, "After replacing constants:");
-		if (!SemanticChecker.check(prog))
-			throw new IllegalStateException("Semantic check failed");
+			prog = (Program)prog.accept(new LockPreprocessing());
+			prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
+			//dump (prog, "After replacing constants:");
+			if (!SemanticChecker.check(prog))
+				throw new IllegalStateException("Semantic check failed");
 
-		prog=preprocessProgram(prog); // perform prereq transformations
-		//dump (prog, "After preprocessing");
-		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-		// if (!SemanticChecker.check(prog))
-		//	throw new IllegalStateException("Semantic check failed");
+			prog=preprocessProgram(prog); // perform prereq transformations
+			//dump (prog, "After preprocessing");
+			// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
+			// if (!SemanticChecker.check(prog))
+			//	throw new IllegalStateException("Semantic check failed");
 
-		if (prog == null)
-			throw new IllegalStateException();
+			if (prog == null)
+				throw new IllegalStateException();
 
-		synthVerifyLoop();
-		finalCode = postprocessProgram (prog);
-		generateCode(finalCode);
+			synthVerifyLoop();
+			finalCode = postprocessProgram (prog);
+			generateCode(finalCode);
+		}
+		finally {
+			stats.finished (success);
+			log (1, ""+ stats);
 
-		System.out.println("[PSKETCH] DONE!");
+			if (success) {
+				log (0, "[PSKETCH] DONE!");
+			} else {
+				System.err.println ("[PSKETCH] Error: couldn't synthesize sketch.");
+				System.exit (1);
+				// TODO: real error message
+			}
+		}
 	}
 
 	public void synthVerifyLoop(){
@@ -93,32 +109,26 @@ public class ToPSbitII extends ToSBit {
 		Verifier verif = createVerif(prog);
 
 		ValueOracle ora = randomOracle(prog);
-		
-		int loopCount = 0;
-		boolean success = false;
-		do{
-			System.out.println ("Loop "+ loopCount++);
-			
+
+		success = false;
+		do {
+			System.out.println ("Loop "+ stats.numIterations ());
+
 			CounterExample cex = verif.verify( ora );
-			
-			if(cex == null){
+			stats.calledVerifier (verif.getLastSolutionStats ());
+
+			if (cex == null) {
 				success = true;
 				break;
-				//we are done;
 			}
 
 			ora = synth.nextCandidate(cex);
-			if(ora == null){
+			stats.calledSynthesizer (synth.getLastSolutionStats ());
+			if (ora == null) {
 				success = false;
 				break;
 			}
-		}while(true);
-
-		if (!success) {
-			System.err.println ("Whoops -- couldn't synthesize sketch.");
-			System.exit (1);
-			// TODO: real error message
-		}
+		} while (true);
 
 		oracle = ora;
 	}
@@ -146,13 +156,13 @@ public class ToPSbitII extends ToSBit {
 		p = (Program) p.accept (new EliminateStarStatic (oracle));
 
 		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-				
+
 		p = (Program)p.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) dump(p, "After partially evaluating generated code.");
 		p = (Program)p.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(p, "After Eliminating transitive assignments.");
-		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));		
+		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
 		//System.out.println("=========  After ElimDeadCode  =========");
 		//finalCode.accept( new SimpleCodePrinter() );
 		p = (Program)p.accept(new SimplifyVarNames());
@@ -170,9 +180,13 @@ public class ToPSbitII extends ToSBit {
 		backendParameters(syn.commandLineOptions);
 		return syn;
 	}
+	public SolverStatistics createSynthStats () {
+		return new SolverStatistics ();
+	}
+
 
 	public Verifier createVerif(Program p){
-		boolean debug = params.flagValue ("verbosity") >= 3;
+		int verbosity = params.flagValue ("verbosity");
 		boolean cleanup = !params.hasFlag ("keeptmpfiles");
 		Configuration config = new Configuration ();
 
@@ -182,8 +196,11 @@ public class ToPSbitII extends ToSBit {
 		// we enforce bounds
 		config.checkArrayBounds (false);
 
-		return new SpinVerifier (varGen, p, config, debug, cleanup,
+		return new SpinVerifier (varGen, p, config, verbosity, cleanup,
 								 params.flagValue ("vectorszGuess"));
+	}
+	public SolverStatistics createVerifStats () {
+		return new SolverStatistics ();
 	}
 
 	public ValueOracle randomOracle(Program p){
