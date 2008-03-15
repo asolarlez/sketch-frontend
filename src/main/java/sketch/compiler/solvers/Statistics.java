@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
+ * Meaningless base class for other statistics classes, in the spirit of
+ * 'Object'.
+ *
+ * Provides convenience methods to inheriting classes.
+ *
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public abstract class Statistics {
