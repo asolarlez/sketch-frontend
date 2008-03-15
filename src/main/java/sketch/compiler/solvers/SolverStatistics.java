@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
+ * Statistics about a particular solver over the entire compilation run.
  *
+ * These stats encompass all calls to the solver during compilation.
+ *
+ * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class SolverStatistics extends Statistics {
 	protected int ncalls;

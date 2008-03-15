@@ -4,6 +4,8 @@
 package streamit.frontend.solvers;
 
 /**
+ * SPIN-specific solution statistics.
+ *
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class SpinSolutionStatistics extends SolutionStatistics {

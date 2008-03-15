@@ -1,5 +1,10 @@
 package streamit.frontend.solvers;
 
+/**
+ * Statistics about a particular call to a solver (synthesizer or verifier).
+ *
+ * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
+ */
 public abstract class SolutionStatistics extends Statistics {
 	public abstract boolean successful ();
 
