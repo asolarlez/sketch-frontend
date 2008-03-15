@@ -62,8 +62,8 @@ public class ToPSbitII extends ToSBit {
 			commandLineOptions.add( "" + params.flagValue("verbosity") );
 		}
 	}
-	
-	
+
+
 
 	public void run() {
 		try {
@@ -96,7 +96,6 @@ public class ToPSbitII extends ToSBit {
 				log (0, "[PSKETCH] DONE!");
 			} else {
 				System.err.println ("[PSKETCH] Error: couldn't synthesize sketch.");
-				System.exit (1);
 				// TODO: real error message
 			}
 		}
