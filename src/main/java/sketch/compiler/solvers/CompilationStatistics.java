@@ -4,6 +4,13 @@
 package streamit.frontend.solvers;
 
 /**
+ * Tracks statistics for an entire SKETCH compilation.
+ *
+ * Tracks stats about the:
+ *   - frontend
+ *   - synthesizer
+ *   - verifier
+ *
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class CompilationStatistics extends Statistics {
