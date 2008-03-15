@@ -18,6 +18,7 @@ import java.util.List;
 public class SynchronousTimedProcess {
 	protected Process	proc;
 	protected int		timeoutMins;
+	protected long		startMs;
 
 	public SynchronousTimedProcess (int _timeoutMins, String... cmdLine)
 			throws IOException {
@@ -33,6 +34,7 @@ public class SynchronousTimedProcess {
 				List<String> cmdLine) throws IOException {
 		ProcessBuilder pb = new ProcessBuilder (cmdLine);
 		pb.directory (new File (workDir));
+		startMs = System.currentTimeMillis ();
 		proc = pb.start ();
 		timeoutMins = _timeoutMins;
 	}
@@ -56,6 +58,7 @@ public class SynchronousTimedProcess {
 			status.out = Misc.readStream (proc.getInputStream ());
 			status.err = Misc.readStream (proc.getErrorStream ());
 			status.exitCode = proc.waitFor ();
+			status.execTimeMs = System.currentTimeMillis () - startMs;
 		} finally {
 			if (null != killer)
 				killer.abort ();

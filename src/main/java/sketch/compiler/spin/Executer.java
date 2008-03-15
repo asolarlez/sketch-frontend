@@ -41,6 +41,9 @@ public class Executer {
 	protected String		err;
 	protected String		trail;
 
+	protected long			cgenTimeMs;
+	protected long			compileTimeMs;
+
 	public Executer (Program _prog, Configuration _config,
 					 boolean _debug, boolean _doCleanup) {
 		sourceProg = _prog;
@@ -76,6 +79,14 @@ public class Executer {
 
 	public String getTrail () {
 		return trail;
+	}
+
+	public long getCodegenTimeMs () {
+		return cgenTimeMs;
+	}
+
+	public long getCompileTimeMs () {
+		return compileTimeMs;
 	}
 
 	public boolean hasErrors () {
@@ -121,6 +132,7 @@ public class Executer {
 		ProcessStatus status = execDebug (spinWorkDir, 0,
 				SPIN, "-a", "-v", promelaCode.getName ());
 		assert 0 == status.exitCode : "Error compiling Promela code";
+		cgenTimeMs = status.execTimeMs;
 
 		File panC = new File (spinWorkDir, "pan.c");
 		assert panC.canRead ();
@@ -140,6 +152,8 @@ public class Executer {
 
 		ProcessStatus status = execDebug (cmd);
 		assert 0 == status.exitCode;
+		compileTimeMs = status.execTimeMs;
+
 		log ("Compilation successful");
 	}
 
