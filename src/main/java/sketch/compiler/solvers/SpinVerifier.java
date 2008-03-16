@@ -214,9 +214,9 @@ public class SpinVerifier implements Verifier {
 			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
 
 			res = search (out, "pan: rate\\s+(\\d+(?:\\d+)?) states/second");
-			assert null != res;
-			s.spinStateExplorationRate =
-				(long) Float.parseFloat (res.get (0));
+			if (null != res)
+				s.spinStateExplorationRate =
+					(long) Float.parseFloat (res.get (0));
 		}
 		else {
 			// lite memory stats
