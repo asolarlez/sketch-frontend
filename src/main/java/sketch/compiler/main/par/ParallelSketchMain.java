@@ -111,11 +111,10 @@ public class ToPSbitII extends ToSBit {
 
 		success = false;
 		do {
-			System.out.println ("Loop "+ stats.numIterations ());
+			System.out.println ("Iteration "+ stats.numIterations ());
 
 			CounterExample cex = verif.verify( ora );
 			stats.calledVerifier (verif.getLastSolutionStats ());
-
 			if (cex == null) {
 				success = true;
 				break;

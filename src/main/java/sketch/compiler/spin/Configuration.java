@@ -62,6 +62,12 @@ public class Configuration {
 		return makeFlags (runParams);
 	}
 
+	public void stateCompressionPolicy (StateCompressionPolicy p) {
+		// special case, since otherwise on a change we would have to ensure
+		// that all other compression flags were eliminated from the options
+		compressionPolicy = p;
+	}
+
 	/* === COMPILE-TIME PARAMS === */
 
 	public void checkArrayBounds (boolean yes) {
@@ -83,12 +89,6 @@ public class Configuration {
 
 	public void memoryLimitMB (int nMB) {
 		setCompileParam ("-DMEMLIM", ""+ nMB);
-	}
-
-	public void stateCompressionPolicy (StateCompressionPolicy p) {
-		// special case, since otherwise on a change we would have to ensure
-		// that all other compression flags were eliminated from the options
-		compressionPolicy = p;
 	}
 
 	/**

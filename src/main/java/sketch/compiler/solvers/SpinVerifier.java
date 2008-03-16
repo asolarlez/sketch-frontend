@@ -213,9 +213,10 @@ public class SpinVerifier implements Verifier {
 			assert null != res;
 			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
 
-			res = search (out, "pan: rate\\s+(\\d+) states/second");
+			res = search (out, "pan: rate\\s+(\\d+(?:\\d+)?) states/second");
 			assert null != res;
-			s.spinStateExplorationRate = Long.parseLong (res.get (0));
+			s.spinStateExplorationRate =
+				(long) Float.parseFloat (res.get (0));
 		}
 		else {
 			// lite memory stats
@@ -258,7 +259,7 @@ public class SpinVerifier implements Verifier {
 	protected void log (String msg) {  log (3, msg);  }
 	protected void log (int minVerbosity, String msg) {
 		if (verbosity >= minVerbosity)
-			System.out.println ("[SPINVERIF]["+ verbosity +"] "+ msg);
+			System.out.println ("[SPINVERIF]["+ minVerbosity+"] "+ msg);
 	}
 
 	/** Returns null if the pattern wasn't found, otherwise returns a list
