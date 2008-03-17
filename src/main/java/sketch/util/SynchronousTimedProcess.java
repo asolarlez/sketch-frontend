@@ -60,8 +60,10 @@ public class SynchronousTimedProcess {
 			status.exitCode = proc.waitFor ();
 			status.execTimeMs = System.currentTimeMillis () - startMs;
 		} finally {
-			if (null != killer)
+			if (null != killer) {
 				killer.abort ();
+				status.killed = killer.didKill ();
+			}
 		}
 
 		return status;
