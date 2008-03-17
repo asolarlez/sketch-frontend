@@ -1,24 +1,26 @@
 package streamit.frontend.solvers;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import streamit.frontend.CommandLineParamManager;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;import streamit.misc.NullStream;
-import streamit.misc.ProcessKillerThread;
+import streamit.frontend.tosbit.recursionCtrl.RecursionControl;import streamit.misc.Misc;
+import streamit.misc.NullStream;
+import streamit.misc.ProcessStatus;
+import streamit.misc.SynchronousTimedProcess;
 
 public class SATBackend {
 
@@ -29,7 +31,7 @@ public class SATBackend {
 	private ValueOracle oracle;
 	private boolean tracing = false;
 	public final List<String> commandLineOptions;
-
+	private SATSolutionStatistics lastSolveStats;
 
 	public SATBackend(CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		this.params = params;
@@ -45,7 +47,7 @@ public class SATBackend {
 
 	public boolean partialEvalAndSolve(Program prog){
 		oracle = new ValueOracle( new StaticHoleTracker(varGen) );
-		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		log ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		//prog.accept(new SimpleCodePrinter());
 		assert oracle != null;
 		try
@@ -71,8 +73,8 @@ public class SATBackend {
                 new ProduceBooleanFunctions (null, varGen, oracle,
                                              new PrintStream(outStream),
                                              params.unrollAmt, newRControl()); */
-			System.out.println("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
-			System.out.println("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
+			log ("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
+			log ("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
 			prog.accept( partialEval );
 			outStream.flush();
 			outStream.close();
@@ -91,10 +93,10 @@ public class SATBackend {
 			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
 				boolean t = fd.delete();
 				if(!t){
-					System.out.println("couldn't delete file" + fd.getAbsolutePath());
+					log (0, "couldn't delete file" + fd.getAbsolutePath());
 				}
 			}else{
-				System.out.println("Not Deleting");
+				log ("Not Deleting");
 			}
 		}
 
@@ -136,14 +138,14 @@ public class SATBackend {
 
 
 
-		System.out.println("OFILE = " + params.sValue("output"));
+		log ("OFILE = " + params.sValue("output"));
 		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
 		if(params.hasFlag("incremental")){
 			boolean isSolved = false;
 			int bits=0;
 			int maxBits = params.flagValue("incremental");
 			for(bits=1; bits<=maxBits; ++bits){
-				System.out.println("TRYING SIZE " + bits);
+				log ("TRYING SIZE " + bits);
 				String[] commandLine = new String[ 5 + commandLineOptions.size()];
 				commandLine[0] = command;
 				commandLine[1] = "-overrideCtrls";
@@ -158,15 +160,15 @@ public class SATBackend {
 					isSolved = true;
 					break;
 				}else{
-					System.out.println("Size " + bits + " is not enough");
+					log ("Size " + bits + " is not enough");
 				}
 			}
 			if(!isSolved){
-				System.out.println("The sketch can not be resolved");
+				log (0, "The sketch cannot be resolved");
 				System.err.println(solverErrorStr);
 				return false;
 			}
-			System.out.println("Succeded with " + bits + " bits for integers");
+			log ("Succeded with " + bits + " bits for integers");
 			oracle.capStarSizes(bits);
 		}else{
 			String[] commandLine = new String[ 3 + commandLineOptions.size()];
@@ -178,7 +180,7 @@ public class SATBackend {
 			commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";
 			boolean ret = runSolver(commandLine, 0);
 			if(!ret){
-				System.out.println("The sketch can not be resolved");
+				log (0, "The sketch cannot be resolved");
 				System.err.println(solverErrorStr);
 				return false;
 			}
@@ -187,48 +189,34 @@ public class SATBackend {
 	}
 
 
-	private boolean runSolver(String[] commandLine, int i){
-		for(int k=0;k<commandLine.length;k++)
-			System.out.print(commandLine[k]+" ");
-		System.out.println("");
+	private boolean runSolver(String[] commandLine, int i) {
+		String cmdLine = "";
+		for (String a : commandLine)  cmdLine += a + " ";
+		log ("Launching: "+ cmdLine);
 
-		Runtime rt = Runtime.getRuntime();
-		ProcessKillerThread stopper=null;
-		try
-		{
-			Process proc = rt.exec(commandLine);
-			if(params.hasFlag("timeout")) {
-				System.out.println("Timing out after " + params.flagValue("timeout") + " minutes.");
-				stopper = new ProcessKillerThread (proc, params.flagValue ("timeout"));
-				stopper.start();
+		ProcessStatus status = null;
+		try {
+			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
+												   commandLine)).run ();
+			if (verbose ()) {
+				// XXX: not sure if this output is meaningful, whether printed
+				// "live" or at the end of the run
+				Matcher m = Pattern.compile ("^-.*->.*$",
+											 Pattern.MULTILINE).matcher (status.out);
+				while (m.find ())  log (m.group ());
 			}
 
-			InputStream output = proc.getInputStream();
-			InputStream stdErr = proc.getErrorStream();
-			InputStreamReader isr = new InputStreamReader(output);
-			InputStreamReader errStr = new InputStreamReader(stdErr);
-			BufferedReader br = new BufferedReader(isr);
-			BufferedReader errBr = new BufferedReader(errStr);
-			String line = null;
-			while ( (line = br.readLine()) != null){
-				if(line.length() > 2){
-					if(!(line.charAt(0) == '-' && line.contains("->"))){
-						System.out.println(i + "  " + line);
-					}
-				}
-			}
-			solverErrorStr = "";
-			while ( (line = errBr.readLine()) != null)
-				solverErrorStr += line + "\n";
-			int exitVal = proc.waitFor();
-			System.out.println("Process exitValue: " + exitVal);
-			if(exitVal != 0) {
-				return false;
-			}
+			lastSolveStats = parseStats (status.out);
+			lastSolveStats.success = (0 == status.exitCode);
+			log (2, "Stats for last run:\n"+ lastSolveStats);
+
+			solverErrorStr = status.err;
+			log ("Solver exit value: "+ status.exitCode);
+
+			return lastSolveStats.success;
 		}
-		catch (java.io.IOException e)
-		{
-			if (stopper != null && stopper.didKill ()) {
+		catch (java.io.IOException e)	{
+			if (null != status && status.killed) {
 				System.err.println ("Warning: lost some output from backend because of timeout.");
 				return false;
 			} else {
@@ -236,20 +224,46 @@ public class SATBackend {
 				throw new RuntimeException(e);
 			}
 		}
-		catch (InterruptedException e)
-		{
+		catch (InterruptedException e) {
 			//e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
-		finally {
-			if (stopper != null)
-				stopper.abort ();
-		}
-		return true;
 	}
 
+	protected SATSolutionStatistics parseStats (String out) {
+		SATSolutionStatistics s = new SATSolutionStatistics ();
+		List<String> res;
+		String NL = "(?:\\r\\n|\\n|\\r)";
 
+		// XXX: using max virtual mem; maybe resident or private is better
+		res = Misc.search (out,
+				"Total elapsed time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
+				"Model building time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
+				"Solution time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
+				"Max virtual mem \\(bytes\\):\\s+(\\d+)");
+		assert null != res;
+		s.elapsedTimeMs = (long) (Float.parseFloat (res.get (0)));
+		s.modelBuildingTimeMs = (long) (Float.parseFloat (res.get (1)));
+		s.solutionTimeMs = (long) (Float.parseFloat (res.get (2)));
+		s.maxMemUsageBytes = Long.parseLong (res.get (3));
 
+		return s;
+	}
+
+	public SolutionStatistics getLastSolutionStats () {
+		return lastSolveStats;
+	}
+
+	protected boolean verbose () {
+		return params.flagValue ("verbosity") >= 3;
+	}
+
+	// TODO: duplication is absurd now, need to use the Logger class
+	protected void log (String msg) {  log (3, msg);  }
+	protected void log (int level, String msg) {
+		if (params.flagValue ("verbosity") >= level)
+			System.out.println ("[SATBackend] "+ msg);
+	}
 
 
 	/**

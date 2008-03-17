@@ -4,55 +4,20 @@
 package streamit.frontend.solvers;
 
 /**
- * FIXME: implement this class
+ * Basic statistics from the SAT backend.
  *
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class SATSolutionStatistics extends SolutionStatistics {
+	protected boolean success;
+	protected long elapsedTimeMs;
+	protected long modelBuildingTimeMs;
+	protected long solutionTimeMs;
+	protected long maxMemUsageBytes;
 
-	/* (non-Javadoc)
-	 * @see streamit.frontend.solvers.SolutionStatistics#elapsedTimeMs()
-	 */
-	@Override
-	public long elapsedTimeMs () {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see streamit.frontend.solvers.SolutionStatistics#maxMemoryUsageBytes()
-	 */
-	@Override
-	public long maxMemoryUsageBytes () {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see streamit.frontend.solvers.SolutionStatistics#modelBuildingTimeMs()
-	 */
-	@Override
-	public long modelBuildingTimeMs () {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see streamit.frontend.solvers.SolutionStatistics#solutionTimeMs()
-	 */
-	@Override
-	public long solutionTimeMs () {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see streamit.frontend.solvers.SolutionStatistics#successful()
-	 */
-	@Override
-	public boolean successful () {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
+	public long elapsedTimeMs () 	   {  return elapsedTimeMs;  }
+	public long maxMemoryUsageBytes () {  return maxMemUsageBytes;  }
+	public long modelBuildingTimeMs () {  return modelBuildingTimeMs;  }
+	public long solutionTimeMs ()      {  return solutionTimeMs;  }
+	public boolean successful () 	   {  return success;  }
 }

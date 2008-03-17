@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Misc extends AssertedClass
 {
@@ -55,5 +59,20 @@ public class Misc extends AssertedClass
 			if (withLineNumbers)  out.print ("["+ (++lineno) +"] ");
 			out.println (line);
 		}
+	}
+
+	/** Returns null if the pattern wasn't found, otherwise returns a list
+	 * of the matched groups. */
+	public static List<String> search (String S, String regex) {
+		Matcher m = Pattern.compile (regex, Pattern.MULTILINE).matcher (S);
+		List<String> groups = null;
+
+		if (m.find ()) {
+			groups = new ArrayList<String> ();
+			for (int i = 1; i <= m.groupCount (); ++i)
+				groups.add (m.group (i));
+		}
+
+		return groups;
 	}
 }

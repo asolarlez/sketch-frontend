@@ -63,7 +63,7 @@ public class CFGSimplifier {
 
 
 	void addNodeToPreds(CFGNode node, CFGNode pred){
-		System.out.println(" adding " + node.getId() + " to pred " + pred.getId());
+		//System.out.println (" adding " + node.getId() + " to pred " + pred.getId());
 		//node.checkNeighbors();
 		assert pred != node;
 		assert pred.isStmt() : "this is weird";
@@ -99,7 +99,7 @@ public class CFGSimplifier {
 	}
 
 	void addNodeToSucc(CFGNode node, CFGNode succ){
-		System.out.println(" adding " + node.getId() + " to succ " + succ.getId());
+		//System.out.println (" adding " + node.getId() + " to succ " + succ.getId());
 		assert node.isStmt();
 		assert succ.getPreds().size() == 1 : "succ should have a single predecessor, and that's node";
 		if(succ.isStmt()){
@@ -163,7 +163,7 @@ public class CFGSimplifier {
 			varsforNode.put(node, nodeLocals);
 		}
 		int oldSz = usedOnceVariables.size();
-		System.out.println("*** #locals before " + locals.size());
+		//System.out.println ("*** #locals before " + locals.size());
 		usedOnceVariables.removeAll(usedAlotVariables);
 		assert usedOnceVariables.size() + usedAlotVariables.size() == oldSz;
 		assert oldSz <= locals.size();
@@ -558,8 +558,8 @@ public class CFGSimplifier {
 	}
 
 	private CFGNode simplifyNode(CFGNode n, Set<CFGNode> ccset, Set<CFGNode> visited){
-		if(visited.contains(n)){System.out.println(" already visited " + n); return n;}
-		System.out.println("visiting node " + n);
+		if(visited.contains(n)){/*System.out.println (" already visited " + n);*/return n;}
+		//System.out.println ("visiting node " + n);
 		visited.add(n);
 		List<EdgePair> succ = n.getSuccs();
 		if(n.isExpr()){

@@ -4,7 +4,6 @@
 package streamit.frontend.solvers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.tosbit.ValueOracle;
+import streamit.misc.Misc;
 import streamit.misc.NullStream;
 
 /**
@@ -37,7 +37,7 @@ public class SpinVerifier implements Verifier {
 	protected int vectorSize;	// bytes
 	protected Map<Integer, Integer> lineToStmtnum;
 
-	protected SpinSolutionStatistics currStats;
+	protected SpinSolutionStatistics lastSolveStats;
 
 	public SpinVerifier (TempVarGen v, Program p) {
 		this (v, p, new Configuration (), 0, true, VECTORSZ_GUESS);
@@ -70,9 +70,9 @@ public class SpinVerifier implements Verifier {
 			// SPIN code generator and the C compiler are strictly less than
 			// the amount used by the model checker, and therefore can safely
 			// be ignored.
-			currStats = new SpinSolutionStatistics ();
-			currStats.cgenTimeMs = spin.getCodegenTimeMs ();
-			currStats.compilerTimeMs = spin.getCompileTimeMs ();
+			lastSolveStats = new SpinSolutionStatistics ();
+			lastSolveStats.cgenTimeMs = spin.getCodegenTimeMs ();
+			lastSolveStats.compilerTimeMs = spin.getCompileTimeMs ();
 
 			String out = spin.getOutput ();
 			String trail = spin.getTrail ();
@@ -84,7 +84,7 @@ public class SpinVerifier implements Verifier {
 				continue;
 			}
 
-			addSpinStats (currStats, out);
+			addSpinStats (lastSolveStats, out);
 
 			try {
 				if (deadlock (out)) {
@@ -92,7 +92,7 @@ public class SpinVerifier implements Verifier {
 					log (5, "counterexample from deadlock: "+ cex);
 					return cex;
 				} else if (trail.length () == 0) {
-					currStats.success = true;
+					lastSolveStats.success = true;
 					return null;	// success!
 				} else {
 					CounterExample cex = parseTrace (trail);
@@ -100,12 +100,12 @@ public class SpinVerifier implements Verifier {
 					return cex;
 				}
 			} finally {
-				log (3, "Stats for last run:\n"+ currStats);
+				log (2, "Stats for last run:\n"+ lastSolveStats);
 			}
 		}
 	}
 
-	public SolutionStatistics getLastSolutionStats () {  return currStats;  }
+	public SolutionStatistics getLastSolutionStats () {  return lastSolveStats;  }
 
 	protected void printVectorszNotice () {
 		log (3, "VECTORSZ too small, increased to "+ vectorSize);
@@ -191,15 +191,15 @@ public class SpinVerifier implements Verifier {
 	protected void addSpinStats (SpinSolutionStatistics s, String out) {
 		List<String> res;
 
-		res = search (out, "pan: elapsed time (\\d+(?:\\.\\d+)?)");
+		res = Misc.search (out, "pan: elapsed time (\\d+(?:\\.\\d+)?)");
 		assert null != res;
 		s.spinTimeMs = (long) (1000.0 * Float.parseFloat (res.get (0)));
 
-		res = search (out, "(\\d+) states, stored");
+		res = Misc.search (out, "(\\d+) states, stored");
 		assert null != res;
 		s.spinNumStates = Long.parseLong (res.get (0));
 
-		res = search (out,
+		res = Misc.search (out,
 				"(\\d+\\.\\d+)\\s+equivalent memory usage.*(?:\\r\\n|\\n|\\r).*"+
 				"(\\d+\\.\\d+)\\s+actual memory usage for states");
 		if (null != res) {
@@ -209,11 +209,11 @@ public class SpinVerifier implements Verifier {
 			s.spinStateCompressionPct = 100.0f *
 				((float) s.spinActualStateMemBytes) / (float) s.spinEquivStateMemBytes;
 
-			res = search (out, "(\\d+\\.\\d+)\\s+total actual memory usage");
+			res = Misc.search (out, "(\\d+\\.\\d+)\\s+total actual memory usage");
 			assert null != res;
 			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
 
-			res = search (out, "pan: rate\\s+(\\d+(?:\\d+)?) states/second");
+			res = Misc.search (out, "pan: rate\\s+(\\d+(?:\\d+)?) states/second");
 			if (null != res)
 				s.spinStateExplorationRate =
 					(long) Float.parseFloat (res.get (0));
@@ -222,7 +222,7 @@ public class SpinVerifier implements Verifier {
 			// lite memory stats
 			log (5, "SPIN only produced 'lite' memory stats");
 
-			res = search (out, "(\\d+\\.\\d+)\\s+memory usage \\(Mbyte\\)");
+			res = Misc.search (out, "(\\d+\\.\\d+)\\s+memory usage \\(Mbyte\\)");
 			assert null != res;
 			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
 		}
@@ -260,20 +260,5 @@ public class SpinVerifier implements Verifier {
 	protected void log (int minVerbosity, String msg) {
 		if (verbosity >= minVerbosity)
 			System.out.println ("[SPINVERIF]["+ minVerbosity+"] "+ msg);
-	}
-
-	/** Returns null if the pattern wasn't found, otherwise returns a list
-	 * of the matched groups. */
-	protected List<String> search (String S, String regex) {
-		Matcher m = Pattern.compile (regex, Pattern.MULTILINE).matcher (S);
-		List<String> groups = null;
-
-		if (m.find ()) {
-			groups = new ArrayList<String> ();
-			for (int i = 1; i <= m.groupCount (); ++i)
-				groups.add (m.group (i));
-		}
-
-		return groups;
 	}
 }
