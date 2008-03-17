@@ -14,6 +14,7 @@ package streamit.misc;
 public class ProcessStatus {
 	public int exitCode;
 	public String out, err;
+	public boolean killed;
 	public long execTimeMs;		// TODO: find a less unholy place to put this
 	public ProcessStatus () {}
 }
