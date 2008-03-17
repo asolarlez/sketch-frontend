@@ -96,11 +96,11 @@ public class CompilationStatistics extends Statistics {
 		public boolean stop;
 
 		public synchronized void run () {
-			while (!stop) {
+			do {
 				maxMemBytes = Math.max (maxMemBytes,
 										Runtime.getRuntime ().totalMemory ());
 				try {  wait (1000);  } catch (InterruptedException ie) { }
-			}
+			} while (!stop);
 		}
 	}
 
