@@ -50,6 +50,7 @@ import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateAnyorder;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
+import streamit.frontend.passes.EliminateInsertBlocks;
 import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.EliminateNestedArrAcc;
 import streamit.frontend.passes.EliminateStructs;
@@ -263,6 +264,8 @@ public class ToSBit
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
 		lprog = (Program)lprog.accept(new EliminateAnyorder(varGen));
+		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
+		dump (lprog, "~insertblocks:");
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
@@ -406,7 +409,7 @@ public class ToSBit
 
 		params.setAllowedParam("timeout", new POpts(POpts.NUMBER,
 				"--timeout min  \t Kills the solver after min minutes.",
-				null, null) );
+				"0", null) );
 
 		params.setAllowedParam("fakesolver", new POpts(POpts.FLAG,
 				"--fakesolver   \t This flag indicates that the SAT solver should not be invoked. " +

@@ -98,6 +98,7 @@ class TestStats:
         for i, stat in enumerate (('feElapsed', 'feMaxmem')):
             self.stats[stat] = m.group (i+1)
 
+
 def runTests (tests):
     return [TestStats (t.run ()) for t in tests]
 
