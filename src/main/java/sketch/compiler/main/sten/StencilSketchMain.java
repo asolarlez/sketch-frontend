@@ -38,7 +38,7 @@ import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.BackendCleanup;
 import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateAnyorder;
+import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.SeparateInitializers;
@@ -57,9 +57,9 @@ import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 /**
- * This class manages all the work involed in compiling a stencil 
+ * This class manages all the work involed in compiling a stencil
  * sketch into C (or Fortran) code.
- * 
+ *
  * @author asolar
  */
 public class ToStencilSK extends ToSBit
@@ -69,98 +69,98 @@ public class ToStencilSK extends ToSBit
 	ToStencilSK(String[] args){
 		super(args);
 	}
-	
-	
-	
+
+
+
     protected Program preprocessProgram(Program prog) {
     	Program lprog = prog;
-    	lprog = (Program)lprog.accept(new EliminateAnyorder(varGen));
-		lprog = (Program)lprog.accept(new FunctionParamExtension(true));		
+    	lprog = (Program)lprog.accept(new EliminateReorderBlocks());
+		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
-		
+
 		//dump (prog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
 		prog = lprog;
-        originalProg = prog;    	
-    	System.out.println("=============================================================");    	
-    	prog = (Program)prog.accept(new FlattenStmtBlocks());    	
+        originalProg = prog;
+    	System.out.println("=============================================================");
+    	prog = (Program)prog.accept(new FlattenStmtBlocks());
     	prog= (Program)prog.accept(new EliminateTransAssns());
-    	prog= (Program)prog.accept(new PropagateFinals());    	
+    	prog= (Program)prog.accept(new PropagateFinals());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	prog = (Program)prog.accept(new EliminateDeadCode(true));
     	System.out.println("=============================================================");
     	prog.accept( new SimpleCodePrinter() );
-    	
+
         prog = (Program) prog.accept(new ReplaceFloatsWithBits());
         //prog = (Program)prog.accept(new VariableDisambiguator());
         System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());
-        System.out.println(" After mpn ");             
+        System.out.println(" After mpn ");
         return prog;
     }
-	
-	
-	
+
+
+
     public RecursionControl visibleRControl(){
     	// return new DelayedInlineRControl(params.inlineAmt, params.branchingFactor);
-    	return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog); 
+    	return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog);
     }
-    
+
     public void run()
-    {    	
-        
+    {
+
         parseProgram();       // parse
-        
+
         //run semantic checker
         if (!StencilSemanticChecker.check(prog))
             throw new IllegalStateException("Semantic check failed");
-                
-        
-        prog=preprocessProgram(prog); // perform prereq transformations        
 
-        
+
+        prog=preprocessProgram(prog); // perform prereq transformations
+
+
         if (prog == null)
             throw new IllegalStateException();
-        
+
         TempVarGen varGen = new TempVarGen();
         prog = (Program)prog.accept(new SeparateInitializers());
-        prog = (Program) prog.accept( new ScalarizeVectorAssignments(varGen, true) );  
+        prog = (Program) prog.accept( new ScalarizeVectorAssignments(varGen, true) );
 
         System.out.println("After SVA.");
-        
+
        //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
        //prog.accept(new SimpleCodePrinter());
        //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         System.out.println("Before preprocessing.");
-        
+
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
-        
+
 //        prog.accept(new SimpleCodePrinter());
-        
+
         FunctionalizeStencils fs = new FunctionalizeStencils();
-        
+
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
-        
+
         prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
         //fs.printFuns();
         System.out.println("After running transformation.");
-        
-       
+
+
         /*
         Program tmp = (Program)prog.accept(new FlattenStmtBlocks());
     	tmp = (Program)tmp.accept(new EliminateTransitiveAssignments());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	tmp = (Program)tmp.accept(new EliminateDeadCode());
     	//System.out.println("=========  After ElimDeadCode  =========");
-    	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
+    	tmp = (Program)tmp.accept(new SimplifyVarNames());
         tmp.accept(new SimpleCodePrinter());
         */
-                
-    	
-    	Program tmp = (Program) prog.accept( 
+
+
+    	Program tmp = (Program) prog.accept(
     			new DataflowWithFixpoint(new IntVtype(), varGen, true,  params.flagValue("unrollamnt"), visibleRControl() ){
     				protected List<Function> functionsToAnalyze(StreamSpec spec){
     				    return new LinkedList<Function>(spec.getFuncs());
@@ -168,19 +168,19 @@ public class ToStencilSK extends ToSBit
     				public String transName(String name){
     					return state.transName(name);
     				}
-    			});    	
+    			});
         //Program tmp = (Program) prog.accept( new PreprocessSketch(varGen, params.unrollAmt, newRControl()));
         tmp = (Program)tmp.accept(new FlattenStmtBlocks());
     	tmp = (Program)tmp.accept(new EliminateTransAssns());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	tmp = (Program)tmp.accept(new EliminateDeadCode(true));
     	//System.out.println("=========  After ElimDeadCode  =========");
-    	tmp = (Program)tmp.accept(new SimplifyVarNames());    	
+    	tmp = (Program)tmp.accept(new SimplifyVarNames());
         tmp.accept(new SimpleCodePrinter());
-        
+
         prog = tmp;
-        
-        
+
+
         oracle = new ValueOracle( new StaticHoleTracker(varGen) );
         partialEvalAndSolve();
         eliminateStar();
@@ -191,7 +191,7 @@ public class ToStencilSK extends ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));
-		
+
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
@@ -204,7 +204,7 @@ public class ToStencilSK extends ToSBit
     	finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 	}
 
-	
+
 	protected Program doBackendPasses(Program prog) {
     	prog=(Program) prog.accept(new BackendCleanup());
     	return prog;
@@ -227,7 +227,7 @@ public class ToStencilSK extends ToSBit
             }
         }
     }
-	
+
     protected void outputFortranCode() {
         String resultFile = getOutputFileName();
 		finalCode=(Program) finalCode.accept(new VariableDisambiguator());
@@ -247,7 +247,7 @@ public class ToStencilSK extends ToSBit
             }
         }
     }
-	
+
 	public void generateCode(){
 		finalCode.accept(new SimpleCodePrinter());
 		finalCode=doBackendPasses(finalCode);
@@ -257,7 +257,7 @@ public class ToStencilSK extends ToSBit
 			outputCCode();
 		}
 	}
-	
+
 	public static void main(String[] args)
 	{
 		new ToStencilSK(args).run();

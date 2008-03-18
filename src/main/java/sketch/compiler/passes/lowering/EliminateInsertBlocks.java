@@ -51,7 +51,7 @@ public class EliminateInsertBlocks extends FEReplacer {
 
 	public Object visitStmtInsertBlock (StmtInsertBlock sib) {
 		String where = varGen.nextVar ("_ins_where");
-		Statement S = sib.getInsertStmt ();
+		Statement S = (Statement) sib.getInsertStmt ().accept (this);
 		List<Statement> oldB = sib.getIntoBlock ().getStmts ();
 		List<Statement> newB = new ArrayList<Statement> ();
 		String maxVal = ""+ oldB.size ();
@@ -68,7 +68,7 @@ public class EliminateInsertBlocks extends FEReplacer {
 								)));
 
 		for (int i = 0; i < oldB.size (); ++i) {
-			Statement si = oldB.get (i);
+			Statement si = (Statement) oldB.get (i).accept (this);
 
 			newB.add (new StmtIfThen (si,
 						new ExprBinary (new ExprVar (si, where),
