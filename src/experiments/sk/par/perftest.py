@@ -15,7 +15,7 @@ class Test:
         self.args = list (cmd) + [path]
 
     def run (self):
-        self.logfile.write ('\nRunning test %s ...'% (self.name))
+        self.logfile.write ('Running test %s ... '% (self.name))
         self.logfile.flush ()
         p = subprocess.Popen (self.args, cwd=self.workdir,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -62,7 +62,7 @@ class TestStats:
         assert m
 
         for i, stat in enumerate (('allSolved', 'allIters', 'allMaxmem', 'allElapsed',
-                                   'all%frontend', 'all%verif', 'all%synth')):
+                                   'fe%All', 'verif%All', 'synth%All')):
             self.stats[stat] = m.group (i+1)
 
     def getSynthStats (self):  self.getSolverStats (r'Synthesizer', 'synth')
@@ -98,9 +98,41 @@ class TestStats:
         for i, stat in enumerate (('feElapsed', 'feMaxmem')):
             self.stats[stat] = m.group (i+1)
 
-
 def runTests (tests):
     return [TestStats (t.run ()) for t in tests]
+
+def prettyPrint (stats, out=sys.stdout):
+    '''Output a tabular representation of the list of TestStats, STATS.'''
+    cols = { 'allElapsed':    'Total time (s)',
+             'allMaxmem':     'Max mem (MiB)',
+             'allIters':      'Iterations',
+             'fe%All':        'Frontend time (%)',
+             'feMaxmem':      'Frontend mem (MiB)',
+             'synth%All':     'Synth time (%)',
+             'synthModel':    'Synth model (s)',
+             'synthSoln':     'Synth soln (s)',
+             'synthMaxmem':   'Synth mem (MiB)',
+             'verif%All':     'Verif time (%)',
+             'verifModel':    'Verif model (s)',
+             'verifSoln':     'Verif soln (s)',
+             'verifMaxmem':   'Verif mem (MiB)' }
+    colwidth = 20
+
+    def adj (s):  return ' ' * (colwidth - len (s))
+    def lfill (s):  return s + adj (s)
+    def rfill (s):  return adj (s) + s
+
+    out.write (lfill ('Name'))
+    for col, head in sorted (cols.iteritems ()):
+        out.write (' || '+ rfill (head))
+    print >>out
+    print >>out, '-' * colwidth * (len (cols) + len (' || '))
+    for s in stats:
+        out.write (lfill (s.test.name))
+        for col, head in sorted (cols.iteritems ()):
+            out.write ('  | '+ rfill (s.stats[col]))
+        print >>out
+
 
 def _usage ():
     print >>sys.stderr, '''
@@ -113,7 +145,7 @@ Usage:
 if __name__ == '__main__':
     cmd = sys.argv[1:]
     if not len (cmd):  _usage ()
-    logf = sys.stderr
+    logf = sys.stdout
     cwd = os.getcwd ()
 
     tests = (
@@ -126,8 +158,4 @@ Test ('lock-free_queue/enqueueSolution.sk',      cwd,  logf,
 #Test ('bigSketches/fineLockingSk1.sk',          '..',  logf,
 #      cmd)
 )
-
-    for stat in runTests (tests):
-        print '\nResults for test', stat.test.name
-        for k, v in sorted (stat.stats.iteritems ()):
-            print '  %s = %s' %(k, v)
+    prettyPrint (runTests (tests))
