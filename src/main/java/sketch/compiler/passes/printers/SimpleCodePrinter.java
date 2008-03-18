@@ -9,11 +9,11 @@ public class SimpleCodePrinter extends CodePrinter
 {
 	boolean outtags = false;
 	public SimpleCodePrinter outputTags(){
-		
+
 		outtags = true;
 		return this;
 	}
-	
+
 	public SimpleCodePrinter() {
 		this(System.out);
 	}
@@ -221,6 +221,14 @@ public class SimpleCodePrinter extends CodePrinter
 		printLine("reorder");
 		block.getBlock().accept(this);
 		return block;
+	}
+
+	public Object visitStmtInsertBlock (StmtInsertBlock sib) {
+		printLine ("insert");
+		sib.getInsertStmt ().accept (this);
+		printLine ("into");
+		sib.getIntoBlock ().accept (this);
+		return sib;
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block){
