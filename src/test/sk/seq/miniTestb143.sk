@@ -1,0 +1,9 @@
+int spec (int in) {
+    return ((in + 1) * 2) / 3;
+}
+
+int sketch (int in) implements spec {
+    insert {  in = in * 2;  }
+    into {  in = in + 1;  in = in / 3;  }
+    return in;
+}
