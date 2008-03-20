@@ -13,6 +13,7 @@ import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateLockUnlock;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.NumberStatements;
@@ -134,6 +135,7 @@ public class ToPSbitII extends ToSBit {
 
 	protected Program preprocessProgram(Program lprog) {
 		lprog = super.preprocessProgram(lprog);
+		lprog = (Program) lprog.accept (new EliminateConditionals(varGen));
 		dump (lprog, "Before AtomizeStatements:");
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 		dump (lprog, "AtomizeStatements:");
@@ -146,9 +148,11 @@ public class ToPSbitII extends ToSBit {
 
 		super.lowerIRToJava();
 
+		prog = (Program) prog.accept (new EliminateConditionals(varGen));
 		prog = (Program) prog.accept(new ProtectArrayAccesses(
 				FailurePolicy.ASSERTION, varGen));
-		//prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+		//prog = (Program) prog.accept(new ProtectArrayAccesses(
+		//		  FailurePolicy.WRSILENT_RDZERO, varGen));
 
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));

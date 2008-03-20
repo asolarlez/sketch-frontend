@@ -31,6 +31,7 @@ import streamit.frontend.nodes.TypePrimitive;
  * t2 = b;
  * a = t1 + t2;
  *
+ * Assumes that conditional expressions have been eliminated.
  *
  * @author asolar
  *
@@ -54,9 +55,9 @@ public class AtomizeStatements extends SymbolTableVisitor {
 	public Object visitExprBinary (ExprBinary exp) {
 		String op = exp.getOpString ();
 		if (op.equals ("&&"))
-			return makeLogicalExpr (exp, true);
+			return doLogicalExpr (exp, true);
 		else if (op.equals ("||"))
-			return makeLogicalExpr (exp, false);
+			return doLogicalExpr (exp, false);
 
 		Expression left = doExpression (exp.getLeft ());
 		if (left instanceof ExprVar && isGlobal ((ExprVar) left)) {
@@ -75,7 +76,7 @@ public class AtomizeStatements extends SymbolTableVisitor {
 					.getAlias ());
 	}
 
-	protected Expression makeLogicalExpr (ExprBinary eb, boolean isAnd) {
+	protected Expression doLogicalExpr (ExprBinary eb, boolean isAnd) {
 		Expression left = eb.getLeft (), right = eb.getRight ();
 
 		if (!(isGlobal (left) || isGlobal (right)))
