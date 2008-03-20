@@ -21,7 +21,6 @@ import streamit.frontend.nodes.ExprNew;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
@@ -92,8 +91,8 @@ public class EliminateStructs extends SymbolTableVisitor {
     		return new Parameter(t, par.getName(), par.getPtype() );
     	}
 	}
-	
-	
+
+
 	/**
 	 * Add variable declarations to the body of 'func', and rewrite its body.
 	 */
@@ -104,12 +103,14 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
 
+	        List<Parameter> newParams = new ArrayList<Parameter>();
 	        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); ) {
 	            Parameter param = (Parameter)iter.next();
 	            symtab.registerVar(param.getName(),
 	                               actualType(param.getType()),
 	                               param,
 	                               SymbolTable.KIND_FUNC_PARAM);
+	            newParams.add ((Parameter) param.accept (this));
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
@@ -133,7 +134,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        StmtBlock newBody = new StmtBlock (oldBody, newBodyStmts);
 
 	        return new Function (func2, func2.getCls (), func2.getName (),
-	        			func2.getReturnType (), func2.getParams (),
+	        			func2.getReturnType (), newParams,
 	        			func2.getSpecification (), newBody);
 		}
 
@@ -144,11 +145,11 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        List<Parameter> newParams = new ArrayList<Parameter>();
 	        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); ) {
 	            Parameter param = (Parameter)iter.next();
-	            newParams.add(param);
 	            symtab.registerVar(param.getName(),
 	                               actualType(param.getType()),
 	                               param,
 	                               SymbolTable.KIND_FUNC_PARAM);
+	            newParams.add ((Parameter) param.accept (this));
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
@@ -190,10 +191,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 		String newName = fc.getName();
 
 		Function fun = this.sspec.getFuncNamed(newName) ;
-		if( fun.isUninterp() ){			
+		if( fun.isUninterp() ){
 			return super.visitExprFunCall(fc);
 		}
-		
+
 		List<Expression> newplist = new ArrayList<Expression>(fc.getParams());
 
 
