@@ -1,0 +1,21 @@
+bit test () { return 1; }
+
+bit main () implements test {
+    int[1] arr;
+    int idx = -1;
+    int foo;
+
+    fork (int i; 2) {
+        int myIdx = idx;
+
+        foo = myIdx == -1 ? 1 : arr[-1];
+
+        if (idx == -1 || (0 == arr[myIdx] && 0 == arr[myIdx-1])) {
+            myIdx = 0;
+            arr[myIdx] = -1;
+        }
+
+        idx = -1;
+    }
+    return 1;
+}
