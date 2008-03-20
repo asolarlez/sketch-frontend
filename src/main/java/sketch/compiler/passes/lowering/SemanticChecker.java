@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
@@ -59,6 +60,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBody;
 import streamit.frontend.nodes.StmtDoWhile;
 import streamit.frontend.nodes.StmtEmpty;
@@ -599,6 +601,21 @@ public class SemanticChecker
 			}
 
 			private Type currentFunctionReturn = null;
+			
+			private Stack<StmtAtomicBlock> atomics = new Stack<StmtAtomicBlock>();
+			
+			@Override
+			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
+				
+				if(stmt.isCond() && atomics.size() > 0){ report(stmt, "Conditional atomics not allowed inside other atomics"); } 
+				atomics.push(stmt);
+				Object o = super.visitStmtAtomicBlock(stmt);
+				StmtAtomicBlock sab = atomics.pop();
+				assert sab == stmt : "This is strange";
+				return o;
+				
+			}
+			
 
 			public Object visitFunction(Function func)
 			{
@@ -1095,21 +1112,43 @@ public class SemanticChecker
 				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
-				// also need to check that the variable is incremented by 1
-				stmt.getIncr ().assertTrue (stmt.getIncr () instanceof StmtExpr,
-					"Sorry, we only support increment /expressions/");
-				StmtExpr incr = (StmtExpr)stmt.getIncr();
-				ExprUnary incrExpr = (ExprUnary) incr.getExpression();
-
-				if (incrExpr.getOp() != ExprUnary.UNOP_POSTINC &&
-					incrExpr.getOp() != ExprUnary.UNOP_POSTDEC &&
-					incrExpr.getOp() != ExprUnary.UNOP_PREINC &&
-					incrExpr.getOp() != ExprUnary.UNOP_PREDEC )
-					report (stmt, "Increment expression should be of the form (var){++,--}: " + incrExpr);
-
-				// again, should check for variable usage
-
+				
+				if(!isIncrByOne(stmt.getIncr())){
+					report(stmt, "Increment in for loop should be either increment or decrement by one.");
+				}
+				
 				return (stmt);
+			}
+			
+			private boolean isIncrByOne(Statement incr){
+				if(incr instanceof StmtAssign){
+					StmtAssign sa = (StmtAssign)incr;
+					String indName = sa.getLHS().toString();					
+					
+					if(!(sa.getRHS() instanceof ExprBinary)){
+						return false;
+					}
+					ExprBinary rhsbin = (ExprBinary) sa.getRHS();
+					
+					Integer rhsrhs = rhsbin.getRight().getIValue();
+					if(!(rhsbin.getOp() == ExprBinary.BINOP_ADD ||rhsbin.getOp() == ExprBinary.BINOP_SUB) || rhsrhs == null || rhsrhs != 1 || !rhsbin.getLeft().toString().equals(indName)){
+						return false;
+					}
+				}else{
+					if(incr instanceof StmtExpr){
+						StmtExpr se = (StmtExpr) incr;
+						if(se.getExpression() instanceof ExprUnary && 
+								( ((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC 
+										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREINC )){
+							
+						}else{
+							return false;	
+						}
+					}else{
+						return false;
+					}
+				}
+				return true;
 			}
 
 			public Object visitStmtIfThen(StmtIfThen stmt)
