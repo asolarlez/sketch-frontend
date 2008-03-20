@@ -1,0 +1,27 @@
+bit test () { return 1; }
+
+bit main () implements test {
+    int[1] arr;
+    int idx = -1;
+
+    arr[0] = 0;
+
+    fork (int i; 2) {
+        atomic {
+            // The first thread to reach this stmt will take this branch.
+            // Attempting to evaluate the right side of this || should cause
+            // an assertion failure.
+            if (idx == -1 || (0 == arr[idx] && 0 == arr[idx-1])) {
+                idx = 0;
+                arr[idx] = -1;
+            }
+            // The second thread to reach this stmt will take this branch.
+            // Attempting to evaluate the right side of this && should cause
+            // an assertion failure.
+            else if (idx == -1 && (0 == arr[arr[idx]] && 0 == arr[-1])) {
+                assert false;
+            }
+        }
+    }
+    return 1;
+}
