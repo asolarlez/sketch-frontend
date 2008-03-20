@@ -73,7 +73,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		left = doExpression (left);
 
 		String resName = varGen.nextVar ("_pac_sc");
-		addStatement (new StmtVarDecl (eb, TypePrimitive.booltype, resName, left));
+		addStatement (new StmtVarDecl (eb, TypePrimitive.bittype, resName, left));
 		ExprVar res = new ExprVar (eb, resName);
 
 		List<Statement> oldStatements = newStatements;
