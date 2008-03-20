@@ -5,7 +5,7 @@ struct Node{
 
 struct Queue{
 	Node prevHead;
-	Node tail;	
+	Node tail;
 }
 
 
@@ -13,25 +13,25 @@ Queue newQueue(){
 	Queue q = new Queue();
 	q.prevHead = new Node();
 	q.prevHead.next = null;
-	q.tail = q.prevHead;	
+	q.tail = q.prevHead;
 	return q;
 }
 
 Node baseQ(Queue q){
 	if(??){
-		return q.tail;	
+		return q.tail;
 	}else{
 		return q.prevHead;
 	}
-	return null;	
+	return null;
 }
 
 Node someNext(Node n){
 	if(??){
-		return n;	
+		return n;
 	}else{
 		Node t= someNext(n);
-		return t.next;	
+		return t.next;
 	}
 	return null;
 }
@@ -42,10 +42,10 @@ Node gen(Queue q){
 }
 
 void enqueue(Queue q, int i){
-	Node n =new Node(); 	
+	Node n =new Node();
 	n.val = i;
 	n.next = null;
-	
+
 	Node ot = null;
 	reorder{
 		ot.next = n;
@@ -60,13 +60,13 @@ int dequeue(Queue q){
 	Node n = q.prevHead;
 	if(n.next != null){
 		q.prevHead = n.next;
-		return q.prevHead.val;	
+		return q.prevHead.val;
 	}else{
-		return -1;	
+		return -1;
 	}
 }
 
-bit test(bit in){	
+bit test(bit in){
 	return 1;
 }
 
