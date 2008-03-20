@@ -70,7 +70,7 @@ import streamit.misc.NullStream;
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  * @see CodePrinter
  */
-abstract public class CodePrinterVisitor extends SymbolTableVisitor {
+public class CodePrinterVisitor extends SymbolTableVisitor {
 	private static final class PrinterState {
 		PrintWriter out;
 		int line;

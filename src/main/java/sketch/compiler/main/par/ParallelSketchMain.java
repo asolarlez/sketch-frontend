@@ -19,6 +19,7 @@ import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SimpleLoopUnroller;
+import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.CompilationStatistics;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
@@ -142,7 +143,10 @@ public class ToPSbitII extends ToSBit {
 
 		super.lowerIRToJava();
 
-		prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+		prog = (Program) prog.accept(new ProtectArrayAccesses(
+				FailurePolicy.ASSERTION, varGen));
+		//prog = (Program) prog.accept(new ProtectArrayAccesses(varGen));
+
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
 		//dump(prog, "After elim locks");
@@ -170,7 +174,8 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public void generateCode (Program p) {
-		p.accept (new SimpleCodePrinter ());
+		//p.accept (new SimpleCodePrinter ());
+		prog.accept (new SimpleCodePrinter ());
 	}
 
 	public Synthesizer createSynth(Program p){
