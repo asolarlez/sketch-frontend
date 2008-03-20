@@ -87,6 +87,7 @@ public class SimpleLoopUnroller extends FEReplacer {
 		for(int i=0; i<sz; ++i){
 			VarReplacer vr = new VarReplacer(indName, new ExprConstInt(i + low) );
 			Statement s = (Statement) stmt.getBody().accept(vr);
+			s = s.doStatement(this);
 			addStatement( s );
 		}
 		return null;

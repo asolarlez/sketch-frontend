@@ -98,8 +98,8 @@ public class EliminateLockUnlock extends FEReplacer {
 */
 			 Statement ass = new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds.");
 			 StmtAssign getLock = new StmtAssign(new ExprArrayRange(locksVar, p),  new ExprBinary(loopVar, "+", ExprConstInt.one));
-
-			 Expression cond =new ExprBinary(new ExprArrayRange(locksVar, p), "==", ExprConstInt.zero);
+			 getLock.setCx(exp.getCx());
+			 Expression cond =new ExprBinary(exp, new ExprArrayRange(locksVar, p), "==", ExprConstInt.zero);
 			 addStatement(ass);
 			 return new StmtAtomicBlock(exp, getLock , cond);			 
 		 }else  if(exp.getName().equals("unlock")){
