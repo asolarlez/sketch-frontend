@@ -135,11 +135,10 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	protected Program preprocessProgram(Program lprog) {
-		lprog = super.preprocessProgram(lprog);
 		lprog = (Program) lprog.accept (new EliminateConditionals(varGen));
-		dump (lprog, "Before AtomizeStatements:");
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
-		dump (lprog, "AtomizeStatements:");
+		//dump (lprog, "AtomizeStatements:");
+		lprog = super.preprocessProgram(lprog);
 
 		return lprog;
 	}
@@ -161,7 +160,7 @@ public class ToPSbitII extends ToSBit {
 		// dump(prog, "after preproc 2.");
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
 		prog = (Program) prog.accept(new NumberStatements());
-		
+
 	}
 
 	public Program postprocessProgram (Program p) {
