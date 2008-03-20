@@ -4,8 +4,8 @@ int spec (int in) {
 
 int sketch (int in) implements spec {
     reorder {
-        in = in / 3;
         in = in * 2;
+        in = in / 3;
         in = in + 1;
     }
     return in;
