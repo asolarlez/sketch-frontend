@@ -82,6 +82,53 @@ public class CFG
     }
     
     
+    public void eliminateUnnecessaryExpr(){
+    	int j=0;
+    	for(Iterator<CFGNode> nit = nodes.iterator(); nit.hasNext(); ++j){
+    		CFGNode n = nit.next();
+    		if(n.isExpr()){
+    			List<EdgePair> succs = n.getSuccs();
+    			CFGNode theSucc = null;
+    			boolean shouldReplace = true;
+        		for(int i=0; i<succs.size(); ++i){
+        			CFGNode s = succs.get(i).node;
+        			if(theSucc == null){
+        				theSucc = s;
+        			}else{
+        				if(theSucc != s){
+        					shouldReplace = false;
+        					break;
+        				}
+        			}
+        		}
+    			if(!shouldReplace){
+    				continue; 
+    			}
+    			CFGNode cn = new CFGNode(n.getPreStmt());
+    			cn.addSucc(new CFGNode.EdgePair(theSucc, 0));
+    			
+    			for(CFGNode pred : n.getPreds() ){
+    				pred.changeSucc(n, cn);
+    				cn.addPred(pred);
+    			}
+    			
+    			theSucc.changePred(n, cn);
+    			nodes.set(j, cn);
+    			if(this.entry == n){
+    				this.entry = cn;
+    			}
+    			if(this.exit == n){
+    				this.entry = cn;
+    			}
+    		}
+    	}
+    	
+    	
+    	
+    	
+    }
+    
+    
     public void repOK(){
     	Set<CFGNode> nset = new HashSet<CFGNode>(nodes);
     	for(Iterator<CFGNode> nit = nodes.iterator(); nit.hasNext(); ){
