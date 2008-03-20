@@ -91,7 +91,7 @@ public class ExprUnary extends Expression
         if(op.equals("!")){
         	this.op = ExprUnary.UNOP_NOT;
         }else if(op.equals("-")){
-        	this.op = ExprUnary.UNOP_NOT;
+        	this.op = ExprUnary.UNOP_NEG;
         }else{
         	throw new RuntimeException("Constructor not supported for this type of operator: " + op);
         }
