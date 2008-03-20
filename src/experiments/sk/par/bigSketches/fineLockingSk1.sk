@@ -1,5 +1,5 @@
-#include "parTest/bigSketches/llset.skh"
-#include "parTest/bigSketches/llset.skh"
+// #include "parTest/bigSketches/llset.skh"
+#include "llset.skh"
 
 
 Node gnext(Node n){
@@ -72,16 +72,18 @@ void hhRemove(Set s, int in){
 			if(more && cur.val < in){
 				Node tprev = prev;
 				reorder{
-					atomic{
+					//atomic{
 					if(?? && comp(cur, prev, null)){ 
-						Node tmp = sel(cur, prev, tprev);
+						Node tmp = null;
+						atomic{ tmp = sel(cur, prev, tprev); }
 						lock(tmp); }  // 6 * 36 =
-					}
-					atomic{ 
+					
+					//atomic{ 
 					if(prev != null){ 
-						Node tmp = sel(cur, prev, tprev);
+						Node tmp = null;
+						atomic{ tmp = sel(cur, prev, tprev); }
 						unlock(tmp); }// 6 * 36 =
-					} 
+					
 					atomic{
 						prev = cur;
 						cur = cur.next;
