@@ -79,13 +79,13 @@ public class AtomizeStatements extends SymbolTableVisitor {
 	protected Expression doLogicalExpr (ExprBinary eb, boolean isAnd) {
 		Expression left = eb.getLeft (), right = eb.getRight ();
 
-		if (!(isGlobal (left) || isGlobal (right)))
-			return eb;
+		//if (!(isGlobal (left) || isGlobal (right)))
+		//	return eb;
 
 		left = doExpression (left);
 
 		String resName = varGen.nextVar ("_atomize_sc");
-		addStatement (new StmtVarDecl (eb, TypePrimitive.booltype, resName, left));
+		addStatement (new StmtVarDecl (eb, TypePrimitive.bittype, resName, left));
 		ExprVar res = new ExprVar (eb, resName);
 
 		List<Statement> oldStatements = newStatements;
