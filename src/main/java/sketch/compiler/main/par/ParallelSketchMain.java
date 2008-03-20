@@ -134,6 +134,7 @@ public class ToPSbitII extends ToSBit {
 
 	protected Program preprocessProgram(Program lprog) {
 		lprog = super.preprocessProgram(lprog);
+		dump (lprog, "Before AtomizeStatements:");
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 		dump (lprog, "AtomizeStatements:");
 		return lprog;
