@@ -1,0 +1,27 @@
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in + ??;
+	assert global <4;
+	fork(int i; 2){
+		int local;
+		for(int t = 0; t < 2; ++t){ 
+		
+		reorder{
+			local = global + 1;
+			global = local;
+		}
+		
+		
+		}		
+	}
+	assert global ==  in + ?? || global ==in + ?? || global ==in + ??;
+	return 1;
+}
+
+
+
