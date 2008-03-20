@@ -41,7 +41,7 @@ public class StmtReorderBlock extends Statement {
     }
 
     public String toString(){
-    	String result = "anyorder{\n";
+    	String result = "reorder{\n";
     	Iterator it = block.getStmts().iterator();
     	while(it.hasNext()){
     		result += it.next().toString() + "\n";
