@@ -33,7 +33,7 @@ public class StmtAtomicBlock extends  Statement{
 		this.cond = cond;
 	}
 
-	public StmtAtomicBlock (FENode context, StmtBlock stmt, Expression cond) {
+	public StmtAtomicBlock (FENode context, StmtBlock stmt, Expression cond) {		
 		super (context);
 		block = stmt;
 		this.cond = cond;
@@ -56,6 +56,7 @@ public class StmtAtomicBlock extends  Statement{
 	 */
 	public StmtAtomicBlock (FEContext context, List<? extends Statement> stmts) {
 		super (context);
+		assert context != null;
 		block = new StmtBlock(context, stmts);
 	}
 
@@ -66,6 +67,7 @@ public class StmtAtomicBlock extends  Statement{
 	 */
 	public StmtAtomicBlock (FEContext context, List<? extends Statement> stmts, Expression cond) {
 		super (context);
+		assert context != null;
 		block = new StmtBlock(context, stmts);
 		this.cond = cond;
 	}

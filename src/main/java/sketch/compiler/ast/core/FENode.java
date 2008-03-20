@@ -106,4 +106,8 @@ public abstract class FENode
     public void report (String errorMsg) {
     	System.err.println(getCx () + ": " + errorMsg);
     }
+    
+    public void setCx(FEContext cx){
+    	context = cx;
+    }
 }
