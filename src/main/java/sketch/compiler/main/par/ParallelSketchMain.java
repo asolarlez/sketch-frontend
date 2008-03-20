@@ -10,17 +10,16 @@ import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
+import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
 import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateLockUnlock;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SimpleLoopUnroller;
-import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.CompilationStatistics;
 import streamit.frontend.solvers.CounterExample;
 import streamit.frontend.solvers.SATSynthesizer;
@@ -81,7 +80,7 @@ public class ToPSbitII extends ToSBit {
 			//dump (prog, "After preprocessing");
 			// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 			// if (!SemanticChecker.check(prog))
-			//	throw new IllegalStateException("Semantic check failed");
+			// throw new IllegalStateException("Semantic check failed");
 
 			if (prog == null)
 				throw new IllegalStateException();
@@ -156,9 +155,11 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
-		//dump(prog, "After elim locks");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
+		// dump(prog, "after preproc 2.");
+		prog = (Program) prog.accept(new AddLastAssignmentToFork());
 		prog = (Program) prog.accept(new NumberStatements());
+		
 	}
 
 	public Program postprocessProgram (Program p) {
