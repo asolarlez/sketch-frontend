@@ -36,7 +36,9 @@ public class RandomValueOracle extends ValueOracle {
 		assert (node instanceof ExprStar) : "Unexpected hole type";
 
 		int bitWidth = ((ExprStar) node).getSize ();
-		int val = rand.nextInt (bitWidth);
+		int val = rand.nextInt (1 << bitWidth);
+
+		//System.out.print (val +",");
 
 		return (ExprConstInt) ExprConstant.createConstant (node, ""+val);
 	}
