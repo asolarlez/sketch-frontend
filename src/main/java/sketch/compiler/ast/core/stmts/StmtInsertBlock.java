@@ -58,4 +58,9 @@ public class StmtInsertBlock extends Statement {
 
 	public Statement getInsertStmt () { return insert; }
 	public StmtBlock getIntoBlock ()  { return into; }
+
+
+    public String toString () {
+    	return "insert {\n" + getInsertStmt () + "\n} into {\n" + getIntoBlock () + "\n}";
+    }
 }
