@@ -85,6 +85,12 @@ public class ExprBinary extends Expression
     public ExprBinary (int op, Expression left, Expression right) {
     	this (left, op, left, right);
     }
+    
+    
+    public ExprBinary(FENode context, Expression left, String sop, Expression right){
+    	this(left, sop, right);
+    	this.setCx(context.getCx());
+    }
 
     public ExprBinary(Expression left, String sop, Expression right)
 {
