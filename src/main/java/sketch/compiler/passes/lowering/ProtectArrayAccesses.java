@@ -6,6 +6,7 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -27,29 +28,37 @@ import streamit.frontend.nodes.TypePrimitive;
  *
  */
 public class ProtectArrayAccesses extends SymbolTableVisitor {
+	/** What happens when an access is out of bounds? */
+	public static enum FailurePolicy { ASSERTION, WRSILENT_RDZERO };
 
 	private TempVarGen vargen;
+	private FailurePolicy policy;
+
 	public ProtectArrayAccesses(TempVarGen vargen){
-		super(null);
-		this.vargen = vargen;
+		this (FailurePolicy.WRSILENT_RDZERO, vargen);
 	}
 
-
+	public ProtectArrayAccesses (FailurePolicy p, TempVarGen vargen) {
+		super(null);
+		this.vargen = vargen;
+		this.policy = p;
+	}
 
 	@Override
 	public Object visitExprArrayRange(ExprArrayRange ear){
-		String nname = vargen.nextVar("i");
-
 		assert ear.hasSingleIndex() : "Array ranges not allowed in parallel code.";
-		Expression nofset = (Expression) ear.getOffset().accept(this);
-		addStatement(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset));
-		ExprVar ev = new ExprVar(ear, nname);
-		Expression sz = ((TypeArray)getType(ear.getBase())).getLength();
-		Expression cond = new ExprBinary(new ExprBinary(ev, ">=", ExprConstInt.zero), "&&",
-										 new ExprBinary(ev, "<", sz));
-		Expression near = new ExprArrayRange(ear.getBase(), ev);
-		Expression tern = new ExprTernary("?:", cond, near, ExprConstInt.zero);
-		return tern;
+
+		Expression idx = makeLocalIndex (ear);
+		Expression base = (Expression) ear.getBase ().accept (this);
+		Expression cond = makeGuard (base, idx);
+		Expression near = new ExprArrayRange(base, idx);
+
+		if (FailurePolicy.WRSILENT_RDZERO == policy) {
+			return new ExprTernary("?:", cond, near, ExprConstInt.zero);
+		} else if (FailurePolicy.ASSERTION == policy){
+			addStatement (new StmtAssert (cond));
+			return near;
+		} else {  assert false : "fatal error"; return null;  }
 	}
 
 	@Override
@@ -57,19 +66,34 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
     {
 		if(stmt.getLHS() instanceof ExprArrayRange){
 			ExprArrayRange ear = (ExprArrayRange) stmt.getLHS();
-			String nname = vargen.nextVar("i");
-			Expression nofset = (Expression) ear.getOffset().accept(this);
-			addStatement(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset));
-			ExprVar ev = new ExprVar(ear, nname);
-			Expression sz = ((TypeArray)getType(ear.getBase())).getLength();
-			Expression cond = new ExprBinary(new ExprBinary(ev, ">=", ExprConstInt.zero), "&&",
-											 new ExprBinary(ev, "<", sz));
-			Expression base = (Expression) ear.getBase().accept(this);
-			Expression near = new ExprArrayRange(base, ev);
-			return new StmtIfThen(stmt, cond, new StmtAssign(near, (Expression)stmt.getRHS().accept(this)), null);
+			Expression idx = makeLocalIndex (ear);
+			Expression base = (Expression) ear.getBase ().accept (this);
+			Expression cond = makeGuard (base, idx);
+			Expression near = new ExprArrayRange(base, idx);
+			Expression rhs = (Expression) stmt.getRHS ().accept (this);
+
+			if (FailurePolicy.WRSILENT_RDZERO == policy) {
+				return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs), null);
+			} else if (FailurePolicy.ASSERTION == policy) {
+				addStatement (new StmtAssert (cond));
+				return new StmtAssign (near, rhs);
+			} else {  assert false : "fatal error"; return null;  }
 		}else{
 			return super.visitStmtAssign(stmt);
 		}
     }
+
+	protected Expression makeLocalIndex (ExprArrayRange ear) {
+		String nname = vargen.nextVar("_i");
+		Expression nofset = (Expression) ear.getOffset().accept(this);
+		addStatement(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset));
+		return new ExprVar(ear, nname);
+	}
+
+	protected Expression makeGuard (Expression base, Expression idx) {
+		Expression sz = ((TypeArray)getType(base)).getLength();
+		return new ExprBinary(new ExprBinary(idx, ">=", ExprConstInt.zero), "&&",
+										 new ExprBinary(idx, "<", sz));
+	}
 
 }
