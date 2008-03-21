@@ -13,6 +13,7 @@ import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
+import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateLockUnlock;
@@ -20,6 +21,7 @@ import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
+import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.SimpleLoopUnroller;
 import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.CompilationStatistics;
@@ -135,6 +137,9 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	protected Program preprocessProgram(Program lprog) {
+		lprog = (Program) lprog.accept (new SeparateInitializers ());
+		lprog = (Program) lprog.accept (new BlockifyRewriteableStmts ());
+		//dump (lprog, "blockify");
 		lprog = (Program) lprog.accept (new EliminateConditionals(varGen));
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 		//dump (lprog, "AtomizeStatements:");
