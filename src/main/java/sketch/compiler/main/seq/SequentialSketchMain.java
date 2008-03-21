@@ -263,7 +263,7 @@ public class ToSBit
 		//dump (prog, "before:");
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
-		lprog = (Program)lprog.accept(new EliminateReorderBlocks());
+		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
 		//dump (lprog, "~insertblocks:");
