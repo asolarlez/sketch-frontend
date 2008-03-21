@@ -5,7 +5,8 @@ int NITEMS = 1;
 int NNODES = NTHREADS * NITEMS;
 
 static void enqueue (Queue q, Item obj) {
-    Node n = new Node (obj, null, 0);
+    /*
+    Node n = newNode (obj, null, 0);
     Node oldTail = null;
 
     // What this is doing:
@@ -16,12 +17,19 @@ static void enqueue (Queue q, Item obj) {
         else     n = q.tail;
     }
     oldTail.next = n;
+    */
+
+    Node n = newNode (obj, null, 0);
+    atomic {
+        q.tail.next = n;
+        q.tail = n;
+    }
 }
 
 bit verify (Queue q) {
     assert isValidQueue (q, NNODES + 1);
 
-    int[NTHREADS] lastItemId;
+    int[NTHREADS] lastItemId = 0;
     Node n = q.head;
     if (n.obj == null)  n = n.next;
 

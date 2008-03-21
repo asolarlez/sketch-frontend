@@ -156,6 +156,7 @@ public class ToPSbitII extends ToSBit {
 	public void lowerIRToJava() {
 		prog = (Program) prog.accept (new MakeAllocsAtomic (varGen));
 
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		super.lowerIRToJava();
 
 		prog = (Program) prog.accept (new EliminateConditionals(varGen));

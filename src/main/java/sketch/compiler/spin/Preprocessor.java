@@ -147,7 +147,7 @@ public class Preprocessor extends FEReplacer {
     		actuals.add(new ExprVar(cx, pname));
     	}
     	Statement body = (Statement) loop.getBody().accept(this);
-    	String fname = varGen.nextVar ("_ploop_thread_");
+    	String fname = varGen.nextVar ("_fork_thread_");
     	Function fun = new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
 
     	generatedFuncs.add(fun);
