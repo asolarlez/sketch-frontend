@@ -199,9 +199,7 @@ public class SATBackend {
 			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
 												   commandLine)).run ();
 			if (verbose ()) {
-				// XXX: not sure if this output is meaningful, whether printed
-				// "live" or at the end of the run
-				Matcher m = Pattern.compile ("^-.*->.*$",
+				Matcher m = Pattern.compile ("^[^\\->]+.*$",
 											 Pattern.MULTILINE).matcher (status.out);
 				while (m.find ())  log (m.group ());
 			}
