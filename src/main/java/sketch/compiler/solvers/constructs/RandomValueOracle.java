@@ -19,10 +19,14 @@ import streamit.frontend.nodes.FENode;
  */
 public class RandomValueOracle extends ValueOracle {
 	protected Map<String, ExprConstInt> valCache = new TreeMap<String, ExprConstInt> ();
-	protected Random rand = new Random ();
+	protected Random rand;
 
 	public RandomValueOracle (HoleNameTracker hnt) {
+		this (hnt, -1);
+	}
+	public RandomValueOracle (HoleNameTracker hnt, long seed) {
 		super (hnt);
+		rand = (seed != -1) ? new Random (seed) : new Random ();
 	}
 
 	public ExprConstInt popValueForNode(FENode node){
