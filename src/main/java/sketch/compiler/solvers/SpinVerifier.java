@@ -159,7 +159,7 @@ public class SpinVerifier implements Verifier {
 
 	/** Parses a single statement in a counterexample trace. */
 	protected static final String STEP_REGEX =
-		"^\\s*\\d+:\\s*proc\\s+(\\d+).* line (\\d+) [^\\[]*\\[(.*)\\]$";
+		"^\\s*\\d+:\\s*proc\\s+(\\d+).* line ([\\-]?\\d+) [^\\[]*\\[(.*)\\]$";
 
 	public CEtrace parseTrace (String trace) {
 		CEtrace cex = new CEtrace ();
@@ -169,6 +169,10 @@ public class SpinVerifier implements Verifier {
 			int thread = Integer.parseInt (m.group (1));
 			int line = Integer.parseInt (m.group (2));
 			String stmt = m.group (3);
+
+			// TODO: this is a SPIN bug.  It at some point casts an int line
+			// number to an short, which causes overflow here.
+			if (line < 0)  line += 1 << 16;
 
 			log (5, "  parsed step:  thread "+ thread +", line "+ line +", stmt \""+ stmt +"\"");
 
