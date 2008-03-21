@@ -1139,7 +1139,10 @@ public class SemanticChecker
 						StmtExpr se = (StmtExpr) incr;
 						if(se.getExpression() instanceof ExprUnary && 
 								( ((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC 
-										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREINC )){
+										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREINC
+										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREDEC
+										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTDEC
+								)){
 							
 						}else{
 							return false;	
