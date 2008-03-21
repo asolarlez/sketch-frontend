@@ -258,12 +258,13 @@ public class ToSBit
 	}
 
 	protected Program preprocessProgram(Program lprog) {
+		boolean useInsertEncoding = params.flagEquals ("reorderEncoding", "exponential");
 		//invoke post-parse passes
 
 		//dump (prog, "before:");
 		// prog = (Program)prog.accept(new NoRefTypes());
 		//dump (prog, "bef fpe:");
-		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen));
+		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
 		//dump (lprog, "~insertblocks:");
@@ -487,6 +488,11 @@ public class ToSBit
 		params.setAllowedParam("trace", new POpts(POpts.FLAG,
 				"--trace  \t Show a trace of the symbolic execution. Useful for debugging purposes.",
 				null, null) );
+		params.setAllowedParam("reorderEncoding", new POpts(POpts.STRING,
+				"--reorderEncoding  which \t How reorder blocks should be rewritten.  Current supported:\n" +
+				"             \t * exponential -- use 'insert' blocks\n" +
+				"             \t * quadratic -- use a loop of switch statements\n",
+				"switchedloop", null) );
 
 
 		Map<String, String> phases = new HashMap<String, String>();

@@ -188,8 +188,8 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public void generateCode (Program p) {
-		//p.accept (new SimpleCodePrinter ());
-		prog.accept (new SimpleCodePrinter ());
+		p.accept (new SimpleCodePrinter ());
+		//prog.accept (new SimpleCodePrinter ());
 	}
 
 	public Synthesizer createSynth(Program p){
@@ -221,7 +221,11 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public ValueOracle randomOracle(Program p){
-		return new RandomValueOracle (new StaticHoleTracker(varGen));
+		if (params.hasFlag ("seed"))
+			return new RandomValueOracle (new StaticHoleTracker(varGen),
+					params.flagValue ("seed"));
+		else
+			return new RandomValueOracle (new StaticHoleTracker(varGen));
 	}
 
 	protected void setCommandLineParams(){

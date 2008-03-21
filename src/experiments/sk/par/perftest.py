@@ -20,12 +20,11 @@ class Test:
         p = subprocess.Popen (self.args, cwd=self.workdir,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               close_fds=True, universal_newlines=True)
-        p.wait ()
-        print >>self.logfile, 'done!'
-
+        self.out, self.err = p.communicate ()
         self.exitcode = p.returncode
-        self.out = p.stdout.read ()
-        self.err = p.stderr.read ()
+
+        print >>self.logfile, 'done!'
+        self.logfile.flush ()
 
         return self
 
@@ -100,7 +99,15 @@ class TestStats:
 
 
 def runTests (tests):
-    return [TestStats (t.run ()) for t in tests]
+    stats = []
+    for t in tests:
+        t.run ()
+        if t.err:
+            print >>sys.stderr, '***** Error in previous test:'
+            print >>sys.stderr, t.err
+            #sys.exit (1)
+        stats.append (TestStats (t))
+    return stats
 
 def prettyPrint (stats, out=sys.stdout):
     '''Output a tabular representation of the list of TestStats, STATS.'''
@@ -150,13 +157,15 @@ if __name__ == '__main__':
     cwd = os.getcwd ()
 
     tests = (
-Test ('regtest/miniTest1.sk',                   '..',  logf,
-      cmd),
-Test ('regtest/miniTest16.sk',                   cwd,  logf,
-      cmd + ['--vectorszGuess', '16384']),
-Test ('lock-free_queue/enqueueSolution.sk',      cwd,  logf,
-      cmd),
-#Test ('bigSketches/fineLockingSk1.sk',          '..',  logf,
-#      cmd)
+Test ('regtest/miniTest1.sk',                   '..',
+      logf, cmd),
+Test ('regtest/miniTest16.sk',                   cwd,
+      logf, cmd + ['--vectorszGuess', '16384']),
+Test ('lock-free_queue/enqueueSolution.sk',      cwd,
+      logf, cmd),
+Test ('bigSketches/fineLockingSk1.sk',          'bigSketches',
+      logf, cmd),
+Test ('bigSketches/fineLockingSK2.sk',          'bigSketches',
+      logf, cmd)
 )
     prettyPrint (runTests (tests))
