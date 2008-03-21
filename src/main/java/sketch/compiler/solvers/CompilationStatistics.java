@@ -72,6 +72,7 @@ public class CompilationStatistics extends Statistics {
 	}
 
 	public String toString () {
+		long totalSolnTimeMs = verifStats.totalSolutionTimeMs () + synthStats.totalSolutionTimeMs ();
 		return
 "\n===== Compilation statistics =====\n"+
 "  Solved? -----------------------------> "+ resolved +"\n"+
@@ -81,6 +82,9 @@ public class CompilationStatistics extends Statistics {
 "    % frontend ............ "+ percent (feTimeMs, totalElapsedTimeMs) +"\n"+
 "    % verification ........ "+ percent (verifStats.totalElapsedTimeMs (), totalElapsedTimeMs) +"\n"+
 "    % synthesis ........... "+ percent (synthStats.totalElapsedTimeMs (), totalElapsedTimeMs) +"\n"+
+"  Total solution time (s) -------------> "+ sec (totalSolnTimeMs) +"\n"+
+"    % verification ........ "+ percent (verifStats.totalSolutionTimeMs (), totalSolnTimeMs) +"\n"+
+"    % synthesis ........... "+ percent (synthStats.totalSolutionTimeMs (), totalSolnTimeMs) +"\n"+
 "\n"+
 "  Synthesizer statistics:  \n"+ synthStats +
 "\n"+
