@@ -695,11 +695,24 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
+    /**
+     * 
+     * This method must necessarily push a parallel section.
+     * This implementation is the most conservative implementation for this methods.
+     * In some cases, we can be more liberal and pass a subset of the variables
+     * that we want to make volatile in the fork. For things like constant propagation,
+     * we only need to make volatile those variables that are modified in the fork.
+     * 
+     * EliminateTransAssign in particular requires the conservative version of the method.
+     *
+     */
+    protected void startFork(StmtFork loop){
+    	state.pushParallelSection();
+    }
+    
     public Object visitStmtFork(StmtFork loop){
     	
-    	IdentifyModifiedVars imv = new IdentifyModifiedVars();
-    	loop.getBody().accept(imv);     	
-    	state.pushParallelSection(imv.lhsVars); 
+    	startFork(loop);
     	
     	Statement nbody = null;
         StmtVarDecl ndecl = null;
@@ -1165,7 +1178,7 @@ public class PartialEvaluator extends FEReplacer {
         }
 
         funcsToAnalyze = this.functionsToAnalyze(spec);
-        assert funcsToAnalyze != spec.getFuncs();
+        assert funcsToAnalyze != spec.getFuncs() :" Functions to analyze shouldn't return spec.getFuncs(). It may return a copy.";
         funcsAnalyzed = new HashSet<Function>();
         if(funcsToAnalyze.size() == 0){
         	System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");

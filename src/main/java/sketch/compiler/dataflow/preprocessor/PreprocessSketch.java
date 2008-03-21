@@ -25,10 +25,12 @@ import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.spin.IdentifyModifiedVars;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 /**
@@ -82,7 +84,11 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 	
 
 	
-	
+	 protected void startFork(StmtFork loop){
+		 IdentifyModifiedVars imv = new IdentifyModifiedVars();
+	    	loop.getBody().accept(imv);     	
+	    	state.pushParallelSection(imv.lhsVars); 
+	    }
 	
 	
 	
