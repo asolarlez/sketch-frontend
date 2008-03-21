@@ -557,11 +557,12 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 		for(int i=0; i<nthreads; ++i){ lastNode[i] = null; }
 
+		StringBuffer sbuf = new StringBuffer();
 
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				log (""+ cur);
+				sbuf.append(""+ cur);				
 				if( invNodeMap.containsKey(cur.stmt) ){
 					int thread = cur.thread-1;
 					stepQueues[thread].add(cur);
@@ -578,8 +579,12 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 			}
 		}
-		log ("");
-
+		
+		log(sbuf.toString());
+		if(schedules.containsKey(sbuf.toString())){			
+			throw new RuntimeException("I just saw a repeated schedule.");
+		}
+		schedules.put(sbuf.toString(), schedules.size());
 
 
 		for(int thread=0; thread<nthreads; ++thread){
@@ -612,6 +617,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			current.accept(new SimpleCodePrinter());
 	}
 
+	Map<String, Integer> schedules = new HashMap<String, Integer>();
 
 
 
