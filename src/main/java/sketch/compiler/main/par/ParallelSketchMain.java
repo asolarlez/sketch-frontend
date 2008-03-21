@@ -166,8 +166,8 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
-		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
-		// dump(prog, "after preproc 2.");
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
+		//dump(prog, "after preproc 2.");
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
 		prog = (Program) prog.accept(new NumberStatements());
 

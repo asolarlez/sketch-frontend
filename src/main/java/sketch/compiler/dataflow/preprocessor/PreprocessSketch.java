@@ -42,13 +42,18 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 
 	public Map<String, Function> newFuns;
 	
+	private boolean inlineStatics = false;
 	
-	 public Object visitExprStar(ExprStar star) {
-		 Object obj = super.visitExprStar(star);
-		 ExprStar old = (ExprStar)exprRV;
-		 exprRV = new ExprStar(old);
-		 return obj;
+	
+	
+	public Object visitExprStar(ExprStar star) {
+		Object obj = super.visitExprStar(star);
+		if(!inlineStatics){
+			ExprStar old = (ExprStar)exprRV;
+			exprRV = new ExprStar(old);
 		}
+		return obj;
+	}
 	
 	
 	@Override
@@ -56,6 +61,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 		return state.transName(name);
 	}
 	
+	
+	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol, boolean uncheckedArrays, boolean inlineStatics){
+		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
+		newFuns = new HashMap<String, Function>();
+		this.uncheckedArrays = uncheckedArrays;
+		this.inlineStatics = inlineStatics;
+	}
 	
 	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol, boolean uncheckedArrays){
 		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
@@ -93,12 +105,15 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			}
 		}
     	if (fun != null) {   
-    		if( fun.isUninterp()  || fun.isStatic() ){    	
+    		if( fun.isUninterp()  || ( fun.isStatic() && !inlineStatics   ) ){    	
     			if(fun.isStatic()){
     				funcsToAnalyze.add(fun);
     			}
     			return super.visitExprFunCall(exp);
     		}else{
+    			if(inlineStatics){
+    				assert fun.isStatic() : " If you are in inlinestatics mode, you should only have statics or uninterpreted functions.";
+    			}
 	    		if (rcontrol.testCall(exp)) {
 	                /* Increment inline counter. */
 	            	rcontrol.pushFunCall(exp, fun);  

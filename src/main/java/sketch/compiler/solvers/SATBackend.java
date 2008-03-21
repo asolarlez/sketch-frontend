@@ -239,28 +239,46 @@ public class SATBackend {
 				"Total elapsed time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
 				"Model building time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
 				"Solution time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
-				"Max virtual mem \\(bytes\\):\\s+(\\d+)");
-		assert null != res;
-		s.elapsedTimeMs = (long) (Float.parseFloat (res.get (0)));
-		s.modelBuildingTimeMs = (long) (Float.parseFloat (res.get (1)));
-		s.solutionTimeMs = (long) (Float.parseFloat (res.get (2)));
-		s.maxMemUsageBytes = Long.parseLong (res.get (3));
+				"Max virtual mem \\(bytes\\):\\s+(\\d+)");		
+		if(res != null){
+			s.elapsedTimeMs = (long) (Float.parseFloat (res.get (0)));
+			s.modelBuildingTimeMs = (long) (Float.parseFloat (res.get (1)));
+			s.solutionTimeMs = (long) (Float.parseFloat (res.get (2)));
+			s.maxMemUsageBytes = Long.parseLong (res.get (3));
+		}else{
+			s.elapsedTimeMs = -1; 
+			s.modelBuildingTimeMs = -1; 
+			s.solutionTimeMs = -1; 
+			s.maxMemUsageBytes = -1; 
+		}
 
 		res = Misc.search (out, "SKETCH nodes = (\\d+)");
-		assert null != res;
-		s.numNodesInitial = Long.parseLong (res.get (0));
+		if(res != null){
+			s.numNodesInitial = Long.parseLong (res.get (0));
+		}else{
+			s.numNodesInitial = -1;
+		}
 
 		res = Misc.search (out, "Final Problem size: Problem nodes = (\\d+)");
-		assert null != res;
-		s.numNodesFinal = Long.parseLong (res.get (0));
+		if( null != res ){
+			s.numNodesFinal = Long.parseLong (res.get (0));
+		}else{
+			s.numNodesFinal = -1;
+		}
 
 		res = Misc.search (out, "# OF CONTROLS:\\s+(\\d+)");
-		assert null != res;
-		s.numControls = Long.parseLong (res.get (0));
+		if(null != res){
+			s.numControls = Long.parseLong (res.get (0));
+		}else{
+			s.numControls = -1;
+		}
 
 		res = Misc.search (out, "ctrlSize = (\\d+)");
-		assert null != res;
-		s.numControlBits = Long.parseLong (res.get (0));
+		if(null != res){
+			s.numControlBits = Long.parseLong (res.get (0));
+		}else{
+			s.numControlBits = -1;
+		}
 
 		return s;
 	}
