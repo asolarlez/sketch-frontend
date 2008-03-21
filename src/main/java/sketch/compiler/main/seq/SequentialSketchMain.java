@@ -492,7 +492,7 @@ public class ToSBit
 				"--reorderEncoding  which \t How reorder blocks should be rewritten.  Current supported:\n" +
 				"             \t * exponential -- use 'insert' blocks\n" +
 				"             \t * quadratic -- use a loop of switch statements\n",
-				"switchedloop", null) );
+				"exponential", null) );
 
 
 		Map<String, String> phases = new HashMap<String, String>();
