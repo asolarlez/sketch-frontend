@@ -41,6 +41,8 @@ import streamit.frontend.tosbit.ValueOracle;
 
 public class ToPSbitII extends ToSBit {
 
+	protected static final int MIN_BACKEND_VERBOSITY = 3;
+
 	protected CompilationStatistics stats;
 	protected boolean success = false;
 
@@ -62,9 +64,12 @@ public class ToPSbitII extends ToSBit {
 		if( params.hasFlag("cex")){
 			commandLineOptions.add("-showinputs");
 		}
-		if( params.hasFlag("verbosity") ){
+		if( params.hasFlag("verbosity") && params.flagValue ("verbosity") >= MIN_BACKEND_VERBOSITY){
 			commandLineOptions.add("-verbosity");
 			commandLineOptions.add( "" + params.flagValue("verbosity") );
+		} else {
+			commandLineOptions.add("-verbosity");
+			commandLineOptions.add(""+ MIN_BACKEND_VERBOSITY);
 		}
 	}
 

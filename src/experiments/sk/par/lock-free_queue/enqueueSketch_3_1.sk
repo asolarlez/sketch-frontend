@@ -1,0 +1,56 @@
+#include "queue.skh"
+
+int NTHREADS = 2;
+int NITEMS = 1;
+int NNODES = NTHREADS * NITEMS;
+
+static void enqueue (Queue q, Item obj) {
+    Node n = new Node (obj, null, 0);
+    Node oldTail = null;
+
+    // What this is doing:
+    //   oldTail = AtomicSwap ({| q.tail|n |}, {| n|q.tail |});
+    atomic {
+        oldTail = ?? ? q.tail : n;
+        if (??)  q.tail = n;
+        else     n = q.tail;
+    }
+    oldTail.next = n;
+}
+
+bit verify (Queue q) {
+    assert isValidQueue (q, NNODES + 1);
+
+    int[NTHREADS] lastItemId;
+    Node n = q.head;
+    if (n.obj == null)  n = n.next;
+
+    for (int i = 0; i < NNODES; ++i) {
+        if (n != null) {
+            assert n.obj != null;
+            assert n.obj.id > lastItemId[n.obj.tid];
+            lastItemId[n.obj.tid] = n.obj.id;
+            n = n.next;
+        }
+    }
+
+    for (int i = 0; i < NTHREADS; ++i) {
+        assert lastItemId[i] == NITEMS;
+    }
+
+    return 1;
+}
+
+bit alwaysTrue () { return 1; }
+
+bit main () implements alwaysTrue {
+    Queue q = newQueue ();
+
+    fork (int i; NTHREADS) {
+        for (int j = 0; j < NITEMS; ++j) {
+            enqueue (q, newItem (i, j+1));
+        }
+    }
+
+    return verify (q);
+}

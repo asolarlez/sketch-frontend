@@ -37,6 +37,7 @@ public class SATBackend {
 		this.params = params;
 		this.rcontrol =rcontrol;
 		this.varGen = varGen;
+
 		commandLineOptions = params.backendOptions;
 	}
 
@@ -244,6 +245,22 @@ public class SATBackend {
 		s.modelBuildingTimeMs = (long) (Float.parseFloat (res.get (1)));
 		s.solutionTimeMs = (long) (Float.parseFloat (res.get (2)));
 		s.maxMemUsageBytes = Long.parseLong (res.get (3));
+
+		res = Misc.search (out, "SKETCH nodes = (\\d+)");
+		assert null != res;
+		s.numNodesInitial = Long.parseLong (res.get (0));
+
+		res = Misc.search (out, "Final Problem size: Problem nodes = (\\d+)");
+		assert null != res;
+		s.numNodesFinal = Long.parseLong (res.get (0));
+
+		res = Misc.search (out, "# OF CONTROLS:\\s+(\\d+)");
+		assert null != res;
+		s.numControls = Long.parseLong (res.get (0));
+
+		res = Misc.search (out, "ctrlSize = (\\d+)");
+		assert null != res;
+		s.numControlBits = Long.parseLong (res.get (0));
 
 		return s;
 	}
