@@ -21,7 +21,7 @@ public abstract class Statistics {
 	}
 
 	public static float percent (long part, long whole) {
-		return 100.0f * ((float) part) / (float) whole;
+		return (whole > 0) ? 100.0f * ((float) part) / (float) whole : 0.0f;
 	}
 
 	public static float sec (long ms) {
