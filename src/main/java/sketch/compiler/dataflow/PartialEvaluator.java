@@ -58,6 +58,7 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.spin.IdentifyModifiedVars;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
@@ -695,7 +696,11 @@ public class PartialEvaluator extends FEReplacer {
 
 
     public Object visitStmtFork(StmtFork loop){
-    	state.pushParallelSection();
+    	
+    	IdentifyModifiedVars imv = new IdentifyModifiedVars();
+    	loop.getBody().accept(imv);     	
+    	state.pushParallelSection(imv.lhsVars); 
+    	
     	Statement nbody = null;
         StmtVarDecl ndecl = null;
         Expression niter = null;

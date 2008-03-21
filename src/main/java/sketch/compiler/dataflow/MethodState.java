@@ -366,10 +366,36 @@ public class MethodState {
 	}
 	
 	
-	
+	/**
+	 * 
+	 * Make all global variables volatile.
+	 *
+	 */
 	public void pushParallelSection(){
+		pushParallelSection(vars.keySet());
+	}
+	/**
+	 * 
+	 * Make all the global variables listed in the modified set volatile.
+	 * 
+	 * @param modified
+	 */
+	public void pushParallelSection(Set<String> modified){
+		
+		if(modified != vars.keySet()){
+			Set<String> vset = vars.keySet();
+			Set<String> tmp = new HashSet<String>();
+			for(String v : modified){
+				String t = this.transName(v);
+				if(vset.contains(t)){
+					tmp.add(t);
+				}
+			}
+			modified = tmp;
+		}
+		
 		pushChangeTracker(null, false);
-		for(Iterator<String> it = vars.keySet().iterator(); it.hasNext(); ){
+		for(Iterator<String> it = modified.iterator(); it.hasNext(); ){
 			varState vs = changeTracker.addToDeltas(it.next());
 			vs.makeVolatile();
 		}
