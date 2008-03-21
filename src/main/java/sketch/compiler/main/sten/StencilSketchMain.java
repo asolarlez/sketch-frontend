@@ -74,7 +74,7 @@ public class ToStencilSK extends ToSBit
 
     protected Program preprocessProgram(Program prog) {
     	Program lprog = prog;
-    	lprog = (Program)lprog.accept(new EliminateReorderBlocks());
+    	lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen));
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
