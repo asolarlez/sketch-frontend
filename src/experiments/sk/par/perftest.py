@@ -1,4 +1,4 @@
-import os, re, subprocess, sys
+import os, re, subprocess, sys, tempfile
 from threading import Thread
 from Queue import Queue
 
@@ -115,8 +115,10 @@ def runTests (tests, maxthreads=1):
             Thread.__init__ (self)
             self.test = test
         def run (self):
-            self.test.run ()
-            doneQ.put (self.test)
+            try:
+                self.test.run ()
+            finally:
+                doneQ.put (self.test)
 
     stats = []
     i = 0    # 'i' is the next thread to run
@@ -165,33 +167,34 @@ def prettyPrint (stats, out=sys.stdout):
             out.write ('  | '+ rfill (s.stats[col]))
         print >>out
 
-
-def _usage ():
-    print >>sys.stderr, '''
-Usage:
-     python %s sketchCmd...
-'''% (sys.argv[0])
-    sys.exit (1)
-
 ##-----------------------------------------------------------------------------
 if __name__ == '__main__':
     cmd = sys.argv[1:]
-    if not len (cmd):  _usage ()
+    if not len (cmd):
+        cmd = ['sketch', '--heapsize', '25', '--verbosity', '1',
+                         '--timeout', '90', '--inlineamnt', '3',
+                         '--schedlen', '1000']
     logf = sys.stdout
     cwd = os.getcwd ()
+    tmpfiles = []
 
-    tests = (
-Test ('regtest/miniTest1.sk',                    '..',
-      logf, cmd),
-Test ('regtest/miniTest2.sk',                    cwd,
-      logf, cmd),
-Test ('regtest/miniTest16.sk',                   cwd,
-      logf, cmd + ['--vectorszGuess', '16384']),
-Test ('lock-free_queue/enqueueSolution.sk',      cwd,
-      logf, cmd),
-Test ('bigSketches/fineLockingSk1.sk',          'bigSketches',
-      logf, cmd),
-Test ('bigSketches/fineLockingSK2.sk',          'bigSketches',
-      logf, cmd)
+    def test (file, workdir=cwd, logfile=logf, extraopts=[]):
+        _, outfile = tempfile.mkstemp ('', os.path.basename (file))
+        tmpfiles.append (outfile)
+        cmdline = cmd + extraopts + ['--output', outfile]
+        return Test (file, workdir, logfile, cmdline)
+
+    try:
+        tests = (
+#test ('regtest/miniTest1.sk'),
+#test ('regtest/miniTest2.sk'),
+test ('regtest/miniTest16.sk', extraopts=['--vectorszGuess', '16384']),
+#test ('lock-free_queue/enqueueSolution.sk'),
+#test ('bigSketches/fineLockingSk1.sk', workdir='bigSketches'),
+#test ('bigSketches/fineLockingSK2.sk', workdir='bigSketches'),
 )
-    prettyPrint (runTests (tests, NCPUS))
+        prettyPrint (runTests (tests, NCPUS))
+    finally:
+        for tmpfile in tmpfiles:
+            if os.access (tmpfile, os.R_OK):         os.remove (tmpfile)
+            if os.access (tmpfile+".tmp", os.R_OK):  os.remove (tmpfile+".tmp")
