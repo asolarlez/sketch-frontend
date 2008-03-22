@@ -1,0 +1,11 @@
+static void enqueue (Queue q, Item obj) {
+    Node n = newNode (obj, null, 0);
+    Node oldTail = null;
+
+    // oldTail = AtomicSwap (q.tail, n);
+    atomic {
+        oldTail = q.tail;
+        q.tail = n;
+    }
+    oldTail.next = n;
+}
