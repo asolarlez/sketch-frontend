@@ -1,6 +1,6 @@
 struct Queue {
     Node tail;
-    Node head;
+    Node prevHead;
 }
 
 struct Node {
@@ -16,8 +16,8 @@ struct Item {
 
 static Queue newQueue () {
     Queue q = new Queue ();
-    q.head = newNode (null, null, 1);
-    q.tail = q.head;
+    q.prevHead = newNode (null, null, 1);
+    q.tail = q.prevHead;
     return q;
 }
 
@@ -48,15 +48,15 @@ static Item newItem (int tid, int id) {
  * - no 'taken' nodes appear after untaken ones
  */
 static bit isValidQueue (Queue q, int maxlen) {
-    assert q.head != null;
-    assert q.head.taken;
+    assert q.prevHead != null;
+    assert q.prevHead.taken;
 
-    if (q.tail == q.head) {
-        assert q.head.next == null;
+    if (q.tail == q.prevHead) {
+        assert q.prevHead.next == null;
         return 1;
     }
 
-    Node n = q.head;
+    Node n = q.prevHead;
     bit sawUntaken = 0;
     for (int i = 0; i < maxlen; ++i) {
         if (n != null) {
@@ -69,13 +69,25 @@ static bit isValidQueue (Queue q, int maxlen) {
                 assert n == q.tail;
                 n = null;
             } else {
-                assert n.next != q.head;
+                assert n.next != q.prevHead;
                 n = n.next;
             }
         }
     }
 
-    assert n == null;   // the loop terminated
+    return n == null;   // the loop "terminated"
+}
 
+/** Assumes isValidQueue (q). */
+static bit isEmptyQueue (Queue q, int maxlen) {
+    Node n = q.prevHead;
+    for (int i = 0; i < maxlen; ++i) {
+        if (n != null) {
+            if (0 == n.taken) {
+                return 0;
+            }
+            n = n.next;
+        }
+    }
     return 1;
 }
