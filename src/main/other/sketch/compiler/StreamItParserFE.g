@@ -96,6 +96,7 @@ throw new IllegalArgumentException("File not found: "+name);
 		assert str!=null;
 		processedIncludes.add(name);
 		StreamItParserFE parser=new StreamItParserFE(new StreamItLex(str),processedIncludes);
+		parser.setFilename(name);
 		Program p=null;
 		try {
 			p = parser.program();
