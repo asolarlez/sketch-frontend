@@ -1,0 +1,24 @@
+static Item dequeue (Queue q) {
+    Node tmp = null;
+    int wasTaken = 1;
+
+    for (int i = 0; i < NNODES; ++i) {
+        tmp = q.prevHead.next;
+        if (null == tmp) {
+            return null;
+        }
+        q.prevHead = tmp;
+
+        if (0 == tmp.taken) {
+            // wasTaken = AtomicSwap (1, tmp.taken);
+            atomic {
+                wasTaken = tmp.taken;
+                tmp.taken = 1;
+            }
+            if (0 == wasTaken) {
+                return tmp.obj;
+            }
+        }
+    }
+    assert 0;
+}
