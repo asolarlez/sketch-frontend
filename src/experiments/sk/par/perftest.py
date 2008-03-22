@@ -1,4 +1,9 @@
 import os, re, subprocess, sys
+from threading import Thread
+from Queue import Queue
+
+# How many tests to run in parallel
+NCPUS = 2
 
 ##-----------------------------------------------------------------------------
 class Test:
@@ -15,7 +20,7 @@ class Test:
         self.args = list (cmd) + [path]
 
     def run (self):
-        self.logfile.write ('Running test %s ... '% (self.name))
+        print >>self.logfile, 'Running test', self.name, '...'
         self.logfile.flush ()
         p = subprocess.Popen (self.args, cwd=self.workdir,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -23,11 +28,14 @@ class Test:
         self.out, self.err = p.communicate ()
         self.exitcode = p.returncode
 
-        print >>self.logfile, 'done!'
+        print >>self.logfile, '  ... test', self.name, 'done!'
         self.logfile.flush ()
 
-        return self
+        if self.exitcode or self.err:
+            print >>sys.stderr, '  Test', self.name, 'failed.  Error output:'
+            print >>sys.stderr, self.err
 
+        return self
 
 ##-----------------------------------------------------------------------------
 _NL = r'(?:\r\n|\n|\r)'
@@ -97,17 +105,33 @@ class TestStats:
         for i, stat in enumerate (('feElapsed', 'feMaxmem')):
             self.stats[stat] = m.group (i+1)
 
+def runTests (tests, maxthreads=1):
+    assert len (tests) > 0 and maxthreads > 0
 
-def runTests (tests):
+    doneQ = Queue ()
+
+    class TestThread (Thread):
+        def __init__ (self, test):
+            Thread.__init__ (self)
+            self.test = test
+        def run (self):
+            self.test.run ()
+            doneQ.put (self.test)
+
     stats = []
-    for t in tests:
-        t.run ()
-        if t.err:
-            print >>sys.stderr, '***** Error in previous test:'
-            print >>sys.stderr, t.err
-            #sys.exit (1)
-        stats.append (TestStats (t))
+    i = 0    # 'i' is the next thread to run
+
+    for i in xrange (min (maxthreads, len (tests))):
+        TestThread (tests[i]).start ()
+
+    while True:
+        stats.append (TestStats (doneQ.get ()))
+        if len (stats) == len (tests):  break
+        i += 1
+        if i < len (tests):  TestThread (tests[i]).start ()
+
     return stats
+
 
 def prettyPrint (stats, out=sys.stdout):
     '''Output a tabular representation of the list of TestStats, STATS.'''
@@ -157,7 +181,9 @@ if __name__ == '__main__':
     cwd = os.getcwd ()
 
     tests = (
-Test ('regtest/miniTest1.sk',                   '..',
+Test ('regtest/miniTest1.sk',                    '..',
+      logf, cmd),
+Test ('regtest/miniTest2.sk',                    cwd,
       logf, cmd),
 Test ('regtest/miniTest16.sk',                   cwd,
       logf, cmd + ['--vectorszGuess', '16384']),
@@ -168,4 +194,4 @@ Test ('bigSketches/fineLockingSk1.sk',          'bigSketches',
 Test ('bigSketches/fineLockingSK2.sk',          'bigSketches',
       logf, cmd)
 )
-    prettyPrint (runTests (tests))
+    prettyPrint (runTests (tests, NCPUS))
