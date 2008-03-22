@@ -178,20 +178,23 @@ if __name__ == '__main__':
     cwd = os.getcwd ()
     tmpfiles = []
 
-    def test (file, workdir=cwd, logfile=logf, extraopts=[]):
-        _, outfile = tempfile.mkstemp ('', os.path.basename (file))
+    def test (path, workdir=None, logfile=logf, extraopts=[]):
+        dir, file = os.path.split (path)
+        if not workdir:  workdir = dir
+        _, outfile = tempfile.mkstemp ('', file)
         tmpfiles.append (outfile)
         cmdline = cmd + extraopts + ['--output', outfile]
-        return Test (file, workdir, logfile, cmdline)
+        return Test (path, workdir, logfile, cmdline)
 
     try:
         tests = (
 #test ('regtest/miniTest1.sk'),
 #test ('regtest/miniTest2.sk'),
 test ('regtest/miniTest16.sk', extraopts=['--vectorszGuess', '16384']),
+#test ('lock-free_queue/soln_2_e-e_dd.sk'),
 #test ('lock-free_queue/enqueueSolution.sk'),
-#test ('bigSketches/fineLockingSk1.sk', workdir='bigSketches'),
-#test ('bigSketches/fineLockingSK2.sk', workdir='bigSketches'),
+#test ('bigSketches/fineLockingSk1.sk'),
+#test ('bigSketches/fineLockingSK2.sk'),
 )
         prettyPrint (runTests (tests, NCPUS))
     finally:
