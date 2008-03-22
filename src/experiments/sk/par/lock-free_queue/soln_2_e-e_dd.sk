@@ -7,41 +7,4 @@ int NNODES = 1 + NTHREADS * NITEMS;     // +1 for the sentinel
 #include "sketch1Enqueue.skh"
 #include "sketch1Dequeue.skh"
 
-bit verify (Queue q, Item[NNODES] popped) {
-    assert isValidQueue (q, NNODES);
-    assert isEmptyQueue (q, NNODES);
-
-    int[NTHREADS] lastItemId = 0;
-
-    for (int i = 0; i < NTHREADS*NITEMS; ++i) {
-        Item it = popped[i];
-
-        assert it != null;
-        assert it.id > lastItemId[it.tid];
-        lastItemId[it.tid] = it.id;
-    }
-
-    return 1;
-}
-
-bit alwaysTrue () { return 1; }
-
-bit main () implements alwaysTrue {
-    Queue q = newQueue ();
-
-    fork (int i; NTHREADS) {
-        for (int j = 0; j < NITEMS; ++j) {
-            enqueue (q, newItem (i, j+1));
-        }
-    }
-
-    Item[NNODES] popped = null;
-    int idx = 0;
-    for (int i = 0; i < NTHREADS; ++i) {
-        for (int j = 0; j < NITEMS; ++j) {
-            popped[idx] = dequeue (q);
-        }
-    }
-
-    return verify (q, popped);
-}
+#include "driver_pe_d.skh"
