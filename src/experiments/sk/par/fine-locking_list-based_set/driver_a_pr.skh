@@ -1,0 +1,30 @@
+// Runs: a... [ r... | r... | ... ]
+
+bit verify (Set S) {
+    assert isValidSet (S, NEGINF, POSINF, NNODES);
+    assert isEmptySet (S);
+
+    return 1;
+}
+
+bit alwaysTrue () { return 1; }
+
+bit main () implements alwaysTrue {
+    Set S = newSet (NEGINF, POSINF);
+
+    for (int key = 0; key < NTHREADS*NITEMS; ++key) {
+        assert add (S, key);
+    }
+
+    int key = NTHREADS*NITEMS - 1;
+    fork (int i; NTHREADS) {
+        for (int j = 0; j < NITEMS; ++j) {
+            assert remove (S, key);
+            atomic {
+                key = key - 1;
+            }
+        }
+    }
+
+    return verify (S);
+}
