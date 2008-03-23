@@ -19,6 +19,7 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
@@ -40,6 +41,13 @@ public class CFGSimplifier {
 			}
 			return exp;
 		}
+		
+		@Override
+		public Object visitStmtAssert(StmtAssert stmt){
+			allLocs = false;
+			return stmt;
+		}
+		
 		public Object visitExprFunCall(ExprFunCall exp){
 			allLocs = false;
 			return exp;
