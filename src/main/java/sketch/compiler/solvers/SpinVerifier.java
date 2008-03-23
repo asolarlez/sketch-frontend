@@ -261,8 +261,13 @@ public class SpinVerifier implements Verifier {
 		public Map<Integer, Integer> condMap = new HashMap<Integer, Integer> ();
 		GetAtomicCondInfo () {  super (NullStream.INSTANCE);  }
 		public Object visitStmtAtomicBlock (StmtAtomicBlock block) {
-			if (block.isCond ())
-				condMap.put (getLineNumber (), (Integer) block.getTag ());
+			if (block.isCond ()){
+				Integer id = (Integer) block.getTag ();
+				condMap.put (getLineNumber (), id);
+				Object o = super.visitStmtAtomicBlock (block);
+				condMap.put (getLineNumber (), id);
+				return o;
+			}
 			return super.visitStmtAtomicBlock (block);
 		}
 	}
