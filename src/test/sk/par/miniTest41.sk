@@ -1,0 +1,20 @@
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int[1] g;
+	g[0] = 1;
+	fork(int i; 2){
+		atomic{
+			g[0] = g[0] + 1;
+		}
+	}
+	assert g[0] == 3;
+	return 1;
+}
+
+
+
