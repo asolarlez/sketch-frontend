@@ -90,7 +90,22 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 	    	state.pushParallelSection(imv.lhsVars); 
 	    }
 	
-	
+	@Override
+	 public Object visitStmtAssert (StmtAssert stmt) {
+	        /* Evaluate given assertion expression. */
+	        Expression assertCond = stmt.getCond();
+	        abstractValue vcond  = (abstractValue) assertCond.accept (this);
+	        Expression ncond = exprRV;
+	        String msg = null;
+	        msg = stmt.getMsg();
+	        state.Assert(vcond, msg);
+	        return isReplacer ?( 
+	        		(vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg()) 
+	        		)
+	        		: stmt
+	        		;
+	    }
+	 
 	
 	public Object visitExprFunCall(ExprFunCall exp)
 	{
