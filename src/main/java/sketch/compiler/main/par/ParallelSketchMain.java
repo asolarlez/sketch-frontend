@@ -95,6 +95,11 @@ public class ToPSbitII extends ToSBit {
 				throw new IllegalStateException();
 
 			synthVerifyLoop();
+			
+			if(!success){
+				return;
+			}
+			
 			finalCode = postprocessProgram (prog);
 			generateCode(finalCode);
 		}
@@ -139,6 +144,7 @@ public class ToPSbitII extends ToSBit {
 		} while (true);
 
 		oracle = ora;
+		
 	}
 
 	protected Program preprocessProgram(Program lprog) {
@@ -167,6 +173,7 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
+		dump(prog, "after elimlocks.");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		//dump(prog, "after preproc 2.");
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
@@ -200,6 +207,11 @@ public class ToPSbitII extends ToSBit {
 
 	public Synthesizer createSynth(Program p){
 		SATSynthesizer syn = new SATSynthesizer(p, params, internalRControl(), varGen );
+		
+		if(params.hasFlag("trace")){
+			syn.activateTracing();
+		}
+		
 		backendParameters(syn.commandLineOptions);
 		return syn;
 	}

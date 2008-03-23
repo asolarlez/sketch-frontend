@@ -18,7 +18,9 @@ import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.Executer;
 import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
+import streamit.frontend.spin.SimpleCleanup;
 import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
 import streamit.misc.NullStream;
@@ -121,7 +123,13 @@ public class SpinVerifier implements Verifier {
 	protected Program spinify (ValueOracle holeVals) {
 		// TODO: might need other passes to make SPIN verification more
 		// efficient
-		return (Program) prog.accept (new EliminateStarStatic (holeVals));
+		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
+		/*
+		p.accept(  new SimpleCodePrinter()  );
+		p = (Program) p.accept (new SimpleCleanup() );
+		p.accept(  new SimpleCodePrinter()  );
+		*/
+		return p;
 	}
 
 	/**
@@ -140,6 +148,10 @@ public class SpinVerifier implements Verifier {
 	protected static final String BLOCK_REGEX =
 		"^\\s*\\d+:\\s*proc\\s+(\\d+) .* line (\\d+) .*\\(invalid end state\\)$";
 
+	//I don't quite understand the regex above, but it looks like it is filtering out
+	//lines corresponding to thread zero. Is that true? : Armando to Chris.
+	
+	
 	public CEDeadlockedTrace parseDeadlockTrace (String trace) {
 		CEDeadlockedTrace cex =	new CEDeadlockedTrace (parseTrace (trace));
 		Matcher m = Pattern.compile (BLOCK_REGEX, Pattern.MULTILINE).matcher (trace);
@@ -187,7 +199,9 @@ public class SpinVerifier implements Verifier {
 			}
 		}
 
-		assert cex.steps.size () > 0 : "Uh-oh!  No steps in counterexample";
+		//If the counterexample contains only the schedule for the parallel section,
+		//the cex could have zero steps if the bug is found in the sequential section.
+		//assert cex.steps.size () > 0 : "Uh-oh!  No steps in counterexample";
 
 		return cex;
 	}

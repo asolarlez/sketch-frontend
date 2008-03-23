@@ -121,7 +121,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		//this.prog.accept(new SimpleCodePrinter().outputTags());
 
 		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
-		//ploop.accept(new SimpleCodePrinter());
+		ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
 
@@ -297,12 +297,46 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		final List<Expression> answer = new ArrayList<Expression>();
 
 		class hasAtomic extends FEReplacer{
-
+			boolean assignOnPath = false;
+			Stack<Expression> estack = new Stack<Expression>();
+			@Override
+			public Object visitStmtAssign(StmtAssign stmt){
+				assignOnPath = true;
+				return stmt;
+			}
+			
+			@Override
+			public Object visitStmtIfThen(StmtIfThen stmt){
+				estack.add(new ExprUnary("!", stmt.getCond()));				
+				boolean tmp = assignOnPath;
+				stmt.getCons().accept(this);
+				estack.pop();
+				boolean tmp2 = assignOnPath;
+				assignOnPath = tmp;
+				if(stmt.getAlt() != null){
+					estack.add(stmt.getCond());
+					stmt.getAlt().accept(this);
+					estack.pop();
+				}
+				assignOnPath = assignOnPath || tmp2;
+				return stmt;
+			}
+			
 			@Override
 			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
 				if(stmt.isCond()){
-					answer.add(stmt.getCond());
+					assert !assignOnPath : "assignments before atomics NYI";
+					Expression c = stmt.getCond() ;
+					for(Expression e : estack){
+						c = new ExprBinary(c, "||", e);
+					}
+					if(answer.size() > 0){
+						answer.set(0, new ExprBinary(c, "&&", answer.get(0)  ) );
+					}else{
+						answer.add(c);	
+					}
 				}
+				assignOnPath = true;
 				return stmt;
 			}
 		}
