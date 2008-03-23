@@ -18,6 +18,7 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
@@ -180,9 +181,14 @@ public class CFGforPloop extends CFGBuilder {
 	boolean isSingleStmt(Statement s){
 
 		if(s instanceof StmtAssign) return true;
+		
 		if(s instanceof StmtAtomicBlock){
 			return true;
 		}
+		
+		if(s instanceof StmtAssert)
+			return true;
+		
 		if(s instanceof StmtBlock){
 			StmtBlock sb = (StmtBlock) s;
 			if(sb.getStmts().size() != 1){ return false; }
