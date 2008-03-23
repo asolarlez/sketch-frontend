@@ -170,9 +170,17 @@ abstract public class varState {
 		if(arrElems == null){
 			absVal.makeVolatile();
 		}else{
-			for(Iterator<Entry<Integer, abstractValue>> it = arrElems.entrySet().iterator(); it.hasNext(); ){
-				it.next().getValue().makeVolatile();
-			}						
+			int sz = this.maxSize;
+			for(int i=0; i<sz; ++i){
+				if(arrElems.containsKey(i)){
+					abstractValue newVal = arrElems.get(i);
+					newVal.makeVolatile();
+				}else{
+					abstractValue newVal = newLHSvalue(i);
+					newVal.makeVolatile();
+					arrElems.put(i, newVal);
+				}								
+			}
 		}		
 	}
 	
