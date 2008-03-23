@@ -80,7 +80,8 @@ void setAdd(Set s, int key){
 			bit more = 1;
 
 			for(int j=0; j<3; ++j){
-				bit tmp = more && cur.val < key;
+				bit tmp = 0;
+				if(outMore){ tmp = more && cur.val < key; }
 				if(outMore && tmp){ pred = cur;	}
 				if(outMore && tmp){cur = cur.next; }
 				if(outMore && !tmp){ more = 0;	}
