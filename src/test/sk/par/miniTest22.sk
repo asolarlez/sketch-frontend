@@ -1,6 +1,8 @@
 //This doesn't deserve to be a miniTest. This is the mother of all sketches.
 //If this sketch works, we have a paper!! So cross your fingers.
 
+BUGGI.
+
 struct Node{
 	int val;
 	Node next;
