@@ -1,0 +1,18 @@
+// It should be OK to use locks outside of parallel sections.
+
+struct P {
+    P next;
+}
+
+bit T ()  { return 1; }
+bit main () implements T {
+    P p = new P ();
+    lock (p);
+    unlock (p);
+
+    fork (int i; 2) {
+        int j = i + 1;
+    }
+
+    return 1;
+}
