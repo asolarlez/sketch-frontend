@@ -201,8 +201,7 @@ public class ToPSbitII extends ToSBit {
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(p, "After Eliminating transitive assignments.");
 		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
-		//System.out.println("=========  After ElimDeadCode  =========");
-		//finalCode.accept( new SimpleCodePrinter() );
+		//dump (p, "After ElimDeadCode");
 		p = (Program)p.accept(new SimplifyVarNames());
 		p = (Program)p.accept(new AssembleInitializers());
 		if(params.flagEquals("showphase", "final")) dump(p, "After Dead Code elimination.");

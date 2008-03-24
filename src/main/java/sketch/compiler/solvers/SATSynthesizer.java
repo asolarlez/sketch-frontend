@@ -121,7 +121,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		//this.prog.accept(new SimpleCodePrinter().outputTags());
 
 		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
-		ploop.accept(new SimpleCodePrinter());
+		//ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
 
@@ -304,10 +304,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				assignOnPath = true;
 				return stmt;
 			}
-			
+
 			@Override
 			public Object visitStmtIfThen(StmtIfThen stmt){
-				estack.add(new ExprUnary("!", stmt.getCond()));				
+				estack.add(new ExprUnary("!", stmt.getCond()));
 				boolean tmp = assignOnPath;
 				stmt.getCons().accept(this);
 				estack.pop();
@@ -321,7 +321,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				assignOnPath = assignOnPath || tmp2;
 				return stmt;
 			}
-			
+
 			@Override
 			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
 				if(stmt.isCond()){
@@ -333,7 +333,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					if(answer.size() > 0){
 						answer.set(0, new ExprBinary(c, "&&", answer.get(0)  ) );
 					}else{
-						answer.add(c);	
+						answer.add(c);
 					}
 				}
 				assignOnPath = true;
@@ -596,7 +596,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				sbuf.append(""+ cur);				
+				sbuf.append(""+ cur);
 				if( invNodeMap.containsKey(cur.stmt) ){
 					int thread = cur.thread-1;
 					stepQueues[thread].add(cur);
@@ -613,9 +613,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 			}
 		}
-		
+
 		log(sbuf.toString());
-		if(schedules.containsKey(sbuf.toString())){			
+		if(schedules.containsKey(sbuf.toString())){
 			throw new RuntimeException("I just saw a repeated schedule.");
 		}
 		schedules.put(sbuf.toString(), schedules.size());
