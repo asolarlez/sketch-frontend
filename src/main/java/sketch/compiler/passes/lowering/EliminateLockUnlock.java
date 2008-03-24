@@ -6,6 +6,7 @@ import java.util.List;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
@@ -24,37 +25,37 @@ import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 
 public class EliminateLockUnlock extends FEReplacer {
-	
-	
+
+
 
 	public Expression loopVar = null;
 	public Expression lockLen = null;
 	public ExprVar locksVar = null;
 	boolean hasLocks = false;
-	
+
 	@Override
 	public Object visitFunction(Function fun){
 		hasLocks = false;
 		Function f = (Function) super.visitFunction(fun);
 		if(hasLocks){
-			
+
 			StmtVarDecl svd = new StmtVarDecl(fun, new TypeArray(TypePrimitive.inttype, lockLen  ), locksVar.getName(), ExprConstInt.zero);
 			StmtBlock sb = new StmtBlock(svd, f.getBody());
-			
+
 			f = new Function(f, f.getCls(), f.getName(), f.getReturnType(), f.getParams(), f.getSpecification(), sb);
-			
+
 		}
 		return f;
 	}
-	
+
 	@Override
 	public Object visitStmtFork(StmtFork stmt){
 		loopVar = new ExprVar(stmt, stmt.getLoopVarName());
 		return super.visitStmtFork(stmt);
 	}
-	
+
 	public EliminateLockUnlock(int lockLen, String locksVar){
-		this.locksVar  =new ExprVar((FENode)null, locksVar);		
+		this.locksVar  =new ExprVar((FENode)null, locksVar);
 		this.lockLen = new ExprConstInt(lockLen);
 	}
 
@@ -79,41 +80,55 @@ public class EliminateLockUnlock extends FEReplacer {
 	    }
 
 
-	 public Object visitExprFunCall(ExprFunCall exp)
-	    {
+	 public Object visitExprFunCall (ExprFunCall exp) {
+		 if (!(exp.getName ().equals ("lock") || exp.getName ().equals ("unlock")))
+			 return exp;
 
+		 hasLocks = true;
 
-		 if(exp.getName().equals("lock")){
-			 hasLocks = true;
-			 assert exp.getParams().size() == 1;
-			 Expression p = exp.getParams().get(0);
-			 
-/** This is the code we are producing here.
- * 
- *  atomic(locks[i] == 0){
- *  	locks[i] = threadID  + 1;
- *  	
- *  }
- * 
-*/
-			 Statement ass = new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds.");
-			 StmtAssign getLock = new StmtAssign(new ExprArrayRange(locksVar, p),  new ExprBinary(loopVar, "+", ExprConstInt.one));
-			 getLock.setCx(exp.getCx());
-			 Expression cond =new ExprBinary(exp, new ExprArrayRange(locksVar, p), "==", ExprConstInt.zero);
-			 addStatement(ass);
-			 return new StmtAtomicBlock(exp, getLock , cond);			 
-		 }else  if(exp.getName().equals("unlock")){
-			 hasLocks = true;
-			 assert exp.getParams().size() == 1;
-			 Expression p = exp.getParams().get(0);
-			 List<Statement> bodyL = new ArrayList<Statement>();
-			 bodyL.add(new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds."));
-			 bodyL.add(new StmtAssert(exp, new ExprBinary(new ExprArrayRange(locksVar, p), "==", new ExprBinary(loopVar, "+", ExprConstInt.one) ), "You can't release a lock you don't own"));
-			 bodyL.add(new StmtAssign(new ExprArrayRange(locksVar, p), ExprConstInt.zero ));
-			 return new StmtAtomicBlock(exp, bodyL);
+		 Expression threadId = getCurrentThreadId (exp);
+		 Expression p = exp.getParams ().get (0);
+		 Expression lock = new ExprArrayRange (locksVar, p);
+		 Statement guard = new StmtAssert(exp, new ExprBinary(p, "<", lockLen),
+				 "The lock expression is out of bounds.");
 
+		 if (exp.getName ().equals ("lock")) {
+			 /* This is the code we are producing here.
+			  *
+			  *  assert (i < lockLen);
+			  *  atomic(locks[i] == 0){
+			  *  	locks[i] = threadID;
+			  *  } */
+			 addStatement (guard);
+			 StmtAssign getLock = new StmtAssign (exp, lock, threadId);
+			 return new StmtAtomicBlock (exp, getLock, makeLockFreeCond (exp, p));
+		 } else {
+			 /* This is the code we are producing here.
+			  *
+			  *  atomic {
+			  *     assert i < lockLen;
+			  *     assert locks[i] == threadId;
+			  *  	locks[i] = 0;
+			  *  } */
+			 List<Statement> body = new ArrayList<Statement> ();
+			 body.add (guard);
+			 body.add (new StmtAssert (makeLockHeldCond (exp, threadId, p),
+					   "You can't release a lock you don't own"));
+			 body.add (new StmtAssign (exp, lock, ExprConstInt.zero));
+			 return new StmtAtomicBlock (exp, body);
 		 }
-		 return exp;
-	    }
+	 }
 
+	 public Expression getCurrentThreadId (FENode cx) {
+		 return (null == loopVar) ? ExprConstant.createConstant (cx, "-1")
+				 : new ExprBinary (loopVar, "+", ExprConstInt.one);
+	 }
+
+	 public Expression makeLockFreeCond (FENode cx, Expression p) {
+		 return new ExprBinary (cx, new ExprArrayRange (locksVar, p), "==", ExprConstInt.zero);
+	 }
+
+	 public Expression makeLockHeldCond (FENode cx, Expression threadId, Expression p) {
+		 return new ExprBinary (cx, new ExprArrayRange (locksVar, p), "==", threadId);
+	 }
 }

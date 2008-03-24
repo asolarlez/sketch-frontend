@@ -95,11 +95,11 @@ public class ToPSbitII extends ToSBit {
 				throw new IllegalStateException();
 
 			synthVerifyLoop();
-			
+
 			if(!success){
 				return;
 			}
-			
+
 			finalCode = postprocessProgram (prog);
 			generateCode(finalCode);
 		}
@@ -144,7 +144,7 @@ public class ToPSbitII extends ToSBit {
 		} while (true);
 
 		oracle = ora;
-		
+
 	}
 
 	protected Program preprocessProgram(Program lprog) {
@@ -207,11 +207,11 @@ public class ToPSbitII extends ToSBit {
 
 	public Synthesizer createSynth(Program p){
 		SATSynthesizer syn = new SATSynthesizer(p, params, internalRControl(), varGen );
-		
+
 		if(params.hasFlag("trace")){
 			syn.activateTracing();
 		}
-		
+
 		backendParameters(syn.commandLineOptions);
 		return syn;
 	}

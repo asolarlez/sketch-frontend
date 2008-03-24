@@ -18,9 +18,7 @@ import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.Executer;
 import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
-import streamit.frontend.spin.SimpleCleanup;
 import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
 import streamit.misc.NullStream;
@@ -150,8 +148,8 @@ public class SpinVerifier implements Verifier {
 
 	//I don't quite understand the regex above, but it looks like it is filtering out
 	//lines corresponding to thread zero. Is that true? : Armando to Chris.
-	
-	
+
+
 	public CEDeadlockedTrace parseDeadlockTrace (String trace) {
 		CEDeadlockedTrace cex =	new CEDeadlockedTrace (parseTrace (trace));
 		Matcher m = Pattern.compile (BLOCK_REGEX, Pattern.MULTILINE).matcher (trace);
