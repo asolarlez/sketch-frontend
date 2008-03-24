@@ -1,24 +1,33 @@
 static Item dequeue (Queue q) {
     Node tmp = null;
     int wasTaken = 1;
+    bit done = 0;   // workaround for frontend bug
 
     for (int i = 0; i < NNODES; ++i) {
-        tmp = q.prevHead.next;
-        if (null == tmp) {
-            return null;
-        }
-        q.prevHead = tmp;
+        if (!done) {
+            tmp = q.prevHead.next;
 
-        if (0 == tmp.taken) {
-            // wasTaken = AtomicSwap (1, tmp.taken);
-            atomic {
-                wasTaken = tmp.taken;
-                tmp.taken = 1;
+            if (null == tmp) {
+                done = 1;
+                return null;
             }
-            if (0 == wasTaken) {
-                return tmp.obj;
+
+            if (!done) {
+                q.prevHead = tmp;
+
+                if (0 == tmp.taken) {
+                    // wasTaken = AtomicSwap (1, tmp.taken);
+                    atomic {
+                        wasTaken = tmp.taken;
+                        tmp.taken = 1;
+                    }
+                    if (0 == wasTaken) {
+                        done = 1;
+                        return tmp.obj;
+                    }
+                }
             }
         }
     }
-    assert 0;
+    assert done;
 }
