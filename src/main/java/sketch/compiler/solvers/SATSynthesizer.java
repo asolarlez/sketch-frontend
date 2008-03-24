@@ -47,6 +47,8 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.ExprArrayRange.Range;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.parallelEncoder.AtomizeConditionals;
 import streamit.frontend.parallelEncoder.BreakParallelFunction;
 import streamit.frontend.parallelEncoder.CFGforPloop;
@@ -78,6 +80,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	BreakParallelFunction parts;
 	Set<StmtVarDecl> locals = new HashSet<StmtVarDecl>();
 	Set<Object> globalTags;
+	HashMap<String, Type> varTypes = new HashMap<String, Type>();
 
 	ExprVar assumeFlag = new ExprVar((FENode)null, "_AF");
 
@@ -105,6 +108,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	CFGNode[] lastNode = null;
 
+	Set<String> globals = null;
+	
 	StmtFork ploop = null;
 
 	int nthreads;
@@ -121,7 +126,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		//this.prog.accept(new SimpleCodePrinter().outputTags());
 
 		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
-		//ploop.accept(new SimpleCodePrinter());
+		// ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
 
@@ -145,7 +150,18 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		CollectGlobalTags gtags = new CollectGlobalTags(parts.globalDecls);
 		ploop.accept(gtags);
 		globalTags = gtags.oset;
-
+		globals = gtags.globals;
+		
+		
+		for(StmtVarDecl svd : locals){
+			for(int i=0; i<svd.getNumVars(); ++i){
+				varTypes.put(svd.getName(i), svd.getType(i));
+			}
+		}
+		
+		
+		
+		
 		localRepl = new VarSetReplacer[nthreads];
 		stepQueues = new Queue[nthreads];
 		for(int i=0; i<nthreads; ++i){
@@ -287,6 +303,143 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
+	
+	
+	
+	private Statement foo(CFGNode n, int thread, final Expression indVar){
+		
+		Statement s = null;
+		if(n.isExpr()){ s = n.getPreStmt(); }
+		if(n.isStmt()){ s = n.getStmt(); }
+		
+		class modifiedLocals extends FEReplacer{
+			boolean isLeft = false;
+			public HashSet<String> locals = new HashSet<String>();
+			private boolean globalTaint = false;
+			private HashSet<String> modLocals = new HashSet<String>();
+			public Object visitStmtAssign(StmtAssign stmt){
+				boolean tmpLeft = isLeft;
+			 	isLeft = true;
+			 	boolean gt = globalTaint;
+			 	globalTaint = false;
+		        Expression newLHS = doExpression(stmt.getLHS());
+		        isLeft = tmpLeft;
+		        boolean newgt = globalTaint;
+		        globalTaint = gt;
+		        Expression newRHS = doExpression(stmt.getRHS());
+		        if(newgt){
+		        	return null; 
+		        }
+		        return stmt;
+			}
+			
+			public Object visitExprArrayRange(ExprArrayRange exp) {
+				boolean tmpLeft = isLeft;
+
+				// This is weird, but arrays can't be parameters to functions in
+				// Promela.  So we'll be conservative and always treat them as
+				// LHS expressions.
+				isLeft = true;
+				doExpression(exp.getBase());
+				isLeft = tmpLeft;
+				
+
+				final List l=exp.getMembers();
+				for(int i=0;i<l.size();i++) {
+					Object obj=l.get(i);
+					if(obj instanceof Range) {
+						Range range=(Range) obj;
+						tmpLeft = isLeft;
+					 	isLeft = false;
+						doExpression(range.start());
+						doExpression(range.end());
+						isLeft = tmpLeft;
+					}
+					else if(obj instanceof RangeLen) {
+						RangeLen range=(RangeLen) obj;
+						tmpLeft = isLeft;
+					 	isLeft = false;
+						doExpression(range.start());
+						isLeft = tmpLeft;
+					}
+				}
+				return exp;
+			}
+			
+			
+			
+			
+			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){				
+				if(stmt.isCond()){
+					return new StmtAssign(indVar, new ExprBinary(indVar , "&&",  stmt.getCond()));
+				}
+				return super.visitStmtAtomicBlock(stmt);
+			}
+			
+			
+
+			public Object visitStmtVarDecl(StmtVarDecl stmt)
+		    {
+		        for (int i = 0; i < stmt.getNumVars(); i++)
+		        {
+		            Expression init = stmt.getInit(i);
+		            if (init != null)
+		                init = doExpression(init);
+		            Type t = (Type) stmt.getType(i).accept(this);
+		            locals.add(stmt.getName(i));
+		        }
+		        return stmt;
+		    }
+			
+			public Object visitExprVar(ExprVar exp) {			
+				if(isLeft){
+					String nm = exp.getName();
+					if(globals.contains(nm)){
+						globalTaint = true;
+					}else{
+						if(!locals.contains(nm)){
+							modLocals.add(nm);
+						}						
+					}
+				}
+				return exp;
+			}
+			
+		}
+		
+		
+		class addTemporaries extends FEReplacer{
+			private final HashSet<String> modLocals;
+			public addTemporaries(HashSet<String> modLocals){
+				this.modLocals = modLocals;
+			}
+			public Object visitExprVar(ExprVar exp) {	
+				String nm = exp.getName();
+				if(modLocals.contains( nm )){
+					return new ExprVar(exp, nm + "__t");
+				}				
+				return exp;
+			}
+		}
+		
+		modifiedLocals ml = new modifiedLocals();
+		s = s.doStatement(ml);
+		s = s.doStatement(new addTemporaries(ml.modLocals));
+		
+		List<Statement> ls = new ArrayList<Statement>();
+		for(String vn : ml.modLocals){
+			ls.add(new StmtVarDecl(s, varTypes.get(vn), vn + "__t", new ExprVar(s, vn)));						
+		}
+		ls.add(s);
+		s = (Statement) parametrizeLocals(new StmtBlock(s, ls), thread);
+		
+		return s;
+	}
+	
+	
+	
+	
+	
 
 	private Expression getAtomicCond(CFGNode n, int thread){
 
@@ -294,6 +447,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		if(n.isExpr()){ s = n.getPreStmt(); }
 		if(n.isStmt()){ s = n.getStmt(); }
 
+		foo(n, thread, new ExprVar(s, "IV"));
+		
 		final List<Expression> answer = new ArrayList<Expression>();
 
 		class hasAtomic extends FEReplacer{
@@ -304,10 +459,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				assignOnPath = true;
 				return stmt;
 			}
-
+			
 			@Override
 			public Object visitStmtIfThen(StmtIfThen stmt){
-				estack.add(new ExprUnary("!", stmt.getCond()));
+				estack.add(new ExprUnary("!", stmt.getCond()));				
 				boolean tmp = assignOnPath;
 				stmt.getCons().accept(this);
 				estack.pop();
@@ -321,7 +476,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				assignOnPath = assignOnPath || tmp2;
 				return stmt;
 			}
-
+			
 			@Override
 			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
 				if(stmt.isCond()){
@@ -333,7 +488,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					if(answer.size() > 0){
 						answer.set(0, new ExprBinary(c, "&&", answer.get(0)  ) );
 					}else{
-						answer.add(c);
+						answer.add(c);	
 					}
 				}
 				assignOnPath = true;
@@ -351,38 +506,36 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
-	private Expression getNextAtomicCond(CFGNode n, int thread){
+	private void getNextAtomicCond(CFGNode n, int thread, ExprVar iv, List<Statement> ls){
 
 		if(n.isStmt()){
 			CFGNode nxt = n.getSuccs().get(0).node;
 
 			if(nxt == cfg.getExit()){
-				return ExprConstInt.zero;
+				ls.add(new StmtAssign(iv, ExprConstInt.zero));
+				return;
 			}else{
-				return getAtomicCond(nxt, thread);
+				ls.add(foo(nxt, thread, iv));
+				return ;
 			}
 		}
 
-		if(n.isExpr()){
-			Expression rv = null;
+		if(n.isExpr()){			
 			for( EdgePair ep : n.getSuccs() ){
-				Expression node = null;
+				Statement s;
 				if(ep.node == cfg.getExit()){
-					node = ExprConstInt.zero;
+					s = new StmtAssign(iv, ExprConstInt.zero);
 				}else{
-					node = getAtomicCond(ep.node, thread);
+					s = foo(ep.node, thread, iv);					
 				}
 				Expression g = new ExprBinary((Expression)parametrizeLocals(n.getExpr(), thread), "==", new ExprConstInt(ep.label));
-				g = new ExprBinary(g , "&&", node);
-				if(rv == null){
-					rv = g;
-				}else{
-					rv = new ExprBinary(rv , "||", g);
-				}
+				
+				ls.add(new StmtIfThen(s, g, s, null));
+				
 			}
-			return rv;
+			return;
 		}
-		return null;
+		return;
 
 	}
 
@@ -440,29 +593,29 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 
-					Expression gcond = null;
+					
 
+					List<Statement> ls = new ArrayList<Statement>();
+					ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
+					ExprVar iv = new ExprVar(stmt, "IV");
 					for(int i=0; i<nthreads; ++i){
 						if(i == thread){ continue; }
 						CFGNode n = lastNode[i];
-						Expression cond;
 						if(n != null){
-							cond = getNextAtomicCond(n, i);
+							getNextAtomicCond(n, i, iv, ls);
 						}else{
-							cond = getAtomicCond(cfg.getEntry(), i);
+							ls.add(foo(cfg.getEntry(), i, iv));
 						}
 
-						if(gcond == null){ gcond = cond; }else
-						{ gcond = new ExprBinary(gcond, "||", cond  );  }
 					}
 
 					Statement allgood = new StmtAssign(assumeFlag, ExprConstInt.zero);
 					Statement allbad = new StmtIfThen(stmt, assumeFlag,
 							new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock."), null);
 
-					Statement otherwise = new StmtIfThen(stmt, gcond, allgood, allbad);
-
-					Statement s = new StmtIfThen(stmt, stmt.getCond(), s2, otherwise);
+					Statement otherwise = new StmtIfThen(stmt, iv, allgood, allbad);
+					ls.add(otherwise);
+					Statement s = new StmtIfThen(stmt, stmt.getCond(), s2, new StmtBlock(stmt, ls));
 					return s;
 				}else{
 					atomicCheck.add(stmt);
@@ -596,7 +749,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				sbuf.append(""+ cur);
+				sbuf.append(""+ cur);				
 				if( invNodeMap.containsKey(cur.stmt) ){
 					int thread = cur.thread-1;
 					stepQueues[thread].add(cur);
@@ -613,9 +766,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 			}
 		}
-
+		
 		log(sbuf.toString());
-		if(schedules.containsKey(sbuf.toString())){
+		if(schedules.containsKey(sbuf.toString())){			
 			throw new RuntimeException("I just saw a repeated schedule.");
 		}
 		schedules.put(sbuf.toString(), schedules.size());
