@@ -1,0 +1,49 @@
+int LEN = 2;
+
+struct Queue {
+    Node prevHead;
+}
+
+struct Node {
+    Node next;
+    bit taken;
+}
+
+Node dequeue (Queue q) {
+    Node tmp = null;
+    bit wasTaken = 1;
+
+    for (int i = 0; i < LEN; ++i) {
+        tmp = q.prevHead.next;
+        if (null == tmp) {
+            return null;
+        }
+
+        q.prevHead = tmp;
+        atomic {
+            wasTaken = tmp.taken;
+            tmp.taken = 1;
+        }
+        if (0 == wasTaken) {
+            return tmp;
+        }
+    }
+    assert 0;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    Queue q = new Queue ();
+    q.prevHead = new Node ();
+    q.prevHead.taken = 1;
+
+    q.prevHead.next = new Node ();
+    q.prevHead.next.taken = 0;
+    q.prevHead.next.next = null;
+
+    fork (int i; 2) {
+        dequeue (q);
+    }
+
+    return 1;
+}
