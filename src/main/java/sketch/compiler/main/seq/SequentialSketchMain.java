@@ -36,6 +36,8 @@ import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
+import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
@@ -374,7 +376,19 @@ public class ToSBit
 		}
 	}
 
-
+	protected boolean isSketch (Program p) {
+		class hasHoles extends FEReplacer {
+			public Object visitExprStar (ExprStar es) {
+				throw new RuntimeException ("yes");
+			}
+		}
+		try {  p.accept (new hasHoles ());  return false;  }
+		catch (RuntimeException re) {
+			if ("yes".equals (re.getMessage ()))
+				return true;
+			throw re;
+		}
+	}
 
 	protected void setCommandLineParams(){
 

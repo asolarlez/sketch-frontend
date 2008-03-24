@@ -124,6 +124,14 @@ public class ToPSbitII extends ToSBit {
 
 		ValueOracle ora = randomOracle(prog);
 
+		if (!isSketch (prog)) {
+			System.out.println ("Verifying non-sketched program ...");
+			success = (null == verif.verify (ora));
+			stats.calledVerifier (verif.getLastSolutionStats ());
+			if (success)  oracle = ora;	// is this necessary?
+			return;
+		}
+
 		success = false;
 		do {
 			System.out.println ("Iteration "+ stats.numIterations ());
@@ -173,9 +181,10 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept(new SimpleLoopUnroller());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
-		dump(prog, "after elimlocks.");
+		//dump(prog, "after elimlocks.");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		//dump(prog, "after preproc 2.");
+
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
 		prog = (Program) prog.accept(new NumberStatements());
 
