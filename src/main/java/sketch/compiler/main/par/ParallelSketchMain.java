@@ -23,6 +23,7 @@ import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.SimpleLoopUnroller;
+import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.CompilationStatistics;
 import streamit.frontend.solvers.CounterExample;
@@ -184,6 +185,8 @@ public class ToPSbitII extends ToSBit {
 		//dump(prog, "after elimlocks.");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		//dump(prog, "after preproc 2.");
+
+		prog = (Program) prog.accept (new TrimDumbDeadCode ());
 
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
 		prog = (Program) prog.accept(new NumberStatements());
