@@ -33,6 +33,7 @@ bit main () implements alwaysTrue {
     for (int i = 0; i < NTHREADS; ++i) {
         for (int j = 0; j < NITEMS; ++j) {
             popped[idx] = dequeue (q);
+            idx = idx + 1;
         }
     }
 
