@@ -16,14 +16,11 @@
 
 package streamit.frontend.passes;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprConstBoolean;
 import streamit.frontend.nodes.ExprConstChar;
 import streamit.frontend.nodes.ExprConstFloat;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstStr;
-import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
@@ -43,16 +40,11 @@ public class TrimDumbDeadCode extends FEReplacer
     public Object visitStmtExpr(StmtExpr stmt)
     {
         Expression expr = stmt.getExpression();
-        // NB: for array and field expressions, we really should look
-        // for side-effect-causing children.  At this point in the
-        // process it's probably okay, though.
-        if (expr instanceof ExprArrayRange ||
-            expr instanceof ExprConstBoolean ||
+        if (expr instanceof ExprConstBoolean ||
             expr instanceof ExprConstChar ||
             expr instanceof ExprConstFloat ||
             expr instanceof ExprConstInt ||
             expr instanceof ExprConstStr ||
-            expr instanceof ExprField ||
             expr instanceof ExprVar)
             return null;
         return stmt;
