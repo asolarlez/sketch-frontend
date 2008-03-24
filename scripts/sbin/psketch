@@ -37,7 +37,7 @@ ARGS="${ARGS} ${INFILE}"
 #
 java -ea \
   -classpath "$TMPCLASSPATH" \
-  streamit.frontend.ToPSbit --output "${INFILE}.tmp" \
+  streamit.frontend.ToPSbitII --output "${INFILE}.tmp" \
   --sbitpath "$TMPSBITPATH" $ARGS
 
 
