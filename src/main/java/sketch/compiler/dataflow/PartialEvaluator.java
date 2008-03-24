@@ -58,7 +58,6 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.spin.IdentifyModifiedVars;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
@@ -520,8 +519,6 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitStmtAssign(StmtAssign stmt)
     {
-
-        String op;
         boolean isFieldAcc;
         abstractValue rhs = null;
         try{
@@ -696,24 +693,24 @@ public class PartialEvaluator extends FEReplacer {
 
 
     /**
-     * 
+     *
      * This method must necessarily push a parallel section.
      * This implementation is the most conservative implementation for this methods.
      * In some cases, we can be more liberal and pass a subset of the variables
      * that we want to make volatile in the fork. For things like constant propagation,
      * we only need to make volatile those variables that are modified in the fork.
-     * 
+     *
      * EliminateTransAssign in particular requires the conservative version of the method.
      *
      */
     protected void startFork(StmtFork loop){
     	state.pushParallelSection();
     }
-    
+
     public Object visitStmtFork(StmtFork loop){
-    	
+
     	startFork(loop);
-    	
+
     	Statement nbody = null;
         StmtVarDecl ndecl = null;
         Expression niter = null;
@@ -1129,7 +1126,6 @@ public class PartialEvaluator extends FEReplacer {
 
 
     public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
-    	Statement tmp = ab.getBlock().doStatement(this);
     	Expression exp = ab.getCond();
     	if(ab.isCond()){
     		abstractValue av =(abstractValue) exp.accept(this);
@@ -1137,6 +1133,7 @@ public class PartialEvaluator extends FEReplacer {
     			exp = exprRV;
     		}
     	}
+    	Statement tmp = ab.getBlock().doStatement(this);
     	if(!isReplacer) return ab;
     	if (tmp == null){
     		return null;
