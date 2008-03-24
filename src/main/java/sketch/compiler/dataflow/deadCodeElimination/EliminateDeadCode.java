@@ -160,13 +160,15 @@ public class EliminateDeadCode extends BackwardDataflow {
 	}
 
 	public Object visitStmtFork (StmtFork loop) {
-    	Statement body = (Statement) loop.getBody().accept(this);
-    	if (null == body) {
+		StmtFork sf = (StmtFork) super.visitStmtFork (loop);
+    	if (null == sf.getBody ()) {
     		return null;
-    	} else if (body == loop.getBody ()) {
+    	} else if (sf.getBody () == loop.getBody ()
+    			   && sf.getLoopVarDecl () == loop.getLoopVarDecl ()
+    			   && sf.getIter () == loop.getIter ()) {
     		return loop;
     	} else {
-    		return new StmtFork(loop, loop.getLoopVarDecl (), loop.getIter (), body);
+    		return sf;
     	}
 	}
 

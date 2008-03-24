@@ -1,9 +1,43 @@
 package streamit.frontend.passes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
+import streamit.frontend.nodes.ExprArrayRange;
+import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprNullPtr;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
+import streamit.frontend.nodes.Parameter;
+import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtDoWhile;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtLoop;
+import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.SymbolTable;
+import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
+import streamit.frontend.nodes.UnrecognizedVariableException;
 
 /**
  * Converts function that return something to functions that take
@@ -35,7 +69,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			StmtBlock body=(StmtBlock) func.getBody();
 			StmtVarDecl decl=new StmtVarDecl(func,param.getType(),param.getName(),
 					new ExprVar(func,newName));
-			List stmts=new ArrayList(body.getStmts().size()+2);
+			List<Statement> stmts = new ArrayList<Statement> (body.getStmts().size()+2);
 			stmts.add(decl);
 			stmts.addAll(body.getStmts());
 			return new Function(func,func.getCls(),func.getName(),func.getReturnType(),
@@ -178,7 +212,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 
 
-		List stmts=new ArrayList(((StmtBlock)func.getBody()).getStmts());
+		List<Statement> stmts=new ArrayList<Statement>(((StmtBlock)func.getBody()).getStmts());
 		//add a declaration for the "return flag"
 		stmts.add(0,new StmtVarDecl(func.getBody(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(0)));
 		if(initOutputs){
@@ -198,7 +232,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					}else{
 						defaultValue = ExprConstInt.zero;
 					}
-					stmts.add(0, new StmtAssign(new ExprVar((FEContext) null, outParamName), defaultValue));
+					stmts.add(0, new StmtAssign(new ExprVar(func, outParamName), defaultValue));
 				}
 			}
 		}
@@ -317,13 +351,13 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	}
 
 	@Override
-	public Object visitStmtAssert(StmtAssert sa){		
+	public Object visitStmtAssert(StmtAssert sa){
 		Statement s = (Statement) super.visitStmtAssert(sa);
-		return conditionWrap(s);		
+		return conditionWrap(s);
 	}
-	
-	
-	
+
+
+
 	public Statement conditionWrap(Statement s){
 		Statement ret=new StmtIfThen(s,
 				new ExprBinary(s, ExprBinary.BINOP_EQ,
@@ -333,8 +367,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				null);
 		return ret;
 	}
-	
-	
+
+
 
 
 	private boolean globalEffects(Statement s){
@@ -366,7 +400,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					}
 					return ev;
 				}
-				
+
 				@Override
 				public Object visitExprFunCall(ExprFunCall exp){
 					ge = true;
@@ -405,7 +439,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	public Object visitStmtReturn(StmtReturn stmt) {
 		FENode cx=stmt;
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);
-		List stmts=new ArrayList();
+		List<Statement> stmts = new ArrayList<Statement> ();
 		List params=getOutputParams(currentFunction);
 		for(int i=0;i<params.size();i++) {
 			Parameter param=(Parameter) params.get(i);
