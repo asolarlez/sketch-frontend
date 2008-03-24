@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.experimental.PartialEvaluator;
 import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.abstractValueType;
 import streamit.frontend.experimental.MethodState.ChangeTracker;
@@ -21,17 +20,17 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 
 public class BackwardDataflow extends DataflowWithFixpoint {
-	
-	
+
+
 	public BackwardDataflow(abstractValueType vtype, TempVarGen varGen,  boolean isReplacer, int maxUnroll, RecursionControl rcontrol){
 		super(vtype, varGen, isReplacer, maxUnroll, rcontrol);
 	}
-	
+
 	/**
 	 * Because we are going backwards, then when we visit the actual var declaration,
 	 * we don't need to declare the variable anymore. We only care about the initializer.
-	 * 
-	 * 
+	 *
+	 *
 	 */
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
@@ -57,33 +56,33 @@ public class BackwardDataflow extends DataflowWithFixpoint {
         }
         return isReplacer? new StmtVarDecl(stmt, types, names, inits) : stmt;
     }
-    
+
     /**
      * The variable declaration is done separately.
      * @param stmt
      * @return
      */
     public void varDecl(StmtVarDecl stmt)
-    {    	
+    {
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             String nm = stmt.getName(i);
             Type vt = (Type)stmt.getType(i).accept(this);
-            state.varDeclare(nm, vt);            
-        }       
+            state.varDeclare(nm, vt);
+        }
     }
 
     public Object visitStmtBlock(StmtBlock stmt)
     {
     	/**
-    	 * Because we are doing dataflow backwards, we need to visit the statements in a 
+    	 * Because we are doing dataflow backwards, we need to visit the statements in a
     	 * block in the reverse direction. However, we must first run the variable declarations
     	 * in the block in order for things to work properly.
-    	 * 
-    	 * 
+    	 *
+    	 *
     	 */
-        // Put context label at the start of the block, too.    	
-    	state.pushLevel();	 
+        // Put context label at the start of the block, too.
+    	state.pushLevel();
     	//First, we declare the variables in the block.
     	for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
         {
@@ -92,18 +91,18 @@ public class BackwardDataflow extends DataflowWithFixpoint {
             // be dropped in the output
             if (s == null)
                 continue;
-            if( s instanceof StmtVarDecl  ){            	
-            	varDecl((StmtVarDecl) s);            	
+            if( s instanceof StmtVarDecl  ){
+            	varDecl((StmtVarDecl) s);
             }
         }
-    	
-    	
+
+
     	Statement rs = null;
     	try{
     		{
     	        List<Statement> oldStatements = newStatements;
     	        newStatements = new ArrayList<Statement>();
-    	        List<Statement> blockBody = stmt.getStmts();    	        
+    	        List<Statement> blockBody = stmt.getStmts();
     	        for(int i=blockBody.size()-1; i>=0; --i){
     	        	Statement s = blockBody.get(i);
     	            // completely ignore null statements, causing them to
@@ -120,8 +119,8 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	        ArrayList<Statement> newBlockBody = new ArrayList<Statement>(newStatements.size());
     	        for(int i=newStatements.size()-1; i>=0; --i){
     	        	newBlockBody.add(newStatements.get(i));
-    	        }    	        
-    	       
+    	        }
+
     	        Statement result = new StmtBlock(stmt, newBlockBody);
     	        newStatements = oldStatements;
     	        rs = result;
@@ -134,38 +133,38 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	}
         return rs;
     }
-	
-    
+
+
     public Object visitStmtFork(StmtFork loop){
-    	
+
     	state.pushParallelSection();
     	Statement nbody = null;
         StmtVarDecl ndecl = null;
         Expression niter = null;
     	try{
-	    	state.pushLevel();	    	
+	    	state.pushLevel();
 	    	varDecl(loop.getLoopVarDecl());
-	    					        
-	        try{ 
+
+	        try{
 	        	nbody = (Statement)loop.getBody().accept(this);
 	        	abstractValue viter = (abstractValue) loop.getIter().accept(this);
 	        	niter = exprRV;
-	        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);		
+	        	ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
 	        	if(ndecl == null){
 	        		ndecl = loop.getLoopVarDecl();
 	        	}
 	        }finally{
-	    		state.popLevel();	        	
+	    		state.popLevel();
 	    	}
-	        
+
     	}finally{
     		state.popParallelSection();
     	}
         return isReplacer?  new StmtFork(loop, ndecl, niter, nbody) : loop;
 	}
-    
-    
-    
+
+
+
     public Object visitStmtFor(StmtFor stmt)
     {
     	state.pushLevel();
@@ -173,30 +172,30 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 		Expression ncond = null;
 		Statement nincr = null;
 		Statement nbody = null;
-    	try{    	
-    		
+    	try{
+
     		if (stmt.getInit() != null){
     			if( stmt.getInit() instanceof StmtVarDecl ){
     				varDecl((StmtVarDecl) stmt.getInit());
     			}
-	        }    		
+	        }
 	        boolean goOn = true;
-	        int iters = 0;	
+	        int iters = 0;
 	        while(goOn){
-	        	state.pushChangeTracker(null, false);	        	
+	        	state.pushChangeTracker(null, false);
 	        	boolean lisReplacer = isReplacer;
 	        	isReplacer = false;
 	        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
 	        	state.pushChangeTracker(vcond, false);
 	        	if(vcond.hasIntVal() && vcond.getIntVal() == 0){
-	        		isReplacer = lisReplacer;	
+	        		isReplacer = lisReplacer;
 	        		state.popChangeTracker();
 	        		state.popChangeTracker();
 	        		break;
 	        	}
 	        	ChangeTracker ct = null;
 	        	try{
-	        		stmt.getBody().accept(this);	        	
+	        		stmt.getBody().accept(this);
 		        	if (stmt.getIncr() != null){
 			        	stmt.getIncr().accept(this);
 		        	}
@@ -205,17 +204,17 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	        		throw e;
 	        		//Should also pop the other change tracker.
 	        	}finally{
-	        		ct = state.popChangeTracker();	
-	        		
+	        		ct = state.popChangeTracker();
+
 	        		isReplacer = lisReplacer;
 	        	}
-	        	
+
 	        	state.pushChangeTracker(null, false);
-	        	ChangeTracker ct2 = state.popChangeTracker();	        	
+	        	ChangeTracker ct2 = state.popChangeTracker();
 	        	state.procChangeTrackers(ct, ct2);
-	        	
+
 	        	ChangeTracker changed = state.popChangeTracker();
-	        	state.pushChangeTracker(null, false);	        	
+	        	state.pushChangeTracker(null, false);
 	        	ChangeTracker orig = state.popChangeTracker();
 	        	goOn = !state.compareChangeTrackers(changed, orig);
 	        	state.procChangeTrackers(changed, orig);
@@ -232,7 +231,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	            ninit = (Statement) stmt.getInit().accept(this);
 	        }
     	}finally{
-    		state.popLevel();	        	
+    		state.popLevel();
     	}
     	if(nbody == null && ninit == null && nincr == null) return null;
     	return new StmtFor(stmt, ninit, ncond, nincr, nbody);
