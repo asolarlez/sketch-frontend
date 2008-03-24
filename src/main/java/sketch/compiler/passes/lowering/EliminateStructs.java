@@ -426,7 +426,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return    an allocation expression
 	     */
 	    public Expression makeAllocation (FENode cx) {
-	    	return new ExprUnary (cx, ExprUnary.UNOP_PREINC, nextInstancePointer);
+	    	return new ExprUnary (cx, ExprUnary.UNOP_POSTINC, nextInstancePointer);
 	    }
 
 	    /**
@@ -451,10 +451,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * <code>(Foo_nextPointer + 1) &lt; len (Foo_instances)</code>.
 	     */
 	    public Expression getAllocationSafetyCheck (FENode cx) {
-	    	ExprBinary next =
-	    		new ExprBinary (cx, ExprBinary.BINOP_ADD, nextInstancePointer,
-	    				ExprConstant.createConstant (cx, "1"));
-	    	return new ExprBinary (cx, ExprBinary.BINOP_LT, next, getNumInstsExpr(cx));
+	    	return new ExprBinary (cx, nextInstancePointer, "<", getNumInstsExpr(cx));
 	    }
 
 	    /**
