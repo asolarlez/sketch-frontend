@@ -1,0 +1,34 @@
+// Calling a function that returns a value should not result
+// in a side-effect-free expression statement.  This makes
+// SPIN unhappy.
+
+struct P {
+    P next;
+}
+
+bit clearNext (ref P p) {
+    P tmp = null;
+
+    atomic {
+        tmp = p.next;
+        if (null == tmp) {
+            return 0;
+        }
+        tmp.next = null;
+        p.next = null;
+    }
+
+    return 1;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    P p = new P ();
+    p.next = new P ();
+
+    fork (int i; 2) {
+        clearNext (p);
+    }
+
+    return 1;
+}
