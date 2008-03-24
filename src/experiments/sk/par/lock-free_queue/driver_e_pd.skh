@@ -1,25 +1,14 @@
 // Runs: e... [ d... | d... | ... ]
 
-bit verify (Queue q, Item[NNODES] popped) {
+bit verify (Queue q) {
     assert isValidQueue (q, NNODES);
     assert isEmptyQueue (q, NNODES);
-
-    int[NTHREADS] lastItemId = 0;
-
-    for (int i = 0; i < NTHREADS*NITEMS; ++i) {
-        Item it = popped[i];
-
-        assert it != null;
-        assert it.id > lastItemId[it.tid];
-        lastItemId[it.tid] = it.id;
-    }
 
     return 1;
 }
 
-bit alwaysTrue () { return 1; }
-
-bit main () implements alwaysTrue {
+bit T () { return 1; }
+bit main () implements T {
     Queue q = newQueue ();
 
     for (int i = 0; i < NTHREADS; ++i) {
@@ -28,19 +17,19 @@ bit main () implements alwaysTrue {
         }
     }
 
-    Item[NNODES] popped = null;
-    int idx = 0;
-
     fork (int i; NTHREADS) {
+        int[NTHREADS] lastItemId = 0;
+
         for (int j = 0; j < NITEMS; ++j) {
             Item it = dequeue (q);
+
             atomic {
                 assert it != null;
-                popped[idx] = it;
-                idx = idx + 1;
+                assert it.id > lastItemId[it.tid];
+                lastItemId[it.tid] = it.id;
             }
         }
     }
 
-    return verify (q, popped);
+    return verify (q);
 }

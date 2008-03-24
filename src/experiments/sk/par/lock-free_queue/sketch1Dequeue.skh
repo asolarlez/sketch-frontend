@@ -1,28 +1,37 @@
 static Item dequeue (Queue q) {
     Node tmp = null;
-    int wasTaken = 1;
+    bit wasTaken = 1;
+    bit done = 0;
 
     for (int i = 0; i < NNODES; ++i) {
-        reorder {
-            tmp = ?? ? q.prevHead :
-                       (?? ? q.prevHead.next : q.prevHead.next.next);
-            if (null == tmp) {
-                return null;
-            }
-            q.prevHead = ?? ? tmp :
-                              (?? ? tmp.next :
-                                    (?? ? q.prevHead : q.prevHead.next));
-            if (tmp.taken != 1) {
-                // wasTaken = AtomicSwap (tmp.taken, 1);
-                atomic {
-                    wasTaken = tmp.taken;
-                    tmp.taken = 1;
+        if (!done) {
+            reorder {
+                if (!done) {
+                    tmp = ?? ? q.prevHead :
+                           (?? ? q.prevHead.next : q.prevHead.next.next);
                 }
-                if (0 == wasTaken) {
-                    return tmp.obj;
+                if (!done && null == tmp) {
+                    done = 1;
+                    return null;
+                }
+                if (!done) {
+                    q.prevHead = ?? ? tmp :
+                                  (?? ? tmp.next :
+                                        (?? ? q.prevHead : q.prevHead.next));
+                }
+                if (!done && tmp.taken != 1) {
+                    // wasTaken = AtomicSwap (tmp.taken, 1);
+                    atomic {
+                        wasTaken = tmp.taken;
+                        tmp.taken = 1;
+                    }
+                    if (0 == wasTaken) {
+                        done = 1;
+                        return tmp.obj;
+                    }
                 }
             }
         }
     }
-    assert 0;
+    assert done;
 }
