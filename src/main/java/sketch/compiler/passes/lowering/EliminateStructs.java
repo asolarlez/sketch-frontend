@@ -18,6 +18,7 @@ import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNew;
+import streamit.frontend.nodes.ExprNullPtr;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
@@ -59,8 +60,8 @@ import streamit.frontend.nodes.TypeStructRef;
  *   int[NUM_FOO] Foo_bar = 0;
  *   int   Foo_nextInstance = 0;
  *   ...
- *   assert (Foo_nextInstance + 1) < NUM_FOO;
- *   int f1 = ++Foo_nextInstance;
+ *   assert Foo_nextInstance < NUM_FOO;
+ *   int f1 = Foo_nextInstance++;
  *   int f2 = f1;
  *   return Foo_bar[f2];
  *
@@ -413,7 +414,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	for (String field : fieldArrays.keySet ()) {
 	    		names.add (fieldArrays.get (field).getName ());
 	    		types.add (typeofFieldArr (field));
-	    		inits.add (ExprConstant.createConstant (cx, "0"));
+	    		if (struct.getType (field).isStruct ())
+	    			inits.add (ExprNullPtr.nullPtr);
+	    		else
+	    			inits.add (ExprConstant.createConstant (cx, "0"));
 	    	}
 
 	    	return new StmtVarDecl (cx, types, names, inits);

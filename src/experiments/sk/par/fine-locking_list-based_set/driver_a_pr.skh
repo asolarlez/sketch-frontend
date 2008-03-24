@@ -12,17 +12,19 @@ bit alwaysTrue () { return 1; }
 bit main () implements alwaysTrue {
     Set S = newSet (NEGINF, POSINF);
 
-    for (int key = 0; key < NTHREADS*NITEMS; ++key) {
+    for (int key = 1; key <= NTHREADS*NITEMS; ++key) {
         assert add (S, key);
     }
 
-    int key = NTHREADS*NITEMS - 1;
+    int key = NTHREADS*NITEMS;
     fork (int i; NTHREADS) {
         for (int j = 0; j < NITEMS; ++j) {
-            assert remove (S, key);
+            int myKey = 0;
             atomic {
+                myKey = key;
                 key = key - 1;
             }
+            assert remove (S, myKey);
         }
     }
 
