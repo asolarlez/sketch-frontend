@@ -61,6 +61,14 @@ public class StmtAssign extends Statement
         this(lhs, lhs, rhs, 0);
     }
 
+    /** Creates a new assignment statement with the specified left-
+     * and right-hand sides and no operation (i.e., 'lhs=rhs;') and
+     * context. */
+    public StmtAssign(FENode cx, Expression lhs, Expression rhs)
+    {
+        this(cx, lhs, rhs, 0);
+    }
+
     /** Returns the left-hand side of this. */
     public Expression getLHS()
     {

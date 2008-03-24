@@ -1,5 +1,5 @@
 static bit add (Set S, int key) {
-    Node prev, cur;
+    Node prev = null, cur = null;
     bit ret = 0;
 
     find (S, key, prev, cur);
@@ -16,7 +16,7 @@ static bit add (Set S, int key) {
 }
 
 static bit remove (Set S, int key) {
-    Node prev, cur;
+    Node prev = null, cur = null;
     bit ret = 0;
 
     find (S, key, prev, cur);
