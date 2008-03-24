@@ -7,34 +7,24 @@ import java.util.List;
 import java.util.Map;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.experimental.PartialEvaluator;
 import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.MethodState.ChangeTracker;
 import streamit.frontend.experimental.nodesToSB.IntVtype;
-import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.spin.IdentifyModifiedVars;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 /**
- * 
+ *
  * The sketch preprocessor mainly does constant propagation and inlining of functions and unrolling of loops.
  * After this step, all the holes are now regarded as static holes.
  * @author asolar
@@ -43,11 +33,11 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 public class PreprocessSketch extends DataflowWithFixpoint {
 
 	public Map<String, Function> newFuns;
-	
+
 	private boolean inlineStatics = false;
-	
-	
-	
+
+
+
 	public Object visitExprStar(ExprStar star) {
 		Object obj = super.visitExprStar(star);
 		if(!inlineStatics){
@@ -56,40 +46,40 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 		}
 		return obj;
 	}
-	
-	
+
+
 	@Override
 	public String transName(String name){
 		return state.transName(name);
 	}
-	
-	
+
+
 	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol, boolean uncheckedArrays, boolean inlineStatics){
 		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
 		newFuns = new HashMap<String, Function>();
 		this.uncheckedArrays = uncheckedArrays;
 		this.inlineStatics = inlineStatics;
 	}
-	
+
 	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol, boolean uncheckedArrays){
 		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
 		newFuns = new HashMap<String, Function>();
 		this.uncheckedArrays = uncheckedArrays;
 	}
-	
+
 	public PreprocessSketch(TempVarGen vargen, int maxUnroll, RecursionControl rcontrol){
 		super(new IntVtype(), vargen,true, maxUnroll, rcontrol );
 		newFuns = new HashMap<String, Function>();
 	}
-	
 
-	
+
+
 	 protected void startFork(StmtFork loop){
 		 IdentifyModifiedVars imv = new IdentifyModifiedVars();
-	    	loop.getBody().accept(imv);     	
-	    	state.pushParallelSection(imv.lhsVars); 
+	    	loop.getBody().accept(imv);
+	    	state.pushParallelSection(imv.lhsVars);
 	    }
-	
+
 	@Override
 	 public Object visitStmtAssert (StmtAssert stmt) {
 	        /* Evaluate given assertion expression. */
@@ -99,19 +89,19 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 	        String msg = null;
 	        msg = stmt.getMsg();
 	        state.Assert(vcond, msg);
-	        return isReplacer ?( 
-	        		(vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg()) 
+	        return isReplacer ?(
+	        		(vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg())
 	        		)
 	        		: stmt
 	        		;
 	    }
-	 
-	
+
+
 	public Object visitExprFunCall(ExprFunCall exp)
 	{
     	String name = exp.getName();
-    	
-    	
+
+
     	// Local function?
 		Function fun = ss.getFuncNamed(name);
 		if(fun.getSpecification()!= null){
@@ -125,8 +115,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 				state.popLevel();
 			}
 		}
-    	if (fun != null) {   
-    		if( fun.isUninterp()  || ( fun.isStatic() && !inlineStatics   ) ){    	
+    	if (fun != null) {
+    		if( fun.isUninterp()  || ( fun.isStatic() && !inlineStatics   ) ){
     			if(fun.isStatic()){
     				funcsToAnalyze.add(fun);
     			}
@@ -137,8 +127,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     			}
 	    		if (rcontrol.testCall(exp)) {
 	                /* Increment inline counter. */
-	            	rcontrol.pushFunCall(exp, fun);  
-	    		
+	            	rcontrol.pushFunCall(exp, fun);
+
 					List<Statement>  oldNewStatements = newStatements;
 					newStatements = new ArrayList<Statement> ();
 					Statement result = null;
@@ -147,7 +137,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 					state.pushLevel();
 					try{
 			    		{
-			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
+			    			Iterator<Expression> actualParams = exp.getParams().iterator();
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 			    			inParameterSetter(exp, formalParams, actualParams, false);
 			    		}
@@ -155,7 +145,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			    			Statement body = (Statement) fun.getBody().accept(this);
 			    			addStatement(body);
 			    		}finally{
-			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
+			    			Iterator<Expression> actualParams = exp.getParams().iterator();
 			    			Iterator<Parameter> formalParams = fun.getParams().iterator();
 			    			outParameterSetter(formalParams, actualParams, false);
 			    		}
@@ -167,22 +157,22 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 		    			newStatements = oldNewStatements;
 		    		}
 		            addStatement(result);
-		    		
+
 		    		rcontrol.popFunCall(exp);
 	    		}else{
 	    			StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero);
-	    			addStatement(sas);    			    		
+	    			addStatement(sas);
 	    		}
 	    		exprRV = null;
 	    		return vtype.BOTTOM();
     		}
     	}
     	exprRV = null;
-    	return vtype.BOTTOM();    	
+    	return vtype.BOTTOM();
     }
 
-	
-	
+
+
 	public Object visitFunction(Function func){
 		if( newFuns.containsKey(func.getName()) ){
 			return newFuns.get(func.getName());
