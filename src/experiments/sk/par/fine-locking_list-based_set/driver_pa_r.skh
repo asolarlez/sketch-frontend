@@ -15,20 +15,20 @@ bit main () implements alwaysTrue {
     assert 0 == remove (S, 1);
     assert 0 == add (S, POSINF);
 
-    for (int key = 1; key <= NTHREADS*NITEMS; ++key) {
-        assert add (S, key);
-    }
-
     int key = NTHREADS*NITEMS;
     fork (int i; NTHREADS) {
         for (int j = 0; j < NITEMS; ++j) {
-            int myKey = 0;
+            int myKey = -1;
             atomic {
                 myKey = key;
                 key = key - 1;
             }
-            assert remove (S, myKey);
+            assert add (S, myKey);
         }
+    }
+
+    for (int k = 1; k <= NTHREADS*NITEMS; ++k) {
+        assert remove (S, k);
     }
 
     return verify (S);
