@@ -33,6 +33,11 @@ public abstract class Type
     /** @return true iff this type is an array type. */
     public boolean isArray () { return false; }
 
+    public Expression defaultValue () {
+    	assert false : "Implement me!";
+    	return null;	// unreachable
+    }
+
     /**
      * Check if this type can be promoted to some other type.
      * Returns true if a value of this type can be assigned to

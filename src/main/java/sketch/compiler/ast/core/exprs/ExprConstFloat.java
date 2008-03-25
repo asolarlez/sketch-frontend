@@ -25,6 +25,8 @@ package streamit.frontend.nodes;
  */
 public class ExprConstFloat extends ExprConstant
 {
+	public static final ExprConstFloat ZERO = new ExprConstFloat ((FEContext)null, 0.0);
+
     private double val;
 
     /**

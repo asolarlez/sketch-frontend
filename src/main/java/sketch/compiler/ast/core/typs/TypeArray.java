@@ -71,6 +71,10 @@ public class TypeArray extends Type
         return length;
     }
 
+    public Expression defaultValue () {
+    	return getBase ().defaultValue ();
+    }
+
     public String toString()
     {
         return base + "[" + length + "]";
