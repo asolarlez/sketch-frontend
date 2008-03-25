@@ -143,7 +143,13 @@ public class PartialEvaluator extends FEReplacer {
 		abstractValue newBase = (abstractValue) exp.getBase().accept(this);
 		Expression nbase = exprRV;
 		if(isReplacer ){
-			exprRV = new ExprArrayRange(exp, nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
+			
+			if(nbase instanceof ExprArrayInit && newStart.hasIntVal()){
+				ExprArrayInit eai = (ExprArrayInit) nbase;
+				exprRV = eai.getElements().get(newStart.getIntVal()); 
+			}else{
+				exprRV = new ExprArrayRange(exp, nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
+			}
 		}
 
 		try{
