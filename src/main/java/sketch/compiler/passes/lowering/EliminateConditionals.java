@@ -9,7 +9,6 @@ import java.util.List;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
@@ -17,6 +16,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
 
 /**
  * @author higgins
@@ -36,9 +36,10 @@ public class EliminateConditionals extends SymbolTableVisitor {
 	public Object visitExprTernary (ExprTernary et) {
 		FENode cx = et;
 		ExprVar tmpVar =
-			new ExprVar (cx, varGen.nextVar ("_tmp_ternary_elim_"));
+			new ExprVar (cx, varGen.nextVar ("_tmp_cond_elim_"));
+		Type t = getType (et);
 		StmtVarDecl tmpDecl =
-			new StmtVarDecl (cx, getType (et), tmpVar.getName (), null);
+			new StmtVarDecl (cx, t, tmpVar.getName (), t.defaultValue ());
 
 		List<Statement> oldStatements = newStatements;
 
