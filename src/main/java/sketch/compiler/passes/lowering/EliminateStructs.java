@@ -488,13 +488,13 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    /** Return a null-initializer. */
 	    private Expression initNull (FENode cx) {
 	    	return new ExprArrayInit (cx,
-	    			Collections.nCopies (heapsize, ExprNullPtr.nullPtr));
+	    			Collections.nCopies (heapsize, (Expression) ExprNullPtr.nullPtr));
 	    }
 
 	    /** Return a null-initializer. */
 	    private Expression initZero (FENode cx) {
 	    	return new ExprArrayInit (cx,
-	    			Collections.nCopies (heapsize, ExprConstInt.zero));
+	    			Collections.nCopies (heapsize, (Expression) ExprConstInt.zero));
 	    }
 	}
 }

@@ -17,6 +17,7 @@ import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
+import streamit.frontend.nodes.TypePrimitive;
 
 /**
  * @author higgins
@@ -38,6 +39,11 @@ public class EliminateConditionals extends SymbolTableVisitor {
 		ExprVar tmpVar =
 			new ExprVar (cx, varGen.nextVar ("_tmp_cond_elim_"));
 		Type t = getType (et);
+
+		// FIXME: this pass shouldn't know about this type coercion
+		if (t == TypePrimitive.nulltype)
+			t = TypePrimitive.inttype;
+
 		StmtVarDecl tmpDecl =
 			new StmtVarDecl (cx, t, tmpVar.getName (), t.defaultValue ());
 
