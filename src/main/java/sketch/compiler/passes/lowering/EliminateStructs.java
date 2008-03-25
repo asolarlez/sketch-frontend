@@ -4,6 +4,7 @@
 package streamit.frontend.passes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,8 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
@@ -415,9 +418,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    		names.add (fieldArrays.get (field).getName ());
 	    		types.add (typeofFieldArr (field));
 	    		if (struct.getType (field).isStruct ())
-	    			inits.add (ExprNullPtr.nullPtr);
+	    			inits.add (initNull (cx));
 	    		else
-	    			inits.add (ExprConstant.createConstant (cx, "0"));
+	    			inits.add (initZero (cx));
 	    	}
 
 	    	return new StmtVarDecl (cx, types, names, inits);
@@ -480,6 +483,18 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	return new TypeArray (
 	    		fieldType.isStruct () ? TypePrimitive.inttype : fieldType,
 	    		getNumInstsExpr (cx));
+	    }
+
+	    /** Return a null-initializer. */
+	    private Expression initNull (FENode cx) {
+	    	return new ExprArrayInit (cx,
+	    			Collections.nCopies (heapsize, ExprNullPtr.nullPtr));
+	    }
+
+	    /** Return a null-initializer. */
+	    private Expression initZero (FENode cx) {
+	    	return new ExprArrayInit (cx,
+	    			Collections.nCopies (heapsize, ExprConstInt.zero));
 	    }
 	}
 }
