@@ -30,6 +30,9 @@ package streamit.frontend.nodes;
  */
 public class ExprComplex extends Expression
 {
+	public static final ExprComplex ZERO =
+		new ExprComplex ((FEContext)null, ExprConstInt.zero, ExprConstInt.zero);
+
     private Expression real, imag;
 
     /**
@@ -42,6 +45,23 @@ public class ExprComplex extends Expression
      * @param imag     imaginary part of the complex expression or null
      */
     public ExprComplex(FENode context, Expression real, Expression imag)
+    {
+        super(context);
+        this.real = real;
+        this.imag = imag;
+    }
+
+    /**
+     * Create a new ExprComplex with the specified real and imaginary
+     * parts.  Either of real or imag may be null, for a purely real
+     * or imaginary complex number.
+     *
+     * @param context  file and line number this expression corresponds to
+     * @param real     real part of the complex expression, or null
+     * @param imag     imaginary part of the complex expression or null
+     * @deprecated
+     */
+    public ExprComplex(FEContext context, Expression real, Expression imag)
     {
         super(context);
         this.real = real;
