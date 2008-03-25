@@ -130,9 +130,14 @@ public class TypeStruct extends Type
      *
      * @param f
      * @param t
+     * @deprecated
      */
     public void setType (String f, Type t) {
     	types.put (f, t);
+    }
+
+    public Expression defaultValue () {
+    	return ExprNullPtr.nullPtr;
     }
 
     /** Accept a front-end visitor. */
