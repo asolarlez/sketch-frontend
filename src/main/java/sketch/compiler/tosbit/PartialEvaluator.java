@@ -490,7 +490,7 @@ public class PartialEvaluator extends FEReplacer {
 		if( sz >= 0 ){
 			List<valueClass> nlist = new ArrayList<valueClass>(sz);
 			boolean isAllValues=true;
-			List<ExprConstInt> olist = new ArrayList<ExprConstInt>(sz);
+			List<Expression> olist = new ArrayList<Expression>(sz);
 			String prefix = vname + "_idx_";
 			for(int i=0; i<sz; ++i){
 				String lnm = prefix + i;
@@ -817,7 +817,7 @@ public class PartialEvaluator extends FEReplacer {
 
         boolean globalHasV = true;
         List<valueClass> results = new ArrayList<valueClass>();
-        List<ExprConstInt> vals =   new ArrayList<ExprConstInt>();
+        List<Expression> vals =   new ArrayList<Expression>();
         for( ; lhsIt.hasNext(); ){
         	valueClass lhs = lhsIt.next();
         	valueClass rhs = rhsIt.next();
