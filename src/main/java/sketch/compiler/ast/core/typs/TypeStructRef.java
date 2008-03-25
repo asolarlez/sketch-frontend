@@ -27,13 +27,13 @@ package streamit.frontend.nodes;
 public class TypeStructRef extends Type
 {
     private String name;
-    
+
     /** Creates a new reference to a structured type. */
     public TypeStructRef(String name)
     {
         this.name = name;
     }
-    
+
     /** Returns the name of the referenced structure. */
     public String getName()
     {
@@ -47,26 +47,30 @@ public class TypeStructRef extends Type
             TypeStruct that = (TypeStruct)other;
             return name.equals(that.getName());
         }
-        
+
         if (other instanceof TypeStructRef)
         {
             TypeStructRef that = (TypeStructRef)other;
             return this.name.equals(that.name);
         }
-        
+
         if (this.isComplex() && other instanceof Type)
             return ((Type)other).isComplex();
-        
+
         return false;
     }
-    
+
     public boolean isStruct () { return true; }
-    
+
+    public Expression defaultValue () {
+    	return ExprNullPtr.nullPtr;
+    }
+
     public int hashCode()
     {
         return name.hashCode();
     }
-    
+
     public String toString()
     {
         return name;
