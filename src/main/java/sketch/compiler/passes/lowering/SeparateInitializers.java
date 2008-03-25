@@ -55,11 +55,11 @@ public class SeparateInitializers extends FEReplacer
         // initializer.
 	ArrayList newInits = new ArrayList(stmt.getNumVars());
 	for (int i=0; i<stmt.getNumVars(); i++) {
-	    if (stmt.getInit(i) instanceof ExprArrayInit) {
-		newInits.add(stmt.getInit(i));
-	    } else {
+	    //if (stmt.getInit(i) instanceof ExprArrayInit) {
+		//newInits.add(stmt.getInit(i));
+	    //} else {
 		newInits.add(null);
-	    }
+	    //}
 	}
         Statement newDecl = new StmtVarDecl(stmt,
                                             stmt.getTypes(),
@@ -75,7 +75,7 @@ public class SeparateInitializers extends FEReplacer
             Expression init = stmt.getInit(i);
 	    // don't separate array initializations, because it become
 	    // illegal syntax
-            if (init != null && !(init instanceof ExprArrayInit))
+            if (init != null) //&& !(init instanceof ExprArrayInit))
             {
                 Statement assign = new StmtAssign(new ExprVar(stmt, name), init);
                 addStatement(assign);
