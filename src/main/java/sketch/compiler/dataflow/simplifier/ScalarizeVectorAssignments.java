@@ -3,9 +3,11 @@ package streamit.frontend.experimental.simplifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprTypeCast;
@@ -15,6 +17,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.GetExprType;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
@@ -134,6 +137,16 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			this.isRHS = isRHS;
 		}
 
+		public Object visitExprArrayInit (ExprArrayInit exp) {
+			// TODO: assuming ExprArrayInit is initialized with scalar constants only.
+			int len = exp.getElements ().size ();
+			Type baseType =
+				(Type) exp.getElements ().get (0).accept (new GetExprType (null, null, null));
+			return new ExprTernary ("?:",
+					new ExprBinary (index, "<", ExprConstant.createConstant (exp, ""+ len)),
+					new ExprArrayRange (exp, index),
+					baseType.defaultValue ());
+		}
 
 		public Object visitExprConstInt(ExprConstInt exp){
 			assert isRHS : "this can't happen!!!";
@@ -141,12 +154,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			if( iv != null && iv <= 1  ){
 				return exp;
 			}
-			return new ExprTernary(exp,
-				ExprTernary.TEROP_COND,
-				new ExprBinary(exp, ExprBinary.BINOP_LT, index,  new ExprConstInt(1) )
-				,
-				 exp,
-				ExprConstInt.zero);
+			return new ExprTernary("?:",
+					new ExprBinary(exp, ExprBinary.BINOP_LT, index,  new ExprConstInt(1)),
+					exp,
+					ExprConstInt.zero);
 		}
 
 
@@ -341,9 +352,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 	}
 
 
-	private void zeroOut(Expression lhs, Expression beg, Expression end, List<Statement> mainLst){
+	private Statement zeroOut(Expression lhs, Expression beg, Expression end, Expression zero){
 		String indexName = varGen.nextVar();
-        ExprVar index = new ExprVar((FEContext) null, indexName);
+        ExprVar index = new ExprVar(lhs, indexName);
         Type intType =  TypePrimitive.inttype;
         Statement init =
             new StmtVarDecl(beg, intType, indexName, beg);
@@ -356,23 +367,20 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Expression fel =  new ExprConstInt(0);
         Indexify indexifier2 = new Indexify(index,  end, false);
         Expression tel = (Expression) lhs.accept(indexifier2);
         List<Statement> bodyLst = new ArrayList<Statement>();
         bodyLst.addAll(indexifier2.preStmts);
         bodyLst.add(new StmtAssign(
                 tel,
-                fel));
+                zero));
         bodyLst.addAll(indexifier2.postStmts);
 
         Statement body = new StmtBlock(lhs, bodyLst);
         body = (Statement)body.accept(this);
 
         // Now generate the loop, we have all the parts.
-        mainLst.add(new StmtFor(init, init, cond, incr, body));
-
-		return;
+        return new StmtFor(init, init, cond, incr, body);
 	}
 
 
@@ -432,7 +440,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     		if( irhs != null && irhs == 0 ){
 
     			List<Statement> mainLst = new ArrayList<Statement>();
-				zeroOut(lhs, ExprConstInt.zero, ltlen, mainLst);
+				mainLst.add (zeroOut(lhs, ExprConstInt.zero, ltlen, getType (rhs).defaultValue ()));
 				Statement mainBody =
 				new StmtBlock(lhs, mainLst);
 				// Now generate the loop, we have all the parts.
@@ -450,7 +458,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // We need to generate a for loop, since from our point of
         // view, the array bounds may not be constant.
         String indexName = varGen.nextVar();
-        ExprVar index = new ExprVar((FEContext) null, indexName);
+        ExprVar index = new ExprVar(lhs, indexName);
         Type intType = TypePrimitive.inttype;
         Statement init =
             new StmtVarDecl(index, intType, indexName,
@@ -487,7 +495,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
 
         if( minLen !=  ltlen){
-        	zeroOut(lhs, minLen, ltlen, mainLst);
+        	mainLst.add (zeroOut(lhs, minLen, ltlen, getType (rhs).defaultValue ()));
         }
         Statement mainBody = new StmtBlock(lhs, mainLst);
 
