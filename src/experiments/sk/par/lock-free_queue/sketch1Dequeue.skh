@@ -5,8 +5,8 @@ static Item dequeue (Queue q) {
 
     for (int i = 0; i < NNODES; ++i) {
         if (!done) {
-            reorder {
-                if (!done) {
+            reorder {   // 24
+                if (!done) {    // 3
                     tmp = ?? ? q.prevHead :
                            (?? ? q.prevHead.next : q.prevHead.next.next);
                 }
@@ -14,7 +14,7 @@ static Item dequeue (Queue q) {
                     done = 1;
                     return null;
                 }
-                if (!done) {
+                if (!done) {    // 4
                     q.prevHead = ?? ? tmp :
                                   (?? ? tmp.next :
                                         (?? ? q.prevHead : q.prevHead.next));
