@@ -1,0 +1,16 @@
+
+struct foo{
+	foo x;	
+}
+
+
+bit one(){
+	return 1;	
+}
+
+bit t() implements one{
+	foo t = new foo();
+	foo v = new foo();
+	
+	return t.x == null && v.x == null;	
+}
