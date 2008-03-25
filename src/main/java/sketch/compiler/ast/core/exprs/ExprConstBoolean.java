@@ -26,7 +26,10 @@ package streamit.frontend.nodes;
  */
 public class ExprConstBoolean extends ExprConstant
 {
-    private boolean val;
+	public static final ExprConstBoolean TRUE = new ExprConstBoolean ((FEContext) null, true);
+	public static final ExprConstBoolean FALSE = new ExprConstBoolean ((FEContext) null, false);
+
+	private boolean val;
 
     /**
      * Create a new ExprConstBoolean with a specified value.
