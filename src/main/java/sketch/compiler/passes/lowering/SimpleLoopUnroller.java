@@ -1,24 +1,19 @@
 package streamit.frontend.passes;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.stencilSK.VarReplacer;
 
 public class SimpleLoopUnroller extends FEReplacer {
-	
+
 	@Override
 	public Object visitStmtFor(StmtFor stmt)
     {
@@ -29,6 +24,9 @@ public class SimpleLoopUnroller extends FEReplacer {
 		if(svd.getNumVars() != 1){
 			return super.visitStmtFor(stmt);
 		}
+		Expression init = svd.getInit (0);
+		stmt.assertTrue (null != init,
+				"need an initializer for loop var '"+ svd.getName (0) +"'");
 		Integer low = svd.getInit(0).getIValue();
 		if(low == null){
 			return super.visitStmtFor(stmt);
@@ -52,18 +50,18 @@ public class SimpleLoopUnroller extends FEReplacer {
 		if(  eb.getOp() == ExprBinary.BINOP_LE ){
 			sz++;
 		}
-		
+
 		if(stmt.getIncr() instanceof StmtAssign){
 			StmtAssign sa = (StmtAssign)stmt.getIncr();
 			if(!sa.getLHS().toString().equals(indName)){
 				return super.visitStmtFor(stmt);
 			}
-			
+
 			if(!(sa.getRHS() instanceof ExprBinary)){
 				return super.visitStmtFor(stmt);
 			}
 			ExprBinary rhsbin = (ExprBinary) sa.getRHS();
-			
+
 			Integer rhsrhs = rhsbin.getRight().getIValue();
 			if(rhsbin.getOp() != ExprBinary.BINOP_ADD || rhsrhs == null || rhsrhs != 1 || !rhsbin.getLeft().toString().equals(indName)){
 				return super.visitStmtFor(stmt);
@@ -71,19 +69,19 @@ public class SimpleLoopUnroller extends FEReplacer {
 		}else{
 			if(stmt.getIncr() instanceof StmtExpr){
 				StmtExpr se = (StmtExpr) stmt.getIncr();
-				if(se.getExpression() instanceof ExprUnary && 
-						( ((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC 
+				if(se.getExpression() instanceof ExprUnary &&
+						( ((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC
 								||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREINC )){
-					
+
 				}else{
-					return super.visitStmtFor(stmt);	
+					return super.visitStmtFor(stmt);
 				}
 			}else{
 				return super.visitStmtFor(stmt);
 			}
 		}
-		
-		
+
+
 		for(int i=0; i<sz; ++i){
 			VarReplacer vr = new VarReplacer(indName, new ExprConstInt(i + low) );
 			Statement s = (Statement) stmt.getBody().accept(vr);

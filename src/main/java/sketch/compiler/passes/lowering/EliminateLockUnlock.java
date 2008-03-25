@@ -50,8 +50,11 @@ public class EliminateLockUnlock extends FEReplacer {
 
 	@Override
 	public Object visitStmtFork(StmtFork stmt){
+		Expression oldLoopVar = loopVar;
 		loopVar = new ExprVar(stmt, stmt.getLoopVarName());
-		return super.visitStmtFork(stmt);
+		Object ret = super.visitStmtFork(stmt);
+		loopVar = oldLoopVar;
+		return ret;
 	}
 
 	public EliminateLockUnlock(int lockLen, String locksVar){
