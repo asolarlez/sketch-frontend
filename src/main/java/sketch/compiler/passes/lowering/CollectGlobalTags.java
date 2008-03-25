@@ -63,9 +63,10 @@ public class CollectGlobalTags extends FEReplacer {
 		isGlobal = false;
 		int sz = oset.size();
 		Object o = super.visitStmtAtomicBlock(stmt); 
-		if( isGlobal || sz != oset.size())
+		if( isGlobal || sz != oset.size()){
+			collectTag(stmt.getBlock());
 			return collectTag(o);
-		else
+		}else
 			return o;
 	}
 	
