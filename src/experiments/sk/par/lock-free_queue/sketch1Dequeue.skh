@@ -1,7 +1,7 @@
 static Item dequeue (Queue q) {
     Node tmp = null;
     bit wasTaken = 1;
-    bit done = 0;
+    bit done = 0;   // workaround for frontend bug
 
     for (int i = 0; i < NNODES; ++i) {
         if (!done) {
@@ -19,7 +19,7 @@ static Item dequeue (Queue q) {
                                   (?? ? tmp.next :
                                         (?? ? q.prevHead : q.prevHead.next));
                 }
-                if (!done && tmp.taken != 1) {
+                if (!done && 0 == tmp.taken) {
                     // wasTaken = AtomicSwap (tmp.taken, 1);
                     atomic {
                         wasTaken = tmp.taken;
