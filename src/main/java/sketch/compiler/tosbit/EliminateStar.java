@@ -320,8 +320,8 @@ public class EliminateStar extends CodePEval {
 		Iterator<valueClass> rhsIt = rhsVect.iterator();
 		Expression rvalE = exp;
 		boolean globalHasV = true;
-		List<ExprConstInt> vals =   new ArrayList<ExprConstInt>(lhsVect.size());
-		List<ExprConstInt> orac =   new ArrayList<ExprConstInt>(lhsVect.size());
+		List<Expression> vals =   new ArrayList<Expression>(lhsVect.size());
+		List<Expression> orac =   new ArrayList<Expression>(lhsVect.size());
         for( ; lhsIt.hasNext(); ){
         	valueClass lhs = lhsIt.next();
         	valueClass rhs = rhsIt.next();

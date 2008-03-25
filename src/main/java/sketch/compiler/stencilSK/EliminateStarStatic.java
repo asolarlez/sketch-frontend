@@ -3,10 +3,9 @@ package streamit.frontend.stencilSK;
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
@@ -29,7 +28,7 @@ public class EliminateStarStatic extends FEReplacer {
 			Integer iv = ((TypeArray)t).getLength().getIValue();
 			assert iv != null;
 			ssz = iv;
-			List<ExprConstInt> lst = new ArrayList<ExprConstInt>(ssz);
+			List<Expression> lst = new ArrayList<Expression>(ssz);
 			for(int i=0; i<ssz; ++i){
 				lst.add(oracle.popValueForNode(star.getDepObject(i)));
 			}
