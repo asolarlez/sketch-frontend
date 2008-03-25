@@ -261,8 +261,10 @@ public class SpinVerifier implements Verifier {
 		public Object visitStmtAtomicBlock (StmtAtomicBlock block) {
 			if (block.isCond ()){
 				Integer id = (Integer) block.getTag ();
+				assert !condMap.containsKey (getLineNumber ()) : "Fix SPIN";
 				condMap.put (getLineNumber (), id);
 				Object o = super.visitStmtAtomicBlock (block);
+				assert !condMap.containsKey (getLineNumber ()) : "Fix SPIN";
 				condMap.put (getLineNumber (), id);
 				return o;
 			}
