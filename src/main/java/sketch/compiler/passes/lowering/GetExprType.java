@@ -16,7 +16,6 @@
 
 package streamit.frontend.nodes;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +45,8 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
-    	assert exp.getMembers().size()==1 : "Array Range expressions not yet implemented; check "+exp+" at "+exp;
+    	exp.assertTrue (exp.getMembers ().size () == 1,
+    			"Array Range expressions not yet implemented; check "+exp);
     	Type base = (Type)exp.getBase().accept(this);
 
 		List l=exp.getMembers();
@@ -137,7 +137,7 @@ public class GetExprType extends FENullVisitor
         		if( !(exp.getLeft() instanceof ExprConstInt )){
         			assert false : "You can only do shift on an array or a constant for now.";
         		}
-        		
+
         	}
         	return tl;
         }
@@ -173,7 +173,7 @@ public class GetExprType extends FENullVisitor
     		return TypePrimitive.bittype;
     	}
     }
-    
+
     public Object visitExprNullPtr(ExprNullPtr exp){
     	return TypePrimitive.nulltype;
     }
