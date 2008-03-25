@@ -470,12 +470,12 @@ public class BitTypeRemover extends SymbolTableVisitor
 
 	private long computeMask(ExprArrayInit exp, int word, int ws)
 	{
-		List<ExprConstInt> bits=exp.getElements();
+		List<Expression> bits=exp.getElements();
 		int nb=bits.size();
 		long mask=0;
 		long p=1;
 		for(int i=word*ws;i<nb && i<(word+1)*ws;i++,p*=2) {
-			long bit=bits.get(i).getVal();
+			long bit=((ExprConstInt)bits.get(i)).getVal();
 			assert(bit==0 || bit==1);
 			mask=mask+bit*p;
 		}
