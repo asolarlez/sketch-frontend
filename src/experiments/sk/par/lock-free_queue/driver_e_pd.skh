@@ -11,6 +11,8 @@ bit T () { return 1; }
 bit main () implements T {
     Queue q = newQueue ();
 
+    assert null == dequeue (q);
+
     for (int i = 0; i < NTHREADS; ++i) {
         for (int j = 0; j < NITEMS; ++j) {
             enqueue (q, newItem (i, j+1));
