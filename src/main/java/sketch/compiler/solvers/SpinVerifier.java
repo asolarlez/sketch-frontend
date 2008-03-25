@@ -18,7 +18,9 @@ import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.Executer;
 import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
+import streamit.frontend.spin.SimpleCleanup;
 import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
 import streamit.misc.NullStream;
@@ -36,9 +38,14 @@ public class SpinVerifier implements Verifier {
 	protected int verbosity;
 	protected int vectorSize;	// bytes
 	protected Map<Integer, Integer> lineToStmtnum;
+	protected boolean preSimplify = false;
 
 	protected SpinSolutionStatistics lastSolveStats;
 
+	public void simplifyBeforeSolving(){
+		preSimplify = true;
+	}
+	
 	public SpinVerifier (TempVarGen v, Program p) {
 		this (v, p, new Configuration (), 0, true, VECTORSZ_GUESS);
 	}
@@ -122,11 +129,13 @@ public class SpinVerifier implements Verifier {
 		// TODO: might need other passes to make SPIN verification more
 		// efficient
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
-		/*
-		p.accept(  new SimpleCodePrinter()  );
-		p = (Program) p.accept (new SimpleCleanup() );
-		p.accept(  new SimpleCodePrinter()  );
-		*/
+		
+		//p.accept(  new SimpleCodePrinter()  );
+		if(preSimplify){
+			p = (Program) p.accept (new SimpleCleanup() );
+		}
+		//p.accept(  new SimpleCodePrinter()  );
+		
 		return p;
 	}
 

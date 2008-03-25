@@ -242,8 +242,13 @@ public class ToPSbitII extends ToSBit {
 		// we enforce bounds
 		config.checkArrayBounds (false);
 
-		return new SpinVerifier (varGen, p, config, verbosity, cleanup,
+		SpinVerifier sv = new SpinVerifier (varGen, p, config, verbosity, cleanup,
 								 params.flagValue ("vectorszGuess"));
+		
+		if(params.hasFlag("simplifySpin")){
+			sv.simplifyBeforeSolving();
+		}		
+		return sv;
 	}
 	public SolverStatistics createVerifStats () {
 		return new SolverStatistics ();
@@ -278,6 +283,12 @@ public class ToPSbitII extends ToSBit {
 				"             \t as necessary, but a good initial guess can reduce the number of calls\n" +
 				"             \t to SPIN.",
 				""+ SpinVerifier.VECTORSZ_GUESS, null) );
+		
+		params.setAllowedParam("simplifySpin", new POpts(POpts.FLAG,
+				"--simplifySpin       \t Do simplification on the program before running spin.",
+				null, null) );
+		
+		
 	}
 
 	public static void main(String[] args)
