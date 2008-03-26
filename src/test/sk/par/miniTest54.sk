@@ -1,0 +1,21 @@
+// This example should not cause a repeated counterexample schedule or a
+// SPIN counterexample trace parser error.
+
+bit T () { return 1; }
+bit main () implements T {
+    int g = 0;
+    int p1 = { * 3 };
+    int p2 = { * 3 };
+
+    int _lkwhere = { * 1 };
+    assert 0 <= _lkwhere && _lkwhere <= 1;
+    int _ulkwhere = { * 1 };
+    assert 0 <= _ulkwhere && _ulkwhere <= 1;
+
+    fork (int i; 2) {
+        if (0 == _lkwhere) {  lock (p1);  }
+        if (0 == _ulkwhere) {  unlock (p2);  }
+    }
+
+    return 1;
+}
