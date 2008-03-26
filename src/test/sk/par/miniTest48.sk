@@ -1,3 +1,5 @@
+// CURRENT, THIS TEST IS SUPPOSED TO FAIL
+
 // Locking null may or may not be an error.  The semantics of this are as
 // yet undecided.  Right now, we've decided that it should sometimes be an
 // error.
