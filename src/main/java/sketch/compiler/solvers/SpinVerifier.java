@@ -133,9 +133,9 @@ public class SpinVerifier implements Verifier {
 				log ("Before specialization and optimization:");
 				p.accept (new SimpleCodePrinter());
 			}
-			prog = (Program) prog.accept (new PreprocessSketch (varGen, 0, ToSBit.visibleRControl (p)));
-			prog = (Program) prog.accept (new EliminateTransAssns ());
-			prog = (Program) prog.accept (new EliminateDeadCode (true));
+			p = (Program) p.accept (new PreprocessSketch (varGen, 0, ToSBit.visibleRControl (p)));
+			p = (Program) p.accept (new EliminateTransAssns ());
+			p = (Program) p.accept (new EliminateDeadCode (true));
 			if (reallyREALLYVerbose ()) {
 				log ("After specialization and optimization:");
 				p.accept (new SimpleCodePrinter ());
