@@ -45,6 +45,8 @@ import streamit.frontend.passes.CodePrinterVisitor;
  * @author Chris Jones
  */
 public class PromelaCodePrinter extends CodePrinterVisitor {
+	public static final String atomicCondLbl = "_atomicCondLbl";
+
 	protected boolean sawInit = false;
 	protected String syncChan;
 
@@ -68,6 +70,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		println ("#define null (-1)");
 		println ("mtype = { done };");
 		println ("chan "+ syncChan +" = [2] of { mtype };");
+		println ("hidden int "+ atomicCondLbl + ";");
 		println ("");
 	}
 
@@ -227,6 +230,8 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 
 		printTab ();
 		if (block.isCond ()) {
+			// XXX: hack around weird way SPIN sometimes prints traces
+			printAtomicCondLabel ((Integer) block.getTag ());
 			block.getCond ().accept (this);
 			print (" -> ");
 		}
@@ -238,6 +243,10 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		dedent ();
 		printlnIndent ("}");
 		return block;
+	}
+
+	protected void printAtomicCondLabel (int lbl) {
+		print ("("+ atomicCondLbl +"=="+ lbl + ")||");
 	}
 
 	@Override

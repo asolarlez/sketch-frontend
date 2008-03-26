@@ -4,9 +4,8 @@
 package streamit.frontend.solvers;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,9 +15,9 @@ import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.passes.LowerLoopsToWhileLoops;
+import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.Executer;
 import streamit.frontend.spin.Preprocessor;
@@ -27,7 +26,6 @@ import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
-import streamit.misc.NullStream;
 
 /**
  * @author Chris Jones
@@ -41,7 +39,6 @@ public class SpinVerifier implements Verifier {
 	protected boolean cleanup;
 	protected int verbosity;
 	protected int vectorSize;	// bytes
-	protected Map<Integer, Integer> lineToStmtnum;
 	protected boolean preSimplify = false;
 
 	protected SpinSolutionStatistics lastSolveStats;
@@ -63,6 +60,14 @@ public class SpinVerifier implements Verifier {
 		vectorSize = initVectorSize;
 
 		config.vectorSizeBytes (vectorSize);
+/*
+		String trace =
+" 32:	proc 0 (:init:)  line  98 (state 56) (invalid end state)\n"+
+"		__return?done\n"+
+" 32:	proc 1 (__s_fork_thread_16)  line 135 (state 19) (invalid end state)\n"+
+"		(((_atomicCondLbl==37)||(_lock_3L0_3L0[6]==0)))\n";
+		parseDeadlockTrace (trace);
+		System.exit (0);*/
 	}
 
 	public CounterExample verify(ValueOracle oracle) {
@@ -94,16 +99,24 @@ public class SpinVerifier implements Verifier {
 			addSpinStats (lastSolveStats, out);
 
 			try {
-				if (deadlock (out)) {
-					CounterExample cex = parseDeadlockTrace (trail);
-					log (5, "counterexample from deadlock: "+ cex);
-					return cex;
-				} else if (trail.length () == 0) {
+				if (trail.length () == 0) {
 					lastSolveStats.success = true;
 					return null;	// success!
 				} else {
-					CounterExample cex = parseTrace (trail);
+					CEtrace cex = parseTrace (trail);
+
+					if (deadlock (out)) {
+						List<step> blocked = findBlockedThreads (trail);
+						assert blocked.size () > 0 : "Uh-oh!  No blocked threads";
+
+						log (5, "  (counterexample from deadlock)");
+						log (5, "  blocked threads: "+ blocked);
+
+						cex.addSteps (blocked);
+					}
+
 					log (5, "counterexample: "+ cex);
+
 					return cex;
 				}
 			} finally {
@@ -147,8 +160,6 @@ public class SpinVerifier implements Verifier {
 		p = (Program) p.accept(new Preprocessor (varGen));
 		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
 
-		lineToStmtnum = buildLineToStmtnumMap (p);
-
 		return p;
 	}
 
@@ -164,29 +175,26 @@ public class SpinVerifier implements Verifier {
 		return 0 <= out.indexOf ("pan: invalid end state");
 	}
 
-	/** Parses the line number at which a particular thread is blocked. */
+	/** Parses the label of an conditional atomic block. */
+	protected static final String ATOMIC_COND_REGEX =
+		"\\(\\(\\("+ PromelaCodePrinter.atomicCondLbl +"==(\\d+)\\)";
+
+	/** Parses thread ID and statement label of a blocked thread. */
 	protected static final String BLOCK_REGEX =
-		"^\\s*\\d+:\\s*proc\\s+(\\d+) .* line (\\d+) .*\\(invalid end state\\)$";
+		"^\\s*\\d+:\\s*proc\\s+(\\d+).*\\(invalid end state\\)"+
+		"(?:\\r\\n|\\r|\\n)\\s+"+ ATOMIC_COND_REGEX;
 
-	//I don't quite understand the regex above, but it looks like it is filtering out
-	//lines corresponding to thread zero. Is that true? : Armando to Chris.
-
-
-	public CEDeadlockedTrace parseDeadlockTrace (String trace) {
-		CEDeadlockedTrace cex =	new CEDeadlockedTrace (parseTrace (trace));
+	public List<step> findBlockedThreads (String trace) {
+		List<step> blocked = new ArrayList<step> ();
 		Matcher m = Pattern.compile (BLOCK_REGEX, Pattern.MULTILINE).matcher (trace);
 
 		while (m.find ()) {
 			int thread = Integer.parseInt (m.group (1));
-			int line = Integer.parseInt (m.group (2));
-			Integer stmt = lineToStmtnum.get (line);
-			if (null != stmt)
-				cex.addBlockedStmt (thread, stmt);
+			int stmt = Integer.parseInt (m.group (2));
+			blocked.add (new step (thread, stmt));
 		}
 
-		assert cex.blocks.size () > 0 : "Uh-oh!  No threads were blocked";
-
-		return cex;
+		return blocked;
 	}
 
 	/** Parses a single statement in a counterexample trace. */
@@ -211,9 +219,9 @@ public class SpinVerifier implements Verifier {
 			if (stmt.startsWith ("_ = "))
 				cex.addStep (thread, Integer.parseInt (stmt.substring (4)));
 			else {	// Might be a conditional atomic
-				Integer stmtNum = lineToStmtnum.get (line);
-				if (null != stmtNum) {
-					cex.addStep (thread, stmtNum);
+				List<String> e = Misc.search (stmt, ATOMIC_COND_REGEX);
+				if (null != e) {
+					cex.addStep (thread, Integer.parseInt (e.get (0)));
 					log (5, "    (conditional atomic step)");
 				}
 			}
@@ -264,33 +272,6 @@ public class SpinVerifier implements Verifier {
 			assert null != res;
 			s.spinTotalMemBytes = (long) (1048576.0 * Float.parseFloat (res.get (0)));
 		}
-	}
-
-	/**
-	 * This unholy little class overrides the Promela code printer's
-	 * visitAtomicBlock() method to record the line numbers at which
-	 * conditions of conditional atomics were seen.
-	 */
-	private static final class GetAtomicCondInfo extends PromelaCodePrinter {
-		public Map<Integer, Integer> condMap = new HashMap<Integer, Integer> ();
-		GetAtomicCondInfo () {  super (NullStream.INSTANCE);  }
-		public Object visitStmtAtomicBlock (StmtAtomicBlock block) {
-			if (block.isCond ()){
-				Integer id = (Integer) block.getTag ();
-				assert !condMap.containsKey (getLineNumber ()) : "Fix SPIN";
-				condMap.put (getLineNumber (), id);
-				Object o = super.visitStmtAtomicBlock (block);
-				assert !condMap.containsKey (getLineNumber ()) : "Fix SPIN";
-				condMap.put (getLineNumber (), id);
-				return o;
-			}
-			return super.visitStmtAtomicBlock (block);
-		}
-	}
-	protected Map<Integer, Integer> buildLineToStmtnumMap (Program p) {
-		GetAtomicCondInfo info = new GetAtomicCondInfo ();
-		p.accept (info);
-		return info.condMap;
 	}
 
 	protected boolean reallyVerbose () {  return verbosity >= 5;  }
