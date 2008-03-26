@@ -1,0 +1,13 @@
+int NTHREADS = 2;
+int NITEMS = 1;
+int NNODES = NTHREADS*NITEMS + 2;   // +2 for sentinels
+
+int NEGINF = -1;
+int POSINF = NNODES;
+
+#include "set.skh"
+
+#include "solnAdd.skh"
+#include "solnRemove.skh"
+
+#include "driver_pa_r.skh"
