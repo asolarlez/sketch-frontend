@@ -274,15 +274,27 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 						EdgePair ep = it.next();
 						CFGNode nxt = ep.node;
 						boolean found = false;
+						CFGNode tmp = nxt;
+						while(tmp.isStmt()){
+							if(tmp == node){
+								found = true;
+								break;
+							}
+							tmp = tmp.getSuccs().get(0).node;
+						}
+						
+						/*
 						for(EdgePair ep2 : nxt.getSuccs()){
 							if(ep2.node == node){
 								found = true;
 								break;
 							}
 						}
+						*/
 						if(found){
 							goodSucc = true;
 							lastNode = nxt;
+							break;
 						}else{
 							assertStmts.add(addAssume(lastNode, thread, ep));
 						}
