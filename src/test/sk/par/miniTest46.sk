@@ -1,3 +1,6 @@
+// Arrays of integers and pointers should be properly initialized.  Ints to 0,
+// and pointers to null.
+
 struct P {
     P dummy;
 }
