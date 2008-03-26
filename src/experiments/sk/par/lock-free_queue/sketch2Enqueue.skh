@@ -7,7 +7,7 @@ static void enqueue(Queue Q, Item obj) {
         {   // {| (Q.tail|tmp|n)(.next)? |} = {| null|(Q.tail|tmp|n)(.next)? |}
             Node _rhs = null;
             int _whichrhs = { * 3 };
-            assert 0 <= _whichrhs <= 6;
+            assert 0 <= _whichrhs && _whichrhs <= 6;
             if (0 == _whichrhs) {  _rhs = Q.tail.next;  }
             if (1 == _whichrhs) {  _rhs = Q.tail;  }
             if (2 == _whichrhs) {  _rhs = tmp.next;  }
@@ -17,7 +17,7 @@ static void enqueue(Queue Q, Item obj) {
             if (6 == _whichrhs) {  _rhs = null;  }
 
             int _whichassn = { * 3 };
-            assert 0 <= _whichassn <= 5;
+            assert 0 <= _whichassn && _whichassn <= 5;
             if (0 == _whichassn) {  Q.tail.next = _rhs;  }
             if (1 == _whichassn) {  Q.tail = _rhs;  }
             if (2 == _whichassn) {  tmp.next = _rhs;  }
@@ -30,9 +30,9 @@ static void enqueue(Queue Q, Item obj) {
         {   // tmp = AtomicSwap ({| (Q.tail|tmp|n)(.next)? |},
             //           {| null|(Q.tail|tmp|n)(.next)? |});
             int _whichrhs = { * 3 };
-            assert 0 <= _whichrhs <= 7;
+            assert 0 <= _whichrhs && _whichrhs <= 7;
             int _whichlhs = { * 3 };
-            assert 0 <= _whichlhs <= 6;
+            assert 0 <= _whichlhs && _whichlhs <= 6;
 
             // Special cases for Q.tail.next, since it's two reads
             if (_whichlhs == 0) {
@@ -117,7 +117,7 @@ static void enqueue(Queue Q, Item obj) {
             if (??) {
                 Node _rhs = null;
                 int _whichrhs = { * 3 };
-                assert 0 <= _whichrhs <= 6;
+                assert 0 <= _whichrhs && _whichrhs <= 6;
                 if (0 == _whichrhs) {  _rhs = Q.tail.next;  }
                 if (1 == _whichrhs) {  _rhs = Q.tail;  }
                 if (2 == _whichrhs) {  _rhs = tmp.next;  }
@@ -127,7 +127,7 @@ static void enqueue(Queue Q, Item obj) {
                 if (6 == _whichrhs) {  _rhs = null;  }
 
                 int _whichop = { * 1 };
-                assert 0 <= _whichop <= 1;
+                assert 0 <= _whichop && _whichop <= 1;
                 if (0 == _whichop) {  _cond = (tmp == _rhs);  }
                 if (1 == _whichop) {  _cond = (tmp != _rhs);  }
             }
@@ -136,7 +136,7 @@ static void enqueue(Queue Q, Item obj) {
             if (_cond) {
                 Node _rhs = null;
                 int _whichrhs = { * 3 };
-                assert 0 <= _whichrhs <= 6;
+                assert 0 <= _whichrhs && _whichrhs <= 6;
                 if (0 == _whichrhs) {  _rhs = Q.tail.next;  }
                 if (1 == _whichrhs) {  _rhs = Q.tail;  }
                 if (2 == _whichrhs) {  _rhs = tmp.next;  }
@@ -146,7 +146,7 @@ static void enqueue(Queue Q, Item obj) {
                 if (6 == _whichrhs) {  _rhs = null;  }
 
                 int _whichassn = { * 3 };
-                assert 0 <= _whichassn <= 5;
+                assert 0 <= _whichassn && _whichassn <= 5;
                 if (0 == _whichassn) {  Q.tail.next = _rhs;  }
                 if (1 == _whichassn) {  Q.tail = _rhs;  }
                 if (2 == _whichassn) {  tmp.next = _rhs;  }

@@ -2,6 +2,7 @@ static Item dequeue (Queue q) {
     Node tmp = null;
     bit wasTaken = 1;
     bit done = 0;   // workaround for frontend bug
+    Item ret = null;
 
     for (int i = 0; i < NNODES; ++i) {
         if (!done) {
@@ -12,7 +13,7 @@ static Item dequeue (Queue q) {
                 }
                 if (!done && null == tmp) {
                     done = 1;
-                    return null;
+                    ret = null;
                 }
                 if (!done) {    // 4
                     q.prevHead = ?? ? tmp :
@@ -27,11 +28,12 @@ static Item dequeue (Queue q) {
                     }
                     if (0 == wasTaken) {
                         done = 1;
-                        return tmp.obj;
+                        ret = tmp.obj;
                     }
                 }
             }
         }
     }
     assert done;
+    return ret;
 }
