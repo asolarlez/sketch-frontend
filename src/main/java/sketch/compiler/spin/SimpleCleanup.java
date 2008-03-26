@@ -3,7 +3,6 @@ package streamit.frontend.spin;
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.experimental.abstractValue;
 import streamit.frontend.experimental.varState;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.nodes.ExprVar;
@@ -21,18 +20,18 @@ public class SimpleCleanup extends PreprocessSketch {
 	public SimpleCleanup(){
 		super(null, 1, new ZeroInlineRControl());
 	}
-	
+
 	public String transName(String name){
 		return name;
 	}
-	
-	
-	
+
+
+
 	@Override
     protected List<Function> functionsToAnalyze(StreamSpec spec){
 	    return new ArrayList<Function>(spec.getFuncs());
     }
-	
+
     @Override
     public Object visitStmtAssert(StmtAssert stmt){
     	 /* Evaluate given assertion expression. */
@@ -43,10 +42,10 @@ public class SimpleCleanup extends PreprocessSketch {
         		: stmt
         		;
     }
-    
-    
-    
-    @Override 
+
+
+
+    @Override
     public Object visitFieldDecl(FieldDecl field){
     	List<Type> types = isReplacer? new ArrayList<Type>() : null;
     	List<String> names = isReplacer? new ArrayList<String>() : null;
@@ -74,14 +73,14 @@ public class SimpleCleanup extends PreprocessSketch {
         }
         return isReplacer? new FieldDecl(field, types, names, inits) :field;
     }
-    
+
 	@Override
 	public Object visitFunction(Function f){
-		
+
 		if(f.getName().contains("_fork_thread_")){
 			return super.visitFunction(f);
-		}		
+		}
 		return f;
 	}
-	
+
 }
