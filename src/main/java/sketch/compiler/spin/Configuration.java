@@ -31,6 +31,7 @@ public class Configuration {
 		// sets default options
 		setCompileParam ("-w");
 		setCompileParam ("-D_POSIX_SOURCE");
+		failOnExceedingSearchDepthLimit (true);
 		listUnreachedStates (false);
 	}
 
@@ -111,6 +112,10 @@ public class Configuration {
 	}
 
 	/* === RUN-TIME PARAMS === */
+
+	public void failOnExceedingSearchDepthLimit (boolean yes) {
+		toggle (runParams, yes, "-b");
+	}
 
 	public void listUnreachedStates (boolean yes) {
 		toggle (runParams, !yes, "-n");
