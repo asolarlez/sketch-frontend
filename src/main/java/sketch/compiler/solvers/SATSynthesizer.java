@@ -56,6 +56,7 @@ import streamit.frontend.parallelEncoder.ExtractPreParallelSection;
 import streamit.frontend.parallelEncoder.VarSetReplacer;
 import streamit.frontend.passes.CollectGlobalTags;
 import streamit.frontend.passes.EliminateMultiDimArrays;
+import streamit.frontend.passes.SimpleLoopUnroller;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
@@ -114,9 +115,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	int nthreads;
 
-	public SATSynthesizer(Program prog, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
+	public SATSynthesizer(Program prog_p, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		super(params, rcontrol, varGen);
-		this.prog = prog;
+		this.prog = prog_p;
+		this.prog = (Program)prog.accept(new SimpleLoopUnroller());
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
 		//this.prog.accept(new SimpleCodePrinter().outputTags());
@@ -228,13 +230,41 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		Expression cond = new ExprBinary( new ExprArrayRange(new ExprVar(lastNode.getExpr(), "_ind_p"), new ExprConstInt(thread)), "==", new ExprConstInt(ep.label.intValue()));
 		return addAssume(cond);
 	}
+	
+	
+	
+	public CFGNode firstChildWithTag(CFGNode parent, int stmt){
+		
+		Queue<CFGNode> nqueue = new LinkedList<CFGNode>();
+		if(parent != null){ 
+			nqueue.add(parent); 
+		} else{ 
+			nqueue.add(cfg.getEntry()) ; 
+		} 
+		CFGNode node = null;		
+		while(nqueue.size() > 0){
+			CFGNode cur = nqueue.poll();
+			Set<Object> so = nodeMap.get(cur);
+			if( so.contains(stmt)  ){ 
+				node = cur; 
+				break; 
+			}
+			for(EdgePair ep : cur.getSuccs()){
+				nqueue.add(ep.node);
+			}
+		}
+		assert node != null;
+		return node;
+		
+	}
+	
 
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
 
 
 		assert invNodeMap.containsKey(stmt);
 
-		CFGNode node = invNodeMap.get( stmt );
+		CFGNode node =  firstChildWithTag(lastNode, stmt);  //invNodeMap.get( stmt );
 
 		assert node != null;
 
@@ -319,6 +349,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				addNode(lastNode, thread);
 
 			}
+			assert lastNode != cfg.getExit() : "This is going to be an infinite loop";
 		}while(true);
 
 		addNode(node, thread);
@@ -793,14 +824,17 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				if( invNodeMap.containsKey(cur.stmt) ){
 					int thread = cur.thread-1;
 					stepQueues[thread].add(cur);
-
+					//System.out.println("C " + cur);
 					if( globalTags.contains(cur.stmt)  ){
-						Queue<step> qs = stepQueues[thread];
+						Queue<step> qs = stepQueues[thread];						
 						while( qs.size() > 0  ){
 							step tmp = qs.remove();
+							//System.out.println("t " + tmp);
 							lastNode[thread] = addBlock(tmp.stmt, thread, lastNode[thread]);
 						}
 					}
+				}else{
+					//System.out.println("NC " + cur);
 				}
 
 
@@ -839,9 +873,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			addStatement(parts.postpar, -1);
 		}
 		popBlock();
-		closeCurrent();
-		if (reallyVerbose ())
-			current.accept(new SimpleCodePrinter());
+		closeCurrent();		
 	}
 
 	Map<String, Integer> schedules = new HashMap<String, Integer>();
@@ -883,6 +915,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		mergeWithCurrent((CEtrace)counterExample);
 
 		current = (Program)current.accept(new EliminateMultiDimArrays());
+		if (reallyVerbose ())
+			current.accept(new SimpleCodePrinter());
 		boolean tmp = partialEvalAndSolve(current);
 
 		return tmp ? getOracle() : null;
