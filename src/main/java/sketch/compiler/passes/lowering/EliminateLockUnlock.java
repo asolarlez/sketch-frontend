@@ -92,7 +92,10 @@ public class EliminateLockUnlock extends FEReplacer {
 		 Expression threadId = getCurrentThreadId (exp);
 		 Expression p = exp.getParams ().get (0);
 		 Expression lock = new ExprArrayRange (locksVar, p);
-		 Statement guard = new StmtAssert(exp, new ExprBinary(p, "<", lockLen),
+		 Statement guard = new StmtAssert(exp, new ExprBinary (
+				 new ExprBinary (ExprConstInt.zero, "<=", p),
+				 "&&",
+				 new ExprBinary(p, "<", lockLen)),
 				 "The lock expression is out of bounds.");
 
 		 if (exp.getName ().equals ("lock")) {

@@ -1,17 +1,11 @@
 package streamit.frontend.experimental.eliminateTransAssign;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
 
@@ -20,12 +14,12 @@ public class EliminateTransAssns extends DataflowWithFixpoint {
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
 	    return new LinkedList<Function>(spec.getFuncs());
     }
-	
+
 	public EliminateTransAssns(){
 		super(TAvalueType.vtype, null, true, 0, (new BaseRControl(10)));
 	}
-	
-	public Object visitExprVar(ExprVar exp) {		
+
+	public Object visitExprVar(ExprVar exp) {
 		String vname =  exp.getName();
 		transAssignAbsValue val = (transAssignAbsValue)state.varValue(vname);
 		transAssignAbsValue oval = val;
@@ -43,15 +37,15 @@ public class EliminateTransAssns extends DataflowWithFixpoint {
 		}
 		return 	oval;
 	}
-	
+
 	/*
     protected Object assignmentToField(String lhsName, StmtAssign stmt, abstractValue rhs, Expression nlhs, Expression nrhs){
-    	ExprField ef = (ExprField) nlhs; 
+    	ExprField ef = (ExprField) nlhs;
     	while(ef.getLeft() instanceof ExprField){
-    		
+
     	}
     	return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
     }
     */
-	
+
 }
