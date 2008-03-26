@@ -24,6 +24,7 @@ import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.SimpleLoopUnroller;
 import streamit.frontend.passes.TrimDumbDeadCode;
+import streamit.frontend.passes.UnrollLocalLoops;
 import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.CompilationStatistics;
 import streamit.frontend.solvers.CounterExample;
@@ -180,7 +181,7 @@ public class ToPSbitII extends ToSBit {
 		//prog = (Program) prog.accept(new ProtectArrayAccesses(
 		//		  FailurePolicy.WRSILENT_RDZERO, varGen));
 
-		prog = (Program) prog.accept(new SimpleLoopUnroller());
+		prog = (Program) prog.accept(new UnrollLocalLoops());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
 		//dump(prog, "after elimlocks.");
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
