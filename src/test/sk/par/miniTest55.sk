@@ -1,0 +1,33 @@
+int N = 2;
+
+bit test(int in){	
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int global = in + ??;
+
+	int G = 0;
+	int G2 = 0;
+	fork(int i; 2){
+		int local;	
+		bit done = 0;
+		for(int i=0; i<5; ++i){
+			if(!done){
+			  local = global + 1; 
+			  global = local; 			
+			  G = 1;
+			  G2 = G;
+			  G = 3;
+			  G2 = G;
+			  done=1;
+			}
+		}
+		G2 = 1;
+	}
+	assert global == in + 4 || global == in + 3;
+	return 1;
+}
+
+
+
