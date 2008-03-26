@@ -69,6 +69,7 @@ import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import streamit.misc.ControlFlowException;
 
 
 
@@ -384,15 +385,11 @@ public class ToSBit
 	protected boolean isSketch (Program p) {
 		class hasHoles extends FEReplacer {
 			public Object visitExprStar (ExprStar es) {
-				throw new RuntimeException ("yes");
+				throw new ControlFlowException ("yes");
 			}
 		}
 		try {  p.accept (new hasHoles ());  return false;  }
-		catch (RuntimeException re) {
-			if ("yes".equals (re.getMessage ()))
-				return true;
-			throw re;
-		}
+		catch (ControlFlowException cfe) {  return true;  }
 	}
 
 	protected void setCommandLineParams(){
