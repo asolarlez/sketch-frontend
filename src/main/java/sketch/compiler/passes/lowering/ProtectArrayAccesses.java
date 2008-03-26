@@ -20,6 +20,7 @@ import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.misc.ControlFlowException;
 
 
 /**
@@ -151,16 +152,10 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	protected boolean hasArrayAccess (Expression e) {
 		class checker extends FEReplacer {
     		public Object visitExprArrayRange (ExprArrayRange ear) {
-    			throw new RuntimeException ("yes");
+    			throw new ControlFlowException ("yes");
     		}
     	};
-    	try {
-    		e.accept (new checker ());
-    	} catch (RuntimeException re) {
-    		if ("yes".equals (re.getMessage ()))
-    			return true;
-    		throw re;
-    	}
-    	return false;
+    	try {  e.accept (new checker ());   return false;  }
+    	catch (ControlFlowException cfe) {  return true;  }
 	}
 }
