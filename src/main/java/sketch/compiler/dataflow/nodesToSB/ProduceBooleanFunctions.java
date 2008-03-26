@@ -16,6 +16,8 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
@@ -291,12 +293,34 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	
 	private Object tmp=null;
 	@Override
-	public Object visitStmtAssign(StmtAssign s){
+	
+	
+	public Object visitStmtIfThen(StmtIfThen s){
 		if(tracing){
-			if(s.getCx() != tmp && s.getCx() != null){
+			//if(s.getCx() != tmp && s.getCx() != null){
+				System.out.println(s.getCx()+ " : \t cond(" + s.getCond() + ")");
+				tmp = s.getCx();
+			//}
+		}
+		return super.visitStmtIfThen(s);
+	}
+	
+	public Object visitStmtVarDecl(StmtVarDecl s){
+		if(tracing){
+			//if(s.getCx() != tmp && s.getCx() != null){
 				System.out.println(s.getCx()+ " : \t" + s);
 				tmp = s.getCx();
-			}
+			//}
+		}
+		return super.visitStmtVarDecl(s);
+	}
+	
+	public Object visitStmtAssign(StmtAssign s){
+		if(tracing){
+			//if(s.getCx() != tmp && s.getCx() != null){
+				System.out.println(s.getCx()+ " : \t" + s);
+				tmp = s.getCx();
+			//}
 		}
 		return super.visitStmtAssign(s);
 		
