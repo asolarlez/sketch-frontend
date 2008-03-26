@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.TempVarGen;
@@ -20,6 +22,7 @@ import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
 import streamit.frontend.spin.SimpleCleanup;
 import streamit.frontend.stencilSK.EliminateStarStatic;
+import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.misc.Misc;
 import streamit.misc.NullStream;
@@ -51,15 +54,11 @@ public class SpinVerifier implements Verifier {
 	public SpinVerifier (TempVarGen v, Program p, Configuration c,
 			int _verbosity, boolean _cleanup, int initVectorSize) {
 		varGen = v;
-		prog = preprocess (p, varGen);
+		prog = p;
 		config = c;
 		verbosity = _verbosity;
 		cleanup = _cleanup;
 		vectorSize = initVectorSize;
-
-		// TODO: this should be moved to 'spinify()' if 'spinify()' starts
-		// doing optimizations that might throw off this mapping.
-		lineToStmtnum = buildLineToStmtnumMap (prog);
 
 		config.vectorSizeBytes (vectorSize);
 	}
@@ -125,15 +124,26 @@ public class SpinVerifier implements Verifier {
 	 * program resulting from this and other preprocessing steps.
 	 */
 	protected Program spinify (ValueOracle holeVals) {
-		// TODO: might need other passes to make SPIN verification more
-		// efficient
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
 
-		//p.accept(  new SimpleCodePrinter()  );
-		if(preSimplify){
-			p = (Program) p.accept (new SimpleCleanup() );
+		if (preSimplify) {
+			if (reallyREALLYVerbose ()) {
+				log ("Before specialization and optimization:");
+				p.accept (new SimpleCodePrinter());
+			}
+			prog = (Program) prog.accept (new EliminateTransAssns ());
+			prog = (Program) prog.accept (new EliminateDeadCode (true));
+			if (reallyREALLYVerbose ()) {
+				log ("After specialization and optimization:");
+				p.accept (new SimpleCodePrinter ());
+			}
 		}
-		//p.accept(  new SimpleCodePrinter()  );
+
+		p = (Program) p.accept(new Preprocessor (varGen));
+		p = (Program) p.accept (new SimpleCleanup ());
+		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
+
+		lineToStmtnum = buildLineToStmtnumMap (p);
 
 		return p;
 	}
@@ -252,12 +262,6 @@ public class SpinVerifier implements Verifier {
 		}
 	}
 
-	protected Program preprocess (Program p, TempVarGen varGen) {
-		p = (Program) p.accept(new Preprocessor(varGen));
-		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
-		return p;
-	}
-
 	/**
 	 * This unholy little class overrides the Promela code printer's
 	 * visitAtomicBlock() method to record the line numbers at which
@@ -286,6 +290,7 @@ public class SpinVerifier implements Verifier {
 	}
 
 	protected boolean reallyVerbose () {  return verbosity >= 5;  }
+	protected boolean reallyREALLYVerbose () {  return verbosity >= 7;  }
 
 	protected void log (String msg) {  log (3, msg);  }
 	protected void log (int minVerbosity, String msg) {

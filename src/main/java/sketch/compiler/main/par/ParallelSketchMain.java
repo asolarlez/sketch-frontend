@@ -189,6 +189,12 @@ public class ToPSbitII extends ToSBit {
 		prog = (Program) prog.accept (new TrimDumbDeadCode ());
 
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
+
+		if (params.hasFlag ("simplifySpin")) {	// probably not terribly useful
+			prog = (Program) prog.accept (new EliminateTransAssns ());
+			prog = (Program) prog.accept (new EliminateDeadCode (true));
+		}
+
 		prog = (Program) prog.accept(new NumberStatements());
 
 	}
@@ -205,7 +211,7 @@ public class ToPSbitII extends ToSBit {
 		if(params.flagEquals("showphase", "taelim")) dump(p, "After Eliminating transitive assignments.");
 		p = (Program)p.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
 		//dump (p, "After ElimDeadCode");
-		p = (Program)p.accept(new SimplifyVarNames());
+		//p = (Program)p.accept(new SimplifyVarNames());
 		p = (Program)p.accept(new AssembleInitializers());
 		if(params.flagEquals("showphase", "final")) dump(p, "After Dead Code elimination.");
 		return p;
