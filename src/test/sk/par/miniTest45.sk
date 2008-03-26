@@ -1,3 +1,6 @@
+// Return statements are translated so that a return can be called anywhere
+// within any block, and the following code is protected appropriately.
+
 int LEN = 2;
 
 struct Queue {
