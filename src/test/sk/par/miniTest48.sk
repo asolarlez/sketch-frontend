@@ -1,0 +1,18 @@
+// Locking null may or may not be an error.  The semantics of this are as
+// yet undecided.  Right now, we've decided that it should sometimes be an
+// error.
+
+struct P {
+    P foo;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    P g = null;
+
+    fork (int i; 2) {
+        lock (g);
+    }
+
+    return 1;
+}

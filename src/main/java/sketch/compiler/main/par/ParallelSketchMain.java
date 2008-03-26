@@ -22,7 +22,6 @@ import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.SimpleLoopUnroller;
 import streamit.frontend.passes.TrimDumbDeadCode;
 import streamit.frontend.passes.UnrollLocalLoops;
 import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
@@ -245,10 +244,10 @@ public class ToPSbitII extends ToSBit {
 
 		SpinVerifier sv = new SpinVerifier (varGen, p, config, verbosity, cleanup,
 								 params.flagValue ("vectorszGuess"));
-		
+
 		if(params.hasFlag("simplifySpin")){
 			sv.simplifyBeforeSolving();
-		}		
+		}
 		return sv;
 	}
 	public SolverStatistics createVerifStats () {
@@ -284,12 +283,12 @@ public class ToPSbitII extends ToSBit {
 				"             \t as necessary, but a good initial guess can reduce the number of calls\n" +
 				"             \t to SPIN.",
 				""+ SpinVerifier.VECTORSZ_GUESS, null) );
-		
+
 		params.setAllowedParam("simplifySpin", new POpts(POpts.FLAG,
 				"--simplifySpin       \t Do simplification on the program before running spin.",
 				null, null) );
-		
-		
+
+
 	}
 
 	public static void main(String[] args)
