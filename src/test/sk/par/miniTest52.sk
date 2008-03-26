@@ -1,9 +1,9 @@
 
 struct Box{
-	int val;	
+	int val;
 }
 
-bit test(int in){	
+bit test(int in){
 	return 1;
 }
 
@@ -13,7 +13,7 @@ static int foo(Box g){
 	reorder{
 		return t;
 		t = g.val;
-		t = t + ??;	
+		t = t + ??;
 	}
 }
 
@@ -21,7 +21,7 @@ bit testSK(int in) implements test{
 	Box g = new Box();
 	g.val = in + ??;
 	fork(int i; 2){
-		g.val = foo(g);	
+		g.val = foo(g);
 	}
 	assert g.val == in + 4 || g.val == in + 3;
 	return 1;
