@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
+import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.StmtAtomicBlock;
@@ -133,6 +134,7 @@ public class SpinVerifier implements Verifier {
 				log ("Before specialization and optimization:");
 				p.accept (new SimpleCodePrinter());
 			}
+			p = (Program) p.accept (new FlattenStmtBlocks ());
 			p = (Program) p.accept (new PreprocessSketch (varGen, 0, ToSBit.visibleRControl (p)));
 			p = (Program) p.accept (new EliminateTransAssns ());
 			p = (Program) p.accept (new EliminateDeadCode (true));
