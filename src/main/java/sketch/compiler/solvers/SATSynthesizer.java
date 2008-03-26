@@ -262,13 +262,37 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					}else{
 						assertStmts.add(addAssume(lastNode, thread, ep));
 					}
+				}								
+				if(goodSucc){
+					for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
+						addStatement(it.next(), thread);
+					}
+					break;
+				}else{					
+					assertStmts.clear();
+					for(Iterator<EdgePair> it = eplist.iterator(); it.hasNext(); ){
+						EdgePair ep = it.next();
+						CFGNode nxt = ep.node;
+						boolean found = false;
+						for(EdgePair ep2 : nxt.getSuccs()){
+							if(ep2.node == node){
+								found = true;
+								break;
+							}
+						}
+						if(found){
+							goodSucc = true;
+							lastNode = nxt;
+						}else{
+							assertStmts.add(addAssume(lastNode, thread, ep));
+						}
+					}
+					assert goodSucc : "None of the successors matched";
+					for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
+						addStatement(it.next(), thread);
+					}
+					addNode(lastNode, thread);					
 				}
-				assert goodSucc : "None of the successors matched";
-				for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
-					addStatement(it.next(), thread);
-				}
-
-				break;
 			}
 
 			if(lastNode.isStmt()){
