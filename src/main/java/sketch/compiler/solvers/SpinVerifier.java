@@ -9,13 +9,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
-import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.parallelEncoder.ParallelPreprocessor;
 import streamit.frontend.passes.LowerLoopsToWhileLoops;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.spin.Configuration;
@@ -148,7 +147,7 @@ public class SpinVerifier implements Verifier {
 				p.accept (new SimpleCodePrinter());
 			}
 			p = (Program) p.accept (new FlattenStmtBlocks ());
-			p = (Program) p.accept (new PreprocessSketch (varGen, 0, ToSBit.visibleRControl (p)));
+			p = (Program) p.accept (new ParallelPreprocessor ());
 			p = (Program) p.accept (new EliminateTransAssns ());
 			p = (Program) p.accept (new EliminateDeadCode (true));
 			if (reallyREALLYVerbose ()) {
