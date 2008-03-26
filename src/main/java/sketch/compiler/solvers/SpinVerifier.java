@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
+import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.TempVarGen;
@@ -20,7 +22,6 @@ import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.Executer;
 import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
-import streamit.frontend.spin.SimpleCleanup;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.tosbit.ValueOracle;
@@ -127,10 +128,12 @@ public class SpinVerifier implements Verifier {
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
 
 		if (preSimplify) {
+			log ("Cleaning up the next candidate.");
 			if (reallyREALLYVerbose ()) {
 				log ("Before specialization and optimization:");
 				p.accept (new SimpleCodePrinter());
 			}
+			prog = (Program) prog.accept (new PreprocessSketch (varGen, 0, ToSBit.visibleRControl (p)));
 			prog = (Program) prog.accept (new EliminateTransAssns ());
 			prog = (Program) prog.accept (new EliminateDeadCode (true));
 			if (reallyREALLYVerbose ()) {
@@ -140,7 +143,6 @@ public class SpinVerifier implements Verifier {
 		}
 
 		p = (Program) p.accept(new Preprocessor (varGen));
-		p = (Program) p.accept (new SimpleCleanup ());
 		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
 
 		lineToStmtnum = buildLineToStmtnumMap (p);

@@ -104,8 +104,12 @@ public class ToSBit
  * @return
  */
 	public RecursionControl visibleRControl(){
+		return visibleRControl (prog);
+	}
+
+	public static RecursionControl visibleRControl (Program p) {
 		// return new BaseRControl(params.inlineAmt);
-		return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog);
+		return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), p);
 	}
 
 	/**
