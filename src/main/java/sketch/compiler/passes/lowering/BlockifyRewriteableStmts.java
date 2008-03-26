@@ -25,6 +25,7 @@ import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StmtWhile;
 import streamit.frontend.nodes.SymbolTable;
+import streamit.misc.ControlFlowException;
 
 /**
  * Prepares an AST for later rewrite steps that might turn a single
@@ -158,7 +159,7 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 			public Object visitExprBinary (ExprBinary eb) {
 				String op = eb.getOpString ();
 				if ("&&".equals (op) || "||".equals (op))
-					throw new RuntimeException ("yes");
+					throw new ControlFlowException ("yes");
 				return super.visitExprBinary (eb);
     		}
 			public Object visitExprTernary (ExprTernary et) {
@@ -166,9 +167,7 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 			}
     	}
 		try {  e.accept (new checker ());  return false;  }
-		catch (RuntimeException re) {
-			if ("yes".equals (re.getMessage ()))  return true;
-			throw re;
+		catch (ControlFlowException re) {  return true;
 		}
 	}
 }
