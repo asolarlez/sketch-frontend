@@ -592,30 +592,34 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 
-
+					Statement elsecond;
 					
-
-					List<Statement> ls = new ArrayList<Statement>();
-					ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
-					ExprVar iv = new ExprVar(stmt, "IV");
-					for(int i=0; i<nthreads; ++i){
-						if(i == thread){ continue; }
-						CFGNode n = lastNode[i];
-						if(n != null){
-							getNextAtomicCond(n, i, iv, ls);
-						}else{
-							ls.add(foo(cfg.getEntry(), i, iv));
+					if(thread >=0){
+						List<Statement> ls = new ArrayList<Statement>();
+						ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
+						ExprVar iv = new ExprVar(stmt, "IV");
+						for(int i=0; i<nthreads; ++i){
+							if(i == thread){ continue; }
+							CFGNode n = lastNode[i];
+							if(n != null){
+								getNextAtomicCond(n, i, iv, ls);
+							}else{
+								ls.add(foo(cfg.getEntry(), i, iv));
+							}
+	
 						}
-
+	
+						Statement allgood = new StmtAssign(assumeFlag, ExprConstInt.zero);
+						Statement allbad = new StmtIfThen(stmt, assumeFlag,
+								new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock."), null);
+	
+						Statement otherwise = new StmtIfThen(stmt, iv, allgood, allbad);
+						ls.add(otherwise);
+						elsecond = new StmtBlock(stmt, ls);
+					}else{
+						elsecond = new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock.");
 					}
-
-					Statement allgood = new StmtAssign(assumeFlag, ExprConstInt.zero);
-					Statement allbad = new StmtIfThen(stmt, assumeFlag,
-							new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock."), null);
-
-					Statement otherwise = new StmtIfThen(stmt, iv, allgood, allbad);
-					ls.add(otherwise);
-					Statement s = new StmtIfThen(stmt, stmt.getCond(), s2, new StmtBlock(stmt, ls));
+					Statement s = new StmtIfThen(stmt, stmt.getCond(), s2, elsecond);
 					return s;
 				}else{
 					atomicCheck.add(stmt);
