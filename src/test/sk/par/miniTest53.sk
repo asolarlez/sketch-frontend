@@ -24,6 +24,9 @@ bit main () implements T {
                     if (g == 3) {
                         g = g + 1;
                         done = 1;
+                    } else {
+                        g = g - 1;
+                        done = 1;
                     }
                 }
             }
