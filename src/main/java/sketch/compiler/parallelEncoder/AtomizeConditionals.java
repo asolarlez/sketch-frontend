@@ -50,7 +50,7 @@ public class AtomizeConditionals extends FEReplacer {
 	 * Accumulated conditionals.
 	 */
 	Stack<Expression> accumCondit = new Stack<Expression>();
-	void pushCondit(Expression e){
+	void pushCondit(Expression e, Statement context){
 		String nm = varGen.nextVar();
 		Expression cond;
 		if(accumCondit.size() == 0){
@@ -59,7 +59,7 @@ public class AtomizeConditionals extends FEReplacer {
 			cond = accumCondit.peek();
 			cond = new ExprBinary(cond, "&&", e);
 		}
-		addStatement(new StmtVarDecl(e, TypePrimitive.bittype, nm, cond ) );
+		addStatement(new StmtVarDecl(context, TypePrimitive.bittype, nm, cond ) );
 		accumCondit.push( new ExprVar(e, nm) );
 	}
 
@@ -167,7 +167,7 @@ public class AtomizeConditionals extends FEReplacer {
 	    		}
 	    	}
 
-	    	pushCondit(stmt.getCond());
+	    	pushCondit(stmt.getCond(), stmt);
 	    	Statement s1 = (Statement) stmt.getCons().accept(this);
 
 	    	if(stmt.getAlt() != null){
