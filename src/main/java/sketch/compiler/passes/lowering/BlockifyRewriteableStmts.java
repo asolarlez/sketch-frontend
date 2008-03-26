@@ -163,7 +163,7 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 				return super.visitExprBinary (eb);
     		}
 			public Object visitExprTernary (ExprTernary et) {
-				throw new RuntimeException ("yes");
+				throw new ControlFlowException ("yes");
 			}
     	}
 		try {  e.accept (new checker ());  return false;  }
