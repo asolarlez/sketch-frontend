@@ -76,6 +76,8 @@ class FindModifiedVarsInPloops extends FEReplacer {
 
 
 public class Preprocessor extends FEReplacer {
+	public static final String PROC_PFX = "_fork_thread_";
+
 	public HashSet<String> lhsVars;
 	public HashSet<String> rhsVars;
 	public HashMap<StmtFork, HashSet<String> > varsPerLoop;
@@ -147,7 +149,7 @@ public class Preprocessor extends FEReplacer {
     		actuals.add(new ExprVar(cx, pname));
     	}
     	Statement body = (Statement) loop.getBody().accept(this);
-    	String fname = varGen.nextVar ("_fork_thread_");
+    	String fname = varGen.nextVar (PROC_PFX);
     	Function fun = new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
 
     	generatedFuncs.add(fun);
