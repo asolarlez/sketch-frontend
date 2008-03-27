@@ -49,13 +49,25 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 
 	protected boolean sawInit = false;
 	protected String syncChan;
+	protected String inttype;
 
 	public PromelaCodePrinter () {
-		this (System.out);
+		this (System.out, 8);
 	}
 
 	public PromelaCodePrinter (OutputStream os) {
+		this (os, 8);
+	}
+
+	public PromelaCodePrinter (OutputStream os, int bitwidth) {
 		super (new PrintWriter (os, true));
+		// Can't use bytes, because they are unsigned in SPIN
+		if (bitwidth <= 16)
+			inttype = "short";
+		else if (bitwidth <= 32)
+			inttype = "int";
+		else
+			assert false : "bit width "+ bitwidth +" is too wide.";
 	}
 
 	protected void printPrelude () {
@@ -408,6 +420,9 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	public Object visitTypePrimitive (TypePrimitive tp) {
 		if (TypePrimitive.TYPE_BOOLEAN == tp.getType ()) {
 			print ("bool");
+			return tp;
+		} else if (TypePrimitive.TYPE_INT == tp.getType ()) {
+			print (inttype);
 			return tp;
 		} else
 			return super.visitTypePrimitive (tp);

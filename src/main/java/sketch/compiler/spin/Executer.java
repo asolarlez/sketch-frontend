@@ -118,7 +118,7 @@ public class Executer {
 		FileOutputStream pout = new FileOutputStream (promelaCode);
 
 		log ("Generating Promela code");
-		sourceProg.accept (new PromelaCodePrinter (pout));
+		sourceProg.accept (new PromelaCodePrinter (pout, config.bitwidth));
 		pout.flush ();
 		pout.close ();
 		dump ("Promela code", promelaCode, true);
