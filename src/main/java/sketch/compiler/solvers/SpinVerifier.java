@@ -98,6 +98,9 @@ public class SpinVerifier implements Verifier {
 					return null;	// success!
 				} else {
 					CEtrace cex = parseTrace (trail);
+					List<step> finalStates = parseFinalStates (trail);
+
+					cex.addSteps (finalStates);
 
 					if (deadlock (out)) {
 						List<step> blocked = findBlockedThreads (trail);
@@ -109,6 +112,7 @@ public class SpinVerifier implements Verifier {
 						//cex.addSteps (blocked);
 					}
 
+					log (5, "  final states: "+ finalStates);
 					log (5, "counterexample: "+ cex);
 
 					return cex;
@@ -198,6 +202,28 @@ public class SpinVerifier implements Verifier {
 		}
 
 		return blocked;
+	}
+
+	/** Parses the label of a statement. */
+	protected static final String STMT_LBL_REGEX =
+		"_ = (\\d+)";
+
+	/** Parses thread ID and statement label of a blocked thread. */
+	protected static final String FINAL_STATE_REGEX =
+		"^\\s*\\d+:\\s*proc\\s+(\\d+).*\\(invalid end state\\)"+
+		"(?:\\r\\n|\\r|\\n)\\s+"+ STMT_LBL_REGEX;
+
+	public List<step> parseFinalStates (String trace) {
+		List<step> S = new ArrayList<step> ();
+		Matcher m = Pattern.compile (FINAL_STATE_REGEX, Pattern.MULTILINE).matcher (trace);
+
+		while (m.find ()) {
+			int thread = Integer.parseInt (m.group (1));
+			int stmt = Integer.parseInt (m.group (2));
+			S.add (new step (thread, stmt));
+		}
+
+		return S;
 	}
 
 	/** Parses a single statement in a counterexample trace. */

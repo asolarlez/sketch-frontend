@@ -32,6 +32,9 @@ public class SynchronousTimedProcess {
 
 	public SynchronousTimedProcess (String workDir, int _timeoutMins,
 				List<String> cmdLine) throws IOException {
+		for (String s : cmdLine)
+			assert s != null : "Null elt of command: '"+ cmdLine +"'";
+
 		ProcessBuilder pb = new ProcessBuilder (cmdLine);
 		pb.directory (new File (workDir));
 		startMs = System.currentTimeMillis ();
