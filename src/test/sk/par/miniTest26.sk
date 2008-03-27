@@ -29,23 +29,23 @@ bit testSK(int in) implements test{
 		}
 		
 		if(t==0){
-			atomic{lock(0);}	
+			lock(0);	
 		}
 		if(t == 0){
 			global = global + 1;	
 		}
 		if(t==0){
-			atomic{ unlock(0); }	
+			unlock(0); 	
 		}
 		
 		if(t==1){
-			atomic{ lock(0); }	
+			lock(0); 	
 		}
 		if(t == 1){
 			global = global + 1;	
 		}
 		if(t==1){
-			atomic{ unlock(0); }	
+			 unlock(0); 	
 		}
 	}
 	assert  global == in + 2;

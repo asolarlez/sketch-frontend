@@ -24,7 +24,7 @@ bit testSK(int in) implements test{
 		for(int j=0; j<3; ++j){
 			bit tmpmore = more;
 			if(tmpmore){ c = t; }
-			if(tmpmore){ atomic{ lock(0); } }
+			if(tmpmore){ lock(0);  }
 			bit tmp = c == t;
 			if(tmp && tmpmore){ out[i] = 1;}
 			if(tmp && tmpmore){ more = 0;	} 
@@ -32,7 +32,7 @@ bit testSK(int in) implements test{
 			if(tmp2 && tmpmore){ t = 1; }
 			if(!tmp2&& tmpmore){ t = 0; }  				
 				
-			if(tmpmore){ atomic{ unlock(0); }}
+			if(tmpmore){ unlock(0); }
 			
 		}
 	}
