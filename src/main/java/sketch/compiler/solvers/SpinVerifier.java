@@ -98,7 +98,8 @@ public class SpinVerifier implements Verifier {
 					return null;	// success!
 				} else {
 					CEtrace cex = parseTrace (trail);
-					List<step> finalStates = parseFinalStates (trail);
+					List<step> finalStates =
+						parseFinalStates (trail, cex.steps.get (cex.steps.size ()-1));
 
 					cex.addSteps (finalStates);
 
@@ -213,15 +214,23 @@ public class SpinVerifier implements Verifier {
 		"^\\s*\\d+:\\s*proc\\s+(\\d+).*\\(invalid end state\\)"+
 		"(?:\\r\\n|\\r|\\n)\\s+"+ STMT_LBL_REGEX;
 
-	public List<step> parseFinalStates (String trace) {
+	public List<step> parseFinalStates (String trace, step lastStep) {
 		List<step> S = new ArrayList<step> ();
 		Matcher m = Pattern.compile (FINAL_STATE_REGEX, Pattern.MULTILINE).matcher (trace);
+		step first = null;
 
 		while (m.find ()) {
 			int thread = Integer.parseInt (m.group (1));
 			int stmt = Integer.parseInt (m.group (2));
-			S.add (new step (thread, stmt));
+
+			if (thread == lastStep.thread)
+				first = new step (thread, stmt);
+			else
+				S.add (new step (thread, stmt));
 		}
+
+		if (null != first)
+			S.add (0, first);
 
 		return S;
 	}
