@@ -1,6 +1,6 @@
 
 
-int N = 3;
+int N = 2;
 int T = 3;
 
 struct barrier{
@@ -18,9 +18,27 @@ barrier newBarrier(){
 }
 
 
+bit predicate(int a, int b, bit c){
+	bit rv = 0;
+	if(??){
+		rv = c;
+	}else{
+		if(??){
+			rv = a == b;	
+		}else{
+			rv = ( ?? ? a : b) == ??;
+		}
+	}
+	if(??){
+		rv = !rv;	
+	}
+	return rv;
+}
+
+
 void next(barrier b, int thread){
 	bit s = b.bits[thread];
-	s = !s;
+	s = predicate(0,0,s);
 	b.bits[thread] = s;
 	int cv = 0;
 	atomic{
@@ -28,7 +46,7 @@ void next(barrier b, int thread){
 		b.count = b.count - 1;	
 	}
 	
-	if(cv == 1){
+	if(cv == 1 ){
 		b.count = N;
 		b.current = s;
 	}else{
