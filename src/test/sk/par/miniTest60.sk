@@ -1,0 +1,94 @@
+int NNODES = 4; // +2 for the sentinels
+int NEGINF = -1;
+int POSINF = NNODES;
+
+struct Set {
+    Node head;
+    Node tail;
+}
+
+struct Node {
+    int key;
+    Node next;
+}
+
+static Node newNode (int key, Node next) {
+    Node n = new Node ();
+    n.key = key;  n.next = next;
+    return n;
+}
+
+Node genNode (Node n1, Node n2) {
+    Node g = ?? ? n1 : n2;
+    return ?? ? g : g.next;
+}
+bit genComparison (Node n1, Node n2) {
+    Node g1 = genNode (n1, n2), g2 = genNode (n1, n2);
+    return g1 != g2;
+}
+
+static void find (Set S, int key, ref Node prev, ref Node cur) {
+    prev = null;
+    cur = S.head;
+    lock (cur);
+    for (int i = 0; i < NNODES; ++i) {
+        if (cur.key < key) {
+            if (genComparison (prev, null)) {
+                unlock (prev);
+            }
+            lock (cur.next);
+            prev = cur;
+            cur = cur.next;
+        }
+    }
+}
+
+static bit add (Set S, int key) {
+    Node prev = null, cur = null;
+    bit ret = 0;
+
+    find (S, key, prev, cur);
+    if (key < cur.key) {
+        prev.next = newNode (key, cur);
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+    unlock (prev);
+    unlock (cur);
+
+    return ret;
+}
+
+static bit remove (Set S, int key) {
+    Node prev = null, cur = null;
+    bit ret = 0;
+
+    find (S, key, prev, cur);
+    if (key == cur.key) {
+        prev.next = cur.next;
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+    unlock (prev);
+    unlock (cur);
+
+    return ret;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    Set S = new Set ();
+    S.tail = newNode (POSINF, null);
+    S.head = newNode (NEGINF, S.tail);
+
+    add (S, 1);
+    add (S, 2);
+
+    fork (int i; 2) {
+        remove (S, i+1);
+    }
+
+    return 1;
+}
