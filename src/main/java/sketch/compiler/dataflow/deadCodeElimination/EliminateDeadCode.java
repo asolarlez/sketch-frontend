@@ -15,6 +15,7 @@ import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtIfThen;
@@ -59,6 +60,27 @@ public class EliminateDeadCode extends BackwardDataflow {
 		return super.visitStmtAssert(stmt);
 	}
 
+	
+	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
+		
+		if(stmt.isCond()){
+			abstractValue val =(abstractValue) stmt.getCond().accept(this);
+			if( val instanceof LVSet){					
+				((LVSet)val).enliven();
+			}
+			if( val instanceof LiveVariableAV){
+				LiveVariableAV lv = (LiveVariableAV) val;
+				if(lv.mstate != null  ){
+					lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+				}			
+			}
+		}
+		return super.visitStmtAtomicBlock(stmt);
+		
+	}
+	
+	
+	
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
 		return new LinkedList<Function>(spec.getFuncs());
 	}
