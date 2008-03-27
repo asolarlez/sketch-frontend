@@ -1142,7 +1142,11 @@ public class PartialEvaluator extends FEReplacer {
     	Statement tmp = ab.getBlock().doStatement(this);
     	if(!isReplacer) return ab;
     	if (tmp == null){
-    		return null;
+    		if(ab.isCond()){
+    			return new StmtAtomicBlock (ab,Collections.EMPTY_LIST, exp);
+    		}else{
+    			return null;
+    		}
     	}else if (tmp != ab.getBlock() || exp != ab.getCond()){
     		if(tmp instanceof StmtBlock){
     			StmtBlock sb = (StmtBlock) tmp;
