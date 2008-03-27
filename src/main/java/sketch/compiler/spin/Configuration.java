@@ -26,6 +26,7 @@ public class Configuration {
 	protected StateCompressionPolicy compressionPolicy = StateCompressionPolicy.NONE;
 	protected Map<String, String> compileParams = new HashMap<String, String> ();
 	protected Map<String, String> runParams = new HashMap<String, String> ();
+	protected int bitwidth;
 
 	public Configuration () {
 		// sets default options
@@ -33,6 +34,7 @@ public class Configuration {
 		setCompileParam ("-D_POSIX_SOURCE");
 		failOnExceedingSearchDepthLimit (true);
 		listUnreachedStates (false);
+		bitWidth (16);
 	}
 
 	public List<String> getCompilerFlags () {
@@ -70,6 +72,8 @@ public class Configuration {
 	}
 
 	/* === COMPILE-TIME PARAMS === */
+
+	public void bitWidth (int width) {  bitwidth = width;  }
 
 	public void checkArrayBounds (boolean yes) {
 		toggle (compileParams, !yes, "-DNOBOUNDCHECK");
