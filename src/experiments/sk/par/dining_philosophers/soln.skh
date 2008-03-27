@@ -1,0 +1,23 @@
+bit sp () { return 1; }
+bit main () implements sp {
+    int ate = 0;
+
+    fork (int i; N) {
+        for (int t = 0; t < T; ++t) {
+            int lk1 = (i == (N-1)) ? ((i+1) % N) : i;
+            int lk2 = (i == (N-1)) ? i : i + 1;
+
+            lock (lk1);
+            lock (lk2);
+
+            atomic { ate = ate + 1; }
+
+            unlock (lk1);
+            unlock (lk2);
+        }
+    }
+
+    assert ate == (T*N);
+
+    return 1;
+}
