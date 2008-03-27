@@ -10,7 +10,7 @@ Node genNode (Node n1, Node n2, Node n3) {
 
 bit genComparison (Node n1, Node n2, Node n3) {
     Node g1 = genNode (n1, n2, n3), g2 = genNode (n1, n2, n3);
-    return ?? && (?? ? g1 == g2 : g1 != g2);
+    return ?? ? g1 == g2 : g1 != g2);
 }
 
 static void find (Set S, int key, ref Node prev, ref Node cur) {
