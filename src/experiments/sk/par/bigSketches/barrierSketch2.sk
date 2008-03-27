@@ -59,20 +59,6 @@ static void next(barrier b, int thread){
 			}	
 		}
 	}
-	
-	
-	
-	
-	
-	
-	if( predicate(b.count,cv,s)){
-		b.count = N;
-		b.current = predicate(b.count,cv,s);
-	}else{
-		bit t = predicate(0,0,s);
-		atomic(b.current == t){
-		}
-	}
 }
 bit test(){
 	return 1;	
