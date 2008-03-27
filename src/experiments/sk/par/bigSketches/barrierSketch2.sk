@@ -1,0 +1,110 @@
+
+
+int N = 3;
+int T = 3;
+
+struct barrier{
+	int count;	
+	bit current;
+	bit[N] bits;
+}
+
+barrier newBarrier(){
+	barrier b = new barrier();	
+	b.count = N;
+	b.bits = 0;	
+	b.current = ??;
+	return b;
+}
+
+
+bit predicate(int a, int b, bit c){
+	bit rv = 0;
+	if(??){
+		rv = c;
+	}else{
+		if(??){
+			rv = a == b;	
+		}else{
+			rv = ( ?? ? a : b) == ??;
+		}
+	}
+	if(??){
+		rv = !rv;	
+	}
+	return rv;
+}
+
+static void next(barrier b, int thread){
+	bit s = b.bits[thread];
+	s = predicate(0,0,s);
+	int cv = 0;
+	
+	reorder{
+		b.bits[thread] = s;	
+	
+		atomic{
+			cv = b.count;
+			b.count = b.count - 1;	
+		}
+		
+		if(predicate(b.count,cv,s)){
+			reorder{
+				b.count = N;
+				b.current = predicate(b.count,cv,s);
+			}
+		}else{
+			bit t = predicate(0,0,s);
+			atomic(b.current == t){
+			}	
+		}
+	}
+	
+	
+	
+	
+	
+	
+	if( predicate(b.count,cv,s)){
+		b.count = N;
+		b.current = predicate(b.count,cv,s);
+	}else{
+		bit t = predicate(0,0,s);
+		atomic(b.current == t){
+		}
+	}
+}
+bit test(){
+	return 1;	
+}
+
+
+int left(int t){
+	int rv = 0;
+	rv = t - 1;
+	if( rv < 0){ rv = rv + N; }
+	return rv;	
+}
+
+int right(int t){
+	int rv = 0;
+	rv = t + 1;
+	if( rv >= N){ rv = rv - N; }
+	return rv;	
+}
+
+bit sketch() implements test{
+	
+	bit[N][T] grid = 0;
+	barrier b = newBarrier();
+	fork(int thread; N){
+		for(int i=0; i<T; ++i){
+			if(i > 0){
+				assert grid[i-1][left(thread)] /*&& grid[i-1][right(thread)]*/; 	
+			}		
+			grid[i][thread] = 1;
+			next(b, thread);
+		}		
+	}
+	return 1;
+}
