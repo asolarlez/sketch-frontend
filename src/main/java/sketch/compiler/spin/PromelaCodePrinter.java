@@ -225,23 +225,32 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock block) {
-		printlnIndent ("atomic {");
-		indent ();
+		if (nAtomics == 0) {
+			printlnIndent ("atomic {");
+			indent ();
+			printTab ();
+		} else {
+			assert !block.isCond ();
+		}
 
-		printTab ();
 		if (block.isCond ()) {
 			// XXX: hack around weird way SPIN sometimes prints traces
 			printAtomicCondLabel ((Integer) block.getTag ());
 			block.getCond ().accept (this);
 			print (" -> ");
 		}
-		println ("_ = "+ block.getTag () +";");
+		if (nAtomics == 0) {
+			println ("_ = "+ block.getTag () +";");
+		}
 		enterAtomic ();
-		visitStmtBlock (block.getBlock ());
+		for (Statement s : block.getBlock ().getStmts ())
+			s.accept (this);
 		leaveAtomic ();
 
-		dedent ();
-		printlnIndent ("}");
+		if (nAtomics == 0) {
+			dedent ();
+			printlnIndent ("}");
+		}
 		return block;
 	}
 
