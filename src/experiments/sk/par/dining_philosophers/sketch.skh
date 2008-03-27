@@ -1,0 +1,53 @@
+int genArithExp (int e) {
+    int _which = { * 3 };
+    assert 0 <= _which && _which <= 4;
+    int c = ??;
+
+    if (0 == _which) {  return e + c;  }
+    if (1 == _which) {  return e - c;  }
+    if (2 == _which) {  assert c > 0;  return e * c;  } // avoid trivial solns
+    if (3 == _which) {  assert c > 0;  return e % c;  }
+    if (4 == _which) {  return e;  }
+}
+
+int gidx (int i) {
+    int g = genArithExp (i);
+    return ?? ? g : genArithExp (g);
+}
+
+bit gcomp (int e1, int e2) {
+    int g1 = genArithExp (e1);
+    int g2 = genArithExp (e2);
+    return ?? ? g1 == g2 :
+                ?? ? g1 != g2 : ??;
+}
+
+bit sp () { return 1; }
+bit main () implements sp {
+    int ate = 0;
+
+    fork (int i; N) {
+        int lk1 = gcomp (i, N) ? gidx (i) : gidx (i);
+        int lk2 = gcomp (i, N) ? gidx (i) : gidx (i);
+
+        assert i == lk1 || lk1 == ((i + 1) % N);
+        assert i == lk2 || lk2 == ((i + 1) % N);
+        assert lk1 != lk2;
+
+        for (int t = 0; t < T; ++t) {
+            lock (lk1);
+            lock (lk2);
+
+            atomic { ate = ate + 1; }
+
+            reorder {
+                unlock (lk1);
+                unlock (lk2);
+            }
+        }
+    }
+
+    assert ate == (T*N);
+
+    return 1;
+}
