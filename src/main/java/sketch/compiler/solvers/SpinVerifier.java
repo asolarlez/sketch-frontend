@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.nodes.Program;
@@ -18,6 +18,7 @@ import streamit.frontend.parallelEncoder.ParallelPreprocessor;
 import streamit.frontend.passes.LowerLoopsToWhileLoops;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.spin.Configuration;
+import streamit.frontend.spin.EliminateDeadParallelCode;
 import streamit.frontend.spin.Executer;
 import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
@@ -59,14 +60,6 @@ public class SpinVerifier implements Verifier {
 		vectorSize = initVectorSize;
 
 		config.vectorSizeBytes (vectorSize);
-/*
-		String trace =
-" 32:	proc 0 (:init:)  line  98 (state 56) (invalid end state)\n"+
-"		__return?done\n"+
-" 32:	proc 1 (__s_fork_thread_16)  line 135 (state 19) (invalid end state)\n"+
-"		(((_atomicCondLbl==37)||(_lock_3L0_3L0[6]==0)))\n";
-		parseDeadlockTrace (trace);
-		System.exit (0);*/
 	}
 
 	public CounterExample verify(ValueOracle oracle) {
@@ -111,7 +104,7 @@ public class SpinVerifier implements Verifier {
 						log (5, "  (counterexample from deadlock)");
 						log (5, "  blocked threads: "+ blocked);
 
-						cex.addSteps (blocked);
+						//cex.addSteps (blocked);
 					}
 
 					log (5, "counterexample: "+ cex);
@@ -147,9 +140,12 @@ public class SpinVerifier implements Verifier {
 				p.accept (new SimpleCodePrinter());
 			}
 			p = (Program) p.accept (new FlattenStmtBlocks ());
+			//ToSBit.dump (p, "flatten");
 			p = (Program) p.accept (new ParallelPreprocessor ());
+			//ToSBit.dump (p, "preproc");
 			p = (Program) p.accept (new EliminateTransAssns ());
-			p = (Program) p.accept (new EliminateDeadCode (true));
+			p = (Program) p.accept (new EliminateDeadParallelCode ());
+			//ToSBit.dump (p, "dead parallel");
 			if (reallyREALLYVerbose ()) {
 				log ("After specialization and optimization:");
 				p.accept (new SimpleCodePrinter ());
@@ -158,6 +154,8 @@ public class SpinVerifier implements Verifier {
 
 		p = (Program) p.accept(new Preprocessor (varGen));
 		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
+
+		//ToSBit.dump (p, "lower while loops");
 
 		return p;
 	}
