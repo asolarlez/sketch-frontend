@@ -252,6 +252,7 @@ public class ToPSbitII extends ToSBit {
 		boolean cleanup = !params.hasFlag ("keeptmpfiles");
 		Configuration config = new Configuration ();
 
+		config.bitWidth (params.flagValue ("cbits"));
 		config.detectCycles (false);
 		config.stateCompressionPolicy (StateCompressionPolicy.LOSSLESS_COLLAPSE);
 		config.checkChannelAssertions (false);
