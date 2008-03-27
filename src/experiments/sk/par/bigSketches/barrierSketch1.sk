@@ -1,6 +1,6 @@
 
 
-int N = 2;
+int N = 3;
 int T = 3;
 
 struct barrier{
@@ -13,7 +13,7 @@ barrier newBarrier(){
 	barrier b = new barrier();	
 	b.count = N;
 	b.bits = 0;	
-	b.current = 0;
+	b.current = ??;
 	return b;
 }
 
