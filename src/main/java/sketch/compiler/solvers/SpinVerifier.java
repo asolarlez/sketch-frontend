@@ -15,6 +15,7 @@ import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.parallelEncoder.ParallelPreprocessor;
+import streamit.frontend.passes.HoistDeclarations;
 import streamit.frontend.passes.LowerLoopsToWhileLoops;
 import streamit.frontend.passes.MergeLocalStatements;
 import streamit.frontend.solvers.CEtrace.step;
@@ -148,8 +149,9 @@ public class SpinVerifier implements Verifier {
 			p = (Program) p.accept (new EliminateTransAssns ());
 			p = (Program) p.accept (new EliminateDeadParallelCode ());
 			//ToSBit.dump (p, "dead parallel");
+			p = (Program) p.accept (new HoistDeclarations ());
 			p = MergeLocalStatements.go (p);
-			ToSBit.dump (p, "merged local stmts (SpinVerif)");
+			//ToSBit.dump (p, "merged local stmts (SpinVerif)");
 
 			if (reallyREALLYVerbose ()) {
 				log ("After specialization and optimization:");
@@ -200,7 +202,7 @@ public class SpinVerifier implements Verifier {
 
 	/** Parses a single statement in a counterexample trace. */
 	protected static final String STEP_REGEX =
-		"^\\s*\\d+:\\s*proc\\s+(\\d+).* line ([\\-]?\\d+) [^\\[]*\\[(.*)\\]$";
+		"^\\s*\\d+:\\s*proc\\s+(\\d+)[^\\[]*\\[(.*)\\]$";
 
 	public CEtrace parseTrace (String trace) {
 		CEtrace cex = new CEtrace ();
@@ -208,14 +210,9 @@ public class SpinVerifier implements Verifier {
 
 		while (m.find ()) {
 			int thread = Integer.parseInt (m.group (1));
-			int line = Integer.parseInt (m.group (2));
-			String stmt = m.group (3);
+			String stmt = m.group (2);
 
-			// TODO: this is a SPIN bug.  It at some point casts an int line
-			// number to an short, which causes overflow here.
-			if (line < 0)  line += 1 << 16;
-
-			log (5, "  parsed step:  thread "+ thread +", line "+ line +", stmt \""+ stmt +"\"");
+			log (5, "  parsed step:  thread "+ thread +", stmt \""+ stmt +"\"");
 
 			if (stmt.startsWith ("_ = "))
 				cex.addStep (thread, Integer.parseInt (stmt.substring (4)));
