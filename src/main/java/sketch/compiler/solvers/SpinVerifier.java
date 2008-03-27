@@ -16,6 +16,7 @@ import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.parallelEncoder.ParallelPreprocessor;
 import streamit.frontend.passes.LowerLoopsToWhileLoops;
+import streamit.frontend.passes.MergeLocalStatements;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.EliminateDeadParallelCode;
@@ -139,6 +140,7 @@ public class SpinVerifier implements Verifier {
 				log ("Before specialization and optimization:");
 				p.accept (new SimpleCodePrinter());
 			}
+
 			p = (Program) p.accept (new FlattenStmtBlocks ());
 			//ToSBit.dump (p, "flatten");
 			p = (Program) p.accept (new ParallelPreprocessor ());
@@ -146,6 +148,9 @@ public class SpinVerifier implements Verifier {
 			p = (Program) p.accept (new EliminateTransAssns ());
 			p = (Program) p.accept (new EliminateDeadParallelCode ());
 			//ToSBit.dump (p, "dead parallel");
+			p = MergeLocalStatements.go (p);
+			ToSBit.dump (p, "merged local stmts (SpinVerif)");
+
 			if (reallyREALLYVerbose ()) {
 				log ("After specialization and optimization:");
 				p.accept (new SimpleCodePrinter ());
@@ -154,7 +159,6 @@ public class SpinVerifier implements Verifier {
 
 		p = (Program) p.accept(new Preprocessor (varGen));
 		p = (Program) p.accept (new LowerLoopsToWhileLoops (varGen));
-
 		//ToSBit.dump (p, "lower while loops");
 
 		return p;
