@@ -1,0 +1,4 @@
+int N = 5;
+int T = 2;
+
+#include "soln.skh"
