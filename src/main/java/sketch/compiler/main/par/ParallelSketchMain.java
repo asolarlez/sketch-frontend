@@ -17,7 +17,9 @@ import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateLockUnlock;
+import streamit.frontend.passes.HoistDeclarations;
 import streamit.frontend.passes.MakeAllocsAtomic;
+import streamit.frontend.passes.MergeLocalStatements;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
@@ -186,6 +188,8 @@ public class ToPSbitII extends ToSBit {
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		//dump(prog, "after preproc 2.");
 
+		prog = (Program) prog.accept (new SeparateInitializers ());
+
 		prog = (Program) prog.accept (new TrimDumbDeadCode ());
 
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
@@ -193,10 +197,16 @@ public class ToPSbitII extends ToSBit {
 		if (params.hasFlag ("simplifySpin")) {	// probably not terribly useful
 			prog = (Program) prog.accept (new EliminateTransAssns ());
 			prog = (Program) prog.accept (new EliminateDeadCode (true));
+			prog = (Program) prog.accept (new HoistDeclarations ());
+			//dump (prog, "hoisted decls");
 		}
 
 		prog = (Program) prog.accept(new NumberStatements());
 
+		if (params.hasFlag ("simplifySpin")) {
+			prog = MergeLocalStatements.go (prog);
+			//dump (prog, "merged local stmts");
+		}
 	}
 
 	public Program postprocessProgram (Program p) {

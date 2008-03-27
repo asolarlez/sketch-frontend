@@ -597,10 +597,10 @@ public class ToSBit
 			System.out.println (msg);
 	}
 
-	protected void dump (Program prog) {
+	public static void dump (Program prog) {
 		dump (prog, "");
 	}
-	protected void dump (Program prog, String message) {
+	public static void dump (Program prog, String message) {
 		System.out.println("=============================================================");
 		System.out.println ("  ----- "+ message +" -----");
 		prog.accept( new SimpleCodePrinter() );
