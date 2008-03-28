@@ -613,10 +613,11 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 		if(node.isStmt()){
 			addNode(node.getSuccs().get(0).node, thread);
+			lastNode[thread] = node.getSuccs().get(0).node;
 		}
 
 		if(node.isExpr()){
-
+			assert false : "NYI Don't know how to modify lastNode.";
 			for(EdgePair ep : node.getSuccs()){
 
 				Expression cond = new ExprBinary((Expression)parametrizeLocals(node.getExpr(), thread), "==", new ExprConstInt(ep.label));
@@ -782,8 +783,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 	public void mergeWithCurrent(CEtrace trace){
-		if (reallyVerbose ())
-			prog.accept(new SimpleCodePrinter().outputTags());
+		/* if (reallyVerbose ())
+			prog.accept(new SimpleCodePrinter().outputTags()); */
 		pushBlock();
 
 		if(current != null){
@@ -829,12 +830,12 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 						Queue<step> qs = stepQueues[thread];						
 						while( qs.size() > 0  ){
 							step tmp = qs.remove();
-							//System.out.println("t " + tmp);
+						//	System.out.println("t " + tmp);
 							lastNode[thread] = addBlock(tmp.stmt, thread, lastNode[thread]);
 						}
 					}
 				}else{
-					//System.out.println("NC " + cur);
+					// System.out.println("NC " + cur);
 				}
 
 
@@ -915,8 +916,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		mergeWithCurrent((CEtrace)counterExample);
 
 		current = (Program)current.accept(new EliminateMultiDimArrays());
-		if (reallyVerbose ())
-			current.accept(new SimpleCodePrinter());
+		 if (reallyVerbose ())
+			current.accept(new SimpleCodePrinter()); 
 		boolean tmp = partialEvalAndSolve(current);
 
 		return tmp ? getOracle() : null;
