@@ -24,6 +24,7 @@ struct barrier{
 
 bit predicate(int a, int b, bit c, bit d){  // 2*(3+2*INT)
 	bit rv = 0;
+	atomic{
 	if(??){    // 3 + INT*2
             // 2
 		if(??){
@@ -41,6 +42,7 @@ bit predicate(int a, int b, bit c, bit d){  // 2*(3+2*INT)
 	}
 	if(??){  // 2
 		rv = !rv;	
+	}
 	}
 	return rv;
 }
@@ -66,7 +68,8 @@ static void next(barrier b, int thread){
 			}
 		}
 		if(tmp){
-                    bit t = predicate(0,0,s, s);  // 4
+                    bit t = 0;
+                    atomic{ t = predicate(0,0,s, s); } // 4 
                     atomic(b.current == t){
                     }
 		}
@@ -79,15 +82,19 @@ bit test(){
 
 int left(int t){
 	int rv = 0;
+	atomic{
 	rv = t - 1;
 	if( rv < 0){ rv = rv + N; }
+	}
 	return rv;	
 }
 
 int right(int t){
 	int rv = 0;
+	atomic{
 	rv = t + 1;
 	if( rv >= N){ rv = rv - N; }
+	}
 	return rv;	
 }
 
