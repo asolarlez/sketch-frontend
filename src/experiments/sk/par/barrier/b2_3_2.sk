@@ -49,12 +49,19 @@ bit predicate(int a, int b, bit c, bit d){  // 2*(3+2*INT)
 
 
 static void next(barrier b, int thread){
-	bit s = b.bits[thread];
-	s = predicate(0,0,s,s);  // 4
+	bit s = 0;
+	atomic{
+		s = b.bits[thread];
+	}
+	atomic{
+		s = predicate(0,0,s,s);  // 4
+	}
 	int cv = 0;
 	bit tmp=0;
 	reorder{  // 5! = 120
-		b.bits[thread] = s;		
+		atomic{
+			b.bits[thread] = s;
+		}		
 		atomic{
 			cv = b.count;
 			b.count = b.count - 1;	
@@ -104,9 +111,11 @@ bit sketch() implements test{
 	barrier b = newBarrier();
 	fork(int thread; N){
 		for(int i=0; i<T; ++i){
-			if(i > 0){
-				assert grid[i-1][left(thread)] /*&& grid[i-1][right(thread)]*/; 	
-			}		
+			atomic{
+				if(i > 0){
+					assert grid[i-1][left(thread)] /*&& grid[i-1][right(thread)]*/; 	
+				}		
+			}
 			grid[i][thread] = 1;
 			next(b, thread);
 		}		
