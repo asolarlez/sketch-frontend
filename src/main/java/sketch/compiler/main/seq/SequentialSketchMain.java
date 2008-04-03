@@ -44,6 +44,8 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.parser.StreamItLex;
+import streamit.frontend.parser.StreamItParserFE;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
