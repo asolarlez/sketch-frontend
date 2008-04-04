@@ -600,9 +600,8 @@ incOrDec returns [Expression x] { x = null; }
 
 value_expr returns [Expression x] { x = null; boolean neg = false; }
 	:
-x=ndvalue {}
-|	(	(m:MINUS { neg = true; })?
-		(x=minic_value_expr | x=streamit_value_expr)
+	(	(m:MINUS { neg = true; })?
+		(x=minic_value_expr | x=streamit_value_expr | x=ndvalue)
 		{ if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x); }
 		)
 	;
