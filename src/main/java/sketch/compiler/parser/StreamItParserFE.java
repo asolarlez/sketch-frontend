@@ -3586,13 +3586,15 @@ inputState.guessing--;
 		x = null; boolean neg = false;
 		
 		try {      // for error handling
-			switch ( LA(1)) {
-			case LCURLY:
-			case NDVAL:
-			case NDVAL2:
 			{
-				x=ndvalue();
+			{
+			switch ( LA(1)) {
+			case MINUS:
+			{
+				m = LT(1);
+				match(MINUS);
 				if ( inputState.guessing==0 ) {
+					neg = true;
 				}
 				break;
 			}
@@ -3601,7 +3603,9 @@ inputState.guessing--;
 			case TK_true:
 			case TK_false:
 			case LPAREN:
-			case MINUS:
+			case LCURLY:
+			case NDVAL:
+			case NDVAL2:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
 			case HQUAN:
@@ -3611,73 +3615,6 @@ inputState.guessing--;
 			case TK_peek:
 			case TK_pi:
 			{
-				{
-				{
-				switch ( LA(1)) {
-				case MINUS:
-				{
-					m = LT(1);
-					match(MINUS);
-					if ( inputState.guessing==0 ) {
-						neg = true;
-					}
-					break;
-				}
-				case TK_new:
-				case TK_null:
-				case TK_true:
-				case TK_false:
-				case LPAREN:
-				case CHAR_LITERAL:
-				case STRING_LITERAL:
-				case HQUAN:
-				case NUMBER:
-				case ID:
-				case TK_pop:
-				case TK_peek:
-				case TK_pi:
-				{
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
-				{
-				switch ( LA(1)) {
-				case TK_new:
-				case TK_null:
-				case TK_true:
-				case TK_false:
-				case LPAREN:
-				case CHAR_LITERAL:
-				case STRING_LITERAL:
-				case HQUAN:
-				case NUMBER:
-				case ID:
-				case TK_pi:
-				{
-					x=minic_value_expr();
-					break;
-				}
-				case TK_pop:
-				case TK_peek:
-				{
-					x=streamit_value_expr();
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
-				if ( inputState.guessing==0 ) {
-					if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x);
-				}
-				}
 				break;
 			}
 			default:
@@ -3685,63 +3622,45 @@ inputState.guessing--;
 				throw new NoViableAltException(LT(1), getFilename());
 			}
 			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_17);
-			} else {
-			  throw ex;
 			}
-		}
-		return x;
-	}
-	
-	public final Expression  ndvalue() throws RecognitionException, TokenStreamException {
-		Expression x;
-		
-		Token  t = null;
-		Token  t2 = null;
-		Token  t3 = null;
-		Token  n = null;
-		x=null;
-		
-		try {      // for error handling
-			switch ( LA(1)) {
-			case NDVAL:
 			{
-				t = LT(1);
-				match(NDVAL);
-				if ( inputState.guessing==0 ) {
-					x=new ExprStar(getContext(t));
-				}
+			switch ( LA(1)) {
+			case TK_new:
+			case TK_null:
+			case TK_true:
+			case TK_false:
+			case LPAREN:
+			case CHAR_LITERAL:
+			case STRING_LITERAL:
+			case HQUAN:
+			case NUMBER:
+			case ID:
+			case TK_pi:
+			{
+				x=minic_value_expr();
 				break;
 			}
-			case NDVAL2:
+			case TK_pop:
+			case TK_peek:
 			{
-				t2 = LT(1);
-				match(NDVAL2);
-				if ( inputState.guessing==0 ) {
-					x=new ExprStar(getContext(t2));
-				}
+				x=streamit_value_expr();
 				break;
 			}
 			case LCURLY:
+			case NDVAL:
+			case NDVAL2:
 			{
-				t3 = LT(1);
-				match(LCURLY);
-				match(STAR);
-				n = LT(1);
-				match(NUMBER);
-				match(RCURLY);
-				if ( inputState.guessing==0 ) {
-					x=new ExprStar(getContext(t3),Integer.parseInt(n.getText()));
-				}
+				x=ndvalue();
 				break;
 			}
 			default:
 			{
 				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
+			if ( inputState.guessing==0 ) {
+				if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x);
 			}
 			}
 		}
@@ -3811,6 +3730,65 @@ inputState.guessing--;
 					x=value();
 				}
 			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+		}
+		catch (RecognitionException ex) {
+			if (inputState.guessing==0) {
+				reportError(ex);
+				recover(ex,_tokenSet_17);
+			} else {
+			  throw ex;
+			}
+		}
+		return x;
+	}
+	
+	public final Expression  ndvalue() throws RecognitionException, TokenStreamException {
+		Expression x;
+		
+		Token  t = null;
+		Token  t2 = null;
+		Token  t3 = null;
+		Token  n = null;
+		x=null;
+		
+		try {      // for error handling
+			switch ( LA(1)) {
+			case NDVAL:
+			{
+				t = LT(1);
+				match(NDVAL);
+				if ( inputState.guessing==0 ) {
+					x=new ExprStar(getContext(t));
+				}
+				break;
+			}
+			case NDVAL2:
+			{
+				t2 = LT(1);
+				match(NDVAL2);
+				if ( inputState.guessing==0 ) {
+					x=new ExprStar(getContext(t2));
+				}
+				break;
+			}
+			case LCURLY:
+			{
+				t3 = LT(1);
+				match(LCURLY);
+				match(STAR);
+				n = LT(1);
+				match(NUMBER);
+				match(RCURLY);
+				if ( inputState.guessing==0 ) {
+					x=new ExprStar(getContext(t3),Integer.parseInt(n.getText()));
+				}
+				break;
+			}
+			default:
+			{
 				throw new NoViableAltException(LT(1), getFilename());
 			}
 			}
