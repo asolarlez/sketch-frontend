@@ -1,0 +1,4 @@
+// Used to be a parser error; -?? was rejected.
+
+int spec () {  return -1; }
+int sk () implements spec {  return -??;  }
