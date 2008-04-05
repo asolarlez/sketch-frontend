@@ -87,12 +87,14 @@ public class NtsbValue extends IntAbsValue {
 		switch(type){
 		case INT: return obj.toString();
 		case LIST: {
-			String rval = "$ ";
+			StringBuffer rval = new StringBuffer();
+			rval.append( "$ " );
+			
 			for(Iterator<abstractValue> it = getVectValue().iterator(); it.hasNext(); ){
-				rval += it.next().toString() + " ";
+				rval.append( it.next().toString() + " ");
 			}
-			rval += "$";
-			return rval;
+			rval.append("$");
+			return rval.toString();
 		}
 		case BOTTOM:{ 
 			if( lhsIdx != null ){
