@@ -118,9 +118,10 @@ public class ExprStar extends Expression
 
     public boolean equals(Object other)
     {
-        if (!(other instanceof ExprStar))
+    	return this == other;
+        /*if (!(other instanceof ExprStar))
             return false;
-        return true;
+        return true; */
     }
 
     public String toString()
