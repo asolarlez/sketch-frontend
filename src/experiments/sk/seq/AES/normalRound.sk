@@ -287,10 +287,12 @@ bit[W] CypherOpt(bit[W] in, bit[W*(Nr+1)] keys){
 
 bit[W] ShiftRowsSK(bit[W] in) implements ShiftRows{
     bit[W] Sout;
-    for(int i=0; i<4; ++i){
+    int i=0;
+    loop(4){
     	/* The operator x = a {|} b; resolves to the following statement { m = ??; x = (a & m) | (a & ~m); } 
     	 * In other words it selects some bits from a and some bits from b, and the selection is determined by the solver. */
 	    Sout[(i*32)::32] =  in[(0*32)::32] {|} in[(1*32)::32] {|} in[(2*32)::32] {|} in[(3*32)::32];
+	    i = i+1;
     }
     return Sout;
 }
@@ -349,8 +351,9 @@ bit[32] sel(bit[32] w1, bit[32] w2, bit[32] w3, bit[32] w4, int i){
 bit[W] ByteSubSK(bit[W] in) implements ByteSub{	
 	bit [32*256] T = ??;
 	bit [W] result;
-		bit[32] mask = {1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};	
-	for(int i=0; i<Nb; ++i){
+		bit[32] mask = {1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int i=0;	
+	loop(Nb){
 		bit [32] word = in[i*32::32];		
 		bit[32] inv0 = word &  mask;        //in[(i*32)::8];
 	  	bit[32] inv1 = (word >> 8) & mask;  //in[(i*32+8)::8];
@@ -361,6 +364,7 @@ bit[W] ByteSubSK(bit[W] in) implements ByteSub{
 	  	int i2 = (int) inv2[0::8];
 	  	int i3 = (int) inv3[0::8];
 		result[i*32::32] = T[i0*32::32] {|} T[i1*32::32] {|} T[i2*32::32] {|} T[i3*32::32];
+		i = i+1;
 	}
 	return result;
 }

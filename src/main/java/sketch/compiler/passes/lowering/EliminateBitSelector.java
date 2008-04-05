@@ -5,6 +5,7 @@ import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -39,11 +40,12 @@ public class EliminateBitSelector extends SymbolTableVisitor {
     	  star.setType( bvtype );
     	  StmtAssign ass = new StmtAssign(tmpvar, star );
     	  this.addStatement(ass);
-
+    	  Expression left = exp.getLeft().doExpr(this);
+    	  Expression right = exp.getRight().doExpr(this);
     	  return new ExprBinary(exp, ExprBinary.BINOP_BOR,
-    		new ExprBinary(exp,  ExprBinary.BINOP_BAND,exp.getLeft(), tmpvar)
+    		new ExprBinary(exp,  ExprBinary.BINOP_BAND,left, tmpvar)
     	  ,
-    	    new ExprBinary(exp,  ExprBinary.BINOP_BAND,exp.getRight(), new ExprUnary(exp, ExprUnary.UNOP_BNOT, tmpvar  ) )
+    	    new ExprBinary(exp,  ExprBinary.BINOP_BAND,right, new ExprUnary(exp, ExprUnary.UNOP_BNOT, tmpvar  ) )
     	  );
       }else{
     	  return super.visitExprBinary(exp);
