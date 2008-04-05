@@ -34,7 +34,8 @@ public class NtsbVtype extends IntVtype {
 	public abstractValue STAR(FENode node){		
 		if(oracle.allowMemoization()){ 
 			if(memoizedValues.containsKey(node)){ 
-				return memoizedValues.get(node); 
+				abstractValue val = memoizedValues.get(node);	
+				return val; 
 			}
 		}
 		if(node instanceof ExprStar){
@@ -61,7 +62,6 @@ public class NtsbVtype extends IntVtype {
 				nv = new NtsbValue(rval);
 				if(avlist != null) avlist.add(nv);
 			}
-			
 			if(avlist != null) nv = new NtsbValue(avlist);
 			if(oracle.allowMemoization()){ memoizedValues.put(node, nv); }
 			return nv;
