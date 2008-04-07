@@ -1,0 +1,142 @@
+module streamit.frontend.parser.Regen;
+
+option withLocation;//, verbose;
+
+public generic Regen =
+    WS  Expr  EOF  ;
+
+generic Expr =
+    Expr  "|":s  ExprCond
+    / ExprCond
+    ;
+
+generic ExprCond =
+    ExprBin  void:"?":s  Expr  void:":":s  ExprCond
+    / ExprBinNoQues  void:"?":s  Expr  void:":":s  ExprCond
+    / ExprBin
+    ;
+
+generic ExprBin =
+    ExprBin  InfixOp  ExprPrefix
+    / ExprPrefix
+    ;
+
+generic ExprBinNoQues =
+    ExprBin  InfixOp  ExprPrefixNQ
+    / ExprPrefixNQ
+    ;
+
+generic ExprPrefix =
+    PrefixOp  ExprPrefix
+    / ExprPostfix
+    ;
+
+generic ExprPrefixNQ =
+    PrefixOp  ExprPrefixNQ
+    / ExprPostfixNQ
+    ;
+
+generic ExprPostfix =
+    ExprPostfixNQ "?":s
+    / ExprPostfixNQ
+    ;
+
+generic ExprPostfixNQ =
+    ExprPostfixNQ PostfixOp PostfixOpNQ
+    / ExprPostfixNQ PostfixOpNQ
+    / ExprPrimary
+    ;
+
+generic ExprPrimary =
+    ExprPrimary Selector
+    / Term ;
+
+generic Term =
+    Literal
+    / Var
+    / "(":s  Expr  ")":s
+    ;
+
+generic InfixOp =
+    InOp  /  void:"(":s  InOpChoice  void:")":s  ;
+generic InOpChoice =
+    InOpChoice  void:"|":s  InOp  /  InOp;
+generic InOp =
+    "||":s  /  "&&":s  /  "<<":s  /  ">>":s
+    /  "==":s  /  "!=":s  /  "<=":s  /  ">=":s
+    /  "\\|":s  /  "^":s  /  "&":s
+    /  "<":s  /  ">":s
+    /  "+":s  /  "-":s  /  "*":s  /  "/":s  /  "%":s
+    ;
+
+generic PrefixOp =
+    PreOp  "?":s
+    /  PreOp
+    /  void:"(":s  PreOpChoice  void:")":s  "?":s
+    /  void:"(":s  PreOpChoice  void:")":s
+    ;
+generic PreOpChoice =
+    PreOpChoice  void:"|"  PreOp  /  PreOp  ;
+generic PreOp =
+    "++":s  /  "--":s  /  "+":s  /  "-":s  /  "!":s  /  "~":s  ;
+
+generic PostfixOp =
+    PostfixOpNQ "?":s
+    / PostfixOpNQ
+    ;
+generic PostfixOpNQ =
+    PostOp
+    /  void:"(":s  PostOpChoice  void:")":s
+    ;
+generic PostOpChoice =
+    PostOpChoice  void:"|"  PostOp  /  PostOp  ;
+generic PostOp =
+    "++":s  /  "--":s  ;
+
+generic Selector =
+    Index  /  Select  ;
+
+generic Index =
+    void:"[":s  Expr  void:"]":s  ;
+generic Select =
+    Sel
+    /  void:"(":s  SelChoice  void:")":s  "?":s
+    /  void:"(":s  SelChoice  void:")":s  ;
+generic SelChoice =
+    SelChoice  void:"|":s  Select
+    /  SelChoice Select
+    /  Select
+    ;
+generic Sel =
+    ".":s  Id  ;
+
+String Var =
+    Id  ;
+String Literal =
+    Num  /  "??":s  ;
+
+transient void WS =
+    (' ' / '\t' / '\f' / '\r' '\n' / '\r' / '\n')* ;
+transient void EOF =
+    !_  ;
+
+String s = SYM WS ;
+transient String SYM =
+    "??"
+    /  "++"  /  "--"
+    /  "||"  /  "&&"  /  "<<"  /  ">>"
+    /  "=="  /  "!="  /  "<="  /  ">="
+    /  "\\|"  /  "^"  /  "&"
+    /  "<"  /  ">"
+    /  "+"  /  "-"  /  "*"  /  "/"  /  "%"
+    /  "!"  /  "~"
+    /  "."
+    /  "("  /  ")"  /  "["  /  "]"
+    /  "|"  /  "?"  /  ":"
+    ;
+
+String Id = ID WS ;
+transient String ID = [a-zA-Z_] [a-zA-Z0-9_]* / "\\n";
+
+String Num = NUM WS ;
+transient String NUM = [0-9]+ ;
