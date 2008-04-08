@@ -601,17 +601,10 @@ incOrDec returns [Expression x] { x = null; }
 value_expr returns [Expression x] { x = null; boolean neg = false; }
 	:
 	(	(m:MINUS { neg = true; })?
-		(x=minic_value_expr | x=streamit_value_expr | x=ndvalue)
+		(x=minic_value_expr | x=streamit_value_expr)
 		{ if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x); }
 		)
 	;
-
-ndvalue returns [Expression x] { x=null; }
-:
-	t:NDVAL {x=new ExprStar(getContext(t));}
-| 	t2:NDVAL2 {x=new ExprStar(getContext(t2));}
-| 	t3:LCURLY STAR n:NUMBER RCURLY {x=new ExprStar(getContext(t3),Integer.parseInt(n.getText()));}
-;
 
 streamit_value_expr returns [Expression x] { x = null; }
 	:	t:TK_pop LPAREN RPAREN
@@ -626,6 +619,8 @@ minic_value_expr returns [Expression x] { x = null; }
 	| 	(constructor_expr) => x = constructor_expr
 	|	x=value
 	|	x=constantExpr
+    |   r:REGEN
+            { x = new ExprRegen (getContext (r), r.getText ()); }
 	;
 
 
@@ -677,6 +672,13 @@ constantExpr returns [Expression x] { x = null; }
 			{ x = new ExprConstBoolean(getContext(f), false); }
 	|   TK_null
 			{ x = ExprNullPtr.nullPtr; }
+    |   t1:NDVAL
+            { x = new ExprStar(getContext(t1)); }
+    |   t2:NDVAL2
+            { x = new ExprStar(getContext(t2)); }
+    |   t3:LCURLY STAR n1:NUMBER RCURLY
+            { x = new ExprStar(getContext(t3),Integer.parseInt(n1.getText())); }
+
 	;
 
 struct_decl returns [TypeStruct ts]
