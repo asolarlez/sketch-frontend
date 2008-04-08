@@ -32,7 +32,7 @@ class StreamItLex extends Lexer;
 options {
 	exportVocab=StreamItLex;
 	charVocabulary = '\3'..'\377';
-	k=3;
+	k=4;
 }
 
 tokens {
@@ -89,7 +89,6 @@ ML_COMMENT
 			{ $setType(Token.SKIP); }
 	;
 
-
 LPAREN
 //options {
 //	paraphrase="'('";
@@ -142,6 +141,15 @@ RSHIFT: ">>";
 NDVAL: "{*}";
 NDVAL2: "??";
 SELECT: "{|}";
+
+REGEN
+    :   "{|"
+        (   { LA(2)!='}' }? '|'
+        |   '\n' { newline(); }
+        |   ~('|'|'\n')
+        )*
+        "|}"
+    ;
 
 CHAR_LITERAL
 	:	'\'' (ESC|~'\'') '\''

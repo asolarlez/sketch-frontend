@@ -1,119 +1,246 @@
 module streamit.frontend.parser.Regen;
 
-option withLocation;//, verbose;
+header {
+    import java.util.List;
 
-public generic Regen =
+    import streamit.frontend.nodes.ExprAlt;
+    import streamit.frontend.nodes.ExprChoiceBinary;
+    import streamit.frontend.nodes.ExprChoiceSelect;
+    import static streamit.frontend.nodes.ExprChoiceSelect.Select;
+    import static streamit.frontend.nodes.ExprChoiceSelect.Selector;
+    import static streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
+    import static streamit.frontend.nodes.ExprChoiceSelect.SelectField;
+    import static streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+    import streamit.frontend.nodes.ExprChoiceUnary;
+    import streamit.frontend.nodes.ExprConstant;
+    import streamit.frontend.nodes.Expression;
+    import streamit.frontend.nodes.ExprParen;
+    import streamit.frontend.nodes.ExprStar;
+    import streamit.frontend.nodes.ExprTernary;
+    import streamit.frontend.nodes.ExprVar;
+    import streamit.frontend.nodes.FEContext;
+}
+
+body {
+    // TODO: get the line/column from Rats!
+    private FEContext cx;
+    public void setCx (FEContext cx) {  this.cx = cx;  }
+    private FEContext getCx ()       {  return cx;  }
+
+    private static class P<T1,T2> {
+        public T1 one;  public T2 two;
+        public P (T1 one, T2 two) {
+            this.one = one;  this.two = two;
+        }
+    }
+
+    private static class BI {
+        public int i;  public BI(){this(0);}  public BI(int i){this.i = i;}
+    }
+
+    private Expression binExpr (Expression e, List l) {
+        for (Object o : l) {
+            P<BI,Expression> p = (P<BI,Expression>) o;
+            e = new ExprChoiceBinary (e, p.one.i, p.two);
+        }
+        return e;
+    }
+}
+
+//option verbose;
+
+public Expression Regen =
     WS  Expr  EOF  ;
 
-generic Expr =
-    Expr  "|":s  ExprCond
-    / ExprCond
+Expression Expr =
+    yyValue:ExprCond  l:(void:"|":s  ExprCond)*
+        { for (Expression e : l)  yyValue = new ExprAlt (yyValue, e); }
     ;
 
-generic ExprCond =
-    ExprBin  void:"?":s  Expr  void:":":s  ExprCond
-    / ExprBinNoQues  void:"?":s  Expr  void:":":s  ExprCond
+Expression ExprCond =
+    a:ExprBin  void:"?":s  b:Expr  void:":":s  c:ExprCond
+        { yyValue = new ExprTernary ("?:", a, b, c); }
+    / a:ExprBinNoQues  void:"?":s  b:Expr  void:":":s  c:ExprCond
+        { yyValue = new ExprTernary ("?:", a, b, c); }
     / ExprBin
     ;
 
-generic ExprBin =
-    ExprBin  InfixOp  ExprPrefix
-    / ExprPrefix
+Expression ExprBin =
+    yyValue:ExprPrefix
+        l:(ops:InfixOp  r:ExprPrefix    { yyValue = new P<BI,Expression>(ops, r); })*
+        { yyValue = binExpr (yyValue, l.list ()); }
     ;
 
-generic ExprBinNoQues =
-    ExprBin  InfixOp  ExprPrefixNQ
+Expression ExprBinNoQues =
+    yyValue:ExprPrefix
+        l:(ops:InfixOp  r:ExprPrefix  &(InfixOp ExprPrefixNQ)
+            { yyValue = new P<BI,Expression>(ops, r); }
+        )*
+        ops:InfixOp  r:ExprPrefixNQ
+            { yyValue = new ExprChoiceBinary (yyValue, ops.i, r); }
     / ExprPrefixNQ
     ;
 
-generic ExprPrefix =
-    PrefixOp  ExprPrefix
+Expression ExprPrefix =
+    ops:PrefixOp  e:ExprPrefix
+        { yyValue = new ExprChoiceUnary (ops.i, e); }
     / ExprPostfix
     ;
 
-generic ExprPrefixNQ =
-    PrefixOp  ExprPrefixNQ
+Expression ExprPrefixNQ =
+    ops:PrefixOp  e:ExprPrefixNQ
+        { yyValue = new ExprChoiceUnary (ops.i, e); }
     / ExprPostfixNQ
     ;
 
-generic ExprPostfix =
-    ExprPostfixNQ "?":s
-    / ExprPostfixNQ
+Expression ExprPostfix =
+    yyValue:ExprPrimary  l:PostfixOp*
+        { for (BI ops : l)  yyValue = new ExprChoiceUnary (ops.i, yyValue); }
     ;
 
-generic ExprPostfixNQ =
-    ExprPostfixNQ PostfixOp PostfixOpNQ
-    / ExprPostfixNQ PostfixOpNQ
-    / ExprPrimary
+Expression ExprPostfixNQ =
+    yyValue:ExprPrimary
+        l:(PostfixOp &PostfixOpNQ)*
+            { for (BI ops : l)  yyValue = new ExprChoiceUnary (ops.i, yyValue); }
+        ops:PostfixOpNQ
+            { yyValue = new ExprChoiceUnary (ops.i, yyValue); }
+    / ExprPrimaryNQ
     ;
 
-generic ExprPrimary =
-    ExprPrimary Selector
-    / Term ;
+Expression ExprPrimary =
+    yyValue:Term  l:Selector*
+        { for (Selector s : l)  yyValue = new ExprChoiceSelect (yyValue, s); }
+    ;
 
-generic Term =
+Expression ExprPrimaryNQ =
+    yyValue:Term  l:(Selector &SelectorNQ)*  ls:SelectorNQ
+        { for (Selector s : l)  yyValue = new ExprChoiceSelect (yyValue, s);
+          yyValue = new ExprChoiceSelect (yyValue, ls); }
+    / yyValue:Term
+    ;
+
+Expression Term =
     Literal
     / Var
-    / "(":s  Expr  ")":s
+    / void:"(":s  e:Expr  void:")":s
+        { yyValue = new ExprParen (e); }
     ;
 
-generic InfixOp =
-    InOp  /  void:"(":s  InOpChoice  void:")":s  ;
-generic InOpChoice =
-    InOpChoice  void:"|":s  InOp  /  InOp;
-generic InOp =
-    "||":s  /  "&&":s  /  "<<":s  /  ">>":s
-    /  "==":s  /  "!=":s  /  "<=":s  /  ">=":s
-    /  "\\|":s  /  "^":s  /  "&":s
-    /  "<":s  /  ">":s
-    /  "+":s  /  "-":s  /  "*":s  /  "/":s  /  "%":s
+BI InfixOp =
+    InOp
+    /  void:"(":s  yyValue:InOpChoice  void:")":s
+    ;
+BI InOpChoice =
+    yyValue:InOp  l:(void:"|":s  InOp)*
+        { for (BI op : l)  yyValue.i |= op.i; }
     ;
 
-generic PrefixOp =
-    PreOp  "?":s
+BI PrefixOp =
+    yyValue:PreOp  "?":s
+        { yyValue = new BI (yyValue.i | ExprChoiceUnary.NONE); }
     /  PreOp
-    /  void:"(":s  PreOpChoice  void:")":s  "?":s
-    /  void:"(":s  PreOpChoice  void:")":s
+    /  void:"(":s  yyValue:PreOpChoice  void:")":s  "?":s
+        { yyValue = new BI (yyValue.i | ExprChoiceUnary.NONE); }
+    /  void:"(":s  yyValue:PreOpChoice  void:")":s
     ;
-generic PreOpChoice =
-    PreOpChoice  void:"|"  PreOp  /  PreOp  ;
-generic PreOp =
-    "++":s  /  "--":s  /  "+":s  /  "-":s  /  "!":s  /  "~":s  ;
+BI PreOpChoice =
+    yyValue:PreOp  l:(void:"|":s  PreOp)*
+        { for (BI op : l)  yyValue = new BI (yyValue.i | op.i); }
+    ;
 
-generic PostfixOp =
-    PostfixOpNQ "?":s
+BI PostfixOp =
+    yyValue:PostfixOpNQ "?":s
+        { yyValue = new BI (yyValue.i | ExprChoiceUnary.NONE); }
     / PostfixOpNQ
     ;
-generic PostfixOpNQ =
+BI PostfixOpNQ =
     PostOp
-    /  void:"(":s  PostOpChoice  void:")":s
+    /  void:"(":s  yyValue:PostOpChoice  void:")":s
     ;
-generic PostOpChoice =
-    PostOpChoice  void:"|"  PostOp  /  PostOp  ;
-generic PostOp =
-    "++":s  /  "--":s  ;
+BI PostOpChoice =
+    yyValue:PostOp  l:(void:"|":s  PostOp)*
+        { for (BI op : l)  yyValue = new BI (yyValue.i | op.i);; }
+    ;
 
-generic Selector =
-    Index  /  Select  ;
+Selector Selector =
+    Select  /  Index ;
+Selector SelectorNQ =
+    SelectNQ  /  Index ;
 
-generic Index =
-    void:"[":s  Expr  void:"]":s  ;
-generic Select =
+Selector Index =
+    void:"[":s  Expr  void:"]":s
+        { if (true) { throw new RuntimeException ("NYI: array indices"); } }
+    ;
+
+Select Select =
     Sel
-    /  void:"(":s  SelChoice  void:")":s  "?":s
-    /  void:"(":s  SelChoice  void:")":s  ;
-generic SelChoice =
-    SelChoice  void:"|":s  Select
-    /  SelChoice Select
-    /  Select
+    /  void:"(":s  yyValue:SelChoice  void:")":s  "?":s
+        { yyValue = Select.clone (yyValue);  yyValue.setOptional (true); }
+    /  void:"(":s yyValue:SelChoice  void:")":s
     ;
-generic Sel =
-    ".":s  Id  ;
 
-String Var =
-    Id  ;
-String Literal =
-    Num  /  "??":s  ;
+Select SelectNQ =
+    Sel  /  void:"(":s yyValue:SelChoice  void:")":s
+    ;
+
+Select SelChoice =
+    yyValue:SelChain  l:(void:"|":s  SelChain)*
+        { for (Select s : l)  yyValue = new SelectOr (yyValue, s);  }
+    ;
+
+Select SelChain =
+    yyValue:Select  l:Select*
+        { for (Select s : l)  yyValue = new SelectChain (yyValue, s); }
+    ;
+
+Select Sel =
+    ".":s  id:Id
+        { yyValue = new SelectField (id); }
+    ;
+
+Expression Var =
+    id:Id
+        { yyValue = new ExprVar (getCx (), id); }
+    ;
+Expression Literal =
+    n:Num
+        { yyValue = ExprConstant.createConstant (getCx (), n); }
+    /  "??":s
+        { yyValue = new ExprStar (getCx ()); }
+    ;
+
+BI InOp =
+    "||":s      { yyValue = new BI (ExprChoiceBinary.LOR); }
+    /  "&&":s   { yyValue = new BI (ExprChoiceBinary.LAND); }
+    /  "<<":s   { yyValue = new BI (ExprChoiceBinary.LSHFT); }
+    /  ">>":s   { yyValue = new BI (ExprChoiceBinary.RSHFT); }
+    /  "==":s   { yyValue = new BI (ExprChoiceBinary.EQ); }
+    /  "!=":s   { yyValue = new BI (ExprChoiceBinary.NEQ); }
+    /  "<=":s   { yyValue = new BI (ExprChoiceBinary.LTEQ); }
+    /  ">=":s   { yyValue = new BI (ExprChoiceBinary.GTEQ); }
+    /  "\\|":s  { yyValue = new BI (ExprChoiceBinary.BOR); }
+    /  "^":s    { yyValue = new BI (ExprChoiceBinary.BXOR); }
+    /  "&":s    { yyValue = new BI (ExprChoiceBinary.BAND); }
+    /  "<":s    { yyValue = new BI (ExprChoiceBinary.LT); }
+    /  ">":s    { yyValue = new BI (ExprChoiceBinary.GT); }
+    /  "+":s    { yyValue = new BI (ExprChoiceBinary.ADD); }
+    /  "-":s    { yyValue = new BI (ExprChoiceBinary.SUB); }
+    /  "*":s    { yyValue = new BI (ExprChoiceBinary.MUL); }
+    /  "/":s    { yyValue = new BI (ExprChoiceBinary.DIV); }
+    /  "%":s    { yyValue = new BI (ExprChoiceBinary.MOD); }
+    ;
+BI PreOp =
+    "++":s      { yyValue = new BI (ExprChoiceUnary.PREINC); }
+    /  "--":s   { yyValue = new BI (ExprChoiceUnary.PREDEC); }
+    /  "+":s    { yyValue = new BI (0); }
+    /  "-":s    { yyValue = new BI (ExprChoiceUnary.NEG); }
+    /  "!":s    { yyValue = new BI (ExprChoiceUnary.NOT); }
+    /  "~":s    { yyValue = new BI (ExprChoiceUnary.BNOT); }
+    ;
+BI PostOp =
+    "++":s      { yyValue = new BI (ExprChoiceUnary.POSTINC); }
+    /  "--":s   { yyValue = new BI (ExprChoiceUnary.POSTDEC); }
+    ;
 
 transient void WS =
     (' ' / '\t' / '\f' / '\r' '\n' / '\r' / '\n')* ;
@@ -136,7 +263,7 @@ transient String SYM =
     ;
 
 String Id = ID WS ;
-transient String ID = [a-zA-Z_] [a-zA-Z0-9_]* / "\\n";
+transient String ID = [a-zA-Z_] [a-zA-Z0-9_]* ;
 
 String Num = NUM WS ;
 transient String NUM = [0-9]+ ;
