@@ -82,11 +82,12 @@ public interface StreamItLexTokenTypes {
 	int NDVAL = 78;
 	int NDVAL2 = 79;
 	int SELECT = 80;
-	int CHAR_LITERAL = 81;
-	int STRING_LITERAL = 82;
-	int ESC = 83;
-	int DIGIT = 84;
-	int HQUAN = 85;
-	int NUMBER = 86;
-	int ID = 87;
+	int REGEN = 81;
+	int CHAR_LITERAL = 82;
+	int STRING_LITERAL = 83;
+	int ESC = 84;
+	int DIGIT = 85;
+	int HQUAN = 86;
+	int NUMBER = 87;
+	int ID = 88;
 }
