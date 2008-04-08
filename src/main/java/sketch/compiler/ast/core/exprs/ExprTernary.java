@@ -89,6 +89,6 @@ public class ExprTernary extends Expression
         return v.visitExprTernary(this);
     }
     public String toString(){
-    	return a.toString() + " ? " + b + ":" + c;
+    	return "("+ a.toString() + " ? " + b + " : " + c + ")";
     }
 }
