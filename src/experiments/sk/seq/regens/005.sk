@@ -1,0 +1,4 @@
+int sp (int in) { return 0; }
+int sk (int in) {
+    return {| (~|++)?in |};
+}

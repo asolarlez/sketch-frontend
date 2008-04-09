@@ -1,0 +1,10 @@
+struct S {
+    S next;
+    int i;
+}
+
+int sp () { return 0; }
+int sk () {
+    S s = new S ();
+    return {| 1 (<<|+|*) 2 |};
+}
