@@ -1,0 +1,4 @@
+int sp () { return 0; }
+int sk () {
+    return {| 1.foo |};
+}

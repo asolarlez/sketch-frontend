@@ -1,0 +1,6 @@
+int sp () { return 0; }
+int sk () {
+    int x = 0;
+    {| x|1 |} = 1;
+    return x;
+}
