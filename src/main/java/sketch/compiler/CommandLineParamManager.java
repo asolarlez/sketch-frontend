@@ -210,6 +210,13 @@ public class CommandLineParamManager{
 	}
 
 
+	/**
+	 * Returns the string value of a given flag.
+	 * If the flag was not passed, produces its default value.
+	 * Includes an implicit check to see if the flag is valid.
+	 * @param flag
+	 * @return
+	 */
 	public String sValue(String flag){
 		checkFlagAllowed(flag);
 		String val = null;
@@ -222,6 +229,13 @@ public class CommandLineParamManager{
 		return val;
 	}
 
+	/**
+	 * Returns the integer value of a given flag.
+	 * If the flag was not passed, produces its default value.
+	 * Includes an implicit check to see if the flag is valid.
+	 * @param flag
+	 * @return
+	 */
 	public int flagValue(String flag){
 		String val = sValue(flag);
 		Integer i = Integer.decode(val);
