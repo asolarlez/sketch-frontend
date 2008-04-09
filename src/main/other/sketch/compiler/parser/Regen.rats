@@ -13,7 +13,9 @@ header {
     import static streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
     import streamit.frontend.nodes.ExprChoiceUnary;
     import streamit.frontend.nodes.ExprConstant;
+    import streamit.frontend.nodes.ExprConstBoolean;
     import streamit.frontend.nodes.Expression;
+    import streamit.frontend.nodes.ExprNullPtr;
     import streamit.frontend.nodes.ExprParen;
     import streamit.frontend.nodes.ExprStar;
     import streamit.frontend.nodes.ExprTernary;
@@ -205,6 +207,12 @@ Expression Var =
 Expression Literal =
     n:Num
         { yyValue = ExprConstant.createConstant (getCx (), n); }
+    /  "true":Keyword
+        { yyValue = new ExprConstBoolean (getCx (), true); }
+    /  "false":Keyword
+        { yyValue = new ExprConstBoolean (getCx (), false); }
+    /  "null":Keyword
+        { yyValue = ExprNullPtr.nullPtr; }
     /  "??":s
         { yyValue = new ExprStar (getCx ()); }
     ;
@@ -260,6 +268,11 @@ transient String SYM =
     /  "."
     /  "("  /  ")"  /  "["  /  "]"
     /  "|"  /  "?"  /  ":"
+    ;
+
+String Keyword = KW WS ;
+transient String KW =
+    "true" / "false" / "null"
     ;
 
 String Id = ID WS ;

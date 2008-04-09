@@ -111,6 +111,17 @@ public class RegenParser {
 { "a(.b|.c|.d)?",
   "a((.b | .c) | .d)?"
 },
+// XXX/cgjones: checking whether these are variables or constants needs to be
+// done manually, in the debugger
+{ "true",
+  "true"
+},
+{ "false",
+  "false"
+},
+{ "null",
+  "null"
+},
 // Examples from PLDI08
 { " tail(.next)? | (tmp|newEntry).next ",
   "(tail(.next)? | ((tmp | newEntry)).next)"},
