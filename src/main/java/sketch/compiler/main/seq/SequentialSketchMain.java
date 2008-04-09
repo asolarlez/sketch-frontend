@@ -522,6 +522,16 @@ public class ToSBit
 		params.setAllowedParam("showphase", new POpts(POpts.TOKEN,
 				"--showphase OPT\t Show the partially evaluated code after the indicated phase of pre or post processing.",
 				"5", phases) );
+		
+		Map<String, String> solvers = new HashMap<String, String>();
+		solvers.put("MINI","MiniSat solver");
+		solvers.put("ABC", "ABC solver");
+		params.setAllowedParam("synth", new POpts(POpts.TOKEN,
+				"--synth OPT\t SAT solver to use for synthesis.",
+				"MINI", solvers) );
+		params.setAllowedParam("verif", new POpts(POpts.TOKEN,
+				"--verif OPT\t SAT solver to use for verification.",
+				"MINI", solvers) );
 
 	}
 
@@ -585,6 +595,14 @@ public class ToSBit
 		if( params.hasFlag("verbosity") ){
 			commandLineOptions.add("-verbosity");
 			commandLineOptions.add( "" + params.flagValue("verbosity") );
+		}
+		if(params.hasFlag("synth")){
+			commandLineOptions.add("-synth");
+			commandLineOptions.add( "" + params.sValue("synth") );
+		}
+		if(params.hasFlag("verif")){
+			commandLineOptions.add("-verif");
+			commandLineOptions.add( "" + params.sValue("verif") );
 		}
 	}
 
