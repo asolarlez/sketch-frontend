@@ -1,7 +1,9 @@
 package streamit.frontend.nodes;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ExprChoiceUnary extends Expression {
 	public static final int NEG 	= 1<<1;
@@ -13,15 +15,19 @@ public class ExprChoiceUnary extends Expression {
 	public static final int POSTDEC = 1<<7;
 	public static final int NONE 	= 1<<31;
 
-	private static final Map<Integer, String> opMap = new HashMap<Integer, String> ();
+	private static final Set<OpInfo> opinfo = new HashSet<OpInfo> ();
 
 	private int ops;
 	private Expression expr;
 
 	public ExprChoiceUnary (int ops, Expression expr) {
-		super (expr);
+		this (expr, ops, expr);
+	}
 
-		if (0 == opMap.size ())  init ();
+	public ExprChoiceUnary (FENode cx, int ops, Expression expr) {
+		super (cx);
+
+		if (0 == opinfo.size ())  init ();
 
 		assert opsConsistent ();
 
@@ -50,11 +56,19 @@ public class ExprChoiceUnary extends Expression {
 		}
 	}
 
+	public List<Integer> opsAsExprUnaryOps () {
+		List<Integer> ret = new ArrayList<Integer> ();
+		for (OpInfo o : opinfo)
+			if (0 != (ops & o.op))
+				ret.add (o.exprUnaryOp);
+		return ret;
+	}
+
 	public String opsToString () {
 		String opStr = "";
-		for (Integer op : opMap.keySet ())
-			if ((ops & op) != 0)
-				opStr += (opStr.length()>0?"|":"")+ opMap.get (op);
+		for (OpInfo o : opinfo)
+			if ((ops & o.op) != 0)
+				opStr += (opStr.length()>0?"|":"")+ o.strOp;
 		return "("+ opStr +")"+ (opOptional () ? "?" : "");
 	}
 
@@ -66,16 +80,26 @@ public class ExprChoiceUnary extends Expression {
 
 	@Override
 	public Object accept (FEVisitor v) {
-		return null; //v.visitExprChoiceUnary (v);
+		return v.visitExprChoiceUnary (this);
 	}
 
 	private static void init () {
-		opMap.put (NEG, "-");
-		opMap.put (NOT, "!");
-		opMap.put (BNOT, "~");
-		opMap.put (PREINC, "++");
-		opMap.put (PREDEC, "--");
-		opMap.put (POSTINC, "++");
-		opMap.put (POSTDEC, "--");
+		opinfo.add (new OpInfo (NEG, ExprUnary.UNOP_NEG, "-"));
+		opinfo.add (new OpInfo (NOT, ExprUnary.UNOP_NOT, "!"));
+		opinfo.add (new OpInfo (BNOT, ExprUnary.UNOP_BNOT, "~"));
+		opinfo.add (new OpInfo (PREINC, ExprUnary.UNOP_PREINC, "++"));
+		opinfo.add (new OpInfo (PREDEC, ExprUnary.UNOP_PREDEC, "--"));
+		opinfo.add (new OpInfo (POSTINC, ExprUnary.UNOP_POSTINC, "++"));
+		opinfo.add (new OpInfo (POSTDEC, ExprUnary.UNOP_POSTDEC, "--"));
+	}
+
+	private static class OpInfo {
+		int op, exprUnaryOp;
+		String strOp;
+		OpInfo (int op, int euOp, String sop) {
+			this.op = op; exprUnaryOp = euOp;  strOp = sop;
+		}
+		@Override
+		public int hashCode () {  return op;  }
 	}
 }

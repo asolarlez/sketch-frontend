@@ -5,9 +5,20 @@ public class ExprChoiceSelect extends Expression {
 	private Selector field;
 
 	public ExprChoiceSelect (Expression obj, Selector field) {
-		super (obj);
+		this (obj, obj, field);
+	}
+
+	public ExprChoiceSelect (FENode cx, Expression obj, Selector field) {
+		super (cx);
 		this.obj = obj;
 		this.field = field;
+	}
+
+	public Expression getObj () { return obj; }
+	public Selector getField () { return field; }
+
+	public boolean isLValue () {
+		return true;
 	}
 
 	public String toString () {
@@ -16,10 +27,22 @@ public class ExprChoiceSelect extends Expression {
 
 	@Override
 	public Object accept (FEVisitor v) {
-		return null; //v.visitExprChoiceSelect (this);
+		return v.visitExprChoiceSelect (this);
+	}
+
+	public Object accept (SelectorVisitor sv) {
+		return field.accept (sv);
 	}
 
 	public static abstract class Selector {
+		public abstract Object accept (SelectorVisitor sv);
+		public abstract boolean isOptional ();
+	}
+
+	public static abstract class SelectorVisitor {
+		public abstract Object visit (SelectOr so);
+		public abstract Object visit (SelectChain sc);
+		public abstract Object visit (SelectField sf);
 	}
 
 	public static abstract class Select extends Selector {
@@ -31,14 +54,17 @@ public class ExprChoiceSelect extends Expression {
 			this.optional = s.optional;
 		}
 
+		@Override public boolean isOptional () {
+			return optional;
+		}
+		public void setOptional (boolean optional) {
+			this.optional = optional;
+		}
+
 		public static Select clone (Select s) {
 			return s instanceof SelectOr ? new SelectOr (s)
 						: s instanceof SelectChain ? new SelectChain (s)
 								: new SelectField (s);
-		}
-
-		public void setOptional (boolean optional) {
-			this.optional = optional;
 		}
 	}
 
@@ -58,9 +84,13 @@ public class ExprChoiceSelect extends Expression {
 			}
 		}
 
+		public Selector getThis () { return ths; }
+		public Selector getThat () { return that; }
+
 		public String toString () {
 			return "("+ ths +" | "+ that +")"+ (optional ? "?" : "");
 		}
+		public Object accept (SelectorVisitor sv) { return sv.visit (this); }
 	}
 
 	public static class SelectChain extends Select {
@@ -79,11 +109,15 @@ public class ExprChoiceSelect extends Expression {
 			}
 		}
 
+		public Selector getFirst () { return first; }
+		public Selector getNext ()  { return next; }
+
 		public String toString () {
 			return (optional ? "(" : "")
 				+ first + next
 				+ (optional ? ")?" : "");
 		}
+		public Object accept (SelectorVisitor sv) { return sv.visit (this); }
 	}
 
 	public static class SelectField extends Select {
@@ -100,10 +134,13 @@ public class ExprChoiceSelect extends Expression {
 			}
 		}
 
+		public String getField () {  return field;  }
+
 		public String toString () {
 			return (optional ? "(" : "")
 				+ "."+ field
 				+ (optional ? ")?" : "");
 		}
+		public Object accept (SelectorVisitor sv) { return sv.visit (this); }
 	}
 }
