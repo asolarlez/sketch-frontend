@@ -461,6 +461,8 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 
 left_expr returns [Expression x] { x = null; }
 	:	x=value
+    |   r:REGEN
+        { x = new ExprRegen (getContext (r), r.getText ()); }
 	;
 
 right_expr returns [Expression x] { x = null; }
