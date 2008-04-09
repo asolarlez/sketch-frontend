@@ -32,9 +32,13 @@ package streamit.frontend.nodes;
  */
 public interface FEVisitor
 {
+	public Object visitExprAlt(ExprAlt exp);
     public Object visitExprArrayInit(ExprArrayInit exp);
     public Object visitExprArrayRange(ExprArrayRange exp);
     public Object visitExprBinary(ExprBinary exp);
+    public Object visitExprChoiceBinary(ExprChoiceBinary exp);
+    public Object visitExprChoiceSelect(ExprChoiceSelect exp);
+    public Object visitExprChoiceUnary(ExprChoiceUnary exp);
     public Object visitExprComplex(ExprComplex exp);
     public Object visitExprConstBoolean(ExprConstBoolean exp);
     public Object visitExprConstChar(ExprConstChar exp);
@@ -44,8 +48,10 @@ public interface FEVisitor
     public Object visitExprLiteral(ExprLiteral exp);
     public Object visitExprField(ExprField exp);
     public Object visitExprFunCall(ExprFunCall exp);
+    public Object visitExprParen(ExprParen exp);
     public Object visitExprPeek(ExprPeek exp);
     public Object visitExprPop(ExprPop exp);
+    public Object visitExprRegen(ExprRegen exp);
 	public Object visitExprStar(ExprStar star);
     public Object visitExprTernary(ExprTernary exp);
     public Object visitExprTypeCast(ExprTypeCast exp);

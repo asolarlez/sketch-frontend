@@ -147,6 +147,13 @@ public class FEReplacer implements FEVisitor
     	}
     }
 
+    public Object visitExprAlt (ExprAlt exp) {
+    	Expression ths = doExpression (exp.getThis ());
+    	Expression that = doExpression (exp.getThat ());
+    	return (ths == exp.getThis () && that == exp.getThat ()) ? exp
+    			: new ExprAlt (exp, ths, that);
+    }
+
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
         boolean hasChanged = false;
@@ -170,6 +177,31 @@ public class FEReplacer implements FEVisitor
             return exp;
         else
             return new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
+    }
+
+    public Object visitExprChoiceBinary (ExprChoiceBinary exp) {
+    	Expression left = doExpression (exp.getLeft ());
+    	Expression right = doExpression (exp.getRight ());
+    	if (left == exp.getLeft () && right == exp.getRight ())
+    		return exp;
+    	else
+    		return new ExprChoiceBinary (exp, left, exp.getOps (), right);
+    }
+
+    public Object visitExprChoiceSelect (ExprChoiceSelect exp) {
+    	Expression obj = doExpression (exp.getObj ());
+    	if (obj == exp.getObj ())
+    		return exp;
+    	else
+    		return new ExprChoiceSelect (exp, obj, exp.getField ());
+    }
+
+    public Object visitExprChoiceUnary (ExprChoiceUnary exp) {
+    	Expression expr = doExpression(exp.getExpr ());
+    	if (expr == exp.getExpr ())
+    		return exp;
+    	else
+    		return new ExprChoiceUnary (exp, exp.getOps (), expr);
     }
 
     public Object visitExprComplex(ExprComplex exp)
@@ -216,6 +248,14 @@ public class FEReplacer implements FEVisitor
         return new ExprFunCall(exp, exp.getName(), newParams);
     }
 
+    public Object visitExprParen (ExprParen exp) {
+    	Expression expr = doExpression (exp.getExpr ());
+    	if (expr == exp.getExpr ())
+    		return exp;
+    	else
+    		return new ExprParen (exp, expr);
+    }
+
     public Object visitExprPeek(ExprPeek exp)
     {
         Expression expr = doExpression(exp.getExpr());
@@ -226,6 +266,14 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprPop(ExprPop exp) { return exp; }
+
+    public Object visitExprRegen (ExprRegen exp) {
+    	Expression expr = doExpression (exp.getExpr ());
+    	if (expr == exp.getExpr ())
+    		return exp;
+    	else
+    		return new ExprRegen (exp, expr);
+    }
 
     public Object visitExprTernary(ExprTernary exp)
     {

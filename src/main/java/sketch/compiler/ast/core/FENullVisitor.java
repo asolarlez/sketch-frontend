@@ -29,8 +29,12 @@ package streamit.frontend.nodes;
  */
 public class FENullVisitor implements FEVisitor
 {
+	public Object visitExprAlt(ExprAlt exp) { return null; }
     public Object visitExprArrayInit(ExprArrayInit exp) { return null; }
     public Object visitExprBinary(ExprBinary exp) { return null; }
+    public Object visitExprChoiceBinary(ExprChoiceBinary exp) { return null; }
+    public Object visitExprChoiceSelect(ExprChoiceSelect exp) { return null; }
+    public Object visitExprChoiceUnary(ExprChoiceUnary exp) { return null; }
     public Object visitExprComplex(ExprComplex exp) { return null; }
     public Object visitExprConstBoolean(ExprConstBoolean exp) { return null; }
     public Object visitExprConstChar(ExprConstChar exp) { return null; }
@@ -40,8 +44,10 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprConstStr(ExprConstStr exp) { return null; }
     public Object visitExprField(ExprField exp) { return null; }
     public Object visitExprFunCall(ExprFunCall exp) { return null; }
+    public Object visitExprParen(ExprParen exp) { return null; }
     public Object visitExprPeek(ExprPeek exp) { return null; }
     public Object visitExprPop(ExprPop exp) { return null; }
+    public Object visitExprRegen(ExprRegen exp) { return null; }
     public Object visitExprTernary(ExprTernary exp) { return null; }
     public Object visitExprTypeCast(ExprTypeCast exp) { return null; }
     public Object visitExprUnary(ExprUnary exp) { return null; }

@@ -7,7 +7,6 @@ import streamit.frontend.parser.RegenParser;
 
 /**
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
- *
  */
 public class ExprRegen extends Expression {
 
@@ -19,6 +18,11 @@ public class ExprRegen extends Expression {
 									   cx.getCx ());
 	}
 
+	public ExprRegen (FENode cx, Expression expr) {
+		super (cx);
+		this.expr = expr;
+	}
+
 	/** @deprecated */
 	public ExprRegen (FEContext cx, String gen) {
 		super (cx);
@@ -26,10 +30,19 @@ public class ExprRegen extends Expression {
 									   cx);
 	}
 
+	public Expression getExpr () { return expr; }
+
+	public boolean isLValue () {
+		return expr.isLValue ();
+	}
+
+	public String toString () {
+		return "{| "+ expr +" |}";
+	}
+
 	@Override
 	public Object accept (FEVisitor v) {
-		// TODO Auto-generated method stub
-		return null;
+		return v.visitExprRegen (this);
 	}
 
 }

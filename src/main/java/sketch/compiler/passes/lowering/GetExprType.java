@@ -21,6 +21,10 @@ import java.util.Map;
 
 import streamit.frontend.nodes.ExprArrayRange.Range;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -42,6 +46,11 @@ public class GetExprType extends FENullVisitor
         this.symTab = symTab;
         this.streamType = streamType;
         this.structsByName = structsByName;
+    }
+
+    public Object visitExprAlt (ExprAlt ea) {
+    	return ((Type) ea.ths.accept (this))
+    		.leastCommonPromotion ((Type) ea.that.accept (this));
     }
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
@@ -91,28 +100,28 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
-	// want to determine these about the array
-	Type base;
-	int length;
+    	// want to determine these about the array
+    	Type base;
+    	int length;
 
-	// get the elements
-	List elems = exp.getElements();
+    	// get the elements
+    	List elems = exp.getElements();
 
-	// not sure what to do for base type if array is empty... try
-	// keeping it null --BFT
-	if (elems.size()==0) {
-	    base = null;
-	} else {
-	    // otherwise, take promotion over all elements declared
-	    base = (Type)((Expression)elems.get(0)).accept(this);
+    	// not sure what to do for base type if array is empty... try
+    	// keeping it null --BFT
+    	if (elems.size()==0) {
+    		base = null;
+    	} else {
+    		// otherwise, take promotion over all elements declared
+    		base = (Type)((Expression)elems.get(0)).accept(this);
 
-	    for (int i=1; i<elems.size(); i++) {
-		Type t = (Type)((Expression)elems.get(i)).accept(this);
-		base = t.leastCommonPromotion(t);
-	    }
-	}
+    		for (int i=1; i<elems.size(); i++) {
+    			Type t = (Type)((Expression)elems.get(i)).accept(this);
+    			base = t.leastCommonPromotion(t);
+    		}
+    	}
 
-	return new TypeArray(base, new ExprConstInt(elems.size()));
+    	return new TypeArray(base, new ExprConstInt(elems.size()));
     }
 
     public Object visitExprBinary(ExprBinary exp)
@@ -128,32 +137,88 @@ public class GetExprType extends FENullVisitor
         case ExprBinary.BINOP_GE:
             return TypePrimitive.booltype;
         }
-        Type tl = (Type)exp.getLeft().accept(this);
-    	Type tr = (Type)exp.getRight().accept(this);
-        switch(exp.getOp()){
-        case ExprBinary.BINOP_RSHIFT:
-        case ExprBinary.BINOP_LSHIFT:
-        	if( ! (tl instanceof TypeArray) || tr == null ){
-        		if( !(exp.getLeft() instanceof ExprConstInt )){
-        			assert false : "You can only do shift on an array or a constant for now.";
-        		}
+        return binopType (exp.getOp (), exp.getLeft (), exp.getRight ());
+    }
 
-        	}
-        	return tl;
-        }
+    public Object visitExprChoiceBinary (ExprChoiceBinary ecb) {
+    	if (ecb.hasComparison ())
+    		return TypePrimitive.booltype;
+    	Type t = null;
+    	for (int op : ecb.opsAsExprBinaryOps ()) {
+    		Type nextType = binopType (op, ecb.getLeft (), ecb.getRight ());
+    		t = (null == t) ? nextType : t.leastCommonPromotion (nextType);
+    	}
+    	return t;
+    }
 
-        // The type of the expression is some type that both sides
-        // promote to, otherwise.
+    public Object visitExprChoiceSelect (ExprChoiceSelect ecs) {
+    	class GetSelectType extends SelectorVisitor {
+    		TypeStruct base;
+    		GetSelectType (TypeStruct base) { this.base = base; }
 
-        if( tr == null){
-        	exp.getRight().accept(this);
-        }
+    		public Object visit (SelectField sf) {
+    			return base.getType (sf.getField ());
+    		}
 
-        Type rv = tl.leastCommonPromotion(tr);
+    		public Object visit (SelectOr so) {
+       			Type t1 = (Type) so.getThis ().accept (this);
+    			Type t2 = (Type) so.getThat ().accept (this);
+    			Type rt = t1.leastCommonPromotion (t2);
 
-        assert rv != null : "Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
+    			return (so.getThis ().isOptional () || so.getThat ().isOptional ()) ?
+    					base.leastCommonPromotion (rt) : rt;
+    		}
 
-        return rv;
+    		public Object visit (SelectChain sc) {
+    			TypeStruct oldBase = base;
+    			// tf : base.first, tfn = base.first.next, tn : base.next
+    			Type tf, tfn, tn = null;
+
+    			tf = (Type) sc.getFirst ().accept (this);
+    			assert tf.isStruct () : "selection on non-struct";
+
+    			if (sc.getFirst ().isOptional ())
+    				tn = (Type) sc.getNext ().accept (this);
+
+    			base = (tf instanceof TypeStruct) ? (TypeStruct) tf
+    	    			: (TypeStruct) structsByName.get (((TypeStructRef) tf).getName ());
+    			tfn = (Type) sc.getNext ().accept (this);
+    			base = oldBase;
+
+    			Type rt = tfn;
+    			if (sc.getFirst ().isOptional ())
+    				rt = rt.leastCommonPromotion (tn);
+    			if (sc.getNext ().isOptional ())
+    				rt = rt.leastCommonPromotion (tf);
+    			if (sc.getNext ().isOptional () && sc.getFirst ().isOptional ())
+    				rt = rt.leastCommonPromotion (base);
+    			return rt;
+    		}
+    	}
+
+    	Type t = (Type) ecs.getObj ().accept (this);
+    	ecs.assertTrue (null != t && t.isStruct (),
+			"field selection of non-struct");
+
+    	TypeStruct base = (t instanceof TypeStruct) ? (TypeStruct) t
+    			: (TypeStruct) structsByName.get (((TypeStructRef) t).getName ());
+    	Type selType = (Type) ecs.accept (new GetSelectType (base));
+
+    	return !ecs.getField ().isOptional () ? selType
+    			: selType.leastCommonPromotion (base);
+    }
+
+    public Object visitExprChoiceUnary (ExprChoiceUnary ecu) {
+    	Type t = (Type) ecu.getExpr().accept(this);
+
+    	if (t.equals(TypePrimitive.bittype)) {
+    		if (0 != (ecu.getOps () & ExprChoiceUnary.NOT))
+    			return TypePrimitive.bittype;
+    		else
+    			return TypePrimitive.inttype;
+    	}
+
+    	return t;
     }
 
     public Object visitExprComplex(ExprComplex exp)
@@ -229,37 +294,41 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprFunCall(ExprFunCall exp)
     {
-        // Has SymbolTable given us a function declaration?
-        try
-        {
-            Function fn = symTab.lookupFn(exp.getName());
-            return fn.getReturnType();
-        } catch (UnrecognizedVariableException e) {
-            // ignore
-        }
+    	// Has SymbolTable given us a function declaration?
+    	try
+    	{
+    		Function fn = symTab.lookupFn(exp.getName());
+    		return fn.getReturnType();
+    	} catch (UnrecognizedVariableException e) {
+    		// ignore
+    	}
 
-	// "abs" returns a float.  We should probably insert other
-	// special cases here for built-in functions, but I'm not
-	// exactly sure which ones have a constant return type and
-	// which ones are polymorphic.  --BFT
-	if (exp.getName().equals("abs")) {
-	    return TypePrimitive.floattype;
-	}
+    	// "abs" returns a float.  We should probably insert other
+    	// special cases here for built-in functions, but I'm not
+    	// exactly sure which ones have a constant return type and
+    	// which ones are polymorphic.  --BFT
+    	if (exp.getName().equals("abs")) {
+    		return TypePrimitive.floattype;
+    	}
 
-        // Otherwise, we can assume that the only function calls are
-        // calls to built-in functions in the absence of helper
-        // function support in the parser.  These by and large have a
-        // signature like
-        //
-        //   template<T> T foo(T);
-        //
-        // So, if there's any arguments, return the type of the first
-        // argument; otherwise, return float as a default.
-        List params = exp.getParams();
-        if (params.isEmpty()) {
-            return TypePrimitive.floattype;
-	}
-        return ((Expression)params.get(0)).accept(this);
+    	// Otherwise, we can assume that the only function calls are
+    	// calls to built-in functions in the absence of helper
+    	// function support in the parser.  These by and large have a
+    	// signature like
+    	//
+    	//   template<T> T foo(T);
+    	//
+    	// So, if there's any arguments, return the type of the first
+    	// argument; otherwise, return float as a default.
+    	List params = exp.getParams();
+    	if (params.isEmpty()) {
+    		return TypePrimitive.floattype;
+    	}
+    	return ((Expression)params.get(0)).accept(this);
+    }
+
+    public Object visitExprParen (ExprParen ep) {
+    	return ep.getExpr ().accept (this);
     }
 
     public Object visitExprPeek(ExprPeek exp)
@@ -270,6 +339,10 @@ public class GetExprType extends FENullVisitor
     public Object visitExprPop(ExprPop exp)
     {
         return streamType.getIn();
+    }
+
+    public Object visitExprRegen (ExprRegen er) {
+    	return er.getExpr ().accept (this);
     }
 
     public Object visitExprTernary(ExprTernary exp)
@@ -329,4 +402,34 @@ public class GetExprType extends FENullVisitor
     	}
         return t;
     }
+
+	private Type binopType (int op, Expression left, Expression right) {
+		Type tl = (Type) left.accept(this);
+    	Type tr = (Type) right.accept(this);
+        switch(op){
+        case ExprBinary.BINOP_RSHIFT:
+        case ExprBinary.BINOP_LSHIFT:
+        	if( ! (tl instanceof TypeArray) || tr == null ){
+        		if( !(left instanceof ExprConstInt )){
+        			assert false : "You can only do shift on an array or a constant for now.";
+        		}
+
+        	}
+        	return tl;
+        }
+
+        // The type of the expression is some type that both sides
+        // promote to, otherwise.
+
+        if( tr == null){
+        	right.accept(this);
+        }
+
+        Type rv = tl.leastCommonPromotion(tr);
+
+        assert rv != null : "Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
+
+        return rv;
+	}
+
 }
