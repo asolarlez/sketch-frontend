@@ -125,6 +125,11 @@ public class TypeStruct extends Type
         return types.get(f);
     }
 
+    /** Return true iff F is a field of this struct. */
+    public boolean hasField (String f) {
+    	return types.containsKey (f);
+    }
+
     /**
      * Set the type of field 'f' to 't'.
      *
