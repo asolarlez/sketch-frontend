@@ -1,0 +1,7 @@
+int spec (int in) {
+    return in * 2;
+}
+
+int sk (int in) implements spec {
+    return {| in (+|-|*|/|%) ?? |};
+}
