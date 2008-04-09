@@ -12,9 +12,20 @@ public class ExprAlt extends Expression {
 	Expression that;
 
 	public ExprAlt (Expression ths, Expression that) {
-		super (ths);
+		this (ths, ths, that);
+	}
+
+	public ExprAlt (FENode cx, Expression ths, Expression that) {
+		super (cx);
 		this.ths = ths;
 		this.that = that;
+	}
+
+	public Expression getThis () { return ths; }
+	public Expression getThat () { return that; }
+
+	@Override public boolean isLValue () {
+		return ths.isLValue () && that.isLValue ();
 	}
 
 	public String toString () {
@@ -23,7 +34,7 @@ public class ExprAlt extends Expression {
 
 	@Override
 	public Object accept (FEVisitor v) {
-		return null; //v.visitExprAlt (this);
+		return v.visitExprAlt (this);
 	}
 
 }
