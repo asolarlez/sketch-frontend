@@ -539,6 +539,10 @@ public class SNodesToFortran implements FEVisitor {
 	    return exp.getName();
     }
 
+	public Object visitExprParen(ExprParen exp) {
+		return "("+ exp.getExpr ().accept (this) +")";
+	}
+
 	public Object visitExprConstBoolean(ExprConstBoolean exp) {
 	    assert false;
 	    return null;
@@ -737,4 +741,9 @@ public class SNodesToFortran implements FEVisitor {
     public Object visitStmtInsertBlock(StmtInsertBlock block){throw new UnsupportedOperationException();}
     public Object visitTypeStruct(TypeStruct ts){throw new UnsupportedOperationException();}
     public Object visitExprNullPtr(ExprNullPtr nptr){ throw new UnsupportedOperationException(); }
+	public Object visitExprAlt (ExprAlt exp) { throw new UnsupportedOperationException (); }
+    public Object visitExprChoiceBinary(ExprChoiceBinary e) { throw new UnsupportedOperationException(); }
+    public Object visitExprChoiceSelect(ExprChoiceSelect e) { throw new UnsupportedOperationException(); }
+    public Object visitExprChoiceUnary(ExprChoiceUnary e) { throw new UnsupportedOperationException(); }
+    public Object visitExprRegen(ExprRegen e) { throw new UnsupportedOperationException(); }
 }
