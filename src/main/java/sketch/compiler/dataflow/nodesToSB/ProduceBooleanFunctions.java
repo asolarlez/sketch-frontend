@@ -298,7 +298,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	public Object visitStmtIfThen(StmtIfThen s){
 		if(tracing){
 			//if(s.getCx() != tmp && s.getCx() != null){
-				System.out.println(s.getCx()+ " : \t cond(" + s.getCond() + ")");
+			abstractValue av = (abstractValue) s.getCond().accept(this);
+				System.out.println(s.getCx()+ " : \t cond(" + s.getCond() + ")   " + av);
 				tmp = s.getCx();
 			//}
 		}

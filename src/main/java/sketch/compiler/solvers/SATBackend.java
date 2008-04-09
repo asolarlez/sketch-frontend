@@ -199,12 +199,13 @@ public class SATBackend {
 		try {
 			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
 												   commandLine)).run ();
+			/*
 			if (verbose ()) {
 				Matcher m = Pattern.compile ("^[^\\->]+.*$",
 											 Pattern.MULTILINE).matcher (status.out);
 				while (m.find ())  log (m.group ());
 			}
-
+			*/
 			lastSolveStats = parseStats (status.out);
 			lastSolveStats.success = (0 == status.exitCode);
 			log (2, "Stats for last run:\n"+ lastSolveStats);

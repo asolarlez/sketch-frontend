@@ -140,6 +140,10 @@ public class SpinVerifier implements Verifier {
 	protected Program spinify (ValueOracle holeVals) {
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
 
+		//p = (Program) p.accept (new ParallelPreprocessor ());
+		//p = (Program) p.accept (new EliminateTransAssns ());
+		//p = (Program) p.accept (new EliminateDeadParallelCode ());
+		
 		if (preSimplify) {
 			log ("Cleaning up the next candidate.");
 			if (reallyREALLYVerbose ()) {

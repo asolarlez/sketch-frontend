@@ -54,7 +54,7 @@ public class SynchronousTimedProcess {
 	public ProcessStatus run () throws IOException, InterruptedException {
 		ProcessKillerThread killer = null;
 		ProcessStatus status = new ProcessStatus ();
-
+		System.gc();
 		try {
 			if (timeoutMins > 0)
 				killer = new ProcessKillerThread (proc, timeoutMins);

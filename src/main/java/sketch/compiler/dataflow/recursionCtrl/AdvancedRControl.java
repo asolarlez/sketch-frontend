@@ -175,6 +175,9 @@ public class AdvancedRControl extends RecursionControl {
 	
 	private boolean bfactorTest(int bf){
 		int p = bfStack.peek();	
+		if(p == 0){ 
+			assert bf == 0; 
+		}
 		p = p*bf;
 		if( p  > branchingTheshold){
 			return false;
@@ -241,8 +244,8 @@ public class AdvancedRControl extends RecursionControl {
 			/*if(bfactor > 0){
 				bfactor = bfactor;
 			}
-			bfactor = bfactor / FACTOR;
-			if(bfactor < 1) bfactor = 1;*/
+			bfactor = bfactor / FACTOR;*/
+			if(bfactor < 1) bfactor = 1;
 			/*
 			 * Then we test the cummulative branching factor. This is the 
 			 * product of all the elements in bfStack * bfactor. 

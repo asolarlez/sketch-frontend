@@ -40,7 +40,7 @@ public class Misc extends AssertedClass
 
 	/** Read all of IN into a string and return the string. */
 	public static String readStream (InputStream in) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream ();
+		TruncatedOutputStream out = new TruncatedOutputStream ();
 		Misc.dumpStreamTo (in, out);
 		return out.toString ();
 	}
@@ -58,6 +58,7 @@ public class Misc extends AssertedClass
 		for (String line : new LineReader (in)) {
 			if (withLineNumbers)  out.print ("["+ (++lineno) +"] ");
 			out.println (line);
+			System.out.println(line);
 		}
 	}
 
