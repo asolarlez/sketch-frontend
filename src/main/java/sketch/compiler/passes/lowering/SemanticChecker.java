@@ -17,26 +17,22 @@
 package streamit.frontend.passes;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
-import streamit.frontend.controlflow.CFGNode;
 import streamit.frontend.controlflow.CountLattice;
-import streamit.frontend.controlflow.DataFlow;
-import streamit.frontend.controlflow.Lattice;
 import streamit.frontend.controlflow.StatementCounter;
-import streamit.frontend.controlflow.StrictTypeLattice;
-import streamit.frontend.nodes.DummyFENode;
 import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprChoiceBinary;
+import streamit.frontend.nodes.ExprChoiceSelect;
+import streamit.frontend.nodes.ExprChoiceUnary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
@@ -54,8 +50,6 @@ import streamit.frontend.nodes.FuncWork;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.SCAnon;
-import streamit.frontend.nodes.SCSimple;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
 import streamit.frontend.nodes.StmtAssert;
@@ -63,23 +57,18 @@ import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBody;
 import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtEmpty;
 import streamit.frontend.nodes.StmtEnqueue;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtJoin;
 import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPhase;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtSendMessage;
 import streamit.frontend.nodes.StmtSplit;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.StreamCreator;
 import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
@@ -87,8 +76,12 @@ import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
 import streamit.frontend.nodes.UnrecognizedVariableException;
-import streamit.frontend.nodes.ExprArrayRange.Range;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
+import streamit.misc.ControlFlowException;
 
 /**
  * Perform checks on the semantic correctness of a StreamIt program.
@@ -114,11 +107,18 @@ public class SemanticChecker
 	{
 		SemanticChecker checker = new SemanticChecker();
 		Map streamNames = checker.checkStreamNames(prog);
+
+		try {
 		checker.checkDupFieldNames(prog, streamNames);
 		//checker.checkStatementPlacement(prog);
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
 		checker.checkStatementCounts(prog);
+		} catch (UnrecognizedVariableException uve) {
+			// Don't care about this exception during type checking
+			assert !checker.good;
+		}
+
 		return checker.good;
 	}
 
@@ -136,6 +136,13 @@ public class SemanticChecker
 		System.err.println(ctx + ": " + message);
 	}
 
+	/** Report incompatible alternative field selections. */
+	protected void report (ExprChoiceSelect exp, Type t1, Type t2,
+			String f1, String f2) {
+		report (exp, "incompatible types '"+ t1 +"', '"+ t2 +"'"
+				+" in alternative selections '"+ f1 +"', '"+ f2 +"'");
+	}
+
 	public SemanticChecker()
 	{
 		good = true;
@@ -151,7 +158,8 @@ public class SemanticChecker
 	 */
 	public Map checkStreamNames(Program prog)
 	{
-		Map names = new HashMap(); // maps names to FEContexts
+		// maps names to FEContexts
+		Map<String, FEContext> names = new HashMap<String, FEContext>();
 
 		//System.out.println("checkStreamNames");
 
@@ -164,14 +172,13 @@ public class SemanticChecker
 		for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
 		{
 			StreamSpec spec = (StreamSpec)iter.next();
-			checkAStreamName(names, spec.getName(), spec);
+			checkAStreamName(names, spec.getName(), spec.getCx ());
 		}
 
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
 		{
 			TypeStruct ts = (TypeStruct)iter.next();
-			checkAStreamName(names, ts.getName(),
-							 new DummyFENode (ts.getContext ()));
+			checkAStreamName(names, ts.getName(), ts.getContext ());
 		}
 		return names;
 	}
@@ -182,7 +189,7 @@ public class SemanticChecker
 	 * @param name
 	 * @param ctx
 	 */
-	private void checkAStreamName(Map map, String name, FENode ctx)
+	private void checkAStreamName(Map<String, FEContext> map, String name, FEContext ctx)
 	{
 		if (map.containsKey(name))
 		{
@@ -195,27 +202,6 @@ public class SemanticChecker
 			map.put(name, ctx);
 		}
 	}
-
-	/**
-	 *
-	 * @param map
-	 * @param name
-	 * @param ctx
-	 * @deprecated
-	 */
-/* TODO:	private void checkAStreamName(Map map, String name, FEContext ctx)
-	{
-		if (map.containsKey(name))
-		{
-			FEContext octx = (FEContext)map.get(name);
-			report(ctx, "Multiple declarations of '" + name + "'");
-			report(octx, "as a stream or structure");
-		}
-		else
-		{
-			map.put(name, ctx);
-		}
-	}*/
 
 	/**
 	 * Checks that no structures have duplicated field names.  In
@@ -240,14 +226,14 @@ public class SemanticChecker
 			{
 				Parameter param = (Parameter)i2.next();
 				checkADupFieldName(localNames, streamNames,
-						param.getName(), spec);
+						param.getName(), spec.getCx ());
 			}
 			for (i2 = spec.getVars().iterator(); i2.hasNext(); )
 			{
 				FieldDecl field = (FieldDecl)i2.next();
 				for (int i = 0; i < field.getNumFields(); i++)
 					checkADupFieldName(localNames, streamNames,
-							field.getName(i), field);
+							field.getName(i), field.getCx ());
 			}
 			for (i2 = spec.getFuncs().iterator(); i2.hasNext(); )
 			{
@@ -277,7 +263,7 @@ public class SemanticChecker
 				}
 				if (name != null)
 					checkADupFieldName(localNames, streamNames,
-							name, func);
+							name, func.getCx ());
 			}
 		}
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
@@ -286,7 +272,7 @@ public class SemanticChecker
 			Map localNames = new HashMap();
 			for (int i = 0; i < ts.getNumFields(); i++)
 				checkADupFieldName(localNames, streamNames,
-						ts.getField(i), new DummyFENode (ts.getContext ()));
+						ts.getField(i), ts.getContext ());
 		}
 	}
 
@@ -298,34 +284,6 @@ public class SemanticChecker
 	 * @param ctx
 	 */
 	private void checkADupFieldName(Map localNames, Map streamNames,
-			String name, FENode ctx)
-	{
-		if (localNames.containsKey(name))
-		{
-			FEContext octx = (FEContext)localNames.get(name);
-			report(ctx, "Duplicate declaration of '" + name + "'");
-			report(octx, "(also declared here)");
-		}
-		else
-		{
-			localNames.put(name, ctx);
-			if (streamNames.containsKey(name))
-			{
-				FEContext octx = (FEContext)streamNames.get(name);
-				report(ctx, "'" + name + "' has the same name as");
-				report(octx, "a stream or structure");
-			}
-		}
-	}
-	/**
-	 *
-	 * @param localNames
-	 * @param streamNames
-	 * @param name
-	 * @param ctx
-	 * @deprecated
-	 */
-/* TODO:	private void checkADupFieldName(Map localNames, Map streamNames,
 			String name, FEContext ctx)
 	{
 		if (localNames.containsKey(name))
@@ -344,7 +302,7 @@ public class SemanticChecker
 				report(octx, "a stream or structure");
 			}
 		}
-	}*/
+	}
 
 	/**
 	 * Checks that statements exist in valid contexts for the type of
@@ -563,59 +521,28 @@ public class SemanticChecker
 				}
 				if (ot != null)
 				{
-					Type inttype =
-						TypePrimitive.inttype;
-					Type bittype =
-						TypePrimitive.bittype;
-
-					switch(expr.getOp())
-					{
-					case ExprUnary.UNOP_NEG:
-					case ExprUnary.UNOP_BNOT:
-						// you can negate a bit, since 0 and 1
-						// literals always count as bits.
-						// However, the resulting negation will be
-						// an int.
-						if (!bittype.promotesTo(ot))
-							report(expr, "cannot negate " + ot);
-						break;
-
-					case ExprUnary.UNOP_NOT:
-						if (!ot.promotesTo(bittype))
-							report(expr, "cannot take boolean not of " +
-									ot);
-						break;
-
-					case ExprUnary.UNOP_PREDEC:
-					case ExprUnary.UNOP_PREINC:
-					case ExprUnary.UNOP_POSTDEC:
-					case ExprUnary.UNOP_POSTINC:
-						// same as negation, regarding bits
-						if (!bittype.promotesTo(ot))
-							report(expr, "cannot perform ++/-- on " + ot);
-						break;
-					}
+					typecheckUnaryExpr (expr.getExpr (), expr.getOp (), ot);
 				}
 
 				return expr;
 			}
 
 			private Type currentFunctionReturn = null;
-			
+
 			private Stack<StmtAtomicBlock> atomics = new Stack<StmtAtomicBlock>();
-			
+
 			@Override
 			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
-				
-				if(stmt.isCond() && atomics.size() > 0){ report(stmt, "Conditional atomics not allowed inside other atomics"); } 
+
+				if(stmt.isCond() && atomics.size() > 0){ report(stmt, "Conditional atomics not allowed inside other atomics"); }
 				atomics.push(stmt);
 				Object o = super.visitStmtAtomicBlock(stmt);
 				StmtAtomicBlock sab = atomics.pop();
 				assert sab == stmt : "This is strange";
 				return o;
-				
+
 			}
-			
+
 
 			public Object visitFunction(Function func)
 			{
@@ -710,101 +637,173 @@ public class SemanticChecker
 				}
 				if (lt != null && rt != null)
 				{
-					Type ct = lt.leastCommonPromotion(rt);
-					if(expr.getOp() == ExprBinary.BINOP_LSHIFT || expr.getOp() == ExprBinary.BINOP_RSHIFT){
-						ct = lt;
-					}
-					Type inttype =
-						TypePrimitive.inttype;
-					Type bittype =
-						TypePrimitive.bittype;
-					Type cplxtype =
-						TypePrimitive.cplxtype;
-					Type floattype =
-						TypePrimitive.floattype;
-					if (ct == null)
-					{
-						report (expr,
-						"incompatible types in binary expression");
-						return expr;
-					}
-					// Check whether ct is an appropriate type.
-					switch (expr.getOp())
-					{
-					// Arithmetic operations:
-					case ExprBinary.BINOP_ADD:
-					case ExprBinary.BINOP_DIV:
-					case ExprBinary.BINOP_MUL:
-					case ExprBinary.BINOP_SUB:
-						if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.inttype)))
-							report(expr,
-									"cannot perform arithmetic on " + ct);
-						break;
-
-						// Bitwise and integer operations:
-					case ExprBinary.BINOP_BAND:
-					case ExprBinary.BINOP_BOR:
-					case ExprBinary.BINOP_BXOR:
-						if (!ct.promotesTo(TypePrimitive.inttype))
-							report(expr,
-									"cannot perform bitwise operations on "
-									+ ct);
-						break;
-
-					case ExprBinary.BINOP_MOD:
-						if (!ct.promotesTo(TypePrimitive.inttype))
-							report(expr, "cannot perform % on " + ct);
-						break;
-
-						// Boolean operations:
-					case ExprBinary.BINOP_AND:
-					case ExprBinary.BINOP_OR:
-						if (!ct.promotesTo(TypePrimitive.bittype))
-							report(expr,
-									"cannot perform boolean operations on "
-									+ ct);
-						break;
-
-						// Comparison operations:
-					case ExprBinary.BINOP_GE:
-					case ExprBinary.BINOP_GT:
-					case ExprBinary.BINOP_LE:
-					case ExprBinary.BINOP_LT:
-						if (!ct.promotesTo(floattype) && !ct.promotesTo(TypePrimitive.inttype))
-							report(expr,
-									"cannot compare non-real type " + ct);
-						if(isLeftArr || isRightArr )
-							report(expr,
-									"Comparissons are not supported for array types" + expr);
-						break;
-
-						// Equality, can compare anything:
-					case ExprBinary.BINOP_EQ:
-					case ExprBinary.BINOP_NEQ:
-						break;
-						// TODO: Make correct rule for SELECT.
-					case ExprBinary.BINOP_SELECT:
-						break;
-
-					case ExprBinary.BINOP_LSHIFT:
-					case ExprBinary.BINOP_RSHIFT:
-						if (!isLeftArr && !(expr.getLeft() instanceof ExprConstInt))
-							report(expr,
-									"Can only shift array types for now. " + ct);
-						break;
-						// And now we should have covered everything.
-					default:
-						report(expr,
-						"semantic checker missed a binop type");
-					break;
-					}
-					//return expr;
+					typecheckBinaryExpr (expr, expr.getOp (),
+							lt, expr.getLeft() instanceof ExprConstInt, isLeftArr,
+							rt, isRightArr);
 				}
 
 				return (expr);
 			}
 
+			public Object visitExprChoiceBinary (ExprChoiceBinary exp) {
+				Expression left = exp.getLeft (), right = exp.getRight ();
+				boolean isLeftArr = false;
+				boolean isRightArr = false;
+				Type lt = getType ((Expression) left.accept (this));
+				Type rt = getType ((Expression) right.accept (this));
+				if (lt instanceof TypeArray) {
+					lt = ((TypeArray) lt).getBase ();
+					isLeftArr = true;
+				}
+				if (rt instanceof TypeArray) {
+					rt = ((TypeArray) rt).getBase ();
+					isRightArr = true;
+				}
 
+				// TODO: this type check is lazy in that it doesn't respect the
+				// associativity and precedence of the operations in 'exp'.
+				List<Integer> ops = exp.opsAsExprBinaryOps ();
+				for (int op : ops)
+					typecheckBinaryExpr (exp, op,
+							lt, left instanceof ExprConstInt, isLeftArr,
+							rt, isRightArr);
+
+				return exp;
+			}
+
+			public Object visitExprChoiceSelect (ExprChoiceSelect exp) {
+				final ExprChoiceSelect e = exp;
+				class SelectorTypeChecker extends SelectorVisitor {
+		    		TypeStruct base;
+		    		SelectorTypeChecker (TypeStruct base) { this.base = base; }
+
+		    		public Object visit (SelectField sf) {
+		    			String f = sf.getField ();
+		    			if (!base.hasField (f)) {
+		    				report(e, "struct "+ base.getName ()
+		    						  +" has no field '"+ f +"'");
+		    				throw new ControlFlowException ("selcheck");
+		    			}
+		    			return base.getType (f);
+		    		}
+
+		    		public Object visit (SelectOr so) {
+		    			Type t1 = (Type) so.getThis ().accept (this);
+		    			Type t2 = (Type) so.getThat ().accept (this);
+		    			Type rt = t1.leastCommonPromotion (t2);
+
+		    			if (null == rt) {
+		    				report (e, t1, t2, so.getThis ().toString (),
+		    						so.getThat ().toString ());
+		    				throw new ControlFlowException ("selcheck");
+		    			}
+
+		    			if (null != rt
+		    				&& (so.getThis ().isOptional () || so.getThat ().isOptional ())) {
+		    				Type tmp = rt.leastCommonPromotion (base);
+		    				if (null == tmp) {
+		    					report (e,
+		    							"not selecting '"+ so.getThis () +"' or '"
+			    						+ so.getThat () +"' yields a type '"
+			    						+ base +"' that is incompatible with '"
+			    						+ rt +"'");
+			    				throw new ControlFlowException ("selcheck");
+		    				}
+		    				rt = tmp;
+		    			}
+
+		    			return rt;
+		    		}
+
+		    		public Object visit (SelectChain sc) {
+		    			Type tfn, tf, tn = null;
+		    			TypeStruct oldBase = base;
+
+		    			tf = (Type) sc.getFirst ().accept (this);
+
+		    			if (!tf.isStruct ()) {
+		    				report (e, "selecting "+ sc.getFirst ()
+		    						+" yields a non-structure type on which"
+		    						+" the selection "+ sc.getNext ()
+		    						+" was to be done");
+		    				throw new ControlFlowException ("selcheck");
+		    			}
+
+		    			if (sc.getFirst ().isOptional ())
+		    				tn = (Type) sc.getNext ().accept (this);
+
+		    			base = (tf instanceof TypeStruct) ? (TypeStruct) tf
+		    	    			: (TypeStruct) structsByName.get (((TypeStructRef) tf).getName ());
+		    			tfn = (Type) sc.getNext ().accept (this);
+		    			base = oldBase;
+
+		    			Type rt = tfn;
+		    			if (sc.getFirst ().isOptional ()) {
+		    				rt = rt.leastCommonPromotion (tn);
+		    				if (null == rt) {
+		    					report (e, tfn, tn,
+		    							sc.getFirst ().toString () + sc.getNext ().toString (),
+		    							"");
+		    					throw new ControlFlowException ("selcheck");
+		    				}
+		    			}
+		    			if (sc.getNext ().isOptional ()) {
+		    				rt = rt.leastCommonPromotion (tf);
+		    				if (null == rt) {
+		    					report (e, "not selecting '"+ sc.getNext () +"'"
+		    							+" yields a type '"+ tf +"' that is "
+		    							+" incompatible with another possible selection");
+		    					throw new ControlFlowException ("selcheck");
+		    				}
+		    			}
+		    			if (sc.getNext ().isOptional () && sc.getFirst ().isOptional ()) {
+		    				rt = rt.leastCommonPromotion (base);
+		    				if (null == rt) {
+		    					report (e, "not selecting both '"+ sc.getFirst ()
+		    							+"' and '"+ sc.getNext ()
+		    							+" yields type '"+ base +"',"
+		    							+" which is incompatible with selecting "
+		    							+" either or both");
+		    					throw new ControlFlowException ("selcheck");
+		    				}
+		    			}
+	    				return rt;
+		    		}
+		    	}
+
+				Type lt = getType ((Expression) exp.getObj ().accept (this));
+
+				if (!lt.isStruct ()) {
+					report(exp, "field reference of a non-structure type");
+				} else {
+					TypeStruct base = (lt instanceof TypeStruct) ? (TypeStruct) lt
+							: (TypeStruct) structsByName.get (((TypeStructRef) lt).getName ());
+					Type selType = null;
+
+					try {  selType = (Type) exp.accept (new SelectorTypeChecker (base));  }
+					catch (ControlFlowException cfe) { }
+
+					if (selType != null && exp.getField ().isOptional ())
+						if (null == selType.leastCommonPromotion (base))
+							report (exp, base, selType, "", exp.getField ().toString ());
+				}
+
+				return exp;
+			}
+
+			public Object visitExprChoiceUnary (ExprChoiceUnary exp) {
+				Type ot = getType ((Expression) exp.getExpr ().accept (this));
+				boolean isArr = false;
+				if (ot instanceof TypeArray) {
+					ot = ((TypeArray) ot).getBase ();
+					isArr = true;
+				}
+				List<Integer> ops = exp.opsAsExprUnaryOps ();
+				for (int op : ops)
+					typecheckUnaryExpr (exp.getExpr (), op, ot);
+
+				return exp;
+			}
 
 			public Object visitExprTernary(ExprTernary expr)
 			{
@@ -1009,11 +1008,11 @@ public class SemanticChecker
 							}
 						}
 					}
-					
+
 					if(type instanceof TypeStruct || type instanceof TypeStructRef){
 						report(field, "You can not have global pointers. Globals can only be constant integers.");
 					}
-					
+
 				}
 
 				return super.visitFieldDecl(field);
@@ -1036,6 +1035,8 @@ public class SemanticChecker
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
 
+				if (!stmt.getLHS ().isLValue ())
+					report (stmt, "assigning to non-lvalue");
 				Type lt = getType((Expression)stmt.getLHS().accept(this));
 				Type rt = getType((Expression)stmt.getRHS().accept(this));
 				String lhsn = null;
@@ -1112,24 +1113,24 @@ public class SemanticChecker
 				if (!cond.promotesTo(TypePrimitive.bittype))
 					report (stmt, "Condition clause is not a proper conditional");
 
-				
+
 				if(!isIncrByOne(stmt.getIncr())){
 					report(stmt, "Increment in for loop should be either increment or decrement by one.");
 				}
-				
+
 				return (stmt);
 			}
-			
+
 			private boolean isIncrByOne(Statement incr){
 				if(incr instanceof StmtAssign){
 					StmtAssign sa = (StmtAssign)incr;
-					String indName = sa.getLHS().toString();					
-					
+					String indName = sa.getLHS().toString();
+
 					if(!(sa.getRHS() instanceof ExprBinary)){
 						return false;
 					}
 					ExprBinary rhsbin = (ExprBinary) sa.getRHS();
-					
+
 					Integer rhsrhs = rhsbin.getRight().getIValue();
 					if(!(rhsbin.getOp() == ExprBinary.BINOP_ADD ||rhsbin.getOp() == ExprBinary.BINOP_SUB) || rhsrhs == null || rhsrhs != 1 || !rhsbin.getLeft().toString().equals(indName)){
 						return false;
@@ -1137,15 +1138,15 @@ public class SemanticChecker
 				}else{
 					if(incr instanceof StmtExpr){
 						StmtExpr se = (StmtExpr) incr;
-						if(se.getExpression() instanceof ExprUnary && 
-								( ((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC 
+						if(se.getExpression() instanceof ExprUnary &&
+								( ((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC
 										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREINC
 										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_PREDEC
 										||((ExprUnary)se.getExpression()).getOp() == ExprUnary.UNOP_POSTDEC
 								)){
-							
+
 						}else{
-							return false;	
+							return false;
 						}
 					}else{
 						return false;
@@ -1195,7 +1196,8 @@ public class SemanticChecker
 				//System.out.println("Return values: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
 
 				stmt = (StmtReturn)super.visitStmtReturn(stmt);
-				if (! getType(stmt.getValue()).promotesTo(currentFunctionReturn))
+				Type rt = getType(stmt.getValue());
+				if (rt != null && !rt.promotesTo(currentFunctionReturn))
 					report (stmt, "Return value incompatible with declared function return value: " + currentFunctionReturn + " vs. " + getType(stmt.getValue()));
 				hasReturn = true;
 				return (stmt);
@@ -1370,6 +1372,131 @@ public class SemanticChecker
 				return super.visitExprUnary(expr);
 			}
 		});
+	}
+
+	protected void typecheckUnaryExpr (Expression expr, int op, Type ot) {
+		Type bittype =
+			TypePrimitive.bittype;
+
+		switch(op)
+		{
+		case ExprUnary.UNOP_NEG:
+		case ExprUnary.UNOP_BNOT:
+			// you can negate a bit, since 0 and 1
+			// literals always count as bits.
+			// However, the resulting negation will be
+			// an int.
+			if (!bittype.promotesTo(ot))
+				report(expr, "cannot negate " + ot);
+			break;
+
+		case ExprUnary.UNOP_NOT:
+			if (!ot.promotesTo(bittype))
+				report(expr, "cannot take boolean not of " +
+						ot);
+			break;
+
+		case ExprUnary.UNOP_PREDEC:
+		case ExprUnary.UNOP_PREINC:
+		case ExprUnary.UNOP_POSTDEC:
+		case ExprUnary.UNOP_POSTINC:
+			if (!expr.isLValue ())
+				report (expr, "increment/decrement of non-lvalue");
+			// same as negation, regarding bits
+			if (!bittype.promotesTo(ot))
+				report(expr, "cannot perform ++/-- on " + ot);
+			break;
+		}
+	}
+
+	private void typecheckBinaryExpr (FENode expr, int op,
+			Type lt, boolean isLeftArr, boolean isLeftConst,
+			Type rt, boolean isRightArr) {
+		Type ct = lt.leastCommonPromotion(rt);
+		if(op == ExprBinary.BINOP_LSHIFT || op == ExprBinary.BINOP_RSHIFT){
+			ct = lt;
+		}
+		Type cplxtype =
+			TypePrimitive.cplxtype;
+		Type floattype =
+			TypePrimitive.floattype;
+		if (ct == null)
+		{
+			report (expr,
+			"incompatible types in binary expression");
+			return;
+		}
+		// Check whether ct is an appropriate type.
+		switch (op)
+		{
+		// Arithmetic operations:
+		case ExprBinary.BINOP_ADD:
+		case ExprBinary.BINOP_DIV:
+		case ExprBinary.BINOP_MUL:
+		case ExprBinary.BINOP_SUB:
+			if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.inttype)))
+				report(expr,
+						"cannot perform arithmetic on " + ct);
+			break;
+
+			// Bitwise and integer operations:
+		case ExprBinary.BINOP_BAND:
+		case ExprBinary.BINOP_BOR:
+		case ExprBinary.BINOP_BXOR:
+			if (!ct.promotesTo(TypePrimitive.inttype))
+				report(expr,
+						"cannot perform bitwise operations on "
+						+ ct);
+			break;
+
+		case ExprBinary.BINOP_MOD:
+			if (!ct.promotesTo(TypePrimitive.inttype))
+				report(expr, "cannot perform % on " + ct);
+			break;
+
+			// Boolean operations:
+		case ExprBinary.BINOP_AND:
+		case ExprBinary.BINOP_OR:
+			if (!ct.promotesTo(TypePrimitive.bittype))
+				report(expr,
+						"cannot perform boolean operations on "
+						+ ct);
+			break;
+
+			// Comparison operations:
+		case ExprBinary.BINOP_GE:
+		case ExprBinary.BINOP_GT:
+		case ExprBinary.BINOP_LE:
+		case ExprBinary.BINOP_LT:
+			if (!ct.promotesTo(floattype) && !ct.promotesTo(TypePrimitive.inttype))
+				report(expr,
+						"cannot compare non-real type " + ct);
+			if(isLeftArr || isRightArr )
+				report(expr,
+						"Comparissons are not supported for array types" + expr);
+			break;
+
+			// Equality, can compare anything:
+		case ExprBinary.BINOP_EQ:
+		case ExprBinary.BINOP_NEQ:
+			break;
+			// TODO: Make correct rule for SELECT.
+		case ExprBinary.BINOP_SELECT:
+			break;
+
+		case ExprBinary.BINOP_LSHIFT:
+		case ExprBinary.BINOP_RSHIFT:
+			if (!isLeftArr && !isLeftConst)
+				report(expr,
+						"Can only shift array types for now. " + ct);
+			break;
+			// And now we should have covered everything.
+		default:
+			report(expr,
+			"semantic checker missed a binop type");
+		break;
+		}
+		//return expr;
 	}
 }
 
