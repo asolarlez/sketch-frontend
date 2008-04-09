@@ -394,6 +394,9 @@ public class NodesToC extends NodesToJava {
         String result = "";
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
+        	if(i > 0){
+        		result += "; ";
+        	}
         	symtab.registerVar(stmt.getName(i),
                     actualType(stmt.getType(i)),
                     stmt,
@@ -411,7 +414,6 @@ public class NodesToC extends NodesToJava {
             }
             if (stmt.getInit(i) != null)
                 result += " = " + (String)stmt.getInit(i).accept(this);
-            //result += ";\n";
             isBool = true;
         }
         return result;
