@@ -110,7 +110,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	CFGNode[] lastNode = null;
 
 	Set<String> globals = null;
-	
+
 	StmtFork ploop = null;
 
 	int nthreads;
@@ -153,17 +153,17 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		ploop.accept(gtags);
 		globalTags = gtags.oset;
 		globals = gtags.globals;
-		
-		
+
+
 		for(StmtVarDecl svd : locals){
 			for(int i=0; i<svd.getNumVars(); ++i){
 				varTypes.put(svd.getName(i), svd.getType(i));
 			}
 		}
-		
-		
-		
-		
+
+
+
+
 		localRepl = new VarSetReplacer[nthreads];
 		stepQueues = new Queue[nthreads];
 		for(int i=0; i<nthreads; ++i){
@@ -230,24 +230,24 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		Expression cond = new ExprBinary( new ExprArrayRange(new ExprVar(lastNode.getExpr(), "_ind_p"), new ExprConstInt(thread)), "==", new ExprConstInt(ep.label.intValue()));
 		return addAssume(cond);
 	}
-	
-	
-	
+
+
+
 	public CFGNode firstChildWithTag(CFGNode parent, int stmt){
-		
+
 		Queue<CFGNode> nqueue = new LinkedList<CFGNode>();
-		if(parent != null){ 
-			nqueue.add(parent); 
-		} else{ 
-			nqueue.add(cfg.getEntry()) ; 
-		} 
-		CFGNode node = null;		
+		if(parent != null){
+			nqueue.add(parent);
+		} else{
+			nqueue.add(cfg.getEntry()) ;
+		}
+		CFGNode node = null;
 		while(nqueue.size() > 0){
 			CFGNode cur = nqueue.poll();
 			Set<Object> so = nodeMap.get(cur);
-			if( so.contains(stmt)  ){ 
-				node = cur; 
-				break; 
+			if( so.contains(stmt)  ){
+				node = cur;
+				break;
 			}
 			for(EdgePair ep : cur.getSuccs()){
 				nqueue.add(ep.node);
@@ -255,9 +255,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 		assert node != null;
 		return node;
-		
+
 	}
-	
+
 
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
 
@@ -292,13 +292,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					}else{
 						assertStmts.add(addAssume(lastNode, thread, ep));
 					}
-				}								
+				}
 				if(goodSucc){
 					for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
 						addStatement(it.next(), thread);
 					}
 					break;
-				}else{					
+				}else{
 					assertStmts.clear();
 					for(Iterator<EdgePair> it = eplist.iterator(); it.hasNext(); ){
 						EdgePair ep = it.next();
@@ -312,7 +312,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 							}
 							tmp = tmp.getSuccs().get(0).node;
 						}
-						
+
 						/*
 						for(EdgePair ep2 : nxt.getSuccs()){
 							if(ep2.node == node){
@@ -333,7 +333,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
 						addStatement(it.next(), thread);
 					}
-					addNode(lastNode, thread);					
+					addNode(lastNode, thread);
 				}
 			}
 
@@ -370,15 +370,15 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
-	
-	
-	
+
+
+
 	private Statement foo(CFGNode n, int thread, final Expression indVar){
-		
+
 		Statement s = null;
 		if(n.isExpr()){ s = n.getPreStmt(); }
 		if(n.isStmt()){ s = n.getStmt(); }
-		
+
 		class modifiedLocals extends FEReplacer{
 			boolean isLeft = false;
 			public HashSet<String> locals = new HashSet<String>();
@@ -395,11 +395,15 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		        globalTaint = gt;
 		        Expression newRHS = doExpression(stmt.getRHS());
 		        if(newgt){
-		        	return null; 
+		        	return null;
 		        }
 		        return stmt;
 			}
-			
+
+			public Object visitStmtAssert(StmtAssert stmt){
+				return new StmtIfThen(stmt, assumeFlag, stmt, null);
+			}
+
 			public Object visitExprArrayRange(ExprArrayRange exp) {
 				boolean tmpLeft = isLeft;
 
@@ -409,7 +413,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				isLeft = true;
 				doExpression(exp.getBase());
 				isLeft = tmpLeft;
-				
+
 
 				final List l=exp.getMembers();
 				for(int i=0;i<l.size();i++) {
@@ -432,18 +436,18 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				}
 				return exp;
 			}
-			
-			
-			
-			
-			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){				
+
+
+
+
+			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
 				if(stmt.isCond()){
 					return new StmtAssign(indVar, new ExprBinary(indVar , "&&",  stmt.getCond()));
 				}
 				return super.visitStmtAtomicBlock(stmt);
 			}
-			
-			
+
+
 
 			public Object visitStmtVarDecl(StmtVarDecl stmt)
 		    {
@@ -457,8 +461,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		        }
 		        return stmt;
 		    }
-			
-			public Object visitExprVar(ExprVar exp) {			
+
+			public Object visitExprVar(ExprVar exp) {
 				if(isLeft){
 					String nm = exp.getName();
 					if(globals.contains(nm)){
@@ -466,47 +470,47 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					}else{
 						if(!locals.contains(nm)){
 							modLocals.add(nm);
-						}						
+						}
 					}
 				}
 				return exp;
 			}
-			
+
 		}
-		
-		
+
+
 		class addTemporaries extends FEReplacer{
 			private final HashSet<String> modLocals;
 			public addTemporaries(HashSet<String> modLocals){
 				this.modLocals = modLocals;
 			}
-			public Object visitExprVar(ExprVar exp) {	
+			public Object visitExprVar(ExprVar exp) {
 				String nm = exp.getName();
 				if(modLocals.contains( nm )){
 					return new ExprVar(exp, nm + "__t");
-				}				
+				}
 				return exp;
 			}
 		}
-		
+
 		modifiedLocals ml = new modifiedLocals();
 		s = s.doStatement(ml);
 		s = s.doStatement(new addTemporaries(ml.modLocals));
-		
+
 		List<Statement> ls = new ArrayList<Statement>();
 		for(String vn : ml.modLocals){
-			ls.add(new StmtVarDecl(s, varTypes.get(vn), vn + "__t", new ExprVar(s, vn)));						
+			ls.add(new StmtVarDecl(s, varTypes.get(vn), vn + "__t", new ExprVar(s, vn)));
 		}
 		ls.add(s);
 		s = (Statement) parametrizeLocals(new StmtBlock(s, ls), thread);
-		
+
 		return s;
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 
 	private Expression getAtomicCond(CFGNode n, int thread){
 
@@ -515,7 +519,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		if(n.isStmt()){ s = n.getStmt(); }
 
 		foo(n, thread, new ExprVar(s, "IV"));
-		
+
 		final List<Expression> answer = new ArrayList<Expression>();
 
 		class hasAtomic extends FEReplacer{
@@ -526,10 +530,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				assignOnPath = true;
 				return stmt;
 			}
-			
+
 			@Override
 			public Object visitStmtIfThen(StmtIfThen stmt){
-				estack.add(new ExprUnary("!", stmt.getCond()));				
+				estack.add(new ExprUnary("!", stmt.getCond()));
 				boolean tmp = assignOnPath;
 				stmt.getCons().accept(this);
 				estack.pop();
@@ -543,7 +547,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				assignOnPath = assignOnPath || tmp2;
 				return stmt;
 			}
-			
+
 			@Override
 			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
 				if(stmt.isCond()){
@@ -555,7 +559,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					if(answer.size() > 0){
 						answer.set(0, new ExprBinary(c, "&&", answer.get(0)  ) );
 					}else{
-						answer.add(c);	
+						answer.add(c);
 					}
 				}
 				assignOnPath = true;
@@ -587,18 +591,18 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 		}
 
-		if(n.isExpr()){			
+		if(n.isExpr()){
 			for( EdgePair ep : n.getSuccs() ){
 				Statement s;
 				if(ep.node == cfg.getExit()){
 					s = new StmtAssign(iv, ExprConstInt.zero);
 				}else{
-					s = foo(ep.node, thread, iv);					
+					s = foo(ep.node, thread, iv);
 				}
 				Expression g = new ExprBinary((Expression)parametrizeLocals(n.getExpr(), thread), "==", new ExprConstInt(ep.label));
-				
+
 				ls.add(new StmtIfThen(s, g, s, null));
-				
+
 			}
 			return;
 		}
@@ -661,7 +665,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 					Statement elsecond;
-					
+
 					if(thread >=0){
 						List<Statement> ls = new ArrayList<Statement>();
 						ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
@@ -674,13 +678,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 							}else{
 								ls.add(foo(cfg.getEntry(), i, iv));
 							}
-	
+
 						}
-	
+
 						Statement allgood = new StmtAssign(assumeFlag, ExprConstInt.zero);
 						Statement allbad = new StmtIfThen(stmt, assumeFlag,
 								new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock."), null);
-	
+
 						Statement otherwise = new StmtIfThen(stmt, iv, allgood, allbad);
 						ls.add(otherwise);
 						elsecond = new StmtBlock(stmt, ls);
@@ -821,13 +825,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		while(sit.hasNext()){
 			cur= sit.next();
 			if(cur.thread>0){
-				sbuf.append(""+ cur);				
+				sbuf.append(""+ cur);
 				if( invNodeMap.containsKey(cur.stmt) ){
 					int thread = cur.thread-1;
 					stepQueues[thread].add(cur);
 					//System.out.println("C " + cur);
 					if( globalTags.contains(cur.stmt)  ){
-						Queue<step> qs = stepQueues[thread];						
+						Queue<step> qs = stepQueues[thread];
 						while( qs.size() > 0  ){
 							step tmp = qs.remove();
 						//	System.out.println("t " + tmp);
@@ -841,9 +845,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 			}
 		}
-		
+
 		log(sbuf.toString());
-		if(schedules.containsKey(sbuf.toString())){			
+		if(schedules.containsKey(sbuf.toString())){
 			throw new RuntimeException("I just saw a repeated schedule.");
 		}
 		schedules.put(sbuf.toString(), schedules.size());
@@ -874,7 +878,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			addStatement(parts.postpar, -1);
 		}
 		popBlock();
-		closeCurrent();		
+		closeCurrent();
 	}
 
 	Map<String, Integer> schedules = new HashMap<String, Integer>();
