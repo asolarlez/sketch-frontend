@@ -77,4 +77,8 @@ public class ExprConstBoolean extends ExprConstant
     {
         return v.visitExprConstBoolean(this);
     }
+
+    public String toString () {
+    	return Boolean.toString (val);
+    }
 }

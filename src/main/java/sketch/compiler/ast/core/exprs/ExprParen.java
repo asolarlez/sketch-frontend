@@ -10,12 +10,20 @@ public class ExprParen extends Expression {
 	private Expression expr;
 
 	public ExprParen (Expression expr) {
-		super (expr);
+		this (expr, expr);
+	}
+
+	public ExprParen (FENode cx, Expression expr) {
+		super (cx);
 		this.expr = expr;
 	}
 
 	public Expression getExpr () {
 		return expr;
+	}
+
+	@Override public boolean isLValue () {
+		return expr.isLValue ();
 	}
 
 	public String toString () {
@@ -24,8 +32,7 @@ public class ExprParen extends Expression {
 
 	@Override
 	public Object accept (FEVisitor v) {
-		// TODO Auto-generated method stub
-		return null;
+		return v.visitExprParen (this);
 	}
 
 }
