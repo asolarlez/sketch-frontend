@@ -144,8 +144,8 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		if(members.isEmpty()) throw new IllegalArgumentException();
 		setUnchecked(unchecked);
 	}
-	
-	
+
+
 	/**
 	 * Construct a new array range Expression. "members" must be a
 	 * list containing Range and RangeLen objects.
@@ -272,4 +272,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		return getSingleIndex()!=null;
 	}
 
+	@Override public boolean isLValue () {
+		return true;
+	}
 }
