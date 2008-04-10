@@ -1,7 +1,7 @@
 #include "set.skh"
 
 int NTHREADS = 2;
-int NITEMS = 1;
+int NITEMS = 2;
 int NNODES = 2 + NTHREADS * NITEMS; // +2 for the sentinels
 int NEGINF = -1;
 int POSINF = NNODES;
