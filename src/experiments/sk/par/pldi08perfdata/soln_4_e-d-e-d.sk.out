@@ -1,0 +1,880 @@
+Verifying non-sketched program ...
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 33.935
+      model building time (s) ---------> 5.235
+      solution time (s) ---------------> 28.7
+      max memory usage (MiB) ----------> 56.688
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 1.098
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 4.137
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 28.7
+      total SPIN mem (MiB) ------------> 56.688
+      actual state mem (MiB) ----------> 5.3449993
+      equiv state mem (MiB) -----------> 1743.997
+      state compression (%) -----------> 0.30647987
+      # states explored ---------------> 1484345
+      state exploration rate (states/s)> 0
+
+void main([!bit _out_1L0_1L0_1L0_1L0]) implements T
+{
+  int __s_Node_nextInstance_6_3L0_3L0=0; int[10] __s_Node_obj_7_3L1_3L1={0,0,0,0,0,0,0,0,0,0}; int[10] __s_Node_next_8_3L2_3L2={0,0,0,0,0,0,0,0,0,0}; bit[10] __s_Node_taken_9_3L3_3L3={0,0,0,0,0,0,0,0,0,0};
+  int __s_tmp_cond_elim_42_5L0_5L0=0;
+  int __s_pac56_6L0_6L0=0;
+  __s_tmp_cond_elim_42_5L0_5L0 = null;
+  int __s_pac57_6L1_6L1=0;
+  __s_Node_obj_7_3L1_3L1[0] = __s_tmp_cond_elim_42_5L0_5L0;
+  int __s_tmp_cond_elim_42_7L0_7L0=0;
+  int __s_pac56_8L0_8L0=1;
+  __s_tmp_cond_elim_42_7L0_7L0 = null;
+  int __s_pac57_8L1_8L1=1;
+  __s_Node_obj_7_3L1_3L1[1] = __s_tmp_cond_elim_42_7L0_7L0;
+  int __s_tmp_cond_elim_42_9L0_9L0=0;
+  int __s_pac56_10L0_10L0=2;
+  __s_tmp_cond_elim_42_9L0_9L0 = null;
+  int __s_pac57_10L1_10L1=2;
+  __s_Node_obj_7_3L1_3L1[2] = __s_tmp_cond_elim_42_9L0_9L0;
+  int __s_tmp_cond_elim_42_11L0_11L0=0;
+  int __s_pac56_12L0_12L0=3;
+  __s_tmp_cond_elim_42_11L0_11L0 = null;
+  int __s_pac57_12L1_12L1=3;
+  __s_Node_obj_7_3L1_3L1[3] = __s_tmp_cond_elim_42_11L0_11L0;
+  int __s_tmp_cond_elim_42_13L0_13L0=0;
+  int __s_pac56_14L0_14L0=4;
+  __s_tmp_cond_elim_42_13L0_13L0 = null;
+  int __s_pac57_14L1_14L1=4;
+  __s_Node_obj_7_3L1_3L1[4] = __s_tmp_cond_elim_42_13L0_13L0;
+  int __s_tmp_cond_elim_42_15L0_15L0=0;
+  int __s_pac56_16L0_16L0=5;
+  __s_tmp_cond_elim_42_15L0_15L0 = null;
+  int __s_pac57_16L1_16L1=5;
+  __s_Node_obj_7_3L1_3L1[5] = __s_tmp_cond_elim_42_15L0_15L0;
+  int __s_tmp_cond_elim_42_17L0_17L0=0;
+  int __s_pac56_18L0_18L0=6;
+  __s_tmp_cond_elim_42_17L0_17L0 = null;
+  int __s_pac57_18L1_18L1=6;
+  __s_Node_obj_7_3L1_3L1[6] = __s_tmp_cond_elim_42_17L0_17L0;
+  int __s_tmp_cond_elim_42_19L0_19L0=0;
+  int __s_pac56_20L0_20L0=7;
+  __s_tmp_cond_elim_42_19L0_19L0 = null;
+  int __s_pac57_20L1_20L1=7;
+  __s_Node_obj_7_3L1_3L1[7] = __s_tmp_cond_elim_42_19L0_19L0;
+  int __s_tmp_cond_elim_42_21L0_21L0=0;
+  int __s_pac56_22L0_22L0=8;
+  __s_tmp_cond_elim_42_21L0_21L0 = null;
+  int __s_pac57_22L1_22L1=8;
+  __s_Node_obj_7_3L1_3L1[8] = __s_tmp_cond_elim_42_21L0_21L0;
+  int __s_tmp_cond_elim_42_23L0_23L0=0;
+  int __s_pac56_24L0_24L0=9;
+  __s_tmp_cond_elim_42_23L0_23L0 = null;
+  int __s_pac57_24L1_24L1=9;
+  __s_Node_obj_7_3L1_3L1[9] = __s_tmp_cond_elim_42_23L0_23L0;
+  int __s_tmp_cond_elim_43_26L0_26L0=0;
+  int __s_pac58_27L0_27L0=0;
+  __s_tmp_cond_elim_43_26L0_26L0 = null;
+  int __s_pac59_27L1_27L1=0;
+  __s_Node_next_8_3L2_3L2[0] = __s_tmp_cond_elim_43_26L0_26L0;
+  int __s_tmp_cond_elim_43_28L0_28L0=0;
+  int __s_pac58_29L0_29L0=1;
+  __s_tmp_cond_elim_43_28L0_28L0 = null;
+  int __s_pac59_29L1_29L1=1;
+  __s_Node_next_8_3L2_3L2[1] = __s_tmp_cond_elim_43_28L0_28L0;
+  int __s_tmp_cond_elim_43_30L0_30L0=0;
+  int __s_pac58_31L0_31L0=2;
+  __s_tmp_cond_elim_43_30L0_30L0 = null;
+  int __s_pac59_31L1_31L1=2;
+  __s_Node_next_8_3L2_3L2[2] = __s_tmp_cond_elim_43_30L0_30L0;
+  int __s_tmp_cond_elim_43_32L0_32L0=0;
+  int __s_pac58_33L0_33L0=3;
+  __s_tmp_cond_elim_43_32L0_32L0 = null;
+  int __s_pac59_33L1_33L1=3;
+  __s_Node_next_8_3L2_3L2[3] = __s_tmp_cond_elim_43_32L0_32L0;
+  int __s_tmp_cond_elim_43_34L0_34L0=0;
+  int __s_pac58_35L0_35L0=4;
+  __s_tmp_cond_elim_43_34L0_34L0 = null;
+  int __s_pac59_35L1_35L1=4;
+  __s_Node_next_8_3L2_3L2[4] = __s_tmp_cond_elim_43_34L0_34L0;
+  int __s_tmp_cond_elim_43_36L0_36L0=0;
+  int __s_pac58_37L0_37L0=5;
+  __s_tmp_cond_elim_43_36L0_36L0 = null;
+  int __s_pac59_37L1_37L1=5;
+  __s_Node_next_8_3L2_3L2[5] = __s_tmp_cond_elim_43_36L0_36L0;
+  int __s_tmp_cond_elim_43_38L0_38L0=0;
+  int __s_pac58_39L0_39L0=6;
+  __s_tmp_cond_elim_43_38L0_38L0 = null;
+  int __s_pac59_39L1_39L1=6;
+  __s_Node_next_8_3L2_3L2[6] = __s_tmp_cond_elim_43_38L0_38L0;
+  int __s_tmp_cond_elim_43_40L0_40L0=0;
+  int __s_pac58_41L0_41L0=7;
+  __s_tmp_cond_elim_43_40L0_40L0 = null;
+  int __s_pac59_41L1_41L1=7;
+  __s_Node_next_8_3L2_3L2[7] = __s_tmp_cond_elim_43_40L0_40L0;
+  int __s_tmp_cond_elim_43_42L0_42L0=0;
+  int __s_pac58_43L0_43L0=8;
+  __s_tmp_cond_elim_43_42L0_42L0 = null;
+  int __s_pac59_43L1_43L1=8;
+  __s_Node_next_8_3L2_3L2[8] = __s_tmp_cond_elim_43_42L0_42L0;
+  int __s_tmp_cond_elim_43_44L0_44L0=0;
+  int __s_pac58_45L0_45L0=9;
+  __s_tmp_cond_elim_43_44L0_44L0 = null;
+  int __s_pac59_45L1_45L1=9;
+  __s_Node_next_8_3L2_3L2[9] = __s_tmp_cond_elim_43_44L0_44L0;
+  bit __s_tmp_cond_elim_44_47L0_47L0=0;
+  int __s_pac60_48L0_48L0=0;
+  __s_tmp_cond_elim_44_47L0_47L0 = 0;
+  int __s_pac61_48L1_48L1=0;
+  __s_Node_taken_9_3L3_3L3[0] = 0;
+  bit __s_tmp_cond_elim_44_49L0_49L0=0;
+  int __s_pac60_50L0_50L0=1;
+  __s_tmp_cond_elim_44_49L0_49L0 = 0;
+  int __s_pac61_50L1_50L1=1;
+  __s_Node_taken_9_3L3_3L3[1] = 0;
+  bit __s_tmp_cond_elim_44_51L0_51L0=0;
+  int __s_pac60_52L0_52L0=2;
+  __s_tmp_cond_elim_44_51L0_51L0 = 0;
+  int __s_pac61_52L1_52L1=2;
+  __s_Node_taken_9_3L3_3L3[2] = 0;
+  bit __s_tmp_cond_elim_44_53L0_53L0=0;
+  int __s_pac60_54L0_54L0=3;
+  __s_tmp_cond_elim_44_53L0_53L0 = 0;
+  int __s_pac61_54L1_54L1=3;
+  __s_Node_taken_9_3L3_3L3[3] = 0;
+  bit __s_tmp_cond_elim_44_55L0_55L0=0;
+  int __s_pac60_56L0_56L0=4;
+  __s_tmp_cond_elim_44_55L0_55L0 = 0;
+  int __s_pac61_56L1_56L1=4;
+  __s_Node_taken_9_3L3_3L3[4] = 0;
+  bit __s_tmp_cond_elim_44_57L0_57L0=0;
+  int __s_pac60_58L0_58L0=5;
+  __s_tmp_cond_elim_44_57L0_57L0 = 0;
+  int __s_pac61_58L1_58L1=5;
+  __s_Node_taken_9_3L3_3L3[5] = 0;
+  bit __s_tmp_cond_elim_44_59L0_59L0=0;
+  int __s_pac60_60L0_60L0=6;
+  __s_tmp_cond_elim_44_59L0_59L0 = 0;
+  int __s_pac61_60L1_60L1=6;
+  __s_Node_taken_9_3L3_3L3[6] = 0;
+  bit __s_tmp_cond_elim_44_61L0_61L0=0;
+  int __s_pac60_62L0_62L0=7;
+  __s_tmp_cond_elim_44_61L0_61L0 = 0;
+  int __s_pac61_62L1_62L1=7;
+  __s_Node_taken_9_3L3_3L3[7] = 0;
+  bit __s_tmp_cond_elim_44_63L0_63L0=0;
+  int __s_pac60_64L0_64L0=8;
+  __s_tmp_cond_elim_44_63L0_63L0 = 0;
+  int __s_pac61_64L1_64L1=8;
+  __s_Node_taken_9_3L3_3L3[8] = 0;
+  bit __s_tmp_cond_elim_44_65L0_65L0=0;
+  int __s_pac60_66L0_66L0=9;
+  __s_tmp_cond_elim_44_65L0_65L0 = 0;
+  int __s_pac61_66L1_66L1=9;
+  __s_Node_taken_9_3L3_3L3[9] = 0;
+  int __s_Item_nextInstance_10_66L4_66L4=0; int[10] __s_Item_tid_11_66L5_66L5={0,0,0,0,0,0,0,0,0,0}; int[10] __s_Item_id_12_66L6_66L6={0,0,0,0,0,0,0,0,0,0};
+  bit __s_tmp_cond_elim_45_68L0_68L0=0;
+  int __s_pac62_69L0_69L0=0;
+  __s_tmp_cond_elim_45_68L0_68L0 = 0;
+  int __s_pac63_69L1_69L1=0;
+  __s_Item_tid_11_66L5_66L5[0] = 0;
+  bit __s_tmp_cond_elim_45_70L0_70L0=0;
+  int __s_pac62_71L0_71L0=1;
+  __s_tmp_cond_elim_45_70L0_70L0 = 0;
+  int __s_pac63_71L1_71L1=1;
+  __s_Item_tid_11_66L5_66L5[1] = 0;
+  bit __s_tmp_cond_elim_45_72L0_72L0=0;
+  int __s_pac62_73L0_73L0=2;
+  __s_tmp_cond_elim_45_72L0_72L0 = 0;
+  int __s_pac63_73L1_73L1=2;
+  __s_Item_tid_11_66L5_66L5[2] = 0;
+  bit __s_tmp_cond_elim_45_74L0_74L0=0;
+  int __s_pac62_75L0_75L0=3;
+  __s_tmp_cond_elim_45_74L0_74L0 = 0;
+  int __s_pac63_75L1_75L1=3;
+  __s_Item_tid_11_66L5_66L5[3] = 0;
+  bit __s_tmp_cond_elim_45_76L0_76L0=0;
+  int __s_pac62_77L0_77L0=4;
+  __s_tmp_cond_elim_45_76L0_76L0 = 0;
+  int __s_pac63_77L1_77L1=4;
+  __s_Item_tid_11_66L5_66L5[4] = 0;
+  bit __s_tmp_cond_elim_45_78L0_78L0=0;
+  int __s_pac62_79L0_79L0=5;
+  __s_tmp_cond_elim_45_78L0_78L0 = 0;
+  int __s_pac63_79L1_79L1=5;
+  __s_Item_tid_11_66L5_66L5[5] = 0;
+  bit __s_tmp_cond_elim_45_80L0_80L0=0;
+  int __s_pac62_81L0_81L0=6;
+  __s_tmp_cond_elim_45_80L0_80L0 = 0;
+  int __s_pac63_81L1_81L1=6;
+  __s_Item_tid_11_66L5_66L5[6] = 0;
+  bit __s_tmp_cond_elim_45_82L0_82L0=0;
+  int __s_pac62_83L0_83L0=7;
+  __s_tmp_cond_elim_45_82L0_82L0 = 0;
+  int __s_pac63_83L1_83L1=7;
+  __s_Item_tid_11_66L5_66L5[7] = 0;
+  bit __s_tmp_cond_elim_45_84L0_84L0=0;
+  int __s_pac62_85L0_85L0=8;
+  __s_tmp_cond_elim_45_84L0_84L0 = 0;
+  int __s_pac63_85L1_85L1=8;
+  __s_Item_tid_11_66L5_66L5[8] = 0;
+  bit __s_tmp_cond_elim_45_86L0_86L0=0;
+  int __s_pac62_87L0_87L0=9;
+  __s_tmp_cond_elim_45_86L0_86L0 = 0;
+  int __s_pac63_87L1_87L1=9;
+  __s_Item_tid_11_66L5_66L5[9] = 0;
+  bit __s_tmp_cond_elim_46_89L0_89L0=0;
+  int __s_pac64_90L0_90L0=0;
+  __s_tmp_cond_elim_46_89L0_89L0 = 0;
+  int __s_pac65_90L1_90L1=0;
+  __s_Item_id_12_66L6_66L6[0] = 0;
+  bit __s_tmp_cond_elim_46_91L0_91L0=0;
+  int __s_pac64_92L0_92L0=1;
+  __s_tmp_cond_elim_46_91L0_91L0 = 0;
+  int __s_pac65_92L1_92L1=1;
+  __s_Item_id_12_66L6_66L6[1] = 0;
+  bit __s_tmp_cond_elim_46_93L0_93L0=0;
+  int __s_pac64_94L0_94L0=2;
+  __s_tmp_cond_elim_46_93L0_93L0 = 0;
+  int __s_pac65_94L1_94L1=2;
+  __s_Item_id_12_66L6_66L6[2] = 0;
+  bit __s_tmp_cond_elim_46_95L0_95L0=0;
+  int __s_pac64_96L0_96L0=3;
+  __s_tmp_cond_elim_46_95L0_95L0 = 0;
+  int __s_pac65_96L1_96L1=3;
+  __s_Item_id_12_66L6_66L6[3] = 0;
+  bit __s_tmp_cond_elim_46_97L0_97L0=0;
+  int __s_pac64_98L0_98L0=4;
+  __s_tmp_cond_elim_46_97L0_97L0 = 0;
+  int __s_pac65_98L1_98L1=4;
+  __s_Item_id_12_66L6_66L6[4] = 0;
+  bit __s_tmp_cond_elim_46_99L0_99L0=0;
+  int __s_pac64_100L0_100L0=5;
+  __s_tmp_cond_elim_46_99L0_99L0 = 0;
+  int __s_pac65_100L1_100L1=5;
+  __s_Item_id_12_66L6_66L6[5] = 0;
+  bit __s_tmp_cond_elim_46_101L0_101L0=0;
+  int __s_pac64_102L0_102L0=6;
+  __s_tmp_cond_elim_46_101L0_101L0 = 0;
+  int __s_pac65_102L1_102L1=6;
+  __s_Item_id_12_66L6_66L6[6] = 0;
+  bit __s_tmp_cond_elim_46_103L0_103L0=0;
+  int __s_pac64_104L0_104L0=7;
+  __s_tmp_cond_elim_46_103L0_103L0 = 0;
+  int __s_pac65_104L1_104L1=7;
+  __s_Item_id_12_66L6_66L6[7] = 0;
+  bit __s_tmp_cond_elim_46_105L0_105L0=0;
+  int __s_pac64_106L0_106L0=8;
+  __s_tmp_cond_elim_46_105L0_105L0 = 0;
+  int __s_pac65_106L1_106L1=8;
+  __s_Item_id_12_66L6_66L6[8] = 0;
+  bit __s_tmp_cond_elim_46_107L0_107L0=0;
+  int __s_pac64_108L0_108L0=9;
+  __s_tmp_cond_elim_46_107L0_107L0 = 0;
+  int __s_pac65_108L1_108L1=9;
+  __s_Item_id_12_66L6_66L6[9] = 0;
+  int __s_Queue_nextInstance_13_108L7_108L7=0; int[10] __s_Queue_prevHead_15_108L8_108L8={0,0,0,0,0,0,0,0,0,0}; int[10] __s_Queue_tail_14_108L9_108L9={0,0,0,0,0,0,0,0,0,0};
+  int __s_tmp_cond_elim_47_110L0_110L0=0;
+  int __s_pac66_111L0_111L0=0;
+  __s_tmp_cond_elim_47_110L0_110L0 = null;
+  int __s_pac67_111L1_111L1=0;
+  __s_Queue_prevHead_15_108L8_108L8[0] = __s_tmp_cond_elim_47_110L0_110L0;
+  int __s_tmp_cond_elim_47_112L0_112L0=0;
+  int __s_pac66_113L0_113L0=1;
+  __s_tmp_cond_elim_47_112L0_112L0 = null;
+  int __s_pac67_113L1_113L1=1;
+  __s_Queue_prevHead_15_108L8_108L8[1] = __s_tmp_cond_elim_47_112L0_112L0;
+  int __s_tmp_cond_elim_47_114L0_114L0=0;
+  int __s_pac66_115L0_115L0=2;
+  __s_tmp_cond_elim_47_114L0_114L0 = null;
+  int __s_pac67_115L1_115L1=2;
+  __s_Queue_prevHead_15_108L8_108L8[2] = __s_tmp_cond_elim_47_114L0_114L0;
+  int __s_tmp_cond_elim_47_116L0_116L0=0;
+  int __s_pac66_117L0_117L0=3;
+  __s_tmp_cond_elim_47_116L0_116L0 = null;
+  int __s_pac67_117L1_117L1=3;
+  __s_Queue_prevHead_15_108L8_108L8[3] = __s_tmp_cond_elim_47_116L0_116L0;
+  int __s_tmp_cond_elim_47_118L0_118L0=0;
+  int __s_pac66_119L0_119L0=4;
+  __s_tmp_cond_elim_47_118L0_118L0 = null;
+  int __s_pac67_119L1_119L1=4;
+  __s_Queue_prevHead_15_108L8_108L8[4] = __s_tmp_cond_elim_47_118L0_118L0;
+  int __s_tmp_cond_elim_47_120L0_120L0=0;
+  int __s_pac66_121L0_121L0=5;
+  __s_tmp_cond_elim_47_120L0_120L0 = null;
+  int __s_pac67_121L1_121L1=5;
+  __s_Queue_prevHead_15_108L8_108L8[5] = __s_tmp_cond_elim_47_120L0_120L0;
+  int __s_tmp_cond_elim_47_122L0_122L0=0;
+  int __s_pac66_123L0_123L0=6;
+  __s_tmp_cond_elim_47_122L0_122L0 = null;
+  int __s_pac67_123L1_123L1=6;
+  __s_Queue_prevHead_15_108L8_108L8[6] = __s_tmp_cond_elim_47_122L0_122L0;
+  int __s_tmp_cond_elim_47_124L0_124L0=0;
+  int __s_pac66_125L0_125L0=7;
+  __s_tmp_cond_elim_47_124L0_124L0 = null;
+  int __s_pac67_125L1_125L1=7;
+  __s_Queue_prevHead_15_108L8_108L8[7] = __s_tmp_cond_elim_47_124L0_124L0;
+  int __s_tmp_cond_elim_47_126L0_126L0=0;
+  int __s_pac66_127L0_127L0=8;
+  __s_tmp_cond_elim_47_126L0_126L0 = null;
+  int __s_pac67_127L1_127L1=8;
+  __s_Queue_prevHead_15_108L8_108L8[8] = __s_tmp_cond_elim_47_126L0_126L0;
+  int __s_tmp_cond_elim_47_128L0_128L0=0;
+  int __s_pac66_129L0_129L0=9;
+  __s_tmp_cond_elim_47_128L0_128L0 = null;
+  int __s_pac67_129L1_129L1=9;
+  __s_Queue_prevHead_15_108L8_108L8[9] = __s_tmp_cond_elim_47_128L0_128L0;
+  int __s_tmp_cond_elim_48_131L0_131L0=0;
+  int __s_pac68_132L0_132L0=0;
+  __s_tmp_cond_elim_48_131L0_131L0 = null;
+  int __s_pac69_132L1_132L1=0;
+  __s_Queue_tail_14_108L9_108L9[0] = __s_tmp_cond_elim_48_131L0_131L0;
+  int __s_tmp_cond_elim_48_133L0_133L0=0;
+  int __s_pac68_134L0_134L0=1;
+  __s_tmp_cond_elim_48_133L0_133L0 = null;
+  int __s_pac69_134L1_134L1=1;
+  __s_Queue_tail_14_108L9_108L9[1] = __s_tmp_cond_elim_48_133L0_133L0;
+  int __s_tmp_cond_elim_48_135L0_135L0=0;
+  int __s_pac68_136L0_136L0=2;
+  __s_tmp_cond_elim_48_135L0_135L0 = null;
+  int __s_pac69_136L1_136L1=2;
+  __s_Queue_tail_14_108L9_108L9[2] = __s_tmp_cond_elim_48_135L0_135L0;
+  int __s_tmp_cond_elim_48_137L0_137L0=0;
+  int __s_pac68_138L0_138L0=3;
+  __s_tmp_cond_elim_48_137L0_137L0 = null;
+  int __s_pac69_138L1_138L1=3;
+  __s_Queue_tail_14_108L9_108L9[3] = __s_tmp_cond_elim_48_137L0_137L0;
+  int __s_tmp_cond_elim_48_139L0_139L0=0;
+  int __s_pac68_140L0_140L0=4;
+  __s_tmp_cond_elim_48_139L0_139L0 = null;
+  int __s_pac69_140L1_140L1=4;
+  __s_Queue_tail_14_108L9_108L9[4] = __s_tmp_cond_elim_48_139L0_139L0;
+  int __s_tmp_cond_elim_48_141L0_141L0=0;
+  int __s_pac68_142L0_142L0=5;
+  __s_tmp_cond_elim_48_141L0_141L0 = null;
+  int __s_pac69_142L1_142L1=5;
+  __s_Queue_tail_14_108L9_108L9[5] = __s_tmp_cond_elim_48_141L0_141L0;
+  int __s_tmp_cond_elim_48_143L0_143L0=0;
+  int __s_pac68_144L0_144L0=6;
+  __s_tmp_cond_elim_48_143L0_143L0 = null;
+  int __s_pac69_144L1_144L1=6;
+  __s_Queue_tail_14_108L9_108L9[6] = __s_tmp_cond_elim_48_143L0_143L0;
+  int __s_tmp_cond_elim_48_145L0_145L0=0;
+  int __s_pac68_146L0_146L0=7;
+  __s_tmp_cond_elim_48_145L0_145L0 = null;
+  int __s_pac69_146L1_146L1=7;
+  __s_Queue_tail_14_108L9_108L9[7] = __s_tmp_cond_elim_48_145L0_145L0;
+  int __s_tmp_cond_elim_48_147L0_147L0=0;
+  int __s_pac68_148L0_148L0=8;
+  __s_tmp_cond_elim_48_147L0_147L0 = null;
+  int __s_pac69_148L1_148L1=8;
+  __s_Queue_tail_14_108L9_108L9[8] = __s_tmp_cond_elim_48_147L0_147L0;
+  int __s_tmp_cond_elim_48_149L0_149L0=0;
+  int __s_pac68_150L0_150L0=9;
+  __s_tmp_cond_elim_48_149L0_149L0 = null;
+  int __s_pac69_150L1_150L1=9;
+  __s_Queue_tail_14_108L9_108L9[9] = __s_tmp_cond_elim_48_149L0_149L0;
+  _out_1L0_1L0_1L0_1L0 = 0;
+  bit _has_out__3L0_3L0_151L0_151L0=0;
+  int q_4L1_4L1_152L1_152L1=0;
+  int _ret_0_4L2_4L2_152L2_152L2=0;
+  int _out_106L1_7L0_154L0_154L0=0;
+  bit _has_out__108L0_8L0_155L0_155L0=0;
+  int q_108L1_8L1_155L1_155L1=0;
+  int __s_tmp_new_Queue_3_8L2_155L2_155L2=0;
+  atomic
+  {
+    __s_tmp_new_Queue_3_8L2_155L2_155L2 = 0;
+    __s_Queue_nextInstance_13_108L7_108L7 = 1;
+  }
+  q_108L1_8L1_155L1_155L1 = 0;
+  int _ret_0_108L2_9L3_156L3_156L3=null;
+  int _ret_1_108L3_9L4_156L4_156L4=null;
+  int _ret_2_108L4_9L5_156L5_156L5=0;
+  int obj_235L6_12L0_158L0_158L0=_ret_0_108L2_9L3_156L3_156L3;
+  int next_235L6_12L1_158L1_158L1=_ret_1_108L3_9L4_156L4_156L4;
+  bit taken_235L7_12L2_158L2_158L2=1;
+  int _out_235L8_12L3_158L3_158L3=0;
+  bit _has_out__237L0_13L0_159L0_159L0=0;
+  int n_237L1_13L1_159L1_159L1=0;
+  int __s_tmp_new_Node_5_13L2_159L2_159L2=0;
+  atomic
+  {
+    __s_tmp_new_Node_5_13L2_159L2_159L2 = 0;
+  }
+  n_237L1_13L1_159L1_159L1 = 0;
+  int __s_pac70_161L0_161L0=0;
+  __s_Node_obj_7_3L1_3L1[0] = _ret_0_108L2_9L3_156L3_156L3;
+  int __s_pac71_162L0_162L0=0;
+  __s_Node_next_8_3L2_3L2[0] = _ret_1_108L3_9L4_156L4_156L4;
+  int __s_pac72_163L0_163L0=0;
+  __s_Node_taken_9_3L3_3L3[0] = 1;
+  _out_235L8_12L3_158L3_158L3 = 0;
+  _has_out__237L0_13L0_159L0_159L0 = 1;
+  _ret_2_108L4_9L5_156L5_156L5 = 0;
+  int __s_pac73_165L0_165L0=0;
+  __s_Queue_prevHead_15_108L8_108L8[0] = 0;
+  int __s_pac74_166L0_166L0=0;
+  int __s_pac75_166L1_166L1=0;
+  __s_Queue_tail_14_108L9_108L9[0] = __s_Queue_prevHead_15_108L8_108L8[0];
+  _out_106L1_7L0_154L0_154L0 = 0;
+  _has_out__108L0_8L0_155L0_155L0 = 1;
+  _ret_0_4L2_4L2_152L2_152L2 = 0;
+  q_4L1_4L1_152L1_152L1 = 0;
+  int dqCount_5L3_21L3_167L3_167L3=0;
+  int _ret_1_5L4_21L4_167L4_167L4=0;
+  int tid_112L1_24L0_169L0_169L0=5;
+  int id_112L2_24L1_169L1_169L1=2;
+  int _out_112L3_24L2_169L2_169L2=0;
+  bit _has_out__114L0_25L0_170L0_170L0=0;
+  int it_114L1_25L1_170L1_170L1=0;
+  int __s_tmp_new_Item_4_25L2_170L2_170L2=0;
+  atomic
+  {
+    __s_tmp_new_Item_4_25L2_170L2_170L2 = 0;
+    __s_Item_nextInstance_10_66L4_66L4 = 1;
+  }
+  it_114L1_25L1_170L1_170L1 = 0;
+  int __s_pac76_172L0_172L0=0;
+  __s_Item_tid_11_66L5_66L5[0] = 5;
+  int __s_pac77_173L0_173L0=0;
+  __s_Item_id_12_66L6_66L6[0] = 2;
+  _out_112L3_24L2_169L2_169L2 = 0;
+  _has_out__114L0_25L0_170L0_170L0 = 1;
+  _ret_1_5L4_21L4_167L4_167L4 = 0;
+  int q_117L3_32L0_176L0_176L0=0;
+  int obj_117L4_32L1_176L1_176L1=0;
+  bit _has_out__119L0_33L0_177L0_177L0=0;
+  int n_119L1_33L1_177L1_177L1=0;
+  int _ret_0_119L2_33L2_177L2_177L2=null;
+  int _ret_1_119L3_33L3_177L3_177L3=0;
+  int obj_235L6_36L0_179L0_179L0=0;
+  int next_235L6_36L1_179L1_179L1=_ret_0_119L2_33L2_177L2_177L2;
+  bit taken_235L7_36L2_179L2_179L2=0;
+  int _out_235L8_36L3_179L3_179L3=0;
+  bit _has_out__237L0_37L0_180L0_180L0=0;
+  int n_237L1_37L1_180L1_180L1=0;
+  int __s_tmp_new_Node_5_37L2_180L2_180L2=0;
+  atomic
+  {
+    __s_tmp_new_Node_5_37L2_180L2_180L2 = 1;
+    __s_Node_nextInstance_6_3L0_3L0 = 2;
+  }
+  n_237L1_37L1_180L1_180L1 = 1;
+  int __s_pac78_182L0_182L0=1;
+  __s_Node_obj_7_3L1_3L1[1] = 0;
+  int __s_pac79_183L0_183L0=1;
+  __s_Node_next_8_3L2_3L2[1] = _ret_0_119L2_33L2_177L2_177L2;
+  int __s_pac80_184L0_184L0=1;
+  __s_Node_taken_9_3L3_3L3[1] = 0;
+  _out_235L8_36L3_179L3_179L3 = 1;
+  _has_out__237L0_37L0_180L0_180L0 = 1;
+  _ret_1_119L3_33L3_177L3_177L3 = 1;
+  n_119L1_33L1_177L1_177L1 = 1;
+  int oldTail_120L4_42L4_185L4_185L4=0;
+  atomic
+  {
+    oldTail_120L4_42L4_185L4_185L4 = __s_Queue_tail_14_108L9_108L9[0];
+    __s_Queue_tail_14_108L9_108L9[0] = 1;
+  }
+  int __s_pac83_188L0_188L0=0;
+  __s_Node_next_8_3L2_3L2[0] = 1;
+  int x_7L5_45L5_188L5_188L5=0;
+  int _ret_2_7L6_45L6_188L6_188L6=0;
+  int q_123L5_48L0_190L0_190L0=0;
+  int _out_123L5_48L1_190L1_190L1=null;
+  bit _has_out__125L0_49L0_191L0_191L0=0;
+  int tmp_125L1_49L1_191L1_191L1=null;
+  bit wasTaken_125L2_49L2_191L2_191L2=1;
+  bit done_125L3_49L3_191L3_191L3=0;
+  for(int i_127L0_51L0_193L0_193L0=0;(i_127L0_51L0_193L0_193L0)<(5);i_127L0_51L0_193L0_193L0 = (i_127L0_51L0_193L0_193L0)+(1))
+  {
+    if(!(done_125L3_49L3_191L3_191L3))
+    {
+      int __s_pac84_231L1_231L1=__s_Queue_prevHead_15_108L8_108L8[0];
+      tmp_125L1_49L1_191L1_191L1 = __s_Node_next_8_3L2_3L2[__s_pac84_231L1_231L1];
+      if((null)==(tmp_125L1_49L1_191L1_191L1))
+      {
+        done_125L3_49L3_191L3_191L3 = 1;
+        if((_has_out__125L0_49L0_191L0_191L0)==(0))
+        {
+          _out_123L5_48L1_190L1_190L1 = null;
+          _has_out__125L0_49L0_191L0_191L0 = 1;
+        }
+      }
+      if(!(done_125L3_49L3_191L3_191L3))
+      {
+        if((_has_out__125L0_49L0_191L0_191L0)==(0))
+        {
+          __s_Queue_prevHead_15_108L8_108L8[0] = tmp_125L1_49L1_191L1_191L1;
+        }
+        if((0)==(__s_Node_taken_9_3L3_3L3[tmp_125L1_49L1_191L1_191L1]))
+        {
+          atomic
+          {
+            wasTaken_125L2_49L2_191L2_191L2 = __s_Node_taken_9_3L3_3L3[tmp_125L1_49L1_191L1_191L1];
+            if((_has_out__125L0_49L0_191L0_191L0)==(0))
+            {
+              __s_Node_taken_9_3L3_3L3[tmp_125L1_49L1_191L1_191L1] = 1;
+            }
+          }
+          if((0)==(wasTaken_125L2_49L2_191L2_191L2))
+          {
+            done_125L3_49L3_191L3_191L3 = 1;
+            if((_has_out__125L0_49L0_191L0_191L0)==(0))
+            {
+              _out_123L5_48L1_190L1_190L1 = __s_Node_obj_7_3L1_3L1[tmp_125L1_49L1_191L1_191L1];
+              _has_out__125L0_49L0_191L0_191L0 = 1;
+            }
+          }
+        }
+      }
+    }
+  }
+  _ret_2_7L6_45L6_188L6_188L6 = _out_123L5_48L1_190L1_190L1;
+  x_7L5_45L5_188L5_188L5 = _out_123L5_48L1_190L1_190L1;
+  bit __s_atomize_sc0_9L0_104L0_246L0_246L0=(_out_123L5_48L1_190L1_190L1)!=(null);
+  if(__s_atomize_sc0_9L0_104L0_246L0_246L0)
+  {
+    __s_atomize_sc0_9L0_104L0_246L0_246L0 = (__s_Item_tid_11_66L5_66L5[_out_123L5_48L1_190L1_190L1])==(5);
+  }
+  bit __s_atomize_sc1_10L1_105L1_247L1_247L1=__s_atomize_sc0_9L0_104L0_246L0_246L0;
+  if(__s_atomize_sc0_9L0_104L0_246L0_246L0)
+  {
+    __s_atomize_sc1_10L1_105L1_247L1_247L1 = (__s_Item_id_12_66L6_66L6[_out_123L5_48L1_190L1_190L1])==(2);
+  }
+  fork(int i_14L0_109L0_251L0_251L0; 4)
+  {
+    if(((i_14L0_109L0_251L0_251L0)%(2))==(0))
+    {
+      for(int j_20L0_115L0_257L0_258L0=0;(j_20L0_115L0_257L0_258L0)<(1);j_20L0_115L0_257L0_258L0 = (j_20L0_115L0_257L0_258L0)+(1))
+      {
+        int _ret_3_33L0_172L0_308L0_309L0=(j_20L0_115L0_257L0_258L0)+(1);
+        int __s_tmp_new_Item_4_176L2_311L2_312L2=0;
+        atomic
+        {
+          __s_tmp_new_Item_4_176L2_311L2_312L2 = __s_Item_nextInstance_10_66L4_66L4;
+          __s_Item_nextInstance_10_66L4_66L4 = (__s_Item_nextInstance_10_66L4_66L4)+(1);
+        }
+        __s_Item_tid_11_66L5_66L5[__s_tmp_new_Item_4_176L2_311L2_312L2] = i_14L0_109L0_251L0_251L0;
+        __s_Item_id_12_66L6_66L6[__s_tmp_new_Item_4_176L2_311L2_312L2] = _ret_3_33L0_172L0_308L0_309L0;
+        int _ret_0_119L2_184L2_318L2_319L2=null;
+        int __s_tmp_new_Node_5_188L2_321L2_322L2=0;
+        atomic
+        {
+          __s_tmp_new_Node_5_188L2_321L2_322L2 = __s_Node_nextInstance_6_3L0_3L0;
+          __s_Node_nextInstance_6_3L0_3L0 = (__s_Node_nextInstance_6_3L0_3L0)+(1);
+        }
+        __s_Node_obj_7_3L1_3L1[__s_tmp_new_Node_5_188L2_321L2_322L2] = __s_tmp_new_Item_4_176L2_311L2_312L2;
+        __s_Node_next_8_3L2_3L2[__s_tmp_new_Node_5_188L2_321L2_322L2] = _ret_0_119L2_184L2_318L2_319L2;
+        __s_Node_taken_9_3L3_3L3[__s_tmp_new_Node_5_188L2_321L2_322L2] = 0;
+        int oldTail_120L4_193L4_326L4_327L4=0;
+        atomic
+        {
+          oldTail_120L4_193L4_326L4_327L4 = __s_Queue_tail_14_108L9_108L9[0];
+          __s_Queue_tail_14_108L9_108L9[0] = __s_tmp_new_Node_5_188L2_321L2_322L2;
+        }
+        __s_Node_next_8_3L2_3L2[oldTail_120L4_193L4_326L4_327L4] = __s_tmp_new_Node_5_188L2_321L2_322L2;
+      }
+    }
+    else
+    {
+      int[4] lastId_37L0_198L0_331L0_332L0={0,0,0,0};
+      lastId_37L0_198L0_331L0_332L0[0] = 0;
+      lastId_37L0_198L0_331L0_332L0[1] = 0;
+      lastId_37L0_198L0_331L0_332L0[2] = 0;
+      lastId_37L0_198L0_331L0_332L0[3] = 0;
+      for(int j_39L0_200L0_338L0_339L0=0;(j_39L0_200L0_338L0_339L0)<(1);j_39L0_200L0_338L0_339L0 = (j_39L0_200L0_338L0_339L0)+(1))
+      {
+        int _out_123L5_338L1_473L1_474L1=null;
+        bit _has_out__125L0_339L0_474L0_475L0=0;
+        int tmp_125L1_339L1_474L1_475L1=0;
+        bit wasTaken_125L2_339L2_474L2_475L2=0;
+        bit done_125L3_339L3_474L3_475L3=0;
+        for(int i_127L0_341L0_476L0_477L0=0;(i_127L0_341L0_476L0_477L0)<(5);i_127L0_341L0_476L0_477L0 = (i_127L0_341L0_476L0_477L0)+(1))
+        {
+          if(!(done_125L3_339L3_474L3_475L3))
+          {
+            int __s_pac102_514L1_515L1=__s_Queue_prevHead_15_108L8_108L8[0];
+            tmp_125L1_339L1_474L1_475L1 = __s_Node_next_8_3L2_3L2[__s_pac102_514L1_515L1];
+            if((null)==(tmp_125L1_339L1_474L1_475L1))
+            {
+              done_125L3_339L3_474L3_475L3 = 1;
+              if((_has_out__125L0_339L0_474L0_475L0)==(0))
+              {
+                _out_123L5_338L1_473L1_474L1 = null;
+                _has_out__125L0_339L0_474L0_475L0 = 1;
+              }
+            }
+            if(!(done_125L3_339L3_474L3_475L3))
+            {
+              if((_has_out__125L0_339L0_474L0_475L0)==(0))
+              {
+                __s_Queue_prevHead_15_108L8_108L8[0] = tmp_125L1_339L1_474L1_475L1;
+              }
+              if((0)==(__s_Node_taken_9_3L3_3L3[tmp_125L1_339L1_474L1_475L1]))
+              {
+                atomic
+                {
+                  wasTaken_125L2_339L2_474L2_475L2 = __s_Node_taken_9_3L3_3L3[tmp_125L1_339L1_474L1_475L1];
+                  if((_has_out__125L0_339L0_474L0_475L0)==(0))
+                  {
+                    __s_Node_taken_9_3L3_3L3[tmp_125L1_339L1_474L1_475L1] = 1;
+                  }
+                }
+                if((0)==(wasTaken_125L2_339L2_474L2_475L2))
+                {
+                  done_125L3_339L3_474L3_475L3 = 1;
+                  if((_has_out__125L0_339L0_474L0_475L0)==(0))
+                  {
+                    _out_123L5_338L1_473L1_474L1 = __s_Node_obj_7_3L1_3L1[tmp_125L1_339L1_474L1_475L1];
+                    _has_out__125L0_339L0_474L0_475L0 = 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+        if((_out_123L5_338L1_473L1_474L1)!=(null))
+        {
+          int __s_pac112_531L1_532L1=__s_Item_tid_11_66L5_66L5[_out_123L5_338L1_473L1_474L1];
+          lastId_37L0_198L0_331L0_332L0[__s_pac112_531L1_532L1] = __s_Item_id_12_66L6_66L6[_out_123L5_338L1_473L1_474L1];
+          atomic
+          {
+            dqCount_5L3_21L3_167L3_167L3 = (dqCount_5L3_21L3_167L3_167L3)+(1);
+          }
+        }
+      }
+    }
+  }
+  int[4] lastId_68L8_457L8_591L8_592L8={0,0,0,0};
+  lastId_68L8_457L8_591L8_592L8[0] = 0;
+  lastId_68L8_457L8_591L8_592L8[1] = 0;
+  lastId_68L8_457L8_591L8_592L8[2] = 0;
+  lastId_68L8_457L8_591L8_592L8[3] = 0;
+  bit done_68L9_457L9_596L9_597L9=0;
+  for(int i_70L0_459L0_598L0_599L0=0;(i_70L0_459L0_598L0_599L0)<(5);i_70L0_459L0_598L0_599L0 = (i_70L0_459L0_598L0_599L0)+(1))
+  {
+    if(!(done_68L9_457L9_596L9_597L9))
+    {
+      int _out_123L5_600L1_736L1_737L1=null;
+      bit _has_out__125L0_601L0_737L0_738L0=0;
+      int tmp_125L1_601L1_737L1_738L1=0;
+      bit wasTaken_125L2_601L2_737L2_738L2=0;
+      bit done_125L3_601L3_737L3_738L3=0;
+      for(int i_127L0_603L0_739L0_740L0=0;(i_127L0_603L0_739L0_740L0)<(5);i_127L0_603L0_739L0_740L0 = (i_127L0_603L0_739L0_740L0)+(1))
+      {
+        if(!(done_125L3_601L3_737L3_738L3))
+        {
+          int __s_pac131_777L1_778L1=__s_Queue_prevHead_15_108L8_108L8[0];
+          tmp_125L1_601L1_737L1_738L1 = __s_Node_next_8_3L2_3L2[__s_pac131_777L1_778L1];
+          if((null)==(tmp_125L1_601L1_737L1_738L1))
+          {
+            done_125L3_601L3_737L3_738L3 = 1;
+            if((_has_out__125L0_601L0_737L0_738L0)==(0))
+            {
+              _out_123L5_600L1_736L1_737L1 = null;
+              _has_out__125L0_601L0_737L0_738L0 = 1;
+            }
+          }
+          if(!(done_125L3_601L3_737L3_738L3))
+          {
+            if((_has_out__125L0_601L0_737L0_738L0)==(0))
+            {
+              __s_Queue_prevHead_15_108L8_108L8[0] = tmp_125L1_601L1_737L1_738L1;
+            }
+            if((0)==(__s_Node_taken_9_3L3_3L3[tmp_125L1_601L1_737L1_738L1]))
+            {
+              atomic
+              {
+                wasTaken_125L2_601L2_737L2_738L2 = __s_Node_taken_9_3L3_3L3[tmp_125L1_601L1_737L1_738L1];
+                if((_has_out__125L0_601L0_737L0_738L0)==(0))
+                {
+                  __s_Node_taken_9_3L3_3L3[tmp_125L1_601L1_737L1_738L1] = 1;
+                }
+              }
+              if((0)==(wasTaken_125L2_601L2_737L2_738L2))
+              {
+                done_125L3_601L3_737L3_738L3 = 1;
+                if((_has_out__125L0_601L0_737L0_738L0)==(0))
+                {
+                  _out_123L5_600L1_736L1_737L1 = __s_Node_obj_7_3L1_3L1[tmp_125L1_601L1_737L1_738L1];
+                  _has_out__125L0_601L0_737L0_738L0 = 1;
+                }
+              }
+            }
+          }
+        }
+      }
+      if((_out_123L5_600L1_736L1_737L1)==(null))
+      {
+        done_68L9_457L9_596L9_597L9 = 1;
+      }
+      else
+      {
+        int __s_pac141_796L1_797L1=__s_Item_tid_11_66L5_66L5[_out_123L5_600L1_736L1_737L1];
+        lastId_68L8_457L8_591L8_592L8[__s_pac141_796L1_797L1] = __s_Item_id_12_66L6_66L6[_out_123L5_600L1_736L1_737L1];
+      }
+    }
+  }
+  _out_1L0_1L0_1L0_1L0 = 1;
+}
+void T([!bit _out_103L1_663L1_799L1_800L1])
+{
+  int[10] __s_Node_obj_17_801L1_802L1={0,0,0,0,0,0,0,0,0,0}; int[10] __s_Node_next_18_801L2_802L2={0,0,0,0,0,0,0,0,0,0}; bit[10] __s_Node_taken_19_801L3_802L3={0,0,0,0,0,0,0,0,0,0};
+  int __s_tmp_cond_elim_49_803L0_804L0=null;
+  __s_Node_obj_17_801L1_802L1[0] = __s_tmp_cond_elim_49_803L0_804L0;
+  int __s_tmp_cond_elim_49_805L0_806L0=null;
+  __s_Node_obj_17_801L1_802L1[1] = __s_tmp_cond_elim_49_805L0_806L0;
+  int __s_tmp_cond_elim_49_807L0_808L0=null;
+  __s_Node_obj_17_801L1_802L1[2] = __s_tmp_cond_elim_49_807L0_808L0;
+  int __s_tmp_cond_elim_49_809L0_810L0=null;
+  __s_Node_obj_17_801L1_802L1[3] = __s_tmp_cond_elim_49_809L0_810L0;
+  int __s_tmp_cond_elim_49_811L0_812L0=null;
+  __s_Node_obj_17_801L1_802L1[4] = __s_tmp_cond_elim_49_811L0_812L0;
+  int __s_tmp_cond_elim_49_813L0_814L0=null;
+  __s_Node_obj_17_801L1_802L1[5] = __s_tmp_cond_elim_49_813L0_814L0;
+  int __s_tmp_cond_elim_49_815L0_816L0=null;
+  __s_Node_obj_17_801L1_802L1[6] = __s_tmp_cond_elim_49_815L0_816L0;
+  int __s_tmp_cond_elim_49_817L0_818L0=null;
+  __s_Node_obj_17_801L1_802L1[7] = __s_tmp_cond_elim_49_817L0_818L0;
+  int __s_tmp_cond_elim_49_819L0_820L0=null;
+  __s_Node_obj_17_801L1_802L1[8] = __s_tmp_cond_elim_49_819L0_820L0;
+  int __s_tmp_cond_elim_49_821L0_822L0=null;
+  __s_Node_obj_17_801L1_802L1[9] = __s_tmp_cond_elim_49_821L0_822L0;
+  int __s_tmp_cond_elim_50_824L0_825L0=null;
+  __s_Node_next_18_801L2_802L2[0] = __s_tmp_cond_elim_50_824L0_825L0;
+  int __s_tmp_cond_elim_50_826L0_827L0=null;
+  __s_Node_next_18_801L2_802L2[1] = __s_tmp_cond_elim_50_826L0_827L0;
+  int __s_tmp_cond_elim_50_828L0_829L0=null;
+  __s_Node_next_18_801L2_802L2[2] = __s_tmp_cond_elim_50_828L0_829L0;
+  int __s_tmp_cond_elim_50_830L0_831L0=null;
+  __s_Node_next_18_801L2_802L2[3] = __s_tmp_cond_elim_50_830L0_831L0;
+  int __s_tmp_cond_elim_50_832L0_833L0=null;
+  __s_Node_next_18_801L2_802L2[4] = __s_tmp_cond_elim_50_832L0_833L0;
+  int __s_tmp_cond_elim_50_834L0_835L0=null;
+  __s_Node_next_18_801L2_802L2[5] = __s_tmp_cond_elim_50_834L0_835L0;
+  int __s_tmp_cond_elim_50_836L0_837L0=null;
+  __s_Node_next_18_801L2_802L2[6] = __s_tmp_cond_elim_50_836L0_837L0;
+  int __s_tmp_cond_elim_50_838L0_839L0=null;
+  __s_Node_next_18_801L2_802L2[7] = __s_tmp_cond_elim_50_838L0_839L0;
+  int __s_tmp_cond_elim_50_840L0_841L0=null;
+  __s_Node_next_18_801L2_802L2[8] = __s_tmp_cond_elim_50_840L0_841L0;
+  int __s_tmp_cond_elim_50_842L0_843L0=null;
+  __s_Node_next_18_801L2_802L2[9] = __s_tmp_cond_elim_50_842L0_843L0;
+  __s_Node_taken_19_801L3_802L3[0] = 0;
+  __s_Node_taken_19_801L3_802L3[1] = 0;
+  __s_Node_taken_19_801L3_802L3[2] = 0;
+  __s_Node_taken_19_801L3_802L3[3] = 0;
+  __s_Node_taken_19_801L3_802L3[4] = 0;
+  __s_Node_taken_19_801L3_802L3[5] = 0;
+  __s_Node_taken_19_801L3_802L3[6] = 0;
+  __s_Node_taken_19_801L3_802L3[7] = 0;
+  __s_Node_taken_19_801L3_802L3[8] = 0;
+  __s_Node_taken_19_801L3_802L3[9] = 0;
+  int[10] __s_Item_tid_21_864L5_865L5={0,0,0,0,0,0,0,0,0,0}; int[10] __s_Item_id_22_864L6_865L6={0,0,0,0,0,0,0,0,0,0};
+  __s_Item_tid_21_864L5_865L5[0] = 0;
+  __s_Item_tid_21_864L5_865L5[1] = 0;
+  __s_Item_tid_21_864L5_865L5[2] = 0;
+  __s_Item_tid_21_864L5_865L5[3] = 0;
+  __s_Item_tid_21_864L5_865L5[4] = 0;
+  __s_Item_tid_21_864L5_865L5[5] = 0;
+  __s_Item_tid_21_864L5_865L5[6] = 0;
+  __s_Item_tid_21_864L5_865L5[7] = 0;
+  __s_Item_tid_21_864L5_865L5[8] = 0;
+  __s_Item_tid_21_864L5_865L5[9] = 0;
+  __s_Item_id_22_864L6_865L6[0] = 0;
+  __s_Item_id_22_864L6_865L6[1] = 0;
+  __s_Item_id_22_864L6_865L6[2] = 0;
+  __s_Item_id_22_864L6_865L6[3] = 0;
+  __s_Item_id_22_864L6_865L6[4] = 0;
+  __s_Item_id_22_864L6_865L6[5] = 0;
+  __s_Item_id_22_864L6_865L6[6] = 0;
+  __s_Item_id_22_864L6_865L6[7] = 0;
+  __s_Item_id_22_864L6_865L6[8] = 0;
+  __s_Item_id_22_864L6_865L6[9] = 0;
+  int[10] __s_Queue_prevHead_25_906L8_907L8={0,0,0,0,0,0,0,0,0,0}; int[10] __s_Queue_tail_24_906L9_907L9={0,0,0,0,0,0,0,0,0,0};
+  int __s_tmp_cond_elim_54_908L0_909L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[0] = __s_tmp_cond_elim_54_908L0_909L0;
+  int __s_tmp_cond_elim_54_910L0_911L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[1] = __s_tmp_cond_elim_54_910L0_911L0;
+  int __s_tmp_cond_elim_54_912L0_913L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[2] = __s_tmp_cond_elim_54_912L0_913L0;
+  int __s_tmp_cond_elim_54_914L0_915L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[3] = __s_tmp_cond_elim_54_914L0_915L0;
+  int __s_tmp_cond_elim_54_916L0_917L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[4] = __s_tmp_cond_elim_54_916L0_917L0;
+  int __s_tmp_cond_elim_54_918L0_919L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[5] = __s_tmp_cond_elim_54_918L0_919L0;
+  int __s_tmp_cond_elim_54_920L0_921L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[6] = __s_tmp_cond_elim_54_920L0_921L0;
+  int __s_tmp_cond_elim_54_922L0_923L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[7] = __s_tmp_cond_elim_54_922L0_923L0;
+  int __s_tmp_cond_elim_54_924L0_925L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[8] = __s_tmp_cond_elim_54_924L0_925L0;
+  int __s_tmp_cond_elim_54_926L0_927L0=null;
+  __s_Queue_prevHead_25_906L8_907L8[9] = __s_tmp_cond_elim_54_926L0_927L0;
+  int __s_tmp_cond_elim_55_929L0_930L0=null;
+  __s_Queue_tail_24_906L9_907L9[0] = __s_tmp_cond_elim_55_929L0_930L0;
+  int __s_tmp_cond_elim_55_931L0_932L0=null;
+  __s_Queue_tail_24_906L9_907L9[1] = __s_tmp_cond_elim_55_931L0_932L0;
+  int __s_tmp_cond_elim_55_933L0_934L0=null;
+  __s_Queue_tail_24_906L9_907L9[2] = __s_tmp_cond_elim_55_933L0_934L0;
+  int __s_tmp_cond_elim_55_935L0_936L0=null;
+  __s_Queue_tail_24_906L9_907L9[3] = __s_tmp_cond_elim_55_935L0_936L0;
+  int __s_tmp_cond_elim_55_937L0_938L0=null;
+  __s_Queue_tail_24_906L9_907L9[4] = __s_tmp_cond_elim_55_937L0_938L0;
+  int __s_tmp_cond_elim_55_939L0_940L0=null;
+  __s_Queue_tail_24_906L9_907L9[5] = __s_tmp_cond_elim_55_939L0_940L0;
+  int __s_tmp_cond_elim_55_941L0_942L0=null;
+  __s_Queue_tail_24_906L9_907L9[6] = __s_tmp_cond_elim_55_941L0_942L0;
+  int __s_tmp_cond_elim_55_943L0_944L0=null;
+  __s_Queue_tail_24_906L9_907L9[7] = __s_tmp_cond_elim_55_943L0_944L0;
+  int __s_tmp_cond_elim_55_945L0_946L0=null;
+  __s_Queue_tail_24_906L9_907L9[8] = __s_tmp_cond_elim_55_945L0_946L0;
+  int __s_tmp_cond_elim_55_947L0_948L0=null;
+  __s_Queue_tail_24_906L9_907L9[9] = __s_tmp_cond_elim_55_947L0_948L0;
+  _out_103L1_663L1_799L1_800L1 = 1;
+}
+
+===== Compilation statistics =====
+  Solved? -----------------------------> true
+  Number of iterations ----------------> 0
+  Maximum memory usage (MiB) ----------> 97.938
+  Total elapsed time (s) --------------> 36.514
+    % frontend ............ 7.0630445
+    % verification ........ 92.93696
+    % synthesis ........... 0.0
+  Total solution time (s) -------------> 28.7
+    % verification ........ 100.0
+    % synthesis ........... 0.0
+
+  Synthesizer statistics:  
+    [solver stats]
+    Number of calls -------------------> 0
+    Total elapsed time (s) ------------> 0.0
+    Total model building time (s) -----> 0.0
+    Total solution time (s) -----------> 0.0
+    Maximum memory usage (MiB) --------> 0.0
+    Average elapsed time (s) ----------> 0.0
+    Average model building time (s) ---> 0.0
+    Average solution time (s) ---------> 0.0
+    Average memory usage (MiB) --------> 0.0
+
+  Verifier statistics:     
+    [solver stats]
+    Number of calls -------------------> 1
+    Total elapsed time (s) ------------> 33.935
+    Total model building time (s) -----> 5.235
+    Total solution time (s) -----------> 28.7
+    Maximum memory usage (MiB) --------> 56.688
+    Average elapsed time (s) ----------> 33.935
+    Average model building time (s) ---> 5.235
+    Average solution time (s) ---------> 28.7
+    Average memory usage (MiB) --------> 56.688
+
+  Frontend statistics:     
+    Total elapsed time (s) ------------> 2.579
+    Max memory usage (MiB) ------------> 41.25
+
+[PSKETCH] DONE!
