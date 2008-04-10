@@ -1,4 +1,6 @@
-Node genNode (Node n1, Node n2, Node n3) {
+// Candidates: 31,104
+
+Node genNode (Node n1, Node n2, Node n3) {    // 6
     Node g = null;
     int _which = { * 2 };
     assert 0 <= _which && _which <= 2;
@@ -8,7 +10,7 @@ Node genNode (Node n1, Node n2, Node n3) {
     return ?? ? g : g.next;
 }
 
-bit genComparison (Node n1, Node n2, Node n3) {
+bit genComparison (Node n1, Node n2, Node n3) {   // 72/2 = 36
     Node g1 = genNode (n1, n2, n3), g2 = genNode (n1, n2, n3);
     return ?? ? g1 == g2 : g1 != g2;
 }
@@ -20,13 +22,13 @@ static void find (Set S, int key, ref Node prev, ref Node cur) {
     for (int i = 0; i < NNODES; ++i) {
         if (cur.key < key) {
             Node tprev = prev;
-            reorder {
-                if (genComparison (cur, prev, null)) {
-                    Node tmp = genNode (cur, prev, tprev);
+            reorder {  // 4! = 24 --> 
+                if (genComparison (cur, prev, null)) {  // 36
+                    Node tmp = genNode (cur, prev, tprev);  // 6
                     lock (tmp);
                 }
                 if (prev != null) {
-                    Node tmp = genNode (cur, prev, tprev);
+                    Node tmp = genNode (cur, prev, tprev);  // 6
                     unlock (tmp);
                 }
                 prev = cur;
