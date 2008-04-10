@@ -1,53 +1,52 @@
-int genArithExp (int e) {
+// Candidates:  6*(2+72*(6*INT)^2), INT=10  -->  1,555,212
+
+int genArithExp (int e1, int e2) {      // 6
     int _which = { * 3 };
-    assert 0 <= _which && _which <= 4;
-    int c = ??;
+    assert 0 <= _which && _which <= 5;
 
-    if (0 == _which) {  return e + c;  }
-    if (1 == _which) {  return e - c;  }
-    if (2 == _which) {  assert c > 0;  return e * c;  } // avoid trivial solns
-    if (3 == _which) {  assert c > 0;  return e % c;  }
-    if (4 == _which) {  return e;  }
+    if (0 == _which) {  return e1 + e2;  }
+    if (1 == _which) {  return e1 - e2;  }
+    if (2 == _which) {  assert e2 > 0;  return e1 * e2;  }
+    if (3 == _which) {  assert e2 > 0;  return e1 % e2;  }
+    if (4 == _which) {  return e1;  }
+    if (5 == _which) {  return e2;  }
 }
 
-int gidx (int i) {
-    int g = genArithExp (i);
-    return ?? ? g : genArithExp (g);
+bit gcomp (int e1, int e2) {    // 2 + 72*(6*INT)^2
+    if (??) {
+        return ??;      // 2
+    } else {
+        int g1 = genArithExp (genArithExp (e1, ??), e2);        // 6*(6*INT)
+        int g2 = genArithExp (genArithExp (e2, ??), e1);        // 6*(6*INT)
+
+        return ?? ? g1 == g2 : g1 != g2;  // 2
+    }
 }
 
-bit gcomp (int e1, int e2) {
-    int g1 = genArithExp (e1);
-    int g2 = genArithExp (e2);
-    return ?? ? g1 == g2 :
-                ?? ? g1 != g2 : ??;
+bit policy (int i, int t, int N) {      // 3*(2+72*(6*INT)^2)
+    return ?? ? gcomp (i, t) :
+                ?? ? gcomp (t, N) : gcomp (i, N);
 }
 
 bit sp () { return 1; }
 bit main () implements sp {
-    int ate = 0;
-
     fork (int i; N) {
-        int lk1 = gcomp (i, N) ? gidx (i) : gidx (i);
-        int lk2 = gcomp (i, N) ? gidx (i) : gidx (i);
-
-        assert i == lk1 || lk1 == ((i + 1) % N);
-        assert i == lk2 || lk2 == ((i + 1) % N);
-        assert lk1 != lk2;
+        int left = i;
+        int right = (i+1)%N;
 
         for (int t = 0; t < T; ++t) {
+            bit p = policy (i, t, N);   // 3*(2+72*(6*INT)^2)
+            int lk1 = p ? left : right, lk2 = p ? right : left;
+
             lock (lk1);
             lock (lk2);
 
-            atomic { ate = ate + 1; }
-
-            reorder {
+            reorder {                   // 2
                 unlock (lk1);
                 unlock (lk2);
             }
         }
     }
-
-    assert ate == (T*N);
 
     return 1;
 }
