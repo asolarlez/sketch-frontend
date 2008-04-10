@@ -1,0 +1,36 @@
+bit T () { return 1; }
+bit main () implements T {
+    assert NTHREADS % 2 == 0;
+
+    Set S = newSet (NEGINF, POSINF);
+    bit[NTHREADS*NITEMS] removed = 0;
+
+    fork (int i; NTHREADS) {
+        if (i % 2 == 0) {   // add
+            for (int j = 0; j < NITEMS; ++j) {
+                int key = j + (i/2)*NITEMS;
+                assert add (S, key);
+            }
+        } else {    // remove
+            for (int j = 0; j < NITEMS; ++j) {
+                int key = j + (i/2)*NITEMS;
+                removed[key] = remove (S, key);
+            }
+        }
+    }
+
+    assert isValidSet (S, NEGINF, POSINF, NNODES);
+
+    for (int k = 0; k < (NTHREADS/2)*NITEMS; ++k) {
+        if (removed[k]) {
+            assert !remove (S, k);
+        } else {
+            assert !add (S, k);
+            assert remove (S, k);
+        }
+    }
+
+    assert isEmptySet (S);
+
+    return 1;
+}
