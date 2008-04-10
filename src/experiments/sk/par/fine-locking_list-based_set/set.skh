@@ -23,7 +23,7 @@ Node newNode (int key, Node next) {
     return n;
 }
 
-bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
+static bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
     assert S.head != null;
     assert S.head.key == negInf;
     assert S.tail != null;
@@ -46,7 +46,7 @@ bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
     return 1;
 }
 
-bit isEmptySet (Set S) {
+static bit isEmptySet (Set S) {
     assert S.tail.next == null;
     return S.head.next == S.tail;
 }

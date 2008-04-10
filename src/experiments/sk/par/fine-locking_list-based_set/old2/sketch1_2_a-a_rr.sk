@@ -1,0 +1,12 @@
+#include "set.skh"
+
+int NTHREADS = 2;
+int NITEMS = 1;
+int NNODES = 2 + NTHREADS * NITEMS; // +2 for the sentinels
+int NEGINF = -1;
+int POSINF = NNODES;
+
+#include "sketch1Find.skh"
+#include "addRemove.skh"
+
+#include "driver_pa_r.skh"
