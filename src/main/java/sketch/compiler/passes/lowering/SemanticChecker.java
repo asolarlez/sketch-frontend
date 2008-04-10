@@ -26,6 +26,7 @@ import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
 import streamit.frontend.controlflow.CountLattice;
 import streamit.frontend.controlflow.StatementCounter;
+import streamit.frontend.nodes.ExprAlt;
 import streamit.frontend.nodes.ExprArray;
 import streamit.frontend.nodes.ExprArrayInit;
 import streamit.frontend.nodes.ExprArrayRange;
@@ -638,11 +639,22 @@ public class SemanticChecker
 				if (lt != null && rt != null)
 				{
 					typecheckBinaryExpr (expr, expr.getOp (),
-							lt, expr.getLeft() instanceof ExprConstInt, isLeftArr,
+							lt, isLeftArr, expr.getLeft() instanceof ExprConstInt,
 							rt, isRightArr);
 				}
 
 				return (expr);
+			}
+
+			public Object visitExprAlt (ExprAlt ea) {
+				Type lt = getType ((Expression) ea.getThis ().accept (this));
+				Type rt = getType ((Expression) ea.getThat ().accept (this));
+
+				if (lt != null && rt != null
+					&& null == lt.leastCommonPromotion (rt))
+					report (ea, "alternatives have incompatible types '"
+							+ lt +"', '"+ rt +"'");
+				return ea;
 			}
 
 			public Object visitExprChoiceBinary (ExprChoiceBinary exp) {
@@ -665,7 +677,7 @@ public class SemanticChecker
 				List<Integer> ops = exp.opsAsExprBinaryOps ();
 				for (int op : ops)
 					typecheckBinaryExpr (exp, op,
-							lt, left instanceof ExprConstInt, isLeftArr,
+							lt, isLeftArr, left instanceof ExprConstInt,
 							rt, isRightArr);
 
 				return exp;
@@ -1412,6 +1424,10 @@ public class SemanticChecker
 	private void typecheckBinaryExpr (FENode expr, int op,
 			Type lt, boolean isLeftArr, boolean isLeftConst,
 			Type rt, boolean isRightArr) {
+		// Already failed for some other reason
+		if (lt == null || rt == null)
+			return;
+
 		Type ct = lt.leastCommonPromotion(rt);
 		if(op == ExprBinary.BINOP_LSHIFT || op == ExprBinary.BINOP_RSHIFT){
 			ct = lt;
