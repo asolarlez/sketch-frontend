@@ -1,4 +1,6 @@
-Node genNode (Node n1, Node n2, Node n3) {
+//  Candidates:  1080
+
+Node genNode (Node n1, Node n2, Node n3) {      // 6
     Node g = null;
     int _which = { * 2 };
     assert 0 <= _which && _which <= 2;
@@ -8,11 +10,11 @@ Node genNode (Node n1, Node n2, Node n3) {
     return ?? ? g : g.next;
 }
 
-static void lockSomething (Node n1, Node n2, Node n3) {
+static void lockSomething (Node n1, Node n2, Node n3) {         // 6
     lock (genNode (n1, n2, n3));
 }
 
-static void unlockSomething (Node n1, Node n2, Node n3) {
+static void unlockSomething (Node n1, Node n2, Node n3) {       // 6
     unlock (genNode (n1, n2, n3));
 }
 
@@ -32,7 +34,7 @@ static bit remove (Set S, int key) {
 
             if (1 == _lkwhere) {  lockSomething (pred, null, S.head);  }
 
-            Node cur=  S.head.next;
+            Node cur =  S.head.next;
 
             if (2 == _lkwhere) {  lockSomething (pred, cur, S.head);  }
             if (0 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
@@ -42,8 +44,7 @@ static bit remove (Set S, int key) {
 
                     if (3 == _lkwhere) {  lockSomething (pred, cur, S.head);  }
 
-                    pred = cur;
-                    cur = cur.next;
+                    pred = cur;  cur = cur.next;
 
                     if (1 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
                 }
@@ -53,14 +54,13 @@ static bit remove (Set S, int key) {
             if (2 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
 
             if (validate (pred, cur)) {
+                done = 1;
                 if (cur.key != key) {
                     ret = 0;
-                    done = 1;
                 } else {
                     cur.marked = 1;
                     pred.next = cur.next;
                     ret = 1;
-                    done = 1;
                 }
             }
 

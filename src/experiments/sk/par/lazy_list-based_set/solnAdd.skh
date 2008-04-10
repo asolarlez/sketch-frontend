@@ -13,13 +13,12 @@ static bit add (Set S, int key) {
             lock (pred);
             lock (cur);
             if (validate (pred, cur)) {
+                done = 1;
                 if (cur.key == key) {
                     ret = 0;
-                    done = 1;
                 } else {
                     pred.next = newNode (key, 0, cur);
                     ret = 1;
-                    done = 1;
                 }
             }
             unlock (cur);
