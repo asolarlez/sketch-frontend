@@ -1,3 +1,5 @@
+// Candidates:  288
+
 static Item dequeue (Queue q) {
     Node tmp = null;
     bit wasTaken = 1;
