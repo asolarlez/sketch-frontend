@@ -3,16 +3,17 @@ changequote({ ,} )
 SBIT=SBitII
 AJAR="ANTLR_JAR";
 SJAR="SKETCH_JAR";
+RJAR="RATS_JAR";
 if [ $OSTYPE == cygwin ]; then
 
 AJAR="`cygpath -w \"$AJAR\"`";
 SJAR="`cygpath -w "$SJAR"`";
-TMPCLASSPATH="$AJAR;$SJAR;."
+TMPCLASSPATH="$AJAR;$SJAR;$RJAR;."
 else
-TMPCLASSPATH="$AJAR:$SJAR:."
+TMPCLASSPATH="$AJAR:$SJAR:$RJAR:."
 fi
 
-TMPCLASSPATH="ANTLR_JAR:SKETCH_JAR:."
+TMPCLASSPATH="ANTLR_JAR:SKETCH_JAR:RATS_JAR:."
 
 # Get the last command-line argument as INFILE
 #
