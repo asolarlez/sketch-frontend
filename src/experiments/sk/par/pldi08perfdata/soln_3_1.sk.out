@@ -1,0 +1,117 @@
+Verifying non-sketched program ...
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 0.457
+      model building time (s) ---------> 0.448
+      solution time (s) ---------------> 0.0090
+      max memory usage (MiB) ----------> 5.125
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.022
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 0.426
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 0.0090
+      total SPIN mem (MiB) ------------> 5.125
+      actual state mem (MiB) ----------> 0.0
+      equiv state mem (MiB) -----------> 0.0
+      state compression (%) -----------> 0.0
+      # states explored ---------------> 975
+      state exploration rate (states/s)> 0
+
+void main([!bit _out_1L0_1L0_1L0_1L0]) implements sp
+{
+  int[10] _lock_3L0_3L0=0;
+  _out_1L0_1L0_1L0_1L0 = 0;
+  bit _has_out__3L0_3L0_5L0_5L0=0;
+  fork(int i_5L0_5L0_7L0_7L0; 3)
+  {
+    int __s_tmp_cond_elim_0_8L0_8L0_10L0_11L0=0;
+    if((i_5L0_5L0_7L0_7L0)==(2))
+    {
+      __s_tmp_cond_elim_0_8L0_8L0_10L0_11L0 = ((i_5L0_5L0_7L0_7L0)+(1))%(3);
+    }
+    else
+    {
+      __s_tmp_cond_elim_0_8L0_8L0_10L0_11L0 = i_5L0_5L0_7L0_7L0;
+    }
+    int __s_tmp_cond_elim_1_11L0_11L0_13L0_14L0=0;
+    if((i_5L0_5L0_7L0_7L0)==(2))
+    {
+      __s_tmp_cond_elim_1_11L0_11L0_13L0_14L0 = i_5L0_5L0_7L0_7L0;
+    }
+    else
+    {
+      __s_tmp_cond_elim_1_11L0_11L0_13L0_14L0 = (i_5L0_5L0_7L0_7L0)+(1);
+    }
+    int _ret_0_29L0_29L0_18L0_19L0=((((int)__s_tmp_cond_elim_0_8L0_8L0_10L0_11L0))*(1))+(0);
+    atomic((_lock_3L0_3L0[_ret_0_29L0_29L0_18L0_19L0])==(0))
+    {
+      _lock_3L0_3L0[_ret_0_29L0_29L0_18L0_19L0] = (i_5L0_5L0_7L0_7L0)+(1);
+    }
+    int _ret_1_30L1_30L1_20L1_21L1=((((int)__s_tmp_cond_elim_1_11L0_11L0_13L0_14L0))*(1))+(0);
+    atomic((_lock_3L0_3L0[_ret_1_30L1_30L1_20L1_21L1])==(0))
+    {
+      _lock_3L0_3L0[_ret_1_30L1_30L1_20L1_21L1] = (i_5L0_5L0_7L0_7L0)+(1);
+    }
+    int _ret_2_31L2_31L2_22L2_23L2=((((int)__s_tmp_cond_elim_0_8L0_8L0_10L0_11L0))*(1))+(0);
+    atomic
+    {
+      _lock_3L0_3L0[_ret_2_31L2_31L2_22L2_23L2] = 0;
+    }
+    int _ret_3_32L3_32L3_24L3_25L3=((((int)__s_tmp_cond_elim_1_11L0_11L0_13L0_14L0))*(1))+(0);
+    atomic
+    {
+      _lock_3L0_3L0[_ret_3_32L3_32L3_24L3_25L3] = 0;
+    }
+  }
+  _out_1L0_1L0_1L0_1L0 = 1;
+}
+void sp([!bit _out_34L1_34L1_27L1_28L1])
+{
+  _out_34L1_34L1_27L1_28L1 = 1;
+}
+void lock([int mem])
+void unlock([int mem])
+
+===== Compilation statistics =====
+  Solved? -----------------------------> true
+  Number of iterations ----------------> 0
+  Maximum memory usage (MiB) ----------> 36.8125
+  Total elapsed time (s) --------------> 0.779
+    % frontend ............ 41.335045
+    % verification ........ 58.664955
+    % synthesis ........... 0.0
+  Total solution time (s) -------------> 0.0090
+    % verification ........ 100.0
+    % synthesis ........... 0.0
+
+  Synthesizer statistics:  
+    [solver stats]
+    Number of calls -------------------> 0
+    Total elapsed time (s) ------------> 0.0
+    Total model building time (s) -----> 0.0
+    Total solution time (s) -----------> 0.0
+    Maximum memory usage (MiB) --------> 0.0
+    Average elapsed time (s) ----------> 0.0
+    Average model building time (s) ---> 0.0
+    Average solution time (s) ---------> 0.0
+    Average memory usage (MiB) --------> 0.0
+
+  Verifier statistics:     
+    [solver stats]
+    Number of calls -------------------> 1
+    Total elapsed time (s) ------------> 0.457
+    Total model building time (s) -----> 0.448
+    Total solution time (s) -----------> 0.0090
+    Maximum memory usage (MiB) --------> 5.125
+    Average elapsed time (s) ----------> 0.457
+    Average model building time (s) ---> 0.448
+    Average solution time (s) ---------> 0.0090
+    Average memory usage (MiB) --------> 5.125
+
+  Frontend statistics:     
+    Total elapsed time (s) ------------> 0.322
+    Max memory usage (MiB) ------------> 31.6875
+
+[PSKETCH] DONE!

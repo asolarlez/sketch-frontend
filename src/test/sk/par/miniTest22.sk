@@ -1,7 +1,7 @@
 //This doesn't deserve to be a miniTest. This is the mother of all sketches.
 //If this sketch works, we have a paper!! So cross your fingers.
 
-BUGGI.
+//BUGGI.
 
 struct Node{
 	int val;
@@ -10,16 +10,16 @@ struct Node{
 
 Node newNode(int i){
 	Node n = null;
-	atomic{ 
+	atomic{
 		n = new Node();
 	}
 	n.val = i;
-	n.next = null;	
+	n.next = null;
 	return n;
 }
 
 struct Set{
-	Node head;	
+	Node head;
 }
 
 Set newSet(){
@@ -28,7 +28,7 @@ Set newSet(){
 		s = new Set();
 	}
 	s.head = null;
-	return s;	
+	return s;
 }
 
 
@@ -45,11 +45,11 @@ void setInit(Set s){
 
 Node someNext(Node n){
 	if(??){
-		return n;	
+		return n;
 	}else{
 		Node t= someNext(n);
 		assert t != null;
-		return t.next;	
+		return t.next;
 	}
 	return null;
 }
@@ -59,10 +59,10 @@ Node gen(Node a, Node b, Node c){
 	atomic{
 	if(??){
 		if(??){
-			t = a;	
+			t = a;
 		}else{
 			t = b;
-		}	
+		}
 	}else{
 		if(??){ t = c; }
 	}
@@ -80,10 +80,10 @@ void setAdd(Set s, int key){
 			bit more = 1;
 			for(int j=0; j<3; ++j){
 				if(more && cur.val < key){
-					pred = cur;	
+					pred = cur;
 					cur = cur.next;
 				}else{
-					more = 0;	
+					more = 0;
 				}
 			}
 			Node lk = null;
@@ -100,7 +100,7 @@ void setAdd(Set s, int key){
 }
 
 
-bit test(int in){	
+bit test(int in){
 	return 1;
 }
 

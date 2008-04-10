@@ -1,0 +1,18 @@
+Renice me, please!
+
+sudo renice -15 32253
+
+Running test lzsoln_2_a-a-r-r.sk ...
+  ... test lzsoln_2_a-a-r-r.sk done!
+Running test lzsoln_2_a-r-a-r.sk ...
+  ... test lzsoln_2_a-r-a-r.sk done!
+Running test lzsketch1_2_a-a-r-r.sk ...
+  ... test lzsketch1_2_a-a-r-r.sk done!
+Running test lzsketch1_2_a-r-a-r.sk ...
+  ... test lzsketch1_2_a-r-a-r.sk done!
+Name                 ||       Total time (s) ||           Iterations ||        Max mem (MiB) ||    Frontend time (%) ||   Frontend mem (MiB) ||       Synth time (%) ||      Synth mem (MiB) ||      Synth model (s) ||       Synth soln (s) ||       Verif time (%) ||      Verif mem (MiB) ||      Verif model (s) ||       Verif soln (s)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+lzsoln_2_a-a-r-r.sk   |                7.213  |                    0  |              60.7505  |             45.01594  |              54.0625  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |             54.98406  |            6.6879997  |                3.317  |                0.649
+lzsoln_2_a-r-a-r.sk   |               23.532  |                    0  |               98.313  |            13.356281  |               54.125  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |             86.64372  |               44.188  |                 3.49  |               16.899
+lzsketch1_2_a-a-r-r.sk  |              179.172  |                   12  |            294.03125  |            21.410152  |               239.75  |             12.27089  |             54.28125  |               16.603  |                5.319  |            66.318954  |               11.375  |              107.395  |                11.43
+lzsketch1_2_a-r-a-r.sk  |              100.243  |                    7  |             246.8086  |            23.855032  |             204.9375  |            7.3142266  |            41.871094  |                5.414  |                 1.88  |             68.83074  |                9.812  |               66.492  |                2.506

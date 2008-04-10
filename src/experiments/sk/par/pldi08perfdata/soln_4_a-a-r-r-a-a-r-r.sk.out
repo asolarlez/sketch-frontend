@@ -1,0 +1,42 @@
+Verifying non-sketched program ...
+
+===== Compilation statistics =====
+  Solved? -----------------------------> false
+  Number of iterations ----------------> 0
+  Maximum memory usage (MiB) ----------> 41.6875
+  Total elapsed time (s) --------------> 1337.039
+    % frontend ............ 100.0
+    % verification ........ 0.0
+    % synthesis ........... 0.0
+  Total solution time (s) -------------> 0.0
+    % verification ........ 0.0
+    % synthesis ........... 0.0
+
+  Synthesizer statistics:  
+    [solver stats]
+    Number of calls -------------------> 0
+    Total elapsed time (s) ------------> 0.0
+    Total model building time (s) -----> 0.0
+    Total solution time (s) -----------> 0.0
+    Maximum memory usage (MiB) --------> 0.0
+    Average elapsed time (s) ----------> 0.0
+    Average model building time (s) ---> 0.0
+    Average solution time (s) ---------> 0.0
+    Average memory usage (MiB) --------> 0.0
+
+  Verifier statistics:     
+    [solver stats]
+    Number of calls -------------------> 0
+    Total elapsed time (s) ------------> 0.0
+    Total model building time (s) -----> 0.0
+    Total solution time (s) -----------> 0.0
+    Maximum memory usage (MiB) --------> 0.0
+    Average elapsed time (s) ----------> 0.0
+    Average model building time (s) ---> 0.0
+    Average solution time (s) ---------> 0.0
+    Average memory usage (MiB) --------> 0.0
+
+  Frontend statistics:     
+    Total elapsed time (s) ------------> 1337.039
+    Max memory usage (MiB) ------------> 41.6875
+

@@ -1,0 +1,231 @@
+Iteration 0
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> false
+      elapsed time (s) ----------------> 2.664
+      model building time (s) ---------> 2.664
+      solution time (s) ---------------> 0.0
+      max memory usage (MiB) ----------> 5.125
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.399
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 2.265
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 0.0
+      total SPIN mem (MiB) ------------> 5.125
+      actual state mem (MiB) ----------> 0.0
+      equiv state mem (MiB) -----------> 0.0
+      state compression (%) -----------> 0.0
+      # states explored ---------------> 120
+      state exploration rate (states/s)> 0
+
+[SATBackend] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 1.057
+      model building time (s) ---------> 0.039
+      solution time (s) ---------------> 0.0090
+      max memory usage (MiB) ----------> 13.839844
+      [SAT-specific solution stats]
+      initial number of nodes ---------> 2646
+      number of nodes after opts ------> 131
+      number of controls --------------> 9
+      total number of control bits ----> 25
+
+Iteration 1
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> false
+      elapsed time (s) ----------------> 50.023
+      model building time (s) ---------> 2.523
+      solution time (s) ---------------> 47.5
+      max memory usage (MiB) ----------> 120.938
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.249
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 2.274
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 47.5
+      total SPIN mem (MiB) ------------> 120.938
+      actual state mem (MiB) ----------> 4.491
+      equiv state mem (MiB) -----------> 3593.805
+      state compression (%) -----------> 0.12496505
+      # states explored ---------------> 3204403
+      state exploration rate (states/s)> 0
+
+[SATBackend] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 1.734
+      model building time (s) ---------> 0.817
+      solution time (s) ---------------> 0.912
+      max memory usage (MiB) ----------> 27.585938
+      [SAT-specific solution stats]
+      initial number of nodes ---------> 28547
+      number of nodes after opts ------> 2543
+      number of controls --------------> 31
+      total number of control bits ----> 79
+
+Iteration 2
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> false
+      elapsed time (s) ----------------> 137.514
+      model building time (s) ---------> 2.514
+      solution time (s) ---------------> 135.0
+      max memory usage (MiB) ----------> 351.375
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.244
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 2.27
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 135.0
+      total SPIN mem (MiB) ------------> 351.375
+      actual state mem (MiB) ----------> 1.5759993
+      equiv state mem (MiB) -----------> 10243.009
+      state compression (%) -----------> 0.015386097
+      # states explored ---------------> 9133141
+      state exploration rate (states/s)> 0
+
+[SATBackend] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 4.278
+      model building time (s) ---------> 2.137
+      solution time (s) ---------------> 2.135
+      max memory usage (MiB) ----------> 83.98047
+      [SAT-specific solution stats]
+      initial number of nodes ---------> 68522
+      number of nodes after opts ------> 4061
+      number of controls --------------> 31
+      total number of control bits ----> 79
+
+Iteration 3
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 544.503
+      model building time (s) ---------> 2.503
+      solution time (s) ---------------> 542.0
+      max memory usage (MiB) ----------> 1340.312
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.245
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 2.258
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 542.0
+      total SPIN mem (MiB) ------------> 1340.312
+      actual state mem (MiB) ----------> 7.2369995
+      equiv state mem (MiB) -----------> 39061.203
+      state compression (%) -----------> 0.018527335
+      # states explored ---------------> 34828775
+      state exploration rate (states/s)> 0
+
+void main([!bit _out_1L0_1L0_1L0_1L0]) implements sp
+{
+  int[10] _lock_3L0_3L0=0;
+  _out_1L0_1L0_1L0_1L0 = 0;
+  bit _has_out__3L0_3L0_5L0_5L0=0;
+  fork(int i_5L0_5L0_7L0_7L0; 5)
+  {
+    int right_7L1_7L1_9L1_10L1=((i_5L0_5L0_7L0_7L0)+(1))%(5);
+    for(int t_9L0_9L0_11L0_12L0=0;(t_9L0_9L0_11L0_12L0)<(3);t_9L0_9L0_11L0_12L0 = (t_9L0_9L0_11L0_12L0)+(1))
+    {
+      int _out_819L2_786L2_812L2_182L2=(i_5L0_5L0_7L0_7L0)+(22);
+      int _out_900L2_864L2_890L2_209L2=(28)-(i_5L0_5L0_7L0_7L0);
+      boolean __s_tmp_cond_elim_0_925L0_889L0_915L0_217L0=(_out_819L2_786L2_812L2_182L2)!=(_out_900L2_864L2_890L2_209L2);
+      int __s_tmp_cond_elim_3_1175L0_1129L0_1155L0_221L0=0;
+      if(__s_tmp_cond_elim_0_925L0_889L0_915L0_217L0)
+      {
+        __s_tmp_cond_elim_3_1175L0_1129L0_1155L0_221L0 = i_5L0_5L0_7L0_7L0;
+      }
+      else
+      {
+        __s_tmp_cond_elim_3_1175L0_1129L0_1155L0_221L0 = right_7L1_7L1_9L1_10L1;
+      }
+      int __s_tmp_cond_elim_4_1178L0_1132L0_1158L0_224L0=0;
+      if(__s_tmp_cond_elim_0_925L0_889L0_915L0_217L0)
+      {
+        __s_tmp_cond_elim_4_1178L0_1132L0_1158L0_224L0 = right_7L1_7L1_9L1_10L1;
+      }
+      else
+      {
+        __s_tmp_cond_elim_4_1178L0_1132L0_1158L0_224L0 = i_5L0_5L0_7L0_7L0;
+      }
+      int _ret_1_1180L4_1134L4_1160L4_226L4=((((int)__s_tmp_cond_elim_3_1175L0_1129L0_1155L0_221L0))*(1))+(0);
+      atomic((_lock_3L0_3L0[_ret_1_1180L4_1134L4_1160L4_226L4])==(0))
+      {
+        _lock_3L0_3L0[_ret_1_1180L4_1134L4_1160L4_226L4] = (i_5L0_5L0_7L0_7L0)+(1);
+      }
+      int _ret_2_1181L5_1135L5_1162L5_228L5=((((int)__s_tmp_cond_elim_4_1178L0_1132L0_1158L0_224L0))*(1))+(0);
+      atomic((_lock_3L0_3L0[_ret_2_1181L5_1135L5_1162L5_228L5])==(0))
+      {
+        _lock_3L0_3L0[_ret_2_1181L5_1135L5_1162L5_228L5] = (i_5L0_5L0_7L0_7L0)+(1);
+      }
+      bit[2] __sa6_1183L0_1137L0_1165L0_231L0={0,0};
+      __sa6_1183L0_1137L0_1165L0_231L0[0] = 0;
+      __sa6_1183L0_1137L0_1165L0_231L0[1] = 0;
+      int _ret_4_1187L0_1142L0_1175L0_237L0=((((int)__s_tmp_cond_elim_4_1178L0_1132L0_1158L0_224L0))*(1))+(0);
+      atomic
+      {
+        _lock_3L0_3L0[_ret_4_1187L0_1142L0_1175L0_237L0] = 0;
+      }
+      __sa6_1183L0_1137L0_1165L0_231L0[1] = 1;
+      int _ret_3_1190L0_1145L0_1180L0_242L0=((((int)__s_tmp_cond_elim_3_1175L0_1129L0_1155L0_221L0))*(1))+(0);
+      atomic
+      {
+        _lock_3L0_3L0[_ret_3_1190L0_1145L0_1180L0_242L0] = 0;
+      }
+      __sa6_1183L0_1137L0_1165L0_231L0[0] = 1;
+    }
+  }
+  _out_1L0_1L0_1L0_1L0 = 1;
+}
+void sp([!bit _out_1195L1_1150L1_1188L1_247L1])
+{
+  _out_1195L1_1150L1_1188L1_247L1 = 1;
+}
+void lock([int mem])
+void unlock([int mem])
+
+===== Compilation statistics =====
+  Solved? -----------------------------> true
+  Number of iterations ----------------> 3
+  Maximum memory usage (MiB) ----------> 1419.4995
+  Total elapsed time (s) --------------> 745.936
+    % frontend ............ 0.55809075
+    % verification ........ 98.49424
+    % synthesis ........... 0.94766843
+  Total solution time (s) -------------> 727.556
+    % verification ........ 99.57996
+    % synthesis ........... 0.4200364
+
+  Synthesizer statistics:  
+    [solver stats]
+    Number of calls -------------------> 3
+    Total elapsed time (s) ------------> 7.069
+    Total model building time (s) -----> 2.993
+    Total solution time (s) -----------> 3.056
+    Maximum memory usage (MiB) --------> 83.98047
+    Average elapsed time (s) ----------> 2.356
+    Average model building time (s) ---> 0.997
+    Average solution time (s) ---------> 1.018
+    Average memory usage (MiB) --------> 41.802082
+
+  Verifier statistics:     
+    [solver stats]
+    Number of calls -------------------> 4
+    Total elapsed time (s) ------------> 734.704
+    Total model building time (s) -----> 10.204
+    Total solution time (s) -----------> 724.5
+    Maximum memory usage (MiB) --------> 1340.312
+    Average elapsed time (s) ----------> 183.676
+    Average model building time (s) ---> 2.551
+    Average solution time (s) ---------> 181.125
+    Average memory usage (MiB) --------> 454.4375
+
+  Frontend statistics:     
+    Total elapsed time (s) ------------> 4.163
+    Max memory usage (MiB) ------------> 79.1875
+
+[PSKETCH] DONE!

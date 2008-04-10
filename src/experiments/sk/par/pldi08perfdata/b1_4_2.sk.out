@@ -1,0 +1,110 @@
+Iteration 0
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> false
+      elapsed time (s) ----------------> 1.69
+      model building time (s) ---------> 1.69
+      solution time (s) ---------------> 0.0
+      max memory usage (MiB) ----------> 5.125
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.103
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 1.587
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 0.0
+      total SPIN mem (MiB) ------------> 5.125
+      actual state mem (MiB) ----------> 0.0
+      equiv state mem (MiB) -----------> 0.0
+      state compression (%) -----------> 0.0
+      # states explored ---------------> 408
+      state exploration rate (states/s)> 0
+
+[SATBackend] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 0.043
+      model building time (s) ---------> 0.03
+      solution time (s) ---------------> 0.0070
+      max memory usage (MiB) ----------> 17.542969
+      [SAT-specific solution stats]
+      initial number of nodes ---------> 1850
+      number of nodes after opts ------> 100
+      number of controls --------------> 24
+      total number of control bits ----> 41
+
+Iteration 1
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> false
+      elapsed time (s) ----------------> 1.672
+      model building time (s) ---------> 1.663
+      solution time (s) ---------------> 0.0090
+      max memory usage (MiB) ----------> 5.125
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.08
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 1.583
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 0.0090
+      total SPIN mem (MiB) ------------> 5.125
+      actual state mem (MiB) ----------> 0.0
+      equiv state mem (MiB) -----------> 0.0
+      state compression (%) -----------> 0.0
+      # states explored ---------------> 605
+      state exploration rate (states/s)> 0
+
+[SATBackend] Stats for last run:
+      [solution stats]
+      successful? ---------------------> true
+      elapsed time (s) ----------------> 0.148
+      model building time (s) ---------> 0.121
+      solution time (s) ---------------> 0.022
+      max memory usage (MiB) ----------> 14.035156
+      [SAT-specific solution stats]
+      initial number of nodes ---------> 5620
+      number of nodes after opts ------> 357
+      number of controls --------------> 24
+      total number of control bits ----> 41
+
+Iteration 2
+
+===== Compilation statistics =====
+  Solved? -----------------------------> false
+  Number of iterations ----------------> 2
+  Maximum memory usage (MiB) ----------> 58.79297
+  Total elapsed time (s) --------------> 1009.516
+    % frontend ............ 99.648056
+    % verification ........ 0.33303088
+    % synthesis ........... 0.018919958
+  Total solution time (s) -------------> 0.038
+    % verification ........ 23.68421
+    % synthesis ........... 76.31579
+
+  Synthesizer statistics:  
+    [solver stats]
+    Number of calls -------------------> 2
+    Total elapsed time (s) ------------> 0.191
+    Total model building time (s) -----> 0.151
+    Total solution time (s) -----------> 0.029
+    Maximum memory usage (MiB) --------> 17.542969
+    Average elapsed time (s) ----------> 0.095
+    Average model building time (s) ---> 0.075
+    Average solution time (s) ---------> 0.014
+    Average memory usage (MiB) --------> 15.7890625
+
+  Verifier statistics:     
+    [solver stats]
+    Number of calls -------------------> 2
+    Total elapsed time (s) ------------> 3.362
+    Total model building time (s) -----> 3.353
+    Total solution time (s) -----------> 0.0090
+    Maximum memory usage (MiB) --------> 5.125
+    Average elapsed time (s) ----------> 1.681
+    Average model building time (s) ---> 1.676
+    Average solution time (s) ---------> 0.0040
+    Average memory usage (MiB) --------> 5.125
+
+  Frontend statistics:     
+    Total elapsed time (s) ------------> 1005.963
+    Max memory usage (MiB) ------------> 41.25
+

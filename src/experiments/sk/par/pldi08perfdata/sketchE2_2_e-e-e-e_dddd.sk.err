@@ -1,0 +1,8 @@
+
+[PSKETCH] Error: couldn't synthesize sketch.
+Exception in thread "main" java.lang.RuntimeException: The sketch could not be resolved.
+	at streamit.frontend.solvers.SATBackend.partialEvalAndSolve(SATBackend.java:106)
+	at streamit.frontend.solvers.SATSynthesizer.nextCandidate(SATSynthesizer.java:925)
+	at streamit.frontend.ToPSbitII.synthVerifyLoop(ToPSbitII.java:149)
+	at streamit.frontend.ToPSbitII.run(ToPSbitII.java:100)
+	at streamit.frontend.ToPSbitII.main(ToPSbitII.java:313)

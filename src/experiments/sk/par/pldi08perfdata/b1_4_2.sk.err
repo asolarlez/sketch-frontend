@@ -1,0 +1,9 @@
+[PSKETCH] Error: couldn't synthesize sketch.
+Exception in thread "main" java.lang.AssertionError
+	at streamit.frontend.spin.Executer.runVerifier(Executer.java:181)
+	at streamit.frontend.spin.Executer.run(Executer.java:65)
+	at streamit.frontend.spin.Executer.run(Executer.java:56)
+	at streamit.frontend.solvers.SpinVerifier.verify(SpinVerifier.java:71)
+	at streamit.frontend.ToPSbitII.synthVerifyLoop(ToPSbitII.java:142)
+	at streamit.frontend.ToPSbitII.run(ToPSbitII.java:100)
+	at streamit.frontend.ToPSbitII.main(ToPSbitII.java:313)

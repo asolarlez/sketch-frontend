@@ -1,0 +1,12 @@
+Renice me, please!
+
+sudo renice -15 28184
+
+Running test soln_4_a-a-r-r-a-a-r-r.sk ...
+  ... test soln_4_a-a-r-r-a-a-r-r.sk done!
+Running test soln_4_a-r-a-r-a-r-a-r.sk ...
+  ... test soln_4_a-r-a-r-a-r-a-r.sk done!
+Name                 ||       Total time (s) ||           Iterations ||        Max mem (MiB) ||    Frontend time (%) ||   Frontend mem (MiB) ||       Synth time (%) ||      Synth mem (MiB) ||      Synth model (s) ||       Synth soln (s) ||       Verif time (%) ||      Verif mem (MiB) ||      Verif model (s) ||       Verif soln (s)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+soln_4_a-a-r-r-a-a-r-r.sk  |             1337.039  |                    0  |              41.6875  |                100.0  |              41.6875  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0
+soln_4_a-r-a-r-a-r-a-r.sk  |              1239.48  |                    0  |              41.3125  |                100.0  |              41.3125  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |                  0.0

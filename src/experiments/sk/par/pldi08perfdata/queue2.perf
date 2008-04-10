@@ -1,0 +1,43 @@
+Renice me, please!
+
+sudo renice -15 12172
+
+Running test soln_3_e-e-e_ddd.sk ...
+  ... test soln_3_e-e-e_ddd.sk done!
+Running test sketchE1_3_e-e-e_ddd.sk ...
+  ... test sketchE1_3_e-e-e_ddd.sk done!
+Running test sketchE2_3_e-e-e_ddd.sk ...
+  ... test sketchE2_3_e-e-e_ddd.sk done!
+Running test soln_3_eee_d-d-d.sk ...
+  ... test soln_3_eee_d-d-d.sk done!
+Running test sketchD1_3_eee_d-d-d.sk ...
+  ... test sketchD1_3_eee_d-d-d.sk done!
+Running test soln_2_e-e-e-e_dddd.sk ...
+  ... test soln_2_e-e-e-e_dddd.sk done!
+Running test sketchE1_2_e-e-e-e_dddd.sk ...
+  ... test sketchE1_2_e-e-e-e_dddd.sk done!
+Running test sketchE2_2_e-e-e-e_dddd.sk ...
+  ... test sketchE2_2_e-e-e-e_dddd.sk done!
+Running test soln_2_eeee_d-d-d-d.sk ...
+  ... test soln_2_eeee_d-d-d-d.sk done!
+Running test sketchD1_2_eeee_d-d-d-d.sk ...
+  ... test sketchD1_2_eeee_d-d-d-d.sk done!
+Running test soln_3_e-e-e-d-d-d.sk ...
+  ... test soln_3_e-e-e-d-d-d.sk done!
+Running test soln_3_e-d-e-d-e-d.sk ...
+  ... test soln_3_e-d-e-d-e-d.sk done!
+Running test soln_4_e-d-e-d.sk ...
+  ... test soln_4_e-d-e-d.sk done!
+Name                 ||       Total time (s) ||           Iterations ||        Max mem (MiB) ||    Frontend time (%) ||   Frontend mem (MiB) ||       Synth time (%) ||      Synth mem (MiB) ||      Synth model (s) ||       Synth soln (s) ||       Verif time (%) ||      Verif mem (MiB) ||      Verif model (s) ||       Verif soln (s)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+soln_3_e-e-e_ddd.sk   |                9.613  |                    0  |              72.3755  |            14.105898  |              40.6875  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |            85.894104  |               31.688  |                2.658  |                5.599
+sketchE1_3_e-e-e_ddd.sk  |               13.004  |                    1  |               72.813  |            16.256536  |               41.125  |            1.3303599  |            17.539062  |                0.121  |                0.045  |              82.4131  |               31.688  |                5.049  |                5.668
+sketchE2_3_e-e-e_ddd.sk  |              249.204  |                    8  |              213.688  |            5.8377876  |                 99.0  |             27.72347  |             92.64453  |               23.297  |                44.74  |             66.43874  |              114.688  |               60.983  |              104.585
+soln_3_eee_d-d-d.sk   |                7.502  |                    0  |              53.6255  |            15.515862  |              40.6875  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |             84.48414  |               12.938  |                2.539  |                3.799
+sketchD1_3_eee_d-d-d.sk  |               33.964  |                    2  |              105.062  |            11.309033  |                82.75  |             6.262513  |            20.492188  |                1.507  |                0.336  |             82.42845  |               22.312  |               14.168  |               13.828
+soln_2_e-e-e-e_dddd.sk  |              352.859  |                    0  |            1224.7495  |            0.6912109  |              40.6875  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |             99.30879  |             1184.062  |                 2.42  |                348.0
+sketchE1_2_e-e-e-e_dddd.sk  |              345.794  |                    1  |             1261.312  |            0.9618443  |                77.25  |            0.3201328  |               25.875  |                0.734  |                0.368  |            98.718025  |             1184.062  |                5.332  |              336.029
+sketchE2_2_e-e-e-e_dddd.sk  |             3658.041  |                    4  |           109.703125  |             98.97978  |                81.25  |            0.0942581  |            28.453125  |                1.797  |                0.626  |            0.9259601  |            6.6879997  |               33.746  |                0.126
+soln_2_eeee_d-d-d-d.sk  |               16.165  |                    0  |              70.8125  |             9.093721  |              40.6875  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |             90.90628  |               30.125  |                2.595  |                 12.1
+sketchD1_2_eeee_d-d-d-d.sk  |              368.132  |                    6  |            485.03516  |            27.704464  |               207.75  |            30.069649  |            277.28516  |               51.555  |               59.021  |            42.225887  |                122.5  |               33.361  |              122.086
+soln_4_e-d-e-d.sk     |               36.514  |                    0  |               97.938  |            7.0630445  |                41.25  |                  0.0  |                  0.0  |                  0.0  |                  0.0  |             92.93696  |               56.688  |                5.235  |                 28.7

@@ -1,0 +1,62 @@
+Verifying non-sketched program ...
+[SPINVERIF][2] Stats for last run:
+      [solution stats]
+      successful? ---------------------> false
+      elapsed time (s) ----------------> 14.695
+      model building time (s) ---------> 2.595
+      solution time (s) ---------------> 12.1
+      max memory usage (MiB) ----------> 30.125
+      [SPIN-specific stats]
+      codegen time (s) ----------------> 0.37
+      codegen memory (MiB) ------------> 0.0
+      compiler time (s) ---------------> 2.225
+      compiler memory (MiB) -----------> 0.0
+      total SPIN time (s) -------------> 12.1
+      total SPIN mem (MiB) ------------> 30.125
+      actual state mem (MiB) ----------> 8.827
+      equiv state mem (MiB) -----------> 723.004
+      state compression (%) -----------> 1.2208784
+      # states explored ---------------> 929074
+      state exploration rate (states/s)> 0
+
+
+===== Compilation statistics =====
+  Solved? -----------------------------> false
+  Number of iterations ----------------> 0
+  Maximum memory usage (MiB) ----------> 70.8125
+  Total elapsed time (s) --------------> 16.165
+    % frontend ............ 9.093721
+    % verification ........ 90.90628
+    % synthesis ........... 0.0
+  Total solution time (s) -------------> 12.1
+    % verification ........ 100.0
+    % synthesis ........... 0.0
+
+  Synthesizer statistics:  
+    [solver stats]
+    Number of calls -------------------> 0
+    Total elapsed time (s) ------------> 0.0
+    Total model building time (s) -----> 0.0
+    Total solution time (s) -----------> 0.0
+    Maximum memory usage (MiB) --------> 0.0
+    Average elapsed time (s) ----------> 0.0
+    Average model building time (s) ---> 0.0
+    Average solution time (s) ---------> 0.0
+    Average memory usage (MiB) --------> 0.0
+
+  Verifier statistics:     
+    [solver stats]
+    Number of calls -------------------> 1
+    Total elapsed time (s) ------------> 14.695
+    Total model building time (s) -----> 2.595
+    Total solution time (s) -----------> 12.1
+    Maximum memory usage (MiB) --------> 30.125
+    Average elapsed time (s) ----------> 14.695
+    Average model building time (s) ---> 2.595
+    Average solution time (s) ---------> 12.1
+    Average memory usage (MiB) --------> 30.125
+
+  Frontend statistics:     
+    Total elapsed time (s) ------------> 1.47
+    Max memory usage (MiB) ------------> 40.6875
+

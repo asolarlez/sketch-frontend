@@ -1,4 +1,5 @@
-import os, sys, tempfile
+import os, sys, tempfile, time
+
 import sketch
 
 # How many tests to run in parallel
@@ -6,11 +7,20 @@ NCPUS = 1
 
 ##-----------------------------------------------------------------------------
 if __name__ == '__main__':
+    print 'Renice me, please!\n'
+    print 'sudo renice -15', os.getpid ()
+    print ''
+    sys.stdout.flush ()
+
+    try:
+        time.sleep (15)
+    except KeyboardInterrupt:
+        pass
+
     cmd = sys.argv[1:]
     if not len (cmd):
-        cmd = ['psketch', '--heapsize', '25', '--verbosity', '2',
-                          '--timeout', '90', '--inlineamnt', '3',
-                          '--schedlen', '1000']
+        cmd = ['psketch', '--heapsize', '10', '--verbosity', '2',
+                          '--timeout', '60', '--seed', '10']
     logf = sys.stdout
     cwd = os.getcwd ()
     tmpfiles = []
@@ -23,16 +33,24 @@ if __name__ == '__main__':
         cmdline = cmd + extraopts + ['--output', outfile]
         return sketch.Test (path, workdir, logfile, cmdline)
 
+    o = ['--vectorszGuess', '16384', 
+         '--reorderEncoding', 'exponential']
+
     try:
         tests = (
-test ('regtest/miniTest1.sk'),
-test ('regtest/miniTest2.sk'),
-test ('regtest/miniTest16.sk', extraopts=['--vectorszGuess', '16384']),
-#test ('lock-free_queue/soln_2_e-e_dd.sk'),
-#test ('lock-free_queue/enqueueSolution.sk'),
-#test ('bigSketches/fineLockingSk1.sk'),
-#test ('bigSketches/fineLockingSK2.sk'),
+##-----------------------------------------------------------------------------
+## Barrier
+
+test ('barrier/b1_3_2.sk', extraopts=o),
+test ('barrier/b1_3_3.sk', extraopts=o),
+test ('barrier/b1_4_2.sk', extraopts=o),
+test ('barrier/b2_3_2.sk', extraopts=o),
+test ('barrier/b1_4_3.sk', extraopts=o),
+
+test ('barrier/b1_5_2.sk', extraopts=o),
+test ('barrier/b2_3_3.sk', extraopts=o),
 )
+
         sketch.prettyPrint (sketch.runTests (tests, NCPUS))
     finally:
         for tmpfile in tmpfiles:
