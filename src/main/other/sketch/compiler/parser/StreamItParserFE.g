@@ -501,22 +501,32 @@ logicOrExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	;
 
 logicAndExpr returns [Expression x] { x = null; Expression r; }
-	:	x=bitwiseExpr
-		(LOGIC_AND r=bitwiseExpr
+	:	x=bitwiseOrExpr
+		(LOGIC_AND r=bitwiseOrExpr
 			{ x = new ExprBinary(ExprBinary.BINOP_AND, x, r); }
 		)*
 	;
 
-bitwiseExpr returns [Expression x] { x = null; Expression r; int o = 0; }
-	:	x=equalExpr
-		(	( BITWISE_OR  { o = ExprBinary.BINOP_BOR; }
-			| BITWISE_AND { o = ExprBinary.BINOP_BAND; }
-			| BITWISE_XOR { o = ExprBinary.BINOP_BXOR; }
-			)
-			r=equalExpr
-			{ x = new ExprBinary(o, x, r); }
+bitwiseOrExpr returns [Expression x] { x = null; Expression r; }
+	:	x=bitwiseXorExpr
+		(	BITWISE_OR  r=bitwiseXorExpr
+			{ x = new ExprBinary(ExprBinary.BINOP_BOR, x, r); }
 		)*
 	;
+
+bitwiseXorExpr returns [Expression x] { x = null; Expression r; }
+    :   x=bitwiseAndExpr
+        (   BITWISE_XOR  r=bitwiseAndExpr
+            { x = new ExprBinary(ExprBinary.BINOP_BXOR, x, r); }
+        )*
+    ;
+
+bitwiseAndExpr returns [Expression x] { x = null; Expression r; }
+    :   x=equalExpr
+        (   BITWISE_AND  r=equalExpr
+            { x = new ExprBinary(ExprBinary.BINOP_BAND, x, r); }
+        )*
+    ;
 
 equalExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	:	x=compareExpr
@@ -529,16 +539,26 @@ equalExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	;
 
 compareExpr returns [Expression x] { x = null; Expression r; int o = 0; }
-	:	x=addExpr
+	:	x=shiftExpr
 		(	( LESS_THAN  { o = ExprBinary.BINOP_LT; }
 			| LESS_EQUAL { o = ExprBinary.BINOP_LE; }
 			| MORE_THAN  { o = ExprBinary.BINOP_GT; }
 			| MORE_EQUAL { o = ExprBinary.BINOP_GE; }
 			)
-			r = addExpr
+			r = shiftExpr
 			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
+
+shiftExpr returns [Expression x] { x=null; Expression r; int op=0; }
+    :   x=addExpr
+        (   ( LSHIFT {op=ExprBinary.BINOP_LSHIFT;}
+            | RSHIFT {op=ExprBinary.BINOP_RSHIFT;}
+            )
+            r=addExpr
+            { x = new ExprBinary(op, x, r); }
+        )*
+    ;
 
 addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	:	x=multExpr
@@ -552,42 +572,25 @@ addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	;
 
 multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
-	:	x=castExpr
+	:	x=inc_dec_expr
 		(	( STAR { o = ExprBinary.BINOP_MUL; }
 			| DIV  { o = ExprBinary.BINOP_DIV; }
 			| MOD  { o = ExprBinary.BINOP_MOD; }
 			)
-			r=castExpr
+			r=inc_dec_expr
 			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
 
-castExpr returns [Expression x] { x = null; Expression bound; Type t=null; }
-	:	(LPAREN primitive_type) =>
-		  (l:LPAREN t=primitive_type
-		  		(sq:LSQUARE bound=right_expr { t = new TypeArray(t, bound); } 			RSQUARE		)*
-		  RPAREN) x=inc_dec_expr
-		{ x = new ExprTypeCast(getContext(l), t, x); }
-	|	x=shiftExpr
-	;
-
-shiftExpr returns [Expression x] { x=null; Expression r; Type t=null; int op=0; }
-: x=inc_dec_expr
-(
-	(LSHIFT {op=ExprBinary.BINOP_LSHIFT;} | RSHIFT {op=ExprBinary.BINOP_RSHIFT;})
-	r=inc_dec_expr
-	{x=new ExprBinary(op, x, r);}
-)*
-;
-
 inc_dec_expr returns [Expression x] { x = null; }
 	:	(incOrDec) => x=incOrDec
+    |   (LPAREN primitive_type) => x=castExpr
 	|	b:BANG x=value_expr { x = new ExprUnary(getContext(b),
 												ExprUnary.UNOP_NOT, x); }
 	|	x=value_expr
 	;
 
-incOrDec returns [Expression x] { x = null; }
+incOrDec returns [Expression x] { x = null; Expression bound = null; Type t = null; }
 	:	x=left_expr
 		(	INCREMENT
 			{ x = new ExprUnary(x.getContext(), ExprUnary.UNOP_POSTINC, x); }
@@ -598,7 +601,16 @@ incOrDec returns [Expression x] { x = null; }
 			{ x = new ExprUnary(getContext(i), ExprUnary.UNOP_PREINC, x); }
 	|	d:DECREMENT x=left_expr
 			{ x = new ExprUnary(getContext(d), ExprUnary.UNOP_PREDEC, x); }
+            (LPAREN primitive_type) =>
 	;
+
+castExpr returns [Expression x] { x = null; Type t = null; Expression bound = null; }
+    :   l:LPAREN t=primitive_type
+            (sq:LSQUARE  bound=right_expr { t = new TypeArray(t, bound); }  RSQUARE)*
+        RPAREN
+        x=value_expr
+            { x = new ExprTypeCast(getContext(l), t, x); }
+    ;
 
 value_expr returns [Expression x] { x = null; boolean neg = false; }
 	:
