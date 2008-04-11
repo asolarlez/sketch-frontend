@@ -172,6 +172,7 @@ class UpgradeStarToInt extends FEReplacer{
             else
                 return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
         }
+        case ExprBinary.BINOP_NEQ:
         case ExprBinary.BINOP_EQ:{
         	Type tleft = stv.getType(exp.getLeft());
         	Type tright = stv.getType(exp.getRight());
