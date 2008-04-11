@@ -1,0 +1,19 @@
+
+int foo(int i, int j, int k){
+	
+	if(i + j != 2){
+		return i + 2;	
+	}	
+	return i + 2*j + 3*k ;
+}
+
+int moo(int i, int j, int k) implements foo{
+	int t = ??;
+	if(??){
+		i = i / t;
+	}
+	if(i + j != ??){
+		return i + ??;	
+	}
+	return i + 2*j + 3*k + t ;
+}
