@@ -370,8 +370,12 @@ public class ToSBit
 				if( params.hasFlag("outputtest") ) {
 					Writer outWriter = new FileWriter(params.sValue("outputdir")+"script");
 					outWriter.write("#!/bin/sh\n");
-
-					outWriter.write("g++ -I \"$FRONTEND/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
+					outWriter.write("if [ -z \"$SKETCH_HOME\" ];\n" +
+							"then\n" +
+							"echo \"You need to set the \\$SKETCH_HOME environment variable to be the path to the SKETCH distribution; This is needed to find the SKETCH header files needed to compile your program.\" >&2;\n" +
+							"exit 1;\n" +
+							"fi\n");					
+					outWriter.write("g++ -I \"$SKETCH_HOME/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
 
 					outWriter.write("./"+resultFile+"\n");
 					outWriter.flush();
