@@ -1,0 +1,31 @@
+
+Instructions.
+
+First, you need to have:
+
+* cygwin  (a minimal instalation will do)
+
+* a java runtime environment.
+
+Then, you can install following these steps:
+
+* Put the contents of this folder in a directory.
+
+* Create an environment variable SKETCH_HOME and make it equal to this directory.
+(You can set environment variables by right-clicking on My Computer in the start
+menu, and clicking on Properties. Then click on the Advanced tab, and there is
+a button with the caption "Environment Variables").
+
+* Add this directory to your PATH environment variable.
+
+And that's it. Now you can call the synthesizer from the command line by just calling 
+
+$ sketch
+
+You can find some examples in the benchmarks directory in this distribution.
+
+
+
+
+
+

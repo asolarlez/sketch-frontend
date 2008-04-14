@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+if [ -z "$SKETCH_HOME" ];
+then
+echo "YOU NEED TO SET THE \$SKETCH_HOME environment variable to be the path to the SKETCH distribution" >&2;
+exit 1;
+fi
+
+
+
+AJAR="$SKETCH_HOME\antlr.jar";
+SJAR="$SKETCH_HOME\sketch.jar";
+RJAR="$SKETCH_HOME\rats-runtime.jar";
+
+TMPCLASSPATH="$AJAR;$SJAR;$RJAR;."
+
+# Get the last command-line argument as INFILE
+#
+for INFILE; do continue; done
+
+# Launch
+#
+java -ea \
+  -classpath "$TMPCLASSPATH" \
+  streamit.frontend.ToSBit \
+  --output "$INFILE.tmp" \
+  "$@"
