@@ -1,3 +1,9 @@
+/*
+
+This benchmark works much faster with --synth ABC 
+
+*/
+
 int N = 5;
 
 struct Queue{
@@ -35,19 +41,20 @@ bit cond(Queue q){
 	}	
 }
 
-int enqueue(Queue q, int i){
+static int enqueue(Queue q, int i){
 	Node n = new Node();
 	n.val = i;
 	n.next = null;	
 	loop(??){
-		if(??){ if(cond(q)){ q.tail.next = n;  } }
+		if(??){ if(cond(q)){ assert q.tail != null;
+							 q.tail.next = n;  } }
 		if(??){ if(cond(q)){ q.tail = n;  } }
 		if(??){ if(cond(q)){ q.head = n;  } }
 	}
 	return 1;
 }
 
-int dequeue(Queue q){
+static int dequeue(Queue q){
 	Node n;
 	n = q.head;	
 	assert q.head != null;

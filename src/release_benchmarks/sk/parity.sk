@@ -1,4 +1,4 @@
-int W=16;
+int W=32;
 
 bit parity(bit[W] in)
 {

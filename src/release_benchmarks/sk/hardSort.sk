@@ -6,6 +6,8 @@
  * Recursion control is very important for this example. Using --inlineamnt > 5 for this 
  * example will cause it to run for a very very long time.
  * 
+ * Also, you want to run with the --inbits flag with a value < 4; otherwise, you will wait for a long time.
+ * 
  * 
  */
 
