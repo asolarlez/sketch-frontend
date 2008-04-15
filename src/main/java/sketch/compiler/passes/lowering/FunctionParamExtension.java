@@ -126,7 +126,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	private Function currentFunction;
 	private ParameterCopyResolver paramCopyRes;
 	public boolean initOutputs=false;
-
+	private boolean inRetStmt = false;
+	
 	public FunctionParamExtension(boolean io) {
 		this(null);
 		initOutputs = io;
@@ -359,13 +360,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 
 	public Statement conditionWrap(Statement s){
-		Statement ret=new StmtIfThen(s,
-				new ExprBinary(s, ExprBinary.BINOP_EQ,
-					new ExprVar(s, getReturnFlag()),
-					new ExprConstInt(s, 0)),
-				s,
-				null);
-		return ret;
+		
+		if(!inRetStmt){
+			
+			Statement ret=new StmtIfThen(s,
+					new ExprBinary(s, ExprBinary.BINOP_EQ,
+						new ExprVar(s, getReturnFlag()),
+						new ExprConstInt(s, 0)),
+					s,
+					null);
+			return ret;
+		}else{
+			return s;
+		}
 	}
 
 
@@ -438,22 +445,28 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	@Override
 	public Object visitStmtReturn(StmtReturn stmt) {
 		FENode cx=stmt;
+		List<Statement> oldns = newStatements;
+		boolean oldInrs = inRetStmt;
+		inRetStmt = true;
+		this.newStatements = new ArrayList<Statement> ();		
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);
-		List<Statement> stmts = new ArrayList<Statement> ();
+		
 		List params=getOutputParams(currentFunction);
 		for(int i=0;i<params.size();i++) {
 			Parameter param=(Parameter) params.get(i);
 			String name=param.getName();
 			Statement assignRet=new StmtAssign(cx, new ExprVar(cx, name), stmt.getValue(), 0);
-			stmts.add(assignRet);
+			newStatements.add(assignRet);
 		}
-		stmts.add(new StmtAssign(cx, new ExprVar(cx, getReturnFlag()), new ExprConstInt(cx, 1), 0));
+		newStatements.add(new StmtAssign(cx, new ExprVar(cx, getReturnFlag()), new ExprConstInt(cx, 1), 0));
 		Statement ret=new StmtIfThen(cx,
 			new ExprBinary(cx, ExprBinary.BINOP_EQ,
 				new ExprVar(cx, getReturnFlag()),
 				new ExprConstInt(cx, 0)),
-			new StmtBlock(cx,stmts),
+			new StmtBlock(cx,newStatements),
 			null);
+		newStatements = oldns;
+		inRetStmt = oldInrs;
 		return ret;
 	}
 
