@@ -1,14 +1,14 @@
 /**
- * This example provides a nice case study of the use of generators to produce 
- * complicated expressions. It also illustrates how one can synthesize code for fixed 
+ * This example provides a nice case study of the use of generators to produce
+ * complicated expressions. It also illustrates how one can synthesize code for fixed
  * word sizes, and produce code that actually works for arbitrary sizes.
- * 
- * Recursion control is very important for this example. Using --inlineamnt > 5 for this 
+ *
+ * Recursion control is very important for this example. Using --inlineamnt > 5 for this
  * example will cause it to run for a very very long time.
- * 
+ *
  * Also, you want to run with the --inbits flag with a value < 4; otherwise, you will wait for a long time.
- * 
- * 
+ *
+ *
  */
 
 int N = 4;
@@ -82,7 +82,7 @@ bit generator(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4)
 
 int[N] MergeSort(int[N] input)implements sort{
 	int[N] output;
-	if(N>1){ 
+	if(N>1){
 		int[No2] firstHalf = input[0::No2];
 		int[No2] secondHalf = input[No2::No2];
 		firstHalf = sortNover2(firstHalf);
@@ -90,7 +90,7 @@ int[N] MergeSort(int[N] input)implements sort{
 		int x=0;
 		int y=0;
 		for(int i=0; i<N; ++i){
-			//  
+			//
 			if(generator(firstHalf, x, secondHalf, y, N, No2) ){
 				output[i] = firstHalf[x]; x = x+1;
 			}else{
@@ -98,7 +98,7 @@ int[N] MergeSort(int[N] input)implements sort{
 			}
 		}
 	}else{
-		output[0] = input[0];	
+		output[0] = input[0];
 	}
 	return output;
 }

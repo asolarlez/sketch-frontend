@@ -1,0 +1,8 @@
+// Used to be a parser error: cast expressions had lower precedence than
+// shift expressions.
+
+int spec () {  return 1; }
+int sk () implements spec {
+    bit shft = ??;
+    return 1 << (int) shft;
+}
