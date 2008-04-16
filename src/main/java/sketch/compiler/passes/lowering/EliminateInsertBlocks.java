@@ -20,6 +20,7 @@ import streamit.frontend.nodes.StmtInsertBlock;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.misc.Misc;
 
 /**
  * Lowers 'insert' blocks as follows:
@@ -77,8 +78,7 @@ public class EliminateInsertBlocks extends FEReplacer {
 			oldB = ((StmtBlock) sib.getIntoBlock ().accept (this)).getStmts ();
 
 		String maxVal = ""+ oldB.size ();
-		int nBits = 32 - Integer.numberOfLeadingZeros(oldB.size () - 1); // ceiling (lg (size))
-		nBits = nBits > 0 ? nBits : 1;	// lg(1) is a special case
+		int nBits = Misc.nBitsBinaryRepr (oldB.size ());
 
 		header.add (0,
 			new StmtAssert (sib,

@@ -16,7 +16,6 @@
 
 package streamit.misc;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,6 +35,14 @@ public class Misc extends AssertedClass
     public static int MIN (int a, int b)
     {
         return (a < b ? a : b);
+    }
+
+    /** The number of bits needed to represent N in binary. */
+    public static int nBitsBinaryRepr (int N) {
+    	assert N >= 1;
+    	int nBits = 32 - Integer.numberOfLeadingZeros(N - 1); // ceiling (lg (size))
+		nBits = nBits > 0 ? nBits : 1;	// lg(1) is a special case
+		return nBits;
     }
 
 	/** Read all of IN into a string and return the string. */

@@ -23,12 +23,14 @@ header {
 	package streamit.frontend.parser;
 
 	import streamit.frontend.nodes.*;
+    import streamit.frontend.Directive;
 
 	import java.util.Collections;
-import java.io.*;
-import java.util.List;
-
-	import java.util.ArrayList;
+    import java.io.*;
+    import java.util.ArrayList;
+    import java.util.HashSet;
+    import java.util.List;
+    import java.util.Set;
 }
 
 class StreamItParserFE extends Parser;
@@ -38,6 +40,7 @@ options {
 
 {
 	private List processedIncludes=new ArrayList();
+    private Set<Directive> directives = new HashSet<Directive> ();
 
 	public StreamItParserFE(StreamItLex lexer, List includes)
 	{
@@ -85,7 +88,6 @@ options {
 
 public void handleInclude(String name, List funcs, List vars, List structs)
 {
-	name=name.substring(1,name.length()-1);
 	if(processedIncludes.contains(name)) return;
 			InputStream str=null;
 		try {
@@ -113,18 +115,27 @@ throw new IllegalStateException(e);
 		structs.addAll(p.getStructs());
 }
 
+    private void handlePragma (String pragma, String args) {
+        directives.add (Directive.make (pragma, args));
+    }
+
+    public Set<Directive> getDirectives () {  return directives;  }
+
 }// end of ANTLR header block
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  List streams = new ArrayList();
-	List funcs=new ArrayList(); Function f; FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
+	List funcs=new ArrayList(); Function f;
+    FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
+    String file = null;
 }
-	:	( (TK_static return_type ID LPAREN) => f=function_decl { funcs.add(f); } |
-    	(return_type ID LPAREN) => f=function_decl { funcs.add(f); } |
-	   fd=field_decl SEMI { vars.add(fd); } |
-	   ts=struct_decl { structs.add(ts); } |
-	   INCLUDE st:STRING_LITERAL { handleInclude(st.getText(),funcs,vars, structs); }
-)*
+	:	(  (TK_static return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+           |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+           |    fd=field_decl SEMI { vars.add(fd); }
+           |    ts=struct_decl { structs.add(ts); }
+           |    file=include_stmt { handleInclude (file, funcs, vars, structs); }
+           |    pragma_stmt
+        )*
 		EOF
 		// Can get away with no context here.
 		{
@@ -134,6 +145,18 @@ program	 returns [Program p]
  				streams.add(ss);
 				 if (!hasError) p = new Program(null, Collections.singletonList(ss), structs); }
 	;
+
+include_stmt    returns [String f]  { f = null; }
+    :   TK_include fn:STRING_LITERAL SEMI
+        {   f = fn.getText ();  f = f.substring (1, f.length () - 1);  }
+    ;
+
+pragma_stmt { String args = ""; }
+    : TK_pragma p:ID
+        ( a:STRING_LITERAL   { args = a.getText ().substring (1, a.getText ().length ()-1); } )?
+        SEMI
+        { handlePragma (p.getText (), args); }
+    ;
 
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();

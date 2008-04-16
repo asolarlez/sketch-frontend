@@ -59,9 +59,10 @@ tokens {
 	"implements";
 	"assert";
 	"static";
+    // Compiler directives:
+    "include";
+    "pragma";
 }
-
-INCLUDE :"#include" ;
 
 ARROW :	"->" ;
 
