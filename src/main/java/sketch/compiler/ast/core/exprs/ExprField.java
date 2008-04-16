@@ -38,6 +38,13 @@ public class ExprField extends Expression
         this.name = name;
     }
 
+    /** Creates a new field-reference expression, referencing the
+     * named field of the specified expression. */
+    public ExprField(Expression left, String name)
+    {
+    	this (left, left, name);
+    }
+
     /** Returns the expression we're taking a field from. */
     public Expression getLeft() { return left; }
 
