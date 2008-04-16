@@ -26,24 +26,25 @@ import streamit.misc.AssertedClass;
  * <dd>
  *
  * <dt>Description:
- * <dd> This class is used to store an ordered pair of objects in 
+ * <dd> This class is used to store an ordered pair of objects in
  * a single object.  The user can retrieve both objects and check
  * equality of pairs.  Objects stored can be null.
  * </dl>
- * 
+ *
  * @version 1
  * @author  Michal Karczmarek
  */
 
-public class Pair extends AssertedClass
+public class Pair<T1, T2> extends AssertedClass
 {
-    Object first, second;
+    T1 first;
+    T2 second;
 
     /**
      * Constructor simply stores the two objects.
      * @return none
      */
-    public Pair(Object _first, Object _second)
+    public Pair(T1 _first, T2 _second)
     {
         first = _first;
         second = _second;
@@ -63,9 +64,7 @@ public class Pair extends AssertedClass
 
         Pair other = (Pair) o;
 
-        int firstDiff, secondDiff;
-
-        return getFirst() == other.getFirst() && 
+        return getFirst() == other.getFirst() &&
                 getSecond() == other.getSecond();
     }
 
@@ -73,7 +72,7 @@ public class Pair extends AssertedClass
      * Returns the first object of the pair.
      * @return first object of the pair
      */
-    public Object getFirst()
+    public T1 getFirst()
     {
         return first;
     }
@@ -82,7 +81,7 @@ public class Pair extends AssertedClass
      * Returns the second object of the pair.
      * @return second object of the pair
      */
-    public Object getSecond()
+    public T2 getSecond()
     {
         return second;
     }
