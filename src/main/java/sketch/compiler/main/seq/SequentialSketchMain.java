@@ -21,11 +21,14 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import streamit.frontend.CommandLineParamManager.POpts;
+import streamit.frontend.Directive.OptionsDirective;
 import streamit.frontend.codegenerators.NodesToC;
 import streamit.frontend.codegenerators.NodesToCTest;
 import streamit.frontend.codegenerators.NodesToH;
@@ -49,8 +52,10 @@ import streamit.frontend.parser.StreamItParserFE;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
+import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateRegens;
 import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
@@ -61,8 +66,10 @@ import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
+import streamit.frontend.passes.ProtectArrayAccesses;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
+import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.SATBackend;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
@@ -72,6 +79,7 @@ import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 import streamit.misc.ControlFlowException;
+import streamit.misc.Pair;
 
 
 
@@ -173,10 +181,11 @@ public class ToSBit
 	 * @throws antlr.TokenStreamException if an error occurs producing
 	 *         the input token stream
 	 */
-	public Program parseFiles(List inputFiles)
+	public Pair<Program, Set<Directive>> parseFiles(List inputFiles)
 	throws java.io.IOException, antlr.RecognitionException, antlr.TokenStreamException
 	{
 		Program prog = emptyProgram();
+		Set<Directive> pragmas = new HashSet<Directive> ();
 		for (Iterator iter = inputFiles.iterator(); iter.hasNext(); )
 		{
 			String fileName = (String)iter.next();
@@ -194,9 +203,10 @@ public class ToSBit
 			newStructs = new java.util.ArrayList();
 			newStructs.addAll(prog.getStructs());
 			newStructs.addAll(pprog.getStructs());
+			pragmas.addAll (parser.getDirectives ());
 			prog = new Program(null, newStreams, newStructs);
 		}
-		return prog;
+		return new Pair<Program, Set<Directive>> (prog, pragmas);
 	}
 
 	/**
@@ -234,6 +244,11 @@ public class ToSBit
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 		//dump (prog, "ScalarizeVectorAssns");
 
+		if (false) {
+			prog = (Program) prog.accept(new ProtectArrayAccesses(
+					FailurePolicy.ASSERTION, varGen));
+		}
+
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
 
 
@@ -246,11 +261,14 @@ public class ToSBit
 	Program prog = null;
 	ValueOracle oracle;
 	Program finalCode;
+	Set<Directive> directives;
 
 	public Program parseProgram(){
 		try
 		{
-			prog = parseFiles(params.inputFiles);
+			Pair<Program, Set<Directive>> res = parseFiles(params.inputFiles);
+			prog = res.getFirst ();
+			directives = res.getSecond ();
 		}
 		catch (Exception e)
 		{
@@ -267,17 +285,29 @@ public class ToSBit
 
 	}
 
+	protected void processDirectives () {
+		for (Directive d : directives)
+			if (d instanceof OptionsDirective)
+				params.loadParams (((OptionsDirective) d).options ());
+	}
+
 	protected Program preprocessProgram(Program lprog) {
 		boolean useInsertEncoding = params.flagEquals ("reorderEncoding", "exponential");
 		//invoke post-parse passes
 
 		//dump (prog, "before:");
+		if (params.hasFlag ("regens")) {
+			lprog = (Program)lprog.accept(new SeparateInitializers ());
+			lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
+			lprog = (Program)lprog.accept(new EliminateRegens(varGen));
+			//dump (lprog, "~regens");
+		}
 		// prog = (Program)prog.accept(new NoRefTypes());
-		//dump (prog, "bef fpe:");
 		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
 		//dump (lprog, "~insertblocks:");
+		//dump (prog, "bef fpe:");
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
@@ -374,7 +404,7 @@ public class ToSBit
 							"then\n" +
 							"echo \"You need to set the \\$SKETCH_HOME environment variable to be the path to the SKETCH distribution; This is needed to find the SKETCH header files needed to compile your program.\" >&2;\n" +
 							"exit 1;\n" +
-							"fi\n");					
+							"fi\n");
 					outWriter.write("g++ -I \"$SKETCH_HOME/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
 
 					outWriter.write("./"+resultFile+"\n");
@@ -516,6 +546,10 @@ public class ToSBit
 				"             \t * quadratic -- use a loop of switch statements\n",
 				"exponential", null) );
 
+		params.setAllowedParam("regens", new POpts(POpts.FLAG,
+				"--regens     \t Enable regular-expression expression generators.  This feature is"+
+				"             \t experimental at the moment.",
+				null, null) );
 
 		Map<String, String> phases = new HashMap<String, String>();
 		phases.put("preproc", " After preprocessing.");
@@ -526,7 +560,7 @@ public class ToSBit
 		params.setAllowedParam("showphase", new POpts(POpts.TOKEN,
 				"--showphase OPT\t Show the partially evaluated code after the indicated phase of pre or post processing.",
 				"5", phases) );
-		
+
 		Map<String, String> solvers = new HashMap<String, String>();
 		solvers.put("MINI","MiniSat solver");
 		solvers.put("ABC", "ABC solver");
@@ -559,6 +593,8 @@ public class ToSBit
 	public void run()
 	{
 		parseProgram();
+		processDirectives ();
+		//dump (prog, "After parsing:");
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		//dump (prog, "After replacing constants:");

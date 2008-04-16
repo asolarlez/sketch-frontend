@@ -85,8 +85,8 @@ public class ExprBinary extends Expression
     public ExprBinary (int op, Expression left, Expression right) {
     	this (left, op, left, right);
     }
-    
-    
+
+
     public ExprBinary(FENode context, Expression left, String sop, Expression right){
     	this(left, sop, right);
     	this.setCx(context.getCx());
@@ -134,7 +134,7 @@ public class ExprBinary extends Expression
 	}else if(sop.equals("xor")){
 		lop = BINOP_BXOR;
 	}else {
-		throw new RuntimeException("What is this operator: "+ sop +" ??!!");
+		throw new IllegalArgumentException ("What is this operator: "+ sop +" ??!!");
 	}
 
 	this.op = lop;
@@ -160,6 +160,12 @@ public class ExprBinary extends Expression
      * @return BINOP_ operator code for this expression
      */
     public int getOp() { return op; }
+
+    /**
+     * Return the precedence of this expression's operator (higher means
+     * evaluate sooner).
+     */
+    public int getOpPrec() { return opPrec (op); }
 
     /**
      * Returns the left child expression of this.
@@ -278,5 +284,41 @@ public class ExprBinary extends Expression
         String theOp = getOpString();
         return "(" + left.toString() + ")" + theOp +
             "(" + right.toString() + ")";
+    }
+
+    /** Return the precedence of OP (higher means evaluated sooner). */
+    public static int opPrec (int op) {
+    	switch (op) {
+        case ExprBinary.BINOP_OR:
+        	return 1;
+        case ExprBinary.BINOP_AND:
+        	return 2;
+
+        case ExprBinary.BINOP_BOR:
+        	return 10;
+        case ExprBinary.BINOP_BXOR:
+        	return 11;
+        case ExprBinary.BINOP_BAND:
+        	return 12;
+    	// This is the bastard of the bunch -- we'll put it higher than the
+    	// other bitdiddling operators
+        case ExprBinary.BINOP_SELECT:
+        	return 15;
+
+        case ExprBinary.BINOP_EQ:  case ExprBinary.BINOP_NEQ:
+        	return 20;
+        case ExprBinary.BINOP_LT: case ExprBinary.BINOP_LE:
+        case ExprBinary.BINOP_GT: case ExprBinary.BINOP_GE:
+        	return 21;
+        case ExprBinary.BINOP_LSHIFT: case ExprBinary.BINOP_RSHIFT:
+        	return 22;
+
+        case ExprBinary.BINOP_ADD: case ExprBinary.BINOP_SUB:
+        	return 30;
+        case ExprBinary.BINOP_MUL: case ExprBinary.BINOP_DIV: case ExprBinary.BINOP_MOD:
+        	return 31;
+
+        default: throw new IllegalArgumentException ("unknown operator "+ op);
+    	}
     }
 }
