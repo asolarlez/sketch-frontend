@@ -4,7 +4,9 @@ struct S {
 }
 
 int sp () { return 0; }
-int sk () {
-    S s = new S ();
-    return {| (null | s)(.next | .next)?.i |};
+int sk () implements sp {
+    S a = new S (), b = new S ();
+    a.i = 1;
+    b.i = 0;
+    return {| (a | b)(.next | .prev)?.i |};
 }

@@ -1,0 +1,6 @@
+int sp (int a, int b, int c, int d) {
+    return a + b - c + d;
+}
+int sk (int a, int b, int c, int d) implements sp {
+    return {| a + b - c + d |};
+}

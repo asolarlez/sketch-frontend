@@ -1,4 +1,4 @@
 int N = 3;
 int T = 1;
 
-#include "soln.skh"
+include "soln.skh";

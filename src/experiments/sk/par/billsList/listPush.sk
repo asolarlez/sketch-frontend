@@ -1,5 +1,5 @@
-#include "../primitives.skh"
-#include "list.skh"
+include "../primitives.skh";
+include "list.skh";
 
 Page findTailFrom (Page p) {
     while_true {

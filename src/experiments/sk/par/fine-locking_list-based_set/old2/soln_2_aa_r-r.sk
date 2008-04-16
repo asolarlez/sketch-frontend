@@ -1,4 +1,4 @@
-#include "set.skh"
+include "set.skh";
 
 int NTHREADS = 2;
 int NITEMS = 1;
@@ -6,7 +6,7 @@ int NNODES = 2 + NTHREADS * NITEMS; // +2 for the sentinels
 int NEGINF = -1;
 int POSINF = NNODES;
 
-#include "solnFind.skh"
-#include "addRemove.skh"
+include "solnFind.skh";
+include "addRemove.skh";
 
-#include "driver_a_pr.skh"
+include "driver_a_pr.skh";

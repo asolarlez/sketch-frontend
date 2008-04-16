@@ -2,8 +2,37 @@ int spec (int in) {
     return in * 2;
 }
 
+int sk(int in) implements spec
+{
+  int x = 0, y = 0;
+
+  int __s_whichexpr0 = ??;
+  //int __s_whichexpr0 = { * 5 };
+  //int __s_whichexpr0 = 11;
+  assert (((0)<=(__s_whichexpr0))&&((__s_whichexpr0)<(20)));
+
+  int __s_whichlhs1 = ??;
+  //int __s_whichlhs1 = { * 1 };
+  //int __s_whichlhs1 = 0;
+  assert (((0)<=(__s_whichlhs1))&&((__s_whichlhs1)<(2)));
+
+  if((__s_whichlhs1)==(0))
+    x = ((__s_whichexpr0)==(0) ? (in)-(in) : ((__s_whichexpr0)==(1) ? (in)*(in) : ((__s_whichexpr0)==(2) ? (in)/(in) : ((__s_whichexpr0)==(3) ? (in)%(in) : ((__s_whichexpr0)==(4) ? (in)+(in) : ((__s_whichexpr0)==(5) ? (in)-(??) : ((__s_whichexpr0)==(6) ? (in)*(??) : ((__s_whichexpr0)==(7) ? (in)/(??) : ((__s_whichexpr0)==(8) ? (in)%(??) : ((__s_whichexpr0)==(9) ? (in)+(??) : ((__s_whichexpr0)==(10) ? (??)-(in) : ((__s_whichexpr0)==(11) ? (??)*(in) : ((__s_whichexpr0)==(12) ? (??)/(in) : ((__s_whichexpr0)==(13) ? (??)%(in) : ((__s_whichexpr0)==(14) ? (??)+(in) : ((__s_whichexpr0)==(15) ? (??)-(??) : ((__s_whichexpr0)==(16) ? (??)*(??) : ((__s_whichexpr0)==(17) ? (??)/(??) : ((__s_whichexpr0)==(18) ? (??)%(??) : (??)+(??))))))))))))))))))));
+  if((__s_whichlhs1)==(1))
+    y = ((__s_whichexpr0)==(0) ? (in)-(in) : ((__s_whichexpr0)==(1) ? (in)*(in) : ((__s_whichexpr0)==(2) ? (in)/(in) : ((__s_whichexpr0)==(3) ? (in)%(in) : ((__s_whichexpr0)==(4) ? (in)+(in) : ((__s_whichexpr0)==(5) ? (in)-(??) : ((__s_whichexpr0)==(6) ? (in)*(??) : ((__s_whichexpr0)==(7) ? (in)/(??) : ((__s_whichexpr0)==(8) ? (in)%(??) : ((__s_whichexpr0)==(9) ? (in)+(??) : ((__s_whichexpr0)==(10) ? (??)-(in) : ((__s_whichexpr0)==(11) ? (??)*(in) : ((__s_whichexpr0)==(12) ? (??)/(in) : ((__s_whichexpr0)==(13) ? (??)%(in) : ((__s_whichexpr0)==(14) ? (??)+(in) : ((__s_whichexpr0)==(15) ? (??)-(??) : ((__s_whichexpr0)==(16) ? (??)*(??) : ((__s_whichexpr0)==(17) ? (??)/(??) : ((__s_whichexpr0)==(18) ? (??)%(??) : (??)+(??))))))))))))))))))));
+
+  int __s_whichexpr2 = ??;
+  //int __s_whichexpr2 = { * 1 };
+  //int __s_whichexpr2 = 0;
+  assert (((0)<=(__s_whichexpr2))&&((__s_whichexpr2)<(2)));
+
+  return ((__s_whichexpr2)==(0) ? x : y);
+}
+
+/*
 int sk (int in) implements spec {
     int x = 0, y = 0;
     {| x | y |} = {| (in|??) (+|-|*|/|%) (in|??) |};
     return {| x | y |};
 }
+*/

@@ -1,5 +1,5 @@
 int sp () { return 0; }
-int sk () {
+int sk () implements sp {
     int x = 0;
     return ++{| x | x |};
 }

@@ -1,0 +1,9 @@
+struct S {
+    S next;
+}
+
+int sp () { return 0; }
+int sk () implements sk {
+    S s = new S ();
+    return {| s(.next|.prev)?.i |};
+}

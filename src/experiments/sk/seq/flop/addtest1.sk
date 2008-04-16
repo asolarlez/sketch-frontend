@@ -1,4 +1,4 @@
-#include "test/flop/floatAdd.skh"
+include "test/flop/floatAdd.skh";
 
 bit alwaysOne(bit x)
 {

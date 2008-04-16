@@ -3,8 +3,10 @@ struct S {
     int i;
 }
 
-int sp () { return 0; }
-int sk () {
+int sp () { return 1; }
+int sk () implements sp {
     S s = new S ();
+    s.next = new S ();
+    s.next.i = 1;
     return {| s.next.i |};
 }

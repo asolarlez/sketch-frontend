@@ -1,5 +1,5 @@
-#include "../primitives.skh"
-#include "list.skh"
+include "../primitives.skh";
+include "list.skh";
 
 void add (List L, int key) {
     Node n = newNode (key, null, 0);

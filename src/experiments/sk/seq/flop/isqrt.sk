@@ -1,5 +1,5 @@
-#include "test/flop/floatAdd.skh"
-#include "test/flop/floatMul.skh"
+include "test/flop/floatAdd.skh";
+include "test/flop/floatMul.skh";
 
 bit[FW] FObitsub(bit[FW] a, bit[FW] b)
 {
