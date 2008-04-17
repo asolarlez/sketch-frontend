@@ -9,9 +9,16 @@ public class TruncatedOutputStream extends OutputStream {
 	char [] cb = new char[sz];
 	int idx  =0;
 	int beg = 0;
+	
+	
+	@Override
+	public void write(byte[] b, int s, int f) throws IOException{
+		System.out.write(b, s, f);
+		super.write(b, s, f);
+	}
+	
 	@Override
 	public void write(int arg0) throws IOException {
-		// TODO Auto-generated method stub
 		if(sbuf.length() < sz){
 			sbuf.append( Character.toChars(arg0)  );
 		}else{
