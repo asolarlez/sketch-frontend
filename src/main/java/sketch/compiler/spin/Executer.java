@@ -209,7 +209,7 @@ public class Executer {
 			log ("In working directory:\t" + workDir);
 
 			status = (new SynchronousTimedProcess (workDir, timeoutMins,
-					cmdLine)).run ();
+					cmdLine)).run (true);
 
 			log ("Process output:");
 			log (status.out);
