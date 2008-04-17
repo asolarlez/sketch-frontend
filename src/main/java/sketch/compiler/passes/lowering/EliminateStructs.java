@@ -137,9 +137,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        newBodyStmts.add (oldBody);
 	        StmtBlock newBody = new StmtBlock (oldBody, newBodyStmts);
 
-	        return new Function (func2, func2.getCls (), func2.getName (),
+	        newFuncs.add( new Function (func2, func2.getCls (), func2.getName (),
 	        			func2.getReturnType (), newParams,
-	        			func2.getSpecification (), newBody);
+	        			func2.getSpecification (), newBody));
 		}
 
 
@@ -182,9 +182,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        	newName = newName + "_2";
 	        }
 
-	        return new Function (func2, func2.getCls (), newName,
+	        newFuncs.add(new Function (func2, func2.getCls (), newName,
 	        			func2.getReturnType (), newParams,
-	        			func2.getSpecification (), newBody);
+	        			func2.getSpecification (), newBody));
         }
 		return null;
 	}
