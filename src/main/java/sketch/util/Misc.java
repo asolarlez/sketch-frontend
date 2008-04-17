@@ -16,6 +16,7 @@
 
 package streamit.misc;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -46,8 +47,14 @@ public class Misc extends AssertedClass
     }
 
 	/** Read all of IN into a string and return the string. */
-	public static String readStream (InputStream in) throws IOException {
-		TruncatedOutputStream out = new TruncatedOutputStream ();
+	public static String readStream (InputStream in, boolean logAllOutput) throws IOException {
+		
+		OutputStream out;
+		if(logAllOutput){
+			out = new ByteArrayOutputStream ();
+		}else{
+			out = new TruncatedOutputStream ();
+		}
 		Misc.dumpStreamTo (in, out);
 		return out.toString ();
 	}
@@ -65,7 +72,6 @@ public class Misc extends AssertedClass
 		for (String line : new LineReader (in)) {
 			if (withLineNumbers)  out.print ("["+ (++lineno) +"] ");
 			out.println (line);
-			System.out.println(line);
 		}
 	}
 

@@ -51,15 +51,15 @@ public class SynchronousTimedProcess {
 		proc = _proc;
 	}
 
-	public ProcessStatus run () throws IOException, InterruptedException {
+	public ProcessStatus run (boolean logAllOutput) throws IOException, InterruptedException {
 		ProcessKillerThread killer = null;
 		ProcessStatus status = new ProcessStatus ();
 		System.gc();
 		try {
 			if (timeoutMins > 0)
 				killer = new ProcessKillerThread (proc, timeoutMins);
-			status.out = Misc.readStream (proc.getInputStream ());
-			status.err = Misc.readStream (proc.getErrorStream ());
+			status.out = Misc.readStream (proc.getInputStream (), logAllOutput);
+			status.err = Misc.readStream (proc.getErrorStream (), true);
 			status.exitCode = proc.waitFor ();
 			status.execTimeMs = System.currentTimeMillis () - startMs;
 		} finally {
