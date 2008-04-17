@@ -198,7 +198,7 @@ public class SATBackend {
 		ProcessStatus status = null;
 		try {
 			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
-												   commandLine)).run ();
+												   commandLine)).run (false);
 			/*
 			if (verbose ()) {
 				Matcher m = Pattern.compile ("^[^\\->]+.*$",
