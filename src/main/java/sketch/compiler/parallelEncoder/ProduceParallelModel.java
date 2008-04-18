@@ -90,7 +90,7 @@ public class ProduceParallelModel extends FEReplacer {
 
 		public Object visitStmtVarDecl(StmtVarDecl decl){
 			List<Type> types  = new ArrayList<Type>(decl.getNumVars());
-			List<Type> inits  = new ArrayList<Type>(decl.getNumVars());
+			List<Expression> inits  = new ArrayList<Expression>(decl.getNumVars());
 			for(int i=0; i<decl.getNumVars(); ++i){
 				types.add( new TypeArray(decl.getType(i), nthreads));
 				inits.add(null);
