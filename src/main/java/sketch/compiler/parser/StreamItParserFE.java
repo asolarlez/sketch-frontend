@@ -25,17 +25,19 @@ import antlr.MismatchedTokenException;
 import antlr.SemanticException;
 import antlr.ParserSharedInputState;
 import antlr.collections.impl.BitSet;
-
+@SuppressWarnings("deprecation")
 public class StreamItParserFE extends antlr.LLkParser       implements StreamItParserFETokenTypes
  {
 
-	private List processedIncludes=new ArrayList();
+	private Set<String> processedIncludes=new HashSet<String> ();
     private Set<Directive> directives = new HashSet<Directive> ();
+    private boolean preprocess;
 
-	public StreamItParserFE(StreamItLex lexer, List includes)
+	public StreamItParserFE(StreamItLex lexer, Set<String> includes, boolean preprocess)
 	{
 		this(lexer);
-		processedIncludes=includes;
+		processedIncludes = includes;
+        this.preprocess = preprocess;
 	}
 
 	public static void main(String[] args)
@@ -76,34 +78,27 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 		super.reportError(s);
 	}
 
-public void handleInclude(String name, List funcs, List vars, List structs)
-{
-	if(processedIncludes.contains(name)) return;
-			InputStream str=null;
-		try {
-			str = new FileInputStream(name);
-		} catch (FileNotFoundException e) {
-throw new IllegalArgumentException("File not found: "+name);
-		}
-		assert str!=null;
-		processedIncludes.add(name);
-		StreamItParserFE parser=new StreamItParserFE(new StreamItLex(str),processedIncludes);
-		parser.setFilename(name);
-		Program p=null;
-		try {
-			p = parser.program();
-		} catch (RecognitionException e) {
-throw new IllegalStateException(e);
-		} catch (TokenStreamException e) {
-			throw new IllegalStateException(e);
-		}
-		assert p!=null;
-		assert p.getStreams().size()==1;
-		StreamSpec ss=(StreamSpec) p.getStreams().get(0);
+    public void handleInclude(String name, List funcs, List vars, List structs)
+    {
+        try {
+            name = (new File (name)).getCanonicalPath ();
+        } catch (IOException ioe) {
+            throw new IllegalArgumentException ("can't find file "+ name, ioe);
+        }
+        if (processedIncludes.contains(name))
+            return;
+        processedIncludes.add(name);
+        StreamItParser parser = new StreamItParser (name, processedIncludes, preprocess);
+        Program p = parser.parse ();
+		assert p != null;
+		assert p.getStreams().size() == 1;
+
+		StreamSpec ss = (StreamSpec) p.getStreams().get(0);
 		funcs.addAll(ss.getFuncs());
 		vars.addAll(ss.getVars());
 		structs.addAll(p.getStructs());
-}
+        directives.addAll (parser.getDirectives ());
+    }
 
     private void handlePragma (String pragma, String args) {
         directives.add (Directive.make (pragma, args));

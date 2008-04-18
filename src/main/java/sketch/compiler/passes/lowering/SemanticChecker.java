@@ -80,7 +80,7 @@ import streamit.frontend.nodes.UnrecognizedVariableException;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
 import streamit.misc.ControlFlowException;
 
@@ -599,8 +599,13 @@ public class SemanticChecker
 			public Object visitExprFunCall(ExprFunCall exp)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
-
-				Function fun = this.symtab.lookupFn(exp.getName());
+				Function fun;
+				try {
+					fun = this.symtab.lookupFn(exp.getName());
+				} catch (UnrecognizedVariableException e) {
+					report (exp, "unknown function "+ exp.getName ());
+					throw e;
+				}
 				List formals = fun.getParams();
 				Iterator form = formals.iterator();
 				if(formals.size() != exp.getParams().size()){
@@ -699,7 +704,7 @@ public class SemanticChecker
 		    			return base.getType (f);
 		    		}
 
-		    		public Object visit (SelectOr so) {
+		    		public Object visit (SelectOrr so) {
 		    			Type t1 = (Type) so.getThis ().accept (this);
 		    			Type t2 = (Type) so.getThat ().accept (this);
 		    			Type rt = t1.leastCommonPromotion (t2);

@@ -153,6 +153,13 @@ public class RegenParser {
 { " (!)? (a==b | (a|b)==?? | c | d) ",
   "((!)?(((((a (==) b) | (((a | b)) (==) ??)) | c) | d)))"},
 
+// Had to add nested regens
+{ " {| q.tail(.next)? | (tmp|newEntry).next |}=={| (q.tail|tmp|newEntry)(.next)? | null |} |"+
+     "{| q.tail(.next)? | (tmp|newEntry).next |}!={| (q.tail|tmp|newEntry)(.next)? | null |} |"+
+     "false ",
+  "(((((q.tail(.next)? | ((tmp | newEntry)).next)) (==) (((((q.tail | tmp) | newEntry))(.next)? | null))) | (((q.tail(.next)? | ((tmp | newEntry)).next)) (!=) (((((q.tail | tmp) | newEntry))(.next)? | null)))) | false)"
+},
+
 // Bug in Rats!.  Needs to be worked around manually by changing generated code.
 { "x \\| 1",
   "(x (\\|) 1)"},

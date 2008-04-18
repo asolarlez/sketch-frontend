@@ -38,7 +38,7 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
 import streamit.misc.Misc;
 
@@ -133,6 +133,7 @@ public class EliminateRegens extends SymbolTableVisitor {
 		return exps;
 	}
 
+	@SuppressWarnings("unchecked")
 	private class DoExprGen extends FEReplacer {
 		public Object visitExprRegen (ExprRegen er) {
 			return er.getExpr ().accept (this);
@@ -176,10 +177,10 @@ public class EliminateRegens extends SymbolTableVisitor {
 					return s;
 				}
 
-				public Object visit (SelectOr so) {
+				public Object visit (SelectOrr so) {
 					Set<List<String>> s1 = (Set<List<String>>) so.getThis ().accept (this);
 					Set<List<String>> s2 = (Set<List<String>>) so.getThat ().accept (this);
-					s1.addAll (s1);
+					s1.addAll (s2);
 					if (so.getThis ().isOptional () && so.getThat ().isOptional ())
 						s1.add (new ArrayList<String> ());
 					return s1;

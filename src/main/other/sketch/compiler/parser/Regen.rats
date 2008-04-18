@@ -10,7 +10,7 @@ header {
     import static streamit.frontend.nodes.ExprChoiceSelect.Selector;
     import static streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
     import static streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-    import static streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+    import static streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
     import streamit.frontend.nodes.ExprChoiceUnary;
     import streamit.frontend.nodes.ExprConstant;
     import streamit.frontend.nodes.ExprConstBoolean;
@@ -21,6 +21,8 @@ header {
     import streamit.frontend.nodes.ExprTernary;
     import streamit.frontend.nodes.ExprVar;
     import streamit.frontend.nodes.FEContext;
+
+    @SuppressWarnings("deprecation")
 }
 
 body {
@@ -187,7 +189,7 @@ Select SelectNQ =
 
 Select SelChoice =
     yyValue:SelChain  l:(void:"|":s  SelChain)*
-        { for (Select s : l)  yyValue = new SelectOr (yyValue, s);  }
+        { for (Select s : l)  yyValue = new SelectOrr (yyValue, s);  }
     ;
 
 Select SelChain =
@@ -205,7 +207,8 @@ Expression Var =
         { yyValue = new ExprVar (getCx (), id); }
     ;
 Expression Literal =
-    n:Num
+    yyValue:NestedRegen
+    /   n:Num
         { yyValue = ExprConstant.createConstant (getCx (), n); }
     /  "true":Keyword
         { yyValue = new ExprConstBoolean (getCx (), true); }
@@ -215,6 +218,23 @@ Expression Literal =
         { yyValue = ExprNullPtr.nullPtr; }
     /  "??":s
         { yyValue = new ExprStar (getCx ()); }
+    ;
+
+Expression NestedRegen =
+    r:RegenLiteral
+        { yyValue = new ExprParen (RegenParser.parse (r)); }
+    ;
+
+transient String RegenLiteral =
+    void:"{|"
+        yyValue:(
+            { String r = ""; }
+            ( !'|' c:_      { r += c; }
+              / c:'|' !'}'  { r += c; }
+            )*
+            { yyValue = r; }
+        )
+    void:"|}"  WS
     ;
 
 BI InOp =
