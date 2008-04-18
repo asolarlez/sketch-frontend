@@ -1,0 +1,37 @@
+struct Object {
+    int tid;
+    int id;
+}
+
+struct QueueEntry {
+    QueueEntry next;
+    Object stored;
+    bit taken;
+}
+
+struct Queue {
+    QueueEntry prevHead;
+    QueueEntry tail;
+}
+
+Object newObject (int tid, int id) {
+    Object o = new Object ();
+    o.tid = tid;
+    o.id = id;
+    return o;
+}
+
+QueueEntry newQueueEntry (QueueEntry next, Object stored, bit taken) {
+    QueueEntry qe = new QueueEntry ();
+    qe.next = next;
+    qe.stored = stored;
+    qe.taken = taken;
+    return qe;
+}
+
+Queue newQueue () {
+    Queue q = new Queue ();
+    q.prevHead = new QueueEntry (null, null, 1);
+    q.tail = q.prevHead;
+    return q;
+}

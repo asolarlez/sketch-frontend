@@ -1,0 +1,38 @@
+include "queue.skh";
+
+#define AtomicSwap(outOldVal, addr, newVal)  atomic { outOldVal = addr;  addr = newVal;  }
+
+#define aLocation {| q.tail(.next)? | (tmp|newEntry).next |}
+#define aValue    {| (q.tail|tmp|newEntry)(.next)? | null |}
+#define anExpr(x,y) {| x==y | x!=y | false |}
+
+static void Enqueue(Queue q, Object newobject) {
+  QueueEntry tmp = null;
+  QueueEntry newEntry = new QueueEntry(newobject);
+
+  reorder {
+    aLocation = aValue;
+    AtomicSwap(tmp, aLocation, aValue);
+    if (anExpr(tmp, aValue)) aLocation = aValue;
+  }
+}
+
+static Object Dequeue(Queue q) {
+    QueueEntry nextEntry = q.prevHead.next;
+    bit taken = 1;
+    while (taken && nextEntry!=null) {
+      AtomicSwap(taken, nextEntry.taken, 1);
+      if (taken) {
+        nextEntry = nextEntry.next;
+      }
+    }
+    if (nextEntry == null)
+      return null;
+    else {
+      QueueEntry p = {| q.prevHead | nextEntry |};
+      while (p != null && {| p(.next)?.taken |} ) {
+        q.prevHead = p;
+        p = p.next;
+      }
+      return nextEntry.stored;
+} }

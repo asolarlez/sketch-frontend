@@ -15,14 +15,11 @@
  */
 
 package streamit.frontend;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
+
 import java.io.FileWriter;
-import java.io.InputStream;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,12 +40,12 @@ import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.MakeBodiesBlocks;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.parser.StreamItLex;
-import streamit.frontend.parser.StreamItParserFE;
+import streamit.frontend.parser.StreamItParser;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
@@ -142,20 +139,24 @@ public class ToSBit
 	 */
 	public static Program emptyProgram()
 	{
-		List streams = new java.util.ArrayList();
+		List<StreamSpec> streams = new java.util.ArrayList<StreamSpec>();
 		List<TypeStruct> structs = new java.util.ArrayList<TypeStruct>();
 
 		// Complex structure type:
 		List<String> fields = new java.util.ArrayList<String>();
 		List<Type> ftypes = new java.util.ArrayList<Type>();
-		Type floattype = TypePrimitive.floattype ;
-		fields.add("real");
-		ftypes.add(floattype);
-		fields.add("imag");
-		ftypes.add(floattype);
-		//TypeStruct complexStruct =
-		//	new TypeStruct(null, "Complex", fields, ftypes);
-		//structs.add(complexStruct);
+
+		// We don't support the Complex type in SKETCH
+		if (false) {
+			Type floattype = TypePrimitive.floattype ;
+			fields.add("real");
+			ftypes.add(floattype);
+			fields.add("imag");
+			ftypes.add(floattype);
+			TypeStruct complexStruct =
+				new TypeStruct(null, "Complex", fields, ftypes);
+			structs.add(complexStruct);
+		}
 
 		return new Program(null, streams, structs);
 	}
@@ -181,26 +182,22 @@ public class ToSBit
 	 * @throws antlr.TokenStreamException if an error occurs producing
 	 *         the input token stream
 	 */
-	public Pair<Program, Set<Directive>> parseFiles(List inputFiles)
+	public Pair<Program, Set<Directive>> parseFiles(List<String> inputFiles)
 	throws java.io.IOException, antlr.RecognitionException, antlr.TokenStreamException
 	{
 		Program prog = emptyProgram();
+		boolean useCpp = params.hasFlag ("cpp");
 		Set<Directive> pragmas = new HashSet<Directive> ();
-		for (Iterator iter = inputFiles.iterator(); iter.hasNext(); )
-		{
-			String fileName = (String)iter.next();
-			InputStream inStream = new FileInputStream(fileName);
-			DataInputStream dis = new DataInputStream(inStream);
-			StreamItLex lexer = new StreamItLex(dis);
-			StreamItParserFE parser = new StreamItParserFE(lexer);
-			parser.setFilename(fileName);
-			Program pprog = parser.program();
-			if(pprog==null) return null;
-			List newStreams, newStructs;
-			newStreams = new java.util.ArrayList();
+		for (String inputFile : inputFiles) {
+			StreamItParser parser = new StreamItParser (inputFile, useCpp);
+			Program pprog = parser.parse ();
+			if (pprog==null)
+				return null;
+
+			List<StreamSpec> newStreams = new java.util.ArrayList<StreamSpec> ();
+			List<TypeStruct> newStructs = new java.util.ArrayList<TypeStruct> ();
 			newStreams.addAll(prog.getStreams());
 			newStreams.addAll(pprog.getStreams());
-			newStructs = new java.util.ArrayList();
 			newStructs.addAll(prog.getStructs());
 			newStructs.addAll(pprog.getStructs());
 			pragmas.addAll (parser.getDirectives ());
@@ -549,6 +546,10 @@ public class ToSBit
 		params.setAllowedParam("regens", new POpts(POpts.FLAG,
 				"--regens     \t Enable regular-expression expression generators.  This feature is"+
 				"             \t experimental at the moment.",
+				null, null) );
+
+		params.setAllowedParam("cpp", new POpts(POpts.FLAG,
+				"--cpp        \t Run the C preprocessor on files before parsing them.",
 				null, null) );
 
 		Map<String, String> phases = new HashMap<String, String>();
