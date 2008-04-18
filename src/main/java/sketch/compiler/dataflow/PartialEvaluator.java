@@ -759,8 +759,8 @@ public class PartialEvaluator extends FEReplacer {
 	        	int remIters = this.MAX_UNROLL - iters;
 	        	if(remIters > 0){
 	        		String doneNm = this.varGen.nextVar("done");
-	        		ExprVar doneVar = new ExprVar((FEContext) null, doneNm);
-	        		StmtVarDecl svd = new StmtVarDecl((FEContext) null, TypePrimitive.bittype, doneNm, ExprConstInt.zero);
+	        		ExprVar doneVar = new ExprVar(stmt, doneNm);
+	        		StmtVarDecl svd = new StmtVarDecl(stmt, TypePrimitive.bittype, doneNm, ExprConstInt.zero);
 	        		Expression cond = new ExprBinary(stmt.getCond(), "&&", new ExprUnary("!", doneVar));
 	        		Statement setDone = new StmtAssign(doneVar, ExprConstInt.one);
 

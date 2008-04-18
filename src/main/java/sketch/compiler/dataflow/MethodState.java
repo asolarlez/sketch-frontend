@@ -218,12 +218,18 @@ public class MethodState {
 
 
 	public void procChangeTrackers (ChangeTracker ch1){
-		Iterator<Entry<String, varState>> it2 = ch1.deltas.entrySet().iterator();
-		while(it2.hasNext()){
-			Entry<String, varState> me =  it2.next();
+		
+		HashMap<String, varState> mmap = new HashMap<String, varState>();
+		
+		for(Entry<String, varState> me : ch1.deltas.entrySet()){
 			varState av2 = me.getValue();
 			varState oldstate = this.UTvarState(me.getKey());
 			varState merged = oldstate.condjoin(ch1.condition, av2, vtype);
+			mmap.put(me.getKey(), merged);
+		}
+		
+		for(Entry<String, varState> me : mmap.entrySet()){
+			varState merged = me.getValue();
 			if( merged.isArr() ){
 				for(Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext(); ){
 					Entry<Integer, abstractValue> tmp  = ttt.next();
@@ -236,46 +242,43 @@ public class MethodState {
 	}
 
 	public void procChangeTrackers (ChangeTracker ch1, ChangeTracker ch2){
-		Iterator<Entry<String, varState>> it = ch1.deltas.entrySet().iterator();
-		while(it.hasNext()){
-			Entry<String, varState> me =  it.next();
+		HashMap<String, varState> mmap = new HashMap<String, varState>();
+		
+		for(Entry<String, varState> me : ch1.deltas.entrySet()){
 			String nm = me.getKey();
 			varState av1 = me.getValue();
 			if(ch2.deltas.containsKey( nm )){
 				//This means the me.getKey() was modified on both branches.
 				varState av2 = ch2.deltas.get( nm );
 				varState merged = av2.condjoin(ch1.condition, av1, vtype);
-
-				if( merged.isArr() ){
-					for(Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext(); ){
-						Entry<Integer, abstractValue> tmp  = ttt.next();
-						this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),  tmp.getValue() );
-					}
-				}else{
-					this.UTsetVarValue(me.getKey(),   merged.state(vtype) );
-				}
+				mmap.put(nm, merged);
 				ch2.deltas.remove(me.getKey());
 			}else{
 				varState oldstate = this.UTvarState(me.getKey());
 				varState merged = oldstate.condjoin(ch1.condition, av1, vtype);
-				if( merged.isArr() ){
-					for(Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext(); ){
-						Entry<Integer, abstractValue> tmp  = ttt.next();
-						this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),  tmp.getValue() );
-					}
-				}else{
-					this.UTsetVarValue(me.getKey(),   merged.state(vtype) );
-				}
+				mmap.put(nm, merged);
 			}
 		}
 		//Now, at this point, we have removed from ch2 all the items
 		//that were also in ch1. So all the ones that are left in ms2
 		//Are the ones that are in ms2 alone.
-		//Once again, if we wanted to be conservative, we would just
-		//unset them all, but we'll see if we can get away with being nice
-		//and only unset them if they are actually different from what they were originally.
-		//This is checked, just as before, by checkAndUnset(...);
-		procChangeTrackers(ch2);
+		for(Entry<String, varState> me : ch2.deltas.entrySet()){
+			varState av2 = me.getValue();
+			varState oldstate = this.UTvarState(me.getKey());
+			varState merged = oldstate.condjoin(ch2.condition, av2, vtype);
+			mmap.put(me.getKey(), merged);
+		}
+		for(Entry<String, varState> me : mmap.entrySet()){
+			varState merged = me.getValue();
+			if( merged.isArr() ){
+				for(Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext(); ){
+					Entry<Integer, abstractValue> tmp  = ttt.next();
+					this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),  tmp.getValue() );
+				}
+			}else{
+				this.UTsetVarValue(me.getKey(),   merged.state(vtype) );
+			}
+		}
 	}
 
 
