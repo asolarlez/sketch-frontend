@@ -17,6 +17,7 @@
 package streamit.frontend.nodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +53,11 @@ public class StmtBlock extends Statement
         this.stmts = Collections.unmodifiableList(stmts);
     }
 
+    /** Create a new StmtBlock for a variable number of statements. */
+    public StmtBlock (FENode cx, Statement... stmts) {
+    	this (cx, Arrays.asList (stmts));
+    }
+
     /** Create a new StmtBlock for a pair of statements. */
     public StmtBlock(Statement stmt1, Statement stmt2)
     {
@@ -67,7 +73,6 @@ public class StmtBlock extends Statement
     {
     	this (stmt, Collections.singletonList (stmt));
     }
-
 
     public boolean isBlock () { return true; }
 

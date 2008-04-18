@@ -102,6 +102,13 @@ public class ExprUnary extends Expression
     /** Returns the operator of this. */
     public int getOp() { return op; }
 
+    public boolean isIncrOrDecr () {
+        return op == UNOP_PREINC
+        	|| op == UNOP_POSTINC
+        	|| op == UNOP_PREDEC
+        	|| op == UNOP_POSTDEC;
+    }
+
     /**
      * Populate PREPOSTOP with ["", OP_STR] for postfix operators, and
      * [OP_STR, ""] for prefix operators.
