@@ -60,8 +60,8 @@ public class Misc extends AssertedClass
 	}
 
 	/** Dump the stream IN to the stream _OUT. */
-	public static void dumpStreamTo (InputStream in, OutputStream _out) {
-		dumpStreamTo (in, _out, false);
+	public static void dumpStreamTo (InputStream in, OutputStream out) {
+		dumpStreamTo (in, out, false);
 	}
 
 	/** Dump the stream IN to the stream _OUT, optionally with line numbers. */
