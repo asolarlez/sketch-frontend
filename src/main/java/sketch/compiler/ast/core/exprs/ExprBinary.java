@@ -181,6 +181,16 @@ public class ExprBinary extends Expression
      */
     public Expression getRight() { return right; }
 
+    /** Returns true iff this expression is a comparison. */
+    public boolean isComparison () {
+    	return op == BINOP_EQ
+        	|| op == BINOP_NEQ
+        	|| op == BINOP_LT
+        	|| op == BINOP_LE
+        	|| op == BINOP_GT
+        	|| op == BINOP_GE;
+    }
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {
