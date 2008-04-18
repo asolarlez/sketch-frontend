@@ -50,7 +50,7 @@ tokens {
 	"struct"; // "template";
 	"ref";
 	// Control flow:
-	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break";
+	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break"; "do";
 	"continue"; "return";
 // Intrinsic values:
 	//"pi";
