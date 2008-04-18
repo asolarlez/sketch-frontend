@@ -159,6 +159,8 @@ public class RegenParser {
      "false ",
   "(((((q.tail(.next)? | ((tmp | newEntry)).next)) (==) (((((q.tail | tmp) | newEntry))(.next)? | null))) | (((q.tail(.next)? | ((tmp | newEntry)).next)) (!=) (((((q.tail | tmp) | newEntry))(.next)? | null)))) | false)"
 },
+{ "{| {|{| x|y |}  |}|}",
+	"((((x | y))))"},
 
 // Bug in Rats!.  Needs to be worked around manually by changing generated code.
 { "x \\| 1",

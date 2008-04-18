@@ -128,6 +128,8 @@ Expression Term =
     / Var
     / void:"(":s  e:Expr  void:")":s
         { yyValue = new ExprParen (e); }
+    / void:"{|":s  e:Expr  void:"|}":s
+        { yyValue = new ExprParen (e); }
     ;
 
 BI InfixOp =
@@ -207,8 +209,7 @@ Expression Var =
         { yyValue = new ExprVar (getCx (), id); }
     ;
 Expression Literal =
-    yyValue:NestedRegen
-    /   n:Num
+    n:Num
         { yyValue = ExprConstant.createConstant (getCx (), n); }
     /  "true":Keyword
         { yyValue = new ExprConstBoolean (getCx (), true); }
@@ -218,23 +219,6 @@ Expression Literal =
         { yyValue = ExprNullPtr.nullPtr; }
     /  "??":s
         { yyValue = new ExprStar (getCx ()); }
-    ;
-
-Expression NestedRegen =
-    r:RegenLiteral
-        { yyValue = new ExprParen (RegenParser.parse (r)); }
-    ;
-
-transient String RegenLiteral =
-    void:"{|"
-        yyValue:(
-            { String r = ""; }
-            ( !'|' c:_      { r += c; }
-              / c:'|' !'}'  { r += c; }
-            )*
-            { yyValue = r; }
-        )
-    void:"|}"  WS
     ;
 
 BI InOp =
@@ -278,6 +262,7 @@ transient void EOF =
 String s = SYM WS ;
 transient String SYM =
     "??"
+    / "{|"   / "|}"
     /  "++"  /  "--"
     /  "||"  /  "&&"  /  "<<"  /  ">>"
     /  "=="  /  "!="  /  "<="  /  ">="

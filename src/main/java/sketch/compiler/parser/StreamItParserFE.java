@@ -83,7 +83,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
         try {
             name = (new File (name)).getCanonicalPath ();
         } catch (IOException ioe) {
-            throw new IllegalArgumentException ("can't find file "+ name, ioe);
+            throw new IllegalArgumentException ("File not found: "+ name);
         }
         if (processedIncludes.contains(name))
             return;
