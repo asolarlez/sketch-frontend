@@ -49,13 +49,14 @@ public class SymbolTable
     public static final int KIND_STREAM_PARAM = 3;
     /** Kind of a function parameter. */
     public static final int KIND_FUNC_PARAM = 4;
-    
-    private Map vars, fns;
+
+    private Map<String, VarInfo> vars;
+    private Map<String, Function> fns;
     private SymbolTable parent;
     private List includedFns;
 
     private boolean makeShared = false;
-    
+
     private static class VarInfo
     {
         public VarInfo(Type type, Object origin, int kind)
@@ -68,41 +69,41 @@ public class SymbolTable
         public Object origin;
         public int kind;
     }
-    
+
     /** Creates a new symbol table with the specified parent (possibly
      * null). */
     public SymbolTable(SymbolTable parent)
     {
-        vars = new HashMap();
-        fns = new HashMap();
+        vars = new HashMap<String, VarInfo>();
+        fns = new HashMap<String, Function>();
         this.parent = parent;
         this.includedFns = null;
     }
-    
-   
+
+
     /** Creates a new symbol table with the specified parent (possibly
      * null). */
     public SymbolTable(SymbolTable parent, boolean makeShared)
     {
-        vars = new HashMap();
-        fns = new HashMap();
+        vars = new HashMap<String, VarInfo>();
+        fns = new HashMap<String, Function>();
         this.parent = parent;
         this.includedFns = null;
         this.makeShared = makeShared;
     }
-    
-    
+
+
     /**
-     * This function will upgrade the type of a variable to a new 
+     * This function will upgrade the type of a variable to a new
      * @param name
      * @param newType
      */
     public void upgradeVar(String name, Type newType){
     	Type oldType = lookupVar(name);
-    	Type lcpType = oldType.leastCommonPromotion(newType);     	
+    	Type lcpType = oldType.leastCommonPromotion(newType);
     	registerVar(name, lcpType);
     }
-    
+
     /** Registers a new symbol in the symbol table, using default
      * origin and kind. */
     public void registerVar(String name, Type type)
@@ -130,7 +131,7 @@ public class SymbolTable
         if (fn.getName() != null)
             fns.put(fn.getName(), fn);
     }
-    
+
     /** Helper method to get the VarInfo for a name.  If the symbol is
      * not in the current symbol table, search in the parent.  If the
      * parent is null, return null. */
@@ -174,15 +175,15 @@ public class SymbolTable
         throw new UnrecognizedVariableException(name);
     }
 
-    
+
     public boolean isVarShared(String name){
-    	
+
     	return isVarShared(name, false);
-    	
-    	
+
+
     }
-    
-    public boolean isVarShared(String name, boolean isShared){    	
+
+    public boolean isVarShared(String name, boolean isShared){
     	   VarInfo info = (VarInfo)vars.get(name);
            if (info != null)
                return isShared;
@@ -190,8 +191,8 @@ public class SymbolTable
                return parent.isVarShared(name, makeShared || isShared);
            throw new UnrecognizedVariableException(name);
     }
-    
-    
+
+
     /**
      * Looks up the type for a variable expression.  If the named
      * symbol is not in the current symbol table, search in the

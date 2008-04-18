@@ -29,11 +29,12 @@ import java.util.List;
  */
 public class Program extends FENode
 {
-    private List streams, structs;
+    private List<StreamSpec> streams;
+    private List<TypeStruct> structs;
 
     /** Creates a new StreamIt program, given lists of streams and
      * structures. */
-    public Program(FENode context, List streams, List structs)
+    public Program(FENode context, List<StreamSpec> streams, List<TypeStruct> structs)
     {
         super(context);
         this.streams = streams;
@@ -41,13 +42,13 @@ public class Program extends FENode
     }
 
     /** Returns the list of streams declared in this. */
-    public List getStreams()
+    public List<StreamSpec> getStreams()
     {
         return streams;
     }
 
     /** Returns the list of structures declared in this. */
-    public List getStructs()
+    public List<TypeStruct> getStructs()
     {
         return structs;
     }
