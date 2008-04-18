@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprRegen;
 import streamit.frontend.nodes.ExprTernary;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
@@ -87,8 +88,7 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 	}
 
 	public Object visitStmtDoWhile (StmtDoWhile stmt) {
-		stmt = (StmtDoWhile) super.visitStmtDoWhile (stmt);
-		return isRewriteable (stmt.getCond ()) ? blockify (stmt) : stmt;
+		return blockify ((Statement) super.visitStmtDoWhile (stmt));
 	}
 
 	public Object visitStmtExpr (StmtExpr stmt) {
@@ -142,8 +142,7 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 	}
 
 	public Object visitStmtWhile (StmtWhile stmt) {
-		stmt = (StmtWhile) super.visitStmtWhile (stmt);
-		return isRewriteable (stmt.getCond ()) ? blockify (stmt) : stmt;
+		return blockify ((Statement) super.visitStmtWhile (stmt));
 	}
 
 	protected StmtBlock blockify (Statement s) {
@@ -151,7 +150,10 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 	}
 
 	protected boolean isRewriteable (Expression e) {
-		return null != e && (isGlobal (e) || hasShortCircuit (e));
+		return null != e
+			&& (e instanceof ExprRegen
+				|| isGlobal (e)
+				|| hasShortCircuit (e));
 	}
 
 	protected boolean hasShortCircuit (Expression e) {
