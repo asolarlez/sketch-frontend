@@ -23,7 +23,7 @@ import streamit.frontend.nodes.ExprArrayRange.Range;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOr;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
 
 /**
@@ -160,7 +160,7 @@ public class GetExprType extends FENullVisitor
     			return base.getType (sf.getField ());
     		}
 
-    		public Object visit (SelectOr so) {
+    		public Object visit (SelectOrr so) {
        			Type t1 = (Type) so.getThis ().accept (this);
     			Type t2 = (Type) so.getThat ().accept (this);
     			Type rt = t1.leastCommonPromotion (t2);
