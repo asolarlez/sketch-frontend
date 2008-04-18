@@ -40,7 +40,7 @@ public class ExprChoiceSelect extends Expression {
 	}
 
 	public static abstract class SelectorVisitor {
-		public abstract Object visit (SelectOr so);
+		public abstract Object visit (SelectOrr so);
 		public abstract Object visit (SelectChain sc);
 		public abstract Object visit (SelectField sf);
 	}
@@ -62,25 +62,25 @@ public class ExprChoiceSelect extends Expression {
 		}
 
 		public static Select clone (Select s) {
-			return s instanceof SelectOr ? new SelectOr (s)
+			return s instanceof SelectOrr ? new SelectOrr (s)
 						: s instanceof SelectChain ? new SelectChain (s)
 								: new SelectField (s);
 		}
 	}
 
-	public static class SelectOr extends Select {
+	public static class SelectOrr extends Select {
 		private Select ths, that;
 
-		public SelectOr (Select ths, Select that) {
+		public SelectOrr (Select ths, Select that) {
 			this.ths = ths;
 			this.that = that;
 		}
 
-		public SelectOr (Select s) {
+		public SelectOrr (Select s) {
 			super (s);
-			if (s instanceof SelectOr) {
-				this.ths = ((SelectOr) s).ths;
-				this.that = ((SelectOr) s).that;
+			if (s instanceof SelectOrr) {
+				this.ths = ((SelectOrr) s).ths;
+				this.that = ((SelectOrr) s).that;
 			}
 		}
 
