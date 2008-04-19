@@ -31,7 +31,8 @@ public abstract class Statistics {
 	// I hate Java.
 	public static long max (List<Long> L) {
 		try {  return Collections.max (L);  }
-		catch (NoSuchElementException e) {  return 0;  }
+		catch (NoSuchElementException e)	{  return 0;  }
+		catch (IndexOutOfBoundsException e) {  return 0;  }
 	}
 
 	// I hate Java.
