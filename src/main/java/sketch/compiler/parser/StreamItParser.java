@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import antlr.RecognitionException;
@@ -31,25 +32,26 @@ public class StreamItParser {
 
 	/** Create a parser of FILENAME. */
 	public StreamItParser (String fileName) {
-		this (fileName, false);
+		this (fileName, false, null);
 	}
 
 	/** Create a parser of FILENAME, and optionally run the input file through
-	 * the C preprocessor before it is parsed. */
-	public StreamItParser (String fileName, boolean preprocess) {
-		this (fileName, new HashSet<String> (), preprocess);
+	 * the C preprocessor before it is parsed.  The flags CPPDEFS will be defined
+	 * if preprocessing is requested. */
+	public StreamItParser (String fileName, boolean preprocess, List<String> cppDefs) {
+		this (fileName, new HashSet<String> (), preprocess, cppDefs);
 	}
 
 	/** Create a parser of FILENAME, and optionally run the input file through
-	 * the C preprocessor before it is parsed. HANDLEDINCLUDES will not be
-	 * included again. */
+	 * the C preprocessor before it is parsed.   The flags CPPDEFS will be defined
+	 * if preprocessing is requested. HANDLEDINCLUDES will not be included again. */
 	public StreamItParser (String fileName, Set<String> handledIncludes,
-						   boolean preprocess) {
+						   boolean preprocess, List<String> cppDefs) {
 		try {
-			InputStream in = preprocess ? new CPreprocessedFileStream (fileName)
+			InputStream in = preprocess ? new CPreprocessedFileStream (fileName, cppDefs)
 										: new FileInputStream (fileName);
 			handledIncludes.add ((new File (fileName)).getCanonicalPath ());
-			parser = new StreamItParserFE (new StreamItLex (in), handledIncludes, preprocess);
+			parser = new StreamItParserFE (new StreamItLex (in), handledIncludes, preprocess, cppDefs);
 			parser.setFilename (fileName);
 		} catch (FileNotFoundException fnf) {
 			throw new IllegalArgumentException("File not found: "+fileName);
