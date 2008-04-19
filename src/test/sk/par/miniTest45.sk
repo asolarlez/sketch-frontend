@@ -1,5 +1,7 @@
+// This currently fails, but it shouldn't.
+
 // Return statements are translated so that a return can be called anywhere
-// within any block, and the following code is protected appropriately.
+// within any block, and the later code is protected appropriately.
 
 int LEN = 2;
 
