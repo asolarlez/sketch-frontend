@@ -207,6 +207,9 @@ public class ToPSbitII extends ToSBit {
 			prog = MergeLocalStatements.go (prog);
 			//dump (prog, "merged local stmts");
 		}
+
+		if (params.flagEquals ("showphase", "lowering"))
+			dump (prog, "After lowering to intermediate representation:");
 	}
 
 	public Program postprocessProgram (Program p) {

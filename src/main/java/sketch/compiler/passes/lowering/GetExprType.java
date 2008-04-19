@@ -39,13 +39,23 @@ public class GetExprType extends FENullVisitor
     private SymbolTable symTab;
     private StreamType streamType;
     private Map structsByName;
+    /** This is a mechanism for a hacky type coercion for null pointers.
+     * Before structs have been eliminated, nulls have type 'null'; afterwards,
+     * they will usually get type 'int'. */
+    private Type nullType;
 
     public GetExprType(SymbolTable symTab, StreamType streamType,
-                       Map structsByName)
+            Map structsByName) {
+    	this (symTab, streamType, structsByName, TypePrimitive.nulltype);
+    }
+
+    public GetExprType(SymbolTable symTab, StreamType streamType,
+                       Map structsByName, Type nullType)
     {
         this.symTab = symTab;
         this.streamType = streamType;
         this.structsByName = structsByName;
+        this.nullType = nullType;
     }
 
     public Object visitExprAlt (ExprAlt ea) {
@@ -240,7 +250,7 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprNullPtr(ExprNullPtr exp){
-    	return TypePrimitive.nulltype;
+    	return nullType;
     }
 
     public Object visitExprConstChar(ExprConstChar exp)
@@ -351,7 +361,11 @@ public class GetExprType extends FENullVisitor
         // (Might not want to blindly assert ?:.)
         Type tb = (Type)exp.getB().accept(this);
         Type tc = (Type)exp.getC().accept(this);
-        return tb.leastCommonPromotion(tc);
+        Type lub = tb.leastCommonPromotion(tc);
+
+        exp.assertTrue (lub != null,
+        		"incompatible types for '"+ exp.getB () +"', '"+ exp.getC () +"'");
+        return lub;
     }
 
     public Object visitExprTypeCast(ExprTypeCast exp)

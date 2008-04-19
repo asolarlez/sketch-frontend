@@ -188,9 +188,11 @@ public class ToSBit
 	{
 		Program prog = emptyProgram();
 		boolean useCpp = params.hasFlag ("cpp");
+		List<String> cppDefs = params.listValue ("def");
 		Set<Directive> pragmas = new HashSet<Directive> ();
+
 		for (String inputFile : inputFiles) {
-			StreamItParser parser = new StreamItParser (inputFile, useCpp);
+			StreamItParser parser = new StreamItParser (inputFile, useCpp, cppDefs);
 			Program pprog = parser.parse ();
 			if (pprog==null)
 				return null;
@@ -259,14 +261,13 @@ public class ToSBit
 	Program prog = null;
 	ValueOracle oracle;
 	Program finalCode;
-	Set<Directive> directives;
 
 	public Program parseProgram(){
 		try
 		{
 			Pair<Program, Set<Directive>> res = parseFiles(params.inputFiles);
 			prog = res.getFirst ();
-			directives = res.getSecond ();
+			processDirectives (res.getSecond ());
 		}
 		catch (Exception e)
 		{
@@ -283,8 +284,8 @@ public class ToSBit
 
 	}
 
-	protected void processDirectives () {
-		for (Directive d : directives)
+	protected void processDirectives (Set<Directive> D) {
+		for (Directive d : D)
 			if (d instanceof OptionsDirective)
 				params.loadParams (((OptionsDirective) d).options ());
 	}
@@ -547,12 +548,17 @@ public class ToSBit
 				"exponential", null) );
 
 		params.setAllowedParam("regens", new POpts(POpts.FLAG,
-				"--regens     \t Enable regular-expression expression generators.  This feature is"+
+				"--regens     \t Enable regular-expression expression generators.  This feature is\n"+
 				"             \t experimental at the moment.",
 				null, null) );
 
 		params.setAllowedParam("cpp", new POpts(POpts.FLAG,
 				"--cpp        \t Run the C preprocessor on files before parsing them.",
+				null, null) );
+		params.setAllowedParam("def", new POpts(POpts.MULTISTRING,
+				"--def        \t Vars to define for the C preprocessor.  Assumes '--cpp'.\n"+
+				"             \t Consider also using the 'safer' option --D VAR value\n"+
+				"             \t Example use:  '--def _FOO=1 --def _BAR=false ...'",
 				null, null) );
 
 		Map<String, String> phases = new HashMap<String, String>();
@@ -597,7 +603,6 @@ public class ToSBit
 	public void run()
 	{
 		parseProgram();
-		processDirectives ();
 		//dump (prog, "After parsing:");
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));

@@ -159,6 +159,7 @@ public class CommandLineParamManager{
 						passedParameters.put(argn, ls);
 						ls.add(argnp1);
 					}
+					return 2;
 				}
 				case POpts.TOKEN:{
 					if(argnp1.length() < 1){ throw new RuntimeException("Flag " + argn + " requires an additional argument. \n" + argInfo); }
@@ -175,7 +176,8 @@ public class CommandLineParamManager{
 					if( !passedParameters.containsKey(argn) ){
 						passedParameters.put(argn, new HashMap<String, String>());
 					}
-					((Map) passedParameters.get(argn)).put(argnp1, argnp2);
+					((Map<String, String>) passedParameters.get(argn)).put(argnp1, argnp2);
+					return 3;
 				}
 
 				default:
