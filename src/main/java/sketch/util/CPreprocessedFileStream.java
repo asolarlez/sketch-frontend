@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * A file input stream that is run through the C preprocessor.
@@ -25,12 +26,22 @@ public class CPreprocessedFileStream extends InputStream {
 	private int state = BOL;
 
 	public CPreprocessedFileStream (String filename) throws FileNotFoundException {
+		this (filename, null);
+	}
+
+	public CPreprocessedFileStream (String filename, List<String> cppDefs)
+	throws FileNotFoundException {
 		if (!(new File (filename)).canRead ())
 			throw new FileNotFoundException ("can't read: "+ filename);
 
 		ProcessBuilder pb;
 		try {
-			pb = new ProcessBuilder (CPP, "-Wno-trigraphs", filename);
+
+			pb = new ProcessBuilder (CPP, "-Wno-trigraphs");
+			if (cppDefs != null)
+				for (String def : cppDefs)
+					pb.command ().add ("-D"+ def);
+			pb.command ().add (filename);
 			p = pb.start ();
 		} catch (IOException ioe) {
 			throw new UnsupportedOperationException ("can't run 'cpp'", ioe);
