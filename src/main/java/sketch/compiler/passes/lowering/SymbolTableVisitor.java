@@ -102,7 +102,6 @@ public class SymbolTableVisitor extends FEReplacer
         this.streamType = st;
         this.structsByName = new java.util.HashMap();
     }
-
     /**
      * Get the type of an <code>Expression</code>.
      *
@@ -110,12 +109,24 @@ public class SymbolTableVisitor extends FEReplacer
      * @returns     Type of the expression
      * @see         streamit.frontend.nodes.GetExprType
      */
-    public Type getType(Expression expr)
+    public Type getType(Expression expr) {
+    	return getType (expr, TypePrimitive.nulltype);
+    }
+
+    /**
+     * Get the type of an <code>Expression</code>.
+     *
+     * @param expr  Expression to get the type of
+     * @param nullType The type ExprNullPointer has.  (hack)
+     * @returns     Type of the expression
+     * @see         streamit.frontend.nodes.GetExprType
+     */
+    public Type getType(Expression expr, Type nullType)
     {
     	if(expr == null){ return TypePrimitive.voidtype; }
 
         // To think about: should we cache GetExprType objects?
-        GetExprType get = new GetExprType(symtab, streamType, structsByName);
+        GetExprType get = new GetExprType(symtab, streamType, structsByName, nullType);
         Type type = (Type)expr.accept(get);
         return actualType(type);
     }
@@ -192,7 +203,7 @@ public class SymbolTableVisitor extends FEReplacer
         return super.visitFieldDecl(field);
     }
 
-    
+
 	@Override
 	public Object visitParameter(Parameter par){
 		Type t = (Type) par.getType().accept(this);
@@ -201,19 +212,19 @@ public class SymbolTableVisitor extends FEReplacer
                 actualType(t),
                 par,
                 SymbolTable.KIND_FUNC_PARAM);
-		
+
 		if( t == par.getType()){
     		return par;
     	}else{
     		return new Parameter(t, par.getName(), par.getPtype() );
     	}
 	}
-    
-    
+
+
     public Object visitFunction(Function func)
     {
         SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);        
+        symtab = new SymbolTable(symtab);
         Object result = super.visitFunction(func);
         symtab = oldSymTab;
         return result;

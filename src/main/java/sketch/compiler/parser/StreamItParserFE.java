@@ -32,12 +32,15 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 	private Set<String> processedIncludes=new HashSet<String> ();
     private Set<Directive> directives = new HashSet<Directive> ();
     private boolean preprocess;
+    private List<String> cppDefs;
 
-	public StreamItParserFE(StreamItLex lexer, Set<String> includes, boolean preprocess)
+	public StreamItParserFE(StreamItLex lexer, Set<String> includes,
+                            boolean preprocess, List<String> cppDefs)
 	{
 		this(lexer);
 		processedIncludes = includes;
         this.preprocess = preprocess;
+        this.cppDefs = cppDefs;
 	}
 
 	public static void main(String[] args)
@@ -88,7 +91,8 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
         if (processedIncludes.contains(name))
             return;
         processedIncludes.add(name);
-        StreamItParser parser = new StreamItParser (name, processedIncludes, preprocess);
+        StreamItParser parser =
+            new StreamItParser (name, processedIncludes, preprocess, cppDefs);
         Program p = parser.parse ();
 		assert p != null;
 		assert p.getStreams().size() == 1;

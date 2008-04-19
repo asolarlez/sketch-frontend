@@ -14,13 +14,14 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtInsertBlock;
 import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypeArray;
@@ -75,17 +76,22 @@ public class EliminateReorderBlocks extends FEReplacer {
 		assert len > 0;
 		Expression elen = new ExprConstInt(len);
 		StmtVarDecl svd = new StmtVarDecl(s, new TypeArray(TypePrimitive.bittype, elen), name, ExprConstInt.zero );
-		StmtLoop sloop = new StmtLoop(s, elen, s);
+
+		String iterName = varGen.nextVar ("_i");
+		ExprVar it = new ExprVar (stmt, iterName);
+		StmtFor sloop = new StmtFor (stmt,
+				new StmtVarDecl (stmt, TypePrimitive.inttype, iterName, ExprConstInt.zero),
+				new ExprBinary (it, "<", elen),
+				new StmtExpr (new ExprUnary (stmt, ExprUnary.UNOP_PREINC, it)),
+				s);
+
 		Expression var = new ExprVar(s, name);
 		Expression fex = new ExprArrayRange(s, var, ExprConstInt.zero);
 		for(int i=1; i<len; ++i){
 			fex = new ExprBinary(s, ExprBinary.BINOP_AND,  fex  , new ExprArrayRange(s, var, new ExprConstInt(i)));
 		}
-		List<Statement> slist = new ArrayList<Statement>(2);
-		slist.add(svd);
-		slist.add(sloop);
-		slist.add(new StmtAssert(s, fex));
-		return new StmtBlock(s, slist);
+
+		return new StmtBlock (stmt, svd, sloop, new StmtAssert (s, fex));
 	}
 
 	private Statement recursiveCondGenerator(Iterator<Statement> iter, String iname, int i){

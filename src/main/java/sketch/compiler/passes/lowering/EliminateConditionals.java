@@ -38,11 +38,7 @@ public class EliminateConditionals extends SymbolTableVisitor {
 		FENode cx = et;
 		ExprVar tmpVar =
 			new ExprVar (cx, varGen.nextVar ("_tmp_cond_elim_"));
-		Type t = getType (et);
-
-		// FIXME: this pass shouldn't know about this type coercion
-		if (t == TypePrimitive.nulltype)
-			t = TypePrimitive.inttype;
+		Type t = getType (et, TypePrimitive.inttype);
 
 		StmtVarDecl tmpDecl =
 			new StmtVarDecl (cx, t, tmpVar.getName (), t.defaultValue ());

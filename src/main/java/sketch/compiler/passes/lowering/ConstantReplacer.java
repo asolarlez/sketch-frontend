@@ -3,7 +3,6 @@ package streamit.frontend.passes;
 import java.util.*;
 
 import streamit.frontend.nodes.*;
-import streamit.frontend.nodes.ExprArrayRange.Range;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 
 /**
@@ -18,7 +17,7 @@ public class ConstantReplacer extends FEReplacer {
 
 	private HashMap<String,Integer> constants;
 
-	public ConstantReplacer(Map subs) {
+	public ConstantReplacer(Map<String, Integer> subs) {
 		constants=new HashMap<String,Integer>();
 		if(subs != null){
 			constants.putAll(subs);
@@ -90,10 +89,10 @@ public class ConstantReplacer extends FEReplacer {
 		return new ExprConstInt(exp,val);
 	}
 
-	
+
 	public Object visitExprUnary(ExprUnary exp){
 		exp = (ExprUnary) super.visitExprUnary(exp);
-		
+
 		if(exp.getExpr() instanceof ExprConstInt){
 			int or = ((ExprConstInt)exp.getExpr()).getVal();
 			final int v;
@@ -105,9 +104,9 @@ public class ConstantReplacer extends FEReplacer {
 			return new ExprConstInt(exp,v);
 		}
 		return exp;
-		
+
 	}
-	
+
 	@Override
 	public Object visitExprBinary(ExprBinary exp) {
 		//first call "recursively" to handle substitutions
