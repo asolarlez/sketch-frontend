@@ -38,6 +38,17 @@ public class ExprChoiceUnary extends Expression {
 	public Expression getExpr () {  return expr;  }
 	public int getOps () {  return ops;  }
 
+    public boolean hasIncrOrDecr () {
+        return 0 != (ops & PREINC)
+        	|| 0 != (ops & POSTINC)
+        	|| 0 != (ops & PREDEC)
+        	|| 0 != (ops & POSTDEC);
+    }
+
+    public boolean hasSideEffects () {
+    	return hasIncrOrDecr ();
+    }
+
 	public boolean postfix () {
 		return (ops & POSTINC) != 0 || (ops & POSTDEC) != 0;
 	}

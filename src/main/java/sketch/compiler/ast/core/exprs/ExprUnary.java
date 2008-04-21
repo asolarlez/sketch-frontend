@@ -109,6 +109,10 @@ public class ExprUnary extends Expression
         	|| op == UNOP_POSTDEC;
     }
 
+    public boolean hasSideEffects () {
+    	return isIncrOrDecr ();
+    }
+
     /**
      * Populate PREPOSTOP with ["", OP_STR] for postfix operators, and
      * [OP_STR, ""] for prefix operators.
