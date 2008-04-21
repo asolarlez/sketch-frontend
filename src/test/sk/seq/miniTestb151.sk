@@ -1,5 +1,5 @@
 bit spec(bit in, int a, int b){
-	return 1;	
+	return 1;
 }
 
 bit sketch(bit in, int a, int b) implements spec{
@@ -13,9 +13,8 @@ bit sketch(bit in, int a, int b) implements spec{
 	}else{
 		x = a;
 		y = a;
-		c = 1;	
+		c = 1;
 	}
-	
 	return (in && x==b && y==b) || (!in && x==a && y == a);
-	
+
 }

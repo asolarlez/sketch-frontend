@@ -1,0 +1,8 @@
+bit sp () { return 1; }
+bit sk () {
+    int i = 0;
+    atomic {
+        i = i + 1;
+    }
+    return 1;
+}

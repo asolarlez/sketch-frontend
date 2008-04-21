@@ -1,0 +1,7 @@
+bit sp () { return 1; }
+bit sk () {
+    fork (int i; 2) {
+        i = i + 1;
+    }
+    return 1;
+}
