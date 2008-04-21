@@ -1,0 +1,26 @@
+int NTHREADS = 3;
+
+struct Counter {
+    int i;
+}
+
+static Counter newCounter () {
+    Counter c = new Counter ();
+    c.i = 0;
+    return c;
+}
+
+bit sp () { return 1; }
+bit sk () implements sp {
+    Counter c1 = null, c2 = newCounter (), c3 = newCounter (), c4 = null;
+
+#define loc  {| (c1|c2|c3|c4).i |}
+    fork (int i; NTHREADS) {
+        atomic (loc == i) {
+            loc = loc + 1;
+        }
+    }
+
+    assert c2.i == NTHREADS;
+    return 1;
+}
