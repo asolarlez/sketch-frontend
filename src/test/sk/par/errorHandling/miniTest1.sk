@@ -1,0 +1,17 @@
+// Conditions in conditional atomics must make at most 1 global read.
+
+struct N {
+    int i;
+    N next;
+}
+
+bit sp () { return 1; }
+bit sk () implements sp {
+    N n = new N ();
+
+    atomic (n.next.i) {
+        n.i = n.i + 1;
+    }
+
+    return 1;
+}
