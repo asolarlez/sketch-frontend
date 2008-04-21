@@ -106,7 +106,9 @@ public class ToSBit
 		params.loadParams(args);
 	}
 
-
+	public boolean isParallel () {
+		return false;
+	}
 
 /**
  * This function produces a recursion control that is used by all the user visible transformations.
@@ -607,7 +609,7 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		//dump (prog, "After replacing constants:");
-		if (!SemanticChecker.check(prog))
+		if (!SemanticChecker.check(prog, isParallel ()))
 			throw new IllegalStateException("Semantic check failed");
 
 		prog=preprocessProgram(prog); // perform prereq transformations

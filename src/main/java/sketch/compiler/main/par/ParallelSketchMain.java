@@ -54,6 +54,10 @@ public class ToPSbitII extends ToSBit {
 		stats = new CompilationStatistics (createSynthStats (), createVerifStats ());
 	}
 
+	@Override
+	public boolean isParallel () {
+		return true;
+	}
 
 	protected void backendParameters(List<String> commandLineOptions){
 		if( params.hasFlag("inbits") ){
@@ -85,7 +89,7 @@ public class ToPSbitII extends ToSBit {
 			prog = (Program)prog.accept(new LockPreprocessing());
 			prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 			//dump (prog, "After replacing constants:");
-			if (!SemanticChecker.check(prog))
+			if (!SemanticChecker.check(prog, isParallel ()))
 				throw new IllegalStateException("Semantic check failed");
 
 			prog=preprocessProgram(prog); // perform prereq transformations
