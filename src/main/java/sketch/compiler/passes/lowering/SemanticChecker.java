@@ -61,6 +61,7 @@ import streamit.frontend.nodes.StmtDoWhile;
 import streamit.frontend.nodes.StmtEnqueue;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtJoin;
 import streamit.frontend.nodes.StmtLoop;
@@ -97,14 +98,27 @@ import streamit.misc.ControlFlowException;
 public class SemanticChecker
 {
 	/**
-	 * Check a StreamIt program for semantic correctness.  This
+	 * Check a SKETCH/PSKETCH program for semantic correctness.  This
 	 * returns <code>false</code> and prints diagnostics to standard
 	 * error if errors are detected.
 	 *
 	 * @param prog  parsed program object to check
 	 * @returns     <code>true</code> if no errors are detected
 	 */
-	public static boolean check(Program prog)
+	public static boolean check(Program prog) {
+		return check (prog, false);
+	}
+
+	/**
+	 * Check a SKETCH/PSKETCH program for semantic correctness.  This
+	 * returns <code>false</code> and prints diagnostics to standard
+	 * error if errors are detected.
+	 *
+	 * @param prog  parsed program object to check
+	 * @param parallel  are parallel constructs allowed?
+	 * @returns     <code>true</code> if no errors are detected
+	 */
+	public static boolean check(Program prog, boolean parallel)
 	{
 		SemanticChecker checker = new SemanticChecker();
 		Map streamNames = checker.checkStreamNames(prog);
@@ -114,6 +128,10 @@ public class SemanticChecker
 		//checker.checkStatementPlacement(prog);
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
+		if (parallel)
+			checker.checkParallelConstructs (prog);
+		else
+			checker.banParallelConstructs (prog);
 		checker.checkStatementCounts(prog);
 		} catch (UnrecognizedVariableException uve) {
 			// Don't care about this exception during type checking
@@ -529,21 +547,6 @@ public class SemanticChecker
 			}
 
 			private Type currentFunctionReturn = null;
-
-			private Stack<StmtAtomicBlock> atomics = new Stack<StmtAtomicBlock>();
-
-			@Override
-			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
-
-				if(stmt.isCond() && atomics.size() > 0){ report(stmt, "Conditional atomics not allowed inside other atomics"); }
-				atomics.push(stmt);
-				Object o = super.visitStmtAtomicBlock(stmt);
-				StmtAtomicBlock sab = atomics.pop();
-				assert sab == stmt : "This is strange";
-				return o;
-
-			}
-
 
 			public Object visitFunction(Function func)
 			{
@@ -1387,6 +1390,65 @@ public class SemanticChecker
 						report(expr, "modification of stream parameter");
 				}
 				return super.visitExprUnary(expr);
+			}
+		});
+	}
+
+	/** Trigger a semantic error if parallel constructs are used. */
+	public void banParallelConstructs (Program prog) {
+		prog.accept(new SymbolTableVisitor(null) {
+			public Object visitExprFunCall (ExprFunCall fc) {
+				String name = fc.getName ();
+				if ("lock".equals (name) || "unlock".equals (name))
+					report (fc, "sorry, locking not allowed in sequential code");
+				return fc;
+			}
+
+			public Object visitStmtAtomicBlock (StmtAtomicBlock sab) {
+				report (sab, "sorry, atomics not allowed in sequential code");
+				return sab;
+			}
+
+			public Object visitStmtFork (StmtFork sf) {
+				report (sf, "sorry, forking not allowed in sequential code");
+				return sf;
+			}
+		});
+	}
+
+	public void checkParallelConstructs (Program prog) {
+		prog.accept (new SymbolTableVisitor(null) {
+			private Stack<StmtAtomicBlock> atomics = new Stack<StmtAtomicBlock>();
+
+			@Override
+			public Object visitStmtAtomicBlock(StmtAtomicBlock stmt) {
+				if(stmt.isCond() && atomics.size() > 0)
+					report(stmt, "Conditional atomics not allowed inside other atomics");
+				atomics.push(stmt);
+
+				if (stmt.isCond ()) {
+					Expression cond = stmt.getCond ();
+					if (!ExprTools.isSideEffectFree (cond))
+						report (cond, "conditions of conditional atomics must be side-effect free");
+					else if (1 < ExprTools.numGlobalReads (cond, symtab))
+						report (cond, "conditions of conditional atomics can read at most one global variable");
+				}
+
+				Object o = super.visitStmtAtomicBlock(stmt);
+				StmtAtomicBlock sab = atomics.pop();
+				assert sab == stmt : "This is strange";
+				return o;
+
+			}
+
+			private int nForks = 0;
+			public Object visitStmtFork (StmtFork stmt) {
+				if (nForks > 0)
+					report (stmt, "sorry, nested 'fork' blocks are not currently supported");
+				++nForks;
+				Object rv = super.visitStmtFork (stmt);
+				--nForks;
+				return rv;
 			}
 		});
 	}
