@@ -35,6 +35,9 @@ public class EliminateConditionals extends SymbolTableVisitor {
 	}
 
 	public Object visitExprTernary (ExprTernary et) {
+		if (1 >= ExprTools.numGlobalReads (et, symtab))
+			return et;
+
 		FENode cx = et;
 		ExprVar tmpVar =
 			new ExprVar (cx, varGen.nextVar ("_tmp_cond_elim_"));
