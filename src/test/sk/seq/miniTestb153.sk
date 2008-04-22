@@ -1,0 +1,14 @@
+pragma options "--reorderEncoding quadratic";
+
+int spec (int in) {
+    return (((in + 1) * 2) / 3);
+}
+
+int sketch (int in) implements spec {
+    reorder {
+        in = in * 2;
+        in = in / 3;
+        in = in + 1;
+    }
+    return in;
+}
