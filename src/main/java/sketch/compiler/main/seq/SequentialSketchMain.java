@@ -246,10 +246,10 @@ public class ToSBit
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 		//dump (prog, "ScalarizeVectorAssns");
 
-		if (false) {
+		// By default, we don't protect array accesses in SKETCH
+		if ("assertions".equals (params.sValue ("arrayOOBPolicy")))
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
-		}
 
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
 
@@ -583,6 +583,13 @@ public class ToSBit
 				"--verif OPT\t SAT solver to use for verification.",
 				"MINI", solvers) );
 
+		Map<String, String> failurePolicies = new HashMap<String, String> ();
+		failurePolicies.put ("wrsilent_rdzero", "Read a zero, silently ignore writes");
+		failurePolicies.put ("assertions", "Fail assertions for reads and writes");
+		params.setAllowedParam ("arrayOOBPolicy", new POpts (POpts.TOKEN,
+				"--arrayOOBPolicy policy \t What to do when an array access would be out\n"+
+				"                        \t of bounds.",
+				"wrsilent_rdzero", failurePolicies));
 	}
 
 

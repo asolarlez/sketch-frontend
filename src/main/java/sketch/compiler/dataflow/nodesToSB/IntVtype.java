@@ -18,12 +18,12 @@ import streamit.frontend.nodes.TypePrimitive;
 
 public class IntVtype extends abstractValueType {
 
-	
+
 
 	public abstractValue STAR(FENode star){
 		return BOTTOM("??");
 	}
-	
+
 	public abstractValue BOTTOM(Type t){
 		if( t instanceof TypePrimitive ){
 			return BOTTOM();
@@ -31,30 +31,30 @@ public class IntVtype extends abstractValueType {
 		assert false;
 		return null;
 	}
-	
+
 
 	public abstractValue ARR(List<abstractValue> vals){
-		return new IntAbsValue(vals);		
+		return new IntAbsValue(vals);
 	}
 
 	public abstractValue BOTTOM(){
 		return new IntAbsValue();
 	}
-	
+
 	public abstractValue BOTTOM(String label){
 		return new IntAbsValue(label);
 	}
 
 	public abstractValue CONST(int v){
-		return new IntAbsValue(v); 
+		return new IntAbsValue(v);
 	}
-	
+
 	public abstractValue NULL(){
-		return BOTTOM("null"); 
+		return BOTTOM("null");
 	}
-	
+
 	public abstractValue CONST(boolean v){
-		return new IntAbsValue(v); 
+		return new IntAbsValue(v);
 	}
 
 
@@ -65,19 +65,19 @@ public class IntVtype extends abstractValueType {
 			 }
 		 }
 	}
-	
+
 
 	public varState cleanState(String var, Type t, MethodState mstate){
 		return new IntState(t, this);
 	}
-	
+
 	private String opStr(abstractValue v1, abstractValue v2, String op) {
 		return "(" + v1.toString() + " " + op + " " + v2.toString() + ")";
 	}
 
 	public abstractValue plus(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() + v2.getIntVal() ); 
+			return CONST( v1.getIntVal() + v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "+") );
 		}
@@ -85,7 +85,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue minus(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() - v2.getIntVal() ); 
+			return CONST( v1.getIntVal() - v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "-") );
 		}
@@ -93,7 +93,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue times(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() * v2.getIntVal() ); 
+			return CONST( v1.getIntVal() * v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "*") );
 		}
@@ -101,7 +101,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue over(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() / v2.getIntVal() ); 
+			return CONST( v1.getIntVal() / v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "/") );
 		}
@@ -109,7 +109,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue mod(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() % v2.getIntVal() ); 
+			return CONST( v1.getIntVal() % v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "%") );
 		}
@@ -122,18 +122,18 @@ public class IntVtype extends abstractValueType {
 			return false;
 	}
 
-	protected int boolToInt(boolean b) {	    	
+	protected int boolToInt(boolean b) {
 		if(b)
 			return 1;
-		else 
+		else
 			return 0;
 	}
-	
-	
+
+
 	public abstractValue shr(abstractValue v1, abstractValue v2){
 		return BOTTOM( v1 + ">>" + v2);
 	}
-	
+
 	public abstractValue shl(abstractValue v1, abstractValue v2){
 		return BOTTOM( v1 + "<<" + v2);
 	}
@@ -141,7 +141,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue and(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( boolToInt(intToBool(v1.getIntVal()) && intToBool(v2.getIntVal())) ); 
+			return CONST( boolToInt(intToBool(v1.getIntVal()) && intToBool(v2.getIntVal())) );
 		}else{
 			if( v1.hasIntVal() ){
 				if(v1.getIntVal() == 0){
@@ -157,7 +157,7 @@ public class IntVtype extends abstractValueType {
 				}else{
 					assert v2.getIntVal()==1;
 					return v1;
-				}			
+				}
 			}
 			return BOTTOM( opStr(v1, v2, "&") );
 		}
@@ -165,7 +165,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue or(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( boolToInt(intToBool(v1.getIntVal()) || intToBool(v2.getIntVal())) ); 
+			return CONST( boolToInt(intToBool(v1.getIntVal()) || intToBool(v2.getIntVal())) );
 		}else{
 			if( v1.hasIntVal() ){
 				if(v1.getIntVal() == 1){
@@ -181,7 +181,7 @@ public class IntVtype extends abstractValueType {
 				}else{
 					assert v2.getIntVal()==0;
 					return v1;
-				}			
+				}
 			}
 			return BOTTOM( opStr(v1, v2, "|") );
 		}
@@ -189,7 +189,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue xor(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( boolToInt(intToBool(v1.getIntVal()) ^ intToBool(v2.getIntVal())) ); 
+			return CONST( boolToInt(intToBool(v1.getIntVal()) ^ intToBool(v2.getIntVal())) );
 		}else{
 			return BOTTOM( opStr(v1, v2, "^") );
 		}
@@ -197,7 +197,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue gt(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() > v2.getIntVal() ); 
+			return CONST( v1.getIntVal() > v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, ">") );
 		}
@@ -205,7 +205,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue lt(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() < v2.getIntVal() ); 
+			return CONST( v1.getIntVal() < v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "<") );
 		}
@@ -213,7 +213,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue ge(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() >= v2.getIntVal() ); 
+			return CONST( v1.getIntVal() >= v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, ">=") );
 		}
@@ -221,7 +221,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue le(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() <= v2.getIntVal() ); 
+			return CONST( v1.getIntVal() <= v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "<=") );
 		}
@@ -229,7 +229,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue eq(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
-			return CONST( v1.getIntVal() == v2.getIntVal() ); 
+			return CONST( v1.getIntVal() == v2.getIntVal() );
 		}else{
 			return BOTTOM( opStr(v1, v2, "==") );
 		}
@@ -241,7 +241,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
 		if(  arr.isBottom()  ){
-			return BOTTOM( "(" + arr + "[" + idx + "])" ); 
+			return BOTTOM( "(" + arr + "[" + idx + "])" );
 		}
 		if(len != null){
 			assert len.hasIntVal() : "NYI";
@@ -254,7 +254,7 @@ public class IntVtype extends abstractValueType {
 				return ARR( lst );
 			}
 		}
-		
+
 		if( idx.hasIntVal() ){
 			int iidx = idx.getIntVal() ;
 			int size = arr.getVectValue().size();
@@ -265,20 +265,20 @@ public class IntVtype extends abstractValueType {
 			return arr.getVectValue().get(idx.getIntVal());
 		}else{
 			return rawArracc(arr, idx);
-		}		
+		}
 	}
-	
-	
+
+
 	protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
 		return BOTTOM( "(" + arr + "[" + idx + "])" );
 	}
 
 	public abstractValue cast(abstractValue v1, Type type) {
-		
+
 		if(type.equals(TypePrimitive.inttype) && !v1.isVect()){
 			return v1;
 		}
-		
+
 		if(v1.isVect() && type.equals( TypePrimitive.inttype ) ){
 			//Casting a bit-vector into an integer.
 			List<abstractValue> lst = v1.getVectValue();
@@ -292,11 +292,11 @@ public class IntVtype extends abstractValueType {
 	    		if(!o.hasIntVal()){
 	    			result += " " + o;
 	    			hasValue = false;
-	    		}else{	        			
+	    		}else{
 	    			int curv =  o.getIntVal();
 	    			result += " " + curv;
 	    			assert curv == 1 || curv == 0 : "Casting only works for boolean arrays!!" + v1;
-	    			if( curv == 1 ) val += t; 
+	    			if( curv == 1 ) val += t;
 	    			t = t*2;
 	    		}
 	    		++i;
@@ -308,16 +308,16 @@ public class IntVtype extends abstractValueType {
 	    		return BOTTOM(result);
 	    	}
 		}
-		
-		
+
+
 		if(type instanceof TypeArray ){
-			
+
 			if(!v1.isVect()){
 				List<abstractValue> vls = new ArrayList<abstractValue>(1);
 				vls.add(v1);
 				v1 = ARR(vls);
 			}
-			
+
 			TypeArray t =  (TypeArray) type;
 			Integer len = t.getLength().getIValue();
 			if(len != null){
@@ -333,18 +333,18 @@ public class IntVtype extends abstractValueType {
 				return v1;
 			}
 		}
-		
+
 		if(v1.isBottom() ){
 			return v1;
 		}
-		
+
 		assert false : "Can't cast " + v1 + " into " + type;
 		return null;
 	}
 
 	public abstractValue not(abstractValue v1) {
 		if( v1.hasIntVal() ){
-			return CONST( 1-v1.getIntVal()  ); 
+			return CONST( 1-v1.getIntVal()  );
 		}else{
 			return BOTTOM( "( ! " + v1 + ")" );
 		}
@@ -352,7 +352,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue neg(abstractValue v1) {
 		if( v1.hasIntVal() ){
-			return CONST( -v1.getIntVal()  ); 
+			return CONST( -v1.getIntVal()  );
 		}else{
 			return BOTTOM( "( -" + v1 + ")" );
 		}
@@ -366,7 +366,7 @@ public class IntVtype extends abstractValueType {
 		}
 	}
 
-	
+
 	public abstractValue ternary(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
 		assert (cond != null) : "API usage bug";
 		if( cond.hasIntVal() ){
@@ -376,10 +376,10 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
-			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" ); 
-		}	
+			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" );
+		}
 	}
-	
+
 	public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
 		if(cond == null) return join(vtrue, vfalse);
 		if( cond.hasIntVal() ){
@@ -389,14 +389,14 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
-			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" ); 
-		}	
+			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" );
+		}
 	}
-	
+
 	public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue patchCond){
 		Iterator<Parameter> formalParams = fun.getParams().iterator();
     	while(formalParams.hasNext()){
-    		Parameter param = formalParams.next();    	
+    		Parameter param = formalParams.next();
     		if( param.isParameterOutput()){
     			outSlist.add(BOTTOM());
     		}

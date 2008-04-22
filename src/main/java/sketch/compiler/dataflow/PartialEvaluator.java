@@ -28,7 +28,6 @@ import streamit.frontend.nodes.ExprTypeCast;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.FieldDecl;
@@ -191,21 +190,28 @@ public class PartialEvaluator extends FEReplacer {
 	}
 
 	public Object visitExprField(ExprField exp) {
-		abstractValue useless = (abstractValue)exp.getLeft().accept(this);
+		exp.getLeft().accept(this);
 		 Expression left = exprRV;
 		 if(isReplacer) exprRV = new ExprField(exp, left, exp.getName());
 	     return vtype.BOTTOM();
 	}
 
-
 	public Object visitExprTernary(ExprTernary exp) {
-
 		abstractValue cond = (abstractValue) exp.getA().accept(this);
 		Expression ncond = exprRV;
+
+		boolean wereArraysUnchecked = uncheckedArrays;
+
+		uncheckedArrays = (!cond.hasIntVal () || cond.getIntVal () == 0);
 		abstractValue vtrue = (abstractValue) exp.getB().accept(this);
 		Expression nvtrue = exprRV;
+
+		uncheckedArrays = (!cond.hasIntVal () || cond.getIntVal () != 0);
 		abstractValue vfalse = (abstractValue) exp.getC().accept(this);
 		Expression nvfalse = exprRV;
+
+		uncheckedArrays = wereArraysUnchecked;
+
 	    switch (exp.getOp())
 	    {
 	    case ExprTernary.TEROP_COND:
@@ -216,9 +222,11 @@ public class PartialEvaluator extends FEReplacer {
 	    			exprRV = new ExprTernary(exp, exp.getOp(), ncond, nvtrue, nvfalse);
 	    	}
 			return vtype.ternary(cond, vtrue, vfalse);
+
+	    default:
+			exp.assertTrue (false, "unknown ternary operator");
+	    	return null;
 	    }
-		assert false;
-	    return null;
 	}
 
 	public Object visitExprTypeCast(ExprTypeCast exp) {

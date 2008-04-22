@@ -31,7 +31,7 @@ QueueEntry newQueueEntry (QueueEntry next, Object stored, bit taken) {
 
 Queue newQueue () {
     Queue q = new Queue ();
-    q.prevHead = new QueueEntry (null, null, 1);
+    q.prevHead = newQueueEntry (null, null, 1);
     q.tail = q.prevHead;
     return q;
 }

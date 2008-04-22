@@ -9,11 +9,11 @@ import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
-import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateLockUnlock;
@@ -163,13 +163,10 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	protected Program preprocessProgram(Program lprog) {
-		lprog = (Program) lprog.accept (new SeparateInitializers ());
-		lprog = (Program) lprog.accept (new BlockifyRewriteableStmts ());
-		//dump (lprog, "blockify");
-		lprog = (Program) lprog.accept (new EliminateConditionals(varGen));
-		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
-		//dump (lprog, "AtomizeStatements:");
 		lprog = super.preprocessProgram(lprog);
+
+		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
+		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 
 		return lprog;
 	}
@@ -180,7 +177,8 @@ public class ToPSbitII extends ToSBit {
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		super.lowerIRToJava();
 
-		//prog = (Program) prog.accept (new EliminateConditionals(varGen));
+		prog = (Program) prog.accept (new EliminateConditionals(varGen));
+		//dump (prog, "elim conds");
 		prog = (Program) prog.accept(new ProtectArrayAccesses(
 				FailurePolicy.ASSERTION, varGen));
 		//prog = (Program) prog.accept(new ProtectArrayAccesses(
