@@ -74,8 +74,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		if (!(hasArrayAccess (left) || hasArrayAccess (right)))
 			return eb;
 
-		boolean isAnd = eb.getOpString ().equals ("&&")
-						|| eb.getOpString ().equals ("||");
+		boolean isAnd = eb.getOpString ().equals ("&&");
 
 		left = doExpression (left);
 
@@ -150,20 +149,36 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		// This rewrite is a bit hairier than the one for the other statement
 		// types.  See bug 55 in bugzilla.
 
-		AtomicConditionRewrite acr = new AtomicConditionRewrite ();
-		Expression newCond = (Expression) sab.getCond ().accept (acr);
-		List<Statement> newBody = new ArrayList<Statement> (acr.guardstmts);
+		CollectAtomicCondGuards acg = new CollectAtomicCondGuards ();
+		Expression newCond = acg.makeAtomicCond (sab.getCond ());
+		List<Statement> newBody = new ArrayList<Statement> (acg.getInnerAssertions ());
 		StmtBlock newBlock = (StmtBlock) sab.getBlock ().accept (this);
 		newBody.addAll (newBlock.getStmts ());
 
 		return new StmtAtomicBlock (sab, newBody, newCond);
 	}
 
-	private class AtomicConditionRewrite extends FEReplacer {
-		public List<StmtAssert> guardstmts = new ArrayList <StmtAssert> ();
+	private class CollectAtomicCondGuards extends FEReplacer {
+		/** A list of "predicated" assertions to check within the body of the
+		 * atomic, to ensure that no null pointers were dereferenced
+		 * while evaluating the atomic's condition. */
+		private List<StmtAssert> guardStmts = new ArrayList <StmtAssert> ();
+		/** An expression to "trap" errors; if this expression is true, then
+		 * one of the assertions in 'guardStmts' must fail. */
+		private Expression condTrap;
 		// A list rather than a stack because we need to traverse it
 		// front to back
 		private List<Expression> guards = new ArrayList<Expression> ();
+
+		public Expression makeAtomicCond (Expression cond) {
+			cond.accept (this);
+			return (condTrap == null) ? cond
+					: new ExprBinary (condTrap, "||", cond);
+		}
+
+		public List<StmtAssert> getInnerAssertions () {
+			return guardStmts;
+		}
 
 		/**
 		 * Creates an assertion to check the following condition:
@@ -172,7 +187,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		 *
 		 * which must be rewritten to:
 		 *
-		 *   !conds-to-eval-array-access || guards
+		 *   !conds-to-eval-array-access || guard
 		 */
 		private void addGuardAssertion (Expression guard) {
 			Expression cond = ExprConstant.createConstant (guard, "1");
@@ -183,7 +198,13 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			cond = new ExprUnary ("!", cond);
 			cond = new ExprBinary (cond, "||", guard);
 
-			guardstmts.add (new StmtAssert (cond, "out-of-bounds array access"));
+			guardStmts.add (new StmtAssert (cond, "out-of-bounds array access"));
+
+			Expression trap = new ExprUnary ("!", cond);
+			if (condTrap == null)
+				condTrap = trap;
+			else
+				condTrap = new ExprBinary (condTrap, "||", trap);
 		}
 
 		private void pushGuard (Expression guard) { guards.add (guard); }
@@ -197,39 +218,37 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			Expression guard = makeGuard (base, index);
 
 			addGuardAssertion (guard);
-			return new ExprTernary ("?:",
-					guard, new ExprArrayRange (base, index), ExprConstInt.one);
+			return exp;
 		}
 
 		// Short-circuit evaluation places guards on expr eval
 		public Object visitExprBinary (ExprBinary exp) {
 			String op = exp.getOpString ();
 			Expression left = doExpression (exp.getLeft ());
-			Expression right;
 
 			if (op.equals ("&&")) {
 				pushGuard (new ExprUnary ("!", left));
-				right = doExpression (exp.getRight ());
+				doExpression (exp.getRight ());
 				popGuard ();
 			} else if (op.equals ("||")) {
 				pushGuard (left);
-				right = doExpression (exp.getRight ());
+				doExpression (exp.getRight ());
 				popGuard ();
 			} else
-				right = doExpression (exp.getRight ());
+				doExpression (exp.getRight ());
 
-			return new ExprBinary (left, op, right);
+			return exp;
 		}
 
 		// Conditional expressions place guards on expr eval
 		public Object visitExprTernary (ExprTernary exp) {
 			Expression A = doExpression (exp.getA ());
 			pushGuard (A);
-			Expression B = doExpression (exp.getB ());
+			doExpression (exp.getB ());
 			pushGuard (new ExprUnary ("!", popGuard ()));
-			Expression C = doExpression (exp.getC ());
+			doExpression (exp.getC ());
 			popGuard ();
-			return new ExprTernary ("?:", A, B, C);
+			return exp;
 		}
 	}
 

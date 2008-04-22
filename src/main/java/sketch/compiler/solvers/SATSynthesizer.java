@@ -920,8 +920,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		mergeWithCurrent((CEtrace)counterExample);
 
 		current = (Program)current.accept(new EliminateMultiDimArrays());
+
 		 if (reallyVerbose ())
-			current.accept(new SimpleCodePrinter()); 
+			current.accept(new SimpleCodePrinter());
 		boolean tmp = partialEvalAndSolve(current);
 
 		return tmp ? getOracle() : null;
