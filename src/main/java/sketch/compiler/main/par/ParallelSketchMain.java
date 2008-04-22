@@ -180,11 +180,12 @@ public class ToPSbitII extends ToSBit {
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
 		super.lowerIRToJava();
 
-		prog = (Program) prog.accept (new EliminateConditionals(varGen));
+		//prog = (Program) prog.accept (new EliminateConditionals(varGen));
 		prog = (Program) prog.accept(new ProtectArrayAccesses(
 				FailurePolicy.ASSERTION, varGen));
 		//prog = (Program) prog.accept(new ProtectArrayAccesses(
 		//		  FailurePolicy.WRSILENT_RDZERO, varGen));
+		//dump (prog, "protect array accesses");
 
 		prog = (Program) prog.accept(new UnrollLocalLoops());
 		prog = (Program) prog.accept(new EliminateLockUnlock(10, "_lock"));
