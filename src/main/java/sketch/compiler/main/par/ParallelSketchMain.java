@@ -14,6 +14,7 @@ import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
+import streamit.frontend.passes.BoundUnboundedLoops;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.EliminateConditionals;
 import streamit.frontend.passes.EliminateLockUnlock;
@@ -163,10 +164,12 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	protected Program preprocessProgram(Program lprog) {
+		lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
+
 		lprog = super.preprocessProgram(lprog);
 
 		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
-		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 
 		return lprog;
 	}

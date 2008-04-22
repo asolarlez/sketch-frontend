@@ -17,11 +17,6 @@ static void Enqueue(Queue q, Object newobject) {
     AtomicSwap(tmp, aLocation, aValue);
     if (anExpr(tmp, aValue)) aLocation = aValue;
   }
-
-/*
-  AtomicSwap (tmp, q.tail, newEntry);
-  tmp.next = newEntry;
-*/
 }
 
 static Object Dequeue(Queue q) {
@@ -30,20 +25,16 @@ static Object Dequeue(Queue q) {
     while (nextEntry!=null
            && taken) {
       AtomicSwap(taken, nextEntry.taken, 1);
-      if (taken) {
-        nextEntry = nextEntry.next;
-      }
+      if (taken) nextEntry = nextEntry.next;
     }
     if (nextEntry == null)
       return null;
     else {
       QueueEntry p = {| q.prevHead | nextEntry |};
-      //QueueEntry p = q.prevHead;
       do {
         q.prevHead = p;
         p = p.next;
       } while (p != null && {| p(.next)?.taken |} );
-      //} while (p != null && p.taken);
       return nextEntry.stored;
 } }
 

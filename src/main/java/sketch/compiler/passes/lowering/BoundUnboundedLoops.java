@@ -140,7 +140,7 @@ public class BoundUnboundedLoops extends FEReplacer {
 		Statement loop = new StmtFor (cx,
 				new StmtVarDecl (cx, TypePrimitive.inttype, iterName, ExprConstInt.zero),
 				new ExprBinary (iter, "<", maxIterations),
-				new StmtAssign (iter, new ExprBinary (iter, "+", ExprConstInt.one)),
+				new StmtExpr (new ExprUnary (cx, ExprUnary.UNOP_POSTINC, iter)),
 				wrappedBody);
 
 		return new StmtBlock (cx, loop, makeTerminatedAssertion (term));
