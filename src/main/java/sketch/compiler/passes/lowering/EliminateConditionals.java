@@ -12,6 +12,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -25,23 +26,27 @@ import streamit.frontend.nodes.TypePrimitive;
  */
 public class EliminateConditionals extends SymbolTableVisitor {
 	protected TempVarGen varGen;
+	protected Type nulltype;
 
 	/**
 	 * @param symtab
 	 */
-	public EliminateConditionals (TempVarGen _vargen) {
+	public EliminateConditionals (TempVarGen varGen) {
+		this (varGen, TypePrimitive.inttype);
+	}
+
+	public EliminateConditionals (TempVarGen varGen, Type nulltype) {
 		super (null);
-		varGen = _vargen;
+		this.varGen = varGen;
+		this.nulltype = nulltype;
+
 	}
 
 	public Object visitExprTernary (ExprTernary et) {
-		if (1 >= ExprTools.numGlobalReads (et, symtab))
-			return et;
-
 		FENode cx = et;
 		ExprVar tmpVar =
 			new ExprVar (cx, varGen.nextVar ("_tmp_cond_elim_"));
-		Type t = getType (et, TypePrimitive.inttype);
+		Type t = getType (et, nulltype);
 
 		StmtVarDecl tmpDecl =
 			new StmtVarDecl (cx, t, tmpVar.getName (), t.defaultValue ());
@@ -68,5 +73,12 @@ public class EliminateConditionals extends SymbolTableVisitor {
 		addStatement (condReplace);
 
 		return tmpVar;
+	}
+
+	/** Ignores the cond; it will be handled later */
+	public Object visitStmtAtomicBlock (StmtAtomicBlock sab) {
+		StmtBlock newBlock = (StmtBlock) sab.getBlock ().accept (this);
+		return (newBlock == sab.getBlock ()) ? sab
+				: new StmtAtomicBlock (sab, newBlock, sab.getCond ());
 	}
 }
