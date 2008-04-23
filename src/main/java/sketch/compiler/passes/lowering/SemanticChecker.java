@@ -66,6 +66,7 @@ import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtJoin;
 import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPush;
+import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtSplit;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -1449,6 +1450,13 @@ public class SemanticChecker
 				Object rv = super.visitStmtFork (stmt);
 				--nForks;
 				return rv;
+			}
+
+			public Object visitStmtReorderBlock (StmtReorderBlock stmt) {
+				for (Statement s : stmt.getStmts ())
+					if (s instanceof StmtVarDecl)
+						report (s, "variable declarations make no sense in a 'reorder' block");
+				return super.visitStmtReorderBlock (stmt);
 			}
 		});
 	}
