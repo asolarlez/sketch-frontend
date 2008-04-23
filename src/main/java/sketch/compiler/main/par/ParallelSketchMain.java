@@ -8,16 +8,24 @@ import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
 import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
+import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
+import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.BoundUnboundedLoops;
 import streamit.frontend.passes.ConstantReplacer;
+import streamit.frontend.passes.DisambiguateUnaries;
 import streamit.frontend.passes.EliminateConditionals;
+import streamit.frontend.passes.EliminateInsertBlocks;
 import streamit.frontend.passes.EliminateLockUnlock;
+import streamit.frontend.passes.EliminateMultiDimArrays;
+import streamit.frontend.passes.EliminateRegens;
+import streamit.frontend.passes.EliminateReorderBlocks;
+import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.HoistDeclarations;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.MergeLocalStatements;
@@ -164,12 +172,43 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	protected Program preprocessProgram(Program lprog) {
-		lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		boolean useInsertEncoding = params.flagEquals ("reorderEncoding", "exponential");
+
+		//dump (lprog, "before:");
+
+		lprog = (Program) lprog.accept (new SeparateInitializers ());
+		lprog = (Program) lprog.accept (new BlockifyRewriteableStmts ());
+
+		if (params.hasFlag ("regens")) {
+			lprog = (Program)lprog.accept(new EliminateRegens(varGen));
+			//dump (lprog, "~regens");
+		}
+
+		lprog = (Program) lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
 
-		lprog = super.preprocessProgram(lprog);
-
+		// prog = (Program)prog.accept(new NoRefTypes());
+		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
+		//dump (lprog, "~reorderblocks:");
+		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
+		//dump (lprog, "~insertblocks:");
+		lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		//dump (lprog, "bounded loops");
+		//dump (prog, "bef fpe:");
+		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
+		//dump (lprog, "fpe:");
+		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
+		//dump (lprog, "tifs:");
+		lprog = (Program)lprog.accept(new TypeInferenceForStars());
+		//dump (lprog, "tifs:");
+		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
+		//dump (lprog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
+
+		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
+
+		if(params.flagEquals("showphase", "preproc")) dump (lprog, "After Preprocessing");
 
 		return lprog;
 	}

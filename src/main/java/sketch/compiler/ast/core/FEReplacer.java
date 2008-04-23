@@ -367,11 +367,11 @@ public class FEReplacer implements FEVisitor
 
     public Object visitProgram(Program prog)
     {
-        List newStreams = new ArrayList();
+        List<StreamSpec> newStreams = new ArrayList<StreamSpec> ();
         for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
-            newStreams.add(((FENode)(iter.next())).accept(this));
+            newStreams.add((StreamSpec) ((FENode)(iter.next())).accept(this));
 
-        List newStructs = new ArrayList ();
+        List<TypeStruct> newStructs = new ArrayList<TypeStruct> ();
         for (Iterator iter = prog.getStructs ().iterator (); iter.hasNext ();) {
         	// XXX: we assume the field names won't change
         	TypeStruct ts = (TypeStruct) iter.next ();
@@ -500,8 +500,18 @@ public class FEReplacer implements FEVisitor
     }
 
 
-    public Object visitStmtReorderBlock(StmtReorderBlock stmt){
+    public Object visitStmtReorderBlock(StmtReorderBlock stmt) {
+    	Object o = stmt.getBlock ().accept (this);
+    	if (o == stmt.getBlock ())
+    		return stmt;
+    	else if (o == null)
+    		return null;
+    	else if (o instanceof StmtBlock)
+    		return new StmtReorderBlock (stmt, (StmtBlock) o);
+    	else
+    		return new StmtReorderBlock (stmt, Collections.singletonList ((Statement) o));
 
+    	/*
     	List<Statement> oldStatements = newStatements;
         newStatements = new ArrayList<Statement>();
         for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
@@ -510,7 +520,7 @@ public class FEReplacer implements FEVisitor
             // completely ignore null statements, causing them to
             // be dropped in the output
             if (s == null)
-                continue;
+            	continue;
             try{
             	doStatement(s);
             }catch(RuntimeException e){
@@ -521,7 +531,7 @@ public class FEReplacer implements FEVisitor
         Statement result = new StmtReorderBlock(stmt, newStatements);
         newStatements = oldStatements;
         return result;
-
+		*/
     }
 
     public Object visitStmtInsertBlock(StmtInsertBlock stmt)
