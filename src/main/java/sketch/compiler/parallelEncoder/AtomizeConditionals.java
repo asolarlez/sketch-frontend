@@ -152,6 +152,25 @@ public class AtomizeConditionals extends FEReplacer {
 	    }
 
 
+	 public boolean hasCondAtomic(Statement stmt){
+		 
+		 class HasCA extends FEReplacer{
+			 public boolean has = false;
+			 @Override
+			 public Object visitStmtAtomicBlock(StmtAtomicBlock ab){
+				 if(ab.isCond()){ has = true; }
+				 return ab;
+			 }
+			 public Object visitStmtAssign(StmtAssign sa){
+				 return sa;
+			 }
+		 }
+		 HasCA h = new HasCA();
+		 stmt.accept(h);
+		 return h.has;
+	 }
+	 
+	 
 	 public Object visitStmtIfThen(StmtIfThen stmt)
 	    {
 
@@ -163,7 +182,11 @@ public class AtomizeConditionals extends FEReplacer {
 	    			rv = fixStmt(stmt);
 	    		}
 	    		if(rv != null){
-	    			return new StmtAtomicBlock(stmt, Collections.singletonList(rv) );
+	    			if( hasCondAtomic(rv) ){
+	    				return stmt;
+	    			}else{
+	    				return new StmtAtomicBlock(stmt, Collections.singletonList(rv) );
+	    			}
 	    		}
 	    	}
 
