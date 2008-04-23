@@ -128,7 +128,7 @@ public class EliminateReorderBlocks extends FEReplacer {
 		if (!it.hasNext ())
 			return new Pair<Statement, Statement> (null, null);
 
-		Statement s = it.next ();
+		Statement s = (Statement) it.next ().accept (this);
 		FENode cx = s;
 		Expression me = new ExprConstInt (cx, i);
 		Expression notPicked = new ExprUnary ("!", new ExprArrayRange (cx, picked, me));
