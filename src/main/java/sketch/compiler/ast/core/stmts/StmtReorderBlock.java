@@ -7,22 +7,29 @@ public class StmtReorderBlock extends Statement {
 
 	StmtBlock block;
 
-	 /** Create a new StmtBlock with the specified ordered list of
+	 /** Create a new StmtReorderBlock with the specified list of
      * statements. */
-    public StmtReorderBlock(FENode context, List stmts)
+    public StmtReorderBlock(FENode context, List<? extends Statement> stmts)
     {
     	super(context);
     	block = new StmtBlock(context, stmts);
     }
 
-	 /** Create a new StmtBlock with the specified ordered list of
+	 /** Create a new StmtReorderBlock with the specified list of
 	  * statements.
 	  * @deprecated
 	  */
-    public StmtReorderBlock(FEContext context, List stmts)
+    public StmtReorderBlock(FEContext context, List<? extends Statement> stmts)
     {
-   	super(context);
-   	block = new StmtBlock(context, stmts);
+    	super(context);
+    	block = new StmtBlock(context, stmts);
+    }
+
+    /** Create a new StmtReorderBlock that orders the statements within the
+     * specified StmtBlock. */
+    public StmtReorderBlock (FENode context, StmtBlock block) {
+    	super (context);
+    	this.block = block;
     }
 
     /** Accepts a front-end visitor. */
