@@ -161,9 +161,12 @@ public class EliminateRegens extends SymbolTableVisitor {
 			List<Expression> exprs = (List<Expression>) ecu.getExpr ().accept (this);
 
 			List<Expression> exps = new ArrayList<Expression> ();
-			for (Expression expr : exprs)
+			for (Expression expr : exprs) {
+				if (ecu.opOptional ())
+					exps.add (expr);
 				for (int op : ecu.opsAsExprUnaryOps ())
 					exps.add (new ExprUnary (expr, op, expr));
+			}
 			return exps;
 		}
 
