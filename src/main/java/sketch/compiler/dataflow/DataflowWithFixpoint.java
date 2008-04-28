@@ -80,7 +80,6 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 		        	abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
 		        	if(vcond.hasIntVal() && vcond.getIntVal() == 0){
 		        		isReplacer = lisReplacer;
-		        		state.popChangeTracker();
 		        		break;
 		        	}
 		        	try{
