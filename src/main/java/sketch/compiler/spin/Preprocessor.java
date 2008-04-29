@@ -140,6 +140,11 @@ public class Preprocessor extends FEReplacer {
     	HashSet<String> vars = varsPerLoop.get(loop);
     	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
 
+    	if (null == decl)
+    		loop.assertTrue (false,
+    				"is the thread ID '"+ loop.getLoopVarDecl ().getName (0)
+    				+"' shadowing a global var?");
+
     	List<Parameter> pars = new ArrayList<Parameter>(vars.size());
     	List<Expression> actuals = new ArrayList<Expression>(vars.size());
     	FENode cx = loop;
