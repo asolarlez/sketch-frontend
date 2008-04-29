@@ -46,7 +46,7 @@ public class AtomizeStatements extends SymbolTableVisitor {
 	public Expression replWithLocal(Expression exp){
 
 		String nname = varGen.nextVar("_atomize");
-		addStatement(new StmtVarDecl(exp, TypePrimitive.inttype, nname,  exp));
+		addStatement(new StmtVarDecl(exp, getType (exp), nname,  exp));
 		ExprVar ev = new ExprVar(exp, nname);
 		return ev;
 	}

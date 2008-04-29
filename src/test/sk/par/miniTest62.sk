@@ -1,0 +1,203 @@
+struct barrier {
+    int yetToArrive;
+    bit phase;
+}
+
+int leftNeighbor(int t)
+{
+  {
+    return ((t)==(0) ? 2 : (t)-(1));
+  }
+}
+bit test()
+{
+  return 1;
+}
+bit sketch() implements test
+{
+  bit[3][2] reached;
+  reached = 0;
+  barrier b;
+  b = newBarrier();
+  {
+    fork(int threadId; 3)
+    {
+      {
+        bit relPhase;
+        relPhase = 0;
+        {
+          for(int t=0;(t)<(2);++t)
+          {
+            {
+              atomic
+              {
+                if((t)>(0))
+                {
+                  {
+                    assert (reached[(t)-(1)][leftNeighbor(threadId)])
+;
+                  }
+                }
+                {
+                  reached[t][threadId] = 1;
+                }
+              }
+              {
+                relPhase = await(b, relPhase);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return 1;
+}
+barrier newBarrier()
+{
+  barrier b;
+  b = new barrier();
+  b.yetToArrive = 3;
+  b.phase = ??;
+  return b;
+}
+bit await(barrier b, bit relPhase)
+{
+  int lastCount;
+  lastCount = 0;
+  bit tmp;
+  tmp = relPhase;
+
+
+  {
+    int __s_whichexpr0;
+    __s_whichexpr0 = 3;
+    assert (((0)<=(__s_whichexpr0))&&((__s_whichexpr0)<(8)))
+;
+    tmp = ((__s_whichexpr0)==(0) ? b.phase : ((__s_whichexpr0)==(1) ? !(b.phase) : ((__s_whichexpr0)==(2) ? relPhase : ((__s_whichexpr0)==(3) ? !(relPhase) : ((__s_whichexpr0)==(4) ? tmp : ((__s_whichexpr0)==(5) ? !(tmp) : ((__s_whichexpr0)==(6) ? true : !(true))))))));
+  }
+  //reorder
+  {
+    atomic
+    {
+      lastCount = b.yetToArrive;
+      b.yetToArrive = (b.yetToArrive)-(1);
+    }
+
+    {
+      int __s_whichexpr2;
+      __s_whichexpr2 = 1;
+      assert (((0)<=(__s_whichexpr2))&&((__s_whichexpr2)<(6)))
+;
+      int __s_whichexpr3;
+      __s_whichexpr3 = 9;
+      assert (((0)<=(__s_whichexpr3))&&((__s_whichexpr3)<(14)))
+;
+      if((((__s_whichexpr2)==(0) ? true : ((__s_whichexpr2)==(1) ? false : ((__s_whichexpr2)==(2) ? (tmp)==(b.phase) : ((__s_whichexpr2)==(3) ? (tmp)==(!(b.phase)) : ((__s_whichexpr2)==(4) ? (!(tmp))==(b.phase) : (!(tmp))==(!(b.phase))))))))||(((__s_whichexpr3)==(0) ? true : ((__s_whichexpr3)==(1) ? false : ((__s_whichexpr3)==(2) ? ((lastCount)-(??))==(b.yetToArrive) : ((__s_whichexpr3)==(3) ? !(((lastCount)-(??))==(b.yetToArrive)) : ((__s_whichexpr3)==(4) ? ((lastCount)-(??))==(??) : ((__s_whichexpr3)==(5) ? !(((lastCount)-(??))==(??)) : ((__s_whichexpr3)==(6) ? ((lastCount)+(??))==(b.yetToArrive) : ((__s_whichexpr3)==(7) ? !(((lastCount)+(??))==(b.yetToArrive)) : ((__s_whichexpr3)==(8) ? ((lastCount)+(??))==(??) : ((__s_whichexpr3)==(9) ? !(((lastCount)+(??))==(??)) : ((__s_whichexpr3)==(10) ? (??)==(b.yetToArrive) : ((__s_whichexpr3)==(11) ? !((??)==(b.yetToArrive)) : ((__s_whichexpr3)==(12) ? (??)==(??) : !((??)==(??)))))))))))))))))
+      {
+        {
+          {
+            int __s_whichexpr4;
+            __s_whichexpr4 = 2;
+            assert (((0)<=(__s_whichexpr4))&&((__s_whichexpr4)<(6)))
+;
+            atomic(((__s_whichexpr4)==(0) ? true : ((__s_whichexpr4)==(1) ? false : ((__s_whichexpr4)==(2) ? (tmp)==(b.phase) : ((__s_whichexpr4)==(3) ? (tmp)==(!(b.phase)) : ((__s_whichexpr4)==(4) ? (!(tmp))==(b.phase) : (!(tmp))==(!(b.phase))))))))
+            {
+            }
+          }
+        }
+      }
+      else
+      {
+        {
+          //reorder
+          {
+            b.yetToArrive = 3;
+            {
+              int __s_whichexpr5;
+              __s_whichexpr5 = 1;
+              assert (((0)<=(__s_whichexpr5))&&((__s_whichexpr5)<(8)))
+;
+              b.phase = ((__s_whichexpr5)==(0) ? b.phase : ((__s_whichexpr5)==(1) ? !(b.phase) : ((__s_whichexpr5)==(2) ? relPhase : ((__s_whichexpr5)==(3) ? !(relPhase) : ((__s_whichexpr5)==(4) ? tmp : ((__s_whichexpr5)==(5) ? !(tmp) : ((__s_whichexpr5)==(6) ? true : !(true))))))));
+            }
+          }
+        }
+      }
+    }
+
+    {
+      int __s_whichexpr1;
+      __s_whichexpr1 = 4;
+      assert (((0)<=(__s_whichexpr1))&&((__s_whichexpr1)<(8)))
+;
+      relPhase = ((__s_whichexpr1)==(0) ? b.phase : ((__s_whichexpr1)==(1) ? !(b.phase) : ((__s_whichexpr1)==(2) ? relPhase : ((__s_whichexpr1)==(3) ? !(relPhase) : ((__s_whichexpr1)==(4) ? tmp : ((__s_whichexpr1)==(5) ? !(tmp) : ((__s_whichexpr1)==(6) ? true : !(true))))))));
+    }
+  }
+
+
+  /*
+  {
+    int __s_whichexpr0;
+    __s_whichexpr0 = ??;
+    assert (((0)<=(__s_whichexpr0))&&((__s_whichexpr0)<(8)))
+;
+    tmp = ((__s_whichexpr0)==(0) ? b.phase : ((__s_whichexpr0)==(1) ? !(b.phase) : ((__s_whichexpr0)==(2) ? relPhase : ((__s_whichexpr0)==(3) ? !(relPhase) : ((__s_whichexpr0)==(4) ? tmp : ((__s_whichexpr0)==(5) ? !(tmp) : ((__s_whichexpr0)==(6) ? true : !(true))))))));
+  }
+  reorder
+  {
+    {
+      int __s_whichexpr1;
+      __s_whichexpr1 = ??;
+      assert (((0)<=(__s_whichexpr1))&&((__s_whichexpr1)<(8)))
+;
+      relPhase = ((__s_whichexpr1)==(0) ? b.phase : ((__s_whichexpr1)==(1) ? !(b.phase) : ((__s_whichexpr1)==(2) ? relPhase : ((__s_whichexpr1)==(3) ? !(relPhase) : ((__s_whichexpr1)==(4) ? tmp : ((__s_whichexpr1)==(5) ? !(tmp) : ((__s_whichexpr1)==(6) ? true : !(true))))))));
+    }
+    atomic
+    {
+      lastCount = b.yetToArrive;
+      b.yetToArrive = (b.yetToArrive)-(1);
+    }
+    {
+      int __s_whichexpr2;
+      __s_whichexpr2 = ??;
+      assert (((0)<=(__s_whichexpr2))&&((__s_whichexpr2)<(6)))
+;
+      int __s_whichexpr3;
+      __s_whichexpr3 = ??;
+      assert (((0)<=(__s_whichexpr3))&&((__s_whichexpr3)<(14)))
+;
+      if((((__s_whichexpr2)==(0) ? true : ((__s_whichexpr2)==(1) ? false : ((__s_whichexpr2)==(2) ? (tmp)==(b.phase) : ((__s_whichexpr2)==(3) ? (tmp)==(!(b.phase)) : ((__s_whichexpr2)==(4) ? (!(tmp))==(b.phase) : (!(tmp))==(!(b.phase))))))))||(((__s_whichexpr3)==(0) ? true : ((__s_whichexpr3)==(1) ? false : ((__s_whichexpr3)==(2) ? ((lastCount)-(??))==(b.yetToArrive) : ((__s_whichexpr3)==(3) ? !(((lastCount)-(??))==(b.yetToArrive)) : ((__s_whichexpr3)==(4) ? ((lastCount)-(??))==(??) : ((__s_whichexpr3)==(5) ? !(((lastCount)-(??))==(??)) : ((__s_whichexpr3)==(6) ? ((lastCount)+(??))==(b.yetToArrive) : ((__s_whichexpr3)==(7) ? !(((lastCount)+(??))==(b.yetToArrive)) : ((__s_whichexpr3)==(8) ? ((lastCount)+(??))==(??) : ((__s_whichexpr3)==(9) ? !(((lastCount)+(??))==(??)) : ((__s_whichexpr3)==(10) ? (??)==(b.yetToArrive) : ((__s_whichexpr3)==(11) ? !((??)==(b.yetToArrive)) : ((__s_whichexpr3)==(12) ? (??)==(??) : !((??)==(??)))))))))))))))))
+      {
+        {
+          {
+            int __s_whichexpr4;
+            __s_whichexpr4 = ??;
+            assert (((0)<=(__s_whichexpr4))&&((__s_whichexpr4)<(6)))
+;
+            atomic(((__s_whichexpr4)==(0) ? true : ((__s_whichexpr4)==(1) ? false : ((__s_whichexpr4)==(2) ? (tmp)==(b.phase) : ((__s_whichexpr4)==(3) ? (tmp)==(!(b.phase)) : ((__s_whichexpr4)==(4) ? (!(tmp))==(b.phase) : (!(tmp))==(!(b.phase))))))))
+            {
+            }
+          }
+        }
+      }
+      else
+      {
+        {
+          reorder
+          {
+            b.yetToArrive = 3;
+            {
+              int __s_whichexpr5;
+              __s_whichexpr5 = ??;
+              assert (((0)<=(__s_whichexpr5))&&((__s_whichexpr5)<(8)))
+;
+              b.phase = ((__s_whichexpr5)==(0) ? b.phase : ((__s_whichexpr5)==(1) ? !(b.phase) : ((__s_whichexpr5)==(2) ? relPhase : ((__s_whichexpr5)==(3) ? !(relPhase) : ((__s_whichexpr5)==(4) ? tmp : ((__s_whichexpr5)==(5) ? !(tmp) : ((__s_whichexpr5)==(6) ? true : !(true))))))));
+            }
+          }
+        }
+      }
+    }
+  }
+  */
+  return relPhase;
+}

@@ -1,4 +1,4 @@
-pragma options "--reorderEncoding quadratic";
+pragma options "--reorderEncoding quadratic --seed 7";
 
 include "queue.skh";
 
@@ -31,10 +31,10 @@ static Object Dequeue(Queue q) {
       return null;
     else {
       QueueEntry p = {| q.prevHead | nextEntry |};
-      do {
+      while (p != null && {| p(.next)?.taken |} ) {
         q.prevHead = p;
         p = p.next;
-      } while (p != null && {| p(.next)?.taken |} );
+      }
       return nextEntry.stored;
 } }
 
