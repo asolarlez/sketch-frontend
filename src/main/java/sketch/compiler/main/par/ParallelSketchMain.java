@@ -185,10 +185,11 @@ public class ToPSbitII extends ToSBit {
 		}
 
 		lprog = (Program) lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
-		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
+		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
+		//dump (lprog, "bounded, ~conditionals, atomized");
 
-		// prog = (Program)prog.accept(new NoRefTypes());
+		//prog = (Program)prog.accept(new NoRefTypes());
 		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
@@ -278,6 +279,7 @@ public class ToPSbitII extends ToSBit {
 	public void generateCode (Program p) {
 		p.accept (new SimpleCodePrinter ());
 		//prog.accept (new SimpleCodePrinter ());
+		//outputCCode ();
 	}
 
 	public Synthesizer createSynth(Program p){

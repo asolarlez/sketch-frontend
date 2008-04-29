@@ -71,11 +71,11 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 //        		System.out.println("CRAP");
 //    	}
     	stmt.assertTrue (
-    			!(lt != null && rt != null && !(rt.promotesTo(lt))),
-    			"Type missmatch " + lt +" !>= " + rt);
-    	stmt.assertTrue (
-    			!( lt == null || rt == null),
+    			lt !=null && rt != null,
     			"internal error: " + lt + "   " + rt);
+    	stmt.assertTrue (
+    			rt.promotesTo(lt),
+    			"Type missmatch " + lt +" !>= " + rt);
         return lt;
     }
     public void upgradeStarToInt(Expression exp, Type ftype){
