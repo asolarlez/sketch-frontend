@@ -125,10 +125,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		parfun = ps.parfun;
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
-		//this.prog.accept(new SimpleCodePrinter().outputTags());
+        prog.accept(new SimpleCodePrinter().outputTags());
 
 		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
-		// ploop.accept(new SimpleCodePrinter());
+		ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
 
@@ -370,10 +370,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
-
-
-
-	private Statement foo(CFGNode n, int thread, final Expression indVar){
+	private Statement nodeReadyToExecute(CFGNode n, int thread, final Expression indVar){
 
 		Statement s = null;
 		if(n.isExpr()){ s = n.getPreStmt(); }
@@ -518,7 +515,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		if(n.isExpr()){ s = n.getPreStmt(); }
 		if(n.isStmt()){ s = n.getStmt(); }
 
-		foo(n, thread, new ExprVar(s, "IV"));
+		nodeReadyToExecute(n, thread, new ExprVar(s, "IV"));
 
 		final List<Expression> answer = new ArrayList<Expression>();
 
@@ -576,7 +573,17 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		return ExprConstInt.one;
 	}
 
-
+/**
+ * 
+ * Adds to the list ls the code to check whether the successor of 
+ * node n is ready to execute or not.
+ * 
+ * @param n
+ * @param thread
+ * @param iv Indicator variable that says whether this thread is 
+ *   ready to execute or not.
+ * @param ls
+ */
 	private void getNextAtomicCond(CFGNode n, int thread, ExprVar iv, List<Statement> ls){
 
 		if(n.isStmt()){
@@ -586,7 +593,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				ls.add(new StmtAssign(iv, ExprConstInt.zero));
 				return;
 			}else{
-				ls.add(foo(nxt, thread, iv));
+				ls.add(nodeReadyToExecute(nxt, thread, iv));
 				return ;
 			}
 		}
@@ -597,7 +604,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				if(ep.node == cfg.getExit()){
 					s = new StmtAssign(iv, ExprConstInt.zero);
 				}else{
-					s = foo(ep.node, thread, iv);
+					s = nodeReadyToExecute(ep.node, thread, iv);
 				}
 				Expression g = new ExprBinary((Expression)parametrizeLocals(n.getExpr(), thread), "==", new ExprConstInt(ep.label));
 
@@ -667,27 +674,32 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					Statement elsecond;
 
 					if(thread >=0){
-						List<Statement> ls = new ArrayList<Statement>();
-						ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
-						ExprVar iv = new ExprVar(stmt, "IV");
+						
+						List<Statement> mls = new ArrayList<Statement>();
+						mls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "mIV", ExprConstInt.zero));
+						ExprVar miv = new ExprVar(stmt, "mIV");	
 						for(int i=0; i<nthreads; ++i){
 							if(i == thread){ continue; }
+							List<Statement> ls = new ArrayList<Statement>();
+							ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
+							ExprVar iv = new ExprVar(stmt, "IV");							
 							CFGNode n = lastNode[i];
 							if(n != null){
 								getNextAtomicCond(n, i, iv, ls);
 							}else{
-								ls.add(foo(cfg.getEntry(), i, iv));
+								ls.add(nodeReadyToExecute(cfg.getEntry(), i, iv));
 							}
-
+							ls.add(new StmtAssign(miv, new ExprBinary(miv, "||", iv)));
+							mls.add(new StmtBlock(stmt, ls));
 						}
 
 						Statement allgood = new StmtAssign(assumeFlag, ExprConstInt.zero);
 						Statement allbad = new StmtIfThen(stmt, assumeFlag,
 								new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock."), null);
 
-						Statement otherwise = new StmtIfThen(stmt, iv, allgood, allbad);
-						ls.add(otherwise);
-						elsecond = new StmtBlock(stmt, ls);
+						Statement otherwise = new StmtIfThen(stmt, miv, allgood, allbad);
+						mls.add(otherwise);
+						elsecond = new StmtBlock(stmt, mls);
 					}else{
 						elsecond = new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock.");
 					}
@@ -920,9 +932,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		mergeWithCurrent((CEtrace)counterExample);
 
 		current = (Program)current.accept(new EliminateMultiDimArrays());
-
 		 if (reallyVerbose ())
-			current.accept(new SimpleCodePrinter());
+			current.accept(new SimpleCodePrinter()); 
 		boolean tmp = partialEvalAndSolve(current);
 
 		return tmp ? getOracle() : null;
