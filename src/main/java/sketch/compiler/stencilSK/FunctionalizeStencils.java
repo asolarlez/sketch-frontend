@@ -980,7 +980,6 @@ class ProcessStencil extends FEReplacer {
     		 for(Expression e : indices ){
     			 if( exp.equals(e)){
     				 StmtVarDecl sv = formals.get(i);
-    				 System.out.println("FOUND ONE");
     				 return new ExprVar(sv, sv.getName(0));
     			 }
     			 ++i;
