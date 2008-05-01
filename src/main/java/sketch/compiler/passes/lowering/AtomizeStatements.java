@@ -10,6 +10,7 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -42,6 +43,12 @@ public class AtomizeStatements extends SymbolTableVisitor {
 		super(null);
 		this.varGen = varGen;
 	}
+	
+	
+	public Object visitStmtAtomicBlock(StmtAtomicBlock atom){
+		return atom;
+	}
+	
 
 	public Expression replWithLocal(Expression exp){
 
