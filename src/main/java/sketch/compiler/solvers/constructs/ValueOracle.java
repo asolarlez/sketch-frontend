@@ -16,45 +16,45 @@ import streamit.frontend.nodes.FENode;
 
 public class ValueOracle {
 	private HoleNameTracker holeNamer;
-	
+
 	/**
-	 * After sketch is resolved, this map will contain the 
+	 * After sketch is resolved, this map will contain the
 	 * value of each variable in store.
 	 */
 	private Map<String, Boolean> valMap;
-	
-	
-	
+
+
+
 	public boolean allowMemoization(){
-		return holeNamer.allowMemoization();	
+		return holeNamer.allowMemoization();
 	}
-	
+
 	public HoleNameTracker getHoleNamer(){
 		return holeNamer;
 	}
-	
+
 	//The following functions are to be called before resolution.
-	
+
 	private int starSizesCaped = -1;
-	
+
 	public ValueOracle(HoleNameTracker holeNamer) {
-		super();		
+		super();
 		valMap = null;
 		this.holeNamer = holeNamer;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Register a new variable name for a node.
 	 *
 	 * @param node
 	 * @param vname
 	 */
 	public String addBinding(Object node){
-		return holeNamer.getName(node);		
-	}	
-	
-	
+		return holeNamer.getName(node);
+	}
+
+
 	/**
 	 * This function populates the valMap with information
 	 * from the file in, about what variables got what values.
@@ -72,23 +72,23 @@ public class ValueOracle {
             valMap.put(vname, val==1);
          }
 	}
-	
+
 	/**
-	 * Before we begin, populating the sketch, we set all the 
+	 * Before we begin, populating the sketch, we set all the
 	 * streams to the beginning.
 	 */
-	
+
 	public void initCurrentVals(){
 		holeNamer.reset();
 	}
-	
-	
-	
+
+
+
 	public ExprConstInt popValueForNode(FENode node){
-		String name = holeNamer.getName(node);	
+		String name = holeNamer.getName(node);
 		return getVal(node, name);
 	}
-	
+
 	protected ExprConstInt getVal(FENode node, String var){
 		if(node instanceof ExprStar){
 			ExprStar star = (ExprStar) node;
@@ -114,7 +114,7 @@ public class ValueOracle {
 						break;
 					}
 				}
-				
+
 				if( p == 1){
 					assert v == 0;
 					if( valMap.containsKey(var) ){
@@ -132,7 +132,7 @@ public class ValueOracle {
 		}
 		return new ExprConstInt(node, -1);
 	}
-	
+
 
 	public void capStarSizes(int size){
 		starSizesCaped = size;

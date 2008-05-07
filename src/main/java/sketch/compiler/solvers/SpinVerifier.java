@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.nodes.Program;
@@ -92,35 +91,41 @@ public class SpinVerifier implements Verifier {
 
 			addSpinStats (lastSolveStats, out);
 
-			try {
-				if (trail.length () == 0) {
-					lastSolveStats.success = true;
-					return null;	// success!
-				} else {
-					CEtrace cex = parseTrace (trail);
-					List<step> finalStates =
-						parseFinalStates (trail, cex.steps.get (cex.steps.size ()-1));
+			CounterExample cex = extractTrace (out, trail);
+			log (2, "Stats for last run:\n"+ lastSolveStats);
+			return cex;
+		}
+	}
 
-					cex.addSteps (finalStates);
+	public CounterExample extractTrace (String out, String trail) {
+		if (trail.length () == 0) {
+			lastSolveStats.success = true;
+			return null;	// success!
+		} else {
+			CEtrace cex = parseTrace (trail);
+			step lastStep;
+			if (cex.steps.size () > 0)
+				lastStep = cex.steps.get (cex.steps.size ()-1);
+			else
+				lastStep = new step (-1, -1);
+			List<step> finalStates = parseFinalStates (trail, lastStep);
 
-					if (deadlock (out)) {
-						List<step> blocked = findBlockedThreads (trail);
-						assert blocked.size () > 0 : "Uh-oh!  No blocked threads";
+			cex.addSteps (finalStates);
 
-						log (5, "  (counterexample from deadlock)");
-						log (5, "  blocked threads: "+ blocked);
+			if (deadlock (out)) {
+				List<step> blocked = findBlockedThreads (trail);
+				assert blocked.size () > 0 : "Uh-oh!  No blocked threads";
 
-						//cex.addSteps (blocked);
-					}
+				log (5, "  (counterexample from deadlock)");
+				log (5, "  blocked threads: "+ blocked);
 
-					log (5, "  final states: "+ finalStates);
-					log (5, "counterexample: "+ cex);
-
-					return cex;
-				}
-			} finally {
-				log (2, "Stats for last run:\n"+ lastSolveStats);
+				//cex.addSteps (blocked);
 			}
+
+			log (5, "  final states: "+ finalStates);
+			log (5, "counterexample: "+ cex);
+
+			return cex;
 		}
 	}
 
@@ -143,7 +148,7 @@ public class SpinVerifier implements Verifier {
 		//p = (Program) p.accept (new ParallelPreprocessor ());
 		//p = (Program) p.accept (new EliminateTransAssns ());
 		//p = (Program) p.accept (new EliminateDeadParallelCode ());
-		
+
 		if (preSimplify) {
 			log ("Cleaning up the next candidate.");
 			if (reallyREALLYVerbose ()) {
