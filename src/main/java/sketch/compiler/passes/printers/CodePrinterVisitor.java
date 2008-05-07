@@ -430,9 +430,6 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 	}
 
 	public Object visitStmtBlock (StmtBlock sb) {
-		if (sb.getStmts ().size () == 0)
-			return sb;
-
 		SymbolTable oldSymtab = symtab;
 		symtab = new SymbolTable (symtab);
 
