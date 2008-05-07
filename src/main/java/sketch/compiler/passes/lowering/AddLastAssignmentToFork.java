@@ -14,30 +14,30 @@ import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TypePrimitive;
 
 public class AddLastAssignmentToFork extends FEReplacer {
+	public static final String PLACEHOLDER = "_END_";
 
-	
 	@Override
 	public Object visitStmtFork(StmtFork stmt){
-		
-		Statement svd = new StmtVarDecl(stmt, TypePrimitive.bittype, "_END_", ExprConstInt.zero);
-		
+
+		Statement svd = new StmtVarDecl(stmt, TypePrimitive.inttype, PLACEHOLDER, ExprConstInt.zero);
+
 		addStatement(svd);
-		
-		Statement fas = new StmtAssign(new ExprVar(stmt, "_END_"), ExprConstInt.zero);
-		
+
+		Statement fas = new StmtAssign(new ExprVar(stmt, PLACEHOLDER), ExprConstInt.zero);
+
 		List<Statement> blist = new ArrayList<Statement>();
 		blist.add(fas);
 		blist.add(stmt.getBody());
 		blist.add(fas);
-		
-		 
-		
-		StmtFork nfork = new StmtFork(stmt, stmt.getLoopVarDecl(), stmt.getIter(), new StmtBlock(stmt.getBody(), blist)); 
-		return nfork;		
+
+
+
+		StmtFork nfork = new StmtFork(stmt, stmt.getLoopVarDecl(), stmt.getIter(), new StmtBlock(stmt.getBody(), blist));
+		return nfork;
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 }
