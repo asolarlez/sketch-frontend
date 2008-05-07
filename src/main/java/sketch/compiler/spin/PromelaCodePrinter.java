@@ -16,6 +16,7 @@ import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
@@ -270,6 +271,14 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		print ("("+ atomicCondLbl +"=="+ lbl + ")||");
 	}
 
+	public Object visitStmtBlock (StmtBlock stmt) {
+		if (stmt.getStmts ().size () == 0) {
+			printlnIndent ("{ skip; }");
+			return stmt;
+		} else
+			return super.visitStmtBlock (stmt);
+	}
+
 	@Override
 	public Object visitStmtBreak(StmtBreak stmt)
 	{
@@ -297,7 +306,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	@Override
 	public Object visitStmtEmpty(StmtEmpty stmt)
 	{
-		//printlnIndent("pass;");
+		printlnIndent("skip;");
 		return stmt;
 	}
 
