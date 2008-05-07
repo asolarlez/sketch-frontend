@@ -118,14 +118,17 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	public SATSynthesizer(Program prog_p, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		super(params, rcontrol, varGen);
 		this.prog = prog_p;
+		
+		
 		this.prog = (Program)prog.accept(new SimpleLoopUnroller());
+		
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
 		//this.prog.accept(new SimpleCodePrinter().outputTags());
 		parfun = ps.parfun;
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
-        prog.accept(new SimpleCodePrinter().outputTags());
+        //prog.accept(new SimpleCodePrinter().outputTags());
 
 		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
 		ploop.accept(new SimpleCodePrinter());
