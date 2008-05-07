@@ -23,15 +23,13 @@ static void find (Node head, int key, ref Node prev, ref Node cur) {
     prev = null;
     cur = head;
     lock (cur);
-    for (int i = 0; i < 2; ++i) {
-        if (cur.key < key) {
-            if (genComparison (prev, null)) {
-                unlock (prev);
-            }
-            lock (cur.next);
-            prev = cur;
-            cur = cur.next;
+    while (cur.key < key) {
+        if (genComparison (prev, null)) {
+            unlock (genNode (prev, cur));
         }
+        lock (cur.next);
+        prev = cur;
+        cur = cur.next;
     }
 }
 
@@ -53,6 +51,7 @@ bit main () implements T {
     fork (int i; 2) {
         Node p = null, c = null;
         find (head, i+1, p, c);
+        unlock (p);  unlock (c);
     }
 
     return 1;
