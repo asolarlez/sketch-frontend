@@ -178,7 +178,15 @@ public class CFGforPloop extends CFGBuilder {
 
 
 
+	/**
+	 * @deprecated Use {@link #isAtomic(Statement)} instead
+	 */
 	boolean isSingleStmt(Statement s){
+		return isAtomic(s);
+	}
+
+
+	boolean isAtomic(Statement s){
 
 		if(s instanceof StmtAssign) return true;
 		
@@ -192,11 +200,26 @@ public class CFGforPloop extends CFGBuilder {
 		if(s instanceof StmtBlock){
 			StmtBlock sb = (StmtBlock) s;
 			if(sb.getStmts().size() != 1){ return false; }
-			return isSingleStmt(sb.getStmts().get(0));
+			return isAtomic(sb.getStmts().get(0));
 		}
 		if(s instanceof StmtExpr){
 			return true;
 		}
+		
+		if(s instanceof StmtIfThen){
+			StmtIfThen sit = (StmtIfThen) s;
+			if( allLocals(sit.getCond()) ){
+	    		if( isAtomic(sit.getCons()) ){
+	    			if(sit.getAlt() == null){
+	    				return true;
+	    			}
+	    			if(isAtomic(sit.getAlt()) ){
+	    				return true;
+	    			}
+	    		}
+	    	}
+		}
+		
 		return false;
 	}
 
@@ -227,11 +250,11 @@ public class CFGforPloop extends CFGBuilder {
     {
 
     	if( allLocals(stmt.getCond()) ){
-    		if( isSingleStmt(stmt.getCons()) ){
+    		if( isAtomic(stmt.getCons()) ){
     			if(stmt.getAlt() == null){
     				return null;
     			}
-    			if(isSingleStmt(stmt.getAlt()) ){
+    			if(isAtomic(stmt.getAlt()) ){
     				return null;
     			}
     		}
