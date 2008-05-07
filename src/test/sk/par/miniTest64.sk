@@ -1,0 +1,18 @@
+static int gen () { return ??; }
+
+int sp () {
+    int in = 3;
+    return in + in;
+}
+
+int sk () implements sp {
+    int in = 3;
+    int g = 0;
+
+    fork (int i; 2) {
+        int j = i + 1;
+        g = g + j;
+    }
+
+    return gen () * in;
+}
