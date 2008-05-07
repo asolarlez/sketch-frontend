@@ -40,6 +40,7 @@ import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.CodePrinterVisitor;
 
 /**
@@ -203,6 +204,10 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		quiet ();  super.visitFieldDecl (fd);  unquiet ();
 		for (int i = 0; i < fd.getNumFields (); ++i) {
 			printTab ();
+
+			if (AddLastAssignmentToFork.PLACEHOLDER.equals (fd.getName (i)))
+				print ("hidden ");
+
 			printDecl (fd.getType (i), fd.getName (i), fd.getInit (i));
 			println (";");
 		}

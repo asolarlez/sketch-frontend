@@ -118,20 +118,23 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	public SATSynthesizer(Program prog_p, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
 		super(params, rcontrol, varGen);
 		this.prog = prog_p;
-		
-		
+
+
 		this.prog = (Program)prog.accept(new SimpleLoopUnroller());
-		
+
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
 		//this.prog.accept(new SimpleCodePrinter().outputTags());
+
+		assert ps.parfun != null : "this is not a parallel sketch";
+
 		parfun = ps.parfun;
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
         //prog.accept(new SimpleCodePrinter().outputTags());
 
 		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
-		ploop.accept(new SimpleCodePrinter());
+		//ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
 
@@ -577,13 +580,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 /**
- * 
- * Adds to the list ls the code to check whether the successor of 
+ *
+ * Adds to the list ls the code to check whether the successor of
  * node n is ready to execute or not.
- * 
+ *
  * @param n
  * @param thread
- * @param iv Indicator variable that says whether this thread is 
+ * @param iv Indicator variable that says whether this thread is
  *   ready to execute or not.
  * @param ls
  */
@@ -677,15 +680,15 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					Statement elsecond;
 
 					if(thread >=0){
-						
+
 						List<Statement> mls = new ArrayList<Statement>();
 						mls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "mIV", ExprConstInt.zero));
-						ExprVar miv = new ExprVar(stmt, "mIV");	
+						ExprVar miv = new ExprVar(stmt, "mIV");
 						for(int i=0; i<nthreads; ++i){
 							if(i == thread){ continue; }
 							List<Statement> ls = new ArrayList<Statement>();
 							ls.add(new StmtVarDecl(stmt, TypePrimitive.bittype, "IV", ExprConstInt.one));
-							ExprVar iv = new ExprVar(stmt, "IV");							
+							ExprVar iv = new ExprVar(stmt, "IV");
 							CFGNode n = lastNode[i];
 							if(n != null){
 								getNextAtomicCond(n, i, iv, ls);
@@ -936,7 +939,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 		current = (Program)current.accept(new EliminateMultiDimArrays());
 		 if (reallyVerbose ())
-			current.accept(new SimpleCodePrinter()); 
+			current.accept(new SimpleCodePrinter());
 		boolean tmp = partialEvalAndSolve(current);
 
 		return tmp ? getOracle() : null;
