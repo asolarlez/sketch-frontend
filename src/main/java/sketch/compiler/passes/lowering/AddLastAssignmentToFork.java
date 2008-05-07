@@ -21,10 +21,12 @@ public class AddLastAssignmentToFork extends FEReplacer {
 		
 		Statement svd = new StmtVarDecl(stmt, TypePrimitive.bittype, "_END_", ExprConstInt.zero);
 		
+		addStatement(svd);
+		
 		Statement fas = new StmtAssign(new ExprVar(stmt, "_END_"), ExprConstInt.zero);
 		
 		List<Statement> blist = new ArrayList<Statement>();
-		blist.add(svd);
+		blist.add(fas);
 		blist.add(stmt.getBody());
 		blist.add(fas);
 		
