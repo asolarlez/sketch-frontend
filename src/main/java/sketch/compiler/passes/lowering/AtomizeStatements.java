@@ -43,12 +43,12 @@ public class AtomizeStatements extends SymbolTableVisitor {
 		super(null);
 		this.varGen = varGen;
 	}
-	
-	
+
+
 	public Object visitStmtAtomicBlock(StmtAtomicBlock atom){
 		return atom;
 	}
-	
+
 
 	public Expression replWithLocal(Expression exp){
 
@@ -61,10 +61,8 @@ public class AtomizeStatements extends SymbolTableVisitor {
 
 	public Object visitExprBinary (ExprBinary exp) {
 		String op = exp.getOpString ();
-		if (op.equals ("&&"))
-			return doLogicalExpr (exp, true);
-		else if (op.equals ("||"))
-			return doLogicalExpr (exp, false);
+		if (op.equals ("&&") || op.equals ("||"))
+			return doLogicalExpr (exp, op);
 
 		Expression left = doExpression (exp.getLeft ());
 		if (left instanceof ExprVar && isGlobal ((ExprVar) left)) {
@@ -83,7 +81,8 @@ public class AtomizeStatements extends SymbolTableVisitor {
 					.getAlias ());
 	}
 
-	protected Expression doLogicalExpr (ExprBinary eb, boolean isAnd) {
+	protected Expression doLogicalExpr (ExprBinary eb, String op) {
+		boolean isAnd = op.equals ("&&");
 		Expression left = eb.getLeft (), right = eb.getRight ();
 
 		//if (!(isGlobal (left) || isGlobal (right)))
