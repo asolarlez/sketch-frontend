@@ -25,6 +25,7 @@ package streamit.frontend.nodes;
  */
 public class StmtEmpty extends Statement
 {
+	public static final StmtEmpty EMPTY = new StmtEmpty((FENode)null);
     /**
      * Creates a new empty statement.
      *
