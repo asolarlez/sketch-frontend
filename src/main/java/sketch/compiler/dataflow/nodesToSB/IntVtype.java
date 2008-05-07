@@ -238,6 +238,11 @@ public class IntVtype extends abstractValueType {
 	public abstractValue arracc(abstractValue arr, abstractValue idx) {
 		assert false; return null;
 	}
+	
+	
+	public abstractValue outOfBounds(){
+		return BOTTOM("OUT OF BOUNDS");
+	}
 
 	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
 		if(  arr.isBottom()  ){
@@ -261,7 +266,7 @@ public class IntVtype extends abstractValueType {
 			 if( !isUnchecked && (iidx < 0 || iidx >= size)  )
 				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size+") ");
 			if(iidx < 0 || iidx >= size)
-				return CONST(0);
+				return outOfBounds();
 			return arr.getVectValue().get(idx.getIntVal());
 		}else{
 			return rawArracc(arr, idx);

@@ -35,6 +35,7 @@ import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAtomicBlock;
+import streamit.frontend.nodes.StmtEmpty;
 import streamit.frontend.nodes.StmtReorderBlock;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
@@ -70,7 +71,7 @@ public class PartialEvaluator extends FEReplacer {
     protected abstractValueType vtype;
 	protected Expression exprRV=null;
     protected boolean isReplacer;
-    protected boolean uncheckedArrays = false;
+    protected boolean uncheckedArrays = true;
     public boolean isPrecise = true;
 
     protected List<Function> funcsToAnalyze = null;
@@ -905,6 +906,9 @@ public class PartialEvaluator extends FEReplacer {
         if(isReplacer){
         	if(nvtrue == null && nvfalse == null){
         		return null;
+        	}
+        	if(nvtrue == null){
+        		nvtrue = StmtEmpty.EMPTY;
         	}
         	return new StmtIfThen(stmt,ncond, nvtrue, nvfalse );
         }else{

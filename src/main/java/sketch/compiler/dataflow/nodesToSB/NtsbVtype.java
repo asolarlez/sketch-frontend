@@ -29,6 +29,10 @@ public class NtsbVtype extends IntVtype {
 	}
 	
 	
+	public abstractValue outOfBounds(){
+		return CONST(0);
+	}
+	
 	java.util.Map<FENode, NtsbValue> memoizedValues = new HashMap<FENode, NtsbValue>();
 	
 	public abstractValue STAR(FENode node){		
