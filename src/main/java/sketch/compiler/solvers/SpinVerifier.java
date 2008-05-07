@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.nodes.Program;
@@ -145,32 +146,29 @@ public class SpinVerifier implements Verifier {
 	protected Program spinify (ValueOracle holeVals) {
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
 
-		//p = (Program) p.accept (new ParallelPreprocessor ());
-		//p = (Program) p.accept (new EliminateTransAssns ());
-		//p = (Program) p.accept (new EliminateDeadParallelCode ());
+		log ("Cleaning up the next candidate.");
+		if (reallyREALLYVerbose ()) {
+			log ("Before specialization and optimization:");
+			p.accept (new SimpleCodePrinter());
+		}
+
+		p = (Program) p.accept (new FlattenStmtBlocks ());
+		//ToSBit.dump (p, "flatten");
+		p = (Program) p.accept (new ParallelPreprocessor ());
+		//ToSBit.dump (p, "preproc");
+		p = (Program) p.accept (new EliminateTransAssns ());
 
 		if (preSimplify) {
-			log ("Cleaning up the next candidate.");
-			if (reallyREALLYVerbose ()) {
-				log ("Before specialization and optimization:");
-				p.accept (new SimpleCodePrinter());
-			}
-
-			p = (Program) p.accept (new FlattenStmtBlocks ());
-			//ToSBit.dump (p, "flatten");
-			p = (Program) p.accept (new ParallelPreprocessor ());
-			//ToSBit.dump (p, "preproc");
-			p = (Program) p.accept (new EliminateTransAssns ());
 			p = (Program) p.accept (new EliminateDeadParallelCode ());
 			//ToSBit.dump (p, "dead parallel");
 			p = (Program) p.accept (new HoistDeclarations ());
 			p = MergeLocalStatements.go (p);
 			//ToSBit.dump (p, "merged local stmts (SpinVerif)");
+		}
 
-			if (reallyREALLYVerbose ()) {
-				log ("After specialization and optimization:");
-				p.accept (new SimpleCodePrinter ());
-			}
+		if (reallyREALLYVerbose ()) {
+			log ("After specialization and optimization:");
+			p.accept (new SimpleCodePrinter ());
 		}
 
 		p = (Program) p.accept(new Preprocessor (varGen));
