@@ -30,8 +30,10 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
@@ -75,7 +77,7 @@ public class EliminateRegens extends SymbolTableVisitor {
 	public Object visitStmtAssign (StmtAssign sa) {
 		if (sa.getLHS () instanceof ExprRegen)
 			return translateRegenAssn ((ExprRegen) sa.getLHS (),
-					(Expression) sa.getRHS ().accept (this));
+					sa.getRHS ()/*(Expression) sa.getRHS ().accept (this)*/);
 		else
 			return super.visitStmtAssign (sa);
 	}
@@ -83,7 +85,7 @@ public class EliminateRegens extends SymbolTableVisitor {
 	public Object translateRegenAssn (ExprRegen lhs, Expression rhs) {
 		List<Expression> lhses = explodeRegen (lhs);
 		if (lhses.size () == 1)
-			return new StmtAssign (lhses.get (0), rhs);
+			return new StmtAssign (lhses.get (0), (Expression) rhs.accept (this));
 
 		// General idea:
 		//   1.) Build set of possible LHSes
@@ -97,8 +99,16 @@ public class EliminateRegens extends SymbolTableVisitor {
 			Expression l = lhses.get (i);
 			Expression cond = new ExprBinary (whichLhs, "==",
 					ExprConstant.createConstant (whichLhs, ""+ i));
-			StmtAssign s = new StmtAssign (l, rhs);
-			addStatement (new StmtIfThen (lhs, cond, s, null));
+
+			List<Statement> oldStmts = newStatements;
+			newStatements = new ArrayList<Statement> ();
+
+			newStatements.add (new StmtAssign (l, (Expression) rhs.accept (this)));
+			StmtIfThen s = new StmtIfThen (lhs, cond, new StmtBlock (lhs, newStatements), null);
+
+			newStatements = oldStmts;
+
+			addStatement (s);
 		}
 
 		return null;
