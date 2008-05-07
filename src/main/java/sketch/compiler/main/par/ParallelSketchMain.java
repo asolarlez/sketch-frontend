@@ -133,8 +133,7 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public void synthVerifyLoop(){
-		lowerIRToJava();
-
+		lowerIRToJava();		
 		Synthesizer synth = createSynth(prog);
 		Verifier verif = createVerif(prog);
 
@@ -217,7 +216,7 @@ public class ToPSbitII extends ToSBit {
 	public void lowerIRToJava() {
 		prog = (Program) prog.accept (new MakeAllocsAtomic (varGen));
 
-		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), false, true ) );
+		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true, true ) );
 		super.lowerIRToJava();
 
 		prog = (Program) prog.accept (new EliminateConditionals(varGen));
@@ -240,15 +239,20 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept(new AddLastAssignmentToFork());
 
+		prog = (Program) prog.accept (new EliminateTransAssns ());
+		prog = (Program) prog.accept (new EliminateDeadCode (true));
+		
+		
+		
 		if (params.hasFlag ("simplifySpin")) {	// probably not terribly useful
-			prog = (Program) prog.accept (new EliminateTransAssns ());
-			prog = (Program) prog.accept (new EliminateDeadCode (true));
+			
 			prog = (Program) prog.accept (new HoistDeclarations ());
 			//dump (prog, "hoisted decls");
 		}
 
 		prog = (Program) prog.accept(new NumberStatements());
-
+		
+		
 		if (params.hasFlag ("simplifySpin")) {
 			prog = MergeLocalStatements.go (prog);
 			//dump (prog, "merged local stmts");
