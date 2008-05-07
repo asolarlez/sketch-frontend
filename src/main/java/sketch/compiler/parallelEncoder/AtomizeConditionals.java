@@ -183,7 +183,7 @@ public class AtomizeConditionals extends FEReplacer {
 	    		}
 	    		if(rv != null){
 	    			if( hasCondAtomic(rv) ){
-	    				return stmt;
+	    				return rv;
 	    			}else{
 	    				return new StmtAtomicBlock(stmt, Collections.singletonList(rv) );
 	    			}
