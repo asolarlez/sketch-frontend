@@ -120,7 +120,7 @@ public class SpinVerifier implements Verifier {
 				log (5, "  (counterexample from deadlock)");
 				log (5, "  blocked threads: "+ blocked);
 
-				//cex.addSteps (blocked);
+				cex.addBlockedSteps (blocked);
 			}
 
 			log (5, "  final states: "+ finalStates);
@@ -157,10 +157,10 @@ public class SpinVerifier implements Verifier {
 		p = (Program) p.accept (new ParallelPreprocessor ());
 		//ToSBit.dump (p, "preproc");
 		p = (Program) p.accept (new EliminateTransAssns ());
+		p = (Program) p.accept (new EliminateDeadParallelCode ());
+		//ToSBit.dump (p, "dead parallel");
 
 		if (preSimplify) {
-			p = (Program) p.accept (new EliminateDeadParallelCode ());
-			//ToSBit.dump (p, "dead parallel");
 			p = (Program) p.accept (new HoistDeclarations ());
 			p = MergeLocalStatements.go (p);
 			//ToSBit.dump (p, "merged local stmts (SpinVerif)");
