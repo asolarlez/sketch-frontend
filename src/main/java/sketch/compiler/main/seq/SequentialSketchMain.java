@@ -189,7 +189,7 @@ public class ToSBit
 	throws java.io.IOException, antlr.RecognitionException, antlr.TokenStreamException
 	{
 		Program prog = emptyProgram();
-		boolean useCpp = params.hasFlag ("cpp");
+		boolean useCpp = true;
 		List<String> cppDefs = params.listValue ("def");
 		Set<Directive> pragmas = new HashSet<Directive> ();
 
@@ -297,12 +297,11 @@ public class ToSBit
 		//invoke post-parse passes
 
 		//dump (prog, "before:");
-		if (params.hasFlag ("regens")) {
-			lprog = (Program)lprog.accept(new SeparateInitializers ());
-			lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
-			lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-			//dump (lprog, "~regens");
-		}
+		lprog = (Program)lprog.accept(new SeparateInitializers ());
+		lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
+		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
+		//dump (lprog, "~regens");
+
 		// prog = (Program)prog.accept(new NoRefTypes());
 		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
@@ -549,16 +548,8 @@ public class ToSBit
 				"             \t * quadratic -- use a loop of switch statements\n",
 				"exponential", null) );
 
-		params.setAllowedParam("regens", new POpts(POpts.FLAG,
-				"--regens     \t Enable regular-expression expression generators.  This feature is\n"+
-				"             \t experimental at the moment.",
-				null, null) );
-
-		params.setAllowedParam("cpp", new POpts(POpts.FLAG,
-				"--cpp        \t Run the C preprocessor on files before parsing them.",
-				null, null) );
 		params.setAllowedParam("def", new POpts(POpts.MULTISTRING,
-				"--def        \t Vars to define for the C preprocessor.  Assumes '--cpp'.\n"+
+				"--def        \t Vars to define for the C preprocessor.\n"+
 				"             \t Consider also using the 'safer' option --D VAR value\n"+
 				"             \t Example use:  '--def _FOO=1 --def _BAR=false ...'",
 				null, null) );

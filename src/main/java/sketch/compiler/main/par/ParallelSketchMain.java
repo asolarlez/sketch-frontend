@@ -44,6 +44,7 @@ import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
 import streamit.frontend.spin.Configuration;
+import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.Configuration.StateCompressionPolicy;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
@@ -57,6 +58,8 @@ public class ToPSbitII extends ToSBit {
 
 	protected CompilationStatistics stats;
 	protected boolean success = false;
+
+	protected Program forCodegen = null;
 
 	public ToPSbitII(String[] args){
 		super(args);
@@ -116,7 +119,7 @@ public class ToPSbitII extends ToSBit {
 				return;
 			}
 
-			finalCode = postprocessProgram (beforeUnvectorizing);
+			finalCode = postprocessProgram (beforeUnvectorizing);//postprocessProgram (forCodegen);
 			generateCode(finalCode);
 		}
 		finally {
@@ -133,7 +136,7 @@ public class ToPSbitII extends ToSBit {
 	}
 
 	public void synthVerifyLoop(){
-		lowerIRToJava();		
+		lowerIRToJava();
 		Synthesizer synth = createSynth(prog);
 		Verifier verif = createVerif(prog);
 
@@ -177,11 +180,8 @@ public class ToPSbitII extends ToSBit {
 
 		lprog = (Program) lprog.accept (new SeparateInitializers ());
 		lprog = (Program) lprog.accept (new BlockifyRewriteableStmts ());
-
-		if (params.hasFlag ("regens")) {
-			lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-			//dump (lprog, "~regens");
-		}
+		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
+		//dump (lprog, "~regens");
 
 		lprog = (Program) lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		lprog = (Program) lprog.accept (new AtomizeStatements(varGen));
@@ -207,6 +207,8 @@ public class ToPSbitII extends ToSBit {
 		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
 
 		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
+
+		forCodegen = lprog;
 
 		if(params.flagEquals("showphase", "preproc")) dump (lprog, "After Preprocessing");
 
@@ -241,18 +243,18 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept (new EliminateTransAssns ());
 		prog = (Program) prog.accept (new EliminateDeadCode (true));
-		
-		
-		
+
+
+
 		if (params.hasFlag ("simplifySpin")) {	// probably not terribly useful
-			
+
 			prog = (Program) prog.accept (new HoistDeclarations ());
 			//dump (prog, "hoisted decls");
 		}
 
 		prog = (Program) prog.accept(new NumberStatements());
-		
-		
+
+
 		if (params.hasFlag ("simplifySpin")) {
 			prog = MergeLocalStatements.go (prog);
 			//dump (prog, "merged local stmts");
@@ -266,6 +268,8 @@ public class ToPSbitII extends ToSBit {
 		p = (Program) p.accept (new EliminateStarStatic (oracle));
 
 		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+
+		//p = (Program) p.accept (new Preprocessor (varGen));
 
 		p = (Program)p.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) dump(p, "After partially evaluating generated code.");
