@@ -1,0 +1,30 @@
+static Item dequeue (Queue q) {
+    Node next = q.prevHead;
+    bit wasTaken = 1;
+    bit done = 0;
+
+    for (int i = 0; i < NNODES; ++i) {
+        if (wasTaken && next != null) {
+            atomic {  wasTaken = next.taken;  next.taken = 1;  }
+            next = next.next;
+        }
+    }
+    if (next == null) {
+        done = 1;
+        return null;
+    } else {
+        Node p = (?? ? q.prevHead : next);
+        for (int j = 0; j < NNODES; ++j) {
+            if (p != null) {
+                bit t = (?? ? p.taken : p.next.taken);
+                if (t) {
+                    q.prevHead = p;
+                    p = p.next;
+                }
+            }
+        }
+        done = 1;
+        return p.obj;
+    }
+    assert done;
+}

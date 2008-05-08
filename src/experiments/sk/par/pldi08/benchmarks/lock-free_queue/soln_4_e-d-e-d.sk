@@ -1,0 +1,10 @@
+include "queue.skh";
+
+int NTHREADS = 4;
+int NITEMS = 1;
+int NNODES = 1 + NTHREADS * NITEMS; // +1 for the sentinel
+
+include "solnEnqueue.skh";
+include "solnDequeue.skh";
+
+include "driver_pepd.skh";

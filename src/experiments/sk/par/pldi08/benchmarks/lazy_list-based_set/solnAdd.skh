@@ -1,0 +1,30 @@
+static bit add (Set S, int key) {
+    bit ret = 0;
+    bit done = 0;   // hack around no 'finally' blocks
+    for (int i = 0; i < NNODES; ++i) {
+        if (!done) {
+            Node pred = S.head;
+            Node cur = S.head.next;
+            for (int j = 0; j < NNODES; ++j) {
+                if (cur.key < key) {
+                    pred = cur;  cur = cur.next;
+                }
+            }
+            lock (pred);
+            lock (cur);
+            if (validate (pred, cur)) {
+                done = 1;
+                if (cur.key == key) {
+                    ret = 0;
+                } else {
+                    pred.next = newNode (key, 0, cur);
+                    ret = 1;
+                }
+            }
+            unlock (cur);
+            unlock (pred);
+        }
+    }
+    assert done;
+    return ret;
+}

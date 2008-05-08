@@ -1,0 +1,16 @@
+static void find (Set S, int key, ref Node prev, ref Node cur) {
+    prev = null;
+    cur = null;
+    cur = S.head;
+    lock (cur);
+    for (int i = 0; i < NNODES; ++i) {
+        if (cur.key < key) {
+            if (prev != null) {
+                unlock (prev);
+            }
+            lock (cur.next);
+            prev = cur;
+            cur = cur.next;
+        }
+    }
+}

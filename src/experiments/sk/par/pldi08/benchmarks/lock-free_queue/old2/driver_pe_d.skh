@@ -1,0 +1,34 @@
+// Runs: [ e ... | e ... | ...] d...
+
+bit verify (Queue q) {
+    assert isValidQueue (q, NNODES);
+    assert isEmptyQueue (q, NNODES);
+
+    return 1;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    Queue q = newQueue ();
+
+    assert null == dequeue (q);
+
+    fork (int i; NTHREADS) {
+        for (int j = 0; j < NITEMS; ++j) {
+            enqueue (q, newItem (i, j+1));
+        }
+    }
+
+    int[NTHREADS] lastItemId = 0;
+    for (int i = 0; i < NTHREADS; ++i) {
+        for (int j = 0; j < NITEMS; ++j) {
+            Item it = dequeue (q);
+
+            assert null != it;
+            assert it.id > lastItemId[it.tid];
+            lastItemId[it.tid] = it.id;
+        }
+    }
+
+    return verify (q);
+}

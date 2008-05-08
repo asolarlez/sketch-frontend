@@ -1,0 +1,98 @@
+pragma options "--reorderEncoding quadratic --seed 7";
+
+include "queue.skh";
+
+#define AtomicSwap(outOldVal, addr, newVal)  atomic { outOldVal = addr;  addr = newVal;  }
+
+#define aLocation {| q.tail(.next)? | (tmp|newEntry).next |}
+#define aValue    {| (q.tail|tmp|newEntry)(.next)? | null |}
+#define anExpr(x,y) {| x==y | x!=y | false |}
+
+static void Enqueue(Queue q, Object newobject) {
+  QueueEntry tmp = null;
+  QueueEntry newEntry = newQueueEntry(null, newobject, 0);
+
+/*  reorder {
+    aLocation = aValue;
+    AtomicSwap(tmp, aLocation, aValue);
+    if (anExpr(tmp, aValue)) aLocation = aValue;
+  }
+*/
+    AtomicSwap (tmp, q.tail, newEntry);
+    tmp.next = newEntry;
+}
+
+static Object Dequeue(Queue q) {
+    QueueEntry nextEntry = q.prevHead.next;
+    bit taken = 1;
+    while (nextEntry!=null
+           && taken) {
+      AtomicSwap(taken, nextEntry.taken, 1);
+      if (taken) nextEntry = nextEntry.next;
+    }
+    if (nextEntry == null)
+      return null;
+    else {
+      QueueEntry p = q.prevHead;//{| q.prevHead | nextEntry |};
+
+      while (p != null && p.taken) {//{| p(.next)?.taken |} ) {
+        q.prevHead = p;
+        p = p.next;
+      }
+      return nextEntry.stored;
+} }
+
+
+//-----------------------------------------------------------------------------
+// Begin testing code
+//
+int NITEMS = 2;     // overridden by command line
+int NTHREADS = 2;   // overridden by command line
+
+bit T () { return 1; }
+bit main () implements T {
+    assert NITEMS % 2 == 0;
+
+    Queue q = newQueue ();
+    int dqCount = 0;
+
+    Enqueue (q, newObject (NTHREADS+1, NITEMS+1));
+    Object x = Dequeue (q);
+    assert x != null && x.tid == NTHREADS+1 && x.id == NITEMS+1;
+
+    fork (int i; NTHREADS) {
+        int[NTHREADS] lastId = 0;
+        int myDqs = 0;
+
+        for (int j = 0; j < NITEMS; ++j) {
+            if (j % 2 == 0) {
+                Enqueue (q, newObject (i, j+1));
+            } else {
+                Object obj = Dequeue (q);
+                if (obj != null) {
+                    assert obj.id > lastId[obj.tid];
+                    lastId[obj.tid] = obj.id;
+                    myDqs = myDqs + 1;
+                }
+            }
+        }
+        atomic { dqCount = dqCount + myDqs; }
+    }
+
+    assert isValidQueue (q);
+
+    int[NTHREADS] lastId = 0;
+    Object obj = Dequeue (q);
+    while (obj != null) {
+        assert obj.id > lastId[obj.tid];
+        lastId[obj.tid] = obj.id;
+        dqCount = dqCount + 1;
+        obj = Dequeue (q);
+    }
+    assert dqCount == (NTHREADS*NITEMS)/2;
+
+    assert isValidQueue (q);
+    assert isEmptyQueue (q);
+
+    return 1;
+}
