@@ -1,0 +1,22 @@
+pragma options "--simplifySpin";
+
+int sp () { return 1; }
+
+int sk () implements sp {
+    int global = 0;
+
+    lock (1);
+
+    fork (int i; 2) {
+        int local = global + 1;
+        global = local;
+    }
+
+    if (??) {
+        lock (1);
+    } else {
+        unlock (1);
+    }
+
+    return 1;
+}
