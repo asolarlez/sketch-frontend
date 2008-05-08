@@ -117,6 +117,10 @@ public class LiveVariableAV extends abstractValue {
 		return liveness;
 	}
 	
+	public boolean isLive () {
+		return liveness == LIVE;
+	}
+	
 	public boolean equals(Object obj){
 		if(!(obj instanceof LiveVariableAV)) return false;
 		return ((LiveVariableAV)obj).liveness == liveness;
