@@ -1,0 +1,52 @@
+struct Set {
+    Node head;
+    Node tail;
+}
+
+struct Node {
+    int key;
+    Node next;
+}
+
+
+Set newSet (int negInf, int posInf) {
+    Set S = new Set ();
+    S.tail = newNode (posInf, null);
+    S.head = newNode (negInf, S.tail);
+    return S;
+}
+
+Node newNode (int key, Node next) {
+    Node n = new Node ();
+    n.key = key;
+    n.next = next;
+    return n;
+}
+
+static bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
+    assert S.head != null;
+    assert S.head.key == negInf;
+    assert S.tail != null;
+    assert S.tail.next == null;
+    assert S.tail.key == posInf;
+
+    Node n = S.head;
+    for (int i = 0; i < maxlen; ++i) {
+        if (n != null) {
+            if (n.next == null) {
+                assert n == S.tail;
+                n = null;
+            } else {
+                assert n.key < n.next.key;
+                n = n.next;
+            }
+        }
+    }
+
+    return 1;
+}
+
+static bit isEmptySet (Set S) {
+    assert S.tail.next == null;
+    return S.head.next == S.tail;
+}
