@@ -4,6 +4,7 @@ import java.util.List;
 
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
+import streamit.frontend.experimental.deadCodeElimination.MinimizeLocalVariables;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.experimental.preprocessor.PreprocessSketch;
@@ -244,10 +245,11 @@ public class ToPSbitII extends ToSBit {
 		prog = (Program) prog.accept (new EliminateTransAssns ());
 		prog = (Program) prog.accept (new EliminateDeadCode (true));
 
-
-
 		if (params.hasFlag ("simplifySpin")) {	// probably not terribly useful
-
+			dump(prog, "before reg alloc");
+			prog = MinimizeLocalVariables.go (prog);
+			dump(prog, "after reg alloc");
+			prog = (Program) prog.accept (new SeparateInitializers());
 			prog = (Program) prog.accept (new HoistDeclarations ());
 			//dump (prog, "hoisted decls");
 		}

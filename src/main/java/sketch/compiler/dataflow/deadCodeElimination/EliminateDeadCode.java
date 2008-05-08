@@ -31,13 +31,6 @@ public class EliminateDeadCode extends BackwardDataflow {
 		this.keepAsserts = keepAsserts;
 	}
 
-
-	public Object visitStmtIfThen(StmtIfThen stmt)
-	{
-
-		Object obj = super.visitStmtIfThen(stmt);
-		return obj;
-	}
 	public Object visitStmtBlock(StmtBlock sb){
 		Object obj = super.visitStmtBlock(sb);
 		if(obj instanceof StmtBlock){
@@ -60,27 +53,27 @@ public class EliminateDeadCode extends BackwardDataflow {
 		return super.visitStmtAssert(stmt);
 	}
 
-	
+
 	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
-		
+
 		if(stmt.isCond()){
 			abstractValue val =(abstractValue) stmt.getCond().accept(this);
-			if( val instanceof LVSet){					
+			if( val instanceof LVSet){
 				((LVSet)val).enliven();
 			}
 			if( val instanceof LiveVariableAV){
 				LiveVariableAV lv = (LiveVariableAV) val;
 				if(lv.mstate != null  ){
 					lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
-				}			
+				}
 			}
 		}
 		return super.visitStmtAtomicBlock(stmt);
-		
+
 	}
-	
-	
-	
+
+
+
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
 		return new LinkedList<Function>(spec.getFuncs());
 	}

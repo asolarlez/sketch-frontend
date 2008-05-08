@@ -218,16 +218,16 @@ public class MethodState {
 
 
 	public void procChangeTrackers (ChangeTracker ch1){
-		
+
 		HashMap<String, varState> mmap = new HashMap<String, varState>();
-		
+
 		for(Entry<String, varState> me : ch1.deltas.entrySet()){
 			varState av2 = me.getValue();
 			varState oldstate = this.UTvarState(me.getKey());
 			varState merged = oldstate.condjoin(ch1.condition, av2, vtype);
 			mmap.put(me.getKey(), merged);
 		}
-		
+
 		for(Entry<String, varState> me : mmap.entrySet()){
 			varState merged = me.getValue();
 			if( merged.isArr() ){
@@ -243,7 +243,7 @@ public class MethodState {
 
 	public void procChangeTrackers (ChangeTracker ch1, ChangeTracker ch2){
 		HashMap<String, varState> mmap = new HashMap<String, varState>();
-		
+
 		for(Entry<String, varState> me : ch1.deltas.entrySet()){
 			String nm = me.getKey();
 			varState av1 = me.getValue();
@@ -430,6 +430,13 @@ public class MethodState {
 		changeTracker = new ChangeTracker (cond, isNegated);
 		changeTracker.kid = oldChangeTracker;
 		changeTrackers++;
+	}
+
+
+	/** Returns a set of the TRANSLATED variables names that are currently
+	 * in scope. */
+	public Set<String> getVarsInScope () {
+		return vars.keySet ();
 	}
 
 
