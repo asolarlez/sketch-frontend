@@ -1,0 +1,76 @@
+include "parTest/bigSketches/llset.skh";
+
+
+
+
+/**
+ * Hand over Hand remove.
+ * 
+ * */
+void hhRemove(Set s, int in){
+	if(in > LOW && in< HIGH){
+		Node cur = s.head;
+		lock(cur);
+		Node prev = null;
+		bit more = 1;
+		for(int i=0; i<5; ++i){
+			if(more && cur.val < in){
+				if(prev != null){ unlock(prev); }
+				prev = cur;
+				cur = cur.next;	
+				lock(cur);
+			}else{
+				more = 0;	
+			}
+		}
+		if(cur.val == in){
+			prev.next = cur.next;			
+		}
+		unlock(cur);
+		unlock(prev);
+	}	
+}
+
+
+
+
+
+
+
+bit test(bit a, bit b){	
+	return 1;
+}
+
+bit testSK(bit a, bit b) implements test{
+	Set s = newSet();
+	setAddSeq(s, 3);
+	setAddSeq(s, 4);
+	setAddSeq(s, 5);
+	
+	fork(int i; 2){
+		int t = 3;
+		if(i==0 && a){ t = 4; }
+		if(i==1 && b){ t = 5; }	
+		hhRemove(s, t);
+	}
+	
+	
+	int[MAXSZ] rv = 0;
+	rv = toArray(s);
+	
+	if(!a && !b){
+		assert rv[1] == 4 && rv[2] == 5 && rv[3] == HIGH;
+	}
+	if(a && !b){
+		assert rv[1] == 5 && rv[2] == HIGH;
+	}
+	if(!a && b){
+		assert rv[1] == 4 && rv[2] == HIGH;
+	}
+	if(a && b){
+		assert rv[1] == 3 && rv[2] == HIGH;
+	}
+		
+	return 1;
+}
+

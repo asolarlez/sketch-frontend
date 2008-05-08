@@ -1,0 +1,83 @@
+int LOW = -1;
+int HIGH = 10;
+int MAXSZ = HIGH - LOW - 1;
+
+struct Node{
+	int val;
+	Node next;
+}
+
+Node newNode(int i){
+	Node n = null;
+	atomic{ 
+		n = new Node();
+	}
+	assert i> LOW && i < HIGH;
+	n.val = i;
+	n.next = null;	
+	return n;
+}
+
+/*private */
+Node newLowNode(){
+	Node n = null;
+	n = new Node();
+	n.val = LOW;
+	n.next = null;	
+	return n;
+}
+
+/*private */
+Node newHighNode(){
+	Node n = null;
+	n = new Node();
+	n.val = HIGH;
+	n.next = null;	
+	return n;
+}
+
+struct Set{
+	Node head;
+	Node tail;	
+}
+
+Set newSet(){
+	Set s = new Set();
+	s.head = newLowNode();
+	s.tail = newHighNode();
+	s.head.next = s.tail;
+	return s;
+}
+
+
+void setAddSeq(Set s, int i){
+	Node n = newNode(i);
+	Node cur = s.head; 
+	Node pred = null;
+	for(int i=0; i<MAXSZ; i++){
+		if(cur.val < i){
+			pred = cur;
+			cur = cur.next;
+		}
+	}
+	
+	pred.next = n;
+	n.next = cur;
+}
+
+int[MAXSZ] toArray(Set s){
+	int[MAXSZ] rv = 0;
+	Node cur = s.head; 
+	for(int i=0; i<MAXSZ; i++){
+		if(cur != null){
+		  rv[i] = cur.val;
+		  cur = cur.next;
+		}
+	}
+	return rv;
+}
+
+
+
+
+
