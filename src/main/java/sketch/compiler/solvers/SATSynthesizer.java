@@ -264,8 +264,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	}
 
-	
-	public CFGNode advanceUpTo(CFGNode node, int thread, CFGNode lastNode){				
+
+	public CFGNode advanceUpTo(CFGNode node, int thread, CFGNode lastNode){
 
 		if(node != cfg.getEntry() && lastNode == null){
 			lastNode = cfg.getEntry();
@@ -344,14 +344,14 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 			assert lastNode != cfg.getExit() : "This is going to be an infinite loop";
 		}while(true);
-		
+
 		return lastNode;
 	}
-	
+
 
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
 
-		
+
 		assert invNodeMap.containsKey(stmt);
 
 		CFGNode node =  firstChildWithTag(lastNode, stmt);  //invNodeMap.get( stmt );
@@ -365,8 +365,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 		advanceUpTo(node, thread, lastNode);
-		
-		
+
+
 		addNode(node, thread);
 
 		return node;
@@ -840,15 +840,15 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 		List<step> l = trace.steps;
-		
+
 		/**
 		 * It's tempting to believe that at this point, we should just append
-		 * trace.blickedSteps to l, and that's that, but that will mess up with 
-		 * deadlock detection. The reason is that before adding the blocked steps, 
+		 * trace.blickedSteps to l, and that's that, but that will mess up with
+		 * deadlock detection. The reason is that before adding the blocked steps,
 		 * we should empty the stepQueues.
-		 * 
+		 *
 		 */
-		
+
 		Iterator<step> sit = l.iterator();
 		step cur;
 
@@ -896,10 +896,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 
 		for(step s : trace.blockedSteps){
+			if (s.thread == 0)
+				continue;
+
 			int thread = s.thread-1;
 			int stmt = s.stmt;
-			
-			assert invNodeMap.containsKey(stmt);
+
+			assert invNodeMap.containsKey(stmt) : "'"+ stmt +"' not in invNodeMap";
 
 			CFGNode node =  firstChildWithTag(lastNode[thread], stmt);  //invNodeMap.get( stmt );
 
@@ -907,10 +910,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 			if( node != lastNode[thread]  ){
 				//Haven't advanced nodes, so I should stay here.
-				lastNode[thread] = advanceUpTo(node, thread, lastNode[thread]);	
+				lastNode[thread] = advanceUpTo(node, thread, lastNode[thread]);
 			}
 		}
-		
+
 		boolean allEnd = true;
 
 		for(int thread=0; thread<nthreads; ++thread){
