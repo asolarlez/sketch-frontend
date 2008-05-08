@@ -18,6 +18,7 @@ import streamit.frontend.parallelEncoder.ParallelPreprocessor;
 import streamit.frontend.passes.HoistDeclarations;
 import streamit.frontend.passes.LowerLoopsToWhileLoops;
 import streamit.frontend.passes.MergeLocalStatements;
+import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.spin.Configuration;
 import streamit.frontend.spin.EliminateDeadParallelCode;
@@ -160,7 +161,8 @@ public class SpinVerifier implements Verifier {
 		p = (Program) p.accept (new EliminateDeadParallelCode ());
 		//ToSBit.dump (p, "dead parallel");
 
-		if (preSimplify) {
+		p = (Program) p.accept (new SeparateInitializers());
+		{
 			p = (Program) p.accept (new HoistDeclarations ());
 			p = MergeLocalStatements.go (p);
 			//ToSBit.dump (p, "merged local stmts (SpinVerif)");
