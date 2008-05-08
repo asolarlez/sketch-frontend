@@ -15,7 +15,7 @@ bit main () implements test {
                 idx = 0;
                 arr[idx] = -1;
             }
-            // The second thread to reach this stmt will take this branch.
+            // The second thread to reach this stmt will try this branch.
             // Attempting to evaluate the right side of this && should cause
             // an assertion failure.
             else if (idx == -1 && (0 == arr[arr[idx]] && 0 == arr[-1])) {

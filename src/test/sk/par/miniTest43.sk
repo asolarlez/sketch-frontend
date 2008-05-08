@@ -1,17 +1,22 @@
 // It should be OK to use locks outside of parallel sections.
 
+// XXX: this minitest used to fail because the 'fork' block got optimized
+// away.  This new test is a hacky fix to that bug, which should be
+// properly fixed at some point.
+
 struct P {
     P next;
 }
 
 bit T ()  { return 1; }
 bit main () implements T {
+    int dummy = 0;
     P p = new P ();
     lock (p);
     unlock (p);
 
     fork (int i; 2) {
-        int j = i + 1;
+        dummy = dummy + 1;
     }
 
     return 1;

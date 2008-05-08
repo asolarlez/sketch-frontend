@@ -3,7 +3,6 @@
 
 bit T () { return 1; }
 bit main () implements T {
-    int g = 0;
     int p1 = { * 3 };
     int p2 = { * 3 };
 

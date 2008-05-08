@@ -1,3 +1,7 @@
+.PHONY: all test-solver test-cgen clean
+
+all: test-solver
+
 test-solver: 
 	bash ./regtest.sh
 test-cgen:
