@@ -4,13 +4,18 @@
 package streamit.frontend.experimental.deadCodeElimination;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Program;
+import streamit.frontend.nodes.StmtFork;
+import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
+import streamit.misc.ControlFlowException;
 import streamit.misc.UndirectedColoredGraph;
 import streamit.misc.UndirectedGraph;
 import streamit.misc.UndirectedColoredGraph.ColoredVertex;
@@ -30,7 +35,35 @@ import streamit.misc.UndirectedGraph.Vertex;
  * This is sort of a dead-code-elimination pass in that unnecessary local
  * variables are killed off.
  *
+ * WARNING: this pass assumes that all variables have been named uniquely,
+ * although the PartialEvaluator does not assume this.
+ *
+ *
+ * XXX/cgjones: this pass suffers from a major design flaw that is very painful
+ * to fix.  Consider this extremely simple program:
+ * <code>
+ *   int x = 1;
+ *   assert x;
+ * </code>
+ * The visitation of the second statement will proceed as follows:
+ *
+ * + enter assertion visitor
+ *   ++ enter exprvar 'x' visitor
+ *   -- exit exprvar visitor
+ * - exit assertion visitor
+ *
+ * The easiest solution to allocating registers is to override the exprvar
+ * visitor.  However, this doesn't work in our dataflow framework because
+ * the abstract value of variable 'x' is updated at the assertion visitor
+ * for this example.  This means that for liveness analysis, 'x' will not
+ * be marked live until we return from the exprvar visitor to the assertion
+ * visitor.
+ *
+ * At this time, working around this limitation is not worth the time it would
+ * take.
+ *
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
+ * @deprecated
  */
 public class MinimizeLocalVariables {
 	static public Program go (Program p) {
@@ -52,26 +85,62 @@ public class MinimizeLocalVariables {
 
 	static class BuildInterferenceGraph extends BackwardDataflow {
 		private UndirectedGraph<String> interferers = new UndirectedGraph<String> ();
+		private Set<String> localInts = new HashSet<String> ();
 
 		public BuildInterferenceGraph () {
-			super(LiveVariableVType.vtype, null, true, -1, new BaseRControl (10));
+			super(LiveVariableVType.vtype, null, false, -1, new BaseRControl (10));
 		}
 
 		public Object visitExprVar (ExprVar ev) {
+			String var = ev.getName ();
 			LiveVariableAV val = (LiveVariableAV) super.visitExprVar (ev);
-			ExprVar var = (ExprVar) exprRV;
 
-			if (!val.isVolatile () && val.isLive ()) {
-				String varName = state.untransName (var.getName ());
-				for (String liveVarTrans : liveVars ())
-					interferes (varName, state.untransName (liveVarTrans));
-			}
+			if (isLocal (var) && val.isLive ())
+				for (String liveVar : liveVars ())
+					interferes (var, liveVar);
 
 			return val;
 		}
 
+		public Object visitStmtFork (StmtFork sf) {
+			Set<String> oldLocals = localInts;
+			localInts = new HashSet<String> ();
+
+			localInts.add (sf.getLoopVarDecl ().getName (0));
+			try {
+				sf.getBody ().accept (new FEReplacer () {
+					public Object visitStmtVarDecl (StmtVarDecl svd) {
+						for (int i = 0; i < svd.getNumVars (); ++i)
+							if (TypePrimitive.inttype.equals (svd.getType (i))) {
+								localInts.add (svd.getName (i));
+								interferers.find (svd.getName (i));
+							}
+						return super.visitStmtVarDecl (svd);
+					}
+					public Object visitStmtFork (StmtFork sf) {
+						throw new ControlFlowException ("done");
+					}
+				});
+			} catch (ControlFlowException cfe) { }
+
+			Object res = super.visitStmtFork (sf);
+			localInts = oldLocals;
+			return res;
+		}
+
 		private Set<String> liveVars () {
-			return state.getVarsInScope ();
+			Set<String> liveVars = new HashSet<String> ();
+			for (String varTrans : state.getVarsInScope ()) {
+				String var = state.untransName (varTrans);
+				if (isLocal (var)
+					&& ((LiveVariableAV)state.varValue (var)).isLive ())
+					liveVars.add (var);
+			}
+			return liveVars;
+		}
+
+		private boolean isLocal (String var) {
+			return localInts.contains (var);
 		}
 
 		private void interferes (String var1, String var2) {

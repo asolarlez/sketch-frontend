@@ -59,7 +59,6 @@ public class UndirectedGraph<T> {
 		UndirectedColoredGraph<T> cG = new UndirectedColoredGraph<T> ();
 		PriorityQueue<Vertex<T>> pq = new PriorityQueue<Vertex<T>> (16,
 				new Comparator<Vertex<T>> () {
-					@Override
 					/** Sorts DESCENDING by degree */
 					public int compare (Vertex<T> v1, Vertex<T> v2) {
 						return v2.degree () - v1.degree ();
@@ -99,6 +98,8 @@ public class UndirectedGraph<T> {
 			String vs = v.toString ();
 			for (Vertex<T> n : v.neighbors)
 				s += "  "+ vs +" -- "+ n +"\n";
+			if (v.neighbors.size () == 0)
+				s += "  "+ vs +"\n";
 		}
 
 		return s +"}";
