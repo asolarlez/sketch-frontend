@@ -1,0 +1,17 @@
+bit sp () { return 1; }
+bit main () implements sp {
+    fork (int i; N) {
+        int lk1 = (i == (N-1)) ? ((i+1) % N) : i;
+        int lk2 = (i == (N-1)) ? i : i + 1;
+
+        for (int t = 0; t < T; ++t) {
+            lock (lk1);
+            lock (lk2);
+
+            unlock (lk1);
+            unlock (lk2);
+        }
+    }
+
+    return 1;
+}
