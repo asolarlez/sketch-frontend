@@ -778,7 +778,6 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	}
 
-
 	/**
 	 * The input collection contains variable declarations, and the output collection contains variable' declarations such that
 	 * if T X; is a declaration in the original list, T[NTHREADS] X_p will be a declaration in the output list.
