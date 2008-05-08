@@ -264,21 +264,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	}
 
-
-	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
-
-
-		assert invNodeMap.containsKey(stmt);
-
-		CFGNode node =  firstChildWithTag(lastNode, stmt);  //invNodeMap.get( stmt );
-
-		assert node != null;
-
-		if( node == lastNode  ){
-			//Haven't advanced nodes, so I should stay here.
-			return lastNode;
-		}
-
+	
+	public CFGNode advanceUpTo(CFGNode node, int thread, CFGNode lastNode){				
 
 		if(node != cfg.getEntry() && lastNode == null){
 			lastNode = cfg.getEntry();
@@ -357,7 +344,29 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 			assert lastNode != cfg.getExit() : "This is going to be an infinite loop";
 		}while(true);
+		
+		return lastNode;
+	}
+	
 
+	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
+
+		
+		assert invNodeMap.containsKey(stmt);
+
+		CFGNode node =  firstChildWithTag(lastNode, stmt);  //invNodeMap.get( stmt );
+
+		assert node != null;
+
+		if( node == lastNode  ){
+			//Haven't advanced nodes, so I should stay here.
+			return lastNode;
+		}
+
+
+		advanceUpTo(node, thread, lastNode);
+		
+		
 		addNode(node, thread);
 
 		return node;
@@ -832,6 +841,15 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 		List<step> l = trace.steps;
+		
+		/**
+		 * It's tempting to believe that at this point, we should just append
+		 * trace.blickedSteps to l, and that's that, but that will mess up with 
+		 * deadlock detection. The reason is that before adding the blocked steps, 
+		 * we should empty the stepQueues.
+		 * 
+		 */
+		
 		Iterator<step> sit = l.iterator();
 		step cur;
 
@@ -870,7 +888,6 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 		schedules.put(sbuf.toString(), schedules.size());
 
-
 		for(int thread=0; thread<nthreads; ++thread){
 			Queue<step> qs = stepQueues[thread];
 			while( qs.size() > 0  ){
@@ -879,6 +896,22 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 		}
 
+		for(step s : trace.blockedSteps){
+			int thread = s.thread-1;
+			int stmt = s.stmt;
+			
+			assert invNodeMap.containsKey(stmt);
+
+			CFGNode node =  firstChildWithTag(lastNode[thread], stmt);  //invNodeMap.get( stmt );
+
+			assert node != null;
+
+			if( node != lastNode[thread]  ){
+				//Haven't advanced nodes, so I should stay here.
+				lastNode[thread] = advanceUpTo(node, thread, lastNode[thread]);	
+			}
+		}
+		
 		boolean allEnd = true;
 
 		for(int thread=0; thread<nthreads; ++thread){
