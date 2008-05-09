@@ -258,6 +258,8 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 			print (" -> ");
 		}
 		if (nAtomics == 0) {
+			assert null != block.getTag () && block.getTag () instanceof Integer
+				: "unlabeled atomic block: '"+ block +"'";
 			println ("_ = "+ block.getTag () +";");
 		}
 		enterAtomic ();
