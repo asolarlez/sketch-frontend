@@ -1,5 +1,3 @@
-pragma options "--verbosity 5 --showphase lowering";
-
 include "set.skh";
 
 int NTHREADS = 4;

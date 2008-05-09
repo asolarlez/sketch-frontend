@@ -31,7 +31,7 @@ static bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
     assert S.tail.key == posInf;
 
     Node n = S.head;
-    for (int i = 0; i < maxlen; ++i) {
+    for (int i = 0; i < NNODES; ++i) {
         if (n != null) {
             if (n.next == null) {
                 assert n == S.tail;
