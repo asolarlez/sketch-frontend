@@ -243,6 +243,7 @@ public class ToPSbitII extends ToSBit {
 
 		prog = (Program) prog.accept (new EliminateTransAssns ());
 		prog = (Program) prog.accept (new EliminateDeadCode (true));
+		//dump (prog, "after dead code/trans assn elim");
 
 		if (params.hasFlag ("simplifySpin")) {	// probably not terribly useful
 			//prog = MinimizeLocalVariables.go (prog);
