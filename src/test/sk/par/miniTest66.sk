@@ -1,0 +1,61 @@
+pragma options "--verbosity 5";
+
+static bit dequeue (Node prevHead) {
+    Node tmp = null;
+    bit wasTaken = 1;
+    bit done = ??;   // workaround for frontend bug
+    bit ret = 1;
+
+    for (int i = 0; i < 2; ++i) {
+        if (!done) {
+            if (!done) {
+                tmp = prevHead.next;
+            }
+            if (!done && null == tmp) {
+                done = 1;
+                ret = 0;
+            }
+            if (!done) {
+                prevHead = tmp;
+            }
+            if (!done && 0 == tmp.taken) {
+                atomic {
+                    wasTaken = tmp.taken;
+                    tmp.taken = 1;
+                    if (0 == wasTaken) {
+                        done = 1;
+                        ret = 1;
+                    }
+                }
+            }
+        }
+    }
+    assert done;
+    return done;
+}
+
+struct Node {
+    Node next;
+    bit taken;
+}
+
+static Node newNode (Node next, bit taken) {
+    Node n = new Node ();
+    n.next = next;
+    n.taken = taken;
+    return n;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    Node prevHead = newNode (null, 1);
+    int dqCount = 0;
+
+    assert 0 == dequeue (prevHead);
+
+    fork (int i; 2) {
+        dqCount = dqCount + 1;
+    }
+
+    return 1;
+}
