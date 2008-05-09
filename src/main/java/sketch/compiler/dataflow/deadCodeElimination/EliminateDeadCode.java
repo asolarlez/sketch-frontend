@@ -17,8 +17,8 @@ import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtEmpty;
 import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.Type;
@@ -136,7 +136,9 @@ public class EliminateDeadCode extends BackwardDataflow {
 		//state.pushVStack(new valueClass((String)null) );
 	}
 
-
+	public Object visitStmtEmpty (StmtEmpty stmt) {
+		return null;
+	}
 
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
