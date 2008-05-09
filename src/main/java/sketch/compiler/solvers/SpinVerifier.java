@@ -111,18 +111,16 @@ public class SpinVerifier implements Verifier {
 			else
 				lastStep = new step (-1, -1);
 			List<step> finalStates = parseFinalStates (trail, lastStep);
-
 			cex.addSteps (finalStates);
 
+			List<step> blocked = findBlockedThreads (trail);
 			if (deadlock (out)) {
-				List<step> blocked = findBlockedThreads (trail);
 				assert blocked.size () > 0 : "Uh-oh!  No blocked threads";
 
 				log (5, "  (counterexample from deadlock)");
 				log (5, "  blocked threads: "+ blocked);
-
-				cex.addBlockedSteps (blocked);
 			}
+			cex.addBlockedSteps (blocked);
 
 			log (5, "  final states: "+ finalStates);
 			log (5, "counterexample: "+ cex);
