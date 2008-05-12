@@ -1,0 +1,182 @@
+pragma options "--inlineamnt 5 --reorderEncoding quadratic --vectorszGuess 16384 --seed 7";
+
+struct Object {
+    int tid;
+    int id;
+}
+
+struct QueueEntry {
+    QueueEntry next;
+    Object stored;
+    bit taken;
+}
+
+struct Queue {
+    QueueEntry prevHead;
+    QueueEntry tail;
+}
+
+Object newObject (int tid, int id) {
+    Object o = new Object ();
+    o.tid = tid;
+    o.id = id;
+    return o;
+}
+
+QueueEntry newQueueEntry (QueueEntry next, Object stored, bit taken) {
+    QueueEntry qe = new QueueEntry ();
+    qe.next = next;
+    qe.stored = stored;
+    qe.taken = taken;
+    return qe;
+}
+
+Queue newQueue () {
+    Queue q = new Queue ();
+    q.prevHead = newQueueEntry (null, null, 1);
+    q.tail = q.prevHead;
+    return q;
+}
+
+/**
+ * Checks these structural properties of 'q':
+ *
+ * - the head is not null
+ * - the head is taken
+ * - the tail is equal to the head, or reachable from the head
+ * - the tail has no successor
+ * - there are at most 'maxlen' nodes in the queue (including the head and tail)
+ *   (this is a cheap cycle detector)
+ * - no 'taken' nodes appear after untaken ones
+ */
+static bit isValidQueue (Queue q) {
+    assert q.prevHead != null;
+    assert q.prevHead.taken;
+
+    if (q.tail == q.prevHead) {
+        assert q.prevHead.next == null;
+        return 1;
+    }
+
+    QueueEntry n = q.prevHead;
+    bit sawUntaken = 0;
+    while (n != null) {
+        if (sawUntaken) {
+            assert 0 == n.taken;
+        } else if (0 == n.taken) {
+            sawUntaken = 1;
+        }
+        if (n.next == null) {
+            assert n == q.tail;
+            n = null;
+        } else {
+            assert n.next != q.prevHead;
+            n = n.next;
+        }
+    }
+
+    return n == null;   // the loop "terminated"
+}
+
+/** Assumes isValidQueue (q). */
+static bit isEmptyQueue (Queue q) {
+    QueueEntry n = q.prevHead;
+    while (n != null) {
+        if (0 == n.taken) {
+            return 0;
+        }
+        n = n.next;
+    }
+    return 1;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Begin testing code
+//
+int NITEMS = 2;     // overridden by command line
+int NTHREADS = 2;   // overridden by command line
+
+bit T () { return 1; }
+bit main () implements T {
+    assert NITEMS % 2 == 0;
+
+    Queue q = newQueue ();
+    int dqCount = 0;
+
+    Enqueue (q, newObject (NTHREADS+1, NITEMS+1));
+    Object x = Dequeue (q);
+    assert x != null && x.tid == NTHREADS+1 && x.id == NITEMS+1;
+
+    fork (int i; NTHREADS) {
+        int[NTHREADS] lastId = 0;
+        int myDqs = 0;
+
+        for (int j = 0; j < NITEMS; ++j) {
+            if (j % 2 == 0) {
+                Enqueue (q, newObject (i, j+1));
+            } else {
+                Object obj = Dequeue (q);
+                if (obj != null) {
+                    assert obj.id > lastId[obj.tid];
+                    lastId[obj.tid] = obj.id;
+                    myDqs = myDqs + 1;
+                }
+            }
+        }
+        atomic { dqCount = dqCount + myDqs; }
+    }
+
+    assert isValidQueue (q);
+
+    int[NTHREADS] lastId = 0;
+    Object obj = Dequeue (q);
+    while (obj != null) {
+        assert obj.id > lastId[obj.tid];
+        lastId[obj.tid] = obj.id;
+        dqCount = dqCount + 1;
+        obj = Dequeue (q);
+    }
+    assert dqCount == (NTHREADS*NITEMS)/2;
+
+    assert isValidQueue (q);
+    assert isEmptyQueue (q);
+
+    return 1;
+}
+
+
+#define AtomicSwap(outOldVal, addr, newVal)  atomic { outOldVal = addr;  addr = newVal;  }
+
+static void Enqueue (Queue q, Object newobject) {
+    QueueEntry tmp = null;
+    QueueEntry newEntry = newQueueEntry(null, newobject, 0);
+
+    AtomicSwap (tmp, q.tail, newEntry);
+    tmp.next = newEntry;
+}
+
+static Object Dequeue(Queue q) {
+  QueueEntry tmp = null;
+  bit taken = 1;
+  bit done = 0;
+
+  while (taken) {
+    if (!done) {
+      //reorder {
+        if (!done)
+          tmp = {| q.prevHead(.next)?(.next)? |};
+        if (!done && tmp == null) {
+          done = 1;
+          return null;
+        }
+        if (!done)
+          q.prevHead = {| (tmp|q.prevHead)(.next)? |};
+        if (!done && !tmp.taken)
+          AtomicSwap(taken, tmp.taken, 1);
+      //}
+    }
+  }
+  return tmp.stored;
+}
