@@ -85,8 +85,8 @@ public class AtomizeStatements extends SymbolTableVisitor {
 		boolean isAnd = op.equals ("&&");
 		Expression left = eb.getLeft (), right = eb.getRight ();
 
-		//if (!(isGlobal (left) || isGlobal (right)))
-		//	return eb;
+		if (!(isGlobal (left) || isGlobal (right)))
+			return eb;
 
 		left = doExpression (left);
 
