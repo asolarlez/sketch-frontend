@@ -12,6 +12,7 @@ import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
+import streamit.frontend.passes.AddInitializers;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
