@@ -1,0 +1,41 @@
+
+
+struct Queue{
+	Node head;
+	Node tail;	
+}
+
+struct Node{
+	int val;
+	Node next;	
+}
+
+Node select(Queue q){
+	int t = ??;
+	if(t == 0){
+		return q.tail;	
+	}	
+	if(t == 1){
+		return q.head;	
+	}
+	if(t == 2){
+		Node n = select(q);
+		assert n != null;
+		return n.next;
+	}	
+	return null;
+}
+
+bit one(bit x){
+	return 1;
+}
+
+bit test(bit x) implements one{
+	Queue q = new Queue();
+	q.head = new Node();
+	q.head.next = new Node();
+	q.head.next.next = new Node();
+	q.tail = q.head.next.next;
+	
+	return q.head.next == select(q); 
+}

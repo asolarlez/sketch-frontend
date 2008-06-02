@@ -1,0 +1,28 @@
+
+bit[2] foo(bit x, bit y){
+		
+		
+	bit w = y || x;
+	if(!x){
+		w = x;	
+	}
+	
+	bit t = x & y;
+	if(y){
+		t = y;	
+	}
+	
+	bit[2] rv;
+	rv[0] = t;
+	rv[1] = w;
+	return rv;	
+}
+
+
+bit[2] moo(bit x, bit y) implements foo{
+	
+	bit[2] rv;
+	rv[0] = (x & y) || y;
+	rv[1] = x;
+	return rv;
+}

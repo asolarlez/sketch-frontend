@@ -1,0 +1,18 @@
+
+bit foo(bit x, bit y){
+	
+	
+	
+	bit t = y & x;
+	if(y){
+		t = y;	
+	}
+	return t;	
+}
+
+
+bit moo(bit x, bit y) implements foo{
+		
+	return (y & x) || y;
+	
+}
