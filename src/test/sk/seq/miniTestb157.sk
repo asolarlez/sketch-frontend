@@ -1,0 +1,20 @@
+int N=2;
+bit[N][N] test0(bit[N][N] a){
+  bit[N][N] out=0;
+  for(int i=0; i<N; ++i){
+  	for(int j=0; j<i; ++j){
+  		out[i][j] = a[i][j];
+  	}
+  }
+  return out;
+}
+
+bit[N][N] testSK0(bit[N][N] a) implements test0 {
+  bit[N][N] out=0;
+  for(int i=0; i<N; ++i){
+  	for(int j=0; j<i; ++j){
+  		out[i][j] = a[i][j];
+  	}
+  }
+  return out;
+}
