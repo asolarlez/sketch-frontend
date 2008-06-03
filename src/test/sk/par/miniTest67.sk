@@ -157,6 +157,8 @@ static void Enqueue (Queue q, Object newobject) {
     tmp.next = newEntry;
 }
 
+
+
 static Object Dequeue(Queue q) {
   QueueEntry tmp = null;
   bit taken = 1;
@@ -166,13 +168,14 @@ static Object Dequeue(Queue q) {
     if (!done) {
       //reorder {
         if (!done)
-          tmp = {| q.prevHead(.next)?(.next)? |};
+          tmp = {| q.prevHead.next(.next)? |};
+          //tmp = q.prevHead.next;
         if (!done && tmp == null) {
           done = 1;
           return null;
         }
         if (!done)
-          q.prevHead = {| (tmp|q.prevHead)(.next)? |};
+          q.prevHead = {| (tmp|q.prevHead)(.next)? |}; // tmp;
         if (!done && !tmp.taken)
           AtomicSwap(taken, tmp.taken, 1);
       //}

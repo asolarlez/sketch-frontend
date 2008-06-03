@@ -18,14 +18,45 @@ static Node newNode (int key, Node next) {
     return n;
 }
 
-Node genNode (Node n1, Node n2) {
-    Node g = ?? ? n1 : n2;
+Node genNode1 (Node n1, Node n2) {
+	bit x = ??;
+    Node g = x ? n1 : n2;
     return ?? ? g : g.next;
 }
+
+Node genNode2 (Node n1, Node n2) {
+	bit x = ??;
+    Node g = (x^x) ? n1 : n2;
+    return !x ? g : g.next;
+}
+
+
+Node genNode1b (Node n1, Node n2) {
+	bit x = !??;
+    Node g = x ? n1 : n2;
+    return 1 ? g : g.next;
+}
+
+Node genNode2b (Node n1, Node n2) {
+	bit x = 0;
+    Node g = (x^x) ? n1 : n2;
+    return !x ? g : g.next;
+}
+
+
+
+
 bit genComparison (Node n1, Node n2) {
-    Node g1 = genNode (n1, n2), g2 = genNode (n1, n2);
+    Node g1 = genNode1 (n1, n2), g2 = genNode2 (n1, n2);
     return g1 != g2;
 }
+
+
+bit genComparison2 (Node n1, Node n2) {
+    Node g1 = genNode1b (n1, n2), g2 = genNode2b (n1, n2);
+    return g1 != g2;
+}
+
 
 static void find (Set S, int key, ref Node prev, ref Node cur) {
     prev = null;
@@ -43,11 +74,29 @@ static void find (Set S, int key, ref Node prev, ref Node cur) {
     }
 }
 
+
+static void find2 (Set S, int key, ref Node prev, ref Node cur) {
+    prev = null;
+    cur = S.head;
+    lock (cur);
+    for (int i = 0; i < NNODES; ++i) {
+        if (cur.key < key) {
+            if (genComparison2 (prev, null)) {
+                unlock (prev);
+            }
+            lock (cur.next);
+            prev = cur;
+            cur = cur.next;
+        }
+    }
+}
+
+
 static bit add (Set S, int key) {
     Node prev = null, cur = null;
     bit ret = 0;
 
-    find (S, key, prev, cur);
+    find2 (S, key, prev, cur);
     if (key < cur.key) {
         prev.next = newNode (key, cur);
         ret = 1;
