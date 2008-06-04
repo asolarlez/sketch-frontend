@@ -1,0 +1,26 @@
+
+
+
+int N = 4;
+
+bit test(int in){
+	return 1;
+}
+
+bit testSK(int in) implements test{
+	int x = 0;
+	bit b = 0;
+	fork(int i; 2){
+		atomic(b == ??){
+			b = 1;
+		} 
+		x = x + 1;
+		b = 0;
+	}
+		
+	assert x == 2;
+    return 1;
+}
+
+
+
