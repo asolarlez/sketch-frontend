@@ -218,10 +218,11 @@ public class ToPSbitII extends ToSBit {
 
 	public void lowerIRToJava() {
 		prog = (Program) prog.accept (new MakeAllocsAtomic (varGen));
-
+		Program tmp = prog; 
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true, true ) );
 		super.lowerIRToJava();
-
+		beforeUnvectorizing = tmp;
+		
 		prog = (Program) prog.accept (new EliminateConditionals(varGen));
 		//dump (prog, "elim conds");
 		prog = (Program) prog.accept(new ProtectArrayAccesses(
@@ -269,7 +270,7 @@ public class ToPSbitII extends ToSBit {
 	public Program postprocessProgram (Program p) {
 		p = (Program) p.accept (new EliminateStarStatic (oracle));
 
-		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+		p=(Program)p.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(p), true ));
 
 		//p = (Program) p.accept (new Preprocessor (varGen));
 
