@@ -1,0 +1,51 @@
+pragma options "--verbosity 5 --showphase preproc --seed 5";
+
+struct account {
+    int balance;
+}
+
+static void withdraw (account a, int amt) {
+    int r = 0;
+    insert { lock (a); } into {
+    insert { unlock (a); } into {
+        a.balance = r - amt;
+        r = read (a);
+    } }
+}
+
+static void deposit (account a, int amt) {
+    int r = 0;
+    insert { lock (a); } into {
+    insert { unlock (a); } into {
+        a.balance = r + amt;
+        r = read (a);
+    } }
+}
+
+static int read (account a) {
+    int r;
+    lock (a);
+    r = a.balance;
+    unlock (a);
+    return r;
+}
+
+//-----------------------------------------------------------------------------
+
+int sp () { return 1; }
+int sk () implements sp {
+    account a = new account ();
+    a.balance = 10;
+
+    fork (int i; 2) {
+        if (i % 2 == 0) {
+            deposit (a, 10);
+        } else {
+            withdraw (a, 10);
+        }
+    }
+
+    assert a.balance == 10;
+
+    return 1;
+}
