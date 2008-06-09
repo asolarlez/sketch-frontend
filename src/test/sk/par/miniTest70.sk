@@ -1,0 +1,226 @@
+pragma options "--reorderEncoding quadratic --heapsize 10";
+
+//
+// QUEUE.SKH
+//
+
+struct Queue {
+    Node tail;
+    Node prevHead;
+}
+
+struct Node {
+    Item obj;
+    Node next;
+    bit taken;
+}
+
+struct Item {
+    int tid;    // the thread that enqueued this
+    int id;     // the id of this object
+}
+
+static Queue newQueue () {
+    Queue q = new Queue ();
+    q.prevHead = newNode (null, null, 1);
+    q.tail = q.prevHead;
+    return q;
+}
+
+static Node newNode (Item obj, Node next, bit taken) {
+    Node n = new Node ();
+    n.obj = obj;
+    n.next = next;
+    n.taken = taken;
+    return n;
+}
+
+static Item newItem (int tid, int id) {
+    Item it = new Item ();
+    it.tid = tid;
+    it.id = id;
+    return it;
+}
+
+/**
+ * Checks these structural properties of 'q':
+ *
+ * - the head is not null
+ * - the head is taken
+ * - the tail is equal to the head, or reachable from the head
+ * - the tail has no successor
+ * - there are at most 'maxlen' nodes in the queue (including the head and tail)
+ *   (this is a cheap cycle detector)
+ * - no 'taken' nodes appear after untaken ones
+ */
+static bit isValidQueue (Queue q, int maxlen) {
+    assert q.prevHead != null;
+    assert q.prevHead.taken;
+
+    if (q.tail == q.prevHead) {
+        assert q.prevHead.next == null;
+        return 1;
+    }
+
+    Node n = q.prevHead;
+    bit sawUntaken = 0;
+    for (int i = 0; i < maxlen; ++i) {
+        if (n != null) {
+            if (sawUntaken) {
+                assert 0 == n.taken;
+            } else if (0 == n.taken) {
+                sawUntaken = 1;
+            }
+            if (n.next == null) {
+                assert n == q.tail;
+                n = null;
+            } else {
+                assert n.next != q.prevHead;
+                n = n.next;
+            }
+        }
+    }
+
+    return n == null;   // the loop "terminated"
+}
+
+/** Assumes isValidQueue (q). */
+static bit isEmptyQueue (Queue q, int maxlen) {
+    Node n = q.prevHead;
+    for (int i = 0; i < maxlen; ++i) {
+        if (n != null) {
+            if (0 == n.taken) {
+                return 0;
+            }
+            n = n.next;
+        }
+    }
+    return 1;
+}
+
+
+int NTHREADS = 2;
+int NITEMS = 2;
+int NNODES = 1 + NTHREADS * NITEMS; // +1 for the sentinel
+
+//
+// ENQUEUE SKETCH 1
+//
+
+static void enqueue (Queue q, Item obj) {
+    Node n = newNode (obj, null, 0);
+    Node oldTail = null;
+
+    // What this is doing:
+    //   oldTail = AtomicSwap ({| q.tail|n |}, {| n|q.tail |});
+    atomic {
+        oldTail = ?? ? q.tail : n;  // 2
+        if (??)  q.tail = n;        // 2
+        else     n = q.tail;
+    }
+    oldTail.next = n;
+}
+
+//
+// DEQUEUE SKETCH 1
+//
+
+static Item dequeue (Queue q) {
+    Node tmp = null;
+    bit wasTaken = 1;
+    bit done = 0;   // workaround for frontend bug
+    Item ret = null;
+
+    for (int i = 0; i < NNODES; ++i) {
+        if (!done) {
+            reorder {   // 24
+                if (!done) {    // 3
+                    tmp = ?? ? q.prevHead :
+                           (?? ? q.prevHead.next : q.prevHead.next.next);
+                }
+                if (!done && null == tmp) {
+                    done = 1;
+                    ret = null;
+                }
+                if (!done) {    // 4
+                    q.prevHead = ?? ? tmp :
+                                  (?? ? tmp.next :
+                                        (?? ? q.prevHead : q.prevHead.next));
+                }
+                if (!done && 0 == tmp.taken) {
+                    // wasTaken = AtomicSwap (tmp.taken, 1);
+                    atomic {
+                        wasTaken = tmp.taken;
+                        tmp.taken = 1;
+                    }
+                    if (0 == wasTaken) {
+                        done = 1;
+                        ret = tmp.obj;
+                    }
+                }
+            }
+        }
+    }
+    assert done;
+    return ret;
+}
+
+
+//
+// DRIVER PEPD
+//
+
+
+bit T () { return 1; }
+bit main () implements T {
+    assert NTHREADS % 2 == 0;
+
+    Queue q = newQueue ();
+    int dqCount = 0;
+
+    enqueue (q, newItem (NTHREADS+1, NITEMS+1));
+    Item x = dequeue (q);
+    assert x != null && x.tid == NTHREADS+1 && x.id == NITEMS+1;
+
+    fork (int i; NTHREADS) {
+        if (i % 2 == 0) {
+           // enqueue thread
+            for (int j = 0; j < NITEMS; ++j) {
+                enqueue (q, newItem (i, j+1));
+            }
+        } else {
+            // dequeue thread
+            int[NTHREADS] lastId = 0;
+            for (int j = 0; j < NITEMS; ++j) {
+                Item it = dequeue (q);
+                if (it != null) {
+                    assert it.id > lastId[it.tid];
+                    lastId[it.tid] = it.id;
+                    atomic {  dqCount = dqCount + 1;  }
+                }
+            }
+        }
+    }
+
+    assert isValidQueue (q, NNODES);
+
+    int[NTHREADS] lastId = 0;
+    bit done = 0;
+    for (int i = 0; i < NNODES; ++i) {
+        if (!done) {
+            Item it = dequeue (q);
+            if (it == null) {
+                done = 1;
+            } else {
+                assert it.id > lastId[it.tid];
+                lastId[it.tid] = it.id;
+                dqCount = dqCount + 1;
+            }
+        }
+    }
+    assert done;
+
+    assert dqCount == (NTHREADS/2)*NITEMS;
+
+    return 1;
+}
