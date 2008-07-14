@@ -796,7 +796,7 @@ public class FEReplacer implements FEVisitor
             Function oldFunc = (Function)iter.next();
             Function newFunc = (Function)oldFunc.accept(this);
             if (oldFunc != newFunc) changed = true;
-            if(oldFunc != null)++nonNull;
+//            if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
 
@@ -880,6 +880,10 @@ public class FEReplacer implements FEVisitor
 
     	return ts;
     }
+    
+    public Object visitTypeStructRef (TypeStructRef tsr) {
+    	return tsr;
+    }
 
     public Object visitParameter(Parameter par){
     	Type t = (Type) par.getType().accept(this);
@@ -899,5 +903,10 @@ public class FEReplacer implements FEVisitor
     	}
     	return new StmtFork(loop, decl, niter, body);
     }
+
+	public Object visitStmtSwitch(StmtSwitch sw) {
+		// TODO add visitSwmtSwitch
+		return sw;
+	}
 
 }
