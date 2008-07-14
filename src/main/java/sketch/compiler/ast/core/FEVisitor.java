@@ -97,9 +97,11 @@ public interface FEVisitor
     public Object visitTypePrimitive(TypePrimitive t);
     public Object visitTypeArray(TypeArray t);
     public Object visitTypeStruct(TypeStruct ts);
+    public Object visitTypeStructRef(TypeStructRef ts);
     public Object visitParameter(Parameter par);
     public Object visitExprNew(ExprNew expNew);
     public Object visitStmtFork(StmtFork loop);
     public Object visitStmtReorderBlock(StmtReorderBlock block);
+    public Object visitStmtSwitch(StmtSwitch sw);
     public Object visitExprNullPtr(ExprNullPtr nptr);
 }
