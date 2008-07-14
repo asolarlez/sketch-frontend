@@ -68,5 +68,10 @@ public class ExprConstStr extends ExprConstant
     {
         return v.visitExprConstStr(this);
     }
+    
+    @Override
+    public String toString() {
+    	return val;
+    }
 }
 
