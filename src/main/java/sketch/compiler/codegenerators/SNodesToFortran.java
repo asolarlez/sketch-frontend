@@ -723,6 +723,7 @@ public class SNodesToFortran implements FEVisitor {
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }
     public Object visitTypeArray(TypeArray t) { return null; }
+    public Object visitTypeStructRef(TypeStructRef ts) { return null; }
     public Object visitParameter(Parameter par){
     	assert false :"NYI";
     	return null;
@@ -746,4 +747,8 @@ public class SNodesToFortran implements FEVisitor {
     public Object visitExprChoiceSelect(ExprChoiceSelect e) { throw new UnsupportedOperationException(); }
     public Object visitExprChoiceUnary(ExprChoiceUnary e) { throw new UnsupportedOperationException(); }
     public Object visitExprRegen(ExprRegen e) { throw new UnsupportedOperationException(); }
+
+	public Object visitStmtSwitch(StmtSwitch sw) {	throw new UnsupportedOperationException();	}
+
+	
 }
