@@ -16,6 +16,8 @@
 
 package streamit.frontend.nodes;
 
+import antlr.ASTVisitor;
+
 /**
  * A named reference to a structure type, as defined in TypeStruct.
  * This will be produced directly by the parser, but later passes
@@ -34,6 +36,11 @@ public class TypeStructRef extends Type
         this.name = name;
     }
 
+    public Object accept(FEVisitor v)
+	{
+		return v.visitTypeStructRef(this);
+	}
+    
     /** Returns the name of the referenced structure. */
     public String getName()
     {
