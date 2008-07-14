@@ -59,8 +59,11 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprAlt (ExprAlt ea) {
-    	return ((Type) ea.ths.accept (this))
-    		.leastCommonPromotion ((Type) ea.that.accept (this));
+    	Type t1 = (Type) ea.ths.accept(this);
+    	Type t2 = (Type) ea.that.accept(this);
+    	Type ret = t1.leastCommonPromotion(t2);
+    	
+    	return ret;
     }
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
