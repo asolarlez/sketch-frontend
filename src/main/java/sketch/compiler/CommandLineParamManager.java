@@ -13,26 +13,26 @@ public class CommandLineParamManager{
 		/**
 		 * A flag is of the form --flag with no extra parameters.
 		 */
-		static final int FLAG = 0;
+		public static final int FLAG = 0;
 		/**
 		 * A number is a flag of the form --flag n where n is a number.
 		 */
-		static final int NUMBER = 1;
+		public static final int NUMBER = 1;
 
-		static final int TOKEN = 2;
+		public static final int TOKEN = 2;
 		/**
 		 * A string is a flag of the form --flag s where s is a string.
 		 */
-		static final int STRING = 3;
-		static final int MULTISTRING = 5;
-		static final int VVAL = 4;
+		public static final int STRING = 3;
+		public static final int MULTISTRING = 5;
+		public static final int VVAL = 4;
 		Map<String, String> tokenDescriptions;
 
 		String description;
 		String defVal;
 		int type;
 
-		POpts(int type, String descrip, String defVal, Map<String, String> td ){
+		public POpts(int type, String descrip, String defVal, Map<String, String> td ){
 			this.description = descrip;
 			this.defVal = defVal;
 			this.type = type;
@@ -71,16 +71,27 @@ public class CommandLineParamManager{
 	}
 	Map<String, POpts> allowedParameters;
 	Map<String, Object> passedParameters;
-	List<String> inputFiles = new ArrayList<String>();
+	public List<String> inputFiles = new ArrayList<String>();
 	public List<String> backendOptions = new ArrayList<String>();
 
-	CommandLineParamManager(){
+	public CommandLineParamManager(){
 		allowedParameters = new HashMap<String, POpts>();
 		passedParameters = new HashMap<String, Object>();
 	}
 
 
 	public void loadParams(String[] args){
+		parseOptions(args);
+
+		if( !(inputFiles.size() > 0)){
+			System.err.println("You did not specify any input files!!");
+			printHelp();
+			System.exit(1);
+		}
+	}
+
+
+	public void parseOptions(String[] args) {
 		for(int i=0; i<args.length; ){
 			if( args[i].charAt(0)=='-') {
 				if( args[i].charAt(1)=='-' ){
@@ -102,12 +113,6 @@ public class CommandLineParamManager{
 				inputFiles.add(args[i]);
 				i+= 1;
 			}
-		}
-
-		if( !(inputFiles.size() > 0)){
-			System.err.println("You did not specify any input files!!");
-			printHelp();
-			System.exit(1);
 		}
 	}
 
