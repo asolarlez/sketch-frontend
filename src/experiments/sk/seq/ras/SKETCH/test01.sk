@@ -1,0 +1,14 @@
+int spec () { return 1; }
+
+#define assume(e) if (!(e)) return 1;
+ 
+int foo() implements spec {
+
+	int t = ??;
+	
+	assume(1 == 2);
+	
+	assert 1 == t && 2 == t;
+	
+	return 1;
+}
