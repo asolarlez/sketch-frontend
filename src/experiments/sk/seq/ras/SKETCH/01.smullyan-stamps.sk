@@ -1,0 +1,58 @@
+#define assume(e) if (!(e)) return 1;
+ 
+#define RED 	0
+#define YELLOW 	1
+#define GREEN 	2
+
+bit valid(int a, int b, int c) {
+	return valid_color(a) & valid_color(b) & valid_color(c) & valid_counts(a, b, c);
+}
+
+bit valid_color(int x) {
+	return x==RED | x==YELLOW | x==GREEN; 
+}
+
+bit valid_counts(int a, int b, int c) {
+	int reds = (a==RED) + (b==RED) + (c==RED);
+	int yellows = (a==YELLOW) + (b==YELLOW) + (c==YELLOW);
+	int greens = (a==GREEN) + (b==GREEN) + (c==GREEN);
+	
+	return (reds <= 2) & (yellows <= 2) & (greens <= 3); 
+}
+ 
+bit spec (int a, int b, int c) { return 1; }
+
+bit validA(int b, int c) {
+	return valid(RED, b, c) && valid(YELLOW, b, c) && valid(GREEN, b, c);
+}
+bit validB(int a, int c) {
+	return // valid(a, RED, c) && 
+	       validA(RED, c) &&  
+	       // valid(a, YELLOW, c) && 
+	       validA(YELLOW, c) && 
+	       // valid(a, GREEN, c) && 
+	       validA(GREEN, c);
+}
+
+bit foo(int a, int b, int c) implements spec {
+	
+	assume(valid_color(a) && valid_color(b) && valid_color(c));
+	
+	// is each configuration that extends what A can see valid?
+	assume(validA(b,c));
+	
+	// the above implies that if c==YELLOW then b!=YELLOW and if c==RED then b!=RED
+	// how to encode this fact?
+	// in particular, RED, YELLOW, YELLOW would not pass this point 
+	
+	// is each configuration that extends what B can see valid?
+	assume(validB(a,c));
+		
+	int known = ??;  // whose color we can infer 
+	
+	if (known == 0) assert a == ??;
+	else if (known == 1) assert b == ??;
+	else assert c == ??;
+	
+	return 1;
+}
