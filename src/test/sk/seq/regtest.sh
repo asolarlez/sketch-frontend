@@ -9,7 +9,7 @@ fi
 
 echo "USING SATSOLVER " $SATSOLVER;
 
-time for x in `ls *.sk`
+time for x in `ls mini*.sk`
 do 
 
 echo "RUNNING $x  $d";
@@ -28,7 +28,7 @@ rm *.tmp;
 
 
 # diff -w current.output reference;
-grep 'CORRECT' *.output | tr ':' ' ' | awk '{ print $1; }' > cur
+grep 'DONE' *.output | tr ':' ' ' | awk '{ print $1; }' > cur
 echo "LISTED BELOW ARE THE FAILED TESTS (IF ANY)"
 diff -w cur ref 
 echo "END OF LIST"
