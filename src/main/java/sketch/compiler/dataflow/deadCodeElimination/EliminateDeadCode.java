@@ -128,7 +128,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 		Statement newBody = (Statement)func.getBody().accept(this);
 
 		state.endFunction();
-
+		if(newBody == null) newBody = new StmtEmpty(func);
 		return isReplacer? new Function(func, func.getCls(),
 				func.getName(), func.getReturnType(),
 				nparams, func.getSpecification(), newBody) : null;
