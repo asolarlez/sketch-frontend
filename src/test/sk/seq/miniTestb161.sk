@@ -7,6 +7,8 @@ bit test(int t) implements spec{
 	int y = mm;
 	assert mm == 5;
 	int t = ??;
+	
+	assert t < 2;
 	int[2] z = {1, -1};
 	z[0] = y;
 	z[t] = x;
