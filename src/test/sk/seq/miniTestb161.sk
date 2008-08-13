@@ -1,0 +1,21 @@
+
+bit test(int t) implements spec{
+	int m = ??;
+	int x = 8 - m;
+	assert m == 3;
+	int mm = ??;
+	int y = mm;
+	assert mm == 5;
+	int t = ??;
+	int[2] z = {1, -1};
+	z[0] = y;
+	z[t] = x;
+	bit[7] out = 0;
+	
+	out[z[0]] = 1;	
+	return out[5]; 		
+}
+
+bit spec(int t){
+	return 1;	
+}

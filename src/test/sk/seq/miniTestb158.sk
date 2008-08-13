@@ -1,0 +1,219 @@
+int N = 8;
+
+// Note that we rely on the fact that RED < WHITE < BLUE
+#define RED 	1
+#define WHITE 	2
+#define BLUE 	3
+
+int one () { return 1; }
+
+
+int test4() 
+implements one 
+{
+	
+	{ int[N] in = {RED, WHITE, BLUE, RED, WHITE, BLUE, RED, WHITE}; test44(in); }
+	
+	return 1;
+}
+
+int test44(int[N] in) 
+// implements two 
+{	
+	// assume all inputs are valid colors
+	
+	for (int i = 0; i < N; i++) {
+		if (in[i] < RED || in[i] > BLUE) return 1;
+	}
+
+	//
+	// compute the correct result
+	//
+	
+	int[N] out2 = spec(in);
+		
+	//
+	// constrain the invariant
+	//
+	
+	// P1 must hold for all input buckets, for the same a, b, c 
+	int a = ??, b = ??, c = N-??;
+	P1(in, a, b, c);
+	
+	// The mix region is empty for correct outputs, so the invariant
+	// must hold for some a and some b, c such that b=c
+	// We cannot directly state this in SKETCH, as a, b, c, depend on input
+	// int aa = ??, bb = ??, c = b;  -- wrong   
+	// Here, I would like the holes to be input dependent, to say
+	// exists a, b, c . b=c and P1(out2,a,b,c)
+	
+	//
+	// Now run the program
+	//
+	
+	int[N] out1 = dutch(in);
+	
+	// 
+	// check correctness
+	//
+	
+	assert equal(out1, out2);
+	
+	return 1;
+}
+
+////////////////////////////////////////
+
+// computes a correct result, but does so without 
+// meeting the restrictions of using just swap(i,j)
+ 
+int[N] spec(int[N] in) {
+	int reds = 0, blues = 0, whites = 0;
+	int i;
+	int[N] out;
+	for (i = 0; i < N; i++) {
+		if (in[i] == RED) reds++;
+		else if (in[i] == WHITE) whites++;
+		else if (in[i] == BLUE) blues++;
+	}
+	i = 0;
+	while (reds-- > 0)   out[i++] = RED;
+	while (whites-- > 0) out[i++] = WHITE;
+	while (blues-- > 0)  out[i++] = BLUE;
+	return out;
+}
+
+bit equal (int[N] in1, int[N] in2) {
+	for (int i = 0; i < N; i++) { 
+		if (in1[i] != in2[i]) 
+			return 0;
+	}
+	return 1;
+}
+
+////////////////////////////////////////
+
+static void P1(int[N] buckets, int a, int b, int c)
+{
+	// a, b, c partition the buckets into regions 
+	assert 0<=a && a<=b && b<=c && c<N;
+	
+	// Note: I initially had i < b, etc, but later changed these
+	// to i <= a because ?? is nonnegative and so {|y|z|}+?? below
+	// could not generate y-1.  This turned out to be a bug because
+	// i<=a required that at least the first element was RED.  So,
+	// We want to sketch the boundaries.  The hard part seems to be 
+	// whether a, b, c denote last element of previous region or 
+	// first element of next region.    
+	
+	// each region but one middle one is monochromatic 
+	for (int i = 0; i < N; i++) {
+		if ( i<a )      assert buckets[i] == RED;
+		else if (i<=b ) assert buckets[i] == WHITE;
+		else if ( i<=c ) assert true;
+		else assert buckets[i] == BLUE;
+	}
+}  
+
+#define swap(a,b) { int _a = (a);    \
+                    int _b = (b);    \
+                    int _t = in[_a]; \
+                    in[_a] = in[_b]; \ 
+                    in[_b] = _t; }
+
+
+int H=10;
+// static 
+static int[N] dutch(int[N] in) 
+{
+	int[H] h = ??;  // for fixed holes used in the loop(??) below
+	
+	// initialize the regions properly
+	int a = ??, b = ??, c = N-??;
+	P1(in, a, b, c);
+	
+	// iterate until the mix region disappears  
+	int diff = c - b;
+	
+	// we'd like to declaratively give these constraints for this loop:
+	//
+	//    strictly monotone (up or down): c-b
+	//    monotone: a, b, c
+	//
+	int j, a_, b_, c_, diff_;
+	
+	int tt = ??;
+	
+	loop (??) {
+		a_ = a; b_ = b; c_ = c; diff_ = diff;
+		 
+		// pick the element to read 
+		int i = b_+1;
+
+		// are we picking the same element, as a function of c or b?
+#define e(c,x,y) (c==0?x:c==1?x+1:c==2?x-1:c==3?y:c==4?y+1:y-1)
+		// assert i==e(h[9], b_, c_);
+		// assert i==b_+1;  // simplified, we learnt that we read b_+1
+
+		int color = in[i];
+				
+		// find regions for which the invariant holds 
+		// such that the mix region shrinks 
+		if (color == RED) {
+			a = a_+h[0];  // need a way to specify thesre holes are global
+			b = b_+h[1];
+			c = c_-h[2];
+			j = a_;
+		} 
+//		else if (color == BLUE) {
+//			a = a_+h[3];  // need a way to specify thesre holes are global
+//			b = b_+h[4];
+//			c = c_-h[5];
+//			j = ??; //c_;
+//			print2(j,c_);
+//		} 
+		else if (color == WHITE) {
+			a = a_+h[6];  // need a way to specify thesre holes are global
+			b = b_+h[7];
+			c = c_-h[8];
+			j = b_;
+		} 
+		else { // BLUE
+			a = ??; b = ??; c = ??;  
+
+			assert a == a_+h[3];  // need a way to specify thesre holes are global
+			assert b == b_+h[4];
+			assert c == c_-h[5];
+
+			int hh=tt;
+			if (??) { j = c_; print2(j,c_);}
+			else { j = c_+hh; print3(j,c_, hh);}
+			assert j == c_;
+		}
+
+		if (??) swap(j,i);
+		P1(in, a, b, c);
+		assert a >= a_ && b >= b_ && c <= c_;
+		
+		diff = c - b;
+		// pick one of the two constraints
+		// (1) allow shrinking by more than 1
+		// assert diff_ > diff; diff_ = diff; 
+		// (2) force shrinking by 1
+		assert diff_ == diff + 1; diff_--; 		 
+	}		
+	print(h);	
+	// this condition should be enforced by the correctness condition, if
+	// synthesized on all inputs
+	
+	assert diff == 0;  
+	
+	return in;
+}
+
+static int print2(int a, int b) { return a+b; }
+static int print3(int a, int b, int c) { return a+b+c; }
+
+int H=10;
+
+static int[H] print(int[H] a) { return a; }
