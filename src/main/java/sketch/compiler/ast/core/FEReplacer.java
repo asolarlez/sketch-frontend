@@ -340,8 +340,9 @@ public class FEReplacer implements FEVisitor
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
     		return func;
     	}
-        Statement newBody = (Statement)func.getBody().accept(this);
-        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
+        Statement newBody = (Statement)func.getBody().accept(this);        
+        if(newBody == null) newBody = new StmtEmpty(func);
+        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;        
         return new Function(func, func.getCls(),
                             func.getName(), rtype,
                             newParam, func.getSpecification(), newBody);
@@ -880,7 +881,7 @@ public class FEReplacer implements FEVisitor
 
     	return ts;
     }
-    
+
     public Object visitTypeStructRef (TypeStructRef tsr) {
     	return tsr;
     }
@@ -906,7 +907,6 @@ public class FEReplacer implements FEVisitor
 
 	public Object visitStmtSwitch(StmtSwitch sw) {
 		// TODO add visitSwmtSwitch
-		return sw;
+		throw new RuntimeException("Not yet implemented");
 	}
-
 }
