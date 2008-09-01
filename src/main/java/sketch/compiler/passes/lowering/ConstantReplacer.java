@@ -47,7 +47,7 @@ public class ConstantReplacer extends FEReplacer {
 				RangeLen range=(RangeLen) m;
 				if(range.hasLenExpression()) {
 					Expression l=(Expression) range.getLenExpression().accept(this);
-					assert l instanceof ExprConstInt;
+					assert l instanceof ExprConstInt : "Range Length expressions can not be Variables. They must be constants";
 					range=new RangeLen(range.start(),((ExprConstInt)l).getVal());
 					change=true;
 				}

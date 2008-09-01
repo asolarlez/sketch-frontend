@@ -622,7 +622,7 @@ public class SemanticChecker
 					Parameter formal = (Parameter) form.next();
 					Type lt = getType(param);
 					if(! lt.promotesTo(formal.getType())){
-						report(exp, "Bad parameter type " + formal + "  " + fun);
+						report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + lt + "  " + fun);
 					}
 				}
 
