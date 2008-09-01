@@ -12,6 +12,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.passes.SymbolTableVisitor;
@@ -62,6 +63,25 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 		}
     	return t; 
     }
+	
+	
+
+	@Override
+	public Object visitParameter(Parameter par){
+		Type ot = par.getType();
+		Type t = (Type) par.getType().accept(this);
+
+		symtab.registerVar(par.getName(),
+                actualType(ot), // We want to remember the old type even if the type changed.
+                par,
+                SymbolTable.KIND_FUNC_PARAM);
+
+		if( t == par.getType()){
+    		return par;
+    	}else{
+    		return new Parameter(t, par.getName(), par.getPtype() );
+    	}
+	}
 	
 	
 	public Object visitExprBinary(ExprBinary exp)
