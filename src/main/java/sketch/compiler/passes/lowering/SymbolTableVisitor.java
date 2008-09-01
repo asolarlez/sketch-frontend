@@ -128,7 +128,7 @@ public class SymbolTableVisitor extends FEReplacer
         // To think about: should we cache GetExprType objects?
         GetExprType get = new GetExprType(symtab, streamType, structsByName, nullType);
         Type type = (Type)expr.accept(get);
-        return type;
+        return actualType(type);
     }
 
     public boolean isGlobal(ExprVar ev){
@@ -209,7 +209,7 @@ public class SymbolTableVisitor extends FEReplacer
 		Type t = (Type) par.getType().accept(this);
 
 		symtab.registerVar(par.getName(),
-                t,
+                actualType(t),
                 par,
                 SymbolTable.KIND_FUNC_PARAM);
 
