@@ -1,22 +1,15 @@
 
-bit test(int t) implements spec{
-	int m = ??;
-	int x = 8 - m;
-	assert m == 3;
-	int mm = ??;
-	int y = mm;
-	assert mm == 5;
-	int t = ??;
-	int[2] z = {1, -1};
-	z[0] = y;
-	z[t] = x;
-	assert t == 0;
-	bit[7] out = 0;
-	
-	out[z[0]] = 1;	
-	return out[5]; 		
+int test(int a, int b, int c) implements spec{
+	int x = a % 5;
+	int y = b % 5;
+	int z = x + y;
+	return z % 8; 		
 }
 
-bit spec(int t){
-	return 1;	
+int spec(int a, int b, int c){
+	int x = a % 5;
+	int y = b % 5;
+	int z = x + (y %5);
+	z = z % 8;
+	return z % 8;	
 }
