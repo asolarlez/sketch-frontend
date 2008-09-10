@@ -94,6 +94,9 @@ public class BoundUnboundedLoops extends FEReplacer {
 
 	/** Canonical form is:  for (int i = CONST; i CMP CONST; (++|--)i(++|--)) */
 	private boolean isCanonicalForLoop (StmtFor stmt) {
+		
+		return SimpleLoopUnroller.decideForLoop(stmt) >= 0;
+		/*
 		if (!(stmt.getInit () instanceof StmtVarDecl
 			  && stmt.getCond () instanceof ExprBinary
 			  && stmt.getIncr () instanceof StmtExpr))
@@ -123,6 +126,7 @@ public class BoundUnboundedLoops extends FEReplacer {
 		ExprVar incrVar = (ExprVar) incrExp.getExpr ();
 
 		return i.equals (cmpVar.getName ()) && i.equals (incrVar.getName ());
+		*/
 	}
 
 	private Statement makeBoundedLoop (FENode cx, Expression cond, Statement body) {
