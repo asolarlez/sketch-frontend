@@ -14,6 +14,7 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNullPtr;
+import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
@@ -31,6 +32,7 @@ import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.Type;
@@ -257,14 +259,57 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return super.visitStmtIfThen(stmt);
 	}
 
+	
+	protected boolean hasRet(FENode n){		
+		class ReturnFinder extends FEReplacer{
+			public boolean hasRet = false;
+			public Object visitStmtReturn(StmtReturn stmt){
+				hasRet  = true;
+				return stmt;
+			}			
+		};
+		
+		ReturnFinder hf = new ReturnFinder();
+		n.accept(hf);
+		return hf.hasRet;
+	}
+	
+	
+	@Override
+	public Object visitStmtWhile(StmtWhile stmt)
+	{
+		Statement body=stmt.getBody();
+		Expression cond = stmt.getCond();
+		if(body!=null && !(body instanceof StmtBlock))
+			body=new StmtBlock(stmt,Collections.singletonList(body));
+		
+		if(hasRet(body)){
+			cond = new ExprBinary(cond, "&&", new ExprBinary(
+					new ExprVar(cond, getReturnFlag()), "==",
+					ExprConstInt.zero) );
+		}
+		
+		if(body!=stmt.getBody() || cond != stmt.getCond())
+			stmt=new StmtWhile(stmt,cond, body);		
+		return super.visitStmtWhile(stmt);
+	}
+	
 	@Override
 	public Object visitStmtDoWhile(StmtDoWhile stmt)
 	{
 		Statement body=stmt.getBody();
+		Expression cond = stmt.getCond();
 		if(body!=null && !(body instanceof StmtBlock))
 			body=new StmtBlock(stmt,Collections.singletonList(body));
-		if(body!=stmt.getBody())
-			stmt=new StmtDoWhile(stmt,body,stmt.getCond());
+		
+		if(hasRet(body)){
+			cond = new ExprBinary(cond, "&&", new ExprBinary(
+					new ExprVar(cond, getReturnFlag()), "==",
+					ExprConstInt.zero) );
+		}
+		
+		if(body!=stmt.getBody() || cond != stmt.getCond())
+			stmt=new StmtDoWhile(stmt,body,cond);
 		return super.visitStmtDoWhile(stmt);
 	}
 
@@ -274,8 +319,17 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		Statement body=stmt.getBody();
 		if(body!=null && !(body instanceof StmtBlock))
 			body=new StmtBlock(stmt,Collections.singletonList(body));
-		if(body!=stmt.getBody())
-			stmt=new StmtFor(stmt,stmt.getInit(),stmt.getCond(),stmt.getIncr(),body);
+		
+		Expression cond = stmt.getCond();
+		
+		if(hasRet(body)){
+			cond = new ExprBinary(cond, "&&", new ExprBinary(
+					new ExprVar(cond, getReturnFlag()), "==",
+					ExprConstInt.zero) );
+		}
+		
+		if(body!=stmt.getBody() || cond != stmt.getCond())
+			stmt=new StmtFor(stmt,stmt.getInit(),cond,stmt.getIncr(),body);
 		return super.visitStmtFor(stmt);
 	}
 
@@ -359,14 +413,14 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 
 
-	public Statement conditionWrap(Statement s){
+	private Statement conditionWrap(Statement s){
 		
 		if(!inRetStmt){
 			
 			Statement ret=new StmtIfThen(s,
 					new ExprBinary(s, ExprBinary.BINOP_EQ,
 						new ExprVar(s, getReturnFlag()),
-						new ExprConstInt(s, 0)),
+						ExprConstInt.zero),
 					s,
 					null);
 			return ret;

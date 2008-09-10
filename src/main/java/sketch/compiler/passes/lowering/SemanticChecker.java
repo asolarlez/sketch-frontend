@@ -1534,7 +1534,7 @@ public class SemanticChecker
 		case ExprBinary.BINOP_BAND:
 		case ExprBinary.BINOP_BOR:
 		case ExprBinary.BINOP_BXOR:
-			if (!ct.promotesTo(TypePrimitive.inttype))
+			if (!ct.promotesTo(TypePrimitive.bittype))
 				report(expr,
 						"cannot perform bitwise operations on "
 						+ ct);

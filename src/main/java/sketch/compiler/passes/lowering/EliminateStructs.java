@@ -254,8 +254,9 @@ public class EliminateStructs extends SymbolTableVisitor {
     	return TypePrimitive.inttype;
     }
 
-    public Object visitType (Type t) {
-    	return (t instanceof TypeStructRef) ? TypePrimitive.inttype : t;
+    @Override
+    public Object visitTypeStructRef (TypeStructRef t) {
+    	return  TypePrimitive.inttype ;
     }
 
 
