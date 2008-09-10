@@ -65,4 +65,8 @@ public class StmtWhile extends Statement
     {
         return v.visitStmtWhile(this);
     }
+    
+    public String toString(){
+    	return "while(" + getCond() + "){\n" + getBody() +  "\n}";
+    }
 }
