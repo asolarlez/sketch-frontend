@@ -1,0 +1,19 @@
+
+struct foo{
+	int x;	
+}
+
+int test(int x) implements spec{
+	
+	foo[3] far;
+	for(int i=0; i<3; ++i){
+		far[i] = new foo();
+		far[i].x = i;	
+	}
+	
+	return far[??].x;	
+}
+
+int spec(int x){
+	return 2;	
+}
