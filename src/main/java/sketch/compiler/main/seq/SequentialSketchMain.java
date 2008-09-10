@@ -230,7 +230,12 @@ public class ToSBit
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
-
+		
+		prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		
+		
+		//dump (prog, "bef fpe:");
+		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		//dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
@@ -302,14 +307,13 @@ public class ToSBit
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
 		//dump (lprog, "~regens");
 
+		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		
 		// prog = (Program)prog.accept(new NoRefTypes());
 		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
-		//dump (lprog, "~insertblocks:");
-		lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
-		//dump (lprog, "bounded loops");
-		//dump (prog, "bef fpe:");
+		//dump (lprog, "~insertblocks:");		
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
@@ -338,17 +342,17 @@ public class ToSBit
 
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
-		//dump(finalCode, "after elim star");
+		// dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-
+		// dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-		if(params.flagEquals("showphase", "postproc")) dump(finalCode, "After partially evaluating generated code.");
+		if(params.flagEquals("showphase", "postproc")) 
+			dump(finalCode, "After Flattening.");
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(params.flagEquals("showphase", "taelim")) dump(finalCode, "After Eliminating transitive assignments.");
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
 		//System.out.println("=========  After ElimDeadCode  =========");
-		//finalCode.accept( new SimpleCodePrinter() );
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 		if(params.flagEquals("showphase", "final")) dump(finalCode, "After Dead Code elimination.");
@@ -554,6 +558,10 @@ public class ToSBit
 				"             \t Example use:  '--def _FOO=1 --def _BAR=false ...'",
 				null, null) );
 
+		params.setAllowedParam("inc", new POpts(POpts.MULTISTRING,
+				"--inc        \t Directory to search for include files.'",
+				null, null) );
+		
 		Map<String, String> phases = new HashMap<String, String>();
 		phases.put("preproc", " After preprocessing.");
 		phases.put("lowering", " Previous to Symbolic execution.");
