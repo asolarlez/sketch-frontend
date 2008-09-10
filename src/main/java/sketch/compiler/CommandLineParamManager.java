@@ -100,7 +100,7 @@ public class CommandLineParamManager{
 
 				}else{
 					backendOptions.add(args[i]);
-					if( args[i+1].charAt(0) != '-' ){
+					if( args[i+1].charAt(0) != '-'  && i+1 != args.length -1 ){
 						//System.out.println("BACKEND FLAG " + args[i] + " " + args[i+1]);
 						backendOptions.add(args[i+1]);
 						i+= 2;
@@ -215,7 +215,8 @@ public class CommandLineParamManager{
 		}
 		return val;
 	}
-
+	
+	
 
 	/**
 	 * Returns the string value of a given flag.
