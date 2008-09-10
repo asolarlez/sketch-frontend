@@ -26,8 +26,13 @@ public class ExprRegen extends Expression {
 	/** @deprecated */
 	public ExprRegen (FEContext cx, String gen) {
 		super (cx);
+		try{
 		this.expr = RegenParser.parse (gen.substring (2, gen.length () - 2),
 									   cx);
+		}catch(RuntimeException e){
+			System.err.println(cx + ": Error Parsing regen " + gen );
+			throw e;
+		}
 	}
 
 	public Expression getExpr () { return expr; }

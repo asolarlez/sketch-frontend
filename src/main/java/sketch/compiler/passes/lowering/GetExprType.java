@@ -444,7 +444,7 @@ public class GetExprType extends FENullVisitor
 
         Type rv = tl.leastCommonPromotion(tr);
 
-        assert rv != null : "Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
+        assert rv != null : left.getCx() + ": Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
 
         return rv;
 	}
