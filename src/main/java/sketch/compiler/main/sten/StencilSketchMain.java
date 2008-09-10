@@ -102,6 +102,11 @@ public class ToStencilSK extends ToSBit
         return prog;
     }
 
+    @Override
+    protected void backendParameters(List<String> commandLineOptions){
+		super.backendParameters(commandLineOptions);
+		commandLineOptions.add("-ufunSymmetry");
+    }
 
 
     public RecursionControl visibleRControl(){
