@@ -1,0 +1,44 @@
+// jburnim_morton_easier.sk
+// Author: jburnim@cs.berkeley.edu (Jacob Burnim)
+//
+// This file contains an easier sketch (than in jburnim_morton.sk) for
+// constructing 32-bit Morton numbers from two 16-bit inputs.  The sketch
+// is easier because it captures the information that the two inputs are
+// processed in the same way ("interleaved with zero") before then being
+// combined.
+//
+// Synthesized code is shown in comments at the end of the file.
+
+int W = 16;
+
+bit[2*W] interleave_bits(bit[W] x, bit[W] y) {
+  return interleave_with_0(x) | (interleave_with_0(y) << 1);
+}
+
+bit[2*W] interleave_with_0(bit[W] x) {
+  bit[2*W] ret = 0;
+  for (int i = 0; i < W; i++) {
+    ret[i*2] = x[i];
+  }
+  return ret;
+}
+
+bit[2*W] sketch(bit[W] x) implements interleave_with_0 {
+  // Idea: It should be possible to shift all of the bits "in parallel"
+  // using only log2(W) shifts.
+  bit[2*W] ret = x;
+  loop(??) {
+    ret = (ret | (ret << ??)) & ??;
+  }
+  return ret;
+}
+
+// In between one and two minutes sythesized:
+//
+// void sketch(bitvec<16>  x_0, bitvec<32> & s_1) {
+//   bitvec<32> ret_2 = (x_0 | (x_0 << 8U)) & bitvec<32>("11111111000000001111111100000000");
+//   ret_2 = (ret_2 | (ret_2 << 4U)) & bitvec<32>("11110000111100001111000011110000");
+//   ret_2 = (ret_2 | (ret_2 << 2U)) & bitvec<32>("11001100110011001100110011001100");
+//   ret_2 = (ret_2 | (ret_2 << 1U)) & bitvec<32>("10101010101010101010101010101010");
+//   s_1 = ret_2;
+// }

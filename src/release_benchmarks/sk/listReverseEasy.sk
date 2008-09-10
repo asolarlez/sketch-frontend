@@ -1,3 +1,4 @@
+pragma options "--unrollamnt 4";
 int N = 4;
 
 struct node{
