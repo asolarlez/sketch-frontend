@@ -24,10 +24,12 @@ header {
 
 	import streamit.frontend.nodes.*;
     import streamit.frontend.Directive;
+	import streamit.frontend.ToSBit;
 
 	import java.util.Collections;
     import java.io.*;
     import java.util.ArrayList;
+    import java.util.Iterator;
     import java.util.HashSet;
     import java.util.List;
     import java.util.Set;
@@ -95,7 +97,23 @@ options {
     public void handleInclude(String name, List funcs, List vars, List structs)
     {
         try {
-            name = (new File (name)).getCanonicalPath ();
+        	List<String> incList = ToSBit.params.listValue("inc");
+        	Iterator<String> lit = null;
+        	if(incList != null){ lit = incList.iterator(); }
+        	File f = new File (name);
+        	String errMsg = "";
+        	while(!f.canRead()){
+        		if(lit != null && lit.hasNext()){
+        			String tmp = lit.next(); 
+        			errMsg += "\n\t" +  f.getCanonicalPath();
+        			f = new File (tmp, name);	
+        		}else{
+        			errMsg += "\n\t" + f.getCanonicalPath();
+        			throw new IllegalArgumentException ("File not found: "+ name + "\n" + 
+        					"Searched the following paths:" + errMsg + "\n");
+        		}
+        	}
+            name = f.getCanonicalPath ();
         } catch (IOException ioe) {
             throw new IllegalArgumentException ("File not found: "+ name);
         }

@@ -4,10 +4,12 @@
 
 	import streamit.frontend.nodes.*;
     import streamit.frontend.Directive;
+	import streamit.frontend.ToSBit;
 
 	import java.util.Collections;
     import java.io.*;
     import java.util.ArrayList;
+    import java.util.Iterator;
     import java.util.HashSet;
     import java.util.List;
     import java.util.Set;
