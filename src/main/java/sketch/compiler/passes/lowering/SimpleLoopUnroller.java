@@ -17,7 +17,7 @@ public class SimpleLoopUnroller extends FEReplacer {
 	
 	
 	
-	public int decideForLoop(StmtFor stmt){
+	public static int decideForLoop(StmtFor stmt){
 		if(!(stmt.getInit() instanceof StmtVarDecl)){
 			return -1;
 		}
