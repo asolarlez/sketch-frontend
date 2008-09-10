@@ -688,15 +688,6 @@ public class PartialEvaluator extends FEReplacer {
         return "continue";
     }
 
-    public Object visitStmtDoWhile(StmtDoWhile stmt)
-    {
-    	report(false, "NYS");
-        String result = "do ";
-        result += (String)stmt.getBody().accept(this);
-        result += "while (" + (String)stmt.getCond().accept(this) + ")";
-        return result;
-    }
-
 
     public Object visitStmtExpr(StmtExpr stmt)
     {
@@ -862,9 +853,10 @@ public class PartialEvaluator extends FEReplacer {
 	        	state.popChangeTracker();
 	        	state.pushChangeTracker (vcond, false);
 	        	nvtrue = (Statement)( new StmtAssert(stmt, ExprConstInt.zero) ).accept(this);
-	        }catch(RuntimeException e){
+	        }catch(Throwable e){
 	        	state.popChangeTracker();
-	        	throw e;
+	        	throw  new RuntimeException( e.getMessage() );
+	        	//throw e;
 	        }
 	        rcontrol.doneWithBlock(cons);
         }else{
@@ -886,9 +878,10 @@ public class PartialEvaluator extends FEReplacer {
 		        	state.popChangeTracker();
 		        	state.pushChangeTracker (vcond, true);
 		        	nvfalse = (Statement)( new StmtAssert(stmt, ExprConstInt.zero) ).accept(this);
-		        }catch(RuntimeException e){
+		        }catch(Throwable e){
 		        	state.popChangeTracker();
-		        	throw e;
+		        	throw  new RuntimeException( e.getMessage() );
+		        	//throw e;
 		        }
 	        	rcontrol.doneWithBlock(alt);
             }else{
@@ -1101,11 +1094,29 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitStmtWhile(StmtWhile stmt)
     {
-    	assert false : "While loops are not yet implemented (I know it sounds strange, why wouldn't we implement while loops. Well, it's a long story, but they just aren't implemented)";
-        return "while (" + (String)stmt.getCond().accept(this) +
-            ") " + (String)stmt.getBody().accept(this);
+    	StmtFor sf = new StmtFor(stmt, null, stmt.getCond(), null, stmt.getBody());
+    	Object t =  sf.accept(this);
+    	if(t instanceof StmtFor){
+    		sf = (StmtFor) t;
+    		return isReplacer ? new StmtWhile(stmt, sf.getCond(), sf.getBody()) : stmt;
+    	}else{
+    		return isReplacer ? t : stmt;
+    	}
     }
 
+
+    public Object visitStmtDoWhile(StmtDoWhile stmt)
+    {
+    	String vn = varGen.nextVar();
+    	ExprVar ev = new ExprVar(stmt, vn);
+    	Statement s = new StmtVarDecl(stmt, TypePrimitive.bittype, vn, ExprConstInt.one  );
+    	StmtAssign sa = new StmtAssign( ev, stmt.getCond() );
+    	Statement tmp = new StmtWhile(stmt, ev, new StmtBlock( stmt.getBody(), sa));
+    	tmp =  new StmtBlock(s, tmp).doStatement(this);
+    	return isReplacer? tmp : stmt;
+    }
+
+    
 
 
     public Object visitFieldDecl(FieldDecl field)
