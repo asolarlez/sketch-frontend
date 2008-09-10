@@ -10,11 +10,13 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtDoWhile;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.StmtWhile;
 
 public class FlattenStmtBlocks extends FEReplacer {
 	
@@ -57,6 +59,26 @@ public class FlattenStmtBlocks extends FEReplacer {
 		 isWithinBlock = oldIsWithinBlock;
 		 return o;
 	    }
+	 @Override
+	 public Object visitStmtWhile(StmtWhile stmt)
+	    {
+		 boolean oldIsWithinBlock = isWithinBlock;
+		 isWithinBlock = false;
+		 Object o = super.visitStmtWhile(stmt);
+		 isWithinBlock = oldIsWithinBlock;
+		 return o;
+	    }
+	 
+	 @Override
+	 public Object visitStmtDoWhile(StmtDoWhile stmt)
+	    {
+		 boolean oldIsWithinBlock = isWithinBlock;
+		 isWithinBlock = false;
+		 Object o = super.visitStmtDoWhile(stmt);
+		 isWithinBlock = oldIsWithinBlock;
+		 return o;
+	    }
+	 
 	 public Object visitStmtIfThen(StmtIfThen stmt){
 		 boolean oldIsWithinBlock = isWithinBlock;
 		 isWithinBlock = false;
