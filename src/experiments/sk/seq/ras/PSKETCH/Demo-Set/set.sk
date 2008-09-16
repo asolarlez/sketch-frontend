@@ -1,0 +1,57 @@
+include "harness.skh";
+
+#define COMP {| ((cur|prev)(.next)? | null) (== | !=) (cur|prev)(.next)?  |}
+#define LOC  {| (cur | prev )(.next)? |}
+
+static void find (Set S, int key, ref Node prev, ref Node cur) {
+	while (cur.key < key) {
+		reorder {
+    		{   prev = cur;
+    			cur = cur.next;  }
+			if (COMP) lock (LOC);
+			if (COMP) unlock (LOC);
+		}
+    }
+}
+
+static bit remove (Set S, int key) {
+    bit ret = 0;
+    Node prev = null;
+    Node cur = S.head;
+
+	lock (cur);
+
+    find (S, key, prev, cur);
+    if (key == cur.key) {
+        prev.next = cur.next;
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+
+	unlock (LOC);
+	unlock (LOC);
+
+    return ret;
+}
+
+static bit add (Set S, int key) {
+    bit ret = 0;
+    Node prev = null;
+    Node cur = S.head;
+
+    lock(cur);
+
+    find(S, key, prev, cur);
+    if (key < cur.key) {
+        prev.next = newNode (key, cur);
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+
+    unlock(LOC);
+    unlock(LOC);
+
+    return ret;
+}

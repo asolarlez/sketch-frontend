@@ -1,0 +1,51 @@
+include "set.skh";
+
+pragma options "--unrollamnt 4 --seed 10";
+
+int NTHREADS = 2;
+int NITEMS = 2;
+int NNODES = 2 + NTHREADS * NITEMS; // +2 for the sentinels
+int NEGINF = -1;
+int POSINF = NNODES;
+
+bit T () { return 1; }
+bit main () implements T {
+    assert NTHREADS % 2 == 0;
+
+    Set S = newSet (NEGINF, POSINF);
+    bit[NTHREADS*NITEMS] removed = 0;
+
+    //assert !add (S, POSINF);
+    assert !remove (S, 1);
+    assert add (S, 1);
+    assert remove (S, 1);
+    assert isEmptySet (S);
+
+    fork (int i; NTHREADS) {
+        if (i % 2 == 0) {   // add
+            for (int j = 0; j < NITEMS; ++j) {
+                int key = j + (i/2)*NITEMS;
+                assert add (S, key);
+            }
+        } else {    // remove
+            for (int j = 0; j < NITEMS; ++j) {
+                int key = j + (i/2)*NITEMS;
+                removed[key] = remove (S, key);
+            }
+        }
+    }
+
+    assert isValidSet (S, NEGINF, POSINF, NNODES);
+
+    for (int k = 0; k < (NTHREADS/2)*NITEMS; ++k) {
+        if (removed[k]) {
+            assert !remove (S, k);
+        } else {
+            assert remove (S, k);
+        }
+    }
+
+    assert isEmptySet (S);
+
+    return 1;
+}
