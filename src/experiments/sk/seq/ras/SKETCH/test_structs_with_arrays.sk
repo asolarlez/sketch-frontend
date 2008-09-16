@@ -1,0 +1,11 @@
+struct S {
+	int[3] arr;
+}
+
+int main() implements one {
+	S s = new S();
+	int a = s.arr[0];
+	return 1;
+} 
+
+int one() { return 1; }
