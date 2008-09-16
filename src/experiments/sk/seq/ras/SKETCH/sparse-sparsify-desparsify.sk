@@ -1,0 +1,48 @@
+#define N 2
+
+int[N][N] sd(int[N][N] a) implements identity {
+	sparsify(a);
+	return desparsify();
+}
+
+// structs are currently not debugged
+// struct CSR {
+//	int[N*N] V;
+//	int[N*N] C;
+//	int[N+1] R;
+//}
+
+int[N*N] V;
+int[N*N] C;
+int[N+1] R;
+
+void sparsify(int[N][N] a) {
+	int idx = 0;
+	R[0]=idx;
+	
+	for (int r = 0; r < N; r++) {
+		R[r] = idx;
+		for (int c = 0; c < N; c++) {
+			if (a[r][c] != 0) {
+				V[idx] = a[r][c];
+				C[idx] = c;
+				idx++;  
+			}
+		}
+	}
+	R[N] = idx;
+}
+
+static int[N][N] desparsify() {
+	int[N][N] a = 0;
+	for (int r = 0; r < N; r++) {
+		for (int idx = R[r]; idx < R[r+1]; idx++) {
+			a[r][C[idx]] = V[idx];
+		}
+	}
+	return a;
+}
+
+int[N][N] identity(int[N][N] a) {
+	return a;	
+}
