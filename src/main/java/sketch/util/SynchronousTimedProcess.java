@@ -56,8 +56,10 @@ public class SynchronousTimedProcess {
 		ProcessStatus status = new ProcessStatus ();
 		System.gc();
 		try {
-			if (timeoutMins > 0)
+			if (timeoutMins > 0){
 				killer = new ProcessKillerThread (proc, timeoutMins);
+				killer.start();
+			}
 			status.out = Misc.readStream (proc.getInputStream (), logAllOutput);
 			status.err = Misc.readStream (proc.getErrorStream (), true);
 			status.exitCode = proc.waitFor ();
