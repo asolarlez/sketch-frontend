@@ -98,7 +98,7 @@ public class ToSBit
 	// protected final CommandLineParams params;
 	protected Program beforeUnvectorizing=null;
 
-	public static final CommandLineParamManager params = new CommandLineParamManager();
+	protected final CommandLineParamManager params =  CommandLineParamManager.getParams();
 
 
 	protected ToSBit(String[] args){
@@ -120,7 +120,7 @@ public class ToSBit
 
 	public static RecursionControl visibleRControl (Program p) {
 		// return new BaseRControl(params.inlineAmt);
-		return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), p);
+		return new AdvancedRControl(CommandLineParamManager.getParams().flagValue("branchamnt"), CommandLineParamManager.getParams().flagValue("inlineamnt"), p);
 	}
 
 	/**
