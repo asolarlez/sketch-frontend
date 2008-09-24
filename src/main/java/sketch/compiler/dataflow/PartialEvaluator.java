@@ -923,7 +923,12 @@ public class PartialEvaluator extends FEReplacer {
         Expression ncond = exprRV;
         String msg = null;
         msg = stmt.getMsg();
+        try{
         state.Assert(vcond, msg);
+        }catch(RuntimeException e){
+        	System.err.println(stmt.getCx() + ":" +  e.getMessage() );
+        	throw e;
+        }
         return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg())  : stmt;
     }
 
