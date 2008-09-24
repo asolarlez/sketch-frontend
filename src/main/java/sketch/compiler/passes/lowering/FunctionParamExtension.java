@@ -322,7 +322,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		
 		Expression cond = stmt.getCond();
 		
-		if(hasRet(body)){
+		if(SimpleLoopUnroller.decideForLoop(stmt)<0 &&  hasRet(body)){
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
 					ExprConstInt.zero) );
