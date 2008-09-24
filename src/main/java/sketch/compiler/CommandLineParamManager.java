@@ -73,10 +73,16 @@ public class CommandLineParamManager{
 	Map<String, Object> passedParameters;
 	public List<String> inputFiles = new ArrayList<String>();
 	public List<String> backendOptions = new ArrayList<String>();
+	
+	private static final CommandLineParamManager params = new CommandLineParamManager();
 
-	public CommandLineParamManager(){
+	private CommandLineParamManager(){
 		allowedParameters = new HashMap<String, POpts>();
 		passedParameters = new HashMap<String, Object>();
+	}
+	
+	public static CommandLineParamManager getParams(){
+		return params;
 	}
 
 
