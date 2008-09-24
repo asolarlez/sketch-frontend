@@ -18,6 +18,7 @@ package streamit.frontend.nodes;
 
 import java.util.Vector;
 
+import streamit.frontend.CommandLineParamManager;
 import streamit.frontend.ToSBit;
 
 /**
@@ -170,7 +171,7 @@ public class ExprStar extends Expression
 			tt = ((TypeArray)tt).getBase();
 		}
 		if( ( tt.equals(TypePrimitive.inttype) ) && !isFixed ){
-			setSize( ToSBit.params.flagValue("cbits")  );
+			setSize( CommandLineParamManager.getParams().flagValue("cbits")  );
 		}
 	}
 
