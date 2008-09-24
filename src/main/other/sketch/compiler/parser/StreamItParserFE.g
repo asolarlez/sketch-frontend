@@ -23,6 +23,7 @@ header {
 	package streamit.frontend.parser;
 
 	import streamit.frontend.nodes.*;
+    import streamit.frontend.CommandLineParamManager;
     import streamit.frontend.Directive;
 	import streamit.frontend.ToSBit;
 
@@ -97,7 +98,7 @@ options {
     public void handleInclude(String name, List funcs, List vars, List structs)
     {
         try {
-        	List<String> incList = ToSBit.params.listValue("inc");
+        	List<String> incList = CommandLineParamManager.getParams().listValue("inc");
         	Iterator<String> lit = null;
         	if(incList != null){ lit = incList.iterator(); }
         	File f = new File (name);
