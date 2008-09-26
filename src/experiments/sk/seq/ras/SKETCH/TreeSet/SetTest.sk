@@ -1,0 +1,37 @@
+
+include "TreeSet.skh" ;
+include "HashSetComplete.skh" ;
+
+pragma options "--unrollamnt 5 --inbits 3 ";
+
+bit ONE(int[T] vals, int tval){
+	return 1;
+}
+
+int T = 4;
+
+bit main(int[T] vals, int tval) implements ONE{
+	
+	HashTable ht = newHashTable();
+	Tree t = newTree();
+	for(int i=0; i<T; ++i){
+		bit t1;
+		t1 =  addh(ht, vals[i]);
+		bit t2;
+		t2 = addt(t, vals[i]);		
+		assert t1 == t2;				
+	}
+	
+	
+	for(int i=0; i<T; ++i){
+		bit t1 =  containsh(ht, vals[i]);
+		bit t2 = containst(t, vals[i]);		
+		assert t1 && t2;				
+	}
+	
+	assert containsh(ht, tval) == containst(t, tval);
+
+	
+	return 1;
+	
+}
