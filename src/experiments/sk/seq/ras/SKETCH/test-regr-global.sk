@@ -1,0 +1,15 @@
+struct S { int field; }
+
+int g=2;
+
+void v(int x) {}
+
+void sparsify(int x) implements v {
+	S ptr = new S();
+	if (g>0) {
+		g = 1;
+		x = 1;
+		ptr.field = 1;
+	}
+}
+

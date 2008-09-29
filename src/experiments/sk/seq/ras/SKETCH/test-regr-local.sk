@@ -1,0 +1,8 @@
+void v(int x) {}
+
+void sparsify(int x) implements v {
+	if (x>0) {
+		x = 1;
+	}
+}
+
