@@ -1,7 +1,6 @@
-pragma options "--inbits 3 ";
+pragma options "--trace --showphase preproc --inbits 2 --cbits 2 --forcecodegen --outputtest --arrayOOBPolicy assertions";
 
-
-#define N 3
+#define N 2
 
 //
 // Modeling multiplication
@@ -20,9 +19,30 @@ T ufun_ii(T x, T y);
 //
 //
 
+//int[N][N] sd(int[N][N] a) implements identity {
+//	return desparsify(sparsify(a));
+//}
 T[N] main(T[N][N] A, T[N] x) implements DeMV {
 	return SpMV(sparsify(A), x);
 }
+int harness () { // implements one {
+	T[N*N] a = {2,0,0,1};
+	T[N] x ={3,2};
+	T[N][N] dA;
+	int k = 0;
+	for (int i = 0; i < N; i++) 
+		for (int j = 0; j < N; j++) 
+			dA[i][j] = a[k++];
+			
+	CSR sA = sparsify(dA);
+	T[N] y = SpMV(sA,x);
+	T[N] yy = DeMV(dA,x);
+	assert y[0] == yy[0];
+	//assert y[1] == yy[1];
+	//assert y[2] == yy[2];
+	return 1;
+}  
+int one () { return 1; }
 
 struct CSR {
 	T[N*N] V;
@@ -36,7 +56,7 @@ static CSR sparsify(T[N][N] a) {
 	int idx = 0;
 	sm.R[0]=idx;
 	
-	for (int r = 0; r < N+??; r++) {
+	for (int r = 0; r < N; r++) {
 		sm.R[r] = idx;
 		for (int c = 0; c < N; c++) {
 			if (a[r][c] != 0) {
@@ -90,4 +110,7 @@ T[N] SpMV(CSR A, T[N] x) {
 		}
 	} 
 	return y;	
+}
+int[N][N] identity(int[N][N] a) {
+	return a;	
 }

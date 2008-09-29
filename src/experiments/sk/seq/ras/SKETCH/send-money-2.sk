@@ -1,0 +1,44 @@
+pragma options "--inbits 16 --cbits 5 --synth MINI --verif MINI --keepasserts --keeptmpfiles";
+
+// This problem was posed by Satish Chandra:
+//  SEND
+// +MORE
+// -----
+// MONEY
+//
+// You have to assign *unique* digits to all the characters. 
+
+int one () { return 1; }
+int main () implements one {
+
+bit[10] digits = false;  // has the letter already been assigned?
+
+#define def(letter) 				\
+	int letter = ??; 				\
+	assert 0<=letter && letter<=9;	\
+	assert digits[letter] == 0;		\
+	digits[letter] = true;
+
+// second column shows a solution that we find when M is not required to be 0.
+def(S);  // 2  6  9
+def(E);  // 4  4  5
+def(N);  // 8  1  6
+def(D);  // 5  9  7
+def(M);  // 1  0  1
+def(O);  // 3  7  3
+def(R);  // 6  2  8
+def(Y);  // 9  3  0
+	
+assert             1000 * S + 100 * E + 10 * N + D 
+                 + 1000 * M + 100 * O + 10 * R + E 
+    == 10000 * M + 1000 * O + 100 * N + 10 * E + Y;
+    
+//assert (D+E)%10            == Y;
+//assert (N+R)%10 + (D+E)/10 == E;
+//assert (E+O)%10 + (N+R)/10 == N;
+//assert (S+M)%10 + (E+O)/10 == O;
+
+// assert                   1 == M;
+
+return 1;
+}

@@ -1,0 +1,25 @@
+pragma options "--keepasserts";
+
+#define K 10
+
+#define ARGS int x, int[K] y
+
+int v (ARGS) {return 1;}
+
+#define assume(e) {if (!e) return 1;} 
+#define I(e, v) { assert(e); v=y[i++]; assume(e); }
+
+   
+int main(ARGS) implements v {
+	int i = 0;
+	
+	x = x*x + 1;
+
+	I(P(x),x);
+	
+	assert x>0; 
+	
+	return 1;
+}
+
+static bit P(int x) { return x>=??; }
