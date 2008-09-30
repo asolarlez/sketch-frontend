@@ -1,4 +1,4 @@
-pragma options "--inbits 16 --cbits 5 --synth MINI --verif MINI --keepasserts --keeptmpfiles";
+pragma options "--verbosity 7 --inbits 16 --cbits 4 --synth ABC --verif MINI --keepasserts --keeptmpfiles";
 
 // This problem was posed by Satish Chandra:
 //  SEND
@@ -13,21 +13,21 @@ int main () implements one {
 
 bit[10] digits = false;  // has the letter already been assigned?
 
-#define def(letter) 				\
-	int letter = ??; 				\
+#define def(letter,T) 				\
+	T letter = ??; 				\
 	assert 0<=letter && letter<=9;	\
 	assert digits[letter] == 0;		\
 	digits[letter] = true;
 
 // second column shows a solution that we find when M is not required to be 0.
-def(S);  // 2  6  9
-def(E);  // 4  4  5
-def(N);  // 8  1  6
-def(D);  // 5  9  7
-def(M);  // 1  0  1
-def(O);  // 3  7  3
-def(R);  // 6  2  8
-def(Y);  // 9  3  0
+def(S,int);  // 2  6  9
+def(E,int);  // 4  4  5
+def(N,int);  // 8  1  6
+def(D,int);  // 5  9  7
+def(M,bit);  // 1  0  1
+def(O,int);  // 3  7  3
+def(R,int);  // 6  2  8
+def(Y,int);  // 9  3  0
 	
 assert             1000 * S + 100 * E + 10 * N + D 
                  + 1000 * M + 100 * O + 10 * R + E 
@@ -38,7 +38,7 @@ assert             1000 * S + 100 * E + 10 * N + D
 //assert (E+O)%10 + (N+R)/10 == N;
 //assert (S+M)%10 + (E+O)/10 == O;
 
-// assert                   1 == M;
+assert                   1 == M;
 
 return 1;
 }

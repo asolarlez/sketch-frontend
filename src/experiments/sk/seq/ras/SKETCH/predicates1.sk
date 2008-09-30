@@ -1,25 +1,26 @@
-pragma options "--keepasserts";
+pragma options "--inbits 3 --keepasserts --arrayOOBPolicy assertions";
 
 #define K 10
 
-#define ARGS int x, int[K] y
+#define ARGS int x, int y, int[K] __states__
 
 int v (ARGS) {return 1;}
 
 #define assume(e) {if (!e) return 1;} 
-#define I(e, v) { assert(e); v=y[i++]; assume(e); }
+#define I(v1,v2,e) { assert(e); v1=__states__[i++]; v2=__states__[i++]; assume(e); }
 
    
 int main(ARGS) implements v {
 	int i = 0;
 	
-	x = x*x + 1;
-
-	I(P(x),x);
-	
-	assert x>0; 
+	x = x*x + 1;     
+						I(x,y,P1(x,y));
+	y = -(y*y) - 2;  
+						I(x,y,P2(x,y));
+	assert x*y<0; 
 	
 	return 1;
 }
 
-static bit P(int x) { return x>=??; }
+static bit P1(int x, int y) { return {| x>=?? | x<=-?? | y>=?? | y<=-?? |}; }
+static bit P2(int x, int y) { return {| x>=?? | x<=-?? | y>=?? | y<=-?? |}; }
