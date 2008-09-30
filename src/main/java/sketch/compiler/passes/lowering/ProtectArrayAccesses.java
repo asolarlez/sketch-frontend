@@ -103,7 +103,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	}
 
 	@Override
-	public Object visitExprArrayRange(ExprArrayRange ear){
+	public Object visitExprArrayRange(ExprArrayRange ear){ 
 		assert ear.hasSingleIndex() : "Array ranges not allowed in parallel code.";
 
 		Expression idx = makeLocalIndex (ear);
@@ -129,12 +129,13 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			Expression cond = makeGuard (base, idx);
 			Expression near = new ExprArrayRange(base, idx);
 			Expression rhs = (Expression) stmt.getRHS ().accept (this);
+			int op = stmt.getOp();
 
 			if (FailurePolicy.WRSILENT_RDZERO == policy) {
-				return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs), null);
+				return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs, op), null);
 			} else if (FailurePolicy.ASSERTION == policy) {
 				addStatement (new StmtAssert (cond));
-				return new StmtAssign (near, rhs);
+				return new StmtAssign (near, rhs, op);
 			} else {  assert false : "fatal error"; return null;  }
 		}else{
 			return super.visitStmtAssign(stmt);
