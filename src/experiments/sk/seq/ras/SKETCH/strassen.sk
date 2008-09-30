@@ -1,0 +1,49 @@
+int WIDTH = 2;
+int NMULTIPLIES = 7;
+
+int[4] gaussian_multiply(int[4] a, int[4] b) {
+    int[4] result;
+    result[0] = a[0] * b[0] + a[1] * b[2];
+    result[1] = a[0] * b[1] + a[1] * b[3];
+    result[2] = a[2] * b[0] + a[3] * b[2];
+    result[3] = a[2] * b[1] + a[3] * b[3];
+    return result;
+}
+
+int[4] strassen_multiply(int[4] a_in, int[4] b_in) implements gaussian_multiply {
+    int[9] a;
+    int[9] b;
+    for (int c = 0; c < 4; c++) {
+        a[c] = a_in[c];
+        b[c] = b_in[c];
+        a[c + 4] = -a_in[c];
+        b[c + 4] = -b_in[c];
+    }
+    a[8] = 0;
+    b[8] = 0;
+    int[4] result = 0;
+    int[2 * NMULTIPLIES + 1] tmp;
+
+    // FIXME - replace with holes eventually
+    tmp[0] = (a_in[0] + a[3]) * (b_in[0] + b[3]);
+    tmp[1] = 0; // don't need calculation for now
+    tmp[2] = 0;
+    tmp[3] = (a_in[3] + a[8]) * (b_in[2] + b[0+4]);
+    tmp[4] = (a_in[0] + a[1]) * (b_in[3] + b[8]);
+    tmp[5] = 0;
+    tmp[6] = (a_in[1] + a[3+4]) * (b_in[2] + b[3]);
+
+    for (int c = 0; c < NMULTIPLIES; c++) {
+        tmp[c + NMULTIPLIES] = -tmp[c];
+    }
+
+    tmp[2 * NMULTIPLIES] = 0;
+
+    // FIXME - replace with holes eventually
+    result[0] = tmp[0] + tmp[3] + tmp[4+7] + tmp[6];
+//     result[0] = a[0] * b[0] + a[1] * b[2];
+    result[1] = a[0] * b[1] + a[1] * b[3];
+    result[2] = a[2] * b[0] + a[3] * b[2];
+    result[3] = a[2] * b[1] + a[3] * b[3];
+    return result;
+}

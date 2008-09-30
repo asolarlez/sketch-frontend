@@ -1,0 +1,18 @@
+struct S {
+	int a;
+}
+
+int main(int x) implements one {
+	S s = new S();
+	if (??>0) {
+		s = new S();
+		s.a = x;
+	}
+	else 
+		s.a = 1+x;
+		
+	assert s.a == 1+x;  
+	return 1;
+} 
+
+int one(int x) { return 1; }
