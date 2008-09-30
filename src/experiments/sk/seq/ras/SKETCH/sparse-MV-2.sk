@@ -1,4 +1,4 @@
-pragma options "--verbosity 7 --inbits 1 --cbits 3 --verif ABC --synth ABC --outputtest --outputcode --arrayOOBPolicy assertions";  
+pragma options "--verbosity 2 --inbits 1 --cbits 3 --verif ABC --synth ABC --arrayOOBPolicy assertions";  
 
 #define N 2
 
