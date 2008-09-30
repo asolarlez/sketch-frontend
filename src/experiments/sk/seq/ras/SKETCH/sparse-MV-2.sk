@@ -1,4 +1,4 @@
-pragma options "--inbits 4 --cbits 2 --arrayOOBPolicy assertions";  
+pragma options "--verbosity 7 --inbits 1 --cbits 3 --verif ABC --synth ABC --outputtest --outputcode --arrayOOBPolicy assertions";  
 
 #define N 2
 
@@ -19,7 +19,7 @@ T ufun_ii(T x, T y);
 //
 //
 
-int[N] main(T[N][N] A, T[N] x) implements DeMV {
+int[N] main(T[N][N] A, T[N] x) { // implements DeMV {
 	return SpMV(sparsify(A), x, /* instr */ A);
 }
 
@@ -78,44 +78,64 @@ int[N] DeMV(T[N][N] A, T[N] x) {
 }
 
 //
-// computes y = Ax on sparse A and dense x and y.
-// 
-static int[N] SpMV(CSR A, T[N] x, /* instr */ T[N][N] dA) {
-	int[N] y = 0;
+// Hoare "rules"
+//
+
+#define K 10
+#define ARGS 	T[N] y, int r, T[N][N] dB, CSR B
+
+int one(T[N] x, T[N][N] dA, ARGS) { return 1; } 
+
+#define assume(e) {if (!e) return 1;} 
+#define I(v1,v2,e) { assert(e); v1=__states__[i++]; v2=__states__[i++]; assume(e); }
+
+int transfer (T[N] x, T[N][N] dA, ARGS) implements one {
+	CSR A = sparsify(dA);
+	SpMV(A, x, dA);
 	
-	for (int r = 0; r < N; r++) {    
-		//L1(A,x,y,r,dA);
-		y[r] = 0;
-		int idx = A.R[r];
-		for (int _bugwrokaround_=0;  idx < A.R[r+1]; idx++) {
-			//L2(A,x,y,r,idx,dA);
-			y[r] += mul(A.V[idx],x[A.C[idx]]);  
-			if (idx < A.R[r+1]-1) L2(A,x,y,r,idx+1,dA);
-		}
-		//L2_1(A,x,y,r,dA);  // how do we know we traversed the whole row?
-		//L1(A,x,y,r,dA);
-	} 
-	//L1(A,x,y,N,dA); // r==N
-	return y;	
+	assume(L2_all_nonzero(B,x,y,r,dB));
+	assert(L2_whole_row(B,x,y,r,dA));
+	
+	return 1;
 }
 
 //
-
-// Invariants
-//
+// computes y = Ax on sparse A and dense x and y.
+// 
+static int SpMV(CSR A, T[N] x, T[N][N] dA) {
+	int[N] y = 0;
+	
+	for (int r = 0; r < N; r++) {    
+		assert L1(A,x,y,r,dA);
+		y[r] = 0;
+		for (int idx = A.R[r];  idx < A.R[r+1]; idx++) {
+			assert L2(A,x,y,r,idx,dA);
+			y[r] += mul(A.V[idx],x[A.C[idx]]);  
+			assert !(idx < A.R[r+1]-1) || L2(A,x,y,r,idx+1,dA);
+		}
+		assert L2_all_nonzero(A,x,y,r,dA);  
+		assert L2_whole_row(A,x,y,r,dA);  
+		L1(A,x,y,r,dA);
+	} 
+	// this is our correctness condition
+	assert L1(A,x,y,N,dA); // r==N
+	
+	return 1;	
+}
 
 //
 // L1: forall i=0,r-1 . y[i] = A[i] dot x
 //
 static bit L1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+	bit t = true;
 	for (int i=0; i<r; i++) {
 		T[N] temp;
 		for (int j = 0; j < N; j++) {
 			temp[j] = dA[i][j];
 		}
-		assert y[i]==dot(x,temp); 
+		t = t & y[i]==dot(x,temp); 
 	}
-	return 1;
+	return t;
 }
 
 //
@@ -126,22 +146,49 @@ static bit L2(CSR A, T[N] x, int[N] y, int r, int idx, T[N][N] dA) {
 	for (int i=0; i<A.C[idx]; i++) {
 		partial_dot += dA[r][i]*x[i]; 
 	}
-	assert y[r] == partial_dot;
-	return 1;
+	return y[r] == partial_dot;
 }
 
 //
-// L2_1: c=A.C[A.R[r+1]-1] . y[r]=A[r][0:c] dot x[0:c]
+// L2_all_nonzero: c=A.C[A.R[r+1]-1] . y[r]=A[r][0:c] dot x[0:c]
 //
-static bit L2_1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+static bit L2_all_nonzero(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+	if (! (0<=r && r<N) ) return 0;
 	int partial_dot = 0;
-	for (int i=0; i<=A.C[A.R[r+1]-1]; i++) {
+	// consitency check
+	int nz = A.R[r+1]-A.R[r];
+	if (! (nz >= 0) ) return 0;
+	if (nz > 0) { // non-zero row
+		// consistency check
+		// within each sparse row, the indices are monotonically increasing
+		int old_c = -1;
+		for (int i=A.R[r+1]; i<A.R[r+1]; i++) {
+			if (! (old_c >= A.C[i])) return 0;
+			old_c = A.C[i];
+			if (! (0<=old_c && old_c<N)) return 0;
+		}
+		for (int i=0; i<=A.C[A.R[r+1]-1]; i++) {
+			partial_dot += dA[r][i]*x[i]; 
+		}
+	}
+	return y[r] == partial_dot;
+}
+//
+// L2_whole_row: y[r] = A[r][0:N-1] dot x[0:N-1]
+//
+static bit L2_whole_row(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+	int partial_dot = 0;
+	for (int i=0; i<N; i++) {
 		partial_dot += dA[r][i]*x[i]; 
 	}
-	assert y[r] == partial_dot;
-	return 1;
+	return y[r] == partial_dot;
 }
 
+//
+
+
+
+// aux stuff
 
 int dot(T[N] a, T[N] b) {
 	int s = 0;
