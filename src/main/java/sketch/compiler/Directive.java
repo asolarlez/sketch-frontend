@@ -30,14 +30,14 @@ public abstract class Directive {
 	 * passed through the command line.
 	 *
 	 * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
-	 */
+	 */ 
 	public static class OptionsDirective extends Directive {
 		private static final String NAME = "options";
 		private String[] opts;
 
 		public OptionsDirective (String pragma, String args) {
 			super (pragma, args);
-			opts = args.split (" ");
+			opts = args.split ("\\s+");
 		}
 
 		public String[] options () { return opts; }
