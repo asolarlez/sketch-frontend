@@ -96,8 +96,7 @@ int transfer (T[N] x, T[N][N] dA, ARGS) implements one {
 	assert consistent(A,dA);
 	SpMV(A, x, dA);
 	
-	
-	// TODO: needs work: arrays currently cannot be copied like this.
+	// TODO: needs work: arrays currently cannot be copied like this when array boudns checks are on
 	CSR B = new CSR(); B.V = V; B.C = C; B.R = R;
 	assume(consistent(B,dB));
 	assume(L2_all_nonzero(B,x,y,r,dB));
