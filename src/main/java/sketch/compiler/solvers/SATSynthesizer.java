@@ -20,12 +20,10 @@ import streamit.frontend.controlflow.CFGNode.EdgePair;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNullPtr;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Function;
@@ -36,13 +34,10 @@ import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
@@ -59,7 +54,7 @@ import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.SimpleLoopUnroller;
 import streamit.frontend.solvers.CEtrace.step;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 
@@ -968,7 +963,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 
-	public ValueOracle nextCandidate(CounterExample counterExample) {
+	public AbstractValueOracle nextCandidate(CounterExample counterExample) {
 
 		mergeWithCurrent((CEtrace)counterExample);
 

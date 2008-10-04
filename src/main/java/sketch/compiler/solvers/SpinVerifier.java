@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.nodes.Program;
@@ -27,7 +26,7 @@ import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.PromelaCodePrinter;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.misc.Misc;
 
 /**
@@ -65,7 +64,7 @@ public class SpinVerifier implements Verifier {
 		config.vectorSizeBytes (vectorSize);
 	}
 
-	public CounterExample verify(ValueOracle oracle) {
+	public CounterExample verify(AbstractValueOracle oracle) {
 		while (true) {
 			Executer spin = Executer.makeExecuter (
 					spinify (oracle), config, reallyVerbose (), cleanup);
@@ -142,7 +141,7 @@ public class SpinVerifier implements Verifier {
 	 * Insert the hole values in HOLEVALS into PROG, and return the
 	 * program resulting from this and other preprocessing steps.
 	 */
-	protected Program spinify (ValueOracle holeVals) {
+	protected Program spinify (AbstractValueOracle holeVals) {
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
 
 		log ("Cleaning up the next candidate.");
