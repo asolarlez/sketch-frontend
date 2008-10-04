@@ -22,6 +22,7 @@ public class RegenParser {
 		return parse (s, new FEContext ("'"+ s +"'", 1, 1));
 	}
 	public static Expression parse (String s, FEContext cx) {
+		s.replaceAll("\\ |\\t" , "");
 		try {
 			StringReader in = new StringReader (s);
 			Regen parser = new Regen (in, cx.getFileName ());

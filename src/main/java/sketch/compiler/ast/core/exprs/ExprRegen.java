@@ -14,6 +14,7 @@ public class ExprRegen extends Expression {
 
 	public ExprRegen (FENode cx, String gen) {
 		super (cx);
+		gen = gen.replaceAll(" ", "");
 		this.expr = RegenParser.parse (gen.substring (2, gen.length () - 2),
 									   cx.getCx ());
 	}
@@ -26,6 +27,7 @@ public class ExprRegen extends Expression {
 	/** @deprecated */
 	public ExprRegen (FEContext cx, String gen) {
 		super (cx);
+		gen = gen.replaceAll(" ", "");
 		try{
 		this.expr = RegenParser.parse (gen.substring (2, gen.length () - 2),
 									   cx);
