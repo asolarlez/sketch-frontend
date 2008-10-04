@@ -14,28 +14,16 @@ import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.FENode;
 
-public class ValueOracle {
-	private HoleNameTracker holeNamer;
-
+public class ValueOracle extends AbstractValueOracle {
 	/**
 	 * After sketch is resolved, this map will contain the
 	 * value of each variable in store.
 	 */
-	private Map<String, Boolean> valMap;
+	protected Map<String, Boolean> valMap;
 
 
 
-	public boolean allowMemoization(){
-		return holeNamer.allowMemoization();
-	}
-
-	public HoleNameTracker getHoleNamer(){
-		return holeNamer;
-	}
-
-	//The following functions are to be called before resolution.
-
-	private int starSizesCaped = -1;
+	protected int starSizesCaped = -1;
 
 	public ValueOracle(HoleNameTracker holeNamer) {
 		super();
@@ -43,24 +31,6 @@ public class ValueOracle {
 		this.holeNamer = holeNamer;
 	}
 
-	/**
-	 *
-	 * Register a new variable name for a node.
-	 *
-	 * @param node
-	 * @param vname
-	 */
-	public String addBinding(Object node){
-		return holeNamer.getName(node);
-	}
-
-
-	/**
-	 * This function populates the valMap with information
-	 * from the file in, about what variables got what values.
-	 * @param in
-	 * @throws IOException
-	 */
 	public void loadFromStream(LineNumberReader in) throws IOException{
 		String dbRecord = null;
 		valMap = new HashMap<String, Boolean>();
@@ -71,22 +41,6 @@ public class ValueOracle {
             int val = Integer.parseInt(sval);
             valMap.put(vname, val==1);
          }
-	}
-
-	/**
-	 * Before we begin, populating the sketch, we set all the
-	 * streams to the beginning.
-	 */
-
-	public void initCurrentVals(){
-		holeNamer.reset();
-	}
-
-
-
-	public ExprConstInt popValueForNode(FENode node){
-		String name = holeNamer.getName(node);
-		return getVal(node, name);
 	}
 
 	protected ExprConstInt getVal(FENode node, String var){
@@ -132,9 +86,13 @@ public class ValueOracle {
 		}
 		return new ExprConstInt(node, -1);
 	}
+	
+	public ExprConstInt popValueForNode(FENode node) {
+		String name = holeNamer.getName(node);
+		return getVal(node, name);
+	}
 
-
-	public void capStarSizes(int size){
+	public void capStarSizes(int size) {
 		starSizesCaped = size;
 	}
 }

@@ -15,13 +15,12 @@ import java.util.List;
 import java.util.Stack;
 
 import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FieldDecl;
 import streamit.frontend.nodes.FuncWork;
@@ -35,6 +34,7 @@ import streamit.frontend.nodes.SJRoundRobin;
 import streamit.frontend.nodes.SJWeightedRR;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAdd;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtBody;
@@ -51,7 +51,6 @@ import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtPhase;
 import streamit.frontend.nodes.StmtPush;
 import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtSendMessage;
 import streamit.frontend.nodes.StmtSplit;
 import streamit.frontend.nodes.StmtVarDecl;
@@ -87,13 +86,13 @@ public class NodesToSBit extends PartialEvaluator{
     protected HashMap<String, StreamSpec> funsWParams;
     protected Stack<String> preFil;
     protected List<Statement> additInit;
-    private ValueOracle oracle;
+    private AbstractValueOracle oracle;
     private LoopMap loopmap= new LoopMap();
 	protected PrintStream out;
 
 
 	    public NodesToSBit (StreamSpec ss, TempVarGen varGen,
-                            ValueOracle oracle, PrintStream out,
+	    		AbstractValueOracle oracle, PrintStream out,
                             int maxUnroll, RecursionControl rcontrol)
 	    {
 	    	super(false, maxUnroll, rcontrol);

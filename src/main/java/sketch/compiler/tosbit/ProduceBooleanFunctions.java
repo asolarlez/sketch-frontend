@@ -1,27 +1,22 @@
 package streamit.frontend.tosbit;
 
-import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.FuncWork;
 import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
 import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class ProduceBooleanFunctions extends NodesToSBit {
 
 	public ProduceBooleanFunctions(StreamSpec ss, TempVarGen varGen,
-			ValueOracle oracle, PrintStream out,
+			AbstractValueOracle oracle, PrintStream out,
             int maxUnroll, RecursionControl rcontrol) {
 		super(ss, varGen, oracle, out, maxUnroll, rcontrol);
 	}

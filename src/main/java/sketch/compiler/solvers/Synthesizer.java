@@ -1,9 +1,9 @@
 package streamit.frontend.solvers;
 
-import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.AbstractValueOracle;
 
 public interface Synthesizer {
 
-	public ValueOracle nextCandidate(CounterExample couterExample);
+	public AbstractValueOracle nextCandidate(CounterExample couterExample);
 	public SolutionStatistics getLastSolutionStats ();
 }

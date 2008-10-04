@@ -33,7 +33,7 @@ import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 public class EliminateStar extends CodePEval {
-	private ValueOracle oracle;
+	private AbstractValueOracle oracle;
 	private HasStars starCheck;
 
 	/**
@@ -86,7 +86,7 @@ public class EliminateStar extends CodePEval {
 		}
 	}
 
-	public EliminateStar(ValueOracle oracle, int maxUnroll,
+	public EliminateStar(AbstractValueOracle oracle, int maxUnroll,
 			RecursionControl rcontrol, int inlineLevel)
     {
 		super(maxUnroll, rcontrol, inlineLevel);
@@ -96,7 +96,7 @@ public class EliminateStar extends CodePEval {
 	}
 
 
-	public EliminateStar(ValueOracle oracle, int maxUnroll, RecursionControl rcontrol)
+	public EliminateStar(AbstractValueOracle oracle, int maxUnroll, RecursionControl rcontrol)
     {
         this (oracle, maxUnroll, rcontrol, 0);
 	}

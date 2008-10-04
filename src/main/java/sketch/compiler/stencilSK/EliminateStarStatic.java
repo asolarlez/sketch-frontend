@@ -9,13 +9,13 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.AbstractValueOracle;
 
 public class EliminateStarStatic extends FEReplacer {
 
-	ValueOracle oracle;
+	AbstractValueOracle oracle;
 
-	public EliminateStarStatic(ValueOracle oracle){
+	public EliminateStarStatic(AbstractValueOracle oracle){
 		assert oracle.getHoleNamer() instanceof StaticHoleTracker;
 		this.oracle = oracle;
 		oracle.initCurrentVals();
