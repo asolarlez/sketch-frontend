@@ -5,6 +5,8 @@ package streamit.misc;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,4 +75,18 @@ public class SynchronousTimedProcess {
 
 		return status;
 	}
+	
+	public OutputStream getOutputStream() {
+		
+		return proc.getOutputStream();
+	}
+	
+	public InputStream getErrorStream() {
+		return proc.getErrorStream();
+	}
+	
+	public InputStream getInputStream() {
+		return proc.getInputStream();
+	}
+	
 }
