@@ -1,27 +1,38 @@
 module streamit.frontend.parser.Regen;
 
 header {
-    import java.util.List;
 
-    import streamit.frontend.nodes.ExprAlt;
-    import streamit.frontend.nodes.ExprChoiceBinary;
-    import streamit.frontend.nodes.ExprChoiceSelect;
-    import static streamit.frontend.nodes.ExprChoiceSelect.Select;
-    import static streamit.frontend.nodes.ExprChoiceSelect.Selector;
-    import static streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
-    import static streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-    import static streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
-    import streamit.frontend.nodes.ExprChoiceUnary;
-    import streamit.frontend.nodes.ExprConstant;
-    import streamit.frontend.nodes.ExprConstBoolean;
-    import streamit.frontend.nodes.Expression;
-    import streamit.frontend.nodes.ExprNullPtr;
-    import streamit.frontend.nodes.ExprParen;
-    import streamit.frontend.nodes.ExprStar;
-    import streamit.frontend.nodes.ExprTernary;
-    import streamit.frontend.nodes.ExprVar;
-    import streamit.frontend.nodes.FEContext;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.LinkedList;
+import java.util.List;
 
+import streamit.frontend.nodes.ExprAlt;
+import streamit.frontend.nodes.ExprChoiceBinary;
+import streamit.frontend.nodes.ExprChoiceSelect;
+import streamit.frontend.nodes.ExprChoiceUnary;
+import streamit.frontend.nodes.ExprConstBoolean;
+import streamit.frontend.nodes.ExprConstant;
+import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprNullPtr;
+import streamit.frontend.nodes.ExprParen;
+import streamit.frontend.nodes.ExprStar;
+import streamit.frontend.nodes.ExprTernary;
+import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
+import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.ExprChoiceSelect.Select;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
+import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
+import streamit.frontend.nodes.ExprChoiceSelect.Selector;
+import xtc.parser.Column;
+import xtc.parser.ParseError;
+import xtc.parser.ParserBase;
+import xtc.parser.Result;
+import xtc.parser.SemanticValue;
+import xtc.util.Pair;
     @SuppressWarnings("deprecation")
 }
 
@@ -49,6 +60,7 @@ body {
         }
         return e;
     }
+ 
 }
 
 //option verbose;
@@ -66,9 +78,26 @@ Expression ExprCond =
         { yyValue = new ExprTernary ("?:", a, b, c); }
     / a:ExprBinNoQues  void:"?":s  b:Expr  void:":":s  c:ExprCond
         { yyValue = new ExprTernary ("?:", a, b, c); }
+    / ExprFuncInvok
     / ExprBin
     ;
-
+    
+Expression ExprFuncInvok =
+	funcName:ID	void:"("	l:ArgList	void:")"
+		{ yyValue = new ExprFunCall((FENode) null, funcName, l); System.out.println("found func invo");	}
+	;
+	
+List<Expression> ArgList =
+	e1st:Expr l:(void:"," Expr)*
+		{
+			LinkedList<Expression> argList = new LinkedList<Expression>();
+			argList.add(e1st);
+			for (Expression e : l)
+				argList.add(e);
+			yyValue = argList; System.out.println(argList.toString()); }
+	/	 { yyValue = new LinkedList<Expression>(); }
+	;
+	
 Expression ExprBin =
     yyValue:ExprPrefix
         l:(ops:InfixOp  r:ExprPrefix    { yyValue = new P<BI,Expression>(ops, r); })*
