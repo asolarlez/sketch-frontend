@@ -6,8 +6,8 @@ package streamit.frontend.solvers;
 import streamit.frontend.CommandLineParamManager;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.stencilSK.StaticHoleTracker;
+import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.frontend.tosbit.RandomValueOracle;
-import streamit.frontend.tosbit.ValueOracle;
 
 /**
  * A synthesizer that uar picks a new candidate program.  There is no guarantee
@@ -26,7 +26,7 @@ public class RandomSynthesizer implements Synthesizer {
 		varGen = _varGen;
 	}
 
-	public ValueOracle nextCandidate (CounterExample cex) {
+	public AbstractValueOracle nextCandidate (CounterExample cex) {
 		return new RandomValueOracle (new StaticHoleTracker(varGen));
 	}
 

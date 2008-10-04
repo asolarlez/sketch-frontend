@@ -12,9 +12,9 @@ public class NtsbState extends varState {
 	public class lhsIndexes{
 		public int idx=1;
 	}
-	private final String name;	
+	protected final String name;	
 	NtsbVtype vtype;
-	private lhsIndexes[] lhsIdxs;
+	protected lhsIndexes[] lhsIdxs;
 	
 	
 	public void incrLhsIdx(int i){
@@ -38,7 +38,7 @@ public class NtsbState extends varState {
 		return rv;
 	}
 	
-	NtsbState(String name, Type t, NtsbVtype vtype){	
+	protected NtsbState(String name, Type t, NtsbVtype vtype){	
 		super(t);
 		this.name = name;		
 		this.vtype = vtype;
@@ -68,10 +68,10 @@ public class NtsbState extends varState {
 		
 	}
 	
-	NtsbValue val(){
+	protected NtsbValue val(){
 		return (NtsbValue)this.state(vtype);
 	}
-	NtsbValue val(int i){
+	protected NtsbValue val(int i){
 		return (NtsbValue)this.state(i);
 	}
 	

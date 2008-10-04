@@ -16,14 +16,14 @@ import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.tosbit.ValueOracle;
+import streamit.frontend.tosbit.AbstractValueOracle;
 
 public class NtsbVtype extends IntVtype {
 	public PrintStream out;
-	private ValueOracle oracle;	
+	private AbstractValueOracle oracle;	
 	
 	
-	public NtsbVtype(ValueOracle oracle, PrintStream out){
+	public NtsbVtype(AbstractValueOracle oracle, PrintStream out){
 		this.oracle = oracle;
 		this.out = out;		
 	}
