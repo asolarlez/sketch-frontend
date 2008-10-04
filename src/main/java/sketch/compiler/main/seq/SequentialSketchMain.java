@@ -53,13 +53,13 @@ import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.BoundUnboundedLoops;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateRegens;
-import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.EliminateInsertBlocks;
 import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.EliminateNestedArrAcc;
+import streamit.frontend.passes.EliminateRegens;
+import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateStructs;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
@@ -72,6 +72,7 @@ import streamit.frontend.solvers.SATBackend;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
+import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
@@ -266,7 +267,7 @@ public class ToSBit
 
 	TempVarGen varGen = new TempVarGen();
 	Program prog = null;
-	ValueOracle oracle;
+	AbstractValueOracle oracle;
 	Program finalCode;
 
 	public Program parseProgram(){

@@ -12,7 +12,6 @@ import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
-import streamit.frontend.passes.AddInitializers;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
@@ -45,13 +44,12 @@ import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
 import streamit.frontend.spin.Configuration;
-import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.Configuration.StateCompressionPolicy;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
+import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.frontend.tosbit.RandomValueOracle;
-import streamit.frontend.tosbit.ValueOracle;
 
 public class ToPSbitII extends ToSBit {
 
@@ -141,7 +139,7 @@ public class ToPSbitII extends ToSBit {
 		Synthesizer synth = createSynth(prog);
 		Verifier verif = createVerif(prog);
 
-		ValueOracle ora = randomOracle(prog);
+		AbstractValueOracle ora = randomOracle(prog);
 
 		if (!isSketch (prog)) {
 			System.out.println ("Verifying non-sketched program ...");
@@ -332,7 +330,7 @@ public class ToPSbitII extends ToSBit {
 		return new SolverStatistics ();
 	}
 
-	public ValueOracle randomOracle(Program p){
+	public AbstractValueOracle randomOracle(Program p){
 		if (params.hasFlag ("seed"))
 			return new RandomValueOracle (new StaticHoleTracker(varGen),
 					params.flagValue ("seed"));
