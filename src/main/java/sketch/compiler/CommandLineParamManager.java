@@ -71,20 +71,32 @@ public class CommandLineParamManager{
 	}
 	Map<String, POpts> allowedParameters;
 	Map<String, Object> passedParameters;
-	public List<String> inputFiles = new ArrayList<String>();
-	public List<String> backendOptions = new ArrayList<String>();
+	public List<String> inputFiles;
+	public List<String> backendOptions;
 	
-	private static final CommandLineParamManager params = new CommandLineParamManager();
+	private static CommandLineParamManager params = new CommandLineParamManager();
 
 	private CommandLineParamManager(){
+		init();
+	}
+	
+	private void init() {
 		allowedParameters = new HashMap<String, POpts>();
 		passedParameters = new HashMap<String, Object>();
+		inputFiles = new ArrayList<String>();
+		backendOptions = new ArrayList<String>();
 	}
 	
 	public static CommandLineParamManager getParams(){
 		return params;
 	}
-
+	
+	/**
+	 * Clears all the data in this object
+	 */
+	public void clear() {
+		init();
+	}
 
 	public void loadParams(String[] args){
 		parseOptions(args);
