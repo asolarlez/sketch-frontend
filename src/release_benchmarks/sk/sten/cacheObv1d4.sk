@@ -1,0 +1,62 @@
+pragma options "--cbits 3 --inbits 4 --branchamnt 33  --inlineamnt 6 --unrollamnt 4    ";
+
+
+int N;
+int T = 4;
+
+
+int linexpa(int i, int j){
+	int rv = -1;
+	rv = rv + i;	
+	return rv;
+}
+
+
+
+int linexpb(int i, int j){
+	// int rv = j - 1 - i;
+	int rv = 0-1;
+	if(??){ rv = -1 + i;  }else{ rv = rv - i; }
+	if(??){ rv = rv + j;  }else{ rv = rv - j; } 
+	return rv;
+}
+
+
+
+
+
+
+float[N][T] cacheObv1d(float[N][T] in, int K1, int K2){
+	float[N][T] out = in;	
+	if(K1<T || K2>N){
+		out = 0;
+	}else{	
+		for(int i=K1; i<K2; ++i){
+			for(int t=1; t<T; ++t){
+				out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1];
+			}
+		}
+	}
+	return out;
+}
+
+float[N][T] cacheObv1dSK(float[N][T] in, int K1, int K2) implements cacheObv1d{
+	float[N][T] out = in;
+	if(K1<T || K2>N){
+		out = 0;
+	}else{	
+		if(K2-K1<5){
+			for(int t=1; t<T; ++t){
+				for(int i=K1; i<K2; ++i){
+					//out[t-1][i-t-1] + out[t-1][i-t+1];
+					out[t][i-t] = out[linexpa(t,i)][linexpb(t,i)] + out[t-1][i-t+1];
+				}
+			}
+		}else{
+			int Km = (K1 + K2) / 2;
+			out = cacheObv1dSK(out, K1, Km);
+			out = cacheObv1dSK(out, Km, K2);
+		}
+	}
+	return out;
+}	
