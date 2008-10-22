@@ -98,7 +98,7 @@ static list reverseSK(list l){
 	bit c  = cond(l, nl);
 	node tmp = null;	
 	for(int i=0; c; ++i){
-		if(cond(l, nl)){tmp = holeB(l, nl, tmp);}
+		if(cond(l, nl)){tmp = holeB(l, nl, tmp);} // 83 * 10 = 498
 		if(cond(l, nl)){l.head.next = holeB(l, nl, tmp);}
 		if(cond(l, nl)){nl.head = holeB(l, nl, tmp);}
 		if(cond(l, nl)){ l.head = holeB(l, nl, tmp);}
