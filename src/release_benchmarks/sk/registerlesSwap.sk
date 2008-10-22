@@ -1,0 +1,23 @@
+int W = 32;
+
+bit one(bit[W] x, bit[W] y){ return 1; }
+
+bit[2*W] swap(bit[W] x, bit[W] y){		
+	bit[2*W] out = 0;
+	out[0::W] = y;
+	out[W::W] = x;		
+	return out;
+}
+
+
+bit[2*W] swapSK(bit[W] x, bit[W] y) implements swap{
+	
+	loop(3){
+		if(??){ x = x ^ y;}else{ y = x ^ y; } 
+	}
+			
+	bit[2*W] out = 0;
+	out[0::W] = x;
+	out[W::W] = y;
+	return out;			
+}
