@@ -17,7 +17,7 @@ struct Node{
 }
 
 
-Node select(Queue q){
+Node select(Queue q){ // 10
 	int t = ??;
 	if(t == 0){
 		return q.tail;	
@@ -33,7 +33,7 @@ Node select(Queue q){
 	return null;
 }
 
-bit cond(Queue q){
+bit cond(Queue q){ // 100
 	if(??){
 		return select(q) == select(q);	
 	}else{
@@ -47,9 +47,9 @@ static int enqueue(Queue q, int i){
 	n.next = null;	
 	loop(??){
 		if(??){ if(cond(q)){ assert q.tail != null;
-							 q.tail.next = n;  } }
+							 q.tail.next = n;  } } // 101
 		if(??){ if(cond(q)){ q.tail = n;  } }
-		if(??){ if(cond(q)){ q.head = n;  } }
+		if(??){ if(cond(q)){ q.head = n;  } } // 
 	}
 	return 1;
 }
