@@ -1,0 +1,66 @@
+#define N 4
+
+#define ARGS int x
+
+void dummy(ARGS) {} 
+void main(ARGS) implements dummy {
+	Graph       g = new Graph();	
+	Spec_Graph sg = new Spec_Graph();
+	
+	Pair p = new Pair();
+	p.v1 = 1;
+	p.v2 = 2;
+	p.f  = 3;
+	
+	g  = add_pair(g, p);
+	sg = spec_add_pair(sg, p);
+	
+	// assert query_pair(g,p) == spec_query_pair(sg,p);
+	assert query_pair(g,p);
+	
+	p.v2 = 3;  // change the query
+	
+	// assert query_pair(g,p) == spec_query_pair(sg,p);
+	assert !query_pair(g,p);
+} 
+
+// Pair represents a (simplified) constraint (v1,v2.f)
+struct Pair {
+	int v1;  // variable represented with a unique int id
+	int v2;  // ditto
+	int f;   // field represented with a unique int id; f > 0.
+}
+struct Node {
+	Node parent;  
+}
+struct Graph {
+	// for now, use adjacency matrix, where m[i][j] & bit(f) means an f edge from i to j
+	bit[N][N][N] m;
+}
+struct Spec_Graph {
+}
+
+Graph add_pair(Graph g, Pair p) {
+	// is there a node for v1 ?
+	int n1 = p.v1; // hack, for now; or say n1 = !!
+	
+	// is there a node for v2.f ?
+	int n2 = ufun2(p.v2, p.f) // always return the same value
+	
+	
+	
+	return g;
+}
+bit query_pair(Graph g, Pair p) {
+	return ??;
+}
+
+
+
+
+Spec_Graph spec_add_pair(Spec_Graph g, Pair x) {
+	return g;
+}
+bit spec_query_pair(Spec_Graph g, Pair p) {
+	return 1;
+}
