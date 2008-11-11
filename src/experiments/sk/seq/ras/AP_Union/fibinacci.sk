@@ -1,0 +1,16 @@
+pragma options "--cbits 10 --keeptmpfiles --branchamnt 20000 --inlineamnt 12";
+
+int dummy(int x) { return 1; }
+
+int main(int x) implements dummy {
+	// assert fib(5)+fib(4) == ??; 
+	assert fib(12) == ??;
+	return 1;
+}
+
+static int fib(int x) {
+	if (x==0) return 1;
+	if (x==1) return 1;
+	return fib(x-1)+fib(x-2);
+} 
+ 
