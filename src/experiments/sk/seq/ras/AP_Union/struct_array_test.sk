@@ -1,17 +1,29 @@
-pragma options "--cbits 10 --keepasserts --branchamnt 1000 --inlineamnt 5 --arrayOOBPolicy assertions";
+pragma options "--synth ABC --cbits 7 --branchamnt 10 --inlineamnt 4 --arrayOOBPolicy assertions --keepasserts";
 
-int dummy(int x) { return 1; }
+int dummy() { return 1; }
 
-#define N 4
+#define N 3
 
-int main(int x) implements dummy {
+int main() implements dummy {
+	// The specification, given as three examples.
+	// DFS(graph) is to return the number of visited nodes
+	
 	Graph_AdjacencyMatrix g = createGraph();
-	
 	g = addEdge(g,0,1);
-//	g = addEdge(g,1,2);
+	g = addEdge(g,1,2);
+	g = addEdge(g,2,0);
+	assert DFS(g) == 3;  
 	
-	assert DFS(g) == ??;
-	
+	g = createGraph();
+	g = addEdge(g,0,1);
+	g = addEdge(g,1,0);
+	assert DFS(g) == 2;
+
+	g = createGraph();
+	g = addEdge(g,1,0);
+	g = addEdge(g,2,0);
+	assert DFS(g) == 1;
+
 	return 1;
 }
  
@@ -38,7 +50,7 @@ Graph_AdjacencyMatrix addEdge(Graph_AdjacencyMatrix g, int from, int to) {
 	g.am[from][to] = true;
 	return g;
 }
-bit edgeExists(Graph_AdjacencyMatrix g, int from, int to) {
+static bit edgeExists(Graph_AdjacencyMatrix g, int from, int to) {
 	return g.am[from][to];
 }
 static Node node(Graph_AdjacencyMatrix g, int u) {
@@ -49,17 +61,17 @@ int DFS(Graph_AdjacencyMatrix g) {
 }
 static int DFS_rec(Graph_AdjacencyMatrix g, int u) {
 	Node n = node(g,u);
-	if (n.marked) 
-		return u; 
-	n.marked = true;
-	int visitedCnt = 1;
+	if ({| true | false | n.marked |}) 
+		return ??; 
+	n.marked = ??;
+	int visitedCnt = ??;
 	 
 	for (int v = 0; v < N; v++) {
-		if (edgeExists(g,u,v)) {
-			visitedCnt += DFS_rec(g,v);
+		if (edgeExists(g,{|u|v|},{|u|v|})) {
+			visitedCnt += DFS_rec(g,{|u|v|});
 		}
 	}
-	return visitedCnt;
+	return {|u|visitedCnt|};
 }
 
 //////////////////////////////////////////
