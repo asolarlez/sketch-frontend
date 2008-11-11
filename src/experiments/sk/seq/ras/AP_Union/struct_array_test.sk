@@ -1,0 +1,81 @@
+pragma options "--cbits 10 --keepasserts --branchamnt 1000 --inlineamnt 5 --arrayOOBPolicy assertions";
+
+int dummy(int x) { return 1; }
+
+#define N 4
+
+int main(int x) implements dummy {
+	Graph_AdjacencyMatrix g = createGraph();
+	
+	g = addEdge(g,0,1);
+//	g = addEdge(g,1,2);
+	
+	assert DFS(g) == ??;
+	
+	return 1;
+}
+ 
+//////////////////////////////////////////
+// The graph, as an adjacency matrix
+//////////////////////////////////////////
+#define ROOT 0   /* id of the root node */
+struct Node {
+	bit marked;
+}
+struct Graph_AdjacencyMatrix {
+	Node[N] nodes;  // int --> node map
+	bit[N][N] am;   // adjacency matrix [from][to]
+}
+Graph_AdjacencyMatrix createGraph() {
+	Graph_AdjacencyMatrix g = new Graph_AdjacencyMatrix();
+	for (int i = 0; i < N; i++) {
+		g.nodes[i] = new Node();
+		g.nodes[i].marked = false;
+	}
+	return g;
+}
+Graph_AdjacencyMatrix addEdge(Graph_AdjacencyMatrix g, int from, int to) {
+	g.am[from][to] = true;
+	return g;
+}
+bit edgeExists(Graph_AdjacencyMatrix g, int from, int to) {
+	return g.am[from][to];
+}
+static Node node(Graph_AdjacencyMatrix g, int u) {
+	return g.nodes[u];
+}
+int DFS(Graph_AdjacencyMatrix g) {
+	return DFS_rec(g,ROOT);
+}
+static int DFS_rec(Graph_AdjacencyMatrix g, int u) {
+	Node n = node(g,u);
+	if (n.marked) 
+		return u; 
+	n.marked = true;
+	int visitedCnt = 1;
+	 
+	for (int v = 0; v < N; v++) {
+		if (edgeExists(g,u,v)) {
+			visitedCnt += DFS_rec(g,v);
+		}
+	}
+	return visitedCnt;
+}
+
+//////////////////////////////////////////
+
+
+//////////////////////////////////////////
+// The graph, as an adjacency list (TODO)
+//////////////////////////////////////////
+struct Edge {
+	int from;
+	int to;
+}
+struct Graph_List {
+	int nodeCnt;
+	Node[N] nodes;
+	
+	int edgeCnt;
+	Edge[N] edges;
+} 
