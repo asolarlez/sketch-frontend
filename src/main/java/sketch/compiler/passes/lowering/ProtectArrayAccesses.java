@@ -1,6 +1,7 @@
 package streamit.frontend.passes;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import streamit.frontend.nodes.ExprArrayRange;
@@ -12,6 +13,7 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
@@ -48,6 +50,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 	private TempVarGen varGen;
 	private FailurePolicy policy;
+	
+//	private LinkedList<Statement> currentBlock;
 
 	public ProtectArrayAccesses(TempVarGen vargen){
 		this (FailurePolicy.WRSILENT_RDZERO, vargen);
@@ -76,10 +80,11 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 		boolean isAnd = eb.getOpString ().equals ("&&");
 
-		left = doExpression (left);
 
 		String resName = varGen.nextVar ("_pac_sc");
 		addStatement (new StmtVarDecl (eb, TypePrimitive.bittype, resName, left));
+		
+		left = doExpression (left);
 		ExprVar res = new ExprVar (eb, resName);
 
 		List<Statement> oldStatements = newStatements;
@@ -158,6 +163,82 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 		return new StmtAtomicBlock (sab, newBody, newCond);
 	}
+	
+	@Override
+	public Object visitExprTernary(ExprTernary exp) {
+		// x = func((c1 ? y[a] : (c2 ? y[b] : (c3 ? y[c] : y[d])))))
+		// Translated into:
+		// boolean c1 = false;
+		// boolean c2 = false;
+		// boolean c3 = false;
+		// boolean c4 = false;
+		// c1 = cond1()
+		//  if (c1)
+		// 		assert a >= 0 && a < heap size
+		// 	else {
+		//		c2 = cond2()
+		//		if (c2) 
+		//			assert b >= 0 && b <  heap size
+		//		else {
+		//			c3 = cond3();
+		//			if (c3)
+		//				....
+		//		}
+		//	}
+		//	...
+		//	x = func((c1 ? y[a] : (c2 ? y[b] : (c3 ? y[c] : y[d])))))
+		
+		ExprTernary et = (ExprTernary) exp;
+		et.getA().accept(this);
+		// array accesses in the condition are added to currentBlock
+		
+		List<Statement> oldStatements = newStatements;
+		newStatements = new LinkedList<Statement>();
+		
+		et.getB().accept(this);
+		StmtBlock cons = new StmtBlock(exp, newStatements);
+		StmtBlock alt = null;
+		
+		if (et.getC() != null) {
+			newStatements = new LinkedList<Statement>();
+			et.getC().accept(this);
+			alt = new StmtBlock(exp, newStatements);
+		}
+		newStatements = oldStatements;
+		
+		StmtIfThen ifStmt = new StmtIfThen(exp, et.getA(), cons, alt);
+		addStatement(ifStmt);
+		
+		return exp;
+		
+	}
+
+	
+//	@Override
+//	protected void addStatement(Statement stmt) {
+//		currentBlock.add(stmt);
+//	}
+	
+	@Override
+	protected void doStatement(Statement stmt) {
+		Statement result = (Statement)stmt.accept(this);
+		
+//		if (currentBlock.size() != 0) {
+//			addStatements(currentBlock);
+//			currentBlock = new LinkedList<Statement>();
+//		}
+		
+		if (result != null)
+            addStatement(result);
+		
+	}
+	
+//	@Override
+//	public Object visitFunction(Function func) {
+//		assert currentBlock == null || currentBlock.size() == 0;
+//		this.currentBlock = new LinkedList<Statement>();
+//		return super.visitFunction(func);
+//	}
 
 	private class CollectAtomicCondGuards extends FEReplacer {
 		/** A list of "predicated" assertions to check within the body of the
