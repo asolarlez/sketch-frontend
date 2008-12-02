@@ -1,0 +1,157 @@
+// pragma options "--cbits 3 --synth MINI";  // synthesizes in 1.3 seconds for W=4
+   pragma options "--cbits 4  -inbits 8 --synth MINI";  // synthesizes in X seconds for W=8
+
+
+int W=8;
+int WW=16;
+int log3Wsq = 4;  // number of stages
+
+int pow2 (int p)
+{
+    int a = 1;
+    loop (p){a = a * 2;}
+    return a;
+}
+
+int bitToInt (bit[W] v) {
+    int out=0;
+    for (int i = 0; i < W; i++) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+    }
+    return out;
+}
+
+int bit2ToInt (bit[WW] v) {
+    int out=0;
+    for (int i = 0; i < WW; i++) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+    }
+    return out;
+}
+
+bit[W] intToBit (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; ++i) {
+        output[i] = (v % 2) > 0;
+        v = v / 2;
+    }
+
+    return output;
+}
+
+
+
+bit far( bit a, bit b, bit c) {
+    return (a^b^c);
+}
+bit fac( bit a, bit b, bit c) {
+    return (a&b)|(c&(a^b));
+}
+bit har( bit a, bit b) {
+    return a^b;
+}
+bit hac( bit a, bit b) {
+    return a&b;
+}
+
+
+int wallace(bit[W] a, bit[W] b) {
+
+    bit[W] out=0;
+
+    bit[W*W] result;
+    bit[W*W] result_out;
+    int[W*W] now;
+
+    for (int i = 0; i < W*W; ++i) {
+            now[i]=0;
+    }
+
+    for (int i = 0; i < W; ++i) {
+        for (int j = 0; j < W; ++j) {
+            int index=i*W+j;
+            result[index]=a[i]&b[j];
+            now[i+j]++;
+            result_out[index]=0;
+        }
+    }
+
+    int max = (W*W)/3;
+
+    int[W*W] sa1=??;
+    int[W*W] sa2=??;
+    int[W*W] sa3=??;
+    int[W*W] da=??;
+    int[W*W] da2=??;
+
+    int cd=0;
+    for (int l=0; l<log3Wsq; l++) {
+        int nfa=0;
+        int nha=0;
+        int npt=0;
+        int Wsq=W*W-1;
+        for (int wn=1; wn<Wsq+1; wn++) {
+            nfa=nfa+now[Wsq-wn]/3;
+            now[Wsq-wn]=now[Wsq-wn]%3;
+            nha=nha+(now[Wsq-wn]/2);
+            npt=npt+(now[Wsq-wn]%2);
+            now[Wsq-wn]=nfa+nha+npt;
+            now[Wsq-wn+1]=now[Wsq-wn+1]+nfa+nha;
+        }
+        for (int fa=0; fa<W*W; fa++) {
+            if (fa<nfa) {
+                int s1=sa1[cd];
+                int s2=sa2[cd];
+                int s3=sa3[cd];
+                int d1=da[cd];
+                int d2=da2[cd];
+                result_out[d1]=far(result[s1],result[s2],result[s3]);
+                result_out[d2]=fac(result[s1],result[s2],result[s3]);
+                cd++;
+            }
+        }
+        for (int ha=0; ha<W*W; ha++) {
+            if (ha<nha) {
+                int s1=sa1[cd];
+                int s2=sa2[cd];
+                int s3=sa3[cd];
+                int d1=da[cd];
+                int d2=da2[cd];
+                result_out[d1]=har(result[s1],result[s2]);
+                result_out[d2]=hac(result[s1],result[s2]);
+                cd++;
+            }
+        }
+        for (int pt=0; pt<W*W; pt++) {
+            if (pt<npt) {
+                int s1=sa1[cd];
+                int d1=da[cd];
+                result_out[d1]= result[s1];
+                cd++;
+            }
+        }
+        for (int i = 0; i < W*W; ++i) {
+            if (i<cd) { result[i]=result_out[i];}
+            else {result[i]=0;}
+        }
+    }
+
+    return bit2ToInt(result_out[0::WW])+bit2ToInt(result_out[WW::WW]); 
+}
+
+int spec( int x, int y){
+   return bit2ToInt(intToBit(x%W))*bit2ToInt(intToBit(y%W));
+}
+
+int wallace_wrapper (int a, int b) implements spec
+{
+    int x = wallace(intToBit(a%W), intToBit(b%W));
+    return x;
+}
+
