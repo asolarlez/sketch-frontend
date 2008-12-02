@@ -1,9 +1,12 @@
 
-pragma options "--inlineamnt 5 --inbits 2";
+pragma options "--inlineamnt 5 --inbits 2 --cbits 2";
 
-int N = 8;
-int No2 = 4;
-int No4 = 2;
+// synthesizes in 13 seconds for N=4, BASE=8, inbits 2, cbits 2, --synth ABC --verif ABC
+// synthesizes in 55 minutes for N=4, BASE=8, inbits 2, cbits 5, --synth ABC --verif ABC
+
+int N = 4;  // 8
+int No2 = 2;  // 4
+int No4 = 1;  // 2
 int BASE = 8;
 
 
@@ -112,7 +115,7 @@ static void print(int x){
 	if(x==0){ x = 5; }
 }
 
-int[N] karatsubabis(int[No2] x, int[No2] y)/* implements mult */{
+int[N] karatsubabis(int[No2] x, int[No2] y) {// implements mult {
 	int[No4] x1, x2, y1, y2;
 	int[No2]  a=0, b=0, c=0, d=0;
 	int[N] out = 0;
@@ -183,7 +186,7 @@ int[N] normalize(int[N] in){
 
 
 
-int[N] karatsuba2(int[No2] x, int[No2] y)  /* implements mult */ {
+int[N] karatsuba2(int[No2] x, int[No2] y)  { //implements mult {
 	/*x[0] = 2; 
 	x[1] = 2;
 	x[2] = 1;
@@ -201,7 +204,7 @@ int[N] karatsuba2(int[No2] x, int[No2] y)  /* implements mult */ {
 	
 	a = multHalf(x1, y1);
 	b = multHalf(x2, y2);
-	c = multHalf((int[2])plus(x2, minus(x1)), (int[2])plus(y2, minus(y1)));
+	c = multHalf((int[No4])plus(x2, minus(x1)), (int[No4])plus(y2, minus(y1)));
 	
 	out = a;
 	out = plus(out, shiftVect(b, No2));
