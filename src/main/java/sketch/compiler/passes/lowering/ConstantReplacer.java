@@ -84,6 +84,8 @@ public class ConstantReplacer extends FEReplacer {
 
 
 	public Object visitExprVar(ExprVar exp) {
+		// TODO we should not be rewritign l-values right?  Add the code below?
+		// if (exp.isLValue()) return exp;
 		Integer val=constants.get(exp.getName());
 		if(val==null) return exp;
 		return new ExprConstInt(exp,val);
@@ -181,6 +183,7 @@ public class ConstantReplacer extends FEReplacer {
 				Expression len=arr.getLength();
 				Expression newlen=(Expression) len.accept(this);
 				if(newlen!=len) {
+					// TODO Is it legal to update an AST?  Don't we need to generate a new types List rather than set its elements?
 					types.set(i,new TypeArray(arr.getBase(),newlen));
 				}
 			}
