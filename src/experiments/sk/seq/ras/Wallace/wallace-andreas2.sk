@@ -18,7 +18,6 @@ int W=4;  // --inbits must be set to W
 int WW=8;
 int log3Wsq = 3;
 
-
 int pow2 (int p)
 {
     int a = 1;
