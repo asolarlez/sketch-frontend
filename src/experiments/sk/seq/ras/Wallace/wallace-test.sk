@@ -1,0 +1,127 @@
+pragma options "--inbits 2";  // inbits must be set to W
+
+int W=2;
+int WW=4;
+int log3Wsq = 0;
+
+/*
+int W=3;
+int WW=6;
+int log3Wsq = 1;
+*/
+
+/*int W=4;
+int WW=8;
+int log3Wsq = 2;
+*/
+
+int wallace(bit[W] a, bit[W] b) {
+	
+    bit[W*W] result;
+
+    for (int i = 0; i < W; i++) {
+        for (int j = 0; j < W; j++) {
+            int index=i*W+j;
+            result[index]=a[i]&b[j];
+        }
+    }
+
+    int[W*W] last=??;
+	bit[WW]  a1=0, a2=0;
+
+	//a1[0] = result[0];
+	//a1[1] = result[1];
+	//a2[1] = result[2];
+	//a2[2] = result[3];
+	
+    for (int i = 0; i < WW; i++) {
+        a1[i]=result[last[i]];
+    }
+    last = ??;
+    for (int i = 0; i < WW; i++) {
+        a2[i]=result[last[i]];
+    }
+
+    return bit2ToInt(a1)+bit2ToInt(a2);
+//	return bitToInt(a)*bitToInt(b);
+}
+
+int spec( int x, int y){
+    //return cut(cut(x,W)*cut(y,W),W);
+    return x*y;
+}
+
+int wallace_wrapper (int a, int b) implements spec
+{
+    return wallace(intToBit(a), intToBit(b));
+}
+
+int pow2 (int p)
+{
+    int a = 1;
+    loop (p){a = a * 2;}
+    return a;
+}
+
+
+int bitToIntVar (bit[W] v) {
+    int out=0;
+    int i=0;
+    loop(??) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+        i++;
+    }
+    return out;
+}
+
+int bitToInt (bit[W] v) {
+    int out=0;
+    for (int i = 0; i < W; i++) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+    }
+    return out;
+}
+
+int bit2ToInt (bit[WW] v) {
+    int out=0;
+    for (int i = 0; i < WW; i++) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+    }
+    return out;
+}
+
+bit[W] intToBit (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; i++) {
+        output[i] = (v % 2) > 0;
+        v = v / 2;
+    }
+
+    return output;
+}
+
+bit full_add_result( bit a, bit b, bit c) {
+    return (a^b^c);
+}
+bit full_add_carry( bit a, bit b, bit c) {
+    return (a&b)|(c&(a^b));
+}
+bit half_add_result( bit a, bit b) {
+    return a^b;
+}
+bit half_add_carry( bit a, bit b) {
+    return a&b;
+}
+
+int cut(int x, int w) {
+    int a=x%(pow2(w));
+    return a;
+}
