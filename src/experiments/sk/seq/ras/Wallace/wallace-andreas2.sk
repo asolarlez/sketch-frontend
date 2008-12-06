@@ -13,7 +13,7 @@ int WW=6;
 int log3Wsq = 1;
 */
 
-pragma options "--cex --seed 1 --inbits 4 --cbits 5 --synth MINI --verif MINI";  
+pragma options "--cex --seed 1 --inbits 4 --cbits 4 --synth ABC --verif MINI";  
 int W=4;  // note that --inbits must be set to W 
 int WW=8;
 int log3Wsq = 2;
@@ -241,11 +241,9 @@ int wallace(bit[W] a, bit[W] b) {
 	bit[WW]  a1, a2;
     int[W*W] p1=??, p2=??;
     for (int i = 0; i < WW; i++) {
-    	bit zero1 = ??;
-        a1[i]=(zero1 ? 0:result[p1[i]]);
-    	bit zero2 = ??;
-        a2[i]=(zero2 ? 0:result[p2[i]]);
-		// require that the final additions add only bits of same weight TODO 
+        a1[i]=?? ? 0:result[p1[i]];
+        a2[i]=?? ? 0:result[p2[i]];
+		// require that the final additions add only bits of same weight, unless one is zero 
         assert a1[i]==0 || a2[i]==0 || col[p1[i]]==col[p2[i]];
     }
     return bit2ToInt(a1) + bit2ToInt(a2);
