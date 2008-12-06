@@ -1,22 +1,22 @@
 /*
-pragma options "--inbits 2 --cbits 3 --synth MINI";  // synthesizes in 0.3 seconds for W=2
+pragma options "--seed 1 --inbits 2 --cbits 3 --synth MINI --verif MINI";  // synthesizes in 0.3 seconds for W=2
 int W=2;
 int WW=4;
-int log3Wsq = 2;
+int log3Wsq = 0;  // number of reductions
 */
 
 /*
-// synthesizes in 0.3 seconds for W=3
+// synthesizes in 1.6 seconds
 pragma options "--cex --seed 1 --inbits 3 --cbits 4 --synth MINI --verif MINI";  
 int W=3;
 int WW=6;
-int log3Wsq = 2;
+int log3Wsq = 1;
 */
 
-pragma options "--cex --seed 1 --inbits 4 --cbits 4 --synth MINI --verif MINI";  
-int W=4;  // --inbits must be set to W 
+pragma options "--cex --seed 1 --inbits 4 --cbits 5 --synth MINI --verif MINI";  
+int W=4;  // note that --inbits must be set to W 
 int WW=8;
-int log3Wsq = 3;
+int log3Wsq = 2;
 
 int pow2 (int p)
 {
@@ -130,22 +130,17 @@ int[W*W] permutation(int level) {
 
 int wallace(bit[W] a, bit[W] b) {
 
-    bit[W*W] result;
-    bit[W*W] result_out;
-    int[W*W] numofweights;
-    int[W*W] col, col_out;  // column in the Dadda Dot Diagram 
-
-    for (int i = 0; i < W*W; i++) {
-            numofweights[i]=0;
-            result[i]=0;
-            result_out[i]=0;
-    }
+    bit[W*W] result=0;
+    bit[W*W] result_out=0;
+    int[W*W] numofweights=0;
+    int[W*W] col=0, col_out=0;  // weight (column in the Dadda Dot Diagram) 
 
     for (int i = 0; i < W; i++) {
         for (int j = 0; j < W; j++) {
             int index=i*W+j;
             result[index]=a[i]&b[j];
             col[index]=i+j;
+            col_out[index]=i+j;
             numofweights[i+j]++;
             result_out[index]=0;
         }
@@ -213,6 +208,7 @@ int wallace(bit[W] a, bit[W] b) {
                 int d2=currentd+1;
                 assert(s1!=s2);
                 assert(d1!=d2);
+                assert(col[s1]==col[s2]);
                 result_out[d1]=half_add_result(result[s1],result[s2]);
                 result_out[d2]=half_add_carry(result[s1],result[s2]);
                 col_out[d1]=col[s1];
@@ -233,34 +229,39 @@ int wallace(bit[W] a, bit[W] b) {
         for (int i = 0; i < W*W; i++) {
             if (i<currentd) {
                 result[i]=result_out[i];
-                col[i]=col[i];
+                col[i]=col_out[i];
             } else {
                 result[i]=0;
+                col[i]=0;
             }
         }
     }
 
-    int[W*W] last=??; // knuth(log3Wsq);  // specifying a permutation here is slower
-    for (int i = 0; i < W*W; i++) {
-        int s1=last[i];
-        result_out[i]=result[s1];
+	// prepare arguments for the final (ripple carry) addition  
+	bit[WW]  a1, a2;
+    int[W*W] p1=??, p2=??;
+    for (int i = 0; i < WW; i++) {
+    	bit zero1 = ??;
+        a1[i]=(zero1 ? 0:result[p1[i]]);
+    	bit zero2 = ??;
+        a2[i]=(zero2 ? 0:result[p2[i]]);
+		// require that the final additions add only bits of same weight TODO 
+        assert a1[i]==0 || a2[i]==0 || col[p1[i]]==col[p2[i]];
     }
-
-    return cut(bit2ToInt(result_out[0::WW-1])+bit2ToInt(result_out[WW-1::WW-1]),W);
+    return bit2ToInt(a1) + bit2ToInt(a2);
 }
 
 int spec( int x, int y){
-   return cut(x*y,W); // x*x is of size 2*inbits so we need to truncate upper bits
+   return x*y;
 }
 
 int wallace_wrapper (int a, int b) implements spec
 {
-	assert W*W-1 == ??; // fails if hole size n (--cbits n) is too small
+	assert W*W-1 == ??; // fails if hole size (set with --cbits n) is too small
 	
-	assert wallace(intToBit(7), intToBit(13)) == cut(7*13,W);
-	assert wallace(intToBit(9), intToBit(3)) == cut(9*3,W);
+	// assert wallace(intToBit(7), intToBit(13)) == cut(7*13,W);
+	// assert wallace(intToBit(9), intToBit(3)) == cut(9*3,W);
     
-    int x = wallace(intToBit(a), intToBit(b));
-    return x;
+    return wallace(intToBit(a), intToBit(b));
 }
 
