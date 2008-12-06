@@ -243,6 +243,7 @@ int wallace(bit[W] a, bit[W] b) {
     int[W*W] last=??; // knuth(log3Wsq);  // specifying a permutation here is slower
     for (int i = 0; i < W*W; i++) {
         int s1=last[i];
+        assert  
         result_out[i]=result[s1];
     }
 
