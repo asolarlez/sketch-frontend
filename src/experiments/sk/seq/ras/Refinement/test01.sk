@@ -1,4 +1,4 @@
-pragma options "--synth ABC --cbits 7	 --showphase final --keepasserts --unrollamnt 31 --verbosity 1";
+pragma options "--seed 1 --synth ABC --cbits 7	 --showphase final --keepasserts --unrollamnt 31 --verbosity 1";
 
 int dummy(int x) { return 1; }
 
@@ -9,6 +9,7 @@ int _i_;
 int _Choice_() { int t = _i_; _i_++; return _r_[t]; }
 #define _ (_Choice_())
 
+
 int harness (int x) implements dummy {
 	_r_ = ??; 
 	_i_ = 0;
@@ -18,7 +19,8 @@ int harness (int x) implements dummy {
 	for (i = 114; i < 137; i++) {
 		int t1 = _; int t2 = _;
 		assert t1 > 1 && t2 > 1;
-		assert t2 * t1 == i;
+		if (i != 127 && i != 131) 
+			assert t2 * t1 == i;
 	}
 	return 1;
 }
