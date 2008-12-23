@@ -1,4 +1,4 @@
-pragma options "--seed 1 --synth ABC --cbits 7	 --showphase final --keepasserts --unrollamnt 31 --verbosity 1";
+pragma options "--synth ABC --cbits 7	 --showphase final --keepasserts --unrollamnt 31 --verbosity 1";
 
 int dummy(int x) { return 1; }
 
