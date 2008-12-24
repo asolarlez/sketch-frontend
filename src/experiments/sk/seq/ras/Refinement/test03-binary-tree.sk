@@ -1,4 +1,4 @@
-pragma options "--cbits 3 --inlineamnt 7 --unrollamnt 7 --heapsize 7 --seed 1 --inbits 2 --synth MINI --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
+pragma options "--cbits 3 --inlineamnt 7 --unrollamnt 7 --heapsize 7 --seed 1 --inbits 2 --synth ABC --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
 
 int dummy(int x) { return 1; }
 
@@ -69,7 +69,7 @@ int harness (int x) implements dummy {
 	
 	int[N] input;
 	for (int i=0; i<N; i++) {
-		input[i] = 10+i;
+		input[i] = 10-i;
 	}
 
 	//Node root = test(input);
@@ -89,15 +89,18 @@ int harness (int x) implements dummy {
 		} 
 	}
 	
-	// corectness condition: sortedness
 	int[N+1] ret = inorder(root);
+	// corectness condition: sortedness
 	int p = ret[0];
 	for (int i = 1; i<N; i++) {
 		assert p <= ret[i];
 		p = ret[i];
 	}
 	// correctness: same elements as on the input
-	// TODO
+	for (int i = 0; i<N; i++) {
+		// assert input[i] == ret[i];  // this check is valid when input is in increasing order
+		assert input[i] == ret[N-i-1];  // this check is valid when input is in decreasing order
+	}
 	return 1;
 }
 
