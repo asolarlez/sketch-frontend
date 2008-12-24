@@ -1,0 +1,70 @@
+pragma options "--seed 1 --heapsize 31 --inbits 2 --synth MINI --cbits 5 --showphase final --keepasserts --unrollamnt 31 --verbosity 1 --arrayOOBPolicy assertions";
+
+int dummy(int x) { return 1; }
+
+#define N 1  
+
+struct Node { 
+	int  data;
+	Node left;
+	Node right;
+}
+
+#define A 2*N+3     // max number of number of angels
+
+Node[N] _Node_;  // list of allocated nodes
+int _n_;         // next allocated node (indexes into _Node_)  
+int[A] _rn_;     // angelic choices for Nodes 
+int _nc_;        // id of next Node angel (indexes into _rn_) 
+Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; }
+#define _N (_NodeChoice_())
+
+Node newNode() {
+	Node n = new Node();
+	_Node_[_n_] = n;
+	_n_++;
+	return n;
+}
+
+// traverse the tree inorder and return the data fields in the returned array 
+int[N+1] inorder(Node root) {
+	int[N+1] ret = 0;
+	ret[0] = -1; //let's use -1 as a sentinel 
+	if (root.left != null) {
+		ret = inorder(root.left);
+	}
+	int i=0;
+	while (ret[i]!=-1 && i<N) i++;
+	if (i < N) {
+		ret[i] = root.data;
+		ret[i+1] = -1;
+	}
+	if (root.left != null) {
+		int[N+1] r = inorder(root.left);
+		for (int j=0; i < N; i++) {
+			ret[i]=r[j];
+			j++;
+		}
+	}
+	return ret;
+}
+
+int harness (int x) implements dummy {
+	// angel implementation
+	_rn_ = ??; _nc_ = 0; _n_ = 0;
+	
+	int[N] input;
+	for (int i=0; i<N; i++) {
+		input[i] = i+1;
+	}
+
+	Node root = newNode();
+	root.data = 1;
+	
+	int[N+1] ret = inorder(root);
+	
+	for (int i = 0; i<N; i++) {
+		assert ret[i] == input[i];
+	}
+	return 1;
+}
