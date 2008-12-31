@@ -1,0 +1,47 @@
+pragma options "--inbits 2 --cbits 2 --verif ABC --synth ABC --arrayOOBPolicy assertions";
+
+#define N 3
+
+int[N][N] sd(int[N][N] a) implements identity {
+	return desparsify(sparsify(a));
+}
+
+struct CSR {
+	int[N*N] V;
+	int[N*N] C;
+	int[N+1] R;
+}
+
+static CSR sparsify(int[N][N] a) {
+	CSR sm = new CSR();
+	
+	int idx = 0;
+	sm.R[0]=idx;
+	
+	for (int r = 0; r < N+??; r++) {
+		sm.R[r] = idx;
+		for (int c = 0; c < N; c++) {
+			if (a[r][c] != 0) {
+				sm.V[idx] = a[r][c];
+				sm.C[idx] = c;
+				idx++;  
+			}
+		}
+	}
+	sm.R[N] = idx;
+	return sm;
+}
+
+static int[N][N] desparsify(CSR sm) {
+	int[N][N] a = 0;
+	for (int r = 0; r < N; r++) {
+		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
+			a[r][sm.C[idx]] = sm.V[idx];
+		}
+	}
+	return a;
+}
+
+int[N][N] identity(int[N][N] a) {
+	return a;	
+}

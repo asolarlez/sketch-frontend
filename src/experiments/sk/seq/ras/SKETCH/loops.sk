@@ -1,0 +1,33 @@
+pragma options "--synth MINI --verif MINI --inbits 1 --cbits 4 --unrollamnt 10 --keepasserts --arrayOOBPolicy assertions";
+
+#define N 5
+
+static int f(int x);// { return x+1; }
+
+int main (int[N] x) implements spec {
+	int ret = 0;
+	int size = N;
+	int i = 0; 
+	int work1 = 0;
+	while (i<size) {
+		ret += f(x[i]);
+		i+=??;
+		work1++;
+	}	
+	i = 1; 
+	int work2 = 0;
+	while (i<size) {
+		ret += f(x[i]);
+		i+=??;
+		work2++;
+	}	
+	assert (work1 - work2) <=1 && (work1 - work2) >= -1;
+	return ret;
+}
+int spec (int[N] x) {
+	int ret = 0; 
+	for (int i = 0; i<N; i++) {
+		ret += f(x[i]);
+	}	
+	return ret;
+} 
