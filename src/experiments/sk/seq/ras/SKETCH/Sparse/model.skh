@@ -1,0 +1,36 @@
+//
+// Modeling multiplication and addition
+// 
+
+// #define MODEL BIT
+// #define MODEL INT
+// #define MODEL UFUN1
+// #define MODEL UFUN2
+
+#ifdef MODEL_BIT
+#define T bit
+T mul(T x, T y) { return x & y; }
+#endif
+
+#ifdef MODEL_INT 
+#define T int
+T mul(T x, T y) { return x * y; }
+#endif
+
+#ifdef MODEL_UFUN1
+#define T int
+static T mul(T x, T y) {
+	if (x == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+#ifdef MODEL_UFUN2
+#define T int
+static T mul(T x, T y) {
+	if (x == 0 || y == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
