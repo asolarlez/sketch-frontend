@@ -1,24 +1,14 @@
-pragma options "--synth ABC --verif MINI --seed 100 --inbits 1 --cbits 1 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --unrollamnt 4 --heapsize 1 --arrayOOBPolicy assertions";
 
-#define N 4
+#define MODEL_INT 1
 
-//
-// Modeling multiplication
-// 
-//#define T bit 
-#define T int
-T mul(T x, T y) {
-	return x * y;  // T == int
-	// return x & y;  // T == bit
-	// if (x == 0 || y == 0) return 0;  
-	// if (x == 0) return 0;  
-	// else return ufun_ii(x,y);
-}
-T ufun_ii(T x, T y);
+#include "model.skh"
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#define N 3
 
-#define Var ({|li|r|n|}+??)
+//%%%%%%	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#define Var ({|i|j|n|0|}+??)
 
 /* Index-type hole composed of array exprs */
 #define IArr ((??) ? Var : ((??) ? A.R[Var] : A.C[Var]))
@@ -26,14 +16,15 @@ T ufun_ii(T x, T y);
 /* Value-type hole composed of array exprs */
 #define VArr ((??) ? A.V[IArr] : x[IArr])  
 
-#define Loop(S,E) for(int li = S; li < E; li++) 
+#define Loop(iv,S,E) for(iv = S; iv < E; iv++) 
 
 static T[N] SpMV_Sketch(CSR A, T[N] x, int n) {
-	T[N] y;
+	T[N] y=0;
+	int i, j;
 	
-	for (int r = 0; r < n; r++) {
-		y[r] = 0;
-		Loop(IArr,IArr) {
+	Loop(i,IArr,IArr) {
+//	for (int i = 0; i < n; i++) {
+		Loop(j,IArr,IArr) {
 //		for (int idx = Arr; idx < Arr; idx++) {
 //			y[r] += mul(A.V[idx],x[A.C[idx]]);
 //			int xi = ((??) ? A.C[Var] : Var);
