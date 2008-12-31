@@ -1,0 +1,16 @@
+pragma options "--keeptmpfiles"; 
+
+struct S {
+   S next;
+}
+S f(int x) { return new S(); } 
+
+int main() implements foo {
+	S p;
+	S q;
+
+	p.next = q;
+	S t = q.next;
+	return 1;
+}
+int foo () { return 1;} 
