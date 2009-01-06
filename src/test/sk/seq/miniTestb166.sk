@@ -1,0 +1,21 @@
+
+bit one(){
+	return 1;	
+}
+
+bit test() implements one{
+	int in =??;
+	int x=??;
+	int y=??;
+	assert y == 0;
+	int z=??;
+	int q = (in - 3) * x; // q == 2;
+	assert in == 4; assert x == 2;
+	int[2] tmp = {0,0};
+	tmp[0] = z;
+	tmp[y] =q; // y==0, tmp[0] == 2; 
+	bit[5] fufu = 0;
+	fufu[tmp[0]] = 1;
+	assert fufu[2];	
+	return 1;	
+}

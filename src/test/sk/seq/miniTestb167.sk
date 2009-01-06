@@ -1,0 +1,14 @@
+bit ONE(int in){
+	return 1;	
+}
+
+bit test(int in) implements ONE{
+	int n = 	in;
+	if(?? && n == in){
+		int q = n;
+		q = q;
+		n = q+1;	
+	}
+	assert n == in+1;
+	return 1;
+}

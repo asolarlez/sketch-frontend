@@ -1,0 +1,25 @@
+/*
+ * Automatic casting from bit to int.
+ * Automatic casting from small bit-vectors to large bit-vectors.
+ * 
+ * 
+ * */
+ 
+ int tt(bit i){
+ 	bit[1] x = i;
+ 	bit[3] y = x;
+ 	assert y[0] == i;
+ 	assert y[1] == 0;
+ 	assert y[2] == 0;
+ 	return i; // returning x or y would be illegal because there is no automatic casting from bit-vectors to ints. 
+ } 
+ 
+ int ta(bit i) implements tt{
+ 	if(i){
+ 		return 1;	
+ 	}else{
+ 		return 0;	
+ 	}
+ }
+ 
+ 

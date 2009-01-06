@@ -1,0 +1,20 @@
+/*
+ * 
+ * */
+ 
+ bit tt(bit[5] i, int t){
+
+	if(t >= 5){
+		return 0;
+	}else{
+		return i[t];		
+	}
+ } 
+ 
+ bit ta(bit[5] i, int t) implements tt{
+
+	return (t<5)&& i[t];
+	
+ }
+ 
+ 

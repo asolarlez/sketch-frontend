@@ -1,0 +1,16 @@
+
+int foo(int x, int y){
+	
+	return y + 4;	
+}
+
+int too(int x, int y) implements foo{
+	int[4] A = 0;
+	
+	if( x >= 4){ x = 3; }
+	
+	A[x] = y;
+	for(int i=0; i<4; ++i){ A[i] = A[i] + 4;}
+	
+	return 	A[x];
+}

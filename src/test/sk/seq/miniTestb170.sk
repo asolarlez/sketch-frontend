@@ -1,0 +1,23 @@
+
+
+struct Node{
+	int val;
+	int next;	
+}
+
+int test(int i){
+	int t = ??;
+	assert t == 0;
+	Node n = new Node();
+	
+	n.val = i;
+	if(t == 0){
+		n = null;	
+	}
+	return {|  n.val | i | n.val + i  |};
+}
+
+int rest(int i) implements test{
+	
+	return i;
+}
