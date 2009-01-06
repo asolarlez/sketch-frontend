@@ -1,0 +1,8 @@
+bit[2] spec(bit[1] x) {
+    return x;
+}
+
+bit[2] sketch(bit[1] x) implements spec {
+    //bit[2] v = ??;
+    return x & ??;
+}

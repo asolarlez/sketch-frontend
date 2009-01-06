@@ -1,0 +1,180 @@
+pragma options "-olevel 7 --synth ABC --verif ABC --unrollamnt 5";
+
+int DAGNODES = 4;
+int N = 4;
+
+struct node{
+	node father;
+	node mother;
+	int flag;		
+	int id;
+}
+
+static node newNode(){
+	node n = new node();
+	n.father = null;
+	n.mother = null;
+	n.flag = -1;	
+	return n;
+}
+
+struct dag{
+	node[DAGNODES] nodes;	
+	int size;
+}
+
+static dag newDag(){
+	dag d = new dag();
+	for(int i=0; i<DAGNODES; ++i){
+		d.nodes[i] = null;	
+	}
+	d.size = 0;
+	return d;
+}
+
+static node addNode(int fid, int mid, dag d){
+		node n = newNode();		
+		if(fid >= 0 && fid < d.size){ 
+			n.father = d.nodes[fid];
+		}else{
+			n.father = null;	
+		}
+		if(mid >= 0 && mid < d.size){ 
+			n.mother = d.nodes[mid];
+		}else{
+			n.mother = null;	
+		}
+		d.nodes[d.size] = n;
+		n.id = d.size;
+		d.size = d.size + 1;
+		return n;
+}
+
+static void dfs(dag d){
+	bit[DAGNODES] visited = 0;
+	int count = 0;
+	for(int i=0; i<d.size; ++i){
+		if(!visited[i]){
+			node cur = d.nodes[i];
+			assert cur.id == i;
+			node prev = null;
+			bit goon = 1;
+			while(goon){
+				node next;
+				if( cur.father != null  &&  !visited[cur.father.id] ){
+					next = cur.father;
+					cur.father = prev;	
+					cur.flag = -1;
+					prev = cur;
+					cur = next;
+				}else{
+					if( cur.mother != null  &&  !visited[cur.mother.id] ){
+						next = cur.mother;
+						cur.mother = prev;
+						cur.flag = -2;
+						prev = cur;
+						cur = next;		
+					}else{
+						cur.flag = count; ++count;
+						visited[ cur.id] = 1;
+						node tmp = prev;
+						if( prev != null && cur.id != i){
+							if(tmp.flag == -1){
+								{| prev | tmp(.father | .mother) | cur | next | tmp |} = {| prev | tmp(.father | .mother) | cur | next | tmp |}; 
+								{| prev | tmp(.father | .mother) | cur | next | tmp |} = {| prev | tmp(.father | .mother) | cur | next | tmp |};
+								{| prev | tmp(.father | .mother) | cur | next | tmp |} = {| prev | tmp(.father | .mother) | cur | next | tmp |};
+							}else{
+								{| prev | tmp(.father | .mother) | cur | next | tmp |} = {| prev | tmp(.father | .mother) | cur | next | tmp |};
+								{| prev | tmp(.father | .mother) | cur | next | tmp |} = {| prev | tmp(.father | .mother) | cur | next | tmp |};
+								{| prev | tmp(.father | .mother) | cur | next | tmp |} = {| prev | tmp(.father | .mother) | cur | next | tmp |};
+							}
+						}else{
+							goon = 0;	
+						}
+					}
+				}
+				
+				
+			}			
+		}
+	}
+		
+}
+
+bit ONE(int[N] mothers, int[N] fathers, int i, int j){ return 1; }
+
+static void swap(dag d, int i, int j){
+	
+	i = i % d.size;
+	j = j%d.size;
+	
+	node ni = d.nodes[i];
+	node nj = d.nodes[j];
+	
+	ni.id = j;
+	nj.id = i;
+	d.nodes[i] = nj;
+	d.nodes[j] = ni;		
+}
+
+bit main(int[N] mothers, int[N] fathers, int i, int j) implements ONE{
+	/*
+	mothers[0] = 3;
+	mothers[1] = 1;
+	mothers[2] = 2;
+	mothers[3] = 1;
+	fathers[0] = 3;
+	fathers[1] = 2;
+	fathers[2] = 0;
+	fathers[3] = 3;
+	
+	i = 3;
+	j = 2;
+	*/
+	dag d = newDag();
+	
+	for(int i=0; i<N; ++i){
+		addNode(mothers[i], fathers[i], d);	
+	}
+	
+	swap(d, 0,2);
+	swap(d, 1,3);
+	swap(d, i, j);
+	
+	dfs(d);
+	
+	for(int i=0; i<N; ++i){
+		node t = d.nodes[i];
+		if(t.father != null){
+			fathers[i] = t.father.id;
+		}else{
+			fathers[i] = -1;	
+		}
+		if(t.mother != null){
+			mothers[i] =  t.mother.id;
+		}else{
+			mothers[i] = -1;
+		}
+	}
+	
+	
+	for(int i=0; i<N; ++i){
+		node t = d.nodes[i];
+		if(t.father != null){
+			assert t.father.flag < t.flag;	
+			assert fathers[i] == t.father.id;
+		}else{
+			assert fathers[i] == -1;	
+		}	
+		if(t.mother != null){
+			assert t.mother.flag < t.flag;	
+			assert mothers[i] == t.mother.id;
+		}else{
+			assert mothers[i] == -1;
+		}
+	}
+	return 1;
+}
+
+
+

@@ -1,0 +1,148 @@
+pragma options "--inbits 2 --cbits 2";  // --arrayOOBPolicy assertions
+
+#define N 3
+
+//
+// Modeling multiplication
+// 
+// #define T bit
+#define T int
+T mul(T x, T y) {
+	// return x * y;  // T == int
+	// return x & y;  // T == bit
+	if (x == 0 || y == 0) return 0; else return ufun_ii(x,y);
+	// if (x == 0) return 0; else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+
+//
+//
+//
+
+int[N] main(T[N][N] A, T[N] x) implements DeMV {
+	return SpMV(sparsify(A), x, /* instr */ A);
+}
+
+struct CSR {
+	T[N*N] V;
+	int[N*N] C;
+	int[N+1] R;
+}
+
+static CSR sparsify(T[N][N] a) {
+	CSR sm = new CSR();
+	
+	int idx = 0;
+	sm.R[0]=idx;
+	
+	for (int r = 0; r < N+0; r++) {
+		sm.R[r] = idx;
+		for (int c = 0; c < N; c++) {
+			if (a[r][c] != 0) {
+				sm.V[idx] = a[r][c];
+				sm.C[idx] = c;
+				idx++;  
+			}
+		}
+	}
+	sm.R[N] = idx;
+	return sm;
+}
+
+static int[N][N] desparsify(CSR sm) {
+	T[N][N] a = 0;
+	for (int r = 0; r < N; r++) {
+		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
+			a[r][sm.C[idx]] = sm.V[idx];
+		}
+	}
+	return a;
+}
+
+
+
+//
+// computes y = Ax on dense A, x, and y.
+// 
+int[N] DeMV(T[N][N] A, T[N] x) {
+	int[N] y;
+	
+	for (int r = 0; r < N; r++) {
+		// y[r] = 0;
+		// for (int c = 0; c < N; c++) {
+		// 	y[r] += mul(A[r][c],x[c]);  
+		// }
+		y[r] = dot(A[r],x);
+	} 
+	return y;	
+}
+
+//
+// computes y = Ax on sparse A and dense x and y.
+// 
+static int[N] SpMV(CSR A, T[N] x, /* instr */ T[N][N] dA) {
+	int[N] y = 0;
+	
+	for (int r = 0; r < N; r++) {    
+		L1(A,x,y,r,dA);
+		y[r] = 0;
+		int idx = A.R[r];
+		for (int _bugwrokaround_=0;  idx < A.R[r+1]; idx++) {
+			L2(A,x,y,r,idx,dA);
+			y[r] += mul(A.V[idx],x[A.C[idx]]);  
+			//L2(A,x,y,r+??,idx+??,dA);
+		}
+		L2_1(A,x,y,r,dA);  // how do we know we traversed the whole row?
+		L1(A,x,y,r,dA);
+	} 
+	L1(A,x,y,N,dA); // r==N
+	return y;	
+}
+
+//
+
+// Invariants and auxiliaries
+//
+
+//
+// L1: forall i=0,r-1 . y[i] = A[i] dot x
+//
+static bit L1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+	for (int i=0; i<r; i++) {
+		assert y[i]==dot(x,dA[i]); 
+	}
+	return 1;
+}
+
+//
+// L2: c=A.C[idx] and y[r]=A[r][0:c-1] dot x[0:c-1]
+//
+static bit L2(CSR A, T[N] x, int[N] y, int r, int idx, T[N][N] dA) {
+	int partial_dot = 0;
+	for (int i=0; i<A.C[idx]; i++) {
+		partial_dot += dA[r][i]*x[i]; 
+	}
+	assert y[r] == partial_dot;
+	return 1;
+}
+
+//
+// L2_1: c=A.C[A.R[r+1]-1] . y[r]=A[r][0:c] dot x[0:c]
+//
+static bit L2_1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+	int partial_dot = 0;
+	for (int i=0; i<=A.C[A.R[r+1]-1]; i++) {
+		partial_dot += dA[r][i]*x[i]; 
+	}
+	assert y[r] == partial_dot;
+	return 1;
+}
+
+
+int dot(T[N] a, T[N] b) {
+	int s = 0;
+	for (int i = 0; i < N; i++) {
+		s += mul(a[i],b[i]);
+	}
+	return s;
+}

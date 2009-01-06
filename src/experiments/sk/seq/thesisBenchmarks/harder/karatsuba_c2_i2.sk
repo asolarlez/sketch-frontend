@@ -1,0 +1,216 @@
+
+pragma options "--inlineamnt 5 --inbits 2 --cbits 2";
+
+int N = 8;
+int No2 = 4;
+int No4 = 2;
+int BASE = 4;
+
+
+int[N] mult(int[No2] x, int[No2] y){
+/*	x[0] = 2; 
+	x[1] = 2;
+	x[2] = 1;
+	x[3] = 0;
+	y[0] = 3;
+	y[1] = 1;
+	y[2] = 0;
+	y[3] = 0; */
+	int[N] out = 0;
+	for(int i=0; i<No2; ++i){
+		//assert x[i] < BASE && y[i] < BASE;
+		for(int j=0; j<No2; ++j){
+			
+			int tmp = y[i] * x[j];
+			tmp = out[j + i] + tmp;
+			out[j + i] = tmp % BASE;
+			out[j + i + 1] = out[j + i + 1] + (tmp / BASE); 
+		}			
+	}		
+	return out;
+}
+
+
+int[No2] multHalf(int[No4] x, int[No4] y){
+	
+	int[No2] out = 0;
+	for(int i=0; i<No4; ++i){
+		//assert x[i] < BASE && y[i] < BASE;
+		for(int j=0; j<No4; ++j){			
+			int tmp = y[i] * x[j];
+			tmp = out[j + i] + tmp;
+			out[j + i] = tmp % BASE;
+			out[j + i + 1] = out[j + i + 1] + (tmp / BASE); 
+		}			
+	}		
+	return out;
+}
+
+
+static int[N] plus(int[N] x, int[N] y){
+	int[N] out = 0;
+	for(int i = 0; i<N; ++i){
+		int tmp = x[i] + y[i] + out[i];
+		out[i] = tmp % BASE;
+		if(i < N-1){
+			out[i+1] = 	tmp / BASE;
+		}
+	}	
+	return out;
+}
+
+static int[N] shiftVect(int[N] in, int s){
+		int[N] out = 0;
+		for(int i=0; i<N; ++i){
+			if(i >= s){
+				out[i] = in[i-s];
+			}
+		}
+		return out;
+}
+
+static int[N] minus(int[N] t){
+	int[N] out = 0;
+	for(int i=0; i<N; ++i){
+		out[i] = -t[i];	
+	}	
+	return out;
+}
+
+int[N] sel(int[N] a, int[N] b){
+	int[N] out;	
+	if(??){ out = a; }else{ out = b; }	
+	return out;
+}
+
+
+int isel(int a, int b){
+	int out;	
+	if(??){ out = a; }else{ out = b; }	
+	return out;
+}
+
+
+int[No4] poly1(int[No4] a, int[No4] b, int[No4] c, int [No4] d){
+	int[No4] out = 0;
+	if(??){
+		if(??){ out = (int[No4])plus(out, a); }else{ out =(int[No4]) plus(out, minus(a)); }	
+	}
+	if(??){
+		if(??){ out = (int[No4])plus(out, b); }else{ out = (int[No4])plus(out, minus(b)); }	
+	}
+	if(??){
+		if(??){ out = (int[No4])plus(out, c); }else{ out = (int[No4])plus(out, minus(c)); }	
+	}
+	if(??){
+		if(??){ out = (int[No4])plus(out, d); }else{ out = (int[No4])plus(out, minus(d)); }	
+	}
+	return out;
+}
+
+static void print(int x){ 
+	if(x==0){ x = 5; }
+}
+
+int[N] karatsubabis(int[No2] x, int[No2] y)/* implements mult */{
+	int[No4] x1, x2, y1, y2;
+	int[No2]  a=0, b=0, c=0, d=0;
+	int[N] out = 0;
+	print(x[0]);
+	x1=x[0::No4];  x2=x[No4::No4];
+	y1=y[0::No4];  y2=y[No4::No4];
+	
+	a = multHalf(x1, y1);
+	b = multHalf(x2, y2);
+	c = multHalf(x2, y1);
+	d = multHalf(x1, y2);
+	out = a;
+	out = plus(out, shiftVect(b, ??));
+	out = plus(out, shiftVect(c, ??));
+	out = plus(out, shiftVect(d, ??));
+	return out;
+}
+
+
+int[N] karatsuba(int[No2] x, int[No2] y)  implements mult  {
+
+	int[No4] x1, x2, y1, y2;
+	int[No2]  a=0, b=0, c=0;
+	int[N] out = 0;
+	
+	x1=x[0::No4];  x2=x[No4::No4];
+	y1=y[0::No4];  y2=y[No4::No4];
+	
+	a = multHalf(x1, y1);
+	b = multHalf(x2, y2);
+	c = multHalf(poly1(x1,x2,y1,y2), poly1(x1,x2,y1,y2));
+	
+	out = a;
+	out = plus(out, shiftVect(b, No2));
+	loop(??){
+		int[N] t = sel(sel(a, b), c);
+		out = plus( out, shiftVect( sel(t, minus(t))  , isel(isel(No2, No4),0) )  );	
+	}
+	out = normalize(out);
+	return out;
+}
+	
+int sgn(int i){
+	return i >= 0 ? 1 : -1;	
+}	
+	
+int[N] normalize(int[N] in){
+	int end = N-1;
+	
+	int[N] out = in;
+	int s = 0;
+	bit found = 0;
+	for(int i = 0; i<N; ++i){
+		if(!found && out[end-i]!=0){
+			s = sgn(out[end-i]);
+			found = 1;	
+		}		
+	}
+	for(int i = 0; i<N-1; ++i){
+		if(sgn(out[i]) != s){
+			int t = BASE * s + out[i];
+			out[i] = t;
+			out[i+1] = out[i+1] - s; 
+		}
+	}		
+	return out;
+}
+
+
+
+int[N] karatsuba2(int[No2] x, int[No2] y)  /* implements mult */ {
+	/*x[0] = 2; 
+	x[1] = 2;
+	x[2] = 1;
+	x[3] = 0;
+	y[0] = 3;
+	y[1] = 1;
+	y[2] = 0;
+	y[3] = 0; 	*/
+	int[No4] x1, x2, y1, y2;
+	int[No2]  a=0, b=0, c=0;
+	int[N] out = 0;
+	
+	x1=x[0::No4];  x2=x[No4::No4];
+	y1=y[0::No4];  y2=y[No4::No4];
+	
+	a = multHalf(x1, y1);
+	b = multHalf(x2, y2);
+	c = multHalf((int[2])plus(x2, minus(x1)), (int[2])plus(y2, minus(y1)));
+	
+	out = a;
+	out = plus(out, shiftVect(b, No2));
+	out = plus(out, shiftVect(a, No4));
+	out = plus(out, shiftVect(b, No4));
+	out = plus(out, minus(shiftVect(c, No4)));	
+	out = normalize(out);
+	return out;
+}
+		
+	
+	

@@ -1,0 +1,112 @@
+/*
+
+This benchmark works much faster with --synth ABC 
+
+*/
+
+int N = 5;
+
+struct Queue{
+	Node head;
+	Node tail;	
+}
+
+struct Node{
+	int val;
+	Node next;	
+}
+
+
+Node select(Queue q){ // 10
+	int t = ??;
+	if(t == 0){
+		return q.tail;	
+	}	
+	if(t == 1){
+		return q.head;	
+	}
+	if(t == 2){
+		Node n = select(q);
+		assert n != null;
+		return n.next;
+	}	
+	return null;
+}
+
+bit cond(Queue q){ // 100
+	if(??){
+		return select(q) == select(q);	
+	}else{
+		return select(q) != select(q);
+	}	
+}
+
+static int enqueue(Queue q, int i){
+	Node n = new Node();
+	n.val = i;
+	n.next = null;	
+	loop(??){
+		if(??){ if(cond(q)){ assert q.tail != null;
+							 q.tail.next = n;  } } // 101
+		if(??){ if(cond(q)){ q.tail = n;  } }
+		if(??){ if(cond(q)){ q.head = n;  } } // 
+	}
+	return 1;
+}
+
+static int dequeue(Queue q){
+	Node n;
+	n = q.head;	
+	assert q.head != null;
+	if(q.head.next == null){
+		assert q.head == q.tail;
+		q.head = null;
+		q.tail = null;	
+	}else{
+		q.head = q.head.next;
+	}
+	return n.val;
+}
+
+
+int[N] test(int[N] in, bit[N] ctrl){
+	int [N] out =0;
+	int [N] tmp=0;
+	int head = 0;
+	int tail = 0; 
+	for(int i=0; i<N; ++i){
+		if(ctrl[i]){
+			tmp[tail] = in[i];
+			tail = tail+1;			
+			out[i] = -1;
+		}else{
+			if(head != tail){
+				out[i] = tmp[head];
+				head = head + 1;
+			}else{
+				out[i] = -1;	
+			}
+		}	
+	}
+	return out;
+}
+
+int[N] rest(int[N] in, bit[N] ctrl) implements test{
+	int [N] out=0;
+	Queue q = new Queue();
+	q.head = null;
+	q.tail = null;	
+	for(int i=0; i<N; ++i){
+		if(ctrl[i]){
+			enqueue(q, in[i]);
+			out[i] = -1;
+		}else{
+			if(q.head != null){
+				out[i] = dequeue(q);  
+			}else{
+				out[i] = -1;	
+			}
+		}	
+	}
+	return out;
+}

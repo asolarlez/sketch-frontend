@@ -1,0 +1,50 @@
+int W = 6;
+int NUM_CAS = 12;
+
+int nospec(int[W] in) {
+    // generate it with octave
+    // in = floor(10 * rand(1, 10));
+    // function printvec(v), printf([repmat("%.0f, ", size(v)), "\n"], v), endfunction
+    // printvec(in)
+    // printvec(sort(in))
+    return 0;
+}
+
+int batcher_sort(int[W] in) implements nospec {
+    int[NUM_CAS - (W/2)] holes_i = ??;
+    int[NUM_CAS - (W/2)] holes_j = ??;
+    int[NUM_CAS] swap_idx_i;
+    int[NUM_CAS] swap_idx_j;
+//     int[9] swap_idx_i = ??;
+//     int[9] swap_idx_j = ??;
+    for (int a = 0; a < W/2; a++) {
+        swap_idx_i[a] = 2 * a;
+        swap_idx_j[a] = 2 * a + 1;
+    }
+    for (int a = W/2; a < NUM_CAS; a++) {
+        swap_idx_i[a] = holes_i[a - (W/2)];
+        swap_idx_j[a] = holes_j[a - (W/2)];
+    }
+    // the assert i < W, j < W speeds things up a lot...
+    // i < j is also night and day, and it doesn't seem to affect accuracy
+    // for some weird reason, --cbits doesn't help as much...
+    //      however, 3 seems to help now that holes are more limited
+    // batcher_sort_test.py attempts to remove any of the sort operations,
+    // so sometimes it's faster to choose an in-optimal value here and let
+    // the python script remove the extra compare and swap.
+    for (int a = 0; a < NUM_CAS; a++) {
+        int i = swap_idx_i[a];
+        int j = swap_idx_j[a];
+        assert(i < j);
+        assert(j < W);
+        if (in[i] > in[j]) {
+            int tmp = in[j];
+            in[j] = in[i];
+            in[i] = tmp;
+        }
+    }
+    for (int a = 0; a < W - 1; a++) {
+        assert(in[a] <= in[a + 1]);
+    }
+    return 0;
+}

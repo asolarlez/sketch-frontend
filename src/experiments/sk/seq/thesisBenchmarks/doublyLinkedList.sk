@@ -1,0 +1,250 @@
+int N=4;
+
+struct node{
+	bit val;
+	node prev;
+	node next;
+}
+
+
+node newNode(bit val){
+	node n = new node();
+	n.val = val;
+	n.prev = null;
+	n.next = null;
+	return n;	
+}
+
+struct list{
+	node head;
+	node tail;		
+}
+
+node rhsNodeB(list l, node n1, bit[3] ctrl){
+	node rv = null;
+	
+	if(ctrl[0]){
+		if(ctrl[1]){
+			assert l != null;
+			if(ctrl[2]){				
+				rv = l.head;
+			}else{
+				rv = l.tail;
+			}	
+		}else{
+			if(ctrl[2]){
+				rv =  n1;
+			}else{
+				assert n1 != null;
+				rv = n1.next;
+			}
+		}	
+	}else{
+		if(ctrl[1]){
+			if(ctrl[2]){
+				assert n1 != null;
+				rv = n1.prev;
+			}else{
+				rv = null;
+			}	
+		}else{
+			if(ctrl[2]){
+				rv = n1;
+			}else{
+				assert n1 != null;
+				rv = n1.next;
+			}
+		}
+	}
+	return rv;
+}
+
+node rhsNode(list l, node n1){
+	bit[3] ctrl = ??;
+	return rhsNodeB(l, n1, ctrl);
+}
+
+
+
+void assign(list l, node n1){
+	node rhs = rhsNode(l, n1);
+	bit[3] ctrl = ??;
+
+	if(ctrl[0] && ctrl[1] && ctrl[2]){
+		assert l != null;
+		l.head = rhs;
+	}
+	if(ctrl[0] && ctrl[1] && !ctrl[2]){
+		assert l != null;
+		l.tail = rhs;
+	}
+	if(ctrl[0] && !ctrl[1] && ctrl[2]){
+		assert n1 != null;
+		n1.prev = rhs;		
+	}
+	if(ctrl[0] && !ctrl[1] && !ctrl[2]){
+		assert n1 != null;
+		n1.next = rhs;		
+	}
+	if(!ctrl[0] && !ctrl[1] ){
+		assert n1 != null;
+		assert n1.prev != null;
+		 n1.prev.next = rhs;
+	}
+
+	if(!ctrl[0] && ctrl[1]){
+		assert n1 != null;
+		assert n1.next != null;
+		n1.next.prev = rhs;		
+	}
+}
+
+
+
+bit cond(list l, node na){
+	bit[3] ctrl1 = ??;
+	bit[3] ctrl2 = ??;
+	node n1 = rhsNodeB(l, na, ctrl1);
+	node n2 = rhsNodeB(l, na, ctrl2);
+	assert( ! (ctrl1[0] == ctrl2[0] && ctrl1[1] == ctrl2[1] &&  ctrl1[2] == ctrl2[2] ));  
+	bit rv = 1;
+	if(??){
+		if(??){ rv = (n1 == n2); }else{ rv = (n1 != n2); }
+	}else{
+		rv = ??;
+	}
+	return rv;
+}
+
+static void addHead(list l, node n){
+	
+	if(cond(l,n)){
+		//assign(l, n);
+		n.next = l.head;
+		l.head.prev = n;
+		l.head = n;
+	}
+	if(cond(l,n)){
+		l.head = n;
+		l.tail = n;	
+	}
+	
+	/*
+	loop(??){
+		if(cond(l, n)){ assign(l, n, l.head, n); }
+	}
+	*/
+	
+}
+
+static void addNext(list l, node cur, node n){
+	
+	n.next = cur.next;
+	cur.next = n;
+	n.next.prev = n;
+	n.prev = cur;
+	if(l.tail == cur){ l.tail = n; }
+	
+	/*
+	loop(4){
+		if(cond(l, ?? ? n : cur)){ assign(l, ?? ? n : cur); }
+	}
+	*/
+	
+	
+}
+
+
+static void remove(list l, node n){
+	
+	loop(4){
+		if(cond(l,n)){assign(l, n);} 	
+	}
+	/*
+	if(l.head == n){
+		//l.head = n.next;	
+	}
+	if(l.tail == n){
+		//l.tail = n.prev;	
+	}
+	if(n.prev != null){
+		//n.prev.next = n.next;	
+	}
+	if(n.next != null){
+		//n.next.prev = n.prev;
+	}
+	*/
+}
+
+
+list newList(){
+	list l = new list();
+	l.head = null;
+	l.tail = null;	
+	return l;
+}
+
+bit one(bit[N] elems, int addP, bit addV, int rem){
+	return 1;	
+}
+bit tester(bit[N] elems, int addP, bit addV, int rem) implements one{
+	list l = newList();
+	node[N] nodes;
+	node prevn = null;
+	for(int i=0; i<N; ++i){
+		node n = newNode(elems[i]);
+		addHead(l, n);
+		assert n.next == prevn;
+		prevn = n;
+		nodes[N-1-i] = n;
+	}
+	
+	assert l.head != null;
+	assert l.tail != null;
+	
+	{
+		node t = l.head;
+		for(int i=0; i<N; ++i){
+			assert t == nodes[i];
+			t = t.next;		
+		}
+	}
+	
+	
+	if(addP < N && rem < N && addP != rem){
+		node n = newNode(addV);
+		addNext(l, nodes[addP], n);
+		remove(l, nodes[rem]);
+		int j=0;
+		node t = l.head;
+		node prevt = null;
+		for(int i=0; i<N; ++i){
+			if(j!= rem){
+				assert t == nodes[j];
+				prevt = t;
+				t = t.next;				
+			}
+			if(j == addP){
+				assert t == n;
+				prevt = t;
+				t = t.next;	
+			}
+			++j;
+		}
+		assert prevt == l.tail;
+	}
+	
+	
+	{
+		node t = l.tail;
+		node prevt = null;
+		for(int i=0; i<N; ++i){
+			assert t != null;
+			prevt = t;
+			t = t.prev;	
+		}
+		assert prevt == l.head;
+	}
+	
+	return 1;
+}

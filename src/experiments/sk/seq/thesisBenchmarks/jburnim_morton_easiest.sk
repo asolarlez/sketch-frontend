@@ -1,0 +1,62 @@
+// jburnim_morton_easier.sk
+// Author: jburnim@cs.berkeley.edu (Jacob Burnim)
+//
+// This file contains an even easier sketch (than those in jburnim_morton.sk
+// and jburnim_morton_easier.sk) for constructing 32-bit Morton numbers from
+// two 16-bit inputs.  The sketch is easier because it captures that the
+// shifts should be done in decreasing powers of two.
+//
+// Synthesized code is shown in comments at the end of the file.
+
+int W = 16;
+
+bit[2*W] interleave_bits(bit[W] x, bit[W] y) {
+  bit[2*W] ret = 0;
+  for (int i = 0; i < W; i++) {
+    ret[i*2] = x[i];
+    ret[i*2+1] = y[i];
+  }
+  return ret;
+}
+
+bit[2*W] sketch(bit[W] x, bit[W] y) implements interleave_bits {
+  // Idea: It should be possible to shift all of the bits "in parallel"
+  // using only log2(W) shifts.
+  bit[2*W] x2 = x;
+  int shift = W / 2;
+  loop(??) {
+    x2 = (x2 | (x2 << shift)) & ??;
+    shift = shift / 2;
+  }
+
+  bit[2*W] y2 = y;
+  shift = W / 2;
+  loop(??) {
+    y2 = (y2 | (y2 << shift)) & ??;
+    shift = shift / 2;
+  }
+
+  return x2 | (y2 << 1);
+}
+
+// In only a few seconds, synthesizes:
+//
+// void sketch(bitvec<16>  x_0, bitvec<16>  y_1, bitvec<32> & s_2) {
+//   bitvec<32> x2_3 = (x_0 | (x_0 << 8U)) & bitvec<32>("111111110000000011111111-1-1-1-1-1-1-1-1");
+//   x2_3 = (x2_3 | (x2_3 << 4U)) & bitvec<32>("1111000011110000111100001111-1-1-1-1");
+//   x2_3 = (x2_3 | (x2_3 << 2U)) & bitvec<32>("110011001100110011001100110011-1-1");
+//   x2_3 = (x2_3 | (x2_3 << 1U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   x2_3 = (x2_3 | (x2_3 << 0U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   x2_3 = (x2_3 | (x2_3 << 0U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   x2_3 = (x2_3 | (x2_3 << 0U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   x2_3 = (x2_3 | (x2_3 << 0U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   bitvec<32> y2_4 = (y_1 | (y_1 << 8U)) & bitvec<32>("111111110000000011111111-1-1-1-1-1-1-1-1");
+//   y2_4 = (y2_4 | (y2_4 << 4U)) & bitvec<32>("1111000011110000111100001111-1-1-1-1");
+//   y2_4 = (y2_4 | (y2_4 << 2U)) & bitvec<32>("110011001100110011001100110011-1-1");
+//   y2_4 = (y2_4 | (y2_4 << 1U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   y2_4 = (y2_4 | (y2_4 << 0U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   y2_4 = (y2_4 | (y2_4 << 0U)) & bitvec<32>("1010101010101010101010101010101-1");
+//   s_2 = x2_3 | (y2_4 << 1U);
+// }
+//
+// (Don't know why those extra iterations are there.)

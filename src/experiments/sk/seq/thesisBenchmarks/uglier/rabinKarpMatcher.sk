@@ -1,0 +1,43 @@
+int N = 5;
+int M = 3;
+
+
+int match(bit[N] string, bit[M] pattern) implements matchSpec{
+	int rv = 0;
+	int p = ??;
+	int t = ??;
+	for(int i=0; i<M; ++i){
+		int s = pattern[i];
+		p = {| (?? | t | p | s)  *  (t | p| s) + (?? | t | p| s)  *  (t | p| s)  |}; 
+		t = {| (?? | t | p)  *  (t | p)  + (?? | t | p)  *  (t | p) |}; 
+	}
+
+	int k = ??;
+	bit done = 0;
+	for(int i=0; i<N; ++i){
+		t = string[i];
+		k = {| (?? | t | k)  *  (t | k)  + (?? | t | k)  *  (t | k) - (?? | t | k)  *  (t | k)  - (?? | t | k)  *  (t | k)|};
+		if( i > ??){
+			k = {| (?? | t | k)  *  (t | k)  + (?? | t | k)  *  (t | k) - (?? | t | k)  *  (t | k)  - (?? | t | k)  *  (t | k)|};
+		}
+		if(!done && k == p ){
+			rv = i;	
+			done = 1;
+		}
+	}		
+	return rv;
+}
+
+int matchSpec(bit[N] string, bit[M] pattern){
+
+	bit done = 0;	
+	int rv = 0;
+		for(int i=0; i<N-M; ++i){
+			int found = 1;
+			for(int j=0; j<M; ++j){
+				if(string[i + j] != pattern[j]){ found = 0;  }
+			}				
+			if(found == 1 && !done){ done = 1; rv = i; } 
+		}
+		return rv;
+}

@@ -1,0 +1,22 @@
+
+int[16] trans(int[16] M) {
+    int[16] T = 0;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            T[4 * i + j] = M[4 * j + i];
+    return T;
+}
+
+int[4] shufps(int[4] x1, int[4] x2, bit[8] b) {
+    int[4] s;
+    s[0] = x1[(int) b[0::2]]; s[1] = x1[(int) b[2::2]];
+    s[2] = x2[(int) b[4::2]]; s[3] = x2[(int) b[6::2]];
+    return s;
+}
+
+int[16] trans_sse(int[16] M) implements trans {
+    int[16] S = 0, T = 0;
+    loop (??) S[??::4] = shufps(M[??::4], M[??::4], ??);
+    loop (??) T[??::4] = shufps(S[??::4], S[??::4], ??);
+    return T;
+}

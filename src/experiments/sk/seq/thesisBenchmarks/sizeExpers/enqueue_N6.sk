@@ -1,0 +1,3 @@
+
+int N = 6;
+include "enqueue.skh";

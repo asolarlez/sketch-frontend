@@ -1,0 +1,42 @@
+// jburnim_morton_easier.sk
+// Author: jburnim@cs.berkeley.edu (Jacob Burnim)
+//
+// This file contains an even easier sketch (than those in jburnim_morton.sk
+// and jburnim_morton_easier.sk) for constructing 32-bit Morton numbers from
+// two 16-bit inputs.  The sketch is easier because it captures that the
+// shifts should be done in decreasing powers of two.
+
+int W = 16;
+
+bit[2*W] interleave_bits(bit[W] x, bit[W] y) {
+  bit[2*W] ret = 0;
+  for (int i = 0; i < W; i++) {
+    ret[i*2] = x[i];
+    ret[i*2+1] = y[i];
+  }
+  return ret;
+}
+
+bit[2*W] sketch(bit[W] x, bit[W] y) implements interleave_bits {
+  // Idea: It should be possible to shift all of the bits "in parallel"
+  // using only log2(W) shifts.
+  bit[2*W] x2 = x;
+  int shift = W / 2;
+  loop(??) {
+    assert(shift != 0);
+    bit[2 * W] mask = ??;
+    x2 = (x2 | (x2 << shift)) & mask;
+    shift = shift / 2;
+  }
+
+  bit[2*W] y2 = y;
+  shift = W / 2;
+  loop(??) {
+    assert(shift != 0);
+    bit[2 * W] mask = ??;
+    y2 = (y2 | (y2 << shift)) & mask;
+    shift = shift / 2;
+  }
+
+  return x2 | (y2 << 1);
+}

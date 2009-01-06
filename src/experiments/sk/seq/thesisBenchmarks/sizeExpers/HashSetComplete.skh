@@ -1,0 +1,72 @@
+
+struct HashNode{
+	HashNode next;
+	int val;
+}
+
+static HashNode newNode(int val){
+	HashNode n = new HashNode();
+	n.val = val;
+	n.next = null;
+	return n;	
+}
+
+int HTSIZE = 10;
+
+int hashB(int x);
+
+int hash(int x){
+
+	return hashB(x);	
+}
+
+
+
+struct HashTable{
+	HashNode[HTSIZE] table;	
+}
+
+static HashTable newHashTable(){
+	HashTable ht = new HashTable();
+	for(int i=0; i<HTSIZE; ++i){
+		ht.table[i] = null;	
+	}	
+	return ht;
+}
+
+static bit addh(HashTable ht,  int v){
+		int hv = hash(v);
+		HashNode n = ht.table[ hv ];
+		if( n == null){
+			ht.table[hv] = newNode(v);
+			return 0;	
+		}else{
+			bit alreadyThere = 0;
+			while( {| n | n.next |} != null){
+				if(n.val == v){ alreadyThere = 1; }
+				n = n.next;	
+			}
+			if(alreadyThere == 0 && n.val != v){
+				n.next = newNode(v);
+				return 0;
+			}
+			return 1;
+		}
+}
+
+static bit containsh(HashTable ht, int v){
+		int hv = hash(v) % HTSIZE;
+		HashNode n = ht.table[ hv ];
+		if( n == null){
+			return 0;
+		}else{
+			if(n.val == v){ return 1; }
+			while( {| n | n.next |} != null){
+				if(n.val == v){ return 1; }
+				n = n.next;	
+			}			
+			return 0;
+		}
+}
+
+

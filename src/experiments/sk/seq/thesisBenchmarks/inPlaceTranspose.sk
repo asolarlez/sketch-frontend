@@ -1,0 +1,20 @@
+pragma options "--seed 7 --synth ABC --verif ABC";
+
+bit one(int[25] mat, int i, int j){
+return 1;	
+}
+
+int[25] transpose5x5(int[25] mat){	
+	for(int i=0; i<??; ++i) for(int j=0; j<?? + i*??; ++j){
+		int tmp = mat[??*i + ??*j+??];
+		mat[ ??*i + ??*j+??] = mat[ ??*i + ??*j+??];
+		mat[ ??*i + ??*j+??] = tmp;
+	}
+	return mat;
+}
+
+bit main(int[25] mat, int i, int j) implements one{
+	int[25] out = transpose5x5(mat);
+	assert !(i < 5 && j < 5) || mat[i*5 + j] == out[j*5 + i];
+	return 1;
+}

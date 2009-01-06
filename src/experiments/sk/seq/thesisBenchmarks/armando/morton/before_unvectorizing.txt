@@ -1,0 +1,57 @@
+void sketch([bit[16] x_1L0, !bit[32] _out_1L1]) implements interleave_with_0
+{
+  _out_1L1 = 0;
+  bit _has_out__3L0=0;
+  bit[32] ret_3L1;
+  ret_3L1 = x_1L0;
+  int __sa0_3L2=??:int:5;
+  assert ((__sa0_3L2)<=(8))
+;
+  if((__sa0_3L2)>(0))
+  {
+    ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+    if((__sa0_3L2)>(1))
+    {
+      ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+      if((__sa0_3L2)>(2))
+      {
+        ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+        if((__sa0_3L2)>(3))
+        {
+          ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+          if((__sa0_3L2)>(4))
+          {
+            ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+            if((__sa0_3L2)>(5))
+            {
+              ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+              if((__sa0_3L2)>(6))
+              {
+                ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+                if((__sa0_3L2)>(7))
+                {
+                  ret_3L1 = ((ret_3L1)|((ret_3L1)<<(??:int:5)))&(??:bit[32]:1);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  _out_1L1 = ret_3L1;
+  _has_out__3L0 = 1;
+}
+void interleave_with_0([bit[16] x_20L2, !bit[32] _out_20L2])
+{
+  _out_20L2 = 0;
+  bit _has_out__22L0=0;
+  bit[32] ret_22L1;
+  ret_22L1 = 0;
+  for(int i_24L0=0;(i_24L0)<(16);i_24L0 = (i_24L0)+(1))
+  {
+    ret_22L1[(i_24L0)*(2)] = x_20L2[i_24L0];
+  }
+  _out_20L2 = ret_22L1;
+  _has_out__22L0 = 1;
+}

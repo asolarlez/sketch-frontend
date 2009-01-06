@@ -1,0 +1,4 @@
+pragma options "--unrollamnt 5 --inbits 3 ";
+int T = 6;
+include "SetTest.skh";
+

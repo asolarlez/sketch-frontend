@@ -1,0 +1,139 @@
+pragma options "--unrollamnt 4 --seed 10";
+int N = 3;
+
+struct node{
+	node next;
+	bit val;	
+}
+
+struct list{
+	node head;	
+	node tail;
+}
+
+
+static list reverse(list l){
+	if(l.head == null){
+		return l;	
+	}else{
+		node n = popHead(l);
+		list l2 = new list();
+		l2.head = n;
+		l2.tail = n;
+		n.next = null;
+		return cat( reverse(l) , l2 );
+	}
+}
+
+
+list cat(list l1, list l2){
+	if(l1.head == null){
+		return l2;	
+	}else{
+		if(l2.head == null){
+			return l1;	
+		}else{
+			l1.tail.next = l2.head;
+			l1.tail = l2.tail;
+			return l1;	
+		}
+	}
+}
+
+node popHead(list l){
+	assert l.head != null;
+	node n = l.head;
+	l.head = l.head.next;
+	if(l.head == null){ assert l.tail == n;  l.tail = null; }
+	return n;
+}
+
+
+
+node exprGenerator(list l1, list l2){ 
+	node t ={| (l1 | l2)(.head | .tail)|}; 
+	if(??){
+		assert t != null;
+		t = t.next; 	
+	}
+	return {| t | null |};
+}
+
+node exprGeneratorB(list l1, list l2, node n){
+	return 	(?? ? exprGenerator(l1, l2) : n); 
+}
+
+
+bit cond(list l1, list l2){ 
+	node n1 = exprGenerator(l1, l2);
+	node n2 = exprGenerator(l1, l2);
+	return {| (n1 ( == | != ) n2) | ?? |};
+}
+
+static list reverseSK(list l){
+	list nl = new list();
+	nl.head = null; 
+	nl.tail = null;
+	bit c  = cond(l, nl);
+	node tmp = null;	
+	while( c ){
+		loop(5){
+			if(cond(l, nl)){ {| tmp | nl.head | nl.head.next | l.head | l.tail | l.head.next | nl.tail |} = exprGeneratorB(l, nl, tmp);}
+		}	
+		c  = cond(l, nl);
+	}	
+	return nl;
+}
+
+static list populate(bit[N] elems, int n){
+	list l = new list();
+	node prev = null;
+	for(int i=0; i<n; ++i){
+		node t = new node();
+		t.val = elems[i];
+		if(prev != null){ prev.next = t; }
+		prev = t;
+		if(i==0){
+			l.head = t;	
+		}
+	}
+	l.tail = prev;
+	return l;	
+}
+
+
+static bit[N] serialize(list l, int n){
+	bit[N] out = 0;
+	node t = l.head;
+	node prev = null;
+	for(int i=0; i<n; ++i){
+		assert t != null;
+		out[i] = t.val;
+		prev = t; 
+		t = t.next;
+	}
+	assert prev == 	 l.tail;
+	assert t == null;
+	return out;
+}
+
+
+bit[N] spec(bit[N] elems, int n){
+	if(n >= N){ n = N; }
+	list l = populate(elems, n);
+	l = reverse(l);
+	
+	return serialize(l, n);
+}
+
+
+
+bit[N] sketch(bit[N] elems, int n) implements spec{
+	if(n >= N){ n = N; }
+	list l = populate(elems, n);
+	l = reverseSK(l);
+	
+	return serialize(l, n);
+}
+
+
