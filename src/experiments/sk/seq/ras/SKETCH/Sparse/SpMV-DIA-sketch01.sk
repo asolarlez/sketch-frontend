@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 5 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--unrollamnt 41 --synth ABC --verif ABC --inbits 10 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
 // Notes on sketching SpMV(DIA)
 //
@@ -10,7 +10,7 @@ pragma options "--unrollamnt 5 --synth ABC --verif ABC --inbits 1 --cbits 2 --he
 
 #include "model.skh"
 
-#define N 3
+#define N 40
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -47,7 +47,7 @@ static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
 	
 	Loop(d,Consts,Consts) {
 		Loop(o,Consts,Consts) {
-			y[Index] += mul(Value,Value);  
+			y[d] += mul(Value,Value);  
 		}
 	} 
 	return y;	
@@ -81,12 +81,22 @@ static T[N] SpMV_2(DIA a, T[N] x, int n) {
 	} 
 	return y;	
 }
-
+// synthesized from our sketch
 static T[N] SpMV_3(DIA a, T[N] x, int n) {
 	T[N] y=0;
 	for (int d=0; d < n; d++) {
 		for (int o = 0; o < n; o++) {
 			y[n-d-1] += mul(a.V[n+o-d-1][n-o-1],x[n-o-1]);
+		}
+	} 
+	return y;	
+}
+// SpMV written by Gilad
+static T[N] SpMV_4(DIA a, T[N] x, int n) {
+	T[N] y=0;
+	for (int r=0; r < n; r++) {
+		for (int c = 0; c < n; c++) {
+			y[r] += mul(a.V[n+r-c-1][c],x[c]);
 		}
 	} 
 	return y;	
@@ -99,7 +109,7 @@ static T[N] SpMV_3(DIA a, T[N] x, int n) {
 //	return desparsify(sparsify(a));
 //}
 T[N] main(T[N][N] A, T[N] x) implements DeMV {
-	return SpMV_Sketch(sparsify(A), x, N);
+	return SpMV_4(sparsify(A), x, N);
 }
 
 #if 1==0
