@@ -1,0 +1,24 @@
+
+struct foo{
+	int v;
+	foo s;
+}
+
+bit test(int i){
+	return 1;	
+}
+
+bit sk(int i) implements test{
+	
+	foo f = new foo();	
+	f.s = f;
+	if(??){
+		foo t = null;
+		t.v = 10;	
+	}else{
+		f.v = 10;	
+	}
+	foo t = {|  (f.s | null) |};
+	return  t.v ==10;
+		
+}

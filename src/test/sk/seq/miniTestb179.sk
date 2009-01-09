@@ -1,0 +1,26 @@
+
+bit one(int[5] in){	
+	return 1;	
+}
+
+bit pred1(int t, int v){
+	return t < v;	
+}
+
+bit pred2(int t){
+	return t > ??;	
+}
+
+bit test(int[5] in) implements one{	
+	int[5] x = 0;
+	int[3] s = 0;
+	s[1] = ??;
+	int t = 0;
+	do{
+		x[t] = in[t];
+		++t;
+	}while( {| pred1(t | s[0] | s[1], t | s[0] | s[1]) | pred2(t) |});
+	
+	assert x[4] == 0 && x[2] == in[2];	
+	return 1;
+}

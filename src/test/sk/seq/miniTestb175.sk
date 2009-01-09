@@ -1,0 +1,18 @@
+
+bit one(int[5] in){	
+	return 1;	
+}
+
+bit pred(int t){
+	return t < ??;	
+}
+
+bit test(int[5] in) implements one{	
+	int[5] x = 0;
+	for(int t=0; pred(t); ++t){
+		x[t] = in[t];
+	}
+	
+	assert x[4] == 0;	
+	return 1;
+}

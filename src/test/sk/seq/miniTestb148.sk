@@ -1,8 +1,8 @@
 // Used to be a problem with operator precedences.
 
-int spec (int a, int b, int c, int d) {
+bit spec (bit a, bit b, bit c, bit d) {
     return (a | (b ^ (c & d)));
 }
-int sk (int a, int b, int c, int d) implements spec {
+bit sk (bit a, bit  b, bit c, bit d) implements spec {
     return a | b ^ c & d;
 }

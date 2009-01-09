@@ -4,5 +4,6 @@
 int spec () {  return 1; }
 int sk () implements spec {
     bit shft = ??;
-    return 1 << (int) shft;
+    bit[1] tmp = (1 << (int) shft);
+    return tmp[0];
 }
