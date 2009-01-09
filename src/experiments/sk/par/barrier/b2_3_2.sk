@@ -2,8 +2,8 @@
 //  Candidate space: ~60,000,000 with INT=5
 //
 
-int N = 3;
-int T = 2;
+int N = 2;
+int T = 3;
 
 struct barrier{
 	int count;	
@@ -71,8 +71,8 @@ static void next(barrier b, int thread){
 		if(tmp){
                     reorder{  // 2
                         b.count = N;
-                        b.current = predicate(b.count,cv,s, s);  // 2*(3+INT*2)
-			}
+                        b.current = predicate(0,0,s, s);  // 2*(3+INT*2)
+					}
 		}
 		if(tmp){
                     bit t = 0;
@@ -80,7 +80,7 @@ static void next(barrier b, int thread){
                     atomic(b.current == t){
                     }
 		}
-	}
+	}	
 }
 bit test(){
 	return 1;	
@@ -114,9 +114,9 @@ bit sketch() implements test{
 			atomic{
 				if(i > 0){
 					assert grid[i-1][left(thread)] /*&& grid[i-1][right(thread)]*/; 	
-				}		
+				}
+				grid[i][thread] = 1;		
 			}
-			grid[i][thread] = 1;
 			next(b, thread);
 		}		
 	}
