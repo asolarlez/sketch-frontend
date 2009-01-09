@@ -15,7 +15,7 @@ int trailing_zero_bits_sketch(bit[W] in) implements trailing_zero_bits
 {
 	int i = 0;
 
-	loop (W) {
+	repeat(W) {
 		if (!in[i]) {
 			i = i+1;
 		} else {

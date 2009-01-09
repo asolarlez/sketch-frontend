@@ -22,7 +22,7 @@ test (bit[W] a) implements count
 
     m[0] = 1;
     i = 0;
-    loop (L) {
+    repeat(L) {
 	mm[(i*W)::W] = m;
 	i++;
     }

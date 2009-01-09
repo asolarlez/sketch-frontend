@@ -5,7 +5,7 @@ bit foo(bit in) implements ka{
 	int[2] tt = {3, 2};
 	int t = ??;
 	assert t > 1;
-	return f[tt[t]];	
+	return f[t<2? tt[ t] : 0];	
 }
 
 bit ka(bit in){

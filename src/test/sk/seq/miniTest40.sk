@@ -12,7 +12,7 @@ bit[N] transpose(bit[N] input){
 bit[N] tiledTranspose(bit[N] input)implements transpose{
 	bit[N] output=0;
 	int i=0;
-	loop(??){
+	repeat(??){
 		int j=0;
 		if(??){
 			output[i+j] = input[i+j];

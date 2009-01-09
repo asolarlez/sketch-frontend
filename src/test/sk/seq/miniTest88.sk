@@ -6,7 +6,7 @@ pow2 (int p)
 {
     int a = 1;
 
-    loop (p){	a = a * 2; }
+    repeat(p){	a = a * 2; }
 
     return a;
 }
@@ -82,7 +82,7 @@ count_sk (bit[W] a) implements count
     m = intToBit (pow2 (sk_offset (s) /* s */) - 1);
     /* - number of iterations is logarithmic by width. */
     i = 0;
-    loop (sk_offset (L) /* L */) {
+    repeat(sk_offset (L) /* L */) {
 	mm[i * W :: W] = m;
 	ss[i] = s;
 	s = s / 2;  /* FIXME better be shift. */
@@ -90,7 +90,7 @@ count_sk (bit[W] a) implements count
 	i++;
     }
 
-    loop (i) {
+    repeat(i) {
 	i--;
 	m = mm[i * W :: W];
 	s = ss[i];

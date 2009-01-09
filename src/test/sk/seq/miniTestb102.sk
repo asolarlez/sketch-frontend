@@ -17,7 +17,7 @@ bit checker(int[MEMSIZE] mem, int tail){
 	int lastPtr = NULL;	
 	int checksum = 0;
 	int cnt = 0;
-	loop(4){
+	repeat(4){
 	  if(ptr != NULL){	
 	  	cnt = cnt + 1;
 	  	val = mem[ptr];

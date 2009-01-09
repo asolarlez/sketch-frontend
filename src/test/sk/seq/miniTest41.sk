@@ -14,9 +14,9 @@ bit[N] tiledTranspose(bit[N] input)implements transpose{
 	bit[N] check = 0;
 	int i=0;
 	int it = ??;
-	loop(??){
+	repeat(??){
 		int j=0;
-		loop(it){
+		repeat(it){
 		    assert (i+j) < N;
 			output[i+j] = input[i+j];
 			assert !check[i+j];

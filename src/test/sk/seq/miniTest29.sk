@@ -8,7 +8,7 @@ bit[3] miniTest(bit[3] in) {
 bit[3] miniTestSK (bit[3] in) implements miniTest{
 	bit[3] tmp = (in<<??);
 	bit[2] one = {0, 0};
-	loop(??){
+	repeat(??){
 		one[0] = ??;
 	}
     return tmp ^ one;
