@@ -221,13 +221,18 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	        	state.procChangeTrackers(changed, orig);
 	        	++iters;
 	        }
-	        stmt.getCond().accept(this);
+	        abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
 	        ncond = exprRV;
-	        nbody = (Statement) stmt.getBody().accept(this);
-	        if (stmt.getIncr() != null){
-	        	nincr = (Statement) stmt.getIncr().accept(this);
-        	}
-
+	        state.pushChangeTracker(vcond, false);
+	        try{
+		        nbody = (Statement) stmt.getBody().accept(this);
+		        if (stmt.getIncr() != null){
+		        	nincr = (Statement) stmt.getIncr().accept(this);
+	        	}
+	        }finally{
+	        	ChangeTracker ct = state.popChangeTracker();
+	        	state.procChangeTrackers(ct);	        	
+	        }
 	        if (stmt.getInit() != null){
 	            ninit = (Statement) stmt.getInit().accept(this);
 	        }

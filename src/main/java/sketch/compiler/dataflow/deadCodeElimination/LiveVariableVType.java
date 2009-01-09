@@ -58,6 +58,11 @@ public class LiveVariableVType extends abstractValueType {
 	public abstractValue BOTTOM(Type t) {
 		return BOTTOM();
 	}
+	
+	@Override
+	public abstractValue BOTTOM(String label) {
+		return BOTTOM();
+	}
 
 	@Override
 	public abstractValue CONST(int v) {
