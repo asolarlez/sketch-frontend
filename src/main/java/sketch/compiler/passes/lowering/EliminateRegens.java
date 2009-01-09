@@ -5,6 +5,7 @@ package streamit.frontend.passes;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import streamit.frontend.nodes.ExprAlt;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprChoiceBinary;
 import streamit.frontend.nodes.ExprChoiceSelect;
@@ -20,6 +22,7 @@ import streamit.frontend.nodes.ExprConstBoolean;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprField;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNullPtr;
 import streamit.frontend.nodes.ExprParen;
 import streamit.frontend.nodes.ExprRegen;
@@ -155,6 +158,40 @@ public class EliminateRegens extends SymbolTableVisitor {
 			return e;
 		}
 
+		@Override
+		public Object visitExprArrayRange(ExprArrayRange ear){
+			List<Expression> exps = new ArrayList<Expression> ();
+			List<Expression> bases = (List<Expression>) ear.getBase().accept(this);
+			List<Expression> offsets = (List<Expression>) ear.getOffset().accept(this);
+			for(Expression base: bases)
+				for(Expression offset: offsets){
+					exps.add(new ExprArrayRange(base, offset));
+				}
+			return exps;
+		}
+		
+		private void fcconstruct(ExprFunCall efc, List<Expression> plist, int lidx, List<Expression> actuals, List<Expression> exprs){
+			if(plist.size() > lidx){
+				Expression cur = plist.get(lidx);
+				List<Expression> tmp = (List<Expression>)cur.accept(this);
+				for(Expression e: tmp){
+					List<Expression> nl = new ArrayList<Expression>(actuals);
+					nl.add(e);
+					fcconstruct(efc, plist, lidx+1, nl, exprs);
+				}
+			}else{
+				exprs.add(new ExprFunCall(efc, efc.getName(), actuals));				
+			}
+		}
+		
+		@Override
+		public Object visitExprFunCall(ExprFunCall efc){
+			List<Expression> plist = efc.getParams();
+			List<Expression> exprs = new ArrayList<Expression>();
+			fcconstruct(efc, plist,0, new ArrayList<Expression>(), exprs);			
+			return exprs;
+		}
+		
 		public Object visitExprChoiceBinary (ExprChoiceBinary ecb) {
 			List<Expression> lefts = (List<Expression>) ecb.getLeft ().accept (this);
 			List<Expression> rights = (List<Expression>) ecb.getRight ().accept (this);

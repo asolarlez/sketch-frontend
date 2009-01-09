@@ -1,7 +1,6 @@
 package streamit.frontend.passes;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import streamit.frontend.nodes.ExprArrayRange;
@@ -13,7 +12,6 @@ import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
@@ -24,6 +22,7 @@ import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.misc.ControlFlowException;
 
 
@@ -50,8 +49,6 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 	private TempVarGen varGen;
 	private FailurePolicy policy;
-	
-//	private LinkedList<Statement> currentBlock;
 
 	public ProtectArrayAccesses(TempVarGen vargen){
 		this (FailurePolicy.WRSILENT_RDZERO, vargen);
@@ -66,11 +63,69 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	/** We have to conditionally protect array accesses for shortcut operators. */
 	public Object visitExprBinary (ExprBinary eb) {
 		String op = eb.getOpString ();
-		if (op.equals ("&&") || op.equals ("||"))
+		if (op.equals ("&&") || op.equals ("||") || op.equals ("&") || op.equals ("|") )
 			return doLogicalExpr (eb);
 		else
 			return super.visitExprBinary (eb);
 	}
+	
+	
+	public Object visitExprTernary(ExprTernary exp){
+		Expression a = exp.getA().doExpr(this);
+		Expression b = exp.getB();
+		Expression c = exp.getC();
+		
+		
+		if (!(hasArrayAccess (b) || hasArrayAccess (c))){			
+			if (a == exp.getA() && b == exp.getB() && c == exp.getC())
+	            return exp;
+	        else
+	            return new ExprTernary(exp, exp.getOp(), a, b, c);
+		}
+			
+		
+		
+		String resName = varGen.nextVar ("_pac_sc");
+		addStatement (new StmtVarDecl (exp,getType(exp), resName, null));
+		ExprVar res = new ExprVar (exp, resName);
+
+		
+		StmtBlock thenBlock = null;
+		{
+			List<Statement> oldStatements = newStatements;
+	        newStatements = new ArrayList<Statement>();
+	
+	        b = doExpression (b);
+	        newStatements.add (new StmtAssign (res, b));
+	
+	        thenBlock = new StmtBlock (exp, newStatements);
+	        newStatements = oldStatements;
+		}
+		
+		StmtBlock elseBlock = null;
+		if(c != null){
+			List<Statement> oldStatements = newStatements;
+	        newStatements = new ArrayList<Statement>();
+	
+	        c = doExpression (c);
+	        newStatements.add (new StmtAssign (res, c));
+	
+	        elseBlock = new StmtBlock (exp, newStatements);
+	        newStatements = oldStatements;
+		}
+		
+        // What is the condition on 'res' that causes us to fully evaluate
+        // the expression?  If it's a logical AND, and 'res' is true, then we
+        // need to evaluate the right expr.  If it's a logical OR, and 'res' is
+        // false, then we need to evaluate the right expr.
+        
+
+        addStatement (new StmtIfThen (exp, a, thenBlock, elseBlock));		
+		
+		 
+		return res;
+	}
+	
 
 	protected Expression doLogicalExpr (ExprBinary eb) {
 		Expression left = eb.getLeft (), right = eb.getRight ();
@@ -78,12 +133,12 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		if (!(hasArrayAccess (left) || hasArrayAccess (right)))
 			return eb;
 
-		boolean isAnd = eb.getOpString ().equals ("&&");
+		boolean isAnd = eb.getOpString ().equals ("&&") || eb.getOpString ().equals ("&");
 
 
 		String resName = varGen.nextVar ("_pac_sc");
 		addStatement (new StmtVarDecl (eb, TypePrimitive.bittype, resName, left));
-		
+
 		left = doExpression (left);
 		ExprVar res = new ExprVar (eb, resName);
 
@@ -108,13 +163,23 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	}
 
 	@Override
-	public Object visitExprArrayRange(ExprArrayRange ear){ 
-		assert ear.hasSingleIndex() : "Array ranges not allowed in parallel code.";
+	public Object visitExprArrayRange(ExprArrayRange ear){		
 
 		Expression idx = makeLocalIndex (ear);
 		Expression base = (Expression) ear.getBase ().accept (this);
-		Expression cond = makeGuard (base, idx);
-		Expression near = new ExprArrayRange(base, idx);
+		
+		Expression cond = null;
+		Expression near = null;
+		
+		if(ear.hasSingleIndex()){		
+			cond = makeGuard (base, idx);		
+			near = new ExprArrayRange(base, idx);
+		}else{
+			RangeLen rl = (RangeLen)ear.getMembers().get(0);
+			Expression ofst = (Expression) rl.getLenExpression().accept(this);
+			cond = makeGuard (base, ofst  ,idx);		
+			near = new ExprArrayRange(ear, base, new RangeLen(idx, ofst));
+		}
 
 		if (FailurePolicy.WRSILENT_RDZERO == policy) {
 			return new ExprTernary("?:", cond, near, ExprConstInt.zero);
@@ -131,8 +196,21 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			ExprArrayRange ear = (ExprArrayRange) stmt.getLHS();
 			Expression idx = makeLocalIndex (ear);
 			Expression base = (Expression) ear.getBase ().accept (this);
-			Expression cond = makeGuard (base, idx);
-			Expression near = new ExprArrayRange(base, idx);
+			
+			Expression cond = null;
+			Expression near = null;
+			
+			if(ear.hasSingleIndex()){		
+				cond = makeGuard (base, idx);		
+				near = new ExprArrayRange(base, idx);
+			}else{
+				RangeLen rl = (RangeLen)ear.getMembers().get(0);
+				Expression ofst = (Expression) rl.getLenExpression().accept(this);
+				cond = makeGuard (base, ofst  ,idx);		
+				near = new ExprArrayRange(ear, base, new RangeLen(idx, ofst));
+			}
+			
+			
 			Expression rhs = (Expression) stmt.getRHS ().accept (this);
 			int op = stmt.getOp();
 
@@ -163,82 +241,6 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 		return new StmtAtomicBlock (sab, newBody, newCond);
 	}
-	
-	@Override
-	public Object visitExprTernary(ExprTernary exp) {
-		// x = func((c1 ? y[a] : (c2 ? y[b] : (c3 ? y[c] : y[d])))))
-		// Translated into:
-		// boolean c1 = false;
-		// boolean c2 = false;
-		// boolean c3 = false;
-		// boolean c4 = false;
-		// c1 = cond1()
-		//  if (c1)
-		// 		assert a >= 0 && a < heap size
-		// 	else {
-		//		c2 = cond2()
-		//		if (c2) 
-		//			assert b >= 0 && b <  heap size
-		//		else {
-		//			c3 = cond3();
-		//			if (c3)
-		//				....
-		//		}
-		//	}
-		//	...
-		//	x = func((c1 ? y[a] : (c2 ? y[b] : (c3 ? y[c] : y[d])))))
-		
-		ExprTernary et = (ExprTernary) exp;
-		et.getA().accept(this);
-		// array accesses in the condition are added to currentBlock
-		
-		List<Statement> oldStatements = newStatements;
-		newStatements = new LinkedList<Statement>();
-		
-		et.getB().accept(this);
-		StmtBlock cons = new StmtBlock(exp, newStatements);
-		StmtBlock alt = null;
-		
-		if (et.getC() != null) {
-			newStatements = new LinkedList<Statement>();
-			et.getC().accept(this);
-			alt = new StmtBlock(exp, newStatements);
-		}
-		newStatements = oldStatements;
-		
-		StmtIfThen ifStmt = new StmtIfThen(exp, et.getA(), cons, alt);
-		addStatement(ifStmt);
-		
-		return exp;
-		
-	}
-
-	
-//	@Override
-//	protected void addStatement(Statement stmt) {
-//		currentBlock.add(stmt);
-//	}
-	
-	@Override
-	protected void doStatement(Statement stmt) {
-		Statement result = (Statement)stmt.accept(this);
-		
-//		if (currentBlock.size() != 0) {
-//			addStatements(currentBlock);
-//			currentBlock = new LinkedList<Statement>();
-//		}
-		
-		if (result != null)
-            addStatement(result);
-		
-	}
-	
-//	@Override
-//	public Object visitFunction(Function func) {
-//		assert currentBlock == null || currentBlock.size() == 0;
-//		this.currentBlock = new LinkedList<Statement>();
-//		return super.visitFunction(func);
-//	}
 
 	private class CollectAtomicCondGuards extends FEReplacer {
 		/** A list of "predicated" assertions to check within the body of the
@@ -335,17 +337,27 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	}
 
 	protected Expression makeLocalIndex (ExprArrayRange ear) {
-		String nname = varGen.nextVar("_pac");
-		Expression nofset = (Expression) ear.getOffset().accept(this);
-		addStatement(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset));
+		String nname = varGen.nextVar("_pac");		
+		assert ear.getMembers().size() == 1 : "Currently only accept arrays with one selection";
+		RangeLen rl =(RangeLen) ear.getMembers().get(0); 
+		Expression nofset = (Expression) rl.start().accept(this);
+		addStatement((Statement)(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset)).accept(this));
 		return new ExprVar(ear, nname);
 	}
 
+	
 	protected Expression makeGuard (Expression base, Expression idx) {
 		Expression sz = ((TypeArray) getType(base)).getLength();
 		return new ExprBinary(new ExprBinary(idx, ">=", ExprConstInt.zero), "&&",
 										 new ExprBinary(idx, "<", sz));
 	}
+	
+	protected Expression makeGuard (Expression base, Expression len, Expression idx) {
+		Expression sz = ((TypeArray) getType(base)).getLength();
+		return new ExprBinary(new ExprBinary(idx, ">=", ExprConstInt.zero), "&&",
+										 new ExprBinary(new ExprBinary(idx, "+", len), "<=", sz));
+	}
+
 
 	protected boolean hasArrayAccess (Expression e) {
 		class checker extends FEReplacer {

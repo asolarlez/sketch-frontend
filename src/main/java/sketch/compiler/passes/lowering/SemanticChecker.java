@@ -1505,7 +1505,15 @@ public class SemanticChecker
 
 		Type ct = lt.leastCommonPromotion(rt);
 		if(op == ExprBinary.BINOP_LSHIFT || op == ExprBinary.BINOP_RSHIFT){
-			ct = lt;
+			if( lt instanceof TypeArray  ){
+				if(!(((TypeArray)lt).getBase() instanceof TypePrimitive) ){
+					report(expr, "You can only shift arrays of primitives.");
+					return;
+				}
+				ct = lt;
+			}else{
+				ct = new TypeArray(lt, ExprConstInt.one);
+			}
 		}
 		Type cplxtype =
 			TypePrimitive.cplxtype;

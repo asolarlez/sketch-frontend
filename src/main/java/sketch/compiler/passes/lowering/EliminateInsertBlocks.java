@@ -78,7 +78,7 @@ public class EliminateInsertBlocks extends FEReplacer {
 			oldB = ((StmtBlock) sib.getIntoBlock ().accept (this)).getStmts ();
 
 		String maxVal = ""+ oldB.size ();
-		int nBits = Misc.nBitsBinaryRepr (oldB.size ());
+		int nBits = Misc.nBitsBinaryRepr (oldB.size ()+1);
 
 		header.add (0,
 			new StmtAssert (sib,

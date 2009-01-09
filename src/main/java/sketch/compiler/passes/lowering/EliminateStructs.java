@@ -43,11 +43,12 @@ import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
 
 /**
- * Does three things:
+ * Does four things:
  *   (1) Replaces 'new [struct]()' expressions with pointers into
  *   	 [struct] arrays
  *   (2) Converts variables of type [struct] into ints
  *   (3) Replaces field accesses with indexes into field arrays
+ *   (4) Replaces null with the constant -1.
  *
  * For example:
  * <code>
@@ -96,7 +97,14 @@ public class EliminateStructs extends SymbolTableVisitor {
     	}
 	}
 
-
+	/**
+	 * 
+	 * Null is replaced with the integer -1. Null pointer accesses will therefore lead to out of bounds array access.
+	 */
+	@Override
+	public Object visitExprNullPtr(ExprNullPtr nptr){ return ExprConstInt.minusone; }
+	
+	
 	/**
 	 * Add variable declarations to the body of 'func', and rewrite its body.
 	 */

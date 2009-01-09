@@ -75,12 +75,15 @@ public class AssembleInitializers extends FEReplacer
 	                			init =decl.getInit(i);
 	                		}else{
 								if( type instanceof TypeArray ){
-									List<Expression> ilist = new ArrayList<Expression>();
-									int N = ((TypeArray)type).getLength().getIValue();
-									for(int k=0; k<N; ++k){
-										ilist.add( ExprConstInt.zero );
+									 Integer len = ((TypeArray)type).getLength().getIValue();
+									if( len != null  ){
+										int N =len;
+										List<Expression> ilist = new ArrayList<Expression>(N);										
+										for(int k=0; k<N; ++k){
+											ilist.add( ExprConstInt.zero );
+										}
+										init = new ExprArrayInit(decl, ilist);
 									}
-									init = new ExprArrayInit(decl, ilist);
 								}else{
 
 									init = ExprConstInt.zero;
@@ -112,12 +115,15 @@ public class AssembleInitializers extends FEReplacer
 	                			init =decl.getInit(i);
 	                		}else{
 								if( type instanceof TypeArray ){
-									List<Expression> ilist = new ArrayList<Expression>();
-									int N = ((TypeArray)type).getLength().getIValue();
-									for(int k=0; k<N; ++k){
-										ilist.add( ExprConstInt.zero );
-									}
-									init = new ExprArrayInit(decl, ilist);
+									 Integer len = ((TypeArray)type).getLength().getIValue();
+									 if(len != null){
+										 int N = len;
+										List<Expression> ilist = new ArrayList<Expression>(N);										
+										for(int k=0; k<N; ++k){
+											ilist.add( ExprConstInt.zero );
+										}
+										init = new ExprArrayInit(decl, ilist);
+									 }
 								}else{
 
 									init = ExprConstInt.zero;
