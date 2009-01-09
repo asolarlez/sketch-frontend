@@ -246,7 +246,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				Type lType = getType(exp.getLeft());
 				//Type rType = stv.getType(exp.getRight());
 				Expression result;
-				if(true){
+				if(false){
 					//This branch just assumes that an out of bounds access doesn't
 					FENode context = exp;
 					String newVarName = addNewDeclaration(TypePrimitive.inttype, exp.getRight());
