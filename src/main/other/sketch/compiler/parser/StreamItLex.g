@@ -21,6 +21,8 @@
 
 header {
 	package streamit.frontend.parser;
+	
+	import java.util.StringTokenizer;
 }
 
 options {
@@ -40,7 +42,7 @@ tokens {
 	"fork";
 	"insert";
 	"into";
-	"loop"; //"enqueue";
+	"loop"; "repeat";
 	"new";
 	"null";
 	"reorder";
@@ -73,6 +75,17 @@ WS	:	(' '
 		{ _ttype = Token.SKIP; }
 	;
 
+
+LINERESET: "#" (' ' | '\t')* NUMBER (' ' | '\t')* STRING_LITERAL 	(' ' | '\t')* '\n' 
+{ 
+			String s = getText(); 
+			_ttype = Token.SKIP;
+			StringTokenizer st = new StringTokenizer(s);
+			st.nextToken();
+			String ln = st.nextToken();			
+			this.setLine(Integer.parseInt(ln) );
+			this.setColumn(0);
+};
 
 SL_COMMENT :
 	"//"

@@ -22,6 +22,7 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
 import streamit.frontend.nodes.FENode;
+import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprChoiceSelect.Select;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
@@ -78,7 +79,6 @@ Expression ExprCond =
         { yyValue = new ExprTernary ("?:", a, b, c); }
     / a:ExprBinNoQues  void:"?":s  b:Expr  void:":":s  c:ExprCond
         { yyValue = new ExprTernary ("?:", a, b, c); }
-    / ExprFuncInvok
     / ExprBin
     ;
     
@@ -154,6 +154,9 @@ Expression ExprPrimaryNQ =
 
 Expression Term =
     Literal
+    / base:Var void:"[":s  idx:Expr  void:"]":s
+        {yyValue = new ExprArrayRange(base, idx); }
+    / ExprFuncInvok
     / Var
     / void:"(":s  e:Expr  void:")":s
         { yyValue = new ExprParen (e); }
@@ -198,14 +201,11 @@ BI PostOpChoice =
     ;
 
 Selector Selector =
-    Select  /  Index ;
+    Select ;
 Selector SelectorNQ =
-    SelectNQ  /  Index ;
+    SelectNQ;
 
-Selector Index =
-    void:"[":s  Expr  void:"]":s
-        { if (true) { throw new RuntimeException ("NYI: array indices"); } }
-    ;
+    
 
 Select Select =
     Sel
