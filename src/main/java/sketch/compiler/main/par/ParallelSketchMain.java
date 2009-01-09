@@ -1,6 +1,7 @@
 package streamit.frontend;
 
 import java.util.List;
+import java.util.Map;
 
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
@@ -12,6 +13,7 @@ import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.parallelEncoder.LockPreprocessing;
+import streamit.frontend.passes.AddInitializers;
 import streamit.frontend.passes.AddLastAssignmentToFork;
 import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.AtomizeStatements;
@@ -44,6 +46,7 @@ import streamit.frontend.solvers.SpinVerifier;
 import streamit.frontend.solvers.Synthesizer;
 import streamit.frontend.solvers.Verifier;
 import streamit.frontend.spin.Configuration;
+import streamit.frontend.spin.Preprocessor;
 import streamit.frontend.spin.Configuration.StateCompressionPolicy;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
@@ -91,9 +94,32 @@ public class ToPSbitII extends ToSBit {
 		}
 	}
 
+	
+	public String benchmarkName(){
+		String rv =super.benchmarkName();
+		if(params.hasFlag("playDumb")){
+			rv += "dumb";
+		}
+		if(params.hasFlag("playRandom")){
+			rv += "random";
+		}
+		return rv;
+	}
 
 
 	public void run() {
+		System.out.println("Benchmark = " + benchmarkName());
+		
+		if( params.hasFlag("playDumb")){
+			System.out.println("playDumb = YES;");
+		}else{
+			if(params.hasFlag("playRandom")){
+				System.out.println("playDumb = RAND;");
+			}else{
+				System.out.println("playDumb = NO;");	
+			}
+						
+		}
 		try {
 			parseProgram();
 
@@ -150,8 +176,9 @@ public class ToPSbitII extends ToSBit {
 		}
 
 		success = false;
+		int i=0;
 		do {
-			System.out.println ("Iteration "+ stats.numIterations ());
+			System.out.println ("Iteration "+ (i++) /* stats.numIterations ()*/);
 
 			CounterExample cex = verif.verify( ora );
 			stats.calledVerifier (verif.getLastSolutionStats ());
@@ -159,12 +186,16 @@ public class ToPSbitII extends ToSBit {
 				success = true;
 				break;
 			}
-
-			ora = synth.nextCandidate(cex);
-			stats.calledSynthesizer (synth.getLastSolutionStats ());
-			if (ora == null) {
-				success = false;
-				break;
+			
+			if(params.hasFlag("playRandom")){
+				ora = new RandomValueOracle (new StaticHoleTracker(varGen));
+			}else{
+				ora = synth.nextCandidate(cex);				
+				stats.calledSynthesizer (synth.getLastSolutionStats ());
+				if (ora == null) {
+					success = false;
+					break;
+				}
 			}
 		} while (true);
 
@@ -364,6 +395,13 @@ public class ToPSbitII extends ToSBit {
 				"--simplifySpin       \t Do simplification on the program before running spin.",
 				null, null) );
 
+		params.setAllowedParam("playDumb", new POpts(POpts.FLAG,
+				"--playDumb       \t This flag makes the solver really dumb. Don't use it unless you want to see how slow a dumb solver can be.",
+				null, null) );
+		
+		params.setAllowedParam("playRandom", new POpts(POpts.FLAG,
+				"--playDumb       \t This flag makes the solver pick candidates at random instead of doing inductive synthesis.",
+				null, null) );
 
 	}
 

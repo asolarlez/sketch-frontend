@@ -647,6 +647,16 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
+    @Override
+    public Object visitParameter(Parameter param){
+    	state.varDeclare(param.getName() , param.getType());
+    	if(isReplacer){
+    		Type ntype = (Type)param.getType().accept(this);
+    		 return new Parameter(ntype, transName(param.getName()), param.getPtype());
+    	}else{
+    		return param;
+    	}
+    }
 
     public Object visitFunction(Function func)
     {
@@ -654,11 +664,10 @@ public class PartialEvaluator extends FEReplacer {
         List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
     	for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
     		Parameter param = it.next();
-    		state.varDeclare(param.getName() , param.getType());
-    		if( isReplacer){
-    			Type ntype = (Type)param.getType().accept(this);
-    			nparams.add( new Parameter(ntype, transName(param.getName()), param.getPtype()));
-    		}
+    		Parameter p  = (Parameter) param.accept(this);
+    		if(isReplacer){
+    			nparams.add(p);
+    		}    		
     	}
 
 
@@ -955,7 +964,7 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue vcond  = (abstractValue)nvarExp.accept (this);
 
         /* If no known value, perform conditional unrolling of the loop. */
-    	if (vcond.isBottom()) {
+    	if (!vcond.hasIntVal()) {
             /* Assert loop expression does not exceed max unrolling constant. */
             StmtAssert nvarAssert =
                 new StmtAssert (nvarContext,
@@ -1003,7 +1012,13 @@ public class PartialEvaluator extends FEReplacer {
 			        	bodlist.add(nbody);
 			        }
 		        	break;
-	    		}
+	    		}catch(Throwable e){
+	    			for(int i=iters; i>=0; --i){
+	        			ChangeTracker ipms = state.popChangeTracker();
+	    			}
+		        	throw  new RuntimeException( e.getMessage() );
+		        	//throw e;
+		        }
 		        if(isReplacer){
 		        	condlist.add(nguard);
 		        	bodlist.add(nbody);
@@ -1082,6 +1097,9 @@ public class PartialEvaluator extends FEReplacer {
             	ninit = exprRV;
             	state.setVarValue(nm, init);
             }
+            /* else{
+            	state.setVarValue(nm, this.vtype.BOTTOM("UNINITIALIZED"));
+            } */
             if( isReplacer ){
             	types.add(vt);
             	names.add(transName(nm));

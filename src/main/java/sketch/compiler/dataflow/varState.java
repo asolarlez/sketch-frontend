@@ -200,6 +200,12 @@ abstract public class varState {
 				arrElems.get(iidx).update(val);
 			}else{
 				abstractValue newVal = newLHSvalue(iidx);
+				if(parent != null){
+					abstractValue tmp = state(iidx);
+					if(tmp.isVolatile()){
+						newVal.makeVolatile();
+					}
+				}
 				arrElems.put(iidx, newVal);
 				newVal.update(val);
 			}
@@ -212,6 +218,12 @@ abstract public class varState {
 					arrElems.get(i).update(bottom); // This could be more precise by doing a condjoin between the current value and prevvalue on cond (idx == i).
 				}else{
 					abstractValue newVal = newLHSvalue(i);
+					if(parent != null){
+						abstractValue tmp = state(i);
+						if(tmp.isVolatile()){
+							newVal.makeVolatile();
+						}
+					}
 					arrElems.put(i, newVal);
 					newVal.update(bottom);
 				}

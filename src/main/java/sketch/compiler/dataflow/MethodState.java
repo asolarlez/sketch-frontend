@@ -193,7 +193,7 @@ public class MethodState {
 			if( changeTracker.knowsAbout(var) ){
 				return changeTracker.varState(var);
 			}else{
-				assert(i != null) : ( "The variable " + var + " is used before being set with a value.\n");
+				assert(i != null) : ( "The variable " + var + " is used before being declared. This is an  internal error indicating a bug in the synthesizer. \n");
 				return i;
 			}
 		}

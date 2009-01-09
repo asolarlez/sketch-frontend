@@ -29,6 +29,7 @@ import streamit.frontend.Directive.OptionsDirective;
 import streamit.frontend.codegenerators.NodesToC;
 import streamit.frontend.codegenerators.NodesToCTest;
 import streamit.frontend.codegenerators.NodesToH;
+import streamit.frontend.experimental.cflowChecks.PerformFlowChecks;
 import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
@@ -53,6 +54,8 @@ import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.BoundUnboundedLoops;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateRegens;
+import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.EliminateInsertBlocks;
@@ -61,6 +64,7 @@ import streamit.frontend.passes.EliminateNestedArrAcc;
 import streamit.frontend.passes.EliminateRegens;
 import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateStructs;
+import streamit.frontend.passes.ExtractComplexLoopConditions;
 import streamit.frontend.passes.ExtractRightShifts;
 import streamit.frontend.passes.ExtractVectorsInCasts;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -73,6 +77,7 @@ import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
 import streamit.frontend.tosbit.AbstractValueOracle;
+import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
@@ -232,6 +237,8 @@ public class ToSBit
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
 		
+		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
+		
 		prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		
@@ -246,17 +253,20 @@ public class ToSBit
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
+		//dump (prog, "Extract Vectors in Casts:");
 		prog = (Program)prog.accept(new SeparateInitializers());
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
-		//dump (prog, "ScalarizeVectorAssns");
+		// dump (prog, "ScalarizeVectorAssns");
 
 		// By default, we don't protect array accesses in SKETCH
 		if ("assertions".equals (params.sValue ("arrayOOBPolicy")))
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
 
+		// dump (prog, "After protecting array accesses.");
+		
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
 
 
@@ -302,12 +312,16 @@ public class ToSBit
 		boolean useInsertEncoding = params.flagEquals ("reorderEncoding", "exponential");
 		//invoke post-parse passes
 
-		//dump (prog, "before:");
+		
+		
+		//dump (lprog, "before:");
 		lprog = (Program)lprog.accept(new SeparateInitializers ());
 		lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
 		//dump (lprog, "~regens");
 
+		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
+		//dump (lprog, "~regens");
 		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		// prog = (Program)prog.accept(new NoRefTypes());
@@ -321,8 +335,12 @@ public class ToSBit
 		//dump (lprog, "tifs:");
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 		//dump (lprog, "tifs:");
+		
+		lprog.accept(new PerformFlowChecks());
+		
+		
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
-		//dump (lprog, "After first elimination of multi-dim arrays:");
+		// dump (lprog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
 		if(params.flagEquals("showphase", "preproc")) dump (lprog, "After Preprocessing");
 
@@ -351,12 +369,15 @@ public class ToSBit
 			dump(finalCode, "After Flattening.");
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		if(params.flagEquals("showphase", "taelim")) dump(finalCode, "After Eliminating transitive assignments.");
+		if(params.flagEquals("showphase", "taelim")) 
+			dump(finalCode, "After Eliminating transitive assignments.");
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		//dump(finalCode, "After Dead Code elimination.");
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
-		if(params.flagEquals("showphase", "final")) dump(finalCode, "After Dead Code elimination.");
+		if(params.flagEquals("showphase", "final")) 
+			dump(finalCode, "After Dead Code elimination.");
 	}
 
 	protected String getOutputFileName() {
@@ -382,9 +403,9 @@ public class ToSBit
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		if(!params.hasFlag("outputcode")){
-			//finalCode.accept( new SimpleCodePrinter() );
+			finalCode.accept( new SimpleCodePrinter() );
 			//System.out.println(hcode);
-			System.out.println(ccode);
+			//System.out.println(ccode);
 		}else{
 			try{
 				{
@@ -424,6 +445,25 @@ public class ToSBit
 			}
 		}
 	}
+	
+	public String benchmarkName(){
+		String rv = "";
+		boolean f = true;
+		for(String s : params.inputFiles){
+			if(!f){rv += "_";}
+			rv += s;			
+			f = false;
+		}
+		Map<String, Integer> m =  params.varValues("D");
+		if(m != null){
+			for(Map.Entry<String, Integer> e :m.entrySet()){
+				rv+= "_";
+				rv += e.getKey() + "=" + e.getValue();
+			}
+		}
+		return rv;
+	}
+	
 
 	protected boolean isSketch (Program p) {
 		class hasHoles extends FEReplacer {
@@ -547,6 +587,12 @@ public class ToSBit
 		params.setAllowedParam("trace", new POpts(POpts.FLAG,
 				"--trace  \t Show a trace of the symbolic execution. Useful for debugging purposes.",
 				null, null) );
+		
+		
+		params.setAllowedParam("showExceptionstack", new POpts(POpts.FLAG,
+				"--trace  \t In case of an exception, show the full stack, not just the debug message.",
+				null, null) );
+		
 		params.setAllowedParam("reorderEncoding", new POpts(POpts.STRING,
 				"--reorderEncoding  which \t How reorder blocks should be rewritten.  Current supported:\n" +
 				"             \t * exponential -- use 'insert' blocks\n" +
@@ -589,7 +635,7 @@ public class ToSBit
 		params.setAllowedParam ("arrayOOBPolicy", new POpts (POpts.TOKEN,
 				"--arrayOOBPolicy policy \t What to do when an array access would be out\n"+
 				"                        \t of bounds.",
-				"wrsilent_rdzero", failurePolicies));
+				"assertions", failurePolicies));
 	}
 
 
@@ -611,6 +657,7 @@ public class ToSBit
 
 	public void run()
 	{
+		System.out.println("Benchmark = " + benchmarkName());
 		parseProgram();
 		//dump (prog, "After parsing:");
 
@@ -618,7 +665,8 @@ public class ToSBit
 		//dump (prog, "After replacing constants:");
 		if (!SemanticChecker.check(prog, isParallel ()))
 			throw new IllegalStateException("Semantic check failed");
-
+		
+		
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
@@ -687,7 +735,16 @@ public class ToSBit
 
 	public static void main(String[] args)
 	{
-		new ToSBit(args).run();
+		try{
+			new ToSBit(args).run();
+		}catch(RuntimeException e){
+			System.err.println(e.getMessage());
+			if(CommandLineParamManager.getParams().hasFlag("showExceptionstack")   ){
+				throw  e;
+			}else{
+				System.exit(1);
+			}
+		}
 		System.exit(0);
 	}
 

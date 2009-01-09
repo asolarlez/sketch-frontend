@@ -36,8 +36,11 @@ import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.StreamSpec;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BackendCleanup;
+import streamit.frontend.passes.BlockifyRewriteableStmts;
 import streamit.frontend.passes.DisambiguateUnaries;
+import streamit.frontend.passes.EliminateRegens;
 import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.FunctionParamExtension;
@@ -74,7 +77,11 @@ public class ToStencilSK extends ToSBit
 
     protected Program preprocessProgram(Program prog) {
     	Program lprog = prog;
+    	lprog = (Program)lprog.accept(new SeparateInitializers ());
+    	lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
+		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
     	lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen));
+    	lprog = (Program)lprog.accept(new AssembleInitializers());
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
@@ -149,7 +156,7 @@ public class ToStencilSK extends ToSBit
 
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
 
-        prog = fs.processFuns(prog); //process the ArrFunction's and create new Function's
+        prog = fs.processFuns(prog, varGen); //process the ArrFunction's and create new Function's
         //fs.printFuns();
         System.out.println("After running transformation.");
 
@@ -181,7 +188,10 @@ public class ToStencilSK extends ToSBit
     	tmp = (Program)tmp.accept(new EliminateDeadCode(true));
     	//System.out.println("=========  After ElimDeadCode  =========");
     	tmp = (Program)tmp.accept(new SimplifyVarNames());
-        tmp.accept(new SimpleCodePrinter());
+        
+    	if(params.flagEquals("showphase", "preproc")){
+    		dump(tmp, "After transformations");
+    	}
 
         prog = tmp;
 
@@ -195,8 +205,7 @@ public class ToStencilSK extends ToSBit
     }
 
 	public void eliminateStar(){
-		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));
-
+		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));		
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());

@@ -17,6 +17,7 @@ public abstract class abstractValueType{
 	abstract public abstractValue STAR(FENode star);
 	abstract public abstractValue BOTTOM(); // == BOTTOM(TypePrimitive);
 	abstract public abstractValue BOTTOM(Type t);	
+	abstract public abstractValue BOTTOM(String label);
 	/**
 	 * Called by varDeclare. Used to create the state that goes on the left hand side.
 	 * Usually ends up calling newLHSState();

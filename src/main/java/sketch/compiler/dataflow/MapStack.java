@@ -63,13 +63,17 @@ class MapStack{
 		Iterator it = curVT.values().iterator();
     	while(it.hasNext()){
     		String nm = (String) it.next();
-    		//System.out.println("Unseting " + nm);
-    		varState vs = vars.get(nm);    		
-    		vs.outOfScope();
-    		vars.remove(nm);
     		if(changeTracker != null){
     			changeTracker.remove(nm);
     		}
+    	}
+    	it = curVT.values().iterator();
+    	while(it.hasNext()){
+    		String nm = (String) it.next();
+    		//System.out.println("Unseting " + nm);
+    		varState vs = vars.get(nm);    		
+    		vs.outOfScope();
+    		vars.remove(nm);    		
     	}
 		kid.pushcount = pushcount;
 		return kid;
