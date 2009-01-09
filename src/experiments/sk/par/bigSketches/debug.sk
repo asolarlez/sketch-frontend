@@ -1,0 +1,40 @@
+/**
+ * Hand over Hand remove.
+ * 
+ * */
+ 
+
+bit cond(Node n1, Node n2){
+	if(??){
+		return ??;	
+	}else{
+		return {| (n1 | n2)(.next)? ( == | !=) ( (n1 | n2 | n3)(.next)?  | null) |} 
+	}
+} 
+ 
+
+void hhRemove(Set s, int in){
+		Node cur = s.head;
+		lock(cur);
+		Node prev = null;
+		while(cur.val < in){
+		   Node tmp = prev;	
+		   anyorder{
+		   	  if(cond(cur, prev)){
+		   	  	  lock( {| (cur | prev | tmp)(.next)? |} );
+		   	  }
+		   	  if(cond(cur, prev)){
+		   	  	  unlock( {| (cur | prev | tmp)(.next)? |} );
+		   	  }
+		   	  {
+		   	  	prev = cur;
+		   	    cur = cur.next;
+		   	  }		   	
+		   }
+		}
+		if(cur.val == in){
+			prev.next = cur.next;			
+		}
+		unlock(cur);  
+		unlock(prev);
+}

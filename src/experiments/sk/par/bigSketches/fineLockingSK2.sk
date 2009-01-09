@@ -72,17 +72,16 @@ void hhRemove(Set s, int in){
 			if(more && cur.val < in){
 				Node tprev = prev;
 				reorder{
-					//atomic{
 					if(?? && comp(cur, prev, null)){
 						Node tmp = sel(cur, prev, tprev);
 						lock(tmp); }  // 6 * 36 = 216
-					//}
-					//atomic{
+					
+					
 					if(?? && comp(cur, prev, null)){
 						Node tmp = sel(cur, prev, tprev);
 						unlock(tmp); }// 6 * 36 = 216
-					//}
-					atomic{
+					
+					{
 						prev = cur;
 						cur = cur.next;
 					}
@@ -139,5 +138,4 @@ bit testSK(bit a, bit b) implements test{
 
 	return 1;
 }
-
 

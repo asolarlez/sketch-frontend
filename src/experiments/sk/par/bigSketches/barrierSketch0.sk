@@ -37,7 +37,7 @@ bit predicate(int a, int b, bit c){
 
 static void next(barrier b, int thread){
 	bit s = b.bits[thread];
-	s = predicate(0,0,s);
+	s = !s;
 	b.bits[thread] = s;
 	int cv = 0;
 	atomic{
@@ -45,9 +45,9 @@ static void next(barrier b, int thread){
 		b.count = b.count - 1;	
 	}
 	
-	if( predicate(b.count,cv,s)){
+	if( cv == 1){
 		b.count = N;
-		b.current = predicate(b.count,cv,s);
+		b.current = s;
 	}else{
 		bit t = predicate(0,0,s);
 		atomic(b.current == t){
