@@ -25,10 +25,10 @@ bit[16] sse_transpose(bit[16] mx) implements transpose {
 	bit[16] p0 = 0;
 	bit[16] p1 = 0;
 
-	loop(??){
+	repeat(??){
 		p0[??::4] = shufps(mx[??::4], mx[??::4], ??);
 	}
-	loop(??){
+	repeat(??){
 		p1[??::4] = shufps(p0[??::4], p0[??::4], ??);
 	}
 

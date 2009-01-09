@@ -17,39 +17,22 @@ struct Node{
 }
 
 
-Node select(Queue q){ // 10
-	int t = ??;
-	if(t == 0){
-		return q.tail;	
-	}	
-	if(t == 1){
-		return q.head;	
-	}
-	if(t == 2){
-		Node n = select(q);
-		assert n != null;
-		return n.next;
-	}	
-	return null;
+Node select(Queue q){	
+	return {| q(.head | .tail)(.next)?(.next)? | null |};	
 }
 
-bit cond(Queue q){ // 100
-	if(??){
-		return select(q) == select(q);	
-	}else{
-		return select(q) != select(q);
-	}	
+bit cond(Queue q){ 
+	Node n1 = select(q);
+	Node n2 = select(q);
+	return {| n1 (== | != ) n2 |};
 }
 
 static int enqueue(Queue q, int i){
 	Node n = new Node();
 	n.val = i;
 	n.next = null;	
-	loop(??){
-		if(??){ if(cond(q)){ assert q.tail != null;
-							 q.tail.next = n;  } } // 101
-		if(??){ if(cond(q)){ q.tail = n;  } }
-		if(??){ if(cond(q)){ q.head = n;  } } // 
+	repeat(??){		
+		if(??){ if(cond(q)){ {| q( .head  | .tail )(.next)? |} = n;  } } // 
 	}
 	return 1;
 }

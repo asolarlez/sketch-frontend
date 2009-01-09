@@ -48,47 +48,19 @@ static list reverse(list l){
 }
 
 
-node hole(list l1, list l2){  // 9 choices.
-	node t = null;
-	if(??){
-		if(??){
-			if(??){
-				t = l1.head;	
-			}else{
-				t = l1.tail;
-			}	
-		}else{
-			if(??){
-				t = l2.head;	
-			}else{
-				t = l2.tail;
-			}
-		}
-		if(??){
-			assert t != null;
-			t = t.next;
-		}
-	}
-	return t;
+node hole(list l1, list l2){  
+	return {| null | ( (l1 | l2)(.head | .tail) )(.next)?  |}	;
 }
 
 node holeB(list l1, list l2, node n){
-	return 	(?? ? hole(l1, l2) : n); // 10 choices
+	return 	(?? ? hole(l1, l2) : n); 
 }
 
 
-bit cond(list l1, list l2){ // 83 choices
+bit cond(list l1, list l2){ 
 	node n1 = hole(l1, l2);
 	node n2 = hole(l1, l2);
-	if(??){
-		if(??){
-			return n1 == n2;	
-		}else{
-			return n1 != n2;
-		}
-	}else{
-		return ??;	
-	}
+	return {| n1 (== | !=) n2 | ??  |};
 }
 
 static list reverseSK(list l){

@@ -17,7 +17,7 @@ bit[W] countBits(bit[W] in)
 bit[W] countSketch(bit[W] in) implements countBits
 {
 	bit[W] tmp=in;
-	loop(??)
+	repeat(??)
 	{
 		tmp=(tmp & ??) + (tmp>>?? & ??);
 	}

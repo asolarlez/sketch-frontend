@@ -42,7 +42,7 @@ bit[W] fast(bit[W] x, bit[W] m) implements compress{
 	int i=0;
 	x = x & m;
 	mk = (!m) << ??;	
-	loop(??){
+	repeat(??){
 	  mp = xor_reduce(mk); 
 	  mv = mp & m;
 	  m = maskedShift(m, mv, ??);

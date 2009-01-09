@@ -12,7 +12,7 @@ bit[2*W] swap(bit[W] x, bit[W] y){
 
 bit[2*W] swapSK(bit[W] x, bit[W] y) implements swap{
 	
-	loop(3){
+	repeat(3){
 		if(??){ x = x ^ y;}else{ y = x ^ y; } 
 	}
 			

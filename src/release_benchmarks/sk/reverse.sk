@@ -1,3 +1,5 @@
+pragma options "--cbits 3";
+
 int W = 32;
 
 bit[W] reverseSketch(bit[W] in) implements reverse {
@@ -5,7 +7,7 @@ bit[W] reverseSketch(bit[W] in) implements reverse {
 	bit[W]  t = in;	
 	int s = 1;
 	int r = ??;
-	loop(??){
+	repeat(??){
 		bit[W] tmp1 = (t << s);
 		bit[W] tmp2 = (t >> s);
 		t = tmp1 {|} tmp2; // The {|} operator is syntactic sugar for m=??, (tmp1&m | tmp2&!m).
@@ -16,7 +18,7 @@ bit[W] reverseSketch(bit[W] in) implements reverse {
 
 
 bit[W] reverse (bit[W] in) {
-	bit [W] out;
+	bit [W] out=0;
 	for (int i = 0; i < W; i++) {
 		out[i] = in[W-1 - i];
 	}

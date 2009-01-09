@@ -16,7 +16,7 @@ bit[W] log2(bit[W] in) {
 
 bit[W] sklog2(bit[W] in) implements log2 {
 	bit[W] ret = 0;
-	loop (logW){
+	repeat(logW){
 		if (!iszero(in & ??)) {
 			in = in >> ??;
 			ret = ret | ??;
@@ -39,7 +39,7 @@ bit[W] castInt(int n){
 	bit[W] one = 0;
 	one[0] = 1;
 	bit[W] ret = 0;
-	loop(n){
+	repeat(n){
 		ret = ret + one;	
 	}
 	return ret;

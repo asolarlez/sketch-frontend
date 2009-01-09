@@ -43,7 +43,7 @@ bit[W] fast(bit[W] x, bit[W] m) implements compress{
 	x = x & m;
 	mk = (!m) << 1;
 	
-	loop(??){
+	repeat(??){
 	  mp = mk ^ (mk << ??);
 	  mp = mp ^ ( mp << ??);
 	  mp = mp ^ ( mp << ??); 

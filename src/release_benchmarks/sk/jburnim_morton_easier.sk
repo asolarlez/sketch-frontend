@@ -27,8 +27,11 @@ bit[2*W] sketch(bit[W] x) implements interleave_with_0 {
   // Idea: It should be possible to shift all of the bits "in parallel"
   // using only log2(W) shifts.
   bit[2*W] ret = x;
-  loop(??) {
-    ret = (ret | (ret << ??)) & ??;
+  int pt = 5*W;
+  repeat(??) {
+  	int t = ??;
+    ret = (ret | (ret << t)) & ??;
+    assert t < pt; pt = t;
   }
   return ret;
 }

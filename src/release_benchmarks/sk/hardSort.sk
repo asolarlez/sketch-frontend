@@ -83,7 +83,7 @@ bit generator(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4)
 }
 
 int[N] MergeSort(int[N] input)implements sort{
-	int[N] output;
+	int[N] output=0;
 	if(N>1){ 
 		int[No2] firstHalf = input[0::No2];
 		int[No2] secondHalf = input[No2::No2];

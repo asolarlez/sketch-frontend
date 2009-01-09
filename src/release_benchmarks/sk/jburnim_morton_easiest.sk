@@ -24,14 +24,14 @@ bit[2*W] sketch(bit[W] x, bit[W] y) implements interleave_bits {
   // using only log2(W) shifts.
   bit[2*W] x2 = x;
   int shift = W / 2;
-  loop(??) {
+  repeat(??) {
     x2 = (x2 | (x2 << shift)) & ??;
     shift = shift / 2;
   }
 
   bit[2*W] y2 = y;
   shift = W / 2;
-  loop(??) {
+  repeat(??) {
     y2 = (y2 | (y2 << shift)) & ??;
     shift = shift / 2;
   }

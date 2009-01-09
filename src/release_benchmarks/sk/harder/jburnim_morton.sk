@@ -26,13 +26,16 @@ bit[2*W] sketch(bit[W] x, bit[W] y) implements interleave_bits {
   // Idea: It should be possible to shift all of the bits "in parallel"
   // using only log2(W) shifts.
   bit[2*W] x2 = x;
-  loop(??) {
+  int pt = 4*W;
+  repeat(??) {
+  	int t = ??;
     // Shift some of the bits, and mask out their original positions.
-    x2 = (x2 | (x2 << ??)) & ??;
+    x2 = (x2 | (x2 << t)) & ??;
+    assert t < pt; pt = t;
   }
 
   bit[2*W] y2 = y;
-  loop(??) {
+  repeat(??) {
     // Shift some of the bits, and mask out their original positions.
     y2 = (y2 | (y2 << ??)) & ??;
   }
