@@ -8,6 +8,7 @@ import java.util.Map;
 
 import streamit.frontend.experimental.DataflowWithFixpoint;
 import streamit.frontend.experimental.abstractValue;
+import streamit.frontend.experimental.nodesToSB.IntAbsValue;
 import streamit.frontend.experimental.nodesToSB.IntVtype;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprFunCall;
@@ -20,6 +21,7 @@ import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
 import streamit.frontend.spin.IdentifyModifiedVars;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
@@ -172,12 +174,14 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     }
 
 
-
+	
+	
 	public Object visitFunction(Function func){
 		if( newFuns.containsKey(func.getName()) ){
 			return newFuns.get(func.getName());
 		}
 		Function obj = (Function)super.visitFunction(func);
+		
 		newFuns.put(obj.getName(), obj);
 		return obj;
 	}
