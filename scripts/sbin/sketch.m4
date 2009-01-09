@@ -8,12 +8,13 @@ if [ $OSTYPE == cygwin ]; then
 
 AJAR="`cygpath -w \"$AJAR\"`";
 SJAR="`cygpath -w "$SJAR"`";
+RJAR="`cygpath -w "$RJAR"`";
 TMPCLASSPATH="$AJAR;$SJAR;$RJAR;."
 else
 TMPCLASSPATH="$AJAR:$SJAR:$RJAR:."
 fi
 
-TMPCLASSPATH="ANTLR_JAR:SKETCH_JAR:RATS_JAR:."
+echo $TMPCLASSPATH
 
 # Get the last command-line argument as INFILE
 #
