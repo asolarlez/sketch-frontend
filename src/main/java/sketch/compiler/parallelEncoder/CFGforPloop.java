@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import streamit.frontend.CommandLineParamManager;
 import streamit.frontend.controlflow.CFG;
 import streamit.frontend.controlflow.CFGBuilder;
 import streamit.frontend.controlflow.CFGNode;
@@ -131,13 +132,24 @@ public class CFGforPloop extends CFGBuilder {
 
         CFGSimplifier sym = new CFGSimplifier(builder.locals);
         //System.out.println("**** was " + rv.size() );
-        rv.repOK();
-        //rv = sym.mergeConsecutiveLocals(rv);
-        rv.repOK();
-        rv = sym.simplifyAcrossBranches(rv);
-        rv.repOK();
-        rv = sym.cleanLocalState(rv, builder.localDecls, ploop.getLoopVarDecl());
-        rv.repOK();
+        
+        if( !CommandLineParamManager.getParams().hasFlag("playDumb")  ){
+	        rv.repOK();
+	        //rv = sym.mergeConsecutiveLocals(rv);
+	        rv.repOK();
+	        rv = sym.simplifyAcrossBranches(rv);
+	        rv.repOK();
+	        rv = sym.cleanLocalState(rv, builder.localDecls, ploop.getLoopVarDecl());
+	        rv.repOK();
+        }else{
+        	rv.repOK();
+	        //rv = sym.mergeConsecutiveLocals(rv);
+	        rv.repOK();
+	        rv = sym.simplifyAcrossBranches(rv);
+	        rv.repOK();
+	        rv = sym.cleanLocalState(rv, builder.localDecls, ploop.getLoopVarDecl());
+	        rv.repOK();
+        }
         locals.addAll(builder.localDecls.values());
         //System.out.println("**** became " + rv.size() );
 
