@@ -60,6 +60,8 @@ public class CPreprocessedFileStream extends InputStream {
 
 	@Override
 	public int read () throws IOException {
+		return in.read();
+		/*
 		loop:
 		while (true) {
 			int c = in.read ();
@@ -94,6 +96,7 @@ public class CPreprocessedFileStream extends InputStream {
 			default:
 				throw new IllegalStateException ();
 			}
-		}
+			
+		}*/
 	}
 }
