@@ -127,8 +127,12 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
         //prog.accept(new SimpleCodePrinter().outputTags());
-
-		ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
+		
+		if(params.hasFlag("playDumb")){
+			ploop = (StmtFork) parts.ploop; //.accept(new AtomizeConditionals(varGen));
+		}else{
+			ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
+		}
 		//ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
@@ -260,6 +264,46 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	}
 
 
+	public int findNode(CFGNode start, CFGNode node, int startCount){
+		if(startCount > 4){ 
+			//System.out.println("Woozing out = " + startCount);  
+			return startCount + 20;
+		}
+		if(start == node){ return startCount; }
+		CFGNode tmp = start;
+		while(tmp.isStmt()){
+			if(tmp == node){
+				return startCount;
+			}
+			tmp = tmp.getSuccs().get(0).node;
+		}		
+		int minCount = 100000000;
+		if(!tmp.isExpr()){ 
+			return minCount; 
+		}
+		for(EdgePair ep : tmp.getSuccs()){
+			int t = findNode(ep.node, node, startCount+1);
+			if(t < minCount){ minCount = t; }
+		}
+		return minCount;
+	}
+	
+	int findBestSucc(List<EdgePair> eplist, CFGNode node){
+		int i=0;
+		int minCount = 100000000;
+		int minCountId = -1;
+		for(Iterator<EdgePair> it = eplist.iterator(); it.hasNext(); ++i){
+			EdgePair ep = it.next();
+			CFGNode nxt = ep.node;
+			int  t = findNode(nxt, node, 0);
+			if(t < minCount){
+				minCount = t;
+				minCountId = i;
+			}			
+		}
+		return minCountId;
+	}
+	
 	public CFGNode advanceUpTo(CFGNode node, int thread, CFGNode lastNode){
 
 		if(node != cfg.getEntry() && lastNode == null){
@@ -288,19 +332,13 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 					break;
 				}else{
 					assertStmts.clear();
-					for(Iterator<EdgePair> it = eplist.iterator(); it.hasNext(); ){
+					int i=0;
+					int bestSucc = findBestSucc(eplist, node);
+					for(Iterator<EdgePair> it = eplist.iterator(); it.hasNext(); ++i){
 						EdgePair ep = it.next();
 						CFGNode nxt = ep.node;
-						boolean found = false;
-						CFGNode tmp = nxt;
-						while(tmp.isStmt()){
-							if(tmp == node){
-								found = true;
-								break;
-							}
-							tmp = tmp.getSuccs().get(0).node;
-						}
-
+						//boolean found = findNode(nxt, node);
+						
 						/*
 						for(EdgePair ep2 : nxt.getSuccs()){
 							if(ep2.node == node){
@@ -309,15 +347,14 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 							}
 						}
 						*/
-						if(found){
+						if(bestSucc == i){
 							goodSucc = true;
 							lastNode = nxt;
-							break;
 						}else{
 							assertStmts.add(addAssume(lastNode, thread, ep));
 						}
 					}
-					assert goodSucc : "None of the successors matched";
+					assert goodSucc : "None of the successors matched bestSucc=="+ bestSucc;
 					for(Iterator<Statement> it = assertStmts.iterator(); it.hasNext(); ){
 						addStatement(it.next(), thread);
 					}
@@ -638,6 +675,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 
 		if(node.isExpr()){
+			/*
 			assert false : "NYI Don't know how to modify lastNode.";
 			for(EdgePair ep : node.getSuccs()){
 
@@ -655,7 +693,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 				bodyl.add(new StmtIfThen(cond, cond, s, null));
 
 			}
-
+			*/
 
 
 		}

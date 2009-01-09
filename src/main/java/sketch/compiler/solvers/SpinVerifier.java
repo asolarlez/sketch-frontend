@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import streamit.frontend.CommandLineParamManager;
+import streamit.frontend.ToSBit;
 import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
 import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
 import streamit.frontend.nodes.Program;
@@ -68,7 +70,7 @@ public class SpinVerifier implements Verifier {
 		while (true) {
 			Executer spin = Executer.makeExecuter (
 					spinify (oracle), config, reallyVerbose (), cleanup);
-			try { spin.run (); } catch (IOException ioe) {
+			try { spin.run ( CommandLineParamManager.getParams().flagValue("timeout") ); } catch (IOException ioe) {
 				throw new RuntimeException ("Fatal error invoking spin", ioe);
 			}
 
@@ -149,13 +151,15 @@ public class SpinVerifier implements Verifier {
 			log ("Before specialization and optimization:");
 			p.accept (new SimpleCodePrinter());
 		}
-
-		p = (Program) p.accept (new FlattenStmtBlocks ());
-		//ToSBit.dump (p, "flatten");
-		p = (Program) p.accept (new ParallelPreprocessor ());
-		//ToSBit.dump (p, "preproc");
-		p = (Program) p.accept (new EliminateTransAssns ());
-		p = (Program) p.accept (new EliminateDeadParallelCode ());
+		if(! CommandLineParamManager.getParams().hasFlag("playDumb")){		
+			p = (Program) p.accept (new FlattenStmtBlocks ());
+			//ToSBit.dump (p, "flatten");
+			p = (Program) p.accept (new ParallelPreprocessor ());
+			//ToSBit.dump (p, "preproc");
+			p = (Program) p.accept (new EliminateTransAssns ());
+			
+			p = (Program) p.accept (new EliminateDeadParallelCode ());
+		
 		//ToSBit.dump (p, "dead parallel");
 
 		p = (Program) p.accept (new SeparateInitializers());
@@ -164,7 +168,8 @@ public class SpinVerifier implements Verifier {
 			p = MergeLocalStatements.go (p);
 			//ToSBit.dump (p, "merged local stmts (SpinVerif)");
 		}
-
+		
+		}
 		if (reallyREALLYVerbose ()) {
 			log ("After specialization and optimization:");
 			p.accept (new SimpleCodePrinter ());
