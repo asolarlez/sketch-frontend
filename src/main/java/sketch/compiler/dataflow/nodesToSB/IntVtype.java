@@ -71,7 +71,7 @@ public class IntVtype extends abstractValueType {
 		return new IntState(t, this);
 	}
 
-	private String opStr(abstractValue v1, abstractValue v2, String op) {
+	private String opStr(abstractValue v1, abstractValue v2, String op) { 
 		return "(" + v1.toString() + " " + op + " " + v2.toString() + ")";
 	}
 
@@ -374,6 +374,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue ternary(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
 		assert (cond != null) : "API usage bug";
+
 		if( cond.hasIntVal() ){
 			if( cond.getIntVal() != 0){
 				return vtrue;
@@ -387,6 +388,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
 		if(cond == null) return join(vtrue, vfalse);
+
 		if( cond.hasIntVal() ){
 			if( cond.getIntVal() != 0){
 				return vtrue;

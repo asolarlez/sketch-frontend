@@ -13,9 +13,7 @@ public class IntAbsValue extends abstractValue {
 	protected int type;
 	protected Object obj;
 
-	
-	
-	
+
 	
 	public boolean equals(Object obj){
 		if( !(obj instanceof IntAbsValue) ) return false;
@@ -124,7 +122,7 @@ public class IntAbsValue extends abstractValue {
 	}
 	public String toString(){
 		switch(type){
-		case INT: return obj.toString();
+		case INT: return obj.toString()+ (isVolatile ? "_v" : "");
 		case LIST: {
 			String rval = "$ ";
 			int i=0;
@@ -138,11 +136,11 @@ public class IntAbsValue extends abstractValue {
 		case BOTTOM:{ 
 			if( obj != null ){
 				if(obj.toString().length() > 10){
-					return "BOTTOM";
+					return "BOTTOM" + (isVolatile ? "_v" : "");
 				}
-				return obj.toString();
+				return obj.toString() + (isVolatile ? "_v" : "");
 			}else{
-				return "BOTTOM";
+				return "BOTTOM"+ (isVolatile ? "_v" : "");
 			}
 		}
 		}

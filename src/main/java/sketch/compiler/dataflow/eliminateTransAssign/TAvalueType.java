@@ -40,6 +40,11 @@ public class TAvalueType extends abstractValueType {
 	}
 
 	@Override
+	public abstractValue BOTTOM(String label) {
+		return bottom;
+	}
+	
+	@Override
 	public abstractValue CONST(int v) {
 		return bottom;
 	}
