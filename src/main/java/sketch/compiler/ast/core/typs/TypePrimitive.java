@@ -51,7 +51,7 @@ public class TypePrimitive extends Type
 
     /** For internal use only. This type can be cast to anything, and anything can be cast to it.*/
     public static final int TYPE_ANYTYPE = 16;
-    
+
     /** Type constant for string types */
     public static final int TYPE_STRING = 17;
 
@@ -83,7 +83,7 @@ public class TypePrimitive extends Type
 
     public static final TypePrimitive anytype =
         new TypePrimitive(TYPE_ANYTYPE);
-    
+
     public static final TypePrimitive strtype = new TypePrimitive(TYPE_STRING);
 
     private int type;
@@ -210,6 +210,8 @@ public class TypePrimitive extends Type
         	return true;
         case TYPE_NULLPTR:
         	return t2 == TYPE_NULLPTR;
+        case TYPE_VOID:
+        	return false;
         default:
             assert false : t1;
             return false;

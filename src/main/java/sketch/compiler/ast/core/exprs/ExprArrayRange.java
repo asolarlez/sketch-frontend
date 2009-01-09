@@ -62,7 +62,10 @@ public class ExprArrayRange extends Expression  implements ExprArray
 			if(lenExpr!=null) throw new IllegalStateException("RangeLen len parameter has not been resolved to an int");
 			return len;
 		}
-		public Expression getLenExpression() {return lenExpr;}
+		public Expression getLenExpression() {
+			if(lenExpr != null){ return lenExpr; }
+			return new ExprConstInt(len);			
+		}
 		public boolean hasLenExpression() {return lenExpr!=null;}
 		public String toString()
 		{

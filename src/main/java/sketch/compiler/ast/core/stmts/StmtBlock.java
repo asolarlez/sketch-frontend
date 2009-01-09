@@ -42,6 +42,15 @@ public class StmtBlock extends Statement
         super(context);
         this.stmts = Collections.unmodifiableList(stmts);
     }
+    
+    /** Create a new StmtBlock with the specified ordered list of
+     * statements. */
+    public StmtBlock(List<? extends Statement> stmts)
+    {
+        super( stmts.size() > 0 ? stmts.get(0) : null );
+        this.stmts = Collections.unmodifiableList(stmts);
+    }
+    
 
     /** Create a new StmtBlock with the specified ordered list of
      * statements.
