@@ -1,5 +1,6 @@
 package streamit.frontend.stencilSK;
 
+import java.awt.Container;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
+import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
@@ -28,6 +30,7 @@ import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Program;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtExpr;
@@ -36,6 +39,7 @@ import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.StreamSpec;
+import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
@@ -139,22 +143,6 @@ class condition{
 }
 
 
-/**
- * This class keeps track of all the functions
- * that represent a given array.
- *
- * @author asolar
- *
- */
-class arrInfo{
-	/**
-	 * This variable registers the position in the stack of loop histories where
-	 * the array was created.
-	 */
-	int stack_beg;
-	ArrFunction fun;
-	Stack<ArrFunction> sfun = new Stack<ArrFunction>();
-}
 
 /**
  * This function directs the process of reducing the stencils down to finite functions.
@@ -195,12 +183,18 @@ public class FunctionalizeStencils extends FEReplacer {
 	 */
 	private Map<String, Map<String, Function> > globalInVars;
 
+	
+	private Map<Function, Map<String, ArrFunction>>  assertsPerFunction;
+	
+	
+	
 	public FunctionalizeStencils() {
 		super();
 		superParams = new TreeMap<String, Type>();
 		funmap = new HashMap<String, ArrFunction>();
 		globalInVars = new HashMap<String, Map<String, Function> >();
 		userFuns = new ArrayList<Function>();
+		assertsPerFunction = new HashMap<Function, Map<String, ArrFunction>>();
 	}
 
 
@@ -238,7 +232,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		return ret;
 	}
 
-	public Program processFuns(Program prog){
+	public Program processFuns(Program prog, TempVarGen varGen){
 		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
 		strs.getVars().clear();
 		List<Function> functions=strs.getFuncs();
@@ -302,14 +296,69 @@ public class FunctionalizeStencils extends FEReplacer {
 			callArgs.addAll(extractInits(outf.iterParams.iterator()));
 			callArgs.addAll(makeRefs(outf.othParams));
 			callArgs.addAll(makeRefs(outf.inputParams));
-			callArgs.add(new ExprVar((FEContext) null,outp.getName()));
+			callArgs.add(new ExprVar(outp,outp.getName()));
 			assert(callArgs.size()==strs.getFuncNamed(outfname).getParams().size());
 
-			Statement fcall=new StmtExpr(new ExprFunCall((FEContext) null,outfname,callArgs));
-
-			Function fun=Function.newHelper((FEContext) null,f.getName(),TypePrimitive.voidtype,
+			Statement fcall=new StmtExpr(new ExprFunCall(f,outfname,callArgs));
+			
+			assert outf.idxParams.size() == outf.dimensions.size() : "Type missmatch";
+			Iterator<StmtVarDecl> svit = outf.idxParams.iterator();
+			Iterator<Expression> eit = outf.dimensions.iterator();
+			ExprBinary cond = null;
+			while(eit.hasNext()){
+				StmtVarDecl vd = svit.next();
+				Expression bound = eit.next();
+				String idxName = vd.getName(0);
+				Expression idx = new ExprVar(vd,idxName);
+				ExprBinary c1 = new ExprBinary(idx , idx , "<", bound );
+				ExprBinary c2 = new ExprBinary(idx , idx , ">=", ExprConstInt.zero );
+				if(cond == null){
+					cond = new ExprBinary( c1 , "&&", c2 );
+				}else{
+					cond = new ExprBinary(cond, "&&", new ExprBinary( c1 , "&&", c2 ));
+				}
+			}
+			Statement body = null; 
+			if(cond != null){
+				body = new StmtIfThen(fcall, cond, fcall, new StmtAssign(new ExprVar(outp,outp.getName()), ExprConstInt.zero));
+			}else{
+				body = fcall;
+			}
+			List<Statement> lst = new ArrayList<Statement>();
+			lst.add(body);
+			Map<String, ArrFunction> ass = assertsPerFunction.get(f);
+			List<Expression> assertInits = new ArrayList<Expression>();
+			for(Entry<String, ArrFunction> x : ass.entrySet() ){
+				ArrFunction assfun = x.getValue();
+				// Declare an output variable.
+				String name = varGen.nextVar("ass");
+				StmtVarDecl svd = new StmtVarDecl((FENode)null, TypePrimitive.bittype, name , ExprConstInt.zero);
+				lst.add(svd);
+				// Call the Assertion Function.
+				List<Expression> assArgs=new ArrayList<Expression>();				
+				
+				for(int c =0; c< assfun.idxParams.size(); ++c  ){
+					if(c >= assertInits.size()){
+						String ainm = varGen.nextVar("asIdx");
+						assertInits.add(new ExprVar(body, ainm));
+						driverParams.add(new Parameter(TypePrimitive.inttype, ainm));						
+					}
+					assArgs.add(assertInits.get(c));
+				}
+				
+				assArgs.addAll(extractInits(assfun.iterParams.iterator()));
+				assArgs.addAll(makeRefs(assfun.othParams));
+				assArgs.addAll(makeRefs(assfun.inputParams));
+				assArgs.add(new ExprVar(body, name));
+				Statement asscall=new StmtExpr(new ExprFunCall(body,assfun.getFullName(),assArgs));				
+				// assert its result.
+				lst.add(asscall);
+				lst.add( new StmtAssert( new ExprUnary("!",  new ExprVar(body, name)  )) );
+			}
+			
+			Function fun=Function.newHelper(f,f.getName(),TypePrimitive.voidtype,
 				driverParams, f.getSpecification(),
-				new StmtBlock((FEContext) null, Collections.singletonList(fcall)));
+				new StmtBlock(lst));
 			functions.add(fun);
 		}
 		return prog;
@@ -450,6 +499,8 @@ public class FunctionalizeStencils extends FEReplacer {
 		func.accept(ps);
 		funmap.putAll(ps.getAllFunctions());
 		userFuns.add(func);
+		assertsPerFunction.put(func, ps.getAssMap());
+		
 
 		return func;
 	 }
@@ -483,20 +534,31 @@ class ProcessStencil extends FEReplacer {
 	private Stack<Expression> conds;
 	private ParamTree.treeNode currentTN;
 	private Stack<scopeHist> scopeStack;
-	private Map<String, arrInfo> smap;
+	private Map<String, ArrFunction> smap;
+	private Map<String, ArrFunction> assmap;
 	private final Map<String, Function> inVars;
 	private Set<String> outVar;
 	private final List<StmtVarDecl> inArrParams;
 	private ParamTree ptree;
 	private final String suffix;
 
+	public Map<String, ArrFunction> getAssMap(){
+		Map<String, ArrFunction> nmap = new TreeMap<String, ArrFunction>();
+		for(Iterator<Entry<String, ArrFunction>> it = assmap.entrySet().iterator(); it.hasNext(); ){
+			Entry<String, ArrFunction> tmp = it.next();
+			// assert tmp.getValue().sfun.size() == 1;
+			ArrFunction fun = tmp.getValue();
+			nmap.put(fun.getFullName(), fun);
+		}
+		return nmap;
+	}
 
 	public Map<String, ArrFunction> getAllFunctions(){
 		Map<String, ArrFunction> nmap = new TreeMap<String, ArrFunction>();
-		for(Iterator<Entry<String, arrInfo>> it = smap.entrySet().iterator(); it.hasNext(); ){
-			Entry<String, arrInfo> tmp = it.next();
-			assert tmp.getValue().sfun.size() == 1;
-			ArrFunction fun = tmp.getValue().sfun.peek();
+		for(Iterator<Entry<String, ArrFunction>> it = smap.entrySet().iterator(); it.hasNext(); ){
+			Entry<String, ArrFunction> tmp = it.next();
+			// assert tmp.getValue().sfun.size() == 1;
+			ArrFunction fun = tmp.getValue();
 			nmap.put(fun.getFullName(), fun);
 		}
 		return nmap;
@@ -539,7 +601,6 @@ class ProcessStencil extends FEReplacer {
 		for(Iterator<ArrFunction> it = sc2.funs.iterator(); it.hasNext();  ){
 			 ArrFunction t = it.next();
 			 t.close();
-			 smap.get(t.arrName).fun=null;
 		 }
 	}
 
@@ -608,23 +669,37 @@ class ProcessStencil extends FEReplacer {
 	    		}
 	    	}
 	    }*/
-
-	    void populateArrInfo(arrInfo ainf, String var, Type type, int dim){
-	    	assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
-   	 		ainf.fun = new ArrFunction(var, type, suffix, ptree, currentTN, conds.size());
-   	 		for(int i=0; i<dim; ++i) ainf.fun.idxParams.add( newVD(ArrFunction.IPARAM+i, null) );
+	   
+	    void initArrFun(ArrFunction fun, List<Expression> dimensions){
+	    	int dim = dimensions.size();
+   	 		for(int i=0; i<dim; ++i) 
+   	 			fun.idxParams.add( newVD(ArrFunction.IPARAM+i, null) );
 
    	 		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
    	 			Entry<String, Type> par = pIt.next();
-   	 			ainf.fun.othParams.add(new StmtVarDecl(cnode, par.getValue(), par.getKey(), null));
+   	 			fun.othParams.add(new StmtVarDecl(cnode, par.getValue(), par.getKey(), null));
    	 		}
 
-   	 		ainf.fun.inputParams = this.inArrParams;
+   	 		fun.inputParams = this.inArrParams;
+   	 		
+   	 		
+   	 		fun.addRetStmt( nullMaxIf(null));   	 		
+   	 		scopeStack.peek().funs.add(fun);
+	    }
 
-   	 		int sz = ainf.sfun.size();
-   	 		ainf.fun.addRetStmt( nullMaxIf(sz>0 ? ainf.sfun.peek():null));
-   	 		ainf.sfun.add(ainf.fun);
-   	 		scopeStack.peek().funs.add(ainf.fun);
+		ArrFunction createArrFunctionForAssert(String var, Type type, List<Expression> dimensions){
+	    	//assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
+	    	ArrFunction fun = new ArrFunction(var, type, dimensions, suffix, ptree, ptree.getRoot(), 0);
+	    	initArrFun(fun, dimensions);
+   	 		return fun;
+	    }
+	    
+	    
+		ArrFunction createArrFunction(String var, Type type, List<Expression> dimensions){
+	    	//assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
+	    	ArrFunction fun = new ArrFunction(var, type, dimensions, suffix, ptree, currentTN, conds.size());
+	    	initArrFun(fun, dimensions);
+   	 		return fun;
 	    }
 
 	    public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -638,11 +713,8 @@ class ProcessStencil extends FEReplacer {
 	        		declareNewArray(ta, var);
 	        	}else{
 	        		String var = stmt.getName(i);
-	        		arrInfo ainf = null;
-    	    		assert !smap.containsKey(var);
-    	    		ainf = new arrInfo();
-    	    		smap.put(var, ainf);
-    	    		populateArrInfo(ainf, var, stmt.getType(i), 0);
+    	    		assert !smap.containsKey(var);    	    		
+    	    		smap.put(var, createArrFunction(var, stmt.getType(i), Collections.EMPTY_LIST) );    	    		
     	    		if( stmt.getInit(i) != null ){
     	    			List<Expression> indices = new ArrayList<Expression>(0);
     	    			processArrAssign(var, indices, stmt.getInit(i));
@@ -652,7 +724,13 @@ class ProcessStencil extends FEReplacer {
 	        return stmt;
 	    }
 
-
+	    /**
+	     * Helper function. Create a new variable declaration.
+	     * 
+	     * @param name
+	     * @param init
+	     * @return
+	     */
 	    public StmtVarDecl newVD(String name, Expression init){
 	    	return new StmtVarDecl(cnode, TypePrimitive.inttype,  name, init);
 	    }
@@ -900,8 +978,7 @@ class ProcessStencil extends FEReplacer {
 
 	    	public ExprFunCall doReplacement(String bname, List<Expression> mem){
 //	    		First, we get the function representation of the array.
-	    		arrInfo ainf = smap.get(bname);
-	    		ArrFunction arFun = ainf.sfun.peek();
+	    		ArrFunction arFun = smap.get(bname);
 	    		//Now we build a function call to replace the array access.
 	    		List<Expression> params = new ArrayList<Expression>();
 	    		assert arFun.idxParams.size() == mem.size();
@@ -1010,10 +1087,10 @@ class ProcessStencil extends FEReplacer {
 
 
 	    public void processArrAssign(String var, List<Expression> indices, Expression rhs){
-	    	assert smap.containsKey(var);
-	    	arrInfo ainf = smap.get(var);
-	   	 	assert ( ainf.fun != null);
-	   	 	ArrFunction fun = ainf.fun;
+	    	assert smap.containsKey(var) : "Variable " + var + " does not exist";	    	
+	   	 	ArrFunction fun = smap.get(var);
+	   	 	assert ! fun.isClosed() : "Variable " + var + " is out of scope";
+	   	 	
 	   	 	int i = fun.size();
 	   	 	fun.addIdxAss( newStmtMax(i, indices, fun) );
 	   	 	fun.addMaxAss( pickLargest(i, currentTN.getLevel()*2+1) );
@@ -1038,6 +1115,29 @@ class ProcessStencil extends FEReplacer {
 	        return indices;
 	    }
 
+	    
+	    @Override
+	    public Object visitStmtAssert(StmtAssert stmt){
+	    	
+	    	Expression rhs = stmt.getCond();
+	    	rhs = new ExprUnary("!", rhs);
+	    	String name = newAssertName();
+	    	List<Expression> indices = new ArrayList<Expression>();
+	    	List<Expression> dims = new ArrayList<Expression>();
+	    	for(Iterator<StmtVarDecl> it = currentTN.limitedPathIter(); it.hasNext(); ){
+	    		StmtVarDecl svd = it.next();
+	    		indices.add( new ExprVar(svd, svd.getName(0)) );
+	    		dims.add(null);
+	    	}
+	    	ArrFunction af = createArrFunctionForAssert(name, TypePrimitive.bittype, dims);
+	    	assmap.put(name, af);
+	    	smap.put(name, af);
+	    	processArrAssign(name, indices, rhs);
+	    	af.close();
+	    	return stmt;
+	    }
+	    
+	    
 	    public Object visitStmtAssign(StmtAssign stmt)
 	    {
 	    	cnode = stmt;
@@ -1067,7 +1167,7 @@ class ProcessStencil extends FEReplacer {
 		 	assert init.getNumVars() == 1;
 	        String indVar = init.getName(0);
 	        Expression exprStart = init.getInit(0);
-	        Expression exprStartPred = new ExprBinary(stmt, ExprBinary.BINOP_GE, new ExprVar(stmt, indVar), exprStart);
+	        Expression exprStartPred = new ExprBinary(new ExprVar(stmt, indVar), ">=",  exprStart);
 	        Expression exprEndPred = stmt.getCond();
 	        processForLoop(stmt, indVar, exprStartPred, exprEndPred, stmt.getBody(), true);
 	        return stmt;
@@ -1078,7 +1178,8 @@ class ProcessStencil extends FEReplacer {
 		super();
 		conds = new Stack<Expression>();
 		scopeStack = new Stack<scopeHist>();
-		smap = new HashMap<String, arrInfo>();
+		smap = new HashMap<String, ArrFunction>();
+		assmap = new HashMap<String, ArrFunction>();
 		this.outVar = new TreeSet<String>();
 		this.suffix = "_" + suffix;
 		this.superParams = sp;
@@ -1086,21 +1187,23 @@ class ProcessStencil extends FEReplacer {
 		this.inArrParams = new ArrayList<StmtVarDecl>();
 	}
 
-
+	int assertCnt = 0;
+	private String newAssertName(){
+		return "ASSERT_" + (assertCnt++);
+	}
+	
 	private void declareNewArray(Type ta , String var){
 
 		int tt = 0;
+		List<Expression> dims = new ArrayList<Expression>();
 		while(ta instanceof TypeArray){
+			dims.add( ((TypeArray) ta).getLength()  );
 			ta = ((TypeArray) ta).getBase();
 			++tt;
 			assert tt < 100;
-		}
-
-		arrInfo ainf = null;
-		assert !smap.containsKey(var);
-		ainf = new arrInfo();
-		smap.put(var, ainf);
-		populateArrInfo(ainf, var, ta, tt);
+		}		
+		assert !smap.containsKey(var);		
+		smap.put(var, createArrFunction(var, ta, dims));		
 	}
 
 

@@ -43,7 +43,7 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitStmtIfThen(StmtIfThen stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
-    	printLine("if(" + stmt.getCond() + ")");
+    	printLine("if(" + stmt.getCond() + ")/*" + stmt.getCx() + "*/");
     	printIndentedStatement(stmt.getCons());
     	if(stmt.getAlt() != null){
     		printLine("else");

@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEContext;
+import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.Type;
@@ -55,8 +59,21 @@ public class ArrFunction{
 	List<StmtVarDecl> othParams;
 
 	ParamTree.treeNode declarationSite;
+	
+	final List<Expression> dimensions;
+	
+	/**
+	 * For the array function, we only need to care about conditionals that are between the use and the declaration site.
+	 * Conditionals that are outside the declaration site are irrelevant because no def-use chain involving this variable will cross that
+	 * conditional. 
+	 * 
+	 * The condsPos field remembers the size of the condition stack when this variable is declared, so that we only consider conditions up to that position.
+	 * 
+	 * */
 	int condsPos = -1;
 
+	private boolean isClosed = false;
+	
 	List<StmtVarDecl> inputParams;
 
 
@@ -81,8 +98,9 @@ public class ArrFunction{
 		return idxAss.size();
 	}
 
-	public ArrFunction(String arrName, Type arrType, String suffix, ParamTree pt, ParamTree.treeNode declarationSite, int condsPos){
+	public ArrFunction(String arrName, Type arrType, List<Expression> dimensions, String suffix, ParamTree pt, ParamTree.treeNode declarationSite, int condsPos){
 		this.arrName = arrName;
+		this.dimensions = dimensions;
 		idxParams = new ArrayList<StmtVarDecl>();
 		iterParams = pt;
 		othParams = new ArrayList<StmtVarDecl>();
@@ -99,9 +117,16 @@ public class ArrFunction{
 		return arrName + suffix;
 	}
 
+	public boolean isClosed(){
+		return isClosed;
+	}
+	
+	/**
+	 * This method signals that from here on,
+	the function will not be modified again.
+	*/
 	public void close(){
-		//This method signals that from here on,
-		//the function will not be modified again.
+		isClosed = true;		
 	}
 
 	public String toString(){
@@ -136,6 +161,24 @@ public class ArrFunction{
 		return ret;
 	}
 
+	private void addIndexCheck(List<Statement> stmts){
+		
+		assert idxParams.size() == dimensions.size() : "Type missmatch";
+		Iterator<StmtVarDecl> svit = idxParams.iterator();
+		Iterator<Expression> eit = dimensions.iterator();
+		while(eit.hasNext()){
+			StmtVarDecl vd = svit.next();
+			Expression bound = eit.next();
+			if(bound != null){
+				String idxName = vd.getName(0);
+				Expression idx = new ExprVar(vd,idxName);
+				String errmsg = "Index " + idxName + " is out of bounds for array " + arrName;
+				stmts.add(new StmtAssert(new ExprBinary(idx, "<", bound  ), errmsg));
+				stmts.add(new StmtAssert(new ExprBinary(idx, ">=", ExprConstInt.zero),  errmsg));
+			}
+		}
+	}
+	
 	public Function toAST() {
 		List<Parameter> params=new ArrayList<Parameter>();
 		{
@@ -145,6 +188,10 @@ public class ArrFunction{
 			params.addAll(makeParams(inputParams));
 		}
 		List<Statement> stmts=new ArrayList<Statement>();
+		
+		addIndexCheck(stmts);
+		
+		
 		{
 			for(Iterator<StmtMax> it = idxAss.iterator(); it.hasNext(); ){
 				Statement stmt=it.next().toAST();
@@ -155,21 +202,21 @@ public class ArrFunction{
 				else
 					stmts.add(stmt);
 			}
-			stmts.add(new StmtVarDecl((FEContext) null,
+			stmts.add(new StmtVarDecl((FENode)null,
 				new TypeArray(TypePrimitive.inttype, new ExprConstInt(max_size)),
 				MAX_VAR, new ExprConstInt(0)));
-			stmts.add(new StmtVarDecl((FEContext) null,
+			stmts.add(new StmtVarDecl((FENode) null,
 					TypePrimitive.bittype,
 					IND_VAR, new ExprConstInt(1)));
 			for(int i=0; i<maxAss.size(); ++i){
-				stmts.add(new StmtVarDecl((FEContext) null,
+				stmts.add(new StmtVarDecl((FENode) null,
 						TypePrimitive.bittype,
 						IND_VAR+i, new ExprConstInt(0)));
 			}
 			stmts.addAll(maxAss);
 			stmts.addAll(retStmts);
 		}
-		Statement body=new StmtBlock((FEContext) null,stmts);
+		Statement body=new StmtBlock(stmts);
 
 		Function ret=Function.newHelper(body,getFullName(), arrType,params,body);
 		return ret;

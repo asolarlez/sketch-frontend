@@ -70,6 +70,11 @@ public class ParamTree{
 			return pi;
 		}
 
+		/**
+		 * Returns a limited PathIterator; that is, an iterator over the set of 
+		 * induction variables for all loops surrounding the current position in the loop tree. 
+		 * 
+		 */
 		public PathIterator limitedPathIter(){
 			PathIterator pi = new PathIterator(false);
 			return pi;
