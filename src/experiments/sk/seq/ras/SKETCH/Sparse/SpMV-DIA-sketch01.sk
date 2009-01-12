@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 41 --synth ABC --verif ABC --inbits 10 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
 // Notes on sketching SpMV(DIA)
 //
@@ -10,7 +10,7 @@ pragma options "--unrollamnt 41 --synth ABC --verif ABC --inbits 10 --cbits 2 --
 
 #include "model.skh"
 
-#define N 40
+#define N 2
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -32,7 +32,7 @@ static int min(int a, int b) { return ((a)<(b) ? (a) : (b)); }
 
 #define Vars   ({|d|o|})  /* unused macro */
 
-#define Affine ((??-1)*d + (??-1)*o + n - ??)
+#define Affine (?? ? ((??-1)*d + (??-1)*o + n - ??) : (Consts))
 
 #define Index  Affine
 
@@ -45,9 +45,9 @@ static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
 	int d=0; 
 	int o=0;
 	
-	Loop(d,Consts,Consts) {
-		Loop(o,Consts,Consts) {
-			y[d] += mul(Value,Value);  
+	Loop(d,Affine,Affine) {
+		Loop(o,Affine,Affine) {
+			y[Affine] += mul(Value,Value);  
 		}
 	} 
 	return y;	
@@ -109,7 +109,7 @@ static T[N] SpMV_4(DIA a, T[N] x, int n) {
 //	return desparsify(sparsify(a));
 //}
 T[N] main(T[N][N] A, T[N] x) implements DeMV {
-	return SpMV_4(sparsify(A), x, N);
+	return SpMV_Sketch(sparsify(A), x, N);
 }
 
 #if 1==0
