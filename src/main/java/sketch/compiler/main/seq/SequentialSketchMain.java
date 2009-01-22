@@ -73,6 +73,7 @@ import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
 import streamit.frontend.solvers.SATBackend;
+import streamit.frontend.solvers.SolutionStatistics;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
@@ -107,7 +108,7 @@ public class ToSBit
 	protected final CommandLineParamManager params =  CommandLineParamManager.getParams();
 
 
-	protected ToSBit(String[] args){
+	public ToSBit(String[] args){
 		this.setCommandLineParams();
 		params.loadParams(args);
 	}
@@ -347,16 +348,18 @@ public class ToSBit
 		return lprog;
 	}
 
-	public boolean partialEvalAndSolve(){
+	public SolutionStatistics partialEvalAndSolve(){
 		lowerIRToJava();
 		SATBackend solver = new SATBackend(params, internalRControl(), varGen);
+		
 		if(params.hasFlag("trace")){
 			solver.activateTracing();
 		}
 		backendParameters(solver.commandLineOptions);
-		boolean tmp = solver.partialEvalAndSolve(prog);
+		solver.partialEvalAndSolve(prog);
+		
 		oracle =solver.getOracle();
-		return tmp;
+		return solver.getLastSolutionStats();
 	}
 
 	public void eliminateStar(){
@@ -658,6 +661,17 @@ public class ToSBit
 	public void run()
 	{
 		System.out.println("Benchmark = " + benchmarkName());
+		
+		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
+		partialEvalAndSolve();
+		eliminateStar();
+
+		generateCode();
+		System.out.println("DONE");
+
+	}
+
+	public void preprocAndSemanticCheck() {
 		parseProgram();
 		//dump (prog, "After parsing:");
 
@@ -675,16 +689,8 @@ public class ToSBit
 
 		if (prog == null)
 			throw new IllegalStateException();
-
-		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
-		partialEvalAndSolve();
-		eliminateStar();
-
-		generateCode();
-		System.out.println("DONE");
-
+		
 	}
-
 
 	protected void backendParameters(List<String> commandLineOptions){
 		if( params.hasFlag("inbits") ){
