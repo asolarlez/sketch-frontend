@@ -206,6 +206,9 @@ public class SATBackend {
 				while (m.find ())  log (m.group ());
 			}
 			*/
+			
+			log(1, status.out);
+			
 			lastSolveStats = parseStats (status.out);
 			lastSolveStats.success = (0 == status.exitCode);
 			log (2, "Stats for last run:\n"+ lastSolveStats);

@@ -13,7 +13,6 @@ public class TruncatedOutputStream extends OutputStream {
 	
 	@Override
 	public void write(byte[] b, int s, int f) throws IOException{
-		System.out.write(b, s, f);
 		super.write(b, s, f);
 	}
 	

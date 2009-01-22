@@ -528,7 +528,7 @@ public class ToSBit
 
 		params.setAllowedParam("verbosity", new POpts(POpts.NUMBER,
 				"--verbosity n       \t Sets the level of verbosity for the output. 0 is quite mode 5 is the most verbose.",
-				"0", null) );
+				"1", null) );
 
 		params.setAllowedParam("cex", new POpts(POpts.FLAG,
 				"--cex       \t Show the counterexample inputs produced by the solver (Equivalend to backend flag -showinputs).",
@@ -660,14 +660,15 @@ public class ToSBit
 
 	public void run()
 	{
-		System.out.println("Benchmark = " + benchmarkName());
+		log(1, "Benchmark = " + benchmarkName());
+		preprocAndSemanticCheck();
 		
 		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
 		partialEvalAndSolve();
 		eliminateStar();
 
 		generateCode();
-		System.out.println("DONE");
+		log(1, "DONE");
 
 	}
 
