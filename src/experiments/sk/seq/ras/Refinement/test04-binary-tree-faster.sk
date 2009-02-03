@@ -1,8 +1,8 @@
-pragma options "--cbits 3 --inlineamnt 8 --unrollamnt 8 --heapsize 8 --seed 1 --inbits 2 --synth ABC --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
+pragma options "--cbits 4 --inlineamnt 2 --unrollamnt 17 --heapsize 16 --seed 3 --inbits 2 --synth MINI --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
 
 int dummy(int x) { return 1; }
 
-#define N 8   // size of tree
+#define N 16   // size of tree
 
 struct Node { 
 	int  data;
@@ -34,32 +34,38 @@ Node newNode(int data) {
 	return n;
 }
 
-// traverse the tree inorder and return the data fields in the returned array 
-int[N+1] inorder(Node root) {
-	int[N+1] ret = 0;
-	ret[0] = -1; //let's use -1 as a sentinel
-	if (root == null) 
-		return ret;
-	if (root.left != null) {
-		ret = inorder(root.left);
+// the check routine is slower than allPresent() becasue it is recursive, causing blow up 
+// in the SAT formula.
+//
+// traverse the tree inorder and checks data fields against desired result; 
+// ir indexes into remainder of result; returns ir pointing to rest of the result
+static int check(Node n, int[N+1] result, int ir) {
+	if (n == null) {
+		assert result[ir]==-1;  // we must be at the end of the result
+		return ir;
 	}
-	int i=0;
-	while (ret[i]!=-1 && i<N) i++;
-	if (i < N) {
-		ret[i] = root.data;
-		assert root.data!=-1;
-		i++;
-		ret[i] = -1;
+	if (n.left != null) 
+		ir = check(n.left, result, ir);
+	assert result[ir] == n.data;
+	ir++;
+	if (n.right != null)
+		ir = check(n.right, result, ir);
+	return ir;
+}
+
+void allPresent(Node root, int[N] input) {
+	for (int i=0; i<N; i++) {
+		assert find(root, input[i]);
 	}
-	if (root.right != null) {
-		int[N+1] r = inorder(root.right);
-		for (int j=0; i < N; i++) {
-			ret[i]=r[j];
-			j++;
-		}
-		ret[i]=-1;
+}
+
+bit find(Node n, int d) {
+	while (n!=null) {
+		if (d==n.data) return 1;
+		else if (d<n.data) n=n.left;
+		else n=n.right;
 	}
-	return ret;
+	return 0;
 }
 
 int harness (int x) implements dummy {
@@ -67,13 +73,8 @@ int harness (int x) implements dummy {
 	_rn_ = ??; _nc_ = 0; _n_ = 0;
 	_r_ = ??; _i_ = 0;
 	
-	int[N] input;
-	for (int i=0; i<N; i++) {
-		input[i] = 10-i;
-	}
-
-	//Node root = test(input);
-	// Node root = insertAll(input);
+	int[N] input =  { 3, 9, 2, 11, 6, 5, 7, 4, 8, 16, 10, 1, 12, 13, 14, 15 } ;
+	//int[N] input =  { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 } ;
 	
 	Node root = null;
 	for (int i = 0; i < N; i++) {
@@ -89,48 +90,8 @@ int harness (int x) implements dummy {
 		} 
 	}
 	
-	int[N+1] ret = inorder(root);
-	// corectness condition: sortedness
-	int p = ret[0];
-	for (int i = 1; i<N; i++) {
-		assert p <= ret[i];
-		p = ret[i];
-	}
-	// correctness: same elements as on the input
-	for (int i = 0; i<N; i++) {
-		// assert input[i] == ret[i];  // this check is valid when input is in increasing order
-		assert input[i] == ret[N-i-1];  // this check is valid when input is in decreasing order
-	}
-	return 1;
-}
-
-
-Node insertAll(int[N] input) {
-	Node root = null;
-	for (int i = 0; i < N; i++) {
-		root = insertT(root, input[i]); 
-	}
-	return root;
-}
-
-static Node insertT(Node root, int data) {
-	if (root == null)
-		return newNode(data);
+	// assert N == check(root, output, 0);
+	allPresent(root,input);
 	
-	Node nn = newNode(data);
-	// !!.{| left !! right |} = nn
-	Node n = _N;  
-	bit c = _b;  
-	if (!c) n.left = nn;
-	else n.right = nn;
-	return root;
-}
-
-Node test(int[N] input) {
-	Node root = newNode(input[1]);
-	Node n = newNode(input[0]);
-	Node m = newNode(input[2]);
-	root.left = n;
-	root.right = m;
-	return root;
+	return 1;
 }
