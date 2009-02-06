@@ -12,7 +12,6 @@ public class SATSolutionStatistics extends SolutionStatistics {
 	protected boolean success;
 	protected long elapsedTimeMs;
 	protected long modelBuildingTimeMs;
-	protected long solutionTimeMs;
 	protected long maxMemUsageBytes;
 
 	protected long numNodesInitial;

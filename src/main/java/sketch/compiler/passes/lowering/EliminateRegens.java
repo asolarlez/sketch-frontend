@@ -51,7 +51,7 @@ import streamit.misc.Misc;
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class EliminateRegens extends SymbolTableVisitor {
-	TempVarGen varGen;
+	protected TempVarGen varGen;
 	boolean lhs = false;
 
 	public EliminateRegens (TempVarGen varGen)  {

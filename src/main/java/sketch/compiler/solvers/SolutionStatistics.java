@@ -6,11 +6,12 @@ package streamit.frontend.solvers;
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public abstract class SolutionStatistics extends Statistics {
+	protected long solutionTimeMs;
+
 	public abstract boolean successful ();
 
 	public abstract long elapsedTimeMs ();
 	public abstract long modelBuildingTimeMs ();
-	public abstract long solutionTimeMs ();
 	public abstract long maxMemoryUsageBytes ();
 
 	public String toString () {
@@ -21,5 +22,13 @@ public abstract class SolutionStatistics extends Statistics {
 "      model building time (s) ---------> "+ sec (modelBuildingTimeMs ()) +"\n"+
 "      solution time (s) ---------------> "+ sec (solutionTimeMs ()) +"\n"+
 "      max memory usage (MiB) ----------> "+ MiB (maxMemoryUsageBytes ()) + "\n";
+	}
+
+	public long solutionTimeMs() {
+		return this.solutionTimeMs;
+	}
+
+	public void setSolutionTimeMs(long timeMs) {
+		this.solutionTimeMs = timeMs;
 	}
 }
