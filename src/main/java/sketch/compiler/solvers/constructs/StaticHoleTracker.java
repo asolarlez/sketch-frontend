@@ -13,6 +13,7 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.tosbit.HoleNameTracker;
 
 public class StaticHoleTracker implements HoleNameTracker {
+	public static final String HOLE_PREFIX = "H_";
 	protected Map<Object, String> store;
 	protected TempVarGen varGen;
 	
@@ -31,7 +32,7 @@ public class StaticHoleTracker implements HoleNameTracker {
 		if(store.containsKey(hole)){
 			vname = store.get(hole);
 		}else{
-			vname = "H_" + varGen.nextVar();			
+			vname = HOLE_PREFIX + varGen.nextVar();			
 			store.put(hole, vname);			
 		}
 		return vname;		
