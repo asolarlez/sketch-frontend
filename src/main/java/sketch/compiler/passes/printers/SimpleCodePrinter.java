@@ -25,7 +25,10 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitFunction(Function func)
 	{
 		if(outtags && func.getTag() != null){ out.println("T="+func.getTag()); }
-		printTab(); out.println(func.toString());
+		printTab(); 
+		out.println("/*" + func.getCx() + "*/");
+		printTab();
+		out.println(func.toString());
 		super.visitFunction(func);
 		out.flush();
 		return func;
