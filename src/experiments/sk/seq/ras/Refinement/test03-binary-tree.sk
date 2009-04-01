@@ -1,8 +1,8 @@
-pragma options "--cbits 3 --inlineamnt 7 --unrollamnt 7 --heapsize 7 --seed 1 --inbits 2 --synth ABC --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
+pragma options "--cbits 3 --inlineamnt 8 --unrollamnt 8 --heapsize 8 --seed 1 --inbits 2 --synth ABC --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
 
 int dummy(int x) { return 1; }
 
-#define N 7    // size of tree
+#define N 8   // size of tree
 
 struct Node { 
 	int  data;
