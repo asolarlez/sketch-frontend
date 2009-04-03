@@ -12,9 +12,9 @@ import streamit.frontend.nodes.TypeArray;
 
 abstract public class varState {	
 	private int maxSize = -1;
-	private TreeMap<Integer, abstractValue> arrElems=null;
-	private abstractValue absVal = null;
-	private varState parent = null;	
+	protected TreeMap<Integer, abstractValue> arrElems=null;
+	protected abstractValue absVal = null;
+	protected varState parent = null;	
 	protected Type t;
 	
 	
@@ -26,7 +26,7 @@ abstract public class varState {
 		}
 	}
 	
-	final public abstractValue state(abstractValueType vtype){		
+	public abstractValue state(abstractValueType vtype){		
 		if( arrElems != null){
 			int sz = this.numKeys();
 			if( sz < 0){ return vtype.BOTTOM();  }
@@ -119,7 +119,7 @@ abstract public class varState {
 		return false;
 	}
 	
-	final public abstractValue state(int i){ 
+	public abstractValue state(int i){ 
 		if(arrElems.containsKey(i)){
 			return arrElems.get(i);
 		}else{
