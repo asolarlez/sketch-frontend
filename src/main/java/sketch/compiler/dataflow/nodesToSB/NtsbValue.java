@@ -111,8 +111,17 @@ public class NtsbValue extends IntAbsValue {
 	public void update(abstractValue v){
 		assert !isVolatile : "NtsbValue does not support volatility."; 
 		assert lhsIdx != null;
-		isAXPB=false;
-		X = null;
+		NtsbValue nb = (NtsbValue)v;
+		if(nb.isAXPB){
+			isAXPB = true;
+			X = new NtsbValue(nb.X.toString());
+			A = nb.A;
+			B = nb.B;
+		}else{
+			isAXPB=false;
+			X = null;
+		}		
+		
 		rhsIdx = lhsIdx.idx;
 		lhsIdx.idx ++;
 		super.update(v);
