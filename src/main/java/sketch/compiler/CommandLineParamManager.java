@@ -111,6 +111,7 @@ public class CommandLineParamManager{
 
 	public void parseOptions(String[] args) {
 		for(int i=0; i<args.length; ){
+			if(args[i].length() == 0){ i+= 1; continue;}
 			if( args[i].charAt(0)=='-') {
 				if( args[i].charAt(1)=='-' ){
 
@@ -118,7 +119,7 @@ public class CommandLineParamManager{
 
 				}else{
 					backendOptions.add(args[i]);
-					if( args[i+1].charAt(0) != '-'  && i+1 != args.length -1 ){
+					if( i != args.length -1  && args[i+1].charAt(0) != '-'  && i+1 != args.length -1 ){
 						//System.out.println("BACKEND FLAG " + args[i] + " " + args[i+1]);
 						backendOptions.add(args[i+1]);
 						i+= 2;
