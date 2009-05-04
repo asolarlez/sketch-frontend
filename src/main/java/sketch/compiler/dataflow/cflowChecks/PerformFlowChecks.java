@@ -1,6 +1,7 @@
 package streamit.frontend.experimental.cflowChecks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Parameter;
 import streamit.frontend.nodes.StmtAssign;
+import streamit.frontend.nodes.StmtFork;
 import streamit.frontend.nodes.StmtReturn;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
@@ -38,6 +40,23 @@ public class PerformFlowChecks extends PartialEvaluator {
 	        if(! rhs.isallinit()){ report(stmt,  "There is a variable in the rhs of the assignment that may not have been initialized. All variables must be statically initialized."); }
 	        return super.visitStmtAssign(stmt);
 	    }
+	 
+	 
+	 /**
+     *
+     * This method must necessarily push a parallel section.
+     * This implementation is the most conservative implementation for this methods.
+     * In some cases, we can be more liberal and pass a subset of the variables
+     * that we want to make volatile in the fork. For things like constant propagation,
+     * we only need to make volatile those variables that are modified in the fork.
+     *
+     * For now, I am making this very liberal. Nothing is made volatile.
+     *
+     */
+    protected void startFork(StmtFork loop){
+    	state.pushParallelSection(Collections.EMPTY_SET);
+    }
+	 
 	 
 	 @Override
 	 public Object visitStmtReturn(StmtReturn stmt)
