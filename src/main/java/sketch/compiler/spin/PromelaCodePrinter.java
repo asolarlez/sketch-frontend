@@ -501,7 +501,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 
 	protected int nAtomics;
 	protected void enterAtomic ()  { nAtomics++; }
-	protected void leaveAtomic ()  { assert --nAtomics >= 0; }
+	protected void leaveAtomic ()  { --nAtomics; assert nAtomics >= 0; }
 
 	/** Ensure that N was eliminated in an earlier pass. */
 	protected FENode assertEliminated (FENode n) {
