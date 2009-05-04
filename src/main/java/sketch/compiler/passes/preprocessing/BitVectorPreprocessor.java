@@ -3,11 +3,46 @@ package streamit.frontend.passes;
 import java.util.*;
 
 import streamit.frontend.nodes.*;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.tosbit.EliminateStar.HasStars;
 
 public class BitVectorPreprocessor extends SymbolTableVisitor
 {
+	public static class HasStars extends FEReplacer{
+		private StreamSpec ss;
+		boolean hasUnknown=false;
+		private Set<Function> visitedFunctions = new HashSet<Function>();;
+		public HasStars(StreamSpec ss) {
+			this.ss=ss;
+		}
+		public Object visitExprFunCall(ExprFunCall exp)
+	    {
+			Function fun = ss.getFuncNamed(exp.getName());
+			assert fun != null : "Calling undefined function!!";
+			Object obj = super.visitExprFunCall(exp);
+			if(!visitedFunctions.contains(fun)){
+				visitedFunctions.add(fun);
+				fun.accept(this);
+			}
+			return obj;
+	    }
+
+		public Object visitExprBinary(ExprBinary exp)
+	    {
+			if(exp.getOp() == ExprBinary.BINOP_SELECT){
+				hasUnknown = true;
+			}
+			return super.visitExprBinary(exp);
+	    }
+		public Object visitExprStar(ExprStar star) {
+			hasUnknown = true;
+			return star;
+		}
+		public boolean testNode(FENode node){
+			this.visitedFunctions.clear();
+			hasUnknown = false;
+			node.accept(this);
+			return hasUnknown;
+		}
+	}
 	private TempVarGen varGen;
 	private HasStars starCheck;
 	public BitVectorPreprocessor(TempVarGen varGen) {
