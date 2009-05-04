@@ -46,6 +46,15 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
  */
 public class ProduceBooleanFunctions extends PartialEvaluator {
 	boolean tracing = false;
+	class SpecSketch{
+		public final String spec;
+		public final String sketch;
+		SpecSketch(String spec, String sketch){ this.spec = spec; this.sketch = sketch; }
+		public String toString(){
+			return sketch + " SKETCHES " + spec;
+		}
+	}
+	List<SpecSketch> assertions = new ArrayList<SpecSketch>();
 	public ProduceBooleanFunctions(TempVarGen varGen, 
 			ValueOracle oracle, PrintStream out, int maxUnroll, RecursionControl rcontrol, boolean tracing){
 		super(new NtsbVtype(oracle, out), varGen, false, maxUnroll, rcontrol);
@@ -186,8 +195,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 		
 		((NtsbVtype)this.vtype).out.print(func.getName());
     	if( func.getSpecification() != null ){
-    		((NtsbVtype)this.vtype).out.print(" SKETCHES " + func.getSpecification()); 
-    	}    	
+    		assertions.add(new SpecSketch(func.getSpecification(), func.getName() ));
+    	}
     	
     	List<Integer> tmpopsz = opsizes;
     	List<String> tmpopnm = opnames;
@@ -219,9 +228,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	
     public Object visitStreamSpec(StreamSpec spec)
     {  
-    	((NtsbVtype)this.vtype).out.println("Filter " + spec.getName() + " {");
+
     	Object tmp = super.visitStreamSpec(spec);
-    	((NtsbVtype)this.vtype).out.println("}");
+
+    	for(SpecSketch s : assertions){
+    		((NtsbVtype)this.vtype).out.println("assert " + s + ";");	
+    	}
     	return spec;
     	
     }
