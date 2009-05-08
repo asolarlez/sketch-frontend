@@ -1,0 +1,20 @@
+// Candidates:  1,119,744
+
+#define COMP {| ((cur|prev )(.next)? | null) (== | !=) (cur|prev)(.next)?  |}
+#define LOC  {| (cur | prev )(.next)? |}
+
+void find (Set S, int key, ref Node prev, ref Node cur) {
+	prev = null;
+    cur = S.head;
+    lock (cur);
+	while (cur.key < key) {
+		reorder {
+			{
+    			prev = cur;
+    			cur = cur.next;
+			}  
+			if (COMP) unlock (LOC);
+			if (COMP) lock (LOC);			
+		}
+    }
+}

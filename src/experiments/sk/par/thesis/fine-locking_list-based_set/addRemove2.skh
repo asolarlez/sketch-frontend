@@ -1,0 +1,35 @@
+#define LOC  {| (cur | prev )(.next)? |}
+
+static bit add (Set S, int key) {
+    Node prev = null, cur = null;
+    bit ret = 0;
+
+    find (S, key, prev, cur);
+    if (key < cur.key) {
+        prev.next = newNode (key, cur);
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+    unlock (LOC);
+//    unlock (cur);
+
+    return ret;
+}
+
+static bit remove (Set S, int key) {
+    Node prev = null, cur = null;
+    bit ret = 0;
+
+    find (S, key, prev, cur);
+    if (key == cur.key) {
+        prev.next = cur.next;
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+    unlock (LOC);
+    unlock (LOC);
+
+    return ret;
+}

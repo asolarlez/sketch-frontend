@@ -1,0 +1,77 @@
+//  Candidates:  1080
+
+Node genNode (Node n1, Node n2, Node n3) {      // 6
+    Node g = null;
+    int _which = { * 2 };
+    assert 0 <= _which && _which <= 2;
+    if (0 == _which) {  g = n1;  }
+    if (1 == _which) {  g = n2;  }
+    if (2 == _which) {  g = n3;  }
+    return ?? ? g : g.next;
+}
+
+static void lockSomething (Node n1, Node n2, Node n3) {         // 6
+    lock (genNode (n1, n2, n3));
+}
+
+static void unlockSomething (Node n1, Node n2, Node n3) {       // 6
+    unlock (genNode (n1, n2, n3));
+}
+
+static bit remove (Set S, int key) {
+    bit ret = 0;
+    bit done = 0;   // hack around no 'finally' blocks
+    int _lkwhere = { * 3 };
+    assert 0 <= _lkwhere && _lkwhere <= 5;      // 6
+    int _ulkwhere = { * 3 };
+    assert 0 <= _ulkwhere && _ulkwhere <= 4;     // 5
+
+    if (0 == _lkwhere) {  lockSomething (S.head, null, null);  }
+
+    for (int i = 0; i < NNODES; ++i) {
+        if (!done) {
+            Node pred = S.head;
+
+            if (1 == _lkwhere) {  lockSomething (pred, null, S.head);  }
+
+            Node cur =  S.head.next;
+
+            if (2 == _lkwhere) {  lockSomething (pred, cur, S.head);  }
+            if (0 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
+
+            for (int j = 0; j < NNODES; ++j) {
+                if (cur.key < key) {
+
+                    if (3 == _lkwhere) {  lockSomething (pred, cur, S.head);  }
+
+                    pred = cur;  cur = cur.next;
+
+                    if (1 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
+                }
+            }
+
+            if (4 == _lkwhere) {  lockSomething (pred, cur, S.head);  }
+            if (2 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
+
+            if (validate (pred, cur)) {
+                done = 1;
+                if (cur.key != key) {
+                    ret = 0;
+                } else {
+                    cur.marked = 1;
+                    pred.next = cur.next;
+                    ret = 1;
+                }
+            }
+
+            if (5 == _lkwhere) {  lockSomething (pred, cur, S.head);  }
+            if (3 == _ulkwhere) {  unlockSomething (pred, cur, S.head);  }
+
+        }
+    }
+    assert done;
+
+    if (4 == _ulkwhere) {  unlockSomething (S.head, null, null);  }
+
+    return ret;
+}

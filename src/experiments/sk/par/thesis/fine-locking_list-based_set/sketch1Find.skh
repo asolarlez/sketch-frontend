@@ -1,0 +1,21 @@
+// Candidates: 31,104
+
+#define COMP {| ((cur|prev )(.next)? | null) (== | !=) (cur|prev)(.next)?  |} // 24
+#define LOC  {| (cur | prev)(.next)? |}
+
+static void find (Set S, int key, ref Node prev, ref Node cur) {
+	prev = null;
+    cur = S.head;
+    if(??){ lock (LOC); }// 5
+    if(??){ lock (LOC); }// 5
+	while (cur.key < key) {
+		Node tprev = prev;
+		reorder {
+    		prev = cur;
+    		cur = cur.next;  
+			if (COMP) lock (LOC);// 24 * 4 = 96
+			if (COMP) unlock (LOC);// 96
+		}// 24 
+    }
+}
+// 24 * 96 * 96 * 5*5 = 

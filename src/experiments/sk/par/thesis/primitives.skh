@@ -1,0 +1,33 @@
+#ifndef __PRIMITIVES_SKH_
+#define __PRIMITIVES_SKH_ 1
+
+
+#define CAS(ret, addr, oldVal, newVal)  \
+    atomic {                            \
+        if ((addr) == (oldVal)) {       \
+            addr = newVal;              \
+            ret = 1;                    \
+        } else {                        \
+            ret = 0;                    \
+        }                               \
+    }
+
+#define ibCAS(ret, addr, b1, oldVal, oldbit, newVal, newbit)  \
+    atomic {                            \
+        if ((addr) == (oldVal) && (b1) == (oldbit)) {       \
+            addr = newVal;   b1=newbit;           \            
+            ret = 1;                    \
+        } else {                        \
+            ret = 0;                    \
+        }                               \
+    }
+
+
+
+#define AtomicSwap(ret, addr, newVal)   \
+    atomic {                            \
+        ret = addr;                     \
+        addr = newVal;                  \
+    }
+
+#endif  /* __PRIMITIVES_SKH_ */

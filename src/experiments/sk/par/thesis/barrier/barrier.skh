@@ -1,0 +1,74 @@
+pragma options "--unrollamnt 4";
+
+
+
+#define READ_AND_DEC( VAL, OUT) atomic{ OUT = VAL; VAL = VAL - 1; } 
+
+struct barrier{
+	int count;	
+	bit sense;
+	bit[N] localSenses;
+}
+
+barrier newBarrier(){
+	barrier b = new barrier();	
+	b.count = N;
+	b.localSenses = 0;	
+	b.sense = ??;  // 2
+	return b;
+}
+
+static void next(barrier b, int thread){
+	bit lsense = b.localSenses[thread];
+	int tmpCount;
+	
+#define VALUES {| b.count | b.sense | lsense | N | tmpCount | ?? |} // 5 + N = 8
+#define BITVALUES {| b.sense | lsense | ?? |} // 4
+	
+	READ_AND_DEC( b.count, tmpCount );
+	
+	if( {| VALUES ( == | != ) VALUES |} ){ // 25 +N^2 + 10N = 64
+		reorder{ b.count = VALUES; b.sense = {| (!)? BITVALUES |};/*=6*/ } // 12
+	}else{
+		atomic( {| VALUES (== | !=) lsense |} ){ } // = 16
+	}
+	
+	b.localSenses[thread] = !lsense;	
+}
+
+// TOT = 16*12*64*2 = 
+
+
+bit sketch() implements TRUE{
+	
+	bit[N][T] grid = 0;
+	barrier b = newBarrier();
+	fork(int thread; N){
+		for(int i=0; i<T; ++i){
+			if(i > 0){
+				assert grid[i-1][left(thread)] && grid[i-1][right(thread)]; 	
+			}
+			grid[i][thread] = 1;
+			next(b, thread);
+		}
+	}
+	return 1;
+}
+
+bit TRUE(){ 
+	return 1;	
+}
+
+int left(int t){
+	int rv = 0;
+	rv = t - 1;
+	if( rv < 0){ rv = rv + N; }
+	return rv;	
+}
+
+int right(int t){
+	int rv = 0;
+	rv = t + 1;
+	if( rv >= N){ rv = rv - N; }
+	return rv;	
+}

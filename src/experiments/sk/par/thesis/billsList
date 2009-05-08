@@ -1,0 +1,41 @@
+#define CAS(A, B, C, out)  atomic{ out = 0; if(A==B){  A=C; out=1; }    }
+
+struct page{
+	page next;
+	bit valid;
+}
+
+struct pageset{
+	page head;
+	page tail;
+}
+
+pageset newpageset(){
+	pageset p = new pageset();
+	p.head = null;
+	p.tail = null;
+	return p;
+}
+
+int ALLOC=0;
+int SWEPT =1;
+int FREE = 2;
+
+
+void moveUp(pageset alloc, pageset swept, pageset free, page n){
+
+}
+
+int main(){
+	pageset alloc = newpageset();
+	pageset swept = newpageset();
+	pageset free = newpageset();
+	int X = 3;
+	fork(int i, N){		
+		page p = selectPage(alloc, swept,  X);
+		X = X+1;
+		moveUp(alloc, swept, free, p);
+	
+	}	
+	return 1;
+}

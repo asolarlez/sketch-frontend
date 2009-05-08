@@ -1,0 +1,29 @@
+bit verify (Set S) {
+    assert isValidSet (S, NEGINF, POSINF, NNODES);
+    assert isEmptySet (S);
+
+    return 1;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    Set S = newSet (NEGINF, POSINF);
+
+    for (int key = 1; key <= NTHREADS*NITEMS; ++key) {
+        assert add (S, key);
+    }
+
+    int key = NTHREADS*NITEMS;
+    fork (int i; NTHREADS) {
+        for (int j = 0; j < NITEMS; ++j) {
+            int myKey = -1;
+            atomic {
+                myKey = key;
+                key = key - 1;
+            }
+            assert remove (S, myKey);
+        }
+    }
+
+    return verify (S);
+}
