@@ -1,0 +1,93 @@
+struct Queue {
+    Node tail;
+    Node prevHead;
+}
+
+struct Node {
+    Item obj;
+    Node next;
+    bit taken;
+}
+
+struct Item {
+    int tid;    // the thread that enqueued this
+    int id;     // the id of this object
+}
+
+static Queue newQueue () {
+    Queue q = new Queue ();
+    q.prevHead = newNode (null, null, 1);
+    q.tail = q.prevHead;
+    return q;
+}
+
+static Node newNode (Item obj, Node next, bit taken) {
+    Node n = new Node ();
+    n.obj = obj;
+    n.next = next;
+    n.taken = taken;
+    return n;
+}
+
+static Item newItem (int tid, int id) {
+    Item it = new Item ();
+    it.tid = tid;
+    it.id = id;
+    return it;
+}
+
+/**
+ * Checks these structural properties of 'q':
+ *
+ * - the head is not null
+ * - the head is taken
+ * - the tail is equal to the head, or reachable from the head
+ * - the tail has no successor
+ * - there are at most 'maxlen' nodes in the queue (including the head and tail)
+ *   (this is a cheap cycle detector)
+ * - no 'taken' nodes appear after untaken ones
+ */
+static bit isValidQueue (Queue q, int maxlen) {
+    assert q.prevHead != null;
+    assert q.prevHead.taken;
+
+    if (q.tail == q.prevHead) {
+        assert q.prevHead.next == null;
+        return 1;
+    }
+
+    Node n = q.prevHead;
+    bit sawUntaken = 0;
+    for (int i = 0; i < NNODES; ++i) {
+        if (n != null) {
+            if (sawUntaken) {
+                assert 0 == n.taken;
+            } else if (0 == n.taken) {
+                sawUntaken = 1;
+            }
+            if (n.next == null) {
+                assert n == q.tail;
+                n = null;
+            } else {
+                assert n.next != q.prevHead;
+                n = n.next;
+            }
+        }
+    }
+
+    return n == null;   // the loop "terminated"
+}
+
+/** Assumes isValidQueue (q). */
+static bit isEmptyQueue (Queue q, int maxlen) {
+    Node n = q.prevHead;
+    for (int i = 0; i < NNODES; ++i) {
+        if (n != null) {
+            if (0 == n.taken) {
+                return 0;
+            }
+            n = n.next;
+        }
+    }
+    return 1;
+}

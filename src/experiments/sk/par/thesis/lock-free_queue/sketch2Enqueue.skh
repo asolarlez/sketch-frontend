@@ -1,0 +1,161 @@
+// Candidates:  8,311,968
+
+static void enqueue(Queue Q, Item obj) {
+    Node n = newNode (obj, null, 0);
+    Node tmp = null;
+
+    reorder {   // 6
+        // 42
+        {   // {| (Q.tail|tmp|n)(.next)? |} = {| null|(Q.tail|tmp|n)(.next)? |}
+            Node _rhs = null;
+            int _whichrhs = { * 3 };
+            assert 0 <= _whichrhs && _whichrhs <= 6;
+            if (0 == _whichrhs) {  _rhs = Q.tail.next;  }
+            if (1 == _whichrhs) {  _rhs = Q.tail;  }
+            if (2 == _whichrhs) {  _rhs = tmp.next;  }
+            if (3 == _whichrhs) {  _rhs = tmp;  }
+            if (4 == _whichrhs) {  _rhs = n.next;  }
+            if (5 == _whichrhs) {  _rhs = n;  }
+            if (6 == _whichrhs) {  _rhs = null;  }
+
+            int _whichassn = { * 3 };
+            assert 0 <= _whichassn && _whichassn <= 5;
+            if (0 == _whichassn) {  Q.tail.next = _rhs;  }
+            if (1 == _whichassn) {  Q.tail = _rhs;  }
+            if (2 == _whichassn) {  tmp.next = _rhs;  }
+            if (3 == _whichassn) {  tmp = _rhs;  }
+            if (4 == _whichassn) {  n.next = _rhs;  }
+            if (5 == _whichassn) {  n = _rhs;  }
+        }
+
+        // 56
+        {   // tmp = AtomicSwap ({| (Q.tail|tmp|n)(.next)? |},
+            //           {| null|(Q.tail|tmp|n)(.next)? |});
+            int _whichrhs = { * 3 };
+            assert 0 <= _whichrhs && _whichrhs <= 7;
+            int _whichlhs = { * 3 };
+            assert 0 <= _whichlhs && _whichlhs <= 6;
+
+            // Special cases for Q.tail.next, since it's two reads
+            if (_whichlhs == 0) {
+                Node tail = Q.tail;
+                if (_whichrhs == 0) {
+                    Node tail2 = Q.tail;
+                    atomic {  tmp = tail.next;  tail.next = tail2.next;  }
+                }
+                if (_whichrhs == 1) {  atomic { tmp = tail.next; tail.next = Q.tail; }   }
+                if (_whichrhs == 2) {  atomic { tmp = tail.next; tail.next = tmp.next; }  }
+                if (_whichrhs == 3) {  atomic { tmp = tail.next; tail.next = tmp; }  }
+                if (_whichrhs == 4) {  atomic { tmp = tail.next; tail.next = n.next; }  }
+                if (_whichrhs == 5) {  atomic { tmp = tail.next; tail.next = n; }  }
+                if (_whichrhs == 6) {  atomic { tmp = tail.next; tail.next = null; }  }
+            }
+            if (_whichlhs == 1) {
+                if (_whichrhs == 0) {
+                    Node tail2 = Q.tail;
+                    atomic {  tmp = Q.tail;  Q.tail = tail2.next;  }
+                }
+                if (_whichrhs == 1) {  atomic { tmp = Q.tail; Q.tail = Q.tail; }   }
+                if (_whichrhs == 2) {  atomic { tmp = Q.tail; Q.tail = tmp.next; }  }
+                if (_whichrhs == 3) {  atomic { tmp = Q.tail; Q.tail = tmp; }  }
+                if (_whichrhs == 4) {  atomic { tmp = Q.tail; Q.tail = n.next; }  }
+                if (_whichrhs == 5) {  atomic { tmp = Q.tail; Q.tail = n; }  }
+                if (_whichrhs == 6) {  atomic { tmp = Q.tail; Q.tail = null; }  }
+            }
+            if (_whichlhs == 2) {
+                if (_whichrhs == 0) {
+                    Node tail2 = Q.tail;
+                    atomic {  tmp = tmp.next;  tmp.next = tail2.next;  }
+                }
+                if (_whichrhs == 1) {  atomic { tmp = tmp.next; tmp.next = Q.tail; }   }
+                if (_whichrhs == 2) {  atomic { tmp = tmp.next; tmp.next = tmp.next; }  }
+                if (_whichrhs == 3) {  atomic { tmp = tmp.next; tmp.next = tmp; }  }
+                if (_whichrhs == 4) {  atomic { tmp = tmp.next; tmp.next = n.next; }  }
+                if (_whichrhs == 5) {  atomic { tmp = tmp.next; tmp.next = n; }  }
+                if (_whichrhs == 6) {  atomic { tmp = tmp.next; tmp.next = null; }  }
+            }
+            if (_whichlhs == 3) {
+                if (_whichrhs == 0) {
+                    Node tail2 = Q.tail;
+                    atomic {  tmp = tmp;  tmp = tail2.next;  }
+                }
+                if (_whichrhs == 1) {  atomic { tmp = tmp; tmp = Q.tail; }   }
+                if (_whichrhs == 2) {  atomic { tmp = tmp; tmp = tmp.next; }  }
+                if (_whichrhs == 3) {  atomic { tmp = tmp; tmp = tmp; }  }
+                if (_whichrhs == 4) {  atomic { tmp = tmp; tmp = n.next; }  }
+                if (_whichrhs == 5) {  atomic { tmp = tmp; tmp = n; }  }
+                if (_whichrhs == 6) {  atomic { tmp = tmp; tmp = null; }  }
+            }
+            if (_whichlhs == 4) {
+                if (_whichrhs == 0) {
+                    Node tail2 = Q.tail;
+                    atomic {  tmp = n.next;  n.next = tail2.next;  }
+                }
+                if (_whichrhs == 1) {  atomic { tmp = n.next; n.next = Q.tail; }   }
+                if (_whichrhs == 2) {  atomic { tmp = n.next; n.next = tmp.next; }  }
+                if (_whichrhs == 3) {  atomic { tmp = n.next; n.next = tmp; }  }
+                if (_whichrhs == 4) {  atomic { tmp = n.next; n.next = n.next; }  }
+                if (_whichrhs == 5) {  atomic { tmp = n.next; n.next = n; }  }
+                if (_whichrhs == 6) {  atomic { tmp = n.next; n.next = null; }  }
+            }
+            if (_whichlhs == 5) {
+                if (_whichrhs == 0) {
+                    Node tail2 = Q.tail;
+                    atomic {  tmp = n;  n = tail2.next;  }
+                }
+                if (_whichrhs == 1) {  atomic { tmp = n; n = Q.tail; }   }
+                if (_whichrhs == 2) {  atomic { tmp = n; n = tmp.next; }  }
+                if (_whichrhs == 3) {  atomic { tmp = n; n = tmp; }  }
+                if (_whichrhs == 4) {  atomic { tmp = n; n = n.next; }  }
+                if (_whichrhs == 5) {  atomic { tmp = n; n = n; }  }
+                if (_whichrhs == 6) {  atomic { tmp = n; n = null; }  }
+            }
+        }
+
+        // 589
+        {   // if ({| false | tmp (==|!=) null|(Q.tail|tmp|n)(.next)? |}) {
+            //     ...
+            bit _cond = 0;
+            if (??) {
+                Node _rhs = null;
+                int _whichrhs = { * 3 };
+                assert 0 <= _whichrhs && _whichrhs <= 6;
+                if (0 == _whichrhs) {  _rhs = Q.tail.next;  }
+                if (1 == _whichrhs) {  _rhs = Q.tail;  }
+                if (2 == _whichrhs) {  _rhs = tmp.next;  }
+                if (3 == _whichrhs) {  _rhs = tmp;  }
+                if (4 == _whichrhs) {  _rhs = n.next;  }
+                if (5 == _whichrhs) {  _rhs = n;  }
+                if (6 == _whichrhs) {  _rhs = null;  }
+
+                int _whichop = { * 1 };
+                assert 0 <= _whichop && _whichop <= 1;
+                if (0 == _whichop) {  _cond = (tmp == _rhs);  }
+                if (1 == _whichop) {  _cond = (tmp != _rhs);  }
+            }
+            //    ...
+            // }
+            if (_cond) {
+                Node _rhs = null;
+                int _whichrhs = { * 3 };
+                assert 0 <= _whichrhs && _whichrhs <= 6;
+                if (0 == _whichrhs) {  _rhs = Q.tail.next;  }
+                if (1 == _whichrhs) {  _rhs = Q.tail;  }
+                if (2 == _whichrhs) {  _rhs = tmp.next;  }
+                if (3 == _whichrhs) {  _rhs = tmp;  }
+                if (4 == _whichrhs) {  _rhs = n.next;  }
+                if (5 == _whichrhs) {  _rhs = n;  }
+                if (6 == _whichrhs) {  _rhs = null;  }
+
+                int _whichassn = { * 3 };
+                assert 0 <= _whichassn && _whichassn <= 5;
+                if (0 == _whichassn) {  Q.tail.next = _rhs;  }
+                if (1 == _whichassn) {  Q.tail = _rhs;  }
+                if (2 == _whichassn) {  tmp.next = _rhs;  }
+                if (3 == _whichassn) {  tmp = _rhs;  }
+                if (4 == _whichassn) {  n.next = _rhs;  }
+                if (5 == _whichassn) {  n = _rhs;  }
+            }
+        }
+    }
+}
