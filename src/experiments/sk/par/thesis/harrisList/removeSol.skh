@@ -1,0 +1,60 @@
+#include "../primitives.skh";
+
+static int remove (List L, int key) {
+    Node next = null, pred = null;
+	
+    bit outerMore = 1, innerMore = 1;
+    bit wasSwapped = 0;
+    for (int i = 0; i < 3; ++i) {
+        if (outerMore) {
+            next = L.head;
+            pred = null;
+			
+            innerMore = 1;
+            
+            for (int j = 0; j < 5; ++j) {
+                if (innerMore) {
+                       bit tmp = 1;
+                       if(key > next.key || next.marked){
+
+                       			pred = next;
+			                	next = next.next;
+
+                       }else{
+                       		if(key < next.key){
+                       			innerMore = 0;
+			                    outerMore = 0;
+                       			return -1;	
+                       		}else{
+                       			
+                       			CAS (wasSwapped, next.marked, 0, 1);                       			
+                       			if(wasSwapped){
+                       				ibCAS(wasSwapped,pred.next, pred.marked, next, 0, next.next, 0);
+                       				
+                       				while(!wasSwapped){
+                       					Node tmp = L.head;
+                       					while(tmp != next){
+                       						pred = tmp;
+                       						tmp = tmp.next;	
+                       					}
+                       					ibCAS(wasSwapped,pred.next, pred.marked, next, 0, next.next, 0);
+                       				}                       				
+                   					innerMore = 0;
+	                    			outerMore = 0;
+               						return next.key;
+                       			}else{
+                       				innerMore = 0;
+			                        outerMore = 1;
+                       			}
+                       		 
+                       		}               	
+						}
+                }
+            }
+        
+			
+        }
+    }
+	
+    return -1;
+}

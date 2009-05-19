@@ -1,0 +1,56 @@
+#include "../primitives.skh";
+
+static int remove (List L, int key) {
+    Node next = null, pred = null;
+	
+    bit outerMore = 1, innerMore = 1;
+    bit wasSwapped = 0;
+    for (int i = 0; i < 4; ++i) {
+        if (outerMore) {
+            next = L.head;
+            pred = null;
+			
+            innerMore = 1;
+            for (int j = 0; j < 5; ++j) {
+                if (innerMore) {
+                	atomic{
+                       bit tmp = 1;
+                       loop(5){
+	                       int ii = ??;	                       
+	                       	bit tp1 ={| ((pred | next).key (== | < | <=) key) |};
+	                       	bit tp2 = {| (pred | next).marked |};
+	                       	tmp = {|  (!tmp | tmp | 1) &&  (!wasSwapped | wasSwapped | 1) && (!tp1 | tp1 | 1) && (!tp2 | tp2 | 1) |};
+	                       
+	                       if(ii==1 && tmp){
+	                        CAS (wasSwapped, next.marked, 0, 1);
+	                       }
+	                       if(ii==0 && tmp){
+	                        CAS (wasSwapped, pred.marked, 0, 1);
+	                       }
+	                       if(ii==2 && tmp){
+	                        CAS (wasSwapped, pred.next, next, next.next);
+	                       }
+	                       if(ii==3 && tmp){
+	                        return next.key;
+	                       }
+	                       if(ii==4 && tmp){
+	                        innerMore = 0;
+	                        outerMore = 1;
+	                       }
+	                       if(ii==5 && tmp){
+	                        return -1;
+	                       }
+	                        if(ii==6 && tmp){
+	                        pred = next;
+	                        next = next.next;
+	                        }
+	                	}
+                	}
+                }
+            }
+			
+        }
+    }
+	
+    return -1;
+}

@@ -1,0 +1,42 @@
+
+bit verifier () { return 1; }
+bit main () implements verifier {
+    List L = newList ();
+    bit[NTHREADS*NITEMS] removed = 0;
+
+    add (L, 1);
+    assert remove (L, 1)==1;
+    cleanupList(L);
+    assert isEmpty (L);
+    fork (int i; NTHREADS) {
+    	
+    	 int addKey = i, rmKey = (i+1) % (NTHREADS*NITEMS);
+
+        for (int j = 0; j < NITEMS; ++j) {
+        	
+            add (L, addKey);
+        	
+            addKey = addKey + NTHREADS; // 0,2 - 1,3
+        	
+			
+            	removed[rmKey] = (remove (L, rmKey) != -1); // 1,3 - 2,0
+			
+			
+            rmKey = (rmKey + NTHREADS) % (NTHREADS*NITEMS);
+        }
+    }
+    
+    assert verify (L);
+    
+    for (int k = 0; k < NTHREADS*NITEMS; ++k) {
+        if (removed[k]) {
+            assert remove (L, k) == -1;
+        } else {
+        	assert find(L, k);
+            assert remove (L, k) == k;
+        }
+    }
+    cleanupList(L);
+    assert isEmpty (L);
+    return 1;
+}

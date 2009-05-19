@@ -1,0 +1,99 @@
+struct Node {
+    int key;
+    Node next;
+    bit marked;
+}
+
+struct List {
+    Node head;  // sentinel
+}
+
+int KEY_MIN = -10;
+int KEY_MAX = 10;
+
+Node newNode (int key, Node next, bit marked) {
+    Node n = new Node ();
+    n.key = key;
+    n.next = next;
+    n.marked = marked;
+    return n;
+}
+
+Node mkSentinel (bit isHead) {
+    return newNode (isHead ? KEY_MIN : KEY_MAX, null, 0);
+}
+
+List newList () {
+    List l = new List ();
+    l.head = mkSentinel (1);
+    l.head.next = mkSentinel (0);
+    return l;
+}
+
+bit isHeadNode (Node n) {
+    return n.key == KEY_MIN && n.next != null && n.marked == 0;
+}
+
+bit isTailNode (Node n) {
+    return n.key == KEY_MAX && n.next == null && n.marked == 0;
+}
+
+bit isEmpty(List L){
+	return isTailNode(L.head.next);	
+}
+
+
+bit verify (List L) {
+	cleanupList(L);
+    assertValidList (L);
+    return 1;
+}
+
+void cleanupList(List L){
+	Node next =  L.head;
+	Node prev = null;
+	while(next.next != null){
+		if(	next.marked){
+			prev.next = next.next;
+			next = next.next;	
+		}else{
+			prev = next;
+			next = next.next;
+		}
+	}	
+}
+
+void assertValidList (List L) {
+    Node n = L.head;
+    assert isHeadNode (n);
+
+    int lastKey = KEY_MIN;
+    bit more = 1;
+    for (int i = 0; i < 5; ++i) {
+        if (more) {
+            if (n.next == null) {
+                assert isTailNode (n);
+                more = 0;
+            } else {
+                assert n.key >= lastKey;
+                assert n.next != null;
+                lastKey = n.key;
+                n = n.next;
+            }
+        }
+    }
+    assert more == 0;
+}
+
+
+bit find (List L, int key) {
+    Node n = L.head;
+    for (int i = 0; i < 5; ++i) {
+        if (n.key == key && n.marked == 0)
+            return 1;
+        else if (n.next != null)
+            n = n.next;
+        else
+            return 0;
+    }
+}

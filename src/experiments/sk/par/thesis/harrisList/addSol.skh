@@ -1,0 +1,34 @@
+#include "../primitives.skh";
+
+static void add (List L, int key) {
+    Node n = newNode (key, null, 0);
+    Node next = null, pred = null;
+
+    bit outerMore = 1, innerMore = 1;
+    bit wasSwapped = 0;
+    for (int i = 0; i < 4; ++i) {
+        if (outerMore) {
+            next = L.head;
+            pred = null;
+            innerMore = 1;
+            for (int j = 0; j < 5; ++j) {
+                if (innerMore) {
+                	
+                    if (key < next.key) {
+                        n.next = next;
+                        ibCAS(wasSwapped,pred.next, pred.marked, next, 0, n, 0);
+						//CAS (wasSwapped, pred.next, next, n);
+                        innerMore = 0;
+                        outerMore = !wasSwapped;
+                    } else {
+                        pred = next;
+                        next = next.next;
+                    }
+                	
+                }
+            }
+            
+        }
+    }
+    assert wasSwapped;
+}
