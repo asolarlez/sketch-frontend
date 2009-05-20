@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 4 --synth MINI --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
 // Notes on sketching SpMV(DIA)
 //
@@ -10,7 +10,7 @@ pragma options "--unrollamnt 4 --synth MINI --verif ABC --inbits 1 --cbits 2 --h
 
 #include "model.skh"
 
-#define N 3
+#define N 2
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -31,9 +31,10 @@ static int min(int a, int b) { return ((a)<(b) ? (a) : (b)); }
 
 
 #define Consts ({|0|n|(2*n-1)|})
-#define Affine ((??-1)*d + (??-1)*o + ??*n - ??)
-#define Index  Affine
-#define Value (?? ? a.V[Index][Index] : x[Index])
+#define Affine1 ((??-1)*d + ??*n - ??)
+#define Affine2 ((??-1)*d + (??-1)*o + ??*n - ??)
+#define Index  Affine2
+#define Value  (a.V[Index][Index])
 #define Loop(iv,S,E) for(iv = S; iv < E; iv++) 
 
 static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
@@ -42,8 +43,8 @@ static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
 	int o=0;
 	
 	Loop(d,Consts,Consts) {
-		Loop(o,Consts,Affine) {
-			y[Affine] += mul(Value,Value);  
+		Loop(o,Affine1,Affine1) {
+			y[Index] += mul(Value,x[Index]);  
 		}
 	} 
 	return y;	
