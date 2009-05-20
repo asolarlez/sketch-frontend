@@ -1,0 +1,4 @@
+int main() implements one {
+	assert ?? * ?? = 99;
+	return 1;
+}
