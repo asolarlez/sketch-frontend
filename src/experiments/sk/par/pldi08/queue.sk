@@ -1,4 +1,4 @@
-pragma options "--reorderEncoding quadratic --seed 7";
+pragma options "--reorderEncoding quadratic";
 
 include "queue.skh";
 
@@ -12,14 +12,11 @@ static void Enqueue(Queue q, Object newobject) {
   QueueEntry tmp = null;
   QueueEntry newEntry = newQueueEntry(null, newobject, 0);
 
-/*  reorder {
+  reorder {
     aLocation = aValue;
     AtomicSwap(tmp, aLocation, aValue);
     if (anExpr(tmp, aValue)) aLocation = aValue;
   }
-*/
-    AtomicSwap (tmp, q.tail, newEntry);
-    tmp.next = newEntry;
 }
 
 static Object Dequeue(Queue q) {
@@ -33,12 +30,11 @@ static Object Dequeue(Queue q) {
     if (nextEntry == null)
       return null;
     else {
-      QueueEntry p = q.prevHead;//{| q.prevHead | nextEntry |};
-
-      while (p != null && p.taken) {//{| p(.next)?.taken |} ) {
+      QueueEntry p = {| q.prevHead | nextEntry |};
+      do {
         q.prevHead = p;
         p = p.next;
-      }
+      } while (p != null && {| p(.next)?.taken |} );
       return nextEntry.stored;
 } }
 

@@ -1,4 +1,0 @@
-int N = 5;
-int T = 1;
-
-include "soln.skh";

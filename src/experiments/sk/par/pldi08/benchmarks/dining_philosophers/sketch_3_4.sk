@@ -1,4 +1,0 @@
-int N = 3;
-int T = 4;
-
-include "sketch.skh";
