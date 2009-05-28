@@ -130,7 +130,7 @@ public class GetExprType extends FENullVisitor
 
     		for (int i=1; i<elems.size(); i++) {
     			Type t = (Type)((Expression)elems.get(i)).accept(this);
-    			base = t.leastCommonPromotion(t);
+    			base = base.leastCommonPromotion(t);
     		}
     	}
 
