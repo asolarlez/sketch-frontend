@@ -1,0 +1,10 @@
+// i++ is not handled properly (i is not incremented)
+
+pragma options "--keepasserts --showphase preproc";
+
+void dummy(int x) { return; }
+void harness (int x) implements dummy {
+	int i = 0;
+	int[2] a = ??;
+	assert 0 == a[i++] + a[i++];
+}

@@ -4,7 +4,7 @@
 
 void dummy(ARGS) {} 
 void main(ARGS) implements dummy {
-	Graph       g = new Graph();	
+	Graph       g = create_graph();	
 	Spec_Graph sg = new Spec_Graph();
 	
 	Pair p = new Pair();
@@ -31,24 +31,45 @@ struct Pair {
 	int f;   // field represented with a unique int id; f > 0.
 }
 struct Node {
-	Node parent;  
+	Node parent;
+	int  id;   // int id of this node  
+	int  type; // Java type
 }
 struct Graph {
 	// for now, use adjacency matrix, where m[i][j] & bit(f) means an f edge from i to j
 	bit[N][N][N] m;
+	Node[N] nodes;
+}
+Graph create_graph() {
+	Graph g = new Graph();
+	for (int i=0; i<N; i++) {
+		g.nodes = new Node();
+	} 
+	return g;
 }
 struct Spec_Graph {
 }
 
 Graph add_pair(Graph g, Pair p) {
 	// is there a node for v1 ?
-	int n1 = p.v1; // hack, for now; or say n1 = !!
+	int n1 = ufun1(p.v1); // or say n1 = !!
 	
 	// is there a node for v2.f ?
 	int n2 = ufun2(p.v2, p.f) // always return the same value
 	
+	// unify n1 and n2
+	// find representative of n1
+	int n1_repre = !!;  // fun of n1
+	assert n1_repre.parent == null;
+	n1_repre.parent = n2.parent;
 	
+	// handle unification across fields:
+	// if n1.f and n2.f exists, unify their classes, recursively
+	// question: if a class is a set of nodes, where do we attach the field?
 	
+	// unify all nodes on a chain that have equal types; use predecessors
+	
+		
 	return g;
 }
 bit query_pair(Graph g, Pair p) {

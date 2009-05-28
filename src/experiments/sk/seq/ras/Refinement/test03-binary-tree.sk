@@ -10,7 +10,7 @@ struct Node {
 	Node right;
 }
 
-#define NA N-1     // max number of number of Node angels
+#define NA N-1    // max number of number of Node angels
 #define BA N-1    // max number of number of bit angels
 
 Node[N] _Node_;  // list of allocated nodes

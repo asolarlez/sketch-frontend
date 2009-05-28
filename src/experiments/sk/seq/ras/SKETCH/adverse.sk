@@ -1,0 +1,14 @@
+pragma options "--cex --synth ABC  --inbits 12 --cbits 12 --showphase final --keepasserts --verbosity 1";
+
+void main(int x) implements one{
+	int r;
+	
+	r = x-500;
+	if (x < ??)
+		r = -r;
+	assert (r>=0); 
+}
+
+void one(int dummy) {
+	
+}
