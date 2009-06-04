@@ -13,7 +13,7 @@ int WW=6;
 int log3Wsq = 1;
 */
 
-pragma options "--cex --seed 1 --inbits 4 --cbits 4 --synth ABC --verif MINI";  
+pragma options "--cex --seed 1 --inbits 4 --cbits 4 --synth MINI --verif MINI";  
 int W=4;  // note that --inbits must be set to W 
 int WW=8;
 int log3Wsq = 2;
