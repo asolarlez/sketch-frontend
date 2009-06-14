@@ -10,11 +10,11 @@ import java.util.Set;
 
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
+import streamit.frontend.nodes.ExprConstBoolean;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprField;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
@@ -228,13 +228,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					String outParamName  = outParam.getName();
 					assert outParam.isParameterOutput();
 
-					Expression defaultValue = null;
-
-					if(func.getReturnType().isStruct()){
-						defaultValue = ExprNullPtr.nullPtr;
-					}else{
-						defaultValue = ExprConstInt.zero;
-					}
+					Expression defaultValue = getDefaultValue(func.getReturnType());
+					
 					stmts.add(0, new StmtAssign(new ExprVar(func, outParamName), defaultValue));
 				}
 			}
@@ -286,7 +281,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		if(hasRet(body)){
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
-					ExprConstInt.zero) );
+					getFalseLiteral()) );
 		}
 		
 		if(body!=stmt.getBody() || cond != stmt.getCond())
@@ -305,7 +300,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		if(hasRet(body)){
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
-					ExprConstInt.zero) );
+					getFalseLiteral()) );
 		}
 		
 		if(body!=stmt.getBody() || cond != stmt.getCond())
@@ -325,7 +320,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		if(SimpleLoopUnroller.decideForLoop(stmt)<0 &&  hasRet(body)){
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
-					ExprConstInt.zero) );
+					getFalseLiteral()) );
 		}
 		
 		if(body!=stmt.getBody() || cond != stmt.getCond())
@@ -370,7 +365,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
 			int ptype = p.getPtype();
-			Expression oldArg= (p.getType() instanceof TypeStruct || p.getType() instanceof TypeStructRef) ? new ExprNullPtr() : ExprConstInt.zero ;
+			Expression oldArg= (p.getType() instanceof TypeStruct || p.getType() instanceof TypeStructRef) ? new ExprNullPtr() : getDefaultValue(p.getType()) ;
 			if(ptype == Parameter.REF || ptype == Parameter.IN){
 				oldArg=(Expression) existingArgs.get(psz);
 				++psz;
@@ -522,6 +517,21 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		newStatements = oldns;
 		inRetStmt = oldInrs;
 		return ret;
+	}
+	
+	protected Expression getFalseLiteral() {
+		return ExprConstInt.zero;
+	}
+	
+	protected Expression getDefaultValue(Type t) {
+		Expression defaultValue = null;
+		if(t.isStruct()){
+			defaultValue = ExprNullPtr.nullPtr;
+		} else {
+			defaultValue = ExprConstInt.zero;
+		}
+		
+		return defaultValue;
 	}
 
 }
