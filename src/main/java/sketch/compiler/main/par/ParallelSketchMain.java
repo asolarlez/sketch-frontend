@@ -27,12 +27,14 @@ import streamit.frontend.passes.EliminateLockUnlock;
 import streamit.frontend.passes.EliminateMultiDimArrays;
 import streamit.frontend.passes.EliminateRegens;
 import streamit.frontend.passes.EliminateReorderBlocks;
+import streamit.frontend.passes.EliminateZeroArrays;
 import streamit.frontend.passes.FunctionParamExtension;
 import streamit.frontend.passes.HoistDeclarations;
 import streamit.frontend.passes.MakeAllocsAtomic;
 import streamit.frontend.passes.MergeLocalStatements;
 import streamit.frontend.passes.NumberStatements;
 import streamit.frontend.passes.ProtectArrayAccesses;
+import streamit.frontend.passes.ScrubStructType;
 import streamit.frontend.passes.SemanticChecker;
 import streamit.frontend.passes.SeparateInitializers;
 import streamit.frontend.passes.TrimDumbDeadCode;
@@ -56,7 +58,7 @@ import streamit.frontend.tosbit.RandomValueOracle;
 
 public class ToPSbitII extends ToSBit {
 
-	protected static final int MIN_BACKEND_VERBOSITY = 3;
+	protected static final int MIN_BACKEND_VERBOSITY = 6;
 
 	protected CompilationStatistics stats;
 	protected boolean success = false;
@@ -91,6 +93,14 @@ public class ToPSbitII extends ToSBit {
 		} else {
 			commandLineOptions.add("-verbosity");
 			commandLineOptions.add(""+ MIN_BACKEND_VERBOSITY);
+		}
+		if(params.hasFlag("synth")){
+			commandLineOptions.add("-synth");
+			commandLineOptions.add( "" + params.sValue("synth") );
+		}
+		if(params.hasFlag("verif")){
+			commandLineOptions.add("-verif");
+			commandLineOptions.add( "" + params.sValue("verif") );
 		}
 	}
 
@@ -198,9 +208,9 @@ public class ToPSbitII extends ToSBit {
 				}
 			}
 		} while (true);
-
+		synth.cleanup();
+		stats.finalSynthStats(synth.getLastSolutionStats());
 		oracle = ora;
-
 	}
 
 	protected Program preprocessProgram(Program lprog) {
@@ -219,10 +229,13 @@ public class ToPSbitII extends ToSBit {
 		//dump (lprog, "bounded, ~conditionals, atomized");
 
 		//prog = (Program)prog.accept(new NoRefTypes());
+		
+		//lprog = (Program)lprog.accept(new ProtectInsertROBlocks());
+		
 		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
-		//dump (lprog, "~insertblocks:");
+		dump (lprog, "~insertblocks:");
 		lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		//dump (lprog, "bounded loops");
 		//dump (prog, "bef fpe:");
@@ -251,11 +264,10 @@ public class ToPSbitII extends ToSBit {
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true, true ) );
 		super.lowerIRToJava();
 		beforeUnvectorizing = tmp;
-		
 		prog = (Program) prog.accept (new EliminateConditionals(varGen));
-		//dump (prog, "elim conds");
-		prog = (Program) prog.accept(new ProtectArrayAccesses(
-				FailurePolicy.ASSERTION, varGen));
+		// dump (prog, "elim conds");
+//		prog = (Program) prog.accept(new ProtectArrayAccesses(
+//				FailurePolicy.ASSERTION, varGen));
 		//prog = (Program) prog.accept(new ProtectArrayAccesses(
 		//		  FailurePolicy.WRSILENT_RDZERO, varGen));
 		//dump (prog, "protect array accesses");
@@ -283,10 +295,18 @@ public class ToPSbitII extends ToSBit {
 			prog = (Program) prog.accept (new HoistDeclarations ());
 			//dump (prog, "hoisted decls");
 		}
+		
+		prog = (Program) prog.accept(new ScrubStructType());
 
 		prog = (Program) prog.accept(new NumberStatements());
 
 
+		
+		prog = (Program) prog.accept(new EliminateZeroArrays());
+		
+		prog = MergeLocalStatements.go (prog);
+		
+		// dump(prog, "after eza.");
 		if (params.hasFlag ("simplifySpin")) {
 			prog = MergeLocalStatements.go (prog);
 			//dump (prog, "merged local stmts");
@@ -329,7 +349,9 @@ public class ToPSbitII extends ToSBit {
 			syn.activateTracing();
 		}
 
-		backendParameters(syn.commandLineOptions);
+		backendParameters(syn.commandLineOptions());
+		
+		syn.initialize();
 		return syn;
 	}
 	public SolverStatistics createSynthStats () {

@@ -57,6 +57,7 @@ import streamit.frontend.stencilSK.StencilSemanticChecker;
 import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
+import streamit.frontend.tosbit.recursionCtrl.DelayedInlineRControl;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 /**
@@ -117,9 +118,16 @@ public class ToStencilSK extends ToSBit
 
 
     public RecursionControl visibleRControl(){
-    	// return new DelayedInlineRControl(params.inlineAmt, params.branchingFactor);
+    	// return new DelayedInlineRControl(params.flagValue("inlineamnt"), params.flagValue("branchamnt"));
     	return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog);
     }
+    
+    
+    public RecursionControl internalRControl(){
+    	return new DelayedInlineRControl(params.flagValue("inlineamnt"), params.flagValue("branchamnt"));		
+	}
+	
+	
 
     public void run()
     {

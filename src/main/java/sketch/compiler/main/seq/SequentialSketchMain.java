@@ -246,10 +246,10 @@ public class ToSBit
 		//dump (prog, "bef fpe:");
 		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
-		//dump (prog, "MBB:");
+		// dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
-		//dump (prog, "After eliminating structs:");
+		// dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
@@ -259,14 +259,14 @@ public class ToSBit
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
-		// dump (prog, "ScalarizeVectorAssns");
+		dump (prog, "ScalarizeVectorAssns");
 
 		// By default, we don't protect array accesses in SKETCH
 		if ("assertions".equals (params.sValue ("arrayOOBPolicy")))
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
 
-		// dump (prog, "After protecting array accesses.");
+		dump (prog, "After protecting array accesses.");
 		
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
 

@@ -2,6 +2,7 @@
 package streamit.frontend;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -307,4 +308,22 @@ public class CommandLineParamManager{
 		return val.equals(candidate);
 	}
 
+	public String[] getBackendCommandline(List<String> commandLineOptions, String[] extraParams){
+		String command = (hasFlag("sbitpath") ? sValue("sbitpath") : "") + "SBitII";
+		int begin = 1 + extraParams.length;
+		if(commandLineOptions == null){ commandLineOptions = Collections.EMPTY_LIST; }
+		String[] commandLine = new String[3 + extraParams.length + commandLineOptions.size()];
+		commandLine[0] = command;
+		for(int i=0; i<extraParams.length; ++i){
+			commandLine[i+1] = extraParams[i];
+		}
+		
+		for(int i=0; i< commandLineOptions.size(); ++i){
+			commandLine[begin+i] = commandLineOptions.get(i);
+		}
+		commandLine[commandLine.length -2 ] = sValue("output") ;
+		commandLine[commandLine.length -1 ] = sValue("output") + ".tmp";
+		return commandLine;
+	}
+	
 }

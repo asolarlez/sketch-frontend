@@ -274,6 +274,7 @@ public class CFG
                 shape = "box";
                 // label = seq + ": " + node.getStmt().getClass();
                 label = seq + ": " + node.getStmt();
+                label = label.replace('\n', ' ');
             }
             result.append(name + " [ label=\"" + label + "\", shape=" +
                           shape + " ]\n");
