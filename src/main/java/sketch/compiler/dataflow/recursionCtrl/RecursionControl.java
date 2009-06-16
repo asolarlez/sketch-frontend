@@ -1,4 +1,8 @@
 package streamit.frontend.tosbit.recursionCtrl;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
@@ -33,7 +37,45 @@ import streamit.frontend.nodes.Statement;
  *
  */
 
+
+class StackTracker{
+	Map<ExprFunCall, Integer> idmap = new HashMap<ExprFunCall, Integer>();
+	Stack<Integer> cstack = new Stack<Integer>();
+	
+	Integer getId(ExprFunCall c){
+		return c.getCallid();
+		/*
+		if(idmap.containsKey(c)){
+			return idmap.get(c);
+		}else{
+			Integer x = idmap.size();
+			idmap.put(c, x);
+			return x;
+		}
+		*/
+	}
+	
+	void pushCall(ExprFunCall c){
+		cstack.push(getId(c));
+	}
+	void popCall(ExprFunCall c){
+		Integer x = cstack.pop();
+		assert x.intValue() == getId(c).intValue();
+	}
+	String getSstring(){
+		String rv = "";
+		for(Integer t : cstack){
+			rv += "_" + t;
+		}
+		return rv;
+	}
+}
+
+
 public abstract class RecursionControl{
+	
+	StackTracker strack = new StackTracker();
+	
 	/**
 	 * The function that is actually used for inlining decisions may be different from the
 	 * actual function called because calls to sketches are replaced by calls to their respective specs.
@@ -72,6 +114,8 @@ public abstract class RecursionControl{
 	public String debugMsg(){
 		return "";
 	}
+	
+	public abstract String callStack();
 	
 	boolean tracing = false;
 	public void activateTracing(){

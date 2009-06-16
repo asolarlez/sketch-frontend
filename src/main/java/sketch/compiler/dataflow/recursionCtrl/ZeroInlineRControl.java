@@ -37,7 +37,10 @@ public class ZeroInlineRControl extends RecursionControl {
 		// Nothing to do here.
 	}
 
-
+	public String callStack(){
+		return "";
+	}
+	
 
 	@Override
 	public boolean testCall(ExprFunCall fc) {		

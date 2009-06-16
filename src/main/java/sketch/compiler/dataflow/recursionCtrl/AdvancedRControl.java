@@ -206,13 +206,18 @@ public class AdvancedRControl extends RecursionControl {
 
 	@Override
 	public void popFunCall(ExprFunCall fun) {
+		strack.popCall(fun);
 		FunInfo fi = funmap.get(fun.getName());
 		fi.rdepth--;
 		--tt;
 	}
 
+	public String callStack(){
+		return strack.getSstring();
+	}
 
 	public void pushFunCall(ExprFunCall fc, Function fun) {
+		strack.pushCall(fc);
 		FunInfo fi = funmap.get(fc.getName());
 		if( tracing && ! fi.isTerminal ){
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO

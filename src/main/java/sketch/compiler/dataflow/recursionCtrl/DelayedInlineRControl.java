@@ -13,6 +13,10 @@ public class DelayedInlineRControl extends BaseRControl {
 	public InlineCounter appearenceCounter = new InlineCounter();	
 	private int MAX_OCC;
 	
+	
+	public boolean leaveCallsBehind(){
+		return true;
+	}
 	public DelayedInlineRControl(int maxInline, int maxOccurrence){
 		super(maxInline);		
 		MAX_OCC = maxOccurrence;
@@ -28,7 +32,8 @@ public class DelayedInlineRControl extends BaseRControl {
 	
 
 	public boolean testCall(ExprFunCall fc) {
-		return super.testCall(fc) && appearenceCounter.getInlineCounter(fc.getName()) < MAX_OCC;
+		return false;
+		//return super.testCall(fc) && appearenceCounter.getInlineCounter(fc.getName()) < MAX_OCC;
 	}
 	
 	

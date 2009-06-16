@@ -61,11 +61,16 @@ public class BaseRControl extends RecursionControl {
 
 	
 	public void popFunCall(ExprFunCall fun) {
+		strack.popCall(fun);
 		icount.decInlineCounter(fun.getName());
 	}
 
+	public String callStack(){
+		return strack.getSstring();
+	}
 	
 	public void pushFunCall(ExprFunCall fc, Function fun) {
+		strack.pushCall(fc);
 		icount.incInlineCounter(fc.getName());
 	}
 
