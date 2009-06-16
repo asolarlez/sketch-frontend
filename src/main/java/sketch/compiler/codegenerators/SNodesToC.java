@@ -442,7 +442,7 @@ public class SNodesToC extends NodesToJava {
             result += stmt.getName(i)+ postFix ;
             if (stmt.getInit(i) != null) {
 	            if(isArray) {
-	            	assert stmt.getInit(i) instanceof ExprConstInt;
+	            	assert stmt.getInit(i) instanceof ExprConstInt : stmt.getInit(i) + " not a constant int";
 	            	assert ((ExprConstInt)stmt.getInit(i)).getVal()==0;
 	            } else { 
 	                result += " = " + (String)stmt.getInit(i).accept(this);
