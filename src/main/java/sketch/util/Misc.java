@@ -46,6 +46,28 @@ public class Misc extends AssertedClass
 		return nBits;
     }
 
+    
+    public static String readStreamUntil (InputStream in, String keyword, boolean logAllOutput) throws IOException {		
+		OutputStream out;
+		if(logAllOutput){
+			out = new ByteArrayOutputStream ();
+		}else{
+			out = new TruncatedOutputStream ();
+		}
+		Misc.readStreamUntil(in, keyword, out);
+		return out.toString ();
+	}
+    
+    public static void readStreamUntil(InputStream in, String keyword, OutputStream _out){    	
+		PrintStream out = new PrintStream (_out);
+		for (String line : new LineReader (in)) {			
+			out.println (line);
+			if(line.contains(keyword)){
+				return;
+			}
+		}
+    }
+    
 	/** Read all of IN into a string and return the string. */
 	public static String readStream (InputStream in, boolean logAllOutput) throws IOException {
 		
