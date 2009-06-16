@@ -157,7 +157,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 	}
 
 	/** Print S followed by a line terminator. */
-	public void println (String s) {
+	public void println (String s) {		
 		currOut.println (s);
 		currOut.flush ();
 		updateLineCount (s);

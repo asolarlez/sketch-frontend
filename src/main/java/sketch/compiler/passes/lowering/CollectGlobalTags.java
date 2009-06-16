@@ -11,6 +11,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
+import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtVarDecl;
 
 public class CollectGlobalTags extends FEReplacer {
@@ -18,6 +19,13 @@ public class CollectGlobalTags extends FEReplacer {
 	public Set<String> globals;
 	
 	public  boolean isGlobal = false;
+	
+	private boolean ignoreAsserts = false;
+	
+	public void ignoreAsserts(){
+		ignoreAsserts = true;
+	}
+	
 	
 	public Statement collectTag(Object o){
 		Statement s = (Statement) o;
@@ -60,15 +68,32 @@ public class CollectGlobalTags extends FEReplacer {
 	
 	@Override
 	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
+		boolean tmp = isGlobal;
 		isGlobal = false;
 		int sz = oset.size();
 		Object o = super.visitStmtAtomicBlock(stmt); 
 		if( isGlobal || sz != oset.size()){
 			collectTag(stmt.getBlock());
 			return collectTag(o);
-		}else
+		}else{
+			isGlobal = tmp;
 			return o;
+		}
 	}
+	
+	public Object visitStmtBlock(StmtBlock sb){
+		boolean tmp = isGlobal;
+		isGlobal = false;
+		int sz = oset.size();
+		Object o = super.visitStmtBlock(sb);
+		if(isGlobal || sz != oset.size()){
+			return collectTag(o);
+		}else{
+			isGlobal = tmp;
+			return o;
+		}
+	}
+	
 	
 	
 	public Object visitExprFunCall(ExprFunCall efc){
@@ -78,8 +103,12 @@ public class CollectGlobalTags extends FEReplacer {
 
 	@Override
     public Object visitStmtAssert(StmtAssert stmt){
-		Object o = super.visitStmtAssert(stmt);    	
-		return collectTag(o);
+		Object o = super.visitStmtAssert(stmt);   
+		if(ignoreAsserts){
+			return o;
+		}else{
+			return collectTag(o);
+		}
 	}
 	
 	

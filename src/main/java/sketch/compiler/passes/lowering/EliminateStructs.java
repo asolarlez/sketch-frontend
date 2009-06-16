@@ -102,7 +102,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 * Null is replaced with the integer -1. Null pointer accesses will therefore lead to out of bounds array access.
 	 */
 	@Override
-	public Object visitExprNullPtr(ExprNullPtr nptr){ return ExprConstInt.minusone; }
+	public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
 	
 	
 	/**
@@ -259,12 +259,14 @@ public class EliminateStructs extends SymbolTableVisitor {
 
     /** Rewrite variables of type 'struct' into ones of type 'int'. */
     public Object visitTypeStruct (TypeStruct ts) {
-    	return TypePrimitive.inttype;
+    	// return TypePrimitive.inttype;
+    	return ts;
     }
 
     @Override
     public Object visitTypeStructRef (TypeStructRef t) {
-    	return  TypePrimitive.inttype ;
+    	// return  TypePrimitive.inttype ;
+    	return t;
     }
 
 
@@ -308,6 +310,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 */
 	private class StructTracker {
 		private TypeStruct struct;
+		private TypeStructRef sref;
 		private FENode cx;
 	    private ExprVar nextInstancePointer;
 	    private Map<String, ExprVar> fieldArrays;
@@ -328,6 +331,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    	this.heapsize = heapsize;
 	    	struct = struct_;
+	    	sref = new TypeStructRef(struct.getName());
 	    	cx = cx_;
 	    	nextInstancePointer =
 	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
@@ -344,7 +348,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    public void addParams(List<Parameter> newParams){
 
-	    	newParams.add(new Parameter(TypePrimitive.inttype, nextInstancePointer.getName (), Parameter.REF));
+	    	newParams.add(new Parameter(sref, nextInstancePointer.getName (), Parameter.REF));
 
 	    	for (String field : fieldArrays.keySet ()) {
 	    		newParams.add(new Parameter(typeofFieldArr (field) , fieldArrays.get (field).getName (), Parameter.REF ));
@@ -420,7 +424,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    	// Add the next instance poiner
 	    	names.add (nextInstancePointer.getName ());
-	    	types.add (TypePrimitive.inttype);
+	    	types.add ( this.sref );
 	    	inits.add (ExprConstant.createConstant (cx, "0"));
 
 	    	for (String field : fieldArrays.keySet ()) {
@@ -490,7 +494,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    private Type typeofFieldArr (String field) {
 	    	Type fieldType = struct.getType (field);
 	    	return new TypeArray (
-	    		fieldType.isStruct () ? TypePrimitive.inttype : fieldType,
+	    		//fieldType.isStruct () ? TypePrimitive.inttype : 
+	    			fieldType,
 	    		getNumInstsExpr (cx));
 	    }
 

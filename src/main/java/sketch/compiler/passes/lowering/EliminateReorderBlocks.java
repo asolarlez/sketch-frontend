@@ -1,5 +1,6 @@
 package streamit.frontend.passes;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import streamit.frontend.nodes.ExprArrayRange;
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprUnary;
 import streamit.frontend.nodes.ExprVar;
@@ -14,6 +16,7 @@ import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtInsertBlock;
@@ -41,6 +44,48 @@ public class EliminateReorderBlocks extends FEReplacer {
 	private boolean insertBlockRewrite;
 	private TempVarGen varGen;
 
+	
+	private class EstimateSize extends FEReplacer{
+		int sz = 0;
+		public int getSize(FENode n){
+			sz = 0;
+			n.accept(this);
+			int tmp = sz;
+			sz = 0;
+			return tmp;			
+		}
+		@Override
+		public Object visitStmtAssert(StmtAssert sa){
+			++sz;
+			return sa;
+		}
+		@Override
+		public Object visitStmtAssign(StmtAssign sa){
+			++sz;
+			return super.visitStmtAssign(sa);
+		}
+		@Override
+		public Object visitStmtAtomicBlock(StmtAtomicBlock sa){
+			if(sa.isCond()){
+				sz+=10;
+			}
+			return super.visitStmtAtomicBlock(sa);
+		}
+		public Object visitExprFunCall(ExprFunCall fc){
+			sz += 5;
+			if(fc.getName().equals("lock")){
+				sz += 5;
+			}
+			return fc;
+		}
+		public Object visitStmtVarDecl(StmtVarDecl svd){
+			if(svd.getInit(0) != null){
+				sz++;
+			}
+			return svd;
+		}
+	}
+	
 	public EliminateReorderBlocks(TempVarGen varGen){
 		this (varGen, false);
 	}
@@ -61,10 +106,24 @@ public class EliminateReorderBlocks extends FEReplacer {
 		if (1 >= B.size ())
 			return (Statement) srb.getBlock ().accept (this);	// no reorder for 1 stmt
 
+		int minSz = 1000000;
+		int minIdx = 0;
+		EstimateSize sest = new EstimateSize();
+		int i=0;
+		for(Statement s : B  ){
+			int tsz = sest.getSize(s); 
+			if(tsz < minSz){
+				minSz = tsz;
+				minIdx = i;
+			}
+			++i;
+		}
+		List<Statement> nl = new ArrayList<Statement>(B);
+		Statement stoinsert = nl.remove(minIdx);
 		StmtBlock into = new StmtBlock (srb,
 				Collections.singletonList ((Statement)
-						(new StmtReorderBlock (srb, B.subList (1, B.size ()))).accept (this)));
-		Statement insert = (Statement) B.get (0).accept (this);
+						(new StmtReorderBlock (srb, nl)).accept (this)));
+		Statement insert = (Statement) stoinsert.accept (this);
 
 		return new StmtInsertBlock (srb, insert, into);
 	}

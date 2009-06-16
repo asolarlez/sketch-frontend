@@ -96,15 +96,15 @@ public class EliminateInsertBlocks extends FEReplacer {
 		for (int i = 0; i < oldB.size (); ++i) {
 			Statement si = (Statement) oldB.get (i);
 
-			newB.add (new StmtIfThen (si,
-						new ExprBinary (new ExprVar (si, where),
-										"==", ExprConstant.createConstant (si, ""+i)),
+			newB.add (new StmtIfThen (S,
+						new ExprBinary (new ExprVar (S, where),
+										"==", ExprConstant.createConstant (S, ""+i)),
 						S, null));
 			newB.add (si);
 		}
-		newB.add (new StmtIfThen (sib,
-					new ExprBinary (new ExprVar (sib, where),
-								    "==", ExprConstant.createConstant (sib, maxVal)),
+		newB.add (new StmtIfThen (S,
+					new ExprBinary (new ExprVar (S, where),
+								    "==", ExprConstant.createConstant (S, maxVal)),
 					S, null));
 
 		if (0 == --depth)
