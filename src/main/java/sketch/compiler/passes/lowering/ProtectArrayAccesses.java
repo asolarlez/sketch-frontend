@@ -20,6 +20,7 @@ import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
+import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
@@ -86,7 +87,11 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		
 		
 		String resName = varGen.nextVar ("_pac_sc");
-		addStatement (new StmtVarDecl (exp,getType(exp), resName, null));
+		Type t = getTypeReal(exp);
+		if(t == TypePrimitive.nulltype){
+			t = TypePrimitive.inttype;
+		}
+		addStatement (new StmtVarDecl (exp,t, resName, null));
 		ExprVar res = new ExprVar (exp, resName);
 
 		
@@ -135,30 +140,23 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 		boolean isAnd = eb.getOpString ().equals ("&&") || eb.getOpString ().equals ("&");
 
-
+		
 		String resName = varGen.nextVar ("_pac_sc");
-		addStatement (new StmtVarDecl (eb, TypePrimitive.bittype, resName, left));
-
-		left = doExpression (left);
+		
+		addStatement(new StmtVarDecl (eb, TypePrimitive.bittype, resName, null));
+		
 		ExprVar res = new ExprVar (eb, resName);
+		Expression cond = isAnd ? res : new ExprUnary ("!", res);
+		List<Statement> blist = new ArrayList<Statement>();
+		blist.add (new StmtAssign (res, right));
+		StmtBlock nb = 
+			new StmtBlock(
+					new StmtAssign (res, left), 			
+					new StmtIfThen (eb, cond, new StmtBlock(blist), null)
+			);
 
-		List<Statement> oldStatements = newStatements;
-        newStatements = new ArrayList<Statement>();
-
-        right = doExpression (right);
-        newStatements.add (new StmtAssign (res, right));
-
-        StmtBlock thenBlock = new StmtBlock (eb, newStatements);
-        newStatements = oldStatements;
-
-        // What is the condition on 'res' that causes us to fully evaluate
-        // the expression?  If it's a logical AND, and 'res' is true, then we
-        // need to evaluate the right expr.  If it's a logical OR, and 'res' is
-        // false, then we need to evaluate the right expr.
-        Expression cond = isAnd ? res : new ExprUnary ("!", res);
-
-        addStatement (new StmtIfThen (eb, cond, thenBlock, null));
-
+		doStatement(nb);
+		
         return res;
 	}
 
@@ -217,8 +215,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			if (FailurePolicy.WRSILENT_RDZERO == policy) {
 				return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs, op), null);
 			} else if (FailurePolicy.ASSERTION == policy) {
-				addStatement (new StmtAssert (cond));
-				return new StmtAssign (near, rhs, op);
+				addStatement (new StmtAssert (ear, cond));
+				return new StmtAssign (stmt, near, rhs, op);
 			} else {  assert false : "fatal error"; return null;  }
 		}else{
 			return super.visitStmtAssign(stmt);
@@ -341,7 +339,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		assert ear.getMembers().size() == 1 : "Currently only accept arrays with one selection";
 		RangeLen rl =(RangeLen) ear.getMembers().get(0); 
 		Expression nofset = (Expression) rl.start().accept(this);
-		addStatement((Statement)(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset)).accept(this));
+		addStatement((Statement)(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset)/*.accept(this)*/));
 		return new ExprVar(ear, nname);
 	}
 

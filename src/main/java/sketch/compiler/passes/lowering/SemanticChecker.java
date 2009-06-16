@@ -1522,7 +1522,7 @@ public class SemanticChecker
 		if (ct == null)
 		{
 			report (expr,
-			"incompatible types in binary expression");
+			"incompatible types in binary expression: " + lt + " and " + rt + " are incompatible.");
 			return;
 		}
 		// Check whether ct is an appropriate type.

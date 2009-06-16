@@ -53,6 +53,7 @@ public class MergeLocalStatements extends FEReplacer {
 		ps.parfun.accept (parts);
 
 		CollectGlobalTags gtags = new CollectGlobalTags (parts.globalDecls);
+		gtags.ignoreAsserts();
 		parts.ploop.accept (gtags);
 
 		return (Program) p.accept (new MergeLocalStatements (gtags.oset));

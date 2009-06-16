@@ -112,6 +112,11 @@ public class SymbolTableVisitor extends FEReplacer
     public Type getType(Expression expr) {
     	return getType (expr, TypePrimitive.nulltype);
     }
+    
+    
+    public Type getTypeReal(Expression expr) {
+    	return getTypeReal (expr, TypePrimitive.nulltype);
+    }
 
     /**
      * Get the type of an <code>Expression</code>.
@@ -123,12 +128,17 @@ public class SymbolTableVisitor extends FEReplacer
      */
     public Type getType(Expression expr, Type nullType)
     {
+        return actualType(getTypeReal(expr, nullType));
+    }
+    
+    public Type getTypeReal(Expression expr, Type nullType)
+    {
     	if(expr == null){ return TypePrimitive.voidtype; }
 
         // To think about: should we cache GetExprType objects?
         GetExprType get = new GetExprType(symtab, streamType, structsByName, nullType);
         Type type = (Type)expr.accept(get);
-        return actualType(type);
+        return type;
     }
 
     public boolean isGlobal(ExprVar ev){
