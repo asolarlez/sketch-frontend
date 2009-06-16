@@ -6,6 +6,7 @@ import streamit.frontend.experimental.varState;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
 import streamit.frontend.nodes.TypeStructRef;
 
 public class NtsbState extends varState {
@@ -46,7 +47,7 @@ public class NtsbState extends varState {
 			lhsIdxs = idxsArr(1);
 			init( newLHSvalue() );			
 		}else
-		if( t instanceof  TypeStructRef){
+		if( t instanceof  TypeStructRef  || t instanceof TypeStruct ){
 			lhsIdxs = idxsArr(1);
 			init( newLHSvalue() );	
 		}else

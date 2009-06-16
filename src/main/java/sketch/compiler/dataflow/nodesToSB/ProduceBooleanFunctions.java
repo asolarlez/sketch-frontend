@@ -193,7 +193,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 		if(tracing)
 			System.out.println("Analyzing " + func.getName());
 		
-		((NtsbVtype)this.vtype).out.print(func.getName());
+		((NtsbVtype)this.vtype).out.print("def " + func.getName());
     	if( func.getSpecification() != null ){
     		assertions.add(new SpecSketch(func.getSpecification(), func.getName() ));
     	}
@@ -321,8 +321,14 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	public Object visitStmtVarDecl(StmtVarDecl s){
 		if(tracing){
 			//if(s.getCx() != tmp && s.getCx() != null){
-				System.out.println(s.getCx()+ " : \t" + s);
+				
 				tmp = s.getCx();
+				if(s.getNumVars() == 1 && s.getInit(0) != null){
+					abstractValue av = (abstractValue) s.getInit(0).accept(this);
+					System.out.println(s.getCx()+ " : \t" + s + "\t rhs=" + av);
+				}else{
+					System.out.println(s.getCx()+ " : \t" + s);
+				}
 			//}
 		}
 		return super.visitStmtVarDecl(s);
