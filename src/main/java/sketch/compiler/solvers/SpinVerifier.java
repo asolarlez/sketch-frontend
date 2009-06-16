@@ -144,6 +144,7 @@ public class SpinVerifier implements Verifier {
 	 * program resulting from this and other preprocessing steps.
 	 */
 	protected Program spinify (AbstractValueOracle holeVals) {
+		
 		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
 
 		log ("Cleaning up the next candidate.");

@@ -60,8 +60,9 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
 
 
-public class SATSynthesizer extends SATBackend implements Synthesizer {
+public class SATSynthesizer implements Synthesizer {
 
+	InteractiveSATBackend solver;
 	/**
 	 * Original program
 	 */
@@ -109,17 +110,24 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 	StmtFork ploop = null;
 
 	int nthreads;
+	
+	public void initialize(){
+		solver.initializeSolver();
+	}
 
 	public SATSynthesizer(Program prog_p, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
-		super(params, rcontrol, varGen);
+		solver = new InteractiveSATBackend(params, rcontrol, varGen);
+		
+		
+		
 		this.prog = prog_p;
-
+		this.prog.accept(new SimpleCodePrinter().outputTags());
 
 		this.prog = (Program)prog.accept(new SimpleLoopUnroller());
 
 		ExtractPreParallelSection ps = new ExtractPreParallelSection();
 		this.prog = (Program) prog.accept(ps);
-		//this.prog.accept(new SimpleCodePrinter().outputTags());
+		
 
 		assert ps.parfun != null : "this is not a parallel sketch";
 
@@ -136,6 +144,8 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		//ploop.accept(new SimpleCodePrinter());
 		cfg = CFGforPloop.buildCFG(ploop, locals);
 		nthreads = ploop.getIter().getIValue();
+		
+		//System.out.println(cfg.toDot());
 
 		locals.add( new StmtVarDecl(prog, TypePrimitive.inttype, "_ind", null) );
 		nodeMap = CFGforPloop.tagSets(cfg);
@@ -383,11 +393,16 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 	public CFGNode addBlock(int stmt, int thread, CFGNode lastNode){
 
-
+		if (reallyVerbose ())
+			System.out.println("Step (" + stmt + ", " + thread + ")"); 
+		
 		assert invNodeMap.containsKey(stmt);
 
 		CFGNode node =  firstChildWithTag(lastNode, stmt);  //invNodeMap.get( stmt );
-
+		if(node.getStmt() != null){
+			// System.out.println("Next " + thread + " -- " + node.getStmt().getOrigin().getCx() + " --> " + node.getStmt().getOrigin() + "  ==  " + node.getStmt());
+		}
+		
 		assert node != null;
 
 		if( node == lastNode  ){
@@ -539,6 +554,9 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 		modifiedLocals ml = new modifiedLocals();
 		s = s.doStatement(ml);
+		if(s == null){
+			return null;			
+		}
 		s = s.doStatement(new addTemporaries(ml.modLocals));
 
 		List<Statement> ls = new ArrayList<Statement>();
@@ -767,13 +785,16 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 	public void addStatement(Statement s, final int thread){
-		bodyl.add(preprocStatement(s, thread));
+		Statement tmp =preprocStatement(s, thread);
+		if(this.reallyVerbose())
+			tmp.accept(new SimpleCodePrinter().outputTags());
+		bodyl.add(tmp);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void closeCurrent(){
 
-
+		
 		List<Parameter> outPar = new ArrayList<Parameter>();
 		String opname = null;
 		List<Statement> lst = new ArrayList<Statement>();
@@ -790,6 +811,10 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 
 		lst.addAll(bodyl);
+		
+		bodyl.clear();
+		bodyl.addAll(globalDecls);
+		
 		lst.add( new StmtAssign(new ExprVar(current, opname), ExprConstInt.one) );
 
 		Statement body = new StmtBlock(current, lst);
@@ -844,12 +869,318 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		}
 	}
 
+	
+	static class dlistNode<E>{
+		final E n;
+		final int thread;
+		dlistNode<E> lnext;
+		dlistNode<E> gnext;
+		dlistNode(E n, int thread){
+			this.n = n;
+			this.thread = thread;
+			lnext = null;
+			gnext = null;
+		}
+		public String toString(){
+			return thread + ":" + n; 
+		}
+	}
+	
+	static class dlist<E>{
+		dlistNode<E> head;
+		dlistNode<E> tail;
+		dlistNode<E>[] lheads; 
+		dlistNode<E>[] ltails;
+		dlist(int nt){
+			lheads = new dlistNode[nt];
+			ltails = new dlistNode[nt];
+		}
+		dlistNode<E> addNode(E n, int thread){
+			int th = thread;
+			dlistNode<E> t = new dlistNode<E>(n, thread);
+			if(head == null){  head = t; tail = t; }
+			else{ tail.gnext = t; tail = t; }
+			if(lheads[th] == null){  lheads[th] = t; ltails[th] = t; }
+			else{ 
+				assert ltails[th].n != n : "Can't have two successive guys with the same node.";
+				ltails[th].lnext = t; ltails[th] = t; }
+			return t;
+		}
+		
+		dlistNode<E> addNode(dlistNode<E> gpred, dlistNode<E> lpred,  E succ, int thread){
+			int th = thread;
+			dlistNode<E> rv = new dlistNode<E>(succ, thread);
+			if(gpred == null){
+				rv.gnext = head;
+				head = rv;
+				if(tail==null){
+					tail = rv;
+				}
+			}else{
+				rv.gnext = gpred.gnext;
+				gpred.gnext = rv;
+				if(gpred == tail){
+					tail = rv;
+				}
+			}
+			if(lpred == null){
+				rv.lnext = lheads[th];
+				lheads[th] = rv;
+				if(ltails[th] == null){
+					ltails[th] = rv;
+				}
+			}else{
+				rv.lnext = lpred.lnext;
+				lpred.lnext = rv;
+				if(lpred == tail){
+					ltails[th] = rv;
+				}
+			}
+			return rv;
+		}
+	}
+	
+	
+	static class parentOrder{
+		dlist<FENode> sdlist;
+		dlist<CFGNode> tlists;
+		Map<Integer, dlistNode<FENode>>[] seenStmts;
+		int nthreads;
+		parentOrder(int nt){
+			tlists = new dlist<CFGNode>(nt);
+			sdlist = new dlist<FENode>(nt);
+			this.nthreads = nt;
+			seenStmts = new Map[nt];
+			for(int i=0; i<nt; ++i){
+				seenStmts[i] = new HashMap<Integer, dlistNode<FENode>>(); 
+			}
+		}
+		
+		void addNode(CFGNode n, int thread){
+			tlists.addNode(n, thread);
+			assert n.isStmt();
+			FENode s = n.getStmt().getOrigin();
+			int key = s.hashCode();
+			if(!seenStmts[thread].containsKey(key)){
+				seenStmts[thread].put(key, sdlist.addNode(s, thread));
+			}
+		}
+		
+		/**
+		 * Return an immediate successor of n. If n has only one successor, return that.
+		 * otherwise, return the successor that will get you to farnext faster. 
+		 * @param n
+		 * @param farnext
+		 * @return
+		 */
+		CFGNode nextNode(CFGNode n, CFGNode farnext){
+			List<EdgePair> succs = n.getSuccs();
+			if(succs.size()==1){
+				return succs.get(0).node;
+			}else{
+				assert false :"NYI";
+				return null;
+			}			
+		}
+		
+		
+		
+		boolean isSucc(CFGNode pred, int predTh, CFGNode succ, int succTh){
+			FENode pori = pred.getStmt().getOrigin();
+			FENode sori = succ.getStmt().getOrigin();
+			if(!seenStmts[predTh].containsKey(pori.hashCode())){
+				return false;
+			}
+			if(!seenStmts[succTh].containsKey(sori.hashCode())){
+				return false;
+			}
+			
+			dlistNode<?> pnode = seenStmts[predTh].get(pori.hashCode());
+			dlistNode<?> snode = seenStmts[succTh].get(sori.hashCode());
+			
+			return pnode.gnext == snode;			
+		}
+		
+		
+		dlistNode<CFGNode> insertSuccessor(dlistNode<CFGNode> gpred, dlistNode<CFGNode> lpred,  CFGNode succ, int thread){
+			return tlists.addNode(gpred, lpred, succ, thread);
+		}
+		
+		
+		/**
+		 * Currents contains the last CFG node that was added to the schedule for each thread.
+		 * tstate contains the last dlistNode in the graph that was added to the schedule for each thread.
+		 * current contaisn the last CFG node that was added to the schedule.
+		 * @param currents
+		 * @param tstate
+		 * @param current
+		 * @return
+		 */
+		dlistNode<CFGNode> selectNext(CFGNode[] currents, dlistNode<CFGNode>[] tstate,  dlistNode<CFGNode> current){
+			assert currents[current.thread] == current.n;
+			assert current == tstate[current.thread];
+			if(current.gnext == null){ return null; }
+			/*
+			 * If current.next == current.lnext, I should only switch from thread i to thread j if:
+			 * currents[j].next is unscheduled (it's not equal to tstate[j]) and
+			 * a node between currents[j].next and tstate[j] wants to be a predecessor of current.next.
+			 * a node between currents[j].next and tstate[j] wants to be a successor of current.  
+			 */			
+			if(current.gnext == current.lnext){
+				for(int j=0; j<nthreads; ++j){
+					if(j != current.thread && tstate[j].lnext != null){
+						CFGNode next = nextNode(currents[j], tstate[j].lnext.n);
+						while(next != tstate[j].lnext.n){
+							if(isSucc(current.n, current.thread, next, j)){
+								System.out.println("SUCCESS CASE 0");
+								dlistNode<CFGNode> tt = insertSuccessor(current, tstate[j], next, j);
+								currents[j] = tt.n;
+								tstate[j] = tt;
+								return tt;
+							}
+							CFGNode onext = nextNode(current.n, current.lnext.n);
+							while(onext != current.lnext.n){
+								if(isSucc(next, j, onext, current.thread)){
+									System.out.println("SUCCESS CASE 1");
+									dlistNode<CFGNode> tt = insertSuccessor(current, tstate[j], next, j);
+									dlistNode<CFGNode> tu = insertSuccessor(tt, current, onext, current.thread);
+									currents[j] = tt.n;
+									tstate[j] = tt;
+									return tt;
+								}
+								onext = nextNode(onext, current.lnext.n);
+							}
+							next = nextNode(next, tstate[j].lnext.n);
+						}
+					}
+				}
+			}
+			
+			/* 
+			 * If current.next != current.lnext, I should only stay in thread i if:
+			 * current.next is in thread j.
+			 * a node between current and current.lnext wants to be a predecessor of a node between 
+			 * currents[j] and current.next; 
+			 * 
+			 */
+			if(current.gnext != current.lnext && (current.lnext!= null) ){
+				int j = current.gnext.thread;
+				dlistNode<CFGNode> lnext = current.lnext!= null ? current.lnext : tlists.ltails[current.thread]; 
+				CFGNode next = nextNode(current.n, lnext.n);
+				while(next != lnext.n){
+					CFGNode onext = nextNode(currents[j], current.gnext.n);
+					while(onext != current.gnext.n){
+						if(isSucc(next, current.thread, onext , j)
+						){
+							System.out.println("SUCCESS CASE 2");
+							dlistNode<CFGNode> tt = insertSuccessor(current, current, next, current.thread); 
+							dlistNode<CFGNode> tu = insertSuccessor(tt, tstate[j], onext, j);
+							currents[current.thread] = tt.n;
+							tstate[current.thread] = tt;
+							return tt;
+						}
+						onext = nextNode(onext, current.gnext.n);						
+					}
+					if(isSucc(next, current.thread, onext , j)
+					){						
+						System.out.println("SUCCESS CASE 3");
+						dlistNode<CFGNode> tt = insertSuccessor(current, current, next, current.thread); 
+						// dlistNode<CFGNode> tu = insertSuccessor(tt, tstate[j], onext, j); No need to insert this because onext already is part of the dag, since it's equal tu current.gnext.n
+						currents[current.thread] = tt.n;
+						tstate[current.thread] = tt;
+						return tt;
+					}
+					next = nextNode(next, lnext.n);
+				}
+				
+			}
 
-	public void mergeWithCurrent(CEtrace trace){
-		/* if (reallyVerbose ())
-			prog.accept(new SimpleCodePrinter().outputTags()); */
-		pushBlock();
+			currents[current.gnext.thread] = current.gnext.n;
+			tstate[current.gnext.thread] = current.gnext;
+			return current.gnext;
+		}
+		
+		
+		List<dlistNode<CFGNode>> computeCFGOrder(CFG cfg){
+			dlistNode<CFGNode>[] tstate = new dlistNode[nthreads]; 
+			List<dlistNode<CFGNode>> fullSchedule = new ArrayList<dlistNode<CFGNode>>();
+			CFGNode[] currents = new CFGNode[nthreads];
+			
+			dlistNode<CFGNode> out = tlists.head;						
+			for(int i=0; i<nthreads; ++i){ 
+				currents[i] = cfg.getEntry(); 
+				tstate[i] = tlists.lheads[i];
+				assert out.n == currents[i];
+				if(i != nthreads-1){ out = out.gnext; }
+				fullSchedule.add(new dlistNode<CFGNode>(cfg.getEntry(), i));
+			}
+						
+			while(true){
+				out = selectNext(currents, tstate, out);
+				if(out == null) break;
+				if(out.n.getStmt().getTag() != null){
+					fullSchedule.add(out);
+				}
+				currents[out.thread] = out.n;				
+			}
+			return fullSchedule;
+		}
+		
+		
+	}
+	
+	public void processTrace(CEtrace trace, CFG cfg){
+		
+		
+		
+		
+		
+		parentOrder po = new parentOrder(nthreads);
+		
+		List<step> l = trace.steps;
 
+		Iterator<step> sit = l.iterator();
+		step cur;
+		for(int i=0; i<nthreads; ++i){ 
+			lastNode[i] = null; 
+			po.addNode(cfg.getEntry(), i);
+		}
+		while(sit.hasNext()){
+			cur= sit.next();
+			if(cur.thread>0){				
+				if( invNodeMap.containsKey(cur.stmt) ){
+					int thread = cur.thread-1;					
+					if( globalTags.contains(cur.stmt)  ){
+						stepQueues[thread].add(cur);
+						Queue<step> qs = stepQueues[thread];
+						while( qs.size() > 0  ){
+							step tmp = qs.remove();
+							CFGNode lnode = firstChildWithTag(lastNode[thread], tmp.stmt); 
+							if(lnode != cfg.getEntry()){
+								// System.out.println(tmp + "--" + lnode);
+								po.addNode(lnode, thread);
+							}
+							lastNode[thread] = lnode;
+						}
+					}
+				}else{
+					// System.out.println("NC " + cur);
+				}
+			}
+		}
+		
+		l.clear();
+		List<dlistNode<CFGNode>>  neworder = po.computeCFGOrder(cfg);
+		for(dlistNode<CFGNode> nn: neworder){
+			Set<Object> s = this.nodeMap.get(nn.n);
+			Integer sid = (Integer) s.iterator().next();
+			l.add(new step(nn.thread+1, sid));
+		}		
+	}
+	
+	
+	
+	public void insertPrePar(){
 		if(current != null){
 			for(Iterator<StmtVarDecl> it = globalDecls.iterator(); it.hasNext(); ){
 				StmtVarDecl svd = it.next();
@@ -869,8 +1200,20 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			Expression idx = new ExprConstInt(i) ;
 			Expression ilhs = new ExprArrayRange( new ExprVar(idx, ploop.getLoopVarName()  +"_p")  , idx  );
 			addStatement(new StmtAssign(ilhs, idx ) , i);
-		}
+		}		
+	}
+	
+	
 
+	public void mergeWithCurrent(CEtrace trace){
+		/* if (reallyVerbose ())
+			prog.accept(new SimpleCodePrinter().outputTags()); */
+		pushBlock();
+
+		insertPrePar();
+
+		// processTrace(trace, cfg);
+		
 
 		List<step> l = trace.steps;
 
@@ -894,10 +1237,11 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			cur= sit.next();
 			if(cur.thread>0){
 				sbuf.append(""+ cur);
+				// System.out.println("T " + cur);
 				if( invNodeMap.containsKey(cur.stmt) ){
 					int thread = cur.thread-1;
 					stepQueues[thread].add(cur);
-					//System.out.println("C " + cur);
+					// System.out.println("C " + cur);
 					if( globalTags.contains(cur.stmt)  ){
 						Queue<step> qs = stepQueues[thread];
 						while( qs.size() > 0  ){
@@ -914,11 +1258,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			}
 		}
 
-		log(sbuf.toString());
-		if(schedules.containsKey(sbuf.toString())){
-			throw new RuntimeException("I just saw a repeated schedule.");
-		}
-		schedules.put(sbuf.toString(), schedules.size());
+		
 
 		for(int thread=0; thread<nthreads; ++thread){
 			Queue<step> qs = stepQueues[thread];
@@ -934,7 +1274,7 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 
 			int thread = s.thread-1;
 			int stmt = s.stmt;
-
+			sbuf.append(""+ s);
 			assert invNodeMap.containsKey(stmt) : "'"+ stmt +"' not in invNodeMap";
 
 			CFGNode node =  firstChildWithTag(lastNode[thread], stmt);  //invNodeMap.get( stmt );
@@ -942,10 +1282,15 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 			assert node != null;
 
 			if( node != lastNode[thread]  ){
-				//Haven't advanced nodes, so I should stay here.
 				lastNode[thread] = advanceUpTo(node, thread, lastNode[thread]);
 			}
 		}
+		
+		solver.log(sbuf.toString());
+		if(schedules.containsKey(sbuf.toString())){
+			throw new RuntimeException("I just saw a repeated schedule.");
+		}
+		schedules.put(sbuf.toString(), schedules.size());
 
 		boolean allEnd = true;
 
@@ -1006,17 +1351,31 @@ public class SATSynthesizer extends SATBackend implements Synthesizer {
 		mergeWithCurrent((CEtrace)counterExample);
 
 		current = (Program)current.accept(new EliminateMultiDimArrays());
-		 if (reallyVerbose ())
-			current.accept(new SimpleCodePrinter());
-		boolean tmp = partialEvalAndSolve(current);
+/*		if (reallyVerbose ())
+			current.accept(new SimpleCodePrinter().outputTags()); */ 
+		boolean tmp = solver.partialEvalAndSolve(current);
 
-		return tmp ? getOracle() : null;
+		return tmp ? solver.getOracle() : null;
 	}
 
 
 
 	protected boolean reallyVerbose () {
-		return params.flagValue ("verbosity") >= 5;
+		return solver.params.flagValue ("verbosity") >= 5;
 	}
 
+	public void cleanup(){
+		solver.cleanup();
+	}
+
+	@Override
+	public SolutionStatistics getLastSolutionStats() {		
+		return solver.getLastSolutionStats();
+	}
+	public List<String> commandLineOptions(){
+		return solver.commandLineOptions;
+	}
+	public void activateTracing(){
+		solver.activateTracing();
+	}
 }

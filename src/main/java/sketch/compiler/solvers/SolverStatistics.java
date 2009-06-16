@@ -28,6 +28,18 @@ public class SolverStatistics extends Statistics {
 		memoryUsagesBytes.add (solve.maxMemoryUsageBytes ());
 	}
 
+	public void setAllStats(SolutionStatistics solve) {
+		ncalls++;
+		solveTimesMs.clear();
+		modelBuildingTimesMs.clear();
+		solutionTimesMs.clear();
+		memoryUsagesBytes.clear();
+		solveTimesMs.add (solve.modelBuildingTimeMs() + solve.solutionTimeMs());
+		modelBuildingTimesMs.add (solve.modelBuildingTimeMs ());
+		solutionTimesMs.add (solve.solutionTimeMs ());
+		memoryUsagesBytes.add (solve.maxMemoryUsageBytes ());
+	}
+	
 	public long numCalls () {
 		return ncalls;
 	}

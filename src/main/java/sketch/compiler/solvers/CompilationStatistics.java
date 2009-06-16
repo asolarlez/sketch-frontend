@@ -53,6 +53,10 @@ public class CompilationStatistics extends Statistics {
 			- verifStats.totalElapsedTimeMs ();
 	}
 
+	public void finalSynthStats(SolutionStatistics solve){
+		synthStats.setAllStats(solve);
+	}
+	
 	public void calledSynthesizer (SolutionStatistics solve) {
 		nIterations++;
 		synthStats.aggregate (solve);

@@ -26,6 +26,11 @@ public class RandomSynthesizer implements Synthesizer {
 		varGen = _varGen;
 	}
 
+	public void cleanup(){}
+	public void initialize(){
+	
+	}
+	
 	public AbstractValueOracle nextCandidate (CounterExample cex) {
 		return new RandomValueOracle (new StaticHoleTracker(varGen));
 	}

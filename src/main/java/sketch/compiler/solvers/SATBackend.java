@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
@@ -28,7 +29,7 @@ public class SATBackend {
 	String solverErrorStr;
 	final RecursionControl rcontrol;
 	final TempVarGen varGen;
-	private ValueOracle oracle;
+	protected ValueOracle oracle;
 	private boolean tracing = false;
 	public final List<String> commandLineOptions;
 	private SATSolutionStatistics lastSolveStats;
@@ -46,6 +47,20 @@ public class SATBackend {
 	}
 
 
+	protected void partialEval(Program prog, OutputStream outStream){
+		streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions
+		partialEval =
+			new streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions (varGen, oracle,
+				new PrintStream(outStream)
+			//	System.out
+			,
+			params.flagValue("unrollamnt"), rcontrol, tracing);
+			log ("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
+			log ("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
+			prog.accept( partialEval );
+			
+	}
+	
 	public boolean partialEvalAndSolve(Program prog){
 		oracle = new ValueOracle( new StaticHoleTracker(varGen) );
 		log ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -62,21 +77,9 @@ public class SATBackend {
 				outStream = System.out;
 
 
-			streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions
-			partialEval =
-				new streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions (varGen, oracle,
-					new PrintStream(outStream)
-				//	System.out
-				,
-				params.flagValue("unrollamnt"), rcontrol, tracing);
-			/*
-             ProduceBooleanFunctions partialEval =
-                new ProduceBooleanFunctions (null, varGen, oracle,
-                                             new PrintStream(outStream),
-                                             params.unrollAmt, newRControl()); */
-			log ("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
-			log ("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
-			prog.accept( partialEval );
+			partialEval(prog, outStream);
+	
+			
 			outStream.flush();
 			outStream.close();
 		}
@@ -105,8 +108,14 @@ public class SATBackend {
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
 
-		try{
-			String fname = params.sValue("output")+ ".tmp";
+		String fname = params.sValue("output")+ ".tmp";
+		extractOracleFromOutput(fname);
+		return worked;
+	}
+
+	
+	protected void extractOracleFromOutput(String fname){
+		try{		
 			File f = new File(fname);
 			FileInputStream fis = new FileInputStream(f);
 			BufferedInputStream bis = new BufferedInputStream(fis);
@@ -122,11 +131,8 @@ public class SATBackend {
 		{
 			//e.printStackTrace(System.err);
 			throw new RuntimeException(e);
-		}
-
-		return worked;
+		}		
 	}
-
 
 	public void addToBackendParams(List<String> params){
 		commandLineOptions.addAll(params);
@@ -134,28 +140,21 @@ public class SATBackend {
 
 
 
+	
 
 	private boolean solve(ValueOracle oracle){
 
-
-
 		log ("OFILE = " + params.sValue("output"));
-		String command = (params.hasFlag("sbitpath") ? params.sValue("sbitpath") : "") + "SBitII";
+		
 		if(params.hasFlag("incremental")){
 			boolean isSolved = false;
 			int bits=0;
 			int maxBits = params.flagValue("incremental");
 			for(bits=1; bits<=maxBits; ++bits){
-				log ("TRYING SIZE " + bits);
-				String[] commandLine = new String[ 5 + commandLineOptions.size()];
-				commandLine[0] = command;
-				commandLine[1] = "-overrideCtrls";
-				commandLine[2] = "" + bits;
-				for(int i=0; i< commandLineOptions.size(); ++i){
-					commandLine[3+i] = commandLineOptions.get(i);
-				}
-				commandLine[commandLine.length -2 ] = params.sValue("output") ;
-				commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";
+				log ("TRYING SIZE " + bits);			
+				String[] extra = {"-overrideCtrls", "" + bits};
+				String[] commandLine = params.getBackendCommandline(commandLineOptions, extra);
+				
 				boolean ret = runSolver(commandLine, bits);
 				if(ret){
 					isSolved = true;
@@ -171,14 +170,9 @@ public class SATBackend {
 			}
 			log ("Succeded with " + bits + " bits for integers");
 			oracle.capStarSizes(bits);
-		}else{
-			String[] commandLine = new String[ 3 + commandLineOptions.size()];
-			commandLine[0] = command;
-			for(int i=0; i< commandLineOptions.size(); ++i){
-				commandLine[1+i] = commandLineOptions.get(i);
-			}
-			commandLine[commandLine.length -2 ] = params.sValue("output");
-			commandLine[commandLine.length -1 ] = params.sValue("output") + ".tmp";
+		}else{			
+			String[] extra = {};
+			String[] commandLine = params.getBackendCommandline(commandLineOptions, extra);
 			boolean ret = runSolver(commandLine, 0);
 			if(!ret){
 				log (0, "The sketch cannot be resolved");
@@ -190,22 +184,19 @@ public class SATBackend {
 	}
 
 
-	private boolean runSolver(String[] commandLine, int i) {
+	protected void logCmdLine(String[] commandLine){
 		String cmdLine = "";
 		for (String a : commandLine)  cmdLine += a + " ";
 		log ("Launching: "+ cmdLine);
-
+	}
+	
+	private boolean runSolver(String[] commandLine, int i) {
+		logCmdLine(commandLine);
+		
 		ProcessStatus status = null;
 		try {
 			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
 												   commandLine)).run (false);
-			/*
-			if (verbose ()) {
-				Matcher m = Pattern.compile ("^[^\\->]+.*$",
-											 Pattern.MULTILINE).matcher (status.out);
-				while (m.find ())  log (m.group ());
-			}
-			*/
 			
 			log(1, status.out);
 			
