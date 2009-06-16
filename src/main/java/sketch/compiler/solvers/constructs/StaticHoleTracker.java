@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import streamit.frontend.nodes.ExprFunCall;
+import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.StmtFor;
 import streamit.frontend.nodes.StmtLoop;
@@ -27,7 +28,9 @@ public class StaticHoleTracker implements HoleNameTracker {
 	}
 	
 	public String getName(Object hole) {
-		
+		if(hole instanceof ExprStar){
+			return ((ExprStar)hole).getSname();
+		}
 		String vname = null;
 		if(store.containsKey(hole)){
 			vname = store.get(hole);
