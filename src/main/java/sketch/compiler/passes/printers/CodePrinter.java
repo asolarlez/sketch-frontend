@@ -36,6 +36,7 @@ public class CodePrinter extends FEReplacer {
 	protected void printLine (String s) {
 		printTab();
 		out.println(s);
+		out.flush();
 	}
 
 	protected void printIndentedStatement (Statement s) {
