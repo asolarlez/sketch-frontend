@@ -61,6 +61,34 @@ import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.frontend.tosbit.SelectFunctionsToAnalyze;
 import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
 
+
+class CloneHoles extends FEReplacer{
+	
+	public Object visitExprStar(ExprStar es){
+		ExprStar newStar = new ExprStar(es);
+		es.renewName();
+		return newStar;
+	}
+	
+	public Statement process(Statement s){
+		return (Statement) s.accept(this);
+	}
+	
+	public Object visitExprFunCall(ExprFunCall exp){
+	        List<Expression> newParams = new ArrayList<Expression>();
+	        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
+	        {
+	            Expression param = (Expression)iter.next();
+	            Expression newParam = doExpression(param);
+	            newParams.add(newParam);
+	        }
+	        ExprFunCall rv = new ExprFunCall(exp, exp.getName(), newParams);
+	        rv.resetCallid();
+	        return rv;
+	}
+	
+}
+
 public class PartialEvaluator extends FEReplacer {
 	protected StreamSpec ss;
 	protected MethodState state;
@@ -621,9 +649,10 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
-
+    
     public Object visitStmtBlock(StmtBlock stmt)
     {
+    	
         // Put context label at the start of the block, too.
     	Statement s = null;
     	int level = state.getLevel();
@@ -993,7 +1022,9 @@ public class PartialEvaluator extends FEReplacer {
 		        Statement nbody = null;
 		        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		        try{
-		        	nbody = (Statement) stmt.getBody().accept(this);
+		        	
+		        	
+		        	nbody = (Statement)(new CloneHoles()).process(stmt.getBody()).accept(this);
 		        }catch(ArrayIndexOutOfBoundsException er){
 		        	//If this happens, it means that we statically determined that unrolling by (iters+1) leads to an out
 		        	//of bounds error. Thus, we will put a new assertion on the loop condition.
@@ -1060,7 +1091,7 @@ public class PartialEvaluator extends FEReplacer {
     	}else{
     		List<Statement> tlist = isReplacer? new ArrayList<Statement>( vcond.getIntVal() ) : null;
     		for(int i=0; i<vcond.getIntVal(); ++i){
-    			Statement itstmt = (Statement) stmt.getBody().accept(this);
+    			Statement itstmt = (Statement)(new CloneHoles()).process(stmt.getBody()).accept(this);
     			if(isReplacer) tlist.add( itstmt );
     		}
     		return isReplacer? new StmtBlock(stmt, tlist) : stmt;
