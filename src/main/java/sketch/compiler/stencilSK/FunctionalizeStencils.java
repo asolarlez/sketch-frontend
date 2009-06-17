@@ -184,6 +184,18 @@ public class FunctionalizeStencils extends FEReplacer {
 	private Map<String, Map<String, Function> > globalInVars;
 
 	
+	/**
+	 * Suppose f is a stencil function, this method returns a map
+	 * that maps the input grid used by f to the uninterpreted functions
+	 * used to model those grids.
+	 *  
+	 * @return the globalInVars
+	 */
+	public Map<String, Map<String, Function>> getGlobalInVars() {
+		return globalInVars;
+	}
+
+
 	private Map<Function, Map<String, ArrFunction>>  assertsPerFunction;
 	
 	
