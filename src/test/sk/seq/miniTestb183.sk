@@ -1,0 +1,13 @@
+
+bit spec(int x, int y){
+	return x + 5 > y;
+}
+
+bit sk1(int x, int y) implements spec{
+	return x + ?? > y;
+}
+
+
+bit sk2(int x, int y) implements spec{
+	return x + 20 - ?? > y;
+}

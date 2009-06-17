@@ -1,0 +1,25 @@
+
+bit[8] test(int x) implements spec{	
+	bit[1024] tmp = ??;
+	bit[8] out=0;
+	for(int i=0; i<8; ++i){
+		int t = x*8;
+		if(t >= 128*8){
+			t = 127*8;
+		}
+		out[i] = tmp[t + i];
+	}
+	return out;
+}
+
+bit[8] spec(int x){
+	if( x >=128){ x = 127; }
+	
+	bit[8] out=0;
+	
+	for(int i=0; i<8; ++i){
+		out[i] = (x % 2 ==1);
+		x = x/2;
+	}
+	return out;
+}
