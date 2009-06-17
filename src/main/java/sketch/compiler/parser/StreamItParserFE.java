@@ -2867,7 +2867,7 @@ inputState.guessing--;
 			}
 			r=right_expr();
 			if ( inputState.guessing==0 ) {
-				s = new StmtAssign(l, r, o);
+				s = new StmtAssign(l, r, o); s.resetOrigin();
 			}
 		}
 		catch (RecognitionException ex) {

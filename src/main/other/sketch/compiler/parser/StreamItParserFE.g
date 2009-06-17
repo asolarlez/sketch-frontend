@@ -485,7 +485,7 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 		|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
 		)
 		r=right_expr
-		{ s = new StmtAssign(l, r, o); }
+		{ s = new StmtAssign(l, r, o); s.resetOrigin(); }
 	;
 
 func_call returns [Expression x] { x = null; List l; }
