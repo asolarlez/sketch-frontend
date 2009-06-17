@@ -37,8 +37,14 @@ public class ExprStar extends Expression
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
-
-
+	private String starName="ANON";
+	private static int NEXT_UID=0;
+	private static String HOLE_BASE="H__";
+	
+	public String getSname(){ return starName; }
+	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
+	public void extendName(String ext){ starName += ext; } 
+	
 	public ExprStar(ExprStar old)
     {
         super(old);
@@ -47,6 +53,7 @@ public class ExprStar extends Expression
         type = old.type;
         INT_SIZE = old.INT_SIZE;
         vectorSize = old.vectorSize;
+        this.starName = old.starName;
     }
 
     /** Create a new ExprConstInt with a specified value. */
@@ -55,6 +62,7 @@ public class ExprStar extends Expression
         super(context);
         size = 1;
         isFixed = false;
+        this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
     /** Create a new ExprConstInt with a specified value.
@@ -65,6 +73,7 @@ public class ExprStar extends Expression
         super(context);
         size = 1;
         isFixed = false;
+        this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
     /**
@@ -75,6 +84,7 @@ public class ExprStar extends Expression
         super(context);
         this.size = size;
         isFixed = true;
+        this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
     /**
@@ -85,6 +95,7 @@ public class ExprStar extends Expression
         super(context);
         this.size = size;
         isFixed = true;
+        this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
 	public FENode getDepObject(int i){
@@ -105,6 +116,7 @@ public class ExprStar extends Expression
 		}
 		if(depObjects.get(i) == null){
 			ExprStar es = new ExprStar(this);
+			es.extendName("_" + i);
 			es.type = t;
 			depObjects.set(i, es);
 		}

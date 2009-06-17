@@ -30,8 +30,18 @@ import java.util.*;
 public class ExprFunCall extends Expression
 {
     private final String name;
+    private static int NEXT_UID=0;
+    private int callid;
     private final List<Expression> params;
 
+    public void resetCallid(){
+    	this.callid = NEXT_UID++;
+    }
+
+    public int getCallid(){
+    	return callid;
+    }
+    
     /** Creates a new function call with the specified name and
      * parameter list. */
     public ExprFunCall(FENode context, String name, List<Expression> params)
@@ -39,6 +49,11 @@ public class ExprFunCall extends Expression
         super(context);
         this.name = name;
         this.params = Collections.unmodifiableList(params);
+        if(context instanceof ExprFunCall){
+        	this.callid = ((ExprFunCall)context).callid;
+        }else{
+        	this.callid = NEXT_UID++;
+        }
     }
 
     /** Creates a new function call with the specified name and
@@ -50,6 +65,7 @@ public class ExprFunCall extends Expression
         super(context);
         this.name = name;
         this.params = Collections.unmodifiableList(params);
+        this.callid = NEXT_UID++;
     }
 
     /** Creates a new function call with the specified name and

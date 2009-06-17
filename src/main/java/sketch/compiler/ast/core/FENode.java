@@ -28,16 +28,24 @@ public abstract class FENode
 {
     private FEContext context;
     private Object tag = null;
+    private FENode origin = null;
     /**
      * Create a new node with the specified context.
      *
      * @param context  file and line number for the node
      */
 
+    public FENode getOrigin(){ return origin; }
+    public void resetOrigin(){ origin = null; }
     public FENode(FENode node){
     	if (null != node) {
     		context = node.context;
     		tag = node.tag;
+    		if(node.origin != null){
+    			origin = node.origin;
+    		}else{
+    			origin = node;
+    		}
     	}
     }
 
