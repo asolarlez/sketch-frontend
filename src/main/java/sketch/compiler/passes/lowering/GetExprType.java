@@ -443,6 +443,11 @@ public class GetExprType extends FENullVisitor
         }
 
         Type rv = tl.leastCommonPromotion(tr);
+        
+        if(rv == null && (tl instanceof TypeStructRef || tl instanceof TypeStruct || tr instanceof TypeStruct || tr instanceof TypeStructRef) && (tl == TypePrimitive.inttype || tr == TypePrimitive.inttype)){
+        	return TypePrimitive.inttype;
+        }
+        
 
         assert rv != null : left.getCx() + ": Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
 

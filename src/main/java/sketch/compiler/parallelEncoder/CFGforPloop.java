@@ -133,6 +133,7 @@ public class CFGforPloop extends CFGBuilder {
         CFGSimplifier sym = new CFGSimplifier(builder.locals);
         //System.out.println("**** was " + rv.size() );
         
+        /*
         if( !CommandLineParamManager.getParams().hasFlag("playDumb")  ){
 	        rv.repOK();
 	        //rv = sym.mergeConsecutiveLocals(rv);
@@ -150,6 +151,7 @@ public class CFGforPloop extends CFGBuilder {
 	        rv = sym.cleanLocalState(rv, builder.localDecls, ploop.getLoopVarDecl());
 	        rv.repOK();
         }
+        */
         locals.addAll(builder.localDecls.values());
         //System.out.println("**** became " + rv.size() );
 
