@@ -1,0 +1,18 @@
+
+int spec(int x, int y){
+	int t = x + y;
+	t = t * 2;
+	return t;
+}
+
+int sketch(int x, int y) implements spec{
+	int t = 0;
+	int v = 3;
+	reorder{
+		{ t = t + x;  }
+		{ t = t + y;  }
+		{ t = t * 2;  v = ??; }
+		{ if(v == 3){ t = t + x; } }
+	}
+	return t;
+}

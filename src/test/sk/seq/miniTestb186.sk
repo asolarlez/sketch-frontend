@@ -1,0 +1,11 @@
+pragma options " -ufunSymmetry";
+
+int ufu(int a);/* Uninterpreted function */
+
+int faa(int s){	
+	return ufu(s) * ufu(s+1); 
+}
+
+int sk(int s) implements faa{	
+	return ufu(s) * ufu(s+1); 
+}

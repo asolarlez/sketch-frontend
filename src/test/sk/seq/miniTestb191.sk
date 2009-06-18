@@ -1,0 +1,21 @@
+
+int spec(int x, int y){
+	int t = x + y;
+	t = t + 3;
+	return t;
+}
+
+int sketch(int x, int y) implements spec{
+	int t = 0;
+	int h = ??;
+	if(h == 0){
+		t = x + y;
+	}
+	if(h == 1){
+		t = t + ??;
+	}
+	if(h == 2){
+		t = h==3? t * ?? : t;
+	}	
+	return t + 3;
+}

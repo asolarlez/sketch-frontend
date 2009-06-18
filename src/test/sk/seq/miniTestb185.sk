@@ -1,0 +1,50 @@
+
+
+static bit[5] test1(bit[5] i, bit[5] j){
+	bit[5] m = ??;
+	return (i & m) | (j & !m);
+}
+
+static bit[5] test2(bit[5] i, bit[5] j){
+	bit[5] m = ??;
+	return (i & m) | (j & !m);
+}
+
+bit[5] bafa(bit[5] i, bit[5] j){
+	bit[5] t = 0;
+	t[0] = i[0];
+	t[1] = j[1];
+	t[2] = i[2];
+	return t;
+}
+
+
+
+bit[5] fasa() implements zONE{
+	bit[5] t0 = 0;
+	bit[5] t1 = {1,1,1,1,1};
+	bit[5] q = test1(t0, t1);
+	assert q[0] == 0 && q[1] == 1 && q[2] == 0;
+	return 1;
+}
+
+
+bit[5] tasa() implements zONE{
+	bit[5] t0 = 0;
+	bit[5] t1 = {1,1,1,1,1};
+	bit[5] q = test2(t0, t1);
+	assert q[4] == 0 && q[3] == 0;
+	return 1;
+}
+
+
+
+bit[5] zcafa(bit[5] i, bit[5] j) implements bafa{
+	bit[5] z=0;
+	return test1(i,j) ^ test2(i,z);
+}
+
+
+bit[5] zONE(){
+	return 1;
+}

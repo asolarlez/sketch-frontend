@@ -1,0 +1,26 @@
+// Arrays of integers and pointers should be properly initialized.  Ints to 0,
+// and pointers to null.
+
+struct P {
+    P dummy;
+}
+
+bit T () { return 1; }
+bit main () implements T {
+    int[3] ia = { 1, 1, 1 };
+    int[3] ia2 = { 1, 1 };
+    int[3] ia3 = 1;
+    P[3] pa = { null, null, null };
+    P[3] pa2 = { null };
+    P[3] pa3 = null;
+
+    assert (1 == ia[0]) && (1 == ia[1]) && (1 == ia[2]);
+    assert (1 == ia2[0]) && (1 == ia2[1]) && (0 == ia2[2]);
+    assert (1 == ia3[0]) && (0 == ia3[1]) && (0 == ia3[2]);
+
+    assert (null == pa[0]) && (null == pa[1]) && (null == pa[2]);
+    assert (null == pa2[0]) && (null == pa2[1]) && (null == pa2[2]);
+    assert (null == pa3[0]) && (null == pa3[1]) && (null == pa3[2]);
+
+    return 1;
+}

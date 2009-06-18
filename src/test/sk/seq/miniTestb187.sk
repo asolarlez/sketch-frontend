@@ -1,0 +1,17 @@
+int ufun(int idx);
+
+int spec(int idx, int N){
+	if(idx >= 0 && idx <N-3){
+		return ufun(idx + 3);
+	}else{
+		return 0;
+	}
+}
+
+int sk(int idx, int N) implements spec{
+	if(idx >= 0 && idx <N-??){
+		return ufun(idx + ??);
+	}else{
+		return 0;
+	}
+}

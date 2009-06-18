@@ -1,0 +1,39 @@
+int NNODES = 3;
+
+struct Set {
+    Node head;
+    Node tail;
+}
+
+struct Node {
+    int key;
+    Node next;
+}
+
+
+Set newSet (int negInf, int posInf) {
+    Set S = new Set ();
+    S.tail = newNode (posInf, null);
+    S.head = newNode (negInf, S.tail);
+    return S;
+}
+
+Node newNode (int key, Node next) {
+    Node n = new Node ();
+    n.key = key;
+    n.next = next;
+    return n;
+}
+
+
+void VOID(int s){
+
+}
+
+void main(int s) implements VOID{
+	Set S = newSet(-1, 10);
+	assert S.head.key == -1;
+}
+
+
+
