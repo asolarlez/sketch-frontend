@@ -339,7 +339,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		assert ear.getMembers().size() == 1 : "Currently only accept arrays with one selection";
 		RangeLen rl =(RangeLen) ear.getMembers().get(0); 
 		Expression nofset = (Expression) rl.start().accept(this);
-		addStatement((Statement)(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset)/*.accept(this)*/));
+		addStatement((Statement)(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset).accept(this)));
 		return new ExprVar(ear, nname);
 	}
 
