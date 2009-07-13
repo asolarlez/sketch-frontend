@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import streamit.frontend.CommandLineParamManager.OptionNotRecognziedException;
 import streamit.frontend.CommandLineParamManager.POpts;
 import streamit.frontend.Directive.OptionsDirective;
 import streamit.frontend.codegenerators.NodesToC;
@@ -259,14 +260,14 @@ public class ToSBit
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
-		dump (prog, "ScalarizeVectorAssns");
+//		dump (prog, "ScalarizeVectorAssns");
 
 		// By default, we don't protect array accesses in SKETCH
 		if ("assertions".equals (params.sValue ("arrayOOBPolicy")))
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
 
-		dump (prog, "After protecting array accesses.");
+//		dump (prog, "After protecting array accesses.");
 		
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
 
@@ -305,8 +306,13 @@ public class ToSBit
 
 	protected void processDirectives (Set<Directive> D) {
 		for (Directive d : D)
-			if (d instanceof OptionsDirective)
-				params.loadParams (((OptionsDirective) d).options ());
+			if (d instanceof OptionsDirective) {
+				try {
+					params.loadParams (((OptionsDirective) d).options ());
+				} catch (OptionNotRecognziedException e) {
+					// ignore any unrecognized pragma
+				}
+			}
 	}
 
 	protected Program preprocessProgram(Program lprog) {
@@ -661,6 +667,7 @@ public class ToSBit
 	public void run()
 	{
 		log(1, "Benchmark = " + benchmarkName());
+		parseProgram();
 		preprocAndSemanticCheck();
 		
 		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
@@ -673,8 +680,6 @@ public class ToSBit
 	}
 
 	public void preprocAndSemanticCheck() {
-		parseProgram();
-		//dump (prog, "After parsing:");
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
 		//dump (prog, "After replacing constants:");

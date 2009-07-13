@@ -70,6 +70,17 @@ public class CommandLineParamManager{
 		}
 
 	}
+	public static class OptionNotRecognziedException extends RuntimeException {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		public OptionNotRecognziedException(String message) {
+			super(message);
+		}
+	}
 	Map<String, POpts> allowedParameters;
 	Map<String, Object> passedParameters;
 	public List<String> inputFiles;
@@ -209,7 +220,7 @@ public class CommandLineParamManager{
 					throw new RuntimeException(" There was an error with argument " + argn + ". Report this as a bug to the SKETCH team.");
 			}
 		}else{
-			throw new RuntimeException(" The command line argument " + argn + " is not recognized!!");
+			throw new OptionNotRecognziedException(" The command line argument " + argn + " is not recognized!!");
 		}
 	}
 
@@ -309,7 +320,7 @@ public class CommandLineParamManager{
 	}
 
 	public String[] getBackendCommandline(List<String> commandLineOptions, String[] extraParams){
-		String command = (hasFlag("sbitpath") ? sValue("sbitpath") : "") + "SBitII";
+		String command = (hasFlag("sbitpath") ? sValue("sbitpath") : "") + "SBitII.exe";
 		int begin = 1 + extraParams.length;
 		if(commandLineOptions == null){ commandLineOptions = Collections.EMPTY_LIST; }
 		String[] commandLine = new String[3 + extraParams.length + commandLineOptions.size()];
