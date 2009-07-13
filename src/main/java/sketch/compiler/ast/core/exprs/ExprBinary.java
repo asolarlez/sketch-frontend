@@ -133,6 +133,10 @@ public class ExprBinary extends Expression
 		lop = BINOP_BXOR;
 	}else if(sop.equals("xor")){
 		lop = BINOP_BXOR;
+	}else if(sop.equals(">>")){
+		lop = BINOP_RSHIFT;
+	}else if(sop.equals("<<")){
+		lop = BINOP_LSHIFT;
 	}else {
 		throw new IllegalArgumentException ("What is this operator: "+ sop +" ??!!");
 	}
