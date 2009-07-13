@@ -70,11 +70,9 @@ public class ToStencilSK extends ToSBit
 {
 
 	Program originalProg;
-	ToStencilSK(String[] args){
+	public ToStencilSK(String[] args){
 		super(args);
 	}
-
-
 
     protected Program preprocessProgram(Program prog) {
     	Program lprog = prog;
@@ -93,20 +91,20 @@ public class ToStencilSK extends ToSBit
 		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
 		prog = lprog;
         originalProg = prog;
-    	System.out.println("=============================================================");
+//    	System.out.println("=============================================================");
     	prog = (Program)prog.accept(new FlattenStmtBlocks());
     	prog= (Program)prog.accept(new EliminateTransAssns());
     	prog= (Program)prog.accept(new PropagateFinals());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	prog = (Program)prog.accept(new EliminateDeadCode(true));
-    	System.out.println("=============================================================");
-    	prog.accept( new SimpleCodePrinter() );
+//    	System.out.println("=============================================================");
+//    	prog.accept( new SimpleCodePrinter() );
 
         prog = (Program) prog.accept(new ReplaceFloatsWithBits());
         //prog = (Program)prog.accept(new VariableDisambiguator());
-        System.out.println(" After preprocessing level 1. ");
+//        System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());
-        System.out.println(" After mpn ");
+//        System.out.println(" After mpn ");
         return prog;
     }
 
@@ -131,9 +129,32 @@ public class ToStencilSK extends ToSBit
 
     public void run()
     {
+    	parseProgram();       // parse
+        preprocAndSemanticCheck();
 
-        parseProgram();       // parse
+        oracle = new ValueOracle( new StaticHoleTracker(varGen) );
+        partialEvalAndSolve();
+        eliminateStar();
+//        finalCode.accept(new SimpleCodePrinter());
+        generateCode();
+        System.out.print("DONE");
+    }
 
+	public void eliminateStar(){
+		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));		
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
+    	finalCode = (Program)finalCode.accept(new EliminateTransAssns());
+    	//System.out.println("=========  After ElimTransAssign  =========");
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+    	//System.out.println("=========  After ElimDeadCode  =========");
+    	//finalCode.accept( new SimpleCodePrinter() );
+    	finalCode = (Program)finalCode.accept(new SimplifyVarNames());
+	}
+	
+	public void preprocAndSemanticCheck() {
         //run semantic checker
         if (!StencilSemanticChecker.check(prog))
             throw new IllegalStateException("Semantic check failed");
@@ -149,12 +170,12 @@ public class ToStencilSK extends ToSBit
         prog = (Program)prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept( new ScalarizeVectorAssignments(varGen, true) );
 
-        System.out.println("After SVA.");
+//        System.out.println("After SVA.");
 
        //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
        //prog.accept(new SimpleCodePrinter());
        //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        System.out.println("Before preprocessing.");
+//        System.out.println("Before preprocessing.");
 
         prog = (Program)prog.accept(new EliminateCompoundAssignments());
 
@@ -166,7 +187,7 @@ public class ToStencilSK extends ToSBit
 
         prog = fs.processFuns(prog, varGen); //process the ArrFunction's and create new Function's
         //fs.printFuns();
-        System.out.println("After running transformation.");
+//        System.out.println("After running transformation.");
 
 
         /*
@@ -197,33 +218,10 @@ public class ToStencilSK extends ToSBit
     	//System.out.println("=========  After ElimDeadCode  =========");
     	tmp = (Program)tmp.accept(new SimplifyVarNames());
         
+    	prog = tmp;
     	if(params.flagEquals("showphase", "preproc")){
     		dump(tmp, "After transformations");
     	}
-
-        prog = tmp;
-
-
-        oracle = new ValueOracle( new StaticHoleTracker(varGen) );
-        partialEvalAndSolve();
-        eliminateStar();
-//        finalCode.accept(new SimpleCodePrinter());
-        generateCode();
-        System.out.print("DONE");
-    }
-
-	public void eliminateStar(){
-		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));		
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
-    	//finalCode.accept( new SimpleCodePrinter() );
-    	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-    	finalCode = (Program)finalCode.accept(new EliminateTransAssns());
-    	//System.out.println("=========  After ElimTransAssign  =========");
-    	//finalCode.accept( new SimpleCodePrinter() );
-    	finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
-    	//System.out.println("=========  After ElimDeadCode  =========");
-    	//finalCode.accept( new SimpleCodePrinter() );
-    	finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 	}
 
 
