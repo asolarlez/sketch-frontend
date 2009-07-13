@@ -608,33 +608,7 @@ public class PartialEvaluator extends FEReplacer {
         	break;
         default:
         	if( !isFieldAcc ){
-	        	if( rlen <= 1){
-	        		state.setVarValue(lhsName, lhsIdx, rhs);
-	        	}else{
-	        		List<abstractValue> lst = null;
-	        		if(rhs.isVect()){
-	        			lst = rhs.getVectValue();
-	        		}
-	        		for(int i=0; i<rlen; ++i){
-	        			if(i==0){
-	        				if(lst != null){
-	        					if(lst.size() > i ){
-	        						state.setVarValue(lhsName, lhsIdx, lst.get(i));
-	        					}else{
-	        						state.setVarValue(lhsName, lhsIdx, vtype.CONST(0));
-	        					}
-	        				}else{
-	        					state.setVarValue(lhsName, lhsIdx, rhs);
-	        				}
-	        			}else{
-	        				if(lst != null && lst.size() > i){
-	        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), lst.get(i));
-	        				}else{
-	        					state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), vtype.CONST(0));
-	        				}
-	        			}
-	        		}
-	        	}
+	        	assignmentToLocal(rhs, lhsName, lhsIdx, rlen);
         	}else{
         		return assignmentToField(lhsName,stmt, rhs, nlhs, nrhs);
         	}
@@ -642,6 +616,37 @@ public class PartialEvaluator extends FEReplacer {
         }
         return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
     }
+
+	protected void assignmentToLocal(abstractValue rhs, String lhsName,
+			abstractValue lhsIdx, int rlen) {
+		if( rlen <= 1){
+			state.setVarValue(lhsName, lhsIdx, rhs);
+		}else{
+			List<abstractValue> lst = null;
+			if(rhs.isVect()){
+				lst = rhs.getVectValue();
+			}
+			for(int i=0; i<rlen; ++i){
+				if(i==0){
+					if(lst != null){
+						if(lst.size() > i ){
+							state.setVarValue(lhsName, lhsIdx, lst.get(i));
+						}else{
+							state.setVarValue(lhsName, lhsIdx, vtype.CONST(0));
+						}
+					}else{
+						state.setVarValue(lhsName, lhsIdx, rhs);
+					}
+				}else{
+					if(lst != null && lst.size() > i){
+						state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), lst.get(i));
+					}else{
+						state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), vtype.CONST(0));
+					}
+				}
+			}
+		}
+	}
 
 
     protected Object assignmentToField(String lhsName, StmtAssign stmt, abstractValue rhs, Expression nlhs, Expression nrhs){
