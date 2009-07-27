@@ -52,11 +52,8 @@ import streamit.frontend.passes.AssembleInitializers;
 import streamit.frontend.passes.BitTypeRemover;
 import streamit.frontend.passes.BitVectorPreprocessor;
 import streamit.frontend.passes.BlockifyRewriteableStmts;
-import streamit.frontend.passes.BoundUnboundedLoops;
 import streamit.frontend.passes.ConstantReplacer;
 import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateRegens;
-import streamit.frontend.passes.EliminateReorderBlocks;
 import streamit.frontend.passes.EliminateArrayRange;
 import streamit.frontend.passes.EliminateBitSelector;
 import streamit.frontend.passes.EliminateInsertBlocks;
@@ -78,8 +75,8 @@ import streamit.frontend.solvers.SolutionStatistics;
 import streamit.frontend.stencilSK.EliminateStarStatic;
 import streamit.frontend.stencilSK.SimpleCodePrinter;
 import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
+import streamit.frontend.tosbit.AbstractValueOracle;
 import streamit.frontend.tosbit.SimplifyExpressions;
 import streamit.frontend.tosbit.ValueOracle;
 import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
@@ -241,7 +238,7 @@ public class ToSBit
 		
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
 		
-		prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
+		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		
 		//dump (prog, "bef fpe:");
@@ -260,14 +257,14 @@ public class ToSBit
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
-//		dump (prog, "ScalarizeVectorAssns");
+		// dump (prog, "ScalarizeVectorAssns");
 
 		// By default, we don't protect array accesses in SKETCH
 		if ("assertions".equals (params.sValue ("arrayOOBPolicy")))
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
 
-//		dump (prog, "After protecting array accesses.");
+		// dump (prog, "After protecting array accesses.");
 		
 		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
 
@@ -324,11 +321,12 @@ public class ToSBit
 		//dump (lprog, "before:");
 		lprog = (Program)lprog.accept(new SeparateInitializers ());
 		lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
-		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-		//dump (lprog, "~regens");
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
+		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
 		//dump (lprog, "~regens");
+		
+		//dump (lprog, "extract clc");
 		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		// prog = (Program)prog.accept(new NoRefTypes());
@@ -535,6 +533,10 @@ public class ToSBit
 		params.setAllowedParam("verbosity", new POpts(POpts.NUMBER,
 				"--verbosity n       \t Sets the level of verbosity for the output. 0 is quite mode 5 is the most verbose.",
 				"1", null) );
+		
+		params.setAllowedParam("olevel", new POpts(POpts.NUMBER,
+				"--olevel n       \t Sets the optimization level for the compiler.",
+				"5", null) );
 
 		params.setAllowedParam("cex", new POpts(POpts.FLAG,
 				"--cex       \t Show the counterexample inputs produced by the solver (Equivalend to backend flag -showinputs).",
@@ -721,6 +723,13 @@ public class ToSBit
 		if(params.hasFlag("verif")){
 			commandLineOptions.add("-verif");
 			commandLineOptions.add( "" + params.sValue("verif") );
+		}
+		if(params.flagEquals("arrayOOBPolicy", "assertions")){
+			commandLineOptions.add("-assumebcheck");
+		}
+		if(params.hasFlag("olevel")){
+			commandLineOptions.add("-olevel");
+			commandLineOptions.add( "" + params.flagValue("olevel") );
 		}
 	}
 
