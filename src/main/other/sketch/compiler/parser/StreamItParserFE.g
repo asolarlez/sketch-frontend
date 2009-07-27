@@ -429,7 +429,17 @@ return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	;
 
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
-	:	t:TK_assert x=right_expr { s = new StmtAssert(getContext(t), x); }
+	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
+		String msg = null;
+		Token t = t1;
+		if(t==null){ t=t2;}
+		FEContext cx =getContext(t); 
+		if(ass!=null){
+			String ps = ass.getText();
+	        ps = ps.substring(1, ps.length()-1);
+			msg =cx + "   "+ ps;	
+		}
+		s = new StmtAssert(cx, x, msg, t2!=null); }	
 	;
 
 if_else_statement returns [Statement s]

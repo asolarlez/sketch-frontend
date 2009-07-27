@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): "StreamItParserFE.g" -> "StreamItParserFE.java"$
+// $ANTLR : "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
 	package streamit.frontend.parser;
 
@@ -164,7 +164,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		
 		try {      // for error handling
 			{
-			_loop7:
+			_loop3003:
 			do {
 				switch ( LA(1)) {
 				case TK_struct:
@@ -189,10 +189,10 @@ public StreamItParserFE(ParserSharedInputState state) {
 					break;
 				}
 				default:
-					boolean synPredMatched4 = false;
+					boolean synPredMatched3000 = false;
 					if (((_tokenSet_0.member(LA(1))))) {
-						int _m4 = mark();
-						synPredMatched4 = true;
+						int _m3000 = mark();
+						synPredMatched3000 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -203,22 +203,22 @@ public StreamItParserFE(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched4 = false;
+							synPredMatched3000 = false;
 						}
-						rewind(_m4);
+						rewind(_m3000);
 inputState.guessing--;
 					}
-					if ( synPredMatched4 ) {
+					if ( synPredMatched3000 ) {
 						f=function_decl();
 						if ( inputState.guessing==0 ) {
 							funcs.add(f);
 						}
 					}
 					else {
-						boolean synPredMatched6 = false;
+						boolean synPredMatched3002 = false;
 						if (((_tokenSet_0.member(LA(1))))) {
-							int _m6 = mark();
-							synPredMatched6 = true;
+							int _m3002 = mark();
+							synPredMatched3002 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -228,12 +228,12 @@ inputState.guessing--;
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched6 = false;
+								synPredMatched3002 = false;
 							}
-							rewind(_m6);
+							rewind(_m3002);
 inputState.guessing--;
 						}
-						if ( synPredMatched6 ) {
+						if ( synPredMatched3002 ) {
 							f=function_decl();
 							if ( inputState.guessing==0 ) {
 								funcs.add(f);
@@ -247,7 +247,7 @@ inputState.guessing--;
 							}
 						}
 					else {
-						break _loop7;
+						break _loop3003;
 					}
 					}}
 				} while (true);
@@ -432,7 +432,7 @@ inputState.guessing--;
 				ctx = getContext(id); ts.add(t); ns.add(id.getText()); xs.add(x);
 			}
 			{
-			_loop15:
+			_loop3011:
 			do {
 				if ((LA(1)==COMMA)) {
 					if ( inputState.guessing==0 ) {
@@ -465,7 +465,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop15;
+					break _loop3011;
 				}
 				
 			} while (true);
@@ -500,7 +500,7 @@ inputState.guessing--;
 			match(ID);
 			match(LCURLY);
 			{
-			_loop199:
+			_loop3197:
 			do {
 				if ((_tokenSet_6.member(LA(1)))) {
 					p=param_decl();
@@ -510,7 +510,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop199;
+					break _loop3197;
 				}
 				
 			} while (true);
@@ -649,7 +649,7 @@ inputState.guessing--;
 				}
 				}
 				{
-				_loop49:
+				_loop3045:
 				do {
 					if ((LA(1)==LSQUARE)) {
 						l = LT(1);
@@ -700,7 +700,7 @@ inputState.guessing--;
 						match(RSQUARE);
 					}
 					else {
-						break _loop49;
+						break _loop3045;
 					}
 					
 				} while (true);
@@ -750,10 +750,10 @@ inputState.guessing--;
 		x = null;
 		
 		try {      // for error handling
-			boolean synPredMatched121 = false;
+			boolean synPredMatched3119 = false;
 			if (((LA(1)==LCURLY))) {
-				int _m121 = mark();
-				synPredMatched121 = true;
+				int _m3119 = mark();
+				synPredMatched3119 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -761,12 +761,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched121 = false;
+					synPredMatched3119 = false;
 				}
-				rewind(_m121);
+				rewind(_m3119);
 inputState.guessing--;
 			}
-			if ( synPredMatched121 ) {
+			if ( synPredMatched3119 ) {
 				x=arr_initializer();
 			}
 			else if ((_tokenSet_8.member(LA(1)))) {
@@ -925,7 +925,7 @@ inputState.guessing--;
 					l.add(p);
 				}
 				{
-				_loop65:
+				_loop3061:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -935,7 +935,7 @@ inputState.guessing--;
 						}
 					}
 					else {
-						break _loop65;
+						break _loop3061;
 					}
 					
 				} while (true);
@@ -975,7 +975,7 @@ inputState.guessing--;
 			t = LT(1);
 			match(LCURLY);
 			{
-			_loop70:
+			_loop3066:
 			do {
 				if ((_tokenSet_11.member(LA(1)))) {
 					s=statement();
@@ -984,7 +984,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop70;
+					break _loop3066;
 				}
 				
 			} while (true);
@@ -1059,7 +1059,7 @@ inputState.guessing--;
 			}
 			}
 			{
-			_loop23:
+			_loop3019:
 			do {
 				switch ( LA(1)) {
 				case TK_push:
@@ -1082,7 +1082,7 @@ inputState.guessing--;
 				}
 				default:
 				{
-					break _loop23;
+					break _loop3019;
 				}
 				}
 			} while (true);
@@ -1281,6 +1281,7 @@ inputState.guessing--;
 				break;
 			}
 			case TK_assert:
+			case TK_h_assert:
 			{
 				s=assert_statement();
 				match(SEMI);
@@ -1302,10 +1303,10 @@ inputState.guessing--;
 				break;
 			}
 			default:
-				boolean synPredMatched28 = false;
+				boolean synPredMatched3024 = false;
 				if (((_tokenSet_1.member(LA(1))))) {
-					int _m28 = mark();
-					synPredMatched28 = true;
+					int _m3024 = mark();
+					synPredMatched3024 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1314,20 +1315,20 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched28 = false;
+						synPredMatched3024 = false;
 					}
-					rewind(_m28);
+					rewind(_m3024);
 inputState.guessing--;
 				}
-				if ( synPredMatched28 ) {
+				if ( synPredMatched3024 ) {
 					s=variable_decl();
 					match(SEMI);
 				}
 				else {
-					boolean synPredMatched30 = false;
+					boolean synPredMatched3026 = false;
 					if (((_tokenSet_14.member(LA(1))))) {
-						int _m30 = mark();
-						synPredMatched30 = true;
+						int _m3026 = mark();
+						synPredMatched3026 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -1335,12 +1336,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched30 = false;
+							synPredMatched3026 = false;
 						}
-						rewind(_m30);
+						rewind(_m3026);
 inputState.guessing--;
 					}
-					if ( synPredMatched30 ) {
+					if ( synPredMatched3026 ) {
 						s=expr_statement();
 						match(SEMI);
 					}
@@ -1529,7 +1530,7 @@ inputState.guessing--;
 			match(TK_insert);
 			match(LCURLY);
 			{
-			_loop73:
+			_loop3069:
 			do {
 				if ((_tokenSet_11.member(LA(1)))) {
 					s=statement();
@@ -1538,7 +1539,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop73;
+					break _loop3069;
 				}
 				
 			} while (true);
@@ -1547,7 +1548,7 @@ inputState.guessing--;
 			match(TK_into);
 			match(LCURLY);
 			{
-			_loop75:
+			_loop3071:
 			do {
 				if ((_tokenSet_11.member(LA(1)))) {
 					s=statement();
@@ -1556,7 +1557,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop75;
+					break _loop3071;
 				}
 				
 			} while (true);
@@ -1588,7 +1589,7 @@ inputState.guessing--;
 			t = LT(1);
 			match(LCURLY);
 			{
-			_loop78:
+			_loop3074:
 			do {
 				if ((_tokenSet_11.member(LA(1)))) {
 					s=statement();
@@ -1597,7 +1598,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop78;
+					break _loop3074;
 				}
 				
 			} while (true);
@@ -1698,7 +1699,7 @@ inputState.guessing--;
 				ts.add(t); ns.add(id.getText()); xs.add(x);
 			}
 			{
-			_loop55:
+			_loop3051:
 			do {
 				if ((LA(1)==COMMA)) {
 					if ( inputState.guessing==0 ) {
@@ -1731,7 +1732,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop55;
+					break _loop3051;
 				}
 				
 			} while (true);
@@ -1757,10 +1758,10 @@ inputState.guessing--;
 		s = null; Expression x;
 		
 		try {      // for error handling
-			boolean synPredMatched104 = false;
+			boolean synPredMatched3102 = false;
 			if (((_tokenSet_16.member(LA(1))))) {
-				int _m104 = mark();
-				synPredMatched104 = true;
+				int _m3102 = mark();
+				synPredMatched3102 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1768,22 +1769,22 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched104 = false;
+					synPredMatched3102 = false;
 				}
-				rewind(_m104);
+				rewind(_m3102);
 inputState.guessing--;
 			}
-			if ( synPredMatched104 ) {
+			if ( synPredMatched3102 ) {
 				x=incOrDec();
 				if ( inputState.guessing==0 ) {
 					s = new StmtExpr(x);
 				}
 			}
 			else {
-				boolean synPredMatched107 = false;
+				boolean synPredMatched3105 = false;
 				if (((LA(1)==REGEN||LA(1)==ID))) {
-					int _m107 = mark();
-					synPredMatched107 = true;
+					int _m3105 = mark();
+					synPredMatched3105 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1824,19 +1825,19 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched107 = false;
+						synPredMatched3105 = false;
 					}
-					rewind(_m107);
+					rewind(_m3105);
 inputState.guessing--;
 				}
-				if ( synPredMatched107 ) {
+				if ( synPredMatched3105 ) {
 					s=assign_expr();
 				}
 				else {
-					boolean synPredMatched109 = false;
+					boolean synPredMatched3107 = false;
 					if (((LA(1)==ID))) {
-						int _m109 = mark();
-						synPredMatched109 = true;
+						int _m3107 = mark();
+						synPredMatched3107 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -1845,12 +1846,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched109 = false;
+							synPredMatched3107 = false;
 						}
-						rewind(_m109);
+						rewind(_m3107);
 inputState.guessing--;
 					}
-					if ( synPredMatched109 ) {
+					if ( synPredMatched3107 ) {
 						x=func_call();
 						if ( inputState.guessing==0 ) {
 							s = new StmtExpr(x);
@@ -1892,10 +1893,10 @@ inputState.guessing--;
 			match(RPAREN);
 			t=pseudo_block();
 			{
-			boolean synPredMatched88 = false;
+			boolean synPredMatched3086 = false;
 			if (((LA(1)==TK_else))) {
-				int _m88 = mark();
-				synPredMatched88 = true;
+				int _m3086 = mark();
+				synPredMatched3086 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1903,12 +1904,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched88 = false;
+					synPredMatched3086 = false;
 				}
-				rewind(_m88);
+				rewind(_m3086);
 inputState.guessing--;
 			}
-			if ( synPredMatched88 ) {
+			if ( synPredMatched3086 ) {
 				{
 				match(TK_else);
 				f=pseudo_block();
@@ -2067,15 +2068,64 @@ inputState.guessing--;
 	public final StmtAssert  assert_statement() throws RecognitionException, TokenStreamException {
 		StmtAssert s;
 		
-		Token  t = null;
+		Token  t1 = null;
+		Token  t2 = null;
+		Token  ass = null;
 		s = null; Expression x;
 		
 		try {      // for error handling
-			t = LT(1);
-			match(TK_assert);
+			{
+			switch ( LA(1)) {
+			case TK_assert:
+			{
+				t1 = LT(1);
+				match(TK_assert);
+				break;
+			}
+			case TK_h_assert:
+			{
+				t2 = LT(1);
+				match(TK_h_assert);
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
 			x=right_expr();
+			{
+			switch ( LA(1)) {
+			case COLON:
+			{
+				match(COLON);
+				ass = LT(1);
+				match(STRING_LITERAL);
+				break;
+			}
+			case SEMI:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
 			if ( inputState.guessing==0 ) {
-				s = new StmtAssert(getContext(t), x);
+				
+						String msg = null;
+						Token t = t1;
+						if(t==null){ t=t2;}
+						FEContext cx =getContext(t); 
+						if(ass!=null){
+							String ps = ass.getText();
+					        ps = ps.substring(1, ps.length()-1);
+							msg =cx + "   "+ ps;	
+						}
+						s = new StmtAssert(cx, x, msg, t2!=null);
 			}
 		}
 		catch (RecognitionException ex) {
@@ -2190,10 +2240,10 @@ inputState.guessing--;
 				tr = LT(1);
 				match(TK_roundrobin);
 				{
-				boolean synPredMatched39 = false;
+				boolean synPredMatched3035 = false;
 				if (((LA(1)==LPAREN))) {
-					int _m39 = mark();
-					synPredMatched39 = true;
+					int _m3035 = mark();
+					synPredMatched3035 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -2202,12 +2252,12 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched39 = false;
+						synPredMatched3035 = false;
 					}
-					rewind(_m39);
+					rewind(_m3035);
 inputState.guessing--;
 				}
-				if ( synPredMatched39 ) {
+				if ( synPredMatched3035 ) {
 					match(LPAREN);
 					match(RPAREN);
 					if ( inputState.guessing==0 ) {
@@ -2215,10 +2265,10 @@ inputState.guessing--;
 					}
 				}
 				else {
-					boolean synPredMatched41 = false;
+					boolean synPredMatched3037 = false;
 					if (((LA(1)==LPAREN))) {
-						int _m41 = mark();
-						synPredMatched41 = true;
+						int _m3037 = mark();
+						synPredMatched3037 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -2228,12 +2278,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched41 = false;
+							synPredMatched3037 = false;
 						}
-						rewind(_m41);
+						rewind(_m3037);
 inputState.guessing--;
 					}
-					if ( synPredMatched41 ) {
+					if ( synPredMatched3037 ) {
 						match(LPAREN);
 						x=right_expr();
 						match(RPAREN);
@@ -2376,7 +2426,7 @@ inputState.guessing--;
 					l.add(x);
 				}
 				{
-				_loop116:
+				_loop3114:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -2386,7 +2436,7 @@ inputState.guessing--;
 						}
 					}
 					else {
-						break _loop116;
+						break _loop3114;
 					}
 					
 				} while (true);
@@ -2577,10 +2627,10 @@ inputState.guessing--;
 		s = null;
 		
 		try {      // for error handling
-			boolean synPredMatched96 = false;
+			boolean synPredMatched3094 = false;
 			if (((_tokenSet_1.member(LA(1))))) {
-				int _m96 = mark();
-				synPredMatched96 = true;
+				int _m3094 = mark();
+				synPredMatched3094 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2588,19 +2638,19 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched96 = false;
+					synPredMatched3094 = false;
 				}
-				rewind(_m96);
+				rewind(_m3094);
 inputState.guessing--;
 			}
-			if ( synPredMatched96 ) {
+			if ( synPredMatched3094 ) {
 				s=variable_decl();
 			}
 			else {
-				boolean synPredMatched98 = false;
+				boolean synPredMatched3096 = false;
 				if (((_tokenSet_14.member(LA(1))))) {
-					int _m98 = mark();
-					synPredMatched98 = true;
+					int _m3096 = mark();
+					synPredMatched3096 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -2608,19 +2658,19 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched98 = false;
+						synPredMatched3096 = false;
 					}
-					rewind(_m98);
+					rewind(_m3096);
 inputState.guessing--;
 				}
-				if ( synPredMatched98 ) {
+				if ( synPredMatched3096 ) {
 					s=expr_statement();
 				}
 				else {
-					boolean synPredMatched100 = false;
+					boolean synPredMatched3098 = false;
 					if (((LA(1)==SEMI))) {
-						int _m100 = mark();
-						synPredMatched100 = true;
+						int _m3098 = mark();
+						synPredMatched3098 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -2628,12 +2678,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched100 = false;
+							synPredMatched3098 = false;
 						}
-						rewind(_m100);
+						rewind(_m3098);
 inputState.guessing--;
 					}
-					if ( synPredMatched100 ) {
+					if ( synPredMatched3098 ) {
 						if ( inputState.guessing==0 ) {
 							s = new StmtEmpty(getContext(t));
 						}
@@ -2970,7 +3020,7 @@ inputState.guessing--;
 				x = new ExprVar(getContext(name), name.getText());
 			}
 			{
-			_loop188:
+			_loop3186:
 			do {
 				switch ( LA(1)) {
 				case DOT:
@@ -2996,7 +3046,7 @@ inputState.guessing--;
 				}
 				default:
 				{
-					break _loop188;
+					break _loop3186;
 				}
 				}
 			} while (true);
@@ -3105,7 +3155,7 @@ inputState.guessing--;
 					l.add(y);
 				}
 				{
-				_loop125:
+				_loop3123:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -3115,7 +3165,7 @@ inputState.guessing--;
 						}
 					}
 					else {
-						break _loop125;
+						break _loop3123;
 					}
 					
 				} while (true);
@@ -3156,7 +3206,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=logicAndExpr();
 			{
-			_loop130:
+			_loop3128:
 			do {
 				if ((LA(1)==LOGIC_OR)) {
 					match(LOGIC_OR);
@@ -3166,7 +3216,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop130;
+					break _loop3128;
 				}
 				
 			} while (true);
@@ -3191,7 +3241,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=bitwiseOrExpr();
 			{
-			_loop133:
+			_loop3131:
 			do {
 				if ((LA(1)==LOGIC_AND)) {
 					match(LOGIC_AND);
@@ -3201,7 +3251,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop133;
+					break _loop3131;
 				}
 				
 			} while (true);
@@ -3226,7 +3276,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=bitwiseXorExpr();
 			{
-			_loop136:
+			_loop3134:
 			do {
 				if ((LA(1)==BITWISE_OR)) {
 					match(BITWISE_OR);
@@ -3236,7 +3286,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop136;
+					break _loop3134;
 				}
 				
 			} while (true);
@@ -3261,7 +3311,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=bitwiseAndExpr();
 			{
-			_loop139:
+			_loop3137:
 			do {
 				if ((LA(1)==BITWISE_XOR)) {
 					match(BITWISE_XOR);
@@ -3271,7 +3321,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop139;
+					break _loop3137;
 				}
 				
 			} while (true);
@@ -3296,7 +3346,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=equalExpr();
 			{
-			_loop142:
+			_loop3140:
 			do {
 				if ((LA(1)==BITWISE_AND)) {
 					match(BITWISE_AND);
@@ -3306,7 +3356,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop142;
+					break _loop3140;
 				}
 				
 			} while (true);
@@ -3331,7 +3381,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=compareExpr();
 			{
-			_loop146:
+			_loop3144:
 			do {
 				if ((LA(1)==EQUAL||LA(1)==NOT_EQUAL)) {
 					{
@@ -3364,7 +3414,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop146;
+					break _loop3144;
 				}
 				
 			} while (true);
@@ -3389,7 +3439,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=shiftExpr();
 			{
-			_loop150:
+			_loop3148:
 			do {
 				if (((LA(1) >= LESS_THAN && LA(1) <= MORE_EQUAL))) {
 					{
@@ -3438,7 +3488,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop150;
+					break _loop3148;
 				}
 				
 			} while (true);
@@ -3463,7 +3513,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=addExpr();
 			{
-			_loop154:
+			_loop3152:
 			do {
 				if ((LA(1)==LSHIFT||LA(1)==RSHIFT)) {
 					{
@@ -3496,7 +3546,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop154;
+					break _loop3152;
 				}
 				
 			} while (true);
@@ -3521,7 +3571,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=multExpr();
 			{
-			_loop158:
+			_loop3156:
 			do {
 				if ((LA(1)==PLUS||LA(1)==MINUS||LA(1)==SELECT)) {
 					{
@@ -3562,7 +3612,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop158;
+					break _loop3156;
 				}
 				
 			} while (true);
@@ -3587,7 +3637,7 @@ inputState.guessing--;
 		try {      // for error handling
 			x=inc_dec_expr();
 			{
-			_loop162:
+			_loop3160:
 			do {
 				if ((LA(1)==STAR||LA(1)==DIV||LA(1)==MOD)) {
 					{
@@ -3628,7 +3678,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop162;
+					break _loop3160;
 				}
 				
 			} while (true);
@@ -3652,10 +3702,10 @@ inputState.guessing--;
 		x = null;
 		
 		try {      // for error handling
-			boolean synPredMatched165 = false;
+			boolean synPredMatched3163 = false;
 			if (((_tokenSet_16.member(LA(1))))) {
-				int _m165 = mark();
-				synPredMatched165 = true;
+				int _m3163 = mark();
+				synPredMatched3163 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -3663,19 +3713,19 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched165 = false;
+					synPredMatched3163 = false;
 				}
-				rewind(_m165);
+				rewind(_m3163);
 inputState.guessing--;
 			}
-			if ( synPredMatched165 ) {
+			if ( synPredMatched3163 ) {
 				x=incOrDec();
 			}
 			else {
-				boolean synPredMatched167 = false;
+				boolean synPredMatched3165 = false;
 				if (((LA(1)==LPAREN))) {
-					int _m167 = mark();
-					synPredMatched167 = true;
+					int _m3165 = mark();
+					synPredMatched3165 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -3684,12 +3734,12 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched167 = false;
+						synPredMatched3165 = false;
 					}
-					rewind(_m167);
+					rewind(_m3165);
 inputState.guessing--;
 				}
-				if ( synPredMatched167 ) {
+				if ( synPredMatched3165 ) {
 					x=castExpr();
 				}
 				else if ((LA(1)==BANG)) {
@@ -3732,7 +3782,7 @@ inputState.guessing--;
 			match(LPAREN);
 			t=primitive_type();
 			{
-			_loop174:
+			_loop3172:
 			do {
 				if ((LA(1)==LSQUARE)) {
 					sq = LT(1);
@@ -3744,7 +3794,7 @@ inputState.guessing--;
 					match(RSQUARE);
 				}
 				else {
-					break _loop174;
+					break _loop3172;
 				}
 				
 			} while (true);
@@ -3905,10 +3955,10 @@ inputState.guessing--;
 				break;
 			}
 			default:
-				boolean synPredMatched182 = false;
+				boolean synPredMatched3180 = false;
 				if (((LA(1)==ID))) {
-					int _m182 = mark();
-					synPredMatched182 = true;
+					int _m3180 = mark();
+					synPredMatched3180 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -3916,12 +3966,12 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched182 = false;
+						synPredMatched3180 = false;
 					}
-					rewind(_m182);
+					rewind(_m3180);
 inputState.guessing--;
 				}
-				if ( synPredMatched182 ) {
+				if ( synPredMatched3180 ) {
 					x=func_call();
 				}
 				else if ((LA(1)==ID)) {
@@ -4183,10 +4233,10 @@ inputState.guessing--;
 				{
 					match(COLON);
 					{
-					boolean synPredMatched195 = false;
+					boolean synPredMatched3193 = false;
 					if (((LA(1)==NUMBER))) {
-						int _m195 = mark();
-						synPredMatched195 = true;
+						int _m3193 = mark();
+						synPredMatched3193 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -4194,12 +4244,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched195 = false;
+							synPredMatched3193 = false;
 						}
-						rewind(_m195);
+						rewind(_m3193);
 inputState.guessing--;
 					}
-					if ( synPredMatched195 ) {
+					if ( synPredMatched3193 ) {
 						len = LT(1);
 						match(NUMBER);
 						if ( inputState.guessing==0 ) {
@@ -4288,6 +4338,7 @@ inputState.guessing--;
 		"\"false\"",
 		"\"implements\"",
 		"\"assert\"",
+		"\"h_assert\"",
 		"\"static\"",
 		"\"include\"",
 		"\"pragma\"",
@@ -4366,12 +4417,12 @@ inputState.guessing--;
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 137439993856L, 35184640524288L, 0L, 0L};
+		long[] data = { 274878947328L, 70369281048576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 1040384L, 35184640524288L, 0L, 0L};
+		long[] data = { 1040384L, 70369281048576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
@@ -4381,162 +4432,162 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 0L, 268435456L, 0L, 0L};
+		long[] data = { 0L, 536870912L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 962074763266L, 35184640524288L, 0L, 0L};
+		long[] data = { 1924147437570L, 70369281048576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { 0L, 4096L, 0L, 0L};
+		long[] data = { 0L, 8192L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 3137536L, 35184640524288L, 0L, 0L};
+		long[] data = { 3137536L, 70369281048576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 36283883716610L, 268435456L, 0L, 0L};
+		long[] data = { 72567767433218L, 536870912L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { 99255139432401920L, 141150290477056L, 0L, 0L};
+		long[] data = { 198510253094996992L, 282300580954112L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { 281474976710656L, 12288L, 0L, 0L};
+		long[] data = { 562949953421312L, 24576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { 140771848093696L, 4096L, 0L, 0L};
+		long[] data = { 281509336449024L, 8192L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { 81205607609135984L, 56556399890432L, 0L, 0L};
+		long[] data = { 162411275829113712L, 113112799780864L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 81488044667958130L, 56556399890432L, 0L, 0L};
+		long[] data = { 162976149937320818L, 113112799780864L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
 	private static final long[] mk_tokenSet_13() {
-		long[] data = { 1618481116086272L, 481036351488L, 0L, 0L};
+		long[] data = { 3236962232172544L, 962072702976L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	private static final long[] mk_tokenSet_14() {
-		long[] data = { 81064793292668928L, 412587393024L, 0L, 0L};
+		long[] data = { 162129586585337856L, 825174786048L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
 	private static final long[] mk_tokenSet_15() {
-		long[] data = { 81487082594235248L, 56556399890432L, 0L, 0L};
+		long[] data = { 162974225790923632L, 113112799780864L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
 	private static final long[] mk_tokenSet_16() {
-		long[] data = { 81064793292668928L, 270532608L, 0L, 0L};
+		long[] data = { 162129586585337856L, 541065216L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
 	private static final long[] mk_tokenSet_17() {
-		long[] data = { 70368744177664L, 4096L, 0L, 0L};
+		long[] data = { 140737488355328L, 8192L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
 	private static final long[] mk_tokenSet_18() {
-		long[] data = { -1563382389395161088L, 481037598711L, 0L, 0L};
+		long[] data = { -3126764778790322176L, 962075197423L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
 	private static final long[] mk_tokenSet_19() {
-		long[] data = { 669602581315586L, 268435456L, 0L, 0L};
+		long[] data = { 1339205162631170L, 536870912L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_19 = new BitSet(mk_tokenSet_19());
 	private static final long[] mk_tokenSet_20() {
-		long[] data = { 70368744177664L, 12288L, 0L, 0L};
+		long[] data = { 140737488355328L, 24576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_20 = new BitSet(mk_tokenSet_20());
 	private static final long[] mk_tokenSet_21() {
-		long[] data = { 70368744177664L, 0L};
+		long[] data = { 140737488355328L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_21 = new BitSet(mk_tokenSet_21());
 	private static final long[] mk_tokenSet_22() {
-		long[] data = { -633318697598976L, 481037598719L, 0L, 0L};
+		long[] data = { -1266637395197952L, 962075197439L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_22 = new BitSet(mk_tokenSet_22());
 	private static final long[] mk_tokenSet_23() {
-		long[] data = { 1618481116086272L, 481036352512L, 0L, 0L};
+		long[] data = { 3236962232172544L, 962072705024L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_23 = new BitSet(mk_tokenSet_23());
 	private static final long[] mk_tokenSet_24() {
-		long[] data = { -9221753555738689536L, 481036352512L, 0L, 0L};
+		long[] data = { 3236962232172544L, 962072705025L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_24 = new BitSet(mk_tokenSet_24());
 	private static final long[] mk_tokenSet_25() {
-		long[] data = { -4610067537311301632L, 481036352512L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962072705025L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_25 = new BitSet(mk_tokenSet_25());
 	private static final long[] mk_tokenSet_26() {
-		long[] data = { -4610067537311301632L, 481036352514L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962072705029L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_26 = new BitSet(mk_tokenSet_26());
 	private static final long[] mk_tokenSet_27() {
-		long[] data = { -4610067537311301632L, 481036352518L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962072705037L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_27 = new BitSet(mk_tokenSet_27());
 	private static final long[] mk_tokenSet_28() {
-		long[] data = { -4610067537311301632L, 481036352519L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962072705039L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_28 = new BitSet(mk_tokenSet_28());
 	private static final long[] mk_tokenSet_29() {
-		long[] data = { -4610067537311301632L, 481036352567L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962072705135L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_29 = new BitSet(mk_tokenSet_29());
 	private static final long[] mk_tokenSet_30() {
-		long[] data = { -4610067537311301632L, 481036353527L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962072707055L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_30 = new BitSet(mk_tokenSet_30());
 	private static final long[] mk_tokenSet_31() {
-		long[] data = { -4610067537311301632L, 481036550135L, 0L, 0L};
+		long[] data = { -9220135074622603264L, 962073100271L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_31 = new BitSet(mk_tokenSet_31());
 	private static final long[] mk_tokenSet_32() {
-		long[] data = { -4589801338988134400L, 481037598711L, 0L, 0L};
+		long[] data = { -9179602677976268800L, 962075197423L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_32 = new BitSet(mk_tokenSet_32());
 	private static final long[] mk_tokenSet_33() {
-		long[] data = { 18190346139732992L, 141150290444288L, 0L, 0L};
+		long[] data = { 36380666509659136L, 282300580888576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_33 = new BitSet(mk_tokenSet_33());
 	private static final long[] mk_tokenSet_34() {
-		long[] data = { 1125899906842624L, 0L};
+		long[] data = { 2251799813685248L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_34 = new BitSet(mk_tokenSet_34());

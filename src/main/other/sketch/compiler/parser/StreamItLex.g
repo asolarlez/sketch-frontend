@@ -60,6 +60,7 @@ tokens {
 	//sketching stuff
 	"implements";
 	"assert";
+	"h_assert";
 	"static";
     // Compiler directives:
     "include";
