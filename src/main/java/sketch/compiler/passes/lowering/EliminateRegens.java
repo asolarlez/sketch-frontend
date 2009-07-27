@@ -33,12 +33,15 @@ import streamit.frontend.nodes.ExprVar;
 import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
 import streamit.frontend.nodes.FEReplacer;
+import streamit.frontend.nodes.Function;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
+import streamit.frontend.nodes.StmtLoop;
 import streamit.frontend.nodes.StmtVarDecl;
+import streamit.frontend.nodes.SymbolTable;
 import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.TypePrimitive;
 import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
@@ -58,7 +61,35 @@ public class EliminateRegens extends SymbolTableVisitor {
 		super (null);
 		this.varGen = varGen;
 	}
-
+	List<Statement> globalDecls;
+	@Override
+	 public Object visitFunction(Function func)
+    {
+		globalDecls = new ArrayList<Statement>();
+		Function f = (Function) super.visitFunction(func);
+		if(globalDecls.size()>0){
+			globalDecls.add(f.getBody());
+			return new Function(f, f.getCls(),
+                    f.getName(), f.getReturnType(),
+                    f.getParams(), f.getSpecification(), new StmtBlock(globalDecls));
+		}
+		return f;        
+    }
+	
+	public Object visitStmtLoop(StmtLoop pl){
+		List<Statement> tmp = globalDecls;
+		globalDecls = new ArrayList<Statement>();
+		StmtLoop nl = (StmtLoop) super.visitStmtLoop(pl);
+		if(globalDecls.size()>0){
+			globalDecls.add(nl.getBody());
+			nl = new StmtLoop(nl, nl.getIter(), new StmtBlock(globalDecls));
+		}
+		globalDecls = tmp;
+		return nl;
+	}
+	
+	
+	
 	public Object visitExprRegen (ExprRegen er) {
 		List<Expression> exps = explodeRegen (er);
 		if (exps.size () == 1)
@@ -120,13 +151,14 @@ public class EliminateRegens extends SymbolTableVisitor {
 	protected ExprVar makeNDChoice (int n, FENode cx, String pfx) {
 		ExprVar which = new ExprVar (cx, varGen.nextVar (pfx));
 
-		addStatement (new StmtVarDecl (cx, TypePrimitive.inttype, which.getName (), null));
-		addStatement (new StmtAssign (which, new ExprStar (which, Misc.nBitsBinaryRepr (n))));
-		addStatement (new StmtAssert (
+		globalDecls.add(new StmtVarDecl (cx, TypePrimitive.inttype, which.getName (), null));
+		ExprStar es = new ExprStar (which, Misc.nBitsBinaryRepr (n));
+		globalDecls.add(new StmtAssign (which, es));
+		globalDecls.add(new StmtAssert (
 			new ExprBinary (
 				new ExprBinary (ExprConstInt.zero, "<=", which),
 				"&&",
-				new ExprBinary (which, "<", ExprConstant.createConstant (which, ""+ n)))));
+				new ExprBinary (which, "<", ExprConstant.createConstant (which, ""+ n))), "regen " + es.getSname(), true));
 
 		return which;
 	}
