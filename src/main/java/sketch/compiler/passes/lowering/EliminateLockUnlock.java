@@ -96,7 +96,7 @@ public class EliminateLockUnlock extends FEReplacer {
 				 new ExprBinary (ExprConstInt.zero, "<=", p),
 				 "&&",
 				 new ExprBinary(p, "<", lockLen)),
-				 "The lock expression is out of bounds.");
+				 "The lock expression is out of bounds.", false);
 
 		 if (exp.getName ().equals ("lock")) {
 			 /* This is the code we are producing here.
@@ -119,7 +119,7 @@ public class EliminateLockUnlock extends FEReplacer {
 			 List<Statement> body = new ArrayList<Statement> ();
 			 body.add (guard);
 			 body.add (new StmtAssert (makeLockHeldCond (exp, threadId, p),
-					   "You can't release a lock you don't own"));
+					   "You can't release a lock you don't own", false));
 			 body.add (new StmtAssign (exp, lock, ExprConstInt.zero));
 			 return new StmtAtomicBlock (exp, body);
 		 }

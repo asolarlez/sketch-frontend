@@ -164,7 +164,7 @@ public class EliminateReorderBlocks extends FEReplacer {
 						valid,
 						"&&",
 						new ExprArrayRange (cx, picked, new ExprConstInt (cx, j)));
-		StmtAssert checkChoices = new StmtAssert (valid, "bad stmt order");
+		StmtAssert checkChoices = new StmtAssert (valid, "bad stmt order", false);
 
 		// Execute the statements
 		StmtFor execLoop = new StmtFor (cx,
