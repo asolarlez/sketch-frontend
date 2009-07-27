@@ -30,7 +30,7 @@ public class ValueOracle extends AbstractValueOracle {
 		String dbRecord = null;
 		valMap = new HashMap<String, Integer>();
 		while ( (dbRecord = in.readLine()) != null) {
-            StringTokenizer st = new StringTokenizer(dbRecord, "\t");
+            StringTokenizer st = new StringTokenizer(dbRecord, "\t ");
             String vname = st.nextToken();
             String sval = st.nextToken();
             int val = Integer.parseInt(sval);
