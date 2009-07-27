@@ -5,15 +5,18 @@ package streamit.frontend.passes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import streamit.frontend.nodes.ExprBinary;
 import streamit.frontend.nodes.ExprConstInt;
 import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprStar;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
+import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtInsertBlock;
@@ -57,24 +60,53 @@ public class EliminateInsertBlocks extends FEReplacer {
 	 */
 	protected int depth;
 	protected List<Statement> header;
+	protected List<Statement> headerDecls;
 
 	public EliminateInsertBlocks (TempVarGen _varGen) {
 		varGen = _varGen;
 	}
 
+	Stack<String> svars = new Stack<String>();
+	
+	int twopow(int n){
+		return 1 << n;
+	}
+	public void addAssertion(Statement cx, List<Statement> slist, Expression cond, int idx){
+		int l = 0;
+		int lp = svars.size();
+		Expression e = null;
+		for(String sv : svars){
+			int diff = lp-l; ++l;
+			if(idx/twopow(diff-1)%2 == 1){
+				if(e == null){
+					e = new ExprBinary(cx, new ExprVar(cx,sv), "==", new ExprConstInt(idx/twopow(diff)));
+				}else{
+					e = new ExprBinary(cx, e, "&&", 
+						new ExprBinary(cx, new ExprVar(cx,sv), "==", new ExprConstInt(idx/twopow(diff)))
+					);
+				}
+			}
+		}
+		if(e != null){
+			slist.add(new StmtIfThen(cx, cond, new StmtAssert(e, "insert assert", true), null)); 			
+		}
+	}
+	
 	public Object visitStmtInsertBlock (StmtInsertBlock sib) {
-		if (0 == depth++)
+		if (0 == depth++){
 			header = new ArrayList<Statement> ();
+			headerDecls = new ArrayList<Statement> ();
+		}
 
-		String where = varGen.nextVar ("_ins_where");
+		String where = varGen.nextVar ("_ins_where");		
 		Statement S = (Statement) sib.getInsertStmt ().accept (this);
 
 		// Rewrite 'into' body
 		List<Statement> oldB = sib.getIntoBlock ().getStmts ();
-		if (1 == oldB.size () && (oldB.get (0) instanceof StmtInsertBlock))
-			// Special case for immediately-nested 'insert' blocks
+		if (1 == oldB.size () && (oldB.get (0) instanceof StmtInsertBlock)){
+			// Special case for immediately-nested 'insert' blocks			
 			oldB = ((StmtBlock) oldB.get (0).accept (this)).getStmts ();
-		else
+		}else
 			oldB = ((StmtBlock) sib.getIntoBlock ().accept (this)).getStmts ();
 
 		String maxVal = ""+ oldB.size ();
@@ -88,27 +120,30 @@ public class EliminateInsertBlocks extends FEReplacer {
 						"&&",
 						new ExprBinary (new ExprVar (sib, where), "<=",
 										ExprConstant.createConstant (sib, maxVal))
-								)));
-		header.add (0,
+								), true));
+		headerDecls.add (0,
 				new StmtVarDecl (sib, TypePrimitive.inttype, where, new ExprStar (sib, nBits)));
 
 		List<Statement> newB = new ArrayList<Statement> ();
 		for (int i = 0; i < oldB.size (); ++i) {
 			Statement si = (Statement) oldB.get (i);
-
-			newB.add (new StmtIfThen (S,
-						new ExprBinary (new ExprVar (S, where),
-										"==", ExprConstant.createConstant (S, ""+i)),
-						S, null));
+			Expression eb = new ExprBinary (new ExprVar (S, where),
+					"==", ExprConstant.createConstant (S, ""+i)); 
+			newB.add (new StmtIfThen (S, eb, S, null));
+			addAssertion(sib, header, eb, i);
 			newB.add (si);
-		}
-		newB.add (new StmtIfThen (S,
-					new ExprBinary (new ExprVar (S, where),
-								    "==", ExprConstant.createConstant (S, maxVal)),
-					S, null));
+		}		
+		Expression eb = new ExprBinary (new ExprVar (S, where),
+			    "==", ExprConstant.createConstant (S, maxVal)); 
+		newB.add (new StmtIfThen (S,eb, S, null));
+		addAssertion(sib, header, eb, oldB.size());
 
-		if (0 == --depth)
-			newB.addAll (0, header);
+		svars.push(where);
+		if (0 == --depth){
+			newB.add(0, new StmtAtomicBlock(sib, header));
+			newB.addAll (0, headerDecls);			
+			svars.clear();
+		}
 
 		return new StmtBlock (sib, newB);
 	}
