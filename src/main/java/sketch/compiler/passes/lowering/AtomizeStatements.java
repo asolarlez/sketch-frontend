@@ -12,6 +12,7 @@ import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtExpr;
 import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.nodes.TempVarGen;
@@ -113,6 +114,29 @@ public class AtomizeStatements extends SymbolTableVisitor {
 
         return res;
 	}
+	
+	public Object visitStmtIfThen(StmtIfThen stmt){
+		Expression newCond;
+		if(stmt.getCond() instanceof ExprVar && isGlobal ((ExprVar) stmt.getCond())){
+			newCond = replWithLocal (stmt.getCond());
+		}else{
+			newCond = doExpression(stmt.getCond());
+		}
+		 
+        Statement newCons = stmt.getCons() == null ? null :
+            (Statement)stmt.getCons().accept(this);
+        Statement newAlt = stmt.getAlt() == null ? null :
+            (Statement)stmt.getAlt().accept(this);
+        if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
+            newAlt == stmt.getAlt())
+            return stmt;
+        if(newCons == null && newAlt == null){
+        	return new StmtExpr(stmt, newCond);
+        }
+
+        return new StmtIfThen(stmt, newCond, newCons, newAlt);
+	}
+	
 
 	@Override
 	public Object visitExprArrayRange(ExprArrayRange ear){
