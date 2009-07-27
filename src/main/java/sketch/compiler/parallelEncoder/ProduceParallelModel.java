@@ -176,7 +176,7 @@ public class ProduceParallelModel extends FEReplacer {
 	 * 		invalidSchedule[threadID] = 1;
 	 * }
  */
-				 bodyL.add(new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds."));
+				 bodyL.add(new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds.", false));
 				 StmtAssign getLock = new StmtAssign(new ExprArrayRange(locksVar, p),  new ExprBinary(loopVar, "+", ExprConstInt.one));
 
 				 Statement sleep = new StmtAssign(new ExprArrayRange(new ExprVar(exp, INV_SCHEDULE), loopVar), ExprConstInt.one);
@@ -189,8 +189,8 @@ public class ProduceParallelModel extends FEReplacer {
 				 assert exp.getParams().size() == 1;
 				 Expression p = exp.getParams().get(0);
 				 List<Statement> bodyL = new ArrayList<Statement>();
-				 bodyL.add(new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds."));
-				 bodyL.add(new StmtAssert(exp, new ExprBinary(new ExprArrayRange(locksVar, p), "==", new ExprBinary(loopVar, "+", ExprConstInt.one) ), "You can't release a lock you don't own"));
+				 bodyL.add(new StmtAssert(exp, new ExprBinary(p, "<", lockLen), "The lock expression is out of bounds.", false));
+				 bodyL.add(new StmtAssert(exp, new ExprBinary(new ExprArrayRange(locksVar, p), "==", new ExprBinary(loopVar, "+", ExprConstInt.one) ), "You can't release a lock you don't own", false));
 				 bodyL.add(new StmtAssign(new ExprArrayRange(locksVar, p), ExprConstInt.zero ));
 				 return new StmtBlock(exp, bodyL);
 
@@ -584,8 +584,8 @@ public class ProduceParallelModel extends FEReplacer {
 		Statement forIncr = new StmtAssign(idx, new ExprBinary(idx, "+", ExprConstInt.one));
 		Expression forCond = new ExprBinary(null,  ExprBinary.BINOP_LT, idx, nthreads);
 		bodyL.add(new StmtFor(forInit, forInit, forCond, forIncr, new StmtBlock((FEContext) null, forBody)));
-		bodyL.add(new StmtAssert(new ExprVar((FEContext) null, noDeadlock), "There is a possible deadlock in the code."));
-		bodyL.add(new StmtAssert(new ExprBinary(new ExprVar((FEContext) null, STEP), "<", SchedLen) , "The schedule is too short. Not all threads had time to terminate."));
+		bodyL.add(new StmtAssert(new ExprVar((FEContext) null, noDeadlock), "There is a possible deadlock in the code.", false));
+		bodyL.add(new StmtAssert(new ExprBinary(new ExprVar((FEContext) null, STEP), "<", SchedLen) , "The schedule is too short. Not all threads had time to terminate.", false));
 		bodyL.add(new StmtAssign(rExpr, new ExprVar((FEContext) null, tmpOut ) ));
 
 		return new StmtBlock((FEContext) null, bodyL);
