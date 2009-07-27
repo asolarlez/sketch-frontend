@@ -48,7 +48,12 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 			public Object visitExprRegen(ExprRegen fc){
 				is = true;
 				return fc;
-			}			
+			}	
+			
+			public Object visitExprField(ExprField ef){
+				is = true;
+				return ef;
+			}
 		}
 		isComplex ic = new isComplex();
 		if(exp != null){
