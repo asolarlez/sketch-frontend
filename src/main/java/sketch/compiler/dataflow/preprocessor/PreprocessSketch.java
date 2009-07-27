@@ -92,9 +92,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 	        Expression ncond = exprRV;
 	        String msg = null;
 	        msg = stmt.getMsg();
-	        state.Assert(vcond, msg);
+	        state.Assert(vcond, msg, stmt.isSuper());
 	        return isReplacer ?(
-	        		(vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg())
+	        		(vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper())
 	        		)
 	        		: stmt
 	        		;
@@ -164,7 +164,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 
 		    		rcontrol.popFunCall(exp);
 	    		}else{
-	    			StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero);
+	    			StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero, false);
 	    			addStatement(sas);
 	    		}
 	    		exprRV = null;
