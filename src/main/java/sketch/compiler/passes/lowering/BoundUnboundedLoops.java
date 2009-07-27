@@ -152,7 +152,7 @@ public class BoundUnboundedLoops extends FEReplacer {
 
 	private Statement makeTerminatedAssertion (ExprVar term) {
 		return new StmtAssert (new ExprBinary (term, "==", ExprConstInt.one),
-				NONTERM_MESSAGE);
+				NONTERM_MESSAGE, false);
 	}
 
 	private ExprVar makeVar (FENode cx, Type t, String pfx, Expression init) {
