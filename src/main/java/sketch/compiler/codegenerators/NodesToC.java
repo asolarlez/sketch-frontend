@@ -403,7 +403,7 @@ public class NodesToC extends NodesToJava {
                     SymbolTable.KIND_LOCAL);
             Type type = stmt.getType(i);
             if(type instanceof TypeArray){
-	            if( ((TypeArray)type).getBase().equals( TypePrimitive.inttype )){
+	            if( !((TypeArray)type).getBase().equals( TypePrimitive.bittype )){
 	            	isBool = false;
 	            }
             }
@@ -506,7 +506,11 @@ public class NodesToC extends NodesToJava {
 				ctype = TypePrimitive.inttype;
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
-				return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";
+				if(range.len()==1){
+					return base.accept(this)+ ".get("+ tmp + ")";
+				}else{
+					return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";
+				}
 			}
 		}
 		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
