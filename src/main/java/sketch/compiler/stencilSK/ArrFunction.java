@@ -173,8 +173,8 @@ public class ArrFunction{
 				String idxName = vd.getName(0);
 				Expression idx = new ExprVar(vd,idxName);
 				String errmsg = "Index " + idxName + " is out of bounds for array " + arrName;
-				stmts.add(new StmtAssert(new ExprBinary(idx, "<", bound  ), errmsg));
-				stmts.add(new StmtAssert(new ExprBinary(idx, ">=", ExprConstInt.zero),  errmsg));
+				stmts.add(new StmtAssert(new ExprBinary(idx, "<", bound  ), errmsg, false));
+				stmts.add(new StmtAssert(new ExprBinary(idx, ">=", ExprConstInt.zero),  errmsg, false));
 			}
 		}
 	}

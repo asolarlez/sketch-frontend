@@ -365,7 +365,7 @@ public class FunctionalizeStencils extends FEReplacer {
 				Statement asscall=new StmtExpr(new ExprFunCall(body,assfun.getFullName(),assArgs));				
 				// assert its result.
 				lst.add(asscall);
-				lst.add( new StmtAssert( new ExprUnary("!",  new ExprVar(body, name)  )) );
+				lst.add( new StmtAssert( new ExprUnary("!",  new ExprVar(body, name)  ), false) );
 			}
 			
 			Function fun=Function.newHelper(f,f.getName(),TypePrimitive.voidtype,
