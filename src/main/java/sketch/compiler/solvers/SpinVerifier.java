@@ -152,10 +152,11 @@ public class SpinVerifier implements Verifier {
 			log ("Before specialization and optimization:");
 			p.accept (new SimpleCodePrinter());
 		}
-		if(! CommandLineParamManager.getParams().hasFlag("playDumb")){		
-			p = (Program) p.accept (new FlattenStmtBlocks ());
+		if(! CommandLineParamManager.getParams().hasFlag("playDumb")){					
 			//ToSBit.dump (p, "flatten");
 			p = (Program) p.accept (new ParallelPreprocessor ());
+			
+			p = (Program) p.accept (new FlattenStmtBlocks ());
 			//ToSBit.dump (p, "preproc");
 			p = (Program) p.accept (new EliminateTransAssns ());
 			

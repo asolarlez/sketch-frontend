@@ -761,13 +761,13 @@ public class SATSynthesizer implements Synthesizer {
 
 						Statement allgood = new StmtAssign(assumeFlag, ExprConstInt.zero);
 						Statement allbad = new StmtIfThen(stmt, assumeFlag,
-								new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock."), null);
+								new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock.", false), null);
 
 						Statement otherwise = new StmtIfThen(stmt, miv, allgood, allbad);
 						mls.add(otherwise);
 						elsecond = new StmtBlock(stmt, mls);
 					}else{
-						elsecond = new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock.");
+						elsecond = new StmtAssert(stmt, ExprConstInt.zero, "There was a deadlock.", false);
 					}
 					Statement s = new StmtIfThen(stmt, stmt.getCond(), s2, elsecond);
 					return s;
