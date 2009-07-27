@@ -6,12 +6,14 @@ import java.util.Set;
 
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprVar;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FEReplacer;
 import streamit.frontend.nodes.Statement;
 import streamit.frontend.nodes.StmtAssert;
 import streamit.frontend.nodes.StmtAssign;
 import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
+import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtVarDecl;
 
 public class CollectGlobalTags extends FEReplacer {
@@ -26,6 +28,17 @@ public class CollectGlobalTags extends FEReplacer {
 		ignoreAsserts = true;
 	}
 	
+	public void collectAllTags(Statement s){
+		FEReplacer fer = new FEReplacer(){
+			public Object visitStmtAssign(StmtAssign stmt){
+				return collectTag(stmt);
+			};
+			public Object visitStmtAssert(StmtAssert stmt){
+				return collectTag(stmt);
+			};			
+		};
+		s.accept(fer);		
+	}
 	
 	public Statement collectTag(Object o){
 		Statement s = (Statement) o;
@@ -74,6 +87,7 @@ public class CollectGlobalTags extends FEReplacer {
 		Object o = super.visitStmtAtomicBlock(stmt); 
 		if( isGlobal || sz != oset.size()){
 			collectTag(stmt.getBlock());
+			collectAllTags(stmt.getBlock());
 			return collectTag(o);
 		}else{
 			isGlobal = tmp;
@@ -92,6 +106,44 @@ public class CollectGlobalTags extends FEReplacer {
 			isGlobal = tmp;
 			return o;
 		}
+	}
+	
+	public Object visitStmtIfThen(StmtIfThen stmt){		
+		int sz = oset.size();
+		boolean gg = false;
+		Statement tpart = null;
+		Statement epart = null;
+		Expression cpart = null;
+		{
+			boolean tmp = isGlobal;
+			isGlobal = false;
+			tpart = (Statement) stmt.getCons().accept(this);
+			gg = gg || isGlobal;
+			isGlobal = tmp;			
+		}
+		if(stmt.getCons()!= null){
+			boolean tmp = isGlobal;
+			isGlobal = false;
+			epart = (Statement) stmt.getCons().accept(this);
+			gg = gg || isGlobal;
+			isGlobal = tmp;	
+		}
+		{
+			boolean tmp = isGlobal;
+			isGlobal = false;
+			cpart = (Expression) stmt.getCond().accept(this);
+			gg = gg || isGlobal;
+			isGlobal = tmp;			
+		}
+		
+		
+		if(gg || sz != oset.size()){
+			isGlobal = true;
+			return collectTag(stmt);
+		}else{
+			return stmt;
+		}
+		
 	}
 	
 	
