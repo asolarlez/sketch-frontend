@@ -23,6 +23,8 @@ import streamit.frontend.nodes.TempVarGen;
 import streamit.frontend.nodes.Type;
 import streamit.frontend.nodes.TypeArray;
 import streamit.frontend.nodes.TypePrimitive;
+import streamit.frontend.nodes.TypeStruct;
+import streamit.frontend.nodes.TypeStructRef;
 import streamit.frontend.nodes.ExprArrayRange.RangeLen;
 import streamit.misc.ControlFlowException;
 
@@ -182,7 +184,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		if (FailurePolicy.WRSILENT_RDZERO == policy) {
 			return new ExprTernary("?:", cond, near, ExprConstInt.zero);
 		} else if (FailurePolicy.ASSERTION == policy){
-			addStatement (new StmtAssert (cond));
+			addStatement (new StmtAssert (cond, false));
 			return near;
 		} else {  assert false : "fatal error"; return null;  }
 	}
@@ -215,7 +217,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			if (FailurePolicy.WRSILENT_RDZERO == policy) {
 				return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs, op), null);
 			} else if (FailurePolicy.ASSERTION == policy) {
-				addStatement (new StmtAssert (ear, cond));
+				addStatement (new StmtAssert (ear, cond, false));
 				return new StmtAssign (stmt, near, rhs, op);
 			} else {  assert false : "fatal error"; return null;  }
 		}else{
@@ -280,7 +282,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			cond = new ExprUnary ("!", cond);
 			cond = new ExprBinary (cond, "||", guard);
 
-			guardStmts.add (new StmtAssert (cond, "out-of-bounds array access"));
+			guardStmts.add (new StmtAssert (cond, "out-of-bounds array access", false));
 
 			Expression trap = new ExprUnary ("!", cond);
 			if (condTrap == null)
@@ -338,16 +340,23 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		String nname = varGen.nextVar("_pac");		
 		assert ear.getMembers().size() == 1 : "Currently only accept arrays with one selection";
 		RangeLen rl =(RangeLen) ear.getMembers().get(0); 
-		Expression nofset = (Expression) rl.start().accept(this);
-		addStatement((Statement)(new StmtVarDecl(ear, TypePrimitive.inttype, nname,  nofset).accept(this)));
+		Expression nofset = (Expression) rl.start()/*.accept(this)*/;
+		Type t = getType(nofset);
+		addStatement((Statement)(new StmtVarDecl(ear, t, nname,  nofset).accept(this)));
 		return new ExprVar(ear, nname);
 	}
 
 	
 	protected Expression makeGuard (Expression base, Expression idx) {
+		Type idxt = getType(idx);
 		Expression sz = ((TypeArray) getType(base)).getLength();
-		return new ExprBinary(new ExprBinary(idx, ">=", ExprConstInt.zero), "&&",
+		if(idxt instanceof TypeStruct || idxt instanceof TypeStructRef){
+			return new ExprBinary(new ExprBinary(idx, "!=", ExprConstInt.minusone), "&&",
 										 new ExprBinary(idx, "<", sz));
+		}else{
+			return new ExprBinary(new ExprBinary(idx, ">=", ExprConstInt.zero), "&&",
+					 new ExprBinary(idx, "<", sz));			
+		}
 	}
 	
 	protected Expression makeGuard (Expression base, Expression len, Expression idx) {
