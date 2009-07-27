@@ -20,8 +20,19 @@ public class MethodState {
 		protected ChangeTracker kid;
 		protected abstractValue condition;
 		protected Map<String, varState> deltas;
+		protected int methodBoundary = 0;
 
-
+		public void pushMethodBoundary(){
+			methodBoundary++;
+		}
+		public void popMethodBoundary(){
+			methodBoundary--;
+		}
+		public boolean isMethodBoundary(){
+			return methodBoundary > 0;
+		}
+		
+		
 		public void remove(String var){
 			if(deltas.containsKey(var)){
 				deltas.get(var).outOfScope();
@@ -337,8 +348,34 @@ public class MethodState {
 	}
 
 
-	public void Assert(abstractValue val, String msg){
+	public abstractValue assertHelper(ChangeTracker tmpTracker, boolean isSuper){
+		abstractValue nestCond;
+		if(tmpTracker.isMethodBoundary() && isSuper){
+			return vtype.CONST(0);
+		}
+		
+		if(tmpTracker.hasCondVal()){
+			nestCond = vtype.not(tmpTracker.getCondVal ());
+		}else{
+			nestCond = vtype.CONST(0);
+		}
+		if(tmpTracker.kid == null){
+			return nestCond;
+		}else{
+			return vtype.or(nestCond, assertHelper(tmpTracker.kid, isSuper) );
+		}		
+	}
+	
+	public void Assert(abstractValue val, String msg, boolean isSuper){
         /* Compose complex expression by walking all nesting conditionals. */
+		
+		if(changeTracker != null){		
+			val = vtype.or(val, assertHelper(changeTracker, isSuper) );
+		}
+
+		/*
+		 * The recursive procedure makes it easier to find common subexpressions. 
+		 * The hope is that that will make the problem easier for the SAT solver to solve.
         for (ChangeTracker tmpTracker = changeTracker;
         		tmpTracker != null; tmpTracker = tmpTracker.kid )
         {
@@ -347,6 +384,7 @@ public class MethodState {
             abstractValue nestCond = vtype.not(tmpTracker.getCondVal ());
             val = vtype.or(val, nestCond );
         }
+        */
 		vtype.Assert(val, msg);
 	}
 
@@ -478,6 +516,20 @@ public class MethodState {
     	level--;
     }
 
+	public void pushFunCall(){
+		pushLevel();
+		if(changeTracker != null){
+			changeTracker.pushMethodBoundary();
+		}
+	}
+	public void popFunCall(){
+		popLevel();
+		if(changeTracker != null){
+			assert changeTracker.isMethodBoundary();
+			changeTracker.popMethodBoundary();
+		}
+	}
+	
 	public void beginFunction(String fname){
 		pushLevel();
 	}

@@ -257,7 +257,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	    		
 					List<Statement>  oldNewStatements = newStatements;
 					newStatements = new ArrayList<Statement> ();					
-					state.pushLevel();
+					state.pushFunCall();
 					try{
 			    		{
 			    			Iterator<Expression> actualParams = exp.getParams().iterator();	        		        	       	
@@ -280,7 +280,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 			    			outParameterSetter(formalParams, actualParams, false);
 			    		}			    		
 		    		}finally{
-		    			state.popLevel();
+		    			state.popFunCall();
 		    			newStatements = oldNewStatements;
 		    		}
 		    		rcontrol.popFunCall(exp);
@@ -290,7 +290,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 	 	    			funcsToAnalyze.add(fun);	    			
 	 	    			return super.visitExprFunCall(exp); 
 	    			}else{
-	    				StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero);
+	    				StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero, false);
 		    			sas.setMsg( (exp!=null?exp.getCx().toString() : "" ) + exp.getName()  );
 		    			sas.accept(this);
 	    			}	    			 
