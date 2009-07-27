@@ -4,6 +4,7 @@
 package streamit.frontend.passes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,7 +19,9 @@ import streamit.frontend.nodes.StmtAtomicBlock;
 import streamit.frontend.nodes.StmtBlock;
 import streamit.frontend.nodes.StmtEmpty;
 import streamit.frontend.nodes.StmtExpr;
+import streamit.frontend.nodes.StmtIfThen;
 import streamit.frontend.nodes.StmtReturn;
+import streamit.frontend.nodes.StmtVarDecl;
 import streamit.frontend.parallelEncoder.BreakParallelFunction;
 import streamit.frontend.parallelEncoder.ExtractPreParallelSection;
 
@@ -75,6 +78,58 @@ public class MergeLocalStatements extends FEReplacer {
 		newStatements = oldStmts;
 		return nb;
 	}
+	/*
+	public Object visitStmtIfThen(StmtIfThen stmt){
+		Statement tpart = peelBlock((Statement) stmt.getCons().accept(this));
+		Statement epart = null;
+		if(stmt.getAlt() != null)
+			epart = peelBlock((Statement) stmt.getAlt().accept(this));
+		if(isSimpleStmt(tpart) && isSimpleStmt(epart)){
+			if(tpart instanceof StmtAtomicBlock && !((StmtAtomicBlock)tpart).isCond()){
+				tpart = ((StmtAtomicBlock)tpart).getBlock();
+			}
+			if(epart != null && epart instanceof StmtAtomicBlock && !((StmtAtomicBlock)epart).isCond()){
+				epart = ((StmtAtomicBlock)epart).getBlock();
+			}
+			if(!(tpart instanceof StmtBlock)){
+				Object oldTag = tpart.getTag();
+				tpart = new StmtBlock(tpart);
+				tpart.setTag(oldTag);
+			}
+			if(epart != null && !(epart instanceof StmtBlock)){
+				Object oldTag = epart.getTag();
+				epart = new StmtBlock(epart);
+				epart.setTag(oldTag);
+			}
+			return new StmtAtomicBlock(stmt, Collections.singletonList(new StmtIfThen(stmt, stmt.getCond(), tpart, epart)));
+		}
+		if(tpart != stmt.getCons() || epart != stmt.getAlt()){
+			if(!(tpart instanceof StmtBlock)){
+				Object oldTag = tpart.getTag();
+				tpart = new StmtBlock(tpart);
+				tpart.setTag(oldTag);
+			}
+			if(epart != null && !(epart instanceof StmtBlock)){
+				Object oldTag = epart.getTag();
+				epart = new StmtBlock(epart);
+				epart.setTag(oldTag);
+			}
+			return new StmtIfThen(stmt, stmt.getCond(), tpart, epart);
+		}else{
+			return stmt;
+		}
+	}
+	*/
+	
+	Statement peelBlock(Statement s){
+		if(s instanceof StmtBlock){
+			StmtBlock sb = (StmtBlock) s;
+			if(sb.getStmts().size() == 1){
+				return peelBlock(sb.getStmts().get(0));
+			}
+		}
+		return s;
+	}
 
 	/** Run through the statements in S, merging adjacent stmts with at most
 	 * one global effect into AtomicBlocks, which are added to 'into'. */
@@ -86,19 +141,27 @@ public class MergeLocalStatements extends FEReplacer {
 
 		while (!work.empty ()) {
 			Statement s = work.pop ();
+			
+			/*
+			if(s instanceof StmtIfThen){
+				s = (Statement) s.accept(this);
+			}
+			*/
 			boolean simple = isSimpleStmt (s);
 			boolean global = isGlobalStmt (s);
 
 			if (s instanceof StmtBlock) {
 				addWork (work, ((StmtBlock) s).getStmts ());
 				continue;
-			} else if (s instanceof StmtAtomicBlock && simple && !global) {
-				addWork (work, ((StmtAtomicBlock) s).getBlock ().getStmts ());
-				continue;
-			}
+			} 
 
-			if (simple)
-				atomicRun.add (s);
+			if (simple){
+				if (s instanceof StmtAtomicBlock) {					
+					atomicRun.addAll (((StmtAtomicBlock) s).getBlock ().getStmts ());
+				}else{
+					atomicRun.add (s);	
+				}
+			}
 
 			if (global || !simple) {
 				addAtomicRun (atomicRun);
@@ -115,9 +178,13 @@ public class MergeLocalStatements extends FEReplacer {
 
 	public void addAtomicRun (List<Statement> run) {
 		if (run.size () > 0) {
-			StmtAtomicBlock b = new StmtAtomicBlock (run.get (0), run);
-			b.setTag (run.get (run.size () - 1).getTag ());
-			addStatement (b);
+			if(run.size() == 1 && run.get(0) instanceof StmtAtomicBlock){
+				addStatement(run.get(0));
+			}else{
+				StmtAtomicBlock b = new StmtAtomicBlock (run.get (0), run);
+				b.setTag (run.get (run.size () - 1).getTag ());
+				addStatement (b);
+			}
 		}
 	}
 
@@ -128,6 +195,7 @@ public class MergeLocalStatements extends FEReplacer {
 	}
 
 	protected boolean isSimpleStmt (Statement s) {
+		if(s == null) return true;
 		return (s instanceof StmtAssert)
 			    || (s instanceof StmtAssign)
 			    || (s instanceof StmtAtomicBlock && !((StmtAtomicBlock)s).isCond ())
