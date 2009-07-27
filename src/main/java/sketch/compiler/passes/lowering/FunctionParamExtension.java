@@ -251,7 +251,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			alt=new StmtBlock(stmt,Collections.singletonList(alt));
 		if(cons!=stmt.getCons() || alt!=stmt.getAlt())
 			stmt=new StmtIfThen(stmt,stmt.getCond(),cons,alt);
-		return super.visitStmtIfThen(stmt);
+		if( globalEffects(stmt) ){
+			return conditionWrap( (Statement)
+			super.visitStmtIfThen(stmt) );
+		}else{
+			return super.visitStmtIfThen(stmt);
+		}
 	}
 
 	
@@ -430,13 +435,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	private boolean globalEffects(Statement s){
 		if(s instanceof StmtAssert){
 			return true;
-		}
-
-		if(s instanceof StmtAssign){
-			StmtAssign sa = (StmtAssign) s;
-
-			Expression left = sa.getLHS();
-
+		}else{
+			
 			class findge extends FEReplacer{
 				public boolean ge = false;
 				public Object visitExprField(ExprField ef){
@@ -464,11 +464,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				}
 			}
 			findge f = new findge();
-			left.accept(f);
+			s.accept(f);			
 			return f.ge;
 		}
-
-		return false;
 	}
 
 
