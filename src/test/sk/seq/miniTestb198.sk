@@ -1,0 +1,27 @@
+pragma options "--unrollamnt 6 ";
+
+struct node{	
+	node n;
+}
+
+
+void VOID(int n){
+
+}
+
+void main(int n) implements VOID{
+	node n = new node();
+	node a = n;
+	n.n = new node();
+	n.n.n = null;
+	a = n.n;
+	if(a.n == null){
+		return;
+	}
+	a = a.n;
+	a = a.n;
+	a = a.n;
+	if(a.n.n.n != null){
+		return;
+	}
+}

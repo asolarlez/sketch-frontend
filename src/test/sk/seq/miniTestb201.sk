@@ -1,0 +1,19 @@
+pragma options "--unrollamnt 6 ";
+
+bit VOID(bit a, bit b, bit c){
+	bit x;
+	if(b & c){
+		x = a ^ b;
+	}else{
+		x = a ^ c;		
+	}
+	return (x & !b) | b;
+}
+
+bit main(bit a, bit b, bit c) implements VOID{
+	if(b){
+		return 1;
+	}else{
+		return a ^ c;
+	}
+}

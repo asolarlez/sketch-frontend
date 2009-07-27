@@ -1,0 +1,28 @@
+pragma options "--unrollamnt 4 ";
+
+struct node{
+	int val;
+	node next;
+}
+
+
+void VOID(int n){
+
+}
+
+void main(int n) implements VOID{
+	if(n>3){ n = 3; }
+	node x = new node();
+	x.val = 0;
+	node t = x;
+	for(int i=0; i<n; ++i){
+		t.next = new node();
+		t.next.val = i+1;
+		t = t.next;
+	}
+		
+	if(n > 1){
+		node t = {| x(.next)?(.next)?(.next)?(.next)? |};
+		assert t.val == 1;
+	}
+}

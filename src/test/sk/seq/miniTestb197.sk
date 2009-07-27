@@ -1,0 +1,36 @@
+pragma options "--unrollamnt 6 ";
+
+struct node{	
+	node n;
+}
+
+
+void VOID(int n){
+
+}
+
+void main(int n) implements VOID{
+	node n = new node();
+	node a = n;
+	n.n = new node();
+	n.n.n = null;
+	while(n.n != null){
+		assert n != null;
+		n = n.n;
+	}
+	assert n != a;
+	n = a;
+	while({|  n.n (!= | ==) null |}){
+		assert n != null;
+		n = n.n;
+	}
+	assert n != a;
+	n = a;
+	int i=0;
+	for(i=0; ({|  n.n (!= | ==) null |}); ++i){
+		assert n != null;
+		n = n.n;
+	}
+	assert n != a;
+	assert i == 1;
+}

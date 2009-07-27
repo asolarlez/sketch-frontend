@@ -1,0 +1,18 @@
+pragma options "--unrollamnt 6 ";
+
+
+void VOID(int n){
+
+}
+
+void main(int n) implements VOID{
+	if(n>5){ n=5; }
+	bit[7] aa = 0;
+	for(int i=0; i<n-??; ++i){
+		aa[i] = 1;		
+	}
+	if(n>0){
+		h_assert aa[n-1] == 1 : "THis is a strange error";
+		assert aa[n] == 0;
+	}
+}
