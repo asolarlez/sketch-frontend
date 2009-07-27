@@ -801,6 +801,21 @@ public class PartialEvaluator extends FEReplacer {
 	        if(vcond.isBottom()){
 	        	int remIters = this.MAX_UNROLL - iters;
 	        	if(remIters > 0){
+	        		
+	        		Statement body = stmt.getBody();
+	        		if (stmt.getIncr() != null){
+	        			body = new StmtBlock(body, stmt.getIncr());
+    	        	}
+	        		
+	        		Statement  cur = new StmtAssert(stmt,new ExprUnary("!", stmt.getCond()) , "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.", false);
+	        		
+	        		for(int i=0; i<remIters; ++i){	        			
+	        			cur = new StmtIfThen(stmt, stmt.getCond(), new StmtBlock(body, cur), null); 	        			
+	        		}
+	        		
+	        		cur.accept(this);	        		
+	        		/*
+	        		
 	        		String doneNm = this.varGen.nextVar("done");
 	        		ExprVar doneVar = new ExprVar(stmt, doneNm);
 	        		StmtVarDecl svd = new StmtVarDecl(stmt, TypePrimitive.bittype, doneNm, ExprConstInt.zero);
@@ -820,8 +835,9 @@ public class PartialEvaluator extends FEReplacer {
 	        		}
 	        		StmtAssert as = new StmtAssert(stmt,new ExprBinary(new ExprUnary("!", stmt.getCond()), "||", doneVar) , "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.");
 	        		as.accept(this);
+	        		*/
 	        	}else{
-	        		StmtAssert as = new StmtAssert(stmt, new ExprUnary("!", stmt.getCond()), "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.");
+	        		StmtAssert as = new StmtAssert(stmt, new ExprUnary("!", stmt.getCond()), "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.", false);
 	        		as.accept(this);
 	        	}
 	        }
@@ -857,7 +873,7 @@ public class PartialEvaluator extends FEReplacer {
         			rv =(Statement) cons.accept(this);
         			rcontrol.doneWithBlock(cons);
         		}else{
-        			StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
+        			StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero, false);
         			sa.setMsg( rcontrol.debugMsg() );
 					rv = (Statement)( sa ).accept(this);
 				}
@@ -869,7 +885,7 @@ public class PartialEvaluator extends FEReplacer {
         				rv =(Statement)alt.accept(this);
         				rcontrol.doneWithBlock(alt);
         			}else{
-        				StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
+        				StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero, false);
         				sa.setMsg( rcontrol.debugMsg() );
         				rv =(Statement)( sa ).accept(this);
 					}
@@ -895,7 +911,7 @@ public class PartialEvaluator extends FEReplacer {
 	        	//and push in a clean one, so the rest of the function thinks that nothing at all was written in this branch.
 	        	state.popChangeTracker();
 	        	state.pushChangeTracker (vcond, false);
-	        	nvtrue = (Statement)( new StmtAssert(stmt, ExprConstInt.zero) ).accept(this);
+	        	nvtrue = (Statement)( new StmtAssert(stmt, ExprConstInt.zero, false) ).accept(this);
 	        }catch(Throwable e){
 	        	state.popChangeTracker();
 	        	throw  new RuntimeException( e.getMessage() );
@@ -903,7 +919,7 @@ public class PartialEvaluator extends FEReplacer {
 	        }
 	        rcontrol.doneWithBlock(cons);
         }else{
-        	StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
+        	StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero, false);
         	sa.setMsg( rcontrol.debugMsg() );
 			nvtrue = (Statement)( sa ).accept(this);
 		}
@@ -920,7 +936,7 @@ public class PartialEvaluator extends FEReplacer {
 	        	}catch(ArrayIndexOutOfBoundsException e){
 		        	state.popChangeTracker();
 		        	state.pushChangeTracker (vcond, true);
-		        	nvfalse = (Statement)( new StmtAssert(stmt, ExprConstInt.zero) ).accept(this);
+		        	nvfalse = (Statement)( new StmtAssert(stmt, ExprConstInt.zero, false) ).accept(this);
 		        }catch(Throwable e){
 		        	state.popChangeTracker();
 		        	throw  new RuntimeException( e.getMessage() );
@@ -928,7 +944,7 @@ public class PartialEvaluator extends FEReplacer {
 		        }
 	        	rcontrol.doneWithBlock(alt);
             }else{
-            	StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero);
+            	StmtAssert sa = new StmtAssert(stmt, ExprConstInt.zero, false);
             	sa.setMsg( rcontrol.debugMsg() );
             	nvfalse = (Statement)( sa ).accept(this);
 			}
@@ -967,12 +983,12 @@ public class PartialEvaluator extends FEReplacer {
         String msg = null;
         msg = stmt.getMsg();
         try{
-        state.Assert(vcond, msg);
+        	state.Assert(vcond, msg, stmt.isSuper());
         }catch(RuntimeException e){
         	System.err.println(stmt.getCx() + ":" +  e.getMessage() );
         	throw e;
         }
-        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg())  : stmt;
+        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper())  : stmt;
     }
 
     public Object visitStmtLoop(StmtLoop stmt)
@@ -1006,7 +1022,7 @@ public class PartialEvaluator extends FEReplacer {
                                     nvarContext,
                                     ExprBinary.BINOP_LE,
                                     new ExprVar (nvarContext, nvar),
-                                    new ExprConstInt (nvarContext, MAX_UNROLL)));
+                                    new ExprConstInt (nvarContext, MAX_UNROLL)), true);
             tmpstmt = (Statement)nvarAssert.accept (this);
             if(isReplacer) slist.add(tmpstmt);
             List<Expression> condlist = isReplacer ? new ArrayList<Expression>() : null;
@@ -1040,7 +1056,7 @@ public class PartialEvaluator extends FEReplacer {
 	                                        nvarContext,
 	                                        ExprBinary.BINOP_LE,
 	                                        new ExprVar (nvarContext, nvar),
-	                                        new ExprConstInt (nvarContext, iters)));
+	                                        new ExprConstInt (nvarContext, iters)), true);
 		        	nbody = (Statement) nvarAssert2.accept (this);
 
 	                if(isReplacer){
