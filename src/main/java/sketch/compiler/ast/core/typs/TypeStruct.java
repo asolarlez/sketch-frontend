@@ -179,7 +179,7 @@ public class TypeStruct extends Type
 
     public String toString()
     {
-        return name;
+        return name + "_ST";
     }
 }
 
