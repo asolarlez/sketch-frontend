@@ -1368,7 +1368,6 @@ public class SATSynthesizer implements Synthesizer {
 		solver.cleanup();
 	}
 
-	@Override
 	public SolutionStatistics getLastSolutionStats() {		
 		return solver.getLastSolutionStats();
 	}
