@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 
 import streamit.frontend.nodes.ExprConstInt;
+import streamit.frontend.nodes.Expression;
 import streamit.frontend.nodes.FENode;
 
 public abstract class AbstractValueOracle {
@@ -34,7 +35,7 @@ public abstract class AbstractValueOracle {
 		holeNamer.reset();
 	}
 
-	public abstract ExprConstInt popValueForNode(FENode node);
+	public abstract Expression popValueForNode(FENode node);
 
 	public abstract void loadFromStream(LineNumberReader in) throws IOException;
 }
