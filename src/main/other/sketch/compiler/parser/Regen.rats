@@ -84,7 +84,7 @@ Expression ExprCond =
     
 Expression ExprFuncInvok =
 	funcName:ID	void:"("	l:ArgList	void:")"
-		{ yyValue = new ExprFunCall((FENode) null, funcName, l); System.out.println("found func invo");	}
+		{ yyValue = new ExprFunCall((FENode) null, funcName, l);
 	;
 	
 List<Expression> ArgList =
@@ -94,7 +94,7 @@ List<Expression> ArgList =
 			argList.add(e1st);
 			for (Expression e : l)
 				argList.add(e);
-			yyValue = argList; System.out.println(argList.toString()); }
+			yyValue = argList;
 	/	 { yyValue = new LinkedList<Expression>(); }
 	;
 	

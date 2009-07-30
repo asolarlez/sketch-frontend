@@ -430,7 +430,7 @@ public final class Regen extends ParserBase {
           if (')' == yyC) {
             yyIndex = yyResult.index + 1;
 
-            yyValue = new ExprFunCall((FENode) null, funcName, l); System.out.println("found func invo");
+            yyValue = new ExprFunCall((FENode) null, funcName, l);
 
             return new SemanticValue(yyValue, yyIndex, yyError);
           } else {
@@ -502,7 +502,7 @@ public final class Regen extends ParserBase {
         argList.add(e1st);
         for (Expression e : l)
         argList.add(e);
-        yyValue = argList; System.out.println(argList.toString());
+        yyValue = argList;
 
         return new SemanticValue(yyValue, yyRepetition1, yyError);
       } // End scope for l.
