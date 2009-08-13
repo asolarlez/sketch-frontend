@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly
+    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.1 http://maven.apache.org/xsd/assembly-1.1.1.xsd">
+
+    <id>all-src</id>
+    <formats>
+        <format>tar.bz2</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>sketch-${version}</outputDirectory>
+            <includes>
+                <include>*frontend-with-deps.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>src/release_benchmarks</directory>
+            <outputDirectory>sketch-${version}/src/release_benchmarks</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${sketch-backend-proj}</directory>
+            <outputDirectory>sketch-${version}/cegis</outputDirectory>
+            <excludes>
+                <exclude>.hg/**</exclude>
+                <!--
+                    generate with tail -n $(($(wc -l .hgignore | cut -d
+                    ' ' -f 1) - 1)) .hgignore | sed -r 's/\*/**/g;
+                    s/^\*\*/**\/*/g; s/^/<exclude>/g; s/$/<\/exclude>/g'
+                -->
+                <exclude>**/*.o</exclude>
+                <exclude>**/*.a</exclude>
+                <exclude>**/*.Po</exclude>
+                <exclude>**/*.so</exclude>
+                <exclude>**/*SBitII</exclude>
+                <exclude>INSTALL</exclude>
+                <exclude>aclocal.m4</exclude>
+                <exclude>autom4te.cache/**</exclude>
+                <exclude>config.**</exclude>
+                <exclude>**/*~</exclude>
+                <exclude>**/*Makefile.in</exclude>
+                <exclude>**/*.Tpo</exclude>
+                <exclude>Makefile</exclude>
+                <exclude>src/Makefile</exclude>
+                <exclude>src/MiniSat/Makefile</exclude>
+                <exclude>src/SketchSolver/Makefile</exclude>
+                <exclude>src/abc60513/Makefile</exclude>
+                <exclude>src/zchaff/Makefile</exclude>
+                <exclude>compile</exclude>
+                <exclude>configure</exclude>
+                <exclude>install-sh</exclude>
+                <exclude>missing</exclude>
+                <exclude>depcomp</exclude>
+                <exclude>stamp-h1</exclude>
+                <exclude>src/abc60513/**.mk</exclude>
+                <exclude>src/SketchSolver/InputLexer.cpp</exclude>
+                <exclude>src/SketchSolver/InputParser.cpp</exclude>
+                <exclude>src/SketchSolver/InputParser.hpp</exclude>
+                <exclude>src/SketchSolver/InputParser.output</exclude>
+                <exclude>src/SketchSolver/cegis</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+
+    <!-- substitute variables -->
+    <files>
+        <file>
+            <source>README</source>
+            <outputDirectory>sketch-${version}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+    </files>
+</assembly>

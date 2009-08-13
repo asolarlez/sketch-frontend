@@ -1,0 +1,135 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>edu.berkeley.cs.sketch</groupId>
+    <artifactId>sketch-frontend</artifactId>
+    <name>SKETCH compiler frontend</name>
+    <description>SKETCH compiler frontend, responsible for AST lowering
+        and optimization</description>
+    <version>1.4.0</version>
+    <url>http://sketch.cs.berkeley.edu</url>
+
+    <distributionManagement>
+        <repository>
+            <id>cobol</id>
+            <name>cobol maven repository</name>
+            <url>scp://cobol.cs.berkeley.edu/home/ntung/public_html/mvn
+            </url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>uc berkeley cobol</id>
+            <name>UC Berkeley Maven2 Repository</name>
+            <url>http://cobol.cs.berkeley.edu/mvn</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>2.7.7</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.6</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.nyu.cs</groupId>
+            <artifactId>rats-runtime</artifactId>
+            <version>1.14.3</version>
+        </dependency>
+        <dependency>
+        	<groupId>gnu-getopt</groupId>
+        	<artifactId>getopt</artifactId>
+        	<version>1.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.anarres</groupId>
+            <artifactId>cpp</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/resources/filtered</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- identify java source version -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <!-- package all dependencies -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>platform_jar_assembly.xml
+                        </descriptor>
+                        <descriptor>jar_assembly.xml</descriptor>
+                        <descriptor>tar_src_assembly.xml</descriptor>
+                    </descriptors>
+                    <finalName>sketch-${version}</finalName>
+                </configuration>
+            </plugin>
+
+            <!-- only run JunitTest classes -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*JunitTest*</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- execute with -ea -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>-ea</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- fetch source in Eclipse; if it doesn't work, right click and choose download sources -->
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
