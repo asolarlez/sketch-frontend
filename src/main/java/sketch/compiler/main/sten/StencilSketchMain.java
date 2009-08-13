@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
+import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -128,7 +129,7 @@ public class StencilSketchMain extends SequentialSketchMain
         eliminateStar();
 //        finalCode.accept(new SimpleCodePrinter());
         generateCode();
-        System.out.print("DONE");
+        System.out.print("[STENCIL_SKETCH] DONE");
     }
 
 	public void eliminateStar(){
@@ -269,10 +270,14 @@ public class StencilSketchMain extends SequentialSketchMain
 		}
 	}
 
-	public static void main(String[] args)
-	{
-		new StencilSketchMain(args).run();
-		System.exit(0);
-	}
+    public static void main(String[] args) {
+        CommandLineParamManager.reset_singleton();
+        try {
+            new StencilSketchMain(args).run();
+        } catch (RuntimeException e) {
+            System.err.println("[ERROR] [STENCIL_SKETCH] Failed with exception "
+                    + e.getMessage());
+            throw e;
+        }
+    }
 }
-

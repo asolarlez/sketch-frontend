@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.anarres.cpp.LexerException;
+
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.Program;
 import sketch.util.CPreprocessedFileStream;
@@ -56,7 +58,9 @@ public class StreamItParser {
 			throw new IllegalArgumentException("File not found: "+fileName);
 		} catch (IOException ioe) {
 			throw new IllegalArgumentException("Something wrong with: "+fileName);
-		}
+		} catch (LexerException e) {
+		    throw new RuntimeException(e);
+        }
 	}
 
 	public Program parse () {

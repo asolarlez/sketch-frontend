@@ -25,6 +25,5 @@ public class RandomParallelSketchMain extends ParallelSketchMain {
 
 	public static void main(String[] args) {
 		new RandomParallelSketchMain (args).run();
-		System.exit(0);
 	}
 }

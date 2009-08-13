@@ -50,6 +50,7 @@ import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
@@ -548,11 +549,10 @@ public class SequentialSketchMain
 				"\n \t\t By default it is the name of the first input file.",
 				null, null) );
 
-
 		params.setAllowedParam("output", new POpts(POpts.STRING,
-				"--output file  \t Temporary output file used to communicate with backend solver. " +
-				"\n \t\t This flag is already set by the sketch script, so don't try to set it yourself.",
-				null, null) );
+				"--output file  \t Temporary output file used to communicate " +
+				"with backend solver.",
+				PlatformLocalization.getLocalization().getDefaultTempFile(), null) );
 
 		params.setAllowedParam("sbitpath", new POpts(POpts.STRING,
 				"--sbitpath path\t Path where the SBitII solver can be found.",
@@ -660,7 +660,7 @@ public class SequentialSketchMain
 		eliminateStar();
 
 		generateCode();
-		log(1, "DONE");
+		log(1, "[SKETCH] DONE");
 
 	}
 
@@ -739,20 +739,14 @@ public class SequentialSketchMain
 
 	public static void main(String[] args)
 	{
-		try{
-			new SequentialSketchMain(args).run();
-		}catch(RuntimeException e){
-			System.err.println(e.getMessage());
-			if(CommandLineParamManager.getParams().hasFlag("showExceptionstack")   ){
-				throw  e;
-			}else{
-				System.exit(1);
-			}
-		}
-		System.exit(0);
+        try {
+            CommandLineParamManager.reset_singleton();
+            new SequentialSketchMain(args).run();
+        } catch (RuntimeException e) {
+            System.err.println("[ERROR] [SKETCH] Failed with exception "
+                    + e.getMessage());
+            throw e;
+        }
 	}
-
-
-
 }
 

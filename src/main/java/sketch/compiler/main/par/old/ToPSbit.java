@@ -150,7 +150,7 @@ public class ToPSbit extends SequentialSketchMain {
 			}
 		}
 		//generateCode();
-		System.out.println("DONE");
+		System.out.println("[PSKETCH] DONE");
 
 	}
 
@@ -175,7 +175,6 @@ public class ToPSbit extends SequentialSketchMain {
 	public static void main(String[] args)
 	{
 		new ToPSbit(args).run();
-		System.exit(0);
 	}
 
 }

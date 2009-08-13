@@ -2,6 +2,7 @@ package sketch.compiler.main.par;
 
 import java.util.List;
 
+import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.CommandLineParamManager.POpts;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -137,7 +138,7 @@ public class ParallelSketchMain extends SequentialSketchMain {
 			if (success) {
 				log (0, "[PSKETCH] DONE!");
 			} else {
-				System.err.println ("[PSKETCH] Error: couldn't synthesize sketch.");
+				System.err.println ("[ERROR] [PSKETCH] Error: couldn't synthesize sketch.");
 				// TODO: real error message
 			}
 		}
@@ -402,7 +403,7 @@ public class ParallelSketchMain extends SequentialSketchMain {
 
 	public static void main(String[] args)
 	{
+	    CommandLineParamManager.reset_singleton();
 		new ParallelSketchMain (args).run();
-		System.exit(0);
 	}
 }

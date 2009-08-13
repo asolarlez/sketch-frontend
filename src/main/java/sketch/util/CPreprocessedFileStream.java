@@ -3,100 +3,58 @@
  */
 package sketch.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.anarres.cpp.LexerException;
+import org.anarres.cpp.Preprocessor;
+import org.anarres.cpp.Token;
+
 /**
- * A file input stream that is run through the C preprocessor.
- *
+ * A file input stream that uses the jcpp library
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
+ * @author gatoatigrado (nicholas tung) [ntung at ntung] rewrote to use jcpp
  */
-public class CPreprocessedFileStream extends InputStream {
-	public static final String CPP = "cpp";
+public class CPreprocessedFileStream extends ByteArrayInputStream {
+    public CPreprocessedFileStream(String filename, List<String> cppDefs)
+            throws IOException, LexerException
+    {
+        super(preprocessFile(filename, cppDefs).getBytes());
+    }
 
-	private static final int BOL = 1;
-	private static final int READ = 2;
-	private static final int IGNORE = 3;
-
-	private Process p;
-	private InputStream in;
-	private int state = BOL;
-
-	public CPreprocessedFileStream (String filename) throws FileNotFoundException {
-		this (filename, null);
-	}
-
-	public CPreprocessedFileStream (String filename, List<String> cppDefs)
-	throws FileNotFoundException {
-		if (!(new File (filename)).canRead ())
-			throw new FileNotFoundException ("can't read: "+ filename);
-
-		ProcessBuilder pb;
-		try {
-
-			pb = new ProcessBuilder (CPP, "-Wno-trigraphs");
-			if (cppDefs != null)
-				for (String def : cppDefs)
-					pb.command ().add ("-D"+ def);
-			pb.command ().add (filename);
-			p = pb.start ();
-		} catch (IOException ioe) {
-			throw new UnsupportedOperationException ("can't run 'cpp'", ioe);
-		}
-
-		in = p.getInputStream ();
-	}
-
-	@Override
-	public void finalize () throws IOException {
-		close ();
-	}
-
-	@Override
-	public void close () throws IOException {  in.close ();  }
-
-	@Override
-	public int read () throws IOException {
-		return in.read();
-		/*
-		loop:
-		while (true) {
-			int c = in.read ();
-
-			switch (state) {
-			case READ:
-				switch (c) {
-				case '\r': case '\n':
-					state = BOL;	// fallthrough
-				default:
-					return c;
-				}
-
-			case BOL:
-				switch (c) {
-				case '\r': case '\n':
-					return c;
-				case '#':
-					state = IGNORE;  continue loop;
-				default:
-					state = READ;  return c;
-				}
-
-			case IGNORE:
-				switch (c) {
-				case '\r': case '\n':
-					state = BOL;	// fallthrough
-				default:
-					continue loop;
-				}
-
-			default:
-				throw new IllegalStateException ();
-			}
-			
-		}*/
-	}
+    public static String preprocessFile(String filename,
+            List<String> additionalDefs) throws IOException, LexerException
+    {
+        Preprocessor preproc = new Preprocessor(new File(filename));
+        ArrayList<String> cppDefs = new ArrayList<String>();
+        cppDefs.add("__SKETCH__");
+        if (additionalDefs != null) {
+            cppDefs.addAll(additionalDefs);
+        }
+        for (String macro : cppDefs) {
+            // these 5 lines taken from cpp/Main.java
+            int idx = macro.indexOf('=');
+            if (idx == -1) {
+                System.out.println("adding macro " + macro);
+                preproc.addMacro(macro);
+            } else {
+                System.out.println("adding macro " + macro.substring(0, idx)
+                        + ", " + macro.substring(idx + 1));
+                preproc.addMacro(macro.substring(0, idx), macro
+                        .substring(idx + 1));
+            }
+        }
+        StringBuilder result_builder = new StringBuilder();
+        while (true) {
+            Token tok = preproc.token();
+            if (tok == null || tok.getType() == Token.EOF) {
+                break;
+            }
+            result_builder.append(tok.getText());
+        }
+        return result_builder.toString();
+    }
 }

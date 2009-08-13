@@ -90,7 +90,7 @@ public class ToSpin extends SequentialSketchMain {
 		spinPreprocess ();
 		generateCode ();
 
-		System.out.println("DONE");
+		System.out.println("[STEN_SKETCH] DONE");
 	}
 
 	protected ToSpin (String[] args) { this (args, System.out);	}
@@ -114,6 +114,5 @@ public class ToSpin extends SequentialSketchMain {
 	public static void main(String[] args)
 	{
 		new ToSpin(args).run();
-		System.exit(0);
 	}
 }

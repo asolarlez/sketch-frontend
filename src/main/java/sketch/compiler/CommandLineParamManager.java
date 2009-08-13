@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import sketch.compiler.main.PlatformLocalization;
+
 public class CommandLineParamManager{
 	public static class POpts{
 		/**
@@ -85,8 +87,7 @@ public class CommandLineParamManager{
 	Map<String, Object> passedParameters;
 	public List<String> inputFiles;
 	public List<String> backendOptions;
-	
-	private static CommandLineParamManager params = new CommandLineParamManager();
+    private static CommandLineParamManager _singleton = null;
 
 	private CommandLineParamManager(){
 		init();
@@ -100,14 +101,15 @@ public class CommandLineParamManager{
 	}
 	
 	public static CommandLineParamManager getParams(){
-		return params;
+	    if (_singleton == null) {
+	        _singleton = new CommandLineParamManager();
+	    }
+		return _singleton;
 	}
-	
-	/**
-	 * Clears all the data in this object
-	 */
-	public void clear() {
-		init();
+
+	/** resets the static singleton */
+	public static void reset_singleton() {
+		_singleton = null;
 	}
 
 	public void loadParams(String[] args){
@@ -116,7 +118,7 @@ public class CommandLineParamManager{
 		if( !(inputFiles.size() > 0)){
 			System.err.println("You did not specify any input files!!");
 			printHelp();
-			System.exit(1);
+			System.exit(1); // @code standards ignore
 		}
 	}
 
@@ -167,9 +169,12 @@ public class CommandLineParamManager{
 	 */
 	@SuppressWarnings("unchecked")
 	private int readParameter(String argn, String argnp1, String argnp2){
-		if(argn.equals("--help")){ printHelp(); System.exit(1);  return 1; }
+        if (argn.equals("--help")) {
+            printHelp();
+            System.exit(1); // @code standards ignore
+        }
 
-		assert argn.charAt(0) == '-' && argn.charAt(1) == '-' : "Something is wrong here.";
+        assert argn.charAt(0) == '-' && argn.charAt(1) == '-' : "Something is wrong here.";
 		argn = argn.substring(2);
 
 		if( allowedParameters.containsKey(argn) ){
@@ -320,7 +325,7 @@ public class CommandLineParamManager{
 	}
 
 	public String[] getBackendCommandline(List<String> commandLineOptions, String[] extraParams){
-		String command = (hasFlag("sbitpath") ? sValue("sbitpath") : "") + "SBitII.exe";
+		String command = PlatformLocalization.getLocalization().getCegisPath();
 		int begin = 1 + extraParams.length;
 		if(commandLineOptions == null){ commandLineOptions = Collections.EMPTY_LIST; }
 		String[] commandLine = new String[3 + extraParams.length + commandLineOptions.size()];
@@ -333,6 +338,7 @@ public class CommandLineParamManager{
 			commandLine[begin+i] = commandLineOptions.get(i);
 		}
 		commandLine[commandLine.length -2 ] = sValue("output") ;
+        assert (commandLine[commandLine.length - 2] != null) : "output file null";
 		commandLine[commandLine.length -1 ] = sValue("output") + ".tmp";
 		return commandLine;
 	}
