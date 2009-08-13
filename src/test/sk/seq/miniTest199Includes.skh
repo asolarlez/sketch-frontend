@@ -1,0 +1,3 @@
+bit VOID(bit a, bit b, bit c){
+        return (a & !b) & (!b & c);
+}

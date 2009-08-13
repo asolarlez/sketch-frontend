@@ -1,0 +1,11 @@
+pragma options "--unrollamnt 6 ";
+
+#ifndef __SKETCH__
+#error This file was only intended to be run with the SKETCH compiler
+#endif
+
+#include "miniTest199Includes.skh"
+
+bit main(bit a, bit b, bit c) implements VOID{
+        return (a & c) & !b;
+}
