@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.frontend.spin;
+package sketch.compiler.spin;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import streamit.frontend.nodes.Program;
-import streamit.misc.Misc;
-import streamit.misc.ProcessStatus;
-import streamit.misc.SynchronousTimedProcess;
+import sketch.compiler.ast.core.Program;
+import sketch.util.Misc;
+import sketch.util.ProcessStatus;
+import sketch.util.SynchronousTimedProcess;
 
 /**
  * Warning: this assumes that all files generated go into the same working

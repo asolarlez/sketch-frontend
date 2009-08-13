@@ -1,32 +1,19 @@
 /**
  *
  */
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.Collections;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprRegen;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.misc.ControlFlowException;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprRegen;
+import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.util.ControlFlowException;
 
 /**
  * Prepares an AST for later rewrite steps that might turn a single

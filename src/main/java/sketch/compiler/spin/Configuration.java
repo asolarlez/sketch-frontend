@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.frontend.spin;
+package sketch.compiler.spin;
 
 import java.util.ArrayList;
 import java.util.HashMap;

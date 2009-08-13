@@ -1,26 +1,15 @@
-package streamit.frontend;
+package sketch.compiler.main.par.old;
 
 import java.io.OutputStream;
 
-import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
-import streamit.frontend.nodes.MakeBodiesBlocks;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateArrayRange;
-import streamit.frontend.passes.EliminateBitSelector;
-import streamit.frontend.passes.EliminateConditionals;
-import streamit.frontend.passes.EliminateMultiDimArrays;
-import streamit.frontend.passes.EliminateNestedArrAcc;
-import streamit.frontend.passes.EliminateStructs;
-import streamit.frontend.passes.ExtractRightShifts;
-import streamit.frontend.passes.ExtractVectorsInCasts;
-import streamit.frontend.passes.MakeAllocsAtomic;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.spin.Preprocessor;
-import streamit.frontend.spin.PromelaCodePrinter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.main.seq.SequentialSketchMain;
+import sketch.compiler.passes.lowering.*;
+import sketch.compiler.spin.Preprocessor;
+import sketch.compiler.spin.PromelaCodePrinter;
 
-public class ToSpin extends ToSBit {
+public class ToSpin extends SequentialSketchMain {
 
 	protected OutputStream out;
 

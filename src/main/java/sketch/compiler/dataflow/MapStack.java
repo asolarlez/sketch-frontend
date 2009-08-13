@@ -1,9 +1,9 @@
-package streamit.frontend.experimental;
+package sketch.compiler.dataflow;
 
 import java.util.HashMap;
 import java.util.Iterator;
 
-import streamit.frontend.experimental.MethodState.ChangeTracker;
+import sketch.compiler.dataflow.MethodState.ChangeTracker;
 
 /**
  * This class maps each program variable name to its unique variable name to

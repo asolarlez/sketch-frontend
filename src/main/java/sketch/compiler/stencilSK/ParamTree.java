@@ -1,4 +1,4 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TypePrimitive;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 
 public class ParamTree{

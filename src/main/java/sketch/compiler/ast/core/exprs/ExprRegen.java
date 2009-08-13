@@ -1,9 +1,11 @@
 /**
  *
  */
-package streamit.frontend.nodes;
-
-import streamit.frontend.parser.RegenParser;
+package sketch.compiler.ast.core.exprs;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.parser.RegenParser;
 
 /**
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>

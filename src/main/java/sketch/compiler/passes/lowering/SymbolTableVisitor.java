@@ -14,32 +14,21 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.Iterator;
 import java.util.Map;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.FuncWork;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.GetExprType;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
+import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 /**
  * Front-end visitor pass that maintains a symbol table.  Other
@@ -107,7 +96,7 @@ public class SymbolTableVisitor extends FEReplacer
      *
      * @param expr  Expression to get the type of
      * @returns     Type of the expression
-     * @see         streamit.frontend.nodes.GetExprType
+     * @see         sketch.compiler.nodes.GetExprType
      */
     public Type getType(Expression expr) {
     	return getType (expr, TypePrimitive.nulltype);
@@ -124,7 +113,7 @@ public class SymbolTableVisitor extends FEReplacer
      * @param expr  Expression to get the type of
      * @param nullType The type ExprNullPointer has.  (hack)
      * @returns     Type of the expression
-     * @see         streamit.frontend.nodes.GetExprType
+     * @see         sketch.compiler.nodes.GetExprType
      */
     public Type getType(Expression expr, Type nullType)
     {
@@ -168,7 +157,7 @@ public class SymbolTableVisitor extends FEReplacer
     /**
      * Add a variable declaration and register the variable in the
      * symbol table.  This creates a {@link
-     * streamit.frontend.nodes.StmtVarDecl} for the specified type and
+     * sketch.compiler.nodes.StmtVarDecl} for the specified type and
      * name, and adds that statement using {@link addStatement}.  It
      * also registers the new variable in the current symbol table.
      *

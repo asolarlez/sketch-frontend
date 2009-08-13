@@ -20,7 +20,7 @@
  * Created on May 31, 2001, 6:27 PM
  */
 
-package streamit.misc;
+package sketch.util;
 
 public class AssertedClass
 {

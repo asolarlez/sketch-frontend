@@ -1,18 +1,17 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENullVisitor;
-import streamit.frontend.nodes.FEReplacer;
+import sketch.compiler.ast.core.FENullVisitor;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 
 
 /**

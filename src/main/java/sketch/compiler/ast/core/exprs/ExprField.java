@@ -14,7 +14,9 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.exprs;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
 
 /**
  * A reference to a named field of a StreamIt structure.  This is

@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.misc;
+package sketch.util;
 
 /**
  * A thread that tracks a running process.  If the process exceeds a time

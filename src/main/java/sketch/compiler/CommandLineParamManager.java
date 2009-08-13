@@ -1,5 +1,5 @@
 
-package streamit.frontend;
+package sketch.compiler;
 
 import java.util.ArrayList;
 import java.util.Collections;

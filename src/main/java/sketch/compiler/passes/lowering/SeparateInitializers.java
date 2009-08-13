@@ -14,19 +14,17 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 /**
  * Separate variable initializers into separate statements.  Given

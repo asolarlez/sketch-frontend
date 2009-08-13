@@ -1,9 +1,21 @@
-package streamit.frontend.codegenerators;
+package sketch.compiler.codegenerators;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.tojava.NodesToJava;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.codegenerators.tojava.NodesToJava;
 
 public class NodesToCTest extends NodesToJava {
 

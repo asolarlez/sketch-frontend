@@ -1,11 +1,11 @@
 /**
  * 
  */
-package streamit.frontend.tosbit;
+package sketch.compiler.solvers.constructs;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtLoop;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtLoop;
 
 /**
  * @author asolar

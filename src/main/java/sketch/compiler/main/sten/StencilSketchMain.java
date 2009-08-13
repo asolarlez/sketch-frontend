@@ -14,51 +14,42 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend;
+package sketch.compiler.main.sten;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
-import streamit.frontend.codegenerators.SNodesToC;
-import streamit.frontend.codegenerators.SNodesToFortran;
-import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
-import streamit.frontend.experimental.nodesToSB.IntVtype;
-import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
-import streamit.frontend.experimental.preprocessor.PreprocessSketch;
-import streamit.frontend.experimental.preprocessor.PropagateFinals;
-import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
-import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
-import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.BackendCleanup;
-import streamit.frontend.passes.BlockifyRewriteableStmts;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateRegens;
-import streamit.frontend.passes.EliminateReorderBlocks;
-import streamit.frontend.passes.EliminateMultiDimArrays;
-import streamit.frontend.passes.FunctionParamExtension;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.VariableDeclarationMover;
-import streamit.frontend.passes.VariableDisambiguator;
-import streamit.frontend.stencilSK.EliminateCompoundAssignments;
-import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.FunctionalizeStencils;
-import streamit.frontend.stencilSK.MatchParamNames;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.stencilSK.StencilSemanticChecker;
-import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
-import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
-import streamit.frontend.tosbit.recursionCtrl.DelayedInlineRControl;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.codegenerators.SNodesToC;
+import sketch.compiler.codegenerators.SNodesToFortran;
+import sketch.compiler.dataflow.DataflowWithFixpoint;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
+import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
+import sketch.compiler.dataflow.nodesToSB.IntVtype;
+import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
+import sketch.compiler.dataflow.preprocessor.PropagateFinals;
+import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
+import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
+import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
+import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.main.seq.SequentialSketchMain;
+import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.compiler.stencilSK.EliminateCompoundAssignments;
+import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.compiler.stencilSK.FunctionalizeStencils;
+import sketch.compiler.stencilSK.MatchParamNames;
+import sketch.compiler.stencilSK.StencilSemanticChecker;
+import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 
 /**
  * This class manages all the work involed in compiling a stencil
@@ -66,11 +57,11 @@ import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
  *
  * @author asolar
  */
-public class ToStencilSK extends ToSBit
+public class StencilSketchMain extends SequentialSketchMain
 {
 
 	Program originalProg;
-	public ToStencilSK(String[] args){
+	public StencilSketchMain(String[] args){
 		super(args);
 	}
 
@@ -280,7 +271,7 @@ public class ToStencilSK extends ToSBit
 
 	public static void main(String[] args)
 	{
-		new ToStencilSK(args).run();
+		new StencilSketchMain(args).run();
 		System.exit(0);
 	}
 }

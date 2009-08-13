@@ -14,7 +14,11 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.stmts;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A loop that executes its body a specified number of times.

@@ -1,10 +1,9 @@
-package streamit.frontend.tosbit;
+package sketch.compiler.passes.preprocessing;
 
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FEReplacer;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.Expression;
 
 public class SimplifyExpressions extends FEReplacer {
 

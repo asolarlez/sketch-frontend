@@ -14,7 +14,13 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.passes.streamit_old;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.SplitterJoiner;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A fixed-weight round-robin splitter or joiner.  This has a single

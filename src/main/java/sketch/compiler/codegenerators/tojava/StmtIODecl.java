@@ -14,13 +14,12 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package sketch.compiler.codegenerators.tojava;
 
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEVisitor;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * An old-syntax I/O rate declaration.  This has a name, a type, and one
@@ -32,7 +31,7 @@ import streamit.frontend.nodes.Type;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class StmtIODecl extends streamit.frontend.nodes.Statement
+public class StmtIODecl extends sketch.compiler.ast.core.stmts.Statement
 {
     private String name;
     private Type type;

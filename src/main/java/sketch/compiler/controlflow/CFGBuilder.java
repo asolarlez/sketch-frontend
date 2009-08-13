@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,18 +22,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.controlflow.CFGNode.EdgePair;
-import streamit.frontend.nodes.FENullVisitor;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtBreak;
-import streamit.frontend.nodes.StmtContinue;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtWhile;
+import sketch.compiler.ast.core.FENullVisitor;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtBreak;
+import sketch.compiler.ast.core.stmts.StmtContinue;
+import sketch.compiler.ast.core.stmts.StmtDoWhile;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.controlflow.CFGNode.EdgePair;
 
 /**
  * Helper class to build a control-flow graph from linear code.

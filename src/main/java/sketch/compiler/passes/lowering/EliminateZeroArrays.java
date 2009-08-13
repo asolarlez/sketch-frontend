@@ -1,17 +1,8 @@
-package streamit.frontend.passes;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstant;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.ExprArrayRange.Range;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.Expression;
 
 public class EliminateZeroArrays extends FEReplacer {
 	

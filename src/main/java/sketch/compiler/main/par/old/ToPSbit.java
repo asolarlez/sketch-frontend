@@ -1,40 +1,28 @@
-package streamit.frontend;
+package sketch.compiler.main.par.old;
 
 import java.util.List;
 
-import streamit.frontend.CommandLineParamManager.POpts;
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
-import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
-import streamit.frontend.experimental.preprocessor.PreprocessSketch;
-import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
-import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
-import streamit.frontend.nodes.MakeBodiesBlocks;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.parallelEncoder.LockPreprocessing;
-import streamit.frontend.parallelEncoder.ProduceParallelModel;
-import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateArrayRange;
-import streamit.frontend.passes.EliminateBitSelector;
-import streamit.frontend.passes.EliminateMultiDimArrays;
-import streamit.frontend.passes.EliminateNestedArrAcc;
-import streamit.frontend.passes.EliminateStructs;
-import streamit.frontend.passes.ExtractRightShifts;
-import streamit.frontend.passes.ExtractVectorsInCasts;
-import streamit.frontend.passes.MakeAllocsAtomic;
-import streamit.frontend.passes.SemanticChecker;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.solvers.SpinVerifier;
-import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
-import streamit.frontend.tosbit.recursionCtrl.ZeroInlineRControl;
+import sketch.compiler.CommandLineParamManager.POpts;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
+import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
+import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
+import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.dataflow.recursionCtrl.ZeroInlineRControl;
+import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.main.seq.SequentialSketchMain;
+import sketch.compiler.parallelEncoder.LockPreprocessing;
+import sketch.compiler.parallelEncoder.ProduceParallelModel;
+import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.solvers.SpinVerifier;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.compiler.stencilSK.EliminateStarStatic;
 
-public class ToPSbit extends ToSBit {
+public class ToPSbit extends SequentialSketchMain {
 
 	public ToPSbit(String[] args) {
 		super(args);

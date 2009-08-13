@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.misc;
+package sketch.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

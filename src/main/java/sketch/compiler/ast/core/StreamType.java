@@ -14,7 +14,8 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * Records the input and output types of a stream.  Stream objects in

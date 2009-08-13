@@ -14,15 +14,14 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * Front-end visitor passes that renames variables of type

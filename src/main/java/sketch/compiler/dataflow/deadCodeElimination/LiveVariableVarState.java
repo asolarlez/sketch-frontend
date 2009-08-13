@@ -1,10 +1,10 @@
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
-import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.abstractValueType;
+import sketch.compiler.dataflow.varState;
 
 public class LiveVariableVarState extends varState {
 	final String name;

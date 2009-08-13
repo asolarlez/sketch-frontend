@@ -1,11 +1,11 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 
 
 

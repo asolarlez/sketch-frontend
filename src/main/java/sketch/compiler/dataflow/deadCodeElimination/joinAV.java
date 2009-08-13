@@ -1,8 +1,8 @@
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.List;
 
-import streamit.frontend.experimental.abstractValue;
+import sketch.compiler.dataflow.abstractValue;
 
 public class joinAV extends abstractValue {
 	int liveness;

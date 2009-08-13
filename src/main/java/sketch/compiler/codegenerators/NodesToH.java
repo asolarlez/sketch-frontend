@@ -1,9 +1,12 @@
-package streamit.frontend.codegenerators;
+package sketch.compiler.codegenerators;
 
-import java.util.*;
+import java.util.Iterator;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.tojava.NodesToJava;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 public class NodesToH extends NodesToC {
 

@@ -1,15 +1,16 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.tosbit.AbstractValueOracle;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
 
 public class EliminateStarStatic extends FEReplacer {
 

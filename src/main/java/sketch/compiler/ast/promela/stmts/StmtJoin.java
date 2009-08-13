@@ -14,7 +14,12 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.promela.stmts;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.SplitterJoiner;
+import sketch.compiler.ast.core.stmts.Statement;
 
 /**
  * Declare the joiner type for a split-join or feedback loop.

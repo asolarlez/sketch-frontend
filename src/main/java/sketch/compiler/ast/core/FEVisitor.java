@@ -14,7 +14,21 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.passes.streamit_old.SCAnon;
+import sketch.compiler.passes.streamit_old.SCSimple;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Visitor interface for StreamIt front-end nodes.  This class
@@ -49,8 +63,6 @@ public interface FEVisitor
     public Object visitExprField(ExprField exp);
     public Object visitExprFunCall(ExprFunCall exp);
     public Object visitExprParen(ExprParen exp);
-    public Object visitExprPeek(ExprPeek exp);
-    public Object visitExprPop(ExprPop exp);
     public Object visitExprRegen(ExprRegen exp);
 	public Object visitExprStar(ExprStar star);
     public Object visitExprTernary(ExprTernary exp);
@@ -74,7 +86,6 @@ public interface FEVisitor
     public Object visitStmtBreak(StmtBreak stmt);
     public Object visitStmtContinue(StmtContinue stmt);
     public Object visitStmtDoWhile(StmtDoWhile stmt);
-    public Object visitStmtEnqueue(StmtEnqueue stmt);
     public Object visitStmtEmpty(StmtEmpty stmt);
     public Object visitStmtExpr(StmtExpr stmt);
     public Object visitStmtFor(StmtFor stmt);
@@ -82,12 +93,8 @@ public interface FEVisitor
     public Object visitStmtInsertBlock (StmtInsertBlock stmt);
     public Object visitStmtJoin(StmtJoin stmt);
     public Object visitStmtLoop(StmtLoop stmt);
-    public Object visitStmtPhase(StmtPhase stmt);
-    public Object visitStmtPush(StmtPush stmt);
     public Object visitStmtReturn(StmtReturn stmt);
     public Object visitStmtAssert(StmtAssert stmt);
-    public Object visitStmtSendMessage(StmtSendMessage stmt);
-    public Object visitStmtSplit(StmtSplit stmt);
     public Object visitStmtVarDecl(StmtVarDecl stmt);
     public Object visitStmtWhile(StmtWhile stmt);
     public Object visitStreamSpec(StreamSpec spec);

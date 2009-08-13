@@ -1,17 +1,7 @@
-package streamit.frontend.passes;
-
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 /**
  * The purpose of this class is to number all the statements in the program.

@@ -1,8 +1,8 @@
-package streamit.frontend.experimental.eliminateTransAssign;
+package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.List;
 
-import streamit.frontend.experimental.abstractValue;
+import sketch.compiler.dataflow.abstractValue;
 
 public class taUpdater extends abstractValue {
 	public static final int ADD = 0;

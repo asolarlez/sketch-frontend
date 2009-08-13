@@ -1,19 +1,18 @@
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.HashSet;
 import java.util.Set;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 public class CollectStmtTags extends FEReplacer {
 

@@ -1,7 +1,10 @@
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core.stmts;
 import java.util.HashMap;
 import java.util.LinkedList;
+
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.Expression;
 
 public class StmtSwitch extends Statement {
 

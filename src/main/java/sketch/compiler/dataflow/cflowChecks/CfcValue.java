@@ -1,9 +1,9 @@
-package streamit.frontend.experimental.cflowChecks;
+package sketch.compiler.dataflow.cflowChecks;
 
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.experimental.abstractValue;
+import sketch.compiler.dataflow.abstractValue;
 
 public class CfcValue extends abstractValue {
 

@@ -1,9 +1,9 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.stencilSK;
 
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.StmtAssign;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 
 public class EliminateCompoundAssignments extends FEReplacer {
 

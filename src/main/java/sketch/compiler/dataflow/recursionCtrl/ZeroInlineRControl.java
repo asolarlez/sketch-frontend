@@ -1,8 +1,8 @@
-package streamit.frontend.tosbit.recursionCtrl;
+package sketch.compiler.dataflow.recursionCtrl;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Statement;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.stmts.Statement;
 
 public class ZeroInlineRControl extends RecursionControl {
 

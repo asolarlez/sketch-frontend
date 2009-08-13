@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.misc;
+package sketch.util;
 
 public class OSetIterator extends AssertedClass
 {

@@ -1,27 +1,25 @@
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.tosbit.AbstractValueOracle;
-import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
-import streamit.misc.Misc;
-import streamit.misc.NullStream;
-import streamit.misc.ProcessStatus;
-import streamit.misc.SynchronousTimedProcess;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.Misc;
+import sketch.util.NullStream;
+import sketch.util.ProcessStatus;
+import sketch.util.SynchronousTimedProcess;
 
 public class SATBackend {
 
@@ -48,9 +46,9 @@ public class SATBackend {
 
 
 	protected void partialEval(Program prog, OutputStream outStream){
-		streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions
+		sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions
 		partialEval =
-			new streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions (varGen, oracle,
+			new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions (varGen, oracle,
 				new PrintStream(outStream)
 			//	System.out
 			,

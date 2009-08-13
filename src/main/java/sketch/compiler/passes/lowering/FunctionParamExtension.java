@@ -1,5 +1,4 @@
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,38 +7,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
-import streamit.frontend.nodes.UnrecognizedVariableException;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.UnrecognizedVariableException;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
  * Converts function that return something to functions that take

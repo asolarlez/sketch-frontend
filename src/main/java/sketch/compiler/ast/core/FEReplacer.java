@@ -14,15 +14,29 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayRange.*;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.passes.streamit_old.SCAnon;
+import sketch.compiler.passes.streamit_old.SCSimple;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -255,17 +269,6 @@ public class FEReplacer implements FEVisitor
     	else
     		return new ExprParen (exp, expr);
     }
-
-    public Object visitExprPeek(ExprPeek exp)
-    {
-        Expression expr = doExpression(exp.getExpr());
-        if (expr == exp.getExpr())
-            return exp;
-        else
-            return new ExprPeek(exp, expr);
-    }
-
-    public Object visitExprPop(ExprPop exp) { return exp; }
 
     public Object visitExprRegen (ExprRegen exp) {
     	Expression expr = doExpression (exp.getExpr ());
@@ -593,13 +596,6 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtEmpty(StmtEmpty stmt) { return stmt; }
 
-    public Object visitStmtEnqueue(StmtEnqueue stmt)
-    {
-        Expression newValue = doExpression(stmt.getValue());
-        if (newValue == stmt.getValue()) return stmt;
-        return new StmtEnqueue(stmt, newValue);
-    }
-
     public Object visitStmtExpr(StmtExpr stmt)
     {
         Expression newExpr = doExpression(stmt.getExpression());
@@ -667,24 +663,6 @@ public class FEReplacer implements FEVisitor
         return new StmtLoop(stmt, newIter, newBody);
     }
 
-    public Object visitStmtPhase(StmtPhase stmt)
-    {
-        Expression newFc = doExpression(stmt.getFunCall());
-        if (newFc == stmt.getFunCall())
-            return stmt;
-        // We lose if the new expression isn't a function call.
-        if (!(newFc instanceof ExprFunCall))
-            return stmt;
-        return new StmtPhase(stmt, (ExprFunCall)newFc);
-    }
-
-    public Object visitStmtPush(StmtPush stmt)
-    {
-        Expression newValue = doExpression(stmt.getValue());
-        if (newValue == stmt.getValue()) return stmt;
-        return new StmtPush(stmt, newValue);
-    }
-
     public Object visitStmtReturn(StmtReturn stmt)
     {
         Expression newValue = stmt.getValue() == null ? null :
@@ -699,38 +677,6 @@ public class FEReplacer implements FEVisitor
             doExpression(stmt.getCond());
         if (newValue == stmt.getCond()) return stmt;
         return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper());
-    }
-
-    public Object visitStmtSendMessage(StmtSendMessage stmt)
-    {
-        boolean hasChanged = false;
-        Expression newReceiver = (Expression)stmt.getReceiver().accept(this);
-        if (newReceiver != stmt.getReceiver()) hasChanged = true;
-        List<Expression> newParams = new ArrayList<Expression>();
-        for (Iterator iter = stmt.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
-            Expression newParam = doExpression(param);
-            newParams.add(newParam);
-            if (param != newParam) hasChanged = true;
-        }
-        Expression newMin = stmt.getMinLatency();
-        if (newMin != null) newMin = (Expression)newMin.accept(this);
-        if (newMin != stmt.getMinLatency()) hasChanged = true;
-        Expression newMax = stmt.getMaxLatency();
-        if (newMax != null) newMax = (Expression)newMax.accept(this);
-        if (newMax != stmt.getMaxLatency()) hasChanged = true;
-        if (!hasChanged) return stmt;
-        return new StmtSendMessage(stmt, newReceiver,
-                                   stmt.getName(), newParams, newMin, newMax);
-    }
-
-    public Object visitStmtSplit(StmtSplit stmt)
-    {
-        SplitterJoiner newSplitter =
-            (SplitterJoiner)stmt.getSplitter().accept(this);
-        if (newSplitter == stmt.getSplitter()) return stmt;
-        return new StmtSplit(stmt, newSplitter);
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)

@@ -1,15 +1,9 @@
-package streamit.frontend.passes;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.ExprArrayRange.Range;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 
 public class EliminateNestedArrAcc extends FEReplacer {
 

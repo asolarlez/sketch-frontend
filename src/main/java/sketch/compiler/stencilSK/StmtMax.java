@@ -1,10 +1,24 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.*;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 
 /**

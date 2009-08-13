@@ -14,82 +14,37 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import streamit.frontend.controlflow.CFG;
-import streamit.frontend.controlflow.CFGBuilder;
-import streamit.frontend.controlflow.CountLattice;
-import streamit.frontend.controlflow.StatementCounter;
-import streamit.frontend.nodes.ExprAlt;
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprChoiceBinary;
-import streamit.frontend.nodes.ExprChoiceSelect;
-import streamit.frontend.nodes.ExprChoiceUnary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.FuncWork;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAdd;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBody;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtEnqueue;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtJoin;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPush;
-import streamit.frontend.nodes.StmtReorderBlock;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtSplit;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
-import streamit.frontend.nodes.UnrecognizedVariableException;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
-import streamit.misc.ControlFlowException;
+import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.controlflow.CFG;
+import sketch.compiler.controlflow.CFGBuilder;
+import sketch.compiler.controlflow.CountLattice;
+import sketch.compiler.controlflow.StatementCounter;
+import sketch.util.ControlFlowException;
 
 /**
  * Perform checks on the semantic correctness of a StreamIt program.
  * The main entry point to this class is the static
- * <code>streamit.frontend.passes.SemanticChecker.check</code> method,
+ * <code>sketch.compiler.passes.SemanticChecker.check</code> method,
  * which returns <code>true</code> if a program has no detected
  * semantic errors.
  *
@@ -274,9 +229,6 @@ public class SemanticChecker
 					case Function.FUNC_HELPER:
 						report(func, "helper functions must have names");
 						break;
-					case Function.FUNC_PHASE:
-						report(func, "phase functions must have names");
-						break;
 					default:
 						// is BUILTIN_HELPER and CONST_HELPER.  Ignore
 					}
@@ -409,86 +361,6 @@ public class SemanticChecker
 							"body statement only allowed " +
 					"in feedbackloop");
 				return super.visitStmtBody(stmt);
-			}
-
-			public Object visitStmtEnqueue(StmtEnqueue stmt)
-			{
-				assert false;
-
-				if (func.getCls() != Function.FUNC_INIT ||
-						spec.getType() != StreamSpec.STREAM_FEEDBACKLOOP)
-					report(stmt,
-							"enqueue statement only allowed " +
-					"in feedbackloop");
-				return super.visitStmtEnqueue(stmt);
-			}
-
-			public Object visitStmtJoin(StmtJoin stmt)
-			{
-				assert false;
-
-				if ((func.getCls() != Function.FUNC_INIT) ||
-						(spec.getType() != StreamSpec.STREAM_FEEDBACKLOOP &&
-								spec.getType() != StreamSpec.STREAM_SPLITJOIN))
-					report(stmt,
-							"join statement only allowed " +
-					"in splitjoin/feedbackloop");
-				return super.visitStmtJoin(stmt);
-			}
-
-			public Object visitExprPeek(ExprPeek expr)
-			{
-				assert false;
-
-				if ((func.getCls() != Function.FUNC_PHASE &&
-						func.getCls() != Function.FUNC_PREWORK &&
-						func.getCls() != Function.FUNC_WORK) ||
-						(spec.getType() != StreamSpec.STREAM_FILTER))
-					report(expr,
-							"peek expression only allowed " +
-					"in filter work functions");
-				return super.visitExprPeek(expr);
-			}
-
-			public Object visitExprPop(ExprPop expr)
-			{
-				assert false;
-
-				if ((func.getCls() != Function.FUNC_PHASE &&
-						func.getCls() != Function.FUNC_PREWORK &&
-						func.getCls() != Function.FUNC_WORK) ||
-						(spec.getType() != StreamSpec.STREAM_FILTER))
-					report(expr,
-							"pop expression only allowed " +
-					"in filter work functions");
-				return super.visitExprPop(expr);
-			}
-
-			public Object visitStmtPush(StmtPush stmt)
-			{
-				assert false;
-
-				if ((func.getCls() != Function.FUNC_PHASE &&
-						func.getCls() != Function.FUNC_PREWORK &&
-						func.getCls() != Function.FUNC_WORK) ||
-						(spec.getType() != StreamSpec.STREAM_FILTER))
-					report(stmt,
-							"push statement only allowed " +
-					"in filter work functions");
-				return super.visitStmtPush(stmt);
-			}
-
-			public Object visitStmtSplit(StmtSplit stmt)
-			{
-				assert false;
-
-				if ((func.getCls() != Function.FUNC_INIT) ||
-						(spec.getType() != StreamSpec.STREAM_FEEDBACKLOOP &&
-								spec.getType() != StreamSpec.STREAM_SPLITJOIN))
-					report(stmt,
-							"split statement only allowed " +
-					"in splitjoin/feedbackloop");
-				return super.visitStmtSplit(stmt);
 			}
 		});
 	}
@@ -1241,25 +1113,6 @@ public class SemanticChecker
 		prog.accept(new FEReplacer() {
 			public Object visitStreamSpec(StreamSpec ss)
 			{
-				if (ss.getType() == StreamSpec.STREAM_SPLITJOIN ||
-						ss.getType() == StreamSpec.STREAM_FEEDBACKLOOP)
-				{
-					exactlyOneStatement
-					(ss, "split",
-							new StatementCounter() {
-						public boolean
-						statementQualifies(Statement stmt)
-						{ return stmt instanceof StmtSplit; }
-					});
-					exactlyOneStatement
-					(ss, "join",
-							new StatementCounter() {
-						public boolean
-						statementQualifies(Statement stmt)
-						{ return stmt instanceof StmtJoin; }
-					});
-				}
-
 				if (ss.getType() == StreamSpec.STREAM_FEEDBACKLOOP)
 				{
 					exactlyOneStatement

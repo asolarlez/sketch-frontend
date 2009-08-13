@@ -1,9 +1,13 @@
 /**
  *
  */
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.exprs;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import java.util.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
 
 /**
  * An array-range reference. A[0:2] means the first 3 elements of A, and
@@ -170,7 +174,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	}
 
 	/* (non-Javadoc)
-	 * @see streamit.frontend.nodes.FENode#accept(streamit.frontend.nodes.FEVisitor)
+	 * @see sketch.compiler.nodes.FENode#accept(sketch.compiler.nodes.FEVisitor)
 	 */
 	public Object accept(FEVisitor v)
 	{

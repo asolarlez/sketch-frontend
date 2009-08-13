@@ -14,11 +14,13 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core.typs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A fixed-length homogenous array type.  This type has a base type and

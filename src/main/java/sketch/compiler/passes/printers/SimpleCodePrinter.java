@@ -1,9 +1,11 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.passes.printers;
 
-import java.io.*;
+import java.io.OutputStream;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.passes.CodePrinter;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 public class SimpleCodePrinter extends CodePrinter
 {
@@ -156,13 +158,6 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 	@Override
-	public Object visitStmtEnqueue(StmtEnqueue stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtEnqueue(stmt);
-	}
-
-	@Override
 	public Object visitStmtExpr(StmtExpr stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
@@ -171,38 +166,10 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 	@Override
-	public Object visitStmtJoin(StmtJoin stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtJoin(stmt);
-	}
-
-	@Override
-	public Object visitStmtPush(StmtPush stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtPush(stmt);
-	}
-
-	@Override
 	public Object visitStmtReturn(StmtReturn stmt)
 	{
 		printLine(stmt.toString());
 		return super.visitStmtReturn(stmt);
-	}
-
-	@Override
-	public Object visitStmtSendMessage(StmtSendMessage stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtSendMessage(stmt);
-	}
-
-	@Override
-	public Object visitStmtSplit(StmtSplit stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtSplit(stmt);
 	}
 
 	@Override

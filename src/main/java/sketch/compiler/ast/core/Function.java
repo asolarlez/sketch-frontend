@@ -14,10 +14,13 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.Collections;
 import java.util.List;
+
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * A function declaration in a StreamIt program.  This may be an init
@@ -38,7 +41,6 @@ public class Function extends FENode
     public static final int FUNC_HELPER = 4;
     public static final int FUNC_CONST_HELPER = 5;
     public static final int FUNC_BUILTIN_HELPER = 6;
-    public static final int FUNC_PHASE = 7;
     public static final int FUNC_PREWORK = 8;
     public static final int FUNC_UNINTERP = 9;
     public static final int FUNC_ASYNC = 10;

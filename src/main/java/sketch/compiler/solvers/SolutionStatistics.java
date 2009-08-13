@@ -1,4 +1,4 @@
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
 /**
  * Statistics about a particular call to a solver (synthesizer or verifier).

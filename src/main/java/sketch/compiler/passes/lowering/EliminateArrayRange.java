@@ -1,21 +1,18 @@
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 
 /**
  * This class isolates array range reads and writes so that

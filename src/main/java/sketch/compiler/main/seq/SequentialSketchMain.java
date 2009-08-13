@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend;
+package sketch.compiler.main.seq;
 
 import java.io.FileWriter;
 import java.io.Writer;
@@ -24,65 +24,48 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import streamit.frontend.CommandLineParamManager.OptionNotRecognziedException;
-import streamit.frontend.CommandLineParamManager.POpts;
-import streamit.frontend.Directive.OptionsDirective;
-import streamit.frontend.codegenerators.NodesToC;
-import streamit.frontend.codegenerators.NodesToCTest;
-import streamit.frontend.codegenerators.NodesToH;
-import streamit.frontend.experimental.cflowChecks.PerformFlowChecks;
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
-import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
-import streamit.frontend.experimental.preprocessor.PreprocessSketch;
-import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
-import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
-import streamit.frontend.experimental.simplifier.ScalarizeVectorAssignments;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.MakeBodiesBlocks;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.parser.StreamItParser;
-import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.BitTypeRemover;
-import streamit.frontend.passes.BitVectorPreprocessor;
-import streamit.frontend.passes.BlockifyRewriteableStmts;
-import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateArrayRange;
-import streamit.frontend.passes.EliminateBitSelector;
-import streamit.frontend.passes.EliminateInsertBlocks;
-import streamit.frontend.passes.EliminateMultiDimArrays;
-import streamit.frontend.passes.EliminateNestedArrAcc;
-import streamit.frontend.passes.EliminateRegens;
-import streamit.frontend.passes.EliminateReorderBlocks;
-import streamit.frontend.passes.EliminateStructs;
-import streamit.frontend.passes.ExtractComplexLoopConditions;
-import streamit.frontend.passes.ExtractRightShifts;
-import streamit.frontend.passes.ExtractVectorsInCasts;
-import streamit.frontend.passes.FunctionParamExtension;
-import streamit.frontend.passes.ProtectArrayAccesses;
-import streamit.frontend.passes.SemanticChecker;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
-import streamit.frontend.solvers.SATBackend;
-import streamit.frontend.solvers.SolutionStatistics;
-import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.stencilSK.preprocessor.ReplaceFloatsWithBits;
-import streamit.frontend.tosbit.AbstractValueOracle;
-import streamit.frontend.tosbit.SimplifyExpressions;
-import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.AdvancedRControl;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
-import streamit.misc.ControlFlowException;
-import streamit.misc.Pair;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.Directive;
+import sketch.compiler.CommandLineParamManager.OptionNotRecognziedException;
+import sketch.compiler.CommandLineParamManager.POpts;
+import sketch.compiler.Directive.OptionsDirective;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.codegenerators.NodesToC;
+import sketch.compiler.codegenerators.NodesToCTest;
+import sketch.compiler.codegenerators.NodesToH;
+import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
+import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
+import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
+import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
+import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
+import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.parser.StreamItParser;
+import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.preprocessing.BitTypeRemover;
+import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
+import sketch.compiler.passes.preprocessing.SimplifyExpressions;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.solvers.SATBackend;
+import sketch.compiler.solvers.SolutionStatistics;
+import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
+import sketch.util.ControlFlowException;
+import sketch.util.Pair;
 
 
 
@@ -97,7 +80,7 @@ import streamit.misc.Pair;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ToSBit
+public class SequentialSketchMain
 {
 
 	// protected final CommandLineParams params;
@@ -106,7 +89,7 @@ public class ToSBit
 	protected final CommandLineParamManager params =  CommandLineParamManager.getParams();
 
 
-	public ToSBit(String[] args){
+	public SequentialSketchMain(String[] args){
 		this.setCommandLineParams();
 		params.loadParams(args);
 	}
@@ -172,11 +155,11 @@ public class ToSBit
 	/**
 	 * Read, parse, and combine all of the StreamIt code in a list of
 	 * files.  Reads each of the files in <code>inputFiles</code> in
-	 * turn and runs <code>streamit.frontend.StreamItParserFE</code>
+	 * turn and runs <code>sketch.compiler.StreamItParserFE</code>
 	 * over it.  This produces a
-	 * <code>streamit.frontend.nodes.Program</code> containing lists
+	 * <code>sketch.compiler.nodes.Program</code> containing lists
 	 * of structures and streams; combine these into a single
-	 * <code>streamit.frontend.nodes.Program</code> with all of the
+	 * <code>sketch.compiler.nodes.Program</code> with all of the
 	 * structures and streams.
 	 *
 	 * @param inputFiles  list of strings naming the files to be read
@@ -274,10 +257,10 @@ public class ToSBit
 	}
 
 
-	TempVarGen varGen = new TempVarGen();
-	Program prog = null;
-	AbstractValueOracle oracle;
-	Program finalCode;
+	protected TempVarGen varGen = new TempVarGen();
+	protected Program prog = null;
+	protected AbstractValueOracle oracle;
+	protected Program finalCode;
 
 	public Program parseProgram(){
 		try
@@ -757,7 +740,7 @@ public class ToSBit
 	public static void main(String[] args)
 	{
 		try{
-			new ToSBit(args).run();
+			new SequentialSketchMain(args).run();
 		}catch(RuntimeException e){
 			System.err.println(e.getMessage());
 			if(CommandLineParamManager.getParams().hasFlag("showExceptionstack")   ){

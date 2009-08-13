@@ -1,63 +1,28 @@
 /**
  *
  */
-package streamit.frontend.passes;
+package sketch.compiler.passes.printers;
 
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Stack;
 
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprComplex;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstChar;
-import streamit.frontend.nodes.ExprConstFloat;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstStr;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprNew;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtBreak;
-import streamit.frontend.nodes.StmtContinue;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtEmpty;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtInsertBlock;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtReorderBlock;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
-import streamit.misc.NullStream;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.NullStream;
 
 /**
  * A parent class for code printers that strictly adhere to the visitor pattern.

@@ -1,12 +1,12 @@
-package streamit.frontend.experimental.eliminateTransAssign;
+package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.Iterator;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
-import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.abstractValueType;
+import sketch.compiler.dataflow.varState;
 
 public class TAvarState extends varState {
 	final MethodState ms;

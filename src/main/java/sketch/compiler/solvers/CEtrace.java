@@ -1,4 +1,4 @@
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
 import java.util.ArrayList;
 import java.util.List;

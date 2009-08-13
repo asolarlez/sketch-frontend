@@ -14,88 +14,34 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package sketch.compiler.codegenerators.tojava;
 
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprComplex;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstChar;
-import streamit.frontend.nodes.ExprConstFloat;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstStr;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprLiteral;
-import streamit.frontend.nodes.ExprNew;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.FuncWork;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.GetExprType;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.SCAnon;
-import streamit.frontend.nodes.SCSimple;
-import streamit.frontend.nodes.SJDuplicate;
-import streamit.frontend.nodes.SJRoundRobin;
-import streamit.frontend.nodes.SJWeightedRR;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAdd;
-import streamit.frontend.nodes.StmtReorderBlock;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtBody;
-import streamit.frontend.nodes.StmtBreak;
-import streamit.frontend.nodes.StmtContinue;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtEmpty;
-import streamit.frontend.nodes.StmtEnqueue;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtJoin;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtPhase;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtPush;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtSendMessage;
-import streamit.frontend.nodes.StmtSplit;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.StreamCreator;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePortal;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.passes.SymbolTableVisitor;
+import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePortal;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.passes.lowering.GetExprType;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.streamit_old.SCAnon;
+import sketch.compiler.passes.streamit_old.SCSimple;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link
- * streamit.frontend.nodes.FEVisitor} directly, without going through
+ * sketch.compiler.nodes.FEVisitor} directly, without going through
  * an intermediate class such as <code>FEReplacer</code>.  Every
  * method actually returns a String.
  *
@@ -534,17 +480,6 @@ public class NodesToJava extends SymbolTableVisitor
     	return newe.toString ();
     }
 
-    public Object visitExprPeek(ExprPeek exp)
-    {
-        String result = (String)exp.getExpr().accept(this);
-        return peekFunction(ss.getStreamType()) + "(" + result + ")";
-    }
-
-    public Object visitExprPop(ExprPop exp)
-    {
-        return popFunction(ss.getStreamType()) + "()";
-    }
-
     public Object visitExprTernary(ExprTernary exp)
     {
         String a = (String)exp.getA().accept(this);
@@ -848,13 +783,6 @@ public class NodesToJava extends SymbolTableVisitor
         return "";
     }
 
-    public Object visitStmtEnqueue(StmtEnqueue stmt)
-    {
-        // Errk: this doesn't become nice Java code.
-        return "/* enqueue(" + (String)stmt.getValue().accept(this) +
-            ") */";
-    }
-
     public Object visitStmtExpr(StmtExpr stmt)
     {
         String result = (String)stmt.getExpression().accept(this);
@@ -920,36 +848,6 @@ public class NodesToJava extends SymbolTableVisitor
 //        return doStreamCreator("setLoop", stmt.getCreator());
     }
 
-    public Object visitStmtPhase(StmtPhase stmt)
-    {
-        ExprFunCall fc = stmt.getFunCall();
-        // ASSERT: the target is always a phase function.
-        FuncWork target = (FuncWork)ss.getFuncNamed(fc.getName());
-        StmtExpr call = new StmtExpr(stmt, fc);
-        String peek, pop, push;
-        if (target.getPeekRate() == null)
-            peek = "0";
-        else
-            peek = (String)target.getPeekRate().accept(this);
-        if (target.getPopRate() == null)
-            pop = "0";
-        else
-            pop = (String)target.getPopRate().accept(this);
-        if (target.getPushRate() == null)
-            push = "0";
-        else
-            push = (String)target.getPushRate().accept(this);
-
-        return "phase(new WorkFunction(" + peek + "," + pop + "," + push +
-            ") { public void work() { " + call.accept(this) + "; } })";
-    }
-
-    public Object visitStmtPush(StmtPush stmt)
-    {
-        return pushFunction(ss.getStreamType()) + "(" +
-            (String)stmt.getValue().accept(this) + ")";
-    }
-
     public Object visitStmtReturn(StmtReturn stmt)
     {
         if (stmt.getValue() == null) return "return";
@@ -959,53 +857,6 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitStmtAssert(StmtAssert stmt)
     {
         return "assert (" + (String)stmt.getCond().accept(this) + ")";
-    }
-
-    public Object visitStmtSendMessage(StmtSendMessage stmt)
-    {
-        String receiver = (String)stmt.getReceiver().accept(this);
-        String result = "";
-
-        // Issue one of the latency-setting statements.
-        if (stmt.getMinLatency() == null)
-        {
-            if (stmt.getMaxLatency() == null)
-                result += receiver + ".setAnyLatency()";
-            else
-                result += receiver + ".setMaxLatency(" +
-                    (String)stmt.getMaxLatency().accept(this) + ")";
-        }
-        else
-        {
-            // Hmm, don't have an SIRLatency for only minimum latency.
-            // Wing it.
-            Expression max = stmt.getMaxLatency();
-            if (max == null)
-                max = new ExprBinary(null, ExprBinary.BINOP_MUL,
-                                     stmt.getMinLatency(),
-                                     new ExprConstInt(100));
-            result += receiver + ".setLatency(" +
-                (String)stmt.getMinLatency().accept(this) + ", " +
-                (String)max.accept(this) + ")";
-        }
-
-        result += ";\n" + indent + receiver + "." + stmt.getName() + "(";
-        boolean first = true;
-        for (Iterator iter = stmt.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
-            if (!first) result += ", ";
-            first = false;
-            result += (String)param.accept(this);
-        }
-        result += ")";
-        return result;
-    }
-
-    public Object visitStmtSplit(StmtSplit stmt)
-    {
-        assert stmt.getSplitter() != null;
-        return "setSplitter(" + (String)stmt.getSplitter().accept(this) + ")";
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)

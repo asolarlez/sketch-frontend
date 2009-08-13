@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
 /**
  * An element in a well-formed lattice structure.  Lattices have

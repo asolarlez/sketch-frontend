@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.misc;
+package sketch.util;
 
 /**
  * Simple 'struct' for returned status from processes:

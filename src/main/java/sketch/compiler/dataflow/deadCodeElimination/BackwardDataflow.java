@@ -1,22 +1,22 @@
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
-import streamit.frontend.experimental.MethodState.ChangeTracker;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.dataflow.DataflowWithFixpoint;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.abstractValueType;
+import sketch.compiler.dataflow.MethodState.ChangeTracker;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 
 
 public class BackwardDataflow extends DataflowWithFixpoint {

@@ -1,16 +1,16 @@
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
-import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.abstractValueType;
+import sketch.compiler.dataflow.varState;
 
 public class LiveVariableVType extends abstractValueType {
 

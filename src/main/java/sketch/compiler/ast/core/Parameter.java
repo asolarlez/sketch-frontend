@@ -14,7 +14,8 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
+import sketch.compiler.ast.core.typs.Type;
 
 
 

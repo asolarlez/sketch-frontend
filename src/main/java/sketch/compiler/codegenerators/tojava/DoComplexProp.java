@@ -14,34 +14,28 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package sketch.compiler.codegenerators.tojava;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ComplexProp;
-import streamit.frontend.nodes.ExprArray;
-import streamit.frontend.nodes.ExprComplex;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.SCSimple;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtEnqueue;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtPush;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.passes.SymbolTableVisitor;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprComplex;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.lowering.ComplexProp;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * Perform constant propagation on function bodies.  This class does
@@ -175,26 +169,6 @@ public class DoComplexProp extends SymbolTableVisitor
         return doExprProp(expr);
     }
 
-    public Object visitExprPeek(ExprPeek expr)
-    {
-        Expression x = (Expression)super.visitExprPeek(expr);
-        // If the stream's input type is complex, we want a temporary
-        // instead.
-        if (streamType.getIn().isComplex())
-            x = makeAnyTemporary(x);
-        return x;
-    }
-
-    public Object visitExprPop(ExprPop expr)
-    {
-        Expression x = (Expression)super.visitExprPop(expr);
-        // If the stream's input type is complex, we want a temporary
-        // instead.
-        // if (streamType.getIn().isComplex())
-        //     x = makeAnyTemporary(x);
-        return x;
-    }
-
     public Object visitExprVar(ExprVar exp)
     {
         if (getType(exp).isComplex())
@@ -267,14 +241,6 @@ public class DoComplexProp extends SymbolTableVisitor
             return stmt;
     }
 
-    public Object visitStmtEnqueue(StmtEnqueue stmt)
-    {
-        Expression value = stmt.getValue();
-        value = doExprProp(value);
-        value = makeComplexTemporary(value);
-        return new StmtEnqueue(stmt, value);
-    }
-
     public Object visitStmtExpr(StmtExpr stmt)
     {
         Expression newExpr = doExprProp(stmt.getExpression());
@@ -288,14 +254,6 @@ public class DoComplexProp extends SymbolTableVisitor
         if (newExpr == stmt.getExpression())
             return stmt;
         return new StmtExpr(stmt, newExpr);
-    }
-
-    public Object visitStmtPush(StmtPush stmt)
-    {
-        Expression value = stmt.getValue();
-        value = doExprProp(value);
-        value = makeComplexTemporary(value);
-        return new StmtPush(stmt, value);
     }
 
     public Object visitStmtReturn(StmtReturn stmt)

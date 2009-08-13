@@ -1,13 +1,13 @@
 /**
  *
  */
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
-import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.tosbit.AbstractValueOracle;
-import streamit.frontend.tosbit.RandomValueOracle;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.compiler.solvers.constructs.RandomValueOracle;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
 
 /**
  * A synthesizer that uar picks a new candidate program.  There is no guarantee

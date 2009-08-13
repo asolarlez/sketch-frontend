@@ -14,7 +14,10 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.exprs;
+import sketch.compiler.ast.core.DummyFENode;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
 
 /**
  * A constant-valued expression.  This class only serves to hold

@@ -1,32 +1,48 @@
 // $ANTLR : "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
-	package streamit.frontend.parser;
+	package sketch.compiler.parser;
 
-	import streamit.frontend.nodes.*;
-    import streamit.frontend.CommandLineParamManager;
-    import streamit.frontend.Directive;
-	import streamit.frontend.ToSBit;
+	import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-	import java.util.Collections;
-    import java.io.*;
-    import java.util.ArrayList;
-    import java.util.Iterator;
-    import java.util.HashSet;
-    import java.util.List;
-    import java.util.Set;
-
-import antlr.TokenBuffer;
-import antlr.TokenStreamException;
-import antlr.TokenStreamIOException;
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.Directive;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.FuncWork;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SplitterJoiner;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePortal;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
 import antlr.ParserSharedInputState;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.Token;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import antlr.collections.impl.BitSet;
 @SuppressWarnings("deprecation")
 public class StreamItParserFE extends antlr.LLkParser       implements StreamItParserFETokenTypes
@@ -1040,18 +1056,6 @@ inputState.guessing--;
 				}
 				break;
 			}
-			case TK_phase:
-			{
-				tp = LT(1);
-				match(TK_phase);
-				id = LT(1);
-				match(ID);
-				if ( inputState.guessing==0 ) {
-					c = getContext(tp); name = id.getText();
-								                    type = Function.FUNC_PHASE;
-				}
-				break;
-			}
 			default:
 			{
 				throw new NoViableAltException(LT(1), getFilename());
@@ -1146,34 +1150,7 @@ inputState.guessing--;
 		}
 		return f;
 	}
-	
-	public final Statement  push_statement() throws RecognitionException, TokenStreamException {
-		Statement s;
-		
-		Token  t = null;
-		s = null; Expression x;
-		
-		try {      // for error handling
-			t = LT(1);
-			match(TK_push);
-			match(LPAREN);
-			x=right_expr();
-			match(RPAREN);
-			if ( inputState.guessing==0 ) {
-				s = new StmtPush(getContext(t), x);
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_5);
-			} else {
-			  throw ex;
-			}
-		}
-		return s;
-	}
-	
+
 	public final Statement  statement() throws RecognitionException, TokenStreamException {
 		Statement s;
 		
@@ -1193,30 +1170,6 @@ inputState.guessing--;
 			case TK_fork:
 			{
 				s=fork_statement();
-				break;
-			}
-			case TK_split:
-			{
-				s=split_statement();
-				match(SEMI);
-				break;
-			}
-			case TK_join:
-			{
-				s=join_statement();
-				match(SEMI);
-				break;
-			}
-			case TK_enqueue:
-			{
-				s=enqueue_statement();
-				match(SEMI);
-				break;
-			}
-			case TK_push:
-			{
-				s=push_statement();
-				match(SEMI);
 				break;
 			}
 			case TK_insert:
@@ -1443,82 +1396,7 @@ inputState.guessing--;
 		}
 		return s;
 	}
-	
-	public final Statement  split_statement() throws RecognitionException, TokenStreamException {
-		Statement s;
-		
-		Token  t = null;
-		s = null; SplitterJoiner sj;
-		
-		try {      // for error handling
-			t = LT(1);
-			match(TK_split);
-			sj=splitter_or_joiner();
-			if ( inputState.guessing==0 ) {
-				s = new StmtSplit(getContext(t), sj);
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_5);
-			} else {
-			  throw ex;
-			}
-		}
-		return s;
-	}
-	
-	public final Statement  join_statement() throws RecognitionException, TokenStreamException {
-		Statement s;
-		
-		Token  t = null;
-		s = null; SplitterJoiner sj;
-		
-		try {      // for error handling
-			t = LT(1);
-			match(TK_join);
-			sj=splitter_or_joiner();
-			if ( inputState.guessing==0 ) {
-				s = new StmtJoin(getContext(t), sj);
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_5);
-			} else {
-			  throw ex;
-			}
-		}
-		return s;
-	}
-	
-	public final Statement  enqueue_statement() throws RecognitionException, TokenStreamException {
-		Statement s;
-		
-		Token  t = null;
-		s = null; Expression x;
-		
-		try {      // for error handling
-			t = LT(1);
-			match(TK_enqueue);
-			x=right_expr();
-			if ( inputState.guessing==0 ) {
-				s = new StmtEnqueue(getContext(t), x);
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_5);
-			} else {
-			  throw ex;
-			}
-		}
-		return s;
-	}
-	
+
 	public final StmtInsertBlock  insert_block() throws RecognitionException, TokenStreamException {
 		StmtInsertBlock ib;
 		
@@ -1853,12 +1731,6 @@ inputState.guessing--;
 					}
 					if ( synPredMatched3107 ) {
 						x=func_call();
-						if ( inputState.guessing==0 ) {
-							s = new StmtExpr(x);
-						}
-					}
-					else if ((LA(1)==TK_pop||LA(1)==TK_peek)) {
-						x=streamit_value_expr();
 						if ( inputState.guessing==0 ) {
 							s = new StmtExpr(x);
 						}
@@ -2956,55 +2828,6 @@ inputState.guessing--;
 		return x;
 	}
 	
-	public final Expression  streamit_value_expr() throws RecognitionException, TokenStreamException {
-		Expression x;
-		
-		Token  t = null;
-		Token  u = null;
-		x = null;
-		
-		try {      // for error handling
-			switch ( LA(1)) {
-			case TK_pop:
-			{
-				t = LT(1);
-				match(TK_pop);
-				match(LPAREN);
-				match(RPAREN);
-				if ( inputState.guessing==0 ) {
-					x = new ExprPop(getContext(t));
-				}
-				break;
-			}
-			case TK_peek:
-			{
-				u = LT(1);
-				match(TK_peek);
-				match(LPAREN);
-				x=right_expr();
-				match(RPAREN);
-				if ( inputState.guessing==0 ) {
-					x = new ExprPeek(getContext(u), x);
-				}
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_18);
-			} else {
-			  throw ex;
-			}
-		}
-		return x;
-	}
-	
 	public final Expression  value() throws RecognitionException, TokenStreamException {
 		Expression x;
 		
@@ -3880,12 +3703,6 @@ inputState.guessing--;
 			case TK_pi:
 			{
 				x=minic_value_expr();
-				break;
-			}
-			case TK_pop:
-			case TK_peek:
-			{
-				x=streamit_value_expr();
 				break;
 			}
 			default:

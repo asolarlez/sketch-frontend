@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
 /**
  * SPIN-specific solution statistics.

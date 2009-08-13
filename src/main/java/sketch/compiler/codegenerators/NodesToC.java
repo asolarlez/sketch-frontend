@@ -1,10 +1,27 @@
-package streamit.frontend.codegenerators;
+package sketch.compiler.codegenerators;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
-import streamit.frontend.nodes.*;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.tojava.NodesToJava;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.codegenerators.tojava.NodesToJava;
 
 public class NodesToC extends NodesToJava {
 

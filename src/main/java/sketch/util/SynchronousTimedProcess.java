@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.misc;
+package sketch.util;
 
 import java.io.File;
 import java.io.IOException;

@@ -14,17 +14,16 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StreamSpec;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 
 /**
  * Create init functions in filters that do not have them.  Later passes

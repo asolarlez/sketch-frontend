@@ -1,8 +1,7 @@
-package streamit.frontend.passes;
-
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.StmtVarDecl;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 
 public class AddInitializers extends FEReplacer {
 

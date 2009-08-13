@@ -14,23 +14,22 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 
 /**
  * Pair up variable declarations and adjacent assignments.  Some of the

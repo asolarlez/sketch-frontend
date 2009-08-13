@@ -1,8 +1,30 @@
-package streamit.frontend.passes;
+package sketch.compiler.passes.preprocessing;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import java.util.*;
-
-import streamit.frontend.nodes.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 public class BitVectorPreprocessor extends SymbolTableVisitor
 {

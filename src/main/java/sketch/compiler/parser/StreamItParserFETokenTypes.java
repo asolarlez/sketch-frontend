@@ -1,20 +1,8 @@
 // $ANTLR : "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
-	package streamit.frontend.parser;
+	package sketch.compiler.parser;
 
-	import streamit.frontend.nodes.*;
-    import streamit.frontend.CommandLineParamManager;
-    import streamit.frontend.Directive;
-	import streamit.frontend.ToSBit;
-
-	import java.util.Collections;
-    import java.io.*;
-    import java.util.ArrayList;
-    import java.util.Iterator;
-    import java.util.HashSet;
-    import java.util.List;
-    import java.util.Set;
-
+	
 public interface StreamItParserFETokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;

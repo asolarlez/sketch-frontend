@@ -1,14 +1,13 @@
-package streamit.frontend.experimental;
+package sketch.compiler.dataflow;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 
 abstract public class varState {	
 	private int maxSize = -1;

@@ -14,14 +14,28 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.passes.streamit_old.SCAnon;
+import sketch.compiler.passes.streamit_old.SCSimple;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Implementation of FEVisitor that always returns <code>null</code>.
  * This is intended to be a base class for other visitors that only
  * visit a subset of the node tree, and don't want to return objects
  * of the same type as the parameter.  {@link
- * streamit.frontend.nodes.FEReplacer} is a better default for
+ * sketch.compiler.nodes.FEReplacer} is a better default for
  * transformations on the tree.
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
@@ -45,8 +59,6 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprField(ExprField exp) { return null; }
     public Object visitExprFunCall(ExprFunCall exp) { return null; }
     public Object visitExprParen(ExprParen exp) { return null; }
-    public Object visitExprPeek(ExprPeek exp) { return null; }
-    public Object visitExprPop(ExprPop exp) { return null; }
     public Object visitExprRegen(ExprRegen exp) { return null; }
     public Object visitExprTernary(ExprTernary exp) { return null; }
     public Object visitExprTypeCast(ExprTypeCast exp) { return null; }
@@ -70,19 +82,14 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtContinue(StmtContinue stmt) { return null; }
     public Object visitStmtDoWhile(StmtDoWhile stmt) { return null; }
     public Object visitStmtEmpty(StmtEmpty stmt) { return null; }
-    public Object visitStmtEnqueue(StmtEnqueue stmt) { return null; }
     public Object visitStmtExpr(StmtExpr stmt) { return null; }
     public Object visitStmtFor(StmtFor stmt) { return null; }
     public Object visitStmtIfThen(StmtIfThen stmt) { return null; }
     public Object visitStmtInsertBlock (StmtInsertBlock stmt) { return null; }
     public Object visitStmtJoin(StmtJoin stmt) { return null; }
     public Object visitStmtLoop(StmtLoop stmt) { return null; }
-    public Object visitStmtPhase(StmtPhase stmt) { return null; }
-    public Object visitStmtPush(StmtPush stmt) { return null; }
     public Object visitStmtReturn(StmtReturn stmt) { return null; }
     public Object visitStmtAssert(StmtAssert stmt) { return null; }
-    public Object visitStmtSendMessage(StmtSendMessage stmt) { return null; }
-    public Object visitStmtSplit(StmtSplit stmt) { return null; }
     public Object visitStmtVarDecl(StmtVarDecl stmt) { return null; }
     public Object visitStmtWhile(StmtWhile stmt) { return null; }
     public Object visitStreamSpec(StreamSpec spec) { return null; }

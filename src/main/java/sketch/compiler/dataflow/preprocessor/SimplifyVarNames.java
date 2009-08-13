@@ -1,4 +1,4 @@
-package streamit.frontend.experimental.preprocessor;
+package sketch.compiler.dataflow.preprocessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,14 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
 
 public class SimplifyVarNames extends FEReplacer {
 

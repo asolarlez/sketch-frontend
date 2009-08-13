@@ -1,21 +1,19 @@
 /**
  *
  */
-package streamit.frontend.passes;
+package sketch.compiler.passes.lowering;
+import static sketch.compiler.ast.core.exprs.ExprNullPtr.nullPtr;
 
 import java.util.Collections;
 
-import streamit.frontend.nodes.ExprNew;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.TypeStruct;
-
-import static streamit.frontend.nodes.ExprNullPtr.nullPtr;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprNew;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
  * This pass is very simple: it wraps allocations in atomic { } blocks.  This

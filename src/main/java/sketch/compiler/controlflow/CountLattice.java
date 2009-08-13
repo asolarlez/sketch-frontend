@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
 /**
  * Simple lattice that counts something.  The value of the lattice can

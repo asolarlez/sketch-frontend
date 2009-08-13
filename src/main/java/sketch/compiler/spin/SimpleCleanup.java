@@ -1,19 +1,19 @@
-package streamit.frontend.spin;
+package sketch.compiler.spin;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.experimental.varState;
-import streamit.frontend.experimental.preprocessor.PreprocessSketch;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.tosbit.recursionCtrl.ZeroInlineRControl;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.dataflow.varState;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
+import sketch.compiler.dataflow.recursionCtrl.ZeroInlineRControl;
 
 public class SimpleCleanup extends PreprocessSketch {
 

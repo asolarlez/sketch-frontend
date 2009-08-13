@@ -1,23 +1,22 @@
-package streamit.frontend.experimental.cflowChecks;
+package sketch.compiler.dataflow.cflowChecks;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.experimental.PartialEvaluator;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.dataflow.PartialEvaluator;
+import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 
 public class PerformFlowChecks extends PartialEvaluator {
 	Cfctype cftype;

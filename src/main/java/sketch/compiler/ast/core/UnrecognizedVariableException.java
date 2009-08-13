@@ -14,7 +14,8 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
+import sketch.compiler.ast.core.exprs.ExprVar;
 
 /**
  * Exception thrown when a pass encounters an undeclared variable

@@ -14,15 +14,16 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.List;
+
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
  * An entire StreamIt program.  This includes all of the program's
  * declared streams and structure types.  It consequently has Lists of
- * streams (as {@link streamit.frontend.nodes.StreamSpec} objects) and
- * of structures (as {@link streamit.frontend.nodes.TypeStruct} objects).
+ * streams (as {@link sketch.compiler.nodes.StreamSpec} objects) and
+ * of structures (as {@link sketch.compiler.nodes.TypeStruct} objects).
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$

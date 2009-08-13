@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import streamit.frontend.controlflow.CFGNode.EdgePair;
+import sketch.compiler.controlflow.CFGNode.EdgePair;
 
 /**
  * A control-flow graph.  This has a set of nodes and a set of edges.

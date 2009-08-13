@@ -14,7 +14,8 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.exprs;
+import sketch.compiler.ast.core.FEVisitor;
 
 /**
  * An array-element reference.  This is an expression like

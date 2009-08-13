@@ -1,4 +1,4 @@
-package streamit.frontend.tosbit;
+package sketch.compiler.tosbit;
 
 import java.util.Iterator;
 import java.util.Stack;

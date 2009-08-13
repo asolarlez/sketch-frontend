@@ -1,6 +1,6 @@
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
-import streamit.frontend.tosbit.AbstractValueOracle;
+import sketch.compiler.solvers.constructs.AbstractValueOracle;
 
 public interface Verifier {
 

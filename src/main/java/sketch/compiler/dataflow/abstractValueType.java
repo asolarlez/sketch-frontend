@@ -1,10 +1,10 @@
-package streamit.frontend.experimental;
+package sketch.compiler.dataflow;
 
 import java.util.List;
 
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.typs.Type;
 
 
 public abstract class abstractValueType{

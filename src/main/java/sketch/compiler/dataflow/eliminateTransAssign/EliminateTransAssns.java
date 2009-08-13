@@ -1,13 +1,13 @@
-package streamit.frontend.experimental.eliminateTransAssign;
+package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.dataflow.DataflowWithFixpoint;
+import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 
 public class EliminateTransAssns extends DataflowWithFixpoint {
 

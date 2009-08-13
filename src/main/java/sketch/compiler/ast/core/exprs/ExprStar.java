@@ -14,12 +14,16 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core.exprs;
 import java.util.Vector;
 
-import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.ToSBit;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * An integer-valued constant.  This can be freely promoted to an

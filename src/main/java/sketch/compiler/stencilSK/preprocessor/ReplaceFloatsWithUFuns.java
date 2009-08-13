@@ -1,7 +1,7 @@
-package streamit.frontend.stencilSK.preprocessor;
+package sketch.compiler.stencilSK.preprocessor;
 
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.TypePrimitive;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class ReplaceFloatsWithUFuns extends ReplaceFloatsWithBits {
 

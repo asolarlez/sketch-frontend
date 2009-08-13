@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.frontend;
+package sketch.compiler;
 
 /**
  * An odd little class for interpreting compiler directives, such as

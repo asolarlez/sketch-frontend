@@ -14,9 +14,9 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
-import streamit.frontend.nodes.Statement;
+import sketch.compiler.ast.core.stmts.Statement;
 
 /**
  * Data-flow analysis to count the number of times some qualifying

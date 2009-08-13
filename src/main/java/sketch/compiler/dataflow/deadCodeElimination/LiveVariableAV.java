@@ -1,9 +1,9 @@
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.List;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
+import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
 
 public class LiveVariableAV extends abstractValue {
 	static final int DEAD=0;

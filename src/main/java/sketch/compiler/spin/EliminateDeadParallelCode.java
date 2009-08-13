@@ -1,14 +1,14 @@
 /**
  *
  */
-package streamit.frontend.spin;
+package sketch.compiler.spin;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.StreamSpec;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 
 /**
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>

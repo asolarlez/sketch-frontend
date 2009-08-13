@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
 
 /**
  * A FEContext provides source locations and other context for a

@@ -14,9 +14,9 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * Type-tracking lattice that finds any compatible type.

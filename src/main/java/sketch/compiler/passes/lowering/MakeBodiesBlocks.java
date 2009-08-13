@@ -14,10 +14,19 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.passes.lowering;
 import java.util.Collections;
 import java.util.List;
+
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FuncWork;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtDoWhile;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtWhile;
 
 /**
  * Front-end visitor pass to replace the bodies of compound statements

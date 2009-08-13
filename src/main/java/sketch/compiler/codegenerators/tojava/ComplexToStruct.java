@@ -14,22 +14,22 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package sketch.compiler.codegenerators.tojava;
 
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypeStruct;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
  * Replace primitive complex types with the <code>Complex</code>

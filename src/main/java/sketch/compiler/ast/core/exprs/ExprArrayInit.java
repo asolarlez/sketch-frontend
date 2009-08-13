@@ -14,9 +14,12 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core.exprs;
 import java.util.List;
+
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
 
 /**
  * An array initializer.  This is an expression like the right hand

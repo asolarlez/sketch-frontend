@@ -14,9 +14,8 @@
  * without express or implied warranty.
  */
 
-package streamit.misc;
+package sketch.util;
 
-import streamit.misc.AssertedClass;
 
 /* $Id$ */
 

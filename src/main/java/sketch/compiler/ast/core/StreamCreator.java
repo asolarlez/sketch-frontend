@@ -14,8 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,8 +27,8 @@ import java.util.List;
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
- * @see     streamit.frontend.nodes.SCAnon
- * @see     streamit.frontend.nodes.SCSimple
+ * @see     sketch.compiler.nodes.SCAnon
+ * @see     sketch.compiler.nodes.SCSimple
  */
 public abstract class StreamCreator extends FENode
 {

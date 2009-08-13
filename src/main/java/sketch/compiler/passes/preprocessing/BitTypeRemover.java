@@ -1,9 +1,29 @@
-package streamit.frontend.passes;
+package sketch.compiler.passes.preprocessing;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-import java.util.*;
-
-import streamit.frontend.nodes.*;
-import streamit.frontend.nodes.ExprArrayRange.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.lowering.GetExprType;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /**
  * Code generation pass that gets rid of the "bit" data type, using appropriate

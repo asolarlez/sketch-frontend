@@ -14,11 +14,14 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.stmts;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.StreamCreator;
 
 /**
  * Adds the body stream to a feedback loop.  This statement has a
- * single {@link streamit.frontend.nodes.StreamCreator} object that
+ * single {@link sketch.compiler.nodes.StreamCreator} object that
  * specifies what child is being added.
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;

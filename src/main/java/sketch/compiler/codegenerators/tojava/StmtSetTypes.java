@@ -14,14 +14,13 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package sketch.compiler.codegenerators.tojava;
 
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEVisitor;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * A new-old-syntax <code>setIOTypes</code> statement.  This statement

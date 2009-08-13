@@ -1,14 +1,13 @@
 /**
  *
  */
-package streamit.frontend.parser;
+package sketch.compiler.parser;
 
 import java.io.IOException;
 import java.io.StringReader;
 
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.exprs.Expression;
 import xtc.parser.ParseException;
 
 /**

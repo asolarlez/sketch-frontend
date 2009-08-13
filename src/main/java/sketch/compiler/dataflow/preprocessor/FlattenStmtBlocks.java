@@ -1,22 +1,19 @@
-package streamit.frontend.experimental.preprocessor;
+package sketch.compiler.dataflow.preprocessor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtDoWhile;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 public class FlattenStmtBlocks extends FEReplacer {
 	

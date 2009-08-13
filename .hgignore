@@ -1,4 +1,2 @@
 syntax: glob
 target/*
-*.tmp
-*.pyc

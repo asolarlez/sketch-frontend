@@ -1,62 +1,35 @@
-package streamit.frontend;
+package sketch.compiler.main.par;
 
 import java.util.List;
-import java.util.Map;
 
-import streamit.frontend.CommandLineParamManager.POpts;
-import streamit.frontend.experimental.deadCodeElimination.EliminateDeadCode;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
-import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
-import streamit.frontend.experimental.preprocessor.PreprocessSketch;
-import streamit.frontend.experimental.preprocessor.SimplifyVarNames;
-import streamit.frontend.experimental.preprocessor.TypeInferenceForStars;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.parallelEncoder.LockPreprocessing;
-import streamit.frontend.passes.AddInitializers;
-import streamit.frontend.passes.AddLastAssignmentToFork;
-import streamit.frontend.passes.AssembleInitializers;
-import streamit.frontend.passes.AtomizeStatements;
-import streamit.frontend.passes.BlockifyRewriteableStmts;
-import streamit.frontend.passes.BoundUnboundedLoops;
-import streamit.frontend.passes.ConstantReplacer;
-import streamit.frontend.passes.DisambiguateUnaries;
-import streamit.frontend.passes.EliminateConditionals;
-import streamit.frontend.passes.EliminateInsertBlocks;
-import streamit.frontend.passes.EliminateLockUnlock;
-import streamit.frontend.passes.EliminateMultiDimArrays;
-import streamit.frontend.passes.EliminateRegens;
-import streamit.frontend.passes.EliminateReorderBlocks;
-import streamit.frontend.passes.EliminateZeroArrays;
-import streamit.frontend.passes.FunctionParamExtension;
-import streamit.frontend.passes.HoistDeclarations;
-import streamit.frontend.passes.MakeAllocsAtomic;
-import streamit.frontend.passes.MergeLocalStatements;
-import streamit.frontend.passes.NumberStatements;
-import streamit.frontend.passes.ProtectArrayAccesses;
-import streamit.frontend.passes.ScrubStructType;
-import streamit.frontend.passes.SemanticChecker;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.passes.TrimDumbDeadCode;
-import streamit.frontend.passes.UnrollLocalLoops;
-import streamit.frontend.passes.ProtectArrayAccesses.FailurePolicy;
-import streamit.frontend.solvers.CompilationStatistics;
-import streamit.frontend.solvers.CounterExample;
-import streamit.frontend.solvers.SATSynthesizer;
-import streamit.frontend.solvers.SolverStatistics;
-import streamit.frontend.solvers.SpinVerifier;
-import streamit.frontend.solvers.Synthesizer;
-import streamit.frontend.solvers.Verifier;
-import streamit.frontend.spin.Configuration;
-import streamit.frontend.spin.Preprocessor;
-import streamit.frontend.spin.Configuration.StateCompressionPolicy;
-import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.tosbit.AbstractValueOracle;
-import streamit.frontend.tosbit.RandomValueOracle;
+import sketch.compiler.CommandLineParamManager.POpts;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
+import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
+import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
+import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
+import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
+import sketch.compiler.main.seq.SequentialSketchMain;
+import sketch.compiler.parallelEncoder.LockPreprocessing;
+import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.solvers.CompilationStatistics;
+import sketch.compiler.solvers.CounterExample;
+import sketch.compiler.solvers.SATSynthesizer;
+import sketch.compiler.solvers.SolverStatistics;
+import sketch.compiler.solvers.SpinVerifier;
+import sketch.compiler.solvers.Synthesizer;
+import sketch.compiler.solvers.Verifier;
+import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.compiler.solvers.constructs.RandomValueOracle;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.compiler.spin.Configuration;
+import sketch.compiler.spin.Configuration.StateCompressionPolicy;
+import sketch.compiler.stencilSK.EliminateStarStatic;
 
-public class ToPSbitII extends ToSBit {
+public class ParallelSketchMain extends SequentialSketchMain {
 
 	protected static final int MIN_BACKEND_VERBOSITY = 6;
 
@@ -65,7 +38,7 @@ public class ToPSbitII extends ToSBit {
 
 	protected Program forCodegen = null;
 
-	public ToPSbitII(String[] args){
+	public ParallelSketchMain(String[] args){
 		super(args);
 		stats = new CompilationStatistics (createSynthStats (), createVerifStats ());
 	}
@@ -429,7 +402,7 @@ public class ToPSbitII extends ToSBit {
 
 	public static void main(String[] args)
 	{
-		new ToPSbitII (args).run();
+		new ParallelSketchMain (args).run();
 		System.exit(0);
 	}
 }

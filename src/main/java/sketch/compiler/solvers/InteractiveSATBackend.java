@@ -1,18 +1,17 @@
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.stencilSK.StaticHoleTracker;
-import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
-import streamit.misc.InteractiveTimedProcess;
-import streamit.misc.Misc;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.InteractiveTimedProcess;
 
 public class InteractiveSATBackend extends SATBackend {
 

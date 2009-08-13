@@ -1,16 +1,14 @@
-package streamit.frontend.passes;
-
-import java.util.HashMap;
+package sketch.compiler.passes.lowering;
 import java.util.HashSet;
 import java.util.Set;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 public class UnrollLocalLoops extends SimpleLoopUnroller {
 

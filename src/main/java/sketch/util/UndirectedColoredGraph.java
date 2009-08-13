@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.misc;
+package sketch.util;
 
 /**
  * An undirected graph where each vertex is labeled with an int color.

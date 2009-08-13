@@ -14,14 +14,14 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * Base class for lattices that track a type.  The value of the lattice
  * can be top (no information), bottom (conflicting types), or a
- * StreamIt {@link streamit.frontend.nodes.Type} value; the interaction
+ * StreamIt {@link sketch.compiler.nodes.Type} value; the interaction
  * of these is defined by the derived class.
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;

@@ -1,18 +1,18 @@
-package streamit.frontend.tosbit.recursionCtrl;
+package sketch.compiler.dataflow.recursionCtrl;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StreamSpec;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
 
 /**
  * 

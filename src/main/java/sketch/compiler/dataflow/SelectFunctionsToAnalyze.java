@@ -1,11 +1,11 @@
-package streamit.frontend.tosbit;
+package sketch.compiler.dataflow;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.StreamSpec;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
 
 public class SelectFunctionsToAnalyze {
 	public SelectFunctionsToAnalyze() {

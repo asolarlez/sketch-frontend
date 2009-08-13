@@ -20,9 +20,9 @@
  * Created on May 31, 2001, 4:50 PM
  */
 
-package streamit.misc;
+package sketch.util;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 
 public class DestroyedClass extends Misc
 {

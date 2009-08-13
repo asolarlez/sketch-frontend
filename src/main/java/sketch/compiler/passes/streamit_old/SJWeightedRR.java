@@ -14,9 +14,13 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.passes.streamit_old;
 import java.util.List;
+
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.SplitterJoiner;
 
 /**
  * A variable-weight round-robin splitter or joiner.  This has a list

@@ -1,24 +1,24 @@
-package streamit.frontend.parallelEncoder;
+package sketch.compiler.parallelEncoder;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.passes.SymbolTableVisitor;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 public class LockPreprocessing extends SymbolTableVisitor {
 	public LockPreprocessing(){

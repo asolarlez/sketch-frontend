@@ -1,33 +1,32 @@
-package streamit.frontend.experimental.nodesToSB;
+package sketch.compiler.dataflow.nodesToSB;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.experimental.PartialEvaluator;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePortal;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
-import streamit.frontend.tosbit.ValueOracle;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePortal;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.dataflow.PartialEvaluator;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.solvers.constructs.ValueOracle;
 /**
  * This class translates the ast into a boolean function which is output to a file.
  * The format is suitable for the SBitII backend solver.<BR>

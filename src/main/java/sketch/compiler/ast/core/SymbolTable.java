@@ -14,12 +14,14 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * A symbol table for StreamIt programs.  This keeps a mapping from a
@@ -35,7 +37,7 @@ import java.util.Map;
  * <code>Parameter</code> for stream parameters.  Each symbol also
  * has an integer kind to distinguish which of these it is.
  *
- * @see     streamit.frontend.passes.SymbolTableVisitor
+ * @see     sketch.compiler.passes.SymbolTableVisitor
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */

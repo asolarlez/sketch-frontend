@@ -1,11 +1,11 @@
-package streamit.frontend.passes;
+package sketch.compiler.passes.printers;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 
 public class CodePrinter extends FEReplacer {
 

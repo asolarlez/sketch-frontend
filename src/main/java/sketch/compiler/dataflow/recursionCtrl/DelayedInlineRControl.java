@@ -1,11 +1,7 @@
-package streamit.frontend.tosbit.recursionCtrl;
+package sketch.compiler.dataflow.recursionCtrl;
 
-import java.util.HashMap;
-
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.tosbit.recursionCtrl.BaseRControl.InlineCounter;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 
 public class DelayedInlineRControl extends BaseRControl {
 		

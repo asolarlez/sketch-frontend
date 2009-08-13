@@ -1,8 +1,7 @@
 /**
  *
  */
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,34 +12,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstant;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprNew;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
  * Does four things:

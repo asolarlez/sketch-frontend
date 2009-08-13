@@ -1,16 +1,13 @@
-package streamit.frontend.passes;
-
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
 
 public class ExtractVectorsInCasts extends SymbolTableVisitor {
 

@@ -1,7 +1,7 @@
-package streamit.misc;
+package sketch.util;
 
-import java.util.StringTokenizer;
 import java.math.BigInteger;
+import java.util.StringTokenizer;
 
 // from http://egghead.psu.edu/~herzog/applets/lin_equation/index.html
 // replaced 'long' with BigInteger to allow for arbitrary precision rationals

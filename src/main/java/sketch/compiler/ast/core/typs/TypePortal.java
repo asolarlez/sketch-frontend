@@ -14,14 +14,14 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.typs;
 
 /**
  * A message-portal type.  This is a type used to send messages; it
  * appears in the portals list of
- * <code>streamit.frontend.nodes.StreamCreator</code>, and as the
+ * <code>sketch.compiler.nodes.StreamCreator</code>, and as the
  * receiver object of
- * <code>streamit.frontend.nodes.StmtSendMessage</code>.  A portal
+ * <code>sketch.compiler.nodes.StmtSendMessage</code>.  A portal
  * corresponds to a single named stream type.  Because of the way
  * <code>FEReplacer</code> works, attempting to keep a pointer to
  * the actual referenced stream type here is useless; we only keep

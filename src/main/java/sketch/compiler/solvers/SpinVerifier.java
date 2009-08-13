@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.frontend.solvers;
+package sketch.compiler.solvers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,27 +9,26 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.ToSBit;
-import streamit.frontend.experimental.eliminateTransAssign.EliminateTransAssns;
-import streamit.frontend.experimental.preprocessor.FlattenStmtBlocks;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.parallelEncoder.ParallelPreprocessor;
-import streamit.frontend.passes.HoistDeclarations;
-import streamit.frontend.passes.LowerLoopsToWhileLoops;
-import streamit.frontend.passes.MergeLocalStatements;
-import streamit.frontend.passes.SeparateInitializers;
-import streamit.frontend.solvers.CEtrace.step;
-import streamit.frontend.spin.Configuration;
-import streamit.frontend.spin.EliminateDeadParallelCode;
-import streamit.frontend.spin.Executer;
-import streamit.frontend.spin.Preprocessor;
-import streamit.frontend.spin.PromelaCodePrinter;
-import streamit.frontend.stencilSK.EliminateStarStatic;
-import streamit.frontend.stencilSK.SimpleCodePrinter;
-import streamit.frontend.tosbit.AbstractValueOracle;
-import streamit.misc.Misc;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
+import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
+import sketch.compiler.parallelEncoder.ParallelPreprocessor;
+import sketch.compiler.passes.lowering.HoistDeclarations;
+import sketch.compiler.passes.lowering.LowerLoopsToWhileLoops;
+import sketch.compiler.passes.lowering.MergeLocalStatements;
+import sketch.compiler.passes.lowering.SeparateInitializers;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.solvers.CEtrace.step;
+import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.compiler.spin.Configuration;
+import sketch.compiler.spin.EliminateDeadParallelCode;
+import sketch.compiler.spin.Executer;
+import sketch.compiler.spin.Preprocessor;
+import sketch.compiler.spin.PromelaCodePrinter;
+import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.util.Misc;
 
 /**
  * @author Chris Jones

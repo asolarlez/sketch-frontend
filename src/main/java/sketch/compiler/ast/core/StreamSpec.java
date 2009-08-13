@@ -14,11 +14,13 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 
 /**
  * Container class containing all of the state for a StreamIt stream

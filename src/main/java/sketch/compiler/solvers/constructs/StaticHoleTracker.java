@@ -1,17 +1,13 @@
-package streamit.frontend.stencilSK;
+package sketch.compiler.solvers.constructs;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.tosbit.HoleNameTracker;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtLoop;
 
 public class StaticHoleTracker implements HoleNameTracker {
 	public static final String HOLE_PREFIX = "H_";

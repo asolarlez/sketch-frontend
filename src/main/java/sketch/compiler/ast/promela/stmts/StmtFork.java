@@ -1,4 +1,11 @@
-package streamit.frontend.nodes;
+package sketch.compiler.ast.promela.stmts;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class StmtFork extends Statement {
 	private StmtVarDecl loopVar;

@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.misc;
+package sketch.util;
 
 /**
  * A bastard exception that represents not an error, but a desire to bypass

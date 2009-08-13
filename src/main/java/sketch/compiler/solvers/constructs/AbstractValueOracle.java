@@ -1,11 +1,10 @@
-package streamit.frontend.tosbit;
+package sketch.compiler.solvers.constructs;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
 
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.exprs.Expression;
 
 public abstract class AbstractValueOracle {
 

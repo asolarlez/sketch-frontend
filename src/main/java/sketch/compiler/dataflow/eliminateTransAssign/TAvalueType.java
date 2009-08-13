@@ -1,17 +1,17 @@
-package streamit.frontend.experimental.eliminateTransAssign;
+package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
-import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.abstractValueType;
+import sketch.compiler.dataflow.varState;
 
 public class TAvalueType extends abstractValueType {
 	public static TAvalueType  vtype = new TAvalueType();

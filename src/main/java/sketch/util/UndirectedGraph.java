@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.misc;
+package sketch.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
 
-import streamit.misc.UndirectedColoredGraph.ColoredVertex;
+import sketch.util.UndirectedColoredGraph.ColoredVertex;
 
 /**
  * A simple undirected graph that uses pointers for edges, rather than an

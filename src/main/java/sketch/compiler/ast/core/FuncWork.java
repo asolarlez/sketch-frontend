@@ -14,9 +14,12 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core;
 import java.util.Collections;
+
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * A StreamIt work or phase function.  A work function always returns

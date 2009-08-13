@@ -14,13 +14,17 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core.typs;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A hetereogeneous structure type.  This type has a name for itself,

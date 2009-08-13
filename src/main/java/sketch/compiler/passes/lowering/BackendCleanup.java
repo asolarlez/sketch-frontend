@@ -1,9 +1,8 @@
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.List;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.StmtBlock;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 
 /**
  * Cleans up the code before output.

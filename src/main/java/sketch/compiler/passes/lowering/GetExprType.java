@@ -14,17 +14,27 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
+package sketch.compiler.passes.lowering;
 import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.nodes.ExprArrayRange.Range;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.FENullVisitor;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.UnrecognizedVariableException;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -59,8 +69,8 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprAlt (ExprAlt ea) {
-    	Type t1 = (Type) ea.ths.accept(this);
-    	Type t2 = (Type) ea.that.accept(this);
+    	Type t1 = (Type) ea.getThis().accept(this);
+    	Type t2 = (Type) ea.getThat().accept(this);
     	Type ret = t1.leastCommonPromotion(t2);
     	
     	return ret;
@@ -344,16 +354,6 @@ public class GetExprType extends FENullVisitor
     	return ep.getExpr ().accept (this);
     }
 
-    public Object visitExprPeek(ExprPeek exp)
-    {
-        return streamType.getIn();
-    }
-
-    public Object visitExprPop(ExprPop exp)
-    {
-        return streamType.getIn();
-    }
-
     public Object visitExprRegen (ExprRegen er) {
     	return er.getExpr ().accept (this);
     }
@@ -403,7 +403,7 @@ public class GetExprType extends FENullVisitor
 
 
     public Object visitExprNew(ExprNew expNew){
-    	return expNew.typeToConstruct;
+    	return expNew.getTypeToConstruct();
 
     }
 

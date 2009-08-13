@@ -1,4 +1,4 @@
-package streamit.frontend.parallelEncoder;
+package sketch.compiler.parallelEncoder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 
 /**

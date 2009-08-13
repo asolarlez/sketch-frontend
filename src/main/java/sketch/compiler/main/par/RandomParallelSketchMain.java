@@ -1,12 +1,11 @@
 /**
  *
  */
-package streamit.frontend;
+package sketch.compiler.main.par;
 
-import streamit.frontend.ToPSbitII;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.solvers.RandomSynthesizer;
-import streamit.frontend.solvers.Synthesizer;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.solvers.RandomSynthesizer;
+import sketch.compiler.solvers.Synthesizer;
 
 /**
  * PSKETCH will a "null" synthesizer that returns random candidates.
@@ -15,8 +14,8 @@ import streamit.frontend.solvers.Synthesizer;
  *
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
-public class NullSynthPSketch extends ToPSbitII {
-	public NullSynthPSketch (String[] args) {
+public class RandomParallelSketchMain extends ParallelSketchMain {
+	public RandomParallelSketchMain (String[] args) {
 		super (args);
 	}
 
@@ -25,7 +24,7 @@ public class NullSynthPSketch extends ToPSbitII {
 	}
 
 	public static void main(String[] args) {
-		new NullSynthPSketch (args).run();
+		new RandomParallelSketchMain (args).run();
 		System.exit(0);
 	}
 }

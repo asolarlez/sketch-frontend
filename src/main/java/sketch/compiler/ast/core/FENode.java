@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
 
 /**
  * Any node in the tree created by the front-end's parser.  This is

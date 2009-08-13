@@ -14,28 +14,24 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprPeek;
-import streamit.frontend.nodes.ExprPop;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * Give a rigid ordering to operations such as ++, --, and pop().
@@ -114,21 +110,6 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         addStatement(new StmtAssign(ctx, var, expr, 0));
         // ...and return the variable.
         return var;
-    }
-
-    public Object visitExprPeek(ExprPeek expr)
-    {
-        // Why do we need to visit peek expressions here?  If we have
-        // peek(0) + pop() + peek(0), the two peeks have different
-        // values, since the pop() shifts the input tape by one.
-        // If we only moved pops, both peeks would refer to peek(1),
-        // which is wrong.
-        return visitPeekOrPop(expr);
-    }
-
-    public Object visitExprPop(ExprPop expr)
-    {
-        return visitPeekOrPop(expr);
     }
 
     public Object visitStmtFor(StmtFor stmt)

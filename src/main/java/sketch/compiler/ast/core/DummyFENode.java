@@ -1,4 +1,4 @@
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
 
 public class DummyFENode extends FENode {
 

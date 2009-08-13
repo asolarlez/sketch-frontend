@@ -1,8 +1,26 @@
-package streamit.frontend.codegenerators;
+package sketch.compiler.codegenerators;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import streamit.frontend.nodes.*;
+import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.passes.streamit_old.SCAnon;
+import sketch.compiler.passes.streamit_old.SCSimple;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * FORTRAN 77 code generator.
@@ -588,14 +606,6 @@ public class SNodesToFortran implements FEVisitor {
 	    throw new IllegalStateException();
     }
 
-	public Object visitExprPeek(ExprPeek exp) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitExprPop(ExprPop exp) {
-	    throw new IllegalStateException();
-    }
-
 	public Object visitExprStar(ExprStar star) {
 	    throw new IllegalStateException();
     }
@@ -670,32 +680,12 @@ public class SNodesToFortran implements FEVisitor {
 	    return "";
     }
 
-	public Object visitStmtEnqueue(StmtEnqueue stmt) {
-	    throw new IllegalStateException();
-    }
-
 	public Object visitStmtExpr(StmtExpr stmt) {
 	    assert false;
 	    return null;
     }
 
 	public Object visitStmtJoin(StmtJoin stmt) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitStmtPhase(StmtPhase stmt) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitStmtPush(StmtPush stmt) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitStmtSendMessage(StmtSendMessage stmt) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitStmtSplit(StmtSplit stmt) {
 	    throw new IllegalStateException();
     }
 

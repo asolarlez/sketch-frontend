@@ -1,13 +1,13 @@
-package streamit.frontend.experimental;
+package sketch.compiler.dataflow;
 
-import streamit.frontend.experimental.MethodState.ChangeTracker;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtReorderBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtReorderBlock;
+import sketch.compiler.dataflow.MethodState.ChangeTracker;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 
 public class DataflowWithFixpoint extends PartialEvaluator {
 

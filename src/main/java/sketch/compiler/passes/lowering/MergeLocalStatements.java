@@ -1,29 +1,25 @@
 /**
  *
  */
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtEmpty;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.parallelEncoder.BreakParallelFunction;
-import streamit.frontend.parallelEncoder.ExtractPreParallelSection;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtEmpty;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.parallelEncoder.BreakParallelFunction;
+import sketch.compiler.parallelEncoder.ExtractPreParallelSection;
 
 /**
  * Converts runs of statements with only local effects, plus at most statement

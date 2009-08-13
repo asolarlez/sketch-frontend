@@ -1,4 +1,4 @@
-package streamit.frontend.experimental.preprocessor;
+package sketch.compiler.dataflow.preprocessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,24 +6,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import streamit.frontend.experimental.DataflowWithFixpoint;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.nodesToSB.IntAbsValue;
-import streamit.frontend.experimental.nodesToSB.IntVtype;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.spin.IdentifyModifiedVars;
-import streamit.frontend.tosbit.recursionCtrl.RecursionControl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.dataflow.DataflowWithFixpoint;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.nodesToSB.IntVtype;
+import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.spin.IdentifyModifiedVars;
 
 /**
  *

@@ -1,7 +1,7 @@
 /**
  *
  */
-package streamit.frontend.parser;
+package sketch.compiler.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,12 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import sketch.compiler.Directive;
+import sketch.compiler.ast.core.Program;
+import sketch.util.CPreprocessedFileStream;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
-
-import streamit.frontend.Directive;
-import streamit.frontend.nodes.Program;
-import streamit.misc.CPreprocessedFileStream;
 
 /**
  * A light wrapper around the main parser.

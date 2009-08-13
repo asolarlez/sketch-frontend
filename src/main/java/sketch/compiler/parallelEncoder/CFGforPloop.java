@@ -1,4 +1,4 @@
-package streamit.frontend.parallelEncoder;
+package sketch.compiler.parallelEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,27 +8,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import streamit.frontend.CommandLineParamManager;
-import streamit.frontend.controlflow.CFG;
-import streamit.frontend.controlflow.CFGBuilder;
-import streamit.frontend.controlflow.CFGNode;
-import streamit.frontend.controlflow.CFGNode.EdgePair;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.passes.CollectStmtTags;
-import streamit.frontend.passes.VariableDeclarationMover;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.controlflow.CFG;
+import sketch.compiler.controlflow.CFGBuilder;
+import sketch.compiler.controlflow.CFGNode;
+import sketch.compiler.controlflow.CFGNode.EdgePair;
+import sketch.compiler.passes.lowering.CollectStmtTags;
 
 public class CFGforPloop extends CFGBuilder {
 

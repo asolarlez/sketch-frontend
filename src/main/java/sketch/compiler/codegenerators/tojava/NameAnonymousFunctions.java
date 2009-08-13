@@ -14,11 +14,11 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
+package sketch.compiler.codegenerators.tojava;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FuncWork;
-import streamit.frontend.nodes.Function;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FuncWork;
+import sketch.compiler.ast.core.Function;
 
 /**
  * Pass to replace anonymous functions with named ones.  This assigns

@@ -1,13 +1,9 @@
-package streamit.frontend.experimental.cflowChecks;
+package sketch.compiler.dataflow.cflowChecks;
 
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.abstractValueType;
-import streamit.frontend.experimental.varState;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.dataflow.abstractValueType;
+import sketch.compiler.dataflow.varState;
 
 public class CfcState extends varState {
 

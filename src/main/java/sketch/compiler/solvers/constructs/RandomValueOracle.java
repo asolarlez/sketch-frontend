@@ -1,16 +1,16 @@
 /**
  *
  */
-package streamit.frontend.tosbit;
+package sketch.compiler.solvers.constructs;
 
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstant;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.FENode;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.exprs.ExprStar;
 
 /**
  * An oracle that assigns a random value to each control value.

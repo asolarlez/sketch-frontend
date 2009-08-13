@@ -1,9 +1,8 @@
-package streamit.frontend.passes;
-
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class ScrubStructType extends FEReplacer {
 	

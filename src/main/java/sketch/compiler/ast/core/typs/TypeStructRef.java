@@ -14,9 +14,10 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
-
-import antlr.ASTVisitor;
+package sketch.compiler.ast.core.typs;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A named reference to a structure type, as defined in TypeStruct.

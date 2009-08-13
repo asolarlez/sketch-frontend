@@ -1,47 +1,30 @@
 /**
  *
  */
-package streamit.frontend.spin;
+package sketch.compiler.spin;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtReorderBlock;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtAtomicBlock;
-import streamit.frontend.nodes.StmtBreak;
-import streamit.frontend.nodes.StmtContinue;
-import streamit.frontend.nodes.StmtDoWhile;
-import streamit.frontend.nodes.StmtEmpty;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtJoin;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtReturn;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StmtWhile;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.passes.AddLastAssignmentToFork;
-import streamit.frontend.passes.CodePrinterVisitor;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.passes.lowering.AddLastAssignmentToFork;
+import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 /**
  * @author Chris Jones
@@ -328,12 +311,6 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 
 	@Override
 	public Object visitStmtFor (StmtFor stmt)
-	{
-		return assertEliminated (stmt);
-	}
-
-	@Override
-	public Object visitStmtFork(StmtFork stmt)
 	{
 		return assertEliminated (stmt);
 	}

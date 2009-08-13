@@ -1,39 +1,28 @@
-package streamit.frontend.experimental.simplifier;
+package sketch.compiler.dataflow.simplifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstant;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.GetExprType;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFor;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
-import streamit.frontend.passes.SymbolTableVisitor;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.lowering.GetExprType;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 /**
  *
  * Scalarizes vector assignments to satisfy the preconditions of
- * {@link streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions ProduceBooleanFunctions}.
+ * {@link sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions ProduceBooleanFunctions}.
  *
  *  Preconditions:
  *  * non-trivial range expressions only appear in simple assignments.

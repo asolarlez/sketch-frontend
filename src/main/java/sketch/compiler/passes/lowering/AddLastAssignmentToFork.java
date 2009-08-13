@@ -1,17 +1,16 @@
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TypePrimitive;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.promela.stmts.StmtFork;
 
 public class AddLastAssignmentToFork extends FEReplacer {
 	public static final String PLACEHOLDER = "_END_";
@@ -35,9 +34,4 @@ public class AddLastAssignmentToFork extends FEReplacer {
 		StmtFork nfork = new StmtFork(stmt, stmt.getLoopVarDecl(), stmt.getIter(), new StmtBlock(stmt.getBody(), blist));
 		return nfork;
 	}
-
-
-
-
-
 }

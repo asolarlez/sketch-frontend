@@ -1,13 +1,12 @@
-package streamit.frontend.experimental.eliminateTransAssign;
+package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
-import streamit.frontend.experimental.varState;
+import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
 
 
 public class transAssignAbsValue extends abstractValue {

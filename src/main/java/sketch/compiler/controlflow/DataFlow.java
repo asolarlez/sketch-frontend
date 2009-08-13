@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.controlflow;
+package sketch.compiler.controlflow;
 
 import java.util.HashMap;
 import java.util.HashSet;

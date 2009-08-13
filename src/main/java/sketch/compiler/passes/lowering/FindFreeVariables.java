@@ -14,19 +14,17 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.UnrecognizedVariableException;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.UnrecognizedVariableException;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * Front-end visitor pass to find free variables in anonymous streams.

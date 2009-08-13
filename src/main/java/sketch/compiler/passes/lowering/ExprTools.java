@@ -1,40 +1,15 @@
 /**
  *
  */
-package streamit.frontend.passes;
-
-import streamit.frontend.nodes.ExprAlt;
-import streamit.frontend.nodes.ExprArrayInit;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprChoiceBinary;
-import streamit.frontend.nodes.ExprChoiceSelect;
-import streamit.frontend.nodes.ExprChoiceUnary;
-import streamit.frontend.nodes.ExprComplex;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstChar;
-import streamit.frontend.nodes.ExprConstFloat;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstStr;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprNew;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprParen;
-import streamit.frontend.nodes.ExprRegen;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprTypeCast;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
-import streamit.misc.ControlFlowException;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.util.ControlFlowException;
 
 /**
  * A toolbox of queries about properties of expressions.

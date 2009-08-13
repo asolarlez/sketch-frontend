@@ -14,7 +14,14 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core.typs;
+import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprComplex;
+import sketch.compiler.ast.core.exprs.ExprConstBoolean;
+import sketch.compiler.ast.core.exprs.ExprConstFloat;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A primitive type.  This can be int, float, or complex, depending on

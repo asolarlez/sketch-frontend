@@ -14,18 +14,16 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FuncWork;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StmtPhase;
-import streamit.frontend.nodes.StreamSpec;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FuncWork;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtExpr;
 
 /**
  * Convert filters to phased filters where appropriate.  This pass
@@ -86,8 +84,6 @@ public class NoticePhasedFilters extends FEReplacer
             return stmt;
         ExprFunCall fc = (ExprFunCall)expr;
         Function target = ss.getFuncNamed(fc.getName());
-        if (target.getCls() != Function.FUNC_PHASE)
-            return stmt;
-        return new StmtPhase(stmt, fc);
+        return stmt;
     }
 }

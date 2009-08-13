@@ -14,7 +14,7 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.nodes;
+package sketch.compiler.ast.core;
 
 /**
  * Base class for all splitters and joiners.

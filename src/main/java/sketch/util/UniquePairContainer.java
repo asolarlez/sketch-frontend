@@ -14,12 +14,10 @@
  * without express or implied warranty.
  */
 
-package streamit.misc;
+package sketch.util;
 
-import streamit.misc.AssertedClass;
-import java.util.Map;
 import java.util.HashMap;
-import streamit.misc.Pair;
+import java.util.Map;
 
 /* $Id$ */
 

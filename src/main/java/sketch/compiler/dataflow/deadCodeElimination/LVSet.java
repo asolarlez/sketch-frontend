@@ -1,12 +1,11 @@
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import streamit.frontend.experimental.MethodState;
-import streamit.frontend.experimental.abstractValue;
+import sketch.compiler.dataflow.abstractValue;
 
 public class LVSet extends abstractValue {
 	Set<LiveVariableAV> set = new HashSet<LiveVariableAV>();

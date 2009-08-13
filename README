@@ -1,28 +1,19 @@
-See http://sketch.cs.berkeley.edu.
+groupId ${groupId}
+artifactId ${artifactId}
+version ${version}
 
-If you are using windows, start by running 
+Project: ${name}
+Short description: ${description}
+URL: ${url}
 
-bash convertScripts.sh
-If you checked out the distribution from CVS and you want to create a 
-streamlined distribution package, you can run the following commands:
+Developing
+    Please see the SKETCH website above for all development notes.
 
-./autogen.sh
-./configure
-make dist
+Running
+    >>> sketch -h
 
-To actually build the executable, you should do 
+Packaging with backend -- replace the "../sketch-backend" with whereever you have the backend project.
+    >>> mvn assembly:assembly -Dsketch-backend-proj=../sketch-backend
 
-./autogen.sh
-./configure
-make 
-make install
-
-Note: If you are using cygwin on Vista, perl 5.10 will crash. Use 5.8 instead.
-
-If you get a sketch distribution, simply run
-
-./configure && make && sudo make install
-
-
-
- 
+Troubleshooting
+    - Make sure you have Java 1.6.0 or later installed. Try this with "java -version".

@@ -1,17 +1,17 @@
-package streamit.frontend.spin;
+package sketch.compiler.spin;
 
 import java.util.HashSet;
 import java.util.List;
 
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.ExprArrayRange.Range;
-import streamit.frontend.nodes.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
 
 
 

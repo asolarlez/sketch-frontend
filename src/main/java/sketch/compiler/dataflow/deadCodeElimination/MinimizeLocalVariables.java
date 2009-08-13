@@ -1,25 +1,25 @@
 /**
  *
  */
-package streamit.frontend.experimental.deadCodeElimination;
+package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.StmtFork;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.tosbit.recursionCtrl.BaseRControl;
-import streamit.misc.ControlFlowException;
-import streamit.misc.UndirectedColoredGraph;
-import streamit.misc.UndirectedGraph;
-import streamit.misc.UndirectedColoredGraph.ColoredVertex;
-import streamit.misc.UndirectedGraph.Vertex;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
+import sketch.util.ControlFlowException;
+import sketch.util.UndirectedColoredGraph;
+import sketch.util.UndirectedGraph;
+import sketch.util.UndirectedColoredGraph.ColoredVertex;
+import sketch.util.UndirectedGraph.Vertex;
 
 /**
  * A pass to minimize (well, reduce) the number of local variables used in the

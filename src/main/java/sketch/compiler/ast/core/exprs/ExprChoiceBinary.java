@@ -1,12 +1,14 @@
 /**
  *
  */
-package streamit.frontend.nodes;
-
+package sketch.compiler.ast.core.exprs;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEVisitor;
 
 /**
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>

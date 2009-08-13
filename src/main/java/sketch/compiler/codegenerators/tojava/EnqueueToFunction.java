@@ -14,16 +14,10 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.tojava;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtEnqueue;
-import streamit.frontend.nodes.StmtExpr;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
+package sketch.compiler.codegenerators.tojava;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * Pass to convert StreamIt enqueue statements to similar function
@@ -35,7 +29,7 @@ import streamit.frontend.nodes.TypePrimitive;
  * <code>initPath</code> function, but can be done regardless of
  * surrounding control flow.
  *
- * @see     streamit.frontend.TranslateEnqueue
+ * @see     sketch.compiler.TranslateEnqueue
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
@@ -57,35 +51,6 @@ public class EnqueueToFunction extends FEReplacer
         
         enqType = lastEnqType;
 
-        return result;
-    }
-    
-    public Object visitStmtEnqueue(StmtEnqueue stmt)
-    {
-        // The goal here is to generate a StmtExpr containing an
-        // ExprFunCall.  Find the name of the function:
-        String fnName;
-        if (enqType instanceof TypePrimitive)
-        {
-            int t = ((TypePrimitive)enqType).getType();
-            if (t == TypePrimitive.TYPE_BIT)
-                fnName = "enqueueInt";
-            else if (t == TypePrimitive.TYPE_COMPLEX)
-                fnName = "enqueueObject";
-            else if (t == TypePrimitive.TYPE_FLOAT)
-                fnName = "enqueueFloat";
-            else if (t == TypePrimitive.TYPE_INT)
-                fnName = "enqueueInt";
-            else
-            throw new IllegalStateException("can't translate enqueue: " +
-                                            "stream's loop type is " +
-                                            enqType);
-        }
-        else
-            fnName = "enqueueObject";
-        Expression theFn = new ExprFunCall(stmt, fnName,
-                                           stmt.getValue());
-        Statement result = new StmtExpr(stmt, theFn);
         return result;
     }
 }

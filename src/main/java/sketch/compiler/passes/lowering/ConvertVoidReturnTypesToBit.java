@@ -1,11 +1,9 @@
 /**
  *
  */
-package streamit.frontend.passes;
-
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypePrimitive;
+package sketch.compiler.passes.lowering;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * Convert functions that return type 'void' to ones that return type 'bit'.

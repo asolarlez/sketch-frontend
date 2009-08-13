@@ -16,11 +16,21 @@
 
 // Does this actually belong here?  If we evolve more front-end passes,
 // it can move.  --dzm
-package streamit.frontend.nodes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprComplex;
+import sketch.compiler.ast.core.exprs.ExprConstFloat;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * A pass to propagate complex values upwards in expression trees.

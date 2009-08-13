@@ -1,54 +1,33 @@
 /**
  *
  */
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import streamit.frontend.nodes.ExprAlt;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprBinary;
-import streamit.frontend.nodes.ExprChoiceBinary;
-import streamit.frontend.nodes.ExprChoiceSelect;
-import streamit.frontend.nodes.ExprChoiceUnary;
-import streamit.frontend.nodes.ExprConstBoolean;
-import streamit.frontend.nodes.ExprConstInt;
-import streamit.frontend.nodes.ExprConstant;
-import streamit.frontend.nodes.ExprField;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprParen;
-import streamit.frontend.nodes.ExprRegen;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprUnary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Statement;
-import streamit.frontend.nodes.StmtAssert;
-import streamit.frontend.nodes.StmtAssign;
-import streamit.frontend.nodes.StmtBlock;
-import streamit.frontend.nodes.StmtIfThen;
-import streamit.frontend.nodes.StmtLoop;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.SymbolTable;
-import streamit.frontend.nodes.TempVarGen;
-import streamit.frontend.nodes.TypePrimitive;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectorVisitor;
-import streamit.misc.Misc;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.util.Misc;
 
 /**
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>

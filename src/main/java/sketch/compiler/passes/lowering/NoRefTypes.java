@@ -14,30 +14,26 @@
  * without express or implied warranty.
  */
 
-package streamit.frontend.passes;
-
+package sketch.compiler.passes.lowering;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import streamit.frontend.nodes.FEReplacer;
-import streamit.frontend.nodes.FieldDecl;
-import streamit.frontend.nodes.Function;
-import streamit.frontend.nodes.Parameter;
-import streamit.frontend.nodes.Program;
-import streamit.frontend.nodes.StmtVarDecl;
-import streamit.frontend.nodes.StreamSpec;
-import streamit.frontend.nodes.StreamType;
-import streamit.frontend.nodes.Type;
-import streamit.frontend.nodes.TypeArray;
-import streamit.frontend.nodes.TypeStruct;
-import streamit.frontend.nodes.TypeStructRef;
-import streamit.frontend.nodes.UnrecognizedVariableException;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.UnrecognizedVariableException;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
  * Replace "reference" types with their actual types.  Currently, this
- * replaces <code>streamit.frontend.nodes.TypeStructRef</code> with
- * <code>streamit.frontend.nodes.TypeStruct</code>, where the former
+ * replaces <code>sketch.compiler.nodes.TypeStructRef</code> with
+ * <code>sketch.compiler.nodes.TypeStruct</code>, where the former
  * is just "the user used a name as a type".  This looks through all
  * of the structure declarations and replaces types in variable and
  * field declarations and parameters with the correct actual structure
