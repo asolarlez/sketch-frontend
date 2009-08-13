@@ -47,9 +47,9 @@
             <version>1.14.3</version>
         </dependency>
         <dependency>
-        	<groupId>gnu-getopt</groupId>
-        	<artifactId>getopt</artifactId>
-        	<version>1.0.13</version>
+            <groupId>gnu-getopt</groupId>
+            <artifactId>getopt</artifactId>
+            <version>1.0.13</version>
         </dependency>
         <dependency>
             <groupId>org.anarres</groupId>
@@ -111,6 +111,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <phase>default</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -123,7 +124,10 @@
                 </executions>
             </plugin>
 
-            <!-- fetch source in Eclipse; if it doesn't work, right click and choose download sources -->
+            <!--
+                fetch source in Eclipse; if it doesn't work, right click
+                and choose download sources
+            -->
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
                 <configuration>
