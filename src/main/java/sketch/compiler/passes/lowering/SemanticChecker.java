@@ -435,7 +435,7 @@ public class SemanticChecker
 					try{
 						parent = this.symtab.lookupFn(func.getSpecification());
 					}catch(UnrecognizedVariableException e){
-						report(func, "Spec of "+ func.getName() + "not found");
+						report(func, "Spec of "+ func.getName() + "() not found");
 						return super.visitFunction(func);
 					}
 
