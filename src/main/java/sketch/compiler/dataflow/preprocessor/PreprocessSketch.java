@@ -90,7 +90,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 	        Expression ncond = exprRV;
 	        String msg = null;
 	        msg = stmt.getMsg();
-	        state.Assert(vcond, msg, stmt.isSuper());
+	        state.Assert(vcond, "assertion always false at " + msg, stmt.isSuper());
 	        return isReplacer ?(
 	        		(vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper())
 	        		)
