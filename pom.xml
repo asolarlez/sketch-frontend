@@ -10,6 +10,12 @@
     <version>1.4.0</version>
     <url>http://sketch.cs.berkeley.edu</url>
 
+    <properties>
+        <!-- assembly is not very intelligent... -->
+        <osname>${os.name}</osname>
+        <osarch>${os.arch}</osarch>
+    </properties>
+
     <distributionManagement>
         <repository>
             <id>cobol</id>
@@ -85,10 +91,10 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>platform_jar_assembly.xml
-                        </descriptor>
+                        <descriptor>platform_jar_assembly.xml</descriptor>
                         <descriptor>jar_assembly.xml</descriptor>
-                        <descriptor>tar_src_assembly.xml</descriptor>
+<!--                         <descriptor>tar_src_assembly.xml</descriptor> -->
+                        <descriptor>launchers_assembly.xml</descriptor>
                     </descriptors>
                     <finalName>sketch-${version}</finalName>
                 </configuration>

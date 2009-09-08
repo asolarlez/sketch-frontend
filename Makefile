@@ -13,7 +13,8 @@ target/version.txt: target/classes/sketch/compiler/localization.properties
 ### distribution and testing
 
 assemble: target/version.txt # build all related jar files, assuming sketch-backend is at ../sketch-backend
-	mvn -q assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+	mvn -e -q assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+	chmod 755 target/sketch-*-launchers.dir/dist/*/*sketch
 	cd target; tar cf sketch-$$(cat version.txt).tar sketch-*-all-*.jar
 
 dist: assemble # alias for assemble
