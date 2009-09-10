@@ -78,43 +78,56 @@ public class PlatformLocalization {
         return jarpath;
     }
 
+    public String load_from_jar(String cegisName) {
+        try {
+            URL rc_url = getCompilerRc(cegisName);
+            if (rc_url != null) {
+                InputStream fileIn = getCompilerRc(cegisName).openStream();
+                if (fileIn.available() > 0) {
+                    return loadTempFile(fileIn, cegisName);
+                }
+            }
+        } catch (IOException e) {
+        }
+        return null;
+    }
+
     public String getCegisPath() {
         String cegisName = "cegis" + (isWin() ? ".exe" : "");
-        if (platformMatchesJava() && tmpdir != null) {
-            // try to get it from the jar
-            try {
-                URL rc_url = getCompilerRc(cegisName);
-                if (rc_url != null) {
-                    InputStream fileIn = getCompilerRc(cegisName).openStream();
-                    if (fileIn.available() > 0) {
-                        String result = loadTempFile(fileIn, cegisName);
-                        if (result != null) {
-                            return result;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-            }
-        } else if (isSet && tmpdir != null) {
-            System.err.println("Your system doesn't match the localization "
-                    + "strings of the SKETCH jar: " + osname + ", " + osarch);
-        }
-        File jarpath = get_jarpath();
-        File[] files =
-                {
-                        path(jarpath, "cegis", "src", "SketchSolver", cegisName),
-                        path(jarpath, cegisName),
-                        path(".", "cegis", "src", "SketchSolver", cegisName),
-                        path("..", "sketch-backend", "src", "SketchSolver",
-                                cegisName), path(cegisName),
-                        path(usersketchdir, cegisName + "-" + version),
-                        path(usersketchdir, cegisName) };
+        CommandLineParamManager params = CommandLineParamManager.getParams();
         Vector<File> all_files = new Vector<File>();
-        for (File file : files) {
-            all_files.add(file);
-        }
-        for (String pathDir : System.getenv("PATH").split(File.pathSeparator)) {
-            all_files.add(path(pathDir, cegisName));
+        if (params.hasFlag("cegispath")) {
+            all_files.add(path(params.sValue("cegispath")));
+        } else {
+            String jarfile = "";
+            if (platformMatchesJava() && tmpdir != null) {
+                // try to get it from the jar
+                jarfile = load_from_jar(cegisName);
+            } else if (isSet && tmpdir != null) {
+                System.err.println("Your system doesn't match the "
+                        + "localization strings of the SKETCH jar: " + osname
+                        + ", " + osarch);
+            }
+            File jarpath = get_jarpath();
+            File[] files =
+                    {
+                            path(jarfile),
+                            path(jarpath, "cegis", "src", "SketchSolver",
+                                    cegisName),
+                            path(jarpath, cegisName),
+                            path(".", "cegis", "src", "SketchSolver", cegisName),
+                            path("..", "sketch-backend", "src", "SketchSolver",
+                                    cegisName), path(cegisName),
+                            path(usersketchdir, cegisName + "-" + version),
+                            path(usersketchdir, cegisName) };
+            for (File file : files) {
+                all_files.add(file);
+            }
+            for (String pathDir : System.getenv("PATH").split(
+                    File.pathSeparator))
+            {
+                all_files.add(path(pathDir, cegisName));
+            }
         }
         for (File file : all_files) {
             if (file != null && file.isFile()) {

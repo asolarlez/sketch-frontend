@@ -554,8 +554,8 @@ public class SequentialSketchMain
 				"with backend solver.",
 				PlatformLocalization.getLocalization().getDefaultTempFile(), null) );
 
-		params.setAllowedParam("sbitpath", new POpts(POpts.STRING,
-				"--sbitpath path\t Path where the SBitII solver can be found.",
+		params.setAllowedParam("cegispath", new POpts(POpts.STRING,
+				"--cegispath path\t Path to the 'cegis' binary, overriding default search paths",
 				"", null) );
 
 
