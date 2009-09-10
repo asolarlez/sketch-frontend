@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Properties;
+import java.util.Vector;
 
 import sketch.compiler.CommandLineParamManager;
 
@@ -61,6 +62,22 @@ public class PlatformLocalization {
         tmpdir = md(path(usersketchdir, "tmp"));
     }
 
+    public File get_jarpath() {
+        File jarpath = null;
+        CodeSource codesource =
+                getClass().getProtectionDomain().getCodeSource();
+        if (codesource != null) {
+            URL location = codesource.getLocation();
+            if (location != null) {
+                jarpath = path(location.getFile());
+                if (jarpath != null && jarpath.isFile()) {
+                    jarpath = jarpath.getParentFile();
+                }
+            }
+        }
+        return jarpath;
+    }
+
     public String getCegisPath() {
         String cegisName = "cegis" + (isWin() ? ".exe" : "");
         if (platformMatchesJava() && tmpdir != null) {
@@ -82,18 +99,7 @@ public class PlatformLocalization {
             System.err.println("Your system doesn't match the localization "
                     + "strings of the SKETCH jar: " + osname + ", " + osarch);
         }
-        File jarpath = null;
-        CodeSource codesource =
-                getClass().getProtectionDomain().getCodeSource();
-        if (codesource != null) {
-            URL location = codesource.getLocation();
-            if (location != null) {
-                jarpath = path(location.getFile());
-                if (jarpath != null && jarpath.isFile()) {
-                    jarpath = jarpath.getParentFile();
-                }
-            }
-        }
+        File jarpath = get_jarpath();
         File[] files =
                 {
                         path(jarpath, "cegis", "src", "SketchSolver", cegisName),
@@ -103,7 +109,14 @@ public class PlatformLocalization {
                                 cegisName), path(cegisName),
                         path(usersketchdir, cegisName + "-" + version),
                         path(usersketchdir, cegisName) };
+        Vector<File> all_files = new Vector<File>();
         for (File file : files) {
+            all_files.add(file);
+        }
+        for (String pathDir : System.getenv("PATH").split(File.pathSeparator)) {
+            all_files.add(path(pathDir, cegisName));
+        }
+        for (File file : all_files) {
             if (file != null && file.isFile()) {
                 try {
                     if (CommandLineParamManager.getParams().flagValue(
@@ -117,6 +130,11 @@ public class PlatformLocalization {
                     throw new RuntimeException(e);
                 }
             }
+        }
+        System.err.println("Could not find cegis binary. "
+                + "Searched the following paths (in order):");
+        for (File path : all_files) {
+            System.err.println("    " + path);
         }
         return cegisName;
     }
