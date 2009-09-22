@@ -351,7 +351,11 @@ public class SequentialSketchMain
 	}
 
 	public void eliminateStar(){
-		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
+	    EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
+		finalCode=(Program)beforeUnvectorizing.accept(eliminate_star);
+		if (params.hasFlag("outputxml")){
+		    eliminate_star.dump_xml();
+        }
 		// dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
 		// dump(finalCode, "After partially evaluating generated code.");
@@ -393,6 +397,7 @@ public class SequentialSketchMain
 		String resultFile = getOutputFileName();
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
+		
 		if(!params.hasFlag("outputcode")){
 			finalCode.accept( new SimpleCodePrinter() );
 			//System.out.println(hcode);
@@ -529,6 +534,9 @@ public class SequentialSketchMain
 		params.setAllowedParam("outputcode", new POpts(POpts.FLAG,
 				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
 				null, null) );
+
+		params.setAllowedParam("outputxml", new POpts(POpts.FLAG,
+		            "--outputxml  \t Output the values of holes as XML", null, null));
 
 		params.setAllowedParam("keepasserts", new POpts(POpts.FLAG,
 				"--keepasserts   \t The synthesizer guarantees that all asserts will succeed." +
