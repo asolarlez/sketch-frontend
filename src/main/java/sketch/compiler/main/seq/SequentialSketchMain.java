@@ -56,6 +56,7 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.preprocessing.BitTypeRemover;
 import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
+import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
@@ -300,7 +301,7 @@ public class SequentialSketchMain
 		boolean useInsertEncoding = params.flagEquals ("reorderEncoding", "exponential");
 		//invoke post-parse passes
 
-		
+		lprog.accept(new ForbidStarsInFieldDecls());		
 		
 		//dump (lprog, "before:");
 		lprog = (Program)lprog.accept(new SeparateInitializers ());

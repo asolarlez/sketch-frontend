@@ -77,7 +77,7 @@ public class EliminateStarStatic extends FEReplacer {
                 System.out.println("    </hole_value>");
             } else {
                 System.out.println("type=\"int\" value=\""
-                        + getIntValue((Expression) ent.getValue()) + "\">");
+                        + getIntValue((Expression) ent.getValue()) + "\" />");
             }
         }
         System.out.println("</hole_values>");
