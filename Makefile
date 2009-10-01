@@ -23,13 +23,13 @@ test:
 	mvn test | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
 
 test-seq:
-	mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	set -o pipefail; mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
 
 test-par:
-	mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	set -o pipefail; mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
 
 test-sten:
-	mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	set -o pipefail; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
 
 ### manually running sketches using the development versions; use $(make <target> EXEC_ARGS=args)
 
