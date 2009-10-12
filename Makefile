@@ -13,8 +13,9 @@ target/version.txt: target/classes/sketch/compiler/localization.properties
 ### distribution and testing
 
 assemble: target/version.txt # build all related jar files, assuming sketch-backend is at ../sketch-backend
+	which buildr && buildr clean compile
 	mvn -e -q assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
-	chmod 755 target/sketch-*-launchers.dir/dist/*/*sketch
+	chmod 755 target/sketch-*-launchers.dir/dist/*/install
 	cd target; tar cf sketch-$$(cat version.txt).tar sketch-*-all-*.jar
 
 dist: assemble # alias for assemble
@@ -42,3 +43,6 @@ run-local-seq:
 
 run-local-par:
 	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.par.ParallelSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+
+run-local-sten:
+	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.sten.StencilSketchMain" "-Dexec.args=$(EXEC_ARGS)"

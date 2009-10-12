@@ -2,5 +2,6 @@ syntax: glob
 target/*
 *.tmp
 *.pyc
+*.swp
 syntax: regexp
 ^[^\\/]+\.sk$

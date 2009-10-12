@@ -1,0 +1,4 @@
+#!/bin/bash
+
+dirname="$(dirname "$(readlink -f "$0")")"
+java -cp "$dirname"/sketch-${version}-all-${osname}-${osarch}.jar -ea sketch.compiler.main.sten.StencilSketchMain "$@"

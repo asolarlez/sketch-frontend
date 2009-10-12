@@ -32,5 +32,15 @@
             <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
             <filtered>true</filtered>
         </file>
+        <file>
+            <source>scripts/new_launchers/unix/stensk</source>
+            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>scripts/new_launchers/unix/install</source>
+            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
     </files>
 </assembly>

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.anarres.cpp.Feature;
 import org.anarres.cpp.LexerException;
 import org.anarres.cpp.Preprocessor;
 import org.anarres.cpp.Token;
@@ -29,6 +30,7 @@ public class CPreprocessedFileStream extends ByteArrayInputStream {
             List<String> additionalDefs) throws IOException, LexerException
     {
         Preprocessor preproc = new Preprocessor(new File(filename));
+        preproc.addFeature(Feature.LINEMARKERS);
         ArrayList<String> cppDefs = new ArrayList<String>();
         cppDefs.add("__SKETCH__");
         if (additionalDefs != null) {
@@ -53,8 +55,16 @@ public class CPreprocessedFileStream extends ByteArrayInputStream {
             if (tok == null || tok.getType() == Token.EOF) {
                 break;
             }
-            result_builder.append(tok.getText());
+            String token_text = tok.getText();
+            if (token_text.contains("#line")) {
+                int first_index = token_text.indexOf('"');
+                int end_index = token_text.indexOf('"', first_index + 1) + 1;
+                token_text = "# " + token_text.substring(6, end_index) + "\n";
+            }
+            result_builder.append(token_text);
         }
-        return result_builder.toString();
+        String result = result_builder.toString();
+        // System.out.println(result);
+        return result;
     }
 }

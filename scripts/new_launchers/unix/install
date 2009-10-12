@@ -1,0 +1,5 @@
+#!/bin/bash
+
+install -m 755 sketch /usr/bin
+install -m 755 stensk /usr/bin
+install -m 644 sketch-${version}-all-${osname}-${osarch}.jar /usr/bin
