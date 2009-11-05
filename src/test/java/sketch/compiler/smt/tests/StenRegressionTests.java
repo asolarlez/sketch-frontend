@@ -15,7 +15,7 @@ import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class StenRegressionTests extends TestHarness {
 	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/stenTests/regtest/" + input;
+		String inputPath = "src/test/sk/sten/" + input;
 		
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 		
