@@ -40,7 +40,7 @@ public class EliminateRegens extends SymbolTableVisitor {
 		super (null);
 		this.varGen = varGen;
 	}
-	List<Statement> globalDecls;
+	protected List<Statement> globalDecls;
 	@Override
 	 public Object visitFunction(Function func)
     {
