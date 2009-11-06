@@ -606,8 +606,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //		if (v2.hasIntVal() && v2.getIntVal() == 0)
 		state.Assert(not(eq(v2, CONST(0))), "divide by zero", false);
 		
-		if (v2.hasIntVal() && v2.getIntVal() == 1)
-			return ntsv1;
 		
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() / v2.getIntVal());
@@ -1149,6 +1147,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public List<NodeToSmtValue> getHashedFuncCall(NodeToSmtValue funccall) {
 		List<NodeToSmtValue> ret = mFuncHash.get(funccall);
+
 //		if (ret == null) {
 //			DebugPrinter dp = new DebugPrinter(intNumBits);
 //			System.err.print("NOT FOUND func call hash: ");

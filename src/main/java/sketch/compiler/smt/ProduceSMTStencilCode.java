@@ -1,5 +1,6 @@
 package sketch.compiler.smt;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -73,8 +74,7 @@ public class ProduceSMTStencilCode extends ProduceSMTCode {
 				List<NodeToSmtValue> outlets = vtype.getHashedFuncCall(funccall);
 				if (outlets == null) {
 					// partial eval the fun
-					
-					ps.println(funccall);
+				
 					NodeToSmtValue returnVal = constructModelingFuncFormula(
 							fun, funName, inputArrDim, inArgVals);
 					

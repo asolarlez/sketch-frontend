@@ -66,8 +66,14 @@ public abstract class SmtValueOracle extends SmtOracle {
 
 	@Override
 	public Expression nodeToExpression(FENode context, NodeToSmtValue value) {
-		assert value.isConst() && (value.isInt() || value.isBit() || BitVectUtil.isBitArray(value.getType()));
-		long v = value.getIntVal();
+		assert value.isConst() && (value.isInt() || value.isBit() || BitVectUtil.isBitArray(value.getType())) : 
+			"unexpected type of value in oracle";
+		long v = 0;
+		try {
+			v = value.getIntVal();
+		} catch (ClassCastException e) {
+			System.err.println(value.getType() + " " + value + " can not be pretty-printed because it's a LabelNode");
+		}
 
 		if (value.getType().equals(TypePrimitive.inttype)) {
 

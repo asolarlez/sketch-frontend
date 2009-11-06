@@ -1,7 +1,5 @@
 package sketch.compiler.smt;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -73,12 +71,6 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 		this.vtype = (NodeToSmtVtype) super.vtype;
 		this.vtype.setMethodState(super.state);
 		
-		try {
-			ps = new PrintStream(new File("/tmp/sketch/log.txt"));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	@Override
@@ -226,7 +218,6 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 		}
 	}
 
-	PrintStream ps;
 	protected void inlineFunction(ExprFunCall exp, Function fun,
 			NodeToSmtValue funccall) throws AssertionError {
 		
@@ -235,9 +226,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 
 //		String[] comment = { "Inlining :" + funccall };
 //		vtype.addBlockComment(comment);
-		
-		ps.println(funccall);
-		
+				
 		state.pushLevel();
 		List<Statement> oldNewStatements = newStatements;
 		newStatements = new ArrayList<Statement>();

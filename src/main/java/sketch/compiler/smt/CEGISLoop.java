@@ -162,6 +162,9 @@ public class CEGISLoop {
 		} catch (Exception e) {
 			e.printStackTrace();
 			mLoopTimer.start();
+		} catch (Throwable e) {
+			e.printStackTrace();
+			mLoopTimer.start();
 		} finally {
 			mLoopTimer.stop();
 		}
@@ -207,6 +210,7 @@ public class CEGISLoop {
 			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.mNumIter + ".smtlib";
 			solver.tmpFilePath = tmpFile;
 			
+			log.fine("Generating formula");
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
 			FormulaPrinter printer = vtype.new FormulaPrinter(ps, false);
 			printer.printVerificaitonFormula(holevalues);
@@ -227,7 +231,7 @@ public class CEGISLoop {
 			mLoopTimer.stop();
 		}
 			
-		
+		log.fine("Solving...");
 		SolutionStatistics stat = solver.solve(vtype);
 		mStat.mVeriTime += stat.solutionTimeMs();
 			
