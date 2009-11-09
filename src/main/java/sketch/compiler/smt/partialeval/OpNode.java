@@ -37,13 +37,23 @@ public class OpNode extends NodeToSmtValue {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		
-		sb.append(getOpcode());
-		sb.append('(');
-		for (NodeToSmtValue opnd : getOperands()) {
-			sb.append(opnd.toString());
-			sb.append(',');
+		if (getOpcode() == OpCode.IF_THEN_ELSE) {
+		    sb.append('(');
+		    sb.append(getOperands()[0].toString());
+		    sb.append(" ? ");
+		    sb.append(getOperands()[1].toString());
+		    sb.append(" : ");
+		    sb.append(getOperands()[2].toString());
+		    sb.append(')');
+		} else {
+		    sb.append('(');
+	        for (NodeToSmtValue opnd : getOperands()) {
+	            sb.append(getCanonicalOp(getOpcode()));
+	            sb.append(opnd.toString());
+	        }
+	        sb.append(')');    
 		}
-		sb.append(')');
+	
 		return sb.toString();
 	}
 	
@@ -82,4 +92,49 @@ public class OpNode extends NodeToSmtValue {
 		}
 		return false;
 	}
+	
+	public static String getCanonicalOp(OpCode opcode) {
+	    if (opcode == OpCode.PLUS)
+	        return "+";
+	    else if (opcode == OpCode.MINUS)
+	        return "-";
+	    else if (opcode == OpCode.TIMES)
+            return "*";
+	    else if (opcode == OpCode.OVER)
+            return "/";
+	    else if (opcode == OpCode.AND)
+            return "&&";
+	    else if (opcode == OpCode.OR)
+            return "||";
+	    else if (opcode == OpCode.NOT)
+            return "!";
+	    else if (opcode == OpCode.XOR)
+            return "^";
+	    else if (opcode == OpCode.CONCAT)
+            return "@";
+	    
+	    else if (opcode == OpCode.EQUALS)
+            return "==";
+	    else if (opcode == OpCode.LT)
+            return "<";
+	    else if (opcode == OpCode.LEQ)
+            return "<=";
+	    else if (opcode == OpCode.GT)
+            return ">";
+	    else if (opcode == OpCode.GEQ)
+            return ">=";
+	    else if (opcode == OpCode.LSHIFT)
+            return "<<";
+	    else if (opcode == OpCode.RSHIFT)
+            return ">>";
+	    
+	    
+	    else
+	        return opcode.toString();
+	}
+	
+	@Override
+    public void accept(FormulaVisitor fv) {
+        fv.visitOpNode(this);
+    }
 }

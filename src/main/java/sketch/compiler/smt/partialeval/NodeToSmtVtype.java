@@ -21,32 +21,72 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SMTTranslator.OpCode;
-import sketch.compiler.smt.stp.STPTranslator;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 
 public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter {
 	
-	public class DebugPrinter extends STPTranslator {
+	public class DebugPrinter extends FormulaVisitor {
 
-		public DebugPrinter(int intNumBits) {
-			super(intNumBits);
+	    String result;
+		public DebugPrinter() { }
+		
+		@Override
+		public void visitConstNode(ConstNode constNode) {
+		    result = constNode.getIntVal() + "";
 		}
 		
 		@Override
-		public String getStr(NodeToSmtValue ntsv) {
-			if (ntsv instanceof VarNode) {
-				NodeToSmtValue def = mSimpleDefs.get(ntsv);
-				if (def == null) {
-					// undefined var
-					return super.getStr(ntsv);
-				} else {
-					return getStr(def);
-				}
-			}
-			return super.getStr(ntsv);
+		public void visitVarNode(VarNode varNode) {
+		    result = varNode.getRHSName();
+		}
+
+		public void visitLinearNode(LinearNode ln) {
+		    StringBuffer sb = new StringBuffer();
+	        sb.append(ln.getCoeff(null));
+	        
+	        for (VarNode v : ln.getVars()) {
+	            sb.append("+");
+	           sb.append(ln.getCoeff(v));
+	           sb.append('*');
+	           v.accept(this);
+	           sb.append(result);
+	        }
+	        result = sb.toString();
 		}
 		
+		@Override
+		public void visitLabelNode(LabelNode labelNode) {
+		    result = labelNode.toString();
+		}
+		
+		@Override
+		public void visitOpNode(OpNode opNode) {
+		    StringBuffer sb = new StringBuffer();
+	        
+	        if (opNode.getOpcode() == OpCode.IF_THEN_ELSE) {
+	            sb.append('(');
+                opNode.getOperands()[0].accept(this);
+                sb.append(result);
+	            sb.append(" ? ");
+	            opNode.getOperands()[1].accept(this);
+	            sb.append(result);
+	            sb.append(" : ");
+	            opNode.getOperands()[2].accept(this);
+                sb.append(result);
+	            sb.append(')');
+	        } else {
+	            sb.append('(');
+	            for (NodeToSmtValue opnd : opNode.getOperands()) {
+	                sb.append(OpNode.getCanonicalOp(opNode.getOpcode()));
+	                opnd.accept(this);
+	                sb.append(result);
+	            }
+	            sb.append(')');    
+	        }
+	    
+	        result = sb.toString();
+		}
 	}
 	public class FormulaPrinter {
 
@@ -251,7 +291,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		}	
 	}
 	
+	public static final boolean USE_STRUCT_HASHING = true;
+	private int structHashingUsed = 0;
+	public static final boolean FUNCCALL_HASHING = true;
+	private int funccallInlined = 0;
 	public static final boolean NO_INTERMEDIATE = true;
+	public static final boolean CANONICALIZE = true;
 	
 	protected TempVarGen tmpVarGen;
 	protected AbstractValueOracle oracle;
@@ -260,7 +305,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	protected int mInBits;
 	protected int mCBits;
 	
-	public static final boolean USE_STRUCT_HASHING = true;
 	private static Logger log = Logger.getLogger(NodeToSmtVtype.class.getCanonicalName());
 
 	
@@ -403,19 +447,45 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		}
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
 		
-		// whenever we create a new OpNode, check structural hashing first
-		if (USE_STRUCT_HASHING && mStructHash.containsKey(newNode)) {
-			// if that structure already has a name var, use that
-			NodeToSmtValue varNode = mStructHash.get(newNode);
-			return varNode;
-		} else {
-			// if that structure has not been assigned to any var, check cache.
-			
-			NodeToSmtValue inCache = checkCache(newNode);
-			
-			return inCache;
-		}
-		
+		return checkStructuralHash(newNode);
+	}
+
+    
+	
+	public NodeToSmtValue LINEAR(NodeToSmtValue v1, NodeToSmtValue v2, boolean isMinus) {
+	    NodeToSmtValue newNode;
+	    // Const and Var
+	    // Const and Linear
+	    // Linear and Linear
+	    // Var and Linear
+	    LinearNode l1;
+	    LinearNode l2;
+	    NodeToSmtValue def;
+	    if (v1 instanceof ConstNode) {
+	        l1 = new LinearNode((ConstNode) v1);
+	    } else if (v1 instanceof VarNode) {
+	        def = findOriginalDef((VarNode) v1);
+            if (def instanceof LinearNode)
+                l1 = (LinearNode) def;
+            else
+                l1 = new LinearNode((VarNode) v1);
+	        
+	    } else
+	        l1 = (LinearNode) v1;
+	    
+	    if (v2 instanceof ConstNode) {
+	        l2 = new LinearNode((ConstNode) v2);
+	    } else if (v2 instanceof VarNode) {
+	        def = findOriginalDef((VarNode) v2);
+	        if (def instanceof LinearNode)
+	            l2 = (LinearNode) def;
+	        else
+	            l2 = new LinearNode((VarNode) v2);
+	    } else
+	        l2 = (LinearNode) v2;
+	    
+	    newNode = new LinearNode(l1, l2, isMinus);
+	    return checkStructuralHash(newNode);
 	}
 	
 	@Override
@@ -565,12 +635,28 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() + v2.getIntVal());
 		} else {
-			// if v1 is var v2 is const, add v2.const to v1
-			
-			// if v2 is var v1 is const, add v1.const to v2
-			
-			// otherwise, return a node with (v1 + v2) + v1.const + v2.const)
-			return mergeTwoValuesToBottom(OpCode.PLUS, ntsv1, ntsv2);
+		    int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
+	        
+	        if (ntsv1.getNumBits() < maxNumBits)
+	            ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
+	        
+	        if (ntsv2.getNumBits() < maxNumBits)
+	            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+	        
+			if (CANONICALIZE &&
+			        (ntsv1 instanceof LinearNode || ntsv1 instanceof ConstNode || ntsv1 instanceof VarNode) &&
+                    (ntsv2 instanceof LinearNode || ntsv2 instanceof ConstNode || ntsv2 instanceof VarNode)) {
+			    // if they are either ConstNode or LinearNode or VarNode
+//			    PrintStream ps = System.err;
+			    
+//			    ps.println(ntsv1 + "\t" + ntsv2);
+			    NodeToSmtValue lin = LINEAR(ntsv1, ntsv2, false);
+//			    ps.println(lin);
+			    return lin;
+			} else {
+			    // if either one is OpNode, nothing we can do.
+			    return mergeTwoValuesToBottom(OpCode.PLUS, ntsv1, ntsv2);
+			}
 		}
 	}
 
@@ -582,7 +668,29 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() - v2.getIntVal());
 		} else {
-			return mergeTwoValuesToBottom(OpCode.MINUS, ntsv1, ntsv2);
+		    int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
+	        
+	        if (ntsv1.getNumBits() < maxNumBits)
+	            ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
+	        
+	        if (ntsv2.getNumBits() < maxNumBits)
+	            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+	        
+		    if (CANONICALIZE &&
+                    (ntsv1 instanceof LinearNode || ntsv1 instanceof ConstNode || ntsv1 instanceof VarNode) &&
+                    (ntsv2 instanceof LinearNode || ntsv2 instanceof ConstNode || ntsv2 instanceof VarNode)) {
+                // if they are either ConstNode or LinearNode or VarNode
+                
+//		        PrintStream ps = System.err;
+//                ps.println(ntsv1 + "\t" + ntsv2);
+                NodeToSmtValue lin = LINEAR(ntsv1, ntsv2, true);
+//                ps.println(lin);
+                return lin;
+            } else {
+                // if either one is OpNode, nothing we can do.
+                return mergeTwoValuesToBottom(OpCode.MINUS, ntsv1, ntsv2);
+            }
+			
 		}
 	}
 
@@ -1142,28 +1250,38 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 		
 	}
-	
-	Map<NodeToSmtValue,List<NodeToSmtValue>> mFuncHash;
+
+	PrintStream ps = null;
 	
 	public List<NodeToSmtValue> getHashedFuncCall(NodeToSmtValue funccall) {
 		List<NodeToSmtValue> ret = mFuncHash.get(funccall);
-
+		
+//		if (ps == null) {
+//            try {
+//                ps = new PrintStream("/tmp/log.txt");
+//            } catch (FileNotFoundException e) {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            }
+//		}
+//
 //		if (ret == null) {
-//			DebugPrinter dp = new DebugPrinter(intNumBits);
-//			System.err.print("NOT FOUND func call hash: ");
-//			System.err.print(funccall.getName());
-//			System.err.print(" ");
+//			DebugPrinter dp = new DebugPrinter();
+////			ps.print("NOT FOUND func call hash: ");
+//			ps.print(funccall.getName());
+//			ps.print(" ");
 //			FuncNode fNode = (FuncNode) funccall;
 //			for (NodeToSmtValue arg : fNode.getOperands()) {
-//				System.err.print(dp.getStr(arg));
-//				System.err.print(", ");
+//			    arg.accept(dp);
+//				ps.print(dp.result);
+//				ps.print(", ");
 //			}
-//			System.err.print(funccall);
-//			System.err.println();
+//			ps.print(funccall);
+//			ps.println();
 //		}
-//		
-//		if (ret != null)
-//			System.err.println("Found func call: " + funccall);
+		
+		if (ret == null)
+		    funccallInlined++;
 		return ret;
 	}
 
@@ -1171,19 +1289,13 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mFuncHash.put(funccall, outletNodes);
 	}
 	
+	
+	
 	/*
 	 * Helpers
 	 */
 	private NodeToSmtValue mergeTwoValuesToBottom(OpCode opcode,
 			NodeToSmtValue ntsv1, NodeToSmtValue ntsv2) {
-		int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
-		
-		if (ntsv1.getNumBits() < maxNumBits)
-			ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
-		
-		if (ntsv2.getNumBits() < maxNumBits)
-			ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
-		
 		
 		return BOTTOM(getCommonType(ntsv1.getType(), ntsv2.getType()), 
 				opcode, ntsv1, ntsv2
@@ -1292,7 +1404,16 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	LinkedList<NodeToSmtValue> mAsserts;
 	HashSet<VarNode> mHoles;
 	HashSet<VarNode> mInputs;
+	
 	HashMap<NodeToSmtValue, NodeToSmtValue> mCache;
+	
+	/**
+	 * Function Call Hashing
+	 * Maps from a FuncNode (which represents a calling context)
+	 * to a list of NodeToSmtValue (which are the outputs of that
+	 * call
+	 */
+    Map<NodeToSmtValue,List<NodeToSmtValue>> mFuncHash;
 	
 	/**
 	 * mStructHash is a map that maps from a OpNode to VarNode
@@ -1360,6 +1481,26 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mSimpleDefs.put(dest, def);
 		mStructHash.put(def, dest);
 	}
+	
+	public NodeToSmtValue getDefinition(VarNode varDefined) {
+        if (mSimpleDefs.containsKey(varDefined))
+            return mSimpleDefs.get(varDefined);
+        return null;
+    }
+	
+	public NodeToSmtValue checkStructuralHash(NodeToSmtValue newNode) {
+        // whenever we create a new OpNode, check structural hashing first
+        if (USE_STRUCT_HASHING && mStructHash.containsKey(newNode)) {
+            // if that structure already has a name var, use that
+            NodeToSmtValue varNode = mStructHash.get(newNode);
+            structHashingUsed++;
+            return varNode;
+        } else {
+            // if that structure has not been assigned to any var, check cache.
+            NodeToSmtValue inCache = checkCache(newNode);
+            return inCache;
+        }
+    }
 	
 	public void addComment(String c) {
 		mEq.add(LABEL(TypePrimitive.voidtype, 0, c));
@@ -1432,23 +1573,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mInputs.add(input);
 		declareRenamableVar(input);
 	}
-	
-	
-//	public NodeToSmtValue newHole(ExprStar star, Type t) {
-//		
-//		String cvar = mHoleNamer.getName(star);
-//	
-//		if (!isHoleVariable(cvar)) {
-//			
-//			VarNode holeValue = NodeToSmtValue.newHole(cvar, t,
-//					// ExprStar.getSize() is incorrect for bit[], special case that
-//					BitVectUtil.isBitArray(t) ? getNumBitsForType(t) : star.getSize());
-//			declareHole(holeValue);
-//			return holeValue;
-//		} else {
-//			return getVarNode(cvar);
-//		}
-//	}
 	
 	public NodeToSmtValue newHole(ExprStar star, Type t) {
 		
@@ -1554,12 +1678,14 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	}
 	
 	public void optimize() {
-		log.fine("Optimizing DAG");
+		log.info("Optimizing DAG");
 		constraintUndefinedVariables();
 		int numRemoved = removeUnusedVariables();
 		
-		log.fine(" - Saved Node creation: " + savedNodes);
-		log.fine(" - Removed " + numRemoved + " unused variables"); 
+		log.info(" - Saved Node creation: " + savedNodes);
+		log.info(" - Removed " + numRemoved + " unused variables");
+		log.info(" - Structural Hashing Used: " + structHashingUsed);
+		log.info(" - Func Call Inlined: " + funccallInlined);
 		
 //		Toolbox.pause();
 	}
@@ -1725,6 +1851,28 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 		numRemoved += setToRemove.size();
 		return numRemoved;
+	}
+	
+	/**
+	 * Follow the definition of src until it reaches
+	 * src = def;
+	 * 
+	 * 1) def is an undefined VarNode (they are the input params)
+	 * 2) def is not longer a VarNode
+	 * 
+	 * @param src
+	 * @return
+	 */
+	protected NodeToSmtValue findOriginalDef(VarNode src) {
+	    NodeToSmtValue def = getDefinition(src);
+	    
+	    if (def == null)
+	        return src;
+	    
+	    if (def instanceof VarNode)
+	        return findOriginalDef((VarNode) def);
+	    else
+	        return def;
 	}
 
 	

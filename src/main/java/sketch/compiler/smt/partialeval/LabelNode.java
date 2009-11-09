@@ -38,4 +38,9 @@ public class LabelNode extends NodeToSmtValue {
 		}
 		return false;
 	}
+	
+	@Override
+	public void accept(FormulaVisitor fv) {
+	    fv.visitLabelNode(this);
+	}
 }

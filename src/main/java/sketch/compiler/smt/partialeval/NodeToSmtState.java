@@ -6,6 +6,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.abstractValueType;
 
+
 public abstract class NodeToSmtState extends TypedState {
 
 	public class lhsIndexes {
@@ -96,9 +97,12 @@ public abstract class NodeToSmtState extends TypedState {
 				vtype.addDefinition(newDest, ntsvVal);
 				
 			} else if (ntsvVal instanceof VarNode ||
-					ntsvVal instanceof ConstNode) {
+					ntsvVal instanceof ConstNode ||
+					ntsvVal instanceof LinearNode) {
 				// if is VarNode or ConstNode, use it as absVal
 				this.absVal = ntsvVal;
+			} else {
+			    throw new IllegalStateException("updating NodeToSmtState with an unexpected value");
 			}
 			
 			

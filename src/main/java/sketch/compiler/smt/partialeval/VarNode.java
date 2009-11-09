@@ -75,4 +75,9 @@ public  class VarNode extends NodeToSmtValue {
 		}
 		return false;
 	}
+	
+	@Override
+    public void accept(FormulaVisitor fv) {
+        fv.visitVarNode(this);
+    }
 }

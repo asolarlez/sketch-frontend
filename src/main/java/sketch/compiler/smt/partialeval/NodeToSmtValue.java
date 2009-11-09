@@ -86,7 +86,6 @@ public class NodeToSmtValue extends TypedValue {
 		return new FuncNode(realRetType, numBits, funcName, args);
 	}
 	
-	
 	public static VarNode newStateDefault(String label, Type realType, int numBits, int rhsIdx) {
 		return new VarNode(label, realType, numBits, rhsIdx);
 	}
@@ -200,9 +199,7 @@ public class NodeToSmtValue extends TypedValue {
 		setType(SmtType.create(
 				new TypeArray(firstElm.getType(), new ExprConstInt(obj.size())),
 				-1));
-	}
-
-	
+	}	
 
 	/*
 	 * public methods
@@ -226,5 +223,8 @@ public class NodeToSmtValue extends TypedValue {
 	public int getNumBits() {
 		return getSmtType().getNumBits();
 	}
-	 
+	
+	public void accept(FormulaVisitor fv) {
+	    
+	}
 }
