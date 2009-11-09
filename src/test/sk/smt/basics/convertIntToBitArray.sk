@@ -1,0 +1,8 @@
+int main(int dummy) implements one{
+	int c = 8;
+	bit[4] a = (bit[4]) c;		// this is turned into {8, 0, 0, 0} 
+	assert a[0] == 0;
+	return 1;
+}
+
+int one (int dummy) { return 1; }

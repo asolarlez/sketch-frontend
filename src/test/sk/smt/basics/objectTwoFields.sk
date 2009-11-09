@@ -1,0 +1,21 @@
+pragma options "--intbits 21 --cbits 21";
+
+struct Person {
+	int age;
+	int sid;
+}
+void main(int dummy) implements one{
+	
+	Person a = new Person();
+
+	a.sid = ??;
+	a.age = a.sid + 333333;
+	
+	assert a.age == 2000000;
+
+
+}
+
+void one(int dummy) {
+	
+}

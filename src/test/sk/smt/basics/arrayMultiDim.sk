@@ -1,0 +1,25 @@
+pragma options "--intbits 20 --cbits 32";
+
+int N = 2;
+int K = 2;
+
+void main(int dummy) implements one{
+	int[N][K] a = 0;
+	
+	int i = 0;
+	int j = 0;
+	repeat(N) {
+		j = 0;
+		repeat(K) {
+			
+			a[j][i] = ??;		// 20 bit = (extract 20 from 32 bit)
+			j++;
+		}
+		i++;
+	}
+	
+	
+	assert a[0][0] == 1999;
+	assert a[0][1] == 2008;
+}
+void one(int dummy) {}

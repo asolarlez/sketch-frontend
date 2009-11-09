@@ -1,0 +1,10 @@
+void main(int dummy) implements one {
+	bit a;
+	
+	a = (?? == 6) && true;
+	
+	assert a == 1;
+	
+}
+
+void one(int dummy) { }

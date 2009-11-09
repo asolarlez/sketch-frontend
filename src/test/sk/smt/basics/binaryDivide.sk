@@ -1,0 +1,6 @@
+void main(int dummy) implements one {
+	int d = ??; // 6
+	assert d / 2 == 3;	
+}
+
+void one(int dummy) { }

@@ -1,0 +1,15 @@
+pragma options "--intbits 32 --cbits 32";
+int main(int a, int b) implements one{
+	int x;
+	if (a + b == 42) {
+		x = ??;
+	} else {
+		x = 100;
+	}
+	return x;
+}
+
+int one(int dummy, int dummyer) {
+
+	return 100;
+}

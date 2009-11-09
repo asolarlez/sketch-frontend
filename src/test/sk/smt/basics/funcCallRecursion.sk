@@ -1,0 +1,26 @@
+pragma options "--cbits 2 --inbits 2 --intbits 32 --inlineamnt 20 --unrollamnt 20";
+
+int main(int dummy) implements one{
+	
+	assert fact(20) == factRecur(20);
+	return 1;
+}
+
+int one(int dummy) {
+	return 1;
+}
+
+static int fact(int steps) {
+	int res = 1;
+	for (int i = 1; i <= steps; i++) {
+		res = res * i;
+	}
+	return res;
+}
+
+static int factRecur(int steps) {
+	if (steps == ??) 
+		return 1;
+	else
+		return steps * factRecur(steps - 1);
+}

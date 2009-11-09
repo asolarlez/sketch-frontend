@@ -1,0 +1,14 @@
+int W = 5;
+void main(bit[W] dummy) implements one {
+	bit[W] a = {0, 0, 1, 0, 0};
+	bit[W] b;
+	
+	int c = ??;
+	
+	b = a << c;
+	
+	
+	assert (b[4] == 1);
+}
+
+void one(bit[W] dummy) { }

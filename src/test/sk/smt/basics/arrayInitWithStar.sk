@@ -1,0 +1,26 @@
+#define N 5
+int reverseSketch(int idx) implements reverse {
+	int [N] fu = ??;
+	
+	if (idx >=0 && idx < N)
+		return fu[idx];
+	else
+		return 0;
+}
+
+
+int reverse (int idx) {
+	
+	if (idx == 0)
+		return 5;
+	if (idx == 1)
+		return 4;
+	if (idx == 2)
+		return 3;
+	if (idx == 3)
+		return 2;
+	if (idx == 4)
+		return 1;
+	else
+		return 0;
+}

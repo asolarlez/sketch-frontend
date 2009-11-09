@@ -1,0 +1,16 @@
+void main(int dummy) implements one {
+	
+	int a;
+	
+	a = {|1|2|};
+	
+	if (??) {
+		a = a + 1;
+	} else {
+		a = a + 2;
+	}
+	
+	assert a == 2;
+}
+
+void one(int dummy) { }

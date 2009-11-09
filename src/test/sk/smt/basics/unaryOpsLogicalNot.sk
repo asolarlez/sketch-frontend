@@ -1,0 +1,10 @@
+void reverseSketch(int dummy) implements reverse {
+	
+	boolean b = (boolean) ??; // true 1
+	boolean bb = !b;
+	assert !b == false;
+
+}
+
+
+void reverse (int dummy) { }

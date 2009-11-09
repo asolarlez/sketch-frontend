@@ -1,0 +1,10 @@
+bit extractSk(bit[4] in) implements extract {	
+	bit a;
+	a = ??;
+	return in[0] | a;
+}
+
+
+bit extract (bit[4] in) {
+	return 1;
+}

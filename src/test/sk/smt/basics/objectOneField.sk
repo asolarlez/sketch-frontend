@@ -1,0 +1,18 @@
+struct Person {
+	int age;
+}
+void main(int dummy) implements one{
+	
+	Person a = new Person();
+
+	a.age = ??;
+	a.age = a.age + 10;
+	
+	assert a.age == 20;
+
+
+}
+
+void one(int dummy) {
+	
+}

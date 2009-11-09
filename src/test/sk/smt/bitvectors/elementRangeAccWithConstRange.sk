@@ -1,0 +1,12 @@
+bit oneSketch(bit[4] in) implements one {
+	bit[4] a = in;
+	bit[2] tmp;
+	
+	tmp = in[1::2];
+	
+	return tmp[1];
+}
+
+bit one (bit[4] in) {
+	return in[2];
+}

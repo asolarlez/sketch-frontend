@@ -1,0 +1,11 @@
+void main(int dummy) implements one {
+	int a;
+	a = 1;
+	a = 2;
+	a = 3;
+	a = 4;
+	assert a == 4;
+	
+}
+
+void one(int dummy) { }

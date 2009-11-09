@@ -1,0 +1,20 @@
+void main(int dummy) implements one {
+
+	
+	
+	// from bit bottom
+	int h = ??; 	// h == 7
+	assert h == 7;
+	
+	bit bBottom = (bit) (h == 30); // bBottom = 0
+	
+	int i = (int) bBottom;	// i = 0
+	boolean bb2 = (boolean) bBottom; // bb2 = false
+	
+	assert i == 0;
+	assert !bb2;
+
+	
+}
+
+void one(int dummy) { }

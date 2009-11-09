@@ -1,0 +1,10 @@
+
+#define N 2
+void main(int dummy) implements one{
+	int[N] a = ??;
+	
+	int[N] b = a;
+	assert b[0] == 3;
+	assert b[1] == 4;
+}
+void one(int dummy) {}

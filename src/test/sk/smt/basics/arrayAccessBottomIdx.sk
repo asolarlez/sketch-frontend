@@ -1,0 +1,15 @@
+pragma options "--intbits 32 --cbits 32";
+void main(int dummy) implements one{
+	int[10] a;
+	a[0] = 3;
+	a[9] = 33;
+	dummy = ??;
+	int x;
+	if (dummy == 90) {
+		x = a[dummy - 90];
+	} else {
+		x = a[9];
+	}
+	assert x == 3;
+}
+void one(int dummy) {}

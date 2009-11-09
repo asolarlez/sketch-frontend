@@ -1,0 +1,18 @@
+pragma options "--cbits 2";
+
+bit one(int dummy) {
+	return 1;
+}
+
+bit sketch(int dummy) implements one{
+
+	int[10] xArr = 0;
+	
+	xArr[2] = ??;
+	
+	if (xArr[2] != 3) {
+		assert false; 
+	}
+	
+	return 1;
+}

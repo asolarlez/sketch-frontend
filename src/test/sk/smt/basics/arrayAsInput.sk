@@ -1,0 +1,14 @@
+pragma options "--intbits 32 --cbits 32 --inbits 7";
+
+void main(int[2] dummy) implements one{
+	
+	
+	if (dummy[0] == 30) {
+		assert dummy[0] + ?? == 130; // ?? == 100
+	}
+	
+	if (dummy[1] == 40) {
+		assert dummy[1] + ?? == 240; // ?? == 200
+	}
+}
+void one(int[2] dummy) {}

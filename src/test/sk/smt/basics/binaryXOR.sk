@@ -1,0 +1,12 @@
+bit sketch(bit in) implements one {
+	
+	bit[4] x = {1, 0, 1, 0};
+	bit[4] t = ??;
+	assert (x ^ t) == 4;
+	
+	return 1;
+}
+
+bit one (bit in) {
+	return 1;
+}

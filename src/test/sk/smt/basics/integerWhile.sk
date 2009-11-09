@@ -1,0 +1,12 @@
+void main(int dummy) implements one {
+	int i = 0;
+	
+	while (i < 5) {
+		i++;
+	}
+	
+	assert i == 10 - ??;
+	
+}
+
+void one(int dummy) { }

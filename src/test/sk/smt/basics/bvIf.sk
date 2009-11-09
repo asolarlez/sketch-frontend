@@ -1,0 +1,16 @@
+void main(int dummy) implements one {
+	
+	bit[2] a = {1, 1};
+	
+	
+	if (!??) {
+		a[0] = 0;
+		
+	} else {
+		a[1] = 0;
+	}
+	
+	assert a[0] != 0;
+}
+
+void one(int dummy) { }

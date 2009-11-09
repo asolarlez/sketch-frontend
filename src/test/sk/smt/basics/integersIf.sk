@@ -1,0 +1,13 @@
+void main(int dummy) implements one {
+	int a;
+	
+	if (dummy == 0) {
+		a = ??;
+	} else {
+		a = ??;
+	}
+	
+	assert a == 30;
+}
+
+void one(int dummy) { }

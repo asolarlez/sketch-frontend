@@ -1,0 +1,35 @@
+
+pragma options "--unrollamnt 6 --inbits 3 ";
+
+int[16] transpose(int[16] mx){
+	int x, y;
+	for(x = 0; x < 4; x++)
+		for(y = 0; y <= x; y++)
+			mx[4*x+y] = mx[4*y+x];
+	return mx;
+}
+
+int[4] shufps(int[4] xmm1, int[4] xmm2, bit[8] imm8){
+	int[4] ret;
+
+	ret[0] = xmm1[(int)imm8[0::2]];
+	ret[1] = xmm1[(int)imm8[2::2]];
+	ret[2] = xmm2[(int)imm8[4::2]];
+	ret[3] = xmm2[(int)imm8[6::2]];
+
+	return ret;
+}
+
+int[16] sse_transpose(int[16] mx) implements transpose {
+	int[16] p0 = 0;
+	int[16] p1 = 0;
+
+	loop(??){
+		p0[??::4] = shufps(mx[??::4], mx[??::4], ??); // 4*4*4 * 2^8 = 2^14 = 16384
+	}
+	loop(??){
+		p1[??::4] = shufps(p0[??::4], p0[??::4], ??);
+	}
+
+	return p1;
+}

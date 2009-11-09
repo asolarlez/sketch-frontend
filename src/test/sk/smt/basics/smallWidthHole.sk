@@ -1,0 +1,14 @@
+pragma options "--cbits 2";
+
+bit one(int dummy) {
+	return 1;
+}
+
+bit sketch(int dummy) implements one{
+	int x = ??;
+	if (x == 0) {
+		assert false;
+	}
+	
+	return 1;
+}

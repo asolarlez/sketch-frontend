@@ -1,0 +1,24 @@
+pragma options "--cbits 2 --inbits 2 --intbits 32 --inlineamnt 1000 --unrollamnt 20";
+
+int main(int dummy) implements one{
+	
+//	assert fib(3) == 2;
+	assert fib(4) == 3;
+//	assert fib(5) == 5;
+	return 1;
+}
+
+int one(int dummy) {
+	return 1;
+}
+
+static int fib(int n) {
+	if (n == 0)
+		return 0;
+	else if (n == 1)
+		return ??;
+	else
+		return fib(n-1) + fib(n-2);
+
+}
+

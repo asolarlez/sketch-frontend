@@ -1,0 +1,10 @@
+
+void main(int dummy) implements one {
+	int a;
+	
+	a = {|1|2|};
+	assert a == 2;
+	
+}
+
+void one(int dummy) { }
