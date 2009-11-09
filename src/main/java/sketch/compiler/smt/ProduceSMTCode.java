@@ -47,6 +47,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 
 	int currObserIdx;
 
+
 	/*
 	 * Getters & Setters
 	 */
@@ -380,7 +381,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 
 	@Override
 	public Object visitStmtAssign(StmtAssign s) {
-//		mFormula.addComment(s.toString());
+//		vtype.addComment(s.toString());
 		return super.visitStmtAssign(s);
 	}
 	
