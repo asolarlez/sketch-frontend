@@ -1,3 +1,5 @@
+pragma options "--intbits 32";
+
 struct Box{
 	int v;	
 }

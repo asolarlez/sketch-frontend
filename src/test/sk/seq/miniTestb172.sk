@@ -1,3 +1,4 @@
+pragma options "--arrayOOBPolicy wrsilent_rdzero";
 /*
  * 
  * */

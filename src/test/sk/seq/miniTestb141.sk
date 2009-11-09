@@ -1,3 +1,4 @@
+pragma options "--intbits 32";
 
 int moo(int i){
 	assert i > i-1;

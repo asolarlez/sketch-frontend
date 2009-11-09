@@ -1,3 +1,4 @@
+pragma options "--intbits 9";
 int W = 5;
 
 bit[W] test92SK(bit[W] in) implements test92{
