@@ -19,7 +19,7 @@ public class EliminateStarStatic extends
 	public EliminateStarStatic(AbstractValueOracle oracle){
 		
 		this.oracle = oracle;
-		oracle.initCurrentVals();
+//		oracle.initCurrentVals();
 	}
 
 	public Object visitExprStar(ExprStar star) {

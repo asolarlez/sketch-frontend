@@ -10,6 +10,7 @@ import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.partialeval.BitVectUtil;
 import sketch.compiler.smt.partialeval.LabelNode;
+import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.OpNode;
 import sketch.compiler.smt.partialeval.SmtType;
@@ -114,12 +115,43 @@ public class STPTranslator extends SMTTranslator {
 				getNaryExpr(node.getOpcode(), node.getOperands());
 			} else if (ntsv instanceof LabelNode) {
 				mSB.append(ntsv.toString());
+			} else if (ntsv instanceof LinearNode) {
+			    LinearNode linNode = (LinearNode) ntsv;
+			    getStrForLinearNode(linNode);
 			}
 			return mSB.toString();
 		}
-		
-//		throw new IllegalStateException("getStrInternal() called on unexpected NodeToSmtValue object");
 	}
+
+    private void getStrForLinearNode(LinearNode linNode) {
+        // +(o1, +(o2, c))
+        for (VarNode vv : linNode.getVars()) {
+            // +
+            mSB.append(opStrMap.get(OpCode.PLUS));
+            mSB.append('(');
+            mSB.append(linNode.getNumBits());
+            mSB.append(',');
+            
+            if (linNode.getCoeff(vv) == 1) {
+                getStrInternal(vv);
+                mSB.append(',');
+            } else {
+                // *
+                mSB.append(opStrMap.get(OpCode.TIMES));
+                mSB.append('(');
+                mSB.append(linNode.getNumBits());
+                mSB.append(',');
+                getStrInternal(vv);
+                mSB.append(",");
+                mSB.append(getIntLiteral(linNode.getCoeff(vv), linNode.getNumBits()));
+                mSB.append(")");
+                mSB.append(',');
+            }
+        }
+        mSB.append(getIntLiteral(linNode.getCoeff(null), linNode.getNumBits()));
+        for (int j = 0; j < linNode.getNumTerms(); j++)
+            mSB.append(')');
+    }
 
 	
 	public String getNaryExpr(sketch.compiler.smt.SMTTranslator.OpCode op,
