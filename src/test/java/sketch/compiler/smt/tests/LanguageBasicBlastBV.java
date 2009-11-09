@@ -45,6 +45,7 @@ public abstract class LanguageBasicBlastBV extends TestHarness {
 		assertTrue(main.runBeforeGenerateCode());
 		oracle = (SmtValueOracle) main.getOracle();
 		stat = main.getSolutionStat();
+		main.eliminateStar();
 	}
 
 	@Test

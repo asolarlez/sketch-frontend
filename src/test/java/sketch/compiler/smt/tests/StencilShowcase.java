@@ -6,16 +6,14 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.junit.After;
-import org.junit.Test;
 
 import sketch.compiler.main.sten.StencilSmtSketchMain;
-import sketch.compiler.smt.TestHarness;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
 
 	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/stenTests/showcase/" + input;
+		String inputPath = "src/test/sk/smt/stenShowcase/" + input;
 	
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 

@@ -14,7 +14,7 @@ import sketch.compiler.smt.partialeval.SmtValueOracle;
 public class Opt extends TestHarness {
 
 	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/basics/" + input;
+		String inputPath = "src/test/sk/smt/opt/" + input;
 
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 
@@ -48,8 +48,13 @@ public class Opt extends TestHarness {
 	
 	@Test
 	public void testPlus() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("concat.sk");
+		HashMap<String, String> argsMap = initCmdArgs("plus.sk");
 		runOneTest(toArgArray(argsMap));
-
 	}
+	
+	@Test
+    public void testPlusMultiVar() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("plusMultiVar.sk");
+        runOneTest(toArgArray(argsMap));
+    }
 }
