@@ -7,6 +7,6 @@ desc 'SKETCH compiler frontend'
 define 'sketch-frontend' do
   project.group = 'edu.berkeley.cs.sketch'
   project.version = '1.5.0-SNAPSHOT'
-  compile.with 'antlr:antlr:jar:2.7.7', 'commons-cli:commons-cli:jar:1.2', 'edu.nyu.cs:rats-runtime:jar:1.14.3', 'gnu-getopt:getopt:jar:1.0.13', 'org.anarres:cpp:jar:1.2.5', 'org.swinglabs:swing-layout:jar:1.0.3'
+  compile.with 'antlr:antlr:jar:2.7.7', 'commons-cli:commons-cli:jar:1.2', 'edu.nyu.cs:rats-runtime:jar:1.14.3', 'gnu-getopt:getopt:jar:1.0.13', 'org.anarres:cpp:jar:1.2.6', 'org.swinglabs:swing-layout:jar:1.0.3'
   package :jar, :id => 'sketch-frontend'
 end

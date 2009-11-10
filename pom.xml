@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.anarres</groupId>
             <artifactId>cpp</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.6</version>
         </dependency>
     </dependencies>
 
