@@ -40,11 +40,8 @@ public class CPreprocessedFileStream extends ByteArrayInputStream {
             // these 5 lines taken from cpp/Main.java
             int idx = macro.indexOf('=');
             if (idx == -1) {
-                System.out.println("adding macro " + macro);
                 preproc.addMacro(macro);
             } else {
-                System.out.println("adding macro " + macro.substring(0, idx)
-                        + ", " + macro.substring(idx + 1));
                 preproc.addMacro(macro.substring(0, idx), macro
                         .substring(idx + 1));
             }

@@ -1,0 +1,21 @@
+
+void main(int dummy) implements one{
+
+	int a = ??;
+	
+	int[2] x;
+	
+	x[1] = 80;
+	
+	if (a != 30) {
+		x[1] = 90;
+	}
+	
+	assert x[1] == 80;
+
+
+}
+
+void one(int dummy) {
+	
+}

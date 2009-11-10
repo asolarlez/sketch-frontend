@@ -1,0 +1,26 @@
+struct Node {
+	int data;
+	Node next;
+}
+
+void main(int dummy) implements one {
+	int i = 0;
+
+	Node n1 = new Node(); n1.data = 1;
+	Node n2 = new Node(); n2.data = 2;
+	Node n3 = new Node(); n3.data = ??;
+	
+	n1.next = n2;
+	n2.next = n3;
+	
+	Node n = n1;
+	while (i < 2) {
+		n = n.next;
+		i++;
+	}
+	
+	assert n.data == 3;
+	
+}
+
+void one(int dummy) { }

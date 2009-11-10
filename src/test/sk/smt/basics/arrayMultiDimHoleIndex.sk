@@ -1,0 +1,30 @@
+pragma options "--intbits 20 --cbits 32 --unrollamnt 3";
+
+
+
+int N = 2;
+int K = 2;
+
+
+void main(int dummy) implements one{
+	int[N][K] a;
+	
+	int i = 0;
+	int j = 0;
+	for (i = 0; i < 2; i++) {
+		
+		for (j = 0; j < 2; j++) {
+		
+	
+			a[i][j] = ??;
+			
+		}
+	}
+	
+	
+	assert a[0][0] == 1999;
+	assert a[0][1] == 2008;
+	assert a[1][0] == 2009;
+	assert a[1][1] == 1984;
+}
+void one(int dummy) {}

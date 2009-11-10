@@ -1,0 +1,13 @@
+pragma options "--cbits 7 --intbits 10";
+void main(int dummy) implements one {
+	int a;
+	
+	a = ??;
+	assert a == 30;
+	
+	a = ??;
+	assert a == 40;
+	
+}
+
+void one(int dummy) { }

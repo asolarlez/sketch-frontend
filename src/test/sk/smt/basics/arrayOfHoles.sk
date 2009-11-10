@@ -1,0 +1,11 @@
+int W=3;
+
+void main(int dummy) implements one {
+	int[W*W] S=??; // knuth(level);
+	assert (S[0] == 30);
+
+}
+
+void one(int dummy) {
+	
+}

@@ -1,0 +1,17 @@
+int main(int dummy) implements one{
+	
+	int i;
+	
+	bit[5] in1;
+	in1[0] = 0;
+	in1[1] = 0;
+	in1[2] = 0;
+	in1[3] = 0;
+	in1[4] = 1;
+
+	assert ((int) in1) == 16;
+	
+	return 1;
+}
+
+int one (int dummy) { return 1; }

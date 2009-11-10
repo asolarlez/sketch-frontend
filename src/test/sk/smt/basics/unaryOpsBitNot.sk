@@ -1,0 +1,10 @@
+void reverseSketch(int dummy) implements reverse {
+
+	bit c = ??;		// 1
+	bit cc = !c;
+	assert cc == 0;
+	
+}
+
+
+void reverse (int dummy) { }

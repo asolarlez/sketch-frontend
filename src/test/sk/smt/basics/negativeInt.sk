@@ -1,0 +1,10 @@
+pragma options "--cbits 11 --intbits 11";
+
+void main(boolean dummy) implements one {
+	int a = -1;
+	int h = ??;
+	
+	assert a + h == 999;
+}
+
+void one(boolean dummy) { }

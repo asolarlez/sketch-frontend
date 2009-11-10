@@ -1,0 +1,14 @@
+struct Node {
+	int data;
+	Node next;
+}
+void main(int dummy) implements one{
+	Node n = new Node();
+	
+	Node x = {|n.next.next|n.next|}; // should choose n.next to avoid null ptr 
+
+}
+
+void one(int dummy) {
+	
+}

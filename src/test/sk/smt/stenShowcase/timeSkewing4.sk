@@ -1,0 +1,63 @@
+pragma options "--cbits 3 --inbits 4 --branchamnt 25  --inlineamnt 6 --unrollamnt 4  ";
+
+int N;
+int T=4;
+
+float[N][T] timeSkew1d(float[N] in, float[N][T] f){
+
+	float[N][T]	out = 0;
+	
+	for(int i=0; i<N; ++i){
+		out[0][i] = in[i];
+	}
+	int t=1;
+	loop(T-1){
+		out[t][0] = 0;
+		out[t][N-1] = 0;
+		for(int i=1; i<N-1; ++i){
+			out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
+			
+		}
+		t = t+1;
+	}
+	return out;	
+}
+
+
+int hole(int i){
+	int rv = {| (N | T | i | ??)   (+ | -)  (N | T | i | ??)   |};		
+	return rv;	
+}
+
+
+float[N][T] timeSkew1dSK(float[N] in, float[N][T] f) implements timeSkew1d{	
+	float[N][T]	out = 0;
+	if(N>=T){
+		int M = T;
+		for(int i=0; i<N; ++i){
+			out[0][i] = in[i];
+		}
+		for(int i=hole(0) /*2*/; i< hole(0) /*4*/; ++i){
+			for(int t=hole(i)+?? /*1*/; t<hole(i) /*i*/; ++t){
+				assert t < T && (i-t) < N;
+				out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+			}
+		}
+		
+		for(int i=hole(0) /*4*/; i< hole(0) /*N*/; ++i){
+			for(int t=hole(i)+?? /*1*/; t<hole(i) /*4*/; ++t){
+				assert t < T && (i-t) < N;
+				out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+			}
+		}
+		for(int i=hole(0) /*N*/; i<hole(0)/*N+2*/; ++i){
+			for(int t=hole(i)+?? /*i-N+2*/; t<hole(i) /*4*/; ++t){
+				assert t < T && (i-t) < N;
+				out[t][i-t] = out[t-1][i-t-1] + out[t-1][i-t+1] + f[t][i-t];
+			}
+		}	
+	}else{
+		out = timeSkew1dSK(in, f);
+	}
+	return out;	
+}

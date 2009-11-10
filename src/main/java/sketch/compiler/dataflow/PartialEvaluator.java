@@ -449,7 +449,7 @@ public class PartialEvaluator extends FEReplacer {
     	//public Expression nlhs;
     	public String lhsName=null;
     	public int rlen = -1;
-    	abstractValue lhsIdx = null;
+    	public abstractValue lhsIdx = null;
     	public boolean isFieldAcc = false;
     	private Type t;
 

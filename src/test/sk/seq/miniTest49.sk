@@ -1,3 +1,4 @@
+pragma options "--intbits 6";
 int N = 4;
 
 bit[N] intToBit(int v){

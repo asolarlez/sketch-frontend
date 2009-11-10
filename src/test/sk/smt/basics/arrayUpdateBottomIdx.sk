@@ -1,0 +1,25 @@
+void main(int dummy) implements one{
+	int[10] a;
+	
+	a[0] = 0;
+	a[1] = 0;
+	a[2] = 0;
+	a[3] = 0;
+	a[4] = 0;
+	a[5] = 0;
+	a[6] = 0;
+	a[7] = 0;
+	a[8] = 0;
+	a[9] = 0;
+	int d = ??;
+	
+	if (d == 5) {
+		a[d] = 3;
+	} else {
+		a[3] = 2;
+	}
+	
+	assert a[5] == 3;
+	
+}
+void one(int dummy) {}

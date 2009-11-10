@@ -1,0 +1,22 @@
+pragma options "--intbits 11";
+
+void main(int dummy) implements one {
+	int a = ??; // 20
+	int b = ??; // 10
+	int c = ??; // 4
+	
+	assert a + b == 30;
+	assert a - b == 10;
+	
+	// Problematic nonlinear arithmetic that causes this test to fial
+	assert c * 5 == 20;
+	
+	assert a < 1000;
+	assert b < 1000;
+	assert c < 1000;
+	assert a >= 5 && b > c;	
+	assert b > 20 || b < 15;
+	
+}
+
+void one(int dummy) { }

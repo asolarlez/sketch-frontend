@@ -1,3 +1,4 @@
+pragma options "--intbits 11";
 int W = 32;
 int K = 2;
 

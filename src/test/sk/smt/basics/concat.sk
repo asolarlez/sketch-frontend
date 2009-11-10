@@ -1,0 +1,9 @@
+int concatSk(bit[4] in) implements concat {	
+	int a = in[3]; //
+	return a + ??;
+}
+
+
+int concat (bit[4] in) {
+	return in[3] + 30;
+}

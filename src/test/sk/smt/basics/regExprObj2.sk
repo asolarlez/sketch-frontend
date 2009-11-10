@@ -1,0 +1,35 @@
+struct Node {
+	
+	int data;
+	Node next;
+}
+
+void main(int dummy) implements one{
+	
+	Node n1 = new Node();
+	n1.data = 1;
+	
+	Node n2 = new Node();
+	n2.data = 2;
+	
+	n1.next = {|n1|n2|};
+//	
+//	Node n3 = new Node();
+//	n3.data = 3;
+//	
+//	Node n4 = new Node();
+//	n4.data = 4;
+//	
+//	
+//	n1.next = n2;
+//	n2.next = n3;
+//	n3.next = {|n3|n4|};
+	
+
+	
+	assert n1.next == n2;
+}
+
+void one(int dummy) {
+	
+}

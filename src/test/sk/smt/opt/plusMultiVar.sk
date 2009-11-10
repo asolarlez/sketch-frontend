@@ -1,0 +1,13 @@
+void main(int a, int b) implements one{
+	
+	int x = (a + b) + (b + 3);
+	
+	int y =  ((b + b) + 2);
+	
+	int z = x - y;
+	
+	assert z == a + 1;
+}
+
+void one (int a, int b) {
+}

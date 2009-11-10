@@ -1,0 +1,173 @@
+pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --intbits 6 --unrollamnt 2 --heapsize 1 --arrayOOBPolicy assertions";
+
+#define MODEL_BIT 1
+#define N 2
+
+//#include "model.skh"
+
+
+
+
+#ifdef MODEL_BIT
+#define T bit
+T mul(T x, T y) { return x & y; }
+#endif
+
+#ifdef MODEL_INT 
+#define T int
+T mul(T x, T y) { return x * y; }
+#endif
+
+#ifdef MODEL_UFUN1
+#define T int
+static T mul(T x, T y) {
+	if (x == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+#ifdef MODEL_UFUN2
+#define T int
+static T mul(T x, T y) {
+	if (x == 0 || y == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+
+//%%%%%%	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#define Var ({|i|j|n|0|}+??)
+//#define Var ({|i|j|0|0|})
+
+/* Index-type hole composed of array exprs */
+#define IArr ((??) ? Var : ((??) ? A.	R[Var] : A.C[Var]))
+
+/* Value-type hole composed of array exprs */
+#define VArr ((??) ? A.V[IArr] : x[IArr])  
+
+#define Loop(iv,S,E) for(iv = S; iv < E; iv++) 
+
+static T[N] SpMV_Sketch(CSR A, T[N] x, int n) {
+	T[N] y=0;
+	int i, j;
+	int which = ??;
+
+	Loop(i, IArr, IArr) {
+		Loop(j,IArr,IArr) {
+			y[Var] += mul(A.V[IArr],x[A.C[IArr]]);
+		}
+	} 
+	return y;	
+}
+
+
+//
+// computes y = Ax on sparse A and dense x and y.
+// 
+static T[N] SpMV(CSR A, T[N] x, int n) {
+	T[N] y;
+	
+	for (int r = 0; r < n; r++) {
+		y[r] = 0;
+		for (int idx = A.R[r]; idx < A.R[r+1]; idx++) {
+			y[r] += mul(A.V[idx],x[A.C[idx]]);  
+		}
+	} 
+	return y;	
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+//int[N][N] sd(int[N][N] a) implements identity {
+//	return desparsify(sparsify(a));
+//}
+T[N] main(T[N][N] A, T[N] x) implements DeMV {
+	return SpMV_Sketch(sparsify(A), x, N);
+//	return SpMV(sparsify(A), x, N);
+}
+//int harness () { // implements one {
+//	T[N*N] a = {1,0,0,1};
+//	T[N] x ={1,1};
+//	T[N][N] dA;
+//	int k = 0;
+//	for (int i = 0; i < N; i++) 
+//		for (int j = 0; j < N; j++) 
+//			dA[i][j] = a[k++];
+//			
+//	CSR sA = sparsify(dA);
+//	T[N] y = SpMV(sA,x,N);
+//	T[N] yy = DeMV(dA,x);
+//	assert y[0] == yy[0];
+//	//assert y[1] == yy[1];
+//	//assert y[2] == yy[2];
+//	return 1;
+//}  
+int one () { return 1; }
+int[N][N] identity(int[N][N] A) { return A; }
+
+struct CSR {
+	T[N*N] V;
+	int[N*N] C;
+	int[N+1] R;
+}
+
+static CSR sparsify(T[N][N] a) {
+	CSR sm = new CSR();
+	
+	int idx = 0;
+	sm.R[0]=idx;
+	
+	for (int r = 0; r < N; r++) {
+		sm.R[r] = idx;
+		for (int c = 0; c < N; c++) {
+			if (a[r][c] != 0) {
+				sm.V[idx] = a[r][c];
+				sm.C[idx] = c;
+				idx++;  
+			}
+		}
+	}
+	sm.R[N] = idx;
+	return sm;
+}
+
+static int[N][N] desparsify(CSR sm) {
+	T[N][N] a = 0;
+	for (int r = 0; r < N; r++) {
+		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
+			a[r][sm.C[idx]] = sm.V[idx];
+		}
+	}
+	return a;
+}
+
+
+
+//
+// computes y = Ax on dense A, x, and y.
+// 
+T[N] DeMV(T[N][N] A, T[N] x) {
+	T[N] y = 0;
+	
+	for (int r = 0; r < N; r++) {
+		y[r] = 0;
+		for (int c = 0; c < N; c++) {
+			y[r] += mul(A[r][c],x[c]);  
+		}
+	} 
+	return y;	
+}
+

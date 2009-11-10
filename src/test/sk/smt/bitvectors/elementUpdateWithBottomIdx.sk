@@ -1,0 +1,20 @@
+bit oneSketch(bit[4] in) implements one {
+	
+	int x = 0;
+	if (in[0] == 1) {
+		x = 2;
+	} else {
+		x = 2;
+	}
+	bit[4] a;
+	
+	a[x] = 0; // x is bottom
+	
+	assert a[2] == 0;
+	
+	return 1;
+}
+
+bit one (bit[4] in) {
+	return 1;
+}

@@ -1,0 +1,13 @@
+void main(int dummy) implements one{
+	
+	int a = (dummy + dummy) + dummy;
+	
+	int b = dummy + (dummy + dummy);
+	
+	int c = a - b;
+	
+	assert c == 0;
+}
+
+void one (int dummy) {
+}

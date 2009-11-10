@@ -1,0 +1,11 @@
+pragma options "--cbits 11 --intbits 11";
+
+void main(int dummy) implements one{
+	int[50] a;
+	
+	a[0] = ??;
+	a[1] = ??;
+	assert a[0] == 99;
+	assert a[1] == 999;
+}
+void one(int dummy) {}

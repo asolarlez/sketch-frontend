@@ -1,0 +1,13 @@
+pragma options "--arrayOOBPolicy wrsilent_rdzero";
+
+bit oneSketch(bit[4] in, int idx) implements one {
+	return in[idx];
+
+}
+
+
+bit one (bit[4] in, int idx) {
+
+	return in[idx];
+
+}

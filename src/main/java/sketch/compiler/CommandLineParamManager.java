@@ -106,6 +106,13 @@ public class CommandLineParamManager{
 	    }
 		return _singleton;
 	}
+	
+	/**
+     * Clears all the data in this object
+     */
+    public void clear() {
+        init();
+    }
 
 	/** resets the static singleton */
 	public static void reset_singleton() {

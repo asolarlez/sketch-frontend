@@ -1,0 +1,20 @@
+pragma options "--intbits 32 --cbits 32";
+void main(int a, int b) implements one{
+	int x, y;
+	if (a + b == 42) {
+		x = ??;
+		y = a + b;
+		assert y == 42;
+	} else {
+		assert a + b != 42;
+		x = 100;
+		y = 42;
+	}
+	
+	assert x == 100;
+	assert y == 42;
+}
+
+void one(int a, int b) {
+	
+}

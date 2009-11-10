@@ -1,0 +1,18 @@
+void main(int dummy) implements one {
+	
+	// from int bottom
+	int h = ??; 	// h == 7
+	bit b = (bit) h;	// b = 1
+	boolean bb = (boolean) h; // bb = true
+	
+	assert b == 1;
+	assert bb; 
+	
+	assert h == 7;
+	
+
+
+	
+}
+
+void one(int dummy) { }

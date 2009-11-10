@@ -1,0 +1,13 @@
+pragma options "--intbits 32 --cbits 32";
+void reverseSketch(int dummy) implements reverse {
+	
+	int one = ??;	// 33
+	int nOne = -one;
+	
+	assert one == 33;
+	
+	assert nOne == -33;
+}
+
+
+void reverse (int dummy) { }
