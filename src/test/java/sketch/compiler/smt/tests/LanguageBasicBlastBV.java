@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.junit.After;
 import org.junit.Test;
 
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
@@ -45,8 +46,15 @@ public abstract class LanguageBasicBlastBV extends TestHarness {
 		assertTrue(main.runBeforeGenerateCode());
 		oracle = (SmtValueOracle) main.getOracle();
 		stat = main.getSolutionStat();
-		main.eliminateStar();
 	}
+	
+	@After
+    public void printTiming() {
+        if (stat == null)
+            System.out.println("\tFAILED");
+        else
+            System.out.println("\t" + stat.getSolutionTimeMs() + "\t" + stat.getIterations());
+    }
 
 	@Test
 	public void testConcat() throws Exception {
