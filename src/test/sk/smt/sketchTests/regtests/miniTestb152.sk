@@ -1,0 +1,17 @@
+bit spec(bit in, int a, int b){
+	return 1;	
+}
+
+bit sketch(bit in, int a, int b) implements spec{
+	bit c = in;
+	int x = a;
+	int y = a;
+	if(c){
+		x = b;
+		y = b;
+		c = 0;
+	}
+	
+	return (in && x==b && y==b) || (!in && x==a && y == a);
+	
+}

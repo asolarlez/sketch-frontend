@@ -1,0 +1,18 @@
+pragma options "--intbits 10";
+struct foo{
+	int[3] x;	
+}
+
+int test(int x) implements spec{
+	
+	foo far = new foo();
+	for(int i=0; i<3; ++i){
+		far.x[i] = i;
+	}
+	
+	return far.x[??];	
+}
+
+int spec(int x){
+	return 2;	
+}
