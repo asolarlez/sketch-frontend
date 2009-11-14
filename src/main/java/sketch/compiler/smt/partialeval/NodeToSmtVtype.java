@@ -1,5 +1,6 @@
 package sketch.compiler.smt.partialeval;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,16 +33,18 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		public DebugPrinter() { }
 		
 		@Override
-		public void visitConstNode(ConstNode constNode) {
+		public Object visitConstNode(ConstNode constNode) {
 		    result = constNode.getIntVal() + "";
+		    return constNode;
 		}
 		
 		@Override
-		public void visitVarNode(VarNode varNode) {
+		public Object visitVarNode(VarNode varNode) {
 		    result = varNode.getRHSName();
+		    return varNode;
 		}
 
-		public void visitLinearNode(LinearNode ln) {
+		public Object visitLinearNode(LinearNode ln) {
 		    StringBuffer sb = new StringBuffer();
 	        sb.append(ln.getCoeff(null));
 	        
@@ -53,15 +56,17 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	           sb.append(result);
 	        }
 	        result = sb.toString();
+	        return ln;
 		}
 		
 		@Override
-		public void visitLabelNode(LabelNode labelNode) {
+		public Object visitLabelNode(LabelNode labelNode) {
 		    result = labelNode.toString();
+		    return labelNode;
 		}
 		
 		@Override
-		public void visitOpNode(OpNode opNode) {
+		public Object visitOpNode(OpNode opNode) {
 		    StringBuffer sb = new StringBuffer();
 	        
 	        if (opNode.getOpcode() == OpCode.IF_THEN_ELSE) {
@@ -86,8 +91,52 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	        }
 	    
 	        result = sb.toString();
+	        return opNode;
 		}
+		
+		
 	}
+	
+	public class NodeReplacer extends FormulaVisitor {
+	    
+	    @Override
+	    public Object visitOpNode(OpNode opNode) {
+	        
+            // if the current structure is found in structural hash
+	        // return the single var that's equivalent to it
+            if (mStructHash.containsKey(opNode)) {
+                structSimplified++;
+                return mStructHash.get(opNode);
+            }
+	        
+	        return replaceChildren(opNode);
+	    }
+
+        public Object replaceChildren(OpNode opNode) {
+            boolean changed = false;
+	        NodeToSmtValue[] newOpnds = new NodeToSmtValue[opNode.getOperands().length];
+	        
+	        int i = 0;
+	        for (NodeToSmtValue oldNode : opNode.getOperands()) {
+	            NodeToSmtValue newNode = (NodeToSmtValue) oldNode.accept(this);
+	            
+	            if (newNode != oldNode) {
+	                changed = true;
+	            }
+	            newOpnds[i] = newNode;
+	            
+	            i++;
+	        }
+	        
+	        if (changed) {
+	            OpNode newOpNode = new OpNode(opNode.getType(), opNode.getNumBits(), opNode.getOpcode(), newOpnds);
+	            return checkCache(newOpNode);
+	        } else {
+	            return opNode;
+	        }
+        }
+	}
+	
 	public class FormulaPrinter {
 
 		boolean mIsSynthesis;
@@ -126,11 +175,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			addComment("DAG");
 			addComment("");
 			
-			for (NodeToSmtValue eq : mEq) {
-				if (eq instanceof LabelNode) {
-					addComment(eq.toString());
+			for (NodeToSmtValue dest : mEq) {
+				if (dest instanceof LabelNode) {
+					addComment(dest.toString());
 				} else {
-					String defStr = mTrans.getAssert(mTrans.getStr(eq));
+				    NodeToSmtValue def = mSimpleDefs.get(dest);
+					String defStr = mTrans.getAssert(mTrans.getStr(assign(dest, def)));
 					out.println(defStr);
 				}
 			}
@@ -295,8 +345,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	private int structHashingUsed = 0;
 	public static final boolean FUNCCALL_HASHING = true;
 	private int funccallInlined = 0;
-	public static final boolean NO_INTERMEDIATE = true;
-	public static final boolean CANONICALIZE = true;
+	public static final boolean FLAT = false;
+	private int structSimplified = 0;
+	public static final boolean CANONICALIZE = false;
 	
 	protected TempVarGen tmpVarGen;
 	protected AbstractValueOracle oracle;
@@ -419,20 +470,19 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	}
 	
 	public VarNode STATE_DEFAULT(String label, Type realType, int numBits, int rhsIdx) {
-		
 		VarNode newNode = NodeToSmtValue.newStateDefault(label, realType, numBits, rhsIdx);
-		
 		newNode = (VarNode) checkCache(newNode);
 		declareRenamableVar(newNode);
+		
 		return newNode;
 	}
 	
 	public VarNode STATE_ELE_DEFAULT(String label, Type realType, int numBits, int rhsIdx) {
 		VarNode newNode = NodeToSmtValue.newStateArrayEleDefault(label, realType, numBits, rhsIdx);
-		
 		newNode = (VarNode) checkCache(newNode);
 		declareRenamableVar(newNode);
-		return newNode;
+	
+        return newNode;
 	}
 	/**
 	 * create a BOTTOM NodeToSmtValue object with the specified label
@@ -446,11 +496,17 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			newOpnds[i] = referenceVar(operands[i]);	
 		}
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
-		
-		return checkStructuralHash(newNode);
+		NodeToSmtValue nInSH = checkStructuralHash(newNode);
+//		if (nInSH == newNode) {
+//		    addTempDefinition(newNode);
+//		    newNode = checkStructuralHash(newNode);
+//		}
+		return nInSH;
 	}
 
-    
+	private boolean isLinearizable(NodeToSmtValue ntsv1) {
+        return ntsv1 instanceof LinearNode || ntsv1 instanceof ConstNode || ntsv1 instanceof VarNode;
+    }
 	
 	public NodeToSmtValue LINEAR(NodeToSmtValue v1, NodeToSmtValue v2, boolean isMinus) {
 	    NodeToSmtValue newNode;
@@ -460,20 +516,19 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    // Var and Linear
 	    LinearNode l1;
 	    LinearNode l2;
-	    NodeToSmtValue def;
-	    if (v1 instanceof ConstNode) {
-	        l1 = new LinearNode((ConstNode) v1);
-	    } else if (v1 instanceof VarNode) {
-	        def = findOriginalDef((VarNode) v1);
-            if (def instanceof LinearNode)
-                l1 = (LinearNode) def;
-            else
-                l1 = new LinearNode((VarNode) v1);
-	        
-	    } else
-	        l1 = (LinearNode) v1;
+
+	    l1 = LINEAR(v1);
+	    l2 = LINEAR(v2);
 	    
-	    if (v2 instanceof ConstNode) {
+	    newNode = new LinearNode(l1, l2, isMinus);
+	    newNode = checkCache(newNode);
+	    return checkStructuralHash(newNode);
+	}
+
+    private LinearNode LINEAR(NodeToSmtValue v2) {
+        LinearNode l2;
+        NodeToSmtValue def;
+        if (v2 instanceof ConstNode) {
 	        l2 = new LinearNode((ConstNode) v2);
 	    } else if (v2 instanceof VarNode) {
 	        def = findOriginalDef((VarNode) v2);
@@ -483,10 +538,10 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	            l2 = new LinearNode((VarNode) v2);
 	    } else
 	        l2 = (LinearNode) v2;
-	    
-	    newNode = new LinearNode(l1, l2, isMinus);
-	    return checkStructuralHash(newNode);
-	}
+        
+        l2 = (LinearNode) checkCache(l2);
+        return l2;
+    }
 	
 	@Override
 	public NodeToSmtValue CONST(boolean v) {
@@ -635,17 +690,11 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() + v2.getIntVal());
 		} else {
-		    int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
-	        
-	        if (ntsv1.getNumBits() < maxNumBits)
-	            ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
-	        
-	        if (ntsv2.getNumBits() < maxNumBits)
-	            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+		    
 	        
 			if (CANONICALIZE &&
-			        (ntsv1 instanceof LinearNode || ntsv1 instanceof ConstNode || ntsv1 instanceof VarNode) &&
-                    (ntsv2 instanceof LinearNode || ntsv2 instanceof ConstNode || ntsv2 instanceof VarNode)) {
+			        (isLinearizable(ntsv1)) &&
+                    (isLinearizable(ntsv2))) {
 			    // if they are either ConstNode or LinearNode or VarNode
 //			    PrintStream ps = System.err;
 			    
@@ -677,8 +726,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
 	        
 		    if (CANONICALIZE &&
-                    (ntsv1 instanceof LinearNode || ntsv1 instanceof ConstNode || ntsv1 instanceof VarNode) &&
-                    (ntsv2 instanceof LinearNode || ntsv2 instanceof ConstNode || ntsv2 instanceof VarNode)) {
+                    (isLinearizable(ntsv1)) &&
+                    (isLinearizable(ntsv2))) {
                 // if they are either ConstNode or LinearNode or VarNode
                 
 //		        PrintStream ps = System.err;
@@ -864,8 +913,21 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		}
 
 		return mergeTwoValuesToBottomWithType(OpCode.EQUALS, ntsv1, ntsv2, TypePrimitive.booltype);
-
 	}
+	
+    public NodeToSmtValue assign(abstractValue v1, abstractValue v2) {
+        NodeToSmtValue ntsv1 = (NodeToSmtValue) v1;
+        NodeToSmtValue ntsv2 = (NodeToSmtValue) v2;
+
+        if (v1.hasIntVal() && v2.hasIntVal()) {
+            return CONST(v1.getIntVal() == v2.getIntVal());
+        }
+
+        NodeToSmtValue newNode = NodeToSmtValue.newBottom(TypePrimitive.booltype, getNumBitsForType(TypePrimitive.booltype), 
+                OpCode.EQUALS, ntsv1, ntsv2);
+        
+        return checkStructuralHash(newNode);
+    }
 
 	@Override
 	public NodeToSmtValue le(abstractValue v1, abstractValue v2) {
@@ -1256,29 +1318,29 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public List<NodeToSmtValue> getHashedFuncCall(NodeToSmtValue funccall) {
 		List<NodeToSmtValue> ret = mFuncHash.get(funccall);
 		
-//		if (ps == null) {
-//            try {
-//                ps = new PrintStream("/tmp/log.txt");
-//            } catch (FileNotFoundException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
-//		}
-//
-//		if (ret == null) {
-//			DebugPrinter dp = new DebugPrinter();
-////			ps.print("NOT FOUND func call hash: ");
-//			ps.print(funccall.getName());
-//			ps.print(" ");
-//			FuncNode fNode = (FuncNode) funccall;
-//			for (NodeToSmtValue arg : fNode.getOperands()) {
-//			    arg.accept(dp);
-//				ps.print(dp.result);
-//				ps.print(", ");
-//			}
-//			ps.print(funccall);
-//			ps.println();
-//		}
+		if (ps == null) {
+            try {
+                ps = new PrintStream("/tmp/log.txt");
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+		}
+
+		if (ret == null) {
+			DebugPrinter dp = new DebugPrinter();
+//			ps.print("NOT FOUND func call hash: ");
+			ps.print(funccall.getName());
+			ps.print(" ");
+			FuncNode fNode = (FuncNode) funccall;
+			for (NodeToSmtValue arg : fNode.getOperands()) {
+			    arg.accept(dp);
+				ps.print(dp.result);
+				ps.print(", ");
+			}
+			ps.print(funccall);
+			ps.println();
+		}
 		
 		if (ret == null)
 		    funccallInlined++;
@@ -1296,7 +1358,14 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	 */
 	private NodeToSmtValue mergeTwoValuesToBottom(OpCode opcode,
 			NodeToSmtValue ntsv1, NodeToSmtValue ntsv2) {
-		
+	    int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
+        
+        if (ntsv1.getNumBits() < maxNumBits)
+            ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
+        
+        if (ntsv2.getNumBits() < maxNumBits)
+            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+        
 		return BOTTOM(getCommonType(ntsv1.getType(), ntsv2.getType()), 
 				opcode, ntsv1, ntsv2
 				);
@@ -1436,13 +1505,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	int savedNodes = 0;
 	protected NodeToSmtValue checkCache(NodeToSmtValue node) {
-		// OpNode is not cached because OpNode
-		// may represent a big tree of expression, which causes
-		// the recursive hashCode() and equals() calls to take
-		// a long time. It's ok to waste a bit of memory here.
-		if (node instanceof OpNode) {
-			return node;
-		}
 		
 		NodeToSmtValue inCache = mCache.get(node);
 		if (inCache == null) {
@@ -1470,16 +1532,23 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		// because that will leave a record that dest is defined instead of
 		// being treated as undefined variables in the future
 		String varName = dest.getRHSName();
-		def = referenceVar(def);
+		if (def instanceof OpNode)
+		    def = referenceVar(def);
 		dest = (VarNode) referenceVar(dest);
 		
 		assert isVarDeclared(dest) : varName + " is defined but not declared";
 		
 		log.finer("defining " + varName);
 		
-		mEq.add(eq(dest, def));
+		mEq.add(dest);
 		mSimpleDefs.put(dest, def);
 		mStructHash.put(def, dest);
+	}
+	
+	public void addTempDefinition(NodeToSmtValue def) {
+	    String varName = tmpVarGen.nextVar("tn");
+	    VarNode dest = STATE_DEFAULT(varName, def.getType(), def.getNumBits(), 0);
+	    addDefinition(dest, def);
 	}
 	
 	public NodeToSmtValue getDefinition(VarNode varDefined) {
@@ -1617,17 +1686,19 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	 */
 	protected NodeToSmtValue referenceVar(NodeToSmtValue original) {
 
-		if (original instanceof OpNode || 
-				original instanceof ConstNode ||
+		if (original instanceof OpNode) {
+		    return original;
+		    
+		} else if (original instanceof ConstNode ||
 				original instanceof LabelNode) {
 			return original;
-		} else {
+			
+		} else if (original instanceof VarNode) {
 
-			NodeToSmtValue def = mSimpleDefs.get(original);
 			NodeToSmtValue toUse;
-			if (NO_INTERMEDIATE && def instanceof VarNode) {
+			if (FLAT) {
 				// use def instead of original
-				toUse = def;
+				toUse = findOriginalDef((VarNode) original);
 			} else {
 				// use original
 				toUse = original;
@@ -1641,8 +1712,19 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			mUses.put(toUse, uses);
 
 			return toUse;
+		} else {
+		    return original;
 		}
 	}
+	
+//	protected NodeToSmtValue referenceRHS(NodeToSmtValue original) {
+//	    NodeToSmtValue referenced = referenceLHS(original);
+////	    return referenced;
+//	    if (CANONICALIZE && isLinearizable(referenced))
+//	        return LINEAR(referenced);
+//	    else
+//	        return referenced;
+//	}
 	
 	/**
 	 * Look up the NodeToSmtValue object in all the declared variables 
@@ -1678,15 +1760,18 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	}
 	
 	public void optimize() {
-		log.info("Optimizing DAG");
+	    int numRemoved = 0;
+	    
+	    log.info("Optimizing DAG");
+		simplifyExpressionTrees();
 		constraintUndefinedVariables();
-		int numRemoved = removeUnusedVariables();
+		numRemoved = removeUnusedVariables();
 		
 		log.info(" - Saved Node creation: " + savedNodes);
 		log.info(" - Removed " + numRemoved + " unused variables");
 		log.info(" - Structural Hashing Used: " + structHashingUsed);
 		log.info(" - Func Call Inlined: " + funccallInlined);
-		
+		log.info(" - Struct Simplified: " + structSimplified);
 //		Toolbox.pause();
 	}
 	
@@ -1790,6 +1875,21 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //		}
 //	}
 	
+	protected void simplifyExpressionTrees() {
+	    if (!FLAT) return;
+	    
+	    NodeReplacer nr = new NodeReplacer();
+	    for (NodeToSmtValue var : mEq) {
+	        NodeToSmtValue def = mSimpleDefs.get(var);
+	        
+	        if (def instanceof OpNode) {
+	            NodeToSmtValue newDef = (NodeToSmtValue) nr.replaceChildren((OpNode) def);
+	            mSimpleDefs.put(var, newDef);
+	        }
+	            
+	    }
+	}
+	
 	protected void constraintUndefinedVariables() {
 		NodeToSmtValue constant = CONST(-1);
 		for (VarNode var : mRenamableVars) {
@@ -1801,7 +1901,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 				// we give it a constant
 				log.finer("Removing declared but undefined " + varName);
 
-				addDefinition(var, CONST(0));
+				addDefinition(var, defaultValue(var.getSmtType()));
 			}
 		}
 	}
