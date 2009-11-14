@@ -94,14 +94,16 @@ public class STPTranslator extends SMTTranslator {
 	
 	protected String getStrInternal(NodeToSmtValue ntsv) {
 		if (ntsv.isConst()) {
-			if (ntsv.isInt())
-				mSB.append(getStrAsInt(ntsv));
+			if (ntsv.isInt()) {
+			    String t = getStrAsInt(ntsv);
+				sbAppend(t);
+			}
 			else if (ntsv.isBool())
-				mSB.append(getStrAsBool(ntsv));
+			    sbAppend(getStrAsBool(ntsv));
 			else if (ntsv.isBit())
-				mSB.append(getStrAsBit(ntsv));
+			    sbAppend(getStrAsBit(ntsv));
 			else if (ntsv.isBitArray())
-				mSB.append(getStrAsBitArray(ntsv));
+			    sbAppend(getStrAsBitArray(ntsv));
 			else
 				throw new IllegalStateException("there is an unknown constant type");
 		
@@ -109,12 +111,12 @@ public class STPTranslator extends SMTTranslator {
 		} else {
 			if (ntsv instanceof VarNode) {
 				VarNode varNode = (VarNode) ntsv;
-				mSB.append(varNode.getRHSName());
+				sbAppend(varNode.getRHSName());
 			} else if (ntsv instanceof OpNode) {
 				OpNode node = (OpNode) ntsv;
 				getNaryExpr(node.getOpcode(), node.getOperands());
 			} else if (ntsv instanceof LabelNode) {
-				mSB.append(ntsv.toString());
+			    sbAppend(ntsv.toString());
 			} else if (ntsv instanceof LinearNode) {
 			    LinearNode linNode = (LinearNode) ntsv;
 			    getStrForLinearNode(linNode);
@@ -123,34 +125,43 @@ public class STPTranslator extends SMTTranslator {
 		}
 	}
 
+    private StringBuffer sbAppend(String t) {
+//        System.out.print(t);
+        return mSB.append(t);
+    }
+    
+    private StringBuffer sbAppend(char t) {
+        return mSB.append(t);
+    }
+
     private void getStrForLinearNode(LinearNode linNode) {
         // +(o1, +(o2, c))
         for (VarNode vv : linNode.getVars()) {
             // +
-            mSB.append(opStrMap.get(OpCode.PLUS));
-            mSB.append('(');
-            mSB.append(linNode.getNumBits());
-            mSB.append(',');
+            sbAppend(opStrMap.get(OpCode.PLUS));
+            sbAppend('(');
+            sbAppend(linNode.getNumBits()+"");
+            sbAppend(',');
             
             if (linNode.getCoeff(vv) == 1) {
                 getStrInternal(vv);
-                mSB.append(',');
+                sbAppend(',');
             } else {
                 // *
-                mSB.append(opStrMap.get(OpCode.TIMES));
-                mSB.append('(');
-                mSB.append(linNode.getNumBits());
-                mSB.append(',');
+                sbAppend(opStrMap.get(OpCode.TIMES));
+                sbAppend('(');
+                sbAppend(linNode.getNumBits()+"");
+                sbAppend(',');
                 getStrInternal(vv);
-                mSB.append(",");
-                mSB.append(getIntLiteral(linNode.getCoeff(vv), linNode.getNumBits()));
-                mSB.append(")");
-                mSB.append(',');
+                sbAppend(",");
+                sbAppend(getIntLiteral(linNode.getCoeff(vv), linNode.getNumBits()));
+                sbAppend(")");
+                sbAppend(',');
             }
         }
-        mSB.append(getIntLiteral(linNode.getCoeff(null), linNode.getNumBits()));
+        sbAppend(getIntLiteral(linNode.getCoeff(null), linNode.getNumBits()));
         for (int j = 0; j < linNode.getNumTerms(); j++)
-            mSB.append(')');
+            sbAppend(')');
     }
 
 	
@@ -173,10 +184,10 @@ public class STPTranslator extends SMTTranslator {
 				op == OpCode.NUM_NOT ||
 				op == OpCode.NEG) {
 			
-			mSB.append(operator);
-			mSB.append('(');
+			sbAppend(operator);
+			sbAppend('(');
 			getStrInternal(opnds[0]);
-			mSB.append(')');
+			sbAppend(')');
 			return null;
 				
 		} else if (op == OpCode.EQUALS ||
@@ -184,47 +195,47 @@ public class STPTranslator extends SMTTranslator {
 			
 			if (op == OpCode.EQUALS && opnds[0].isBool() && opnds[1].isBool()) {
 				getStrInternal(opnds[0]);
-				mSB.append(" <=> ");
+				sbAppend(" <=> ");
 				getStrInternal(opnds[1]);
 				return null;
 			} else { 
-				mSB.append('(');
+				sbAppend('(');
 				insertBetween(operator, opnds);
-				mSB.append(')');
+				sbAppend(')');
 				return null;
 			}
 			
 		} else if (op == OpCode.RSHIFT) {
 			assert opnds[1].isConst() : "second operand of shift has to be constant";
-			mSB.append('(');
+			sbAppend('(');
 			getStrInternal(opnds[0]);
-			mSB.append(" >> ");
-			mSB.append(opnds[1].getIntVal());
-			mSB.append(')');
+			sbAppend(" >> ");
+			sbAppend(opnds[1].getIntVal()+"");
+			sbAppend(')');
 			return null;
 		
 		} else if (op == OpCode.LSHIFT) {
 			assert opnds[1].isConst() : "second operand of shift has to be constant";
-			mSB.append('(');
+			sbAppend('(');
 			getStrInternal(opnds[0]);
-			mSB.append(" << ");
-			mSB.append(opnds[1].getIntVal());
-			mSB.append(')');
+			sbAppend(" << ");
+			sbAppend(opnds[1].getIntVal()+"");
+			sbAppend(')');
 			return null;
 		} else if (op == OpCode.PLUS ||
 				op == OpCode.TIMES ||
 				op == OpCode.MINUS ||
 				op == OpCode.OVER ||
 				op == OpCode.MOD) {
-			mSB.append('(');
-			mSB.append(operator);
-			mSB.append('(');
-			mSB.append(opnds[0].getNumBits());
-			mSB.append(',');
+			sbAppend('(');
+			sbAppend(operator);
+			sbAppend('(');
+			sbAppend(opnds[0].getNumBits()+"");
+			sbAppend(',');
 			getStrInternal(opnds[0]);
-			mSB.append(",");
+			sbAppend(",");
 			getStrInternal(opnds[1]);
-			mSB.append("))");
+			sbAppend("))");
 			return null;
 		
 		} else if (op == OpCode.GEQ || 
@@ -232,13 +243,13 @@ public class STPTranslator extends SMTTranslator {
 				op == OpCode.LEQ ||
 				op == OpCode.LT ||
 				op == OpCode.NUM_XOR) {
-			mSB.append('(');
-			mSB.append(operator);
-			mSB.append('(');
+			sbAppend('(');
+			sbAppend(operator);
+			sbAppend('(');
 			getStrInternal(opnds[0]);
-			mSB.append(',');
+			sbAppend(',');
 			getStrInternal(opnds[1]);
-			mSB.append("))");
+			sbAppend("))");
 			return null;
 		
 		} else if (op == OpCode.EXTRACT) {
@@ -246,25 +257,25 @@ public class STPTranslator extends SMTTranslator {
 				// Get String representation that accesses one bit of a bitvector
 				// %s[%d:%d] 
 				getStrInternal(opnds[0]);
-				mSB.append(String.format("[%d:%d]", opnds[1].getIntVal(), opnds[1].getIntVal()));
+				sbAppend(String.format("[%d:%d]", opnds[1].getIntVal(), opnds[1].getIntVal()));
 				return null;
 			} else if (opnds.length == 3) {
 				// Get String representation that accesses a range in a bitvector
 				// "%s[%d:%d]" 
 				getStrInternal(opnds[0]);
-				mSB.append(String.format("[%d:%d]", opnds[2].getIntVal(), opnds[1].getIntVal()));
+				sbAppend(String.format("[%d:%d]", opnds[2].getIntVal(), opnds[1].getIntVal()));
 				return null;
 			}
 			
 		} else if (op ==  OpCode.IF_THEN_ELSE) {
 		
-			mSB.append("(IF ");
+			sbAppend("(IF ");
 			getStrInternal(opnds[0]);
-			mSB.append(" THEN ");
+			sbAppend(" THEN ");
 			getStrInternal(opnds[1]);
-			mSB.append(" ELSE ");
+			sbAppend(" ELSE ");
 			getStrInternal(opnds[2]);
-			mSB.append(" ENDIF)");
+			sbAppend(" ENDIF)");
 			return null;
 			
 		} else if (op == OpCode.ARRNEW) {
@@ -363,11 +374,11 @@ public class STPTranslator extends SMTTranslator {
 		getStrInternal(opnds[0]);
 		for (int i = 1; i < opnds.length; i++) {
 			if (opnds.length > 2) 
-				mSB.append('\n');
+				sbAppend('\n');
 			else 
-				mSB.append(' ');
-			mSB.append(operator);
-			mSB.append(' ');
+				sbAppend(' ');
+			sbAppend(operator);
+			sbAppend(' ');
 			getStrInternal(opnds[i]);
 		}
 	}
