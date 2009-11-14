@@ -64,6 +64,7 @@ import sketch.compiler.smt.SMTTranslator.OpCode;
 public class NodeToSmtValue extends TypedValue {
 	
 	protected ISuffixSetter suffixSetter;
+	protected int hashCode;
 	
 	/*
 	 * Getters and Setters
@@ -224,7 +225,7 @@ public class NodeToSmtValue extends TypedValue {
 		return getSmtType().getNumBits();
 	}
 	
-	public void accept(FormulaVisitor fv) {
-	    
+	public Object accept(FormulaVisitor fv) {
+	    return null;
 	}
 }

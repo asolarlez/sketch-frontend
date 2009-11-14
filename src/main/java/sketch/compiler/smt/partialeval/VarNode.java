@@ -17,7 +17,8 @@ public  class VarNode extends NodeToSmtValue {
 	
 	public VarNode(String name, Type t, int numBits, int rhsIdx) {
 		super(name, t, SmtStatus.BOTTOM, numBits, null);
-		this.rhsIdx = rhsIdx;		
+		this.rhsIdx = rhsIdx;	
+		this.hashCode = computeHash();
 	}
 	
 	
@@ -61,6 +62,10 @@ public  class VarNode extends NodeToSmtValue {
 	
 	@Override
 	public int hashCode() {
+	    return hashCode;
+	}
+	
+	private int computeHash() {
 		return rhsIdx ^ name.hashCode() ^ type.hashCode();
 	}
 	
@@ -77,7 +82,7 @@ public  class VarNode extends NodeToSmtValue {
 	}
 	
 	@Override
-    public void accept(FormulaVisitor fv) {
-        fv.visitVarNode(this);
+    public Object accept(FormulaVisitor fv) {
+        return fv.visitVarNode(this);
     }
 }

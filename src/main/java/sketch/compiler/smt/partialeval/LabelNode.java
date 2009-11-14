@@ -6,6 +6,7 @@ public class LabelNode extends NodeToSmtValue {
 	
 	public LabelNode(Type t, int size, String rep) {
 		super(null, t, SmtStatus.CONST, size, rep);
+		this.hashCode = computeHash();
 	}
 	
 	@Override
@@ -25,6 +26,10 @@ public class LabelNode extends NodeToSmtValue {
 	
 	@Override
 	public int hashCode() {
+	    return hashCode;
+	}
+	
+	public int computeHash() {
 		return obj.hashCode();
 	}
 	
@@ -40,7 +45,7 @@ public class LabelNode extends NodeToSmtValue {
 	}
 	
 	@Override
-	public void accept(FormulaVisitor fv) {
-	    fv.visitLabelNode(this);
+	public Object accept(FormulaVisitor fv) {
+	    return fv.visitLabelNode(this);
 	}
 }

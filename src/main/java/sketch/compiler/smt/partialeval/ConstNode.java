@@ -9,6 +9,7 @@ public class ConstNode extends NodeToSmtValue {
 	public ConstNode(Type t, int size, int value) {
 		super(null, t, SmtStatus.CONST, size, null);
 		this.obj = value;
+		this.hashCode = computeHash();
 	}
 	
 	@Override
@@ -27,7 +28,11 @@ public class ConstNode extends NodeToSmtValue {
 	
 	@Override
 	public int hashCode() {
-		return type.hashCode() ^ obj.hashCode();
+		return hashCode;
+	}
+	
+	private int computeHash() {
+	    return type.hashCode() ^ obj.hashCode();
 	}
 	
 	@Override
@@ -44,7 +49,7 @@ public class ConstNode extends NodeToSmtValue {
 	}
 	
 	@Override
-    public void accept(FormulaVisitor fv) {
-        fv.visitConstNode(this);
+    public Object accept(FormulaVisitor fv) {
+        return fv.visitConstNode(this);
     }
 }

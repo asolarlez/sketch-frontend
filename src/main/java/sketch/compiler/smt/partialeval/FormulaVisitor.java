@@ -2,23 +2,23 @@ package sketch.compiler.smt.partialeval;
 
 public abstract class FormulaVisitor {
     
-    public void visitVarNode(VarNode varNode) {
-        
+    public Object visitVarNode(VarNode varNode) {
+        return varNode;
     }
     
-    public void visitLabelNode(LabelNode labelNode) {
-        
+    public Object visitLabelNode(LabelNode labelNode) {
+        return labelNode;
     }
     
-    public void visitOpNode(OpNode opNode) {
-        
+    public Object visitOpNode(OpNode opNode) {
+        return opNode;
     }
     
-    public void visitLinearNode(LinearNode linearNode) {
-        
+    public Object visitLinearNode(LinearNode linearNode) {
+        return linearNode;
     }
     
-    public void visitConstNode(ConstNode constNode) {
-        
+    public Object visitConstNode(ConstNode constNode) {
+        return constNode;
     }
 }

@@ -13,6 +13,7 @@ public class LinearNode extends NodeToSmtValue {
 	protected LinearNode(Type t, int numBits) {
 		super(null, t, SmtStatus.BOTTOM, numBits,
 				new HashMap<VarNode, Integer>());
+		this.hashCode = computeHash();
 	}
 	
 	/**
@@ -163,12 +164,16 @@ public class LinearNode extends NodeToSmtValue {
 	
 	@Override
 	public int hashCode() {
+	    return hashCode;
+	}
+	
+	public int computeHash() {
 	    return this.mC ^ obj.hashCode();
 	}
 
     @Override
-    public void accept(FormulaVisitor fv) {
-        fv.visitLinearNode(this);
+    public Object accept(FormulaVisitor fv) {
+        return fv.visitLinearNode(this);
     }
 
 	

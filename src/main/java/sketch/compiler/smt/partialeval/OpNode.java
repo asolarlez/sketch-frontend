@@ -31,6 +31,7 @@ public class OpNode extends NodeToSmtValue {
 		super(null, realType, SmtStatus.BOTTOM, numBits, null);
 		this.opcode = opcode;
 		this.obj = operands;
+		this.hashCode = computeHash();
 	}
 	
 	@Override
@@ -64,11 +65,15 @@ public class OpNode extends NodeToSmtValue {
 	
 	@Override
 	public int hashCode() {
-		int code = opcode.hashCode() ^ type.hashCode() ^ getOperands().length;
-//		for (NodeToSmtValue opnd : getOperands()) {
-//			code ^= opnd.hashCode();
-//		}
-		return code;
+		return hashCode;
+	}
+	
+	private int computeHash() {
+	    int code = opcode.hashCode() ^ type.hashCode() ^ getOperands().length;
+      for (NodeToSmtValue opnd : getOperands()) {
+          code ^= opnd.hashCode();
+      }
+        return code;
 	}
 	
 	@Override
@@ -134,7 +139,7 @@ public class OpNode extends NodeToSmtValue {
 	}
 	
 	@Override
-    public void accept(FormulaVisitor fv) {
-        fv.visitOpNode(this);
+    public Object accept(FormulaVisitor fv) {
+        return fv.visitOpNode(this);
     }
 }
