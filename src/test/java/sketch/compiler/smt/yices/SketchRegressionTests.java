@@ -13,7 +13,7 @@ public class SketchRegressionTests extends sketch.compiler.smt.tests.SketchRegre
 		
 //		 argsMap.put("--verbosity", "4");
 		// argsMap.put("--showphase", "parse");
-		System.out.print(input + "\tyices");
+		System.out.print(input.substring(input.lastIndexOf("/")) + "\tyices");
 		return argsMap;
 	}
 

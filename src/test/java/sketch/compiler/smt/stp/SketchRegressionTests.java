@@ -12,9 +12,9 @@ public class SketchRegressionTests extends
 		HashMap<String, String> argsMap = super.initCmdArgs(input);
 		argsMap.put("--backend", "stp");
 		
-		 argsMap.put("--verbosity", "0");
-//		 argsMap.put("--showphase", "lowering");
-		System.out.print(input + "\tstp");
+		 argsMap.put("--verbosity", "4");
+		 argsMap.put("--showphase", "lowering");
+		 System.out.print(input.substring(input.lastIndexOf("/")) + "\tstp");
 		return argsMap;
 	}
 	

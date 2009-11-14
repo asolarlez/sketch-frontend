@@ -12,10 +12,11 @@ public class SketchRegressionTests extends
 		sketch.compiler.seq.SketchRegressionTests {
 
 	SolutionStatistics stat;
+	
+	
 	@Override
-	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/sketchTests/regtests/" + input;
-		
+	protected HashMap<String, String> initCmdArgsWithFileName(String input) {
+	    String inputPath = "src/test/sk/seq/" + input;
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 		
 		argsMap.put("--sbitpath", System.getenv("sbitpath"));
@@ -32,7 +33,7 @@ public class SketchRegressionTests extends
 		argsMap.put(inputPath, null);
 		
 		
-		System.out.print(input + "\tSBit");
+		System.out.print(input.substring(input.lastIndexOf("\"")) + "\tSBit");
 		
 		return argsMap;
 	}
@@ -56,4 +57,11 @@ public class SketchRegressionTests extends
 		else
 			System.out.println("\t" + stat.elapsedTimeMs());
 	}
+
+    @Override
+    protected HashMap<String, String> initCmdArgs(String string) {
+        // NO OP
+        return null;
+    }
+
 }

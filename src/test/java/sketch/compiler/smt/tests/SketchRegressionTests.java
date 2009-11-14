@@ -13,11 +13,13 @@ import sketch.compiler.smt.HoleSorter;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRegressionTests {
-	
-	protected HashMap<String, String> initCmdArgs(String input) {
-//		String inputPath = "src/test/sk/smt/sketchTests/regtests/" + input;
-	    String inputPath = "src/test/sk/seq/" + input;
-	
+    
+    @Override
+    protected HashMap<String, String> initCmdArgsWithFileName(String input) {
+        return initCmdArgs("src/test/sk/seq/" + input);
+    }
+	protected HashMap<String, String> initCmdArgs(String inputPath) {
+	    
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 
 		argsMap.put("--smtpath", System.getenv("smtpath"));
@@ -682,11 +684,7 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 
 	@Test
 	public void miniTest82() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("miniTest82.sk");
-
-		argsMap.put("--intbits", "32");
-		runOneTest(toArgArray(argsMap));
-
+	    super.miniTest82();
 	}
 
 	@Test
@@ -760,20 +758,11 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 	@Test
 	public void miniTest91() throws IOException, InterruptedException {
 		super.miniTest91();
-
-		
-
 	}
 
 	 @Test
 	 public void miniTest92() throws IOException, InterruptedException {
-		 HashMap<String, String> argsMap = initCmdArgs("miniTest92.sk");
-		
-//		 argsMap.put("--intbits", "32");
-		 runOneTest(toArgArray(argsMap));
-			
-		 // failed because BV of size > 32 can not be represented with int. Need
-		 // to use BigInteger to track them.
+	     super.miniTest92();
 	 }
 	
 	@Test
@@ -974,9 +963,6 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 	@Test
 	public void miniTestb117() throws IOException, InterruptedException {
 		super.miniTestb117();
-
-		
-
 	}
 
 	@Test
@@ -1469,24 +1455,16 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 
 	@Test
 	public void miniTestb177() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("miniTestb177.sk");
-		argsMap.put("--intbits", "32");
-		runOneTest(toArgArray(argsMap));
-
+	    super.miniTestb177();
 	}
 
 	@Test
 	public void miniTestb178() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("miniTestb178.sk");
-		argsMap.put("--intbits", "32");
-		runOneTest(toArgArray(argsMap));
-
+		super.miniTestb178();
 	}
 
 	@Test
 	public void miniTestb179() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("miniTestb179.sk");
-		argsMap.put("--intbits", "32");
-		runOneTest(toArgArray(argsMap));
+	    super.miniTestb179();
 	}
 }
