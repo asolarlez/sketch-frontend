@@ -24,6 +24,7 @@ import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SMTTranslator.OpCode;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.util.DisjointSet;
 
 public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter {
 	
@@ -358,6 +359,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	private static Logger log = Logger.getLogger(NodeToSmtVtype.class.getCanonicalName());
 
+	protected DisjointSet<VarNode> mTransitiveSet;
 	
 	/*
 	 * Getters & Setters
@@ -366,6 +368,10 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public int getIntNumBits() { return intNumBits; }
 	
 	public StaticHoleTracker getHoleNamer() { return mHoleNamer; }
+	
+	public DisjointSet<VarNode> getEquivalenceSet() {
+	    return mTransitiveSet;
+	}
 	
 	/**
 	 * Constructor
@@ -402,6 +408,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mAsserts = new LinkedList<NodeToSmtValue>();
 		mHoles = new HashSet<VarNode>();
 		mInputs = new HashSet<VarNode>();
+		
+		mTransitiveSet = new DisjointSet<VarNode>();
 		
 		
 		mHoleNamer = new StaticHoleTracker(tmpVarGen);
@@ -1467,6 +1475,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	StaticHoleTracker mHoleNamer;
 	HashSet<VarNode> mRenamableVars;
 	HashSet<VarNode> mFixedNameVars;
+//	HashMap<String, VarNode> mRenamableVars;
+//    HashMap<String, VarNode> mFixedNameVars;
 	List<NodeToSmtValue> mEq;
 	HashMap<NodeToSmtValue, NodeToSmtValue> mSimpleDefs;
 	HashMap<NodeToSmtValue, Integer> mUses;
@@ -1506,6 +1516,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	int savedNodes = 0;
 	protected NodeToSmtValue checkCache(NodeToSmtValue node) {
 		
+	    if (node instanceof OpNode)
+	        return node;
+	    
 		NodeToSmtValue inCache = mCache.get(node);
 		if (inCache == null) {
 			inCache = node;
@@ -1527,6 +1540,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mAsserts.add(referenceVar(predicate));
 	}
 	
+	
 	public void addDefinition(VarNode dest, NodeToSmtValue def) {
 		// even if def is CONST true, we still want to assert it
 		// because that will leave a record that dest is defined instead of
@@ -1534,6 +1548,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		String varName = dest.getRHSName();
 		if (def instanceof OpNode)
 		    def = referenceVar(def);
+		else if (def instanceof VarNode) {
+		    mTransitiveSet.union((VarNode) def, dest);
+		}
 		dest = (VarNode) referenceVar(dest);
 		
 		assert isVarDeclared(dest) : varName + " is defined but not declared";
@@ -1542,7 +1559,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 		mEq.add(dest);
 		mSimpleDefs.put(dest, def);
-		mStructHash.put(def, dest);
+		if (!mStructHash.containsKey(def))
+		    mStructHash.put(def, dest);
 	}
 	
 	public void addTempDefinition(NodeToSmtValue def) {
@@ -1619,7 +1637,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			nodeToStore.setSuffixSetter(this);
 			
 			// renamable variables
-//			nodeToStore = new ProxyNode(node, this);
 			mRenamableVars.add(nodeToStore);
 			
 		}
@@ -1732,7 +1749,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	 * @param varName
 	 * @return
 	 */
-	public NodeToSmtValue getVarNode(String varName) {
+	public VarNode getVarNode(String varName) {
 		
 		for (VarNode renamable : mRenamableVars)
 			if (renamable.getRHSName().equals(varName))
@@ -1741,12 +1758,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		for (VarNode fixed : mFixedNameVars)
 			if (fixed.getRHSName().equals(varName))
 				return fixed;
-		
-//		if (mRenamableVars.containsKey(varName))
-//			return mRenamableVars.get(varName);
-//		
-//		if (mFixedNameVars.containsKey(varName))
-//			return mFixedNameVars.get(varName);
 		
 		return null;
 	}
@@ -1769,17 +1780,15 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 		log.info(" - Saved Node creation: " + savedNodes);
 		log.info(" - Removed " + numRemoved + " unused variables");
-		log.info(" - Structural Hashing Used: " + structHashingUsed);
+		log.info(" - Structural Hashing Used: " + structHashingUsed + " (size = " + mStructHash.size() +")");
 		log.info(" - Func Call Inlined: " + funccallInlined);
 		log.info(" - Struct Simplified: " + structSimplified);
 //		Toolbox.pause();
 	}
 	
-	public boolean isVarDeclared(NodeToSmtValue var) {
+	public boolean isVarDeclared(VarNode var) {
 		return mRenamableVars.contains(var) || 
 			mFixedNameVars.contains(var);
-//		return mRenamableVars.containsKey(varName) || 
-//			mFixedNameVars.containsKey(varName);
 	}
 	
 	public boolean isVarDefined(NodeToSmtValue var) {
@@ -1878,6 +1887,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	protected void simplifyExpressionTrees() {
 	    if (!FLAT) return;
 	    
+	    // simplfy the assignments
 	    NodeReplacer nr = new NodeReplacer();
 	    for (NodeToSmtValue var : mEq) {
 	        NodeToSmtValue def = mSimpleDefs.get(var);
@@ -1886,9 +1896,19 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	            NodeToSmtValue newDef = (NodeToSmtValue) nr.replaceChildren((OpNode) def);
 	            mSimpleDefs.put(var, newDef);
 	        }
-	            
+	    }
+	    
+	    // simplify the asserts
+	    LinkedList<NodeToSmtValue> oldAsserts = mAsserts;
+	    mAsserts = new LinkedList<NodeToSmtValue>(); 
+	    for (NodeToSmtValue predicate : oldAsserts) {
+	        if (predicate instanceof OpNode) {
+                NodeToSmtValue newPredicate = (NodeToSmtValue) nr.replaceChildren((OpNode) predicate);
+                mAsserts.add(newPredicate);
+            }
 	    }
 	}
+
 	
 	protected void constraintUndefinedVariables() {
 		NodeToSmtValue constant = CONST(-1);

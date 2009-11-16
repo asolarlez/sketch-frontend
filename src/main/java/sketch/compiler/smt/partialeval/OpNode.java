@@ -78,6 +78,8 @@ public class OpNode extends NodeToSmtValue {
 	
 	@Override
 	public boolean equals(Object obj) {
+	    if (this == obj)
+	        return true;
 
 		if (obj instanceof OpNode) {
 			OpNode that = (OpNode) obj;
