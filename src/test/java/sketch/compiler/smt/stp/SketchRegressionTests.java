@@ -43,5 +43,12 @@ public class SketchRegressionTests extends
 //		Assert.fail("divide by zero guarded by a condition");
 		super.miniTestb147();
 	}
+	
+	@Override
+	public void miniTest51() throws IOException, InterruptedException {
+       HashMap<String, String> argsMap = initCmdArgsWithFileName("miniTest51.sk");
+       runOneTest(toArgArray(argsMap));
+	}
+
 		
 }

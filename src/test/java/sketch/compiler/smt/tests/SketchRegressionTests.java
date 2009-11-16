@@ -382,8 +382,6 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 	public void miniTest39() throws IOException, InterruptedException {
 		super.miniTest39();
 
-		
-
 		HoleSorter sorter = new HoleSorter(oracle);
 		assertTrue((sorter.getHoleValueByOrder(0) == 2));
 		assertTrue((sorter.getHoleValueByOrder(1) == 2));
@@ -484,7 +482,6 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 		assertTrue(sorter.getHoleValueByOrder(5) == 2);
 		assertTrue(sorter.getHoleValueByOrder(6) == 2);
 		assertTrue(sorter.getHoleValueByOrder(7) == 2);
-
 	}
 
 	@Test
@@ -544,7 +541,8 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 	public void miniTest63() throws IOException, InterruptedException {
 		super.miniTest63();
 		HoleSorter sorter = new HoleSorter(oracle);
-		assertTrue((sorter.getHoleValueByOrder(0) == 1));
+		assertTrue((sorter.getHoleValueByOrder(0) == 1) ||
+		        (sorter.getHoleValueByOrder(0) == 3));
 	}
 
 	@Test
