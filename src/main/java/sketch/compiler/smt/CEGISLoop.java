@@ -311,7 +311,12 @@ public class CEGISLoop {
 			return new YicesBVBackend(
 					mParams,
 					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
-					mRControl, mTmpVarGen, tracing);
+					mRControl, mTmpVarGen, 1, tracing);
+		} else if (backend.equals("yices2")) {
+            return new YicesBVBackend(
+                    mParams,
+                    mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+                    mRControl, mTmpVarGen, 2, tracing);
 		} else if (backend.equals("stp")) {
 //			return new StpSmtlibBackend(
 			return new STPBackend(
