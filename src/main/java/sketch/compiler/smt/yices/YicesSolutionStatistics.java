@@ -20,9 +20,6 @@ public class YicesSolutionStatistics extends SolutionStatistics {
 				Float sec = Float.parseFloat(matcher.group(1));
 				long ms = (long) (sec * 1000L);
 				setSolutionTimeMs(ms);
-
-			} else {
-				throw new IllegalStateException("Failed to find timing info.");
 			}
 		}
 

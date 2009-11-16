@@ -13,6 +13,7 @@ import sketch.compiler.smt.partialeval.BitVectUtil;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtType;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
+import sketch.compiler.smt.partialeval.VarNode;
 
 public class YicesBVOracle extends SmtValueOracle {
 
@@ -115,6 +116,16 @@ public class YicesBVOracle extends SmtValueOracle {
 		}
 	}
 
-
+	@Override
+	public NodeToSmtValue getValueForVariable(String var, SmtType smtType) {
+	    
+	    NodeToSmtValue val = super.getValueForVariable(var, smtType);
+	    if (val == null) {
+	        VarNode varNode = mFormula.getVarNode(var);
+	        VarNode root = mFormula.getEquivalenceSet().find(varNode);
+	        return getValueForVariable(root);
+	    }
+	    return val;
+	}
 
 }

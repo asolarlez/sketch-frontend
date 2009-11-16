@@ -24,11 +24,18 @@ import sketch.util.SynchronousTimedProcess;
 
 public class YicesBVBackend extends SMTBackend {
 	
+    private final static String V1_SWICHES = " -smt -e -tc -st ";
+    private final static String V2_SWICHES = " -f ";
+    private String mSwitch;
 	private final static boolean USE_FILE_SYSTEM = true;
 	
 	public YicesBVBackend(CommandLineParamManager params, String tmpFilePath,
-			RecursionControl rcontrol, TempVarGen varGen, boolean tracing) throws IOException {
+			RecursionControl rcontrol, TempVarGen varGen, int version, boolean tracing) throws IOException {
 		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		if (version == 1)
+		    mSwitch = V1_SWICHES;
+		else
+		    mSwitch = V2_SWICHES;
 	}
 
 	@Override
@@ -68,9 +75,9 @@ public class YicesBVBackend extends SMTBackend {
 		// -smt tells yices the input is in smt format, and -e tells yices to output the model
 		String command;
 		if (USE_FILE_SYSTEM) {
-			command = params.sValue("smtpath") + " -smt" + " -e" + " -tc" + " -st" + " " + getTmpFilePath();
+			command = params.sValue("smtpath") + mSwitch + getTmpFilePath();
 		} else {
-			command = params.sValue("smtpath") + " -smt" + " -e" + " -tc" + " -st"; 
+			command = params.sValue("smtpath") + mSwitch; 
 		}
 		String[] commandLine = command.split(" ");
 		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
