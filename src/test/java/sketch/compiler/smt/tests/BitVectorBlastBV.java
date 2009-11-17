@@ -12,7 +12,8 @@ import sketch.compiler.smt.TestHarness;
 
 public class BitVectorBlastBV extends TestHarness {
 
-	protected HashMap<String, String> initCmdArgs(String inputPath) {
+	protected HashMap<String, String> initCmdArgs(String input) {
+	    String inputPath = "src/test/sk/smt/bitvectors/" + input;
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 		
 		argsMap.put("--smtpath", System.getenv("smtpath"));
@@ -28,9 +29,6 @@ public class BitVectorBlastBV extends TestHarness {
 		argsMap.put("--tmpdir", tmpDirStr);
 		argsMap.put("--keeptmpfiles", null);
 		
-//		argsMap.put("--verbosity", "4");
-//		argsMap.put("--showphase", "lowering");
-//		argsMap.put("--trace", null);
 		argsMap.put(inputPath, null);
 		
 		return argsMap;
@@ -44,91 +42,91 @@ public class BitVectorBlastBV extends TestHarness {
 	
 	@Test
 	public void testInit() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/init.sk");
+		HashMap<String, String> argsMap = initCmdArgs("init.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testVectorIndex() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/vectorIndex.sk");
+		HashMap<String, String> argsMap = initCmdArgs("vectorIndex.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testArrayAssignment() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/arrayAssignment.sk");
+		HashMap<String, String> argsMap = initCmdArgs("arrayAssignment.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testCastConstScalarToBitArray() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/castConstScalarToBitArray.sk");
+		HashMap<String, String> argsMap = initCmdArgs("castConstScalarToBitArray.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testCastBottomScalarToBitArray() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/castBottomScalarToBitArray.sk");
+		HashMap<String, String> argsMap = initCmdArgs("castBottomScalarToBitArray.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testCastBigBitArrayToSmall() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/castBigBitArrayToSmall.sk");
+		HashMap<String, String> argsMap = initCmdArgs("castBigBitArrayToSmall.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testCastSmallBitArrayToBig() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/castSmallBitArrayToBig.sk");
+		HashMap<String, String> argsMap = initCmdArgs("castSmallBitArrayToBig.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testElementUpdateWithConstIdx() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/elementUpdateWithConstIdx.sk");
+		HashMap<String, String> argsMap = initCmdArgs("elementUpdateWithConstIdx.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testElementAccwWithBottomIdx() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/elementAccWithBottomIdx.sk");
+		HashMap<String, String> argsMap = initCmdArgs("elementAccWithBottomIdx.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testElementRangeAccWithConstRange() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/elementRangeAccWithConstRange.sk");
+		HashMap<String, String> argsMap = initCmdArgs("elementRangeAccWithConstRange.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testElementRangeUpdateWithConstRange() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/elementRangeUpdateWithConstRange.sk");
+		HashMap<String, String> argsMap = initCmdArgs("elementRangeUpdateWithConstRange.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testElementUpdateWithBottomIdx() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/elementUpdateWithBottomIdx.sk");
+		HashMap<String, String> argsMap = initCmdArgs("elementUpdateWithBottomIdx.sk");
 
 		runOneTest(argsMap);
 	}
 	
 	@Test
 	public void testHole() throws Exception {
-		HashMap<String, String> argsMap = initCmdArgs("inputs/bitvectors/hole.sk");
+		HashMap<String, String> argsMap = initCmdArgs("hole.sk");
 
 		runOneTest(argsMap);
 	}
