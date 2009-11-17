@@ -105,7 +105,7 @@ public abstract class SmtOracle extends AbstractValueOracle {
 	@Override
 	public Expression popValueForNode(FENode node) {
 		String name = holeNamer.getName(node);
-		NodeToSmtValue v = valMap.get(name);
+		NodeToSmtValue v = getValueForVariable(name, null);
 		
 		return nodeToExpression(node, v); 
 	}
