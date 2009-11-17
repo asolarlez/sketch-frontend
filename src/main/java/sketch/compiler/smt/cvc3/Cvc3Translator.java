@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtType;
 
@@ -148,6 +149,12 @@ public class Cvc3Translator extends SMTTranslator {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+    @Override
+    public String getStrForLinearNode(LinearNode linNode) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 
 }

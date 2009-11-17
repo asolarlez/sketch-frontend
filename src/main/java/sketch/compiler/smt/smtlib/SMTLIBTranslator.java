@@ -9,8 +9,11 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.partialeval.BitVectUtil;
+import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtType;
+import sketch.compiler.smt.partialeval.VarNode;
 
 /**
  * This class translates NodeToSmtValue and NodeToSmtState into SMTLIB formulas
@@ -73,6 +76,40 @@ public class SMTLIBTranslator extends SMTTranslator {
 	public String getArrayAcess(String base, String idx) {
 		return "(select " + base + " " + idx + ")";
 	}
+	
+	public String getStrForLinearNode(LinearNode linNode) {
+	    StringBuffer sb = new StringBuffer();
+        // +(o1, +(o2, c))
+        for (VarNode vv : linNode.getVars()) {
+            // +
+            
+            sb.append('(');
+            sb.append(opStrMap.get(OpCode.PLUS));
+            sb.append(' ');
+            
+            if (linNode.getCoeff(vv) == 1) {
+                // 1*a = a
+                sb.append(getStr(vv));
+                sb.append(' ');
+            } else {
+                // *
+                
+                sb.append('(');
+                sb.append(opStrMap.get(OpCode.TIMES));
+                sb.append(' ');
+                sb.append(getStr(vv));
+                sb.append(' ');
+                
+                sb.append(getIntLiteral(linNode.getCoeff(vv), linNode.getNumBits()));
+                sb.append(") ");
+                
+            }
+        }
+        sb.append(getIntLiteral(linNode.getCoeff(null), linNode.getNumBits()));
+        for (int j = 0; j < linNode.getNumTerms(); j++)
+            sb.append(')');
+        return sb.toString();
+    }
 	
 	@Override
 	public String getNaryExpr(OpCode op,
@@ -146,9 +183,10 @@ public class SMTLIBTranslator extends SMTTranslator {
 				return "BitVec[1]";
 			} else if (t ==TypePrimitive.booltype) {
 				return PREDICATE_FLAG;
-			} else if (t == TypePrimitive.nulltype || t == TypePrimitive.inttype){
-				return "BitVec[" + type.getNumBits() + "]";	
-			} else if (t instanceof TypeStruct || t instanceof TypeStructRef) {
+			} else if (t == TypePrimitive.nulltype || 
+			        t == TypePrimitive.inttype ||
+			        t instanceof TypeStruct || 
+			        t instanceof TypeStructRef) {
 				return "BitVec[" + type.getNumBits() + "]";
 			}
 			
@@ -156,7 +194,7 @@ public class SMTLIBTranslator extends SMTTranslator {
 			TypeArray arrType = (TypeArray) t;
 			// if the type is BIT[W], just use bit vector
 			if (arrType.getBase() == TypePrimitive.bittype)
-				return "BitVec[" + arrType.getDimension(0) + "]";
+				return "BitVec[" + BitVectUtil.vectSize(arrType) + "]";
 				
 			return "Array[" + mIntNumBits + ":" + mIntNumBits + "]";
 		} 

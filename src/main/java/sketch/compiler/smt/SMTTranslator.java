@@ -7,6 +7,7 @@ import java.util.Map;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.smt.partialeval.LabelNode;
+import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.OpNode;
 import sketch.compiler.smt.partialeval.SmtType;
@@ -126,6 +127,9 @@ public abstract class SMTTranslator  {
 	 */	
 	public abstract String getNaryExpr(OpCode op, NodeToSmtValue... opnds);
 	
+	
+	public abstract String getStrForLinearNode(LinearNode linNode);
+	
 	/**
 	 * Get String representation that does a unary operation on cond
 	 * @param op
@@ -189,6 +193,8 @@ public abstract class SMTTranslator  {
 				return getNaryExpr(node.getOpcode(), node.getOperands());
 			} else if (ntsv instanceof LabelNode) {
 				return ntsv.toString();
+			} else if (ntsv instanceof LinearNode) {
+			    return getStrForLinearNode((LinearNode) ntsv);
 			}
 		
 		}
