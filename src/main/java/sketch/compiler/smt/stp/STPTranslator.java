@@ -134,7 +134,7 @@ public class STPTranslator extends SMTTranslator {
         return mSB.append(t);
     }
 
-    public String getStrForLinearNode(LinearNode linNode) {
+     public String getStrForLinearNode(LinearNode linNode) {
         // +(o1, +(o2, c))
         for (VarNode vv : linNode.getVars()) {
             // +
