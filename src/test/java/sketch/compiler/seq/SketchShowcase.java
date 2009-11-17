@@ -12,41 +12,7 @@ public abstract class SketchShowcase extends TestHarness {
 	protected abstract HashMap<String, String> initCmdArgs(String string);
 	protected abstract void runOneTest(String[] args) throws IOException, InterruptedException;
 	
-	@Test
-	public void xpose() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("xpose.sk");
-		runOneTest(toArgArray(argsMap));
-	}
 	
-	@Test
-	public void logcount() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("logcount.sk");
-		runOneTest(toArgArray(argsMap));
-	}
-	
-	@Test
-	public void polynomialInt() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("polynomialInt.sk");
-		runOneTest(toArgArray(argsMap));
-	}
-	
-	@Test
-	public void aesFullStage() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("aesFullStage.sk");
-		runOneTest(toArgArray(argsMap));
-	}
-	
-	@Test
-	public void des2() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("des2.sk");
-		runOneTest(toArgArray(argsMap));
-	}
-	
-	@Test
-	public void Pollard() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("Pollard.sk");
-		runOneTest(toArgArray(argsMap));
-	}
 	
 	// DIA-2
 	@Test
@@ -165,6 +131,49 @@ public abstract class SketchShowcase extends TestHarness {
 		runOneTest(toArgArray(argsMap));
 	}
 	
+	// others
+	
+	@Test
+    public void xpose() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("xpose.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+    
+    @Test
+    public void logcount() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("logcount.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+    
+    @Test
+    public void polynomialInt() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("polynomialInt.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+    
+    @Test
+    public void aesFullStage() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("aesFullStage.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+    
+    @Test
+    public void des2() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("des2.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+    
+    @Test
+    public void Pollard() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("Pollard.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+	
+    @Test
+    public void tableBasedAddition() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("tableBasedAddition.sk");
+        runOneTest(toArgArray(argsMap));
+    }
 	
 
 }

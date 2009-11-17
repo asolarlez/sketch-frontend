@@ -14,7 +14,7 @@ public class SketchShowcase extends sketch.compiler.seq.SketchShowcase {
 
 	@Override
 	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/sketchTests/showcase/" + input;
+		String inputPath = "src/test/sk/smt/sketchTests/showcase/" + input;
 	
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 
