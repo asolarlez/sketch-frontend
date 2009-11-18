@@ -38,7 +38,7 @@ public class LinearNode extends NodeToSmtValue {
 	}
 	
 	/**
-	 * Create a LinearNode obj by combining n1 and n2
+	 * Create a LinearNode obj by adding n1 and n2
 	 * @param n1
 	 * @param n2
 	 */
@@ -65,6 +65,11 @@ public class LinearNode extends NodeToSmtValue {
 		    mC = n1.getCoeff(null) + n2.getCoeff(null);
 	}
 	
+	/**
+	 * Create a LinearNode obj by multiplying n1 with c
+	 * @param n1
+	 * @param c
+	 */
 	public LinearNode(LinearNode n1, ConstNode c) {
 		this(n1.getType(), n1.getNumBits());
 		obj = n1.getVarToCoeffMap().clone();

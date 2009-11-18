@@ -345,7 +345,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	private int funccallInlined = 0;
 	public static final boolean FLAT = false;
 	private int structSimplified = 0;
-	public static final boolean CANONICALIZE = true;
+	public static final boolean CANONICALIZE = false;
 	
 	protected TempVarGen tmpVarGen;
 	protected AbstractValueOracle oracle;
@@ -513,7 +513,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
         return ntsv1 instanceof LinearNode || ntsv1 instanceof ConstNode || ntsv1 instanceof VarNode;
     }
 	
-	public NodeToSmtValue LINEAR(NodeToSmtValue v1, NodeToSmtValue v2, boolean isMinus) {
+	public NodeToSmtValue LINEAR_PLUS(NodeToSmtValue v1, NodeToSmtValue v2, boolean isMinus) {
 	    NodeToSmtValue newNode;
 	    // Const and Var
 	    // Const and Linear
@@ -522,15 +522,24 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    LinearNode l1;
 	    LinearNode l2;
 
-	    l1 = LINEAR(v1);
-	    l2 = LINEAR(v2);
+	    l1 = LINEARIZE(v1);
+	    l2 = LINEARIZE(v2);
 	    
 	    newNode = new LinearNode(l1, l2, isMinus);
 	    newNode = checkCache(newNode);
 	    return checkStructuralHash(newNode);
 	}
+	
+	public NodeToSmtValue LINEAR_MULT(NodeToSmtValue lineraizableVar, ConstNode c) {
+	    
+	    LinearNode lin = LINEARIZE(lineraizableVar);
+	    NodeToSmtValue newNode = new LinearNode(lin, c);
+	    
+	    newNode = checkCache(newNode);
+	    return checkStructuralHash(newNode);
+	}
 
-    private LinearNode LINEAR(NodeToSmtValue v2) {
+    private LinearNode LINEARIZE(NodeToSmtValue v2) {
         LinearNode l2;
         NodeToSmtValue def;
         if (v2 instanceof ConstNode) {
@@ -704,7 +713,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //			    PrintStream ps = System.err;
 			    
 //			    ps.println(ntsv1 + "\t" + ntsv2);
-			    NodeToSmtValue lin = LINEAR(ntsv1, ntsv2, false);
+			    NodeToSmtValue lin = LINEAR_PLUS(ntsv1, ntsv2, false);
 //			    ps.println(lin);
 			    return lin;
 			} else {
@@ -737,7 +746,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
                 
 //		        PrintStream ps = System.err;
 //                ps.println(ntsv1 + "\t" + ntsv2);
-                NodeToSmtValue lin = LINEAR(ntsv1, ntsv2, true);
+                NodeToSmtValue lin = LINEAR_PLUS(ntsv1, ntsv2, true);
 //                ps.println(lin);
                 return lin;
             } else {
@@ -755,15 +764,17 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() * v2.getIntVal());
-		} else if (CANONICALIZE &&
-		        (ntsv1 instanceof ConstNode && 
-		        isLinearizable(ntsv2)) ||
-                (isLinearizable(ntsv1) &&
-               ntsv2 instanceof ConstNode)) {
-		    return LINEAR(ntsv1, ntsv2, false);
-		} else {
-			return mergeTwoValuesToBottom(OpCode.TIMES, ntsv1, ntsv2);
-		}
+		} else if (CANONICALIZE) {
+		        if (ntsv1 instanceof ConstNode && 
+		                isLinearizable(ntsv2)) {
+		            return LINEAR_MULT(ntsv2, (ConstNode) ntsv1);
+		        } else if (isLinearizable(ntsv1) &&
+		                ntsv2 instanceof ConstNode) {
+		            return LINEAR_MULT(ntsv1, (ConstNode) ntsv2);
+                }
+		} 
+		return mergeTwoValuesToBottom(OpCode.TIMES, ntsv1, ntsv2);
+		
 	}
 
 	@Override
