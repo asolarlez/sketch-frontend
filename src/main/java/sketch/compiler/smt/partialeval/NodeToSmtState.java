@@ -105,8 +105,7 @@ public abstract class NodeToSmtState extends TypedState {
 			    throw new IllegalStateException("updating NodeToSmtState with an unexpected value");
 			}
 			
-			
-			
+		
 		} else {
 			// NO-OP. if the state is an array, it must be the case that we are
 			// assigning an array to another array, which means we need

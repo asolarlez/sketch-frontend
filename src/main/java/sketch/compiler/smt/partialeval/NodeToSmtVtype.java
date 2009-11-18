@@ -30,23 +30,24 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public class DebugPrinter extends FormulaVisitor {
 
-	    String result;
+	    StringBuffer sb = new StringBuffer();
+	   
 		public DebugPrinter() { }
 		
 		@Override
 		public Object visitConstNode(ConstNode constNode) {
-		    result = constNode.getIntVal() + "";
+		    sb.append(constNode.getIntVal());
 		    return constNode;
 		}
 		
 		@Override
 		public Object visitVarNode(VarNode varNode) {
-		    result = varNode.getRHSName();
+		    sb.append(varNode.getRHSName());
 		    return varNode;
 		}
 
 		public Object visitLinearNode(LinearNode ln) {
-		    StringBuffer sb = new StringBuffer();
+		    
 	        sb.append(ln.getCoeff(null));
 	        
 	        for (VarNode v : ln.getVars()) {
@@ -54,44 +55,40 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	           sb.append(ln.getCoeff(v));
 	           sb.append('*');
 	           v.accept(this);
-	           sb.append(result);
+	           
 	        }
-	        result = sb.toString();
 	        return ln;
 		}
 		
 		@Override
 		public Object visitLabelNode(LabelNode labelNode) {
-		    result = labelNode.toString();
+		    sb.append(labelNode.toString());
 		    return labelNode;
 		}
 		
 		@Override
 		public Object visitOpNode(OpNode opNode) {
-		    StringBuffer sb = new StringBuffer();
 	        
 	        if (opNode.getOpcode() == OpCode.IF_THEN_ELSE) {
 	            sb.append('(');
                 opNode.getOperands()[0].accept(this);
-                sb.append(result);
+                
 	            sb.append(" ? ");
 	            opNode.getOperands()[1].accept(this);
-	            sb.append(result);
+	            
 	            sb.append(" : ");
 	            opNode.getOperands()[2].accept(this);
-                sb.append(result);
+                
 	            sb.append(')');
 	        } else {
 	            sb.append('(');
 	            for (NodeToSmtValue opnd : opNode.getOperands()) {
 	                sb.append(OpNode.getCanonicalOp(opNode.getOpcode()));
 	                opnd.accept(this);
-	                sb.append(result);
+	                
 	            }
 	            sb.append(')');    
 	        }
-	    
-	        result = sb.toString();
 	        return opNode;
 		}
 		
@@ -348,7 +345,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	private int funccallInlined = 0;
 	public static final boolean FLAT = false;
 	private int structSimplified = 0;
-	public static final boolean CANONICALIZE = false;
+	public static final boolean CANONICALIZE = true;
 	
 	protected TempVarGen tmpVarGen;
 	protected AbstractValueOracle oracle;
@@ -758,6 +755,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() * v2.getIntVal());
+		} else if (CANONICALIZE &&
+		        (ntsv1 instanceof ConstNode && 
+		        isLinearizable(ntsv2)) ||
+                (isLinearizable(ntsv1) &&
+               ntsv2 instanceof ConstNode)) {
+		    return LINEAR(ntsv1, ntsv2, false);
 		} else {
 			return mergeTwoValuesToBottom(OpCode.TIMES, ntsv1, ntsv2);
 		}
@@ -1335,20 +1338,20 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
             }
 		}
 
-		if (ret == null) {
-			DebugPrinter dp = new DebugPrinter();
+//		if (ret == null) {
 //			ps.print("NOT FOUND func call hash: ");
-			ps.print(funccall.getName());
-			ps.print(" ");
-			FuncNode fNode = (FuncNode) funccall;
-			for (NodeToSmtValue arg : fNode.getOperands()) {
-			    arg.accept(dp);
-				ps.print(dp.result);
-				ps.print(", ");
-			}
-			ps.print(funccall);
-			ps.println();
-		}
+//			ps.print(funccall.getName());
+//			ps.print(" ");
+//			FuncNode fNode = (FuncNode) funccall;
+//			for (NodeToSmtValue arg : fNode.getOperands()) {
+//			    DebugPrinter dp = new DebugPrinter();
+//			    arg.accept(dp);
+//				ps.print(dp.sb.toString());
+//				ps.print(", ");
+//			}
+//			ps.print(funccall);
+//			ps.println();
+//		}
 		
 		if (ret == null)
 		    funccallInlined++;
@@ -1516,8 +1519,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	int savedNodes = 0;
 	protected NodeToSmtValue checkCache(NodeToSmtValue node) {
 		
-	    if (node instanceof OpNode)
-	        return node;
+//	    if (node instanceof OpNode)
+//	        return node;
 	    
 		NodeToSmtValue inCache = mCache.get(node);
 		if (inCache == null) {
