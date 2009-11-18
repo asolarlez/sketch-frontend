@@ -6,7 +6,7 @@ import sketch.compiler.ast.core.typs.Type;
 
 public class SmtType extends Type {
 	
-	private static final boolean USE_CACHE = false;
+	private static final boolean USE_CACHE = true;
 	
 	private int mNumBits;
 	
@@ -29,8 +29,6 @@ public class SmtType extends Type {
 					return smtType;
 				} else {
 					typesSaved++;
-					if (typesSaved % 1000 == 0)
-						System.err.println("Saved types: " + typesSaved);
 					return smtType;
 				}
 
