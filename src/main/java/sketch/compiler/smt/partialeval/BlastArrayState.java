@@ -243,14 +243,25 @@ public class BlastArrayState extends NodeToSmtState {
 		}
 	}
 	
-	protected void updateOneElement(int i, NodeToSmtValue newVal) {
-		this.updateLHSidx(i);
-		VarNode newDest = newLHSvalue(i);
-		newDest.update(newVal);
-		arrElems.put(i, newDest);
-
-		vtype.declareRenamableVar(newDest);
-		vtype.addDefinition(newDest, newVal);
+	protected void updateOneElement(int i, NodeToSmtValue ntsvVal) {
+		
+		
+		if (ntsvVal instanceof OpNode) {
+		    this.updateLHSidx(i);
+            VarNode newDest = newLHSvalue(i);
+            newDest.update(ntsvVal);
+            arrElems.put(i, newDest);
+            vtype.declareRenamableVar(newDest);
+            vtype.addDefinition(newDest, ntsvVal);
+            
+        } else if (ntsvVal instanceof VarNode ||
+                ntsvVal instanceof ConstNode ||
+                ntsvVal instanceof LinearNode) {
+            // if is VarNode or ConstNode, use it as absVal
+            arrElems.put(i, ntsvVal);
+        } else {
+            throw new IllegalStateException("updating NodeToSmtState with an unexpected value");
+        }
 	}
 	
 	/**
