@@ -102,6 +102,7 @@ public class STPBackend extends SMTBackend {
 
 	@Override
 	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits,
+	        boolean useTheoryOfArray,
 			TempVarGen tmpVarGen) {
 		return new STPVtype(  
 				getSMTTranslator(), 

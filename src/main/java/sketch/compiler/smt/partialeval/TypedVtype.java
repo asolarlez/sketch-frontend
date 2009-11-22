@@ -199,4 +199,5 @@ public class TypedVtype extends IntVtype {
 	public static Type getElementType(Type arrayType) {
 		return ((TypeArray) arrayType).getBase();
 	}
+
 }

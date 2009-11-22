@@ -134,13 +134,13 @@ public class SMTLIBTranslator extends SMTTranslator {
 			sb.append(getStr(opnds[1]));
 			sb.append(')');
 			return sb.toString();
-		} else if (op == OpCode.ARRACC) {
-			// array update
-			return getArrayAcess(null, null);//base, idx);
-			
-		} else if (op == OpCode.ARRUPD) {
-			// array update
-			return getAssignment(null, null, null, null); //dest, src, idx, newVal);
+//		} else if (op == OpCode.ARRACC) {
+//			// array update
+//			return getArrayAcess(null, null);//base, idx);
+//			
+//		} else if (op == OpCode.ARRUPD) {
+//			
+//			return getAssignment(null, null, null, null); //dest, src, idx, newVal);
 		
 		} else if (op == OpCode.ARRNEW) {
 			sb.append("bvbin");
@@ -154,7 +154,7 @@ public class SMTLIBTranslator extends SMTTranslator {
 			return sb.toString();
 			
 		} else {
-			
+		 	// other operations, including array update
 			sb.append('(');
 			sb.append(getOp(op));
 			sb.append(' ');
@@ -238,6 +238,9 @@ public class SMTLIBTranslator extends SMTTranslator {
 		opStrMap.put(OpCode.EXTRACT, "extract");
 		opStrMap.put(OpCode.REPEAT, "repeat");
 		opStrMap.put(OpCode.IF_THEN_ELSE, "ite");
+		
+		opStrMap.put(OpCode.ARRUPD, "store");
+		opStrMap.put(OpCode.ARRACC, "select");
 		// not equals needs to be done with special case in binary operator
 	}
 	

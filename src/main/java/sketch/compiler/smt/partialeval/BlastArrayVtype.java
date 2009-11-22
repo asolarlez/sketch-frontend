@@ -1,10 +1,12 @@
 package sketch.compiler.smt.partialeval;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.dataflow.MethodState;
+import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
 import sketch.compiler.smt.SMTTranslator;
 
@@ -36,47 +38,50 @@ public class BlastArrayVtype extends NodeToSmtVtype {
 		NodeToSmtState ret = new BlastArrayState(properName, type, this);
 		return ret;
 	}
-
+	
+	protected NodeToSmtValue handleNormalArrayConstAccess(NodeToSmtValue arr,
+            NodeToSmtValue idx, NodeToSmtValue len, boolean isUnchecked)
+    {
+        int iidx = idx.getIntVal();
+        int size = arr.getVectValue().size();
+        if((iidx < 0 || iidx >= size)  )
+            throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size+") ");
+        
+        if(len != null){
+            assert len.hasIntVal() : "NYI";
+            int ilen = len.getIntVal();
+            if(ilen != 1){
+                List<abstractValue> lst = new ArrayList<abstractValue>(ilen);
+                for(int i=0; i<ilen; ++i){
+                    lst.add(  arracc(arr, plus(idx, CONST(i)), null, isUnchecked)  );
+                }
+                return ARR( lst );
+            }
+        }
+        return (NodeToSmtValue) arr.getVectValue().get(iidx);
+    }
+	
 	/**
 	 * Partial eval the array-access node when the index expression is BOTTOM
 	 */
 	@Override
-	protected NodeToSmtValue rawArracc(TypedValue arr, TypedValue idx, TypedValue len) {
-		NodeToSmtValue ntsvArr = (NodeToSmtValue) arr;
-		NodeToSmtValue ntsvIdx = (NodeToSmtValue) idx;
-		// (ite (= idx 1) a_0
-		//		(ite (= idx 2) a_1) ...)
-		String newTmpVarName = tmpVarGen.nextVar("rawArracTmp");
-		Type eleType = TypedVtype.getElementType(ntsvArr.getType());
-		if (len.getIntVal() != 1)
-			eleType = new TypeArray(eleType, new ExprConstInt(len.getIntVal()));
-		varState tmpVarState = cleanState(newTmpVarName, eleType, getMethodState());
-		int arrSize = arr.isBitArray() ? BitVectUtil.vectSize(ntsvArr.getType()) : arr.getVectValue().size();
-		NodeToSmtValue newVal = rawArraccRecursive(ntsvArr, ntsvIdx, 0, arrSize, len.getIntVal());
-		tmpVarState.update(newVal, this);
-		
-	
-		return (NodeToSmtValue) tmpVarState.state(this);
+	protected NodeToSmtValue handleNormalArrayRawAccess(NodeToSmtValue arr,
+	        NodeToSmtValue idx, NodeToSmtValue len, boolean isUnchecked)
+	{
+	    return rawArraccRecursiveNormalArray(arr, idx, 0, arr.getVectValue().size(), len.getIntVal());
 	}
 	
-	private NodeToSmtValue rawArraccRecursive(NodeToSmtValue arr, NodeToSmtValue idx, int i, int size, int len) {
+	protected NodeToSmtValue rawArraccRecursiveNormalArray(NodeToSmtValue arr, NodeToSmtValue idx, int i, int size, int len) {
 		
 		if (i + len - 1 == size - 1) {
 			// the last element
-			if (arr.isBitArray()) {
-				return extract(i+len-1, i, arr);
-			} else {
-				return (NodeToSmtValue) arr.getVectValue().get(i);
-			}
-		} else {
-			if (arr.isBitArray()) {
-				return condjoin(eq(idx, CONST(i)), extract(i+len-1, i, arr), 
-						rawArraccRecursive(arr, idx, i+1, size, len));
-			} else {
-				return condjoin(eq(idx, CONST(i)), (NodeToSmtValue) arr.getVectValue().get(i), 
-					rawArraccRecursive(arr, idx, i+1, size, len));
-			}
+			return (NodeToSmtValue) arr.getVectValue().get(i);
+		} else {		
+			return condjoin(eq(idx, CONST(i)), (NodeToSmtValue) arr.getVectValue().get(i), 
+			        rawArraccRecursiveNormalArray(arr, idx, i+1, size, len));
 		}
 	}
+	
+	
 
 }

@@ -108,7 +108,6 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 				if (BitVectUtil.isPrimitive(paramType)) {
 				
 					NodeToSmtValue paramVal = vtype.newParam(param, param.getType());
-					
 					state.setVarValue(param.getName(), paramVal);
 					
 				} else {
@@ -119,7 +118,6 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 						NodeToSmtValue ntsvEle = (NodeToSmtValue) arrEle;
 						
 						NodeToSmtValue paramVal = vtype.newParam(param, i, ntsvEle.getType());
-						
 						
 						state.setVarValue(param.getName(), vtype.CONST(i),
 								paramVal);

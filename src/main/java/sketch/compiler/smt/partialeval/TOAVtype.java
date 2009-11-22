@@ -5,7 +5,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.varState;
 import sketch.compiler.smt.SMTTranslator;
-import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.compiler.smt.SMTTranslator.OpCode;
 
 /**
  * Emit formula to use Theory Of Array
@@ -16,7 +16,7 @@ import sketch.compiler.solvers.constructs.AbstractValueOracle;
  */
 public class TOAVtype extends NodeToSmtVtype {
 	
-	public TOAVtype(AbstractValueOracle oracle, 
+	public TOAVtype( 
 			SMTTranslator smtTran, 
 			int intNumBits,
             int inBits,
@@ -27,9 +27,40 @@ public class TOAVtype extends NodeToSmtVtype {
 
 	@Override
 	public varState cleanState(String var, Type t, MethodState mstate) {
-		String properName = mTrans.getProperVarName(var);
-
-		NodeToSmtState ret = new TOAState(properName, t, this);
+	    SmtType type = SmtType.create(t, getNumBitsForType(t));
+	    String properName = mTrans.getProperVarName(var);
+		NodeToSmtState ret = new TOAState(properName, type, this);
 		return ret;
 	}
+
+    @Override
+    protected NodeToSmtValue handleNormalArrayRawAccess(NodeToSmtValue arr,
+            NodeToSmtValue idx, NodeToSmtValue len, boolean isUnchecked)
+    {
+        return theoryOfArrayAccess(arr, idx);
+    }
+
+    @Override
+    protected NodeToSmtValue handleNormalArrayConstAccess(NodeToSmtValue arr,
+            NodeToSmtValue idx, NodeToSmtValue len, boolean isUnchecked)
+    {
+        int iidx = idx.getIntVal();
+        
+        int size = BitVectUtil.vectSize(arr.getType());
+        
+        if((iidx < 0 || iidx >= size)  )
+            throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size+") ");
+        
+        if (arr.obj != null) {
+            return (NodeToSmtValue) arr.getVectValue().get(iidx);
+        }
+        return theoryOfArrayAccess(arr, idx);
+    }
+    
+    protected NodeToSmtValue theoryOfArrayAccess(NodeToSmtValue arr, NodeToSmtValue idx) {
+        
+        Type eleType = TypedVtype.getElementType(arr.getType());
+        
+        return BOTTOM(eleType, OpCode.ARRACC, arr, idx);
+    }
 }

@@ -232,13 +232,13 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 				printFixedNameDeclarations();
 				
 				for (int currObserIdx = 0; currObserIdx < observations.size(); currObserIdx++) {
-					String[] comment = {"Formula for observation " + currObserIdx };
+					String comment = "Formula for observation " + currObserIdx;
 					
 					setSuffix("");
 					HashMap<NodeToSmtValue, NodeToSmtValue> valueAssignments = useOracle(observations.get(currObserIdx), true);
 					setSuffix("s" + currObserIdx);
 					
-					addBlockComment(comment);
+					addComment(comment);
 					
 					printRenamableDeclarations();
 					printValueAssignments(valueAssignments);
@@ -615,46 +615,65 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsvArr = (NodeToSmtValue) arr;
 		NodeToSmtValue ntsvIdx = (NodeToSmtValue) idx;
 		NodeToSmtValue ntsvLen = (NodeToSmtValue) len;
-		int size = BitVectUtil.vectSize(ntsvArr.getType());
 		
-		if (!ntsvIdx.isConst() || !ntsvLen.isConst()) {
-			// index is bottom or length is bottom
-			return rawArracc(ntsvArr, ntsvIdx, ntsvLen);
-			
+		if (ntsvArr.isBitArray()) {
+		    return bitArrayAccess(ntsvArr, ntsvIdx, ntsvLen, isUnchecked);
 		} else {
-			// constant index and length
-			
-			int iidx = idx.getIntVal() ;
-			size = ntsvArr.isBitArray() ? BitVectUtil.vectSize(ntsvArr.getType()) : arr.getVectValue().size();
-			if( !isUnchecked && (iidx < 0 || iidx >= size)  )
-				throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size+") ");
-			
-			if(iidx < 0 || iidx >= size)
-				// index out of bound
-				return outOfBounds((NodeToSmtValue) arr);
-			
-			if (BitVectUtil.isBitArray(ntsvArr.getType())) {
-				// if it's bit aray
-				return extract(idx.getIntVal() + len.getIntVal() - 1, idx.getIntVal(), ntsvArr);
-
-			} else {
-				// if it's normal array
-				
-				if(len != null){
-					assert len.hasIntVal() : "NYI";
-					int ilen = len.getIntVal();
-					if(ilen != 1){
-						List<abstractValue> lst = new ArrayList<abstractValue>(ilen);
-						for(int i=0; i<ilen; ++i){
-							lst.add(  arracc(arr, plus(idx, CONST(i)), null, isUnchecked)  );
-						}
-						return ARR( lst );
-					}
-				}
-				return arr.getVectValue().get(idx.getIntVal());
-			}
+		    return normalArrayAccess(ntsvArr, ntsvIdx, ntsvLen, isUnchecked);
 		}
 	}
+	
+	protected NodeToSmtValue bitArrayAccess(NodeToSmtValue ntsvArr, NodeToSmtValue ntsvIdx,
+            NodeToSmtValue len, boolean isUnchecked) {
+	    
+	    int size = BitVectUtil.vectSize(ntsvArr.getType());
+	    
+	    if (!ntsvIdx.isConst() || !len.isConst()) {
+            // index is bottom or length is bottom
+            return rawArraccRecursiveBitArray(ntsvArr, ntsvIdx, 0, 
+                    size, len.getIntVal());
+            
+        } else {
+            int iidx = ntsvIdx.getIntVal();
+            
+            if((iidx < 0 || iidx >= size)  )
+                throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size+") ");
+            
+            return extract(ntsvIdx.getIntVal() + len.getIntVal() - 1, ntsvIdx.getIntVal(), ntsvArr);
+        }
+	    
+	}
+	
+	protected NodeToSmtValue rawArraccRecursiveBitArray(NodeToSmtValue arr, NodeToSmtValue idx, int i, int size, int len) {
+        if (i + len - 1 == size - 1) {
+            // the last element
+            return extract(i+len-1, i, arr);
+        } else {
+            return condjoin(eq(idx, CONST(i)), extract(i+len-1, i, arr), 
+                        rawArraccRecursiveBitArray(arr, idx, i+1, size, len));
+        }
+    }
+	
+	protected NodeToSmtValue normalArrayAccess(NodeToSmtValue arr, NodeToSmtValue idx,
+	        NodeToSmtValue len, boolean isUnchecked) {
+	    if (!idx.isConst() || !len.isConst()) {
+            // index is bottom or length is bottom
+            return handleNormalArrayRawAccess(arr, idx, len, isUnchecked);
+            
+        } else {
+            return handleNormalArrayConstAccess(arr, idx, len, isUnchecked);
+        }
+	}
+
+	protected abstract NodeToSmtValue handleNormalArrayConstAccess(NodeToSmtValue arr,
+            NodeToSmtValue idx, 
+            NodeToSmtValue len, 
+            boolean isUnchecked);
+	
+	protected abstract NodeToSmtValue handleNormalArrayRawAccess(NodeToSmtValue arr, 
+	        NodeToSmtValue idx,
+	        NodeToSmtValue len, 
+	        boolean isUnchecked);
 	
 	@Override
 	public abstractValue outOfBounds(TypedValue arr) {
@@ -1460,6 +1479,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	protected static NodeToSmtValue bit0 = NodeToSmtValue.newBit(0);
 	protected static NodeToSmtValue bool0 = NodeToSmtValue.newBool(false);
 	
+	/**
+	 * Returns the default value of a certain type.
+	 * @param t
+	 * @return the default value of type t.
+	 *         null if t is TypeArray
+	 */
 	public static NodeToSmtValue defaultValue(SmtType t) {
 		if (t.getRealType().equals(TypePrimitive.inttype))
 			return NodeToSmtValue.newInt(0, t.getNumBits());
@@ -1473,10 +1498,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			NodeToSmtValue bitArr = NodeToSmtValue.newBitArray(0, size);
 			return bitArr;
 		} else if (t.getRealType() instanceof TypeArray) {
-			TypeArray starType2 = (TypeArray) t.getRealType();
-//			ExprConstInt size = (ExprConstInt) starType2.getLength();
-			throw new IllegalStateException("Not implemented - SmtValueOracle.defaultValue()");
-//			return NodeToSmtValue.newListOf(defaultValue(starType2.getBase()), size.getVal());	
+			return null;	
 		} else {
 			throw new IllegalStateException("unexpected starType");
 		}
@@ -1935,7 +1957,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 				// we give it a constant
 				log.finer("Removing declared but undefined " + varName);
 
-				addDefinition(var, defaultValue(var.getSmtType()));
+				NodeToSmtValue defaultVal = defaultValue(var.getSmtType());
+				if (defaultVal != null)
+				    addDefinition(var, defaultVal);
 			}
 		}
 	}

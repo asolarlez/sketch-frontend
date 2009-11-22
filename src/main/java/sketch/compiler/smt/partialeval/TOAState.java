@@ -2,11 +2,10 @@ package sketch.compiler.smt.partialeval;
 
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.abstractValueType;
 import sketch.compiler.dataflow.varState;
+import sketch.compiler.smt.SMTTranslator.OpCode;
 
 /**
  * Emit formula to use Theory Of Array
@@ -17,26 +16,30 @@ import sketch.compiler.dataflow.varState;
  */
 public class TOAState extends NodeToSmtState {
 
-	protected TOAState(String name, Type t, NodeToSmtVtype vtype) {
-		super(name, t, vtype);
+    
+    /**
+     * Create a clean BlastArrayState object
+     * @param name
+     * @param t
+     * @param vt
+     */
+    protected TOAState(String name, SmtType t, NodeToSmtVtype vt) {
+        this(name, t, vt, null);
+    }
+    
+	protected TOAState(String name, SmtType t, NodeToSmtVtype vt, TOAState parent) {
+		super(name, t, vt);
 		
-		if (t instanceof TypePrimitive) {
-			lhsIdxs = idxsArr(1);
-			init(newLHSvalue());
-		} else if (t instanceof TypeStructRef) {
-			lhsIdxs = idxsArr(1);
-			init(newLHSvalue());
-		} else if (t instanceof TypeArray) {
-			TypeArray tarr = (TypeArray) t;
+		
+		if (parent != null)
+            helperDeltaClone(parent, vt);
+		
+		lhsIdxs = idxsArr(1);
 
-			// Theory of array
-			// give a value to the array itself
-			lhsIdxs = idxsArr(1);
-			init(newLHSvalue());
-
-		} else {
-			assert false : "This is an error.";
-		}
+        if (parent != null)
+            init(parent.absVal);
+        else
+            init(newLHSvalue());
 
 	}
 
@@ -52,24 +55,27 @@ public class TOAState extends NodeToSmtState {
 		NodeToSmtValue destVal = state(vtype);
 		NodeToSmtValue ntsvIdx = (NodeToSmtValue) idx;
 		
-		// FIXME this is certainly wrong. fix this.
-//		String destName = vtype.mTrans.getDefStr(destVal);
-//		vtype.declareVar(this.getSmtType(),
-//				destName);
-//
-//		
-//		// / normal assignment
-//		vtype.addAssert(vtype.mTrans.getAssignment(destVal, ntsvIdx,
-//				ntsvVal));
-//		
-//		
-//		this.callParentUpdate(vtype.BOTTOM(destName, destVal.getSmtType()), vt);
+		if (BitVectUtil.isBitArray(this.getType())) {
+            // two cases:
+            // 1) the state is bit array, in which case, handle it as if
+            //      theory of array - increment the ssa number.
+            //      Example:
+            //          x_i[idx] = val;
+            handleBitArrayUpdate(ntsvVal, ntsvIdx, vtype);
+		} else {
+		
+    		this.updateLHSidx();
+    		this.absVal = newLHSvalue();
+    		VarNode newDest = (VarNode) state(vt);
+    		vtype.addDefinition(newDest, 
+    		        vtype.BOTTOM(this.t, OpCode.ARRUPD, destVal, ntsvIdx, ntsvVal));
+		}
 	}
 
 	public varState getDeltaClone(abstractValueType vt) {
 		TOAVtype ntsvt = ((TOAVtype) vt);
-		TOAState st = new TOAState(name, this.t, ntsvt);
-		st.helperDeltaClone(this, vtype);
+		TOAState st = new TOAState(name, this.getSmtType(), ntsvt, this);
+		
 		if (st.rootParent() != this)
 			st.lhsIdxs = null;
 		return st;

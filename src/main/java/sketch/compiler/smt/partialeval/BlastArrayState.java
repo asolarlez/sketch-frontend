@@ -93,107 +93,14 @@ public class BlastArrayState extends NodeToSmtState {
 			//	  	theory of array - increment the ssa number.
 			//		Example:
 			//  		x_i[idx] = val;
-			handleBitArrayUpdate(vt, ntsvVal, ntsvIdx, vtype);
+		    handleBitArrayUpdate(ntsvVal, ntsvIdx, vtype);
 		} else {
 			// 2) the state is any other kind of array
 			handleNormalArrayUpdate(vt, ntsvVal, ntsvIdx, vtype);
 		}
 	}
 
-	private void handleBitArrayUpdate(abstractValueType vt,
-			NodeToSmtValue ntsvVal, NodeToSmtValue ntsvIdx,
-			NodeToSmtVtype vtype) {
-		
-		int bitArrSize = BitVectUtil.vectSize(getType());
-		NodeToSmtValue dest = state(vtype);
-		NodeToSmtValue newVal = null;
-		
-		if (ntsvIdx.isConst()) {
-			//    	if idx is constant, translate it as:
-			//			x_i+1 = (concat (extract[bitArrSize-1:idx+1] x_i)
-			//							(extract[idx:idx] x_i)
-			//							(extract[idx-1:0] x_i))
-			int iIdx =  ntsvIdx.getIntVal();
-			
-			newVal = ntsvVal;
-			if (iIdx > 0)
-				newVal = (NodeToSmtValue) vtype.concat(newVal, 
-									vtype.extract(iIdx-1, 0, dest));
-			
-			if (iIdx < bitArrSize-1)
-				newVal = (NodeToSmtValue) vtype.concat(	
-						vtype.extract(bitArrSize-1, iIdx+1, dest), 
-						newVal);
-			
-		} else {
-			//		if idx is bottom:
-			//			if idx == 0, x_i+1[0] = val else x_i+1[0] = x_i[0]
-			//			if idx == 1, x_i+1[1] = val else x_i[1]
-			//			... use a bunch of if-then-else to handle it
-			// (= x_i+1 (ite (= idx bv0[32]) 
-			//				(concat (extract[31:1] x_i) val)
-			//				(ite (= idx bv1[32])
-			//					(concat (concat (extract[31:2] x_i) val) (extract[0:0] x_i)))
-			//					... continue nesting down
-			// 
-			int high = BitVectUtil.vectSize(this.getType()) - 1;
-			
-			newVal = getRecursiveIfThenElse(0, high, dest, ntsvIdx, ntsvVal);
-		}
-		
-		super.update(newVal, vtype);
-	}
 	
-	private NodeToSmtValue getRecursiveIfThenElse(int mid, int high, NodeToSmtValue dest, NodeToSmtValue ntsvIdx, NodeToSmtValue ntsvVal) {
-		if (mid > high) {
-			return dest;
-		} else {
-			
-			NodeToSmtValue rhs;
-			if (mid == 0) {
-				// arr_0[high:mid+1] @ (if idx == mid) then ntsv else arr_0[mid:mid])
-				NodeToSmtValue first = (NodeToSmtValue) vtype.extract(high, mid + 1, dest);
-//				NodeToSmtValue second = vtype.condjoin(
-//							vtype.eq(ntsvIdx, vtype.CONST(mid)),
-//							ntsvVal,
-//							vtype.extract(mid, mid, dest));
-				NodeToSmtValue second = ntsvVal;
-				
-				rhs = (NodeToSmtValue) vtype.concat(first, second); 
-				
-			} else if (mid == high) {
-				// ntsv @ arr_0[mid-1:0]
-//				NodeToSmtValue first = vtype.condjoin( 
-//							vtype.eq(ntsvIdx, vtype.CONST(mid)),
-//							ntsvVal,
-//							vtype.extract(mid, mid, dest));
-				NodeToSmtValue first = ntsvVal;
-				
-				NodeToSmtValue second = (NodeToSmtValue) vtype.extract(mid - 1, 0, dest);
-				rhs = (NodeToSmtValue) vtype.concat(first, second); 
-			} else {
-				// arr_0[high:mid+1] @ ntsv @ arr_0[mid-1:0]
-				NodeToSmtValue first = (NodeToSmtValue) vtype.extract(high, mid + 1, dest);
-//				NodeToSmtValue second = vtype.condjoin( 
-//							vtype.eq(ntsvIdx, vtype.CONST(mid)),
-//							ntsvVal,
-//							vtype.extract(mid, mid, dest));
-				NodeToSmtValue second = ntsvVal;
-				
-				NodeToSmtValue third = (NodeToSmtValue) vtype.extract(mid - 1, 0, dest);
-				rhs = (NodeToSmtValue) vtype.concat(
-						vtype.concat(first, second), 
-						third);
-				// concat three pieces together
-			}
-			
-			NodeToSmtValue ite = vtype.condjoin( 
-							vtype.eq(ntsvIdx, vtype.CONST(mid)),
-							rhs,
-							getRecursiveIfThenElse(mid + 1, high, dest, ntsvIdx, ntsvVal));
-			return ite;
-		}
-	}
 
 	private void handleNormalArrayUpdate(abstractValueType vt, 
 			final NodeToSmtValue ntsvVal,

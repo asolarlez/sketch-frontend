@@ -11,6 +11,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.partialeval.BlastArrayVtype;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
+import sketch.compiler.smt.partialeval.TOAVtype;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.SynchronousTimedProcess;
 
@@ -63,7 +64,15 @@ public abstract class SMTBackend {
 	 */
 	protected abstract OutputStream createStreamToSolver() throws IOException;
 	
-	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits, TempVarGen tmpVarGen) {
+	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits, boolean useTheoryOfArray, TempVarGen tmpVarGen) {
+	    if (useTheoryOfArray) {
+	        return new TOAVtype(  
+	                getSMTTranslator(),
+	                intBits,
+	                inBits,
+	                cBits,
+	                tmpVarGen);
+	    } else
 		return new BlastArrayVtype(  
 				getSMTTranslator(),
 				intBits,

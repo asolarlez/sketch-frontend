@@ -888,7 +888,7 @@ public class SequentialSMTSketchMain {
 
 		NodeToSmtVtype vtype = solver.createFormula(
 				params.flagValue("intbits"), params.flagValue("inbits"), params
-						.flagValue("cbits"), varGen);
+						.flagValue("cbits"), params.hasFlag("theoryofarray"), varGen);
 
 		ProduceSMTCode partialEval = getPartialEvaluator(vtype);
 		prog.accept(partialEval);
