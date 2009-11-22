@@ -207,7 +207,7 @@ public class CEGISLoop {
 
 		try {
 			solver.init();
-			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.mNumIter + ".smtlib";
+			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.mNumIter + ".smt";
 			solver.tmpFilePath = tmpFile;
 			
 			log.fine("Generating formula");
@@ -246,7 +246,7 @@ public class CEGISLoop {
 	
 		try {
 			solver.init();
-			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-s" + mStat.mNumIter + ".smtlib";
+			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-s" + mStat.mNumIter + ".smt";
 			solver.tmpFilePath = tmpFile;
 			
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
