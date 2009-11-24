@@ -1,11 +1,13 @@
 package sketch.compiler.smt.stp;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.smtlib.SMTLIBTranslator;
 import sketch.util.SynchronousTimedProcess;
 
@@ -16,11 +18,6 @@ public class StpSmtlibBackend extends STPBackend {
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing)
 			throws IOException {
 		super(params, tmpFilePath, rcontrol, varGen, tracing);
-	}
-
-	@Override
-	protected SMTTranslator createSMTTranslator() {
-		return new SMTLIBTranslator(mIntNumBits);
 	}
 	
 	@Override
@@ -35,5 +32,11 @@ public class StpSmtlibBackend extends STPBackend {
 		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
 	}
 	
+	@Override
+    public FormulaPrinter getSMTTranslator(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new SMTLIBTranslator(formula, ps, mIntNumBits);
+    }
 	
 }

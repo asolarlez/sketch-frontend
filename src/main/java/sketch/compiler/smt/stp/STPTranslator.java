@@ -1,4 +1,5 @@
 package sketch.compiler.smt.stp;
+import java.io.PrintStream;
 import java.util.List;
 
 import sketch.compiler.ast.core.typs.Type;
@@ -7,23 +8,25 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.dataflow.abstractValue;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.partialeval.BitVectUtil;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.LabelNode;
 import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.OpNode;
 import sketch.compiler.smt.partialeval.SmtType;
 import sketch.compiler.smt.partialeval.VarNode;
 
 
-public class STPTranslator extends SMTTranslator {
+public class STPTranslator extends FormulaPrinter {
 
 	protected StringBuffer mSB;
 	protected int mIntNumBits;
 	
-	public STPTranslator(int intNumBits) {
-		super();
+	public STPTranslator(NodeToSmtVtype formula,
+            PrintStream ps, int intNumBits) {
+		super(formula, ps);
 		mIntNumBits = intNumBits;
 	}
 	
@@ -282,8 +285,24 @@ public class STPTranslator extends SMTTranslator {
 		} else if (op == OpCode.ARRNEW) {
 			getNaryExpr(OpCode.CONCAT, opnds);
 			return null;
-		}
-//			return String.format("(%s(%s, %s))", operator, getStrInternal(opnds[0]), getStrInternal(opnds[1]));	
+		} else if (op == OpCode.ARRUPD) {
+		    sbAppend("(");
+		    getStrInternal(opnds[0]);
+		    sbAppend(" WITH [");
+		    getStrInternal(opnds[1]);
+		    sbAppend("] := ");
+		    getStrInternal(opnds[2]);
+		    sbAppend(")");
+		    
+		    return null;
+		} else if (op == OpCode.ARRACC) {
+		    getStrInternal(opnds[0]);
+            sbAppend("[");
+            getStrInternal(opnds[1]);
+            sbAppend("]");
+            return null;
+		} 
+//		return String.format("(%s(%s, %s))", operator, getStrInternal(opnds[0]), getStrInternal(opnds[1]));	
 	
 		throw new IllegalStateException(op + " is not yet implemented");
 	}
@@ -313,8 +332,9 @@ public class STPTranslator extends SMTTranslator {
 			// if the type is BIT[W], just use bit vector
 			if (arrType.getBase() == TypePrimitive.bittype)
 				return "BITVECTOR(" + BitVectUtil.vectSize(arrType)  + ")";
-				
-			return "Array[" + mIntNumBits + ":" + mIntNumBits + "]";
+			
+			return "ARRAY BITVECTOR(" + mIntNumBits +") OF BITVECTOR(" + mIntNumBits + ")";
+			
 		}
 		
 		assert false : "NOT implemented";
@@ -370,8 +390,19 @@ public class STPTranslator extends SMTTranslator {
 		return "";
 	}
 	
+	@Override
+    public String getBitArrayLiteral(int numBits, int... arr) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("0bin");
+        for (int i = arr.length - 1; i >= 0; i--) {
+            sb.append(arr[i]);
+        }
+        return sb.toString();
+    }
+	
 	// helpers
 	protected void insertBetween(String operator, NodeToSmtValue...opnds) {
+	    sbAppend("(");
 		getStrInternal(opnds[0]);
 		for (int i = 1; i < opnds.length; i++) {
 			if (opnds.length > 2) 
@@ -382,16 +413,35 @@ public class STPTranslator extends SMTTranslator {
 			sbAppend(' ');
 			getStrInternal(opnds[i]);
 		}
+		sbAppend(")");
 	}
 
-	@Override
-	public String getBitArrayLiteral(int numBits, int... arr) {
-		StringBuffer sb = new StringBuffer();
-		sb.append("0bin");
-		for (int i = arr.length - 1; i >= 0; i--) {
-			sb.append(arr[i]);
-		}
-		return sb.toString();
-	}
+    @Override
+    public String getLetHead() {
+        return "ASSERT";
+    }
+
+    @Override
+    public String getLetLine(NodeToSmtValue dest, NodeToSmtValue def) {
+        mSB = new StringBuffer();
+        sbAppend(" LET ");
+        getStrInternal(dest);
+        sbAppend(" = ");
+        getStrInternal(def);
+        sbAppend(" IN ");
+        return mSB.toString();
+    }
+    
+    public String getLetFormula(NodeToSmtValue formula) {
+        return getStr(formula);
+    }
+
+    @Override
+    public String getLetTail(int numLets) {
+        return ";";
+
+    }
+
+	
 
 }

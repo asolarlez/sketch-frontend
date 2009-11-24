@@ -5,14 +5,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.StringReader;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SolverFailedException;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.solvers.SolutionStatistics;
@@ -29,11 +30,6 @@ public class STPBackend extends SMTBackend {
 	}
 
 	private final static boolean USE_FILE_SYSTEM = true;
-	
-	@Override
-	protected SMTTranslator createSMTTranslator() {
-		return new STPTranslator(mIntNumBits);
-	}
 
 	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
@@ -104,12 +100,25 @@ public class STPBackend extends SMTBackend {
 	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits,
 	        boolean useTheoryOfArray,
 			TempVarGen tmpVarGen) {
-		return new STPVtype(  
-				getSMTTranslator(), 
+	    if (useTheoryOfArray)
+	        return new STPTOAVtype(  
+	                intBits,
+	                inBits,
+	                cBits,
+	                tmpVarGen);
+	    else
+	        return new STPBlastVtype(  
 				intBits,
 				inBits,
 				cBits,
 				tmpVarGen);
 	}
+
+    @Override
+    public FormulaPrinter getSMTTranslator(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new STPTranslator(formula, ps, mIntNumBits);
+    }
 
 }
