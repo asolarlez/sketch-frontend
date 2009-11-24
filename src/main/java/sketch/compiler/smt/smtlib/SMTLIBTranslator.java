@@ -1,5 +1,6 @@
 package sketch.compiler.smt.smtlib;
 
+import java.io.PrintStream;
 import java.util.List;
 
 import sketch.compiler.ast.core.typs.Type;
@@ -8,10 +9,11 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.dataflow.abstractValue;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.partialeval.BitVectUtil;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtType;
 import sketch.compiler.smt.partialeval.VarNode;
 
@@ -23,13 +25,13 @@ import sketch.compiler.smt.partialeval.VarNode;
  * @email lshan@eecs.berkeley.edu
  * 
  */
-public class SMTLIBTranslator extends SMTTranslator {
+public class SMTLIBTranslator extends FormulaPrinter {
 	private static final String PREDICATE_FLAG = "#boolean#";
 
 	protected int mIntNumBits;
 	
-	public SMTLIBTranslator(int intNumBIts) {
-		super();
+	public SMTLIBTranslator(NodeToSmtVtype formula, PrintStream ps, int intNumBIts) {
+	    super(formula, ps);
 		mIntNumBits = intNumBIts;
 	}
 
@@ -65,6 +67,12 @@ public class SMTLIBTranslator extends SMTTranslator {
 		return ")";
 	}
 
+	@Override
+	public String getDefineVar(VarNode varNode) {
+	    String name = getStr(varNode);
+        return getDefineVar(getTypeForSolver(varNode.getSmtType()), 
+                name.startsWith("_") ? "sk_" + name : name);
+    }
 
 	public String getAssignment(String dest, String src, String idx,
 			String newVal) {
@@ -75,6 +83,20 @@ public class SMTLIBTranslator extends SMTTranslator {
 
 	public String getArrayAcess(String base, String idx) {
 		return "(select " + base + " " + idx + ")";
+	}
+	
+	@Override
+	public String getStr(NodeToSmtValue ntsv) {
+	    
+	    if (ntsv instanceof VarNode) {
+	        VarNode vn = (VarNode) ntsv;
+	        if (USE_LET && 
+	                !(mFormula.isHole(vn) || mFormula.isInput(vn)))
+	            return "?" + super.getStr(vn);
+	        else
+	            return super.getStr(vn);
+	    }
+	    return super.getStr(ntsv);
 	}
 	
 	public String getStrForLinearNode(LinearNode linNode) {
@@ -134,13 +156,6 @@ public class SMTLIBTranslator extends SMTTranslator {
 			sb.append(getStr(opnds[1]));
 			sb.append(')');
 			return sb.toString();
-//		} else if (op == OpCode.ARRACC) {
-//			// array update
-//			return getArrayAcess(null, null);//base, idx);
-//			
-//		} else if (op == OpCode.ARRUPD) {
-//			
-//			return getAssignment(null, null, null, null); //dest, src, idx, newVal);
 		
 		} else if (op == OpCode.ARRNEW) {
 			sb.append("bvbin");
@@ -305,5 +320,34 @@ public class SMTLIBTranslator extends SMTTranslator {
 		sb.append(']');
 		return sb.toString();
 	}
+
+    @Override
+    public String getLetFormula(NodeToSmtValue formula) {
+        return getStr(formula);
+    }
+
+    @Override
+    public String getLetHead() {
+        return ":formula";
+    }
+
+    @Override
+    public String getLetLine(NodeToSmtValue dest, NodeToSmtValue def) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("(let (");
+        sb.append(getStr(dest));
+        sb.append(" ");
+        sb.append(getStr(def));
+        sb.append(") \n");
+        return sb.toString();
+    }
+
+    @Override
+    public String getLetTail(int numLets) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < numLets; i++)
+            sb.append(')');
+        return sb.toString();
+    }
 
 }
