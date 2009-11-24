@@ -4,7 +4,6 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.varState;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SMTTranslator.OpCode;
 
 /**
@@ -17,18 +16,17 @@ import sketch.compiler.smt.SMTTranslator.OpCode;
 public class TOAVtype extends NodeToSmtVtype {
 	
 	public TOAVtype( 
-			SMTTranslator smtTran, 
 			int intNumBits,
             int inBits,
             int cBits,
 			TempVarGen varGen) {
-		super(smtTran, intNumBits, inBits, cBits, varGen);
+		super(intNumBits, inBits, cBits, varGen);
 	}	
 
 	@Override
 	public varState cleanState(String var, Type t, MethodState mstate) {
 	    SmtType type = SmtType.create(t, getNumBitsForType(t));
-	    String properName = mTrans.getProperVarName(var);
+	    String properName = var;
 		NodeToSmtState ret = new TOAState(properName, type, this);
 		return ret;
 	}

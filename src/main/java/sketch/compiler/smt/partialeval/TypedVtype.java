@@ -11,15 +11,12 @@ import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
 import sketch.compiler.dataflow.nodesToSB.IntVtype;
-import sketch.compiler.smt.SMTTranslator;
 
 public class TypedVtype extends IntVtype {
 
-	protected SMTTranslator mTrans;
 	protected MethodState state;
 	
-	public TypedVtype(SMTTranslator trans) {
-		mTrans = trans;
+	public TypedVtype() {
 	}
 	
 	// Getters & Setters

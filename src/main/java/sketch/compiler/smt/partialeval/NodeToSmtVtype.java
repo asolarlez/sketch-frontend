@@ -2,8 +2,6 @@ package sketch.compiler.smt.partialeval;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -135,217 +134,16 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
         }
 	}
 	
-	public class FormulaPrinter {
-
-		boolean mIsSynthesis;
-		PrintStream out;
-		
-		public FormulaPrinter(PrintStream out, boolean isSynthesis) {
-			
-			mIsSynthesis = isSynthesis;
-			this.out = out;
-			
-		}
-		
-		public void printRenamableDeclarations() {
-			addComment("");
-			addComment("Renamable Variable Declarations");
-			addComment("");
-			
-			for (VarNode p : mRenamableVars) {				
-				out.println(mTrans.getDefineVar(p.getSmtType(), p.getRHSName()));
-			}
-		}
-		
-		public void printFixedNameDeclarations() {
-			addComment("");
-			addComment("Fixed Name Variable Declarations");
-			addComment("");
-
-			for (VarNode p : mFixedNameVars) {				
-				out.println(mTrans.getDefineVar(p.getSmtType(), p.getRHSName()));
-			}
-		}
-		
-		public void printDAG() {
-			
-			addComment("");
-			addComment("DAG");
-			addComment("");
-			
-			for (NodeToSmtValue dest : mEq) {
-				if (dest instanceof LabelNode) {
-					addComment(dest.toString());
-				} else {
-				    NodeToSmtValue def = mSimpleDefs.get(dest);
-					String defStr = mTrans.getAssert(mTrans.getStr(assign(dest, def)));
-					out.println(defStr);
-				}
-			}
-		
-		}
-		
-		/**
-		 * Helper that generates the correctness condition for the entire program
-		 * at the end.
-		 */
-		protected void generateCorrectnessConditions(boolean negated) {
-			// print out the correctness conditions
-			addComment("");
-			addComment("Correctness Conditions");
-			addComment("");
-
-			if (!negated)
-				// output a disjunction of all asserts
-				for (NodeToSmtValue predicate : mAsserts) {
-					out.println(mTrans.getAssert(mTrans.getStr(predicate)));
-				}
-
-			else {
-				if (mAsserts.size() > 0) {
-
-					NodeToSmtValue[] negatedAsserts = new NodeToSmtValue[mAsserts.size()];
-					
-					int i = 0;
-					for (NodeToSmtValue oneAssert : mAsserts) {
-						negatedAsserts[i] = not(oneAssert);
-						i++;
-					}
-					
-					out.println(mTrans.getAssert(mTrans.getStr(or(negatedAsserts))));
-				} else {
-					// if there is no assertion in a verification phase, that means the program
-					// can never fail, in which case, verification can fail immediately
-
-					out.println(mTrans.getAssert(mTrans.getStr(CONST(false))));
-				}
-			}
-		}
-		
-		public void printSynthesisFormula(ArrayList<SmtValueOracle> observations) {
-			
-			try {
-				
-				out.println(mTrans.prolog());
-//				println(mTrans.getComment("intbits=" + mIntBits + " cbits=" + mcbits + " inbits=" + minbits));
-				
-				printFixedNameDeclarations();
-				
-				for (int currObserIdx = 0; currObserIdx < observations.size(); currObserIdx++) {
-					String comment = "Formula for observation " + currObserIdx;
-					
-					setSuffix("");
-					HashMap<NodeToSmtValue, NodeToSmtValue> valueAssignments = useOracle(observations.get(currObserIdx), true);
-					setSuffix("s" + currObserIdx);
-					
-					addComment(comment);
-					
-					printRenamableDeclarations();
-					printValueAssignments(valueAssignments);
-					printDAG();
-					generateCorrectnessConditions(false);
-					
-				}
-				
-				out.println(mTrans.epilog());
-				
-			} catch (AssertionFailedException e) {
-				throw e;
-			} catch (ArrayIndexOutOfBoundsException e) {
-				throw e;
-			} finally {
-				
-			}
-		}
-		
-		public void printVerificaitonFormula(SmtValueOracle candidate) {
-		
-			String[] comment = {"Verification formulas"};
-			try {
-				
-				HashMap<NodeToSmtValue, NodeToSmtValue> valueAssignments = useOracle(candidate, false);
-				
-				
-				setSuffix("");
-				out.println(mTrans.prolog());
-				printFixedNameDeclarations();
-//				println(mTrans.getComment("intbits=" + mIntBits + " cbits=" + mcbits + " inbits=" + minbits));
-				
-				addBlockComment(comment);
-				
-				printRenamableDeclarations();
-				printValueAssignments(valueAssignments);
-				printDAG();
-				generateCorrectnessConditions(true);
-				out.println(mTrans.epilog());
-				
-		
-			} catch (AssertionFailedException e) {
-				throw e;
-			} catch (ArrayIndexOutOfBoundsException e) {
-				throw e;
-			} finally {
-
-			}
-		
-		}
-		
-		public HashMap<NodeToSmtValue, NodeToSmtValue> useOracle(SmtValueOracle oracle, boolean isSynthesis) {
-			
-			Collection<VarNode> inlets;
-			if (isSynthesis) {
-//				mSharedFalseValue.obj = 0;
-				inlets = mInputs;
-			} else {
-//				mSharedFalseValue.obj = 1;
-				inlets = mHoles;
-			}
-			
-			HashMap<NodeToSmtValue, NodeToSmtValue> valueAssignments = new HashMap<NodeToSmtValue, NodeToSmtValue>();
-			
-			
-			for (VarNode var : inlets) {
-				// CAUTION, for synthesis, oracle is from verification, no suffix
-				// the way to solve this problem is to retrieve the values from the oracles first.
-				
-				// for verification, oracle is from synthesis, has suffix, but we
-				// only care about the hole variables, which don't have suffix, so
-				// it's ok.
-				NodeToSmtValue rhs = oracle.getValueForVariable(var);
-				
-				NodeToSmtValue lhs = var;
-				valueAssignments.put(lhs, rhs);
-			}
-			
-			return valueAssignments;
-		}
-		
-		public void printValueAssignments(HashMap<NodeToSmtValue, NodeToSmtValue> valueAssignments) {
-			addComment("");
-			addComment("Input/Hole assignments");
-			addComment("");
-			for (NodeToSmtValue lhs :  valueAssignments.keySet()) {
-				NodeToSmtValue rhs = valueAssignments.get(lhs);
-				out.println(mTrans.getAssert(mTrans.getStr(eq(lhs, rhs))));
-			}
-		}
-		
-		/**
-		 * Add comment to the formula file
-		 * @param msg
-		 */
-		public void addComment(String msg) {
-			out.println(mTrans.getComment(msg));
-		}	
-	}
+	
 	
 	public static final boolean USE_STRUCT_HASHING = true;
 	private int structHashingUsed = 0;
-	public static final boolean FUNCCALL_HASHING = true;
+	public static final boolean FUNCCALL_HASHING = CommandLineParamManager.getParams().hasFlag("funchash");
 	private int funccallInlined = 0;
 	public static final boolean FLAT = false;
 	private int structSimplified = 0;
-	public static final boolean CANONICALIZE = false;
+	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");;
+
 	
 	protected TempVarGen tmpVarGen;
 	protected AbstractValueOracle oracle;
@@ -381,14 +179,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	 * @param out 
 	 */
 	public NodeToSmtVtype(
-			SMTTranslator smtTran,
 			int intNumBits,
 			int inBits,
 			int cBits,
 			TempVarGen tmpVarGen) {
-		super(smtTran);
+		super();
 		
-		this.mTrans = smtTran;
 		this.intNumBits = intNumBits;
 		mCBits = cBits;
 		mInBits = inBits;
@@ -964,8 +760,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
             return CONST(v1.getIntVal() == v2.getIntVal());
         }
 
-        NodeToSmtValue newNode = NodeToSmtValue.newBottom(TypePrimitive.booltype, getNumBitsForType(TypePrimitive.booltype), 
-                OpCode.EQUALS, ntsv1, ntsv2);
+        NodeToSmtValue newNode = NodeToSmtValue.newBottom(TypePrimitive.booltype, 
+                getNumBitsForType(TypePrimitive.booltype), 
+                OpCode.EQUALS, ntsv1, ntsv2);    
         
         return checkStructuralHash(newNode);
     }
@@ -1494,7 +1291,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			return bool0;
 		else if (BitVectUtil.isBitArray(t.getRealType())) {
 			TypeArray ta = (TypeArray) t.getRealType();
-			int size = ((ExprConstInt) ta.getLength()).getVal();
+			int size = BitVectUtil.vectSize(ta);
 			NodeToSmtValue bitArr = NodeToSmtValue.newBitArray(0, size);
 			return bitArr;
 		} else if (t.getRealType() instanceof TypeArray) {
@@ -1513,7 +1310,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	HashSet<VarNode> mFixedNameVars;
 //	HashMap<String, VarNode> mRenamableVars;
 //    HashMap<String, VarNode> mFixedNameVars;
-	List<NodeToSmtValue> mEq;
+	LinkedList<NodeToSmtValue> mEq;
 	HashMap<NodeToSmtValue, NodeToSmtValue> mSimpleDefs;
 	HashMap<NodeToSmtValue, Integer> mUses;
 	LinkedList<NodeToSmtValue> mAsserts;
@@ -1549,6 +1346,14 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		this.suffix = suffix;
 	}
 	
+	public boolean isHole(VarNode varNode) {
+	    return mHoles.contains(varNode);
+	}
+	
+	public boolean isInput(VarNode varNode) {
+        return mInputs.contains(varNode);
+    }
+	
 	int savedNodes = 0;
 	protected NodeToSmtValue checkCache(NodeToSmtValue node) {
 		
@@ -1576,8 +1381,15 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mAsserts.add(referenceVar(predicate));
 	}
 	
-	
 	public void addDefinition(VarNode dest, NodeToSmtValue def) {
+	    addDefinition(dest, def, false);
+	}
+	
+	public void addConstraint(VarNode dest, NodeToSmtValue def) {
+	    addDefinition(dest, def, true);
+	}
+	
+	protected void addDefinition(VarNode dest, NodeToSmtValue def, boolean toFront) {
 		// even if def is CONST true, we still want to assert it
 		// because that will leave a record that dest is defined instead of
 		// being treated as undefined variables in the future
@@ -1593,7 +1405,11 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 		log.finer("defining " + varName);
 		
-		mEq.add(dest);
+		if (toFront)
+		    mEq.addFirst(dest);
+		else
+		    mEq.addLast(dest);
+		
 		mSimpleDefs.put(dest, def);
 		if (!mStructHash.containsKey(def))
 		    mStructHash.put(def, dest);
@@ -1627,14 +1443,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public void addComment(String c) {
 		mEq.add(LABEL(TypePrimitive.voidtype, 0, c));
-	}
-	
-	/**
-	 * Add block comment
-	 * @param msgs
-	 */
-	public void addBlockComment(String[] msgs) {
-		mEq.add(LABEL(TypePrimitive.voidtype, 0, mTrans.getBlockComment(msgs)));
 	}
 	
 	/**
@@ -1959,7 +1767,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 
 				NodeToSmtValue defaultVal = defaultValue(var.getSmtType());
 				if (defaultVal != null)
-				    addDefinition(var, defaultVal);
+				    addConstraint(var, defaultVal);
+				
+				
 			}
 		}
 	}

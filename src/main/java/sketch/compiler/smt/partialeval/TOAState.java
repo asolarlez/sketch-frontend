@@ -25,6 +25,9 @@ public class TOAState extends NodeToSmtState {
      */
     protected TOAState(String name, SmtType t, NodeToSmtVtype vt) {
         this(name, t, vt, null);
+        
+        if (t.getRealType() instanceof TypeArray)
+            vtype.declareInput((VarNode) this.absVal);
     }
     
 	protected TOAState(String name, SmtType t, NodeToSmtVtype vt, TOAState parent) {
@@ -68,7 +71,7 @@ public class TOAState extends NodeToSmtState {
     		this.absVal = newLHSvalue();
     		VarNode newDest = (VarNode) state(vt);
     		vtype.addDefinition(newDest, 
-    		        vtype.BOTTOM(this.t, OpCode.ARRUPD, destVal, ntsvIdx, ntsvVal));
+    		        vtype.BOTTOM(newDest.getType(), OpCode.ARRUPD, destVal, ntsvIdx, ntsvVal));
 		}
 	}
 

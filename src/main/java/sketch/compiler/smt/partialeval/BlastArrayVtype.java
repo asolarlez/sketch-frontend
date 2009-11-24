@@ -8,7 +8,6 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
-import sketch.compiler.smt.SMTTranslator;
 
 /**
  * This class is for translating to SMT formulas that blast array elements into 
@@ -21,12 +20,11 @@ import sketch.compiler.smt.SMTTranslator;
 public class BlastArrayVtype extends NodeToSmtVtype {
 
 	public BlastArrayVtype(
-			SMTTranslator smtTran,
 			int intNumBits,
 			int inBits,
 			int cBits,
 			TempVarGen varGen) {
-		super(smtTran, intNumBits, inBits, cBits, varGen);
+		super(intNumBits, inBits, cBits, varGen);
 		
 	}
 
@@ -34,7 +32,7 @@ public class BlastArrayVtype extends NodeToSmtVtype {
 	@Override
 	public varState cleanState(String var, Type t, MethodState mstate) {
 		SmtType type = SmtType.create(t, getNumBitsForType(t));
-		String properName = mTrans.getProperVarName(var);
+		String properName = var; 
 		NodeToSmtState ret = new BlastArrayState(properName, type, this);
 		return ret;
 	}

@@ -90,10 +90,7 @@ import sketch.util.Pair;
  * @version $Id: SequentialSMTSketchMain.java,v 1.46 2009/11/03 22:40:32 lshan Exp $
  */
 public class SequentialSMTSketchMain {
-
-	public static final String HOLE_PREFIX = "H___";
-	public static final String INPUT_PREFIX = "I___";
-	
+    
 	// protected final CommandLineParams params;
 	protected Program beforeUnvectorizing = null;
 	Program finalCode;
@@ -611,6 +608,19 @@ public class SequentialSMTSketchMain {
 
 		params.setAllowedParam("theoryofarray", new POpts(POpts.FLAG,
 				"--theoryofarray\t Uses theory of array", null, null));
+		
+		params.setAllowedParam("funchash", new POpts(POpts.FLAG,
+                "--funchash\t Function hashing", null, null));
+		
+		params.setAllowedParam("canon", new POpts(POpts.FLAG,
+                "--canon\t Canonicalize arithmetics", null, null));
+		
+		params.setAllowedParam("linear", new POpts(POpts.FLAG,
+                "--linear\t Linearize arithmetics", null, null));
+		
+		params.setAllowedParam("uselet", new POpts(POpts.FLAG,
+                "--uselet\t Use LET construct", null, null));
+		
 		
 		params.setAllowedParam("bv", new POpts(POpts.FLAG,
 				"--bv\t Uses BitVector in the given backend", null, null));

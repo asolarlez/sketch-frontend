@@ -26,6 +26,9 @@ public class BlastArrayState extends NodeToSmtState {
 	 */
 	protected BlastArrayState(String name, SmtType t, NodeToSmtVtype vt) {
 		this(name, t, vt, null);
+		
+		if (BitVectUtil.isBitArray(t.getRealType()))
+		    vtype.declareInput((VarNode) this.absVal);
 	}
 	
 	/**
