@@ -10,8 +10,9 @@ public class SketchShowcase extends sketch.compiler.smt.tests.SketchShowcase {
         HashMap<String, String> argsMap = super.initCmdArgs(input);
         argsMap.put("--backend", "yices2");
         
-         argsMap.put("--verbosity", "0");
-//       argsMap.put("--showphase", "lowering");
+        argsMap.put("--bv", null);
+        argsMap.put("--verbosity", "0");
+//      argsMap.put("--showphase", "lowering");
         System.out.print(input + "\tstp");
         return argsMap;
     }
