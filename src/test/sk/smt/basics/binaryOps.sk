@@ -7,8 +7,6 @@ void main(int dummy) implements one {
 	
 	assert a + b == 30;
 	assert a - b == 10;
-	
-	// Problematic nonlinear arithmetic that causes this test to fial
 	assert c * 5 == 20;
 	
 	assert a < 1000;
