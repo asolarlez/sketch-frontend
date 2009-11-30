@@ -1,5 +1,5 @@
 
-pragma options "--unrollamnt 6 --inbits 3 --intbits 6";
+pragma options "--unrollamnt 6 --inbits 3 --intbits 6 --cbits 6";
 
 int[16] transpose(int[16] mx){
 	int x, y;

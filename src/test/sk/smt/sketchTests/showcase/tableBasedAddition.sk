@@ -1,3 +1,4 @@
+pragma options "--intbits 10";
 int W = 4;
 
 bit[W] tableAddition(bit[W] in1, bit[W] in2) implements addition {
