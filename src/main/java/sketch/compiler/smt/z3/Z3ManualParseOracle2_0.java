@@ -6,6 +6,7 @@ import java.io.LineNumberReader;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.smt.partialeval.BitVectUtil;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtType;
 import sketch.compiler.smt.stp.STPOracle;
@@ -21,8 +22,8 @@ import sketch.compiler.smt.stp.STPOracle;
  */
 public class Z3ManualParseOracle2_0 extends STPOracle {
 		
-	public Z3ManualParseOracle2_0() {
-		super();
+	public Z3ManualParseOracle2_0(FormulaPrinter fPrinter) {
+		super(fPrinter);
 	}
 
 	@Override
@@ -42,11 +43,11 @@ public class Z3ManualParseOracle2_0 extends STPOracle {
 		}
 		
 		for (String varName : transferMap.keySet()) {
-			if ((mFormula.isHoleVariable(varName) || mFormula.isInputVariable(varName))) {
+			if ((mFPrinter.isHoleVariable(varName) || mFPrinter.isInputVariable(varName))) {
 				String value = traceDown(varName);
 				if (value == null)
 					continue;
-				NodeToSmtValue ntsv = stringToNodeToSmtValue(value, mFormula.getTypeForVariable(varName));
+				NodeToSmtValue ntsv = stringToNodeToSmtValue(value, mFPrinter.getTypeForVariable(varName));
 				
 				if (ntsv != null)
 					putValueForVariable(varName, ntsv);
