@@ -23,6 +23,7 @@ public abstract class LanguageBasicBlastBV extends TestHarness {
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 
 		argsMap.put("--bv", null);
+		argsMap.put("--uselet", null);
 		argsMap.put("--arrayOOBPolicy", "assertions");
 
 		argsMap.put("--heapsize", "10");
@@ -273,6 +274,24 @@ public abstract class LanguageBasicBlastBV extends TestHarness {
 		HoleSorter sorter = new HoleSorter(oracle);
 		assertTrue(sorter.getHoleValueByOrder(0) == 1);
 	}
+	
+	@Test
+	public void testSmallWidtHole() throws Exception {
+        HashMap<String, String> argsMap = initCmdArgs("smallWidthHole.sk");
+        runOneTest(toArgArray(argsMap));
+
+        HoleSorter sorter = new HoleSorter(oracle);
+        assertTrue(sorter.getHoleValueByOrder(0) != 0);
+	}
+	
+	@Test
+	public void testSmallWidthHoleArrayUpdate() throws Exception {
+        HashMap<String, String> argsMap = initCmdArgs("smallWidthHoleArrayUpdate.sk");
+        runOneTest(toArgArray(argsMap));
+
+        HoleSorter sorter = new HoleSorter(oracle);
+        assertTrue(sorter.getHoleValueByOrder(0) != 0);
+    }
 
 	@Test
 	public void testNegativeInt() throws Exception {

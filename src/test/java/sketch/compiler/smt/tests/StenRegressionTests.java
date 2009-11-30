@@ -22,6 +22,9 @@ public class StenRegressionTests extends TestHarness {
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 		argsMap.put("--backend", "yices");
 		argsMap.put("--bv", null);		
+		argsMap.put("--canon", null);
+		argsMap.put("--funchash", null);
+		
 		argsMap.put("--arrayOOBPolicy", "assertions");
 		
 		argsMap.put("--heapsize", "10");

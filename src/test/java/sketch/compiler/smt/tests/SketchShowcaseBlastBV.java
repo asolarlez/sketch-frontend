@@ -10,7 +10,7 @@ import org.junit.After;
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
-public class SketchShowcase extends sketch.compiler.seq.SketchShowcase {
+public class SketchShowcaseBlastBV extends sketch.compiler.seq.SketchShowcase {
 
 	@Override
 	protected HashMap<String, String> initCmdArgs(String input) {
@@ -21,7 +21,8 @@ public class SketchShowcase extends sketch.compiler.seq.SketchShowcase {
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 		
 		argsMap.put("--bv", null);
-		argsMap.put("--arrayOOBPolicy", "assertions");
+		argsMap.put("--uselet", null);
+//		argsMap.put("--arrayOOBPolicy", "assertions");
 
 		argsMap.put("--heapsize", "10");
 		argsMap.put("--intbits", "5");

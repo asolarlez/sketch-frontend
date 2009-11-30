@@ -6,6 +6,6 @@ import org.junit.runners.Suite.SuiteClasses;
 
 
 @RunWith(Suite.class)
-@SuiteClasses({LanguageBasicBlastBV.class, LanguageBasicTOABV.class, SketchRegressionTests.class, BitVectorBlastBV.class})
+@SuiteClasses({LanguageBasicBlastBV.class, LanguageBasicTOABV.class, SketchRegressionBlastBV.class, BitVectorBlastBV.class})
 public class AllYices2Tests {
 }

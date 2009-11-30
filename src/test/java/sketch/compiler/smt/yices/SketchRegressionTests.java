@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import sketch.compiler.smt.HoleSorter;
 
-public class SketchRegressionTests extends sketch.compiler.smt.tests.SketchRegressionTests {
+public class SketchRegressionTests extends sketch.compiler.smt.tests.SketchRegressionBlastBV {
 
 	protected HashMap<String, String> initCmdArgs(String input) {
 		HashMap<String, String> argsMap = super.initCmdArgs(input);

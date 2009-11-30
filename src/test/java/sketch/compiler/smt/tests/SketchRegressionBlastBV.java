@@ -12,7 +12,7 @@ import sketch.compiler.main.seq.SequentialSMTSketchMain;
 import sketch.compiler.smt.HoleSorter;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
-public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRegressionTests {
+public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.SketchRegressionTests {
     
     @Override
     protected HashMap<String, String> initCmdArgsWithFileName(String input) {
@@ -25,11 +25,12 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 		
 		argsMap.put("--bv", null);
+		argsMap.put("--uselet", null);
 		argsMap.put("--arrayOOBPolicy", "assertions");
 
 		argsMap.put("--heapsize", "10");
 		argsMap.put("--intbits", "5");
-
+		
 		argsMap.put("--outputdir", "output/");
 		argsMap.put("--tmpdir", tmpDirStr);
 		argsMap.put("--keeptmpfiles", null);
@@ -1149,18 +1150,14 @@ public abstract class SketchRegressionTests extends sketch.compiler.seq.SketchRe
 		
 
 		HoleSorter sorter = new HoleSorter(oracle);
-		assertTrue((sorter.getHoleValueByOrder(0) == 2 - sorter
-				.getHoleValueByOrder(1)));
+		assertTrue((sorter.getHoleValueByOrder(0) == 2 - 
+		        sorter.getHoleValueByOrder(1)));
 	}
 
 	@Test
 	public void miniTestb141() throws IOException, InterruptedException {
 		super.miniTestb141();
-
-		
-
 		// an infinite loop after reducing the num bits for int to 8
-
 	}
 
 	@Test

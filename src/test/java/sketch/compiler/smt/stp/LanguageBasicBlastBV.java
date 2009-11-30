@@ -9,9 +9,8 @@ public class LanguageBasicBlastBV extends sketch.compiler.smt.tests.LanguageBasi
 		HashMap<String, String> argsMap = super.initCmdArgs(input);
 		argsMap.put("--backend", "stp");
 		
-		argsMap.put("--uselet", null);
-		argsMap.put("--verbosity", "0");
-//		argsMap.put("--showphase", "lowering");
+		argsMap.put("--verbosity", "4");
+		argsMap.put("--showphase", "lowering");
 		System.out.print(input + "\tstp");
 		return argsMap;
 	}

@@ -5,15 +5,15 @@ import java.util.HashMap;
 
 import org.junit.Assert;
 
-public class SketchRegressionTests extends
-		sketch.compiler.smt.tests.SketchRegressionTests {
+public class SketchRegressionBlastBV extends
+		sketch.compiler.smt.tests.SketchRegressionBlastBV {
 
 	protected HashMap<String, String> initCmdArgs(String input) {
 		HashMap<String, String> argsMap = super.initCmdArgs(input);
 		argsMap.put("--backend", "stp");
 		
 		 argsMap.put("--verbosity", "0");
-		 argsMap.put("--showphase", "lowering");
+//		 argsMap.put("--showphase", "lowering");
 		 System.out.print(input.substring(input.lastIndexOf("/")) + "\tstp");
 		return argsMap;
 	}
@@ -36,12 +36,6 @@ public class SketchRegressionTests extends
 	public void miniTestb101() throws IOException, InterruptedException {
 		Assert.fail("Uninterpreted function");
 		super.miniTestb101();
-	}
-	
-	@Override
-	public void miniTestb147() throws IOException, InterruptedException {
-//		Assert.fail("divide by zero guarded by a condition");
-		super.miniTestb147();
 	}
 	
 	@Override
