@@ -11,11 +11,16 @@ public class STPSolutionStatistics extends SolutionStatistics {
 		
 		String prefix = "CPU time              :";
 		int cpuPrefixIdx = stderr.indexOf(prefix);
-		int startIdx = cpuPrefixIdx + prefix.length();
-		int endIdx = stderr.indexOf("s", cpuPrefixIdx);
 		
-		String timeStr = stderr.substring(startIdx, endIdx);
-		this.setSolutionTimeMs((long) (Float.parseFloat(timeStr) * 1000));
+		if (cpuPrefixIdx >= 0) {
+		    int startIdx = cpuPrefixIdx + prefix.length();
+		    int endIdx = stderr.indexOf("s", cpuPrefixIdx);
+		
+		    String timeStr = stderr.substring(startIdx, endIdx);
+		    this.setSolutionTimeMs((long) (Float.parseFloat(timeStr) * 1000));
+		} else {
+		    this.setSolutionTimeMs(0);
+		}
 
 	}
 	

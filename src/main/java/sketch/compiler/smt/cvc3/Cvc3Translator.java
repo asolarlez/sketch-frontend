@@ -1,20 +1,22 @@
 package sketch.compiler.smt.cvc3;
 
+import java.io.PrintStream;
 import java.util.List;
 
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.dataflow.abstractValue;
-import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.LinearNode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtType;
 
-public class Cvc3Translator extends SMTTranslator {
+public class Cvc3Translator extends FormulaPrinter {
 	
-	public Cvc3Translator() {
-		super();
+	public Cvc3Translator(NodeToSmtVtype formula, PrintStream ps) {
+		super(formula, ps);
 	}
 
 	@Override
@@ -152,6 +154,30 @@ public class Cvc3Translator extends SMTTranslator {
 
     @Override
     public String getStrForLinearNode(LinearNode linNode) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getLetFormula(NodeToSmtValue formula) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getLetHead() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getLetLine(NodeToSmtValue dest, NodeToSmtValue def) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getLetTail(int numLets) {
         // TODO Auto-generated method stub
         return null;
     }

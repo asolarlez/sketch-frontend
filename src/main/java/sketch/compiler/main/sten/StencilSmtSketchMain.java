@@ -209,6 +209,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 	@Override
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
 		ProduceSMTCode partialEval = new ProduceSMTStencilCode(vtype, numGridAccesses, varGen,
+		        params.hasFlag("theoryofarray"),
 				params.flagValue("unrollamnt"), internalRControl(), params
 						.hasFlag("trace"));
 		return partialEval;

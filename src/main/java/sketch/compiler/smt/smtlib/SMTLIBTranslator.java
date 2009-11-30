@@ -67,13 +67,6 @@ public class SMTLIBTranslator extends FormulaPrinter {
 		return ")";
 	}
 
-	@Override
-	public String getDefineVar(VarNode varNode) {
-	    String name = getStr(varNode);
-        return getDefineVar(getTypeForSolver(varNode.getSmtType()), 
-                name.startsWith("_") ? "sk_" + name : name);
-    }
-
 	public String getAssignment(String dest, String src, String idx,
 			String newVal) {
 		return "(store " + src + " " + idx + " " + newVal
@@ -90,11 +83,26 @@ public class SMTLIBTranslator extends FormulaPrinter {
 	    
 	    if (ntsv instanceof VarNode) {
 	        VarNode vn = (VarNode) ntsv;
-	        if (USE_LET && 
-	                !(mFormula.isHole(vn) || mFormula.isInput(vn)))
-	            return "?" + super.getStr(vn);
-	        else
+	        
+	        if (mFormula.isArraySeed(vn)) {
 	            return super.getStr(vn);
+	        }
+	        
+	        if (mFormula.isLocalVar(vn) || mFormula.isArraySeed(vn) ||
+	                (mFormula.isHole(vn) && !isSynthesis) ||
+	                (mFormula.isInput(vn) && isSynthesis)){
+	            return "?" + super.getStr(vn);
+	            
+	        } else {
+	            return super.getStr(vn);
+	        }
+	        
+//	        if (!mFormula.isArraySeed(vn) && 
+//	                ((isSynthesis && !mFormula.isHole(vn)) || 
+//	                (!isSynthesis && !mFormula.isInput(vn))))
+//	            return "?" + super.getStr(vn);
+//	        else
+//	            return super.getStr(vn);
 	    }
 	    return super.getStr(ntsv);
 	}
@@ -338,7 +346,7 @@ public class SMTLIBTranslator extends FormulaPrinter {
         sb.append(getStr(dest));
         sb.append(" ");
         sb.append(getStr(def));
-        sb.append(") \n");
+        sb.append(")");
         return sb.toString();
     }
 

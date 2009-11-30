@@ -1,11 +1,14 @@
 package sketch.compiler.smt.cvc3;
 
+import java.io.PrintStream;
+
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.smtlib.SMTLIBTranslator;
 
 public class Cvc3SMTLIBTranslator extends SMTLIBTranslator {
 	
-	public Cvc3SMTLIBTranslator(int intNumBits) {
-		super(intNumBits);
+	public Cvc3SMTLIBTranslator(NodeToSmtVtype formula, PrintStream ps, int intNumBits) {
+		super(formula, ps, intNumBits);
 	}
 	
 	@Override

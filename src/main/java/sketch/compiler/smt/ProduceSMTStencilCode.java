@@ -26,9 +26,14 @@ public class ProduceSMTStencilCode extends ProduceSMTCode {
 	
 	
 	public ProduceSMTStencilCode(TypedVtype vtype,
-			Map<String, Integer> numGridAccesses, TempVarGen varGen, int maxUnroll,
+			Map<String, Integer> numGridAccesses, 
+			TempVarGen varGen, 
+			boolean useTheoryOfArray,
+			int maxUnroll,
 			RecursionControl rcontrol, boolean tracing) {
-		super(vtype, varGen, maxUnroll, rcontrol, tracing);
+		super(vtype, varGen, useTheoryOfArray,
+		        maxUnroll, 
+		        rcontrol, tracing);
 		mNumGridAccesses = numGridAccesses;
 		
 		mVMap = new HashMap<String, NodeToSmtValue[]>();

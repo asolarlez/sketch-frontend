@@ -5,13 +5,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SolverFailedException;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.solvers.SolutionStatistics;
@@ -24,11 +25,6 @@ public class BeaverBVBackend extends SMTBackend {
 	public BeaverBVBackend(CommandLineParamManager params, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing) throws IOException {
 		super(params, tmpFilePath, rcontrol, varGen, tracing);
-	}
-
-	@Override
-	protected SMTTranslator createSMTTranslator() {
-		return new BeaverSMTLIBTranslator(mIntNumBits);
 	}
 
 	@Override
@@ -55,7 +51,7 @@ public class BeaverBVBackend extends SMTBackend {
 
 	@Override
 	protected SmtValueOracle createValueOracle() {
-		return new BeaverBVOracle();
+		return new BeaverBVOracle(mTrans);
 	}
 	
 	private String getModelFilename() {
@@ -72,6 +68,13 @@ public class BeaverBVBackend extends SMTBackend {
 		lir.close();
 		return new BeaverSolutionStatistics(solverOutput);
 	}
+
+    @Override
+    public FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new BeaverSMTLIBTranslator(formula, ps, mIntNumBits);
+    }
 
 
 }

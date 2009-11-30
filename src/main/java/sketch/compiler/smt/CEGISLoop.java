@@ -15,9 +15,9 @@ import sketch.compiler.smt.cvc3.Cvc3BVBackend;
 import sketch.compiler.smt.cvc3.Cvc3Backend;
 import sketch.compiler.smt.cvc3.Cvc3SMTLIBBackend;
 import sketch.compiler.smt.partialeval.AssertionFailedException;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
-import sketch.compiler.smt.partialeval.NodeToSmtVtype.FormulaPrinter;
 import sketch.compiler.smt.stp.STPBackend;
 import sketch.compiler.smt.yices.YicesBVBackend;
 import sketch.compiler.smt.z3.Z3BVBackend;
@@ -101,7 +101,7 @@ public class CEGISLoop {
 		mLoopTimer = new Stopwatch();
 		
 		mIntNumBits = params.flagValue("intbits");
-		mAllZerosOracle = new SmtValueOracle.AllZeroOracle();
+
 		
 	}
 
@@ -109,7 +109,7 @@ public class CEGISLoop {
 		mLoopTimer.start();
 		ArrayList<SmtValueOracle> observations = new ArrayList<SmtValueOracle>();
 
-		SmtValueOracle curOracle = mAllZerosOracle;
+		SmtValueOracle curOracle = new SmtValueOracle.AllZeroOracle(solver.getSMTTranslator());
 		mBestOracle = curOracle;
 		
 		try {
@@ -212,7 +212,7 @@ public class CEGISLoop {
 			
 			log.fine("Generating formula");
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
-			FormulaPrinter printer = vtype.new FormulaPrinter(ps, false);
+			FormulaPrinter printer = solver.createFormulaPrinter(vtype, ps);
 			printer.printVerificaitonFormula(holevalues);
 			ps.close();
 			
@@ -250,7 +250,9 @@ public class CEGISLoop {
 			solver.tmpFilePath = tmpFile;
 			
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
-			FormulaPrinter printer = vtype.new FormulaPrinter(ps, true);
+//			FormulaPrinter printer = vtype.new FormulaPrinter(ps, true);
+			
+			FormulaPrinter printer = solver.createFormulaPrinter(vtype, ps);
 			printer.printSynthesisFormula(observations);
 			ps.close();
 			

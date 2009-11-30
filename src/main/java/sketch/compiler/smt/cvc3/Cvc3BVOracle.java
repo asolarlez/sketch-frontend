@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.StringTokenizer;
 
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 
 public class Cvc3BVOracle extends Cvc3Oracle {
 
-	public Cvc3BVOracle() {
-		super();
+	public Cvc3BVOracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 	}
 
 	@Override

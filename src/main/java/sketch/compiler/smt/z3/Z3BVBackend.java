@@ -4,14 +4,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.StringReader;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SolverFailedException;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.smtlib.SMTLIBTranslator;
@@ -60,11 +61,6 @@ public class Z3BVBackend extends SMTBackend {
 	}
 
 	@Override
-	protected SMTTranslator createSMTTranslator() {
-		return new SMTLIBTranslator(mIntNumBits);
-	}
-
-	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
 		String z3Path = this.params.sValue("smtpath");
 		SynchronousTimedProcess stp = new SynchronousTimedProcess(params.flagValue("timeout"),
@@ -80,7 +76,14 @@ public class Z3BVBackend extends SMTBackend {
 
 	@Override
 	protected SmtValueOracle createValueOracle() {
-		return new Z3ManualParseOracle2_0();
+		return new Z3ManualParseOracle2_0(mTrans);
 	}
+
+	@Override
+    protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new SMTLIBTranslator(formula, ps, mIntNumBits);
+    }
 
 }

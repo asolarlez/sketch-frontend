@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.StringReader;
 
 import sketch.compiler.CommandLineParamManager;
@@ -13,9 +14,10 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
 import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
+import sketch.compiler.smt.smtlib.SMTLIBTranslator;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.InterceptedOutputStream;
 import sketch.util.ProcessStatus;
@@ -88,12 +90,6 @@ public class Cvc3Backend extends SMTBackend {
 		return null;
 	}
 
-
-	protected SMTTranslator createSMTTranslator() {
-		 return new Cvc3Translator();
-	}
-
-
 	protected OutputStream createStreamToSolver() throws FileNotFoundException {
 		if (USE_FILE_SYSTEM) {
 			// use file system for input purpose
@@ -134,11 +130,14 @@ public class Cvc3Backend extends SMTBackend {
 
 	@Override
 	protected SmtValueOracle createValueOracle() {
-		return new Cvc3Oracle();
+		return new Cvc3Oracle(mTrans);
 	}
 
-
-	
-	
+	@Override
+    protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new SMTLIBTranslator(formula, ps, mIntNumBits);
+    }
 
 }

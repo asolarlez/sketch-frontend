@@ -93,7 +93,7 @@ public abstract class NodeToSmtState extends TypedState {
 				this.updateLHSidx();
 				this.absVal = newLHSvalue();
 				VarNode newDest = (VarNode) state(vt);
-				vtype.declareRenamableVar(newDest);
+				vtype.declareLocalVar(newDest);
 				vtype.addDefinition(newDest, ntsvVal);
 				
 			} else if (ntsvVal instanceof VarNode ||
@@ -227,5 +227,25 @@ public abstract class NodeToSmtState extends TypedState {
 	protected void callParentUpdate(abstractValue val, abstractValueType vt) {
 		super.update(val, vt);
 	}
+	
+	/**
+     * Make RHS conform with LHS width
+     * @param lhsVal
+     * @param rhsVal
+     * @param vtype
+     * @return
+     */
+    protected NodeToSmtValue makeRhsConformLhsWidth(int lhsNumBits,
+            final NodeToSmtValue rhsVal, NodeToSmtVtype vtype)
+    {
+        NodeToSmtValue newVal = rhsVal;
+        // make sure the RHS's width conforms with LHS
+        if (lhsNumBits < rhsVal.getNumBits()) {
+            newVal = vtype.extract(lhsNumBits-1, 0, rhsVal);
+        } else if (lhsNumBits > rhsVal.getNumBits()) {
+            newVal = vtype.padIfNotWideEnough(rhsVal, lhsNumBits);
+        }
+        return newVal;
+    }
 
 }

@@ -49,7 +49,11 @@ public class BitVectUtil {
 	public static boolean isBitArray(Type t) {
 		return (t instanceof TypeArray) && 
 		(((TypeArray) t).getBase() == TypePrimitive.bittype);
+	}
 	
+	public static boolean isNormalArray(Type t) {
+	    return (t instanceof TypeArray) && 
+        (((TypeArray) t).getBase() != TypePrimitive.bittype); 
 	}
 	
 	public static int vectSize(Type t) {

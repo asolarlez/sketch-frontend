@@ -2,14 +2,15 @@ package sketch.compiler.smt.yices;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.smt.partialeval.BitVectUtil;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtType;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.partialeval.VarNode;
@@ -19,8 +20,8 @@ public class YicesBVOracle extends SmtValueOracle {
 	private static final String regex = "0b(\\d+)\\)|(true)|(false)";
 	private Pattern pattern;
 	
-	public YicesBVOracle() {
-		super();
+	public YicesBVOracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 		pattern = Pattern.compile(regex);
 	}
 
@@ -44,25 +45,39 @@ public class YicesBVOracle extends SmtValueOracle {
 					//   0b00000000000000000000000000000001)
 					
 					String arrayName = parts[1].substring(1);
-					Map<Integer, NodeToSmtValue> arrayStore = arrayValueMap.get(arrayName);
+					arrayName = mFPrinter.stripVariableName(arrayName);
 					
-					if (arrayStore == null) {
-						arrayStore = new HashMap<Integer, NodeToSmtValue>();
-						arrayValueMap.put(arrayName, arrayStore);
-					}
+					// ignore the ??? in yices2 output for now
+					if (parts[2].startsWith("?"))
+					    continue;
 					
 					// parse the index
 					String idxStr = parts[2].substring(2, parts[2].length()-1);
-					int idx = (int) Long.parseLong(idxStr, 2);
-					
+					int iidx = (int) Long.parseLong(idxStr, 2);
 					// trim away the ) at the second line
 //					String secondLine = in.readLine().trim();
 //					secondLine = secondLine.substring(2, secondLine.length()-1);
 					
 					String valStr = parts[3].substring(0, parts[3].length()-1);
-					if (mFormula.isHoleVariable(arrayName) || mFormula.isInputVariable(arrayName)) {
-					    NodeToSmtValue ntsv = stringToNodeToSmtValue(valStr, mFormula.getTypeForVariable(arrayName));
-	                    arrayStore.put(idx, ntsv);    
+					if (mFPrinter.isHoleVariable(arrayName) || mFPrinter.isInputVariable(arrayName)) {
+					    
+//					    if (arrayStore == null) {
+//	                        arrayStore = new HashMap<Integer, NodeToSmtValue>();
+//	                        arrayValueMap.put(arrayName, arrayStore);
+//	                    }
+					    
+					    SmtType ta = mFPrinter.getTypeForVariable(arrayName);
+					    NodeToSmtValue val = stringToNodeToSmtValue(valStr, ta);
+					    NodeToSmtValue idx = mFPrinter.getFormula().CONST(iidx); 
+					    
+	                    NodeToSmtValue arr;
+	                    if (!valMap.containsKey(arrayName)) {
+	                        arr = NodeToSmtValue.newParam(arrayName + "_seed", ta.getRealType(), ta.getNumBits());
+	                    } else {
+	                        arr = valMap.get(arrayName);
+	                    }
+	                    arr = (NodeToSmtValue) mFPrinter.getFormula().arrupd(arr, idx, val);
+	                    putValueForVariable(arrayName, arr);
 					}
 					
 					
@@ -70,19 +85,11 @@ public class YicesBVOracle extends SmtValueOracle {
 					// normal variable-value pair
 					// example: (= s_11_28L3_3 0b1)
 					String name = parts[1];
+					name = mFPrinter.stripVariableName(name);
 					// Extract the value
-//					Matcher matcher = pattern.matcher(parts[2]);
-//					if (matcher.find()) {
-//						String valStr;
-//						if (matcher.group(1) != null)
-//							valStr = matcher.group(1);
-//						else if (matcher.group(2) != null)
-//							valStr = matcher.group(2);
-//						else
-//							valStr = matcher.group(3);
 					String valStr = parts[2].substring(0, parts[2].length()-1);
-					if (mFormula.isHoleVariable(name) || mFormula.isInputVariable(name)) {
-						NodeToSmtValue ntsv = stringToNodeToSmtValue(valStr, mFormula.getTypeForVariable(name));
+					if (mFPrinter.isHoleVariable(name) || mFPrinter.isInputVariable(name)) {
+						NodeToSmtValue ntsv = stringToNodeToSmtValue(valStr, mFPrinter.getTypeForVariable(name));
 						putValueForVariable(name, ntsv);
 					}
 						
@@ -100,21 +107,36 @@ public class YicesBVOracle extends SmtValueOracle {
 	 */
 	protected NodeToSmtValue stringToNodeToSmtValue(String str, SmtType smtType) {
 		Type t = smtType.getRealType();
+		
+		int bvSize;
 		if (str.equals("true"))
-			return NodeToSmtValue.newBool(true);
-		if (str.equals("false"))
-			return NodeToSmtValue.newBool(false);
-		if (str.startsWith("0b")) {
-		    str = str.substring(2);
-		}
+            return NodeToSmtValue.newBool(true);
+        if (str.equals("false"))
+            return NodeToSmtValue.newBool(false);
+        if (str.startsWith("0b")) {
+            str = str.substring(2);
+            bvSize = str.length();
+            
+            if (bvSize > 32) { // 0b + 32bits
+                str = "bvbin" + str;
+                return NodeToSmtValue.newLabel(BitVectUtil.newBitArrayType(bvSize), bvSize, str);
+            }
+        }
 		int intValue = (int) Long.parseLong(str, 2);
+		if (t instanceof TypeArray) {
+		    if (BitVectUtil.isBitArray(t)) {
+		        return NodeToSmtValue.newBitArray(intValue, str.length());
+		    } else {
+		        TypeArray ta = (TypeArray) t;
+		        t = ta.getBase();
+		    }
+		}
+		
+		
 		if (t == TypePrimitive.inttype)
 			return NodeToSmtValue.newInt(intValue, str.length());
-		else if (t == TypePrimitive.bittype)
+		else if (t == TypePrimitive.bittype) {
 			return NodeToSmtValue.newBit(intValue); 
-		else if (BitVectUtil.isBitArray(t)) {
-			return NodeToSmtValue.newBitArray(intValue, str.length());
-			
 		} else {
 			assert false : "unexpected case";
 			return null;
@@ -126,9 +148,12 @@ public class YicesBVOracle extends SmtValueOracle {
 	    
 	    NodeToSmtValue val = super.getValueForVariable(var, smtType);
 	    if (val == null) {
-	        VarNode varNode = mFormula.getVarNode(var);
+	        VarNode varNode = mFPrinter.getVarNode(var);
 	        VarNode root = mFormula.getEquivalenceSet().find(varNode);
-	        return getValueForVariable(root);
+	        if (root != varNode)
+	            return getValueForVariable(root);
+	        else
+	            return NodeToSmtVtype.defaultValue(smtType);
 	    }
 	    return val;
 	}

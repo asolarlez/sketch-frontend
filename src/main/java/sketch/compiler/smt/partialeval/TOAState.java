@@ -5,7 +5,6 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.abstractValueType;
 import sketch.compiler.dataflow.varState;
-import sketch.compiler.smt.SMTTranslator.OpCode;
 
 /**
  * Emit formula to use Theory Of Array
@@ -26,8 +25,8 @@ public class TOAState extends NodeToSmtState {
     protected TOAState(String name, SmtType t, NodeToSmtVtype vt) {
         this(name, t, vt, null);
         
-        if (t.getRealType() instanceof TypeArray)
-            vtype.declareInput((VarNode) this.absVal);
+        if (BitVectUtil.isNormalArray(t.getRealType()))
+            vtype.declareArraySeedVariable((VarNode) this.absVal);
     }
     
 	protected TOAState(String name, SmtType t, NodeToSmtVtype vt, TOAState parent) {
@@ -67,11 +66,14 @@ public class TOAState extends NodeToSmtState {
             handleBitArrayUpdate(ntsvVal, ntsvIdx, vtype);
 		} else {
 		
+		    TypeArray ta = (TypeArray) destVal.getType();
+		    ntsvVal = makeRhsConformLhsWidth(vtype.getNumBitsForType(ta.getBase()), ntsvVal, vtype);
+		    
     		this.updateLHSidx();
     		this.absVal = newLHSvalue();
     		VarNode newDest = (VarNode) state(vt);
-    		vtype.addDefinition(newDest, 
-    		        vtype.BOTTOM(newDest.getType(), OpCode.ARRUPD, destVal, ntsvIdx, ntsvVal));
+    		vtype.addDefinition(newDest,
+    		        (NodeToSmtValue) vtype.arrupd(destVal, ntsvIdx, ntsvVal));
 		}
 	}
 

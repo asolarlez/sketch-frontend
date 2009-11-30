@@ -6,6 +6,7 @@ import java.io.LineNumberReader;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.smt.partialeval.BitVectUtil;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 
 /**
@@ -18,8 +19,8 @@ import sketch.compiler.smt.partialeval.NodeToSmtValue;
  */
 public class SMTLIBOracle extends Cvc3Oracle {
 
-	public SMTLIBOracle() {
-		super();
+	public SMTLIBOracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 	}
 
 	@Override
@@ -44,7 +45,7 @@ public class SMTLIBOracle extends Cvc3Oracle {
 
 
 			if (mFormula.isHoleVariable(varName) || mFormula.isInputVariable(varName)) {
-				Type varType = mFormula.getTypeForVariable(varName);
+				Type varType = mFPrinter.getTypeForVariable(varName);
 				putValueForVariable(varName,
 						stringToNodeToSmtValue(valStr, varType));
 			}

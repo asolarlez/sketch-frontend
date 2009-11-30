@@ -4,13 +4,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.smt.cvc3.Cvc3Translator;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.smtlib.SMTLIBTranslator;
@@ -42,7 +43,7 @@ public class FakeSolverBackend extends SMTBackend {
 	public class FakeOracle extends SmtValueOracle {
 
 		public FakeOracle() {
-			super();
+			super(mTrans);
 		}
 
 		@Override
@@ -102,16 +103,6 @@ public class FakeSolverBackend extends SMTBackend {
 	}
 
 	@Override
-	public SMTTranslator createSMTTranslator() {
-		if (params.hasFlag("backend") &&
-				params.sValue("backend").equals("cvc3")) {
-			return new Cvc3Translator();
-		} else {
-			return new SMTLIBTranslator(mIntNumBits);
-		}
-	}
-
-	@Override
 	protected SmtValueOracle createValueOracle() {
 		return new FakeOracle();
 	}
@@ -137,6 +128,14 @@ public class FakeSolverBackend extends SMTBackend {
 			InterruptedException, SolverFailedException {
 		return createSolutionStat();
 	}
+
+
+    @Override
+    public FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new SMTLIBTranslator(formula, ps, mIntNumBits);
+    }
 	
 	
 

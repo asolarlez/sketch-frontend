@@ -5,6 +5,7 @@ import java.io.LineNumberReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
@@ -13,8 +14,8 @@ public class BeaverBVOracle extends SmtValueOracle {
 	private static final String regex = "bv(\\d+)";
 	private Pattern pattern;
 	
-	public BeaverBVOracle() {
-		super();
+	public BeaverBVOracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 		pattern = Pattern.compile(regex);
 	}
 

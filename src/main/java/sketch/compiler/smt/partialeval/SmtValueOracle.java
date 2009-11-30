@@ -29,8 +29,8 @@ public abstract class SmtValueOracle extends SmtOracle {
 	public static class AllZeroOracle extends SmtValueOracle {
 		
 		
-		public AllZeroOracle() {
-			super();
+		public AllZeroOracle(FormulaPrinter fPrinter) {
+			super(fPrinter);
 		}
 
 		@Override
@@ -60,8 +60,8 @@ public abstract class SmtValueOracle extends SmtOracle {
 		
 	}
 
-	public SmtValueOracle() {
-		super();
+	public SmtValueOracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 	}
 
 	@Override

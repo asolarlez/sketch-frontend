@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtType;
@@ -46,6 +47,8 @@ public abstract class SmtOracle extends AbstractValueOracle {
 	
 	protected HashSet<String> mVarsOfInterest;
 	
+	protected FormulaPrinter mFPrinter;
+	
 	/*
 	 * Getters & Setters
 	 */
@@ -57,9 +60,10 @@ public abstract class SmtOracle extends AbstractValueOracle {
 	 * Constructor
 	 * @param holeTracker
 	 */
-	public SmtOracle() {
+	public SmtOracle(FormulaPrinter printer) {
 		super(null);
 		
+		mFPrinter = printer;
 		arrayValueMap = new HashMap<String, Map<Integer,NodeToSmtValue>>();
 		valMap = new TreeMap<String, NodeToSmtValue>();
 		mVarsOfInterest = new HashSet<String>();

@@ -27,8 +27,6 @@ public class BlastArrayState extends NodeToSmtState {
 	protected BlastArrayState(String name, SmtType t, NodeToSmtVtype vt) {
 		this(name, t, vt, null);
 		
-		if (BitVectUtil.isBitArray(t.getRealType()))
-		    vtype.declareInput((VarNode) this.absVal);
 	}
 	
 	/**
@@ -116,12 +114,7 @@ public class BlastArrayState extends NodeToSmtState {
 			int iidx = ntsvIdx.getIntVal();
 			NodeToSmtValue dest = state(iidx);
 			
-			// make sure the RHS's width conforms with LHS
-			if (dest.getNumBits() < ntsvVal.getNumBits()) {
-				newVal = vtype.extract(dest.getNumBits()-1, 0, ntsvVal);
-			} else if (dest.getNumBits() > ntsvVal.getNumBits()) {
-				newVal = vtype.padIfNotWideEnough(ntsvVal, dest.getNumBits());
-			}
+			newVal = makeRhsConformLhsWidth(dest.getNumBits(), newVal, vtype);
 			
 			updateOneElement(iidx, newVal);
 			
@@ -137,12 +130,7 @@ public class BlastArrayState extends NodeToSmtState {
 			for (int i = 0; i < this.numKeys(); i++) {
 				NodeToSmtValue dest = state(i);
 				
-				// make sure the RHS's width conforms with LHS
-				if (dest.getNumBits() < ntsvVal.getNumBits()) {
-					newVal = vtype.extract(dest.getNumBits()-1, 0, ntsvVal);
-				} else if (dest.getNumBits() > ntsvVal.getNumBits()) {
-					newVal = vtype.padIfNotWideEnough(ntsvVal, dest.getNumBits());
-				}
+				newVal = makeRhsConformLhsWidth(dest.getNumBits(), ntsvVal, vtype);
 				NodeToSmtValue finalVal = vtype.condjoin(
 						vtype.eq(ntsvIdx, vtype.CONST(i)), 
 						newVal, 
@@ -152,6 +140,7 @@ public class BlastArrayState extends NodeToSmtState {
 			}	
 		}
 	}
+
 	
 	protected void updateOneElement(int i, NodeToSmtValue ntsvVal) {
 		
@@ -161,7 +150,7 @@ public class BlastArrayState extends NodeToSmtState {
             VarNode newDest = newLHSvalue(i);
             newDest.update(ntsvVal);
             arrElems.put(i, newDest);
-            vtype.declareRenamableVar(newDest);
+            vtype.declareLocalVar(newDest);
             vtype.addDefinition(newDest, ntsvVal);
             
         } else if (ntsvVal instanceof VarNode ||

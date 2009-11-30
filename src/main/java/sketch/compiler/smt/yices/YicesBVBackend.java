@@ -5,14 +5,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.StringReader;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SolverFailedException;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.smtlib.SMTLIBTranslator;
@@ -25,13 +26,15 @@ import sketch.util.SynchronousTimedProcess;
 public class YicesBVBackend extends SMTBackend {
 	
     private final static String V1_SWICHES = " -smt -e -tc -st ";
-    private final static String V2_SWICHES = " -f ";
+    private final static String V2_SWICHES = " -m ";
     private String mSwitch;
 	private final static boolean USE_FILE_SYSTEM = true;
+	private int mVersion;
 	
 	public YicesBVBackend(CommandLineParamManager params, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, int version, boolean tracing) throws IOException {
 		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		mVersion = version;
 		if (version == 1)
 		    mSwitch = V1_SWICHES;
 		else
@@ -48,7 +51,13 @@ public class YicesBVBackend extends SMTBackend {
 		String solverOutput = run.out;
 		String solverError = run.err;
 		
-		YicesSolutionStatistics stat = new YicesSolutionStatistics(solverOutput, solverError);
+		SolutionStatistics stat;
+		if (mVersion == 1) {
+		    stat = new YicesSolutionStatistics(solverOutput, solverError);    
+		} else {
+		    stat = new Yices2SolutionStatistics(solverOutput, solverError, watch.toValue());
+		}
+		
 		
 		mOracle = createValueOracle();
 		mOracle.linkToFormula(formula);
@@ -66,8 +75,10 @@ public class YicesBVBackend extends SMTBackend {
 	}
 
 	@Override
-	protected SMTTranslator createSMTTranslator() {
-		return new SMTLIBTranslator(mIntNumBits);
+	protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+	        PrintStream ps)
+	{
+	    return new SMTLIBTranslator(formula, ps, mIntNumBits);
 	}
 
 	@Override
@@ -108,9 +119,7 @@ public class YicesBVBackend extends SMTBackend {
 
 	@Override
 	protected SmtValueOracle createValueOracle() {
-		return new YicesBVOracle();
+		return new YicesBVOracle(mTrans);
 	}
-
-
 
 }

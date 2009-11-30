@@ -1,12 +1,15 @@
 package sketch.compiler.smt.cvc3;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
+import sketch.compiler.smt.smtlib.SMTLIBTranslator;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
@@ -26,11 +29,6 @@ public class Cvc3SMTLIBBackend extends Cvc3Backend {
 	}
 	
 	@Override
-	protected SMTTranslator createSMTTranslator() {
-		return new Cvc3SMTLIBTranslator(mIntNumBits);
-	}
-	
-	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
 		String command;
 		
@@ -46,13 +44,20 @@ public class Cvc3SMTLIBBackend extends Cvc3Backend {
 	
 	@Override
 	protected SmtValueOracle createValueOracle() {
-		return new SMTLIBOracle();
+		return new SMTLIBOracle(mTrans);
 	}
 	
 	@Override
 	protected SolutionStatistics createSolutionStat(ProcessStatus status) {
 		return new Cvc3SMTLIBSolutionStatistics(status);
 	}
+	
+	@Override
+    protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new SMTLIBTranslator(formula, ps, mIntNumBits);
+    }
 	
 	
 }

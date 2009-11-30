@@ -43,7 +43,7 @@ public class LinearNode extends NodeToSmtValue {
 	 * @param n2
 	 */
 	public LinearNode(LinearNode n1, LinearNode n2, boolean isMinus) {
-		this(n1.getType(), n1.getNumBits());
+		this(n1.getType(), Math.max(n1.getNumBits(), n2.getNumBits()));
 		
 		for (VarNode v : n1.getVars()) {
 			increment(v, n1.getCoeff(v));

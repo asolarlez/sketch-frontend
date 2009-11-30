@@ -22,6 +22,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtWhile;
@@ -220,10 +221,26 @@ public class RegularizeTypesByTypeCheck extends SymbolTableVisitor {
 		if (cond != stmt.getCond() ||
 				body != stmt.getBody())
 			return new StmtWhile(stmt, cond, body);
-		
-	
 		return stmt;
 	}
+	
+	@Override
+    public Object visitStmtFor(StmtFor stmt) {
+        // make sure the condition is bool
+	    Statement init = (Statement) stmt.getInit().accept(this);
+	    Expression cond = (Expression) stmt.getCond().accept(this);
+	    Statement incr = (Statement) stmt.getIncr().accept(this);
+        cond = castIfTypeIncorrect(TypePrimitive.booltype, cond);
+        Statement body = (Statement) stmt.getBody().accept(this);
+        if (init != stmt.getInit() ||
+                cond != stmt.getCond() ||
+                incr != stmt.getIncr() ||
+                body != stmt.getBody())
+            return new StmtFor(stmt, init, cond, incr, body);
+        return stmt;
+    }
+	
+	
 	
 	// Expression related stuff
 	@Override

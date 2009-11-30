@@ -7,9 +7,9 @@ import java.util.regex.Pattern;
 
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
-import sketch.compiler.solvers.constructs.HoleNameTracker;
 
 /**
  * Use regular expression to to parse the output lines into
@@ -36,8 +36,8 @@ public class Z3BVOracle extends SmtValueOracle {
 	
 	Pattern pattern;
 
-	public Z3BVOracle(HoleNameTracker nameTracker, int intNumBits) {
-		super();
+	public Z3BVOracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 		pattern = Pattern.compile(regex);
 		
 	}

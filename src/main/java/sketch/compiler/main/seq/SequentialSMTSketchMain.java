@@ -306,7 +306,9 @@ public class SequentialSMTSketchMain {
 		// dump (prog, "MBB:");
 		prog = (Program) prog.accept(new EliminateStructs(varGen, params
 				.flagValue("heapsize")));
+//		dump (prog, "Before ReplaceStructTypeWithInt:");
 		prog = (Program) prog.accept(new ReplaceStructTypeWithInt());
+//		dump (prog, "After ReplaceStructTypeWithInt:");
 		
 		prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 //		dump (prog, "After eliminating structs:");
@@ -917,7 +919,9 @@ public class SequentialSMTSketchMain {
 
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
 		ProduceSMTCode partialEval = new ProduceSMTCode(vtype, varGen,
-				params.flagValue("unrollamnt"), internalRControl(), params
+		        params.hasFlag("theoryofarray"),
+				params.flagValue("unrollamnt"), 
+				internalRControl(), params
 						.hasFlag("trace"));
 		return partialEval;
 	}

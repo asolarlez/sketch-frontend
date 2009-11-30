@@ -1,14 +1,18 @@
 package sketch.compiler.smt.cvc3;
 
+import java.io.PrintStream;
+
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 
 public class Cvc3BVTranslator extends Cvc3Translator {
 	
-	private static int INT_WIDTH = 32;
+	protected int intBits;
 
-	public Cvc3BVTranslator(int i) {
-		super();
+	public Cvc3BVTranslator(NodeToSmtVtype formula, PrintStream ps, int numIntBits) {
+		super(formula, ps);
+		intBits = numIntBits;
 	}
 
 	@Override

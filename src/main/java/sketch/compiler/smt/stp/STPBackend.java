@@ -60,8 +60,15 @@ public class STPBackend extends SMTBackend {
 
 	@Override
 	protected SmtValueOracle createValueOracle() {
-		return new STPOracle();
+		return new STPOracle(mTrans);
 	}
+	
+	@Override
+    protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
+            PrintStream ps)
+    {
+        return new STPTranslator(formula, ps, mIntNumBits);
+    }
 
 	@Override
 	public SolutionStatistics solve(NodeToSmtVtype formula) throws IOException, InterruptedException,
@@ -114,11 +121,6 @@ public class STPBackend extends SMTBackend {
 				tmpVarGen);
 	}
 
-    @Override
-    public FormulaPrinter getSMTTranslator(NodeToSmtVtype formula,
-            PrintStream ps)
-    {
-        return new STPTranslator(formula, ps, mIntNumBits);
-    }
+   
 
 }

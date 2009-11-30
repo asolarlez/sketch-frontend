@@ -33,10 +33,9 @@ public class StpSmtlibBackend extends STPBackend {
 	}
 	
 	@Override
-    public FormulaPrinter getSMTTranslator(NodeToSmtVtype formula,
+    protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
             PrintStream ps)
     {
         return new SMTLIBTranslator(formula, ps, mIntNumBits);
     }
-	
 }

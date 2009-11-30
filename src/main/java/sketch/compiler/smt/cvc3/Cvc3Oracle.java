@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.StringTokenizer;
 
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
@@ -17,8 +18,8 @@ import sketch.compiler.smt.partialeval.SmtValueOracle;
  */
 public class Cvc3Oracle extends SmtValueOracle {
 
-	public Cvc3Oracle() {
-		super();
+	public Cvc3Oracle(FormulaPrinter fPrinter) {
+		super(fPrinter);
 	}
 
 	/**

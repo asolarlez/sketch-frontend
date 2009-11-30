@@ -4,44 +4,55 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.smt.SMTTranslator;
 
 public abstract class FormulaPrinter extends SMTTranslator{
-    
-    public static final boolean USE_LET = CommandLineParamManager.getParams().hasFlag("uselet");
 
     protected NodeToSmtVtype mFormula;
     PrintStream out;
+    HashSet<VarNode> mVarsDecalred;
+    protected boolean isSynthesis;
+    
+    public NodeToSmtVtype getFormula() {
+        return mFormula;
+    }
+    
+    /**
+     * 
+     * @param var
+     * @return true if var is defined in the current textual formula
+     */
+    private boolean isVarDeclaredInFormula(VarNode varNode) {
+        return mVarsDecalred.contains(varNode);
+    }
+    
+    private void defineVarInFormula(VarNode varNode) {
+        if (!isVarDeclaredInFormula(varNode)) {
+            out.println(getDefineVar(varNode));
+            mVarsDecalred.add(varNode);
+        }
+            
+    }
     
     public FormulaPrinter(NodeToSmtVtype formula, PrintStream out) {
         super();
         
         mFormula = formula;
         this.out = out;
+        mVarsDecalred = new HashSet<VarNode>();
         
     }
     
-    public void printRenamableDeclarations() {
+    public void printInputDeclarations() {
         addComment("");
         addComment("Renamable Variable Declarations");
         addComment("");
         
-        for (VarNode p : mFormula.mRenamableVars) {              
+        for (VarNode p : mFormula.mInputs) {              
             out.println(getDefineVar(p));
         }
-    }
-    
-    public void printFixedNameDeclarations() {
-
-        addComment("");
-        addComment("Fixed Name Variable Declarations");
-        addComment("");
-        for (VarNode p : mFormula.mFixedNameVars) {
-            out.println(getDefineVar(p));
-        }
-    
     }
 
     private void printHoleDeclarations() {
@@ -52,12 +63,12 @@ public abstract class FormulaPrinter extends SMTTranslator{
             out.println(getDefineVar(p));
         }
     }
-
-    private void printInputDeclarations() {
+    
+    private void printArraySeedlDeclarations() {
         addComment("");
-        addComment("Inputs Declarations");
+        addComment("Real Variable Declarations");
         addComment("");
-        for (VarNode p : mFormula.mInputs) {
+        for (VarNode p : mFormula.mArraySeeds) {
             out.println(getDefineVar(p));
         }
     }
@@ -69,24 +80,14 @@ public abstract class FormulaPrinter extends SMTTranslator{
         addComment("DAG");
         addComment("");
         
-        if (USE_LET) {
-            
-            out.println(getLetHead());
-        }
-        
         for (NodeToSmtValue dest : mFormula.mEq) {
             
             if (dest instanceof LabelNode) {
                 addComment(dest.toString());
             } else {
                 NodeToSmtValue def = mFormula.mSimpleDefs.get(dest);
-                if (USE_LET) {
-                    String defStr = getLetLine(dest, def);
-                    out.println(defStr);    
-                } else {
-                    String defStr = getAssert(getStr(mFormula.assign(dest, def)));
-                    out.println(defStr);
-                }
+                String defStr = getLetLine(dest, def);
+                out.println(defStr);
             }
         }       
     }
@@ -103,25 +104,14 @@ public abstract class FormulaPrinter extends SMTTranslator{
         
 
         if (!negated) {
-            if (USE_LET) {
-                NodeToSmtValue[] asserts = new NodeToSmtValue[mFormula.mAsserts.size()];
-                int i = 0;
-                for (NodeToSmtValue oneAssert : mFormula.mAsserts) {
-                    asserts[i] = oneAssert;
-                    i++;
-                }
-                out.println(getLetFormula(mFormula.and(asserts)));
-                
-            } else {
-                            
-                // output a disjunction of all asserts
-                for (NodeToSmtValue predicate : mFormula.mAsserts) {
-                    out.println(getAssert(getStr(predicate)));
-                }
-            
+            // print disjunction of asserts
+            NodeToSmtValue[] asserts = new NodeToSmtValue[mFormula.mAsserts.size()];
+            int i = 0;
+            for (NodeToSmtValue oneAssert : mFormula.mAsserts) {
+                asserts[i] = oneAssert;
+                i++;
             }
-        
-            
+            out.println(getLetFormula(mFormula.and(asserts)));
 
         } else {
             if (mFormula.mAsserts.size() > 0) {
@@ -135,39 +125,26 @@ public abstract class FormulaPrinter extends SMTTranslator{
                 }
                 
                 NodeToSmtValue finalCondition = mFormula.or(negatedAsserts);
-                if (USE_LET) {
-                    out.println(getLetFormula(finalCondition));
-                } else {
-                    out.println(getAssert(getStr(finalCondition)));    
-                }
+                out.println(getLetFormula(finalCondition));
                 
             } else {
                 // if there is no assertion in a verification phase, that means the program
                 // can never fail, in which case, verification can fail immediately
-                if (USE_LET) {
-                    out.println(getLetFormula(mFormula.CONST(false)));
-                        
-                } else {
-                    out.println(getAssert(getStr(mFormula.CONST(false))));
-                }
+
+                out.println(getLetFormula(mFormula.CONST(false)));
             }
         }
-        if (USE_LET)
-            out.println(getLetTail(mFormula.mEq.size()));
+        
     }
     
     public void printSynthesisFormula(ArrayList<SmtValueOracle> observations) {
         
         try {
-            
+            isSynthesis = true;
             out.println(prolog());
 //          println(getComment("intbits=" + mIntBits + " cbits=" + mcbits + " inbits=" + minbits));
             
-            if (USE_LET)
-                printHoleDeclarations();
-            else
-                printFixedNameDeclarations();
-            
+            printHoleDeclarations();
             
             for (int currObserIdx = 0; currObserIdx < observations.size(); currObserIdx++) {
                 String comment = "Formula for observation " + currObserIdx;
@@ -178,14 +155,12 @@ public abstract class FormulaPrinter extends SMTTranslator{
                 
                 addComment(comment);
         
-                if (USE_LET)
-                    printInputDeclarations();
-                else
-                    printRenamableDeclarations();
-                
+                printArraySeedlDeclarations();
                 printValueAssignments(valueAssignments);
                 printDAG();
                 generateCorrectnessConditions(false);
+
+                out.println(getLetTail(mFormula.mEq.size() + mFormula.mInputs.size()));
                 
             }
             
@@ -201,27 +176,26 @@ public abstract class FormulaPrinter extends SMTTranslator{
     }
     
     public void printVerificaitonFormula(SmtValueOracle candidate) {
-    
+        isSynthesis = false;
         try {
             
             HashMap<NodeToSmtValue, NodeToSmtValue> valueAssignments = useOracle(candidate, false);
             
             mFormula.setSuffix("");
             out.println(prolog());
-            printFixedNameDeclarations();
+//            printFixedNameDeclarations();
 //          println(getComment("intbits=" + mIntBits + " cbits=" + mcbits + " inbits=" + minbits));
             
             addComment("Verification formulas");
         
-            
-            if (USE_LET)
-                printInputDeclarations();
-            else
-                printRenamableDeclarations();
+            printInputDeclarations();
+            printArraySeedlDeclarations();
             
             printValueAssignments(valueAssignments);
             printDAG();
             generateCorrectnessConditions(true);
+            
+            out.println(getLetTail(mFormula.mEq.size()+ mFormula.mHoles.size()));
             out.println(epilog());
             
     
@@ -270,8 +244,21 @@ public abstract class FormulaPrinter extends SMTTranslator{
         addComment("Input/Hole assignments");
         addComment("");
         for (NodeToSmtValue lhs :  valueAssignments.keySet()) {
+          
             NodeToSmtValue rhs = valueAssignments.get(lhs);
-            out.println(getAssert(getStr(mFormula.eq(lhs, rhs))));
+            if (BitVectUtil.isNormalArray(rhs.getType())) {
+                VarNode seed = findArraySeed(rhs);
+                defineVarInFormula(seed);
+            }
+        }
+        
+        out.println(getLetHead());
+        
+        for (NodeToSmtValue lhs :  valueAssignments.keySet()) {
+            NodeToSmtValue rhs = valueAssignments.get(lhs);
+            String defStr = getLetLine(lhs, rhs);
+            out.println(defStr);
+
         }
     }
     
@@ -281,7 +268,61 @@ public abstract class FormulaPrinter extends SMTTranslator{
      */
     public void addComment(String msg) {
         out.println(getComment(msg));
-    }   
+    }  
+    
+    
+    /*
+     * The following methods are used by the oracle to access the formula again
+     */
+    
+    public boolean isHoleVariable(String varName) {
+        return mFormula.isHoleVariable(stripVariableName(varName));
+    }
+    
+    public boolean isInputVariable(String varName) {
+        return mFormula.isInputVariable(stripVariableName(varName));
+    }
+    
+    /**
+     * Look up the NodeToSmtValue object in all the declared variables 
+     * 
+     * @param varName
+     * @return
+     */
+    public VarNode getVarNode(String varName) {
+        varName = stripVariableName(varName);
+        for (VarNode renamable : mFormula.mInputs)
+            if (renamable.getRHSName().equals(varName))
+                return renamable;
+        
+        for (VarNode fixed : mFormula.mHoles)
+            if (fixed.getRHSName().equals(varName))
+                return fixed;
+        
+        for (VarNode fixed : mFormula.mArraySeeds)
+            if (fixed.getRHSName().equals(varName))
+                return fixed;
+        
+        return null;
+    }
+    
+    public SmtType getTypeForVariable(String varName) {
+        return getVarNode(varName).getSmtType();
+    }
+    
+    /*
+     * Helpers
+     */
+    private VarNode findArraySeed(NodeToSmtValue node) {
+        if (node instanceof VarNode)
+            return (VarNode) node;
+        if (node instanceof OpNode) {
+            OpNode arrUpdate = (OpNode) node;
+            if (arrUpdate.getOpcode() == OpCode.ARRUPD)
+            return findArraySeed(arrUpdate.getOperands()[0]);
+        }
+        throw new IllegalArgumentException("arr update node is expected");
+    }
 }
 
 

@@ -1,11 +1,14 @@
 package sketch.compiler.smt.beaver;
 
+import java.io.PrintStream;
+
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.smtlib.SMTLIBTranslator;
 
 public class BeaverSMTLIBTranslator extends SMTLIBTranslator {
 	
-	public BeaverSMTLIBTranslator(int intNumBits) {
-		super(intNumBits);
+	public BeaverSMTLIBTranslator(NodeToSmtVtype formula, PrintStream ps, int intNumBits) {
+	    super(formula, ps, intNumBits);
 	}
 	
 	/**

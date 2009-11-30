@@ -44,7 +44,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 	
 	boolean tracing = false;
 	PrintStream traceStream = System.out;
-
+	boolean mUseTOA;
 	int currObserIdx;
 
 
@@ -59,6 +59,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 	public ProduceSMTCode(
 			TypedVtype vtype,
 			TempVarGen varGen,
+			boolean useTheoryOfArray,
 			int maxUnroll,
 			RecursionControl rcontrol, 
 			boolean tracing) {
@@ -68,7 +69,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 				maxUnroll, rcontrol);
 		
 		this.tracing = tracing;
-
+		mUseTOA = useTheoryOfArray;
 		this.vtype = (NodeToSmtVtype) super.vtype;
 		this.vtype.setMethodState(super.state);
 		
@@ -96,7 +97,17 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 	 */
 	@Override
 	public Object visitFunction(Function func) {
-		
+		// int sp(int v) {
+	    // }
+	    // Translates into:
+	    // v : INT;          // v is a global input variable
+	    // v_0 = v;    // v_0 is a local variable
+	    
+	    // int sp(int[] a) {
+        // }
+	    // Translates into:
+        // a : ARRAY BITVECTOR(32) OF BITVECTOR(32);     // a is a global input variable
+        // a_0 = a;    // a_0 is a local variable
 		for (Parameter param : func.getParams()) {
 			state.varDeclare(param.getName(), param.getType());
 			if (param.isParameterInput()) {
@@ -105,25 +116,32 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 				Type paramType = param.getType();
 				inputVal = (NodeToSmtValue) state.varValue(param.getName());
 				
-				if (BitVectUtil.isPrimitive(paramType)) {
-				
-					NodeToSmtValue paramVal = vtype.newParam(param, param.getType());
-					state.setVarValue(param.getName(), paramVal);
-					
+				if (mUseTOA) {
+				    NodeToSmtValue paramVal = vtype.newParam(param, param.getType());
+                    state.setVarValue(param.getName(), paramVal);
+				    
 				} else {
-					List<abstractValue> vectValue = inputVal.getVectValue();
-					
-					int i = 0;
-					for (abstractValue arrEle : vectValue) {
-						NodeToSmtValue ntsvEle = (NodeToSmtValue) arrEle;
-						
-						NodeToSmtValue paramVal = vtype.newParam(param, i, ntsvEle.getType());
-						
-						state.setVarValue(param.getName(), vtype.CONST(i),
-								paramVal);
-						i++;
-					}
+				    if (BitVectUtil.isPrimitive(paramType)) {
+		                
+	                    NodeToSmtValue paramVal = vtype.newParam(param, param.getType());
+	                    state.setVarValue(param.getName(), paramVal);
+	                    
+	                } else {
+	                    List<abstractValue> vectValue = inputVal.getVectValue();
+	                    
+	                    int i = 0;
+	                    for (abstractValue arrEle : vectValue) {
+	                        NodeToSmtValue ntsvEle = (NodeToSmtValue) arrEle;
+	                        
+	                        NodeToSmtValue paramVal = vtype.newParam(param, i, ntsvEle.getType());
+	                        
+	                        state.setVarValue(param.getName(), vtype.CONST(i),
+	                                paramVal);
+	                        i++;
+	                    }
+	                }
 				}
+				
 			}
 		}
 

@@ -50,6 +50,7 @@ public class OpNode extends NodeToSmtValue {
 		    sb.append('(');
 	        for (NodeToSmtValue opnd : getOperands()) {
 	            sb.append(getCanonicalOp(getOpcode()));
+	            sb.append(' ');
 	            sb.append(opnd.toString());
 	        }
 	        sb.append(')');    

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import sketch.compiler.CommandLineParamManager;
@@ -190,8 +189,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mInBits = inBits;
 		this.tmpVarGen = tmpVarGen;
 		
-		mRenamableVars = new HashSet<VarNode>();
-		mFixedNameVars = new HashSet<VarNode>();
+		mInputs = new HashSet<VarNode>();
+		mLocalVars = new HashSet<VarNode>();
+		
 		mEq = new LinkedList<NodeToSmtValue>();
 		mCache = new HashMap<NodeToSmtValue, NodeToSmtValue>(100000);
 		mStructHash = new HashMap<NodeToSmtValue, NodeToSmtValue>(100000);
@@ -200,7 +200,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mUses = new HashMap<NodeToSmtValue, Integer>();
 		mAsserts = new LinkedList<NodeToSmtValue>();
 		mHoles = new HashSet<VarNode>();
-		mInputs = new HashSet<VarNode>();
+		mArraySeeds = new HashSet<VarNode>();
 		
 		mTransitiveSet = new DisjointSet<VarNode>();
 		
@@ -273,7 +273,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public VarNode STATE_DEFAULT(String label, Type realType, int numBits, int rhsIdx) {
 		VarNode newNode = NodeToSmtValue.newStateDefault(label, realType, numBits, rhsIdx);
 		newNode = (VarNode) checkCache(newNode);
-		declareRenamableVar(newNode);
+		declareLocalVar(newNode);
 		
 		return newNode;
 	}
@@ -281,7 +281,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public VarNode STATE_ELE_DEFAULT(String label, Type realType, int numBits, int rhsIdx) {
 		VarNode newNode = NodeToSmtValue.newStateArrayEleDefault(label, realType, numBits, rhsIdx);
 		newNode = (VarNode) checkCache(newNode);
-		declareRenamableVar(newNode);
+		declareLocalVar(newNode);
 	
         return newNode;
 	}
@@ -419,6 +419,10 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		}
 	}
 	
+	public abstractValue arrupd(NodeToSmtValue arr, NodeToSmtValue idx, NodeToSmtValue val){
+	    return BOTTOM(arr.getType(), OpCode.ARRUPD, arr, idx, val);
+	}
+	
 	protected NodeToSmtValue bitArrayAccess(NodeToSmtValue ntsvArr, NodeToSmtValue ntsvIdx,
             NodeToSmtValue len, boolean isUnchecked) {
 	    
@@ -525,11 +529,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			        (isLinearizable(ntsv1)) &&
                     (isLinearizable(ntsv2))) {
 			    // if they are either ConstNode or LinearNode or VarNode
-//			    PrintStream ps = System.err;
-			    
-//			    ps.println(ntsv1 + "\t" + ntsv2);
+		        
 			    NodeToSmtValue lin = LINEAR_PLUS(ntsv1, ntsv2, false);
-//			    ps.println(lin);
+
 			    return lin;
 			} else {
 			    // if either one is OpNode, nothing we can do.
@@ -1306,16 +1308,14 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	SMTTranslator mTrans;
 	
 	StaticHoleTracker mHoleNamer;
-	HashSet<VarNode> mRenamableVars;
-	HashSet<VarNode> mFixedNameVars;
-//	HashMap<String, VarNode> mRenamableVars;
-//    HashMap<String, VarNode> mFixedNameVars;
+	HashSet<VarNode> mLocalVars;
 	LinkedList<NodeToSmtValue> mEq;
 	HashMap<NodeToSmtValue, NodeToSmtValue> mSimpleDefs;
 	HashMap<NodeToSmtValue, Integer> mUses;
 	LinkedList<NodeToSmtValue> mAsserts;
 	HashSet<VarNode> mHoles;
 	HashSet<VarNode> mInputs;
+	HashSet<VarNode> mArraySeeds;
 	
 	HashMap<NodeToSmtValue, NodeToSmtValue> mCache;
 	
@@ -1353,6 +1353,14 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public boolean isInput(VarNode varNode) {
         return mInputs.contains(varNode);
     }
+	
+	public boolean isArraySeed(VarNode varNode) {
+	    return mArraySeeds.contains(varNode);
+	}
+	
+	public boolean isLocalVar(VarNode varNode) {
+	    return mLocalVars.contains(varNode);
+	}
 	
 	int savedNodes = 0;
 	protected NodeToSmtValue checkCache(NodeToSmtValue node) {
@@ -1401,7 +1409,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		}
 		dest = (VarNode) referenceVar(dest);
 		
-		assert isVarDeclared(dest) : varName + " is defined but not declared";
+
 		
 		log.finer("defining " + varName);
 		
@@ -1444,46 +1452,18 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public void addComment(String c) {
 		mEq.add(LABEL(TypePrimitive.voidtype, 0, c));
 	}
+
 	
-	/**
-	 * Define a variable whose name will not be changed. The variables
-	 * whose name don't change are always holes.
-	 * 
-	 * @param node
-	 * 
-	 */
-	public void declareFixedNameVar(VarNode node) {
-		
-		if (!isVarDeclared(node)) {
-			String varName = node.getRHSName();
-			log.finer("declaring fixed name " + varName);
-			VarNode nodeToStore = null;
-			
-			// variables should not be renamed
-			nodeToStore = node;
-			mFixedNameVars.add(nodeToStore);
-			
-		}
-	}
-	
-	/**
-	 * Declare a variable whose name depends on the observation 
-	 * suffix. These include all normal variables and input variables.
-	 * 
-	 * @param node
-	 */
-	public void declareRenamableVar(VarNode node) {
-	
-		if (!isVarDeclared(node)) {
-			String varName = node.getRHSName();
-			log.finer("declaring renamambe " + varName);
-			VarNode nodeToStore = node;
-			nodeToStore.setSuffixSetter(this);
-			
-			// renamable variables
-			mRenamableVars.add(nodeToStore);
-			
-		}
+	public void declareLocalVar(VarNode node) {
+//	    if (!isVarDeclared(node)) {
+            String varName = node.getRHSName();
+            log.finer("declaring local " + varName);
+            VarNode nodeToStore = node;
+            nodeToStore.setSuffixSetter(this);
+            
+            // renamable variables
+            mLocalVars.add(nodeToStore);
+//        }
 	}
 	
 	/**
@@ -1491,17 +1471,29 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	 * @param hole
 	 */
 	public void declareHole(VarNode hole) {
+	    log.finer("declaring fixed name hole " + hole.getRHSName());
 		mHoles.add(hole);
-		declareFixedNameVar(hole);
 	}
 	
 	/**
-	 * Add the node to thelist of input without any checking
+	 * Add the node to the list of input without any checking
 	 * @param input
 	 */
 	public void declareInput(VarNode input) {
+	    log.finer("declaring renamable input " + input.getRHSName());
 		mInputs.add(input);
-		declareRenamableVar(input);
+		input.setSuffixSetter(this);
+	}
+	
+	/**
+	 * Add the node to the list of varialbes that are real
+	 * variables
+	 * 
+	 * It currently stores the seed array variable
+	 * @param var
+	 */
+	public void declareArraySeedVariable(VarNode var) {
+	    mArraySeeds.add(var);
 	}
 	
 	public NodeToSmtValue newHole(ExprStar star, Type t) {
@@ -1587,28 +1579,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //	        return referenced;
 //	}
 	
-	/**
-	 * Look up the NodeToSmtValue object in all the declared variables 
-	 * 
-	 * @param varName
-	 * @return
-	 */
-	public VarNode getVarNode(String varName) {
-		
-		for (VarNode renamable : mRenamableVars)
-			if (renamable.getRHSName().equals(varName))
-				return renamable;
-		
-		for (VarNode fixed : mFixedNameVars)
-			if (fixed.getRHSName().equals(varName))
-				return fixed;
-		
-		return null;
-	}
 	
-	public SmtType getTypeForVariable(String varName) {
-		return getVarNode(varName).getSmtType();
-	}
 	
 	public void finalize() {
 //		guardModAndDivide();
@@ -1620,7 +1591,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    log.info("Optimizing DAG");
 		simplifyExpressionTrees();
 		constraintUndefinedVariables();
-		numRemoved = removeUnusedVariables();
+//		numRemoved = removeUnusedVariables();
 		
 		log.info(" - Saved Node creation: " + savedNodes);
 		log.info(" - Removed " + numRemoved + " unused variables");
@@ -1630,10 +1601,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //		Toolbox.pause();
 	}
 	
-	public boolean isVarDeclared(VarNode var) {
-		return mRenamableVars.contains(var) || 
-			mFixedNameVars.contains(var);
-	}
 	
 	public boolean isVarDefined(NodeToSmtValue var) {
 		return mSimpleDefs.containsKey(var);
@@ -1756,7 +1723,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	protected void constraintUndefinedVariables() {
 		NodeToSmtValue constant = CONST(-1);
-		for (VarNode var : mRenamableVars) {
+		
+		for (VarNode var : mLocalVars) {
 			if (mUses.containsKey(var) && 
 					!isVarDefined(var) &&
 					!mInputs.contains(var)) {
@@ -1768,58 +1736,11 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 				NodeToSmtValue defaultVal = defaultValue(var.getSmtType());
 				if (defaultVal != null)
 				    addConstraint(var, defaultVal);
-				
-				
 			}
 		}
 	}
 	
-	protected int removeUnusedVariables() {
-		Set<NodeToSmtValue> setToRemove = new HashSet<NodeToSmtValue>();
-		int numRemoved = 0;
-		
-		log.fine("Before cache size:" + mCache.size());
-		
-		for (VarNode var : mRenamableVars) {
-			
-			// if a renamable variable is not an input and not used
-			// do not print the declaration
-			
-			if (!mInputs.contains(var) && 
-					!mUses.containsKey(var)) {
-				String varName = var.getRHSName();
-				log.finer("Removing unused var " + varName);
-				setToRemove.add(var);
-			}
-		}
-		
-		for (NodeToSmtValue var : setToRemove) {
-			mRenamableVars.remove(var);
-			mCache.remove(var);
-		}
-		
-		numRemoved = setToRemove.size();
-		setToRemove.clear();
-		
-		for (NodeToSmtValue var : mFixedNameVars) {
-			
-			// if a renamable variable is not an input and not used
-			// do not print the declaration
-			if (!mHoles.contains(var) && 
-					!mUses.containsKey(var)) {
-				setToRemove.add(var);
-			}
-		}
-		
-		for (NodeToSmtValue var : setToRemove) {
-			mFixedNameVars.remove(var);
-			mCache.remove(var);	
-		}
-		log.fine("After cache size:" + mCache.size());
-		
-		numRemoved += setToRemove.size();
-		return numRemoved;
-	}
+	
 	
 	/**
 	 * Follow the definition of src until it reaches

@@ -3,12 +3,14 @@ package sketch.compiler.smt;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.logging.Logger;
 
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.partialeval.BlastArrayVtype;
+import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.partialeval.TOAVtype;
@@ -25,7 +27,7 @@ public abstract class SMTBackend {
 	private SynchronousTimedProcess stp;
 	private OutputStream streamToSolver;
 	protected SmtValueOracle mOracle;
-	private SMTTranslator trans;
+	protected FormulaPrinter mTrans;
 	
 	
 	protected boolean tracing = false;
@@ -51,11 +53,8 @@ public abstract class SMTBackend {
 	 */
 	protected abstract SmtValueOracle createValueOracle();
 	
-	/**
-	 * Creates an SMT Translator for this backend
-	 * @return
-	 */
-	protected abstract SMTTranslator createSMTTranslator();
+	protected abstract FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula, PrintStream ps);
+	
 	
 	/**
 	 * Creates an output stream for the solver
@@ -67,14 +66,12 @@ public abstract class SMTBackend {
 	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits, boolean useTheoryOfArray, TempVarGen tmpVarGen) {
 	    if (useTheoryOfArray) {
 	        return new TOAVtype(  
-	                getSMTTranslator(),
 	                intBits,
 	                inBits,
 	                cBits,
 	                tmpVarGen);
 	    } else
 		return new BlastArrayVtype(  
-				getSMTTranslator(),
 				intBits,
 				inBits,
 				cBits,
@@ -107,15 +104,19 @@ public abstract class SMTBackend {
 		return this.mOracle;
 	}
 	
+	public FormulaPrinter createFormulaPrinter(NodeToSmtVtype formula, PrintStream ps) {
+	    
+	    mTrans = createFormulaPrinterInternal(formula, ps);
+        
+	    return mTrans;
+	}
+	
 	/**
 	 * Returns the SMTTranslator object needed for input to this backend
 	 * @return
 	 */
-	protected SMTTranslator getSMTTranslator() {
-		if (this.trans == null) {
-			this.trans = createSMTTranslator();
-		}
-		return this.trans;
+	public FormulaPrinter getSMTTranslator() {
+	    return mTrans;
 	}
 	
 	/**

@@ -95,9 +95,10 @@ public abstract class SMTTranslator  {
 	 */
 	protected abstract String getDefineVar(String type, String varName);
 	
-	public String getDefineVar(SmtType t, String varName) {
-		return getDefineVar(getTypeForSolver(t), varName);
-	}
+	public String getDefineVar(VarNode varNode) {
+        String name = getStr(varNode);
+        return getDefineVar(getTypeForSolver(varNode.getSmtType()), name);
+    }
 	
 	public abstract String epilog();
 	
@@ -129,6 +130,14 @@ public abstract class SMTTranslator  {
 	
 	
 	public abstract String getStrForLinearNode(LinearNode linNode);
+	
+	
+	public abstract String getLetHead();
+	public abstract String getLetLine(NodeToSmtValue dest, NodeToSmtValue def);
+	public abstract String getLetFormula(NodeToSmtValue formula);
+	public abstract String getLetTail(int numLets);
+	
+	
 	
 	/**
 	 * Get String representation that does a unary operation on cond
@@ -187,7 +196,11 @@ public abstract class SMTTranslator  {
 		} else {
 			if (ntsv instanceof VarNode) {
 				VarNode varNode = (VarNode) ntsv;
-				return varNode.getRHSName();
+				String varName = varNode.getRHSName();
+				if (varName.startsWith("_")) {
+		            return "sk_" + varName;
+		        }
+				return varName;
 			} else if (ntsv instanceof OpNode) {
 				OpNode node = (OpNode) ntsv;
 				return getNaryExpr(node.getOpcode(), node.getOperands());
@@ -200,6 +213,13 @@ public abstract class SMTTranslator  {
 		}
 		
 		throw new IllegalStateException("getStr() called on unexpected NodeToSmtValue object");
+	}
+	
+	public String stripVariableName(String varName) {
+	    if (varName.startsWith("sk_"))
+	        return varName.substring(3);
+	    else
+	        return varName;
 	}
 	
 	/**
@@ -243,28 +263,6 @@ public abstract class SMTTranslator  {
 		return getBitArrayLiteral(val.getIntVal(), val.getSmtType().getNumBits());
 	}
 	
-	/**
-	 * Given a variable name, returns the proper name that's compatible with
-	 * the solver.
-	 * 
-	 * For instance, SMTLIB format doesn't allow variables begin with underscore
-	 * 
-	 * @param var
-	 * @return
-	 */
-	public String getProperVarName(String var) {
-		if (var.startsWith("_")) {
-			return "sk_" + var;
-		}
-		return var;
-	}
-	
-	public String stripProperVarName(String properName) {
-		if (properName.startsWith("sk_"))
-			return properName.substring(3);
-		return properName;
-	}
-
 	public abstract String getTrueLiteral();
 	public abstract String getFalseLiteral();
 	public abstract String getIntLiteral(int i, int numBits);
