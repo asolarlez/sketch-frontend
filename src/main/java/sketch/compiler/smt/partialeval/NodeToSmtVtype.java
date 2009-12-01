@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -600,7 +601,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsv2 = (NodeToSmtValue) v2;
 
 //		if (v2.hasIntVal() && v2.getIntVal() == 0)
-		state.Assert(not(eq(v2, CONST(0))), "divide by zero", false);
+		state.Assert(not(eq(v2, CONST(0))), "divide by zero", StmtAssert.NORMAL);
 		
 		
 		if (v1.hasIntVal() && v2.hasIntVal()) {
@@ -823,7 +824,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsv1 = (NodeToSmtValue) v1;
 		NodeToSmtValue ntsv2 = (NodeToSmtValue) v2;
 		
-		state.Assert(not(eq(v2, CONST(0))), "mod by zero", false);
+		state.Assert(not(eq(v2, CONST(0))), "mod by zero", StmtAssert.NORMAL);
 		
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() % v2.getIntVal());

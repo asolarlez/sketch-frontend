@@ -36,7 +36,7 @@ import sketch.compiler.ast.core.exprs.Expression;
  * static
  * void foo(node n, i){
  *   if(i > 0){
- *   	assert n != null;
+ *      assert n != null;
  *   }
  *   ...
  * }
@@ -44,7 +44,7 @@ import sketch.compiler.ast.core.exprs.Expression;
  * void main(){
  *   ...
  *   if(n != null){
- *   	foo(n);
+ *      foo(n);
  *   }
  * }
  * 
@@ -76,23 +76,30 @@ public class StmtAssert extends Statement
 {
     Expression cond;
     private String msg = null;
-    private boolean superA = false;
+    public static final int NORMAL = 0;
+    public static final int SUPER = 1;
+    public static final int UBER = 2;
     
+    private int superA = NORMAL;
+ 
     
-    public boolean isSuper(){
-    	return superA;
+    public int isSuper(){
+        return superA;
     }
+    
+    
+    
     
     /** Creates a new assert statement with the specified conditional. */
     public StmtAssert(FENode context, Expression cond, boolean isSuper)
     {
-    	this (context, cond, null, isSuper);
+        this (context, cond, null, isSuper);
     }
 
     /** Creates a new assert statement with the specified conditional. */
     public StmtAssert(Expression cond, boolean isSuper)
     {
-    	this (cond, cond, null, isSuper);
+        this (cond, cond, null, isSuper);
     }
 
     /** Creates a new assert statement with the specified conditional.
@@ -100,9 +107,25 @@ public class StmtAssert extends Statement
      */
     public StmtAssert(FEContext context, Expression cond, boolean isSuper)
     {
-    	this (context, cond, null, isSuper);
+        this (context, cond, null, isSuper);
     }
 
+    
+
+    /** Creates a new assert statement with the specified conditional. */
+    public StmtAssert(FENode context, Expression cond, int isSuper)
+    {
+        this (context, cond, null, isSuper);
+    }
+    
+    public StmtAssert(FENode context, Expression cond, String msg, int isSuper)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+        this.superA = isSuper;
+    }
+    
     /**
      *
      */
@@ -111,7 +134,7 @@ public class StmtAssert extends Statement
         super(context);
         this.cond = cond;
         this.msg = msg;
-        this.superA = isSuper;
+        this.superA = isSuper? 1 : 0;
     }
 
     /**
@@ -119,7 +142,7 @@ public class StmtAssert extends Statement
      */
     public StmtAssert(Expression cond, String msg, boolean isSuper)
     {
-    	this (cond, cond, msg, isSuper);
+        this (cond, cond, msg, isSuper);
     }
 
     /**
@@ -130,7 +153,7 @@ public class StmtAssert extends Statement
         super(context);
         this.cond = cond;
         this.msg = msg;
-        this.superA = isSuper;
+        this.superA = isSuper? 1 : 0;
     }
 
     /** Returns the assertion condition. */
@@ -157,7 +180,7 @@ public class StmtAssert extends Statement
          * the visitors).
          *
         if(msg != null){
-        	result += ": \"" + msg + "\"";
+            result += ": \"" + msg + "\"";
         }
         */
         result += "\n";
@@ -165,18 +188,18 @@ public class StmtAssert extends Statement
         return result;
     }
 
-	/**
-	 * @param msg the msg to set
-	 */
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
+    /**
+     * @param msg the msg to set
+     */
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 
-	/**
-	 * @return the msg
-	 */
-	public String getMsg() {
-		if(msg == null && getCx() != null) return getCx().toString();
-		return msg;
-	}
+    /**
+     * @return the msg
+     */
+    public String getMsg() {
+        if(msg == null && getCx() != null) return getCx().toString();
+        return msg;
+    }
 }
