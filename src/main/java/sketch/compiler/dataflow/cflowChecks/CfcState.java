@@ -7,33 +7,33 @@ import sketch.compiler.dataflow.varState;
 
 public class CfcState extends varState {
 
-	
-	CfcState(Type t){
-		super(t);
-	}
-	
-	CfcState(Type t, abstractValueType vtype){		
-		super(t);
-		init(newLHSvalue());
-	}
-	
-	
-	@Override
-	public varState getDeltaClone(abstractValueType vt) {
-		CfcState st  = new CfcState(getType());
-		st.helperDeltaClone(this, vt);		
-		return st;
-	}
-	
-	
-	@Override
-	public abstractValue newLHSvalue() {
-		return new CfcValue(CfcValue.noinit);
-	}
+    
+    CfcState(Type t){
+        super(t);
+    }
+    
+    CfcState(Type t, abstractValueType vtype){      
+        super(t);
+        init(newLHSvalue());
+    }
+    
+    
+    @Override
+    public varState getDeltaClone(abstractValueType vt) {
+        CfcState st  = new CfcState(getType());
+        st.helperDeltaClone(this, vt);      
+        return st;
+    }
+    
+    
+    @Override
+    public abstractValue newLHSvalue() {
+        return new CfcValue(CfcValue.noinit);
+    }
 
-	@Override
-	public abstractValue newLHSvalue(int i) {
-		return new CfcValue(CfcValue.noinit);
-	}
+    @Override
+    public abstractValue newLHSvalue(int i) {
+        return new CfcValue(CfcValue.noinit);
+    }
 
 }
