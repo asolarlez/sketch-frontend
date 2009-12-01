@@ -6,7 +6,7 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 
-public class SketchRegressionTests extends sketch.compiler.smt.tests.SketchRegressionBlastBV {
+public class SketchRegressionBlastBV extends sketch.compiler.smt.tests.SketchRegressionBlastBV {
     
 	protected HashMap<String, String> initCmdArgs(String input) {
 		HashMap<String, String> argsMap = super.initCmdArgs(input);
@@ -35,4 +35,22 @@ public class SketchRegressionTests extends sketch.compiler.smt.tests.SketchRegre
 //		Assert.fail("divide by zero guarded by a condition");
 		super.miniTestb147();
 	}
+	
+	@Override
+    public void miniTestb140() throws IOException, InterruptedException {
+        Assert.fail("Z3 not displaying full model. displayed a equality instead");
+        super.miniTestb147();
+    }
+    
+    @Override
+    public void miniTestb160() throws IOException, InterruptedException {
+        Assert.fail("Z3 is acting weird about bvsmod");
+        super.miniTestb160();
+    }
+    
+    @Override
+    public void miniTestb161() throws IOException, InterruptedException {
+        Assert.fail("Z3 is acting weird about bvsmod");
+        super.miniTestb161();
+    }
 }

@@ -1147,8 +1147,6 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 	public void miniTestb140() throws IOException, InterruptedException {
 		super.miniTestb140();
 
-		
-
 		HoleSorter sorter = new HoleSorter(oracle);
 		assertTrue((sorter.getHoleValueByOrder(0) == 2 - 
 		        sorter.getHoleValueByOrder(1)));
