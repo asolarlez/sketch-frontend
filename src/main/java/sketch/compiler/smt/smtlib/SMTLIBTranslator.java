@@ -336,7 +336,7 @@ public class SMTLIBTranslator extends FormulaPrinter {
 
     @Override
     public String getLetHead() {
-        return ":formula";
+        return ":assumption";
     }
 
     @Override
