@@ -13,7 +13,7 @@ import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.smt.SmtOracle;
-import sketch.compiler.smt.smtlib.SMTLIBTranslator;
+import sketch.compiler.smt.smtlib.SMTLIBTranslatorBV;
 import sketch.util.IPredicate;
 import sketch.util.Numerical;
 
@@ -124,13 +124,13 @@ public abstract class SmtValueOracle extends SmtOracle {
 
 				} else if (ntsv.isConst()){
 					if (ntsv.isBit())
-						sb.append(SMTLIBTranslator.intToSMTLIB(
+						sb.append(SMTLIBTranslatorBV.intToSmtLibBV(
 								ntsv.getIntVal(), 1));
 					else if (ntsv.isInt())
-						sb.append(SMTLIBTranslator.intToSMTLIB(
+						sb.append(SMTLIBTranslatorBV.intToSmtLibBV(
 								ntsv.getIntVal(), ntsv.getNumBits()));
 					else if (ntsv.isBitArray())
-						sb.append(SMTLIBTranslator.intToSMTLIB(
+						sb.append(SMTLIBTranslatorBV.intToSmtLibBV(
 								ntsv.getIntVal(), ntsv.getNumBits()));
 					else if (ntsv.isVect())
 						sb.append(ntsv.obj.toString());

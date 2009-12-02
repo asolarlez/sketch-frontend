@@ -45,6 +45,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 	boolean tracing = false;
 	PrintStream traceStream = System.out;
 	boolean mUseTOA;
+	boolean mUseBV;
 	int currObserIdx;
 
 
@@ -60,6 +61,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 			TypedVtype vtype,
 			TempVarGen varGen,
 			boolean useTheoryOfArray,
+			boolean useBV,
 			int maxUnroll,
 			RecursionControl rcontrol, 
 			boolean tracing) {
@@ -70,6 +72,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 		
 		this.tracing = tracing;
 		mUseTOA = useTheoryOfArray;
+		mUseBV = useBV;
 		this.vtype = (NodeToSmtVtype) super.vtype;
 		this.vtype.setMethodState(super.state);
 		

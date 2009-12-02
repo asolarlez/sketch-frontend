@@ -16,7 +16,7 @@ import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
-import sketch.compiler.smt.smtlib.SMTLIBTranslator;
+import sketch.compiler.smt.smtlib.SMTLIBTranslatorBV;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.InterceptedOutputStream;
 import sketch.util.ProcessStatus;
@@ -78,7 +78,7 @@ public class YicesBVBackend extends SMTBackend {
 	protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
 	        PrintStream ps)
 	{
-	    return new SMTLIBTranslator(formula, ps, mIntNumBits);
+	    return new SMTLIBTranslatorBV(formula, ps, mIntNumBits);
 	}
 
 	@Override

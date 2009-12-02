@@ -283,7 +283,12 @@ public class STPTranslator extends FormulaPrinter {
 			return null;
 			
 		} else if (op == OpCode.ARRNEW) {
-			getNaryExpr(OpCode.CONCAT, opnds);
+		    NodeToSmtValue[] reversed = new NodeToSmtValue[opnds.length];
+		    int j = 0;
+		    for (int i = opnds.length-1; i >= 0; i--, j++) {
+		        reversed[j] = opnds[i];
+		    }
+			getNaryExpr(OpCode.CONCAT, reversed);
 			return null;
 		} else if (op == OpCode.ARRUPD) {
 		    sbAppend("(");
