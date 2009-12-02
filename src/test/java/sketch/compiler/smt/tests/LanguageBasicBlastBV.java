@@ -22,7 +22,7 @@ public abstract class LanguageBasicBlastBV extends TestHarness {
 
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 
-		argsMap.put("--bv", null);
+		argsMap.put("--modelint", "bv");
 		argsMap.put("--uselet", null);
 		argsMap.put("--arrayOOBPolicy", "assertions");
 
