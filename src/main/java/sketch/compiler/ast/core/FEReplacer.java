@@ -312,14 +312,16 @@ public class FEReplacer implements FEVisitor
     public Object visitFieldDecl(FieldDecl field)
     {
         List<Expression> newInits = new ArrayList<Expression>();
+        List<Type> newTypes = new ArrayList<Type>();
         for (int i = 0; i < field.getNumFields(); i++)
         {
             Expression init = field.getInit(i);
             if (init != null)
                 init = (Expression)init.accept(this);
             newInits.add(init);
+            newTypes.add((Type) field.getType(i).accept(this));
         }
-        return new FieldDecl(field, field.getTypes(),
+        return new FieldDecl(field, newTypes,
                              field.getNames(), newInits);
     }
 

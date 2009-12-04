@@ -562,7 +562,7 @@ public class NodesToC extends NodesToJava {
 	@Override
 	public String convertType(Type type)
 	{
-		assert type instanceof TypePrimitive || type instanceof TypeStructRef;
+	    assert type instanceof TypePrimitive || type instanceof TypeStructRef || type instanceof TypeStruct;
 		if(type instanceof TypeStructRef){
 			return type.toString() + "*";
 		}
