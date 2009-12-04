@@ -25,12 +25,12 @@ import sketch.compiler.smt.partialeval.VarNode;
  * @email lshan@eecs.berkeley.edu
  * 
  */
-public class SMTLIBTranslator extends FormulaPrinter {
+public class SMTLIBTranslatorBV extends FormulaPrinter {
 	private static final String PREDICATE_FLAG = "#boolean#";
 
 	protected int mIntNumBits;
 	
-	public SMTLIBTranslator(NodeToSmtVtype formula, PrintStream ps, int intNumBIts) {
+	public SMTLIBTranslatorBV(NodeToSmtVtype formula, PrintStream ps, int intNumBIts) {
 	    super(formula, ps);
 		mIntNumBits = intNumBIts;
 	}
@@ -97,12 +97,6 @@ public class SMTLIBTranslator extends FormulaPrinter {
 	            return super.getStr(vn);
 	        }
 	        
-//	        if (!mFormula.isArraySeed(vn) && 
-//	                ((isSynthesis && !mFormula.isHole(vn)) || 
-//	                (!isSynthesis && !mFormula.isInput(vn))))
-//	            return "?" + super.getStr(vn);
-//	        else
-//	            return super.getStr(vn);
 	    }
 	    return super.getStr(ntsv);
 	}
@@ -269,7 +263,7 @@ public class SMTLIBTranslator extends FormulaPrinter {
 	
 	@Override
 	public String getIntLiteral(int i, int numBits) {
-		return intToSMTLIB(i, numBits);
+		return intToSmtLibBV(i, numBits);
 	}
 
 	@Override
@@ -284,7 +278,7 @@ public class SMTLIBTranslator extends FormulaPrinter {
 	
 	@Override
 	public String getBitArrayLiteral(int i, int numBits) {
-		return intToSMTLIB(i, numBits);
+		return intToSmtLibBV(i, numBits);
 	}
 
 	@Override
@@ -308,7 +302,7 @@ public class SMTLIBTranslator extends FormulaPrinter {
 		return sb.toString();
 	}
 	
-	public static String intToSMTLIB(int i, int numBits) {
+	public static String intToSmtLibBV(int i, int numBits) {
 		long longVal = i;
 		if (i < 0) {
 			longVal = 4294967296L + longVal;

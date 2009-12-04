@@ -20,6 +20,7 @@ import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.stp.STPBackend;
 import sketch.compiler.smt.yices.YicesBVBackend;
+import sketch.compiler.smt.yices.YicesIntBackend;
 import sketch.compiler.smt.z3.Z3BVBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.Statistics;
@@ -315,10 +316,17 @@ public class CEGISLoop {
 					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
 					mRControl, mTmpVarGen, 1, tracing);
 		} else if (backend.equals("yices2")) {
-            return new YicesBVBackend(
+		    if (bv)
+		        return new YicesBVBackend(
                     mParams,
                     mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
                     mRControl, mTmpVarGen, 2, tracing);
+		    else
+              return new YicesIntBackend(
+                      mParams,
+                      mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+                      mRControl, mTmpVarGen, 2, tracing);
+		        
 		} else if (backend.equals("stp")) {
 //			return new StpSmtlibBackend(
 			return new STPBackend(

@@ -11,7 +11,7 @@ public class SketchShowcaseBlastBV extends sketch.compiler.smt.tests.SketchShowc
 		
 		argsMap.put("--verbosity", "0");
 //		argsMap.put("--showphase", "lowering");
-		System.out.print(input + "\tstp");
+		System.out.print(input + "\tstp-blastbv");
 		return argsMap;
 	}
 

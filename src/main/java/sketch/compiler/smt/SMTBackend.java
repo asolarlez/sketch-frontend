@@ -71,11 +71,11 @@ public abstract class SMTBackend {
 	                cBits,
 	                tmpVarGen);
 	    } else
-		return new BlastArrayVtype(  
-				intBits,
-				inBits,
-				cBits,
-				tmpVarGen);
+    		return new BlastArrayVtype(  
+    				intBits,
+    				inBits,
+    				cBits,
+    				tmpVarGen);
 	}
 	
 	/*

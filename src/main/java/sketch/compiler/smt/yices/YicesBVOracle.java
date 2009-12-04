@@ -61,11 +61,6 @@ public class YicesBVOracle extends SmtValueOracle {
 					String valStr = parts[3].substring(0, parts[3].length()-1);
 					if (mFPrinter.isHoleVariable(arrayName) || mFPrinter.isInputVariable(arrayName)) {
 					    
-//					    if (arrayStore == null) {
-//	                        arrayStore = new HashMap<Integer, NodeToSmtValue>();
-//	                        arrayValueMap.put(arrayName, arrayStore);
-//	                    }
-					    
 					    SmtType ta = mFPrinter.getTypeForVariable(arrayName);
 					    NodeToSmtValue val = stringToNodeToSmtValue(valStr, ta);
 					    NodeToSmtValue idx = mFPrinter.getFormula().CONST(iidx); 
@@ -93,11 +88,10 @@ public class YicesBVOracle extends SmtValueOracle {
 						putValueForVariable(name, ntsv);
 					}
 						
-//					}
+
 				}
 			}
 		}
-		// TODO: Do error handling here?  Other oracles don't.
 	}
 	
 	/**
@@ -109,6 +103,7 @@ public class YicesBVOracle extends SmtValueOracle {
 		Type t = smtType.getRealType();
 		
 		int bvSize;
+		int intValue;
 		if (str.equals("true"))
             return NodeToSmtValue.newBool(true);
         if (str.equals("false"))
@@ -121,16 +116,20 @@ public class YicesBVOracle extends SmtValueOracle {
                 str = "bvbin" + str;
                 return NodeToSmtValue.newLabel(BitVectUtil.newBitArrayType(bvSize), bvSize, str);
             }
+            
+            intValue = (int) Long.parseLong(str, 2);
+            if (t instanceof TypeArray) {
+                if (BitVectUtil.isBitArray(t)) {
+                    return NodeToSmtValue.newBitArray(intValue, str.length());
+                } else {
+                    TypeArray ta = (TypeArray) t;
+                    t = ta.getBase();
+                }
+            }
+        } else {
+            intValue = (int) Long.parseLong(str);
         }
-		int intValue = (int) Long.parseLong(str, 2);
-		if (t instanceof TypeArray) {
-		    if (BitVectUtil.isBitArray(t)) {
-		        return NodeToSmtValue.newBitArray(intValue, str.length());
-		    } else {
-		        TypeArray ta = (TypeArray) t;
-		        t = ta.getBase();
-		    }
-		}
+		
 		
 		
 		if (t == TypePrimitive.inttype)

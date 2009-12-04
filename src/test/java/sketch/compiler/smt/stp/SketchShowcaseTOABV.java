@@ -13,7 +13,7 @@ public class SketchShowcaseTOABV extends
         
         argsMap.put("--verbosity", "0");
 //        argsMap.put("--showphase", "lowering");
-        System.out.print(input + "\tstp-toa");
+        System.out.print(input + "\tstp-toabv");
         return argsMap;
     }
 }

@@ -46,9 +46,11 @@ public abstract class FormulaPrinter extends SMTTranslator{
     }
     
     public void printInputDeclarations() {
-        addComment("");
-        addComment("Renamable Variable Declarations");
-        addComment("");
+        if (mFormula.mInputs.size() > 0) {
+            addComment("");
+            addComment("Input Variable Declarations");
+            addComment("");
+        }
         
         for (VarNode p : mFormula.mInputs) {              
             out.println(getDefineVar(p));
@@ -56,18 +58,23 @@ public abstract class FormulaPrinter extends SMTTranslator{
     }
 
     private void printHoleDeclarations() {
-        addComment("");
-        addComment("Holes Declarations");
-        addComment("");
+        if (mFormula.mHoles.size() > 0) {
+            addComment("");
+            addComment("Holes Declarations");
+            addComment("");    
+        }
+        
         for (VarNode p : mFormula.mHoles) {
             out.println(getDefineVar(p));
         }
     }
     
     private void printArraySeedlDeclarations() {
-        addComment("");
-        addComment("Real Variable Declarations");
-        addComment("");
+        if (mFormula.mArraySeeds.size() > 0) {
+            addComment("");
+            addComment("Real Variable Declarations");
+            addComment("");    
+        }
         for (VarNode p : mFormula.mArraySeeds) {
             out.println(getDefineVar(p));
         }
@@ -186,8 +193,10 @@ public abstract class FormulaPrinter extends SMTTranslator{
 //            printFixedNameDeclarations();
 //          println(getComment("intbits=" + mIntBits + " cbits=" + mcbits + " inbits=" + minbits));
             
+            addComment("");
             addComment("Verification formulas");
-        
+            addComment("");
+            
             printInputDeclarations();
             printArraySeedlDeclarations();
             

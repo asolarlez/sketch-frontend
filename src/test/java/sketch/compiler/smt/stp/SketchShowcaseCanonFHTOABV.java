@@ -13,7 +13,7 @@ public class SketchShowcaseCanonFHTOABV extends
         
         argsMap.put("--verbosity", "0");
 //      argsMap.put("--showphase", "lowering");
-        System.out.print(input + "\tstp-cfhtoa");
+        System.out.print(input + "\tstp-cfhtoabv");
         return argsMap;
     }
 }

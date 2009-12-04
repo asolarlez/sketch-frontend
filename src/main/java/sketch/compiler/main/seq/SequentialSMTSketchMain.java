@@ -623,10 +623,6 @@ public class SequentialSMTSketchMain {
 		params.setAllowedParam("uselet", new POpts(POpts.FLAG,
                 "--uselet\t Use LET construct", null, null));
 		
-		
-		params.setAllowedParam("bv", new POpts(POpts.FLAG,
-				"--bv\t Uses BitVector in the given backend", null, null));
-		
 		params.setAllowedParam("seed", new POpts(POpts.NUMBER,
 				"--seed s       \t Seeds the random number generator with s.",
 				null, null));
@@ -819,6 +815,12 @@ public class SequentialSMTSketchMain {
 				"--arrayOOBPolicy policy \t What to do when an array access would be out\n"
 						+ "                        \t of bounds.",
 				"wrsilent_rdzero", failurePolicies));
+		
+		Map<String, String> intModelings = new HashMap<String, String>();
+		intModelings.put("int", "Model int type with integer");
+		intModelings.put("bv", "Model int type with bit-vector");
+		params.setAllowedParam("modelint", new POpts(POpts.STRING,
+                "--modelint model\t model can be int or bv", "bv", intModelings));
 	}
 
 	protected Program doBackendPasses(Program prog) {
@@ -891,8 +893,9 @@ public class SequentialSMTSketchMain {
 	private CEGISLoop startCEGIS() throws IOException {
 		CEGISLoop loop = new CEGISLoop(programName, params, internalRControl());
 
-		SMTBackend solver = loop.selectBackend(params.sValue("backend"), params
-				.hasFlag("bv"), params.hasFlag("trace"), true);
+		SMTBackend solver = loop.selectBackend(params.sValue("backend"), 
+		        "bv".equals(params.sValue("modelint"))
+		        , params.hasFlag("trace"), true);
 
 		solver.setIntNumBits(params.flagValue("intbits"));
 
@@ -920,6 +923,7 @@ public class SequentialSMTSketchMain {
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
 		ProduceSMTCode partialEval = new ProduceSMTCode(vtype, varGen,
 		        params.hasFlag("theoryofarray"),
+		        params.sValue("modelint").equals("bv"),
 				params.flagValue("unrollamnt"), 
 				internalRControl(), params
 						.hasFlag("trace"));

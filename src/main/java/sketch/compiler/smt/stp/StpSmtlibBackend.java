@@ -8,7 +8,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
-import sketch.compiler.smt.smtlib.SMTLIBTranslator;
+import sketch.compiler.smt.smtlib.SMTLIBTranslatorBV;
 import sketch.util.SynchronousTimedProcess;
 
 public class StpSmtlibBackend extends STPBackend {
@@ -36,6 +36,6 @@ public class StpSmtlibBackend extends STPBackend {
     protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
             PrintStream ps)
     {
-        return new SMTLIBTranslator(formula, ps, mIntNumBits);
+        return new SMTLIBTranslatorBV(formula, ps, mIntNumBits);
     }
 }

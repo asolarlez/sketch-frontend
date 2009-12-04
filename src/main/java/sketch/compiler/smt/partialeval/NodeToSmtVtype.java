@@ -142,8 +142,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	private int funccallInlined = 0;
 	public static final boolean FLAT = false;
 	private int structSimplified = 0;
-	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");;
+	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");
 
+	public final boolean USE_BV = CommandLineParamManager.getParams().sValue("modelint").equals("bv");
 	
 	protected TempVarGen tmpVarGen;
 	protected AbstractValueOracle oracle;
@@ -251,19 +252,19 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			
 		}
 		
-		if (isBitArray) {
-			if (allConst && vals.size() <= 32) {
-				NodeToSmtValue newNode = NodeToSmtValue.newBitArray(accu, vals.size());
-				return checkCache(newNode);
-	
-			} else {
-				NodeToSmtValue newNode = NodeToSmtValue.newList(arr);
-				return checkCache(newNode);
-			}
-		} else {
+//		if (isBitArray) {
+//			if (allConst && vals.size() <= 32) {
+//				NodeToSmtValue newNode = NodeToSmtValue.newBitArray(accu, vals.size());
+//				return checkCache(newNode);
+//	
+//			} else {
+//				NodeToSmtValue newNode = NodeToSmtValue.newList(arr);
+//				return checkCache(newNode);
+//			}
+//		} else {
 			NodeToSmtValue newNode = NodeToSmtValue.newList(arr);
 			return checkCache(newNode);
-		}
+//		}
 	}
 	
 	public NodeToSmtValue ARR(abstractValue val, int size) {
@@ -299,6 +300,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		}
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
 		NodeToSmtValue nInSH = checkStructuralHash(newNode);
+		
 //		if (nInSH == newNode) {
 //		    addTempDefinition(newNode);
 //		    newNode = checkStructuralHash(newNode);
@@ -413,7 +415,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsvIdx = (NodeToSmtValue) idx;
 		NodeToSmtValue ntsvLen = (NodeToSmtValue) len;
 		
-		if (ntsvArr.isBitArray()) {
+		if (USE_BV && ntsvArr.isBitArray()) {
 		    return bitArrayAccess(ntsvArr, ntsvIdx, ntsvLen, isUnchecked);
 		} else {
 		    return normalArrayAccess(ntsvArr, ntsvIdx, ntsvLen, isUnchecked);
@@ -952,6 +954,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public NodeToSmtValue padIfNotWideEnough(NodeToSmtValue ntsvVal,
 			int numBits) {
+	    if (!USE_BV) return ntsvVal;
+	    
 		if (ntsvVal.getNumBits() < numBits)
 			return concat(CONSTBITARRAY(0, numBits - ntsvVal.getNumBits()),
 				ntsvVal);

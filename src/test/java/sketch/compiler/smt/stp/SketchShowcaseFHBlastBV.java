@@ -12,7 +12,7 @@ public class SketchShowcaseFHBlastBV extends
         
         argsMap.put("--verbosity", "0");
 //      argsMap.put("--showphase", "lowering");
-        System.out.print(input + "\tstp-fhblast");
+        System.out.print(input + "\tstp-fhblastbv");
         return argsMap;
     }
 }

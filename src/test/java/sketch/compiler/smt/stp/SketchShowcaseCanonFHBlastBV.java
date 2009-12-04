@@ -12,7 +12,7 @@ public class SketchShowcaseCanonFHBlastBV extends
         
         argsMap.put("--verbosity", "0");
 //      argsMap.put("--showphase", "lowering");
-        System.out.print(input + "\tstp-cfhblast");
+        System.out.print(input + "\tstp-cfhblastbv");
         return argsMap;
     }
 }
