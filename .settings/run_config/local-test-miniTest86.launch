@@ -12,7 +12,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="sketch.compiler.main.seq.SequentialSketchMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--verbosity 10 --cegispath &quot;c:\Armando\Workspace\frontend\sbin\SBitII.exe&quot;  src/test/sk/seq/miniTest86.sk"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--seed 1259944572  --keeptmpfiles  --verbosity 5 --cegispath &quot;c:\Armando\Workspace\backend\Release\Sketch.exe&quot;     &quot;${resource_loc}&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="sketch-frontend"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea"/>
