@@ -1,14 +1,32 @@
-// $ANTLR : "StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR 2.7.7 (2006-11-01): "StreamItLex.g" -> "StreamItLex.java"$
 
 	package sketch.compiler.parser;
 	
-	import java.io.InputStream;
+	import java.util.StringTokenizer;
+
+import java.io.InputStream;
+import antlr.TokenStreamException;
+import antlr.TokenStreamIOException;
+import antlr.TokenStreamRecognitionException;
+import antlr.CharStreamException;
+import antlr.CharStreamIOException;
+import antlr.ANTLRException;
 import java.io.Reader;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
-
-import antlr.*;
+import antlr.CharScanner;
+import antlr.InputBuffer;
+import antlr.ByteBuffer;
+import antlr.CharBuffer;
+import antlr.Token;
+import antlr.CommonToken;
+import antlr.RecognitionException;
+import antlr.NoViableAltForCharException;
+import antlr.MismatchedCharException;
+import antlr.TokenStream;
+import antlr.ANTLRHashString;
+import antlr.LexerSharedInputState;
 import antlr.collections.impl.BitSet;
+import antlr.SemanticException;
 
 public class StreamItLex extends antlr.CharScanner implements StreamItLexTokenTypes, TokenStream
  {
@@ -417,7 +435,7 @@ tryAgain:
 		
 		match("#");
 		{
-		_loop2102:
+		_loop6:
 		do {
 			switch ( LA(1)) {
 			case ' ':
@@ -432,14 +450,14 @@ tryAgain:
 			}
 			default:
 			{
-				break _loop2102;
+				break _loop6;
 			}
 			}
 		} while (true);
 		}
 		mNUMBER(false);
 		{
-		_loop2104:
+		_loop8:
 		do {
 			switch ( LA(1)) {
 			case ' ':
@@ -454,14 +472,14 @@ tryAgain:
 			}
 			default:
 			{
-				break _loop2104;
+				break _loop8;
 			}
 			}
 		} while (true);
 		}
 		mSTRING_LITERAL(false);
 		{
-		_loop2106:
+		_loop10:
 		do {
 			switch ( LA(1)) {
 			case ' ':
@@ -476,7 +494,7 @@ tryAgain:
 			}
 			default:
 			{
-				break _loop2106;
+				break _loop10;
 			}
 			}
 		} while (true);
@@ -506,34 +524,34 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt2178=0;
-		_loop2178:
+		int _cnt82=0;
+		_loop82:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt2178>=1 ) { break _loop2178; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt82>=1 ) { break _loop82; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt2178++;
+			_cnt82++;
 		} while (true);
 		}
 		{
 		if ((LA(1)=='.')) {
 			mDOT(false);
 			{
-			int _cnt2181=0;
-			_loop2181:
+			int _cnt85=0;
+			_loop85:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt2181>=1 ) { break _loop2181; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt85>=1 ) { break _loop85; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt2181++;
+				_cnt85++;
 			} while (true);
 			}
 		}
@@ -586,17 +604,17 @@ tryAgain:
 			}
 			}
 			{
-			int _cnt2186=0;
-			_loop2186:
+			int _cnt90=0;
+			_loop90:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt2186>=1 ) { break _loop2186; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt90>=1 ) { break _loop90; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt2186++;
+				_cnt90++;
 			} while (true);
 			}
 		}
@@ -626,7 +644,7 @@ tryAgain:
 		
 		match('"');
 		{
-		_loop2165:
+		_loop69:
 		do {
 			if ((LA(1)=='\\')) {
 				mESC(false);
@@ -635,7 +653,7 @@ tryAgain:
 				matchNot('"');
 			}
 			else {
-				break _loop2165;
+				break _loop69;
 			}
 			
 		} while (true);
@@ -655,13 +673,13 @@ tryAgain:
 		
 		match("//");
 		{
-		_loop2109:
+		_loop13:
 		do {
 			if ((_tokenSet_2.member(LA(1)))) {
 				matchNot('\n');
 			}
 			else {
-				break _loop2109;
+				break _loop13;
 			}
 			
 		} while (true);
@@ -684,7 +702,7 @@ tryAgain:
 		
 		match("/*");
 		{
-		_loop2113:
+		_loop17:
 		do {
 			if (((LA(1)=='*') && ((LA(2) >= '\u0003' && LA(2) <= '\u00ff')) && ((LA(3) >= '\u0003' && LA(3) <= '\u00ff')))&&( LA(2)!='/' )) {
 				match('*');
@@ -701,7 +719,7 @@ tryAgain:
 				}
 			}
 			else {
-				break _loop2113;
+				break _loop17;
 			}
 			
 		} while (true);
@@ -1248,12 +1266,12 @@ tryAgain:
 		match(_tokenSet_0);
 		}
 		{
-		_loop2160:
+		_loop64:
 		do {
-			boolean synPredMatched2158 = false;
+			boolean synPredMatched62 = false;
 			if (((LA(1)=='{') && (LA(2)=='|') && ((LA(3) >= '\u0003' && LA(3) <= '\u00ff')) && ((LA(4) >= '\u0003' && LA(4) <= '\u00ff')))) {
-				int _m2158 = mark();
-				synPredMatched2158 = true;
+				int _m62 = mark();
+				synPredMatched62 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1261,12 +1279,12 @@ tryAgain:
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched2158 = false;
+					synPredMatched62 = false;
 				}
-				rewind(_m2158);
+				rewind(_m62);
 inputState.guessing--;
 			}
-			if ( synPredMatched2158 ) {
+			if ( synPredMatched62 ) {
 				match("{|");
 				if ( inputState.guessing==0 ) {
 					open++;
@@ -1296,7 +1314,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop2160;
+				break _loop64;
 			}
 			
 		} while (true);
@@ -1459,8 +1477,8 @@ inputState.guessing--;
 		
 		match("0x");
 		{
-		int _cnt2175=0;
-		_loop2175:
+		int _cnt79=0;
+		_loop79:
 		do {
 			switch ( LA(1)) {
 			case '0':  case '1':  case '2':  case '3':
@@ -1534,10 +1552,10 @@ inputState.guessing--;
 			}
 			default:
 			{
-				if ( _cnt2175>=1 ) { break _loop2175; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt79>=1 ) { break _loop79; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt2175++;
+			_cnt79++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -1588,7 +1606,7 @@ inputState.guessing--;
 		}
 		}
 		{
-		_loop2191:
+		_loop95:
 		do {
 			switch ( LA(1)) {
 			case 'a':  case 'b':  case 'c':  case 'd':
@@ -1627,7 +1645,7 @@ inputState.guessing--;
 			}
 			default:
 			{
-				break _loop2191;
+				break _loop95;
 			}
 			}
 		} while (true);

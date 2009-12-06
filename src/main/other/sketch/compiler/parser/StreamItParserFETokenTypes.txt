@@ -1,4 +1,4 @@
-// $ANTLR : StreamItParserFE.g -> StreamItParserFETokenTypes.txt$
+// $ANTLR 2.7.7 (2006-11-01): StreamItParserFE.g -> StreamItParserFETokenTypes.txt$
 StreamItParserFE    // output token vocab name
 TK_atomic="atomic"=4
 TK_fork="fork"=5
@@ -94,18 +94,8 @@ TK_pipeline=94
 TK_splitjoin=95
 TK_feedbackloop=96
 TK_sbox=97
-TK_work=98
-TK_prework=99
-TK_phase=100
-TK_push=101
-TK_pop=102
-TK_peek=103
-TK_init=104
-TK_split=105
-TK_join=106
-TK_roundrobin=107
-TK_duplicate=108
-TK_enqueue=109
-TK_portal=110
-TK_handler=111
-TK_pi=112
+TK_roundrobin=98
+TK_duplicate=99
+TK_portal=100
+TK_handler=101
+TK_pi=102

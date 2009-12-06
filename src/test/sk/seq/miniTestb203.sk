@@ -1,0 +1,35 @@
+int ufun(int idx);
+ 
+int spec(int idx, int N){
+	if(idx >= 0 && idx <N-3){
+		return ufun(idx + 3);
+	}else{
+		return 0;
+	}
+}
+
+int sk(int idx, int N){
+	if(idx >= 0 && idx <N-??){
+		return ufun(idx + ??);
+	}else{
+		return 0;
+	}
+}
+void VOID(int a, int b){}
+
+void main(int a, int b) implements VOID{
+	assert spec(a, b) == sk(a, b);
+	
+	assert spec(a+6, b) == sk(a, b+5);
+	
+	assert spec(a, b) == sk(a, b+4);
+	if(a == (??/5)){
+		if(b == ??){
+			if(a!=(??/5)){
+				assert false;
+			}
+		}
+	}
+	assert spec(a+2, b) == sk(a, b);
+	
+}

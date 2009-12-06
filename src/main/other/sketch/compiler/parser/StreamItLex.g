@@ -20,7 +20,7 @@
  */
 
 header {
-	package streamit.frontend.parser;
+	package sketch.compiler.parser;
 	
 	import java.util.StringTokenizer;
 }

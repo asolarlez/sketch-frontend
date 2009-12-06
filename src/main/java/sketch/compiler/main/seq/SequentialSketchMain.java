@@ -357,9 +357,9 @@ public class SequentialSketchMain
 		if (params.hasFlag("outputxml")){
 		    eliminate_star.dump_xml();
         }
-		// dump(finalCode, "after elim star");
+		dump(finalCode, "after elim star");
 		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
-		// dump(finalCode, "After partially evaluating generated code.");
+		dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		if(params.flagEquals("showphase", "postproc")) 
 			dump(finalCode, "After Flattening.");

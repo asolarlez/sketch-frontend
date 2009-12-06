@@ -20,20 +20,41 @@
  */
 
 header {
-	package streamit.frontend.parser;
+		package sketch.compiler.parser;
 
-	import streamit.frontend.nodes.*;
-    import streamit.frontend.CommandLineParamManager;
-    import streamit.frontend.Directive;
-	import streamit.frontend.ToSBit;
+	import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-	import java.util.Collections;
-    import java.io.*;
-    import java.util.ArrayList;
-    import java.util.Iterator;
-    import java.util.HashSet;
-    import java.util.List;
-    import java.util.Set;
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.Directive;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.FuncWork;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SplitterJoiner;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePortal;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
 }
 
 {@SuppressWarnings("deprecation")}
@@ -213,42 +234,11 @@ struct_stream_decl[StreamType st] returns [StreamSpec ss]
 				params, body); }
 	;
 
-work_decl returns [FuncWork f]
-{	f = null;
-	Expression pop = null, peek = null, push = null;
-	Statement s; FEContext c = null; String name = null;
-	int type = 0;
-}
-	:	(	tw:TK_work { c = getContext(tw); type = Function.FUNC_WORK; }
-		|	tpw:TK_prework { c = getContext(tpw);
-							 type = Function.FUNC_PREWORK; }
-		|	tp:TK_phase id:ID { c = getContext(tp); name = id.getText();
-			                    type = Function.FUNC_PHASE;}
-		)
-		(	TK_push push=right_expr
-		|	TK_pop pop=right_expr
-		|	TK_peek peek=right_expr
-		)*
-		s=block
-		{ f = new FuncWork(c, type, name, s, peek, pop, push); }
-	;
 
-init_decl returns [Function f] { Statement s; f = null; }
-	:	t:TK_init s=block { f = Function.newInit(getContext(t), s); }
-	;
-
-push_statement returns [Statement s] { s = null; Expression x; }
-	:	t:TK_push LPAREN x=right_expr RPAREN
-		{ s = new StmtPush(getContext(t), x); }
-	;
 
 statement returns [Statement s] { s = null; }
 	:	s=loop_statement
-	|   s=fork_statement
-	|	s=split_statement SEMI
-	|	s=join_statement SEMI
-	|	s=enqueue_statement SEMI
-	|	s=push_statement SEMI
+	|   s=fork_statement	
 	|	s=insert_block
 	|	s=reorder_block
 	|	s=atomic_block
@@ -277,15 +267,8 @@ fork_statement returns [Statement s] { s = null; Statement ivar; Expression exp;
 	{ s = new StmtFork(getContext(t), (StmtVarDecl) ivar, exp, b); }
 	;
 
-split_statement returns [Statement s] { s = null; SplitterJoiner sj; }
-	: t:TK_split sj=splitter_or_joiner
-		{ s = new StmtSplit(getContext(t), sj); }
-	;
 
-join_statement returns [Statement s] { s = null; SplitterJoiner sj; }
-	: t:TK_join sj=splitter_or_joiner
-		{ s = new StmtJoin(getContext(t), sj); }
-	;
+
 
 splitter_or_joiner returns [SplitterJoiner sj]
 { sj = null; Expression x; List l; }
@@ -313,9 +296,6 @@ splitter_or_joiner returns [SplitterJoiner sj]
 		}
 	;
 
-enqueue_statement returns [Statement s] { s = null; Expression x; }
-	: t:TK_enqueue x=right_expr { s = new StmtEnqueue(getContext(t), x); }
-	;
 
 data_type returns [Type t] { t = null; Expression x; }
 	:	(t=primitive_type | id:ID { t = new TypeStructRef(id.getText()); })
@@ -483,7 +463,6 @@ expr_statement returns [Statement s] { s = null; Expression x; }
 	:	(incOrDec) => x=incOrDec { s = new StmtExpr(x); }
 	|	(left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS | DIV_EQUALS)) => s=assign_expr
 	|	(ID LPAREN) => x=func_call { s = new StmtExpr(x); }
-	|	x=streamit_value_expr { s = new StmtExpr(x); }
 	;
 
 assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
@@ -512,13 +491,14 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 	;
 
 left_expr returns [Expression x] { x = null; }
-	:	x=value
-    |   r:REGEN
-        { x = new ExprRegen (getContext (r), r.getText ()); }
+	:	x=minic_value_exprnofo
 	;
+	/*|   r:REGEN
+        { x = new ExprRegen (getContext (r), r.getText ()); } 
+        */
 
 right_expr returns [Expression x] { x = null; }
-	:	x=ternaryExpr
+	:	x=ternaryExpr	
 	;
 
 var_initializer returns [Expression x] { x = null; }
@@ -667,24 +647,51 @@ castExpr returns [Expression x] { x = null; Type t = null; Expression bound = nu
 value_expr returns [Expression x] { x = null; boolean neg = false; }
 	:
 	(	(m:MINUS { neg = true; })?
-		(x=minic_value_expr | x=streamit_value_expr)
+		(x=minic_value_expr)
 		{ if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x); }
 		)
 	;
 
-streamit_value_expr returns [Expression x] { x = null; }
-	:	t:TK_pop LPAREN RPAREN
-			{ x = new ExprPop(getContext(t)); }
-	|	u:TK_peek LPAREN x=right_expr RPAREN
-			{ x = new ExprPeek(getContext(u), x); }
+
+
+minic_value_expr returns [Expression x] { x = null; List rlist; }
+	:	x=tminic_value_expr
+		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
+		|	l:LSQUARE
+					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
+			RSQUARE
+		)*
 	;
 
-minic_value_expr returns [Expression x] { x = null; }
+
+minic_value_exprnofo returns [Expression x] { x = null; List rlist; }
+	:	x=uminic_value_expr
+		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
+		|	l:LSQUARE
+					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
+			RSQUARE
+		)*
+	;
+
+
+uminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
-	|	x=value
+	|	x=var_expr	
+    |   r:REGEN
+            { x = new ExprRegen (getContext (r), r.getText ()); }
+	;
+
+
+
+tminic_value_expr returns [Expression x] { x = null; }
+	:	LPAREN x=right_expr RPAREN
+	|	(func_call) => x=func_call
+	| 	(constructor_expr) => x = constructor_expr
+	|	x=var_expr
 	|	x=constantExpr
+	|   x=arr_initializer
     |   r:REGEN
             { x = new ExprRegen (getContext (r), r.getText ()); }
 	;
@@ -693,6 +700,12 @@ minic_value_expr returns [Expression x] { x = null; }
 constructor_expr returns [Expression x] { x = null; Type t; List l;}
 	: n:TK_new t=data_type l=func_call_params {  x = new ExprNew( getContext(n), t);     }
 	;
+
+var_expr returns [Expression x] { x = null; List rlist; }
+:	name:ID { x = new ExprVar(getContext(name), name.getText()); }
+	;
+	
+/*
 value returns [Expression x] { x = null; List rlist; }
 	:	name:ID { x = new ExprVar(getContext(name), name.getText()); }
 		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
@@ -701,7 +714,7 @@ value returns [Expression x] { x = null; List rlist; }
 			RSQUARE
 		)*
 	;
-
+*/
 array_range_list returns [List l] { l=new ArrayList(); Object r;}
 :r=array_range {l.add(r);}
 ;
@@ -740,11 +753,13 @@ constantExpr returns [Expression x] { x = null; }
 			{ x = ExprNullPtr.nullPtr; }
     |   t1:NDVAL
             { x = new ExprStar(getContext(t1)); }
-    |   t2:NDVAL2
-            { x = new ExprStar(getContext(t2)); }
-    |   t3:LCURLY STAR n1:NUMBER RCURLY
-            { x = new ExprStar(getContext(t3),Integer.parseInt(n1.getText())); }
-
+    |   t2:NDVAL2 (LPAREN n1:NUMBER RPAREN)?
+            {  if(n1 != null){
+            	  x = new ExprStar(getContext(t2),Integer.parseInt(n1.getText())); 
+            	}else{
+            	  x = new ExprStar(getContext(t2)); 
+            	}
+            }    
 	;
 
 struct_decl returns [TypeStruct ts]

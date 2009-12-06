@@ -1,4 +1,4 @@
-// $ANTLR : StreamItLex.g -> StreamItLexTokenTypes.txt$
+// $ANTLR 2.7.7 (2006-11-01): StreamItLex.g -> StreamItLexTokenTypes.txt$
 StreamItLex    // output token vocab name
 TK_atomic="atomic"=4
 TK_fork="fork"=5

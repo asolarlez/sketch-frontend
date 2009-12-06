@@ -1,8 +1,9 @@
-// $ANTLR : "StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR 2.7.7 (2006-11-01): "StreamItLex.g" -> "StreamItLex.java"$
 
 	package sketch.compiler.parser;
 	
-	
+	import java.util.StringTokenizer;
+
 public interface StreamItLexTokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;

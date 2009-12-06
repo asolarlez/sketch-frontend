@@ -1,8 +1,41 @@
-// $ANTLR : "StreamItParserFE.g" -> "StreamItParserFE.java"$
+// $ANTLR 2.7.7 (2006-11-01): "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
-	package sketch.compiler.parser;
+		package sketch.compiler.parser;
 
-	
+	import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.Directive;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.FuncWork;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SplitterJoiner;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePortal;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.passes.streamit_old.SJDuplicate;
+import sketch.compiler.passes.streamit_old.SJRoundRobin;
+import sketch.compiler.passes.streamit_old.SJWeightedRR;
+
 public interface StreamItParserFETokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;
@@ -100,19 +133,9 @@ public interface StreamItParserFETokenTypes {
 	int TK_splitjoin = 95;
 	int TK_feedbackloop = 96;
 	int TK_sbox = 97;
-	int TK_work = 98;
-	int TK_prework = 99;
-	int TK_phase = 100;
-	int TK_push = 101;
-	int TK_pop = 102;
-	int TK_peek = 103;
-	int TK_init = 104;
-	int TK_split = 105;
-	int TK_join = 106;
-	int TK_roundrobin = 107;
-	int TK_duplicate = 108;
-	int TK_enqueue = 109;
-	int TK_portal = 110;
-	int TK_handler = 111;
-	int TK_pi = 112;
+	int TK_roundrobin = 98;
+	int TK_duplicate = 99;
+	int TK_portal = 100;
+	int TK_handler = 101;
+	int TK_pi = 102;
 }
