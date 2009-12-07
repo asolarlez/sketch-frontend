@@ -71,7 +71,7 @@ public class LinearNode extends NodeToSmtValue {
 	 * @param c
 	 */
 	public LinearNode(LinearNode n1, ConstNode c) {
-		this(n1.getType(), n1.getNumBits());
+		this(n1.getType(), Math.max(n1.getNumBits(), c.getNumBits()));
 		obj = n1.getVarToCoeffMap().clone();
 		mC = n1.mC;
 		

@@ -1,7 +1,7 @@
 package sketch.compiler.smt.partialeval;
 
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -31,7 +31,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 
 	    StringBuffer sb = new StringBuffer();
 	   
-		public DebugPrinter() { }
+		public DebugPrinter(NodeToSmtVtype formula) {
+		    super(formula);
+		}
 		
 		@Override
 		public Object visitConstNode(ConstNode constNode) {
@@ -94,47 +96,70 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 	}
 	
-	public class NodeReplacer extends FormulaVisitor {
+	public class EliminateCommonOpNode extends NodeReplacer {
 	    
-	    @Override
+	    public EliminateCommonOpNode(NodeToSmtVtype formula) {
+            super(formula);
+        }
+
+        @Override
 	    public Object visitOpNode(OpNode opNode) {
-	        
+            NodeToSmtValue newOpNode = (NodeToSmtValue) super.visitOpNode(opNode);
             // if the current structure is found in structural hash
 	        // return the single var that's equivalent to it
-            if (mStructHash.containsKey(opNode)) {
+            if (mStructHash.containsKey(newOpNode)) {
                 structSimplified++;
-                return mStructHash.get(opNode);
+                return mStructHash.get(newOpNode);
             }
-	        
-	        return replaceChildren(opNode);
+	        return newOpNode;
 	    }
 
-        public Object replaceChildren(OpNode opNode) {
-            boolean changed = false;
-	        NodeToSmtValue[] newOpnds = new NodeToSmtValue[opNode.getOperands().length];
-	        
-	        int i = 0;
-	        for (NodeToSmtValue oldNode : opNode.getOperands()) {
-	            NodeToSmtValue newNode = (NodeToSmtValue) oldNode.accept(this);
-	            
-	            if (newNode != oldNode) {
-	                changed = true;
-	            }
-	            newOpnds[i] = newNode;
-	            
-	            i++;
-	        }
-	        
-	        if (changed) {
-	            OpNode newOpNode = new OpNode(opNode.getType(), opNode.getNumBits(), opNode.getOpcode(), newOpnds);
-	            return checkCache(newOpNode);
-	        } else {
-	            return opNode;
-	        }
-        }
 	}
 	
-	
+	public class EliminateLinerNode extends NodeReplacer {
+	    
+	    public EliminateLinerNode(NodeToSmtVtype formula) {
+            super(formula);
+        }
+
+        @Override
+	    public Object visitLinearNode(LinearNode linearNode) {
+	        int maxBits = -1;
+	        NodeToSmtValue newTerm = null;
+	        ArrayList<NodeToSmtValue> terms = new ArrayList<NodeToSmtValue>();
+	        for (VarNode v : linearNode.getVars()) {
+	            int coe = linearNode.getCoeff(v); 
+	            if (coe != 0) {
+	                NodeToSmtValue c = CONST(coe);
+	                
+	                
+	                if (coe == 1) {
+	                    newTerm = v;
+	                } else {
+	                    newTerm = mergeTwoValuesToBottom(OpCode.TIMES, c, v);
+	                }
+	                maxBits = Math.max(maxBits, newTerm.getNumBits());
+	                terms.add(newTerm);
+	            }	            
+	        }
+	        if (linearNode.getCoeff(null) != 0) {
+	            newTerm = CONST(linearNode.getCoeff(null));
+	            maxBits = Math.max(maxBits, newTerm.getNumBits());
+                terms.add(newTerm);
+	        }
+	        
+	        NodeToSmtValue[] dummy = new NodeToSmtValue[terms.size()];
+	        for (int i = 0; i < terms.size(); i++) {
+	            dummy[i] = padIfNotWideEnough(terms.get(i), maxBits);
+	        }
+	        
+	        if (terms.size() > 0)
+	            return BOTTOM(dummy[0].getType(), OpCode.PLUS, dummy);
+	        else
+	            return CONST(0);
+	    }
+	    
+	}
 	
 	public static final boolean USE_STRUCT_HASHING = true;
 	private int structHashingUsed = 0;
@@ -1163,30 +1188,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public List<NodeToSmtValue> getHashedFuncCall(NodeToSmtValue funccall) {
 		List<NodeToSmtValue> ret = mFuncHash.get(funccall);
 		
-		if (ps == null) {
-            try {
-                ps = new PrintStream("/tmp/log.txt");
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-		}
-
-//		if (ret == null) {
-//			ps.print("NOT FOUND func call hash: ");
-//			ps.print(funccall.getName());
-//			ps.print(" ");
-//			FuncNode fNode = (FuncNode) funccall;
-//			for (NodeToSmtValue arg : fNode.getOperands()) {
-//			    DebugPrinter dp = new DebugPrinter();
-//			    arg.accept(dp);
-//				ps.print(dp.sb.toString());
-//				ps.print(", ");
-//			}
-//			ps.print(funccall);
-//			ps.println();
-//		}
-		
 		if (ret == null)
 		    funccallInlined++;
 		return ret;
@@ -1587,10 +1588,16 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	
 	public void finalize() {
+	    eliminateLinearNode();
 //		guardModAndDivide();
 	}
 	
-	public void optimize() {
+	private void eliminateLinearNode() {
+	    EliminateLinerNode eln = new EliminateLinerNode(this);
+	    eln.visitFormula();
+    }
+
+    public void optimize() {
 	    int numRemoved = 0;
 	    
 	    log.info("Optimizing DAG");
@@ -1704,25 +1711,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    if (!FLAT) return;
 	    
 	    // simplfy the assignments
-	    NodeReplacer nr = new NodeReplacer();
-	    for (NodeToSmtValue var : mEq) {
-	        NodeToSmtValue def = mSimpleDefs.get(var);
-	        
-	        if (def instanceof OpNode) {
-	            NodeToSmtValue newDef = (NodeToSmtValue) nr.replaceChildren((OpNode) def);
-	            mSimpleDefs.put(var, newDef);
-	        }
-	    }
-	    
-	    // simplify the asserts
-	    LinkedList<NodeToSmtValue> oldAsserts = mAsserts;
-	    mAsserts = new LinkedList<NodeToSmtValue>(); 
-	    for (NodeToSmtValue predicate : oldAsserts) {
-	        if (predicate instanceof OpNode) {
-                NodeToSmtValue newPredicate = (NodeToSmtValue) nr.replaceChildren((OpNode) predicate);
-                mAsserts.add(newPredicate);
-            }
-	    }
+	    EliminateCommonOpNode nr = new EliminateCommonOpNode(this);
+	    nr.visitFormula();
 	}
 
 	

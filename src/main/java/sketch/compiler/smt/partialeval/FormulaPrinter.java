@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import sketch.compiler.smt.SMTTranslator;
+import sketch.compiler.smt.SolverFailedException;
 
 public abstract class FormulaPrinter extends SMTTranslator{
 
@@ -240,7 +241,8 @@ public abstract class FormulaPrinter extends SMTTranslator{
             // only care about the hole variables, which don't have suffix, so
             // it's ok.
             NodeToSmtValue rhs = oracle.getValueForVariable(var);
-            
+            if (rhs == null)
+                throw new SolverFailedException("SMT solver not outputting full model");
             NodeToSmtValue lhs = var;
             valueAssignments.put(lhs, rhs);
         }
