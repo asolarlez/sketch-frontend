@@ -9,7 +9,7 @@ import sketch.compiler.solvers.SolutionStatistics;
 public class STPSolutionStatistics extends SolutionStatistics {
 
 	private boolean success;
-	public final static boolean newSTP = true;
+	public final static boolean newSTP = false;
 	
 	public STPSolutionStatistics(String stdout, String stderr) {
 		this.success = stdout.contains("Invalid");
