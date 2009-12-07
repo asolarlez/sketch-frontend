@@ -19,9 +19,6 @@ public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
 
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 		
-		argsMap.put("--bv", null);
-		argsMap.put("--canon", null);
-		argsMap.put("--funchash", null);
 //		argsMap.put("--arrayOOBPolicy", "assertions");
 
 //		argsMap.put("--heapsize", "10");
