@@ -150,10 +150,7 @@ public class CEGISLoop {
 				mStat.mNumIter++;
 			}
 			
-		} catch (SolverFailedException e) {
-			e.printStackTrace();
-			mBestOracle = null;
-			mLoopTimer.start();
+		
 		} catch (IOException e) {
 			e.printStackTrace();
 			mLoopTimer.start();
@@ -163,9 +160,13 @@ public class CEGISLoop {
 		} catch (Exception e) {
 			e.printStackTrace();
 			mLoopTimer.start();
-		} catch (Throwable e) {
-			e.printStackTrace();
-			mLoopTimer.start();
+		} catch (SolverFailedException e) {
+            mBestOracle = null;
+            mLoopTimer.start();
+            throw e;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            mLoopTimer.start();
 		} finally {
 			mLoopTimer.stop();
 		}
