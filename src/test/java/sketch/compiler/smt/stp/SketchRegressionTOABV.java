@@ -15,7 +15,8 @@ public class SketchRegressionTOABV extends
         
          argsMap.put("--verbosity", "4");
 //       argsMap.put("--showphase", "lowering");
-         System.out.print(input.substring(input.lastIndexOf("/")) + "\tstp");
+         System.out.print(input.substring(input.lastIndexOf("/")) + 
+                 "\tstp+toabv");
         return argsMap;
     }
     

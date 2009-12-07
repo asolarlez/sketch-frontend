@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 public class SketchRegressionBlastBV extends
 		sketch.compiler.smt.tests.SketchRegressionBlastBV {
@@ -12,9 +13,10 @@ public class SketchRegressionBlastBV extends
 		HashMap<String, String> argsMap = super.initCmdArgs(input);
 		argsMap.put("--backend", "stp");
 		
-		 argsMap.put("--verbosity", "0");
+		 argsMap.put("--verbosity", "4");
 //		 argsMap.put("--showphase", "lowering");
-		 System.out.print(input.substring(input.lastIndexOf("/")) + "\tstp-");
+		 System.out.print(input.substring(input.lastIndexOf("/")) + 
+		         "\tstp-blastbv");
 		return argsMap;
 	}
 	
@@ -37,6 +39,13 @@ public class SketchRegressionBlastBV extends
 		Assert.fail("Uninterpreted function");
 		super.miniTestb101();
 	}
+	
+	@Test
+    public void miniTest50() throws IOException, InterruptedException {
+	    Assert.fail("division by zero. internal to STP");
+        super.miniTest50();
+        
+    }
 	
 	@Override
 	public void miniTest51() throws IOException, InterruptedException {

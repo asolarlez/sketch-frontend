@@ -13,14 +13,15 @@ import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class TestHarness {
 	
-	protected final static String tmpDirStr = System.getenv("tmpdir");
-	protected File tmpDir = new File(tmpDirStr);
+	protected String tmpDirStr = System.getenv("tmpdir");
+	protected File tmpDir;
 
 	protected CEGISStat stat;
 	protected SmtValueOracle oracle;
 
 	@Before
-	public void init() {	
+	public void init() {
+	    tmpDir = new File(tmpDirStr);
 		if (!tmpDir.exists())
 			tmpDir.mkdir();
 	}

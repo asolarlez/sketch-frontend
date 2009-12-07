@@ -24,7 +24,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 		
-		argsMap.put("--bv", null);
+		argsMap.put("--modelint", "bv");
 		argsMap.put("--uselet", null);
 		argsMap.put("--arrayOOBPolicy", "assertions");
 
