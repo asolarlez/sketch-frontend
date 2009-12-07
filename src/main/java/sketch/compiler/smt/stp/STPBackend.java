@@ -35,9 +35,9 @@ public class STPBackend extends SMTBackend {
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
 		String command;
 		if (USE_FILE_SYSTEM) {
-			command = params.sValue("smtpath") + " -p -s" + " " + getTmpFilePath();
+			command = params.sValue("smtpath") + " -p -t" + " " + getTmpFilePath();
 		} else {
-			command = params.sValue("smtpath") + " -p -s"; 
+			command = params.sValue("smtpath") + " -p -t"; 
 		}
 		String[] commandLine = command.split(" ");
 		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
