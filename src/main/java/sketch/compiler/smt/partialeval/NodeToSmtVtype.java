@@ -1588,7 +1588,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	
 	public void finalize() {
-	    eliminateLinearNode();
+//	    eliminateLinearNode();
 //		guardModAndDivide();
 	}
 	
