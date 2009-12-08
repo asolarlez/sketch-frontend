@@ -10,15 +10,40 @@ target/classes/%s:
 target/version.txt: target/classes/sketch/compiler/localization.properties
 	cat target/classes/sketch/compiler/localization.properties | head -n 1 | sed -u "s/version = //g" > target/version.txt
 
-### distribution and testing
+codegen: # codegen a few files (not very high probability of changing)
+	scripts/run_jinja2.py
+
+### distribution
+
+assemble-file: # internal step
+	cp $(FILE) tmp-assembly.xml
+	mvn -e assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+	rm tmp-assembly.xml
+
+assemble-noarch:
+	make assemble-file FILE=jar_assembly.xml
+
+assemble-arch:
+	make assemble-file FILE=platform_jar_assembly.xml
+	make assemble-file FILE=launchers_assembly.xml
+	make assemble-file FILE=tar_src_assembly.xml
 
 assemble: target/version.txt # build all related jar files, assuming sketch-backend is at ../sketch-backend
 	mvn -e -q clean compile
-	mvn -e -q assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+	make assemble-noarch assemble-arch
 	chmod 755 target/sketch-*-launchers.dir/dist/*/install
 	cd target; tar cf sketch-$$(cat version.txt).tar sketch-*-all-*.jar
 
 dist: assemble # alias for assemble
+
+install:
+	rm target/sketch-frontend-1.4.0.jar
+	install -m 644 target/sketch-*.jar /usr/bin
+	install -m 755 scripts/new_launchers/unix/sketch /usr/bin
+	install -m 755 scripts/new_launchers/unix/psketch /usr/bin
+	install -m 755 scripts/new_launchers/unix/stensk /usr/bin
+
+### testing
 
 test:
 	mvn test | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"

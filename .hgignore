@@ -3,5 +3,9 @@ target/*
 *.tmp
 *.pyc
 *.swp
+
+distconfig/linux_rpm/sketch-frontend.spec
+tmp-assembly.xml
+
 syntax: regexp
 ^[^\\/]+\.sk$

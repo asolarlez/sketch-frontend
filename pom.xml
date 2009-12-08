@@ -91,10 +91,12 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>platform_jar_assembly.xml</descriptor>
-                        <descriptor>jar_assembly.xml</descriptor>
-<!--                         <descriptor>tar_src_assembly.xml</descriptor> -->
-                        <descriptor>launchers_assembly.xml</descriptor>
+                        <descriptor>tmp-assembly.xml</descriptor>
+                        <!-- assemblies:
+                            jar_assembly.xml    noarch jar with dependencies
+                            platform_jar_assembly.xml    jar with cegis from $sketch-backend-proj
+                            launchers_assembly    same as above but with scripts
+                            tar_src_assembly.xml    both frontend and backend source only. -->
                     </descriptors>
                     <finalName>sketch-${version}</finalName>
                 </configuration>

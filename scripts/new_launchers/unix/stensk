@@ -1,4 +1,32 @@
 #!/bin/bash
+# WARNING -- generated file, see version with ".jinja2" extension.
 
-dirname="$(dirname "$(readlink -f "$0")")"
-java -cp "$dirname"/sketch-${version}-all-${osname}-${osarch}.jar -ea sketch.compiler.main.sten.StencilSketchMain "$@"
+scriptname="$(readlink -f "$0")"
+dirname="$(dirname "$scriptname")"
+
+# SEARCH FOR JAR FILES
+for fname in "$dirname/sketch-1.4.0-noarch.jar" "$dirname/sketch-${version}-all-${osname}-${osarch}.jar" "$SKETCHJAR"; do
+    if [ -f "$fname" ]; then
+        jarname="$fname"
+    fi
+    if [ "$fname" ]; then
+        errtext="${errtext}    seraching for jar '$fname' ...
+"
+    fi
+done
+
+function err() {
+    echo "ERROR running bash script '$scriptname'" >&2
+    echo "$1" >&2
+    exit 1
+}
+
+if [ -z "$(java -version 2>&1 | grep 1.6)" ]; then
+    err "please configure \$PATH so you are using Java 1.6"
+fi
+[ "$jarname" ] || { echo "$errtext"; err "could not find any jars (see 'SEARCH FOR JAR FILES' in the script)"; }
+if ! [ -f "$jarname" ]; then
+    err "couldn't find file '$jarname'"
+fi
+
+java -cp "$jarname" -ea sketch.compiler.main.sten.StencilSketchMain "$@"
