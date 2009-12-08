@@ -8,7 +8,6 @@ import org.junit.After;
 import org.junit.Before;
 
 import sketch.compiler.CommandLineParamManager;
-import sketch.compiler.smt.CEGISLoop.CEGISStat;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class TestHarness {
@@ -16,7 +15,7 @@ public class TestHarness {
 	protected String tmpDirStr = System.getenv("tmpdir");
 	protected File tmpDir;
 
-	protected CEGISStat stat;
+	protected GeneralStatistics stat;
 	protected SmtValueOracle oracle;
 
 	@Before

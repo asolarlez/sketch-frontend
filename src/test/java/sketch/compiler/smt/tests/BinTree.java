@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.junit.After;
 
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
+import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class BinTree extends sketch.compiler.seq.BinTree {
@@ -49,7 +50,12 @@ public class BinTree extends sketch.compiler.seq.BinTree {
 	}
 
 	@After
-	public void printTiming() {
-		System.out.println("\t" + stat.getSolutionTimeMs());
-	}
+    public void printTiming() {
+        if (stat == null)
+            System.out.println("\tFAILED");
+        else
+            System.out.println("\t" + 
+                    (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t" + 
+                    stat.getLong(CEGISLoop.CEGIS_ITR));
+    }
 }

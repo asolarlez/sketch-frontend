@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.junit.After;
 
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
+import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
@@ -62,7 +63,9 @@ public class SketchShowcaseBlastBV extends sketch.compiler.seq.SketchShowcase {
 		if (stat == null)
 			System.out.println("\t" + mStatus);
 		else
-			System.out.println("\t" + stat.getSolutionTimeMs() + "\t" + stat.getIterations());
+			System.out.println("\t" + 
+			        (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t" + 
+			        stat.getLong(CEGISLoop.CEGIS_ITR));
 	}
 	
 
