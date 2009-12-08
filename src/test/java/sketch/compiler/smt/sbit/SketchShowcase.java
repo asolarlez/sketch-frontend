@@ -13,24 +13,22 @@ public class SketchShowcase extends sketch.compiler.seq.SketchShowcase {
 	SolutionStatistics stat;
 	@Override
 	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/sketchTests/showcase/" + input;
+		String inputPath = "src/test/sk/smt/sketchTests/showcase/" + input;
 		
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 		
-		argsMap.put("--sbitpath", System.getenv("sbitpath"));
-		argsMap.put("--arrayOOBPolicy", "assertions");
+//		argsMap.put("--arrayOOBPolicy", "assertions");
 
 		argsMap.put("--heapsize", "10");
 //		argsMap.put("--inbits", "5");
 
 		argsMap.put("--verbosity", "0");
 		argsMap.put("--outputdir", "output/");
-		argsMap.put("--output", "/tmp/" + input + ".tmp"); 
+		argsMap.put("--output", tmpDirStr + "//" + input + ".tmp"); 
 		argsMap.put("--keeptmpfiles", null);
-		argsMap.put("--timeout", "10");
+//		argsMap.put("--timeout", "10");
 		
 		argsMap.put(inputPath, null);
-		
 		
 		System.out.print(input + "\tSBit");
 		

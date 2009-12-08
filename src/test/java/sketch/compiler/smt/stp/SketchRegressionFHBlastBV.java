@@ -14,7 +14,8 @@ public class SketchRegressionFHBlastBV extends
         
          argsMap.put("--verbosity", "0");
 //       argsMap.put("--showphase", "lowering");
-         System.out.print(input.substring(input.lastIndexOf("/")) + "\tstp");
+         System.out.print(input.substring(input.lastIndexOf("/")) + 
+                 "\tstp+fhblastbv");
         return argsMap;
     }
     

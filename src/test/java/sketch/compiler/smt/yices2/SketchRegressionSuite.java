@@ -6,6 +6,10 @@ import org.junit.runners.Suite.SuiteClasses;
 
 
 @RunWith(Suite.class)
-@SuiteClasses({SketchRegressionBlastBV.class, SketchRegressionTOABV.class, SketchRegressionFHBlastBV.class, SketchRegressionCanonFHBlastBV.class, SketchRegressionCanonFHTOABV.class})
+@SuiteClasses({SketchRegressionBlastBV.class,
+    SketchRegressionTOABV.class, 
+    SketchRegressionFHBlastBV.class, 
+    SketchRegressionCanonFHBlastBV.class, 
+    SketchRegressionCanonFHTOABV.class})
 public class SketchRegressionSuite {
 }

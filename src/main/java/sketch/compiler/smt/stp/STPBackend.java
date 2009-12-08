@@ -30,14 +30,15 @@ public class STPBackend extends SMTBackend {
 	}
 
 	private final static boolean USE_FILE_SYSTEM = true;
+	public final static boolean newSTP = false;
 
 	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
 		String command;
 		if (USE_FILE_SYSTEM) {
-			command = params.sValue("smtpath") + " -p -s" + " " + getTmpFilePath();
+			command = params.sValue("smtpath") + " -p " + getTimeStatFlag() + " " + getTmpFilePath();
 		} else {
-			command = params.sValue("smtpath") + " -p -s"; 
+			command = params.sValue("smtpath") + " -p "  + getTimeStatFlag(); 
 		}
 		String[] commandLine = command.split(" ");
 		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
@@ -119,6 +120,16 @@ public class STPBackend extends SMTBackend {
 				inBits,
 				cBits,
 				tmpVarGen);
+	}
+	
+	/*
+	 * Helpers 
+	 */
+	private static String getTimeStatFlag() {
+	    if (newSTP)
+	        return "-t";
+	    else
+	        return "-s";
 	}
 
    
