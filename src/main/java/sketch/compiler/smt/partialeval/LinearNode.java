@@ -75,7 +75,12 @@ public class LinearNode extends NodeToSmtValue {
 		obj = n1.getVarToCoeffMap().clone();
 		mC = n1.mC;
 		
-		mC += c.getIntVal();
+		for (VarNode v : getVars()) {
+		    int coe = getCoeff(v);
+		    coe *= c.getIntVal();
+		    getVarToCoeffMap().put(v, coe);
+		}
+		mC *= c.getIntVal();
 	}
 	
 	@SuppressWarnings("unchecked")
