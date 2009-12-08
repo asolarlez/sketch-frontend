@@ -23,62 +23,19 @@ import sketch.compiler.smt.yices.YicesBVBackend;
 import sketch.compiler.smt.yices.YicesIntBackend;
 import sketch.compiler.smt.z3.Z3BVBackend;
 import sketch.compiler.solvers.SolutionStatistics;
-import sketch.compiler.solvers.Statistics;
 import sketch.util.Stopwatch;
 
 public class CEGISLoop {
 
-	public static class CEGISStat extends Statistics {
-		private long mSynTime;
-		private long mVeriTime;
-		private int mNumIter;
-		private long mLoop;
-
-		public long getSynthesisTime() {
-			return mSynTime;
-		}
-
-		public long getVerificationTime() {
-			return mVeriTime;
-		}
-		
-		public long getSolutionTimeMs() {
-			return mVeriTime + mSynTime;
-		}
-		
-		public long getLoopTimeMs() {
-			return mLoop;
-		}
-
-		public long getIterations() {
-			return mNumIter;
-		}
-		
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append("[CEGIS Solution Stat]\n");
-			sb.append("Number of Iterations   ");
-			sb.append(getIterations());
-			sb.append('\n');
-			sb.append("Synthesis Time         ");
-			sb.append(getSynthesisTime());
-			sb.append('\n');
-			sb.append("Verification Time      ");
-			sb.append(getVerificationTime());
-			sb.append('\n');
-			sb.append("Solution Time      ");
-			sb.append(getSolutionTimeMs());
-			sb.append('\n');
-			sb.append("Loop Time      ");
-			sb.append(getLoopTimeMs());
-			sb.append('\n');
-			return sb.toString();
-		}
-	}
+    public static final String SYNTHESIS_TIME = "Synthesis Time(ms)";
+    public static final String VERIFICATION_TIME = "Verificaiton Time(ms)";
+    public static final String CEGIS_ITR = "CEGIS Iterations";
+    public static final String SOLUTION_TIME = "Solution Time(ms)";
+    public static final String LOOP_TIME = "CEGIS Loop Time(ms)";
+   
 
 	protected Program mProg;
-	protected CEGISStat mStat;
+	protected GeneralStatistics mStat;
 	protected SmtValueOracle mBestOracle;
 	protected CommandLineParamManager mParams;
 	protected RecursionControl mRControl;
@@ -92,13 +49,13 @@ public class CEGISLoop {
 	
 	private static Logger log = Logger.getLogger(CEGISLoop.class.getCanonicalName());
 	
-	public CEGISLoop(String programName, CommandLineParamManager params, RecursionControl rControl) {
+	public CEGISLoop(String programName, CommandLineParamManager params, GeneralStatistics stat, RecursionControl rControl) {
 		mProgramName = programName;
 		mParams = params;
 		mRControl = rControl;
 		
 		mTmpVarGen = new TempVarGen("__sa");
-		mStat = new CEGISStat();
+		mStat = stat;
 		mLoopTimer = new Stopwatch();
 		
 		mIntNumBits = params.flagValue("intbits");
@@ -116,7 +73,7 @@ public class CEGISLoop {
 		try {
 			
 			while (true) {
-				log.fine("Iteration: " + mStat.mNumIter);
+				log.fine("Iteration: " + mStat.getLong(CEGIS_ITR));
 				
 				// Verification
 				log.fine("Verifier: ");
@@ -147,7 +104,7 @@ public class CEGISLoop {
 
 				log.fine(curOracle.toString());
 				
-				mStat.mNumIter++;
+				mStat.incrementLong(CEGIS_ITR, 1);
 			}
 			
 		
@@ -172,10 +129,10 @@ public class CEGISLoop {
 		}
 
 		
-		mStat.mLoop += mLoopTimer.toValue();
+		mStat.incrementLong(LOOP_TIME, mLoopTimer.toValue());
 	}
 
-	public CEGISStat getStat() {
+	public GeneralStatistics getStat() {
 		return mStat;
 	}
 
@@ -209,7 +166,7 @@ public class CEGISLoop {
 
 		try {
 			solver.init();
-			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.mNumIter + ".smt";
+			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.getLong(CEGIS_ITR) + ".smt";
 			solver.tmpFilePath = tmpFile;
 			
 			log.fine("Generating formula");
@@ -235,7 +192,7 @@ public class CEGISLoop {
 			
 		log.fine("Solving...");
 		SolutionStatistics stat = solver.solve(vtype);
-		mStat.mVeriTime += stat.solutionTimeMs();
+		mStat.incrementLong(VERIFICATION_TIME, stat.solutionTimeMs());
 			
 		if (!stat.successful())
 			return null;		
@@ -248,7 +205,7 @@ public class CEGISLoop {
 	
 		try {
 			solver.init();
-			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-s" + mStat.mNumIter + ".smt";
+			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-s" + mStat.getLong(CEGIS_ITR) + ".smt";
 			solver.tmpFilePath = tmpFile;
 			
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
@@ -271,7 +228,7 @@ public class CEGISLoop {
 		}
 		
 		SolutionStatistics stat = solver.solve(vtype);
-		mStat.mSynTime += stat.solutionTimeMs();
+		mStat.incrementLong(SYNTHESIS_TIME, stat.solutionTimeMs());
 		if (!stat.successful())
 			return null;
 
@@ -281,7 +238,7 @@ public class CEGISLoop {
 	public SMTBackend selectBackend(String backend, boolean bv,
 			boolean tracing, boolean isSynthesis) throws IOException {
 		String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-" + 
-		(isSynthesis ? "s" : "v") + mStat.mNumIter;
+		(isSynthesis ? "s" : "v") + mStat.getLong(CEGIS_ITR);
 		
 		if (mParams.hasFlag("fakesolver")) {
 			return new FakeSolverBackend(mParams,

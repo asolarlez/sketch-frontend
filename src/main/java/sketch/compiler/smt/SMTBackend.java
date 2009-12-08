@@ -63,18 +63,20 @@ public abstract class SMTBackend {
 	 */
 	protected abstract OutputStream createStreamToSolver() throws IOException;
 	
-	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits, boolean useTheoryOfArray, TempVarGen tmpVarGen) {
+	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits, boolean useTheoryOfArray, GeneralStatistics stat, TempVarGen tmpVarGen) {
 	    if (useTheoryOfArray) {
 	        return new TOAVtype(  
 	                intBits,
 	                inBits,
 	                cBits,
+	                stat,
 	                tmpVarGen);
 	    } else
     		return new BlastArrayVtype(  
     				intBits,
     				inBits,
     				cBits,
+    				stat,
     				tmpVarGen);
 	}
 	

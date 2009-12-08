@@ -62,9 +62,9 @@ import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.smt.CEGISLoop;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.ProduceSMTCode;
 import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.CEGISLoop.CEGISStat;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.ScalarizeAssignmentNotBitArray;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
@@ -106,7 +106,7 @@ public class SequentialSMTSketchMain {
 	
 	SmtValueOracle bestOracle;
 	
-	CEGISStat stat;
+	GeneralStatistics stat;
 	
 	/*
 	 * Getters & Setters
@@ -119,7 +119,7 @@ public class SequentialSMTSketchMain {
 		return this.bestOracle;
 	}
 	
-	public CEGISStat getSolutionStat() {
+	public GeneralStatistics getSolutionStat() {
 		return this.stat;
 	}
 	
@@ -182,6 +182,7 @@ public class SequentialSMTSketchMain {
 	    }
 		
 		this.programName = getOutputFileName();
+		this.stat = new GeneralStatistics();
 	}
 	
 	protected SequentialSMTSketchMain() {}
@@ -891,7 +892,7 @@ public class SequentialSMTSketchMain {
 	}
 
 	private CEGISLoop startCEGIS() throws IOException {
-		CEGISLoop loop = new CEGISLoop(programName, params, internalRControl());
+		CEGISLoop loop = new CEGISLoop(programName, params, stat, internalRControl());
 
 		SMTBackend solver = loop.selectBackend(params.sValue("backend"), 
 		        "bv".equals(params.sValue("modelint"))
@@ -903,7 +904,7 @@ public class SequentialSMTSketchMain {
 
 		NodeToSmtVtype vtype = solver.createFormula(
 				params.flagValue("intbits"), params.flagValue("inbits"), params
-						.flagValue("cbits"), params.hasFlag("theoryofarray"), varGen);
+						.flagValue("cbits"), params.hasFlag("theoryofarray"), stat, varGen);
 
 		ProduceSMTCode partialEval = getPartialEvaluator(vtype);
 		prog.accept(partialEval);

@@ -2,6 +2,7 @@ package sketch.compiler.smt.stp;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SMTTranslator.OpCode;
 import sketch.compiler.smt.partialeval.BlastArrayVtype;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
@@ -12,8 +13,9 @@ public class STPBlastVtype extends BlastArrayVtype {
 			int intNumBits,
 			int inBits,
 			int cBits,
+			GeneralStatistics stat,
 			TempVarGen tmpVarGen) {
-		super(intNumBits, inBits, cBits, tmpVarGen);
+		super(intNumBits, inBits, cBits, stat, tmpVarGen);
 
 	}
 	

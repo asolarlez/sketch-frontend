@@ -4,6 +4,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.varState;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SMTTranslator.OpCode;
 
 /**
@@ -19,8 +20,9 @@ public class TOAVtype extends NodeToSmtVtype {
 			int intNumBits,
             int inBits,
             int cBits,
+            GeneralStatistics stat,
 			TempVarGen varGen) {
-		super(intNumBits, inBits, cBits, varGen);
+		super(intNumBits, inBits, cBits, stat, varGen);
 	}	
 
 	@Override
