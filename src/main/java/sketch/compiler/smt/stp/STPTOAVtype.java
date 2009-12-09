@@ -2,6 +2,7 @@ package sketch.compiler.smt.stp;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SMTTranslator.OpCode;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.TOAVtype;
@@ -9,9 +10,9 @@ import sketch.compiler.smt.partialeval.TOAVtype;
 public class STPTOAVtype extends TOAVtype {
 
     public STPTOAVtype(int intNumBits, int inBits,
-            int bits, TempVarGen tmpVarGen)
+            int bits, GeneralStatistics stat, TempVarGen tmpVarGen)
     {
-        super(intNumBits, inBits, bits, tmpVarGen);
+        super(intNumBits, inBits, bits, stat, tmpVarGen);
     }
     
     @Override

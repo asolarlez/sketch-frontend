@@ -9,8 +9,10 @@ import org.junit.After;
 import org.junit.Test;
 
 import sketch.compiler.main.sten.StencilSmtSketchMain;
+import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.HoleSorter;
 import sketch.compiler.smt.TestHarness;
+import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class StenRegressionTests extends TestHarness {
@@ -21,7 +23,7 @@ public class StenRegressionTests extends TestHarness {
 		
 		argsMap.put("--smtpath", System.getenv("smtpath"));
 		argsMap.put("--backend", "yices");
-		argsMap.put("--bv", null);		
+		argsMap.put("--modelint", "bv");		
 		argsMap.put("--canon", null);
 		argsMap.put("--funchash", null);
 		
@@ -50,9 +52,11 @@ public class StenRegressionTests extends TestHarness {
 	}
 	
 	@After
-	public void printTiming() {
-		System.out.println("\t" + stat.getSolutionTimeMs() + "\t" + stat.getIterations());
-	}
+    public void printTiming() {
+        System.out.println("\t" + (stat.getLong(CEGISLoop.SYNTHESIS_TIME) + stat.getLong(CEGISLoop.VERIFICATION_TIME)) + "\t" + 
+        stat.getLong(CEGISLoop.CEGIS_ITR) + "\t" +
+        stat.getLong(NodeToSmtVtype.FUNC_INLINED));
+    }
 	
 	@Test
 	public void miniTest0() throws IOException, InterruptedException {

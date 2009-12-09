@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
+import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.HoleSorter;
 import sketch.compiler.smt.TestHarness;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
@@ -54,7 +55,9 @@ public abstract class LanguageBasicBlastBV extends TestHarness {
         if (stat == null)
             System.out.println("\tFAILED");
         else
-            System.out.println("\t" + stat.getSolutionTimeMs() + "\t" + stat.getIterations());
+            System.out.println("\t" + 
+                    (stat.getLong(CEGISLoop.SYNTHESIS_TIME) + stat.getLong(CEGISLoop.VERIFICATION_TIME)) + "\t" + 
+                    stat.getLong(CEGISLoop.CEGIS_ITR));
     }
 
 	@Test

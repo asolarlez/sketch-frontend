@@ -26,7 +26,7 @@ import sketch.util.SynchronousTimedProcess;
 public class YicesBVBackend extends SMTBackend {
 	
     private final static String V1_SWICHES = " -smt -e -tc -st ";
-    private final static String V2_SWICHES = " -m ";
+    private final static String V2_SWICHES = " -f ";
     private String mSwitch;
 	private final static boolean USE_FILE_SYSTEM = true;
 	private int mVersion;

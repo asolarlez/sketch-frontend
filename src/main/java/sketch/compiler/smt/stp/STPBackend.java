@@ -11,6 +11,7 @@ import java.io.StringReader;
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
@@ -107,18 +108,21 @@ public class STPBackend extends SMTBackend {
 	@Override
 	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits,
 	        boolean useTheoryOfArray,
+	        GeneralStatistics stat,
 			TempVarGen tmpVarGen) {
 	    if (useTheoryOfArray)
 	        return new STPTOAVtype(  
 	                intBits,
 	                inBits,
 	                cBits,
+	                stat,
 	                tmpVarGen);
 	    else
 	        return new STPBlastVtype(  
 				intBits,
 				inBits,
 				cBits,
+				stat,
 				tmpVarGen);
 	}
 	

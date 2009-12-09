@@ -119,8 +119,7 @@ public class ProduceSMTStencilCode extends ProduceSMTCode {
 			for (i = 0; i < numCases*inputArrDim; i++) {
 				String gName = funName + "_g" + i;	
 				Type paramType = fun.getParams().get(0).getType();
-				gVars[i] = NodeToSmtValue.newParam(gName, paramType, 
-						vtype.getNumBitsForType(paramType));
+				gVars[i] = vtype.newParam(gName, paramType);
 				vtype.declareInput((VarNode) gVars[i]);
 			}
 			
@@ -128,8 +127,7 @@ public class ProduceSMTStencilCode extends ProduceSMTCode {
 			for (i = 0; i < numCases; i++) {
 				String vName = funName + "_v" + i;
 				
-				vVars[i] = NodeToSmtValue.newParam(vName, fun.getReturnType(), 
-						vtype.getNumBitsForType(fun.getReturnType()));
+				vVars[i] = vtype.newParam(vName, fun.getReturnType());
 				vtype.declareInput((VarNode) vVars[i]);
 			}
 			
@@ -148,7 +146,7 @@ public class ProduceSMTStencilCode extends ProduceSMTCode {
 		int numCases = vVars.length;
 		int gIdx = gVars.length - 1;
 		int vIdx = numCases - 1;
-		NodeToSmtValue opnd = gVars[vIdx];
+		NodeToSmtValue opnd = vVars[vIdx];
 		for (vIdx = numCases-2 ; vIdx >= 0; vIdx--) {
 
 			int i = 0;
