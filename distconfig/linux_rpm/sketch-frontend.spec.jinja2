@@ -6,8 +6,8 @@
 # not use this file except in compliance with the License. You may obtain a
 # copy of the License at http://www.apache.org/licenses/LICENSE-2.0 .
 
-Name: sketch-cegis
-Summary: CEGIS backend for UC Berkeley's SKETCH
+Name: {{ name }}
+Summary: Java frontend for UC Berkeley's SKETCH
 Version: {{ version }}
 Release: {{ release_number }}
 Url: http://sketch.cs.berkeley.edu/
@@ -15,9 +15,20 @@ Source0: {{ sourcefile }}
 License: different modules under different licenses (BSD and LGPL)
 Group: Development/Tools
 BuildRoot: %{_tmppath}/%{name}-%{version}-build
+BuildArch: noarch
+
+# fedora and suse name things differently
+%if 0%{?fedora_version}
+Requires: java-1.6.0-openjdk
+BuildRequires: unzip
+%endif
+%if 0%{?suse_version}
 Requires: java-1_6_0-openjdk
-BuildRequires: lzma java-1_6_0-openjdk-devel make
-# BuildRequires: lzma gcc gzip gcc-c++ binutils glibc-devel libstdc++-devel libstdc++ make bison flex
+BuildRequires: fastjar
+%endif
+
+Requires: sketch-cegis
+BuildRequires: lzma make
 
 %description
 SKETCH is a software synthesis tool that allows for rapid development of highly tuned bug-free algorithm implementations. To do this, the programmer develops a sketch, or partial implementation, and a separate specification of the desired functionality. The synthesizer then completes the sketch to behave like the specification. The correctness of the synthesized implementation is guaranteed by the compiler.
@@ -28,15 +39,19 @@ SKETCH is a software synthesis tool that allows for rapid development of highly 
 %setup -q
 
 %build
-make assemble-noarch
 
 %install
-make DESTDIR=$RPM_BUILD_ROOT install
+make DESTDIR=$RPM_BUILD_ROOT install-launchers-only
+install -m 644 java-build/sketch-{{ version }}-noarch.jar $RPM_BUILD_ROOT/usr/bin
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(755, root, root)
-/usr/bin/cegis
+/usr/bin/sketch
+/usr/bin/psketch
+/usr/bin/stensk
+%defattr(644, root, root)
+/usr/bin/sketch-{{ version }}-noarch.jar
 

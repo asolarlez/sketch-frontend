@@ -1,8 +1,15 @@
 # @code standards ignore file
 
+SHELL = /bin/bash
+
+VERSION = $(shell python -c "from amara import bindery; print(bindery.parse(open('pom.xml', 'r').read()).project.version)" 2>/dev/null)
+
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
 	@grep -iE "^(###.+|[a-zA-Z0-9_-]+:.*(#.+)?)$$" Makefile | sed -u -r "s/^### /\n/g; s/:.+#/#/g; s/^/    /g; s/#/\\n        /g; s/:$$//g"
+
+show-info:
+	@echo "version $(VERSION)"
 
 target/classes/%s:
 	mvn compile
@@ -32,16 +39,20 @@ assemble: target/version.txt # build all related jar files, assuming sketch-back
 	mvn -e -q clean compile
 	make assemble-noarch assemble-arch
 	chmod 755 target/sketch-*-launchers.dir/dist/*/install
-	cd target; tar cf sketch-$$(cat version.txt).tar sketch-*-all-*.jar
+	cd target; tar cf sketch-$(VERSION).tar sketch-*-all-*.jar
 
 dist: assemble # alias for assemble
 
-install:
-	rm target/sketch-frontend-1.4.0.jar
-	install -m 644 target/sketch-*.jar /usr/bin
-	install -m 755 scripts/new_launchers/unix/sketch /usr/bin
-	install -m 755 scripts/new_launchers/unix/psketch /usr/bin
-	install -m 755 scripts/new_launchers/unix/stensk /usr/bin
+osc: assemble-noarch
+	mkdir -p "java-build"; cp target/sketch-$(VERSION)-noarch.jar java-build
+	../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
+	rm -rf java-build
+
+install-launchers-only:
+	mkdir -p $(DESTDIR)/usr/bin
+	install -m 755 scripts/new_launchers/unix/sketch $(DESTDIR)/usr/bin
+	install -m 755 scripts/new_launchers/unix/psketch $(DESTDIR)/usr/bin
+	install -m 755 scripts/new_launchers/unix/stensk $(DESTDIR)/usr/bin
 
 ### testing
 
