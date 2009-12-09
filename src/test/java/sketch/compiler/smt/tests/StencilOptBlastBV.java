@@ -12,9 +12,7 @@ import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 public class StencilOptBlastBV extends StencilShowcase {
     
     @Override
-    public void init() {
-        
-    }
+    public void init() { }
     
     @Override
     protected HashMap<String, String> initCmdArgs(String input) {
@@ -24,15 +22,19 @@ public class StencilOptBlastBV extends StencilShowcase {
         // argsMap.put("--arrayOOBPolicy", "assertions");
         // argsMap.put("--heapsize", "10");
         argsMap.put("--intbits", "8");
-        argsMap.put("--outputdir", "output/");
-        
+        argsMap.put("--outputdir", "output/");        
         argsMap.put("--keeptmpfiles", null);
 
+        
+        
+        
+        
+        
         argsMap.put("--verbosity", "0");
         
         argsMap.put(inputPath, null);
         
-        System.out.print(input + "\t");
+        System.out.print(input + "\tbase");
         return argsMap;
     }
 
@@ -50,7 +52,7 @@ public class StencilOptBlastBV extends StencilShowcase {
     
     @After
     public void printStat() {
-        System.out.println( 
+        System.out.println("\t" +
                 stat.getLong(NodeToSmtVtype.FUNC_INLINED) + "\t" +
                 stat.getLong(NodeToSmtVtype.SH_USED) + "\t" +
                 stat.getLong(NodeToSmtVtype.CACHE_SIZE) + "\t" +
