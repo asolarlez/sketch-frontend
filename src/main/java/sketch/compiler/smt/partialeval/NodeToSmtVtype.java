@@ -1652,7 +1652,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    int numRemoved = 0;
 	    
 	    log.info("Optimizing DAG");
-		simplifyExpressionTrees();
+//		simplifyExpressionTrees();
 		constraintUndefinedVariables();
 //		numRemoved = removeUnusedVariables();
 		
