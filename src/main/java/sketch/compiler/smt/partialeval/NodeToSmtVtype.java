@@ -209,11 +209,11 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public static final String FUNC_INLINED = "Function Inlined";
 	public static final String STRUCT_SIMPLIFED = "OpNode Eliminated";
 	public static final String SH_USED = "Struct Hash Used Times";
+	public static final String CACHE_SIZE = "DAG Number of Nodes";
 	public static final String CACHE_USED = "Cache Used Times";
 	
 	public static final boolean USE_STRUCT_HASHING = true;
 	public static final boolean FUNCCALL_HASHING = CommandLineParamManager.getParams().hasFlag("funchash");
-	public static final boolean FLAT = false;
 	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");
 
 	public final boolean USE_BV = CommandLineParamManager.getParams().sValue("modelint").equals("bv");
@@ -570,13 +570,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsvTrue = (NodeToSmtValue) vtrue;
 		NodeToSmtValue ntsvFalse = (NodeToSmtValue) vfalse;
 		int maxNumBits = getNumBitsForType(ntsvTrue.getType());
-		
-		if (ntsvTrue instanceof OpNode && ntsvFalse instanceof OpNode) {
-		    OpNode nt = (OpNode) ntsvTrue;
-		    OpNode nf = (OpNode) ntsvFalse;
-		    if (nt.getOpcode() == OpCode.PLUS && nf.getOpcode() == OpCode.PLUS)
-		        System.out.println("found it");
-		}
 		
 		if (ntsvTrue.getNumBits() < maxNumBits)
 			ntsvTrue = padIfNotWideEnough(ntsvTrue, maxNumBits);
@@ -1617,13 +1610,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		} else if (original instanceof VarNode) {
 
 			NodeToSmtValue toUse;
-			if (FLAT) {
-				// use def instead of original
-				toUse = findOriginalDef((VarNode) original);
-			} else {
-				// use original
-				toUse = original;
-			}
+			
+			// use original
+			toUse = original;
 			
 			Integer uses = mUses.get(toUse);
 			if (uses == null) {
@@ -1671,7 +1660,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		log.info(" - Removed " + numRemoved + " unused variables");
 		log.info(" - Structural Hashing Used: " + mStat.getLong(SH_USED) + " (size = " + mStructHash.size() +")");
 		log.info(" - Func Call Inlined: " + mStat.getLong(FUNC_INLINED));
-//		Toolbox.pause();
+
+		mStat.incrementLong(CACHE_SIZE, mCache.size());
 	}
 	
 	
@@ -1769,7 +1759,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //	}
 	
 	protected void simplifyExpressionTrees() {
-	    if (!FLAT) return;
 	    
 	    // simplfy the assignments
 	    EliminateCommonOpNode nr = new EliminateCommonOpNode(this);

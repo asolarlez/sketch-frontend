@@ -96,6 +96,11 @@ public class SequentialSMTSketchMain {
 	Program finalCode;
 	Program prog = null;
 	
+	String solverErrorStr;
+    private CEGISLoop loop;
+    private SMTBackend solver;
+    private NodeToSmtVtype vtype;
+	
 	protected String programName;
 	
 	public static final CommandLineParamManager params = CommandLineParamManager
@@ -864,61 +869,54 @@ public class SequentialSMTSketchMain {
 
 	public boolean runBeforeGenerateCode() throws IOException,
 			InterruptedException {
-		parseProgram();
-		// dump (prog, "After parsing:");
-
-		prog = (Program) prog
-				.accept(new ConstantReplacer(params.varValues("D")));
-		// dump (prog, "After replacing constants:");
-		if (!SemanticChecker.check(prog, isParallel()))
-			throw new IllegalStateException("Semantic check failed");
-
-		prog = preprocessProgram(prog); // perform prereq transformations
-		// prog.accept(new SimpleCodePrinter());
-		// RenameBitVars is buggy!! prog = (Program)prog.accept(new
-		// RenameBitVars());
-		// if (!SemanticChecker.check(prog))
-		// throw new IllegalStateException("Semantic check failed");
-
-		if (prog == null)
-			throw new IllegalStateException();
-
-		prog = lowering(prog);
-
-		CEGISLoop loop = startCEGIS();
-		stat = loop.getStat();
+		
+	    parseProgram();
+        // dump (prog, "After parsing:");
+	    processing();
+		generateDAG();
+		startCEGIS();
 
 		return bestOracle != null;
 	}
+	
+	public void processing() {
+	    prog = (Program) prog
+                .accept(new ConstantReplacer(params.varValues("D")));
+        // dump (prog, "After replacing constants:");
+        if (!SemanticChecker.check(prog, isParallel()))
+            throw new IllegalStateException("Semantic check failed");
 
-	private CEGISLoop startCEGIS() throws IOException {
-		CEGISLoop loop = new CEGISLoop(programName, params, stat, internalRControl());
+        prog = preprocessProgram(prog); // perform prereq transformations
 
-		SMTBackend solver = loop.selectBackend(params.sValue("backend"), 
-		        "bv".equals(params.sValue("modelint"))
-		        , params.hasFlag("trace"), true);
+        if (prog == null)
+            throw new IllegalStateException();
 
-		solver.setIntNumBits(params.flagValue("intbits"));
+        prog = lowering(prog);
+	}
+	
+	public void generateDAG() throws IOException {
+	    loop = new CEGISLoop(programName, params, stat, internalRControl());
+	    solver = loop.selectBackend(params.sValue("backend"), 
+                "bv".equals(params.sValue("modelint"))
+                , params.hasFlag("trace"), true);
 
-		// Toolbox.pause();
+        solver.setIntNumBits(params.flagValue("intbits"));
 
-		NodeToSmtVtype vtype = solver.createFormula(
-				params.flagValue("intbits"), params.flagValue("inbits"), params
-						.flagValue("cbits"), params.hasFlag("theoryofarray"), stat, varGen);
+        vtype = solver.createFormula(
+                params.flagValue("intbits"), params.flagValue("inbits"), params
+                        .flagValue("cbits"), params.hasFlag("theoryofarray"), stat, varGen);
 
-		ProduceSMTCode partialEval = getPartialEvaluator(vtype);
-		prog.accept(partialEval);
-		vtype.finalize();
-		
-//		 Toolbox.pause("Done generating DAG");
+        ProduceSMTCode partialEval = getPartialEvaluator(vtype);
+        prog.accept(partialEval);
+        vtype.finalize();
+        vtype.optimize();
+	}
 
-		vtype.optimize();
-
-//		 Toolbox.pause("Done Optimizing DAG");
-		loop.start(vtype, solver);
-
-		bestOracle = loop.getSolution();
-		return loop;
+	public void startCEGIS() {
+	    
+	    loop.start(vtype, solver);
+        bestOracle = loop.getSolution();
+        stat = loop.getStat();
 	}
 
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
@@ -957,8 +955,6 @@ public class SequentialSMTSketchMain {
 			commandLineOptions.add("" + params.sValue("verif"));
 		}
 	}
-
-	String solverErrorStr;
 	
 	/*
 	 * Helper functions
