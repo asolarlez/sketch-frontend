@@ -78,6 +78,8 @@ public class SmtType extends Type {
 
 	@Override
 	public boolean equals(Object obj) {
+	    if (this == obj) return true;
+	    
 		if (obj instanceof SmtType) {
 			SmtType t2 = (SmtType) obj;
 			return this.getRealType().equals(t2.getRealType());

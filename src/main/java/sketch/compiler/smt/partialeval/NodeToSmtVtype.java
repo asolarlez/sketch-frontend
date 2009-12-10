@@ -130,10 +130,16 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	     */
         @Override
 	    public Object visitLinearNode(LinearNode linearNode) {
+            
+            if (linearNode.getTransformed() != null)
+                return linearNode.getTransformed();
+            
 	        int maxBits = -1;
 	        NodeToSmtValue newTerm = null;
 	        ArrayList<NodeToSmtValue> posTerms = new ArrayList<NodeToSmtValue>();
 	        ArrayList<NodeToSmtValue> negTerms = new ArrayList<NodeToSmtValue>();
+	        
+	        NodeToSmtValue ret = null;
 	        
 	        // separate the positive terms and negative terms
 	        for (VarNode v : linearNode.getVars()) {
@@ -145,7 +151,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	                    if (coe == 1) {
 	                        newTerm = v;
 	                    } else {
-	                        newTerm = mergeTwoValuesToBottom(OpCode.TIMES, c, v);
+	                        newTerm = createOp(OpCode.TIMES, c, v);
 	                    }
                         posTerms.add(newTerm);
                     } else if (coe < 0) {
@@ -153,7 +159,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
                         if (coe == -1) {
                             newTerm = v;
                         } else {
-                            newTerm = mergeTwoValuesToBottom(OpCode.TIMES, c, v);
+                            newTerm = createOp(OpCode.TIMES, c, v);
                         }
                         negTerms.add(newTerm);
                     }
@@ -185,10 +191,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	        if (posTerms.size() == 1)
 	            posPart = pdummy[0];
             else
-                posPart = BOTTOM(pdummy[0].getType(), OpCode.PLUS, pdummy);
+                posPart = createOp(OpCode.PLUS, pdummy);
 	        
 	        if (negTerms.size() <= 0) {
-	            return padIfNotWideEnough(posPart, linearNode.getNumBits());
+	            ret = padIfNotWideEnough(posPart, linearNode.getNumBits());
+	            linearNode.setTransformed(ret);
+	            return ret;
 	        } else {
 	            // put the positive part as the first term of the negative terms
     	        NodeToSmtValue[] ndummy = new NodeToSmtValue[negTerms.size()+1];
@@ -198,11 +206,57 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
                    ndummy[i+1] = padIfNotWideEnough(negTerms.get(i), maxBits);
                 }
     	        
-                NodeToSmtValue ret = BOTTOM(ndummy[0].getType(), OpCode.MINUS, ndummy);
-                return padIfNotWideEnough(ret, linearNode.getNumBits());
+                ret = createOp(OpCode.MINUS, ndummy);
+                ret = padIfNotWideEnough(ret, linearNode.getNumBits());
+                linearNode.setTransformed(ret);
+                return ret;
     	        
 	        }
 	    }
+        
+        private NodeToSmtValue createOp(OpCode opcode, NodeToSmtValue... opnds) {
+            
+            int maxNumBits = 0;
+            Type commonType = null;
+            
+            for (NodeToSmtValue opnd : opnds) {
+                if (commonType == null)
+                    commonType = opnd.getType();
+                maxNumBits  = Math.max(maxNumBits, opnd.getNumBits());
+                commonType = getCommonType(commonType, opnd.getType());
+            }
+            
+            if (!COMMON_SUBEXP_ELIMINATION) {
+                return BOTTOM(commonType, opcode, opnds);
+            }
+            
+            for (int i = 0 ; i < opnds.length; i++) {
+                opnds[i] = padIfNotWideEnough(opnds[i], maxNumBits); 
+            }
+
+            NodeToSmtValue newNode = NodeToSmtValue.newBottom(
+                    commonType, 
+                    getNumBitsForType(commonType), opcode, opnds);
+            NodeToSmtValue nInSH = checkStructuralHash(newNode);
+            return nInSH;
+        }
+        
+        private NodeToSmtValue padIfNotWideEnough(NodeToSmtValue ntsvVal,
+                int numBits) {
+            if (!USE_BV) return ntsvVal;
+            
+            if (ntsvVal.getNumBits() < numBits) {
+                
+                Type t = new TypeArray(TypePrimitive.bittype, new ExprConstInt(numBits));
+                NodeToSmtValue newNode = NodeToSmtValue.newBottom(t, numBits, OpCode.CONCAT, 
+                        CONSTBITARRAY(0, numBits - ntsvVal.getNumBits()),
+                        ntsvVal);
+                newNode = checkStructuralHash(newNode);
+                
+                return newNode;
+            } else
+                return ntsvVal;
+        }
 	    
 	}
 	
@@ -270,7 +324,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mLocalVars = new HashSet<VarNode>();
 		
 		mEq = new LinkedList<NodeToSmtValue>();
-		mCache = new HashMap<NodeToSmtValue, NodeToSmtValue>(100000);
+		mCache = new HashMap<NodeToSmtValue, NodeToSmtValue>(1000000);
 		mStructHash = new HashMap<NodeToSmtValue, NodeToSmtValue>(100000);
 		mFuncHash = new HashMap<NodeToSmtValue, List<NodeToSmtValue>>();
 		mSimpleDefs = new HashMap<NodeToSmtValue, NodeToSmtValue>();
@@ -376,7 +430,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
 		NodeToSmtValue nInSH = checkStructuralHash(newNode);
 		
-		if (COMMON_SUBEXP_ELIMINATION && nInSH == newNode) {
+		if (COMMON_SUBEXP_ELIMINATION && 
+		        nInSH == newNode) {
 		    addTempDefinition(newNode);
 		    newNode = checkStructuralHash(newNode);
 		}
@@ -1256,11 +1311,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			NodeToSmtValue ntsv1, NodeToSmtValue ntsv2) {
 	    int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
         
-        if (ntsv1.getNumBits() < maxNumBits)
-            ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
-        
-        if (ntsv2.getNumBits() < maxNumBits)
-            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+        ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
+        ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
         
 		return BOTTOM(getCommonType(ntsv1.getType(), ntsv2.getType()), 
 				opcode, ntsv1, ntsv2
@@ -1271,11 +1323,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			NodeToSmtValue ntsv1, NodeToSmtValue ntsv2, Type resultType) {
 		int maxNumBits = Math.max(ntsv1.getNumBits(), ntsv2.getNumBits());
 		
-		if (ntsv1.getNumBits() < maxNumBits)
-			ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
-		
-		if (ntsv2.getNumBits() < maxNumBits)
-			ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+		ntsv1 = padIfNotWideEnough(ntsv1, maxNumBits);
+		ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
+
 		return BOTTOM(resultType, 
 				opcode, ntsv1, ntsv2
 				);
