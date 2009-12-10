@@ -28,6 +28,7 @@ import sketch.util.Stopwatch;
 public class CEGISLoop {
 
     public static final String SYNTHESIS_TIME = "Synthesis Time(ms)";
+    public static final String FINAL_SYNTHESIS_TIME = "Final Iteration Synthesis Time(ms)";
     public static final String VERIFICATION_TIME = "Verificaiton Time(ms)";
     public static final String CEGIS_ITR = "CEGIS Iterations";
     public static final String SOLUTION_TIME = "Solution Time(ms)";
@@ -46,6 +47,7 @@ public class CEGISLoop {
 	
 	protected SmtValueOracle mAllZerosOracle;
 	protected int mIntNumBits;
+    private long finalSynTime;
 	
 	private static Logger log = Logger.getLogger(CEGISLoop.class.getCanonicalName());
 	
@@ -130,6 +132,7 @@ public class CEGISLoop {
 
 		
 		mStat.incrementLong(LOOP_TIME, mLoopTimer.toValue());
+		mStat.incrementLong(FINAL_SYNTHESIS_TIME, finalSynTime);
 	}
 
 	public GeneralStatistics getStat() {
@@ -229,6 +232,8 @@ public class CEGISLoop {
 		
 		SolutionStatistics stat = solver.solve(vtype);
 		mStat.incrementLong(SYNTHESIS_TIME, stat.solutionTimeMs());
+		finalSynTime = stat.solutionTimeMs();
+		
 		if (!stat.successful())
 			return null;
 

@@ -226,34 +226,49 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
                 commonType = getCommonType(commonType, opnd.getType());
             }
             
-            if (!COMMON_SUBEXP_ELIMINATION) {
-                return BOTTOM(commonType, opcode, opnds);
-            }
+            
             
             for (int i = 0 ; i < opnds.length; i++) {
                 opnds[i] = padIfNotWideEnough(opnds[i], maxNumBits); 
             }
+            
+            if (!COMMON_SUBEXP_ELIMINATION) {
+                return BOTTOM(commonType, opcode, opnds);
+            } else {
 
-            NodeToSmtValue newNode = NodeToSmtValue.newBottom(
-                    commonType, 
-                    getNumBitsForType(commonType), opcode, opnds);
-            NodeToSmtValue nInSH = checkStructuralHash(newNode);
-            return nInSH;
+                NodeToSmtValue newNode = NodeToSmtValue.newBottom(
+                        commonType, 
+                        getNumBitsForType(commonType), opcode, opnds);
+                NodeToSmtValue nInSH = checkStructuralHash(newNode);
+                return nInSH;
+                
+            }
         }
         
         private NodeToSmtValue padIfNotWideEnough(NodeToSmtValue ntsvVal,
                 int numBits) {
             if (!USE_BV) return ntsvVal;
             
+            
+            
             if (ntsvVal.getNumBits() < numBits) {
                 
-                Type t = new TypeArray(TypePrimitive.bittype, new ExprConstInt(numBits));
-                NodeToSmtValue newNode = NodeToSmtValue.newBottom(t, numBits, OpCode.CONCAT, 
-                        CONSTBITARRAY(0, numBits - ntsvVal.getNumBits()),
-                        ntsvVal);
-                newNode = checkStructuralHash(newNode);
+                NodeToSmtValue first = CONSTBITARRAY(0, numBits - ntsvVal.getNumBits());
+                if (!COMMON_SUBEXP_ELIMINATION) {
+                    
+                    return concat(first, ntsvVal);
+                    
+                } else {
+                    Type t = new TypeArray(TypePrimitive.bittype, new ExprConstInt(numBits));
+                    NodeToSmtValue newNode = NodeToSmtValue.newBottom(t, numBits, OpCode.CONCAT, 
+                            first,
+                            ntsvVal);
+                    newNode = checkStructuralHash(newNode);
+                    
+                    return newNode;
+                }
+                    
                 
-                return newNode;
             } else
                 return ntsvVal;
         }

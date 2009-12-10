@@ -65,7 +65,8 @@ public class SketchShowcaseBlastBV extends sketch.compiler.seq.SketchShowcase {
 		else
 			System.out.println("\t" + 
 			        (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t" + 
-			        stat.getLong(CEGISLoop.CEGIS_ITR));
+			        stat.getLong(CEGISLoop.CEGIS_ITR) + "\t" +
+			        stat.getLong(CEGISLoop.FINAL_SYNTHESIS_TIME));
 	}
 	
 
