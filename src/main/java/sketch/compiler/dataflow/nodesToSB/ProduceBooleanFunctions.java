@@ -285,7 +285,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     rcontrol.popFunCall(exp);
                 }else{
                     if(rcontrol.leaveCallsBehind()){
-                        System.out.println("        Stopped recursion:  " + fun.getName());
+//                        System.out.println("        Stopped recursion:  " + fun.getName());
                         funcsToAnalyze.add(fun);                    
                         return super.visitExprFunCall(exp); 
                     }else{
