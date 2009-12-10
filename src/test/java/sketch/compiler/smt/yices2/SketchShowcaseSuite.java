@@ -5,12 +5,12 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({SketchShowcaseBlastBV.class, 
-     
-    SketchShowcaseFHBlastBV.class, 
+@SuiteClasses({
     SketchShowcaseCanonFHBlastBV.class,
     SketchShowcaseCanonFHTOABV.class,
-    SketchShowcaseTOABV.class
+    SketchShowcaseBlastBV.class, 
+    SketchShowcaseTOABV.class, 
+    SketchShowcaseFHBlastBV.class
     })
 public class SketchShowcaseSuite {
 }

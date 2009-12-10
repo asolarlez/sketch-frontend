@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SMTTranslator.OpCode;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
@@ -108,7 +109,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
             // if the current structure is found in structural hash
 	        // return the single var that's equivalent to it
             if (mStructHash.containsKey(newOpNode)) {
-                structSimplified++;
+                mStat.incrementLong(STRUCT_SIMPLIFED, 1);
                 return mStructHash.get(newOpNode);
             }
 	        return newOpNode;
@@ -122,56 +123,103 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
             super(formula);
         }
 
+	    /**
+	     * Turn (0 + -z + 3*x - 2y + 5a) 
+	     * into: ((3x + 5a) - z - 2y)
+	     *  
+	     */
         @Override
 	    public Object visitLinearNode(LinearNode linearNode) {
 	        int maxBits = -1;
 	        NodeToSmtValue newTerm = null;
-	        ArrayList<NodeToSmtValue> terms = new ArrayList<NodeToSmtValue>();
+	        ArrayList<NodeToSmtValue> posTerms = new ArrayList<NodeToSmtValue>();
+	        ArrayList<NodeToSmtValue> negTerms = new ArrayList<NodeToSmtValue>();
+	        
+	        // separate the positive terms and negative terms
 	        for (VarNode v : linearNode.getVars()) {
 	            int coe = linearNode.getCoeff(v); 
 	            if (coe != 0) {
-	                NodeToSmtValue c = CONST(coe);
 	                
-	                
-	                if (coe == 1) {
-	                    newTerm = v;
-	                } else {
-	                    newTerm = mergeTwoValuesToBottom(OpCode.TIMES, c, v);
-	                }
+	                if (coe > 0) {
+	                    NodeToSmtValue c = CONST(coe);
+	                    if (coe == 1) {
+	                        newTerm = v;
+	                    } else {
+	                        newTerm = mergeTwoValuesToBottom(OpCode.TIMES, c, v);
+	                    }
+                        posTerms.add(newTerm);
+                    } else if (coe < 0) {
+                        NodeToSmtValue c = CONST(-coe);
+                        if (coe == -1) {
+                            newTerm = v;
+                        } else {
+                            newTerm = mergeTwoValuesToBottom(OpCode.TIMES, c, v);
+                        }
+                        negTerms.add(newTerm);
+                    }
 	                maxBits = Math.max(maxBits, newTerm.getNumBits());
-	                terms.add(newTerm);
+	                
 	            }	            
 	        }
-	        if (linearNode.getCoeff(null) != 0) {
-	            newTerm = CONST(linearNode.getCoeff(null));
+	        // handle constant term
+	        int coe = linearNode.getCoeff(null);
+	        if (coe != 0) {
+	            newTerm = CONST(Math.abs(coe));
 	            maxBits = Math.max(maxBits, newTerm.getNumBits());
-                terms.add(newTerm);
+	            if (coe > 0)
+	                posTerms.add(newTerm);
+	            else if (coe < 0)
+	                negTerms.add(newTerm);
 	        }
 	        
-	        NodeToSmtValue[] dummy = new NodeToSmtValue[terms.size()];
-	        for (int i = 0; i < terms.size(); i++) {
-	            dummy[i] = padIfNotWideEnough(terms.get(i), maxBits);
-	        }
+	        if (posTerms.size() == 0)
+                posTerms.add(CONST(0));
 	        
-	        if (terms.size() > 0)
-	            return BOTTOM(dummy[0].getType(), OpCode.PLUS, dummy);
-	        else
-	            return CONST(0);
+	        // pad positve terms
+	        NodeToSmtValue[] pdummy = new NodeToSmtValue[posTerms.size()];
+	        for (int i = 0; i < posTerms.size(); i++) {
+	            pdummy[i] = padIfNotWideEnough(posTerms.get(i), maxBits);
+	        }
+
+	        NodeToSmtValue posPart;
+	        if (posTerms.size() == 1)
+	            posPart = pdummy[0];
+            else
+                posPart = BOTTOM(pdummy[0].getType(), OpCode.PLUS, pdummy);
+	        
+	        if (negTerms.size() <= 0) {
+	            return padIfNotWideEnough(posPart, linearNode.getNumBits());
+	        } else {
+	            // put the positive part as the first term of the negative terms
+    	        NodeToSmtValue[] ndummy = new NodeToSmtValue[negTerms.size()+1];
+    	        ndummy[0] = posPart;
+    	        
+                for (int i = 0; i < negTerms.size(); i++) {
+                   ndummy[i+1] = padIfNotWideEnough(negTerms.get(i), maxBits);
+                }
+    	        
+                NodeToSmtValue ret = BOTTOM(ndummy[0].getType(), OpCode.MINUS, ndummy);
+                return padIfNotWideEnough(ret, linearNode.getNumBits());
+    	        
+	        }
 	    }
 	    
 	}
 	
+	public static final String FUNC_INLINED = "Function Inlined";
+	public static final String STRUCT_SIMPLIFED = "OpNode Eliminated";
+	public static final String SH_USED = "Struct Hash Used Times";
+	public static final String CACHE_SIZE = "DAG Number of Nodes";
+	public static final String CACHE_USED = "Cache Used Times";
+	
 	public static final boolean USE_STRUCT_HASHING = true;
-	private int structHashingUsed = 0;
 	public static final boolean FUNCCALL_HASHING = CommandLineParamManager.getParams().hasFlag("funchash");
-	private int funccallInlined = 0;
-	public static final boolean FLAT = false;
-	private int structSimplified = 0;
 	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");
-
+	public static final boolean COMMON_SUBEXP_ELIMINATION = CommandLineParamManager.getParams().hasFlag("cse");
 	public final boolean USE_BV = CommandLineParamManager.getParams().sValue("modelint").equals("bv");
 	
 	protected TempVarGen tmpVarGen;
+	protected GeneralStatistics mStat;
 	protected AbstractValueOracle oracle;
 	
 	protected int intNumBits;
@@ -208,10 +256,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			int intNumBits,
 			int inBits,
 			int cBits,
+			GeneralStatistics stat,
 			TempVarGen tmpVarGen) {
 		super();
 		
 		this.intNumBits = intNumBits;
+		mStat = stat;
 		mCBits = cBits;
 		mInBits = inBits;
 		this.tmpVarGen = tmpVarGen;
@@ -321,15 +371,15 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		
 		NodeToSmtValue[] newOpnds = new NodeToSmtValue[operands.length];
 		for (int i = 0 ; i < newOpnds.length; i++) {
-			newOpnds[i] = referenceVar(operands[i]);	
+			newOpnds[i] = referenceVar(operands[i]);
 		}
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
 		NodeToSmtValue nInSH = checkStructuralHash(newNode);
 		
-//		if (nInSH == newNode) {
-//		    addTempDefinition(newNode);
-//		    newNode = checkStructuralHash(newNode);
-//		}
+		if (COMMON_SUBEXP_ELIMINATION && nInSH == newNode) {
+		    addTempDefinition(newNode);
+		    newNode = checkStructuralHash(newNode);
+		}
 		return nInSH;
 	}
 
@@ -519,7 +569,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsvCond = (NodeToSmtValue) cond;
 		NodeToSmtValue ntsvTrue = (NodeToSmtValue) vtrue;
 		NodeToSmtValue ntsvFalse = (NodeToSmtValue) vfalse;
-		int maxNumBits = Math.max(ntsvTrue.getNumBits(), ntsvFalse.getNumBits());
+		int maxNumBits = getNumBitsForType(ntsvTrue.getType());
 		
 		if (ntsvTrue.getNumBits() < maxNumBits)
 			ntsvTrue = padIfNotWideEnough(ntsvTrue, maxNumBits);
@@ -1189,7 +1239,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		List<NodeToSmtValue> ret = mFuncHash.get(funccall);
 		
 		if (ret == null)
-		    funccallInlined++;
+		    mStat.incrementLong(FUNC_INLINED, 1);
 		return ret;
 	}
 
@@ -1368,7 +1418,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    return mLocalVars.contains(varNode);
 	}
 	
-	int savedNodes = 0;
+	
 	protected NodeToSmtValue checkCache(NodeToSmtValue node) {
 		
 //	    if (node instanceof OpNode)
@@ -1379,7 +1429,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 			inCache = node;
 			mCache.put(node, node);	
 		} else {
-			savedNodes++;
+			mStat.incrementLong(CACHE_USED, 1);
 //			if (mCache.size() %10000 == 0)
 //				System.out.println(mCache.size());
 		}
@@ -1446,7 +1496,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
         if (USE_STRUCT_HASHING && mStructHash.containsKey(newNode)) {
             // if that structure already has a name var, use that
             NodeToSmtValue varNode = mStructHash.get(newNode);
-            structHashingUsed++;
+            mStat.incrementLong(SH_USED, 1);
             return varNode;
         } else {
             // if that structure has not been assigned to any var, check cache.
@@ -1527,13 +1577,18 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	}
 	
 	public NodeToSmtValue newParam(Parameter param, Type paramType) {
-		String varName = param.getName();
-		
+        String varName = param.getName();
+        return newParam(varName, paramType);
+    }
+	
+	public NodeToSmtValue newParam(String varName, Type paramType) {
+
 		VarNode paramVal = NodeToSmtValue.newParam(varName, paramType, 
 				paramType.equals(TypePrimitive.inttype) ? mInBits : getNumBitsForType(paramType));
 		declareInput(paramVal);
 		return paramVal;
 	}
+
 	
 	/**
 	 * Reference the specified variable. (use count will be incremented)
@@ -1555,13 +1610,9 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		} else if (original instanceof VarNode) {
 
 			NodeToSmtValue toUse;
-			if (FLAT) {
-				// use def instead of original
-				toUse = findOriginalDef((VarNode) original);
-			} else {
-				// use original
-				toUse = original;
-			}
+			
+			// use original
+			toUse = original;
 			
 			Integer uses = mUses.get(toUse);
 			if (uses == null) {
@@ -1588,7 +1639,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	
 	public void finalize() {
-//	    eliminateLinearNode();
+	    eliminateLinearNode();
 //		guardModAndDivide();
 	}
 	
@@ -1601,16 +1652,16 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    int numRemoved = 0;
 	    
 	    log.info("Optimizing DAG");
-		simplifyExpressionTrees();
+//		simplifyExpressionTrees();
 		constraintUndefinedVariables();
 //		numRemoved = removeUnusedVariables();
 		
-		log.info(" - Saved Node creation: " + savedNodes);
+		log.info(" - Saved Node creation: " + mStat.getLong(CACHE_USED));
 		log.info(" - Removed " + numRemoved + " unused variables");
-		log.info(" - Structural Hashing Used: " + structHashingUsed + " (size = " + mStructHash.size() +")");
-		log.info(" - Func Call Inlined: " + funccallInlined);
-		log.info(" - Struct Simplified: " + structSimplified);
-//		Toolbox.pause();
+		log.info(" - Structural Hashing Used: " + mStat.getLong(SH_USED) + " (size = " + mStructHash.size() +")");
+		log.info(" - Func Call Inlined: " + mStat.getLong(FUNC_INLINED));
+
+		mStat.incrementLong(CACHE_SIZE, mCache.size());
 	}
 	
 	
@@ -1708,7 +1759,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //	}
 	
 	protected void simplifyExpressionTrees() {
-	    if (!FLAT) return;
 	    
 	    // simplfy the assignments
 	    EliminateCommonOpNode nr = new EliminateCommonOpNode(this);
