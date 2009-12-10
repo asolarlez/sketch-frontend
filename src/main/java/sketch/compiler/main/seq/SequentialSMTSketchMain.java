@@ -623,6 +623,9 @@ public class SequentialSMTSketchMain {
 		params.setAllowedParam("canon", new POpts(POpts.FLAG,
                 "--canon\t Canonicalize arithmetics", null, null));
 		
+		params.setAllowedParam("cse", new POpts(POpts.FLAG,
+                "--canon\t Enable Common Subexpession Elimination", null, null));
+		
 		params.setAllowedParam("linear", new POpts(POpts.FLAG,
                 "--linear\t Linearize arithmetics", null, null));
 		
