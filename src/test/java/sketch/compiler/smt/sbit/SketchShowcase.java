@@ -26,7 +26,7 @@ public class SketchShowcase extends sketch.compiler.seq.SketchShowcase {
 		argsMap.put("--outputdir", "output/");
 		argsMap.put("--output", tmpDirStr + "//" + input + ".tmp"); 
 		argsMap.put("--keeptmpfiles", null);
-//		argsMap.put("--timeout", "10");
+		argsMap.put("--timeout", "10");
 		
 		argsMap.put(inputPath, null);
 		
