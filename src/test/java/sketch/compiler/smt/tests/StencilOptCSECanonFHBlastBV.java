@@ -24,7 +24,7 @@ public class StencilOptCSECanonFHBlastBV extends StencilOptCanonFHBlastBV {
         
         argsMap.put(inputPath, null);
         
-        System.out.print(input + "\tcanon-fh");
+        System.out.print(input + "\tccse-canon-fh");
         return argsMap;
     }
     
