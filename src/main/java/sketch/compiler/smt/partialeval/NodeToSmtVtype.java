@@ -215,7 +215,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public static final boolean USE_STRUCT_HASHING = true;
 	public static final boolean FUNCCALL_HASHING = CommandLineParamManager.getParams().hasFlag("funchash");
 	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");
-
+	public static final boolean COMMON_SUBEXP_ELIMINATION = CommandLineParamManager.getParams().hasFlag("cse");
 	public final boolean USE_BV = CommandLineParamManager.getParams().sValue("modelint").equals("bv");
 	
 	protected TempVarGen tmpVarGen;
@@ -376,10 +376,10 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
 		NodeToSmtValue nInSH = checkStructuralHash(newNode);
 		
-//		if (nInSH == newNode) {
-//		    addTempDefinition(newNode);
-//		    newNode = checkStructuralHash(newNode);
-//		}
+		if (COMMON_SUBEXP_ELIMINATION && nInSH == newNode) {
+		    addTempDefinition(newNode);
+		    newNode = checkStructuralHash(newNode);
+		}
 		return nInSH;
 	}
 
