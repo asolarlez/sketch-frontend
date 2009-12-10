@@ -12,16 +12,17 @@ public abstract class SketchShowcase extends TestHarness {
 	protected abstract HashMap<String, String> initCmdArgs(String string);
 	protected abstract void runOneTest(String[] args) throws IOException, InterruptedException;
 	
+	final static int TIMEOUT = 60; 
 	
 	
 	// DIA-2
-	@Test(timeout=15*60*1000)
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA2_N2_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N2-BIT.sk");
 		runOneTest(toArgArray(argsMap));
 	}
 	
-	@Test(timeout=15*60*1000)
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA2_N3_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N3-BIT.sk");
 		runOneTest(toArgArray(argsMap));
@@ -44,7 +45,7 @@ public abstract class SketchShowcase extends TestHarness {
 	// DIA-1
 	
 	
-	@Test(timeout=15*60*1000)
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA1_N2_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA1-N2-BIT.sk");
 		runOneTest(toArgArray(argsMap));
@@ -52,7 +53,7 @@ public abstract class SketchShowcase extends TestHarness {
 
 	
 	
-	@Test(timeout=15*60*1000)
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA1_N3_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA1-N3-BIT.sk");
 		runOneTest(toArgArray(argsMap));
@@ -61,7 +62,7 @@ public abstract class SketchShowcase extends TestHarness {
 	
 	
 	// CSR
-	@Test(timeout=15*60*1000)
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_CSR1_N2_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-CSR1-N2-BIT.sk");
 
@@ -81,7 +82,7 @@ public abstract class SketchShowcase extends TestHarness {
 	// COO
 	
 	
-	@Test(timeout=15*60*1000)
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_COO1_N2_INT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-COO1-N2-INT.sk");
 
@@ -89,20 +90,21 @@ public abstract class SketchShowcase extends TestHarness {
 	}
 
 	
-	@Test
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_COO1_N3_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-COO1-N3-BIT.sk");
 
 		runOneTest(toArgArray(argsMap));
 	}
 	
-	@Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_CSR1_N2_INT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-CSR1-N2-INT.sk");
 
         runOneTest(toArgArray(argsMap));
     }
-    @Test
+	
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_CSR1_N3_INT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-CSR1-N3-INT.sk");
 
@@ -119,13 +121,13 @@ public abstract class SketchShowcase extends TestHarness {
 //        runOneTest(toArgArray(argsMap));
 //    }
     
-	@Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void polynomialInt() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("polynomialInt.sk");
         runOneTest(toArgArray(argsMap));
     }
     
-	@Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void aesFullStage() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("aesFullStage.sk");
         runOneTest(toArgArray(argsMap));
@@ -151,44 +153,44 @@ public abstract class SketchShowcase extends TestHarness {
 	 * Likely timeout
 	 */
 
-    @Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_COO1_N2_BIT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-COO1-N2-BIT.sk");
 
         runOneTest(toArgArray(argsMap));
     }
 	
-	@Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_DIA1_N2_INT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA1-N2-INT.sk");
         runOneTest(toArgArray(argsMap));
     }
-    @Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_DIA1_N3_INT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA1-N3-INT.sk");
         runOneTest(toArgArray(argsMap));
     }
 	
-	@Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_DIA2_N4_BIT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N4-BIT.sk");
         runOneTest(toArgArray(argsMap));
     }
     
-    @Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_COO1_N3_INT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-COO1-N3-INT.sk");
 
         runOneTest(toArgArray(argsMap));
     }
     
-    @Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void xpose() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("xpose.sk");
         runOneTest(toArgArray(argsMap));
     }
     
-    @Test
+	@Test(timeout=TIMEOUT*60*1000)
     public void Pollard() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("Pollard.sk");
         runOneTest(toArgArray(argsMap));
