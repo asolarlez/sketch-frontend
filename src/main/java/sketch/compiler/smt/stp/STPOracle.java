@@ -21,60 +21,6 @@ public class STPOracle extends SmtValueOracle {
 		super(fPrinter);
 		transferMap = new HashMap<String, String>();
 	}
-
-//	/**
-//	 * This version of the loadFromStream assumes STP does not show the
-//	 * var = value map directly. It assumes it shows:
-//	 * 
-//	 * v1 = v2;
-//	 * v2 = v3;
-//	 * v3 = value;
-//	 * 
-//	 * Therefore, this method uses a transferMap to map out the transitive relationships
-//	 */
-//	@Override
-//	public void loadFromStream(LineNumberReader in) throws IOException {
-//		String line;
-//
-//		
-//		while ((line = in.readLine()) != null) {
-//			try {
-//			if (line.startsWith("ASSERT(")) {
-//				line = line.substring("ASSERT(".length(), line.lastIndexOf(')'));
-//				line = line.trim();
-//				
-//				String[] fields;
-//				if (line.contains("<=>"))
-//					// windows version, BOOLEAN var value assignment uses this notation
-//					fields = line.split("<=>"); 
-//				else
-//					// mac or linux version
-//					fields = line.split("="); // 
-//				
-//				String varName = fields[0].trim();
-//				String value = fields[1].trim();
-//				
-//				transferMap.put(varName, value);
-//				
-//				
-//			}
-//			} catch (Exception e) {
-//				// there can be output format that we dont understand
-//			}
-//		}
-//		
-//		for (String varName : transferMap.keySet()) {
-//			if ((mFPrinter.isHoleVariable(varName) || mFPrinter.isInputVariable(varName))) {
-//				String value = traceDown(varName);
-//				if (value == null)
-//					continue;
-//				NodeToSmtValue ntsv = stringToNodeToSmtValue(value, mFPrinter.getTypeForVariable(varName));
-//				
-//				if (ntsv != null)
-//					putValueForVariable(varName, ntsv);
-//			}
-//		}
-//	}
 	
   @Override
   public void loadFromStream(LineNumberReader in) throws IOException {

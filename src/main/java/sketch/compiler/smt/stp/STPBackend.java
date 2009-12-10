@@ -31,7 +31,7 @@ public class STPBackend extends SMTBackend {
 	}
 
 	private final static boolean USE_FILE_SYSTEM = true;
-	public final static boolean newSTP = false;
+	public final static boolean newSTP = true;
 
 	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
