@@ -11,6 +11,6 @@ import org.junit.runners.Suite.SuiteClasses;
     SketchShowcaseBlastBV.class, 
     SketchShowcaseTOABV.class, 
     SketchShowcaseFHBlastBV.class, 
-    SketchShowcaseCanonFHTOABV.class,})
+    SketchShowcaseCanonFHTOABV.class})
 public class SketchShowcaseSuite {
 }
