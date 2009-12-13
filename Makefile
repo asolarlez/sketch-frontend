@@ -26,7 +26,7 @@ codegen: # codegen a few files (not very high probability of changing)
 compile:
 	$(OPT_BUILDR) compile
 
-install:
+install: compile
 	mvn install -Dmaven.test.skip=true
 
 ### distribution
