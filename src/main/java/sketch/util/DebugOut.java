@@ -76,6 +76,10 @@ public class DebugOut {
         print_colored(BASH_BLUE, "[debug]", " ", false, text);
     }
 
+    public static void fmt(String fmt, Object... args) {
+        print(String.format(fmt, args));
+    }
+
     public static synchronized void print_mt(Object... text) {
         print_colored(BASH_LIGHT_BLUE, thread_indentation.get() + "[debug-"
                 + Thread.currentThread().getId() + "]", " ", false, text);
