@@ -4,12 +4,15 @@ SHELL = /bin/bash
 
 VERSION = $(shell python -c "from amara import bindery; print(bindery.parse(open('pom.xml', 'r').read()).project.version)" 2>/dev/null)
 
+OPT_BUILDR = $(shell (which buildr >/dev/null && which buildr) || which mvn)
+
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
 	@grep -iE "^(###.+|[a-zA-Z0-9_-]+:.*(#.+)?)$$" Makefile | sed -u -r "s/^### /\n/g; s/:.+#/#/g; s/^/    /g; s/#/\\n        /g; s/:$$//g"
 
 show-info:
-	@echo "version $(VERSION)"
+	@echo "version = $(VERSION)"
+	@echo "buildr or maven = $(OPT_BUILDR)"
 
 target/classes/%s:
 	mvn compile
@@ -19,6 +22,12 @@ target/version.txt: target/classes/sketch/compiler/localization.properties
 
 codegen: # codegen a few files (not very high probability of changing)
 	scripts/run_jinja2.py
+
+compile:
+	$(OPT_BUILDR) compile
+
+install: compile
+	mvn install -Dmaven.test.skip=true
 
 ### distribution
 
@@ -42,6 +51,9 @@ assemble: target/version.txt # build all related jar files, assuming sketch-back
 	cd target; tar cf sketch-$(VERSION).tar sketch-*-all-*.jar
 
 dist: assemble # alias for assemble
+
+deploy: compile
+	mvn deploy -Dmaven.test.skip=true
 
 osc: assemble-noarch
 	mkdir -p "java-build"; cp target/sketch-$(VERSION)-noarch.jar java-build
