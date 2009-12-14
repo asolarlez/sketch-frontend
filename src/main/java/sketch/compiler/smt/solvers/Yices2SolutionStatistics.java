@@ -1,4 +1,4 @@
-package sketch.compiler.smt.yices;
+package sketch.compiler.smt.solvers;
 
 import sketch.compiler.solvers.SolutionStatistics;
 

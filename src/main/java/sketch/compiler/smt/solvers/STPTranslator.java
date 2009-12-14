@@ -1,4 +1,4 @@
-package sketch.compiler.smt.stp;
+package sketch.compiler.smt.solvers;
 import java.io.PrintStream;
 import java.util.List;
 

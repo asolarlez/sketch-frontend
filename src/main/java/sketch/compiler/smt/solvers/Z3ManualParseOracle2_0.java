@@ -1,4 +1,4 @@
-package sketch.compiler.smt.z3;
+package sketch.compiler.smt.solvers;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -9,7 +9,6 @@ import sketch.compiler.smt.partialeval.BitVectUtil;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
 import sketch.compiler.smt.partialeval.SmtType;
-import sketch.compiler.smt.stp.STPOracle;
 
 /**
  * Manually disassemble the output lines into variable-value pair

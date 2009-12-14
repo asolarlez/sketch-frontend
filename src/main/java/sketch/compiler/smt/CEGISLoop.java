@@ -18,10 +18,12 @@ import sketch.compiler.smt.partialeval.AssertionFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
-import sketch.compiler.smt.stp.STPBackend;
-import sketch.compiler.smt.yices.YicesBVBackend;
-import sketch.compiler.smt.yices.YicesIntBackend;
-import sketch.compiler.smt.z3.Z3BVBackend;
+import sketch.compiler.smt.solvers.SMTBackend;
+import sketch.compiler.smt.solvers.STPBackend;
+import sketch.compiler.smt.solvers.STPYicesBackend;
+import sketch.compiler.smt.solvers.YicesBVBackend;
+import sketch.compiler.smt.solvers.YicesIntBackend;
+import sketch.compiler.smt.solvers.Z3BVBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.Stopwatch;
 
@@ -170,7 +172,7 @@ public class CEGISLoop {
 		try {
 			solver.init();
 			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.getLong(CEGIS_ITR) + ".smt";
-			solver.tmpFilePath = tmpFile;
+			solver.setTmpFilePath(tmpFile);
 			
 			log.fine("Generating formula");
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
@@ -198,7 +200,7 @@ public class CEGISLoop {
 		mStat.incrementLong(VERIFICATION_TIME, stat.solutionTimeMs());
 			
 		if (!stat.successful())
-			return null;		
+			return null;
 		
 		return solver.getOracle();
 	}
@@ -209,7 +211,7 @@ public class CEGISLoop {
 		try {
 			solver.init();
 			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-s" + mStat.getLong(CEGIS_ITR) + ".smt";
-			solver.tmpFilePath = tmpFile;
+			solver.setTmpFilePath(tmpFile);
 			
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
 //			FormulaPrinter printer = vtype.new FormulaPrinter(ps, true);
@@ -296,7 +298,13 @@ public class CEGISLoop {
 					mParams,
 					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".stp" : null,
 					mRControl, mTmpVarGen, tracing);
+		} else if (backend.equals("stpyices2")) {
+	            return new STPYicesBackend(
+	                    mParams,
+	                    mParams.hasFlag("keeptmpfiles") ? tmpFile + ".stp" : null,
+	                    mRControl, mTmpVarGen, tracing);
 		} else {
+		    
 			// other solvers for example
 			return null;
 		}

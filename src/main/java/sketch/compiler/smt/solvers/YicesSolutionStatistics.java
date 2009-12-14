@@ -1,4 +1,4 @@
-package sketch.compiler.smt.yices;
+package sketch.compiler.smt.solvers;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
