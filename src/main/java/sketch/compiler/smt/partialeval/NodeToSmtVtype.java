@@ -215,30 +215,35 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	    }
         
         private NodeToSmtValue createOp(OpCode opcode, NodeToSmtValue... opnds) {
+            NodeToSmtValue previous = opnds[0];
+            for (int i = 1 ; i < opnds.length; i++) {
+                previous = createOpBinary(opcode, previous, opnds[i]);
+            }
+            return previous;
             
+            
+        }
+        
+        private NodeToSmtValue createOpBinary(OpCode opcode, NodeToSmtValue opnd1, NodeToSmtValue opnd2) {
             int maxNumBits = 0;
             Type commonType = null;
             
-            for (NodeToSmtValue opnd : opnds) {
-                if (commonType == null)
-                    commonType = opnd.getType();
-                maxNumBits  = Math.max(maxNumBits, opnd.getNumBits());
-                commonType = getCommonType(commonType, opnd.getType());
-            }
+
+            maxNumBits  = Math.max(opnd1.getNumBits(), opnd2.getNumBits());
+            commonType = getCommonType(opnd1.getType(), opnd2.getType());
+        
             
+            opnd1 = padIfNotWideEnough(opnd1, maxNumBits);
+            opnd2 = padIfNotWideEnough(opnd2, maxNumBits);
             
-            
-            for (int i = 0 ; i < opnds.length; i++) {
-                opnds[i] = padIfNotWideEnough(opnds[i], maxNumBits); 
-            }
             
             if (!COMMON_SUBEXP_ELIMINATION) {
-                return BOTTOM(commonType, opcode, opnds);
+                return BOTTOM(commonType, opcode, opnd1, opnd2);
             } else {
 
                 NodeToSmtValue newNode = NodeToSmtValue.newBottom(
                         commonType, 
-                        getNumBitsForType(commonType), opcode, opnds);
+                        getNumBitsForType(commonType), opcode, opnd1, opnd2);
                 NodeToSmtValue nInSH = checkStructuralHash(newNode);
                 return nInSH;
                 
