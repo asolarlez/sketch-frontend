@@ -10,11 +10,11 @@ import java.io.PrintStream;
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
+import sketch.compiler.smt.solvers.SMTBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.InterceptedOutputStream;
 import sketch.util.ProcessStatus;
@@ -36,7 +36,7 @@ public class BeaverBVBackend extends SMTBackend {
 	}
 
 	@Override
-	protected OutputStream createStreamToSolver() throws IOException {
+	public OutputStream createStreamToSolver() throws IOException {
 		// Copy-pasted from Cvc3Backend
 		OutputStream ret = getSolverProcess().getOutputStream();
 		if (this.outputTmpFile) {
@@ -50,7 +50,7 @@ public class BeaverBVBackend extends SMTBackend {
 	}
 
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new BeaverBVOracle(mTrans);
 	}
 	

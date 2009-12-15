@@ -1,4 +1,4 @@
-package sketch.compiler.smt.stp;
+package sketch.compiler.smt.solvers;
 
 import java.io.BufferedReader;
 import java.io.IOException;

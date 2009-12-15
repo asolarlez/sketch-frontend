@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.junit.launchconfig">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/sketch-frontend"/>
+<listEntry value="/sketch-frontend/src/test/java/sketch/compiler/smt/stp/SketchRegressionSuite.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
-<listEntry value="4"/>
+<listEntry value="1"/>
 </listAttribute>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="smtpath" value="/Users/lshan/Applications/bin/yices2"/>
+<mapEntry key="smtpath" value="/Users/lshan/Applications/bin/stp"/>
 <mapEntry key="tmpdir" value="/tmp/sketch"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value=""/>
@@ -15,7 +15,7 @@
 <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.classpathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="sketch.compiler.smt.solvers.AllYicesTests"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="sketch.compiler.smt.stp.SketchRegressionSuite"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="sketch-frontend"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.sourcepathProvider"/>
 </launchConfiguration>

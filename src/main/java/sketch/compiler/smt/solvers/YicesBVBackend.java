@@ -1,4 +1,4 @@
-package sketch.compiler.smt.yices;
+package sketch.compiler.smt.solvers;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,7 +11,6 @@ import java.io.StringReader;
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -39,6 +38,8 @@ public class YicesBVBackend extends SMTBackend {
 		    mSwitch = V1_SWICHES;
 		else
 		    mSwitch = V2_SWICHES;
+		
+		solverPath = params.sValue("smtpath");
 	}
 
 	@Override
@@ -86,16 +87,16 @@ public class YicesBVBackend extends SMTBackend {
 		// -smt tells yices the input is in smt format, and -e tells yices to output the model
 		String command;
 		if (USE_FILE_SYSTEM) {
-			command = params.sValue("smtpath") + mSwitch + getTmpFilePath();
+			command = solverPath + mSwitch + getTmpFilePath();
 		} else {
-			command = params.sValue("smtpath") + mSwitch; 
+			command = solverPath + mSwitch; 
 		}
 		String[] commandLine = command.split(" ");
 		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
 	}
 
 	@Override
-	protected OutputStream createStreamToSolver() throws IOException {
+	public OutputStream createStreamToSolver() throws IOException {
 		
 		if (USE_FILE_SYSTEM) {
 			// use file system for input purpose
@@ -118,7 +119,7 @@ public class YicesBVBackend extends SMTBackend {
 	}
 
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new YicesBVOracle(mTrans);
 	}
 

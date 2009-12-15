@@ -1,0 +1,26 @@
+pragma options "--intbits 6 --cbits 6";
+
+#define N 10
+//int N = 3;
+
+int sketch(int a) implements spec{
+	int[N] tmp;
+	
+	tmp[0] = ??;	// t_0 = {1, true} {2, true}
+	tmp[1] = ??;
+	
+	for (int i = 2; i < N; i++) {
+		
+		tmp[i] = tmp[i-2] - tmp[i-1]; 
+		// t_2 = { t_0-t_1, i < N
+	}
+
+	assert tmp[N-1] == 0;
+	assert tmp[N-2] == 1;
+	
+	return 1;
+}
+
+int spec(int a) {
+	return 1;
+}

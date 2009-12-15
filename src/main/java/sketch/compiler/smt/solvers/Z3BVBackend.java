@@ -1,4 +1,4 @@
-package sketch.compiler.smt.z3;
+package sketch.compiler.smt.solvers;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +10,6 @@ import java.io.StringReader;
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -69,13 +68,13 @@ public class Z3BVBackend extends SMTBackend {
 	}
 
 	@Override
-	protected OutputStream createStreamToSolver() throws IOException {
+	public OutputStream createStreamToSolver() throws IOException {
 		FileOutputStream fos = new FileOutputStream(this.getTmpFilePath());
 		return fos;
 	}
 
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new Z3ManualParseOracle2_0(mTrans);
 	}
 

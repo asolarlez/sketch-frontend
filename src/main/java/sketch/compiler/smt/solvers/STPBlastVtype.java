@@ -1,4 +1,4 @@
-package sketch.compiler.smt.stp;
+package sketch.compiler.smt.solvers;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.abstractValue;

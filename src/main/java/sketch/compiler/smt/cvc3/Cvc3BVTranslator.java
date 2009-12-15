@@ -3,7 +3,7 @@ package sketch.compiler.smt.cvc3;
 import java.io.PrintStream;
 
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
-import sketch.compiler.smt.stp.STPTranslator;
+import sketch.compiler.smt.solvers.STPTranslator;
 
 public class Cvc3BVTranslator extends STPTranslator {
 	

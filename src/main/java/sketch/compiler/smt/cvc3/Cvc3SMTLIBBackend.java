@@ -43,7 +43,7 @@ public class Cvc3SMTLIBBackend extends Cvc3Backend {
 	}
 	
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new SMTLIBOracle(mTrans);
 	}
 	

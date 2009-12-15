@@ -32,5 +32,17 @@ public class GeneralStatistics {
         return oldValue;
     }
     
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (String key : mStore.keySet()) {
+            sb.append(key);
+            sb.append("\t");
+            sb.append(mStore.get(key));
+            sb.append("\n");
+        }
+        
+        return sb.toString();
+    }
     
 }

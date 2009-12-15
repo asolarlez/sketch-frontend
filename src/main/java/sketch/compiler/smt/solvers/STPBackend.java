@@ -1,4 +1,4 @@
-package sketch.compiler.smt.stp;
+package sketch.compiler.smt.solvers;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,7 +12,6 @@ import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.GeneralStatistics;
-import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -24,10 +23,12 @@ import sketch.util.SynchronousTimedProcess;
 
 public class STPBackend extends SMTBackend {
 
+    
 	public STPBackend(CommandLineParamManager params, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing)
 			throws IOException {
 		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		solverPath = params.sValue("smtpath");
 	}
 
 	private final static boolean USE_FILE_SYSTEM = true;
@@ -37,16 +38,16 @@ public class STPBackend extends SMTBackend {
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
 		String command;
 		if (USE_FILE_SYSTEM) {
-			command = params.sValue("smtpath") + " -p " + getTimeStatFlag() + " " + getTmpFilePath();
+			command = solverPath + " -p " + getTimeStatFlag() + " " + getTmpFilePath();
 		} else {
-			command = params.sValue("smtpath") + " -p "  + getTimeStatFlag(); 
+			command = solverPath + " -p "  + getTimeStatFlag(); 
 		}
 		String[] commandLine = command.split(" ");
 		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
 	}
 
 	@Override
-	protected OutputStream createStreamToSolver() throws IOException {
+	public OutputStream createStreamToSolver() throws IOException {
 		if (USE_FILE_SYSTEM) {
 			// use file system for input purpose
 			File tmpFile = new File(getTmpFilePath());
@@ -61,7 +62,7 @@ public class STPBackend extends SMTBackend {
 	}
 
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new STPOracle(mTrans);
 	}
 	

@@ -1,4 +1,4 @@
-package sketch.compiler.smt;
+package sketch.compiler.smt.solvers;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.smt.GeneralStatistics;
+import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.BlastArrayVtype;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -24,6 +26,7 @@ public abstract class SMTBackend {
 	protected final RecursionControl rcontrol;
 	protected final TempVarGen varGen;
 	
+	protected String solverPath;
 	private SynchronousTimedProcess stp;
 	private OutputStream streamToSolver;
 	protected SmtValueOracle mOracle;
@@ -40,6 +43,13 @@ public abstract class SMTBackend {
 	protected int mIntNumBits;
 	
 	/*
+	 * getters & setters
+	 */
+	public void setTmpFilePath(String path) {
+	    tmpFilePath = path;
+	}
+	
+	/*
 	 * Abstract Methods
 	 */
 	
@@ -51,7 +61,7 @@ public abstract class SMTBackend {
 	/**
 	 * Creates an AbstractValueOracle for this backend
 	 */
-	protected abstract SmtValueOracle createValueOracle();
+	public abstract SmtValueOracle createValueOracle();
 	
 	protected abstract FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula, PrintStream ps);
 	
@@ -61,7 +71,7 @@ public abstract class SMTBackend {
 	 * @return
 	 * @throws FileNotFoundException 
 	 */
-	protected abstract OutputStream createStreamToSolver() throws IOException;
+	public abstract OutputStream createStreamToSolver() throws IOException;
 	
 	public NodeToSmtVtype createFormula(int intBits, int inBits, int cBits, boolean useTheoryOfArray, GeneralStatistics stat, TempVarGen tmpVarGen) {
 	    if (useTheoryOfArray) {
@@ -102,14 +112,11 @@ public abstract class SMTBackend {
 	 * Returns the Oracle for this backend
 	 */
 	public SmtValueOracle getOracle() {
-		
 		return this.mOracle;
 	}
 	
 	public FormulaPrinter createFormulaPrinter(NodeToSmtVtype formula, PrintStream ps) {
-	    
 	    mTrans = createFormulaPrinterInternal(formula, ps);
-        
 	    return mTrans;
 	}
 	
@@ -148,7 +155,6 @@ public abstract class SMTBackend {
 		mIntNumBits = intNumBits;
 	}
 	
-
 	/*
 	 * Constructors
 	 */

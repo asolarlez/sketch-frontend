@@ -64,7 +64,6 @@ import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.ProduceSMTCode;
-import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.ScalarizeAssignmentNotBitArray;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
@@ -75,6 +74,7 @@ import sketch.compiler.smt.passes.EliminateStarStatic;
 import sketch.compiler.smt.passes.FunctionParamExtension;
 import sketch.compiler.smt.passes.RegularizeTypesByTypeCheck;
 import sketch.compiler.smt.passes.ReplaceStructTypeWithInt;
+import sketch.compiler.smt.solvers.SMTBackend;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
@@ -879,6 +879,7 @@ public class SequentialSMTSketchMain {
 		generateDAG();
 		startCEGIS();
 
+		log.fine(stat.toString());
 		return bestOracle != null;
 	}
 	

@@ -13,11 +13,11 @@ import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
-import sketch.compiler.smt.SMTBackend;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
-import sketch.compiler.smt.stp.STPTranslator;
+import sketch.compiler.smt.solvers.SMTBackend;
+import sketch.compiler.smt.solvers.STPTranslator;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.util.InterceptedOutputStream;
 import sketch.util.ProcessStatus;
@@ -77,7 +77,7 @@ public class Cvc3Backend extends SMTBackend {
         return null;
     }
 
-    protected OutputStream createStreamToSolver() throws FileNotFoundException {
+    public OutputStream createStreamToSolver() throws FileNotFoundException {
         if (USE_FILE_SYSTEM) {
             // use file system for input purpose
             File tmpFile = new File(getTmpFilePath());
@@ -114,7 +114,7 @@ public class Cvc3Backend extends SMTBackend {
     }
 
     @Override
-    protected SmtValueOracle createValueOracle() {
+    public SmtValueOracle createValueOracle() {
         return new Cvc3Oracle(mTrans);
     }
 

@@ -1,0 +1,14 @@
+bit one(int dummy) {
+	return 1;
+}
+
+bit sk(int dummy) implements one{
+	int[2] a = {3, 4};
+	int t = f(a);
+	assert t == 8;
+	return 1;
+}
+
+int f(int[2] a) {
+	return a[0] + a[1] +??;
+}
