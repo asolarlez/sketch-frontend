@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.scala.exprs.ExprConstUnit;
 
 /**
  * A return statement with an optional value.  Functions returning
@@ -39,6 +40,9 @@ public class StmtReturn extends Statement
     public StmtReturn(FENode context, Expression value)
     {
         super(context);
+        if (value instanceof ExprConstUnit) {
+            value = null;
+        }
         this.value = value;
     }
 
@@ -49,6 +53,9 @@ public class StmtReturn extends Statement
     public StmtReturn(FEContext context, Expression value)
     {
         super(context);
+        if (value instanceof ExprConstUnit) {
+            value = null;
+        }
         this.value = value;
     }
 
