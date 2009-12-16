@@ -286,10 +286,10 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public static final String CACHE_SIZE = "DAG Number of Nodes";
 	public static final String CACHE_USED = "Cache Used Times";
 	
-	public static final boolean USE_STRUCT_HASHING = true;
+	public static final boolean COMMON_SUBEXP_ELIMINATION_HALF = CommandLineParamManager.getParams().hasFlag("cse");;
 	public static final boolean FUNCCALL_HASHING = CommandLineParamManager.getParams().hasFlag("funchash");
 	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");
-	public static final boolean COMMON_SUBEXP_ELIMINATION = CommandLineParamManager.getParams().hasFlag("cse");
+	public static final boolean COMMON_SUBEXP_ELIMINATION = CommandLineParamManager.getParams().hasFlag("cse2");
 	public final boolean USE_BV = CommandLineParamManager.getParams().sValue("modelint").equals("bv");
 	
 	protected TempVarGen tmpVarGen;
@@ -1563,7 +1563,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public NodeToSmtValue checkStructuralHash(NodeToSmtValue newNode) {
         // whenever we create a new OpNode, check structural hashing first
-        if (USE_STRUCT_HASHING && mStructHash.containsKey(newNode)) {
+        if (COMMON_SUBEXP_ELIMINATION_HALF && mStructHash.containsKey(newNode)) {
             // if that structure already has a name var, use that
             NodeToSmtValue varNode = mStructHash.get(newNode);
             mStat.incrementLong(SH_USED, 1);
