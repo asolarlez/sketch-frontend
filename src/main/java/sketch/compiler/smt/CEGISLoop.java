@@ -73,7 +73,7 @@ public class CEGISLoop {
 
 		SmtValueOracle curOracle = new SmtValueOracle.AllZeroOracle(solver.getSMTTranslator());
 		mBestOracle = curOracle;
-		
+		mStat.incrementLong(CEGIS_ITR, 1);
 		try {
 			
 			while (true) {
