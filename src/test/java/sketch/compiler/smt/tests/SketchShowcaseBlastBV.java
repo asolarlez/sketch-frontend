@@ -5,16 +5,14 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.After;
-
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
-import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
-public class SketchShowcaseBlastBV extends sketch.compiler.seq.SketchShowcase {
+public class SketchShowcaseBlastBV 
+extends sketch.compiler.seq.SketchShowcase {
 
-    protected String mStatus;
+    
     
 	@Override
 	protected HashMap<String, String> initCmdArgs(String input) {
@@ -56,17 +54,6 @@ public class SketchShowcaseBlastBV extends sketch.compiler.seq.SketchShowcase {
 		    stat = null;
 		}
 		
-	}
-	
-	@After
-	public void printTiming() {
-		if (stat == null)
-			System.out.println("\t" + mStatus);
-		else
-			System.out.println("\t" + 
-			        (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t" + 
-			        stat.getLong(CEGISLoop.CEGIS_ITR) + "\t" +
-			        stat.getLong(CEGISLoop.FINAL_SYNTHESIS_TIME));
 	}
 	
 

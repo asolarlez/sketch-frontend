@@ -45,7 +45,6 @@ public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
             mStatus = "NO_MODEL";
             stat = null;
         }
-        
     }
 
     @After
@@ -53,10 +52,12 @@ public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
         if (stat == null)
             System.out.println("\t" + mStatus);
         else
-            System.out.println("\t"
-                + (stat.getLong(CEGISLoop.SYNTHESIS_TIME) + stat
-                        .getLong(CEGISLoop.VERIFICATION_TIME)) + "\t"
-                + stat.getLong(CEGISLoop.CEGIS_ITR) + "\t"
-                + stat.getLong(NodeToSmtVtype.FUNC_INLINED));
+            System.out.println("\t" + stat.getLong(CEGISLoop.VERIFICATION_TIME) + "\t" 
+                    + stat.getLong(CEGISLoop.SYNTHESIS_TIME) + "\t"
+                    + (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t"
+                    + stat.getLong(CEGISLoop.CEGIS_ITR) + "\t"
+                    + stat.getLong(CEGISLoop.LOOP_TIME) + "\t"
+                    + stat.getLong(CEGISLoop.FINAL_SYNTHESIS_TIME) + "\t"
+                    + stat.getLong(NodeToSmtVtype.FUNC_INLINED));
     }
 }

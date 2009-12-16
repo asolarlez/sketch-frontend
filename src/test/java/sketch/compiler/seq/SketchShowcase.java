@@ -3,8 +3,10 @@ package sketch.compiler.seq;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.junit.After;
 import org.junit.Test;
 
+import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.TestHarness;
 
 public abstract class SketchShowcase extends TestHarness {
@@ -13,13 +15,14 @@ public abstract class SketchShowcase extends TestHarness {
 	protected abstract void runOneTest(String[] args) throws IOException, InterruptedException;
 	
 	final static int TIMEOUT = 60; 
-	
+	final static int REPEAT = 10;
+	protected String mStatus;
 	
 	// DIA-2
 	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA2_N2_BIT() throws IOException, InterruptedException {
-		HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N2-BIT.sk");
-		runOneTest(toArgArray(argsMap));
+        HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N2-BIT.sk");
+	    runOneTest(toArgArray(argsMap));
 	}
 	
 	@Test(timeout=TIMEOUT*60*1000)
@@ -194,6 +197,20 @@ public abstract class SketchShowcase extends TestHarness {
     public void Pollard() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("Pollard.sk");
         runOneTest(toArgArray(argsMap));
+    }
+	
+	@After
+	public void printTiming() {
+        if (stat == null)
+            System.out.println("\t" + mStatus);
+        else
+            System.out.println("\t" + 
+                    stat.getLong(CEGISLoop.VERIFICATION_TIME) + "\t" +
+                    stat.getLong(CEGISLoop.SYNTHESIS_TIME) + "\t" +
+                    (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t" + 
+                    stat.getLong(CEGISLoop.CEGIS_ITR) + "\t" +
+                    stat.getLong(CEGISLoop.LOOP_TIME) + "\t" +
+                    stat.getLong(CEGISLoop.FINAL_SYNTHESIS_TIME));
     }
 
 }
