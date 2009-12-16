@@ -626,6 +626,9 @@ public class SequentialSMTSketchMain {
 		params.setAllowedParam("cse", new POpts(POpts.FLAG,
                 "--canon\t Enable Common Subexpession Elimination", null, null));
 		
+		params.setAllowedParam("cse2", new POpts(POpts.FLAG,
+                "--canon\t Enable Full Common Subexpession Elimination", null, null));
+		
 		params.setAllowedParam("linear", new POpts(POpts.FLAG,
                 "--linear\t Linearize arithmetics", null, null));
 		
