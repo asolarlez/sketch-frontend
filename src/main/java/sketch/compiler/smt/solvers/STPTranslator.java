@@ -110,7 +110,7 @@ public class STPTranslator extends FormulaPrinter {
 			else
 				throw new IllegalStateException("there is an unknown constant type");
 		
-			return mSB.toString();
+			return null;
 		} else {
 			if (ntsv instanceof VarNode) {
 				VarNode varNode = (VarNode) ntsv;
@@ -124,7 +124,7 @@ public class STPTranslator extends FormulaPrinter {
 			    LinearNode linNode = (LinearNode) ntsv;
 			    getStrForLinearNode(linNode);
 			}
-			return mSB.toString();
+			return null;
 		}
 	}
 
