@@ -1,5 +1,5 @@
 // option for ToSBit
-pragma options "--unrollamnt 2 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--unrollamnt 2 --synth ABC --verif ABC --intbits 5 --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
 //pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
