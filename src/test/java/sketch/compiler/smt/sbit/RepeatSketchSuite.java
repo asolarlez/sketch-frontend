@@ -11,11 +11,8 @@ import org.junit.runners.Suite.SuiteClasses;
         SketchShowcase.class,
         SketchShowcase.class,
         SketchShowcase.class,
-        SketchShowcase.class,
-        SketchShowcase.class,
-        SketchShowcase.class,
-        SketchShowcase.class,
-        SketchShowcase.class,
          })
-public class RepeatSketchShowcase {
+public class RepeatSketchSuite {
+    
+    
 }
