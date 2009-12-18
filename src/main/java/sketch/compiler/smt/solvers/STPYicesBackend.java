@@ -1,4 +1,5 @@
 package sketch.compiler.smt.solvers;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -27,7 +28,7 @@ public class STPYicesBackend extends SMTBackend {
     {
         super(params, tmpFilePath, rcontrol, varGen, tracing);
         solverPath = params.sValue("smtpath");
-        int idx = solverPath.indexOf(":");
+        int idx = solverPath.indexOf(File.pathSeparator);
         
         backend1 = new STPBackend(params, tmpFilePath, rcontrol, varGen, tracing);
         backend2 = new YicesBVBackend(params, tmpFilePath, rcontrol, varGen, 2, tracing);
