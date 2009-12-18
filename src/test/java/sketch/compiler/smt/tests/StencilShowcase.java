@@ -52,7 +52,8 @@ public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
         if (stat == null)
             System.out.println("\t" + mStatus);
         else
-            System.out.println("\t" + stat.getLong(CEGISLoop.VERIFICATION_TIME) + "\t" 
+            System.out.println("\t" 
+                    + stat.getLong(CEGISLoop.VERIFICATION_TIME) + "\t" 
                     + stat.getLong(CEGISLoop.SYNTHESIS_TIME) + "\t"
                     + (stat.getLong(CEGISLoop.VERIFICATION_TIME) + stat.getLong(CEGISLoop.SYNTHESIS_TIME)) + "\t"
                     + stat.getLong(CEGISLoop.CEGIS_ITR) + "\t"
