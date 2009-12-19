@@ -1,5 +1,6 @@
 package sketch.compiler.smt.z3;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class SketchShowcaseBlastBV extends
@@ -13,5 +14,11 @@ public class SketchShowcaseBlastBV extends
 //      argsMap.put("--showphase", "lowering");
         System.out.print(input + "\tz3-blastbv");
         return argsMap;
+    }
+    
+    @Override
+    public void xpose() throws IOException, InterruptedException {
+        initCmdArgs("xpose.sk");
+        mStatus = "TIMEOUT";
     }
 }
