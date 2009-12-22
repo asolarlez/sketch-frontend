@@ -14,6 +14,18 @@ public abstract class StencilShowcase extends TestHarness {
             InterruptedException;
 
     @Test
+    public void rb3d() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("rb3d.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+
+    @Test
+    public void rb3dSimpleOdd() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("rb3dSimpleOdd.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+
+    @Test
     public void cacheObv1d4() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("cacheObv1d4.sk");
         runOneTest(toArgArray(argsMap));
@@ -37,12 +49,6 @@ public abstract class StencilShowcase extends TestHarness {
         runOneTest(toArgArray(argsMap));
     }
 
-//    @Test
-//    public void rb3d() throws IOException, InterruptedException {
-//        HashMap<String, String> argsMap = initCmdArgs("rb3d.sk");
-//        runOneTest(toArgArray(argsMap));
-//    }
-
     @Test
     public void timeSkewing3() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("timeSkewing3.sk");
@@ -54,10 +60,4 @@ public abstract class StencilShowcase extends TestHarness {
         HashMap<String, String> argsMap = initCmdArgs("timeSkewing4.sk");
         runOneTest(toArgArray(argsMap));
     }
-
-//    @Test
-//    public void rb3dSimpleOdd() throws IOException, InterruptedException {
-//        HashMap<String, String> argsMap = initCmdArgs("rb3dSimpleOdd.sk");
-//        runOneTest(toArgArray(argsMap));
-//    }
 }

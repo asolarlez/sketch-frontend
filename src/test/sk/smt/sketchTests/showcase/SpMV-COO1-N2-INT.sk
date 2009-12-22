@@ -1,4 +1,5 @@
 pragma options "--unrollamnt 5 --synth MINI --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --heapsize 1 -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--intbits 4";
 // for desparsify, --unrollamnt must be at least N*N+1
 
 // Notes on sketching SpMV(COO)
