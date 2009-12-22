@@ -1,0 +1,258 @@
+// synthesizes in 0.3 seconds for W=3
+pragma options "--unrollamnt 20 --inbits 3 --cbits 4";  
+int W=3;
+int WW=6;
+int log3Wsq = 2;
+
+int pow2 (int p)
+{
+    int a = 1;
+    loop (p){a = a + a;}
+    return a;
+}
+
+
+int bitToIntVar (bit[W] v) {
+    int out=0;
+    int i=0;
+    loop(??) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+        i++;
+    }
+    return out;
+}
+
+int bitToInt (bit[W] v) {
+    int out=0;
+    for (int i = 0; i < W; i++) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+    }
+    return out;
+}
+
+int bit2ToInt (bit[WW] v) {
+    int out=0;
+    for (int i = 0; i < WW; i++) {
+        if (v[i]==1) {
+            out = out + pow2(i);
+        }
+    }
+    return out;
+}
+
+bit[W] intToBit (int v)
+{
+    bit[W] output;
+
+    for (int i = 0; i < W; i++) {
+        output[i] = (v % 2) > 0;
+        v = v / 2;
+    }
+
+    return output;
+}
+
+bit full_add_result( bit a, bit b, bit c) {
+    return (a^b^c);
+}
+bit full_add_carry( bit a, bit b, bit c) {
+    return (a&b)|(c&(a^b));
+}
+bit half_add_result( bit a, bit b) {
+    return a^b;
+}
+bit half_add_carry( bit a, bit b) {
+    return a&b;
+}
+
+int cut(int x, int w) {
+    int a=x%(pow2(w));
+    return a;
+}
+
+int[W*W] getshuffle(int level) {
+   int[W*W] S;
+   assert(level<=log3Wsq);
+   if (level==0) {
+        S=??;
+  }
+   else {
+       S=getshuffle(level-1);
+   }
+   return S;
+}
+
+int[W*W] knuth(int level) {
+   int[W*W] result;
+   for (int i=0;i< W*W; i++) {
+       result[i]=i;
+   }
+   int[W*W] S;
+   S=getshuffle(level);
+   for (int i=0; i<W*W-1; i++) {
+      int s=i+S[i];
+      /*assert(i<=s);*/
+      assert(s<W*W);
+      int tmp=result[i];
+      result[i]=result[s];
+      result[s]=tmp;
+   }
+   return result;
+}
+
+int[W*W] permutation(int level) {
+	int[W*W] S = getshuffle(level);
+	for (int i=0; i < W*W; i++) {
+		for (int j=0; j < W*W; j++) {
+//			if (i!=j) assert S[i]!=S[j];
+		}
+   	}
+   	return S;
+}
+
+int wallace(bit[W] a, bit[W] b) {
+
+    bit[W*W] result;
+    bit[W*W] result_out;
+    int[W*W] numofweights;
+    int[W*W] col, col_out;  // column in the Dadda Dot Diagram 
+
+    for (int i = 0; i < W*W; i++) {
+            numofweights[i]=0;
+            result[i]=0;
+            result_out[i]=0;
+    }
+
+    for (int i = 0; i < W; i++) {
+        for (int j = 0; j < W; j++) {
+            int index=i*W+j;
+            result[index]=a[i]&b[j];
+            col[index]=i+j;
+            numofweights[i+j]++;
+            result_out[index]=0;
+        }
+    }
+
+    int currents=0;
+    int currentd=0;
+
+    for (int level=0; level<log3Wsq; level++) {
+
+        int nfa=0;
+        int nha=0;
+        int npt=0;
+        int Wsq=W*W-1;
+        for (int wn=1; wn<Wsq+1; wn++) {
+            int nfatmp=numofweights[Wsq-wn]/3;
+            nfa+=nfatmp;
+            numofweights[Wsq-wn]=numofweights[Wsq-wn]%3;
+            int nhatmp=(numofweights[Wsq-wn]/2);
+            nha+=nhatmp;
+            int npttmp=(numofweights[Wsq-wn]%2);
+            npt+=npttmp;
+            numofweights[Wsq-wn]=nfatmp+nhatmp+npttmp;
+            numofweights[Wsq-wn+1]=numofweights[Wsq-wn+1]+nfatmp+nhatmp;
+        }
+
+        if (W==3) {
+            assert(level!=0||nfa==1);
+            assert(level!=0||nha==2);
+            assert(level!=0||npt==2);
+        }
+        if (W==4) {
+            assert(level!=0||nfa==3);
+            assert(level!=0||nha==2);
+            assert(level!=0||npt==3);
+            assert(level!=1||nfa==1);
+            assert(level!=1||nha==4);
+            assert(level!=1||npt==2);
+        }
+
+        int[W*W] S=??; // knuth(level);
+        currents=0;
+        currentd=0;
+        for (int fa=0; fa<nfa; fa++) {
+                int s1=S[currents];
+                int s2=S[currents+1];
+                int s3=S[currents+2];
+                int d1=currentd;
+                int d2=currentd+1;
+                assert(s1!=s2);assert(s1!=s3);assert(s2!=s3);
+                assert(d1!=d2);
+                assert(col[s1]==col[s2] && col[s2]==col[s3]);
+                result_out[d1]=full_add_result(result[s1],result[s2],result[s3]);
+                result_out[d2]=full_add_carry(result[s1],result[s2],result[s3]);
+                col_out[d1]=col[s1];
+                col_out[d2]=col[s1]+1;
+                currents+=3;
+                currentd+=2;
+        }
+
+        for (int ha=0; ha<nha; ha++) {
+                int s1=S[currents];
+                int s2=S[currents+1];
+                int d1=currentd;
+                int d2=currentd+1;
+                assert(s1!=s2);
+                assert(d1!=d2);
+                result_out[d1]=half_add_result(result[s1],result[s2]);
+                result_out[d2]=half_add_carry(result[s1],result[s2]);
+                col_out[d1]=col[s1];
+                col_out[d2]=col[s1]+1;
+                currents+=2;
+                currentd+=2;
+        }
+
+        for (int pt=0; pt<npt; pt++) {
+                int s1=S[currents];
+                int d1=currentd;
+                result_out[d1]= result[s1];
+                col_out[d1]=col[s1];
+                currents++;
+                currentd++;
+        }
+
+        for (int i = 0; i < W*W; i++) {
+            if (i<currentd) {
+                result[i]=result_out[i];
+                col[i]=col[i];
+            } else {
+                result[i]=0;
+            }
+        }
+    }
+
+    int[W*W] last=??; // knuth(log3Wsq);  // specifying a permutation here is slower
+    for (int i = 0; i < W*W; i++) {
+        int s1=last[i];
+        result_out[i]=result[s1];
+    }
+
+    return cut(bit2ToInt(result_out[0::WW-1])+bit2ToInt(result_out[WW-1::WW-1]),W);
+}
+
+//int spec( int x, int y){
+//   return cut(x*y,W); // x*x is of size 2*inbits so we need to truncate upper bits
+//}
+
+int one (int x, int y) { return 1; }
+
+int wallace_wrapper (int a, int b) implements one
+{
+	assert W*W-1 == ??; // fails if hole size n (--cbits n) is too small
+	
+	assert wallace(intToBit(7), intToBit(13)) == cut(7*13,W);
+	assert wallace(intToBit(9), intToBit(3)) == cut(9*3,W);
+	assert wallace(intToBit(7), intToBit(13)) == cut(7*13,W);
+	assert wallace(intToBit(9), intToBit(3)) == cut(9*3,W);
+	assert wallace(intToBit(7), intToBit(13)) == cut(7*13,W);
+	assert wallace(intToBit(9), intToBit(3)) == cut(9*3,W);
+    
+    // return wallace(intToBit(a), intToBit(b));
+    return 1;
+}
+
