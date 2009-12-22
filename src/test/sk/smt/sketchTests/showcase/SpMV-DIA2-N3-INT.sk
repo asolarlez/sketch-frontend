@@ -1,6 +1,6 @@
 // option for ToSBit
 pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
-
+pragma options "--intbits 5";
 //pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
 // Notes on sketching SpMV(DIA)
@@ -9,7 +9,7 @@ pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --he
 //
 //
  
-#define MODEL_BIT 1
+#define MODEL_INT 1
 #define N 3
 
 
@@ -71,8 +71,8 @@ static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
       int d=0;
       int o=0;
      
-      Loop(d,Consts, Affine2) {
-            Loop(o,Consts, Affine2) {
+      Loop(d,Consts, Consts) {
+            Loop(o,Consts, Consts) {
             	y[Index] += mul(Value,Value);
             }
       }

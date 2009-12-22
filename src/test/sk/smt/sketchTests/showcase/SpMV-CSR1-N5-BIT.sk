@@ -1,9 +1,11 @@
-pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --intbits 6 --unrollamnt 2 --heapsize 1 --arrayOOBPolicy assertions";
-
-#define MODEL_INT 1
-#define N 2
+pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --unrollamnt 5 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "--intbits 6";
+#define MODEL_BIT 1
+#define N 5
 
 //#include "model.skh"
+
+
 
 
 #ifdef MODEL_BIT

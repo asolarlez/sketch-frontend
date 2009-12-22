@@ -1,7 +1,7 @@
-pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --intbits 6 --unrollamnt 2 --heapsize 1 --arrayOOBPolicy assertions";
-
-#define MODEL_BIT 1
-#define N 2
+pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --unrollamnt 4 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "--intbits 6";
+#define MODEL_INT 1
+#define N 4
 
 //#include "model.skh"
 
@@ -54,9 +54,19 @@ static T[N] SpMV_Sketch(CSR A, T[N] x, int n) {
 	T[N] y=0;
 	int i, j;
 	int which = ??;
-
+//	i = 0;
+//	j = 0;
 	Loop(i, IArr, IArr) {
+//	for (int i = 0; i < n; i++) {
 		Loop(j,IArr,IArr) {
+//		for (int j = A.R[i]; j < A.R[i+1]; j++) {
+		
+//		for (int idx = Arr; idx < Arr; idx++) {
+//			y[r] += mul(A.V[idx],x[A.C[idx]]);
+//			int xi = ((??) ? A.C[Var] : Var);
+//			y[Var] += mul(VArr,VArr);
+//			y[i] += mul(A.V[j],x[A.C[j]]);
+			
 			y[Var] += mul(A.V[IArr],x[A.C[IArr]]);
 		}
 	} 

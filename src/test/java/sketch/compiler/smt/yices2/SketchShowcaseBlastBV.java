@@ -15,4 +15,10 @@ public class SketchShowcaseBlastBV extends
         System.out.print(input + "\tyices2-blastbv");
         return argsMap;
     }
+    
+//    @Override
+//    public void SpMV_CSR1_N5_BIT() throws IOException, InterruptedException {
+//        initCmdArgs("SpMV-CSR1-N5-BIT.sk");
+//        mStatus = "TIMEOUT";
+//    }
 }

@@ -1,4 +1,5 @@
-pragma options "--unrollamnt 10 --synth MINI --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --heapsize 1 -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--unrollamnt 17 --synth MINI --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --heapsize 1 -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--intbits 6";
 // for desparsify, --unrollamnt must be at least N*N+1
 
 // Notes on sketching SpMV(COO)
@@ -20,8 +21,8 @@ pragma options "--unrollamnt 10 --synth MINI --verif ABC --seed 10 --cex --inbit
 // FIND TIME 1391 CHECK TIME 12051 TOTAL TIME 13443
 //
 
-#define MODEL_INT 1
-#define N 3
+#define MODEL_BIT 1
+#define N 4
 //#include "model.skh"
 
 
