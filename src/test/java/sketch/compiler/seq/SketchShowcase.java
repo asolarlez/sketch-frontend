@@ -20,17 +20,37 @@ public abstract class SketchShowcase extends TestHarness {
 	
 	// DIA-2
 	@Test(timeout=TIMEOUT*60*1000)
+    public void SpMV_DIA2_N2_INT() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N2-INT.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+	
+	@Test(timeout=TIMEOUT*60*1000)
+    public void SpMV_DIA2_N3_INT() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N3-INT.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+
+	@Test(timeout=TIMEOUT*60*1000)
+    public void SpMV_DIA2_N4_INT() throws IOException, InterruptedException {
+        HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N4-INT.sk");
+        runOneTest(toArgArray(argsMap));
+    }
+	
+	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA2_N2_BIT() throws IOException, InterruptedException {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N2-BIT.sk");
 	    runOneTest(toArgArray(argsMap));
 	}
+	
 	
 	@Test(timeout=TIMEOUT*60*1000)
 	public void SpMV_DIA2_N3_BIT() throws IOException, InterruptedException {
 		HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N3-BIT.sk");
 		runOneTest(toArgArray(argsMap));
 	}
-
+	
+	
 	
 	
 //	@Test(timeout=15*60*1000)
@@ -219,6 +239,7 @@ public abstract class SketchShowcase extends TestHarness {
         HashMap<String, String> argsMap = initCmdArgs("SpMV-DIA2-N4-BIT.sk");
         runOneTest(toArgArray(argsMap));
     }
+	
     
 	@Test(timeout=TIMEOUT*60*1000)
     public void SpMV_COO1_N3_INT() throws IOException, InterruptedException {
