@@ -21,4 +21,22 @@ public class SketchShowcaseBlastBV extends
         initCmdArgs("xpose.sk");
         mStatus = "TIMEOUT";
     }
+    
+    @Override
+    public void SpMV_CSR1_N5_BIT() throws IOException, InterruptedException {
+        initCmdArgs("SpMV-CSR1-N5-BIT.sk");
+        mStatus = "MEM_OUT";
+    }
+    
+    @Override
+    public void SpMV_CSR1_N5_INT() throws IOException, InterruptedException {
+        initCmdArgs("SpMV-CSR1-N5-INT.sk");
+        mStatus = "MEM_OUT";
+    }
+    
+    @Override
+    public void SpMV_COO1_N4_BIT() throws IOException, InterruptedException {
+        initCmdArgs("SpMV-COO1-N4-BIT.sk");
+        mStatus = "MEM_OUT";
+    }
 }
