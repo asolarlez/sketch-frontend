@@ -1,0 +1,79 @@
+pragma options "--seed 1 --inbits 1 --synth MINI --cbits 3 --keepasserts --verbosity 3 --arrayOOBPolicy assertions";
+
+int dummy(int x) { return 1; }
+
+#define LOGN 3
+#define N (1<<LOGN)  // size of array
+#define T int
+
+#define A LOGN*3*N      // max number of number of angels
+int[A] _angels_; // angelic choices 
+int    _next_;   // id of the next angel value
+int _nextAngel_() { int t = _next_; _next_++; return _angels_[t]; }
+#define _ (_nextAngel_())
+void initAngels() { _angels_ = ??; _next_ = 0; }
+
+T[N] scanSpec (T[N] x) {
+	T[N] y = 0;
+	
+	y[0] = x[0];
+	for (int r = 1; r < N; r++) {
+		y[r] = y[r-1]+x[r];
+	} 
+	return y;	
+}
+
+T[N] scanSame(T[N] x) 
+// implements scanSpec 
+{
+	initAngels();
+
+	T[N] y = 0;
+	
+	y[0] = x[0];
+	for (int r = 1; r < N; r++) {
+		y[r] = y[r-_]+x[_];
+	}
+	return y;
+}
+
+T[N] scanSteele(T[N] x) 
+//implements scanSpec 
+{
+	initAngels();
+
+	T[N] y = 0;
+	
+	for (int step = 0; step < LOGN; step++) {
+		for (int r = 0; r < N; r++) {
+			if (_==0) y[r] = x[r-_]+x[r-_];    // x[_]+x[_] was too slow.
+			else { y[r] = x[r]; int t = _;int t2=_; }
+		}
+		x = y;
+	} 
+	return x;
+}
+
+T[N] scan2Phase(T[N] x) 
+implements scanSpec 
+{
+	initAngels();
+
+	T[N] y = 0;
+	
+	for (int step = 0; step < LOGN; step++) {
+		for (int r = 0; r < N; r++) {
+			if (_==0) y[r] = x[r-_]+x[r-_];
+			else { y[r] = x[r]; int t = _;int t2=_; }
+		}
+		x = y;
+	} 
+	for (int step = 0; step < LOGN; step++) {
+		for (int r = 0; r < N; r++) {
+			if (_==0) y[r] = x[r-_]+x[r-_];
+			else { y[r] = x[r]; int t = _;int t2=_; }
+		}
+		x = y;
+	} 
+	return x;
+}
