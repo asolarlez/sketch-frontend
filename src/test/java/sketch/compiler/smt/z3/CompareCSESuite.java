@@ -45,7 +45,7 @@ import org.junit.runners.Suite.SuiteClasses;
     
     SketchShowcaseCSE2CanonFHBlastBV.class,
     SketchShowcaseCSECanonFHBlastBV.class,
-    SketchShowcaseCanonFHBlastBV.class,
+    SketchShowcaseCanonFHBlastBV.class
     
      })
      

@@ -16,7 +16,7 @@ import org.junit.runners.Suite.SuiteClasses;
         SketchShowcaseBlastBV.class,
         SketchShowcaseBlastBV.class,
         SketchShowcaseBlastBV.class,
-        SketchShowcaseBlastBV.class,
+        SketchShowcaseBlastBV.class
          })
 public class RepeatSketchBlastBVSuite {
 }

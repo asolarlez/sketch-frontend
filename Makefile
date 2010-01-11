@@ -2,7 +2,7 @@
 
 SHELL = /bin/bash
 
-VERSION = $(shell python -c "from amara import bindery; print(bindery.parse(open('pom.xml', 'r').read()).project.version)" 2>/dev/null)
+VERSION = 1.4.0
 
 OPT_BUILDR = $(shell (which buildr >/dev/null && which buildr) || which mvn)
 

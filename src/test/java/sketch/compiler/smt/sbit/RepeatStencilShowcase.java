@@ -15,7 +15,7 @@ import org.junit.runners.Suite.SuiteClasses;
         StencilShowcase.class,
         StencilShowcase.class,
         StencilShowcase.class,
-        StencilShowcase.class,
+        StencilShowcase.class
          })
 public class RepeatStencilShowcase {
 }
