@@ -57,6 +57,7 @@ import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.preprocessing.BitTypeRemover;
 import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
+import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
@@ -309,6 +310,7 @@ public class SequentialSketchMain
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
+		lprog = (Program)lprog.accept(new MainMethodCreateNospec("main"));
 		//dump (lprog, "~regens");
 		
 		//dump (lprog, "extract clc");

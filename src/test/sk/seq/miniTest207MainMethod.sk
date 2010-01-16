@@ -1,0 +1,4 @@
+
+void main(int x) {
+    assert(x - x + ?? == 3);
+}
