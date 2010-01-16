@@ -50,7 +50,7 @@ public class CliOptionResult {
     public boolean is_set(String name) {
         parser.parse();
         CliOption opt = options.opt_set.get(name);
-        return parser.cmd_line.hasOption(opt.full_name_);
+        return parser.cmd_line.hasOption(opt.full_name());
     }
 
     public boolean bool_(String name) {

@@ -21,18 +21,19 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
         }
         try {
             for (Field field : fields) {
-                if (!lazy_results.is_set(field.getName())) {
+                final String name = cmdlineName(field.getName());
+                if (!lazy_results.is_set(name)) {
                     continue;
                 }
                 if (field.getType() == Boolean.TYPE) {
-                    field.setBoolean(this, lazy_results.bool_(field.getName()));
+                    field.setBoolean(this, lazy_results.bool_(name));
                 } else if (field.getType() == Integer.TYPE) {
                     field.setInt(this, (int) lazy_results
-                            .long_(field.getName()));
+                            .long_(name));
                 } else if (field.getType() == Long.TYPE) {
-                    field.setLong(this, lazy_results.long_(field.getName()));
+                    field.setLong(this, lazy_results.long_(name));
                 } else {
-                    field.set(this, lazy_results.other_type_(field.getName()));
+                    field.set(this, lazy_results.other_type_(name));
                 }
             }
         } catch (Exception e) {
@@ -54,8 +55,7 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                     field.getAnnotation(CliParameter.class);
             if (cli_annotation != null) {
                 try {
-                    add("--" + field.getName(), field.get(this), cli_annotation
-                            .help());
+                    addOption(cmdlineName(field.getName()), field.getType(), field.get(this), cli_annotation.help());
                     fields.add(field);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -63,6 +63,10 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                 }
             }
         }
+    }
+    
+    public static String cmdlineName(String name) {
+        return name.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase().replace('_', '-');
     }
 
     @Override
