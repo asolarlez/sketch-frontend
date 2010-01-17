@@ -61,7 +61,7 @@ deploy: compile
 
 osc: assemble-noarch
 	mkdir -p "java-build"; cp target/sketch-$(VERSION)-noarch.jar java-build
-	../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
+	python ../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
 	rm -rf java-build
 
 install-launchers-only:

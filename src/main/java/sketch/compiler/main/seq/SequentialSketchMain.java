@@ -310,7 +310,8 @@ public class SequentialSketchMain
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-		lprog = (Program)lprog.accept(new MainMethodCreateNospec("main"));
+		lprog = (Program)lprog.accept(new MainMethodCreateNospec(
+		        params.sValue("main_names")));
 		//dump (lprog, "~regens");
 		
 		//dump (lprog, "extract clc");
@@ -568,6 +569,10 @@ public class SequentialSketchMain
 		params.setAllowedParam("cegispath", new POpts(POpts.STRING,
 				"--cegispath path\t Path to the 'cegis' binary, overriding default search paths",
 				"", null) );
+		
+		params.setAllowedParam("main_names", new POpts(POpts.STRING,
+                "--main_names names\tComma-separated names of main (no specification) methods",
+                "main", null));
 
 
 
