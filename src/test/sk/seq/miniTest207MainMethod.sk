@@ -1,6 +1,6 @@
 pragma options "--main_names main,main2";
 
-void main(int x) {
+void main1(int x) {
     assert(x - x + ?? == 3);
 }
 

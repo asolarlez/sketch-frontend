@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
@@ -483,26 +484,58 @@ public class NodesToC extends NodesToJava {
         return result;
     }
 
-
-    public Object visitStmtLoop(StmtLoop stmt)
-    {
-
-    	String result ;
-    	String itNum = this.varGen.nextVar();
-    	String var = this.varGen.nextVar();
-    	result = "int "+itNum + " = " + stmt.getIter().accept(this) + "; \n";
-    	result += indent + "for (int " + var + " = 0; ";
-    	result += var + " < " +  itNum + "; ++" + var;
-        result += ") ";
-        result += (String)stmt.getBody().accept(this);
-        return result;
+  // JY: We need to print the bodies of for loops.
+  public Object visitStmtFor(StmtFor stmt) {
+    String result = ""; 
+    result += indent + "for (";
+    Statement init = stmt.getInit();
+    if (init != null) {
+      result += (String)init.accept(this);
     }
+    result += ";";
+    Expression cond = stmt.getCond();
+    if (cond != null) {
+      result += (String)cond.accept(this);
+    }
+    result += ";";
+    Statement incr = stmt.getIncr();
+    if (incr != null) {
+      result += (String)incr.accept(this);
+    }
+    result += ")";
+    String body = (String)stmt.getBody().accept(this);
+    if (body.length() == 0) { 
+      result += "{}";
+    } else { 
+      result += body;
+    }
+    return result;
+  }
 
-	@Override
-	public Object visitStmtAssign(StmtAssign stmt)
-	{
-        String op;
-        switch(stmt.getOp())
+  public Object visitStmtLoop(StmtLoop stmt)
+  {
+
+    String result ;
+    String itNum = this.varGen.nextVar();
+    String var = this.varGen.nextVar();
+    result = "int "+itNum + " = " + stmt.getIter().accept(this) + "; \n";
+    result += indent + "for (int " + var + " = 0; ";
+    result += var + " < " +  itNum + "; ++" + var;
+    result += ") ";
+    String body = (String)stmt.getBody().accept(this);
+    if (body.length() == 0) {
+      result += "{}";
+    } else {
+      result += body;
+    }
+    return result;
+  }
+
+  @Override
+    public Object visitStmtAssign(StmtAssign stmt)
+    {
+      String op;
+      switch(stmt.getOp())
         {
 	        case 0: op = " = "; break;
 	        case ExprBinary.BINOP_ADD: op = " += "; break;
@@ -557,10 +590,11 @@ public class NodesToC extends NodesToJava {
 				ctype = TypePrimitive.inttype;
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
-        // NOTE(JY): Took this away. TODO: Fix!
-				if(!ctype.equals(TypePrimitive.bittype) && range.len()==1){
+				// JY: This needs to be fixed.
+        // I think we don't want range.len() == 1.
+        if(!ctype.equals(TypePrimitive.bittype) && range.len()==1){
 					return base.accept(this)+ ".get("+ tmp + ")";
-				}else{
+				} else{
 					return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";
 				}
 			}

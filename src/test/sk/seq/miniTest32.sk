@@ -1,5 +1,6 @@
 bit miniTest(bit[4] in) {
-	return in[!in[0]];
+	bit tmp = !in[0];
+  return in[tmp];
 }
 
 
