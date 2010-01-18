@@ -27,8 +27,11 @@ public class NodesToC extends NodesToJava {
 
 	private String filename;
 	private boolean isBool = true;
-	protected boolean addIncludes = true;
 
+  // JY:
+  private boolean needsVal = false;
+
+	protected boolean addIncludes = true;
 
 	public NodesToC(TempVarGen varGen, String filename) {
 		super(false, varGen);
@@ -72,6 +75,7 @@ public class NodesToC extends NodesToJava {
         }
         String left = (String)exp.getLeft().accept(this);
 
+        // TODO: Is this the place to make the change for test 23?
         if(exp.getOp()== ExprBinary.BINOP_LSHIFT || exp.getOp()== ExprBinary.BINOP_RSHIFT){
         	tmptype = ctype;
         	ctype = TypePrimitive.inttype;
@@ -173,19 +177,23 @@ public class NodesToC extends NodesToJava {
 	        if(exp.getRight() instanceof ExprConstInt){
 	        	right = "bitvec<1>((unsigned)" + right + ")";
 	        }
+          // NOTE(JY): Changed the cast from unsigned int to unsigned long so
+          // that it doesn't lose precision on 64-bit systems.
 	        if(exp.getLeft() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
 	        	int sz = eai.getElements().size();
-	        	left = "bitvec<" + sz + ">((unsigned)" + left + ")";
+	        	left = "bitvec<" + sz + ">((unsigned long)" + left + ")";
 	        }
 
 	        if(exp.getRight() instanceof ExprArrayInit){
 	        	ExprArrayInit eai = (ExprArrayInit) exp.getRight();
 	        	int sz = eai.getElements().size();
-	        	right = "bitvec<" + sz + ">((unsigned)" + right + ")";
+	        	right = "bitvec<" + sz + ">((unsigned long)" + right + ")";
 	        }
 	        break;
-	        case ExprBinary.BINOP_RSHIFT: op = ">>";
+          // NOTE(JY): Fixed compiler operator precedence problem with ISO C++
+          // by calling operator as method.
+	        case ExprBinary.BINOP_RSHIFT: op = ".operator >>";
 	        if(exp.getLeft() instanceof ExprConstInt){
 	        	left = "bitvec<1>((unsigned)" + left + ")";
 	        }
@@ -194,9 +202,12 @@ public class NodesToC extends NodesToJava {
 	        	int sz = eai.getElements().size();
 	        	left = "bitvec<" + sz + ">((unsigned)" + left + ")";
 	        }
-	        right = "(unsigned)" + right;
+          // Need parens here because it's an argument to the operator >>
+          // method.
+	        right = "((unsigned)" + right + ")";
 	        break;
-	        case ExprBinary.BINOP_LSHIFT: op = "<<";
+          // NOTE(JY): Same operator fix here.
+	        case ExprBinary.BINOP_LSHIFT: op = ".operator <<";
 	        if(exp.getLeft() instanceof ExprConstInt){
 	        	left = "bitvec<1>((unsigned)" + left + ")";
 	        }
@@ -205,7 +216,9 @@ public class NodesToC extends NodesToJava {
 	        	int sz = eai.getElements().size();
 	        	left = "bitvec<" + sz + ">((unsigned)" + left + ")";
 	        }
-	        right = "(unsigned)" + right;
+          // Need parents here because it's an argument to the operator <<
+          // method.
+	        right = "((unsigned)" + right + ")";
 	        break;
 	        default: assert false : exp; break;
         }
@@ -233,7 +246,7 @@ public class NodesToC extends NodesToJava {
 
 		if(isBool){
 			StringBuffer sb = new StringBuffer();
-			sb.append("\"");
+			sb.append("(char*) \"");
 
 			List elems = exp.getElements();
 			for (int i=0; i<elems.size(); i++) {
@@ -336,7 +349,13 @@ public class NodesToC extends NodesToJava {
    		 	}
    		 	result += "\n}";
 		}else{
-			result += (String)func.getBody().accept(this);
+      // NOTE(JY): Inserted code to handle the empty body case.
+			String body = (String)func.getBody().accept(this);
+      if (body.length() == 0) {
+        result += "{}";
+      } else {
+        result += body;
+      }
 		}
         result += "\n";
 
@@ -405,7 +424,6 @@ public class NodesToC extends NodesToJava {
         return convertType(type) +  " " + name + postFix ;
     }
 
-
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         String result = "";
@@ -429,12 +447,24 @@ public class NodesToC extends NodesToJava {
             while(ctype instanceof TypeArray){
             	ctype = ((TypeArray)ctype).getBase();
             }
-            if (stmt.getInit(i) != null)
-                result += " = " + (String)stmt.getInit(i).accept(this);
-            isBool = true;
+            if (stmt.getInit(i) != null) {
+              String typeAsStr = "";
+              // NOTE(JY): Added cast.
+              if(type instanceof TypeArray){
+                Type otype = type;
+                type = ((TypeArray)type).getBase();
+                if(!type.equals(TypePrimitive.bittype)){
+                  typeAsStr = "(fixedarr<" + convertType(type) + ", " +
+                    ((TypeArray)otype).getLength() + ">)" ;
+                }
+              }
+              result += " = " + typeAsStr +
+                (String)stmt.getInit(i).accept(this);
+              isBool = true;
+            }
         }
-        return result;
-    }
+            return result;
+  }
 
 	public Object visitExprFunCall(ExprFunCall exp)
     {
@@ -494,6 +524,7 @@ public class NodesToC extends NodesToJava {
         isLHS = true;
         String lhs = (String)stmt.getLHS().accept(this);
         isLHS = false;
+        needsVal = false;
         String rhs = (String)stmt.getRHS().accept(this);
         return lhs + op + rhs ;
 	}
@@ -517,13 +548,17 @@ public class NodesToC extends NodesToJava {
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
 				isLHS = true;
-				return base.accept(this)+"["+tmp+"]";
+        if (!getType(exp.getBase()).equals(TypePrimitive.bittype)) {
+          needsVal = isLHS;
+        }
+				return base.accept(this)+"["+tmp+"]"; //+postfix;
 			}else{
 				Type tmptype = ctype;
 				ctype = TypePrimitive.inttype;
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
-				if(range.len()==1){
+        // NOTE(JY): Took this away. TODO: Fix!
+				if(!ctype.equals(TypePrimitive.bittype) && range.len()==1){
 					return base.accept(this)+ ".get("+ tmp + ")";
 				}else{
 					return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";
@@ -537,6 +572,10 @@ public class NodesToC extends NodesToJava {
     {
         String result = "";
         result += (String)exp.getLeft().accept(this);
+        // NOTE(JY): Added thing here.
+        if (needsVal) {
+          result += ".val()";
+        }
         result += "->";
         result += (String)exp.getName();
         return result;

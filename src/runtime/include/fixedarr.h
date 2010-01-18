@@ -3,7 +3,7 @@
 
 template<typename T, size_t N> class fixedarr;
 
-
+/* How does this class work? */
 template<typename T> 
 class fixedarrRef{
 	T* ref;
@@ -23,7 +23,7 @@ class fixedarrRef{
 		ref[0] = v;
 		return *this;
 	}
-	
+
 	T val(){ return ref[0]; }
 };
 
@@ -37,7 +37,7 @@ public:
       }
    }
    fixedarr(unsigned i){
-      arr[0] = i;
+      arr[0] = (T)i;
       for(int t=1; t<N; ++t){ arr[t] = 0; }
    }
 
@@ -55,7 +55,11 @@ public:
 	  }
       return tmp;
    }
-   
+
+  inline T get(int i) {
+    return arr[i];
+  }
+
    inline fixedarr<T,N>& v(size_t i, T val){
    		arr[i] = val;
    		return *this;

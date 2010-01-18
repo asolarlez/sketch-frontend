@@ -5,7 +5,7 @@ void VOID(int n){
 
 }
 
-void main(int n) implements VOID{
+void main_fun(int n) implements VOID{
 	if(n>5){ n=5; }
 	bit[7] aa = 0;
 	for(int i=0; i<n-??; ++i){

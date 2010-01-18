@@ -10,7 +10,7 @@ bit VOID(bit a, bit b, bit c){
 	return (x & !b) | b;
 }
 
-bit main(bit a, bit b, bit c) implements VOID{
+bit main_fun(bit a, bit b, bit c) implements VOID{
 	if(b){
 		return 1;
 	}else{

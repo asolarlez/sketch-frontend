@@ -30,7 +30,7 @@ void VOID(int s){
 
 }
 
-void main(int s) implements VOID{
+void main_fun(int s) implements VOID{
 	Set S = newSet(-1, 10);
 	assert S.head.key == -1;
 }

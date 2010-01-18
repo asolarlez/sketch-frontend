@@ -17,7 +17,7 @@ int sk(int idx, int N){
 }
 void VOID(int a, int b){}
 
-void main(int a, int b) implements VOID{
+void main_fun(int a, int b) implements VOID{
 	assert spec(a, b) == sk(a, b);
 	
 	assert spec(a+6, b) == sk(a, b+5);

@@ -141,39 +141,39 @@ public:
 };
 
 class bitref : public const_bitref {
-public:
+  public:
     inline bitref (unsigned *a_w, size_t a_i, size_t a_n = 1) :
-	const_bitref (a_w, a_i, a_n) { }
+      const_bitref (a_w, a_i, a_n) { }
 
     inline const bitref &operator= (const bool b) {
-	unsigned w_old = *w;
-	*w = (b ? (w_old | m) : (w_old & ~m));
-	return *this;
+      unsigned w_old = *w;
+      *w = (b ? (w_old | m) : (w_old & ~m));
+      return *this;
     }
 
     inline const bitref &operator= (const bitref &br) {
-	return *this = (bool) br;
+      return *this = (bool) br;
     }
 
     inline void flip (void) {
-	*w ^= m;
+      *w ^= m;
     }
 
     template <size_t N> inline const bitref operator= (const bitvec<N> bv) {
-	assert (N <= n);
+      assert (N <= n);
 
-	unsigned *wtag = w;
-	size_t itag = i;
-	for (size_t j = 0; j < N; j++) {
-	    unsigned m = bitmask (1, itag);
-	    *wtag = (*wtag & ~m) | ((j < N && bv[j]) ? m : 0);
-	    if (++itag == WORDBITS) {
-		itag = 0;
-		wtag++;
-	    }
-	}
+      unsigned *wtag = w;
+      size_t itag = i;
+      for (size_t j = 0; j < N; j++) {
+        unsigned m = bitmask (1, itag);
+        *wtag = (*wtag & ~m) | ((j < N && bv[j]) ? m : 0);
+        if (++itag == WORDBITS) {
+          itag = 0;
+          wtag++;
+        }
+      }
 
-	return *this;
+      return *this;
     }
 };
 
@@ -272,6 +272,16 @@ public:
      */
 
     template <size_t Ntag> friend ostream &operator<< (ostream &out, const bitvec<Ntag> &bv);
+
+    /* JY: Added a get function. */
+    const bitvec<N> get (const size_t i) {
+      /* Want 0-(WORDBITS-1) to go to index 0, WORDBITS-(2*WORDBITS-1) to go to
+       * index 1, etc. */
+      int idx = i / WORDBITS;
+      bitvec<N> cur = v[0];
+      bitvec<N> mask = 1 << i;
+      return bitvec<1>((cur & mask) >> i);
+    }
 };
 
 
@@ -587,6 +597,9 @@ const bitvec<Ntag>
 bitvec<N>::sub (size_t offset) const
 {
 	//cout<<"offset = "<<offset <<" Ntag = "<<Ntag<<" N="<< N<<endl;
+    cout << "offset: " << offset << endl;
+    cout << "Ntag: " << Ntag << endl;
+    cout << "N: " << N << endl;
     assert (offset + Ntag <= N);
     bitvec<N> tmp = *this >> offset;
     return (bitvec<Ntag> (tmp));

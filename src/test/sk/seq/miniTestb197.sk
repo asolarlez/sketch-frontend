@@ -9,7 +9,7 @@ void VOID(int n){
 
 }
 
-void main(int n) implements VOID{
+void main_fun(int n) implements VOID{
 	node n = new node();
 	node a = n;
 	n.n = new node();

@@ -13,7 +13,7 @@ rm -f ${bname}.h
 
 
 bash sketch --outputtest  --outputcode --keepasserts -synth ABC -verif ABC  --incremental 6 --seed 10 ${x} &> ${x}.output ;
-bash script >> runoutput;
+bash script bname >> runoutput;
 done;
 
 rm *.tmp;

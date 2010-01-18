@@ -6,7 +6,7 @@ struct P {
 }
 
 bit T () { return 1; }
-bit main () implements T {
+bit main_fun () implements T {
     int[3] ia = { 1, 1, 1 };
     int[3] ia2 = { 1, 1 };
     int[3] ia3 = 1;

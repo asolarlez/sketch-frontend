@@ -513,7 +513,7 @@ public class SNodesToC extends NodesToJava {
         String op;
         switch(stmt.getOp())
         {
-	        case 0: op = " = "; break;
+	        case 0: op = " ??= "; break;
 	        case ExprBinary.BINOP_ADD: op = " += "; break;
 	        case ExprBinary.BINOP_SUB: op = " -= "; break;
 	        case ExprBinary.BINOP_MUL: op = " *= "; break;
