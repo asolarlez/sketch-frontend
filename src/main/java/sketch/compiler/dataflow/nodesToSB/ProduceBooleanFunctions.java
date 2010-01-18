@@ -117,7 +117,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             if (!first) out.print(", ");
             first = false;
             if(param.isParameterOutput()) out.print("! ");
-            out.print(convertType(param.getType()) + " ");
+            out.print(printType(param.getType()) + " ");
             String lhs = param.getName();
             
             
@@ -156,7 +156,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             
             if(param.isParameterInput() && param.isParameterOutput()){
                 out.print(", ");
-                out.print(convertType(param.getType()) + " ");
+                out.print(printType(param.getType()) + " ");
                 if( param.getType() instanceof TypeArray ){
                     TypeArray ta = (TypeArray) param.getType();
                     IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);               
@@ -178,6 +178,23 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             
         }
         out.print(")");     
+    }
+    
+
+    private String printType(Type type){
+        if (type instanceof TypeArray)
+        {
+            TypeArray array = (TypeArray)type;
+            String base = convertType(array.getBase());
+            abstractValue iv = (abstractValue) array.getLength().accept(this);          
+            return base + "[" + iv + "]";
+        }
+        
+        if(type.equals(TypePrimitive.bittype)){
+            return "bit";
+        }else{
+            return "int";
+        }
     }
     
     public void doOutParams(List<Parameter> params) {
