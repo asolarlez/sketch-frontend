@@ -233,16 +233,25 @@ public class NtsbVtype extends IntVtype {
                         int lnt = ta.getLength().getIValue();
                         List<abstractValue> ls = new ArrayList<abstractValue>(lnt);
                         for(int i=0; i< lnt; ++i){
-                            ls.add(BOTTOM(name + "[" + ta.getBase() + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName()+"_idx_" + i + "," + funid +"]"));
+                            ls.add(BOTTOM(name + "[" + printType(ta.getBase()) + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName()+"_idx_" + i + "," + funid +"]"));
+                            plist = "0";
                         }
                         outSlist.add(ARR(ls));
                     }else{
-                        outSlist.add(BOTTOM(name + "[" + param.getType() + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName() + "," + funid +"]"));
+                        outSlist.add(BOTTOM(name + "[" + printType(param.getType()) + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName() + "," + funid +"]"));
                     }
                 }
             }
         }
         
         
+    }
+    
+    String printType(Type t){
+        if(t.equals(TypePrimitive.bittype)){
+            return "bit";
+        }else{
+            return "int";
+        }
     }
 }
