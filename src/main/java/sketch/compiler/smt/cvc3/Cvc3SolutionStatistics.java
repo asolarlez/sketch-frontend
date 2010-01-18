@@ -16,7 +16,7 @@ public class Cvc3SolutionStatistics extends SolutionStatistics {
 		String out = status.out;
 		if (status.killed)
 			this.success = false;
-		else if (status.err.isEmpty() && out.contains("Satisfiable"))
+		else if (out.contains("Satisfiable"))
 			this.success = true;
 		else
 			this.success = false;

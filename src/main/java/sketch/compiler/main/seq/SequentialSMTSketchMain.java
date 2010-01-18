@@ -62,9 +62,8 @@ import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.smt.CEGISLoop;
+import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.ProduceSMTCode;
-import sketch.compiler.smt.SMTBackend;
-import sketch.compiler.smt.CEGISLoop.CEGISStat;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.ScalarizeAssignmentNotBitArray;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
@@ -75,6 +74,7 @@ import sketch.compiler.smt.passes.EliminateStarStatic;
 import sketch.compiler.smt.passes.FunctionParamExtension;
 import sketch.compiler.smt.passes.RegularizeTypesByTypeCheck;
 import sketch.compiler.smt.passes.ReplaceStructTypeWithInt;
+import sketch.compiler.smt.solvers.SMTBackend;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
@@ -96,6 +96,11 @@ public class SequentialSMTSketchMain {
 	Program finalCode;
 	Program prog = null;
 	
+	String solverErrorStr;
+    private CEGISLoop loop;
+    private SMTBackend solver;
+    private NodeToSmtVtype vtype;
+	
 	protected String programName;
 	
 	public static final CommandLineParamManager params = CommandLineParamManager
@@ -106,7 +111,7 @@ public class SequentialSMTSketchMain {
 	
 	SmtValueOracle bestOracle;
 	
-	CEGISStat stat;
+	GeneralStatistics stat;
 	
 	/*
 	 * Getters & Setters
@@ -119,7 +124,7 @@ public class SequentialSMTSketchMain {
 		return this.bestOracle;
 	}
 	
-	public CEGISStat getSolutionStat() {
+	public GeneralStatistics getSolutionStat() {
 		return this.stat;
 	}
 	
@@ -182,6 +187,7 @@ public class SequentialSMTSketchMain {
 	    }
 		
 		this.programName = getOutputFileName();
+		this.stat = new GeneralStatistics();
 	}
 	
 	protected SequentialSMTSketchMain() {}
@@ -617,6 +623,12 @@ public class SequentialSMTSketchMain {
 		params.setAllowedParam("canon", new POpts(POpts.FLAG,
                 "--canon\t Canonicalize arithmetics", null, null));
 		
+		params.setAllowedParam("cse", new POpts(POpts.FLAG,
+                "--canon\t Enable Common Subexpession Elimination", null, null));
+		
+		params.setAllowedParam("cse2", new POpts(POpts.FLAG,
+                "--canon\t Enable Full Common Subexpession Elimination", null, null));
+		
 		params.setAllowedParam("linear", new POpts(POpts.FLAG,
                 "--linear\t Linearize arithmetics", null, null));
 		
@@ -863,61 +875,55 @@ public class SequentialSMTSketchMain {
 
 	public boolean runBeforeGenerateCode() throws IOException,
 			InterruptedException {
-		parseProgram();
-		// dump (prog, "After parsing:");
+		
+	    parseProgram();
+        // dump (prog, "After parsing:");
+	    processing();
+		generateDAG();
+		startCEGIS();
 
-		prog = (Program) prog
-				.accept(new ConstantReplacer(params.varValues("D")));
-		// dump (prog, "After replacing constants:");
-		if (!SemanticChecker.check(prog, isParallel()))
-			throw new IllegalStateException("Semantic check failed");
-
-		prog = preprocessProgram(prog); // perform prereq transformations
-		// prog.accept(new SimpleCodePrinter());
-		// RenameBitVars is buggy!! prog = (Program)prog.accept(new
-		// RenameBitVars());
-		// if (!SemanticChecker.check(prog))
-		// throw new IllegalStateException("Semantic check failed");
-
-		if (prog == null)
-			throw new IllegalStateException();
-
-		prog = lowering(prog);
-
-		CEGISLoop loop = startCEGIS();
-		stat = loop.getStat();
-
+		log.fine(stat.toString());
 		return bestOracle != null;
 	}
+	
+	public void processing() {
+	    prog = (Program) prog
+                .accept(new ConstantReplacer(params.varValues("D")));
+        // dump (prog, "After replacing constants:");
+        if (!SemanticChecker.check(prog, isParallel()))
+            throw new IllegalStateException("Semantic check failed");
 
-	private CEGISLoop startCEGIS() throws IOException {
-		CEGISLoop loop = new CEGISLoop(programName, params, internalRControl());
+        prog = preprocessProgram(prog); // perform prereq transformations
 
-		SMTBackend solver = loop.selectBackend(params.sValue("backend"), 
-		        "bv".equals(params.sValue("modelint"))
-		        , params.hasFlag("trace"), true);
+        if (prog == null)
+            throw new IllegalStateException();
 
-		solver.setIntNumBits(params.flagValue("intbits"));
+        prog = lowering(prog);
+	}
+	
+	public void generateDAG() throws IOException {
+	    loop = new CEGISLoop(programName, params, stat, internalRControl());
+	    solver = loop.selectBackend(params.sValue("backend"), 
+                "bv".equals(params.sValue("modelint"))
+                , params.hasFlag("trace"), true);
 
-		// Toolbox.pause();
+        solver.setIntNumBits(params.flagValue("intbits"));
 
-		NodeToSmtVtype vtype = solver.createFormula(
-				params.flagValue("intbits"), params.flagValue("inbits"), params
-						.flagValue("cbits"), params.hasFlag("theoryofarray"), varGen);
+        vtype = solver.createFormula(
+                params.flagValue("intbits"), params.flagValue("inbits"), params
+                        .flagValue("cbits"), params.hasFlag("theoryofarray"), stat, varGen);
 
-		ProduceSMTCode partialEval = getPartialEvaluator(vtype);
-		prog.accept(partialEval);
-		vtype.finalize();
-		
-//		 Toolbox.pause("Done generating DAG");
+        ProduceSMTCode partialEval = getPartialEvaluator(vtype);
+        prog.accept(partialEval);
+        vtype.finalize();
+        vtype.optimize();
+	}
 
-		vtype.optimize();
-
-//		 Toolbox.pause("Done Optimizing DAG");
-		loop.start(vtype, solver);
-
-		bestOracle = loop.getSolution();
-		return loop;
+	public void startCEGIS() {
+	    
+	    loop.start(vtype, solver);
+        bestOracle = loop.getSolution();
+        stat = loop.getStat();
 	}
 
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
@@ -956,8 +962,6 @@ public class SequentialSMTSketchMain {
 			commandLineOptions.add("" + params.sValue("verif"));
 		}
 	}
-
-	String solverErrorStr;
 	
 	/*
 	 * Helper functions

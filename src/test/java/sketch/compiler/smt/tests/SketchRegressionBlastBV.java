@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
+import sketch.compiler.smt.CEGISLoop;
 import sketch.compiler.smt.HoleSorter;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
@@ -56,7 +57,9 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		if (stat == null)
 			System.out.println("\tFAILED");
 		else
-			System.out.println("\t" + stat.getSolutionTimeMs() + "\t" + stat.getIterations());
+			System.out.println("\t" + 
+			        (stat.getLong(CEGISLoop.SYNTHESIS_TIME) + stat.getLong(CEGISLoop.VERIFICATION_TIME))
+			        + "\t" + stat.getLong(CEGISLoop.CEGIS_ITR));
 	}
 	
 	@Test
@@ -80,7 +83,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 	@Test
 	public void miniTest3() throws IOException, InterruptedException {
 		super.miniTest3();
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -128,14 +131,14 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 	public void miniTest11() throws IOException, InterruptedException {
 		super.miniTest11();
 
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
 	public void miniTest12() throws IOException, InterruptedException {
 		super.miniTest12();
 
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -169,7 +172,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 	public void miniTest16() throws IOException, InterruptedException {
 		super.miniTest16();
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -177,7 +180,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest17();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -192,7 +195,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest19();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -247,7 +250,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		
 
 		HoleSorter sorter = new HoleSorter(oracle);
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -416,7 +419,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 
 		
 
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -424,7 +427,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest43();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -432,7 +435,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest45();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -440,7 +443,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest46();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -448,7 +451,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest47();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -524,7 +527,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 	@Test
 	public void miniTest60() throws IOException, InterruptedException {
 		super.miniTest60();
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 	
 	@Test
@@ -575,19 +578,19 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 	@Test
 	public void miniTest68() throws IOException, InterruptedException {
 		super.miniTest68();
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
 	public void miniTest69() throws IOException, InterruptedException {
 		super.miniTest69();
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
 	public void miniTest70() throws IOException, InterruptedException {
 		super.miniTest70();
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -595,7 +598,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest71();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -603,7 +606,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest72();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -611,7 +614,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest73();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -627,7 +630,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest75();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -635,7 +638,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest76();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -643,14 +646,14 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest77();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
 	public void miniTest78() throws IOException, InterruptedException {
 		super.miniTest78();
 
-		assertTrue("AllZeroOracle works, should iterate 0 times", stat.getIterations() == 0);
+		assertTrue("AllZeroOracle works, should iterate 0 times", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test
@@ -668,7 +671,7 @@ public abstract class SketchRegressionBlastBV extends sketch.compiler.seq.Sketch
 		super.miniTest80();
 
 		
-		assertTrue("No hole, iteration # should be 0", stat.getIterations() == 0);
+		assertTrue("No hole, iteration # should be 0", stat.getLong(CEGISLoop.CEGIS_ITR) == 0);
 	}
 
 	@Test

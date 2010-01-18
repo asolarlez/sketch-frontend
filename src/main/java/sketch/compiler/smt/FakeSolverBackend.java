@@ -15,6 +15,7 @@ import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 import sketch.compiler.smt.smtlib.SMTLIBTranslatorBV;
+import sketch.compiler.smt.solvers.SMTBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.util.InterceptedOutputStream;
@@ -103,12 +104,12 @@ public class FakeSolverBackend extends SMTBackend {
 	}
 
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new FakeOracle();
 	}
 	
 	@Override
-	protected OutputStream createStreamToSolver() throws IOException {
+	public OutputStream createStreamToSolver() throws IOException {
 		OutputStream ret = new NullStream();
 		if (this.outputTmpFile) {
 			System.out.println("Formulas output to: " + this.getTmpFilePath());

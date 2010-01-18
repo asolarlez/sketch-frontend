@@ -1,8 +1,8 @@
-pragma options "--seed 1 --heapsize 31 --inbits 2 --synth MINI --cbits 5 --showphase final --keepasserts --unrollamnt 31 --verbosity 1 --arrayOOBPolicy assertions";
+pragma options "--seed 1 --heapsize 33 --inbits 2 --synth MINI --cbits 6 --showphase final --keepasserts --unrollamnt 31 --verbosity 1 --arrayOOBPolicy assertions";
 
 int dummy(int x) { return 1; }
 
-#define N 17  // size of linked list
+#define N 32  // size of linked list
 
 struct Node { 
 	int  data;

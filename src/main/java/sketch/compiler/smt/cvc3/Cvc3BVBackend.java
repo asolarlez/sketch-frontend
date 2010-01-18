@@ -9,7 +9,6 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
-import sketch.compiler.smt.smtlib.SMTLIBTranslatorBV;
 
 /**
  * Backend used for emitting Cvc3 BitVector formulas
@@ -30,11 +29,11 @@ public class Cvc3BVBackend extends Cvc3Backend{
     protected FormulaPrinter createFormulaPrinterInternal(NodeToSmtVtype formula,
             PrintStream ps)
     {
-        return new SMTLIBTranslatorBV(formula, ps, mIntNumBits);
+        return new Cvc3BVTranslator(formula, ps, mIntNumBits);
     }
 	
 	@Override
-	protected SmtValueOracle createValueOracle() {
+	public SmtValueOracle createValueOracle() {
 		return new Cvc3BVOracle(mTrans);
 	}
 	

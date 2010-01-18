@@ -1,8 +1,18 @@
 # @code standards ignore file
 
+SHELL = /bin/bash
+
+VERSION = 1.4.0
+
+OPT_BUILDR = $(shell (which buildr >/dev/null && which buildr) || which mvn)
+
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
 	@grep -iE "^(###.+|[a-zA-Z0-9_-]+:.*(#.+)?)$$" Makefile | sed -u -r "s/^### /\n/g; s/:.+#/#/g; s/^/    /g; s/#/\\n        /g; s/:$$//g"
+
+show-info:
+	@echo "version = $(VERSION)"
+	@echo "buildr or maven = $(OPT_BUILDR)"
 
 target/classes/%s:
 	mvn compile
@@ -10,15 +20,57 @@ target/classes/%s:
 target/version.txt: target/classes/sketch/compiler/localization.properties
 	cat target/classes/sketch/compiler/localization.properties | head -n 1 | sed -u "s/version = //g" > target/version.txt
 
-### distribution and testing
+clean:
+	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
+	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
+
+codegen: # codegen a few files (not very high probability of changing)
+	scripts/run_jinja2.py
+
+compile:
+	$(OPT_BUILDR) compile
+
+install: compile
+	mvn install -Dmaven.test.skip=true
+
+### distribution
+
+assemble-file: # internal step
+	cp $(FILE) tmp-assembly.xml
+	mvn -e assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+	rm tmp-assembly.xml
+
+assemble-noarch:
+	make assemble-file FILE=jar_assembly.xml
+
+assemble-arch:
+	make assemble-file FILE=platform_jar_assembly.xml
+	make assemble-file FILE=launchers_assembly.xml
+	make assemble-file FILE=tar_src_assembly.xml
 
 assemble: target/version.txt # build all related jar files, assuming sketch-backend is at ../sketch-backend
-	which buildr && buildr clean compile
-	mvn -e -q assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+	mvn -e -q clean compile
+	make assemble-noarch assemble-arch
 	chmod 755 target/sketch-*-launchers.dir/dist/*/install
-	cd target; tar cf sketch-$$(cat version.txt).tar sketch-*-all-*.jar
+	cd target; tar cf sketch-$(VERSION).tar sketch-*-all-*.jar
 
 dist: assemble # alias for assemble
+
+deploy: compile
+	mvn deploy -Dmaven.test.skip=true
+
+osc: assemble-noarch
+	mkdir -p "java-build"; cp target/sketch-$(VERSION)-noarch.jar java-build
+	python ../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
+	rm -rf java-build
+
+install-launchers-only:
+	mkdir -p $(DESTDIR)/usr/bin
+	install -m 755 scripts/new_launchers/unix/sketch $(DESTDIR)/usr/bin
+	install -m 755 scripts/new_launchers/unix/psketch $(DESTDIR)/usr/bin
+	install -m 755 scripts/new_launchers/unix/stensk $(DESTDIR)/usr/bin
+
+### testing
 
 test:
 	mvn test | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"

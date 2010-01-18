@@ -96,7 +96,7 @@ public class OpNode extends NodeToSmtValue {
 					return false;
 				i++;
 			}
-			return this.type.equals(that.type);
+			return this.type == that.type;
 		}
 		return false;
 	}

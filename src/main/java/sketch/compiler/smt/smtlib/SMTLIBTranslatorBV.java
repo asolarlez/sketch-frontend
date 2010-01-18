@@ -226,7 +226,7 @@ public class SMTLIBTranslatorBV extends FormulaPrinter {
 		opStrMap.put(OpCode.MINUS, "bvsub");
 		opStrMap.put(OpCode.TIMES, "bvmul");
 		opStrMap.put(OpCode.OVER, "bvudiv");
-		opStrMap.put(OpCode.MOD, "bvsmod");
+		opStrMap.put(OpCode.MOD, "bvsrem");
 
 		opStrMap.put(OpCode.EQUALS, "="); // logical equals
 		// TODO maybe i need a separate numerical equals here

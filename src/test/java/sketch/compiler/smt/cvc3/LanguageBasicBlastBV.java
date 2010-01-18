@@ -8,32 +8,17 @@ import java.util.HashMap;
  * @email lshan@eecs.berkeley.edu
  *
  */
-public class LanguageBasicBlastBV extends LanguageBasicBlastInt {
+public class LanguageBasicBlastBV extends sketch.compiler.smt.tests.LanguageBasicBlastBV {
 	
-	protected HashMap<String, String> initCmdArgs(String inputPath) {
-		HashMap<String, String> argsMap = new HashMap<String, String>();
-		argsMap.put("--smtpath", System.getenv("smtpath"));
-		
-		argsMap.put("--backend", "cvc3");
-		argsMap.put("--arrayOOBPolicy", "assertions");
-		argsMap.put("--bv", null);
-		
-		argsMap.put("--heapsize", "10");
-		argsMap.put("--inbits", "32");
-		argsMap.put("--cbits", "32");
-		
-		argsMap.put("--keeptmpfiles", null);
-		argsMap.put("--outputdir", "output/");
-		argsMap.put("--tmpdir", tmpDirStr);
-		
-		argsMap.put("--verbosity", "0");
-//		argsMap.put("--trace", null);
-//		argsMap.put("--showphase", "lowering");
-		
-		argsMap.put(inputPath, null);
-		
-		return argsMap;
-	}
+    protected HashMap<String, String> initCmdArgs(String input) {
+        HashMap<String, String> argsMap = super.initCmdArgs(input);
+        argsMap.put("--backend", "cvc3");
+        
+        argsMap.put("--verbosity", "0");
+//        argsMap.put("--showphase", "lowering");
+        System.out.print(input + "\tcvc3");
+        return argsMap;
+    }
 	
 
 }

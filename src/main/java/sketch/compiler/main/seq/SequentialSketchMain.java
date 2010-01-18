@@ -58,6 +58,7 @@ import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.preprocessing.BitTypeRemover;
 import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
+import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
@@ -310,6 +311,8 @@ public class SequentialSketchMain
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
+		lprog = (Program)lprog.accept(new MainMethodCreateNospec(
+		        params.sValue("main_names")));
 		//dump (lprog, "~regens");
 		
 		//dump (lprog, "extract clc");
@@ -567,6 +570,10 @@ public class SequentialSketchMain
 		params.setAllowedParam("cegispath", new POpts(POpts.STRING,
 				"--cegispath path\t Path to the 'cegis' binary, overriding default search paths",
 				"", null) );
+		
+		params.setAllowedParam("main_names", new POpts(POpts.STRING,
+                "--main_names names\tComma-separated names of main (no specification) methods",
+                "main", null));
 
 
 

@@ -1,0 +1,176 @@
+pragma options "--unrollamnt 17 --synth MINI --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --heapsize 1 -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--intbits 6";
+// for desparsify, --unrollamnt must be at least N*N+1
+
+// Notes on sketching SpMV(COO)
+//
+// SpMV needs 1D loop nest iterating N*N times.  Sketching two nested loops
+// works with synth MINI at N=2; the outer loop is syntheiszed to execute one iteration.  
+// A better approach might be to sketch first a 1d loop, failing that try a 2D sketch, ... 
+//
+// (sketch of desparsify also works nice and fast)
+//
+// SpMV results: 
+//
+// 2D Sketch, N=2, Model=INT, synth MINI, verif ABC
+//  GOT THE CORRECT ANSWER IN 5 iterations.
+//  FIND TIME 71727 CHECK TIME 3035 TOTAL TIME 74763
+//
+// 1D sketch, N=3, Model=INT, synth MINI, verif ABC
+// GOT THE CORRECT ANSWER IN 2 iterations.
+// FIND TIME 1391 CHECK TIME 12051 TOTAL TIME 13443
+//
+
+#define MODEL_BIT 1
+#define N 4
+//#include "model.skh"
+
+
+#ifdef MODEL_BIT
+#define T bit
+T mul(T x, T y) { return x & y; }
+#endif
+
+#ifdef MODEL_INT 
+#define T int
+T mul(T x, T y) { return x * y; }
+#endif
+
+#ifdef MODEL_UFUN1
+#define T int
+static T mul(T x, T y) {
+	if (x == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+#ifdef MODEL_UFUN2
+#define T int
+static T mul(T x, T y) {
+	if (x == 0 || y == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+struct COO {    // COO is a list of tripples (non-zero value, column index, row index)
+	int      n; // length of the list
+	T[N*N]   V; 
+	int[N*N] C;  
+	int[N*N] R;
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#define Var ({|i|j|n|0|a.n|}+??)
+
+/* Index-type hole composed of array exprs */
+#define IArr ((??) ? Var : ((??) ? a.R[Var] : a.C[Var]))
+
+/* Value-type hole composed of array exprs */
+#define VArr ((??) ? a.V[IArr] : x[IArr])  
+
+#define Loop(iv,S,E) for(iv = S; iv < E; iv++) 
+
+static T[N] SpMV_Sketch(COO a, T[N] x, int n) {
+	T[N] y=0;
+	int i, j;
+	
+	Loop(i,IArr,IArr) {
+//		Loop(j,IArr,IArr) {
+			y[IArr] += mul(VArr,VArr);  
+//		}
+	} 
+	return y;	
+}
+static T[N][N] desparsify_Sketch(COO a) {  // sketch works correctly
+	T[N][N] A = 0;
+	int i,j;  // j is unused
+	T[N] x=0; // x is unused
+	int n=N;
+	//for (int idx = 0; idx < sp.n; idx++) {
+	//	A[sp.R[idx]][sp.C[idx]] = sp.V[idx];
+	//}
+	Loop(i,IArr,IArr) {
+		A[IArr][IArr] = VArr;
+	}
+	return A;
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+//int[N][N] sd(int[N][N] a) implements identity {
+//	return desparsify_Sketch(sparsify(a));
+//}
+T[N] main(T[N][N] A, T[N] x) implements DeMV {
+	return SpMV_Sketch(sparsify(A), x, N);
+}
+int harness () { // implements one {
+	T[N*N] A = {1,0,0,1};
+	T[N] x ={1,1};
+	T[N][N] dA;
+	int k = 0;
+	for (int i = 0; i < N; i++) 
+		for (int j = 0; j < N; j++) 
+			dA[i][j] = A[k++];
+			
+	COO sA = sparsify(dA);
+	T[N] y = SpMV_Sketch(sA,x,N);
+	T[N] yy = DeMV(dA,x);
+	assert y[0] == yy[0];
+	//assert y[1] == yy[1];
+	//assert y[2] == yy[2];
+	return 1;
+}  
+
+static COO sparsify(T[N][N] A) {
+	COO sp = new COO();
+	
+	int idx = 0;
+	for (int r = 0; r < N; r++) {
+		for (int c = 0; c < N; c++) {
+			if (A[r][c] != 0) {
+				sp.V[idx] = A[r][c];
+				sp.C[idx] = c;
+				sp.R[idx] = r;
+				idx++;  
+			}
+		}
+	}
+	sp.n = idx;
+	return sp;
+}
+// TODO: try to sketch desparsify
+static T[N][N] desparsify(COO sp) {
+	T[N][N] A = 0;
+	for (int idx = 0; idx < sp.n; idx++) {
+		A[sp.R[idx]][sp.C[idx]] = sp.V[idx];
+	}
+	return A;
+}
+
+//
+// SPECIFICATIONS
+//
+// computes y = Ax on dense A, x, and y.
+// 
+T[N] DeMV(T[N][N] A, T[N] x) {
+	T[N] y = 0;
+	
+	for (int r = 0; r < N; r++) {
+		y[r] = 0;
+		for (int c = 0; c < N; c++) {
+			y[r] += mul(A[r][c],x[c]);  
+		}
+	} 
+	return y;	
+}
+int one () { return 1; }
+int[N][N] identity(int[N][N] A) { return A; }

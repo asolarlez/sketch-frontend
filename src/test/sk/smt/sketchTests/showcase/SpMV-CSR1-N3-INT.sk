@@ -1,4 +1,5 @@
-pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --intbits 6 --unrollamnt 3 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --unrollamnt 3 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "--intbits 5";
 
 #define MODEL_INT 1
 #define N 3

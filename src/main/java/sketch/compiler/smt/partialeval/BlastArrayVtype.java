@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
+import sketch.compiler.smt.GeneralStatistics;
 
 /**
  * This class is for translating to SMT formulas that blast array elements into 
@@ -23,8 +24,9 @@ public class BlastArrayVtype extends NodeToSmtVtype {
 			int intNumBits,
 			int inBits,
 			int cBits,
+			GeneralStatistics stat,
 			TempVarGen varGen) {
-		super(intNumBits, inBits, cBits, varGen);
+		super(intNumBits, inBits, cBits, stat, varGen);
 		
 	}
 

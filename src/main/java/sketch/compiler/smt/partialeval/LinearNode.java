@@ -7,8 +7,8 @@ import sketch.compiler.ast.core.typs.Type;
 
 public class LinearNode extends NodeToSmtValue {
 	
+    private NodeToSmtValue mTransformed;
 	protected int mC;
-	
 	
 	protected LinearNode(Type t, int numBits) {
 		super(null, t, SmtStatus.BOTTOM, numBits,
@@ -75,7 +75,12 @@ public class LinearNode extends NodeToSmtValue {
 		obj = n1.getVarToCoeffMap().clone();
 		mC = n1.mC;
 		
-		mC += c.getIntVal();
+		for (VarNode v : getVars()) {
+		    int coe = getCoeff(v);
+		    coe *= c.getIntVal();
+		    getVarToCoeffMap().put(v, coe);
+		}
+		mC *= c.getIntVal();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -128,6 +133,14 @@ public class LinearNode extends NodeToSmtValue {
 			return getVarToCoeffMap().get(var);
 		else
 			return 0;
+	}
+	
+	NodeToSmtValue getTransformed() {
+	    return mTransformed;
+	}
+	
+	void setTransformed(NodeToSmtValue afterTransform) {
+	    mTransformed = afterTransform;
 	}
 	
 	@Override

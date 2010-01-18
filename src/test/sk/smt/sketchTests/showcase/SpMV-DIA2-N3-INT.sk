@@ -1,0 +1,234 @@
+// option for ToSBit
+pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--intbits 5";
+//pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+
+// Notes on sketching SpMV(DIA)
+//
+// SpMV results:
+//
+//
+ 
+#define MODEL_INT 1
+#define N 3
+
+
+#ifdef MODEL_BIT
+#define T bit
+T mul(T x, T y) { return x & y; }
+#endif
+
+#ifdef MODEL_INT 
+#define T int
+T mul(T x, T y) { return x * y; }
+#endif
+
+#ifdef MODEL_UFUN1
+#define T int
+static T mul(T x, T y) {
+	if (x == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+#ifdef MODEL_UFUN2
+#define T int
+static T mul(T x, T y) {
+	if (x == 0 || y == 0) return 0;  
+	else return ufun_ii(x,y);
+}
+T ufun_ii(T x, T y);
+#endif
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+// DIA stores the main diagonal (A[i][i]) in V[N][k..N]
+// higher diagonals are stored in V[N-k][0..N-1]
+// lower diagonals are stored in V[N+k][0..N-1-k]
+ 
+struct DIA { 
+      // x indexes the diagonals
+      // y indexes elements in the diagonal
+      T[N][2*N-1] V;
+}
+ 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+static int max(int a, int b) { return ((a)>(b) ? (a) : (b)); }
+static int min(int a, int b) { return ((a)<(b) ? (a) : (b)); }
+#define Vars   ({|d|o|})  /* unused macro */
+
+#define Consts ({|0|n|(2*n-1)|})
+#define Affine1 ((??-1)*d + ??*n - ??)
+#define Affine2 ((??-1)*d + (??-1)*o + ??*n - ??)
+#define Index  Affine2
+#define Value (?? ? (a.V[Index][Index]) : x[Index])
+#define Loop(iv,S,E) for(iv = S; iv < E; iv++)
+ 
+static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
+      T[N] y=0;
+      int d=0;
+      int o=0;
+     
+      Loop(d,Consts, Consts) {
+            Loop(o,Consts, Consts) {
+            	y[Index] += mul(Value,Value);
+            }
+      }
+      
+//      // produce SpMV_3
+//      Loop(d,Consts,n) {
+//          Loop(o,Consts,n) {
+//        	  y[n-d-1] += mul(Value,x[n-o-1]);
+//          }
+//      }
+//      
+//      // produce SpMV_4
+//      Loop(d,Consts,n) {
+//          Loop(o,Consts,n) {
+//        	  y[Index] += mul(Value,Value);
+//          }
+//      }
+      return y;  
+}
+ 
+// hand-written SpMV: The guard of the assignment avoids the corner elements of the sparse matrix
+// that do not correspond to any element of dense matrix 
+static T[N] SpMV_1(DIA a, T[N] x, int n) {
+      T[N] y=0;
+      for (int d=0; d < 2*n-1; d++) {
+            for (int o=0; o<n; o++) {
+                  int r = o+d-n+1;
+                  int c = o;
+                  if (0<=r && r<n) {
+                        y[o+d-n+1] += mul(a.V[d][o],x[o]);
+                  }
+            }
+      }
+      return y;  
+}
+// same as SpMV_1 but second loop is responsible for avoiding the invalid corners of the iteration space
+static T[N] SpMV_2(DIA a, T[N] x, int n) {
+      T[N] y=0;
+      int o=0;
+      for (int d=0; d < 2*n-1; d++) {
+            for (o = max(0,n-1-d); o < min(n,2*n-d-1); o++) {
+                  int r = o+d-n+1;
+                  int c = o;
+                  y[o+d-n+1] += mul(a.V[d][o],x[o]);
+            }
+      }
+      return y;  
+}
+// synthesized from our sketch
+static T[N] SpMV_3(DIA a, T[N] x, int n) {
+      T[N] y=0;
+      for (int d=0; d < n; d++) {
+            for (int o = 0; o < n; o++) {
+                  y[n-d-1] += mul(a.V[n+o-d-1][n-o-1],x[n-o-1]);
+                  // 2n + 2o - 2d -2 + n - o - 1 = 3n + o - 2d -3
+                  // when n = 2, o - 2d + 3
+            }
+      }
+      return y;  
+}
+// SpMV written by Gilad
+static T[N] SpMV_4(DIA a, T[N] x, int n) {
+      T[N] y=0;
+      for (int d=0; d < n; d++) {
+            for (int o = 0; o < n; o++) {
+                  y[d] += mul(a.V[n+d-o-1][o],x[o]);
+            }
+      }
+      return y;  
+}
+ 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+ 
+//int[N][N] sd(int[N][N] a) implements identity {  // Works OK
+//    return desparsify(sparsify(a));
+//}
+T[N] main(T[N][N] A, T[N] x) implements DeMV {
+	return SpMV_Sketch(sparsify(A), x, N);
+//	return SpMV_3(sparsify(A), x, N);
+}
+ 
+#if 1==0
+int harness () { // implements one {  // this harness either has a bug or it exposes a bug int he compiler
+      // INPUT: initialize the dense matrix (example from Ahmed et al paper)
+      T[N*N] AA = {1,2,0,0, 3,4,5,0, 0,6,7,8, 0,0,9,10 };
+      T[N][N] A;
+      int k = 0;
+      for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++)
+                  A[i][j] = AA[k++];
+     
+      // OUTPUT: desired sparse format
+      T[(2*N-1)*N] aa = {0,0,0,0, 0,0,0,0, 0,2,5,8, 1,4,7,10, 3,6,9,0, 0,0,0,0, 0,0,0,0 };
+      T[2*N-1][N] a;
+      k = 0;
+      for (int i = 0; i < 2*N-1; i++)
+            for (int j = 0; j < N; j++)
+//                a[i][j] = aa[k++];
+ 
+      DIA sa = sparsify(A);
+      // T[N] y = SpMV_Sketch(sA,x,N);
+      // T[N] yy = DeMV(dA,x);
+ 
+      for (int d = 0; d<2*N-1; d++) {
+            for (int o = 0; o < N; o++) {
+//                assert sa.V[d][o] == a[d][o];
+            }
+      }
+      return 1;
+} 
+#endif
+static DIA sparsify(T[N][N] A) {
+      DIA sp = new DIA();
+      for (int d = 0; d < 2*N-1; d++) {
+            for (int o = 0; o < N; o++) {
+                  sp.V[d][o] = 0;
+            }
+      }
+      for (int r = 0; r < N; r++) {
+            for (int c = 0; c < N; c++) {
+                  sp.V[N-1+r-c][c] = A[r][c];
+            }
+      }
+      return sp;
+}
+static T[N][N] desparsify(DIA a) {
+      T[N][N] A = 0;
+      int o, c, r;
+      for (int d = 0; d < 2*N-1; d++) {
+            for (o = 0; o < N; o++) {
+                  c = o;
+                  r = d+c+1-N;
+                  if (0<=r && r<N) {
+                        A[r][c] = a.V[d][o];
+                  }
+            }
+      }
+      return A;
+}
+ 
+//
+// SPECIFICATIONS, identical for all formats
+//
+// computes y = Ax on dense A, x, and y.
+//
+T[N] DeMV(T[N][N] A, T[N] x) {
+      T[N] y = 0;
+     
+      for (int r = 0; r < N; r++) {
+            y[r] = 0;
+            for (int c = 0; c < N; c++) {
+                  y[r] += mul(A[r][c],x[c]); 
+            }
+      }
+      return y;  
+}
+int one () { return 1; }
+int[N][N] identity(int[N][N] A) { return A; }

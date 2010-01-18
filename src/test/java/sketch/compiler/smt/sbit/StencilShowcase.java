@@ -14,11 +14,11 @@ public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
 	
 	@Override
 	protected HashMap<String, String> initCmdArgs(String input) {
-		String inputPath = "inputs/stenTests/showcase/" + input;
+		String inputPath = "src/test/sk/smt/stenShowcase/" + input;
 		
 		HashMap<String, String> argsMap = new HashMap<String, String>();
 		
-		argsMap.put("--sbitpath", System.getenv("sbitpath"));
+//		argsMap.put("--sbitpath", System.getenv("sbitpath"));
 		argsMap.put("--arrayOOBPolicy", "assertions");
 
 		argsMap.put("--heapsize", "10");
@@ -28,7 +28,7 @@ public class StencilShowcase extends sketch.compiler.seq.StencilShowcase {
 		argsMap.put("--outputdir", "output/");
 		argsMap.put("--output", "/tmp/" + input + ".tmp"); 
 		argsMap.put("--keeptmpfiles", null);
-		argsMap.put("--timeout", "2");
+		argsMap.put("--timeout", "30");
 		
 		argsMap.put(inputPath, null);
 		
