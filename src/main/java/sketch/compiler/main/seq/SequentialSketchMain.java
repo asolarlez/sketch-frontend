@@ -48,6 +48,7 @@ import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
 import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
+import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.PlatformLocalization;
@@ -120,7 +121,7 @@ public class SequentialSketchMain
 	 */
 	public RecursionControl internalRControl(){
 
-		return visibleRControl();
+		return new DelayedInlineRControl(0, 0);
 	}
 
 

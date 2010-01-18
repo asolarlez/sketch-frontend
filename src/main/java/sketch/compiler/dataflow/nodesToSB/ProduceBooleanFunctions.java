@@ -119,6 +119,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             if(param.isParameterOutput()) out.print("! ");
             out.print(convertType(param.getType()) + " ");
             String lhs = param.getName();
+            
+            
             state.varDeclare(lhs , param.getType());
             IntAbsValue inval = (IntAbsValue)state.varValue(lhs);
             
@@ -128,14 +130,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 report(tmp.hasIntVal(), "The array size must be a compile time constant !! \n" );
                 assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
                 int sz = tmp.getIntVal();
-                if(param.isParameterOutput()){
-                    assert !param.isParameterInput() : "Reference parameters not yet supported for interface functions.";
+                if(param.isParameterOutput()){                    
                     opsizes.add(sz);
                 }
                 for(int tt=0; tt<sz; ++tt){                 
                     String nnm = inval.getVectValue().get(tt).toString();                   
                     if(param.isParameterOutput()){
-                        String opname = "_p_" + nnm + " ";
+                        String opname = "_p_" + param.getName() + "_idx_" + tt + " ";
                         opnames.add(opname);
                         out.print(opname);
                     }else{
@@ -145,11 +146,32 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }else{
                 if(param.isParameterOutput()){
                     opsizes.add(1);
-                    String opname = "_p_" + inval.toString() + " ";
+                    String opname = "_p_" + param.getName() + " ";
                     opnames.add(opname);
                     out.print(opname);
                 }else{
                     out.print(inval.toString() + " ");
+                }
+            }
+            
+            if(param.isParameterInput() && param.isParameterOutput()){
+                out.print(", ");
+                out.print(convertType(param.getType()) + " ");
+                if( param.getType() instanceof TypeArray ){
+                    TypeArray ta = (TypeArray) param.getType();
+                    IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);               
+                    assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
+                    int sz = tmp.getIntVal();                    
+                    for(int tt=0; tt<sz; ++tt){                 
+                        String nnm = inval.getVectValue().get(tt).toString();                   
+                        {
+                            out.print(nnm + " ");
+                        }
+                    }
+                }else{
+                    
+                    out.print(inval.toString() + " ");
+                    
                 }
             }
             

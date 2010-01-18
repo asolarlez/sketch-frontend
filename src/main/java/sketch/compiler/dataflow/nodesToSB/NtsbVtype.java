@@ -204,8 +204,9 @@ public class NtsbVtype extends IntVtype {
             return BOTTOM( "(" + arr + "[" + idx + "])" );
     }
     
-    
+    int funid = 0;
     public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond){
+        ++funid;
         Iterator<abstractValue> actualParams = avlist.iterator();
         String name = fun.getName();
         String plist = "";
@@ -226,16 +227,22 @@ public class NtsbVtype extends IntVtype {
         while(formalParams.hasNext()){
             Parameter param = formalParams.next();      
             if( param.isParameterOutput()){
-                if( fun.isUninterp() ){
-                outSlist.add(BOTTOM(name+ "_" + param.getName() + "[" + param.getType() + "]( "+ plist +"  )(" + pathCond + ")"));
-                }else{
-                    outSlist.add(BOTTOM(name + "[" + param.getType() + "]( "+ plist +"  )(" + pathCond + ")"));
+                {
+                    if(param.getType().isArray()){
+                        TypeArray ta = (TypeArray)param.getType();
+                        int lnt = ta.getLength().getIValue();
+                        List<abstractValue> ls = new ArrayList<abstractValue>(lnt);
+                        for(int i=0; i< lnt; ++i){
+                            ls.add(BOTTOM(name + "[" + ta.getBase() + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName()+"_idx_" + i + "," + funid +"]"));
+                        }
+                        outSlist.add(ARR(ls));
+                    }else{
+                        outSlist.add(BOTTOM(name + "[" + param.getType() + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName() + "," + funid +"]"));
+                    }
                 }
             }
         }
-        if(!fun.isUninterp()){
-            assert outSlist.size() == 1 : "If a function is to be dynamically inlined, it ought to have only one return value.";
-        }
+        
         
     }
 }
