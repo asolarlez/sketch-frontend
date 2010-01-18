@@ -10,7 +10,7 @@ import org.junit.runners.Suite.SuiteClasses;
     SketchShowcaseCanonFHBlastBV.class,
     SketchShowcaseCanonFHTOABV.class,
     SketchShowcaseBlastBV.class, 
-    SketchShowcaseTOABV.class, 
+    SketchShowcaseTOABV.class
     })
 public class SketchShowcaseSuite {
 }

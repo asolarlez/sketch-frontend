@@ -16,59 +16,96 @@ import sketch.util.DebugOut;
  *          make changes, please consider contributing back!
  */
 public final class CliOption {
-    public Class<?> type_ = Boolean.class;
-    public Object default_ = new Boolean(false);
-    public String name_ = null;
-    public String full_name_ = null;
-    public String help_ = null;
+    public final String name;
+    public final Class<?> typ;
+    public final Object defaultValue;
+    public final String help;
+    public final CliOptionGroup group;
+
+    public CliOption(String name, Class<?> typ, Object defaultValue,
+            String help, CliOptionGroup group)
+    {
+        this.name = name;
+        this.typ = typ;
+        this.defaultValue = defaultValue;
+        this.help = help;
+        this.group = group;
+        if (this.name.length() > 18) {
+            assertFalse("name", name, "should be shorter than 18 characters",
+                    "(to prevent help description overflow)");
+        } else if (this.name.contains("_")) {
+            assertFalse("name", name,
+                    "should use hyphens instead of underscores",
+                    "(for code standards)");
+        } else if (defaultValue != null && !typ.isPrimitive()
+                && !typ.isAssignableFrom(defaultValue.getClass()))
+        {
+            assertFalse("default value", defaultValue, "of class", defaultValue
+                    .getClass(), "doesn't match type", typ, "for option", name);
+        } else if (defaultValue instanceof Boolean) {
+            if (((Boolean) defaultValue).booleanValue() != false) {
+                assertFalse("boolean values must be false initially. option",
+                        name);
+            }
+        }
+    }
+
+    public CliOption(String name, Object defaultValue, String help,
+            CliOptionGroup group)
+    {
+        this(name, defaultValue.getClass(), defaultValue, help, group);
+    }
+
+    public String full_name() {
+        return group.get_prefix_with_sep() + name;
+    }
 
     public Option as_option(String prefix) {
-        boolean has_name = !(type_.equals(Boolean.class));
-        full_name_ = prefix.equals("") ? name_ : (prefix + "_" + name_);
-        String help = help_;
-        if (default_ == null) {
+        boolean has_name = !(typ.equals(Boolean.class));
+        String help = this.help;
+        if (defaultValue == null) {
             help += " (REQUIRED)";
         } else if (has_name) {
-            help += " [default " + default_.toString() + "]";
+            help += " [default " + defaultValue.toString() + "]";
         }
-        return new Option(null, full_name_, has_name, help);
+        return new Option(null, full_name(), has_name, help);
     }
 
     @Override
     public String toString() {
         return String.format("CmdOption[name=%s, type=%s, default=%s, "
-                + "full_name=%s, help=%s]", name_, type_, default_, full_name_,
-                help_);
+                + "full_name=%s, help=%s]", name, typ, defaultValue,
+                full_name(), help);
     }
 
     public Object parse(CommandLine cmd_line, boolean no_defaults) {
-        if (type_.equals(Boolean.class)) {
-            return cmd_line.hasOption(full_name_);
+        if (typ.equals(Boolean.class)) {
+            return cmd_line.hasOption(full_name());
         }
-        if (!cmd_line.hasOption(full_name_)) {
+        if (!cmd_line.hasOption(full_name())) {
             if (no_defaults) {
                 assertFalse("CliOption - no_defaults set, but no option", this);
             }
-            if (default_ == null) {
+            if (defaultValue == null) {
                 DebugOut.print_colored(DebugOut.BASH_RED, "", " ", false,
-                        "argument", name_, "is required.\n    argument info:",
+                        "argument", name, "is required.\n    argument info:",
                         this);
                 System.exit(1); // @code standards ignore
-            } else if (CliOptionType.class.isAssignableFrom(type_)) {
-                return ((CliOptionType<?>) default_).clone();
+            } else if (CliOptionType.class.isAssignableFrom(typ)) {
+                return ((CliOptionType<?>) defaultValue).clone();
             }
-            return default_;
+            return defaultValue;
         }
-        String v = cmd_line.getOptionValue(full_name_);
-        if (type_.equals(Long.class)) {
+        String v = cmd_line.getOptionValue(full_name());
+        if (typ.equals(Long.class)) {
             return Long.parseLong(v);
-        } else if (type_.equals(Float.class)) {
+        } else if (typ.equals(Float.class)) {
             return Float.parseFloat(v);
-        } else if (CliOptionType.class.isAssignableFrom(type_)) {
-            return ((CliOptionType<?>) default_).fromString(v);
+        } else if (CliOptionType.class.isAssignableFrom(typ)) {
+            return ((CliOptionType<?>) defaultValue).fromString(v);
         } else {
-            if (!type_.equals(String.class)) {
-                DebugOut.assertFalse("can't parse type ", type_);
+            if (!typ.equals(String.class)) {
+                DebugOut.assertFalse("can't parse option type ", typ);
             }
             return v;
         }

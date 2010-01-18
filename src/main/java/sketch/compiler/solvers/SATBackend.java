@@ -196,7 +196,7 @@ public class SATBackend {
 			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
 												   commandLine)).run (false);
 			
-			log(1, status.out);
+			
 			
 			lastSolveStats = parseStats (status.out);
 			lastSolveStats.success = (0 == status.exitCode);

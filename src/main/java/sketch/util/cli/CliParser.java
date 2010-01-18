@@ -53,6 +53,15 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
             }
             if (print_help) {
                 HelpFormatter hf = new HelpFormatter();
+                String cols = System.getenv("COLUMNS");
+                if (cols != null && !cols.equals("")) {
+                    try {
+                        hf.setWidth(Integer.parseInt(cols));
+                    } catch (Exception e) {
+                    }
+                } else {
+                    hf.setWidth(100);
+                }
                 StringBuilder description = new StringBuilder();
                 description.append("\n");
                 for (CliOptionGroup group : opt_groups) {

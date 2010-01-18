@@ -2,7 +2,7 @@
 
 SHELL = /bin/bash
 
-VERSION = $(shell python -c "from amara import bindery; print(bindery.parse(open('pom.xml', 'r').read()).project.version)" 2>/dev/null)
+VERSION = 1.4.0
 
 OPT_BUILDR = $(shell (which buildr >/dev/null && which buildr) || which mvn)
 
@@ -19,6 +19,10 @@ target/classes/%s:
 
 target/version.txt: target/classes/sketch/compiler/localization.properties
 	cat target/classes/sketch/compiler/localization.properties | head -n 1 | sed -u "s/version = //g" > target/version.txt
+
+clean:
+	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
+	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
 
 codegen: # codegen a few files (not very high probability of changing)
 	scripts/run_jinja2.py
@@ -57,7 +61,7 @@ deploy: compile
 
 osc: assemble-noarch
 	mkdir -p "java-build"; cp target/sketch-$(VERSION)-noarch.jar java-build
-	../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
+	python ../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
 	rm -rf java-build
 
 install-launchers-only:

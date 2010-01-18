@@ -1,0 +1,9 @@
+pragma options "--main_names main,main2";
+
+void main(int x) {
+    assert(x - x + ?? == 3);
+}
+
+void main2(int x) {
+    assert(?? + 1 == 3 - 1);
+}

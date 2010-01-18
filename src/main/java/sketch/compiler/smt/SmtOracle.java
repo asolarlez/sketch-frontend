@@ -8,6 +8,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtValue;
@@ -30,11 +31,6 @@ public abstract class SmtOracle extends AbstractValueOracle {
 	protected NodeToSmtVtype mFormula;
 	
 	/**
-	 * The vtype object that will be using this mOutputOracle as input
-	 */
-	protected NodeToSmtVtype mVtype;
-	
-	/**
 	 * A map that maps from array name to maps of the idx and value.
 	 * String -> (int -> int)
 	 */
@@ -52,9 +48,6 @@ public abstract class SmtOracle extends AbstractValueOracle {
 	/*
 	 * Getters & Setters
 	 */
-	public void setVtype(NodeToSmtVtype vtype) {
-		mVtype = vtype;
-	}
 	
 	/**
 	 * Constructor
@@ -109,7 +102,9 @@ public abstract class SmtOracle extends AbstractValueOracle {
 	@Override
 	public Expression popValueForNode(FENode node) {
 		String name = holeNamer.getName(node);
-		NodeToSmtValue v = getValueForVariable(name, null);
+		ExprStar star = (ExprStar) node;
+		int bits = mFormula.getNumBitsForType(star.getType());
+		NodeToSmtValue v = getValueForVariable(name, SmtType.create(star.getType(), bits));
 		
 		return nodeToExpression(node, v); 
 	}

@@ -1,0 +1,19 @@
+static bit[4] rvbit(bit[2] in){
+    return in ^ ??;
+}
+
+static bit[4] tutu(bit[2] in, int n){
+    if(n>0){
+        return tutu(in, n-1);
+    }else{
+        return rvbit(in);
+    }
+}
+
+bit[4] sketch(bit[2] in) implements spec{
+    return tutu(in, 2);
+}
+
+bit[4] spec(bit[2] in){
+    return in;
+}

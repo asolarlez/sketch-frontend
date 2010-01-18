@@ -10,7 +10,7 @@ import org.junit.runners.Suite.SuiteClasses;
         SketchShowcase.class,
         SketchShowcase.class,
         SketchShowcase.class,
-        SketchShowcase.class,
+        SketchShowcase.class
          })
 public class RepeatSketchSuite {
     
