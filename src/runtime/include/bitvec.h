@@ -272,16 +272,6 @@ public:
      */
 
     template <size_t Ntag> friend ostream &operator<< (ostream &out, const bitvec<Ntag> &bv);
-
-    /* JY: Added a get function. */
-    const bitvec<N> get (const size_t i) {
-      /* Want 0-(WORDBITS-1) to go to index 0, WORDBITS-(2*WORDBITS-1) to go to
-       * index 1, etc. */
-      int idx = i / WORDBITS;
-      bitvec<N> cur = v[0];
-      bitvec<N> mask = 1 << i;
-      return bitvec<1>((cur & mask) >> i);
-    }
 };
 
 
