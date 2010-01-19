@@ -185,7 +185,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if (type instanceof TypeArray)
         {
             TypeArray array = (TypeArray)type;
-            String base = convertType(array.getBase());
+            String base = printType(array.getBase());
             abstractValue iv = (abstractValue) array.getLength().accept(this);          
             return base + "[" + iv + "]";
         }
