@@ -586,7 +586,7 @@ template <size_t N> template <size_t Ntag>
 const bitvec<Ntag>
 bitvec<N>::sub (size_t offset) const
 {
-	//cout<<"offset = "<<offset <<" Ntag = "<<Ntag<<" N="<< N<<endl;
+	  cout<<"offset = "<<offset <<" Ntag = "<<Ntag<<" N="<< N<<endl;
     assert (offset + Ntag <= N);
     bitvec<N> tmp = *this >> offset;
     return (bitvec<Ntag> (tmp));

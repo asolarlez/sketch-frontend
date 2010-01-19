@@ -369,10 +369,10 @@ public class SequentialSketchMain
 			dump(finalCode, "After Flattening.");
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		if(params.flagEquals("showphase", "taelim")) 
+		//if(params.flagEquals("showphase", "taelim")) 
 			dump(finalCode, "After Eliminating transitive assignments.");
 		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
-		//dump(finalCode, "After Dead Code elimination.");
+		dump(finalCode, "After Dead Code elimination.");
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
