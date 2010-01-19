@@ -593,7 +593,9 @@ public class NodesToC extends NodesToJava {
 				// JY: This needs to be fixed.
         // I think we don't want range.len() == 1.
         if(!ctype.equals(TypePrimitive.bittype) && range.len()==1){
-					return base.accept(this)+ ".get("+ tmp + ")";
+					// TODO: There is a bug here.  When the result we want is an int
+          // rather than a bit, this doesn't work...
+          return base.accept(this)+ ".get("+ tmp + ")";
 				} else{
 					return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";
 				}
@@ -607,7 +609,8 @@ public class NodesToC extends NodesToJava {
         String result = "";
         result += (String)exp.getLeft().accept(this);
         // NOTE(JY): Added thing here.
-        if (needsVal) {
+        // TODO: This is broken.
+        if (isLHS && !getType(exp.getLeft()).equals(TypePrimitive.bittype)) {
           result += ".val()";
         }
         result += "->";
