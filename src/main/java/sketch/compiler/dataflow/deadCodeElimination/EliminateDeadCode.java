@@ -91,29 +91,6 @@ public class EliminateDeadCode extends BackwardDataflow {
     return super.visitStmtExpr(stmt);
   }
 
-  public Object visitStmtWhile(StmtWhile stmt) {
-    // Visit the condition.
-    if (stmt.getCond() != null){
-      abstractValue val =(abstractValue) stmt.getCond().accept(this);
-      if( val instanceof LVSet){
-        ((LVSet)val).enliven();
-      }
-      if( val instanceof LiveVariableAV){
-        LiveVariableAV lv = (LiveVariableAV) val;
-        if(lv.mstate != null  ){
-          lv.mstate.setVarValue(
-              lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
-        }
-      }
-    }
-
-    // Visit the body.
-    Statement body = (Statement)stmt.getBody().accept(this);
-
-    return super.visitStmtWhile(
-        new StmtWhile(stmt, stmt.getCond(), body));
-  }
-
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
 		return new LinkedList<Function>(spec.getFuncs());
 	}
