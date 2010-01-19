@@ -1,3 +1,4 @@
+pragma options "--inbits 8";
 
 bit[8] test(int x) implements spec{	
 	bit[1024] tmp = ??;
