@@ -1,3 +1,4 @@
+//@Description Sketch of a merge sort implementation.
 /**
  * This example provides a nice case study of the use of generators to produce 
  * complicated expressions. It also illustrates how one can synthesize code for fixed 
