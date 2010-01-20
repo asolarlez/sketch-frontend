@@ -1,3 +1,5 @@
+//@Description Sketches a remove method from a doubly linked list.
+
 int N=4;
 
 struct node{

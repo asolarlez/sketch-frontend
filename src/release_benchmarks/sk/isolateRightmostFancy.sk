@@ -1,3 +1,4 @@
+//@Description Sketch to isolate the rightmost 0 index using only bit-vector operations. Harder version than isolateRightmost.sk
 
 int W = 32;
 

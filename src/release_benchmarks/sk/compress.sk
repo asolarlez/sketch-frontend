@@ -1,3 +1,5 @@
+//@Description Given a bit-vector and a bit-mask, the task is select from the bit-vector all the bits selected by the bit-mask and pack them in the beginning of the word.
+
 int W = 8;
 
 bit[W] compress(bit[W] x, bit[W] m){

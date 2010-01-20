@@ -1,3 +1,5 @@
+//@Description A harder version of compress.sk.
+
 int W = 8;
 
 bit[W] compress(bit[W] x, bit[W] m){
