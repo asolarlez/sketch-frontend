@@ -29,9 +29,6 @@ public class NodesToC extends NodesToJava {
 	private String filename;
 	private boolean isBool = true;
 
-  // JY:
-  private boolean needsVal = false;
-
 	protected boolean addIncludes = true;
 
 	public NodesToC(TempVarGen varGen, String filename) {
@@ -557,7 +554,6 @@ public class NodesToC extends NodesToJava {
         isLHS = true;
         String lhs = (String)stmt.getLHS().accept(this);
         isLHS = false;
-        needsVal = false;
         String rhs = (String)stmt.getRHS().accept(this);
         return lhs + op + rhs ;
 	}
@@ -581,23 +577,21 @@ public class NodesToC extends NodesToJava {
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
 				isLHS = true;
-        if (!getType(exp.getBase()).equals(TypePrimitive.bittype)) {
-          needsVal = isLHS;
-        }
 				return base.accept(this)+"["+tmp+"]"; //+postfix;
 			}else{
 				Type tmptype = ctype;
 				ctype = TypePrimitive.inttype;
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
-				// JY: This needs to be fixed.
-        // I think we don't want range.len() == 1.
-        if(!ctype.equals(TypePrimitive.bittype) && range.len()==1){
-					// TODO: There is a bug here.  When the result we want is an int
-          // rather than a bit, this doesn't work...
-          return base.accept(this)+ ".get("+ tmp + ")";
+        String lhs = (String)base.accept(this);
+        Type curType = (Type)getType(exp.getBase());
+        boolean isBitvec =
+          (curType instanceof TypeArray) &&
+          ((TypeArray)curType).getBase().equals(TypePrimitive.bittype);
+        if (!isBitvec && range.len()==1) {
+          return lhs + ".get("+ tmp + ")";
 				} else{
-					return base.accept(this)+ ".sub<" + range.len() + ">("+ tmp + ")";
+					return lhs + ".sub<" + range.len() + ">("+ tmp + ")";
 				}
 			}
 		}
@@ -608,10 +602,16 @@ public class NodesToC extends NodesToJava {
     {
         String result = "";
         result += (String)exp.getLeft().accept(this);
-        // NOTE(JY): Added thing here.
-        // TODO: This is broken.
-        if (isLHS && !getType(exp.getLeft()).equals(TypePrimitive.bittype)) {
-          result += ".val()";
+        // NOTE(JY): We want to access the val() field whenever we have a
+        // fixedarrRef, which we get from indexing into a non-bittype array.
+        if (isLHS && exp.getLeft() instanceof ExprArrayRange) {
+          Expression lhsBase = ((ExprArrayRange)exp.getLeft()).getBase();
+          Type baseType = (Type)getType(lhsBase);
+          if (baseType instanceof TypeArray) {
+            if (!((TypeArray)baseType).getBase().equals(TypePrimitive.bittype)) {
+              result += ".val()";
+            }
+          }
         }
         result += "->";
         result += (String)exp.getName();
