@@ -84,6 +84,9 @@ test-par:
 test-sten:
 	set -o pipefail; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
 
+test-release-benchmarks:
+	for i in src/release_benchmarks/sk/*.sk; do make run-local-seq EXEC_ARGS="$$i"; done | tee target/test_output.txt | grep -E "Benchmark = src/release_benchmarks|\[ERROR\]"
+
 ### manually running sketches using the development versions; use $(make <target> EXEC_ARGS=args)
 
 run-platform-seq: target/version.txt # run a test using the platform jar
