@@ -1,3 +1,4 @@
+//@Description Counts the number of ones in a bit-vector in logn steps.
 int W=8;
 
 bit[W] countBits(bit[W] in)

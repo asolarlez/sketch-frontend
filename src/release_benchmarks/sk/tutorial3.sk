@@ -1,3 +1,5 @@
+//@Description Toy benchmarks to show complex recursive generators.
+
 int spec( int x, int y, int z ){
    return (x + x) * (y - z);
 }

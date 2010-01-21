@@ -1,3 +1,5 @@
+//@Description Sketch to compute the logarithm base two of an integer represented as a vector of bits. The number of loop iterations is synthesized by Sketch.
+
 int W = 32, logW = 5;
 
 

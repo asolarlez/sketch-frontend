@@ -1,3 +1,5 @@
+//@Description Implements an addition of two 4-bit numbers through a table lookup.
+
 int W = 4;
 
 bit[W] tableAddition(bit[W] in1, bit[W] in2) implements addition {

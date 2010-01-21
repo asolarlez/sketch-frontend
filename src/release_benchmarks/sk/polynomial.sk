@@ -1,3 +1,5 @@
+//@Description A toy Sketch to synthesize a polynomial of degree 4.
+
 int W = 5;
 // This benchmark requires --inlineamnt  >= 5 in order to resolve.
 

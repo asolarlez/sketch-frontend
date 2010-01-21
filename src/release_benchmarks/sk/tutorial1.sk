@@ -1,3 +1,5 @@
+//@Description Toy benchmark.
+
 int spec( int x ){
    return x + x;
 }

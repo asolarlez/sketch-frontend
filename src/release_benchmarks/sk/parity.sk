@@ -1,3 +1,5 @@
+//@Description Sketch that computes the xor of all the bits in a bit-vector using a strategy similar to log-shifting.
+
 int W=32;
 
 bit parity(bit[W] in)

@@ -1,3 +1,5 @@
+//@Description Sketch to reverse all the bits in a word in log-time using log-shifting.
+
 pragma options "--cbits 3";
 
 int W = 32;

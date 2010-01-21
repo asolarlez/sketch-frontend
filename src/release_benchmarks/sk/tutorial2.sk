@@ -1,3 +1,5 @@
+//@Description Toy benchmark that explores the use of generators.
+
 int spec( int x, int y ){
    return (x + x) * (y + 5);
 }

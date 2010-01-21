@@ -1,3 +1,5 @@
+//@Description A read-only array with N elements contains the values {1,...,N-1}. This Sketch finds the duplicate entry using only constant extra space.
+
 int W = 17;
 
 pragma options "--inlineamnt 5 --inbits 3 "; 

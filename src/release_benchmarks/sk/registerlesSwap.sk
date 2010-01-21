@@ -1,3 +1,5 @@
+//@Description Sketch to swap two bit arrays without using extra storage.
+
 int W = 32;
 
 bit one(bit[W] x, bit[W] y){ return 1; }
