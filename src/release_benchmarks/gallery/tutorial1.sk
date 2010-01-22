@@ -1,0 +1,9 @@
+//@Description Toy benchmark.
+
+int spec( int x ){
+   return x + x;
+}
+
+int sketch( int x ) implements spec{
+   return ?? * x;
+}

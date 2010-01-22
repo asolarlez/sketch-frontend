@@ -1,0 +1,94 @@
+//@Description Sketch to construct 32-bit Morton numbers from two 16-bit inputs.
+
+// jburnim_morton.sk
+// Author: jburnim@cs.berkeley.edu (Jacob Burnim)
+//
+// This file contains a sketch for constructing 32-bit Morton numbers from
+// two 16-bit inputs.  "Interleaved bits (aka Morton numbers) are useful for
+// linearizing 2D integer coordinates, so x and y are combined into a single
+// number that can be compared easily and has the property that a number is
+// usually close to another if their x and y values are close." [1]
+//
+// Synthesized code is shown in comments at the end of the file.
+//
+// [1] Anderson, Bit Twiddling Hacks, http://www.cs.utk.edu/~vose/c-stuff/bithacks.html
+
+int W = 16;
+
+bit[2*W] interleave_bits(bit[W] x, bit[W] y) {
+  bit[2*W] ret = 0;
+  for (int i = 0; i < W; i++) {
+    ret[i*2] = x[i];
+    ret[i*2+1] = y[i];
+  }
+  return ret;
+}
+
+bit[2*W] sketch(bit[W] x, bit[W] y) implements interleave_bits {
+  // Idea: It should be possible to shift all of the bits "in parallel"
+  // using only log2(W) shifts.
+  bit[2*W] x2 = x;
+  int pt = 4*W;
+  repeat(??) {
+  	int t = ??;
+    // Shift some of the bits, and mask out their original positions.
+    x2 = (x2 | (x2 << t)) & ??;
+    assert t < pt; pt = t;
+  }
+
+  bit[2*W] y2 = y;
+  repeat(??) {
+    // Shift some of the bits, and mask out their original positions.
+    y2 = (y2 | (y2 << ??)) & ??;
+  }
+
+  return x2 | (y2 << 1);
+}
+
+// In roughly 22 minutes, synthesizes:
+//
+// void sketch(bitvec<16>  x_0, bitvec<16>  y_1, bitvec<32> & s_2) {
+//   bitvec<32> x2_3 = (x_0 | (x_0 << 8U)) & bitvec<32>("11111111000000001111111100000000");
+//   x2_3 = (x2_3 | (x2_3 << 4U)) & bitvec<32>("11110000111100001111000011110000");
+//   x2_3 = (x2_3 | (x2_3 << 2U)) & bitvec<32>("11001100110011001100110011001100");
+//   x2_3 = (x2_3 | (x2_3 << 1U)) & bitvec<32>("10101010101010101010101010101010");
+//   bitvec<32> y2_4 = (y_1 | (y_1 << 8U)) & bitvec<32>("11111111000000001111111100000000");
+//   y2_4 = (y2_4 | (y2_4 << 4U)) & bitvec<32>("11110000111100001111000011110000");
+//   y2_4 = (y2_4 | (y2_4 << 2U)) & bitvec<32>("11001100110011001100110011001100");
+//   y2_4 = (y2_4 | (y2_4 << 1U)) & bitvec<32>("10101010101010101010101010101010");
+//   s_2 = x2_3 | (y2_4 << 1U);
+// }
+//
+// NOTE: This sketch becomes much easier if we tell the synthesizer that the
+// constants for processing 'y' are the same as for 'x'.  See file
+// jburnim_morton_easier.sk.
+
+
+// Sketches for W = 8 --
+//
+// In roughly one minute, synthesizes:
+//
+// void sketch(bitvec<8>  x_0, bitvec<8>  y_1, bitvec<16> & s_2) {
+//   bitvec<16> x2_3 = (x_0 | (x_0 << 4U)) & bitvec<16>("1111000011110000");
+//   x2_3 = (x2_3 | (x2_3 << 2U)) & bitvec<16>("1100110011001100");
+//   x2_3 = (x2_3 | (x2_3 << 1U)) & bitvec<16>("1010101010101010");
+//   bitvec<16> y2_4 = (y_1 | (y_1 << 4U)) & bitvec<16>("1111000011110000");
+//   y2_4 = (y2_4 | (y2_4 << 2U)) & bitvec<16>("1100110011001100");
+//   y2_4 = (y2_4 | (y2_4 << 1U)) & bitvec<16>("1010101010101010");
+//   s_2 = x2_3 | (y2_4 << 1U);
+// }
+//
+// Strangely, a later synthesis ran for 3.5 minutes and produced a longer,
+// less efficient solution:
+//
+// void sketch(bitvec<8>  x_0, bitvec<8>  y_1, bitvec<16> & s_2) {
+//   bitvec<16> x2_3 = (x_0 | (x_0 << 4U)) & bitvec<16>("1111000011110000");
+//   x2_3 = (x2_3 | (x2_3 << 2U)) & bitvec<16>("1100110011001100");
+//   x2_3 = (x2_3 | (x2_3 << 16U)) & bitvec<16>("1100110011001100");
+//   x2_3 = (x2_3 | (x2_3 << 1U)) & bitvec<16>("1010101010101010");
+//   bitvec<16> y2_4 = (y_1 | (y_1 << 4U)) & bitvec<16>("1111000011110000");
+//   y2_4 = (y2_4 | (y2_4 << 2U)) & bitvec<16>("1100110011001100");
+//   y2_4 = (y2_4 | (y2_4 << 16U)) & bitvec<16>("1100110011001100");
+//   y2_4 = (y2_4 | (y2_4 << 1U)) & bitvec<16>("1010101010101010");
+//   s_2 = x2_3 | (y2_4 << 1U);
+// }

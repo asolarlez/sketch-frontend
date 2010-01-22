@@ -1,0 +1,55 @@
+//@Description Given a bit-vector and a bit-mask, the task is select from the bit-vector all the bits selected by the bit-mask and pack them in the beginning of the word.
+
+int W = 8;
+
+bit[W] compress(bit[W] x, bit[W] m){
+  int i=0;
+  bit[W] out = 0;	
+  for(int j=0; j<W; ++j){
+  	if(m[j]){
+  	  out[i] = x[j];
+  	  i = i+1;	
+  	}  	
+  }
+  return out;
+}
+
+
+bit[W] fixedMask(bit[W] x){
+   bit[W] mask = {0, 1, 0, 0, 1, 0, 0, 1};
+   return  compress(x, mask);
+}
+
+
+bit[W] xor_reduce(bit[W] in){
+  bit[W] out = 0;
+  out[0] = in[0];
+  for(int i=1; i<W; ++i){
+  	out[i] = in[i] ^ out[i-1];
+  }
+  return out;
+}
+
+bit[W] maskedShift(bit[W] in, bit[W] mask, int s){
+	bit[W] t = in & mask;
+	return (in ^ t) | t >> s;
+}
+
+xo
+bit[W] fast(bit[W] x, bit[W] m) implements compress{
+	bit[W] mk=0;
+	bit[W] mp=0;
+	bit[W] mv=0;
+	bit[W] t=0;
+	int i=0;
+	x = x & m;
+	mk = (!m) << ??;	
+	repeat(??){
+	  mp = xor_reduce(mk); 
+	  mv = mp & m;
+	  m = maskedShift(m, mv, ??);
+	  x = maskedShift(x, mv, ??);
+	  mk = mk & !mp;
+	}
+	return x;	
+}

@@ -1,0 +1,173 @@
+//@Description Sketches a remove method from a doubly linked list.
+
+pragma options "--main_names main";
+
+int N=4;
+
+struct node{
+	bit val;
+	node prev;
+	node next;
+}
+
+
+node newNode(bit val){
+	node n = new node();
+	n.val = val;
+	n.prev = null;
+	n.next = null;
+	return n;	
+}
+
+struct list{
+	node head;
+	node tail;		
+}
+
+
+node rhsNode(list l, node n1){
+	return {| ( l(.head | .tail) | n1(.next | .prev)? ) | null  |};
+}
+
+void assign(list l, node n1){
+	node rhs = rhsNode(l, n1);	
+	{|  l(.head | .tail)  | n1(.prev | .next | .prev.next | .next.prev)   |} = rhs;	
+}
+
+
+bit cond(list l, node na){	
+	node n1 = rhsNode(l, na);
+	node n2 = rhsNode(l, na);
+	return {|  n1 (== | !=) n2 | ??  |}  ;	
+}
+
+static void addHead(list l, node n){
+	
+	if(cond(l,n)){
+		//assign(l, n);
+		n.next = l.head;
+		l.head.prev = n;
+		l.head = n;
+	}
+	if(cond(l,n)){
+		l.head = n;
+		l.tail = n;	
+	}
+	
+	/*
+	repeat(??){
+		if(cond(l, n)){ assign(l, n, l.head, n); }
+	}
+	*/
+	
+}
+
+static void addNext(list l, node cur, node n){
+	
+	n.next = cur.next;
+	cur.next = n;
+	if(cond(l, ?? ? n : cur)){ n.next.prev = n; }
+	n.prev = cur;
+	if(l.tail == cur){ l.tail = n; }
+	
+	/*
+	repeat(4){
+		if(cond(l, ?? ? n : cur)){ assign(l, ?? ? n : cur); }
+	}
+	*/
+	
+	
+}
+
+
+static void remove(list l, node n){
+	
+	repeat(4){
+		if(cond(l,n)){assign(l, n);} 	
+	}
+	/*
+	if(l.head == n){
+		//l.head = n.next;	
+	}
+	if(l.tail == n){
+		//l.tail = n.prev;	
+	}
+	if(n.prev != null){
+		//n.prev.next = n.next;	
+	}
+	if(n.next != null){
+		//n.next.prev = n.prev;
+	}
+	*/
+}
+
+
+list newList(){
+	list l = new list();
+	l.head = null;
+	l.tail = null;	
+	return l;
+}
+
+
+void main(bit[N] elems, int addP, bit addV, int rem){
+	list l = newList();
+	node[N] nodes;
+	node prevn = null;
+	for(int i=0; i<N; ++i){
+		node n = newNode(elems[i]);
+		addHead(l, n);
+		assert n.next == prevn;
+		prevn = n;
+		nodes[N-1-i] = n;
+	}
+	
+	assert l.head != null;
+	assert l.tail != null;
+	
+	{
+		node t = l.head;
+		for(int i=0; i<N; ++i){
+			assert t == nodes[i];
+			t = t.next;		
+		}
+	}
+	
+	
+	if(addP < N && rem < N && addP != rem){
+		node n = newNode(addV);
+		addNext(l, nodes[addP], n);
+		remove(l, nodes[rem]);
+		int j=0;
+		node t = l.head;
+		node prevt = null;
+		for(int i=0; i<N; ++i){
+			if(j!= rem){
+				assert t == nodes[j];
+				prevt = t;
+				t = t.next;				
+			}
+			if(j == addP){
+				assert t == n;
+				prevt = t;
+				t = t.next;	
+			}
+			++j;
+		}
+		assert prevt == l.tail;
+	}
+	
+	
+	{
+		node t = l.tail;
+		node prevt = null;
+		for(int i=0; i<N; ++i){
+			assert t != null;
+			prevt = t;
+			t = t.prev;	
+		}
+		assert prevt == l.head;
+	}
+	
+	
+}

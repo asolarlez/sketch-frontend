@@ -1,0 +1,27 @@
+//@Description Counts the number of ones in a bit-vector in logn steps.
+int W=8;
+
+bit[W] countBits(bit[W] in)
+{
+	bit[W] ret=0;
+	bit[W] one = 0;
+	one[0] = 1;
+	for(int i=0;i<W;i++){
+		if(in[i])
+			ret=ret+one;
+	}
+	return ret;
+}
+
+
+
+bit[W] countSketch(bit[W] in) implements countBits
+{
+	bit[W] tmp=in;
+	repeat(??)
+	{
+		tmp=(tmp & ??) + (tmp>>?? & ??);
+	}
+	return tmp;
+}
+

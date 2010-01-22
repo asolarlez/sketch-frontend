@@ -1,0 +1,64 @@
+//@Description A read-only array with N elements contains the values {1,...,N-1}. This Sketch finds the duplicate entry using only constant extra space.
+
+int W = 17;
+
+pragma options "--inlineamnt 5 --inbits 3 "; 
+
+bit dup(int[W] in) {
+	int[W] tab = 0;
+	int count = 0;
+	for(int i = 0;i<W; i++) 
+		tab[in[i]] = tab[in[i]] + 1;
+	for(int i = 0;i<W; i++)
+		if(tab[i] > 1) count = count + 1;
+	if(count >= 1) return 1;
+	return 0;
+}
+
+int f(int[W] in, int n) {
+	return in[n];
+}
+
+int fstar(int[W] in, int n, int k) {
+	for(int i = 1;i<=k; i++) 
+		n = f(in, n);
+	return n;
+}
+	
+int expr(int[W] in, int n, int flag) {
+	if(flag == 1) return fstar(in, n, ??);
+	else return fstar(in, n, ??);
+}
+
+bit dupSketched(int[W] in) implements dup{
+	int a,b;
+	int count1 = ??;
+	int count2 = ??;
+	a = expr(in, W-1, 1);
+	b = expr(in, W-1, 2);
+	for(int i = 0; a != b; i++) {
+		a = expr(in, a, 1);
+		b = expr(in, b, 2);
+	}
+
+	//Computing length of tail
+	a = W - ??;
+	for(int i = 0; a != b; i++) {
+		count2 = count2 + 1;
+		a = f(in, a);
+		b = f(in, b);
+	}
+
+	//Counting the length of cycle
+	a = expr(in, a, 1);
+	for(int i = 0; a != b; i++) {
+		a = f(in, a);
+		count1 = count1 + 1;
+	}
+
+	int count3 = ??;
+	for(int i = 0;i<W; i++) if(in[i] == b) count3++;
+	
+	if(count1 + count2 + count3 >= W + ??) return 0;
+	return 1;
+}

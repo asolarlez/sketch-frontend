@@ -1,0 +1,19 @@
+//@Description Implements an addition of two 4-bit numbers through a table lookup.
+
+int W = 4;
+
+bit[W] tableAddition(bit[W] in1, bit[W] in2) implements addition {
+	int exp = 1<<(W*2); //The back-end solver doesn't implement shifts for ints, but in this case, it's OK because we are shifting constants.
+	bit [W*exp] tmp=??;
+	bit[W] output;
+	bit[2*W] input;
+	input[0::W] = in1;
+	input[W::W] = in2;	
+	int idx = (int) input;
+	output = tmp[idx*W::W];	
+	return output;
+}
+
+bit[W] addition (bit[W] in1, bit[W] in2) {	
+	return in1 + in2;
+}

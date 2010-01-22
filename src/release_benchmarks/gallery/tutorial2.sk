@@ -1,0 +1,13 @@
+//@Description Toy benchmark that explores the use of generators.
+
+int spec( int x, int y ){
+   return (x + x) * (y + 5);
+}
+
+int axpb(int x){
+   return ?? * x + ??;
+}
+
+int sketch( int x, int y ) implements spec{
+   return ( axpb(x) ) * ( axpb(y) );
+}
