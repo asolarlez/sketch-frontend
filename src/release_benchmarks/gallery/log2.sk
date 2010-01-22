@@ -1,0 +1,48 @@
+//@Description Sketch to compute the logarithm base two of an integer represented as a vector of bits. The number of loop iterations is synthesized by Sketch.
+
+int W = 32, logW = 5;
+
+
+bit[W] log2(bit[W] in) {
+	bit[W] i = castInt(W);
+	bit[W] minusone = 0; minusone = !minusone;	
+	for(int t=0; t<W; ++t){
+		i = i + minusone;
+		if (in[(int)i]){
+			return i;	
+		}
+	}
+}
+
+
+
+bit[W] sklog2(bit[W] in) implements log2 {
+	bit[W] ret = 0;
+	repeat(??){
+		if (!iszero(in & ??)) {
+			in = in >> ??;
+			ret = ret | ??;
+		}
+	}
+	return ret;
+}
+
+
+bit iszero(bit[W] in)
+{
+	bit res=1;
+	for(int i=0;i<W;i++)
+		res=res & !in[i];
+	return res;
+}
+
+
+bit[W] castInt(int n){
+	bit[W] one = 0;
+	one[0] = 1;
+	bit[W] ret = 0;
+	repeat(n){
+		ret = ret + one;	
+	}
+	return ret;
+}

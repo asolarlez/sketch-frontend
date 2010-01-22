@@ -1,0 +1,21 @@
+//@Description Sketch that computes the xor of all the bits in a bit-vector using a strategy similar to log-shifting.
+
+int W=32;
+
+bit parity(bit[W] in)
+{
+	bit ret=0;
+	for(int i=0;i<W;i++)
+		ret=ret^in[i];
+	return ret;
+}
+
+bit fastparity(bit[W] in) implements parity
+{
+	bit[W] y=in;
+	int x = ??;
+	repeat(??) {
+		y=y^(y << ??);
+	}	
+	return y[W-1];
+}
