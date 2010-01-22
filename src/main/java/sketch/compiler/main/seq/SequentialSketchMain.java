@@ -753,9 +753,29 @@ public class SequentialSketchMain
 		prog.accept( new SimpleCodePrinter() );
 		System.out.println("=============================================================");
 	}
+	
+    public static void checkJavaVersion(int... gt_tuple) {
+        String java_version = System.getProperty("java.version");
+        String[] version_numbers = java_version.split("\\.");
+        for (int a = 0; a < gt_tuple.length; a++) {
+            int real_version = Integer.parseInt(version_numbers[a]);
+            if (real_version < gt_tuple[a]) {
+                String required = "";
+                for (int c = 0; c < gt_tuple.length; c++) {
+                    required +=
+                            String.valueOf(gt_tuple[c])
+                                    + ((c != gt_tuple.length - 1) ? "." : "");
+                }
+                System.err.println("your java version is out of date. Version "
+                        + required + " required");
+                System.exit(1);
+            }
+        }
+    }
 
 	public static void main(String[] args)
 	{
+	    checkJavaVersion(1, 6);
         try {
             CommandLineParamManager.reset_singleton();
             new SequentialSketchMain(args).run();
