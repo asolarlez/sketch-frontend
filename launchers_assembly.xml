@@ -18,27 +18,17 @@
                 <include>sketch-${version}-all-${os.name}-${os.arch}.jar</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>${basedir}/scripts/${osfamily}/final</directory>
+            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <filtered>true</filtered>
+        </fileSet>
     </fileSets>
 
     <!-- substitute variables -->
     <files>
         <file>
             <source>README</source>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>scripts/new_launchers/unix/sketch</source>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>scripts/new_launchers/unix/stensk</source>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>scripts/new_launchers/unix/install</source>
             <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
             <filtered>true</filtered>
         </file>

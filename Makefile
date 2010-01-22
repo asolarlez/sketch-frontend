@@ -64,11 +64,10 @@ osc: assemble-noarch
 	python ../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
 	rm -rf java-build
 
-install-launchers-only:
-	mkdir -p $(DESTDIR)/usr/bin
-	install -m 755 scripts/new_launchers/unix/sketch $(DESTDIR)/usr/bin
-	install -m 755 scripts/new_launchers/unix/psketch $(DESTDIR)/usr/bin
-	install -m 755 scripts/new_launchers/unix/stensk $(DESTDIR)/usr/bin
+system-install: assemble-arch # usage: make system-install DESTDIR=/usr/bin
+	[ "$(DESTDIR)" ] || { echo "no destination directory defined. try make help."; exit 1; }
+	mkdir -p $(DESTDIR)
+	DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers.dir/dist/* && install -m 644 *jar "$$DESTDIR" && install -m 755 sketch psketch stensk "$$DESTDIR"
 
 ### testing
 

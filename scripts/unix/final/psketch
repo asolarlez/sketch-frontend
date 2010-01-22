@@ -10,7 +10,7 @@ for fname in "$dirname/sketch-1.4.0-noarch.jar" "$dirname/sketch-${version}-all-
         jarname="$fname"
     fi
     if [ "$fname" ]; then
-        errtext="${errtext}    seraching for jar '$fname' ...
+        errtext="${errtext}    searching for jar '$fname' ...
 "
     fi
 done
@@ -21,9 +21,6 @@ function err() {
     exit 1
 }
 
-if [ -z "$(java -version 2>&1 | grep 1.6)" ]; then
-    err "please configure \$PATH so you are using Java 1.6"
-fi
 [ "$jarname" ] || { echo "$errtext"; err "could not find any jars (see 'SEARCH FOR JAR FILES' in the script)"; }
 if ! [ -f "$jarname" ]; then
     err "couldn't find file '$jarname'"
