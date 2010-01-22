@@ -1,12 +1,12 @@
-pragma options "--seed 1 --inbits 1 --synth MINI --cbits 3 --keepasserts --verbosity 3 --arrayOOBPolicy assertions";
-
-int dummy(int x) { return 1; }
+pragma options "--seed 1 --inbits 1 --cex --cbits 3 -showinputs --keeptmpfiles --keepasserts --verbosity 10 --arrayOOBPolicy assertions";
+//pragma options "-simplifycex NOSIM"
 
 #define LOGN 3
 #define N (1<<LOGN)  // size of array
+
 #define T int
 
-#define A LOGN*3*N      // max number of number of angels
+#define A LOGN*3*2*N      // max number of number of angels
 int[A] _angels_; // angelic choices 
 int    _next_;   // id of the next angel value
 int _nextAngel_() { int t = _next_; _next_++; return _angels_[t]; }
@@ -47,31 +47,123 @@ T[N] scanSteele(T[N] x)
 	for (int step = 0; step < LOGN; step++) {
 		for (int r = 0; r < N; r++) {
 			if (_==0) y[r] = x[r-_]+x[r-_];    // x[_]+x[_] was too slow.
-			else { y[r] = x[r]; int t = _;int t2=_; }
+			else { y[r] = x[r]; int t = _;int t2=_; }  // consume angels to make each control flow path consume equal amount
 		}
 		x = y;
 	} 
 	return x;
 }
 
-T[N] scan2Phase(T[N] x) 
+#define NADDERS ((LOGN * N))
+T[N] scanWithResourceConstraints(T[N] x) 
+// implements scanSpec 
+{
+	initAngels();
+
+	T[N] y = 0;
+	int adders = 0; // limit number of adders used 
+	
+	for (int step = 0; step < LOGN; step++) {
+	    int a1 = _;
+	    int a2 = _;
+		for (int r = 0; r < N; r++) {
+			if (_==0) { 
+				y[r] = x[r-a1]+x[r-a2];
+				adders = adders + 1;
+				assert(adders <= NADDERS);
+			} else { 
+				y[r] = x[r]; 
+//				int t = _;int t2=_;   
+			}
+		}
+		x = y;
+	} 
+	return x;
+}
+
+#define NADDERS ((LOGN * N)/2)  
+T[N] scanWithResourceConstraintsSmallerLessRegular(T[N] x) 
 implements scanSpec 
+{
+	initAngels();
+	
+	// 4,0,0, 0,0,1, 1,7,5, 0,0,1, 1,3,1, 0,0,1, 4,2,6, 0,0,1,
+	// 1,2,1, 1,0,0, 1,2,2, 0,0,2, 1,7,0, 1,4,4, 0,0,1, 0,0,2,
+	// 1,1,1, 1,2,1, 0,0,1, 1,4,2, 0,0,1, 0,0,2, 0,0,3, 0,0,4};
+
+	T[N] y = 0;
+	int adders = 0; // limit number of adders used 
+	
+	for (int step = 0; step < LOGN; step++) {
+		for (int r = 0; r < N; r++) {
+			if (_==0) {
+				int a1 = _; int a2 = _; assert(a1<a2); 
+				y[r] = x[r-a1]+x[r-a2];
+				adders = adders + 1; assert(adders <= NADDERS);
+			} else { 
+				y[r] = x[r]; 
+				int t = _;int t2=_;   
+			}
+		}
+		x = y;
+	} 
+	return x;
+}
+
+int dummy(int x) { return 1; }
+int harness(int x) 
+// implements dummy 
+{
+	T[N] input = { 
+		4,2,3,5,6,1,8,7
+//    	,4,2,3,5,6,1,8,7
+	};
+		
+	T[N] r1 = scanSpec(input);
+	T[N] r2 = scanWithResourceConstraintsSmallerLessRegular(input);
+	
+	for (int i = 0; i < N; i++) 
+		assert r1[i]==r2[i]; 
+	 
+	return 1;
+}
+
+
+/* N adders per phase */
+#define NADDERS (16*N)
+T[N] scan2Phase(T[N] x) 
+// implements scanSpec 
 {
 	initAngels();
 
 	T[N] y = 0;
 	
+	int adders = 0; // limit number of adders used 
 	for (int step = 0; step < LOGN; step++) {
 		for (int r = 0; r < N; r++) {
-			if (_==0) y[r] = x[r-_]+x[r-_];
-			else { y[r] = x[r]; int t = _;int t2=_; }
+			if (_==0) { 
+				adders = adders + 1; assert(adders <= NADDERS);
+				int a1 = _; int a2 = _; assert(a1<a2); 
+				y[r] = x[r-a1]+x[r-a2];
+			} else { 
+				y[r] = x[_]; 
+				int t = _; 
+			}
 		}
 		x = y;
 	} 
+	
+	adders = 0;
 	for (int step = 0; step < LOGN; step++) {
 		for (int r = 0; r < N; r++) {
-			if (_==0) y[r] = x[r-_]+x[r-_];
-			else { y[r] = x[r]; int t = _;int t2=_; }
+			if (_==0) { 
+				adders = adders + 1; assert(adders <= NADDERS);
+				int a1 = _; int a2 = _; assert(a1<a2); 
+				y[r] = x[r+a1]+x[r+a2];  // was - a1   -a2
+			} else { 
+				y[r] = x[_]; 
+				int t = _; 
+			}
 		}
 		x = y;
 	} 
