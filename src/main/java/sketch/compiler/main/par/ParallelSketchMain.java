@@ -403,6 +403,7 @@ public class ParallelSketchMain extends SequentialSketchMain {
 
 	public static void main(String[] args)
 	{
+	    checkJavaVersion(1, 6);
 	    CommandLineParamManager.reset_singleton();
 		new ParallelSketchMain (args).run();
 	}

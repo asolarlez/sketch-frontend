@@ -1,9 +1,5 @@
 //@Description Sketches an enqueue method for a Queue represented as a linked list.
 
-/*
-This benchmark works much faster with --synth ABC 
-*/
-
 int N = 5;
 
 struct Queue{

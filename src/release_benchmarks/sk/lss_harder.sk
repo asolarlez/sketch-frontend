@@ -1,3 +1,4 @@
+//@Description Sketch that takes in an array of signed inputs and returns the maximum value of the sum of any contiguous subarray, in linear time.
 
 pragma options "--inlineamnt 5 --inbits 3 ";
 

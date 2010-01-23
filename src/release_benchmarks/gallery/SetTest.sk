@@ -3,15 +3,12 @@
 include "TreeSet.skh" ;
 include "HashSetComplete.skh" ;
 
-pragma options "--unrollamnt 5 --inbits 3 ";
+pragma options "--unrollamnt 5 --inbits 3 --main_names main";
 
-bit ONE(int[T] vals, int tval){
-	return 1;
-}
 
 int T = 4;
 
-bit main(int[T] vals, int tval) implements ONE{
+void main(int[T] vals, int tval){
 	
 	HashTable ht = newHashTable();
 	Tree t = newTree();
@@ -32,7 +29,5 @@ bit main(int[T] vals, int tval) implements ONE{
 	
 	assert containsh(ht, tval) == containst(t, tval);
 
-	
-	return 1;
 	
 }

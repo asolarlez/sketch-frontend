@@ -1,5 +1,7 @@
 //@Description Sketches a remove method from a doubly linked list.
 
+pragma options "--main_names main";
+
 int N=4;
 
 struct node{
@@ -107,10 +109,8 @@ list newList(){
 	return l;
 }
 
-bit one(bit[N] elems, int addP, bit addV, int rem){
-	return 1;	
-}
-bit tester(bit[N] elems, int addP, bit addV, int rem) implements one{
+
+void main(bit[N] elems, int addP, bit addV, int rem){
 	list l = newList();
 	node[N] nodes;
 	node prevn = null;
@@ -169,5 +169,5 @@ bit tester(bit[N] elems, int addP, bit addV, int rem) implements one{
 		assert prevt == l.head;
 	}
 	
-	return 1;
+	
 }

@@ -16,6 +16,32 @@
         <osarch>${os.arch}</osarch>
     </properties>
 
+    <profiles>
+        <!-- maven doesn't define a variable os.family! -->
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <osfamily>windows</osfamily>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <osfamily>unix</osfamily>
+            </properties>
+        </profile>
+    </profiles>
+
     <distributionManagement>
         <repository>
             <id>cobol</id>

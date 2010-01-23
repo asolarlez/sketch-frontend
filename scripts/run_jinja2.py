@@ -22,7 +22,9 @@ def main():
     from amara import bindery
     version = str(bindery.parse(mvnfile.read()).project.version)
     files = [v for v in Path("scripts").walk_files() if v.endswith(".jinja2")]
-    process_jinja2(files=files, glbls={"version": version})
+    def outfcn(fname, output):
+        Path(fname.parent().subpath("final", fname.basename().strip(".jinja2"))).write(output)
+    process_jinja2(files=files, glbls={"version": version}, output_fcn=outfcn)
     for fname in files:
         if "launchers" in fname and "unix" in fname:
             Path(fname.replace(".jinja2", "")).chmod(0755)

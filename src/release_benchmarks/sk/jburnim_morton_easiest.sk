@@ -1,3 +1,5 @@
+//@Description Sketch to construct 32-bit Morton numbers from two 16-bit inputs.
+
 // jburnim_morton_easier.sk
 // Author: jburnim@cs.berkeley.edu (Jacob Burnim)
 //

@@ -271,6 +271,7 @@ public class StencilSketchMain extends SequentialSketchMain
 	}
 
     public static void main(String[] args) {
+        checkJavaVersion(1, 6);
         CommandLineParamManager.reset_singleton();
         try {
             new StencilSketchMain(args).run();
