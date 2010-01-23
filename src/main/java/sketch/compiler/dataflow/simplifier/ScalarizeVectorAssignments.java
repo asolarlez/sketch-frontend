@@ -19,10 +19,11 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+
 /**
  *
  * Scalarizes vector assignments to satisfy the preconditions of
- * {@link sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions ProduceBooleanFunctions}.
+ * {@link streamit.frontend.experimental.nodesToSB.ProduceBooleanFunctions ProduceBooleanFunctions}.
  *
  *  Preconditions:
  *  * non-trivial range expressions only appear in simple assignments.
@@ -74,7 +75,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 	 * <dd> 2) lhs is an array and rhs is a scalar
 	 * <dd> 3) lhs is an array and rhs contains a ternary/binary/unary operator.
 	 * <dd> 4) lhs contains a non-trivial array range.
-	 * </dl>
+	 * 	</dl>
 	 *
 	 *
 	 */
@@ -85,6 +86,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		if( !(rt instanceof TypeArray )  ) return 2;
 		if( (new OpFinder()).hasOp(rhs) ) return 3;
 		if( lt.equals(rt) && !agressive ) return 0;
+		
 		return 1; //lhs and rhs are arrays of different dimensions.
 	}
 
@@ -429,19 +431,14 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     		if( irhs != null && irhs == 0 ){
 
     			List<Statement> mainLst = new ArrayList<Statement>();
-				mainLst.add (zeroOut(lhs, ExprConstInt.zero, ltlen, getType (rhs).defaultValue ()));
-				Statement mainBody =
-				new StmtBlock(lhs, mainLst);
+				mainLst.add (zeroOut(lhs, ExprConstInt.zero, ltlen, getType(rhs).defaultValue()));
+				Statement mainBody = new StmtBlock(lhs, mainLst);
 				// Now generate the loop, we have all the parts.
 				addStatement(mainBody);
 
-
     			return;
-
     		}
-
     	}
-
 
     	Expression minLen = minLength(ltlen, rtlen);
         // We need to generate a for loop, since from our point of
@@ -486,17 +483,12 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         if( minLen !=  ltlen){
         	mainLst.add (zeroOut(lhs, minLen, ltlen, getType (rhs).defaultValue ()));
         }
+        
         Statement mainBody = new StmtBlock(lhs, mainLst);
-
 
         // Now generate the loop, we have all the parts.
         addStatement(mainBody);
     }
-
-
-
-
-
 
 
 	public Object visitStmtAssign(StmtAssign stmt)
@@ -510,8 +502,83 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
                 makeCopy(stmt.getLHS(), stmt.getRHS(), ncReason);
                 return null;
             }
+            
+            
+          //not sure what the context should be in general 
+           // 	z = array1 == array2;
+           // ---->
+           //
+           //	z = 1;
+           //	for (int index = 0; index < length; index = index + 1)
+           // 		z = z && (array1[index] == array2[index]);
+            
+          if (stmt.getRHS() instanceof ExprBinary){
+            	ExprBinary expr = (ExprBinary)stmt.getRHS();
+            	Type lt = getType(expr.getLeft());
+            	Type rt = getType(expr.getRight());
+            	
+            	Expression len = typeLen(lt);
+            	
+            	//assert typeLen(lt) == typeLen(rt);
+            	
+            	if (expr.getOp() == ExprBinary.BINOP_EQ && lt.isArray()){           		
+            		
+            		ExprVar leftVar = (ExprVar) stmt.getLHS();
+            		
+            		String indexName = varGen.nextVar();
+            		ExprVar index = new ExprVar(leftVar, indexName);
+            		
+            		//create arr1[i] and arr2[i]
+            		ExprArrayRange leftScalarExp = new ExprArrayRange(expr, expr.getLeft(), index, true);
+            		ExprArrayRange rightScalarExp = new ExprArrayRange(expr, expr.getRight(), index, true);
+            		
+            		//create expression var1 && (arr1[i] == arr2[i]);
+            		ExprBinary scalarEqExp = new ExprBinary(ExprBinary.BINOP_EQ, leftScalarExp, rightScalarExp);
+            		ExprBinary scalarAndExp = new ExprBinary(ExprBinary.BINOP_AND, leftVar, scalarEqExp);
+            		
+            		// create assignments:
+            		Statement decl = new StmtAssign(leftVar, ExprConstInt.one);
+            		Statement body = new StmtAssign(leftVar, scalarAndExp);
+            		
+            		List<Statement> bodyList = new ArrayList<Statement>();
+            		bodyList.add(body);
+            		
+            		Statement bodyBlock = new StmtBlock(expr, bodyList);
+            		
+            		
+            		//surround with for-loop
+            		Statement init = new StmtVarDecl(index, TypePrimitive.inttype, indexName, new ExprConstInt(0));
+            		Expression cond = new ExprBinary(ExprBinary.BINOP_LT, index, len);
+            		Statement incr = new StmtAssign(index, new ExprBinary(index, "+", new ExprConstInt(1)));
+            		
+            		Statement forStmt = new StmtFor(stmt, init, cond, incr, bodyBlock);
+            		
+            		/****/ //copy-pasted from above
+            		//List<Statement> bodyLst = new ArrayList<Statement>();
+                    //Statement block = new StmtBlock(expr, bodyLst);
+                    //block = (Statement)block.accept(this);
+
+                    List<Statement> mainLst = new ArrayList<Statement>();
+                    
+                    mainLst.add(decl);
+                    mainLst.add(forStmt);                   
+                    Statement mainBody = new StmtBlock(expr, mainLst);
+
+                    // Now generate the loop, we have all the parts.
+                    addStatement(mainBody);
+            		/****/
+                    
+                    
+                    //addStatement(decl);
+            		//addStatement(forStmt);
+            		
+            		return null;
+            		
+            	}
+            }
         }
         return result;
     }
+	
 
 }

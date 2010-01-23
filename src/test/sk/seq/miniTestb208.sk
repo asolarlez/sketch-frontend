@@ -1,0 +1,87 @@
+pragma options "--seed 1 --inbits 1 --cbits 3 --cex --keeptmpfiles --keepasserts --verbosity 6 --arrayOOBPolicy assertions";
+
+#define LOGN 3
+#define N (1<<LOGN)  // size of array
+
+#define T int
+
+#define A LOGN*3*2*N      // max number of number of angels
+int[A] _angels_; // angelic choices 
+int    _next_;   // id of the next angel value
+int _nextAngel_() { int t = _next_; _next_++; return _angels_[t]; }
+#define _ (_nextAngel_())
+void initAngels() { _angels_ = ??; _next_ = 0; }
+
+T[N] scanSpec (T[N] x) {
+	T[N] y = 0;
+	
+	y[0] = x[0];
+	for (int r = 1; r < N; r++) {
+		y[r] = y[r-1]+x[r];
+	} 
+	return y;	
+}
+
+T[N] scanSame(T[N] x) 
+// implements scanSpec 
+{
+	initAngels();
+
+	T[N] y = 0;
+	
+	y[0] = x[0];
+	for (int r = 1; r < N; r++) {
+		y[r] = y[r-_]+x[_];
+	}
+	return y;
+}
+
+#define NADDERS ((LOGN * N)/2)  
+T[N] scanWithResourceConstraintsSmallerLessRegular(T[N] x) 
+// implements scanSpec 
+{
+	initAngels();
+
+	T[N] y = 0;
+	int adders = 0; // limit number of adders used 
+	
+	for (int step = 0; step < LOGN; step++) {
+		for (int r = 0; r < N; r++) {
+			if (_==0) {
+				y[r] = x[r-_]+x[r-_];
+				adders = adders + 1; 
+				assert(adders <= NADDERS);
+			} else { 
+				y[r] = x[r]; 
+				int t = _;int t2=_;   // consume angels to achieve symmetry
+			}
+		}
+		x = y;
+	} 
+	return x;
+}
+
+int dummy(int x) { return 1; }
+int harness(int x) 
+implements dummy 
+{
+	T[N] input = { 
+		4,2,3,5,6,1,8,7
+	};
+		
+	T[N] r1 = scanSpec(input);
+	// T[N] r2 = scanSame(input);
+	T[N] r2 = scanWithResourceConstraintsSmallerLessRegular(input);
+	
+	for (int i = 0; i < N; i++) 
+		assert r1[i]==r2[i]; 
+	 
+	return 1;
+}
+
+int harness2(int x)
+// implements dummy
+{
+	return 1;
+}
+

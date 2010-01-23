@@ -1,0 +1,51 @@
+int N = 5;
+
+
+
+
+void VOID(){
+}
+
+
+
+static bit[N] fc145(bit[N] in, bit[N] out){
+assert !in[1] || out[1];
+assert !in[3] || out[3];
+assert !out[0];
+assert !out[1] || in[1];
+assert !out[2];
+assert !out[3] || in[3];
+assert !out[4];
+return out;
+}
+
+static bit[N] f1(bit[N] in, bit[N] out){
+return fc145(in, out);
+}
+
+void assertequal(bit[N] a, bit[N] b, int k){
+
+    
+
+     for(int i=0; i<k; ++i){
+
+          assert a[i] == b[i];
+
+     }
+
+}
+
+
+void main() implements VOID{
+	bit[N] t1,t2,t3;
+	t1 = ??;
+
+	t2 = ??;
+
+	t3 = ??;
+	
+	assert t2[3];
+	
+   assertequal( t3 , f1(t2,??) | f1(t1, ??), N);
+
+}
