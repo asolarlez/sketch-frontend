@@ -1,0 +1,28 @@
+int N = 5;
+
+
+
+
+void VOID(){
+}
+
+
+
+static int fc145(int in){
+	return in;
+}
+
+static int f1(int in){
+return fc145(in);
+}
+
+
+
+void main() implements VOID{
+	int t1 = ??;
+	int t2 = ??;
+	assert t1 + t2 == 5;
+	assert t1 == 1;
+	assert f1(t1) + f1(t2) == 5;
+
+}

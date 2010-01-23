@@ -238,6 +238,7 @@ public class SequentialSketchMain
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
+		dump (prog, "Extract Vectors in Casts:");
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		//dump (prog, "Extract Vectors in Casts:");
 		prog = (Program)prog.accept(new SeparateInitializers());
@@ -586,6 +587,16 @@ public class SequentialSketchMain
 				"--keeptmpfiles  \t Keep intermediate files. Useful for debugging the compiler.",
 				null, null) );
 
+		params.setAllowedParam("showinputs", new POpts(POpts.FLAG,
+                "--showinputs  \t Show the counterexample inputs produced as part of the synthesis process.",
+                null, null) );
+		
+		params.setAllowedParam("simpleinputs", new POpts(POpts.FLAG,
+                "--simpleinputs  \t Helps performance on bitvector benchmarks. Avoids producing completely random inputs.",
+                null, null) );
+		
+		
+		
 		params.setAllowedParam("cbits", new POpts(POpts.NUMBER,
 				"--cbits n      \t Specify the number of bits to use for integer holes.",
 				"5", null) );
@@ -731,6 +742,12 @@ public class SequentialSketchMain
 			commandLineOptions.add("-olevel");
 			commandLineOptions.add( "" + params.flagValue("olevel") );
 		}
+		if(params.hasFlag("showinputs")){
+            commandLineOptions.add("-showinputs");            
+        }
+		if(params.hasFlag("simpleinputs")){
+            commandLineOptions.add("-nosim");            
+        }
 	}
 
 

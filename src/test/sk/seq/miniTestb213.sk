@@ -1,0 +1,14 @@
+bit foo(){
+	return 1;
+}
+
+bit fooSK() implements foo{
+	bit[3] x = {1,1,1};
+	bit[3] y = {1,0,1};
+	
+	bit z;
+	z = x == y;
+	
+	return 1;
+}
+
