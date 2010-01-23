@@ -25,7 +25,7 @@ clean:
 	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
 
 codegen: # codegen a few files (not very high probability of changing)
-	scripts/run_jinja2.py
+	python scripts/run_jinja2.py
 
 compile:
 	$(OPT_BUILDR) compile
@@ -98,6 +98,9 @@ run-platform-seq: target/version.txt # run a test using the platform jar
 
 run-local-seq:
 	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+
+dump-fcn-info: # dump information about functions to a file. usage: EXEC_ARGS=filename.sk
+	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.other.ParseFunctions" "-Dexec.args=$(EXEC_ARGS)"
 
 run-local-par:
 	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.par.ParallelSketchMain" "-Dexec.args=$(EXEC_ARGS)"

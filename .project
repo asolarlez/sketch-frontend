@@ -5,6 +5,9 @@
   <projects/>
   <buildSpec>
     <buildCommand>
+      <name>org.python.pydev.PyDevBuilder</name>
+    </buildCommand>
+    <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>
     </buildCommand>
     <buildCommand>
@@ -14,5 +17,6 @@
   <natures>
     <nature>org.maven.ide.eclipse.maven2Nature</nature>
     <nature>org.eclipse.jdt.core.javanature</nature>
+    <nature>org.python.pydev.pythonNature</nature>
   </natures>
 </projectDescription>
