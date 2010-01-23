@@ -27,6 +27,7 @@
             </activation>
             <properties>
                 <osfamily>windows</osfamily>
+                <cegisBinName>cegis.exe</cegisBinName>
             </properties>
         </profile>
         <profile>
@@ -38,6 +39,7 @@
             </activation>
             <properties>
                 <osfamily>unix</osfamily>
+                <cegisBinName>cegis</cegisBinName>
             </properties>
         </profile>
     </profiles>

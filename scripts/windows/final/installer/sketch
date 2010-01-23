@@ -1,0 +1,3 @@
+#!/bin/bash
+skbat="$(cygpath --windows "$(readlink -f "$(dirname "$0")")/sketch.bat")"
+cmd /c "$skbat" "$@"

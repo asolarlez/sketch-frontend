@@ -67,9 +67,16 @@ public class MainMethodCreateNospec extends FEReplacer {
                 && func.getReturnType().equals(TypePrimitive.voidtype))
         {
             return add_main_fcn(func);
-        } else {
-            return super.visitFunction(func);
+        } else if (isMainName) {
+            if (func.getSpecification() != null) {
+                System.err.println("WARNING -- didn't replace 'main' function "
+                        + "because it already has an implements");
+            } else {
+                System.err.println("WARNING -- didn't replace 'main' function "
+                        + "because it doesn't have a void return type");
+            }
         }
+        return super.visitFunction(func);
     }
 
     public Function add_main_fcn(Function func) {

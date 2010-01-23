@@ -56,6 +56,10 @@ assemble: target/version.txt # build all related jar files, assuming sketch-back
 
 dist: assemble # alias for assemble
 
+win-installer: assemble-arch
+	basedir=$$(pwd); cd target/*-launchers-windows.dir/dist/*; mv COPYING *jar installer; cd installer; /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensis sketch-installer.nsi; cp *exe "$$basedir"
+	@ls -l *exe
+
 deploy: compile
 	mvn deploy -Dmaven.test.skip=true
 

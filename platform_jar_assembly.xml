@@ -37,7 +37,7 @@
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${sketch-backend-proj}/src/SketchSolver/cegis</source>
+            <source>${sketch-backend-proj}/src/SketchSolver/${cegisBinName}</source>
             <outputDirectory>sketch/compiler</outputDirectory>
             <filtered>false</filtered>
         </file>
