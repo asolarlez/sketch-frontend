@@ -72,17 +72,17 @@ public class FunctionDeclPrinter extends FEReplacer {
     public static class FunctionInfo {
         public final int lineNum;
         public final String srcFile;
-        public final String name;
-        public final String impl;
+        public final String nameStr;
+        public final String implName;
         public final boolean isGenerator;
 
         public FunctionInfo(String srcFile, int lineNum, String name,
-                String impl, boolean isGenerator)
+                String implName, boolean isGenerator)
         {
             this.srcFile = srcFile;
             this.lineNum = lineNum;
-            this.name = name;
-            this.impl = impl;
+            this.nameStr = name;
+            this.implName = implName;
             this.isGenerator = isGenerator;
         }
     }

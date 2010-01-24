@@ -11,26 +11,72 @@ from collections import namedtuple
 from amara import bindery
 from gatoatigrado_lib import (ExecuteIn, Path, SubProc, dict, get_singleton,
     list, memoize_file, pprint, process_jinja2, set, sort_asc, sort_desc)
+import re
+
+REWR_STR = " /* automatically rewritten */"
+FIRST_CHAR = re.compile(r"[^\s]")
 
 def get_info(fname):
-    SubProc(['mvn', '-e', 'exec:java',
-        "-Dexec.mainClass=sketch.compiler.main.other.ParseFunctions",
-        "-Dexec.args=%s" % (fname)]).start_wait()
+    assert fname.isfile()
+    SubProc(["java", "-classpath", "sketch-noarch.jar",
+        "sketch.compiler.main.other.ParseFunctions",
+        fname]).start_wait()
 
 def read_info(fname):
     all = bindery.parse(fname.read()).vector
-    import ipdb; ipdb.set_trace()
+    info = [v for v in all.xml_children if v.xml_type == "element"]
+
+    def setImplements(fcns):
+        for fcn in fcns:
+            fcn.name = str(fcn.nameStr)
+            fcn.impl = getattr(fcn, "implName", None)
+            fcn.impl = (str(fcn.impl) if fcn.impl else fcn.impl)
+            fcn.line_idx = int(str(fcn.lineNum)) - 1
+            fcn.is_generator = str(fcn.isGenerator) == "true"
+        for fcn in fcns:
+            fcn.is_toplevel = getattr(fcn, "is_toplevel", False) or bool(fcn.impl)
+            if fcn.impl:
+                get_singleton(v for v in fcns if v.name == fcn.impl).is_toplevel = True
+        return fcns
+    return dict(list(info).equiv_classes(lambda a: Path(str(a.srcFile)))).map_values(setImplements)
 
 def main(*sketchfiles):
-    with SubProc(["mvn", "-e", "compile"]).wait_block():
-        if not sketchfiles:
-            sketchfiles = [v for v in Path(".").walk_files() if v.extension() in ["sk", "skh"]]
-        else:
-            sketchfiles = [Path(v) for v in sketchfiles]
+    # make sure sketch-noarch.jar exists
+    assembly_file = Path("sketch-noarch.jar")
+    if not assembly_file.isfile():
+        raise Exception("please run renamer-script to generate sketch-noarch.jar")
+
+    # use all sketch files which are subpaths of directory if they exist
+    if not sketchfiles:
+        sketchfiles = [v for v in Path(".").walk_files() if v.extension() in ["sk", "skh"]]
+    else:
+        sketchfiles = [Path(v) for v in sketchfiles]
+
+    # run the Java program
     outpath = Path("function_list.xml")
     outpath.exists() and outpath.unlink()
-    [get_info(v) for v in sketchfiles[:10]]
-    read_info(outpath)
+    [get_info(v) for v in sketchfiles]
+
+    fcns_by_fname = read_info(outpath)
+    print(fcns_by_fname)
+    
+    return
+
+    for fname, fcns in fcns_by_fname.items():
+        lines = fname.read().split("\n")
+        for fcn in fcns:
+            line = lines[fcn.line_idx]
+            line = line.replace("\r", "")
+            if REWR_STR in line:
+                continue
+            first_char = FIRST_CHAR.search(line).start()
+            if fcn.is_generator and not fcn.is_toplevel:
+                line = line[:first_char] + "generator " + line[first_char:] + REWR_STR
+            elif not fcn.is_toplevel:
+                assert "static " in line
+                line = line.replace("static ", "", 1)
+            lines[fcn.line_idx] = line
+        print("\n".join(lines))
 
 if __name__ == "__main__":
     import optparse

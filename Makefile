@@ -8,30 +8,34 @@ OPT_BUILDR = $(shell (which buildr >/dev/null && which buildr) || which mvn)
 
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
-	@grep -iE "^(###.+|[a-zA-Z0-9_-]+:.*(#.+)?)$$" Makefile | sed -u -r "s/^### /\n/g; s/:.+#/#/g; s/^/    /g; s/#/\\n        /g; s/:$$//g"
+	@grep -iE "^(###.+|[a-zA-Z0-9_-]+:.*(#.+)?)$$" Makefile | sed -u -r "/ #HIDDEN/d; s/^### /\n/g; s/:.+#/#/g; s/^/    /g; s/#/\\n        /g; s/:$$//g"
+
+help-all: # show uncommon commands as well
+	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
+	@grep -iE "^(###.+|[a-zA-Z0-9_-]+:.*(#.+)?)$$" Makefile | sed -u -r "s/ #HIDDEN//g; s/^### /\n/g; s/:.+#/#/g; s/^/    /g; s/#/\\n        /g; s/:$$//g"
 
 show-info:
 	@echo "version = $(VERSION)"
 	@echo "buildr or maven = $(OPT_BUILDR)"
 
-target/classes/%s:
-	mvn compile
-
-target/version.txt: target/classes/sketch/compiler/localization.properties
-	cat target/classes/sketch/compiler/localization.properties | head -n 1 | sed -u "s/version = //g" > target/version.txt
-
 clean:
 	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
 	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
 
-codegen: # codegen a few files (not very high probability of changing)
-	python scripts/run_jinja2.py
-
-compile:
+compile: # build all sources with buildr (if found) or maven
 	$(OPT_BUILDR) compile
 
-install: compile
+maven-install: compile
 	mvn install -Dmaven.test.skip=true
+
+### development #HIDDEN
+
+codegen: # codegen a few files (not very high probability of changing) #HIDDEN
+	python scripts/run_jinja2.py
+
+renamer-script: #HIDDEN
+	[ -f sketch-noarch.jar ] || { make assemble-noarch; cp target/sketch-*-noarch.jar sketch-noarch.jar; }
+	python scripts/rewrite_fcns.py
 
 ### distribution
 
@@ -48,7 +52,7 @@ assemble-arch:
 	make assemble-file FILE=launchers_assembly.xml
 	make assemble-file FILE=tar_src_assembly.xml
 
-assemble: target/version.txt # build all related jar files, assuming sketch-backend is at ../sketch-backend
+assemble: # build all related jar files, assuming sketch-backend is at ../sketch-backend
 	mvn -e -q clean compile
 	make assemble-noarch assemble-arch
 	chmod 755 target/sketch-*-launchers.dir/dist/*/install
@@ -92,7 +96,7 @@ test-release-benchmarks:
 
 ### manually running sketches using the development versions; use $(make <target> EXEC_ARGS=args)
 
-run-platform-seq: target/version.txt # run a test using the platform jar
+run-platform-seq: # run a test using the platform jar
 	[ -f target/sketch-*-all-*.jar ] || make assemble
 	java -cp target/sketch-*-all-*.jar -ea sketch.compiler.main.seq.SequentialSketchMain $(EXEC_ARGS)
 
