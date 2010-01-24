@@ -21,13 +21,16 @@ public class ParseFunctions extends SequentialSketchMain {
 
     public static void main(String[] args) {
         checkJavaVersion(1, 6);
-        try {
-            CommandLineParamManager.reset_singleton();
-            new ParseFunctions(args).run();
-        } catch (RuntimeException e) {
-            System.err.println("[ERROR] [SKETCH] Failed with exception "
-                    + e.getMessage());
-            throw e;
+        for (String arg : args) {
+            System.out.println("processing file " + arg);
+            String[] new_args = { arg };
+            try {
+                CommandLineParamManager.reset_singleton();
+                new ParseFunctions(new_args).run();
+            } catch (RuntimeException e) {
+                System.err.println("[ERROR] [SKETCH] Failed with exception "
+                        + e.getMessage());
+            }
         }
     }
 }

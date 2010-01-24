@@ -12,15 +12,20 @@ from amara import bindery
 from gatoatigrado_lib import (ExecuteIn, Path, SubProc, dict, get_singleton,
     list, memoize_file, pprint, process_jinja2, set, sort_asc, sort_desc)
 import re
+import gatoatigrado_lib.subproc
 
 REWR_STR = " /* automatically rewritten */"
 FIRST_CHAR = re.compile(r"[^\s]")
 
 def get_info(fname):
     assert fname.isfile()
-    SubProc(["java", "-classpath", "sketch-noarch.jar",
-        "sketch.compiler.main.other.ParseFunctions",
-        fname]).start_wait()
+    try:
+        print("running %s" %(fname))
+        SubProc(["java", "-classpath", "sketch-noarch.jar",
+            "sketch.compiler.main.other.ParseFunctions",
+            fname]).start_wait()
+    except gatoatigrado_lib.subproc.ProcessException:
+        print("failed with %s" %(fname))
 
 def read_info(fname):
     all = bindery.parse(fname.read()).vector
@@ -40,6 +45,22 @@ def read_info(fname):
         return fcns
     return dict(list(info).equiv_classes(lambda a: Path(str(a.srcFile)))).map_values(setImplements)
 
+class RewriteException(Exception): pass
+
+def try_rewrite(line, first_char, fcn):
+    end_whitespace = re.search(r"\s*$", line).group(0)
+    if fcn.is_generator and not fcn.is_toplevel:
+        line = line[:first_char] + "generator " + line[first_char:].rstrip() + REWR_STR + end_whitespace
+    elif not fcn.is_toplevel:
+        if "static " in line:
+            line = line.replace("static ", "", 1).rstrip() + REWR_STR + end_whitespace
+        elif "static" in line:
+            line = line.replace("static", "", 1).rstrip() + REWR_STR + end_whitespace
+        else:
+            raise RewriteException("no static keyword to delete")
+    return line
+
+
 def main(*sketchfiles):
     # make sure sketch-noarch.jar exists
     assembly_file = Path("sketch-noarch.jar")
@@ -51,32 +72,55 @@ def main(*sketchfiles):
         sketchfiles = [v for v in Path(".").walk_files() if v.extension() in ["sk", "skh"]]
     else:
         sketchfiles = [Path(v) for v in sketchfiles]
+    # sketchfiles = sketchfiles[:1000]
 
     # run the Java program
     outpath = Path("function_list.xml")
     outpath.exists() and outpath.unlink()
-    [get_info(v) for v in sketchfiles]
+    #[get_info(v) for v in sketchfiles]
+    for coarse_idx in range(0, len(sketchfiles), 100):
+        subset = map(str, sketchfiles[coarse_idx:(coarse_idx + 100)])
+        SubProc(["java", "-classpath", "sketch-noarch.jar",
+            "sketch.compiler.main.other.ParseFunctions"] + subset).start_wait()
 
     fcns_by_fname = read_info(outpath)
-    print(fcns_by_fname)
     
-    return
-
     for fname, fcns in fcns_by_fname.items():
-        lines = fname.read().split("\n")
+        lines = open(fname).readlines()
         for fcn in fcns:
-            line = lines[fcn.line_idx]
-            line = line.replace("\r", "")
-            if REWR_STR in line:
-                continue
-            first_char = FIRST_CHAR.search(line).start()
-            if fcn.is_generator and not fcn.is_toplevel:
-                line = line[:first_char] + "generator " + line[first_char:] + REWR_STR
-            elif not fcn.is_toplevel:
-                assert "static " in line
-                line = line.replace("static ", "", 1)
-            lines[fcn.line_idx] = line
-        print("\n".join(lines))
+            success = False
+            if not (0 <= fcn.line_idx < len(lines)):
+                print("line offset not in range, assuming it came from a header file")
+                success = True
+            elif not str(fcn.name) in lines[fcn.line_idx]:
+                print("function name not in line, assuming it came from a header file")
+                success = True
+            else:
+                for err_offset in [0, -1, 1, -2, 2]:
+                    if not (0 <= fcn.line_idx + err_offset < len(lines)):
+                        continue
+                    
+                    line = lines[fcn.line_idx + err_offset]
+                    if REWR_STR in line:
+                        success = True
+                        break
+
+                    first_char = FIRST_CHAR.search(line)
+                    if not first_char:
+                        continue
+
+                    try:
+                        lines[fcn.line_idx + err_offset] = try_rewrite(line, first_char.start(), fcn)
+                        success = True
+                        break
+                    except RewriteException, e:
+                        print("WARNING / REWRITE EXCEPTION -- %s -- %s:%d"
+                            %(fname, e, fcn.line_idx + err_offset))
+                        continue
+            if not success:
+                print("    WARNING -- couldn't perform rewrite on all neighboring lines!")
+
+        Path(fname + ".rewrite").write("".join(lines))
 
 if __name__ == "__main__":
     import optparse

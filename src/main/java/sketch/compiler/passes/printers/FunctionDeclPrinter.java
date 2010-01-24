@@ -21,13 +21,17 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  *          make changes, please consider contributing back!
  */
 public class FunctionDeclPrinter extends FEReplacer {
-    public Vector<FunctionInfo> values;
+    public static Vector<FunctionInfo> values = null;
     public File path;
 
     public FunctionDeclPrinter(File outfile) {
         path = outfile;
         if (outfile.isFile()) {
-            values = read();
+            if (values == null) {
+                System.out.println("    reading xml file...");
+                values = read();
+                System.out.println("    done reading xml file");
+            }
         } else {
             values = new Vector<FunctionInfo>();
         }
