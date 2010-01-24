@@ -1,4 +1,4 @@
-include "../primitives.skh";
+#include "../primitives.skh"
 #include "list.skh"
 
 void add (List L, int key) {

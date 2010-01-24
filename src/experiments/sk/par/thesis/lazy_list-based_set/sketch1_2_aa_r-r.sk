@@ -8,6 +8,6 @@ int POSINF = NNODES;
 #include "set.skh"
 
 #include "solnAdd.skh"
-include "sketch1LockRemove.skh";
+#include "sketch1LockRemove.skh"
 
-include "driver_a_pr.skh";
+#include "driver_a_pr.skh"

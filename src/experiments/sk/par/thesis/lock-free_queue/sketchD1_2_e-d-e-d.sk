@@ -5,6 +5,6 @@ int NITEMS = 2;
 int NNODES = 1 + NTHREADS * NITEMS; // +1 for the sentinel
 
 #include "solnEnqueue.skh"
-include "sketch1Dequeue.skh";
+#include "sketch1Dequeue.skh"
 
-include "driver_ped.skh";
+#include "driver_ped.skh"

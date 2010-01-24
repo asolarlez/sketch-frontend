@@ -1,4 +1,4 @@
-include "../primitives.skh";
+#include "../primitives.skh"
 
 struct Node {
     int obj;

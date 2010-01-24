@@ -9,4 +9,4 @@ int POSINF = NNODES;
 #include "solnFind.skh"
 #include "addRemove.skh"
 
-include "driver_par.skh";
+#include "driver_par.skh"
