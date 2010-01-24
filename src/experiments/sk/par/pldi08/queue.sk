@@ -1,6 +1,6 @@
 pragma options "--reorderEncoding quadratic";
 
-include "queue.skh";
+#include "queue.skh"
 
 #define AtomicSwap(outOldVal, addr, newVal)  atomic { outOldVal = addr;  addr = newVal;  }
 

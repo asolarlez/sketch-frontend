@@ -1,4 +1,4 @@
-include "queue.skh";
+#include "queue.skh"
 
 int NTHREADS = 2;
 int NITEMS = 1;

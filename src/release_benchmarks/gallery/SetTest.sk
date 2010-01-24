@@ -1,7 +1,7 @@
 //@Description Implement a TreeSet from a HashSet specification.
 
-include "TreeSet.skh" ;
-include "HashSetComplete.skh" ;
+#include "TreeSet.skh"
+#include "HashSetComplete.skh"
 
 pragma options "--unrollamnt 5 --inbits 3 --main_names main";
 

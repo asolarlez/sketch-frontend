@@ -1,4 +1,4 @@
-include "harness.skh";
+#include "harness.skh"
 
 #define COMP {| ((cur|prev)(.next)? | null) (== | !=) (cur|prev)(.next)?  |}
 #define LOC  {| (cur | prev )(.next)? |}

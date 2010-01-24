@@ -1,4 +1,4 @@
-include "set.skh";
+#include "set.skh"
 
 int NTHREADS = 3;
 int NITEMS = 1;
@@ -7,6 +7,6 @@ int NEGINF = -1;
 int POSINF = NNODES;
 
 include "sketch2Find.skh";
-include "addRemove.skh";
+#include "addRemove.skh"
 
 include "driver_par.skh";

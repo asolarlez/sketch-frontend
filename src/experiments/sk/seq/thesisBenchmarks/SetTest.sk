@@ -1,6 +1,6 @@
 
-include "TreeSet.skh" ;
-include "HashSetComplete.skh" ;
+#include "TreeSet.skh"
+#include "HashSetComplete.skh"
 
 pragma options "--unrollamnt 5 --inbits 3 ";
 
