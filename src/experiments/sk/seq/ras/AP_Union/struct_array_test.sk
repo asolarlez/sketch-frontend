@@ -38,7 +38,7 @@ struct Graph_AdjacencyMatrix {
 	Node[N] nodes;  // int --> node map
 	bit[N][N] am;   // adjacency matrix [from][to]
 }
-Graph_AdjacencyMatrix createGraph() {
+generator Graph_AdjacencyMatrix createGraph() { /* automatically rewritten */
 	Graph_AdjacencyMatrix g = new Graph_AdjacencyMatrix();
 	for (int i = 0; i < N; i++) {
 		g.nodes[i] = new Node();
@@ -46,20 +46,20 @@ Graph_AdjacencyMatrix createGraph() {
 	}
 	return g;
 }
-Graph_AdjacencyMatrix addEdge(Graph_AdjacencyMatrix g, int from, int to) {
+generator Graph_AdjacencyMatrix addEdge(Graph_AdjacencyMatrix g, int from, int to) { /* automatically rewritten */
 	g.am[from][to] = true;
 	return g;
 }
-static bit edgeExists(Graph_AdjacencyMatrix g, int from, int to) {
+bit edgeExists(Graph_AdjacencyMatrix g, int from, int to) { /* automatically rewritten */
 	return g.am[from][to];
 }
-static Node node(Graph_AdjacencyMatrix g, int u) {
+Node node(Graph_AdjacencyMatrix g, int u) { /* automatically rewritten */
 	return g.nodes[u];
 }
-int DFS(Graph_AdjacencyMatrix g) {
+generator int DFS(Graph_AdjacencyMatrix g) { /* automatically rewritten */
 	return DFS_rec(g,ROOT);
 }
-static int DFS_rec(Graph_AdjacencyMatrix g, int u) {
+int DFS_rec(Graph_AdjacencyMatrix g, int u) { /* automatically rewritten */
 	Node n = node(g,u);
 	if ({| true | false | n.marked |}) 
 		return ??; 

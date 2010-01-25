@@ -4,7 +4,7 @@ struct HashNode{
 	int val;
 }
 
-static HashNode newNode(int val){
+HashNode newNode(int val){ /* automatically rewritten */
 	HashNode n = new HashNode();
 	n.val = val;
 	n.next = null;
@@ -13,9 +13,9 @@ static HashNode newNode(int val){
 
 int HTSIZE = 10;
 
-int hashB(int x);
+generator int hashB(int x); /* automatically rewritten */
 
-int hash(int x){
+generator int hash(int x){ /* automatically rewritten */
 
 	return hashB(x);	
 }
@@ -26,7 +26,7 @@ struct HashTable{
 	HashNode[HTSIZE] table;	
 }
 
-static HashTable newHashTable(){
+HashTable newHashTable(){ /* automatically rewritten */
 	HashTable ht = new HashTable();
 	for(int i=0; i<HTSIZE; ++i){
 		ht.table[i] = null;	
@@ -34,7 +34,7 @@ static HashTable newHashTable(){
 	return ht;
 }
 
-static bit addh(HashTable ht,  int v){
+bit addh(HashTable ht,  int v){ /* automatically rewritten */
 		int hv = hash(v);
 		HashNode n = ht.table[ hv ];
 		if( n == null){
@@ -54,7 +54,7 @@ static bit addh(HashTable ht,  int v){
 		}
 }
 
-static bit containsh(HashTable ht, int v){
+bit containsh(HashTable ht, int v){ /* automatically rewritten */
 		int hv = hash(v) % HTSIZE;
 		HashNode n = ht.table[ hv ];
 		if( n == null){

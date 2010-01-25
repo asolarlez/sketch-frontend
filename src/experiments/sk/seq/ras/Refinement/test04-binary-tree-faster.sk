@@ -17,16 +17,16 @@ Node[N] _Node_;  // list of allocated nodes
 int _n_;         // next allocated node (indexes into _Node_)  
 int[NA] _rn_;     // angelic choices for Nodes 
 int _nc_;        // id of next Node angel (indexes into _rn_) 
-Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; }
+generator Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; } /* automatically rewritten */
 #define _N (_NodeChoice_())
 
 bit[BA] _r_; 
 int _i_;
-bit _BitChoice_() { int t = _i_; _i_++; return _r_[t]; }
+generator bit _BitChoice_() { int t = _i_; _i_++; return _r_[t]; } /* automatically rewritten */
 #define _b (_BitChoice_())
 
 
-Node newNode(int data) {
+generator Node newNode(int data) { /* automatically rewritten */
 	Node n = new Node();
 	_Node_[_n_] = n;
 	_n_++;
@@ -39,7 +39,7 @@ Node newNode(int data) {
 //
 // traverse the tree inorder and checks data fields against desired result; 
 // ir indexes into remainder of result; returns ir pointing to rest of the result
-static int check(Node n, int[N+1] result, int ir) {
+int check(Node n, int[N+1] result, int ir) { /* automatically rewritten */
 	if (n == null) {
 		assert result[ir]==-1;  // we must be at the end of the result
 		return ir;
@@ -53,13 +53,13 @@ static int check(Node n, int[N+1] result, int ir) {
 	return ir;
 }
 
-void allPresent(Node root, int[N] input) {
+generator void allPresent(Node root, int[N] input) { /* automatically rewritten */
 	for (int i=0; i<N; i++) {
 		assert find(root, input[i]);
 	}
 }
 
-bit find(Node n, int d) {
+generator bit find(Node n, int d) { /* automatically rewritten */
 	while (n!=null) {
 		if (d==n.data) return 1;
 		else if (d<n.data) n=n.left;

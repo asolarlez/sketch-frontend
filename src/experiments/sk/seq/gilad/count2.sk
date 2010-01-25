@@ -1,7 +1,7 @@
 int W = 8;
 
-bit[W]
-intToBit (int v)
+generator bit[W]
+intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -27,8 +27,8 @@ count (bit[W] a)
     return ret;
 }
 
-bit[W]
-count_sk_rec (bit[W] a, bit[W] s, bit[W] m)
+generator bit[W]
+count_sk_rec (bit[W] a, bit[W] s, bit[W] m) /* automatically rewritten */
 {
     if ((int) s == 0)
 	return a;

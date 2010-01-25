@@ -1,6 +1,6 @@
 int N = 20;
 
-int index(int i, int j){
+generator int index(int i, int j){ /* automatically rewritten */
 	return i*N + j;
 }
 

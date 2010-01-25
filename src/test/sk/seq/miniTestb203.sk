@@ -1,6 +1,6 @@
-int ufun(int idx);
+generator int ufun(int idx); /* automatically rewritten */
  
-int spec(int idx, int N){
+generator int spec(int idx, int N){ /* automatically rewritten */
 	if(idx >= 0 && idx <N-3){
 		return ufun(idx + 3);
 	}else{
@@ -8,7 +8,7 @@ int spec(int idx, int N){
 	}
 }
 
-int sk(int idx, int N){
+generator int sk(int idx, int N){ /* automatically rewritten */
 	if(idx >= 0 && idx <N-??){
 		return ufun(idx + ??);
 	}else{

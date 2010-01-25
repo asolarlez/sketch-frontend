@@ -38,7 +38,7 @@ bit[3] firstZero (bit[3] in) {
 	return ret;
 }
 
-bit [3] mult(bit[3] in1, bit[3] in2){
+generator bit [3] mult(bit[3] in1, bit[3] in2){ /* automatically rewritten */
 	bit [3] result = 0;
 	for(int i=0; i<W; ++i){
 		if(in2[i]==1){

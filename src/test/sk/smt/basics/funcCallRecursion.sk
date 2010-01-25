@@ -10,7 +10,7 @@ int one(int dummy) {
 	return 1;
 }
 
-static int fact(int steps) {
+int fact(int steps) { /* automatically rewritten */
 	int res = 1;
 	for (int i = 1; i <= steps; i++) {
 		res = res * i;
@@ -18,7 +18,7 @@ static int fact(int steps) {
 	return res;
 }
 
-static int factRecur(int steps) {
+int factRecur(int steps) { /* automatically rewritten */
 	if (steps == ??) 
 		return 1;
 	else

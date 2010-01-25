@@ -11,7 +11,7 @@ struct Queue {
     Node tail;
 }
 
-void enqueue (Queue q, int v) {
+generator void enqueue (Queue q, int v) { /* automatically rewritten */
     Node oldTail = null;
     Node n = null;
 
@@ -28,7 +28,7 @@ void enqueue (Queue q, int v) {
     return 0;
 }
 
-void verify (Queue q) {
+generator void verify (Queue q) { /* automatically rewritten */
     assert q.head.taken == 1;
     assert q.head.value == -1;
     assert q.head.next != null;

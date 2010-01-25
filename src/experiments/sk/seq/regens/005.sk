@@ -1,4 +1,4 @@
-int sp (int in) { return 0; }
-int sk (int in) {
+generator int sp (int in) { return 0; } /* automatically rewritten */
+generator int sk (int in) { /* automatically rewritten */
     return {| (~|++)?in |};
 }

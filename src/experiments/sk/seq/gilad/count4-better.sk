@@ -4,8 +4,8 @@ int W = 8;  /* FIXME should be an exponent of L. */
 /* 
  * Exponentiation.
  */
-int
-exp (int b, int e)
+generator int
+exp (int b, int e) /* automatically rewritten */
 {
     int a = 1;
 
@@ -18,8 +18,8 @@ exp (int b, int e)
 /*
  * Casting from integer to bit-vector (currently not supported by the language).
  */
-bit[W]
-intToBit (int v)
+generator bit[W]
+intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -34,8 +34,8 @@ intToBit (int v)
 /*
  * Template for linear combination with single variable.
  */
-int
-tem_linear (int a, int x, int b)
+generator int
+tem_linear (int a, int x, int b) /* automatically rewritten */
 {
     return (a * x +  b);
 }
@@ -43,8 +43,8 @@ tem_linear (int a, int x, int b)
 /*
  * Template for linear combination with two variables.
  */
-int
-tem_linear2 (int a, int x, int b, int y, int c)
+generator int
+tem_linear2 (int a, int x, int b, int y, int c) /* automatically rewritten */
 {
     return tem_linear (a, x, 0) + tem_linear (b, y, c);
 }
@@ -52,8 +52,8 @@ tem_linear2 (int a, int x, int b, int y, int c)
 /*
  * Non-deterministic sign inverter.
  */
-int
-any_sign (int a)
+generator int
+any_sign (int a) /* automatically rewritten */
 {
     return (?? ? a : -a);
 }
@@ -61,8 +61,8 @@ any_sign (int a)
 /*
  * Shift amount generator, returning an 2^O(i+l).
  */
-int
-some_shift (int i, int l)
+generator int
+some_shift (int i, int l) /* automatically rewritten */
 {
     int s;
 
@@ -74,8 +74,8 @@ some_shift (int i, int l)
  * Bit-mask generator of the form (0^{n}1^{n})^{2^l/2n}, where n is
  * correlated with the value of the iteration counter, i.
  */
-bit[W]
-some_filter (int i, int l)
+generator bit[W]
+some_filter (int i, int l) /* automatically rewritten */
 {
     bit[W] m;
     int s;

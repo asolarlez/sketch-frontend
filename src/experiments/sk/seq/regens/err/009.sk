@@ -2,7 +2,7 @@ struct S {
     S next;
 }
 
-int sp () { return 0; }
+generator int sp () { return 0; } /* automatically rewritten */
 int sk () implements sk {
     S s = new S ();
     return {| s(.next|.prev)?.i |};

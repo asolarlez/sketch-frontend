@@ -7,7 +7,7 @@ int spec(int i){
 	return i;		
 }
 
-void foo(ref int x, int i){	
+generator void foo(ref int x, int i){ /* automatically rewritten */	
 	x = i;
 }
 

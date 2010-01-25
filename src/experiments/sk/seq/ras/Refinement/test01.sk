@@ -6,7 +6,7 @@ int dummy(int x) { return 1; }
 
 int[2*N] _r_; 
 int _i_;
-int _Choice_() { int t = _i_; _i_++; return _r_[t]; }
+generator int _Choice_() { int t = _i_; _i_++; return _r_[t]; } /* automatically rewritten */
 #define _ (_Choice_())
 
 
@@ -26,7 +26,7 @@ int harness (int x) implements dummy {
 }
 
 
-void main(int x) {
+generator void main(int x) { /* automatically rewritten */
 	assert x == 1 * _;  // x+1 >= t && t > x;
 	return; 
 }

@@ -8,7 +8,7 @@ void VOID(){
 
 
 
-static bit[N] fc145(bit[N] in, bit[N] out){
+bit[N] fc145(bit[N] in, bit[N] out){ /* automatically rewritten */
 assert !in[1] || out[1];
 assert !in[3] || out[3];
 assert !out[0];
@@ -19,11 +19,11 @@ assert !out[4];
 return out;
 }
 
-static bit[N] f1(bit[N] in, bit[N] out){
+bit[N] f1(bit[N] in, bit[N] out){ /* automatically rewritten */
 return fc145(in, out);
 }
 
-void assertequal(bit[N] a, bit[N] b, int k){
+generator void assertequal(bit[N] a, bit[N] b, int k){ /* automatically rewritten */
 
     
 

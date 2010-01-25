@@ -4,7 +4,7 @@ bit ONE(int x){
 
 int T = 4;
 
-int f(int x);
+generator int f(int x); /* automatically rewritten */
 
 bit main(int x) implements ONE{
 	assert ??*f(x)==f(x)+f(x);

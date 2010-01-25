@@ -1,9 +1,9 @@
 pragma options "--main_names main,main2";
 
-void main1(int x) {
+generator void main1(int x) { /* automatically rewritten */
     assert(x - x + ?? == 3);
 }
 
-void main2(int x) {
+generator void main2(int x) { /* automatically rewritten */
     assert(?? + 1 == 3 - 1);
 }

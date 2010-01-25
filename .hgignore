@@ -12,3 +12,9 @@ sketch-noarch.jar
 
 syntax: regexp
 ^[^\\/]+\.sk$
+
+# parser generator things
+src/main/java/sketch/compiler/parser/StreamItLex.smap
+src/main/java/sketch/compiler/parser/StreamItLexTokenTypes.txt
+src/main/java/sketch/compiler/parser/StreamItParserFE.smap
+src/main/java/sketch/compiler/parser/StreamItParserFETokenTypes.txt

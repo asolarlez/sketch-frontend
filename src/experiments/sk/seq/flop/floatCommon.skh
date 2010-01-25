@@ -4,7 +4,7 @@ int SB=M+E;
 int FW=M+E+1;
 int log_M=2;
 
-bit[FW] floatOne()
+generator bit[FW] floatOne() /* automatically rewritten */
 {
 	bit[FW] ret=0;
 	ret[SB-1]=1;
@@ -12,7 +12,7 @@ bit[FW] floatOne()
 	return ret;
 }
 
-bit floatEquals(bit[FW] a, bit[FW] b) 
+generator bit floatEquals(bit[FW] a, bit[FW] b) /* automatically rewritten */ 
 {
 	bit ret=1;
 	for(int i=0;i<FW;i++)

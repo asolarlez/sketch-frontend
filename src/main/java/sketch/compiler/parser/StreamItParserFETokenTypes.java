@@ -73,7 +73,7 @@ public interface StreamItParserFETokenTypes {
 	int TK_implements = 35;
 	int TK_assert = 36;
 	int TK_h_assert = 37;
-	int TK_static = 38;
+	int TK_generator = 38;
 	int TK_include = 39;
 	int TK_pragma = 40;
 	int ARROW = 41;

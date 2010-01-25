@@ -2,7 +2,7 @@ int N = 10;
 int No2 = N/2;
 
 // x <= y
-bit leq(bit x, bit y){
+generator bit leq(bit x, bit y){ /* automatically rewritten */
 	return !x || y;
 }
 bit[N] sort(bit[N] input){
@@ -24,7 +24,7 @@ bit[N] sort(bit[N] input){
 }
 
 
-bit[No2] sortNover2(bit[No2] input){
+generator bit[No2] sortNover2(bit[No2] input){ /* automatically rewritten */
 	
 	bit[No2] output=0;
 	bit[No2] done = 0;
@@ -43,7 +43,7 @@ bit[No2] sortNover2(bit[No2] input){
 	return output;
 }
 
-bit binop(bit x, bit y, bit[4] table){
+generator bit binop(bit x, bit y, bit[4] table){ /* automatically rewritten */
 	bit[2] b;
 	b[0] = x;
 	b[1] = y;
@@ -51,7 +51,7 @@ bit binop(bit x, bit y, bit[4] table){
 	return table[idx];
 }
 
-bit pred(int x, int y, bit[2] table){ 
+generator bit pred(int x, int y, bit[2] table){ /* automatically rewritten */ 
 	bit rv;
 	if(table[0]){
 		if(table[1]){

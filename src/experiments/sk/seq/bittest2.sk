@@ -2,14 +2,14 @@ int W=128;
 int S=3;
 int E=W-5;
 
-bit[W] copy1(bit[W] in) {
+generator bit[W] copy1(bit[W] in) { /* automatically rewritten */
 	bit[W] ret;
 	ret=0;
 	ret[S:E]=in;
 	return ret;
 }
 
-bit[W] copy2(bit[W] in) {
+generator bit[W] copy2(bit[W] in) { /* automatically rewritten */
 	bit[W] ret;
 	ret=0;
 	for(int i=S;i<=E;i++)

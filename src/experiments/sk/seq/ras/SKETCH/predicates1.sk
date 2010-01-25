@@ -22,5 +22,5 @@ int main(ARGS) implements v {
 	return 1;
 }
 
-static bit P1(int x, int y) { return {| x>=?? | x<=-?? | y>=?? | y<=-?? |}; }
-static bit P2(int x, int y) { return {| x>=?? | x<=-?? | y>=?? | y<=-?? |}; }
+bit P1(int x, int y) { return {| x>=?? | x<=-?? | y>=?? | y<=-?? |}; } /* automatically rewritten */
+bit P2(int x, int y) { return {| x>=?? | x<=-?? | y>=?? | y<=-?? |}; } /* automatically rewritten */

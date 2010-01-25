@@ -1,7 +1,7 @@
 // This benchmark requires --inlineamnt  > 5 in order to resolve.
 //It also requires at least 4 bits of controls. That was the bug. The benchmark is OK.
 
-int poly(int n, int x) {	
+generator int poly(int n, int x) { /* automatically rewritten */	
 	if (n <= 0) return ??; 
 	else 
 	  return x * poly(n-1, x) + ??;

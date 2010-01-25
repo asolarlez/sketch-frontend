@@ -1,6 +1,6 @@
 pragma options "--verbosity 7";
 
-static bit dequeue (Node prevHead) {
+bit dequeue (Node prevHead) { /* automatically rewritten */
     Node tmp = null;
     bit wasTaken = 1;
     bit done = ??;   // workaround for frontend bug
@@ -37,7 +37,7 @@ struct Node {
     bit taken;
 }
 
-static Node newNode (Node next, bit taken) {
+Node newNode (Node next, bit taken) { /* automatically rewritten */
     Node n = new Node ();
     n.next = next;
     n.taken = taken;

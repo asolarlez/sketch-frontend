@@ -13,7 +13,7 @@ float[N][N] ident(float[N][N] in){
 	return out;
 }
 
-float[N][M][P] distribute(float[N][N] in){
+generator float[N][M][P] distribute(float[N][N] in){ /* automatically rewritten */
 	float[N][M][P] out;
 	for(int p=0; p<P; ++p){
 		for(int j=0; j< {| (P | N | M) |} ; ++j){
@@ -26,7 +26,7 @@ float[N][M][P] distribute(float[N][N] in){
 	return out;
 }
 
-float[N][N] collect(float[N][M][P] in){
+generator float[N][N] collect(float[N][M][P] in){ /* automatically rewritten */
 	float[N][N] out;
 	for(int j=0; j<N ;++j){
 		for(int i=0; i<N; ++i){		

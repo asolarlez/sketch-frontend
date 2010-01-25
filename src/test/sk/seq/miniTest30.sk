@@ -1,4 +1,4 @@
-int foo(int i, int j){
+generator int foo(int i, int j){ /* automatically rewritten */
 	return i*2+j;
 }
 

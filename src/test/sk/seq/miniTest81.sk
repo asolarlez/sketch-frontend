@@ -6,8 +6,8 @@ test ()
     return (LW - 1);
 }
 
-int
-sk_offset (int x)
+generator int
+sk_offset (int x) /* automatically rewritten */
 {
     int b = ??;
     return (x - b);

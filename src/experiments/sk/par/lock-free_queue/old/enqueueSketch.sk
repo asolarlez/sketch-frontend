@@ -9,7 +9,7 @@ struct Node {
     bit taken;
 }
 
-void enqueue (Queue q, int val) {
+generator void enqueue (Queue q, int val) { /* automatically rewritten */
     Node n = new Node ();
     n.val = val;
     n.taken = 0;
@@ -26,7 +26,7 @@ void enqueue (Queue q, int val) {
     oldTail.next = n;
 }
 
-bit verify (Queue q) {
+generator bit verify (Queue q) { /* automatically rewritten */
     Node head = q.head;
     assert head != null;
     Node e1 = head.next;

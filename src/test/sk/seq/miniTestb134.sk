@@ -9,7 +9,7 @@ int spec(int i){
 	return i+1;		
 }
 
-static void foo(voo x, int i){	
+void foo(voo x, int i){ /* automatically rewritten */	
 	x.x = i;
 }
 

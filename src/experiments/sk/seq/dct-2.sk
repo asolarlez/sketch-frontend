@@ -7,7 +7,7 @@ int SH=3;
 int CWS=IWS+SH; //computation word size
 
 int MP=CWS; //multiplication template parameter
-bit [MP] mult(bit[MP] in1, bit[MP] in2){
+generator bit [MP] mult(bit[MP] in1, bit[MP] in2){ /* automatically rewritten */
 	bit [MP] result = 0;
 	for(int i=0; i<MP; ++i){
 		if(in2[i]==1){

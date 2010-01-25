@@ -1,6 +1,6 @@
 pragma options " -ufunSymmetry";
 
-int ufu(int a);/* Uninterpreted function */
+generator int ufu(int a);/* Uninterpreted function */ /* automatically rewritten */
 
 int faa(int s){	
 	return ufu(s) * ufu(s+1); 

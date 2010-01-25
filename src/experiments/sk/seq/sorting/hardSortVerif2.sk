@@ -18,7 +18,7 @@ int[N] sort(int[N] input){
 }
 
 
-int[No2] sortNover2(int[No2] input){
+generator int[No2] sortNover2(int[No2] input){ /* automatically rewritten */
 	int[No2] output=input;
 	int[No2] done = 0;
 	int k=0;

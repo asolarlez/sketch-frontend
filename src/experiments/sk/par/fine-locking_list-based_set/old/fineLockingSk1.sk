@@ -2,7 +2,7 @@
 #include "llset.skh"
 
 
-Node gnext(Node n){
+generator Node gnext(Node n){ /* automatically rewritten */
 	Node rv = null;
 	/*	
 	if(??){
@@ -27,7 +27,7 @@ Node gnext(Node n){
 }
 
 /* 6 possibilities per call */
-Node sel(Node n1, Node n2, Node n3){
+generator Node sel(Node n1, Node n2, Node n3){ /* automatically rewritten */
 	Node rv = null;
 	if(??){
 		if(??){
@@ -43,7 +43,7 @@ Node sel(Node n1, Node n2, Node n3){
 
 
 /* 36 possibilities due to symmetry.  */
-bit comp(Node n1, Node n2, Node n3){
+generator bit comp(Node n1, Node n2, Node n3){ /* automatically rewritten */
 	bit t= 0;
 	Node t1 = sel(n1, n2, n3);
 	Node t2 = sel(n1, n2, n3);
@@ -62,7 +62,7 @@ bit comp(Node n1, Node n2, Node n3){
  * Hand over Hand remove.
  * 
  * */
-void hhRemove(Set s, int in){
+generator void hhRemove(Set s, int in){ /* automatically rewritten */
 	if(in > LOW && in< HIGH){
 		Node cur = s.head; 
 		lock(cur); // 6

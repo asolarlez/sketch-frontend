@@ -19,7 +19,7 @@ bit[Wout] remainder(bit[Win] in)
 }
 
 
-bit[Wout] crcCore(bit[Wout] in, bit[Wout] state){
+generator bit[Wout] crcCore(bit[Wout] in, bit[Wout] state){ /* automatically rewritten */
 	bit[Wout] poly=0;
 	poly[Wout-1]=1; poly[Wout-2]=1; poly[Wout-3]=1; //CRC-8
 	bit[Wout] one = 0; one[0] = 1;

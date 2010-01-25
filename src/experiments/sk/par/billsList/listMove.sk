@@ -21,7 +21,7 @@ Page malloc (Memory M) {
 }
 
 void free (Memory M, Page p) {
-    move (M.alloc, M.free, p);
+    generator move (M.alloc, M.free, p); /* automatically rewritten */
 }
 
 Page sbrk (Memory M, int addr) {
@@ -38,7 +38,7 @@ Page sbrk (Memory M, int addr) {
 
 /** @return true :- yes, moved; false :- maybe */
 bit move (List oldL, List newL, Page p) {
-    assert newL.id < oldL.id;   // only move into lower circles of hell
+    generator assert newL.id < oldL.id;   // only move into lower circles of hell /* automatically rewritten */
 
     // This function has been artificially rewritten to make tracking PCs
     // easier.  It is less efficient than it could be.

@@ -64,7 +64,6 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("reorder", this), new Integer(12));
 	literals.put(new ANTLRHashString("insert", this), new Integer(6));
 	literals.put(new ANTLRHashString("ref", this), new Integer(21));
-	literals.put(new ANTLRHashString("static", this), new Integer(38));
 	literals.put(new ANTLRHashString("while", this), new Integer(24));
 	literals.put(new ANTLRHashString("repeat", this), new Integer(9));
 	literals.put(new ANTLRHashString("pragma", this), new Integer(40));
@@ -80,6 +79,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("fork", this), new Integer(5));
 	literals.put(new ANTLRHashString("default", this), new Integer(28));
 	literals.put(new ANTLRHashString("struct", this), new Integer(20));
+	literals.put(new ANTLRHashString("generator", this), new Integer(38));
 	literals.put(new ANTLRHashString("else", this), new Integer(23));
 }
 

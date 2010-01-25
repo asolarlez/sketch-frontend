@@ -1,4 +1,4 @@
-static int gen () { return ??; }
+int gen () { return ??; } /* automatically rewritten */
 
 int sp () {
     int in = 3;

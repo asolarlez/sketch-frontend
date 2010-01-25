@@ -3,7 +3,7 @@ int N;
 int T = 3;
 
 
-int linexp(int i, int j){
+generator int linexp(int i, int j){ /* automatically rewritten */
 	int rv = ??-2;
 	if(??){ if(??){ rv = rv + i;  }else{ rv = rv - i; }}
 	if(??){ if(??){ rv = rv + j;  }else{ rv = rv - j; }}

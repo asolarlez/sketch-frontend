@@ -1,4 +1,4 @@
-int moo(int x); 	/* Uninterpreted function.*/
+generator int moo(int x); 	/* Uninterpreted function.*/ /* automatically rewritten */
 
 
 int foo(int x){

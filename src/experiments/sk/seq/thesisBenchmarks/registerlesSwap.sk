@@ -1,6 +1,6 @@
 int W = 32;
 
-bit one(bit[W] x, bit[W] y){ return 1; }
+generator bit one(bit[W] x, bit[W] y){ return 1; } /* automatically rewritten */
 
 bit[2*W] swap(bit[W] x, bit[W] y){		
 	bit[2*W] out = 0;

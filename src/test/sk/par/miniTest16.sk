@@ -9,7 +9,7 @@ struct Queue{
 }
 
 
-Queue newQueue(){
+generator Queue newQueue(){ /* automatically rewritten */
 	Queue q = new Queue();
 	q.prevHead = new Node();
 	q.prevHead.next = null;
@@ -17,7 +17,7 @@ Queue newQueue(){
 	return q;
 }
 
-Node baseQ(Queue q){
+generator Node baseQ(Queue q){ /* automatically rewritten */
 	if(??){
 		return q.tail;
 	}else{
@@ -26,7 +26,7 @@ Node baseQ(Queue q){
 	return null;
 }
 
-Node someNext(Node n){
+generator Node someNext(Node n){ /* automatically rewritten */
 	if(??){
 		return n;
 	}else{
@@ -36,12 +36,12 @@ Node someNext(Node n){
 	return null;
 }
 
-Node gen(Queue q){
+generator Node gen(Queue q){ /* automatically rewritten */
 	Node n = baseQ(q); // -> ( q.tail | q.prevHead );
 	return someNext(n);	// ( q.tail | q.prevHead)(.next)*
 }
 
-void enqueue(Queue q, int i){
+generator void enqueue(Queue q, int i){ /* automatically rewritten */
 	Node n =new Node();
 	n.val = i;
 	n.next = null;
@@ -56,7 +56,7 @@ void enqueue(Queue q, int i){
 	}
 }
 
-int dequeue(Queue q){
+generator int dequeue(Queue q){ /* automatically rewritten */
 	Node n = q.prevHead;
 	if(n.next != null){
 		q.prevHead = n.next;

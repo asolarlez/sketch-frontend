@@ -1,6 +1,6 @@
 #define LOC {| (n | next | pred)(.next)? |}
 
-static void add (List L, int key) {
+void add (List L, int key) { /* automatically rewritten */
     Node n = newNode (key, null, 0);
     Node next = null, pred = null;
 

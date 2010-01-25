@@ -1,4 +1,4 @@
-static void find (Set S, int key, ref Node prev, ref Node cur) {
+void find (Set S, int key, ref Node prev, ref Node cur) { /* automatically rewritten */
     prev = null;
     cur = null;
     cur = S.head;

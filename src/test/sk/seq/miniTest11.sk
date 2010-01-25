@@ -1,13 +1,13 @@
 int W = 2;
 
-bit[W] moo(bit[4] in){
+generator bit[W] moo(bit[4] in){ /* automatically rewritten */
 	bit [2] tmp ;
 	tmp[0] = in[0];
 	tmp[1] = in[2];
 	return tmp;
 }
 
-bit foo(bit[4] in){
+generator bit foo(bit[4] in){ /* automatically rewritten */
 	bit [2] tmp = moo(in);
 	return tmp[1];;
 }

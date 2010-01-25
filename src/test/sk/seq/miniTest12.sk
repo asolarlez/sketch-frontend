@@ -1,6 +1,6 @@
 int W = 2;
 
-bit foo(bit[4] in, int k){
+generator bit foo(bit[4] in, int k){ /* automatically rewritten */
 	if(k>0){
 		return foo(in, k-1);
 	}else{

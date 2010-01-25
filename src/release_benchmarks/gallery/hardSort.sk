@@ -34,7 +34,7 @@ int[N] sort(int[N] input){
 }
 
 
-int[No2] sortNover2(int[No2] input){
+generator int[No2] sortNover2(int[No2] input){ /* automatically rewritten */
 	int[No2] output=input;
 	int[No2] done = 0;
 	int k=0;
@@ -51,7 +51,7 @@ int[No2] sortNover2(int[No2] input){
 }
 
 
-int chose(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){
+generator int chose(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){ /* automatically rewritten */
 	int t2 = ??;
 	int rv = 0;
 	if( t2== 0){ rv = idx1; }
@@ -64,7 +64,7 @@ int chose(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){
 	return rv;
 }
 
-bit generator(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){
+generator bit generator(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){ /* automatically rewritten */
 	int t = ??;
 	bit rv = 0;
 	if( t==0){

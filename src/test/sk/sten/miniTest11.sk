@@ -7,7 +7,7 @@ int[N] test11(int[N] in){
   return out;
 }
 
-int foo(int x){
+generator int foo(int x){ /* automatically rewritten */
 	return x + x;
 }
 

@@ -1,6 +1,6 @@
 // Runs: a... [ r... | r... | ... ]
 
-bit verify (Set S) {
+generator bit verify (Set S) { /* automatically rewritten */
     assert isValidSet (S, NEGINF, POSINF, NNODES);
     assert isEmptySet (S);
 

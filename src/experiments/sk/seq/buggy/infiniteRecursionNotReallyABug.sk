@@ -19,7 +19,7 @@ bit[W] countSketch3 (bit[W] in) implements countBits
 }
 	
 
-bit[W] count(bit[W] in) {
+generator bit[W] count(bit[W] in) { /* automatically rewritten */
 	bit[W] m={*};
 	in = (in & m) + (in>>?? & m);
 	return ?? ? in : count(in);

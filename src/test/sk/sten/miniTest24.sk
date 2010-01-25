@@ -12,7 +12,7 @@ float[N][N] test0(float[N][N] a){
 }
 
 
-int hole(int i){
+generator int hole(int i){ /* automatically rewritten */
 	int rv = 0;
 	int t = ??;
 	bit s = ??;

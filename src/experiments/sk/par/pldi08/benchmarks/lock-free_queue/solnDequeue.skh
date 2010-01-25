@@ -1,4 +1,4 @@
-static Item dequeue (Queue q) {
+Item dequeue (Queue q) { /* automatically rewritten */
     Node tmp = null;
     bit wasTaken = 1;
     bit done = 0;   // workaround for frontend bug

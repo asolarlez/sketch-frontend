@@ -4,7 +4,7 @@ struct TreeNode{
 	TreeNode right;	
 }
 
-static TreeNode newTreeNode(int val){
+TreeNode newTreeNode(int val){ /* automatically rewritten */
 	TreeNode tn = new TreeNode();
 	tn.val = val;
 	tn.left = null;
@@ -16,14 +16,14 @@ struct Tree{
 	TreeNode root;	
 }
 
-static Tree newTree(){
+Tree newTree(){ /* automatically rewritten */
 	Tree t = new Tree();
 	t.root = null;
 	return t;	
 }
 
 
-bit choice(ref TreeNode n, int v){
+generator bit choice(ref TreeNode n, int v){ /* automatically rewritten */
 	if({| n(.left | .right) |} == null){
 		{| n(.left | .right) |} = newTreeNode(v);
 		return ??;
@@ -34,7 +34,7 @@ bit choice(ref TreeNode n, int v){
 }
 
 
-static bit addt(Tree t, int v){
+bit addt(Tree t, int v){ /* automatically rewritten */
 	TreeNode n =t.root;	
 	if(n == null){
 		t.root = 	newTreeNode(v);
@@ -55,7 +55,7 @@ static bit addt(Tree t, int v){
 	return ??;
 }
 
-static bit containst(Tree t, int v){
+bit containst(Tree t, int v){ /* automatically rewritten */
 	TreeNode n = t.root;
 	while(n != null){
 		if( n.val == v){ return ??; }

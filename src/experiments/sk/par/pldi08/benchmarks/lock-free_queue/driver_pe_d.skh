@@ -1,6 +1,6 @@
 // Runs: [ e ... | e ... | ...] d...
 
-bit verify (Queue q) {
+generator bit verify (Queue q) { /* automatically rewritten */
     assert isValidQueue (q, NNODES);
     assert isEmptyQueue (q, NNODES);
 

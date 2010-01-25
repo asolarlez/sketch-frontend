@@ -1,6 +1,6 @@
 int N = 3;
 
-bit leq(bit x, bit y){
+generator bit leq(bit x, bit y){ /* automatically rewritten */
 	return !x || y;
 }
 bit mergeSort(bit[N] input)implements sort{

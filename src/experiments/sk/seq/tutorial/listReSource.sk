@@ -6,7 +6,7 @@ struct node{
 	int val;	
 }
 
-node newNode(int i){
+generator node newNode(int i){ /* automatically rewritten */
 	node n = new node();
 	n.next = null;	
 	n.val = i;
@@ -18,23 +18,23 @@ struct list{
 	node tail;
 }
 
-list newList(){
+generator list newList(){ /* automatically rewritten */
 	list l = new list();
 	l.head = null;
 	l.tail = null;	
 	return l;
 }
 
-node hole(list l1, list l2){  
+generator node hole(list l1, list l2){ /* automatically rewritten */  
 	return {| null | ( (l1 | l2)(.head | .tail) )(.next)?  |}	;
 }
 
-node holeB(list l1, list l2, node n){
+generator node holeB(list l1, list l2, node n){ /* automatically rewritten */
 	return 	(?? ? hole(l1, l2) : n); 
 }
 
 
-bit cond(list l1, list l2, node nh){ 
+generator bit cond(list l1, list l2, node nh){ /* automatically rewritten */ 
 	node n1 = holeB(l1, l2, nh);
 	node n2 = holeB(l1, l2, nh);
 	return {| n1 (== | !=) n2 | ??  |};
@@ -43,7 +43,7 @@ bit cond(list l1, list l2, node nh){
 
 
 
-list restartLst(list l, node nh){
+generator list restartLst(list l, node nh){ /* automatically rewritten */
 	
 	list nl = newList();	
 	bit c  = cond(l, nl, nh);

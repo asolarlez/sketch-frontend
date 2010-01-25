@@ -1,5 +1,5 @@
 int W = 32;
-bit [W] mult(bit[W] in1, bit[W] in2){
+generator bit [W] mult(bit[W] in1, bit[W] in2){ /* automatically rewritten */
 	bit [W] result = 0;
 	for(int i=0; i<W; ++i){
 		if(in2[i]==1){

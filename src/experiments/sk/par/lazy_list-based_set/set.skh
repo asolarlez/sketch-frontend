@@ -9,14 +9,14 @@ struct Node {
     Node next;
 }
 
-static Set newSet (int negInf, int posInf) {
+Set newSet (int negInf, int posInf) { /* automatically rewritten */
     Set S = new Set ();
     S.tail = newNode (posInf, 0, null);
     S.head = newNode (negInf, 0, S.tail);
     return S;
 }
 
-static Node newNode (int key, bit marked, Node next) {
+Node newNode (int key, bit marked, Node next) { /* automatically rewritten */
     Node n = new Node ();
     n.key = key;
     n.marked = marked;
@@ -24,11 +24,11 @@ static Node newNode (int key, bit marked, Node next) {
     return n;
 }
 
-static bit validate (Node pred, Node cur) {
+bit validate (Node pred, Node cur) { /* automatically rewritten */
     return pred.marked == 0 && cur.marked == 0 && pred.next == cur;
 }
 
-static bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
+bit isValidSet (Set S, int negInf, int posInf, int maxlen) { /* automatically rewritten */
     assert S.head != null;
     assert S.head.key == negInf;
     assert S.tail != null;
@@ -51,7 +51,7 @@ static bit isValidSet (Set S, int negInf, int posInf, int maxlen) {
     return 1;
 }
 
-static bit isEmptySet (Set S) {
+bit isEmptySet (Set S) { /* automatically rewritten */
     assert S.tail.next == null;
     return S.head.next == S.tail;
 }

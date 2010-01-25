@@ -1,6 +1,6 @@
 int W = 5;
 
-int poly(bit[W] n, bit[W] x) {			
+generator int poly(bit[W] n, bit[W] x) { /* automatically rewritten */			
 	if (!n[0]&!n[1]&!n[2]&!n[3]&!n[4]) return ??; 
 	else return ??;
 }

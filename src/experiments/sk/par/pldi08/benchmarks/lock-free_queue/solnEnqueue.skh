@@ -1,4 +1,4 @@
-static void enqueue (Queue q, Item obj) {
+void enqueue (Queue q, Item obj) { /* automatically rewritten */
     Node n = newNode (obj, null, 0);
     Node oldTail = null;
 

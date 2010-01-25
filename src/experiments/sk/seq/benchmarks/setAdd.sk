@@ -67,7 +67,7 @@ bit alwaysTrue (bit[N] in) {
 }
 
 
-bit scheduleThr(bit[N] schedule, bit[NTHREADS] thrState_waiting, int[NTHREADS] thrState_waitingOn, int[MEMSIZE] locks, int[NTHREADS] pc){
+generator bit scheduleThr(bit[N] schedule, bit[NTHREADS] thrState_waiting, int[NTHREADS] thrState_waitingOn, int[MEMSIZE] locks, int[NTHREADS] pc){ /* automatically rewritten */
 	if(schedule[t]){
 	//It's thread 1's turn, but first, check that it can actually run;
 		if(pc[1] >= ENDPC) return 0;
@@ -168,7 +168,7 @@ bit setAddTest(bit[N] schedule) implements alwaysTrue{
 }
 
 
-bit verify(int[MEMSIZE] mem, int[NTHREADS] pc){
+generator bit verify(int[MEMSIZE] mem, int[NTHREADS] pc){ /* automatically rewritten */
 	return pc[0] == 9 && pc[1] == 9 && 
 	mem[0] == 0 && mem[mem[1]] == 2 && mem[ mem[mem[1]+1] ] == 3 && mem[mem[ mem[mem[1]+1]+1 ]] == 5;
 	

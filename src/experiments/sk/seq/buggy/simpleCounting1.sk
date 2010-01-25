@@ -1,6 +1,6 @@
 int W = 8;
 
-bit[W] firstZero (bit[W] in) {
+generator bit[W] firstZero (bit[W] in) { /* automatically rewritten */
 	bit[W] ret=0;
 	bit flag = 1;
 	for(int i=0; i<W ; ++i){
@@ -12,7 +12,7 @@ bit[W] firstZero (bit[W] in) {
 	return ret;
 }
 
-bit[W] isolateSketch (bit[W] in, bit[W] c1, bit[W] c2) 
+generator bit[W] isolateSketch (bit[W] in, bit[W] c1, bit[W] c2) /* automatically rewritten */ 
 { 
     return !(in + c1) & 
     (in + c2);

@@ -6,7 +6,7 @@ bit test(int in){
 	return 1;
 }
 
-static int foo(int t){
+int foo(int t){ /* automatically rewritten */
 
 	return t + 1;	
 }

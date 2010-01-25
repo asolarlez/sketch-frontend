@@ -2,14 +2,14 @@ int M=4;
 int E=4;
 int FW=M+E;
 
-bit[E] FOnegate(bit[E] x)
+generator bit[E] FOnegate(bit[E] x) /* automatically rewritten */
 {
 	for(int i=0;i<E;i++)	
 		x[i]=!x[i];
 	return x;
 }
 
-bit[E] FOsubtract(bit[E] a, bit[E] b)
+generator bit[E] FOsubtract(bit[E] a, bit[E] b) /* automatically rewritten */
 {
 	bit[E] ret=0;
 	ret[0]=1;
@@ -18,14 +18,14 @@ bit[E] FOsubtract(bit[E] a, bit[E] b)
 	return ret;
 }
 
-bit[M*2] FOnegate2(bit[M*2] x)
+generator bit[M*2] FOnegate2(bit[M*2] x) /* automatically rewritten */
 {
 	for(int i=0;i<M*2;i++)	
 		x[i]=!x[i];
 	return x;
 }
 
-bit[M*2] FOsubtract2(bit[M*2] a, bit[M*2] b)
+generator bit[M*2] FOsubtract2(bit[M*2] a, bit[M*2] b) /* automatically rewritten */
 {
 	bit[M*2] ret=0;
 	ret[0]=1;
@@ -34,7 +34,7 @@ bit[M*2] FOsubtract2(bit[M*2] a, bit[M*2] b)
 	return ret;
 }
 
-bit[FW] FOnormalize2(bit[2*M] m, bit[E] e) 
+generator bit[FW] FOnormalize2(bit[2*M] m, bit[E] e) /* automatically rewritten */ 
 {
 	bit[E] fix=0;
 	fix[2]=1; //fix=M(=4)
@@ -59,7 +59,7 @@ bit[FW] FOnormalize2(bit[2*M] m, bit[E] e)
 	return ret;
 }
 
-bit[M*2] FOdivide(bit[M*2] a, bit[M] b)
+generator bit[M*2] FOdivide(bit[M*2] a, bit[M] b) /* automatically rewritten */
 {
 	bit[2*M] ret=0;
 	bit[2*M] tosub=0;
@@ -75,7 +75,7 @@ bit[M*2] FOdivide(bit[M*2] a, bit[M] b)
 	return ret;
 }
 
-bit FOzero(bit[M] x)
+generator bit FOzero(bit[M] x) /* automatically rewritten */
 {
 	bit ret=1;
 	for(int i=0;i<M;i++)
@@ -83,7 +83,7 @@ bit FOzero(bit[M] x)
 	return ret;
 }
 
-bit[FW] floatDiv(bit[FW] a, bit[FW] b) 
+generator bit[FW] floatDiv(bit[FW] a, bit[FW] b) /* automatically rewritten */ 
 {
 	bit[M*2] aext=0;
 	aext[M::4]=a[0::4];

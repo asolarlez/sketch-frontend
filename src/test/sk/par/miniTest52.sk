@@ -8,7 +8,7 @@ bit test(int in){
 }
 
 
-static int foo(Box g){
+int foo(Box g){ /* automatically rewritten */
 	int t = 0;
 	reorder{
 		return t;

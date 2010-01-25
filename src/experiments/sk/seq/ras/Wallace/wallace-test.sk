@@ -15,7 +15,7 @@ int WW=8;
 int log3Wsq = 2;
 */
 
-int wallace(bit[W] a, bit[W] b) {
+generator int wallace(bit[W] a, bit[W] b) { /* automatically rewritten */
 	
     bit[W*W] result;
 
@@ -56,7 +56,7 @@ int wallace_wrapper (int a, int b) implements spec
     return wallace(intToBit(a), intToBit(b));
 }
 
-int pow2 (int p)
+generator int pow2 (int p) /* automatically rewritten */
 {
     int a = 1;
     loop (p){a = a * 2;}
@@ -64,7 +64,7 @@ int pow2 (int p)
 }
 
 
-int bitToIntVar (bit[W] v) {
+generator int bitToIntVar (bit[W] v) { /* automatically rewritten */
     int out=0;
     int i=0;
     loop(??) {
@@ -76,7 +76,7 @@ int bitToIntVar (bit[W] v) {
     return out;
 }
 
-int bitToInt (bit[W] v) {
+generator int bitToInt (bit[W] v) { /* automatically rewritten */
     int out=0;
     for (int i = 0; i < W; i++) {
         if (v[i]==1) {
@@ -86,7 +86,7 @@ int bitToInt (bit[W] v) {
     return out;
 }
 
-int bit2ToInt (bit[WW] v) {
+generator int bit2ToInt (bit[WW] v) { /* automatically rewritten */
     int out=0;
     for (int i = 0; i < WW; i++) {
         if (v[i]==1) {
@@ -96,7 +96,7 @@ int bit2ToInt (bit[WW] v) {
     return out;
 }
 
-bit[W] intToBit (int v)
+generator bit[W] intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -108,20 +108,20 @@ bit[W] intToBit (int v)
     return output;
 }
 
-bit full_add_result( bit a, bit b, bit c) {
+generator bit full_add_result( bit a, bit b, bit c) { /* automatically rewritten */
     return (a^b^c);
 }
-bit full_add_carry( bit a, bit b, bit c) {
+generator bit full_add_carry( bit a, bit b, bit c) { /* automatically rewritten */
     return (a&b)|(c&(a^b));
 }
-bit half_add_result( bit a, bit b) {
+generator bit half_add_result( bit a, bit b) { /* automatically rewritten */
     return a^b;
 }
-bit half_add_carry( bit a, bit b) {
+generator bit half_add_carry( bit a, bit b) { /* automatically rewritten */
     return a&b;
 }
 
-int cut(int x, int w) {
+generator int cut(int x, int w) { /* automatically rewritten */
     int a=x%(pow2(w));
     return a;
 }

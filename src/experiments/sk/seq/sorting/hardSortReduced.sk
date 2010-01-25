@@ -18,7 +18,7 @@ int[N] sort(int[N] input){
 }
 
 
-int[No2] sortNover2(int[No2] input){
+generator int[No2] sortNover2(int[No2] input){ /* automatically rewritten */
 	int[No2] output=input;
 	int[No2] done = 0;
 	int k=0;
@@ -35,7 +35,7 @@ int[No2] sortNover2(int[No2] input){
 }
 
 
-int inthole(int x1, int x2, int x3, int x4, int x5, int x6){
+generator int inthole(int x1, int x2, int x3, int x4, int x5, int x6){ /* automatically rewritten */
 	int t2 = ??;
 
 	if( t2== 0){ return x1; }
@@ -48,7 +48,7 @@ int inthole(int x1, int x2, int x3, int x4, int x5, int x6){
 }
 
 
-int intholeA(int x1, int x2, int x3, int x4, int x5, int x6){
+generator int intholeA(int x1, int x2, int x3, int x4, int x5, int x6){ /* automatically rewritten */
 	int t2 = ??;
 
 	if( t2== 0){ return x1; }
@@ -62,7 +62,7 @@ int intholeA(int x1, int x2, int x3, int x4, int x5, int x6){
 
 
 
-int intholeB(int x1, int x2, int x3, int x4, int x5, int x6){
+generator int intholeB(int x1, int x2, int x3, int x4, int x5, int x6){ /* automatically rewritten */
 	int t2 = ??;
 
 	if( t2== 0){ return x1; }

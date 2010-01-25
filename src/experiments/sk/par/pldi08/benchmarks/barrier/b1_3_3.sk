@@ -9,7 +9,7 @@ struct barrier{
 	bit[N] bits;
 }
 
-barrier newBarrier(){
+generator barrier newBarrier(){ /* automatically rewritten */
 	barrier b = new barrier();
 	b.count = N;
 	b.bits = 0;
@@ -18,7 +18,7 @@ barrier newBarrier(){
 }
 
 
-bit predicate(int a, int b, bit c){
+generator bit predicate(int a, int b, bit c){ /* automatically rewritten */
 	bit rv = 0;
 	if(??){
 		rv = c;
@@ -35,7 +35,7 @@ bit predicate(int a, int b, bit c){
 	return rv;
 }
 
-static void next(barrier b, int thread){
+void next(barrier b, int thread){ /* automatically rewritten */
 	bit s = b.bits[thread];
 	s = predicate(0,0,s);
 	int cv = 0;
@@ -65,14 +65,14 @@ bit test(){
 }
 
 
-int left(int t){
+generator int left(int t){ /* automatically rewritten */
 	int rv = 0;
 	rv = t - 1;
 	if( rv < 0){ rv = rv + N; }
 	return rv;
 }
 
-int right(int t){
+generator int right(int t){ /* automatically rewritten */
 	int rv = 0;
 	rv = t + 1;
 	if( rv >= N){ rv = rv - N; }

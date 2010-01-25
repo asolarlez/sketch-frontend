@@ -14,14 +14,14 @@ struct Queue {
     QueueEntry tail;
 }
 
-Object newObject (int tid, int id) {
+generator Object newObject (int tid, int id) { /* automatically rewritten */
     Object o = new Object ();
     o.tid = tid;
     o.id = id;
     return o;
 }
 
-QueueEntry newQueueEntry (QueueEntry next, Object stored, bit taken) {
+generator QueueEntry newQueueEntry (QueueEntry next, Object stored, bit taken) { /* automatically rewritten */
     QueueEntry qe = new QueueEntry ();
     qe.next = next;
     qe.stored = stored;
@@ -29,7 +29,7 @@ QueueEntry newQueueEntry (QueueEntry next, Object stored, bit taken) {
     return qe;
 }
 
-Queue newQueue () {
+generator Queue newQueue () { /* automatically rewritten */
     Queue q = new Queue ();
     q.prevHead = newQueueEntry (null, null, 1);
     q.tail = q.prevHead;
@@ -47,7 +47,7 @@ Queue newQueue () {
  *   (this is a cheap cycle detector)
  * - no 'taken' nodes appear after untaken ones
  */
-static bit isValidQueue (Queue q) {
+bit isValidQueue (Queue q) { /* automatically rewritten */
     assert q.prevHead != null;
     assert q.prevHead.taken;
 
@@ -77,7 +77,7 @@ static bit isValidQueue (Queue q) {
 }
 
 /** Assumes isValidQueue (q). */
-static bit isEmptyQueue (Queue q) {
+bit isEmptyQueue (Queue q) { /* automatically rewritten */
     QueueEntry n = q.prevHead;
     while (n != null) {
         if (0 == n.taken) {

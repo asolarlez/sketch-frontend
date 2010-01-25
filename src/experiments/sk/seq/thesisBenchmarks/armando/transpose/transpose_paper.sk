@@ -7,7 +7,7 @@ int[16] trans(int[16] M) {
     return T;
 }
 
-int[4] shufps(int[4] x1, int[4] x2, bit[8] b) {
+generator int[4] shufps(int[4] x1, int[4] x2, bit[8] b) { /* automatically rewritten */
     int[4] s;
     s[0] = x1[(int) b[0::2]]; s[1] = x1[(int) b[2::2]];
     s[2] = x2[(int) b[4::2]]; s[3] = x2[(int) b[6::2]];

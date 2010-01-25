@@ -3,7 +3,7 @@ struct Node{
 	Node next;
 }
 
-Node newNode(int v){
+generator Node newNode(int v){ /* automatically rewritten */
 	Node n = new Node();
 	n.val = v;
 	n.next = null;	

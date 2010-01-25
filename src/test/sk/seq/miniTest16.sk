@@ -1,6 +1,6 @@
 int W = 4;
 
-bit[W] foo(bit[W] in){
+generator bit[W] foo(bit[W] in){ /* automatically rewritten */
 	return (in);
 }
 

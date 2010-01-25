@@ -12,7 +12,7 @@ int one(int dummy) {
 	return 1;
 }
 
-static int fib(int n) {
+int fib(int n) { /* automatically rewritten */
 	if (n == 0)
 		return 0;
 	else if (n == 1)

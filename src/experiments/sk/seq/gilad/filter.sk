@@ -19,7 +19,7 @@ bit[48] Esk(bit[32] in) implements E{
   return E2(E1(in));
  }
 
- bit[64] E1(bit[32] in){
+ generator bit[64] E1(bit[32] in){ /* automatically rewritten */
   bit[64] bigIn = in;
   bit[64] result;
   result = (bigIn >> ??) && ??;
@@ -28,7 +28,7 @@ bit[48] Esk(bit[32] in) implements E{
   return result;
  }
 
- bit[48] E2(bit[64] in){
+ generator bit[48] E2(bit[64] in){ /* automatically rewritten */
   bit[48] result = 0;
   bit[64] check = 0;
   for(int i=0; i<48; ++i){

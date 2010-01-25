@@ -1,11 +1,11 @@
 
 
-static bit[5] test1(bit[5] i, bit[5] j){
+bit[5] test1(bit[5] i, bit[5] j){ /* automatically rewritten */
 	bit[5] m = ??;
 	return (i & m) | (j & !m);
 }
 
-static bit[5] test2(bit[5] i, bit[5] j){
+bit[5] test2(bit[5] i, bit[5] j){ /* automatically rewritten */
 	bit[5] m = ??;
 	return (i & m) | (j & !m);
 }

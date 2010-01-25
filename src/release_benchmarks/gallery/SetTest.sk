@@ -8,7 +8,7 @@ pragma options "--unrollamnt 5 --inbits 3 --main_names main";
 
 int T = 4;
 
-void main(int[T] vals, int tval){
+generator void main(int[T] vals, int tval){ /* automatically rewritten */
 	
 	HashTable ht = newHashTable();
 	Tree t = newTree();

@@ -1,5 +1,5 @@
-bit sp () { return 1; }
-bit sk () {
+generator bit sp () { return 1; } /* automatically rewritten */
+generator bit sk () { /* automatically rewritten */
     fork (int i; 2) {
         i = i + 1;
     }

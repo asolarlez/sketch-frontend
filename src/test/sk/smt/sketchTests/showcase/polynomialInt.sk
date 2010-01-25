@@ -1,7 +1,7 @@
 // This benchmark requires --inlineamnt  > 5 in order to resolve.
 pragma options "--inlineamnt 6";
 
-int poly(int n, int x) {	
+generator int poly(int n, int x) { /* automatically rewritten */	
 	if (n <= 0) return ??; 
 	else 
 	  return x * poly(n-1, x) + ??;

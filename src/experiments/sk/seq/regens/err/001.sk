@@ -1,4 +1,4 @@
-int sp () { return 0; }
-int sk () {
+generator int sp () { return 0; } /* automatically rewritten */
+generator int sk () { /* automatically rewritten */
     return {| 1.foo |};
 }

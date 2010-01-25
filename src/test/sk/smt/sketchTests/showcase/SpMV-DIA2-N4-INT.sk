@@ -20,7 +20,7 @@ T mul(T x, T y) { return x & y; }
 
 #ifdef MODEL_INT 
 #define T int
-T mul(T x, T y) { return x * y; }
+generator T mul(T x, T y) { return x * y; } /* automatically rewritten */
 #endif
 
 #ifdef MODEL_UFUN1
@@ -55,8 +55,8 @@ struct DIA {
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-static int max(int a, int b) { return ((a)>(b) ? (a) : (b)); }
-static int min(int a, int b) { return ((a)<(b) ? (a) : (b)); }
+int max(int a, int b) { return ((a)>(b) ? (a) : (b)); } /* automatically rewritten */
+int min(int a, int b) { return ((a)<(b) ? (a) : (b)); } /* automatically rewritten */
 #define Vars   ({|d|o|})  /* unused macro */
 
 #define Consts ({|0|n|(2*n-1)|})
@@ -66,7 +66,7 @@ static int min(int a, int b) { return ((a)<(b) ? (a) : (b)); }
 #define Value (?? ? (a.V[Index][Index]) : x[Index])
 #define Loop(iv,S,E) for(iv = S; iv < E; iv++)
  
-static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
+T[N] SpMV_Sketch(DIA a, T[N] x, int n) { /* automatically rewritten */
       T[N] y=0;
       int d=0;
       int o=0;
@@ -95,7 +95,7 @@ static T[N] SpMV_Sketch(DIA a, T[N] x, int n) {
  
 // hand-written SpMV: The guard of the assignment avoids the corner elements of the sparse matrix
 // that do not correspond to any element of dense matrix 
-static T[N] SpMV_1(DIA a, T[N] x, int n) {
+T[N] SpMV_1(DIA a, T[N] x, int n) { /* automatically rewritten */
       T[N] y=0;
       for (int d=0; d < 2*n-1; d++) {
             for (int o=0; o<n; o++) {
@@ -109,7 +109,7 @@ static T[N] SpMV_1(DIA a, T[N] x, int n) {
       return y;  
 }
 // same as SpMV_1 but second loop is responsible for avoiding the invalid corners of the iteration space
-static T[N] SpMV_2(DIA a, T[N] x, int n) {
+T[N] SpMV_2(DIA a, T[N] x, int n) { /* automatically rewritten */
       T[N] y=0;
       int o=0;
       for (int d=0; d < 2*n-1; d++) {
@@ -122,7 +122,7 @@ static T[N] SpMV_2(DIA a, T[N] x, int n) {
       return y;  
 }
 // synthesized from our sketch
-static T[N] SpMV_3(DIA a, T[N] x, int n) {
+T[N] SpMV_3(DIA a, T[N] x, int n) { /* automatically rewritten */
       T[N] y=0;
       for (int d=0; d < n; d++) {
             for (int o = 0; o < n; o++) {
@@ -134,7 +134,7 @@ static T[N] SpMV_3(DIA a, T[N] x, int n) {
       return y;  
 }
 // SpMV written by Gilad
-static T[N] SpMV_4(DIA a, T[N] x, int n) {
+T[N] SpMV_4(DIA a, T[N] x, int n) { /* automatically rewritten */
       T[N] y=0;
       for (int d=0; d < n; d++) {
             for (int o = 0; o < n; o++) {
@@ -185,7 +185,7 @@ int harness () { // implements one {  // this harness either has a bug or it exp
       return 1;
 } 
 #endif
-static DIA sparsify(T[N][N] A) {
+DIA sparsify(T[N][N] A) { /* automatically rewritten */
       DIA sp = new DIA();
       for (int d = 0; d < 2*N-1; d++) {
             for (int o = 0; o < N; o++) {
@@ -199,7 +199,7 @@ static DIA sparsify(T[N][N] A) {
       }
       return sp;
 }
-static T[N][N] desparsify(DIA a) {
+T[N][N] desparsify(DIA a) { /* automatically rewritten */
       T[N][N] A = 0;
       int o, c, r;
       for (int d = 0; d < 2*N-1; d++) {
@@ -230,5 +230,5 @@ T[N] DeMV(T[N][N] A, T[N] x) {
       }
       return y;  
 }
-int one () { return 1; }
-int[N][N] identity(int[N][N] A) { return A; }
+generator int one () { return 1; } /* automatically rewritten */
+generator int[N][N] identity(int[N][N] A) { return A; } /* automatically rewritten */

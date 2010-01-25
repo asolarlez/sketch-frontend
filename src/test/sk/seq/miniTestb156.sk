@@ -10,7 +10,7 @@ struct Node{
 	Node next;	
 }
 
-Node select(Queue q){
+generator Node select(Queue q){ /* automatically rewritten */
 	int t = ??;
 	if(t == 0){
 		return q.tail;	

@@ -7,14 +7,14 @@ pragma options "--inbits 2";
 // Modeling multiplication
 //
 #define T int
-T mul(T x, T y) {
+generator T mul(T x, T y) { /* automatically rewritten */
 // return x * y;  // T == int
 // return x & y;  // T == bit
 // if (x == 0 || y == 0) return 0; 
 if (x == 0) return 0; 
 else return ufun_ii(x,y);
 }
-T ufun_ii(T x, T y);
+generator T ufun_ii(T x, T y); /* automatically rewritten */
 
 //
 //
@@ -30,7 +30,7 @@ int[N*N] C;
 int[N+1] R;
 }
 
-static CSR sparsify(T[N][N] a) {
+CSR sparsify(T[N][N] a) { /* automatically rewritten */
 CSR sm = new CSR();
 
 int idx = 0;
@@ -50,7 +50,7 @@ sm.R[N] = idx;
 return sm;
 }
 
-static int[N][N] desparsify(CSR sm) {
+int[N][N] desparsify(CSR sm) { /* automatically rewritten */
 T[N][N] a = 0;
 for (int r = 0; r < N; r++) {
          for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
@@ -80,7 +80,7 @@ return y;
 //
 // computes y = Ax on sparse A and dense x and y.
 //
-T[N] SpMV(CSR A, T[N] x) {
+generator T[N] SpMV(CSR A, T[N] x) { /* automatically rewritten */
 T[N] y;
 
 for (int r = 0; r < N; r++) {
