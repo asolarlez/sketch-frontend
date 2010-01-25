@@ -79,7 +79,8 @@ public final class CliOption {
     }
 
     public Object parse(CommandLine cmd_line, boolean no_defaults) {
-        if (typ.equals(Boolean.class)) {
+        System.out.println(typ);
+        if (typ.equals(Boolean.class) || typ.equals(boolean.class)) {
             return cmd_line.hasOption(full_name());
         }
         if (!cmd_line.hasOption(full_name())) {
