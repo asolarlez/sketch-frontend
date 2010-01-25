@@ -13,6 +13,8 @@ from gatoatigrado_lib import (ExecuteIn, Path, SubProc, dict, get_singleton,
     list, memoize_file, pprint, process_jinja2, set, sort_asc, sort_desc)
 import re
 import gatoatigrado_lib.subproc
+from gatoatigrado_lib.util import GetSingletonEmptyException
+import sys
 
 REWR_STR = " /* automatically rewritten */"
 FIRST_CHAR = re.compile(r"[^\s]")
@@ -26,6 +28,8 @@ def get_info(fname):
             fname]).start_wait()
     except gatoatigrado_lib.subproc.ProcessException:
         print("failed with %s" %(fname))
+
+couldntfindexception = False
 
 def read_info(fname):
     all = bindery.parse(fname.read()).vector
@@ -41,7 +45,12 @@ def read_info(fname):
         for fcn in fcns:
             fcn.is_toplevel = getattr(fcn, "is_toplevel", False) or bool(fcn.impl)
             if fcn.impl:
-                get_singleton(v for v in fcns if v.name == fcn.impl).is_toplevel = True
+                try:
+                    get_singleton(v for v in fcns if v.name == fcn.impl).is_toplevel = True
+                except GetSingletonEmptyException:
+                    global couldntfindexception
+                    couldntfindexception = True
+                    print("couldn't find function %s for file %s" %(fcn.impl, fcn.srcFile))
         return fcns
     return dict(list(info).equiv_classes(lambda a: Path(str(a.srcFile)))).map_values(setImplements)
 
@@ -76,14 +85,17 @@ def main(*sketchfiles):
 
     # run the Java program
     outpath = Path("function_list.xml")
-    outpath.exists() and outpath.unlink()
-    #[get_info(v) for v in sketchfiles]
-    for coarse_idx in range(0, len(sketchfiles), 100):
-        subset = map(str, sketchfiles[coarse_idx:(coarse_idx + 100)])
-        SubProc(["java", "-classpath", "sketch-noarch.jar",
-            "sketch.compiler.main.other.ParseFunctions"] + subset).start_wait()
+#    outpath.exists() and outpath.unlink()
+#    #[get_info(v) for v in sketchfiles]
+#    for coarse_idx in range(0, len(sketchfiles), 100):
+#        subset = map(str, sketchfiles[coarse_idx:(coarse_idx + 100)])
+#        SubProc(["java", "-classpath", "sketch-noarch.jar",
+#            "sketch.compiler.main.other.ParseFunctions"] + subset).start_wait()
 
     fcns_by_fname = read_info(outpath)
+    if couldntfindexception:
+        print("(press enter to continue)", end="")
+        sys.stdin.readline()
     
     for fname, fcns in fcns_by_fname.items():
         lines = open(fname).readlines()

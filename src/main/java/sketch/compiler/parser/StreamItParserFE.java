@@ -217,7 +217,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 						inputState.guessing++;
 						try {
 							{
-							match(TK_static);
+							match(TK_generator);
 							return_type();
 							match(ID);
 							match(LPAREN);
@@ -318,16 +318,16 @@ inputState.guessing--;
 		
 		Token  id = null;
 		Token  impl = null;
-		Type rt; List l; StmtBlock s; f = null; boolean isStatic=false;
+		Type rt; List l; StmtBlock s; f = null; boolean isGenerator=false;
 		
 		try {      // for error handling
 			{
 			switch ( LA(1)) {
-			case TK_static:
+			case TK_generator:
 			{
-				match(TK_static);
+				match(TK_generator);
 				if ( inputState.guessing==0 ) {
-					isStatic=true;
+					isGenerator=true;
 				}
 				break;
 			}
@@ -380,12 +380,12 @@ inputState.guessing--;
 				s=block();
 				if ( inputState.guessing==0 ) {
 					
-								if(isStatic){
-									f = Function.newStatic(getContext(id), id.getText(), rt, l,
-										impl==null?null:impl.getText(), s);
-								}else{
-									f = Function.newHelper(getContext(id), id.getText(), rt, l,
-										impl==null?null:impl.getText(), s);
+								if (isGenerator) {
+					f = Function.newHelper(getContext(id), id.getText(), rt, l,
+					impl==null ? null : impl.getText(), s);
+								} else {
+					f = Function.newStatic(getContext(id), id.getText(), rt, l,
+					impl==null ? null : impl.getText(), s);
 								}
 						
 				}
@@ -4172,7 +4172,7 @@ inputState.guessing--;
 		"\"implements\"",
 		"\"assert\"",
 		"\"h_assert\"",
-		"\"static\"",
+		"\"generator\"",
 		"\"include\"",
 		"\"pragma\"",
 		"ARROW",

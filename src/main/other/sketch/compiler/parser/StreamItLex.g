@@ -61,7 +61,7 @@ tokens {
 	"implements";
 	"assert";
 	"h_assert";
-	"static";
+	"generator";
     // Compiler directives:
     "include";
     "pragma";

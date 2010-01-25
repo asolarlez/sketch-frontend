@@ -169,7 +169,7 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  (TK_static return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  (TK_generator return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -334,21 +334,21 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isStatic=false; }
+function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isGenerator=false; }
 	:
-	(TK_static { isStatic=true;} )?
+	(TK_generator { isGenerator=true;} )?
 	rt=return_type
 	id:ID
 	l=param_decl_list
 	(TK_implements impl:ID)?
 	( s=block
 	{
-			if(isStatic){
-				f = Function.newStatic(getContext(id), id.getText(), rt, l,
-					impl==null?null:impl.getText(), s);
-			}else{
-				f = Function.newHelper(getContext(id), id.getText(), rt, l,
-					impl==null?null:impl.getText(), s);
+			if (isGenerator) {
+                f = Function.newHelper(getContext(id), id.getText(), rt, l,
+                    impl==null ? null : impl.getText(), s);
+			} else {
+                f = Function.newStatic(getContext(id), id.getText(), rt, l,
+                    impl==null ? null : impl.getText(), s);
 			}
 	}
 	| SEMI  { f = Function.newUninterp(getContext(id),id.getText(), rt, l);   })
