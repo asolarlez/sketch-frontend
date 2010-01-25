@@ -1,7 +1,7 @@
 int W = 8;  /* FIXME pow2 (logW) */
 
-int
-generator leq (bit[W] l, bit[W] r, int start, int count) /* automatically rewritten */
+generator int
+leq (bit[W] l, bit[W] r, int start, int count) /* automatically rewritten */
 {
     int a = 0;
     for (int i = start + count; i > start; i--) {  /* FIXME while (i > 0) */
@@ -13,8 +13,8 @@ generator leq (bit[W] l, bit[W] r, int start, int count) /* automatically rewrit
     return 1;
 }
 
-bit[W]
-generator itob (int v) /* automatically rewritten */
+generator bit[W]
+itob (int v) /* automatically rewritten */
 {
     bit[W] output;
 

@@ -85,12 +85,12 @@ def main(*sketchfiles):
 
     # run the Java program
     outpath = Path("function_list.xml")
-#    outpath.exists() and outpath.unlink()
-#    #[get_info(v) for v in sketchfiles]
-#    for coarse_idx in range(0, len(sketchfiles), 100):
-#        subset = map(str, sketchfiles[coarse_idx:(coarse_idx + 100)])
-#        SubProc(["java", "-classpath", "sketch-noarch.jar",
-#            "sketch.compiler.main.other.ParseFunctions"] + subset).start_wait()
+    outpath.exists() and outpath.unlink()
+    #[get_info(v) for v in sketchfiles]
+    for coarse_idx in range(0, len(sketchfiles), 100):
+        subset = map(str, sketchfiles[coarse_idx:(coarse_idx + 100)])
+        SubProc(["java", "-classpath", "sketch-noarch.jar",
+            "sketch.compiler.main.other.ParseFunctions"] + subset).start_wait()
 
     fcns_by_fname = read_info(outpath)
     if couldntfindexception:
