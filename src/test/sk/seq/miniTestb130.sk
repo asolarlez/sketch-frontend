@@ -3,7 +3,7 @@ int spec(int i){
 	return i;		
 }
 
-static void foo(ref int a, ref int b, int x1, int x2){
+void foo(ref int a, ref int b, int x1, int x2){ /* automatically rewritten */
 	int tmp = ?? ? x1 : x2;
 	if(??){
 		a = tmp;

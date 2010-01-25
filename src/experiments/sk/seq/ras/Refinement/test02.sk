@@ -14,12 +14,12 @@ Node[N] _Node_;  // list of allocated nodes
 int _n_;         // next allocated node (indexes into _Node_  
 int[A] _rn_;     // angelic choices for Nodes 
 int _nc_;        // id of the Node angel
-Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; }
+generator Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; } /* automatically rewritten */
 #define _N (_NodeChoice_())
-Node _NodeChoice2_() { int t = _nc_; _nc_++; assert _rn_[t-1]-_rn_[t] < 2; return _Node_[_rn_[t]]; }
+generator Node _NodeChoice2_() { int t = _nc_; _nc_++; assert _rn_[t-1]-_rn_[t] < 2; return _Node_[_rn_[t]]; } /* automatically rewritten */
 #define _N2 (_NodeChoice2_())
 
-Node newNode() {
+generator Node newNode() { /* automatically rewritten */
 	Node n = new Node();
 	_Node_[_n_] = n;
 	_n_++;

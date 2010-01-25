@@ -5,12 +5,12 @@ struct Box{
 }
 
 
-Box moo(Box i){
+generator Box moo(Box i){ /* automatically rewritten */
 	assert i.v > i.v-1;
 	return i;		
 }
 
-Box voo(Box i){
+generator Box voo(Box i){ /* automatically rewritten */
 	assert i.v < i.v - 1;
 	return i;	
 }

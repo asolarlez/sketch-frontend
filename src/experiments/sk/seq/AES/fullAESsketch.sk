@@ -1,6 +1,6 @@
 int W = 32;
 
-bit[W] Drot(bit[W] in, int r){
+generator bit[W] Drot(bit[W] in, int r){ /* automatically rewritten */
 	bit[W] tmp = in<<r;
 	bit[W] tmp2 = in>>(W-r);
 	bit[W] out=0;

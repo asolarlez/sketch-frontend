@@ -34,7 +34,7 @@ int[N] mult(int[No2] x, int[No2] y){
 }
 
 
-int[No2] multHalf(int[No4] x, int[No4] y){
+generator int[No2] multHalf(int[No4] x, int[No4] y){ /* automatically rewritten */
 	
 	int[No2] out = 0;
 	for(int i=0; i<No4; ++i){
@@ -50,7 +50,7 @@ int[No2] multHalf(int[No4] x, int[No4] y){
 }
 
 
-static int[N] plus(int[N] x, int[N] y){
+int[N] plus(int[N] x, int[N] y){ /* automatically rewritten */
 	int[N] out = 0;
 	for(int i = 0; i<N; ++i){
 		int tmp = x[i] + y[i] + out[i];
@@ -62,7 +62,7 @@ static int[N] plus(int[N] x, int[N] y){
 	return out;
 }
 
-static int[N] shiftVect(int[N] in, int s){
+int[N] shiftVect(int[N] in, int s){ /* automatically rewritten */
 		int[N] out = 0;
 		for(int i=0; i<N; ++i){
 			if(i >= s){
@@ -72,7 +72,7 @@ static int[N] shiftVect(int[N] in, int s){
 		return out;
 }
 
-static int[N] minus(int[N] t){
+int[N] minus(int[N] t){ /* automatically rewritten */
 	int[N] out = 0;
 	for(int i=0; i<N; ++i){
 		out[i] = -t[i];	
@@ -80,21 +80,21 @@ static int[N] minus(int[N] t){
 	return out;
 }
 
-int[N] sel(int[N] a, int[N] b){
+generator int[N] sel(int[N] a, int[N] b){ /* automatically rewritten */
 	int[N] out;	
 	if(??){ out = a; }else{ out = b; }	
 	return out;
 }
 
 
-int isel(int a, int b){
+generator int isel(int a, int b){ /* automatically rewritten */
 	int out;	
 	if(??){ out = a; }else{ out = b; }	
 	return out;
 }
 
 
-int[No4] poly1(int[No4] a, int[No4] b, int[No4] c, int [No4] d){
+generator int[No4] poly1(int[No4] a, int[No4] b, int[No4] c, int [No4] d){ /* automatically rewritten */
 	int[No4] out = 0;
 	if(??){
 		if(??){ out = (int[No4])plus(out, a); }else{ out =(int[No4]) plus(out, minus(a)); }	
@@ -111,11 +111,11 @@ int[No4] poly1(int[No4] a, int[No4] b, int[No4] c, int [No4] d){
 	return out;
 }
 
-static void print(int x){ 
+void print(int x){ /* automatically rewritten */ 
 	if(x==0){ x = 5; }
 }
 
-int[N] karatsubabis(int[No2] x, int[No2] y) {// implements mult {
+generator int[N] karatsubabis(int[No2] x, int[No2] y) {// implements mult { /* automatically rewritten */
 	int[No4] x1, x2, y1, y2;
 	int[No2]  a=0, b=0, c=0, d=0;
 	int[N] out = 0;
@@ -158,11 +158,11 @@ int[N] karatsuba(int[No2] x, int[No2] y)  implements mult  {
 	return out;
 }
 	
-int sgn(int i){
+generator int sgn(int i){ /* automatically rewritten */
 	return i >= 0 ? 1 : -1;	
 }	
 	
-int[N] normalize(int[N] in){
+generator int[N] normalize(int[N] in){ /* automatically rewritten */
 	int end = N-1;
 	
 	int[N] out = in;
@@ -186,7 +186,7 @@ int[N] normalize(int[N] in){
 
 
 
-int[N] karatsuba2(int[No2] x, int[No2] y)  { //implements mult {
+generator int[N] karatsuba2(int[No2] x, int[No2] y)  { //implements mult { /* automatically rewritten */
 	/*x[0] = 2; 
 	x[1] = 2;
 	x[2] = 1;

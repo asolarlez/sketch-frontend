@@ -4,7 +4,7 @@ int W=3;
 int WW=6;
 int log3Wsq = 2;
 
-int pow2 (int p)
+generator int pow2 (int p) /* automatically rewritten */
 {
     int a = 1;
     loop (p){a = a + a;}
@@ -12,7 +12,7 @@ int pow2 (int p)
 }
 
 
-int bitToIntVar (bit[W] v) {
+generator int bitToIntVar (bit[W] v) { /* automatically rewritten */
     int out=0;
     int i=0;
     loop(??) {
@@ -24,7 +24,7 @@ int bitToIntVar (bit[W] v) {
     return out;
 }
 
-int bitToInt (bit[W] v) {
+generator int bitToInt (bit[W] v) { /* automatically rewritten */
     int out=0;
     for (int i = 0; i < W; i++) {
         if (v[i]==1) {
@@ -34,7 +34,7 @@ int bitToInt (bit[W] v) {
     return out;
 }
 
-int bit2ToInt (bit[WW] v) {
+generator int bit2ToInt (bit[WW] v) { /* automatically rewritten */
     int out=0;
     for (int i = 0; i < WW; i++) {
         if (v[i]==1) {
@@ -44,7 +44,7 @@ int bit2ToInt (bit[WW] v) {
     return out;
 }
 
-bit[W] intToBit (int v)
+generator bit[W] intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -56,25 +56,25 @@ bit[W] intToBit (int v)
     return output;
 }
 
-bit full_add_result( bit a, bit b, bit c) {
+generator bit full_add_result( bit a, bit b, bit c) { /* automatically rewritten */
     return (a^b^c);
 }
-bit full_add_carry( bit a, bit b, bit c) {
+generator bit full_add_carry( bit a, bit b, bit c) { /* automatically rewritten */
     return (a&b)|(c&(a^b));
 }
-bit half_add_result( bit a, bit b) {
+generator bit half_add_result( bit a, bit b) { /* automatically rewritten */
     return a^b;
 }
-bit half_add_carry( bit a, bit b) {
+generator bit half_add_carry( bit a, bit b) { /* automatically rewritten */
     return a&b;
 }
 
-int cut(int x, int w) {
+generator int cut(int x, int w) { /* automatically rewritten */
     int a=x%(pow2(w));
     return a;
 }
 
-int[W*W] getshuffle(int level) {
+generator int[W*W] getshuffle(int level) { /* automatically rewritten */
    int[W*W] S;
    assert(level<=log3Wsq);
    if (level==0) {
@@ -86,7 +86,7 @@ int[W*W] getshuffle(int level) {
    return S;
 }
 
-int[W*W] knuth(int level) {
+generator int[W*W] knuth(int level) { /* automatically rewritten */
    int[W*W] result;
    for (int i=0;i< W*W; i++) {
        result[i]=i;
@@ -104,7 +104,7 @@ int[W*W] knuth(int level) {
    return result;
 }
 
-int[W*W] permutation(int level) {
+generator int[W*W] permutation(int level) { /* automatically rewritten */
 	int[W*W] S = getshuffle(level);
 	for (int i=0; i < W*W; i++) {
 		for (int j=0; j < W*W; j++) {
@@ -114,7 +114,7 @@ int[W*W] permutation(int level) {
    	return S;
 }
 
-int wallace(bit[W] a, bit[W] b) {
+generator int wallace(bit[W] a, bit[W] b) { /* automatically rewritten */
 
     bit[W*W] result;
     bit[W*W] result_out;

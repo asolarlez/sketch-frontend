@@ -1,8 +1,8 @@
-static bit[4] rvbit(bit[2] in){
+bit[4] rvbit(bit[2] in){ /* automatically rewritten */
     return in ^ ??;
 }
 
-static bit[4] tutu(bit[2] in, int n){
+bit[4] tutu(bit[2] in, int n){ /* automatically rewritten */
     if(n>0){
         return tutu(in, n-1);
     }else{

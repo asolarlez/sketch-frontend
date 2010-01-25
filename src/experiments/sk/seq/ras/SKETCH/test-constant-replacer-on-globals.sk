@@ -1,4 +1,4 @@
 int g = 2;
-void main () {
+generator void main () { /* automatically rewritten */
 	g = 1;
 }

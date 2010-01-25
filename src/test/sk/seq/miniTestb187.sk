@@ -1,4 +1,4 @@
-int ufun(int idx);
+generator int ufun(int idx); /* automatically rewritten */
 
 int spec(int idx, int N){
 	if(idx >= 0 && idx <N-3){

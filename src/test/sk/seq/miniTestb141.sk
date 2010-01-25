@@ -1,11 +1,11 @@
 pragma options "--intbits 32";
 
-int moo(int i){
+generator int moo(int i){ /* automatically rewritten */
 	assert i > i-1;
 	return i;		
 }
 
-int voo(int i){
+generator int voo(int i){ /* automatically rewritten */
 	assert i < i - 1;
 	return i;	
 }

@@ -2,7 +2,7 @@ int L = 3;
 int W = 8;  /* FIXME should be an exponent of L. */
 
 int
-pow2 (int p)
+generator pow2 (int p) /* automatically rewritten */
 {
     int a = 1;
 
@@ -13,7 +13,7 @@ pow2 (int p)
 }
 
 bit[W]
-intToBit (int v)
+generator intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -48,7 +48,7 @@ sk_linear (int x)
 */
 
 int
-sk_offset (int x)
+generator sk_offset (int x) /* automatically rewritten */
 {
     int b = ??;
     return (?? ? x + b : x - b);

@@ -4,7 +4,7 @@ struct Counter {
     int i;
 }
 
-static Counter newCounter () {
+Counter newCounter () { /* automatically rewritten */
     Counter c = new Counter ();
     c.i = 0;
     return c;

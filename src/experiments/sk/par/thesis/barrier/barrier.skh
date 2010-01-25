@@ -10,7 +10,7 @@ struct barrier{
 	bit[N] localSenses;
 }
 
-barrier newBarrier(){
+generator barrier newBarrier(){ /* automatically rewritten */
 	barrier b = new barrier();	
 	b.count = N;
 	b.localSenses = 0;	
@@ -18,7 +18,7 @@ barrier newBarrier(){
 	return b;
 }
 
-static void next(barrier b, int thread){
+void next(barrier b, int thread){ /* automatically rewritten */
 	bit lsense = b.localSenses[thread];
 	int tmpCount;
 	
@@ -59,14 +59,14 @@ bit TRUE(){
 	return 1;	
 }
 
-int left(int t){
+generator int left(int t){ /* automatically rewritten */
 	int rv = 0;
 	rv = t - 1;
 	if( rv < 0){ rv = rv + N; }
 	return rv;	
 }
 
-int right(int t){
+generator int right(int t){ /* automatically rewritten */
 	int rv = 0;
 	rv = t + 1;
 	if( rv >= N){ rv = rv - N; }

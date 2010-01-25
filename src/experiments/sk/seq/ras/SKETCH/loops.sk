@@ -2,7 +2,7 @@ pragma options "--synth MINI --verif MINI --inbits 1 --cbits 4 --unrollamnt 10 -
 
 #define N 5
 
-static int f(int x);// { return x+1; }
+generator static int f(int x);// { return x+1; } /* automatically rewritten */
 
 int main (int[N] x) implements spec {
 	int ret = 0;

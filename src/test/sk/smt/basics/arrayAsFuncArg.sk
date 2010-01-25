@@ -9,6 +9,6 @@ bit sk(int dummy) implements one{
 	return 1;
 }
 
-int f(int[2] a) {
+generator int f(int[2] a) { /* automatically rewritten */
 	return a[0] + a[1] +??;
 }

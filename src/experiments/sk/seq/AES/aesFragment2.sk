@@ -1,9 +1,9 @@
 
-bit[8] GFM01(bit[8] in){
+generator bit[8] GFM01(bit[8] in){ /* automatically rewritten */
 	return in;
 }
 
-bit[8] GFMul2(bit[8] in){
+generator bit[8] GFMul2(bit[8] in){ /* automatically rewritten */
  	bit [8] t1 = in << {*}; 	
  	bit [8] m1 = (in>>{*}) & {*};
 	bit [8] m2 = (m1<<{*}) | m1;
@@ -11,7 +11,7 @@ bit[8] GFMul2(bit[8] in){
 	return t1 ^ m3;
 }
 
-bit[8] GFMul3(bit[8] in){
+generator bit[8] GFMul3(bit[8] in){ /* automatically rewritten */
  	bit [8] t1 = in << {*} ^ in;
  	bit [8] m1 = (in>>{*}) & {*};
 	bit [8] m2 = (m1<<{*}) | m1;
@@ -87,7 +87,7 @@ bit[8] GFM02(bit[8] input){
 	return out;
 }
 
-bit[8] row1Fil(bit[32] input){
+generator bit[8] row1Fil(bit[32] input){ /* automatically rewritten */
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -105,7 +105,7 @@ bit[8] row1Fil(bit[32] input){
   return in1 ^ in2 ^ in3 ^ in4;
 }
 
-bit[8] row2Fil(bit[32] input){
+generator bit[8] row2Fil(bit[32] input){ /* automatically rewritten */
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;

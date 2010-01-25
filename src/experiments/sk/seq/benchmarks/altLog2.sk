@@ -30,7 +30,7 @@ bit[W] slog2(bit[W] in)
 }
 
 
-bit[W] castInt(int n){
+generator bit[W] castInt(int n){ /* automatically rewritten */
 	bit[W] one = 0;
 	one[0] = 1;
 	bit[W] ret = 0;

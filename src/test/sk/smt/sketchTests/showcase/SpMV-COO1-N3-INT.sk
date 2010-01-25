@@ -33,7 +33,7 @@ T mul(T x, T y) { return x & y; }
 
 #ifdef MODEL_INT 
 #define T int
-T mul(T x, T y) { return x * y; }
+generator T mul(T x, T y) { return x * y; } /* automatically rewritten */
 #endif
 
 #ifdef MODEL_UFUN1
@@ -78,7 +78,7 @@ struct COO {    // COO is a list of tripples (non-zero value, column index, row 
 
 #define Loop(iv,S,E) for(iv = S; iv < E; iv++) 
 
-static T[N] SpMV_Sketch(COO a, T[N] x, int n) {
+T[N] SpMV_Sketch(COO a, T[N] x, int n) { /* automatically rewritten */
 	T[N] y=0;
 	int i, j;
 	
@@ -89,7 +89,7 @@ static T[N] SpMV_Sketch(COO a, T[N] x, int n) {
 	} 
 	return y;	
 }
-static T[N][N] desparsify_Sketch(COO a) {  // sketch works correctly
+T[N][N] desparsify_Sketch(COO a) {  // sketch works correctly /* automatically rewritten */
 	T[N][N] A = 0;
 	int i,j;  // j is unused
 	T[N] x=0; // x is unused
@@ -112,7 +112,7 @@ static T[N][N] desparsify_Sketch(COO a) {  // sketch works correctly
 T[N] main(T[N][N] A, T[N] x) implements DeMV {
 	return SpMV_Sketch(sparsify(A), x, N);
 }
-int harness () { // implements one {
+generator int harness () { // implements one { /* automatically rewritten */
 	T[N*N] A = {1,0,0,1};
 	T[N] x ={1,1};
 	T[N][N] dA;
@@ -130,7 +130,7 @@ int harness () { // implements one {
 	return 1;
 }  
 
-static COO sparsify(T[N][N] A) {
+COO sparsify(T[N][N] A) { /* automatically rewritten */
 	COO sp = new COO();
 	
 	int idx = 0;
@@ -148,7 +148,7 @@ static COO sparsify(T[N][N] A) {
 	return sp;
 }
 // TODO: try to sketch desparsify
-static T[N][N] desparsify(COO sp) {
+T[N][N] desparsify(COO sp) { /* automatically rewritten */
 	T[N][N] A = 0;
 	for (int idx = 0; idx < sp.n; idx++) {
 		A[sp.R[idx]][sp.C[idx]] = sp.V[idx];
@@ -172,5 +172,5 @@ T[N] DeMV(T[N][N] A, T[N] x) {
 	} 
 	return y;	
 }
-int one () { return 1; }
-int[N][N] identity(int[N][N] A) { return A; }
+generator int one () { return 1; } /* automatically rewritten */
+generator int[N][N] identity(int[N][N] A) { return A; } /* automatically rewritten */

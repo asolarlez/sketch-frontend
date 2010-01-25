@@ -11,7 +11,7 @@ bit one(bit[N] in){
 
 
 
-bit checker(int[MEMSIZE] mem, int tail){
+generator bit checker(int[MEMSIZE] mem, int tail){ /* automatically rewritten */
 	int val = mem[0];
 	int ptr = mem[1];
 	int lastPtr = NULL;	

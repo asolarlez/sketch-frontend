@@ -7,7 +7,7 @@ test ()
 }
 
 int
-sk_offset (int x)
+generator sk_offset (int x) /* automatically rewritten */
 {
     int b = ??;
     return (x - b);

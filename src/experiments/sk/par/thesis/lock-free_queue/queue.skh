@@ -14,14 +14,14 @@ struct Item {
     int id;     // the id of this object
 }
 
-static Queue newQueue () {
+Queue newQueue () { /* automatically rewritten */
     Queue q = new Queue ();
     q.prevHead = newNode (null, null, 1);
     q.tail = q.prevHead;
     return q;
 }
 
-static Node newNode (Item obj, Node next, bit taken) {
+Node newNode (Item obj, Node next, bit taken) { /* automatically rewritten */
     Node n = new Node ();
     n.obj = obj;
     n.next = next;
@@ -29,7 +29,7 @@ static Node newNode (Item obj, Node next, bit taken) {
     return n;
 }
 
-static Item newItem (int tid, int id) {
+Item newItem (int tid, int id) { /* automatically rewritten */
     Item it = new Item ();
     it.tid = tid;
     it.id = id;
@@ -47,7 +47,7 @@ static Item newItem (int tid, int id) {
  *   (this is a cheap cycle detector)
  * - no 'taken' nodes appear after untaken ones
  */
-static bit isValidQueue (Queue q, int maxlen) {
+bit isValidQueue (Queue q, int maxlen) { /* automatically rewritten */
     assert q.prevHead != null;
     assert q.prevHead.taken;
 
@@ -79,7 +79,7 @@ static bit isValidQueue (Queue q, int maxlen) {
 }
 
 /** Assumes isValidQueue (q). */
-static bit isEmptyQueue (Queue q, int maxlen) {
+bit isEmptyQueue (Queue q, int maxlen) { /* automatically rewritten */
     Node n = q.prevHead;
     for (int i = 0; i < NNODES; ++i) {
         if (n != null) {

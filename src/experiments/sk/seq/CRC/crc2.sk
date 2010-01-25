@@ -37,7 +37,7 @@ bit[Wout] crcCore(bit[Wout] in, bit[Wout] state){
 	return ret;
 }
 
-bit[Wout] remainderSK(bit[Win] in)
+generator bit[Wout] remainderSK(bit[Win] in) /* automatically rewritten */
 {
 	bit[Wout] ret=0;
 	int T = Win / Wout;	

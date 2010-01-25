@@ -4,7 +4,7 @@ int spec( int x, int y, int z ){
    return (x + x) * (y - z);
 }
 
-int rec(int x, int y, int z){
+generator int rec(int x, int y, int z){ /* automatically rewritten */
    int t = ??;
    if(t == 0){
      return x;

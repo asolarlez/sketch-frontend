@@ -3,23 +3,23 @@ struct Node {
     Node next;
 }
 
-Node newNode (int key, Node next) {
+generator Node newNode (int key, Node next) { /* automatically rewritten */
     Node n = new Node ();
     n.key = key;
     n.next = next;
     return n;
 }
 
-Node genNode (Node n1, Node n2) {
+generator Node genNode (Node n1, Node n2) { /* automatically rewritten */
     Node g = ?? ? n1 : n2;
     return ?? ? g : g.next;
 }
-static bit genComparison (Node n1, Node n2) {
+bit genComparison (Node n1, Node n2) { /* automatically rewritten */
     Node g1 = genNode (n1, n2), g2 = genNode (n1, n2);
     return g1 != g2;
 }
 
-static void find (Node head, int key, ref Node prev, ref Node cur) {
+void find (Node head, int key, ref Node prev, ref Node cur) { /* automatically rewritten */
     prev = null;
     cur = head;
     lock (cur);

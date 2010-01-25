@@ -7,19 +7,19 @@ pragma options "--showphase final --verbosity 7 --inbits 1 --cbits 3 --verif ABC
 // 
 //#define T bit
 #define T int
-T mul(T x, T y) {
+generator T mul(T x, T y) { /* automatically rewritten */
 	return x * y;  // T == int
 	// return x & y;  // T == bit
 	// if (x == 0 || y == 0) return 0; else return ufun_ii(x,y);
 	// if (x == 0) return 0; else return ufun_ii(x,y);
 }
-T ufun_ii(T x, T y);
+generator T ufun_ii(T x, T y); /* automatically rewritten */
 
 //
 //
 //
 
-int[N] main(T[N][N] A, T[N] x) { // implements DeMV {
+generator int[N] main(T[N][N] A, T[N] x) { // implements DeMV { /* automatically rewritten */
 	return SpMV(sparsify(A), x, /* instr */ A);
 }
 
@@ -29,7 +29,7 @@ struct CSR {
 	int[N+1] R;
 }
 
-static CSR sparsify(T[N][N] a) {
+CSR sparsify(T[N][N] a) { /* automatically rewritten */
 	CSR sm = new CSR();
 	
 	int idx = 0;
@@ -49,7 +49,7 @@ static CSR sparsify(T[N][N] a) {
 	return sm;
 }
 
-static int[N][N] desparsify(CSR sm) {
+int[N][N] desparsify(CSR sm) { /* automatically rewritten */
 	T[N][N] a = 0;
 	for (int r = 0; r < N; r++) {
 		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
@@ -64,7 +64,7 @@ static int[N][N] desparsify(CSR sm) {
 //
 // computes y = Ax on dense A, x, and y.
 // 
-int[N] DeMV(T[N][N] A, T[N] x) {
+generator int[N] DeMV(T[N][N] A, T[N] x) { /* automatically rewritten */
 	int[N] y;
 	
 	for (int r = 0; r < N; r++) {
@@ -108,7 +108,7 @@ int transfer (T[N] x, T[N][N] dA, ARGS) implements one {
 //
 // computes y = Ax on sparse A and dense x and y.
 // 
-static int SpMV(CSR A, T[N] x, T[N][N] dA) {
+int SpMV(CSR A, T[N] x, T[N][N] dA) { /* automatically rewritten */
 	int[N] y = 0;
 	
 	for (int r = 0; r < N; r++) {    
@@ -132,7 +132,7 @@ static int SpMV(CSR A, T[N] x, T[N][N] dA) {
 //
 // L1: forall i=0,r-1 . y[i] = A[i] dot x
 //
-static bit L1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+bit L1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) { /* automatically rewritten */
 	bit t = true;
 	for (int i=0; i<r; i++) {
 		T[N] temp;
@@ -147,7 +147,7 @@ static bit L1(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
 //
 // L2: c=A.C[idx] and y[r]=A[r][0:c-1] dot x[0:c-1]
 //
-static bit L2(CSR A, T[N] x, int[N] y, int r, int idx, T[N][N] dA) {
+bit L2(CSR A, T[N] x, int[N] y, int r, int idx, T[N][N] dA) { /* automatically rewritten */
 	int partial_dot = 0;
 	for (int i=0; i<A.C[idx]; i++) {
 		partial_dot += dA[r][i]*x[i]; 
@@ -158,7 +158,7 @@ static bit L2(CSR A, T[N] x, int[N] y, int r, int idx, T[N][N] dA) {
 //
 // Consistency checks
 // 
-static bit consistent (CSR A, T[N][N] dA) {
+bit consistent (CSR A, T[N][N] dA) { /* automatically rewritten */
 	
 	// internal consistency
 	
@@ -240,7 +240,7 @@ static bit consistent (CSR A, T[N][N] dA) {
 //
 // L2_all_nonzero: c=A.C[A.R[r+1]-1] . y[r]=A[r][0:c] dot x[0:c]
 //
-static bit L2_all_nonzero(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+bit L2_all_nonzero(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) { /* automatically rewritten */
 	if (! (0<=r && r<N) ) return 0;
 	int partial_dot = 0;
 	// consitency check
@@ -263,7 +263,7 @@ static bit L2_all_nonzero(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
 //
 // L2_whole_row: y[r] = A[r][0:N-1] dot x[0:N-1]
 //
-static bit L2_whole_row(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
+bit L2_whole_row(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) { /* automatically rewritten */
 	int partial_dot = 0;
 	for (int i=0; i<N; i++) {
 		partial_dot += dA[r][i]*x[i]; 
@@ -277,7 +277,7 @@ static bit L2_whole_row(CSR A, T[N] x, int[N] y, int r, T[N][N] dA) {
 
 // aux stuff
 
-int dot(T[N] a, T[N] b) {
+generator int dot(T[N] a, T[N] b) { /* automatically rewritten */
 	int s = 0;
 	for (int i = 0; i < N; i++) {
 		s += mul(a[i],b[i]);

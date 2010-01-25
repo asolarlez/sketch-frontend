@@ -3,11 +3,11 @@ bit one(int[5] in){
 	return 1;	
 }
 
-bit pred1(int t, int v){
+generator bit pred1(int t, int v){ /* automatically rewritten */
 	return t < v;	
 }
 
-bit pred2(int t){
+generator bit pred2(int t){ /* automatically rewritten */
 	return t > ??;	
 }
 

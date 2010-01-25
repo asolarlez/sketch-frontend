@@ -49,7 +49,7 @@ bit[2*32] dropThirdImplementation(bit[3*32] in) implements dropThirdWordAligned
 	return t1<<{*} {|} t2<<{*} {|} t3<<{*};
 }
 
-bit[32] logShifter(bit[32] in) {   
+generator bit[32] logShifter(bit[32] in) { /* automatically rewritten */   
 	int disp=1;
 	loop( {*} ) {
 		in = in {|} in>>disp;

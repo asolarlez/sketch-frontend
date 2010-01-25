@@ -9,7 +9,7 @@ pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1
 
 #ifdef MODEL_BIT
 #define T bit
-T mul(T x, T y) { return x & y; }
+generator T mul(T x, T y) { return x & y; } /* automatically rewritten */
 #endif
 
 #ifdef MODEL_INT 
@@ -45,7 +45,7 @@ T ufun_ii(T x, T y);
 
 #define Loop(iv,S,E) for(iv = S; iv < E; iv++) 
 
-static T[N] SpMV_Sketch(CSR A, T[N] x, int n) {
+T[N] SpMV_Sketch(CSR A, T[N] x, int n) { /* automatically rewritten */
 	T[N] y=0;
 	int i, j;
 	int which = ??;
@@ -106,7 +106,7 @@ bit one(T[N][N] A, T[N] x) {
 //	return 1;
 //}  
 
-int[N][N] identity(int[N][N] A) { return A; }
+generator int[N][N] identity(int[N][N] A) { return A; } /* automatically rewritten */
 
 struct CSR {
 	T[N*N] V;
@@ -114,7 +114,7 @@ struct CSR {
 	int[N+1] R;
 }
 
-static CSR sparsify(T[N][N] a) {
+CSR sparsify(T[N][N] a) { /* automatically rewritten */
 	CSR sm = new CSR();
 	
 	int idx = 0;
@@ -134,7 +134,7 @@ static CSR sparsify(T[N][N] a) {
 	return sm;
 }
 
-static int[N][N] desparsify(CSR sm) {
+int[N][N] desparsify(CSR sm) { /* automatically rewritten */
 	T[N][N] a = 0;
 	for (int r = 0; r < N; r++) {
 		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
@@ -149,7 +149,7 @@ static int[N][N] desparsify(CSR sm) {
 //
 // computes y = Ax on dense A, x, and y.
 // 
-T[N] DeMV(T[N][N] A, T[N] x) {
+generator T[N] DeMV(T[N][N] A, T[N] x) { /* automatically rewritten */
 	T[N] y = 0;
 	
 	for (int r = 0; r < N; r++) {

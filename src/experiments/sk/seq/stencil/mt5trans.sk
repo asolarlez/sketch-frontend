@@ -1,5 +1,5 @@
 
-int in(int t0, int tabs, int iM1, int iP1){
+generator int in(int t0, int tabs, int iM1, int iP1){ /* automatically rewritten */
 	int rv=0;
 	if( tabs==t0-1)
 		rv = iM1;
@@ -16,7 +16,7 @@ int sketch(int t0, int N, int iM1, int iP1) implements spec{
 	return outSK(t0, N, N, t0, iM1, iP1);
 }
 
-int out_0(int t0,  int i, int N, int tabs, int iM1, int iP1){
+generator int out_0(int t0,  int i, int N, int tabs, int iM1, int iP1){ /* automatically rewritten */
 	int[3] idx_0; 
 	idx_0[0] = 0;
 	idx_0[1] = t0;	
@@ -54,7 +54,7 @@ int out_0(int t0,  int i, int N, int tabs, int iM1, int iP1){
 	return rv;
 }
 
-int t2_0(int i, int N, int tabs, int iM1, int iP1){
+generator int t2_0(int i, int N, int tabs, int iM1, int iP1){ /* automatically rewritten */
 	int[3] idx_0;
 	idx_0[0] = 4;
 	idx_0[1] = i-1;
@@ -71,7 +71,7 @@ int t2_0(int i, int N, int tabs, int iM1, int iP1){
 }
 
 
-int outSK(int t0,  int i, int N, int tabs, int iM1, int iP1){
+generator int outSK(int t0,  int i, int N, int tabs, int iM1, int iP1){ /* automatically rewritten */
 	int[1] idx_0; 
 	idx_0[0] = 2;
 	bit g0 = (0)==(t0);
@@ -120,7 +120,7 @@ int outSK(int t0,  int i, int N, int tabs, int iM1, int iP1){
 	}
 	return rv;
 }
-int t0_0(int i, int N, int tabs, int iM1, int iP1){
+generator int t0_0(int i, int N, int tabs, int iM1, int iP1){ /* automatically rewritten */
 	int[1] idx_0;
 	idx_0[0] = 0;
 	bit g0 = true;
@@ -153,7 +153,7 @@ int t0_0(int i, int N, int tabs, int iM1, int iP1){
 	}
 	return rv;
 }
-int t1_0(int i, int N, int tabs, int iM1, int iP1){
+generator int t1_0(int i, int N, int tabs, int iM1, int iP1){ /* automatically rewritten */
 	int[1] idx_0;
 	idx_0[0] = 1;
 	bit g0 = true;

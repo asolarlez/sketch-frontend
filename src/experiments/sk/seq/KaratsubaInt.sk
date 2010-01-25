@@ -13,12 +13,12 @@
 
 
 
-int sel(int in1, int in2){
+generator int sel(int in1, int in2){ /* automatically rewritten */
 	bit c = {*};
 	return c ? in1 : in2;
 }
 
-int poly(int n, int x0,int x1,int x2,int x3) {
+generator int poly(int n, int x0,int x1,int x2,int x3) { /* automatically rewritten */
 if (n<=0){
  return {*};
 }else{

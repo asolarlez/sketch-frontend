@@ -13,17 +13,17 @@ struct Node{
 }
 
 
-Node select(Queue q){	
+generator Node select(Queue q){ /* automatically rewritten */	
 	return {| q(.head | .tail)(.next)?(.next)? | null |};	
 }
 
-bit cond(Queue q){ 
+generator bit cond(Queue q){ /* automatically rewritten */ 
 	Node n1 = select(q);
 	Node n2 = select(q);
 	return {| n1 (== | != ) n2 |};
 }
 
-static int enqueue(Queue q, int i){
+int enqueue(Queue q, int i){ /* automatically rewritten */
 	Node n = new Node();
 	n.val = i;
 	n.next = null;	
@@ -33,7 +33,7 @@ static int enqueue(Queue q, int i){
 	return 1;
 }
 
-static int dequeue(Queue q){
+int dequeue(Queue q){ /* automatically rewritten */
 	Node n;
 	n = q.head;	
 	assert q.head != null;

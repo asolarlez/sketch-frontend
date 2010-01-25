@@ -11,7 +11,7 @@ struct List {
 int KEY_MIN = -10;
 int KEY_MAX = 10;
 
-Node newNode (int key, Node next, bit marked) {
+generator Node newNode (int key, Node next, bit marked) { /* automatically rewritten */
     Node n = new Node ();
     n.key = key;
     n.next = next;
@@ -19,37 +19,37 @@ Node newNode (int key, Node next, bit marked) {
     return n;
 }
 
-Node mkSentinel (bit isHead) {
+generator Node mkSentinel (bit isHead) { /* automatically rewritten */
     return newNode (isHead ? KEY_MIN : KEY_MAX, null, 0);
 }
 
-List newList () {
+generator List newList () { /* automatically rewritten */
     List l = new List ();
     l.head = mkSentinel (1);
     l.head.next = mkSentinel (0);
     return l;
 }
 
-bit isHeadNode (Node n) {
+generator bit isHeadNode (Node n) { /* automatically rewritten */
     return n.key == KEY_MIN && n.next != null && n.marked == 0;
 }
 
-bit isTailNode (Node n) {
+generator bit isTailNode (Node n) { /* automatically rewritten */
     return n.key == KEY_MAX && n.next == null && n.marked == 0;
 }
 
-bit isEmpty(List L){
+generator bit isEmpty(List L){ /* automatically rewritten */
 	return isTailNode(L.head.next);	
 }
 
 
-bit verify (List L) {
+generator bit verify (List L) { /* automatically rewritten */
 	cleanupList(L);
     assertValidList (L);
     return 1;
 }
 
-void cleanupList(List L){
+generator void cleanupList(List L){ /* automatically rewritten */
 	Node next =  L.head;
 	Node prev = null;
 	while(next.next != null){
@@ -63,7 +63,7 @@ void cleanupList(List L){
 	}	
 }
 
-void assertValidList (List L) {
+generator void assertValidList (List L) { /* automatically rewritten */
     Node n = L.head;
     assert isHeadNode (n);
 
@@ -86,7 +86,7 @@ void assertValidList (List L) {
 }
 
 
-bit find (List L, int key) {
+generator bit find (List L, int key) { /* automatically rewritten */
     Node n = L.head;
     for (int i = 0; i < 5; ++i) {
         if (n.key == key && n.marked == 0)

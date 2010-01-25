@@ -3,7 +3,7 @@ pragma options "--keeptmpfiles";
 struct S {
    S next;
 }
-S f(int x) { return new S(); } 
+generator S f(int x) { return new S(); } /* automatically rewritten */ 
 
 int main() implements foo {
 	S p;

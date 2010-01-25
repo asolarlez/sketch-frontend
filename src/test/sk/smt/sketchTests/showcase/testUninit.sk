@@ -4,7 +4,7 @@ bit main(bit dummy) implements one {
 	return 1;
 }
 
-void dang() {
+generator void dang() { /* automatically rewritten */
 	int i;
 	int j;
 	assert i == ??;

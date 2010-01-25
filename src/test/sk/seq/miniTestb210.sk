@@ -8,11 +8,11 @@ void VOID(){
 
 
 
-static int fc145(int in){
+int fc145(int in){ /* automatically rewritten */
 	return in;
 }
 
-static int f1(int in){
+int f1(int in){ /* automatically rewritten */
 return fc145(in);
 }
 

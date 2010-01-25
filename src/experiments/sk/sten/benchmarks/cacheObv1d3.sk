@@ -20,7 +20,7 @@ float[N][T] cacheObv1d(float[N] in, float[N][T] f){
 }
 
 
-int hole2(int i){
+generator int hole2(int i){ /* automatically rewritten */
 	int rv = 0;
 	if(??){
 		if(??){
@@ -38,7 +38,7 @@ int hole2(int i){
 	return rv;	
 }
 
-int hole(int i){
+generator int hole(int i){ /* automatically rewritten */
 	int rv = 0;
 	if(??){
 		if(??){
@@ -66,7 +66,7 @@ int hole(int i){
 
 
 
-float[N][T] helper(float[N][T] f, float[N][T] outold){
+generator float[N][T] helper(float[N][T] f, float[N][T] outold){ /* automatically rewritten */
 	float[N][T]	out = outold;
 	for(int i=hole(0); i<hole(0); ++i){			
 		for(int t=hole(i)+??; t<hole(i); ++t){

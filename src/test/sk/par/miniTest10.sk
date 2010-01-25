@@ -4,13 +4,13 @@ struct Box {
 	int val;	
 }
 
-Box newBox(int i){
+generator Box newBox(int i){ /* automatically rewritten */
 	Box b = new Box();
 	b.val = i;
 	return b;	
 }
 
-int getVal(Box b){
+generator int getVal(Box b){ /* automatically rewritten */
 	return b.val;	
 }
 

@@ -1,4 +1,4 @@
-bit[16] firstZeroSk(bit[16] in){	
+generator bit[16] firstZeroSk(bit[16] in){ /* automatically rewritten */	
 	bit[16] ret;
 	ret = (!in) & (in + {*});
 	return ret;

@@ -13,7 +13,7 @@ struct list{
 	node tail;
 }
 
-list cat(list l1, list l2){
+generator list cat(list l1, list l2){ /* automatically rewritten */
 	if(l1.head == null){
 		return l2;	
 	}else{
@@ -27,7 +27,7 @@ list cat(list l1, list l2){
 	}
 }
 
-node popHead(list l){
+generator node popHead(list l){ /* automatically rewritten */
 	assert l.head != null;
 	node n = l.head;
 	l.head = l.head.next;
@@ -36,7 +36,7 @@ node popHead(list l){
 }
 
 
-static list reverse(list l){
+list reverse(list l){ /* automatically rewritten */
 	if(l.head == null){
 		return l;	
 	}else{
@@ -50,22 +50,22 @@ static list reverse(list l){
 }
 
 
-node hole(list l1, list l2){  
+generator node hole(list l1, list l2){ /* automatically rewritten */  
 	return {| null | ( (l1 | l2)(.head | .tail) )(.next)?  |}	;
 }
 
-node holeB(list l1, list l2, node n){
+generator node holeB(list l1, list l2, node n){ /* automatically rewritten */
 	return 	(?? ? hole(l1, l2) : n); 
 }
 
 
-bit cond(list l1, list l2){ 
+generator bit cond(list l1, list l2){ /* automatically rewritten */ 
 	node n1 = hole(l1, l2);
 	node n2 = hole(l1, l2);
 	return {| n1 (== | !=) n2 | ??  |};
 }
 
-static list reverseSK(list l){
+list reverseSK(list l){ /* automatically rewritten */
 	list nl = new list();
 	nl.head = null; 
 	nl.tail = null;
@@ -82,7 +82,7 @@ static list reverseSK(list l){
 	return nl;
 }
 
-static list populate(bit[N] elems, int n){
+list populate(bit[N] elems, int n){ /* automatically rewritten */
 	list l = new list();
 	node prev = null;
 	for(int i=0; i<n; ++i){
@@ -99,7 +99,7 @@ static list populate(bit[N] elems, int n){
 }
 
 
-static bit[N] serialize(list l, int n){
+bit[N] serialize(list l, int n){ /* automatically rewritten */
 	bit[N] out = 0;
 	node t = l.head;
 	node prev = null;

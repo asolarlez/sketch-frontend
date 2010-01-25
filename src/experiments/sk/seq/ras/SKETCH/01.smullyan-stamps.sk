@@ -4,15 +4,15 @@
 #define YELLOW 	1
 #define GREEN 	2
 
-bit valid(int a, int b, int c) {
+generator bit valid(int a, int b, int c) { /* automatically rewritten */
 	return valid_color(a) & valid_color(b) & valid_color(c) & valid_counts(a, b, c);
 }
 
-bit valid_color(int x) {
+generator bit valid_color(int x) { /* automatically rewritten */
 	return x==RED | x==YELLOW | x==GREEN; 
 }
 
-bit valid_counts(int a, int b, int c) {
+generator bit valid_counts(int a, int b, int c) { /* automatically rewritten */
 	int reds = (a==RED) + (b==RED) + (c==RED);
 	int yellows = (a==YELLOW) + (b==YELLOW) + (c==YELLOW);
 	int greens = (a==GREEN) + (b==GREEN) + (c==GREEN);
@@ -22,10 +22,10 @@ bit valid_counts(int a, int b, int c) {
  
 bit spec (int a, int b, int c) { return 1; }
 
-bit validA(int b, int c) {
+generator bit validA(int b, int c) { /* automatically rewritten */
 	return valid(RED, b, c) && valid(YELLOW, b, c) && valid(GREEN, b, c);
 }
-bit validB(int a, int c) {
+generator bit validB(int a, int c) { /* automatically rewritten */
 	return // valid(a, RED, c) && 
 	       validA(RED, c) &&  
 	       // valid(a, YELLOW, c) && 

@@ -1,7 +1,7 @@
 int N = 4;
 
 // x <= y
-bit leq(bit x, bit y){
+generator bit leq(bit x, bit y){ /* automatically rewritten */
 	return !x || y;
 }
 bit[N] sort(bit[N] input){

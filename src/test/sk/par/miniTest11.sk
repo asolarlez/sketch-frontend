@@ -9,7 +9,7 @@ struct Queue{
 }
 
 
-Queue newQueue(){
+generator Queue newQueue(){ /* automatically rewritten */
 	Queue q = new Queue();
 	q.prevHead = new Node();
 	q.prevHead.next = null;
@@ -18,7 +18,7 @@ Queue newQueue(){
 }
 
 
-void enqueue(Queue q, int i){
+generator void enqueue(Queue q, int i){ /* automatically rewritten */
 	Node n = null;
 	atomic{
 		n = new Node();
@@ -33,7 +33,7 @@ void enqueue(Queue q, int i){
 	ot.next = n;
 }
 
-int dequeue(Queue q){
+generator int dequeue(Queue q){ /* automatically rewritten */
 	Node n = q.prevHead;
 	if(n.next != null){
 		q.prevHead = n.next;

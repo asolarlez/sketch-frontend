@@ -1,4 +1,4 @@
-static bit remove (Set S, int key) {
+bit remove (Set S, int key) { /* automatically rewritten */
     bit ret = 0;
     bit done = 0;   // hack around no 'finally' blocks
     for (int i = 0; i < NNODES; ++i) {

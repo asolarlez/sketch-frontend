@@ -6,14 +6,14 @@ pragma options "--verif MINI --inbits 1 --cbits 2 --heapsize 1 --arrayOOBPolicy 
 // Modeling multiplication
 // 
 #define T bit
-T mul(T x, T y) {
+generator T mul(T x, T y) { /* automatically rewritten */
 	// return x * y;  // T == int
 	return x & y;  // T == bit
 	// if (x == 0 || y == 0) return 0;  
 	// if (x == 0) return 0;  
 	// else return ufun_ii(x,y);
 }
-T ufun_ii(T x, T y);
+generator T ufun_ii(T x, T y); /* automatically rewritten */
 
 //int[N][N] sd(int[N][N] a) implements identity {
 //	return desparsify(sparsify(a));
@@ -21,7 +21,7 @@ T ufun_ii(T x, T y);
 T[N] main(T[N][N] A, T[N] x) implements DeMV {
 	return SpMV(sparsify(A), x, N);
 }
-int harness () { // implements one {
+generator int harness () { // implements one { /* automatically rewritten */
 	T[N*N] a = {1,0,0,1};
 	T[N] x ={1,1};
 	T[N][N] dA;
@@ -38,7 +38,7 @@ int harness () { // implements one {
 	//assert y[2] == yy[2];
 	return 1;
 }  
-int one () { return 1; }
+generator int one () { return 1; } /* automatically rewritten */
 
 struct CSR {
 	T[N*N] V;
@@ -46,7 +46,7 @@ struct CSR {
 	int[N+1] R;
 }
 
-static CSR sparsify(T[N][N] a) {
+CSR sparsify(T[N][N] a) { /* automatically rewritten */
 	CSR sm = new CSR();
 	
 	int idx = 0;
@@ -66,7 +66,7 @@ static CSR sparsify(T[N][N] a) {
 	return sm;
 }
 
-static int[N][N] desparsify(CSR sm) {
+int[N][N] desparsify(CSR sm) { /* automatically rewritten */
 	T[N][N] a = 0;
 	for (int r = 0; r < N; r++) {
 		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {
@@ -96,7 +96,7 @@ T[N] DeMV(T[N][N] A, T[N] x) {
 //
 // computes y = Ax on sparse A and dense x and y.
 // 
-static T[N] SpMV(CSR A, T[N] x, int n) {
+T[N] SpMV(CSR A, T[N] x, int n) { /* automatically rewritten */
 	T[N] y;
 	
 	for (int r = 0; r < n; r++) {
@@ -107,6 +107,6 @@ static T[N] SpMV(CSR A, T[N] x, int n) {
 	} 
 	return y;	
 }
-int[N][N] identity(int[N][N] a) {
+generator int[N][N] identity(int[N][N] a) { /* automatically rewritten */
 	return a;	
 }

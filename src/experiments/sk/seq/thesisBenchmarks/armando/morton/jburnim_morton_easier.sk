@@ -11,7 +11,7 @@
 
 int W = 16;
 
-bit[2*W] interleave_bits(bit[W] x, bit[W] y) {
+generator bit[2*W] interleave_bits(bit[W] x, bit[W] y) { /* automatically rewritten */
   return interleave_with_0(x) | (interleave_with_0(y) << 1);
 }
 

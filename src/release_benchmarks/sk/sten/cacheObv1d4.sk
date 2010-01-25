@@ -5,7 +5,7 @@ int N;
 int T = 4;
 
 
-int linexpa(int i, int j){
+generator int linexpa(int i, int j){ /* automatically rewritten */
 	int rv = -1;
 	rv = rv + i;	
 	return rv;
@@ -13,7 +13,7 @@ int linexpa(int i, int j){
 
 
 
-int linexpb(int i, int j){
+generator int linexpb(int i, int j){ /* automatically rewritten */
 	// int rv = j - 1 - i;
 	int rv = 0-1;
 	if(??){ rv = -1 + i;  }else{ rv = rv - i; }

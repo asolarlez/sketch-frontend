@@ -6,7 +6,7 @@ int SB=M+E;
 int FW=M+E+1;
 int log_M=2;
 
-bit[FW] floatOne()
+generator bit[FW] floatOne() /* automatically rewritten */
 {
 	bit[FW] ret=0;
 	ret[SB-1]=1;
@@ -16,7 +16,7 @@ bit[FW] floatOne()
 
 
 
-bit[E] FOnegateE(bit[E] x)
+generator bit[E] FOnegateE(bit[E] x) /* automatically rewritten */
 {
 	bit[E] ret;
 	for(int i=0;i<E;i++)
@@ -24,7 +24,7 @@ bit[E] FOnegateE(bit[E] x)
 	return ret;
 }
 
-bit[E] FOsubtractE(bit[E] e1, bit[E] e2)
+generator bit[E] FOsubtractE(bit[E] e1, bit[E] e2) /* automatically rewritten */
 {
 	bit[E] ret=FOnegateE(e2);
 	ret=ret+e1;
@@ -33,7 +33,7 @@ bit[E] FOsubtractE(bit[E] e1, bit[E] e2)
 	return ret+one;
 }
 
-bit[M+1] FOtwocomp(bit[M+1] x)
+generator bit[M+1] FOtwocomp(bit[M+1] x) /* automatically rewritten */
 {
 	bit[M+1] ret;
 	for(int i=0;i<M+1;i++)
@@ -43,12 +43,12 @@ bit[M+1] FOtwocomp(bit[M+1] x)
 	return ret+one;
 }
 
-bit floatIsZero(bit[FW] x)
+generator bit floatIsZero(bit[FW] x) /* automatically rewritten */
 {
 	return !x[M-1];
 }
 
-bit floatAbsLess(bit[FW] a, bit[FW] b)
+generator bit floatAbsLess(bit[FW] a, bit[FW] b) /* automatically rewritten */
 {
     bit ret=0;
 	bit eq=1;
@@ -66,7 +66,7 @@ bit floatAbsLess(bit[FW] a, bit[FW] b)
 }
 
 
-bit[FW] FOadd(bit[FW] a, bit[FW] b)
+generator bit[FW] FOadd(bit[FW] a, bit[FW] b) /* automatically rewritten */
 {
 	/* we assume a>=b */
 	bit[FW] ret=0;
@@ -112,7 +112,7 @@ bit[FW] FOadd(bit[FW] a, bit[FW] b)
 	return ret;
 }
 
-bit[FW] floatAdd(bit[FW] a, bit[FW] b) 
+generator bit[FW] floatAdd(bit[FW] a, bit[FW] b) /* automatically rewritten */ 
 {
 	bit[FW] ret=0;
 
@@ -131,7 +131,7 @@ bit alwaysOne(bit x)
 }
 
 
-bit floatEqualsE(bit[FW] a, bit[FW] b) 
+generator bit floatEqualsE(bit[FW] a, bit[FW] b) /* automatically rewritten */ 
 {
 	bit ret=1;
 	for(int i=4;i<6;i++)

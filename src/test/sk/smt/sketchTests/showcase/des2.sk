@@ -17,7 +17,7 @@ bit[64] DES_IP(bit[64] in) {
 	return out;
 }
 
-int pow(int in){
+generator int pow(int in){ /* automatically rewritten */
 	bit[6] one=0; one[0]=1;
 	return (int) (one<<in);
 }

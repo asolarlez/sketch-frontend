@@ -11,14 +11,14 @@ struct Node {
 }
 
 
-Set newSet (int negInf, int posInf) {
+generator Set newSet (int negInf, int posInf) { /* automatically rewritten */
     Set S = new Set ();
     S.tail = newNode (posInf, null);
     S.head = newNode (negInf, S.tail);
     return S;
 }
 
-Node newNode (int key, Node next) {
+generator Node newNode (int key, Node next) { /* automatically rewritten */
     Node n = new Node ();
     n.key = key;
     n.next = next;

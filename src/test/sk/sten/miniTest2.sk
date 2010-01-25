@@ -8,7 +8,7 @@ int[N] test16(int[N] in){
   return out;
 }
 
-int exp(){
+generator int exp(){ /* automatically rewritten */
 	int rv = 0;
 	if(??){ rv = rv + ??;} else { rv = rv - ??; } 	
 	if(??){ rv = rv + N; }	

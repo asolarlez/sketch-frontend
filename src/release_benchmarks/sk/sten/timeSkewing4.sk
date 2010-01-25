@@ -24,7 +24,7 @@ float[N][T] timeSkew1d(float[N] in, float[N][T] f){
 }
 
 
-int hole(int i){
+generator int hole(int i){ /* automatically rewritten */
 	int rv = {| (N | T | i | ??)   (+ | -)  (N | T | i | ??)   |};		
 	return rv;	
 }

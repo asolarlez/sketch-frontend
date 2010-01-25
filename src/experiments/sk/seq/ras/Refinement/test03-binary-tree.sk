@@ -17,16 +17,16 @@ Node[N] _Node_;  // list of allocated nodes
 int _n_;         // next allocated node (indexes into _Node_)  
 int[NA] _rn_;     // angelic choices for Nodes 
 int _nc_;        // id of next Node angel (indexes into _rn_) 
-Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; }
+generator Node _NodeChoice_() { int t = _nc_; _nc_++; return _Node_[_rn_[t]]; } /* automatically rewritten */
 #define _N (_NodeChoice_())
 
 bit[BA] _r_; 
 int _i_;
-bit _BitChoice_() { int t = _i_; _i_++; return _r_[t]; }
+generator bit _BitChoice_() { int t = _i_; _i_++; return _r_[t]; } /* automatically rewritten */
 #define _b (_BitChoice_())
 
 
-Node newNode(int data) {
+generator Node newNode(int data) { /* automatically rewritten */
 	Node n = new Node();
 	_Node_[_n_] = n;
 	_n_++;
@@ -35,7 +35,7 @@ Node newNode(int data) {
 }
 
 // traverse the tree inorder and return the data fields in the returned array 
-int[N+1] inorder(Node root) {
+generator int[N+1] inorder(Node root) { /* automatically rewritten */
 	int[N+1] ret = 0;
 	ret[0] = -1; //let's use -1 as a sentinel
 	if (root == null) 
@@ -105,7 +105,7 @@ int harness (int x) implements dummy {
 }
 
 
-Node insertAll(int[N] input) {
+generator Node insertAll(int[N] input) { /* automatically rewritten */
 	Node root = null;
 	for (int i = 0; i < N; i++) {
 		root = insertT(root, input[i]); 
@@ -113,7 +113,7 @@ Node insertAll(int[N] input) {
 	return root;
 }
 
-static Node insertT(Node root, int data) {
+Node insertT(Node root, int data) { /* automatically rewritten */
 	if (root == null)
 		return newNode(data);
 	
@@ -126,7 +126,7 @@ static Node insertT(Node root, int data) {
 	return root;
 }
 
-Node test(int[N] input) {
+generator Node test(int[N] input) { /* automatically rewritten */
 	Node root = newNode(input[1]);
 	Node n = newNode(input[0]);
 	Node m = newNode(input[2]);

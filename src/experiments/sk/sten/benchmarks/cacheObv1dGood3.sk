@@ -21,7 +21,7 @@ float[N][T] timeSkew1d(float[N] in, float[N][T] f){
 	return out;	
 }
 
-int linexp(int i, int j, int k){
+generator int linexp(int i, int j, int k){ /* automatically rewritten */
 	int rv = ??-2;
 	if(??){ if(??){ rv = rv + i;  }else{ rv = rv - i; }}
 	if(??){ if(??){ rv = rv + j;  }else{ rv = rv - j; }}

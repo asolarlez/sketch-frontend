@@ -35,7 +35,7 @@ struct Memory {
 }
 
 
-Page newPage (int addr, Page next, id_t id) {
+generator Page newPage (int addr, Page next, id_t id) { /* automatically rewritten */
     Page n = new Page ();
     n.addr = addr;
     n.next = next;
@@ -43,7 +43,7 @@ Page newPage (int addr, Page next, id_t id) {
     return n;
 }
 
-List newList (id_t id) {
+generator List newList (id_t id) { /* automatically rewritten */
     List L = new List ();
     L.id = id;
     L.head = newPage (-1, null, id);
@@ -51,14 +51,14 @@ List newList (id_t id) {
     return L;
 }
 
-Memory newMemory () {
+generator Memory newMemory () { /* automatically rewritten */
     Memory M = new Memory ();
     M.free = newList (0);
     M.alloc = newList (1);
     return M;
 }
 
-bit containsAddrSeq (List L, int addr) {
+generator bit containsAddrSeq (List L, int addr) { /* automatically rewritten */
     Page n = L.head;
     while_true {
         if (n == null) {
@@ -73,10 +73,10 @@ bit containsAddrSeq (List L, int addr) {
     } end_while_true;
 }
 
-bit isFree (Memory M, int addr) {
+generator bit isFree (Memory M, int addr) { /* automatically rewritten */
     return containsAddrSeq (M.free, addr) && !containsAddrSeq (M.alloc, addr);
 }
 
-bit isAllocated (Memory M, int addr) {
+generator bit isAllocated (Memory M, int addr) { /* automatically rewritten */
     return !isFree (M, addr);
 }

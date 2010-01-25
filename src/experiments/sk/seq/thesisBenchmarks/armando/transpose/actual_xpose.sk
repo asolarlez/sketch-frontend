@@ -7,7 +7,7 @@ int[16] transpose(int[16] mx){
     return T;
 }
 
-int[4] shufps(int[4] xmm1, int[4] xmm2, bit[8] imm8){
+generator int[4] shufps(int[4] xmm1, int[4] xmm2, bit[8] imm8){ /* automatically rewritten */
     int[4] ret;
 
     ret[0] = xmm1[(int)imm8[0::2]];

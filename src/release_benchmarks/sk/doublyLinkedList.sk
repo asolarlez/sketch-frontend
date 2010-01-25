@@ -9,7 +9,7 @@ struct node{
 }
 
 
-node newNode(bit val){
+generator node newNode(bit val){ /* automatically rewritten */
 	node n = new node();
 	n.val = val;
 	n.prev = null;
@@ -23,23 +23,23 @@ struct list{
 }
 
 
-node rhsNode(list l, node n1){
+generator node rhsNode(list l, node n1){ /* automatically rewritten */
 	return {| ( l(.head | .tail) | n1(.next | .prev)? ) | null  |};
 }
 
-void assign(list l, node n1){
+generator void assign(list l, node n1){ /* automatically rewritten */
 	node rhs = rhsNode(l, n1);	
 	{|  l(.head | .tail)  | n1(.prev | .next | .prev.next | .next.prev)   |} = rhs;	
 }
 
 
-bit cond(list l, node na){	
+generator bit cond(list l, node na){ /* automatically rewritten */	
 	node n1 = rhsNode(l, na);
 	node n2 = rhsNode(l, na);
 	return {|  n1 (== | !=) n2 | ??  |}  ;	
 }
 
-static void addHead(list l, node n){
+void addHead(list l, node n){ /* automatically rewritten */
 	
 	if(cond(l,n)){
 		//assign(l, n);
@@ -60,7 +60,7 @@ static void addHead(list l, node n){
 	
 }
 
-static void addNext(list l, node cur, node n){
+void addNext(list l, node cur, node n){ /* automatically rewritten */
 	
 	n.next = cur.next;
 	cur.next = n;
@@ -78,7 +78,7 @@ static void addNext(list l, node cur, node n){
 }
 
 
-static void remove(list l, node n){
+void remove(list l, node n){ /* automatically rewritten */
 	
 	repeat(4){
 		if(cond(l,n)){assign(l, n);} 	
@@ -100,7 +100,7 @@ static void remove(list l, node n){
 }
 
 
-list newList(){
+generator list newList(){ /* automatically rewritten */
 	list l = new list();
 	l.head = null;
 	l.tail = null;	

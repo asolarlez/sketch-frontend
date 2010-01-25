@@ -8,7 +8,7 @@ struct Node{
 	Node next;
 }
 
-Node newNode(int i){
+generator Node newNode(int i){ /* automatically rewritten */
 	Node n = null;
 	atomic{
 		n = new Node();
@@ -22,7 +22,7 @@ struct Set{
 	Node head;
 }
 
-Set newSet(){
+generator Set newSet(){ /* automatically rewritten */
 	Set s = null;
 	atomic{
 		s = new Set();
@@ -32,7 +32,7 @@ Set newSet(){
 }
 
 
-void setInit(Set s){
+generator void setInit(Set s){ /* automatically rewritten */
 	int key1 = 0;
 	int key2 = 5;
 	Node n1 = newNode(key1);
@@ -43,7 +43,7 @@ void setInit(Set s){
 
 
 
-Node someNext(Node n){
+generator Node someNext(Node n){ /* automatically rewritten */
 	if(??){
 		return n;
 	}else{
@@ -54,7 +54,7 @@ Node someNext(Node n){
 	return null;
 }
 
-Node gen(Node a, Node b, Node c){
+generator Node gen(Node a, Node b, Node c){ /* automatically rewritten */
 	Node t = null;
 	atomic{
 	if(??){
@@ -70,7 +70,7 @@ Node gen(Node a, Node b, Node c){
 	return someNext(t);
 }
 
-void setAdd(Set s, int key){
+generator void setAdd(Set s, int key){ /* automatically rewritten */
 	Node n = newNode(key);
 	bit outMore = 1;
 	for(int i=0; i<3; ++i){

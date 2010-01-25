@@ -6,7 +6,7 @@ int log_M=2;
 
 
 
-bit[M] FOadd(bit[FW] a, bit[FW] b, bit tt)
+generator bit[M] FOadd(bit[FW] a, bit[FW] b, bit tt) /* automatically rewritten */
 {
 	/* we assume a>=b */
 	
@@ -37,7 +37,7 @@ bit[M] FOadd(bit[FW] a, bit[FW] b, bit tt)
 	}
 }
 
-bit floatEquals(bit[M] a, bit[M] b) 
+generator bit floatEquals(bit[M] a, bit[M] b) /* automatically rewritten */ 
 {
 	bit ret=1;
 	for(int i=0;i<M;i++)

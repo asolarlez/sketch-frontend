@@ -4,7 +4,7 @@ struct account {
     int balance;
 }
 
-static void withdraw (account a, int amt) {
+void withdraw (account a, int amt) { /* automatically rewritten */
     int r = 0;
     insert { lock (a); } into {
     insert { unlock (a); } into {
@@ -13,7 +13,7 @@ static void withdraw (account a, int amt) {
     } }
 }
 
-static void deposit (account a, int amt) {
+void deposit (account a, int amt) { /* automatically rewritten */
     int r = 0;
     insert { lock (a); } into {
     insert { unlock (a); } into {
@@ -22,7 +22,7 @@ static void deposit (account a, int amt) {
     } }
 }
 
-static int read (account a) {
+int read (account a) { /* automatically rewritten */
     int r;
     lock (a);
     r = a.balance;

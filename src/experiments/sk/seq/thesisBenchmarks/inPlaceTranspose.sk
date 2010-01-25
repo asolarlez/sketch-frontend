@@ -4,7 +4,7 @@ bit one(int[25] mat, int i, int j){
 return 1;	
 }
 
-int[25] transpose5x5(int[25] mat){	
+generator int[25] transpose5x5(int[25] mat){ /* automatically rewritten */	
 	for(int i=0; i<??; ++i) for(int j=0; j<?? + i*??; ++j){
 		int tmp = mat[??*i + ??*j+??];
 		mat[ ??*i + ??*j+??] = mat[ ??*i + ??*j+??];

@@ -17,7 +17,7 @@ bit alwaysTrue (bit[N] in) {
 }
 
 
-bit verify (int prevHead,
+generator bit verify (int prevHead, /* automatically rewritten */
             int[NTHREADS] popped,
             int[NTHREADS] pc,
             int[MEMSIZE] mem) {

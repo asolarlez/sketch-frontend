@@ -5,7 +5,7 @@ int foo(int a, int b){
 }
 
 
-static int op(int a, int b){
+int op(int a, int b){ /* automatically rewritten */
 	if(??){
 		return a + b;	
 	}

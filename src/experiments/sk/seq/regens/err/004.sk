@@ -3,8 +3,8 @@ struct S {
     int i;
 }
 
-int sp () { return 0; }
-int sk () {
+generator int sp () { return 0; } /* automatically rewritten */
+generator int sk () { /* automatically rewritten */
     S s = new S ();
     return {| s(.next) |};
 }

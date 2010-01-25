@@ -1,6 +1,6 @@
 int W = 13;
 
-bit [W] mult(bit[W] in1, bit[W] in2){
+generator bit [W] mult(bit[W] in1, bit[W] in2){ /* automatically rewritten */
 	bit [W] result = 0;
 	for(int i=0; i<W; ++i){
 		if(in2[i]==1){
@@ -12,7 +12,7 @@ bit [W] mult(bit[W] in1, bit[W] in2){
 }
 
 
-bit[W] poly(bit[W] n, bit[W] x) {
+generator bit[W] poly(bit[W] n, bit[W] x) { /* automatically rewritten */
 	bit[W] minusone = 1;
 		
 	if (!n[0]&!n[1]&!n[2]&!n[3]&!n[4]) return ??; 

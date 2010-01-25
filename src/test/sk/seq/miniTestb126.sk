@@ -10,7 +10,7 @@ bit spec(int i){
 }
 
 
-void moo(foo x){
+generator void moo(foo x){ /* automatically rewritten */
 	
 	if(x.y == 3){
 		return;	

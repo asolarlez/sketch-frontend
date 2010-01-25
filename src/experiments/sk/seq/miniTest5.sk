@@ -1,4 +1,4 @@
-bit foo(bit[4] in){
+generator bit foo(bit[4] in){ /* automatically rewritten */
 	return in[{*}];
 }
 

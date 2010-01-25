@@ -26,11 +26,11 @@ bit[8] rowFilSK(bit[32] in)  implements row2Fil{
 
 
 
-bit[8] GFM01(bit[8] in){
+generator bit[8] GFM01(bit[8] in){ /* automatically rewritten */
 	return in;
 }
 
-bit[8] GFM03(bit[8] input){
+generator bit[8] GFM03(bit[8] input){ /* automatically rewritten */
 
     bit[9] in={0,0,0,0,0,0,0,0,0};
 
@@ -61,7 +61,7 @@ bit[8] GFM03(bit[8] input){
 	return out;
 }
 
-bit[8] GFM02(bit[8] input){
+generator bit[8] GFM02(bit[8] input){ /* automatically rewritten */
     bit[9] in={0,0,0,0,0,0,0,0,0};
     for(int i=0; i<8; ++i)
       in[i+1] = input[i];

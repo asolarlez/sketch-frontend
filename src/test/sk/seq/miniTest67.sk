@@ -6,11 +6,11 @@ bit spec (bit[W] x) {
 	return x[2];
 }
 
-bit [W+1] ident2(bit [W+1] in){
+generator bit [W+1] ident2(bit [W+1] in){ /* automatically rewritten */
 	return in;
 }
 
-int ident(bit [W+1] in){
+generator int ident(bit [W+1] in){ /* automatically rewritten */
 	bit [W+1] ttt = ident2(in);
 	int idx = 0;
 	if(ttt[5]){

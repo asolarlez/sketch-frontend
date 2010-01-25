@@ -8,7 +8,7 @@ bit test(int in){
 }
 
 
-static void foo(Box g){
+void foo(Box g){ /* automatically rewritten */
 	int t = g.val;
 	t = t + ??;
 	g.val = t;		

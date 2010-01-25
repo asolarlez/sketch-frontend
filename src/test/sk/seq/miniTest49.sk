@@ -1,7 +1,7 @@
 pragma options "--intbits 6";
 int N = 4;
 
-bit[N] intToBit(int v){
+generator bit[N] intToBit(int v){ /* automatically rewritten */
 	bit[N] output;
 	for(int i=0; i<N; ++i){
 		output[i] = (v % 2) > 0;

@@ -36,7 +36,7 @@ float[M][N][T] gen1(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, in
 	return X;
 }
 
-int egen(){
+generator int egen(){ /* automatically rewritten */
 	int rv = ??-2;
 	if(??){ rv = N + rv; }
 	if(??){ rv = M + rv; }
@@ -57,7 +57,7 @@ float[M][N][T] cacheObv1dSK(float[M][N] in) implements cacheObv1d{
 }
 
 
-int newp(int p){
+generator int newp(int p){ /* automatically rewritten */
 	int rv = 0;
 	if(??){ rv = -1; }
 	if(??){ rv = 1; }
@@ -66,21 +66,21 @@ int newp(int p){
 
 
 
-float[M][N][T] xCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p, int m){
+generator float[M][N][T] xCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p, int m){ /* automatically rewritten */
 	X = gen1SK( X, x1, m, y1, y2, t1, t2, newp(x1p), newp(x2p), y1p, y2p );
 	X = gen1SK( X, m, x2, y1, y2, t1, t2, newp(x1p), newp(x2p), y1p, y2p );
 	return X;
 }
 
 
-float[M][N][T] yCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p, int m){
+generator float[M][N][T] yCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p, int m){ /* automatically rewritten */
 	X = gen1SK( X, x1, x2, y1, m, t1, t2, x1p, x2p, newp(y1p), newp(y2p));
 	X = gen1SK( X, x1, x2, m, y2, t1, t2, x1p, x2p, newp(y1p), newp(y2p));
 	return X;
 }
 
 
-float[M][N][T] tCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p){
+generator float[M][N][T] tCut(float[M][N][T] X, int x1, int x2, int y1, int y2, int t1, int t2, int x1p, int x2p, int y1p, int y2p){ /* automatically rewritten */
 	int m = (t1 + t2) / 2;
 	X = gen1SK( X, x1, x2, y1, y2, t1, m, x1p, x2p, y1p, y2p);
 	X = gen1SK( X, x1, x2, y1, y2, m, t2, x1p, x2p, y1p, y2p);

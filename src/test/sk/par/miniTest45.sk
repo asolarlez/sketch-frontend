@@ -14,7 +14,7 @@ struct Node {
     bit taken;
 }
 
-Node dequeue (Queue q) {
+generator Node dequeue (Queue q) { /* automatically rewritten */
     Node tmp = null;
     bit wasTaken = 1;
 

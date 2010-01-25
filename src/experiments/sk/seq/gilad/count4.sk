@@ -5,7 +5,7 @@ int W = 8;  /* FIXME should be an exponent of L. */
  * Exponentiation.
  */
 int
-exp (int b, int e)
+generator exp (int b, int e) /* automatically rewritten */
 {
     int a = 1;
 
@@ -19,7 +19,7 @@ exp (int b, int e)
  * Casting from integer to bit-vector (currently not supported by the language).
  */
 bit[W]
-intToBit (int v)
+generator intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -35,7 +35,7 @@ intToBit (int v)
  * Template for linear combination with single variable.
  */
 int
-tem_linear (int a, int x, int b)
+generator tem_linear (int a, int x, int b) /* automatically rewritten */
 {
     return (a * x +  b);
 }
@@ -44,7 +44,7 @@ tem_linear (int a, int x, int b)
  * Template for linear combination with two variables.
  */
 int
-tem_linear2 (int a, int x, int b, int y, int c)
+generator tem_linear2 (int a, int x, int b, int y, int c) /* automatically rewritten */
 {
     return tem_linear (a, x, 0) + tem_linear (b, y, c);
 }
@@ -53,7 +53,7 @@ tem_linear2 (int a, int x, int b, int y, int c)
  * Non-deterministic sign inverter.
  */
 int
-any_sign (int a)
+generator any_sign (int a) /* automatically rewritten */
 {
     return (?? ? a : -a);
 }
@@ -62,7 +62,7 @@ any_sign (int a)
  * Shift amount generator, returning an 2^O(i+l).
  */
 int
-shift (int i, int l, int a, int b, int c)
+generator shift (int i, int l, int a, int b, int c) /* automatically rewritten */
 {
     int s;
 
@@ -75,7 +75,7 @@ shift (int i, int l, int a, int b, int c)
  * correlated with the value of the iteration counter, i.
  */
 bit[W]
-filter (int i, int l, int a1, int b1, int a2, int b2, int a3, int b3, int c3)
+generator filter (int i, int l, int a1, int b1, int a2, int b2, int a3, int b3, int c3) /* automatically rewritten */
 {
     bit[W] m;
     int s;

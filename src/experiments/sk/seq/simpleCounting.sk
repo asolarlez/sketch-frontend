@@ -1,6 +1,6 @@
 
 
-bit[16] firstZero (bit[16] in) {
+generator bit[16] firstZero (bit[16] in) { /* automatically rewritten */
 	bit[16] ret=0;
 	bit flag = 1;
 	for(int i=0; i<16 ; ++i){

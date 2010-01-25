@@ -12,7 +12,7 @@ struct CSR {
 	int[N+1] R;
 }
 
-static CSR sparsify(int[N][N] a) {
+CSR sparsify(int[N][N] a) { /* automatically rewritten */
 	CSR sm = new CSR();
 	
 	int idx = 0;
@@ -38,7 +38,7 @@ static CSR sparsify(int[N][N] a) {
 	return sm;
 }
 
-static int[N][N] desparsify(CSR sm) {
+int[N][N] desparsify(CSR sm) { /* automatically rewritten */
 	int[N][N] a = 0;
 	for (int r = 0; r < N; r++) {
 //		for (int idx = sm.R[r]; idx < sm.R[r+1]; idx++) {

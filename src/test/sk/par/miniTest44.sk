@@ -6,7 +6,7 @@ struct P {
     P next;
 }
 
-bit clearNext (ref P p) {
+generator bit clearNext (ref P p) { /* automatically rewritten */
     P tmp = null;
 
     atomic {

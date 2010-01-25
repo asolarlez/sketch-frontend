@@ -1,6 +1,6 @@
 int W = 32;
 
-bit isIT(bit[W] in) {
+generator bit isIT(bit[W] in) { /* automatically rewritten */
   bit ret=1;
   for(int i=0;i<W;i++)
     ret=ret & (!in[i]);

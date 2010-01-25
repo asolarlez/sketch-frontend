@@ -9,7 +9,7 @@ struct node{
 	int id;
 }
 
-static node newNode(){
+node newNode(){ /* automatically rewritten */
 	node n = new node();
 	n.father = null;
 	n.mother = null;
@@ -22,7 +22,7 @@ struct dag{
 	int size;
 }
 
-static dag newDag(){
+dag newDag(){ /* automatically rewritten */
 	dag d = new dag();
 	for(int i=0; i<DAGNODES; ++i){
 		d.nodes[i] = null;	
@@ -31,7 +31,7 @@ static dag newDag(){
 	return d;
 }
 
-static node addNode(int fid, int mid, dag d){
+node addNode(int fid, int mid, dag d){ /* automatically rewritten */
 		node n = newNode();		
 		if(fid >= 0 && fid < d.size){ 
 			n.father = d.nodes[fid];
@@ -49,7 +49,7 @@ static node addNode(int fid, int mid, dag d){
 		return n;
 }
 
-static void dfs(dag d){
+void dfs(dag d){ /* automatically rewritten */
 	bit[DAGNODES] visited = 0;
 	int count = 0;
 	for(int i=0; i<d.size; ++i){
@@ -100,7 +100,7 @@ static void dfs(dag d){
 
 bit ONE(int[N] mothers, int[N] fathers, int i, int j){ return 1; }
 
-static void swap(dag d, int i, int j){
+void swap(dag d, int i, int j){ /* automatically rewritten */
 	
 	i = i % d.size;
 	j = j%d.size;

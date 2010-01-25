@@ -2,8 +2,8 @@ struct Struct {
     Struct next;
 }
 
-bit sp () { return 1; }
-bit sk () {
+generator bit sp () { return 1; } /* automatically rewritten */
+generator bit sk () { /* automatically rewritten */
     Struct s = null;
     lock (s);
     unlock (s);

@@ -14,7 +14,7 @@
 /* FIXME int logW = 2; */  /* Max is 5 (i.e. 64-bit). */
 
 int
-pow2 (int p)
+generator pow2 (int p) /* automatically rewritten */
 {
     int a = 1;
     loop (p)
@@ -25,7 +25,7 @@ pow2 (int p)
 int W = 4;  /* FIXME pow2 (logW) */
 
 int
-leq (bit[W] l, bit[W] r, int start, int count)
+generator leq (bit[W] l, bit[W] r, int start, int count) /* automatically rewritten */
 {
     for (int i = start + count; i > start; i--) {  /* FIXME while (i > 0) */
 	int j = i - 1;
@@ -52,7 +52,7 @@ mult (bit[W] x, bit[W] y)
 }
 
 bit[W]
-neg (bit[W] x)
+generator neg (bit[W] x) /* automatically rewritten */
 {
     bit[W] s = 0;
     s[0] = 1;
@@ -63,13 +63,13 @@ neg (bit[W] x)
 }
 
 bit[W]
-sub (bit[W] x, bit[W] y)
+generator sub (bit[W] x, bit[W] y) /* automatically rewritten */
 {
     return x + neg (y);
 }
 
 bit[W]
-sel (bit[W] x, bit[W] y)
+generator sel (bit[W] x, bit[W] y) /* automatically rewritten */
 {
     if (??)
 	return x;
@@ -78,7 +78,7 @@ sel (bit[W] x, bit[W] y)
 }
 
 bit[W]
-karatsuba_rec (bit[W] x, bit[W] y, int start, int count)
+generator karatsuba_rec (bit[W] x, bit[W] y, int start, int count) /* automatically rewritten */
 {
     assert (count > 0);
     bit[W] ret = 0;

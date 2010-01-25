@@ -9,9 +9,9 @@ pragma options "--seed 1 --inbits 1 --cex --cbits 3 -showinputs --keeptmpfiles -
 #define A LOGN*3*2*N      // max number of number of angels
 int[A] _angels_; // angelic choices 
 int    _next_;   // id of the next angel value
-int _nextAngel_() { int t = _next_; _next_++; return _angels_[t]; }
+generator int _nextAngel_() { int t = _next_; _next_++; return _angels_[t]; } /* automatically rewritten */
 #define _ (_nextAngel_())
-void initAngels() { _angels_ = ??; _next_ = 0; }
+generator void initAngels() { _angels_ = ??; _next_ = 0; } /* automatically rewritten */
 
 T[N] scanSpec (T[N] x) {
 	T[N] y = 0;
@@ -23,7 +23,7 @@ T[N] scanSpec (T[N] x) {
 	return y;	
 }
 
-T[N] scanSame(T[N] x) 
+generator T[N] scanSame(T[N] x) /* automatically rewritten */ 
 // implements scanSpec 
 {
 	initAngels();
@@ -37,7 +37,7 @@ T[N] scanSame(T[N] x)
 	return y;
 }
 
-T[N] scanSteele(T[N] x) 
+generator T[N] scanSteele(T[N] x) /* automatically rewritten */ 
 //implements scanSpec 
 {
 	initAngels();
@@ -55,7 +55,7 @@ T[N] scanSteele(T[N] x)
 }
 
 #define NADDERS ((LOGN * N))
-T[N] scanWithResourceConstraints(T[N] x) 
+generator T[N] scanWithResourceConstraints(T[N] x) /* automatically rewritten */ 
 // implements scanSpec 
 {
 	initAngels();
@@ -110,8 +110,8 @@ implements scanSpec
 	return x;
 }
 
-int dummy(int x) { return 1; }
-int harness(int x) 
+generator int dummy(int x) { return 1; } /* automatically rewritten */
+generator int harness(int x) /* automatically rewritten */ 
 // implements dummy 
 {
 	T[N] input = { 
@@ -131,7 +131,7 @@ int harness(int x)
 
 /* N adders per phase */
 #define NADDERS (16*N)
-T[N] scan2Phase(T[N] x) 
+generator T[N] scan2Phase(T[N] x) /* automatically rewritten */ 
 // implements scanSpec 
 {
 	initAngels();

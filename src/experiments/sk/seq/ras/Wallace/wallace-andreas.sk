@@ -6,14 +6,14 @@ int W=5;
 int WW=10;
 int log3Wsq = 2;  // number of stages
 
-int pow2 (int p)
+generator int pow2 (int p) /* automatically rewritten */
 {
     int a = 1;
     loop (p){a = a * 2;}
     return a;
 }
 
-int bitToInt (bit[W] v) {
+generator int bitToInt (bit[W] v) { /* automatically rewritten */
     int out=0;
     for (int i = 0; i < W; i++) {
         if (v[i]==1) {
@@ -23,7 +23,7 @@ int bitToInt (bit[W] v) {
     return out;
 }
 
-int bit2ToInt (bit[WW] v) {
+generator int bit2ToInt (bit[WW] v) { /* automatically rewritten */
     int out=0;
     for (int i = 0; i < WW; i++) {
         if (v[i]==1) {
@@ -33,7 +33,7 @@ int bit2ToInt (bit[WW] v) {
     return out;
 }
 
-bit[W] intToBit (int v)
+generator bit[W] intToBit (int v) /* automatically rewritten */
 {
     bit[W] output;
 
@@ -47,21 +47,21 @@ bit[W] intToBit (int v)
 
 
 
-bit far( bit a, bit b, bit c) {
+generator bit far( bit a, bit b, bit c) { /* automatically rewritten */
     return (a^b^c);
 }
-bit fac( bit a, bit b, bit c) {
+generator bit fac( bit a, bit b, bit c) { /* automatically rewritten */
     return (a&b)|(c&(a^b));
 }
-bit har( bit a, bit b) {
+generator bit har( bit a, bit b) { /* automatically rewritten */
     return a^b;
 }
-bit hac( bit a, bit b) {
+generator bit hac( bit a, bit b) { /* automatically rewritten */
     return a&b;
 }
 
 
-int wallace(bit[W] a, bit[W] b) {
+generator int wallace(bit[W] a, bit[W] b) { /* automatically rewritten */
 
     bit[W] out=0;
 

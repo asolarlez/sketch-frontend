@@ -4,7 +4,7 @@ struct Box {
 	int val;	
 }
 
-Box newBox(int i){
+generator Box newBox(int i){ /* automatically rewritten */
 	Box b = new Box();
 	b.val = i;
 	return b;	

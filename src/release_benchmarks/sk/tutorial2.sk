@@ -4,7 +4,7 @@ int spec( int x, int y ){
    return (x + x) * (y + 5);
 }
 
-int axpb(int x){
+generator int axpb(int x){ /* automatically rewritten */
    return ?? * x + ??;
 }
 

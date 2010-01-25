@@ -18,18 +18,18 @@ int WWWW =  WW+WW;
 int k = 0;  // this is used to verify mutliplication for some 
 			// specific values of y.  Succeeds for k=0, fails for k=1
 
-bit [WWWW] sel(bit[WWWW] in1, bit[WWWW] in2){
+generator bit [WWWW] sel(bit[WWWW] in1, bit[WWWW] in2){ /* automatically rewritten */
 	bit c = {*};
 	return c ? in1 : in2 ;
 }
 
-bit [W+1] sub(bit[W+1] in1, bit[W+1] in2){
+generator bit [W+1] sub(bit[W+1] in1, bit[W+1] in2){ /* automatically rewritten */
 	bit [W+1] one = 0; one[0] = 1;
 	bit[W+1] result=in1 + ((in2 ^ 1)+ one);
 	return result;
 }
 
-bit[WWWW] minus(bit[WWWW] in){
+generator bit[WWWW] minus(bit[WWWW] in){ /* automatically rewritten */
 	bit [WWWW] one = 0; one[0] = 1;
 	return ((in ^ 1)+ one);
 }
@@ -47,7 +47,7 @@ bit[WWWW] multiplyFull (bit[WW] in1, bit[WW] in2) {
 	return result;	
 }
 
-bit[WW+1] multiplyHalf (bit[W+1] in1, bit[W+1] in2) 
+generator bit[WW+1] multiplyHalf (bit[W+1] in1, bit[W+1] in2) /* automatically rewritten */ 
 {	
 	bit [W] one = 0; one[0] = 1;
 	bit sgn1 = in1[W];

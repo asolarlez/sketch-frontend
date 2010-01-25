@@ -3,7 +3,7 @@
 #define COMP {| ((cur|prev )(.next)? | null) (== | !=) (cur|prev)(.next)?  |}
 #define LOC  {| (cur | prev )(.next)? |}
 
-void find (Set S, int key, ref Node prev, ref Node cur) {
+generator void find (Set S, int key, ref Node prev, ref Node cur) { /* automatically rewritten */
 	prev = null;
     cur = S.head;
     lock (cur);

@@ -1,4 +1,4 @@
-bit[8] rowFilSK(bit[32] in){ 	
+generator bit[8] rowFilSK(bit[32] in){ /* automatically rewritten */ 	
 	bit [32] t1 = ((in << 1 ) &{*}) ^ ((in) &{*});
 	bit [32] m1 = (in>>7) & {*};
 	bit [32] m2 = (m1<<{*}) | m1;
@@ -33,11 +33,11 @@ bit[32] MixColumnsSK(bit[32] input) implements MixColumns{
 
 
 
-bit[8] GFM01(bit[8] in){
+generator bit[8] GFM01(bit[8] in){ /* automatically rewritten */
 	return in;
 }
 
-bit[8] GFM03(bit[8] input){
+generator bit[8] GFM03(bit[8] input){ /* automatically rewritten */
 
     bit[9] in={0,0,0,0,0,0,0,0,0};
 
@@ -68,7 +68,7 @@ bit[8] GFM03(bit[8] input){
 	return out;
 }
 
-bit[8] GFM02(bit[8] input){
+generator bit[8] GFM02(bit[8] input){ /* automatically rewritten */
     bit[9] in={0,0,0,0,0,0,0,0,0};
     for(int i=0; i<8; ++i)
       in[i+1] = input[i];
@@ -95,7 +95,7 @@ bit[8] GFM02(bit[8] input){
 	return out;
 }
 
-bit[8] row1Fil(bit[32] input){
+generator bit[8] row1Fil(bit[32] input){ /* automatically rewritten */
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -113,7 +113,7 @@ bit[8] row1Fil(bit[32] input){
   return in1 ^ in2 ^ in3 ^ in4;
 }
 
-bit[8] row2Fil(bit[32] input){
+generator bit[8] row2Fil(bit[32] input){ /* automatically rewritten */
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -133,7 +133,7 @@ bit[8] row2Fil(bit[32] input){
 
 
 
-bit[8] row3Fil(bit[32] input){
+generator bit[8] row3Fil(bit[32] input){ /* automatically rewritten */
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;
@@ -152,7 +152,7 @@ bit[8] row3Fil(bit[32] input){
 }
 
 
-bit[8] row4Fil(bit[32] input){
+generator bit[8] row4Fil(bit[32] input){ /* automatically rewritten */
   bit[8] in1;
   bit[8] in2;
   bit[8] in3;

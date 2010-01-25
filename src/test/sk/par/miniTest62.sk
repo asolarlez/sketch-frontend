@@ -1,6 +1,6 @@
 pragma options "--verbosity 5";
 
-bit await (barrier b, bit relPhase) {
+generator bit await (barrier b, bit relPhase) { /* automatically rewritten */
     int lastCount;
     lastCount = 0;
     bit tmp;
@@ -29,7 +29,7 @@ struct barrier {
     bit phase;
 }
 
-int leftNeighbor(int t) { return ((t)==(0) ? 2 : (t)-(1)); }
+generator int leftNeighbor(int t) { return ((t)==(0) ? 2 : (t)-(1)); } /* automatically rewritten */
 
 bit test() { return 1; }
 bit sketch() implements test {
@@ -53,7 +53,7 @@ bit sketch() implements test {
     return 1;
 }
 
-barrier newBarrier() {
+generator barrier newBarrier() { /* automatically rewritten */
   barrier b;
   b = new barrier();
   b.yetToArrive = 3;

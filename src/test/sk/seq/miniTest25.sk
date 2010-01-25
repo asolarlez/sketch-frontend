@@ -4,7 +4,7 @@ bit[3] miniTest(bit[3] in) {
 }
 
 
-bit[3] fu(bit[3] x){
+generator bit[3] fu(bit[3] x){ /* automatically rewritten */
 	x[0] = 1;
 	return x;
 }

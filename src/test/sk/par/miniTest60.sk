@@ -12,32 +12,32 @@ struct Node {
     Node next;
 }
 
-static Node newNode (int key, Node next) {
+Node newNode (int key, Node next) { /* automatically rewritten */
     Node n = new Node ();
     n.key = key;  n.next = next;
     return n;
 }
 
-Node genNode1 (Node n1, Node n2) {
+generator Node genNode1 (Node n1, Node n2) { /* automatically rewritten */
 	bit x = ??;
     Node g = x ? n1 : n2;
     return ?? ? g : g.next;
 }
 
-Node genNode2 (Node n1, Node n2) {
+generator Node genNode2 (Node n1, Node n2) { /* automatically rewritten */
 	bit x = ??;
     Node g = (x^x) ? n1 : n2;
     return !x ? g : g.next;
 }
 
 
-Node genNode1b (Node n1, Node n2) {
+generator Node genNode1b (Node n1, Node n2) { /* automatically rewritten */
 	bit x = !??;
     Node g = x ? n1 : n2;
     return 1 ? g : g.next;
 }
 
-Node genNode2b (Node n1, Node n2) {
+generator Node genNode2b (Node n1, Node n2) { /* automatically rewritten */
 	bit x = 0;
     Node g = (x^x) ? n1 : n2;
     return !x ? g : g.next;
@@ -46,19 +46,19 @@ Node genNode2b (Node n1, Node n2) {
 
 
 
-bit genComparison (Node n1, Node n2) {
+generator bit genComparison (Node n1, Node n2) { /* automatically rewritten */
     Node g1 = genNode1 (n1, n2), g2 = genNode2 (n1, n2);
     return g1 != g2;
 }
 
 
-bit genComparison2 (Node n1, Node n2) {
+generator bit genComparison2 (Node n1, Node n2) { /* automatically rewritten */
     Node g1 = genNode1b (n1, n2), g2 = genNode2b (n1, n2);
     return g1 != g2;
 }
 
 
-static void find (Set S, int key, ref Node prev, ref Node cur) {
+void find (Set S, int key, ref Node prev, ref Node cur) { /* automatically rewritten */
     prev = null;
     cur = S.head;
     lock (cur);
@@ -75,7 +75,7 @@ static void find (Set S, int key, ref Node prev, ref Node cur) {
 }
 
 
-static void find2 (Set S, int key, ref Node prev, ref Node cur) {
+void find2 (Set S, int key, ref Node prev, ref Node cur) { /* automatically rewritten */
     prev = null;
     cur = S.head;
     lock (cur);
@@ -92,7 +92,7 @@ static void find2 (Set S, int key, ref Node prev, ref Node cur) {
 }
 
 
-static bit add (Set S, int key) {
+bit add (Set S, int key) { /* automatically rewritten */
     Node prev = null, cur = null;
     bit ret = 0;
 
@@ -109,7 +109,7 @@ static bit add (Set S, int key) {
     return ret;
 }
 
-static bit remove (Set S, int key) {
+bit remove (Set S, int key) { /* automatically rewritten */
     Node prev = null, cur = null;
     bit ret = 0;
 

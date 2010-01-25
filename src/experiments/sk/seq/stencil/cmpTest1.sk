@@ -1,6 +1,6 @@
 int N = 32;
 
-bit eq(bit[N] a, bit[N] b){
+generator bit eq(bit[N] a, bit[N] b){ /* automatically rewritten */
 	bit rv = true;
 	int i=0;
 	loop(N){
@@ -12,7 +12,7 @@ bit eq(bit[N] a, bit[N] b){
 	return rv;
 }
 
-bit gt(bit[N] a, bit[N] b){
+generator bit gt(bit[N] a, bit[N] b){ /* automatically rewritten */
 	bit rv = false;
 	bit done = false;
 	int i=N-1;

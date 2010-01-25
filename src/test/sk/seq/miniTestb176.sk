@@ -3,7 +3,7 @@ bit one(int[5] in){
 	return 1;	
 }
 
-bit pred(int t){
+generator bit pred(int t){ /* automatically rewritten */
 	return t < ??;	
 }
 

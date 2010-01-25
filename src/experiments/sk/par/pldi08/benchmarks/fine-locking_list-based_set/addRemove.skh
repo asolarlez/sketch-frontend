@@ -1,4 +1,4 @@
-static bit add (Set S, int key) {
+bit add (Set S, int key) { /* automatically rewritten */
     Node prev = null, cur = null;
     bit ret = 0;
 
@@ -15,7 +15,7 @@ static bit add (Set S, int key) {
     return ret;
 }
 
-static bit remove (Set S, int key) {
+bit remove (Set S, int key) { /* automatically rewritten */
     Node prev = null, cur = null;
     bit ret = 0;
 

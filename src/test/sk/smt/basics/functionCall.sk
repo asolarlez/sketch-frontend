@@ -9,6 +9,6 @@ void main(int dummy) implements one {
 
 void one(int dummy) { }
 
-int foo() {
+generator int foo() { /* automatically rewritten */
 	return ??;
 }

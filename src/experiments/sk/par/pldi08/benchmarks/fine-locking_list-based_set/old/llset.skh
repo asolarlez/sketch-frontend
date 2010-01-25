@@ -7,7 +7,7 @@ struct Node{
 	Node next;
 }
 
-Node newNode(int i){
+generator Node newNode(int i){ /* automatically rewritten */
 	Node n = null;
 	atomic{ 
 		n = new Node();
@@ -19,7 +19,7 @@ Node newNode(int i){
 }
 
 /*private */
-Node newLowNode(){
+generator Node newLowNode(){ /* automatically rewritten */
 	Node n = null;
 	n = new Node();
 	n.val = LOW;
@@ -28,7 +28,7 @@ Node newLowNode(){
 }
 
 /*private */
-Node newHighNode(){
+generator Node newHighNode(){ /* automatically rewritten */
 	Node n = null;
 	n = new Node();
 	n.val = HIGH;
@@ -41,7 +41,7 @@ struct Set{
 	Node tail;	
 }
 
-Set newSet(){
+generator Set newSet(){ /* automatically rewritten */
 	Set s = new Set();
 	s.head = newLowNode();
 	s.tail = newHighNode();
@@ -50,7 +50,7 @@ Set newSet(){
 }
 
 
-void setAddSeq(Set s, int i){
+generator void setAddSeq(Set s, int i){ /* automatically rewritten */
 	Node n = newNode(i);
 	Node cur = s.head; 
 	Node pred = null;
@@ -65,7 +65,7 @@ void setAddSeq(Set s, int i){
 	n.next = cur;
 }
 
-int[MAXSZ] toArray(Set s){
+generator int[MAXSZ] toArray(Set s){ /* automatically rewritten */
 	int[MAXSZ] rv = 0;
 	Node cur = s.head; 
 	for(int i=0; i<MAXSZ; i++){

@@ -9,7 +9,7 @@
  * needs to be solved further).
  */
 
-bit[2] intToBit2 (int v) {
+generator bit[2] intToBit2 (int v) { /* automatically rewritten */
     bit[2] output;
 
     for (int i = 0; i < 2; ++i) {
@@ -24,7 +24,7 @@ bit[2] dummy () {
     return (intToBit2 (3));
 }
 
-int inc (int in) {
+generator int inc (int in) { /* automatically rewritten */
     int val = in;
 
     if (val < 3)
