@@ -32,6 +32,8 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                             .long_(name));
                 } else if (field.getType() == Long.TYPE) {
                     field.setLong(this, lazy_results.long_(name));
+                } else if (field.getType() == String.class) {
+                    field.set(this, lazy_results.str_(name));
                 } else {
                     field.set(this, lazy_results.other_type_(name));
                 }
