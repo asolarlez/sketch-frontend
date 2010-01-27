@@ -3,7 +3,7 @@ generator int innerfcn() {
     return ??;
 }
 
-void main() {
+void main_fun() {
     assert(innerfcn() == 0);
     assert(innerfcn() == 1);
 }
