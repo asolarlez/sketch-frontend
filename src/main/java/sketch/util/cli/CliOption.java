@@ -21,6 +21,8 @@ public final class CliOption {
     public final Object defaultValue;
     public final String help;
     public final CliOptionGroup group;
+    public boolean isRequired = true;
+    public String metavarName;
 
     public CliOption(String name, Class<?> typ, Object defaultValue,
             String help, CliOptionGroup group)
@@ -56,19 +58,36 @@ public final class CliOption {
         this(name, defaultValue.getClass(), defaultValue, help, group);
     }
 
+    public void setAdditionalInfo(final boolean isRequired,
+            final String metavarName)
+    {
+        this.isRequired = isRequired;
+        this.metavarName = metavarName;
+    }
+
     public String full_name() {
         return group.get_prefix_with_sep() + name;
     }
 
     public Option as_option(String prefix) {
-        boolean has_name = !(typ.equals(Boolean.class));
+        boolean has_name =
+                !(typ.equals(Boolean.class) || typ.equals(boolean.class));
         String help = this.help;
         if (defaultValue == null) {
-            help += " (REQUIRED)";
+            if (isRequired) {
+                help += " (REQUIRED)";
+            }
         } else if (has_name) {
             help += " [default " + defaultValue.toString() + "]";
         }
-        return new Option(null, full_name(), has_name, help);
+        Option result = new Option(null, full_name(), has_name, help);
+        if (isRequired) {
+            result.setRequired(true);
+        }
+        if (metavarName != null) {
+            result.setArgName(metavarName);
+        }
+        return result;
     }
 
     @Override

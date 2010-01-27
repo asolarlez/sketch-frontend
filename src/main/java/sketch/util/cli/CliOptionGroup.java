@@ -39,14 +39,16 @@ public abstract class CliOptionGroup {
     {
         final CliOption opt =
                 new CliOption(name, typ, defaultValue, help, this);
-        if (opt_set.put(name, opt) != null) {
-            assertFalse("already contained option", opt);
-        }
+        addOption(opt);
     }
 
     public void addOption(String name, Object defaultValue, String help) {
         final CliOption opt = new CliOption(name, defaultValue, help, this);
-        if (opt_set.put(name, opt) != null) {
+        addOption(opt);
+    }
+
+    public void addOption(CliOption opt) {
+        if (opt_set.put(opt.name, opt) != null) {
             assertFalse("already contained option", opt);
         }
     }

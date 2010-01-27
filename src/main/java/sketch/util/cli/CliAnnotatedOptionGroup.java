@@ -21,15 +21,14 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
         }
         try {
             for (Field field : fields) {
-                final String name = cmdlineName(field.getName());
+                final String name = cmdlineName(field);
                 if (!lazy_results.is_set(name)) {
                     continue;
                 }
                 if (field.getType() == Boolean.TYPE) {
                     field.setBoolean(this, lazy_results.bool_(name));
                 } else if (field.getType() == Integer.TYPE) {
-                    field.setInt(this, (int) lazy_results
-                            .long_(name));
+                    field.setInt(this, (int) lazy_results.long_(name));
                 } else if (field.getType() == Long.TYPE) {
                     field.setLong(this, lazy_results.long_(name));
                 } else if (field.getType() == String.class) {
@@ -57,7 +56,10 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                     field.getAnnotation(CliParameter.class);
             if (cli_annotation != null) {
                 try {
-                    addOption(cmdlineName(field.getName()), field.getType(), field.get(this), cli_annotation.help());
+                    final CliOption opt = new CliOption(cmdlineName(field), field.getType(), field
+                            .get(this), cli_annotation.help(), this);
+                    opt.setAdditionalInfo(cli_annotation.required(), cli_annotation.metavar());
+                    addOption(opt);
                     fields.add(field);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -66,9 +68,15 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
             }
         }
     }
-    
-    public static String cmdlineName(String name) {
-        return name.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase().replace('_', '-');
+
+    public static String cmdlineName(Field field) {
+        CliParameter cli_annotation = field.getAnnotation(CliParameter.class);
+        if (cli_annotation.cliname() != null) {
+            return cli_annotation.cliname();
+        }
+        String name = field.getName();
+        return name.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase()
+                .replace('_', '-');
     }
 
     @Override
