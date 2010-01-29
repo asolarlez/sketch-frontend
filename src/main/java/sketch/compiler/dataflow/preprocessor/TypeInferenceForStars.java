@@ -132,9 +132,7 @@ class UpgradeStarToInt extends FEReplacer{
 	}
 
 	public Object visitExprStar(ExprStar star) {
-
-		star.setType(type);
-
+	    star.setType(type);
 		return star;
 	}
 

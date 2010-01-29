@@ -17,13 +17,13 @@
 package sketch.compiler.ast.core.exprs;
 import java.util.Vector;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 
 /**
  * An integer-valued constant.  This can be freely promoted to an
@@ -187,7 +187,7 @@ public class ExprStar extends Expression
 			tt = ((TypeArray)tt).getBase();
 		}
 		if( ( tt.equals(TypePrimitive.inttype) ) && !isFixed ){
-			setSize( CommandLineParamManager.getParams().flagValue("cbits")  );
+			setSize( SequentialSketchOptions.getSingleton().bndOpts.cbits  );
 		}
 	}
 

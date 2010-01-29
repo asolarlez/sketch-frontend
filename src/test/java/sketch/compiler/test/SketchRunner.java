@@ -43,7 +43,7 @@ public abstract class SketchRunner extends TestCase {
 
     public void runTestStatement() {
         System.err.println("[SKETCH] running test " + path);
-        String[] args = { "--showExceptionstack", path };
+        String[] args = { path };
         runSketch(args);
     }
 

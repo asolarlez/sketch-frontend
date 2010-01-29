@@ -1,8 +1,8 @@
 // $ANTLR 2.7.7 (2006-11-01): "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
-		package sketch.compiler.parser;
+package sketch.compiler.parser;
 
-	import java.io.DataInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,11 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.FuncWork;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
@@ -32,6 +30,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
