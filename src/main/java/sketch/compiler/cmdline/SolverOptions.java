@@ -3,29 +3,47 @@ package sketch.compiler.cmdline;
 import sketch.util.cli.CliAnnotatedOptionGroup;
 import sketch.util.cli.CliParameter;
 
+/**
+ * options which are mostly passed to cegis; a few lowering stages are in the
+ * frontend though.
+ * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+ * @license This file is licensed under BSD license, available at
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you
+ *          make changes, please consider contributing back!
+ */
 public class SolverOptions extends CliAnnotatedOptionGroup {
     public SolverOptions() {
         super("slv", "solver options");
     }
 
     @CliParameter(help = "Sets the optimization level for the compiler.")
-    public int olevel;
+    public int olevel = -1;
     @CliParameter(help = "Seeds the random number generator")
     public int seed;
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
-    public SynthSolvers synth = SynthSolvers.MINI;
+    public SynthSolvers synth = SynthSolvers.NOT_SET;
     @CliParameter(help = "Kills the solver after given number of minutes.")
     public float timeout;
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
-    public VerifSolvers verif = VerifSolvers.MINI;
+    public VerifSolvers verif = VerifSolvers.NOT_SET;
+    @CliParameter(help = "How reorder blocks should be rewritten. Options: "
+            + "'exponential' to use 'insert' blocks, 'quadratic' to use a loop of switch "
+            + "statements. Default value is exponential.")
+    public ReorderEncoding reorderEncoding = ReorderEncoding.exponential;
+    @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs")
+    public boolean simpleInputs = false;
+
+    public enum ReorderEncoding {
+        exponential, quadratic
+    }
 
     public enum SynthSolvers {
-        ABC, MINI
+        NOT_SET, ABC, MINI
     }
 
     public enum VerifSolvers {
-        ABC, MINI
+        NOT_SET, ABC, MINI
     }
 }

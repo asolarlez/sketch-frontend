@@ -1,6 +1,7 @@
 package sketch.compiler.cmdline;
 
 import sketch.util.cli.CliAnnotatedOptionGroup;
+import sketch.util.cli.CliOptional;
 import sketch.util.cli.CliParameter;
 
 /**
@@ -23,18 +24,18 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
             + "calls itself recursively, times the amount of inlining.")
     public int branchAmnt = 15;
     @CliParameter(help = "The number of bits to use for integer holes.")
-    public int bndCbits = 5;
+    public int cbits = 5;
     @CliParameter(help = "The number of bits to use for integer inputs.")
-    public int bndInbits = 5;
+    public int inbits = 5;
     @CliParameter(help = "Size of the heap for each object. This is the maximum "
             + "number of objects of a given type that the program may allocate.")
-    public int bndHeapSize = 11;
+    public int heapSize = 11;
     @CliParameter(help = "Tells the solver to incrementally grow the size of integer "
             + "holes from 1 to n bits.")
-    public int bndIncremental = 5;
+    public CliOptional<Integer> incremental = new CliOptional<Integer>(5);
     @CliParameter(help = "Bounds inlining to n levels of recursion, so each "
             + "function can appear at most n times in the stack.")
-    public int bndInlineAmnt = 5;
+    public int inlineAmnt = 5;
     @CliParameter(help = "The unroll ammount for loops.")
-    public int bndUnrollAmnt = 8;
+    public int unrollAmnt = 8;
 }

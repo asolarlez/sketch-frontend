@@ -17,11 +17,11 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Path to the 'cegis' binary, overriding default search paths.")
     public String cegisPath = null;
-    @CliParameter(metavar = "VAR=val", help = "If the program contains a global variable "
-            + "VAR, it sets its value to val.")
-    public String cegisDefine = null;
+    @CliParameter(metavar = "VAR=val", inlinesep=",", 
+            help = "If the program contains a global variable VAR, it sets its value to val.")
+    public String[] def = new String[0];
     @CliParameter(help = "Directory to search for include files.")
-    public String inc = null;
+    public String[] inc = new String[0];
     @CliParameter(help = "Forces code generation. Even if the sketch fails to resolve, "
             + "this flag will force the synthesizer to produce code from the latest known control values.")
     public boolean forceCodegen;
@@ -40,9 +40,10 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public String outputProgName;
     @CliParameter(help = "Output the values of holes as XML.")
     public boolean outputXml;
-    @CliParameter(help = "Set the directory where you want the generated code "
-            + "to live. Default value is ./")
-    public String outputDir;
+    @CliParameter(help = "Set the directory where you want the generated code to be written.")
+    public String outputDir = "./";
     @CliParameter(help = "Produce also a harness to test the generated C code.")
     public boolean outputTest;
+//    @CliParameter(help = "Enable Fortran output")
+//    public boolean outputFortran;
 }

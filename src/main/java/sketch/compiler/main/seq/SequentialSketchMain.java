@@ -18,25 +18,23 @@ package sketch.compiler.main.seq;
 
 import java.io.FileWriter;
 import java.io.Writer;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.Directive;
-import sketch.compiler.CommandLineParamManager.OptionNotRecognziedException;
-import sketch.compiler.CommandLineParamManager.POpts;
-import sketch.compiler.Directive.OptionsDirective;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprStar;
-import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
+import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
+import sketch.compiler.cmdline.SolverOptions.SynthSolvers;
+import sketch.compiler.cmdline.SolverOptions.VerifSolvers;
 import sketch.compiler.codegenerators.NodesToC;
 import sketch.compiler.codegenerators.NodesToCTest;
 import sketch.compiler.codegenerators.NodesToH;
@@ -51,15 +49,11 @@ import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
-import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
-import sketch.compiler.passes.preprocessing.BitTypeRemover;
-import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
-import sketch.compiler.passes.preprocessing.SimplifyExpressions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
@@ -89,16 +83,24 @@ public class SequentialSketchMain
 
 	// protected final CommandLineParams params;
 	protected Program beforeUnvectorizing=null;
-
-	protected final CommandLineParamManager params =  CommandLineParamManager.getParams();
+    public SequentialSketchOptions options;
 
 
 	public SequentialSketchMain(String[] args){
-		this.setCommandLineParams();
-		params.loadParams(args);
+		options = new SequentialSketchOptions(args);
 	}
 
-	public boolean isParallel () {
+	/** for subclasses */
+    public SequentialSketchMain(SequentialSketchOptions options) {
+        this.options = options;
+    }
+
+    public boolean showPhaseOpt(String opt) {
+        return (options.debugOpts.showPhase != null)
+                && options.debugOpts.showPhase.contains(opt);
+    }
+
+    public boolean isParallel () {
 		return false;
 	}
 
@@ -110,9 +112,9 @@ public class SequentialSketchMain
 		return visibleRControl (prog);
 	}
 
-	public static RecursionControl visibleRControl (Program p) {
+	public RecursionControl visibleRControl (Program p) {
 		// return new BaseRControl(params.inlineAmt);
-		return new AdvancedRControl(CommandLineParamManager.getParams().flagValue("branchamnt"), CommandLineParamManager.getParams().flagValue("inlineamnt"), p);
+		return new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p);
 	}
 
 	/**
@@ -138,20 +140,18 @@ public class SequentialSketchMain
 		List<TypeStruct> structs = new java.util.ArrayList<TypeStruct>();
 
 		// Complex structure type:
-		List<String> fields = new java.util.ArrayList<String>();
-		List<Type> ftypes = new java.util.ArrayList<Type>();
+//		List<String> fields = new java.util.ArrayList<String>();
+//		List<Type> ftypes = new java.util.ArrayList<Type>();
 
 		// We don't support the Complex type in SKETCH
-		if (false) {
-			Type floattype = TypePrimitive.floattype ;
-			fields.add("real");
-			ftypes.add(floattype);
-			fields.add("imag");
-			ftypes.add(floattype);
-			TypeStruct complexStruct =
-				new TypeStruct(null, "Complex", fields, ftypes);
-			structs.add(complexStruct);
-		}
+//			Type floattype = TypePrimitive.floattype ;
+//			fields.add("real");
+//			ftypes.add(floattype);
+//			fields.add("imag");
+//			ftypes.add(floattype);
+//			TypeStruct complexStruct =
+//				new TypeStruct(null, "Complex", fields, ftypes);
+//			structs.add(complexStruct);
 
 		return new Program(null, streams, structs);
 	}
@@ -182,7 +182,7 @@ public class SequentialSketchMain
 	{
 		Program prog = emptyProgram();
 		boolean useCpp = true;
-		List<String> cppDefs = params.listValue ("def");
+		List<String> cppDefs = Arrays.asList(options.feOpts.def);
 		Set<Directive> pragmas = new HashSet<Directive> ();
 
 		for (String inputFile : inputFiles) {
@@ -232,7 +232,7 @@ public class SequentialSketchMain
 		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		// dump (prog, "MBB:");
-		prog = (Program)prog.accept(new EliminateStructs(varGen, params.flagValue("heapsize")));
+		prog = (Program)prog.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		// dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
@@ -248,13 +248,15 @@ public class SequentialSketchMain
 		// dump (prog, "ScalarizeVectorAssns");
 
 		// By default, we don't protect array accesses in SKETCH
-		if ("assertions".equals (params.sValue ("arrayOOBPolicy")))
+		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
 
 		// dump (prog, "After protecting array accesses.");
 		
-		if(params.flagEquals("showphase", "lowering")) dump(prog, "Lowering the code previous to Symbolic execution.");
+		if (showPhaseOpt("lowering")) {
+		    dump(prog, "Lowering the code previous to Symbolic execution.");
+		}
 
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
@@ -270,9 +272,8 @@ public class SequentialSketchMain
 	public Program parseProgram(){
 		try
 		{
-			Pair<Program, Set<Directive>> res = parseFiles(params.inputFiles);
+            Pair<Program, Set<Directive>> res = parseFiles(options.argsAsList);
 			prog = res.getFirst ();
-			processDirectives (res.getSecond ());
 		}
 		catch (Exception e)
 		{
@@ -289,19 +290,9 @@ public class SequentialSketchMain
 
 	}
 
-	protected void processDirectives (Set<Directive> D) {
-		for (Directive d : D)
-			if (d instanceof OptionsDirective) {
-				try {
-					params.loadParams (((OptionsDirective) d).options ());
-				} catch (OptionNotRecognziedException e) {
-					// ignore any unrecognized pragma
-				}
-			}
-	}
-
 	protected Program preprocessProgram(Program lprog) {
-		boolean useInsertEncoding = params.flagEquals ("reorderEncoding", "exponential");
+        boolean useInsertEncoding =
+                (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 		//invoke post-parse passes
 
 		lprog.accept(new ForbidStarsInFieldDecls());		
@@ -313,7 +304,7 @@ public class SequentialSketchMain
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
 		lprog = (Program)lprog.accept(new MainMethodCreateNospec(
-		        params.sValue("main_names")));
+		        options.semOpts.mainNames));
 		//dump (lprog, "~regens");
 		
 		//dump (lprog, "extract clc");
@@ -336,20 +327,23 @@ public class SequentialSketchMain
 		
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
 		// dump (lprog, "After first elimination of multi-dim arrays:");
-		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
-		if(params.flagEquals("showphase", "preproc")) dump (lprog, "After Preprocessing");
+        lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl()));
+        if (showPhaseOpt("preproc")) {
+            dump(lprog, "After Preprocessing");
+        }
 
 		return lprog;
 	}
 
 	public SolutionStatistics partialEvalAndSolve(){
 		lowerIRToJava();
-		SATBackend solver = new SATBackend(params, internalRControl(), varGen);
+		SATBackend solver = new SATBackend(options, internalRControl(), varGen);
 		
-		if(params.hasFlag("trace")){
-			solver.activateTracing();
-		}
-		backendParameters(solver.commandLineOptions);
+        if (options.debugOpts.trace) {
+            solver.activateTracing();
+        }
+		backendParameters();
 		solver.partialEvalAndSolve(prog);
 		
 		oracle =solver.getOracle();
@@ -359,33 +353,37 @@ public class SequentialSketchMain
 	public void eliminateStar(){
 	    EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
 		finalCode=(Program)beforeUnvectorizing.accept(eliminate_star);
-		if (params.hasFlag("outputxml")){
+		if (options.feOpts.outputXml){
 		    eliminate_star.dump_xml();
         }
 		dump(finalCode, "after elim star");
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+        finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl(), true));
 		dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-		if(params.flagEquals("showphase", "postproc")) 
-			dump(finalCode, "After Flattening.");
+        if (showPhaseOpt("postproc")) {
+            dump(finalCode, "After Flattening.");
+        }
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		//if(params.flagEquals("showphase", "taelim")) 
 			dump(finalCode, "After Eliminating transitive assignments.");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+        finalCode = (Program) finalCode.accept(new EliminateDeadCode(
+                        options.feOpts.keepAsserts));
 		dump(finalCode, "After Dead Code elimination.");
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
-		if(params.flagEquals("showphase", "final")) 
-			dump(finalCode, "After Dead Code elimination.");
+		if (showPhaseOpt("final")) {
+            dump(finalCode, "After Dead Code elimination.");
+        }
 	}
 
 	protected String getOutputFileName() {
-		String resultFile = params.sValue("outputprogname");
-		if(resultFile==null) {
-			resultFile=params.inputFiles.get(0);
-		}
+        String resultFile = options.feOpts.outputProgName;
+        if (options.feOpts.outputProgName == null) {
+            options.feOpts.outputProgName = options.args[0];
+        }
 		if(resultFile.lastIndexOf("/")>=0)
 			resultFile=resultFile.substring(resultFile.lastIndexOf("/")+1);
 		if(resultFile.lastIndexOf("\\")>=0)
@@ -403,43 +401,41 @@ public class SequentialSketchMain
 		String resultFile = getOutputFileName();
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
-		
-		if(!params.hasFlag("outputcode")){
-			finalCode.accept( new SimpleCodePrinter() );
+
+		if (!options.feOpts.outputCode) {
+            finalCode.accept(new SimpleCodePrinter());
 			//System.out.println(hcode);
 			//System.out.println(ccode);
 		}else{
 			try{
 				{
-					Writer outWriter = new FileWriter(params.sValue("outputdir") +resultFile+".h");
+					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + ".h");
 					outWriter.write(hcode);
 					outWriter.flush();
 					outWriter.close();
-					outWriter = new FileWriter(params.sValue("outputdir")+resultFile+".cpp");
+					outWriter = new FileWriter(options.feOpts.outputDir + resultFile + ".cpp");
 					outWriter.write(ccode);
 					outWriter.flush();
 					outWriter.close();
 				}
-				if( params.hasFlag("outputtest")  ) {
+                if (options.feOpts.outputTest) {
 					String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
-					Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+"_test.cpp");
+					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + "_test.cpp");
 					outWriter.write(testcode);
 					outWriter.flush();
 					outWriter.close();
-				}
-				if( params.hasFlag("outputtest") ) {
-					Writer outWriter = new FileWriter(params.sValue("outputdir")+"script");
-					outWriter.write("#!/bin/sh\n");
-					outWriter.write("if [ -z \"$SKETCH_HOME\" ];\n" +
+					Writer outWriter2 = new FileWriter(options.feOpts.outputDir + "script");
+					outWriter2.write("#!/bin/sh\n");
+					outWriter2.write("if [ -z \"$SKETCH_HOME\" ];\n" +
 							"then\n" +
 							"echo \"You need to set the \\$SKETCH_HOME environment variable to be the path to the SKETCH distribution; This is needed to find the SKETCH header files needed to compile your program.\" >&2;\n" +
 							"exit 1;\n" +
 							"fi\n");
-					outWriter.write("g++ -I \"$SKETCH_HOME/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
+					outWriter2.write("g++ -I \"$SKETCH_HOME/include\" -o "+resultFile+" "+resultFile+".cpp "+resultFile+"_test.cpp\n");
 
-					outWriter.write("./"+resultFile+"\n");
-					outWriter.flush();
-					outWriter.close();
+					outWriter2.write("./"+resultFile+"\n");
+					outWriter2.flush();
+					outWriter2.close();
 				}
 			}
 			catch (java.io.IOException e){
@@ -451,17 +447,13 @@ public class SequentialSketchMain
 	public String benchmarkName(){
 		String rv = "";
 		boolean f = true;
-		for(String s : params.inputFiles){
+		for(String s : options.args){
 			if(!f){rv += "_";}
 			rv += s;			
 			f = false;
 		}
-		Map<String, Integer> m =  params.varValues("D");
-		if(m != null){
-			for(Map.Entry<String, Integer> e :m.entrySet()){
-				rv+= "_";
-				rv += e.getKey() + "=" + e.getValue();
-			}
+		for (String define : options.feOpts.def) {
+		    rv += "_" + define;
 		}
 		return rv;
 	}
@@ -477,198 +469,14 @@ public class SequentialSketchMain
 		catch (ControlFlowException cfe) {  return true;  }
 	}
 
-	protected void setCommandLineParams(){
-
-		params.setAllowedParam("D", new POpts(POpts.VVAL,
-				"--D VAR val    \t If the program contains a global variable VAR, it sets its value to val.",
-				null, null));
-
-		params.setAllowedParam("unrollamnt", new POpts(POpts.NUMBER,
-				"--unrollamnt n \t It sets the unroll ammount for loops to n.",
-				"8", null) );
-
-		params.setAllowedParam("inlineamnt", new POpts(POpts.NUMBER,
-				"--inlineamnt n \t Bounds inlining to n levels of recursion, so" +
-				"\n\t\t each function can appear at most n times in the stack.",
-				"5", null) );
-
-		params.setAllowedParam("heapsize", new POpts(POpts.NUMBER,
-				"--heapsize n \t Size of the heap for each object. This is the maximum" +
-				"\n\t\t number of objects of a given type that the program may allocate.",
-				"11", null) );
-
-		params.setAllowedParam("branchamnt", new POpts(POpts.NUMBER,
-				"--branchamnt n \t This flag is also used for recursion control. " +
-				"\n\t\t It bounds inlining based on the idea that if a function calls " +
-				"\n\t\t itself recureively ten times, we want to inline it less than a function" +
-				"\n\t\t that calls itself recursively only once. In this case, n is the " +
-				"\n\t\t maximum value of the branching factor, which is the number of times" +
-				"\n\t\t a function calls itself recursively, times the amount of inlining. ",
-				"15", null) );
-
-		params.setAllowedParam("incremental", new POpts(POpts.NUMBER,
-				"--incremental n\t Tells the solver to incrementally grow the size of integer holes from 1 to n bits.",
-				"5", null) );
-
-		params.setAllowedParam("timeout", new POpts(POpts.NUMBER,
-				"--timeout min  \t Kills the solver after min minutes.",
-				"0", null) );
-
-		params.setAllowedParam("fakesolver", new POpts(POpts.FLAG,
-				"--fakesolver   \t This flag indicates that the SAT solver should not be invoked. " +
-				"\n \t\t Instead the frontend should look for a solution file, and generate the code from that. " +
-				"\n \t\t It is useful when working with sketches that take a long time to resolve" +
-				"\n \t\t if one wants to play with different settings for code generation.",
-				null, null) );
-
-		params.setAllowedParam("seed", new POpts(POpts.NUMBER,
-				"--seed s       \t Seeds the random number generator with s.",
-				null, null) );
-
-		params.setAllowedParam("verbosity", new POpts(POpts.NUMBER,
-				"--verbosity n       \t Sets the level of verbosity for the output. 0 is quite mode 5 is the most verbose.",
-				"1", null) );
-		
-		params.setAllowedParam("olevel", new POpts(POpts.NUMBER,
-				"--olevel n       \t Sets the optimization level for the compiler.",
-				"5", null) );
-
-		params.setAllowedParam("cex", new POpts(POpts.FLAG,
-				"--cex       \t Show the counterexample inputs produced by the solver (Equivalend to backend flag -showinputs).",
-				null, null) );
-
-		params.setAllowedParam("outputcode", new POpts(POpts.FLAG,
-				"--outputcode   \t Use this flag if you want the compiler to produce C code.",
-				null, null) );
-
-		params.setAllowedParam("outputxml", new POpts(POpts.FLAG,
-		            "--outputxml  \t Output the values of holes as XML", null, null));
-
-		params.setAllowedParam("keepasserts", new POpts(POpts.FLAG,
-				"--keepasserts   \t The synthesizer guarantees that all asserts will succeed." +
-				"\n \t\t For this reason, all asserts are removed from generated code by default. However, " +
-				"\n \t\t sometimes it is useful for debugging purposes to keep the assertions around.",
-				null, null) );
-
-		params.setAllowedParam("outputtest", new POpts(POpts.FLAG,
-				"--outputtest   \t Produce also a harness to test the generated C code.",
-				null, null) );
-
-		params.setAllowedParam("outputdir", new POpts(POpts.STRING,
-				"--outputdir dir\t Set the directory where you want the generated code to live.",
-				"./", null) );
-
-		params.setAllowedParam("outputprogname", new POpts(POpts.STRING,
-				"--outputprogname name \t Set the name of the output C files." +
-				"\n \t\t By default it is the name of the first input file.",
-				null, null) );
-
-		params.setAllowedParam("output", new POpts(POpts.STRING,
-				"--output file  \t Temporary output file used to communicate " +
-				"with backend solver.",
-				PlatformLocalization.getLocalization().getDefaultTempFile(), null) );
-
-		params.setAllowedParam("cegispath", new POpts(POpts.STRING,
-				"--cegispath path\t Path to the 'cegis' binary, overriding default search paths",
-				"", null) );
-		
-		params.setAllowedParam("main_names", new POpts(POpts.STRING,
-                "--main_names names\tComma-separated names of main (no specification) methods",
-                "main", null));
-
-
-
-		params.setAllowedParam("forcecodegen", new POpts(POpts.FLAG,
-				"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, " +
-				"                \t this flag will force the synthesizer to produce code from the latest known control values.",
-				null, null) );
-
-		params.setAllowedParam("keeptmpfiles", new POpts(POpts.FLAG,
-				"--keeptmpfiles  \t Keep intermediate files. Useful for debugging the compiler.",
-				null, null) );
-
-		params.setAllowedParam("showinputs", new POpts(POpts.FLAG,
-                "--showinputs  \t Show the counterexample inputs produced as part of the synthesis process.",
-                null, null) );
-		
-		params.setAllowedParam("simpleinputs", new POpts(POpts.FLAG,
-                "--simpleinputs  \t Helps performance on bitvector benchmarks. Avoids producing completely random inputs.",
-                null, null) );
-		
-		
-		
-		params.setAllowedParam("cbits", new POpts(POpts.NUMBER,
-				"--cbits n      \t Specify the number of bits to use for integer holes.",
-				"5", null) );
-
-		params.setAllowedParam("inbits", new POpts(POpts.NUMBER,
-				"--inbits n      \t Specify the number of bits to use for integer inputs.",
-				"5", null) );
-
-
-		params.setAllowedParam("trace", new POpts(POpts.FLAG,
-				"--trace  \t Show a trace of the symbolic execution. Useful for debugging purposes.",
-				null, null) );
-		
-		
-		params.setAllowedParam("showExceptionstack", new POpts(POpts.FLAG,
-				"--trace  \t In case of an exception, show the full stack, not just the debug message.",
-				null, null) );
-		
-		params.setAllowedParam("reorderEncoding", new POpts(POpts.STRING,
-				"--reorderEncoding  which \t How reorder blocks should be rewritten.  Current supported:\n" +
-				"             \t * exponential -- use 'insert' blocks\n" +
-				"             \t * quadratic -- use a loop of switch statements\n",
-				"exponential", null) );
-
-		params.setAllowedParam("def", new POpts(POpts.MULTISTRING,
-				"--def        \t Vars to define for the C preprocessor.\n"+
-				"             \t Consider also using the 'safer' option --D VAR value\n"+
-				"             \t Example use:  '--def _FOO=1 --def _BAR=false ...'",
-				null, null) );
-
-		params.setAllowedParam("inc", new POpts(POpts.MULTISTRING,
-				"--inc        \t Directory to search for include files.'",
-				null, null) );
-		
-		Map<String, String> phases = new HashMap<String, String>();
-		phases.put("preproc", " After preprocessing.");
-		phases.put("lowering", " Previous to Symbolic execution.");
-		phases.put("postproc", " After partially evaluating the generated code (ugly).");
-		phases.put("taelim", " After eliminating transitive assignments (before cse, ugly).");
-		phases.put("final", " After all optimizations.");
-		params.setAllowedParam("showphase", new POpts(POpts.TOKEN,
-				"--showphase OPT\t Show the partially evaluated code after the indicated phase of pre or post processing.",
-				"5", phases) );
-
-		Map<String, String> solvers = new HashMap<String, String>();
-		solvers.put("MINI","MiniSat solver");
-		solvers.put("ABC", "ABC solver");
-		params.setAllowedParam("synth", new POpts(POpts.TOKEN,
-				"--synth OPT\t SAT solver to use for synthesis.",
-				"MINI", solvers) );
-		params.setAllowedParam("verif", new POpts(POpts.TOKEN,
-				"--verif OPT\t SAT solver to use for verification.",
-				"MINI", solvers) );
-
-		Map<String, String> failurePolicies = new HashMap<String, String> ();
-		failurePolicies.put ("wrsilent_rdzero", "Read a zero, silently ignore writes");
-		failurePolicies.put ("assertions", "Fail assertions for reads and writes");
-		params.setAllowedParam ("arrayOOBPolicy", new POpts (POpts.TOKEN,
-				"--arrayOOBPolicy policy \t What to do when an array access would be out\n"+
-				"                        \t of bounds.",
-				"assertions", failurePolicies));
-	}
-
-
 	protected Program doBackendPasses(Program prog) {
-		if( false && params.hasFlag("outputcode") ) {
-			prog=(Program) prog.accept(new AssembleInitializers());
-			prog=(Program) prog.accept(new BitVectorPreprocessor(varGen));
-			//prog.accept(new SimpleCodePrinter());
-			prog=(Program) prog.accept(new BitTypeRemover(varGen));
-			prog=(Program) prog.accept(new SimplifyExpressions());
-		}
+//		if( false && params.hasFlag("outputcode") ) {
+//			prog=(Program) prog.accept(new AssembleInitializers());
+//			prog=(Program) prog.accept(new BitVectorPreprocessor(varGen));
+//			//prog.accept(new SimpleCodePrinter());
+//			prog=(Program) prog.accept(new BitTypeRemover(varGen));
+//			prog=(Program) prog.accept(new SimplifyExpressions());
+//		}
 		return prog;
 	}
 
@@ -693,9 +501,6 @@ public class SequentialSketchMain
 	}
 
 	public void preprocAndSemanticCheck() {
-
-		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
-		//dump (prog, "After replacing constants:");
 		if (!SemanticChecker.check(prog, isParallel ()))
 			throw new IllegalStateException("Semantic check failed");
 		
@@ -711,45 +516,39 @@ public class SequentialSketchMain
 		
 	}
 
-	protected void backendParameters(List<String> commandLineOptions){
-		if( params.hasFlag("inbits") ){
-			commandLineOptions.add("-overrideInputs");
-			commandLineOptions.add( "" + params.flagValue("inbits") );
-		}
-		if( params.hasFlag("seed") ){
-			commandLineOptions.add("-seed");
-			commandLineOptions.add( "" + params.flagValue("seed") );
-		}
-		if( params.hasFlag("cex")){
-			commandLineOptions.add("-showinputs");
-		}
-		if( params.hasFlag("verbosity") ){
-			commandLineOptions.add("-verbosity");
-			commandLineOptions.add( "" + params.flagValue("verbosity") );
-		}
-		if(params.hasFlag("synth")){
-			commandLineOptions.add("-synth");
-			commandLineOptions.add( "" + params.sValue("synth") );
-		}
-		if(params.hasFlag("verif")){
-			commandLineOptions.add("-verif");
-			commandLineOptions.add( "" + params.sValue("verif") );
-		}
-		if(params.flagEquals("arrayOOBPolicy", "assertions")){
-			commandLineOptions.add("-assumebcheck");
-		}
-		if(params.hasFlag("olevel")){
-			commandLineOptions.add("-olevel");
-			commandLineOptions.add( "" + params.flagValue("olevel") );
-		}
-		if(params.hasFlag("showinputs")){
-            commandLineOptions.add("-showinputs");            
+    protected void backendParameters() {
+        options.backendOptions = new Vector<String>();
+        Vector<String> backendOptions = options.backendOptions;
+        backendOptions.add("-overrideInputs");
+        backendOptions.add("" + options.bndOpts.inbits);
+        if (options.solverOpts.seed != 0) {
+            backendOptions.add("-seed");
+            backendOptions.add("" + options.solverOpts.seed);
         }
-		if(params.hasFlag("simpleinputs")){
-            commandLineOptions.add("-nosim");            
+        if (options.debugOpts.cex) {
+            backendOptions.add("-showinputs");
         }
-	}
-
+        backendOptions.add("-verbosity");
+        backendOptions.add("" + options.debugOpts.verbosity);
+        if (options.solverOpts.synth != SynthSolvers.NOT_SET) {
+            backendOptions.add("-synth");
+            backendOptions.add("" + options.solverOpts.synth.toString());
+        }
+        if (options.solverOpts.verif != VerifSolvers.NOT_SET) {
+            backendOptions.add("-verif");
+            backendOptions.add("" + options.solverOpts.verif.toString());
+        }
+        if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions) {
+            backendOptions.add("-assumebcheck");
+        }
+        if (options.solverOpts.olevel >= 0) {
+            backendOptions.add("-olevel");
+            backendOptions.add("" + options.solverOpts.olevel);
+        }
+        if (options.solverOpts.simpleInputs) {
+            backendOptions.add("-nosim");
+        }
+    }
 
 
 
@@ -757,7 +556,7 @@ public class SequentialSketchMain
 
 	protected void log (String msg) {  log (3, msg);  }
 	protected void log (int level, String msg) {
-		if (params.flagValue ("verbosity") >= level)
+		if (options.debugOpts.verbosity >= level)
 			System.out.println (msg);
 	}
 
@@ -794,7 +593,6 @@ public class SequentialSketchMain
 	{
 	    checkJavaVersion(1, 6);
         try {
-            CommandLineParamManager.reset_singleton();
             new SequentialSketchMain(args).run();
         } catch (RuntimeException e) {
             System.err.println("[ERROR] [SKETCH] Failed with exception "

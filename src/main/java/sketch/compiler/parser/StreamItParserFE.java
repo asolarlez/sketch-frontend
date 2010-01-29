@@ -5,6 +5,7 @@ package sketch.compiler.parser;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -107,8 +108,8 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
     public void handleInclude(String name, List funcs, List vars, List structs)
     {
         try {
-            List<String> incList =
-                    SequentialSketchOptions.getSingleton().feOpts.inc;
+            List<String> incList = Arrays.asList(
+                    SequentialSketchOptions.getSingleton().feOpts.inc);
         	Iterator<String> lit = null;
         	if(incList != null){ lit = incList.iterator(); }
         	File f = new File (name);
