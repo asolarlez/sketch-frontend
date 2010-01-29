@@ -21,20 +21,20 @@ import sketch.compiler.CommandLineParamManager;
  */
 public class SynchronousTimedProcess {
 	protected Process	proc;
-	protected int		timeoutMins;
+	protected float		timeoutMins;
 	protected long		startMs;
 
-	public SynchronousTimedProcess (int _timeoutMins, String... cmdLine)
+	public SynchronousTimedProcess (float timeoutMins, String... cmdLine)
 			throws IOException {
-		this (System.getProperty ("user.dir"), _timeoutMins, cmdLine);
+		this (System.getProperty ("user.dir"), timeoutMins, cmdLine);
 	}
 
-	public SynchronousTimedProcess (String workDir, int _timeoutMins,
+	public SynchronousTimedProcess (String workDir, float timeoutMins,
 			String... cmdLine) throws IOException {
-		this (workDir, _timeoutMins, Arrays.asList (cmdLine));
+		this (workDir, timeoutMins, Arrays.asList (cmdLine));
 	}
 
-	public SynchronousTimedProcess (String workDir, int _timeoutMins,
+	public SynchronousTimedProcess (String workDir, float timeoutMins,
 				List<String> cmdLine) throws IOException {
         for (String s : cmdLine)
             assert s != null : "Null elt of command: '" + cmdLine + "'";
@@ -45,7 +45,7 @@ public class SynchronousTimedProcess {
 		pb.directory (new File (workDir));
 		startMs = System.currentTimeMillis ();
 		proc = pb.start ();
-		timeoutMins = _timeoutMins;
+		this.timeoutMins = timeoutMins;
 	}
 
 	public SynchronousTimedProcess (Process _proc) {

@@ -15,9 +15,9 @@ public class ProcessKillerThread extends Thread {
 	private volatile boolean aborted=false;
 	private boolean killed = false;
 
-	public ProcessKillerThread(Process p, int timeoutMinutes) {
+	public ProcessKillerThread(Process p, float timeoutMinutes) {
 		proc = p;
-		fTimeout=((long)timeoutMinutes)*60*1000;
+        fTimeout = (long) ((timeoutMinutes) * 60 * 1000);
 		setDaemon(true);
 	}
 

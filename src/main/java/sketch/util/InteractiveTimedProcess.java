@@ -9,7 +9,7 @@ import java.util.List;
 
 public class InteractiveTimedProcess {
 	protected Process	proc;
-	protected int		timeoutMins;
+	protected float		timeoutMins;
 	protected long		startMs;
 	ProcessKillerThread killer = null;
 	ProcessStatus status = new ProcessStatus ();
@@ -19,17 +19,17 @@ public class InteractiveTimedProcess {
 		return status;
 	}
 	
-	public InteractiveTimedProcess (int _timeoutMins, String... cmdLine)
+	public InteractiveTimedProcess (float timeout, String... cmdLine)
 	throws IOException {
-		this (System.getProperty ("user.dir"), _timeoutMins, cmdLine);
+		this (System.getProperty ("user.dir"), timeout, cmdLine);
 	}
 
-	public InteractiveTimedProcess (String workDir, int _timeoutMins,
+	public InteractiveTimedProcess (String workDir, float timeout,
 			String... cmdLine) throws IOException {
-		this (workDir, _timeoutMins, Arrays.asList (cmdLine));
+		this (workDir, timeout, Arrays.asList (cmdLine));
 	}
 
-	public InteractiveTimedProcess (String workDir, int _timeoutMins,
+	public InteractiveTimedProcess (String workDir, float timeout,
 			List<String> cmdLine) throws IOException {
 		for (String s : cmdLine)
 			assert s != null : "Null elt of command: '"+ cmdLine +"'";
@@ -38,7 +38,7 @@ public class InteractiveTimedProcess {
 		pb.directory (new File (workDir));
 		startMs = System.currentTimeMillis ();
 		proc = pb.start ();
-		timeoutMins = _timeoutMins;
+		timeoutMins = timeout;
 	}
 
 	public InteractiveTimedProcess (Process _proc) {

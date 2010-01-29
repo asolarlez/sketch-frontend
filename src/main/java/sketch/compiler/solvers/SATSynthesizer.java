@@ -3,7 +3,6 @@ package sketch.compiler.solvers;
 import java.util.*;
 import java.util.Map.Entry;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -35,6 +34,8 @@ import sketch.compiler.controlflow.CFG;
 import sketch.compiler.controlflow.CFGNode;
 import sketch.compiler.controlflow.CFGNode.EdgePair;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.par.ParallelSketchOptions;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.parallelEncoder.AtomizeConditionals;
 import sketch.compiler.parallelEncoder.BreakParallelFunction;
 import sketch.compiler.parallelEncoder.CFGforPloop;
@@ -100,13 +101,15 @@ public class SATSynthesizer implements Synthesizer {
 	StmtFork ploop = null;
 
 	int nthreads;
+    public final SequentialSketchOptions options;
 	
 	public void initialize(){
 		solver.initializeSolver();
 	}
 
-	public SATSynthesizer(Program prog_p, CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
-		solver = new InteractiveSATBackend(params, rcontrol, varGen);
+	public SATSynthesizer(Program prog_p, SequentialSketchOptions options, RecursionControl rcontrol, TempVarGen varGen) {
+		this.options = options;
+        solver = new InteractiveSATBackend(options, rcontrol, varGen);
 		
 		
 		
@@ -125,8 +128,10 @@ public class SATSynthesizer implements Synthesizer {
 		parts = new BreakParallelFunction();
 		parfun.accept(parts);
         //prog.accept(new SimpleCodePrinter().outputTags());
-		
-		if(params.hasFlag("playDumb")){
+
+		boolean playDumb = (options instanceof ParallelSketchOptions) &&
+		    ((ParallelSketchOptions)options).parOpts.playDumb;
+		if(playDumb){
 			ploop = (StmtFork) parts.ploop; //.accept(new AtomizeConditionals(varGen));
 		}else{
 			ploop = (StmtFork) parts.ploop.accept(new AtomizeConditionals(varGen));
@@ -1351,7 +1356,7 @@ public class SATSynthesizer implements Synthesizer {
 
 
 	protected boolean reallyVerbose () {
-		return solver.params.flagValue ("verbosity") >= 5;
+		return options.debugOpts.verbosity >= 5;
 	}
 
 	public void cleanup(){
@@ -1360,9 +1365,6 @@ public class SATSynthesizer implements Synthesizer {
 
 	public SolutionStatistics getLastSolutionStats() {		
 		return solver.getLastSolutionStats();
-	}
-	public List<String> commandLineOptions(){
-		return solver.commandLineOptions;
 	}
 	public void activateTracing(){
 		solver.activateTracing();

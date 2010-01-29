@@ -4,20 +4,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Vector;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.InteractiveTimedProcess;
 
 public class InteractiveSATBackend extends SATBackend {
 
-	public InteractiveSATBackend(CommandLineParamManager params,
+	public InteractiveSATBackend(SequentialSketchOptions options,
 			RecursionControl rcontrol, TempVarGen varGen) {
-		super(params, rcontrol, varGen);
+		super(options, rcontrol, varGen);
 		ht = new StaticHoleTracker(varGen);
 		// TODO Auto-generated constructor stub
 	}
@@ -26,15 +27,19 @@ public class InteractiveSATBackend extends SATBackend {
 	final StaticHoleTracker ht;
 	
 	public void initializeSolver(){
-		String[] extra = {"-interactive"};
-		String[] commandLine = params.getBackendCommandline(commandLineOptions, extra);
+		String interactiveFlag = "-interactive";
+		Vector<String> opts = options.getBackendOptions();
+		if (!opts.contains(interactiveFlag)) {
+		    opts.add(interactiveFlag);
+		}
+		String[] commandLine = getBackendCommandline(options.backendOptions);
 		{
 			String cmdLine = "";
 			for (String a : commandLine)  cmdLine += a + " ";
 			log (0, "Launching: "+ cmdLine);
 		}
 		try{
-			proc = new InteractiveTimedProcess(params.flagValue("timeout"),commandLine);
+			proc = new InteractiveTimedProcess(options.solverOpts.timeout, commandLine);
 			proc.run();		
 		}catch (java.io.IOException e)	{
 			if (null != proc.status() && proc.status().killed) {
@@ -60,10 +65,10 @@ public class InteractiveSATBackend extends SATBackend {
 			final OutputStream pos = proc.getOutputStream(); 
 			OutputStream multiplex = null;
 			
-			if(params.hasFlag("keeptmpfiles")){
+			if(options.feOpts.keepTmp){
 				/*If the keeptmpfiles flag is set, we put a copy of whatever we write to the 
 				 * output stream into the tmp file.*/
-				final OutputStream outStream = new FileOutputStream(params.sValue("output") + ver);
+				final OutputStream outStream = new FileOutputStream(options.feOpts.output + ver);
 				multiplex = new OutputStream(){
 					@Override
 					public void write(int b) throws IOException {
@@ -86,7 +91,7 @@ public class InteractiveSATBackend extends SATBackend {
 			throw new RuntimeException(ioe.getMessage());
 		}
 		proc.waitForAnswer("COMPLETED", false);
-		String fname = params.sValue("output")+ ".tmp";
+		String fname = options.feOpts.output + ".tmp";
 		extractOracleFromOutput(fname);
 		return proc.stillActive();
 	}

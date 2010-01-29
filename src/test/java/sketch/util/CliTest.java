@@ -34,6 +34,7 @@ public class CliTest {
     public void testOptional() {
         String[] args = { "--bnd-incremental", "3" };
         final SequentialSketchOptions opts = new SequentialSketchOptions(args);
+        Assert.assertTrue(opts.bndOpts.incremental.isSet);
         Assert.assertTrue(opts.bndOpts.incremental.value.intValue() == 3);
     }
 }

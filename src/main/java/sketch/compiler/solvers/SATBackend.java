@@ -9,11 +9,13 @@ import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Vector;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.PlatformLocalization;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.Misc;
@@ -23,41 +25,47 @@ import sketch.util.SynchronousTimedProcess;
 
 public class SATBackend {
 
-	final CommandLineParamManager params;
 	String solverErrorStr;
 	final RecursionControl rcontrol;
 	final TempVarGen varGen;
 	protected ValueOracle oracle;
 	private boolean tracing = false;
-	public final List<String> commandLineOptions;
 	private SATSolutionStatistics lastSolveStats;
+    public final SequentialSketchOptions options;
 
-	public SATBackend(CommandLineParamManager params, RecursionControl rcontrol, TempVarGen varGen){
-		this.params = params;
+	public SATBackend(SequentialSketchOptions options, 
+	        RecursionControl rcontrol, TempVarGen varGen)
+	{
+		this.options = options;
 		this.rcontrol =rcontrol;
 		this.varGen = varGen;
-
-		commandLineOptions = params.backendOptions;
 	}
 
 	public void activateTracing(){
 		tracing = true;
 	}
+	
+	public String[] getBackendCommandline(Vector<String> commandLineOptions){
+        String cegisBinary = PlatformLocalization.getLocalization().getCegisPath();
+        commandLineOptions.insertElementAt(cegisBinary, 0);
+        if (options.feOpts.output == null) {
+            options.feOpts.output = options.args[0].replace(".sk", "");
+        }
+        commandLineOptions.add(options.feOpts.output);
+        commandLineOptions.add(options.feOpts.output + ".tmp");
+        return commandLineOptions.toArray(new String[0]);
+    }
 
-
-	protected void partialEval(Program prog, OutputStream outStream){
-		sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions
-		partialEval =
-			new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions (varGen, oracle,
-				new PrintStream(outStream)
-			//	System.out
-			,
-			params.flagValue("unrollamnt"), rcontrol, tracing);
-			log ("MAX LOOP UNROLLING = " + params.flagValue("unrollamnt"));
-			log ("MAX FUNC INLINING  = " + params.flagValue("inlineamnt"));
-			prog.accept( partialEval );
-			
-	}
+    protected void partialEval(Program prog, OutputStream outStream) {
+        sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
+                new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
+                        oracle, new PrintStream(outStream)
+                        // System.out
+                        , options.bndOpts.unrollAmnt, rcontrol, tracing);
+        log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
+        log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
+        prog.accept(partialEval);
+    }
 	
 	public boolean partialEvalAndSolve(Program prog){
 		oracle = new ValueOracle( new StaticHoleTracker(varGen) );
@@ -67,14 +75,14 @@ public class SATBackend {
 		try
 		{
 			OutputStream outStream;
-			if(params.hasFlag("fakesolver"))
+            if (options.debugOpts.fakeSolver)
 				outStream = NullStream.INSTANCE;
-			else if(params.sValue("output") != null)
-				outStream = new FileOutputStream(params.sValue("output"));
+            else if (options.feOpts.output != null)
+                outStream = new FileOutputStream(options.feOpts.output);
 			else
 				outStream = System.out;
 
-
+			// visit the program and write out the program in the backend's input format.
 			partialEval(prog, outStream);
 	
 			
@@ -88,11 +96,11 @@ public class SATBackend {
 		}
 
 
-		boolean worked = params.hasFlag("fakesolver") || solve(oracle);
+		boolean worked = options.debugOpts.fakeSolver || solve(oracle);
 
 		{
-			java.io.File fd = new File(params.sValue("output"));
-			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
+			java.io.File fd = new File(options.feOpts.output);
+			if(fd.exists() && !options.feOpts.keepTmp){
 				boolean t = fd.delete();
 				if(!t){
 					log (0, "couldn't delete file" + fd.getAbsolutePath());
@@ -102,11 +110,11 @@ public class SATBackend {
 			}
 		}
 
-		if(!worked && !params.hasFlag("forcecodegen")){
+		if(!worked && !options.feOpts.forceCodegen){
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
 
-		String fname = params.sValue("output")+ ".tmp";
+		String fname = options.feOpts.output + ".tmp";
 		extractOracleFromOutput(fname);
 		return worked;
 	}
@@ -121,7 +129,7 @@ public class SATBackend {
 			oracle.loadFromStream(lir);
 			fis.close();
 			java.io.File fd = new File(fname);
-			if(fd.exists() && !params.hasFlag("keeptmpfiles")){
+			if(fd.exists() && !options.feOpts.keepTmp){
 				fd.delete();
 			}
 		}
@@ -132,26 +140,24 @@ public class SATBackend {
 		}		
 	}
 
-	public void addToBackendParams(List<String> params){
-		commandLineOptions.addAll(params);
-	}
-
 
 
 	
 
 	private boolean solve(ValueOracle oracle){
 
-		log ("OFILE = " + params.sValue("output"));
+		log ("OFILE = " + options.feOpts.output);
 		
-		if(params.hasFlag("incremental")){
+		if (options.bndOpts.incremental.isSet) {
 			boolean isSolved = false;
 			int bits=0;
-			int maxBits = params.flagValue("incremental");
+			int maxBits = options.bndOpts.incremental.value;
 			for(bits=1; bits<=maxBits; ++bits){
 				log ("TRYING SIZE " + bits);			
-				String[] extra = {"-overrideCtrls", "" + bits};
-				String[] commandLine = params.getBackendCommandline(commandLineOptions, extra);
+				Vector<String> backendOptions = options.getBackendOptions();
+				backendOptions.add("-overrideCtrls");
+				backendOptions.add("" + bits);
+				String[] commandLine = getBackendCommandline(backendOptions);
 				
 				boolean ret = runSolver(commandLine, bits);
 				if(ret){
@@ -168,9 +174,9 @@ public class SATBackend {
 			}
 			log ("Succeded with " + bits + " bits for integers");
 			oracle.capStarSizes(bits);
-		}else{			
-			String[] extra = {};
-			String[] commandLine = params.getBackendCommandline(commandLineOptions, extra);
+        } else {
+            Vector<String> backendOptions = options.getBackendOptions();
+            String[] commandLine = getBackendCommandline(backendOptions);
 			boolean ret = runSolver(commandLine, 0);
 			if(!ret){
 				log (0, "The sketch cannot be resolved");
@@ -193,7 +199,7 @@ public class SATBackend {
 		
 		ProcessStatus status = null;
 		try {
-			status = (new SynchronousTimedProcess (params.flagValue("timeout"),
+			status = (new SynchronousTimedProcess (options.solverOpts.timeout,
 												   commandLine)).run (false);
 			
 			
@@ -281,13 +287,13 @@ public class SATBackend {
 	}
 
 	protected boolean verbose () {
-		return params.flagValue ("verbosity") >= 3;
+		return options.debugOpts.verbosity >= 3;
 	}
 
 	// TODO: duplication is absurd now, need to use the Logger class
 	protected void log (String msg) {  log (3, msg);  }
 	protected void log (int level, String msg) {
-		if (params.flagValue ("verbosity") >= level)
+		if (options.debugOpts.verbosity >= level)
 			System.out.println ("[SATBackend] "+ msg);
 	}
 

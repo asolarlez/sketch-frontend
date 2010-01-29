@@ -3,8 +3,8 @@
  */
 package sketch.compiler.solvers;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.main.par.ParallelSketchOptions;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.RandomValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
@@ -18,11 +18,11 @@ import sketch.compiler.solvers.constructs.StaticHoleTracker;
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class RandomSynthesizer implements Synthesizer {
-	protected CommandLineParamManager params;
+	protected ParallelSketchOptions options;
 	protected TempVarGen varGen;
 
-	public RandomSynthesizer (CommandLineParamManager _params, TempVarGen _varGen) {
-		params = _params;
+	public RandomSynthesizer (ParallelSketchOptions options, TempVarGen _varGen) {
+		this.options = options;
 		varGen = _varGen;
 	}
 

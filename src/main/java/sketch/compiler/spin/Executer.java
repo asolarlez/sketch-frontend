@@ -56,7 +56,7 @@ public class Executer {
 		run (0);
 	}
 
-	public void run (int timeoutMins) throws IOException {
+	public void run (float timeoutMins) throws IOException {
 		try {
 			init ();
 			generatePromelaCode ();
@@ -157,7 +157,7 @@ public class Executer {
 		log ("Compilation successful");
 	}
 
-	protected void runVerifier (int timeoutMins) throws IOException {
+	protected void runVerifier (float timeoutMins) throws IOException {
 		log ("Running the verifier");
 		assert prog.canRead ();
 
@@ -194,12 +194,12 @@ public class Executer {
 		return execDebug (System.getProperty ("user.dir"), timeoutMins, cmdLine);
 	}
 
-	protected ProcessStatus execDebug (String workDir, int timeoutMins,
+	protected ProcessStatus execDebug (String workDir, float timeoutMins,
 			String... cmdLine) {
 		return execDebug (workDir, timeoutMins, Arrays.asList (cmdLine));
 	}
 
-	protected ProcessStatus execDebug (String workDir, int timeoutMins,
+	protected ProcessStatus execDebug (String workDir, float timeoutMins,
 			List<String> cmdLine) {
 		ProcessStatus status;
 
