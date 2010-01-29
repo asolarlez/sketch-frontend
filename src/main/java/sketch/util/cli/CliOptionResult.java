@@ -5,12 +5,13 @@ import java.util.HashMap;
 import sketch.util.DebugOut;
 
 /**
- * returns values for command line options. this is lazy in the sense that the
- * command line will only be parsed when the first value is requested.
+ * returns values for command line options. this is lazy in the sense that the command
+ * line will only be parsed when the first value is requested.
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class CliOptionResult {
     CliOptionGroup options;
@@ -27,7 +28,7 @@ public class CliOptionResult {
         cached_results = new HashMap<String, Object>();
     }
 
-    protected Object get_value(String name) {
+    public Object get_value(String name) {
         parser.parse();
         if (cached_results == null) {
             DebugOut.assertFalse();
@@ -45,6 +46,11 @@ public class CliOptionResult {
             cached_results.put(name, result);
         }
         return result;
+    }
+
+    public String[] get_args() {
+        parser.parse();
+        return parser.cmd_line.getArgs();
     }
 
     public boolean is_set(String name) {
@@ -65,12 +71,11 @@ public class CliOptionResult {
         return (Long) get_value(name);
     }
 
-    public float flt_(String name) {
-        return (Float) get_value(name);
+    public int int_(String name) {
+        return (Integer) get_value(name);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends CliOptionType> T other_type_(String name) {
-        return (T) get_value(name);
+    public float flt_(String name) {
+        return (Float) get_value(name);
     }
 }
