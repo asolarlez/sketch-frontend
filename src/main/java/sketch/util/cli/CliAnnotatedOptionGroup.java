@@ -64,7 +64,7 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                             new CliOption(cmdlineName(field), field.getType(),
                                     field.get(this), cli_annotation.help(), this);
                     opt.setAdditionalInfo(cli_annotation.required(),
-                            cli_annotation.metavar());
+                            cli_annotation.metavar(), cli_annotation.inlinesep());
                     addOption(opt);
                     fields.add(field);
                 } catch (Exception e) {

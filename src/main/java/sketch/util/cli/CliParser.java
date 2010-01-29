@@ -22,10 +22,17 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
             new LinkedList<CliAnnotatedOptionGroup>();
     public CommandLine cmd_line;
     public String[] args;
+    public String usageStr = "[options]";
 
     public CliParser(String[] args) {
         super();
         this.args = args;
+    }
+    
+    public CliParser(String[] args, String usage) {
+        super();
+        this.args = args;
+        this.usageStr = usage;
     }
 
     protected void parse() {
@@ -33,13 +40,7 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
             return;
         }
         // add names
-        Options options = new Options();
-        options.addOption("h", "help", false, "display help");
-        for (CliOptionGroup group : opt_groups) {
-            for (CliOption cmd_opt : group.opt_set.values()) {
-                options.addOption(cmd_opt.as_option(group.prefix));
-            }
-        }
+        Options options = getOptionsList();
         try {
             cmd_line = super.parse(options, args, true);
             boolean print_help = cmd_line.hasOption("help");
@@ -52,25 +53,7 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
                 }
             }
             if (print_help) {
-                HelpFormatter hf = new HelpFormatter();
-                String cols = System.getenv("COLUMNS");
-                if (cols != null && !cols.equals("")) {
-                    try {
-                        hf.setWidth(Integer.parseInt(cols));
-                    } catch (Exception e) {
-                    }
-                } else {
-                    hf.setWidth(100);
-                }
-                StringBuilder description = new StringBuilder();
-                description.append("\n");
-                for (CliOptionGroup group : opt_groups) {
-                    description.append(group.prefix + " - " + group.description
-                            + "\n");
-                }
-                description.append(" \n");
-                hf.printHelp("[options]", description.toString(), options, "");
-                System.exit(1); // @code standards ignore
+                printHelpInner(options, "");
             }
         } catch (org.apache.commons.cli.ParseException e) {
             DebugOut.assertFalse(e.getMessage());
@@ -80,5 +63,45 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
         for (CliAnnotatedOptionGroup elt : set_on_parse_arr) {
             elt.set_values();
         }
+    }
+    
+    public void printHelpAndExit(String error_msg) {
+        printHelpInner(getOptionsList(), error_msg);
+    }
+
+    private void printHelpInner(Options options, String error_msg) {
+        HelpFormatter hf = new HelpFormatter();
+        String cols = System.getenv("COLUMNS");
+        if (cols != null && !cols.equals("")) {
+            try {
+                hf.setWidth(Integer.parseInt(cols));
+            } catch (Exception e) {
+            }
+        } else {
+            hf.setWidth(100);
+        }
+        StringBuilder description = new StringBuilder();
+        description.append("\n");
+        for (CliOptionGroup group : opt_groups) {
+            description.append(group.prefix + " - " + group.description
+                    + "\n");
+        }
+        description.append(" \n");
+        if (error_msg != "") {
+            error_msg = "\n\n[ERROR] [SKETCH] " + error_msg;
+        }
+        hf.printHelp(usageStr, description.toString(), options, error_msg);
+        System.exit(1); // @code standards ignore
+    }
+
+    private Options getOptionsList() {
+        Options options = new Options();
+        options.addOption("h", "help", false, "display help");
+        for (CliOptionGroup group : opt_groups) {
+            for (CliOption cmd_opt : group.opt_set.values()) {
+                options.addOption(cmd_opt.as_option(group.prefix));
+            }
+        }
+        return options;
     }
 }

@@ -9,4 +9,5 @@ public @interface CliParameter {
     String cliname() default "";
     boolean required() default false;
     String metavar() default "";
+    String inlinesep() default "";
 }

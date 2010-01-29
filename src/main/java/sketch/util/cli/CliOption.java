@@ -2,6 +2,9 @@ package sketch.util.cli;
 
 import static sketch.util.DebugOut.assertFalse;
 
+import java.lang.reflect.Array;
+import java.util.Vector;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
@@ -23,9 +26,11 @@ public final class CliOption {
     public final CliOptionGroup group;
     public boolean isRequired = true;
     public String metavarName;
+    public String inlinesep;
 
     public CliOption(String name, Class<?> typ, Object defaultValue, String help,
-            CliOptionGroup group) {
+            CliOptionGroup group)
+    {
         this.name = name;
         this.typ = typ;
         this.defaultValue = defaultValue;
@@ -38,7 +43,8 @@ public final class CliOption {
             assertFalse("name", name, "should use hyphens instead of underscores",
                     "(for code standards)");
         } else if (defaultValue != null && !typ.isPrimitive() &&
-                !typ.isAssignableFrom(defaultValue.getClass())) {
+                !typ.isAssignableFrom(defaultValue.getClass()))
+        {
             assertFalse("default value", defaultValue, "of class",
                     defaultValue.getClass(), "doesn't match type", typ, "for option",
                     name);
@@ -49,13 +55,17 @@ public final class CliOption {
         }
     }
 
-    public CliOption(String name, Object defaultValue, String help, CliOptionGroup group) {
+    public CliOption(String name, Object defaultValue, String help, CliOptionGroup group)
+    {
         this(name, defaultValue.getClass(), defaultValue, help, group);
     }
 
-    public void setAdditionalInfo(final boolean isRequired, final String metavarName) {
+    public void setAdditionalInfo(final boolean isRequired, final String metavarName,
+            final String inlinesep)
+    {
         this.isRequired = isRequired;
         this.metavarName = metavarName;
+        this.inlinesep = inlinesep;
     }
 
     public String full_name() {
@@ -89,7 +99,6 @@ public final class CliOption {
     }
 
     public Object parse(CommandLine cmd_line, boolean no_defaults) {
-        System.out.println(typ);
         if (CliOptional.class.isAssignableFrom(typ)) {
             if (defaultValue == null) {
                 assertFalse("java generics are not stored, so you must "
@@ -99,15 +108,42 @@ public final class CliOption {
             defaultValue.setValue(getValue(defaultValue.value.getClass(), cmd_line,
                     no_defaults));
             return defaultValue;
+        } else if (typ.isArray()) {
+            final Class<?> subtyp = typ.getComponentType();
+            if (!cmd_line.hasOption(full_name())) {
+                return defaultValue;
+            } else {
+                final Object[] values = getValues(subtyp, cmd_line, no_defaults);
+                if (!inlinesep.equals("")) {
+                    assert(subtyp.equals(String.class));
+                    Vector<String> result = new Vector<String>();
+                    for (Object value : values) {
+                        for (String entry : ((String)value).split(inlinesep)) {
+                            result.add(entry);
+                        }
+                    }
+                    return result.toArray(new String[0]);
+                }
+                final Object result = Array.newInstance(subtyp, values.length);
+                System.arraycopy(values, 0, result, 0, values.length);
+                return result;
+            }
         } else {
             return getValue(typ, cmd_line, no_defaults);
         }
     }
 
     public Object getValue(Class<?> typ, CommandLine cmd_line, boolean no_defaults) {
-        System.out.println(typ);
+        final Object[] values = getValues(typ, cmd_line, no_defaults);
+        if (values.length != 1) {
+            assertFalse("multiple values provided for command line option", this);
+        }
+        return values[0];
+    }
+
+    public Object[] getValues(Class<?> typ, CommandLine cmd_line, boolean no_defaults) {
         if (typmatch(typ, Boolean.class, boolean.class)) {
-            return cmd_line.hasOption(full_name());
+            return new Object[] { cmd_line.hasOption(full_name()) };
         }
         if (!cmd_line.hasOption(full_name())) {
             if (no_defaults) {
@@ -118,33 +154,37 @@ public final class CliOption {
                         name, "is required.\n    argument info:", this);
                 System.exit(1); // @code standards ignore
             } else if (CliOptionType.class.isAssignableFrom(typ)) {
-                return ((CliOptionType<?>) defaultValue).clone();
+                return new Object[] { ((CliOptionType<?>) defaultValue).clone() };
             }
-            return defaultValue;
+            return new Object[] { defaultValue };
         }
-        String v = cmd_line.getOptionValue(full_name());
-        if (typmatch(typ, int.class, Integer.class)) {
-            return Integer.parseInt(v);
-        } else if (typmatch(typ, long.class, Long.class)) {
-            return Long.parseLong(v);
-        } else if (typmatch(typ, float.class, Float.class)) {
-            return Float.parseFloat(v);
-        } else if (CliOptionType.class.isAssignableFrom(typ)) {
-            return ((CliOptionType<?>) defaultValue).fromString(v);
-        } else if (typ.isEnum()) {
-            for (Enum<?> value : (Enum<?>[]) typ.getEnumConstants()) {
-                if (value.name().equals(v)) {
-                    return value;
+        Vector<Object> result_vector = new Vector<Object>();
+        optionloop: for (String v : cmd_line.getOptionValues(full_name())) {
+            if (typmatch(typ, int.class, Integer.class)) {
+                result_vector.add(Integer.parseInt(v));
+            } else if (typmatch(typ, long.class, Long.class)) {
+                result_vector.add(Long.parseLong(v));
+            } else if (typmatch(typ, float.class, Float.class)) {
+                result_vector.add(Float.parseFloat(v));
+            } else if (CliOptionType.class.isAssignableFrom(typ)) {
+                result_vector.add(((CliOptionType<?>) defaultValue).fromString(v));
+            } else if (typ.isEnum()) {
+                for (Enum<?> value : (Enum<?>[]) typ.getEnumConstants()) {
+                    if (value.name().equals(v)) {
+                        result_vector.add(value);
+                        continue optionloop;
+                    }
                 }
+                assertFalse("invalid value ", v, " for ", this);
+                return null;
+            } else {
+                if (!typ.equals(String.class)) {
+                    DebugOut.assertFalse("can't parse option type ", typ);
+                }
+                result_vector.add(v);
             }
-            assertFalse("invalid value for ", this);
-            return null;
-        } else {
-            if (!typ.equals(String.class)) {
-                DebugOut.assertFalse("can't parse option type ", typ);
-            }
-            return v;
         }
+        return result_vector.toArray();
     }
 
     public boolean typmatch(Class<?> typ, Class<?>... matches) {
