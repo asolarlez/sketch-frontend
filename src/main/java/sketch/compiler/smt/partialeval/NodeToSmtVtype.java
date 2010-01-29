@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -18,7 +17,9 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.cmdline.SMTOptions.IntModel;
 import sketch.compiler.dataflow.abstractValue;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SMTTranslator;
 import sketch.compiler.smt.SMTTranslator.OpCode;
@@ -237,7 +238,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
             opnd2 = padIfNotWideEnough(opnd2, maxNumBits);
             
             
-            if (!COMMON_SUBEXP_ELIMINATION) {
+            if (!options.smtOpts.cse2) {
                 return BOTTOM(commonType, opcode, opnd1, opnd2);
             } else {
 
@@ -252,14 +253,14 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
         
         private NodeToSmtValue padIfNotWideEnough(NodeToSmtValue ntsvVal,
                 int numBits) {
-            if (!USE_BV) return ntsvVal;
+            if (options.smtOpts.intmodel != IntModel.bv) return ntsvVal;
             
             
             
             if (ntsvVal.getNumBits() < numBits) {
                 
                 NodeToSmtValue first = CONSTBITARRAY(0, numBits - ntsvVal.getNumBits());
-                if (!COMMON_SUBEXP_ELIMINATION) {
+                if (!options.smtOpts.cse2) {
                     
                     return concat(first, ntsvVal);
                     
@@ -286,12 +287,6 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	public static final String CACHE_SIZE = "DAG Number of Nodes";
 	public static final String CACHE_USED = "Cache Used Times";
 	
-	public static final boolean COMMON_SUBEXP_ELIMINATION_HALF = CommandLineParamManager.getParams().hasFlag("cse");;
-	public static final boolean FUNCCALL_HASHING = CommandLineParamManager.getParams().hasFlag("funchash");
-	public static final boolean CANONICALIZE = CommandLineParamManager.getParams().hasFlag("canon");
-	public static final boolean COMMON_SUBEXP_ELIMINATION = CommandLineParamManager.getParams().hasFlag("cse2");
-	public final boolean USE_BV = CommandLineParamManager.getParams().sValue("modelint").equals("bv");
-	
 	protected TempVarGen tmpVarGen;
 	protected GeneralStatistics mStat;
 	protected AbstractValueOracle oracle;
@@ -303,6 +298,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	private static Logger log = Logger.getLogger(NodeToSmtVtype.class.getCanonicalName());
 
 	protected DisjointSet<VarNode> mTransitiveSet;
+    protected final SMTSketchOptions options;
 	
 	/*
 	 * Getters & Setters
@@ -339,6 +335,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		mCBits = cBits;
 		mInBits = inBits;
 		this.tmpVarGen = tmpVarGen;
+		this.options = SMTSketchOptions.getSingleton();
 		
 		mInputs = new HashSet<VarNode>();
 		mLocalVars = new HashSet<VarNode>();
@@ -450,7 +447,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue newNode = NodeToSmtValue.newBottom(type, getNumBitsForType(type), opcode, newOpnds);
 		NodeToSmtValue nInSH = checkStructuralHash(newNode);
 		
-		if (COMMON_SUBEXP_ELIMINATION && 
+		if (options.smtOpts.cse2 && 
 		        nInSH == newNode) {
 		    addTempDefinition(newNode);
 		    newNode = checkStructuralHash(newNode);
@@ -565,7 +562,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsvIdx = (NodeToSmtValue) idx;
 		NodeToSmtValue ntsvLen = (NodeToSmtValue) len;
 		
-		if (USE_BV && ntsvArr.isBitArray()) {
+		if (options.smtOpts.intmodel == IntModel.bv && ntsvArr.isBitArray()) {
 		    return bitArrayAccess(ntsvArr, ntsvIdx, ntsvLen, isUnchecked);
 		} else {
 		    return normalArrayAccess(ntsvArr, ntsvIdx, ntsvLen, isUnchecked);
@@ -678,7 +675,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		} else {
 		    
 	        
-			if (CANONICALIZE &&
+			if (options.smtOpts.canon &&
 			        (isLinearizable(ntsv1)) &&
                     (isLinearizable(ntsv2))) {
 			    // if they are either ConstNode or LinearNode or VarNode
@@ -709,7 +706,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	        if (ntsv2.getNumBits() < maxNumBits)
 	            ntsv2 = padIfNotWideEnough(ntsv2, maxNumBits);
 	        
-		    if (CANONICALIZE &&
+		    if (options.smtOpts.canon &&
                     (isLinearizable(ntsv1)) &&
                     (isLinearizable(ntsv2))) {
                 // if they are either ConstNode or LinearNode or VarNode
@@ -734,7 +731,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() * v2.getIntVal());
-		} else if (CANONICALIZE) {
+		} else if (options.smtOpts.canon) {
 		        if (ntsv1 instanceof ConstNode && 
 		                isLinearizable(ntsv2)) {
 		            return LINEAR_MULT(ntsv2, (ConstNode) ntsv1);
@@ -1104,7 +1101,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public NodeToSmtValue padIfNotWideEnough(NodeToSmtValue ntsvVal,
 			int numBits) {
-	    if (!USE_BV) return ntsvVal;
+	    if (options.smtOpts.intmodel != IntModel.bv) return ntsvVal;
 	    
 		if (ntsvVal.getNumBits() < numBits)
 			return concat(CONSTBITARRAY(0, numBits - ntsvVal.getNumBits()),
@@ -1563,7 +1560,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	
 	public NodeToSmtValue checkStructuralHash(NodeToSmtValue newNode) {
         // whenever we create a new OpNode, check structural hashing first
-        if (COMMON_SUBEXP_ELIMINATION_HALF && mStructHash.containsKey(newNode)) {
+        if (options.smtOpts.cse && mStructHash.containsKey(newNode)) {
             // if that structure already has a name var, use that
             NodeToSmtValue varNode = mStructHash.get(newNode);
             mStat.incrementLong(SH_USED, 1);
@@ -1700,7 +1697,7 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 //	protected NodeToSmtValue referenceRHS(NodeToSmtValue original) {
 //	    NodeToSmtValue referenced = referenceLHS(original);
 ////	    return referenced;
-//	    if (CANONICALIZE && isLinearizable(referenced))
+//	    if (options.smtOpts.canon && isLinearizable(referenced))
 //	        return LINEAR(referenced);
 //	    else
 //	        return referenced;
