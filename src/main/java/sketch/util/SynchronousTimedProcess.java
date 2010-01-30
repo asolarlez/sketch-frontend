@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 
 
 /**
@@ -38,7 +38,7 @@ public class SynchronousTimedProcess {
 				List<String> cmdLine) throws IOException {
         for (String s : cmdLine)
             assert s != null : "Null elt of command: '" + cmdLine + "'";
-        if (CommandLineParamManager.getParams().flagValue("verbosity") > 2) {
+        if (SequentialSketchOptions.getSingleton().debugOpts.verbosity > 2) {
             System.err.println("starting command line: " + cmdLine.toString());
         }
 		ProcessBuilder pb = new ProcessBuilder (cmdLine);

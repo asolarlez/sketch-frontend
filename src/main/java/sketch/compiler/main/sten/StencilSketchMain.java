@@ -20,7 +20,6 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -79,8 +78,9 @@ public class StencilSketchMain extends SequentialSketchMain
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 
 		//dump (prog, "After first elimination of multi-dim arrays:");
-		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
-		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
+		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, options.bndOpts.unrollAmnt, visibleRControl() ) );
+        if (showPhaseOpt("preproc"))
+            dump(prog, "After Preprocessing");
 		prog = lprog;
         originalProg = prog;
 //    	System.out.println("=============================================================");
@@ -101,20 +101,20 @@ public class StencilSketchMain extends SequentialSketchMain
     }
 
     @Override
-    protected void backendParameters(List<String> commandLineOptions){
-		super.backendParameters(commandLineOptions);
-		commandLineOptions.add("-ufunSymmetry");
+    protected void backendParameters() {
+        super.backendParameters();
+        options.backendOptions.add("-ufunSymmetry");
     }
 
 
     public RecursionControl visibleRControl(){
     	// return new DelayedInlineRControl(params.flagValue("inlineamnt"), params.flagValue("branchamnt"));
-    	return new AdvancedRControl(params.flagValue("branchamnt"), params.flagValue("inlineamnt"), prog);
+    	return new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, prog);
     }
     
     
     public RecursionControl internalRControl(){
-    	return new DelayedInlineRControl(params.flagValue("inlineamnt"), params.flagValue("branchamnt"));		
+    	return new DelayedInlineRControl(options.bndOpts.inlineAmnt, options.bndOpts.branchAmnt);		
 	}
 	
 	
@@ -134,13 +134,13 @@ public class StencilSketchMain extends SequentialSketchMain
 
 	public void eliminateStar(){
 		finalCode=(Program)originalProg.accept(new EliminateStarStatic(oracle));		
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  params.flagValue("unrollamnt"), visibleRControl() ));
+		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen,  options.bndOpts.unrollAmnt, visibleRControl() ));
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
     	finalCode = (Program)finalCode.accept(new EliminateTransAssns());
     	//System.out.println("=========  After ElimTransAssign  =========");
     	//finalCode.accept( new SimpleCodePrinter() );
-    	finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+    	finalCode = (Program)finalCode.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
     	//System.out.println("=========  After ElimDeadCode  =========");
     	//finalCode.accept( new SimpleCodePrinter() );
     	finalCode = (Program)finalCode.accept(new SimplifyVarNames());
@@ -194,7 +194,7 @@ public class StencilSketchMain extends SequentialSketchMain
 
 
     	Program tmp = (Program) prog.accept(
-    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  params.flagValue("unrollamnt"), visibleRControl() ){
+    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  options.bndOpts.unrollAmnt, visibleRControl() ){
     				protected List<Function> functionsToAnalyze(StreamSpec spec){
     				    return new LinkedList<Function>(spec.getFuncs());
     			    }
@@ -211,9 +211,9 @@ public class StencilSketchMain extends SequentialSketchMain
     	tmp = (Program)tmp.accept(new SimplifyVarNames());
         
     	prog = tmp;
-    	if(params.flagEquals("showphase", "preproc")){
-    		dump(tmp, "After transformations");
-    	}
+        if (showPhaseOpt("preproc")) {
+            dump(tmp, "After transformations");
+        }
 	}
 
 
@@ -225,11 +225,11 @@ public class StencilSketchMain extends SequentialSketchMain
     protected void outputCCode() {
         String resultFile = getOutputFileName();
         String ccode = (String)finalCode.accept(new SNodesToC(varGen,resultFile));
-        if(!params.hasFlag("outputcode")){
+        if (!options.feOpts.outputCode) {
         	System.out.println(ccode);
         }else{
         	try{
-				Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+".cpp");
+				Writer outWriter = new FileWriter(options.feOpts.outputDir+resultFile+".cpp");
 				outWriter.write(ccode);
 				outWriter.flush();
 				outWriter.close();
@@ -245,11 +245,11 @@ public class StencilSketchMain extends SequentialSketchMain
 		finalCode=(Program) finalCode.accept(new VariableDisambiguator());
 		finalCode=(Program) finalCode.accept(new VariableDeclarationMover());
         String fcode = (String)finalCode.accept(new SNodesToFortran(resultFile));
-        if(!params.hasFlag("outputcode")){
+        if(!options.feOpts.outputCode){
         	System.out.println(fcode);
         }else{
         	try{
-				Writer outWriter = new FileWriter(params.sValue("outputdir")+resultFile+".f");
+				Writer outWriter = new FileWriter(options.feOpts.outputDir+resultFile+".f");
 				outWriter.write(fcode);
 				outWriter.flush();
 				outWriter.close();
@@ -263,16 +263,15 @@ public class StencilSketchMain extends SequentialSketchMain
 	public void generateCode(){
 		finalCode.accept(new SimpleCodePrinter());
 		finalCode=doBackendPasses(finalCode);
-		if(false && params.hasFlag("outputfortran")) {
-			outputFortranCode();
-		} else {
+//		if(false && options.feOpts.outputFortran) {
+//			outputFortranCode();
+//		} else {
 			outputCCode();
-		}
+//		}
 	}
 
     public static void main(String[] args) {
         checkJavaVersion(1, 6);
-        CommandLineParamManager.reset_singleton();
         try {
             new StencilSketchMain(args).run();
         } catch (RuntimeException e) {

@@ -1,8 +1,5 @@
 package sketch.util.fcns;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Vector;
 
 import sketch.util.ScCloneable;
@@ -109,13 +106,5 @@ public class ScArrayUtil {
             result.add(elt.clone());
         }
         return result;
-    }
-
-    public static <T> List<T> arrayToList(T[] array) {
-        ArrayList<T> as_list = new ArrayList<T>();
-        for (T elt : array) {
-            as_list.add(elt);
-        }
-        return Collections.unmodifiableList(as_list);
     }
 }

@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -22,16 +22,16 @@ public class STPYicesBackend extends SMTBackend {
     
     boolean isBackend1 = false;
     
-    public STPYicesBackend(CommandLineParamManager params, String tmpFilePath,
+    public STPYicesBackend(SMTSketchOptions options, String tmpFilePath,
             RecursionControl rcontrol, TempVarGen varGen, boolean tracing)
             throws IOException
     {
-        super(params, tmpFilePath, rcontrol, varGen, tracing);
-        solverPath = params.sValue("smtpath");
+        super(options, tmpFilePath, rcontrol, varGen, tracing);
+        solverPath = options.smtOpts.solverpath;
         int idx = solverPath.indexOf(File.pathSeparator);
         
-        backend1 = new STPBackend(params, tmpFilePath, rcontrol, varGen, tracing);
-        backend2 = new YicesBVBackend(params, tmpFilePath, rcontrol, varGen, 2, tracing);
+        backend1 = new STPBackend(options, tmpFilePath, rcontrol, varGen, tracing);
+        backend2 = new YicesBVBackend(options, tmpFilePath, rcontrol, varGen, 2, tracing);
         backend1.solverPath = solverPath.substring(0, idx);
         backend2.solverPath = solverPath.substring(idx+1, solverPath.length());
     }

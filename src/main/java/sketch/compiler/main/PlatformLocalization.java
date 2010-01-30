@@ -1,5 +1,7 @@
 package sketch.compiler.main;
 
+import static sketch.util.DebugOut.assertFalse;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,15 +11,16 @@ import java.security.CodeSource;
 import java.util.Properties;
 import java.util.Vector;
 
-import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 
 /**
- * get any variables related to this specific compile, e.g. version number, and
- * resolve the path to the cegis binary.
+ * get any variables related to this specific compile, e.g. version number, and resolve
+ * the path to the cegis binary.
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class PlatformLocalization {
     protected static PlatformLocalization singleton;
@@ -29,8 +32,8 @@ public class PlatformLocalization {
     /** only extract to a secure (not shared) location */
     public File tmpdir;
     /**
-     * if this is false, fake values will be filled in for version, etc. so
-     * other code doesn't fail.
+     * if this is false, fake values will be filled in for version, etc. so other code
+     * doesn't fail.
      */
     public boolean isSet = false;
 
@@ -64,8 +67,7 @@ public class PlatformLocalization {
 
     public File get_jarpath() {
         File jarpath = null;
-        CodeSource codesource =
-                getClass().getProtectionDomain().getCodeSource();
+        CodeSource codesource = getClass().getProtectionDomain().getCodeSource();
         if (codesource != null) {
             URL location = codesource.getLocation();
             if (location != null) {
@@ -87,56 +89,50 @@ public class PlatformLocalization {
                     return loadTempFile(fileIn, cegisName);
                 }
             }
-        } catch (IOException e) {
-        }
+        } catch (IOException e) {}
         return null;
     }
 
     public String getCegisPath() {
         String cegisName = "cegis" + (isWin() ? ".exe" : "");
-        CommandLineParamManager params = CommandLineParamManager.getParams();
+        SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
         Vector<File> all_files = new Vector<File>();
-        if (params.hasFlag("cegispath")) {
-            all_files.add(path(params.sValue("cegispath")));
+        if (options.feOpts.cegisPath != null) {
+            all_files.add(path(options.feOpts.cegisPath));
         } else {
             String jarfile = "";
             if (platformMatchesJava() && tmpdir != null) {
                 // try to get it from the jar
                 jarfile = load_from_jar(cegisName);
             } else if (isSet && tmpdir != null) {
-                System.err.println("Your system doesn't match the "
-                        + "localization strings of the SKETCH jar: " + osname
-                        + ", " + osarch);
+                System.err.println("Your system doesn't match the " +
+                        "localization strings of the SKETCH jar: " + osname + ", " +
+                        osarch);
             }
             File jarpath = get_jarpath();
             File[] files =
                     {
                             path(jarfile),
-                            path(jarpath, "cegis", "src", "SketchSolver",
-                                    cegisName),
+                            path(jarpath, "cegis", "src", "SketchSolver", cegisName),
                             path(jarpath, cegisName),
                             path(".", "cegis", "src", "SketchSolver", cegisName),
-                            path("..", "sketch-backend", "src", "SketchSolver",
-                                    cegisName), path(cegisName),
+                            path("..", "sketch-backend", "src", "SketchSolver", cegisName),
+                            path(cegisName),
                             path(usersketchdir, cegisName + "-" + version),
                             path(usersketchdir, cegisName) };
             for (File file : files) {
                 all_files.add(file);
             }
-            for (String pathDir : System.getenv("PATH").split(
-                    File.pathSeparator))
-            {
+            for (String pathDir : System.getenv("PATH").split(File.pathSeparator)) {
                 all_files.add(path(pathDir, cegisName));
             }
         }
         for (File file : all_files) {
             if (file != null && file.isFile()) {
                 try {
-                    if (CommandLineParamManager.getParams().flagValue(
-                            "verbosity") > 2)
-                    {
-                        System.out.println("resolved cegis to path "
-                                + file.getCanonicalPath());
+                    if (options.debugOpts.verbosity > 2) {
+                        System.out.println("resolved cegis to path " +
+                                file.getCanonicalPath());
                     }
                     return file.getCanonicalPath();
                 } catch (IOException e) {
@@ -207,8 +203,7 @@ public class PlatformLocalization {
                 assert (fileIn.available() == 0) : "didn't read all of file";
                 if (!isWin()) {
                     Process proc =
-                            (new ProcessBuilder("chmod", "755", canonicalName))
-                                    .start();
+                            (new ProcessBuilder("chmod", "755", canonicalName)).start();
                     assert (proc.waitFor() == 0) : "couldn't make cegis executable";
                 }
                 return canonicalName;
@@ -221,13 +216,12 @@ public class PlatformLocalization {
 
     // misc functions
     public URL getCompilerRc(String name) {
-        return getClass().getClassLoader().getResource(
-                "sketch/compiler/" + name);
+        return getClass().getClassLoader().getResource("sketch/compiler/" + name);
     }
 
     public boolean platformMatchesJava() {
-        return isSet && osname.equals(System.getProperty("os.name"))
-                && osarch.equals(System.getProperty("os.arch"));
+        return isSet && osname.equals(System.getProperty("os.name")) &&
+                osarch.equals(System.getProperty("os.arch"));
     }
 
     public boolean isWin() {
@@ -244,6 +238,33 @@ public class PlatformLocalization {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static int trygetenv(int defValue, String... keys) {
+        for (String key : keys) {
+            String value = System.getenv(key);
+            if (value != null) {
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+            }
+        }
+        return defValue;
+    }
+
+    public File getTempPath(String... subpaths) {
+        return path(tmpdir, subpaths);
+    }
+
+    public String getTempPathString(String... subpaths) {
+        try {
+            return path(tmpdir, subpaths).getCanonicalPath();
+        } catch (IOException e) {
+            assertFalse("canonicalPath failed for subpaths", subpaths);
+            throw new RuntimeException(e);
         }
     }
 }

@@ -3,9 +3,7 @@ package sketch.compiler.main.par.old;
 import java.io.OutputStream;
 
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.seq.SequentialSketchMain;
-import sketch.compiler.passes.lowering.*;
 import sketch.compiler.spin.Preprocessor;
 import sketch.compiler.spin.PromelaCodePrinter;
 
@@ -33,6 +31,8 @@ public class ToSpin extends SequentialSketchMain {
 	 */
 	public void lowerIRToJava()
 	{
+	    throw new RuntimeException("ToSpin deprecated.");
+	    /*
 		prog = (Program)prog.accept (new MakeAllocsAtomic (varGen));
 		//dump (prog, "After making allocations atomic");
 
@@ -61,6 +61,7 @@ public class ToSpin extends SequentialSketchMain {
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");
+		 */
 	}
 
 	/**
@@ -73,6 +74,8 @@ public class ToSpin extends SequentialSketchMain {
 
 	public void run()
 	{
+	    throw new RuntimeException("ToSpin deprecated.");
+	    /*
 		parseProgram();
 
 		prog = (Program)prog.accept(new ConstantReplacer(params.varValues("D")));
@@ -91,6 +94,7 @@ public class ToSpin extends SequentialSketchMain {
 		generateCode ();
 
 		System.out.println("[STEN_SKETCH] DONE");
+		*/
 	}
 
 	protected ToSpin (String[] args) { this (args, System.out);	}

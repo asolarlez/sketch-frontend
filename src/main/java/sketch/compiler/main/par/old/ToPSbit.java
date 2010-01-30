@@ -1,8 +1,5 @@
 package sketch.compiler.main.par.old;
 
-import java.util.List;
-
-import sketch.compiler.CommandLineParamManager.POpts;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
@@ -11,15 +8,8 @@ import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.recursionCtrl.ZeroInlineRControl;
-import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.seq.SequentialSketchMain;
-import sketch.compiler.parallelEncoder.LockPreprocessing;
-import sketch.compiler.parallelEncoder.ProduceParallelModel;
-import sketch.compiler.passes.lowering.*;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
-import sketch.compiler.solvers.SpinVerifier;
-import sketch.compiler.solvers.constructs.StaticHoleTracker;
-import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.stencilSK.EliminateStarStatic;
 
 public class ToPSbit extends SequentialSketchMain {
@@ -32,17 +22,18 @@ public class ToPSbit extends SequentialSketchMain {
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(oracle));
 		dump(finalCode, "after elim star");
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+        finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl(), true));
 		dump(finalCode, "after postproc");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
 		dump(finalCode, "after flattening");
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		//dump(finalCode, "Before DCE");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+        finalCode = (Program) finalCode.accept(new EliminateDeadCode(
+                        options.feOpts.keepAsserts));
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
-
 	}
 
 
@@ -56,17 +47,23 @@ public class ToPSbit extends SequentialSketchMain {
 		return new ZeroInlineRControl();
 	}
 
-
-	protected void backendParameters(List<String> commandLineOptions){
-		super.backendParameters(commandLineOptions);
-		commandLineOptions.add("-inlineamnt");
-		commandLineOptions.add( "" + (params.flagValue("schedlen")+1) );
-		commandLineOptions.add("-mergeFunctions");
+	
+	@Override
+	protected void backendParameters() {
+	    throw new RuntimeException("ToPSbit deprecated.");
+	    /*
+	    super.backendParameters();
+	    options.backendOptions.add("-inlineamnt");
+        options.backendOptions.add( "" + (params.flagValue("schedlen")+1) );
+        options.backendOptions.add("-mergeFunctions");
+        */
 	}
 
 
 	public void lowerIRToJava()
 	{
+	    throw new RuntimeException("ToPSbit deprecated.");
+	    /*
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
@@ -90,16 +87,19 @@ public class ToPSbit extends SequentialSketchMain {
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen));
-		if(params.flagEquals("showphase", "preproc"))
+		if(showPhaseOpt"preproc"))
 			prog.accept(new SimpleCodePrinter());
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
 		//dump (prog, "After lowerIR:");
+		 */
 	}
 
 
 	public void run()
 	{
+	    throw new RuntimeException("ToPSbit deprecated.");
+	    /*
 		parseProgram();
 
 		prog = (Program)prog.accept(new LockPreprocessing());
@@ -119,7 +119,7 @@ public class ToPSbit extends SequentialSketchMain {
 		if (prog == null)
 			throw new IllegalStateException();
 
-		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
+		oracle = new ValueOracle( new StaticHoleTracker(varGen));
 		boolean solved = partialEvalAndSolve().successful();
 		if (!solved)  System.out.println ("Backend timed out; controls may be synthesized, though.");
 		try {
@@ -151,11 +151,14 @@ public class ToPSbit extends SequentialSketchMain {
 		}
 		//generateCode();
 		System.out.println("[PSKETCH] DONE");
+		*/
 
 	}
 
 
 	protected void setCommandLineParams(){
+	    throw new RuntimeException("ToPSbit deprecated.");
+	    /*
 		super.setCommandLineParams();
 		params.setAllowedParam("schedlen", new POpts(POpts.NUMBER,
 				"--schedlen  n \t Sets the length of the schedule for the parallel sections to n.",
@@ -169,6 +172,7 @@ public class ToPSbit extends SequentialSketchMain {
 				"             \t If that index is out of bounds, your sketch will not resolve, so you use this \n" +
 				"             \t parameter to make that lock array larger.",
 				"10", null) );
+				*/
 	}
 
 

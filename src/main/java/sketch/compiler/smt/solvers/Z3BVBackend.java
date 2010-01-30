@@ -7,9 +7,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -24,9 +24,9 @@ public class Z3BVBackend extends SMTBackend {
 
 	String solverInputFile;
 	
-	public Z3BVBackend(CommandLineParamManager params, String tmpFilePath,
+	public Z3BVBackend(SMTSketchOptions options, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing) throws IOException {
-		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		super(options, tmpFilePath, rcontrol, varGen, tracing);
 
 	}
 
@@ -61,8 +61,8 @@ public class Z3BVBackend extends SMTBackend {
 
 	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
-		String z3Path = this.params.sValue("smtpath");
-		SynchronousTimedProcess stp = new SynchronousTimedProcess(params.flagValue("timeout"),
+		String z3Path = this.options.smtOpts.solverpath;
+		SynchronousTimedProcess stp = new SynchronousTimedProcess(options.solverOpts.timeout,
 				z3Path, this.getTmpFilePath(), "/m", "/st");
 		return stp;
 	}

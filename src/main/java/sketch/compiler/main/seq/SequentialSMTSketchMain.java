@@ -19,10 +19,9 @@ package sketch.compiler.main.seq;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -30,10 +29,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.Directive;
-import sketch.compiler.CommandLineParamManager.POpts;
-import sketch.compiler.Directive.OptionsDirective;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -42,6 +38,9 @@ import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.cmdline.SMTOptions.IntModel;
+import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
+import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
 import sketch.compiler.codegenerators.NodesToC;
 import sketch.compiler.codegenerators.NodesToCTest;
 import sketch.compiler.codegenerators.NodesToH;
@@ -89,7 +88,7 @@ import sketch.util.Pair;
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id: SequentialSMTSketchMain.java,v 1.46 2009/11/03 22:40:32 lshan Exp $
  */
-public class SequentialSMTSketchMain {
+public class SequentialSMTSketchMain extends CommonSketchMain {
     
 	// protected final CommandLineParams params;
 	protected Program beforeUnvectorizing = null;
@@ -103,8 +102,7 @@ public class SequentialSMTSketchMain {
 	
 	protected String programName;
 	
-	public static final CommandLineParamManager params = CommandLineParamManager
-			.getParams();
+	public final SMTSketchOptions options;
 	private static Logger log = Logger.getLogger(SequentialSMTSketchMain.class.getCanonicalName());
 	
 	protected TempVarGen varGen = new TempVarGen("__sa");
@@ -150,21 +148,20 @@ public class SequentialSMTSketchMain {
 	 * Constructors
 	 */
 	public SequentialSMTSketchMain(String[] args) {
-		this.setCommandLineParams();
-		
-		params.loadParams(args);
+	    super(new SMTSketchOptions(args));
+	    this.options = (SMTSketchOptions) super.options;
 		
 		Logger rootLogger = Logger.getLogger("");
-		int verbosity = params.flagValue("verbosity");
+		int verbosity = options.debugOpts.verbosity;
 		Level vLevel = null;
 		switch (verbosity) {
-		case 0: vLevel = Level.OFF; break;
-		case 1: vLevel = Level.SEVERE; break;
-		case 2: vLevel = Level.WARNING; break;
-		case 3: vLevel = Level.INFO; break;
-		case 4: vLevel = Level.FINE; break;
-		case 5: vLevel = Level.FINER; break;
-		case 6: vLevel = Level.FINEST; break;
+		    case 0: vLevel = Level.OFF; break;
+    		case 1: vLevel = Level.SEVERE; break;
+    		case 2: vLevel = Level.WARNING; break;
+    		case 3: vLevel = Level.INFO; break;
+    		case 4: vLevel = Level.FINE; break;
+    		case 5: vLevel = Level.FINER; break;
+    		case 6: vLevel = Level.FINEST; break;
 		}
 		rootLogger.setLevel(vLevel);
 		
@@ -189,14 +186,12 @@ public class SequentialSMTSketchMain {
 		this.programName = getOutputFileName();
 		this.stat = new GeneralStatistics();
 	}
-	
-	protected SequentialSMTSketchMain() {}
-	
+
 	public static RecursionControl visibleRControl(Program p) {
-		// return new BaseRControl(params.inlineAmt);
-		return new AdvancedRControl(params.flagValue("branchamnt"), params
-				.flagValue("inlineamnt"), p);
-	}
+        // return new BaseRControl(params.inlineAmt);
+        return new AdvancedRControl(SMTSketchOptions.getSingleton().bndOpts.branchAmnt,
+                SMTSketchOptions.getSingleton().bndOpts.inlineAmnt, p);
+    }
 
 	/**
 	 * This function produces a recursion control that is used by all
@@ -265,7 +260,7 @@ public class SequentialSMTSketchMain {
 			antlr.TokenStreamException {
 		Program prog = emptyProgram();
 		boolean useCpp = true;
-		List<String> cppDefs = params.listValue("def");
+		List<String> cppDefs = Arrays.asList(options.feOpts.def);
 		Set<Directive> pragmas = new HashSet<Directive>();
 
 		for (String inputFile : inputFiles) {
@@ -310,8 +305,8 @@ public class SequentialSMTSketchMain {
 		
 		prog = (Program) prog.accept(new MakeBodiesBlocks());
 		// dump (prog, "MBB:");
-		prog = (Program) prog.accept(new EliminateStructs(varGen, params
-				.flagValue("heapsize")));
+        prog = (Program) prog.accept(new EliminateStructs(varGen,
+                        options.bndOpts.heapSize));
 //		dump (prog, "Before ReplaceStructTypeWithInt:");
 		prog = (Program) prog.accept(new ReplaceStructTypeWithInt());
 //		dump (prog, "After ReplaceStructTypeWithInt:");
@@ -338,7 +333,7 @@ public class SequentialSMTSketchMain {
 //		dump (prog, "After ScalarizeVectorAssignments");
 
 		// By default, we don't protect array accesses in SKETCH
-		if ("assertions".equals(params.sValue("arrayOOBPolicy"))) {
+		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions) {
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
 					FailurePolicy.ASSERTION, varGen));
 //			dump (prog, "After arrayOOBPolicy");
@@ -351,8 +346,8 @@ public class SequentialSMTSketchMain {
 //		dump (prog, "Before regularize types:");
 		prog = (Program) prog.accept(new RegularizeTypesByTypeCheck());
 		
-		if (params.flagEquals("showphase", "lowering"))
-			dump(prog, "Lowering the code previous to Symbolic execution.");
+        if (showPhaseOpt("lowering"))
+            dump(prog, "Lowering the code previous to Symbolic execution.");
 
 		prog = (Program) prog.accept(new EliminateNestedArrAcc());
 //		 dump (prog, "After lowerIR:");
@@ -362,11 +357,11 @@ public class SequentialSMTSketchMain {
 	public Program parseProgram() {
 		
 		try {
-			Pair<Program, Set<Directive>> res = parseFiles(params.inputFiles);
+			Pair<Program, Set<Directive>> res = parseFiles(options.argsAsList);
 			prog = res.getFirst();
 			processDirectives(res.getSecond());
 			
-			if (params.flagEquals("showphase", "parse"))
+			if (showPhaseOpt("parse"))
 				dump(prog, "After parsing");
 		} catch (Exception e) {
 			// e.printStackTrace(System.err);
@@ -378,18 +373,11 @@ public class SequentialSMTSketchMain {
 			throw new IllegalStateException();
 		}
 		return prog;
-
-	}
-
-	protected void processDirectives(Set<Directive> D) {
-		for (Directive d : D)
-			if (d instanceof OptionsDirective)
-				params.loadParams(((OptionsDirective) d).options());
-	}
+    }
 
 	protected Program preprocessProgram(Program lprog) {
-		boolean useInsertEncoding = params.flagEquals("reorderEncoding",
-				"exponential");
+	    boolean useInsertEncoding =
+            (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 		// invoke post-parse passes
 
 //		dump (prog, "before:");
@@ -424,10 +412,10 @@ public class SequentialSMTSketchMain {
 		
 		lprog = (Program) lprog.accept(new EliminateMultiDimArrays());
 //		dump (lprog, "After first elimination of multi-dim arrays:");
-		lprog = (Program) lprog.accept(new PreprocessSketch(varGen, params
-				.flagValue("unrollamnt"), visibleRControl(lprog)));
-		if (params.flagEquals("showphase", "preproc"))
-			dump(lprog, "After Preprocessing");
+        lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl(lprog)));
+        if (showPhaseOpt("preproc"))
+            dump(lprog, "After Preprocessing");
 //		dump(lprog, "After Preprocessing");
 		return lprog;
 	}
@@ -435,30 +423,31 @@ public class SequentialSMTSketchMain {
 	public void eliminateStar(){
 		finalCode=(Program)beforeUnvectorizing.accept(new EliminateStarStatic(bestOracle));
 //		 dump(finalCode, "after elim star");
-		finalCode=(Program)finalCode.accept(new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl(), true ));
+        finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl(), true));
 		// dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
-		if(params.flagEquals("showphase", "postproc")) 
+		if(showPhaseOpt("postproc")) 
 			dump(finalCode, "After Flattening.");
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		if(params.flagEquals("showphase", "taelim")) 
+		if(showPhaseOpt("taelim")) 
 			dump(finalCode, "After Eliminating transitive assignments.");
-		finalCode = (Program)finalCode.accept(new EliminateDeadCode(params.hasFlag("keepasserts")));
+		finalCode = (Program)finalCode.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
 		//dump(finalCode, "After Dead Code elimination.");
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 		
 		finalCode = (Program)finalCode.accept(new ArithmeticSimplification());
-		if(params.flagEquals("showphase", "final")) 
+		if(showPhaseOpt("final")) 
 			dump(finalCode, "After Dead Code elimination.");
 	}
 
 	protected String getOutputFileName() {
-		String resultFile = params.sValue("outputprogname");
+		String resultFile = options.feOpts.output;
 		if (resultFile == null) {
-			resultFile = params.inputFiles.get(0);
+			resultFile = options.args[0];
 		}
 		if (resultFile.lastIndexOf("/") >= 0)
 			resultFile = resultFile.substring(resultFile.lastIndexOf("/") + 1);
@@ -475,7 +464,7 @@ public class SequentialSMTSketchMain {
 
 		String resultFile = getOutputFileName();
 		
-		if (!params.hasFlag("outputcode")) {
+		if (!options.feOpts.outputCode) {
 			 finalCode.accept( new SimpleCodePrinter() );
 			// System.out.println(hcode);
 //			System.out.println(ccode);
@@ -486,31 +475,28 @@ public class SequentialSMTSketchMain {
 					String ccode = (String) finalCode.accept(new NodesToC(varGen,
 							resultFile));
 					
-					Writer outWriter = new FileWriter(params
-							.sValue("outputdir")
+					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + ".h");
 					outWriter.write(hcode);
 					outWriter.flush();
 					outWriter.close();
-					outWriter = new FileWriter(params.sValue("outputdir")
+					outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + ".cpp");
 					outWriter.write(ccode);
 					outWriter.flush();
 					outWriter.close();
 				}
-				if (params.hasFlag("outputtest")) {
+				if (options.feOpts.outputTest) {
 					String testcode = (String) beforeUnvectorizing
 							.accept(new NodesToCTest(resultFile));
-					Writer outWriter = new FileWriter(params
-							.sValue("outputdir")
+					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + "_test.cpp");
 					outWriter.write(testcode);
 					outWriter.flush();
 					outWriter.close();
 				}
-				if (params.hasFlag("outputtest")) {
-					Writer outWriter = new FileWriter(params
-							.sValue("outputdir")
+				if (options.feOpts.outputTest) {
+					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ "script");
 					outWriter.write("#!/bin/sh\n");
 					outWriter
@@ -546,297 +532,8 @@ public class SequentialSMTSketchMain {
 		}
 	}
 
-	protected void setCommandLineParams() {
-
-		params
-				.setAllowedParam(
-						"D",
-						new POpts(
-								POpts.VVAL,
-								"--D VAR val    \t If the program contains a global variable VAR, it sets its value to val.",
-								null, null));
-
-		params.setAllowedParam("unrollamnt", new POpts(POpts.NUMBER,
-				"--unrollamnt n \t It sets the unroll ammount for loops to n.",
-				"8", null));
-
-		params
-				.setAllowedParam(
-						"inlineamnt",
-						new POpts(
-								POpts.NUMBER,
-								"--inlineamnt n \t Bounds inlining to n levels of recursion, so"
-										+ "\n\t\t each function can appear at most n times in the stack.",
-								"5", null));
-
-		params
-				.setAllowedParam(
-						"heapsize",
-						new POpts(
-								POpts.NUMBER,
-								"--heapsize n \t Size of the heap for each object. This is the maximum"
-										+ "\n\t\t number of objects of a given type that the program may allocate.",
-								"11", null));
-
-		params
-				.setAllowedParam(
-						"branchamnt",
-						new POpts(
-								POpts.NUMBER,
-								"--branchamnt n \t This flag is also used for recursion control. "
-										+ "\n\t\t It bounds inlining based on the idea that if a function calls "
-										+ "\n\t\t itself recureively ten times, we want to inline it less than a function"
-										+ "\n\t\t that calls itself recursively only once. In this case, n is the "
-										+ "\n\t\t maximum value of the branching factor, which is the number of times"
-										+ "\n\t\t a function calls itself recursively, times the amount of inlining. ",
-								"15", null));
-
-		params
-				.setAllowedParam(
-						"incremental",
-						new POpts(
-								POpts.NUMBER,
-								"--incremental n\t Tells the solver to incrementally grow the size of integer holes from 1 to n bits.",
-								"5", null));
-
-		params.setAllowedParam("timeout", new POpts(POpts.NUMBER,
-				"--timeout min  \t Kills the solver after min minutes.", "0",
-				null));
-
-		params
-				.setAllowedParam(
-						"fakesolver",
-						new POpts(
-								POpts.FLAG,
-								"--fakesolver   \t This flag indicates that the SAT solver should not be invoked. "
-										+ "\n \t\t Instead the frontend should look for a solution file, and generate the code from that. "
-										+ "\n \t\t It is useful when working with sketches that take a long time to resolve"
-										+ "\n \t\t if one wants to play with different settings for code generation.",
-								null, null));
-
-		params.setAllowedParam("theoryofarray", new POpts(POpts.FLAG,
-				"--theoryofarray\t Uses theory of array", null, null));
-		
-		params.setAllowedParam("funchash", new POpts(POpts.FLAG,
-                "--funchash\t Function hashing", null, null));
-		
-		params.setAllowedParam("canon", new POpts(POpts.FLAG,
-                "--canon\t Canonicalize arithmetics", null, null));
-		
-		params.setAllowedParam("cse", new POpts(POpts.FLAG,
-                "--canon\t Enable Common Subexpession Elimination", null, null));
-		
-		params.setAllowedParam("cse2", new POpts(POpts.FLAG,
-                "--canon\t Enable Full Common Subexpession Elimination", null, null));
-		
-		params.setAllowedParam("linear", new POpts(POpts.FLAG,
-                "--linear\t Linearize arithmetics", null, null));
-		
-		params.setAllowedParam("uselet", new POpts(POpts.FLAG,
-                "--uselet\t Use LET construct", null, null));
-		
-		params.setAllowedParam("seed", new POpts(POpts.NUMBER,
-				"--seed s       \t Seeds the random number generator with s.",
-				null, null));
-
-		params
-				.setAllowedParam(
-						"verbosity",
-						new POpts(
-								POpts.NUMBER,
-								"--verbosity n       \t Sets the level of verbosity for the output. 0 is quite mode 5 is the most verbose.",
-								"3", null));
-
-		params
-				.setAllowedParam(
-						"cex",
-						new POpts(
-								POpts.FLAG,
-								"--cex       \t Show the counterexample inputs produced by the solver (Equivalend to backend flag -showinputs).",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"outputcode",
-						new POpts(
-								POpts.FLAG,
-								"--outputcode   \t Use this flag if you want the compiler to produce C code.",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"keepasserts",
-						new POpts(
-								POpts.FLAG,
-								"--keepasserts   \t The synthesizer guarantees that all asserts will succeed."
-										+ "\n \t\t For this reason, all asserts are removed from generated code by default. However, "
-										+ "\n \t\t sometimes it is useful for debugging purposes to keep the assertions around.",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"outputtest",
-						new POpts(
-								POpts.FLAG,
-								"--outputtest   \t Produce also a harness to test the generated C code.",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"outputdir",
-						new POpts(
-								POpts.STRING,
-								"--outputdir dir\t Set the directory where you want the generated code to live.",
-								"./", null));
-		
-		params
-		.setAllowedParam(
-				"tmpdir",
-				new POpts(
-						POpts.STRING,
-						"--tmpdir dir\t Set the directory where you want the temporary files to live.",
-						"/tmp", null));
-
-		params
-				.setAllowedParam(
-						"outputprogname",
-						new POpts(
-								POpts.STRING,
-								"--outputprogname name \t Set the name of the output C files."
-										+ "\n \t\t By default it is the name of the first input file.",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"smtpath",
-						new POpts(
-								POpts.STRING,
-								"--smtpath path\t Path to the SMT solver executable. default to cvc3",
-								"cvc3", null));
-
-		params
-				.setAllowedParam(
-						"backend",
-						new POpts(
-								POpts.STRING,
-								"--backend cvc3|cvc3smtlib\t Choose the backend of the SMT code",
-								"cvc3", null));
-
-		params
-				.setAllowedParam(
-						"forcecodegen",
-						new POpts(
-								POpts.FLAG,
-								"--forcecodegen  \t Forces code generation. Even if the sketch fails to resolve, "
-										+ "                \t this flag will force the synthesizer to produce code from the latest known control values.",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"keeptmpfiles",
-						new POpts(
-								POpts.FLAG,
-								"--keeptmpfiles  \t Keep intermediate files. Useful for debugging the compiler.",
-								null, null));
-
-		params
-				.setAllowedParam(
-						"cbits",
-						new POpts(
-								POpts.NUMBER,
-								"--cbits n      \t Specify the number of bits to use for integer holes.",
-								"5", null));
-
-		params
-				.setAllowedParam(
-						"inbits",
-						new POpts(
-								POpts.NUMBER,
-								"--inbits n      \t Specify the number of bits to use for integer inputs.",
-								"5", null));
-		
-		params
-		.setAllowedParam(
-				"intbits",
-				new POpts(
-						POpts.NUMBER,
-						"--intbits n      \t Specify the number of bits to use for integers.",
-						"32", null));
-
-		params
-				.setAllowedParam(
-						"trace",
-						new POpts(
-								POpts.FLAG,
-								"--trace  \t Show a trace of the symbolic execution. Useful for debugging purposes.",
-								null, null));
-		params
-				.setAllowedParam(
-						"reorderEncoding",
-						new POpts(
-								POpts.STRING,
-								"--reorderEncoding  which \t How reorder blocks should be rewritten.  Current supported:\n"
-										+ "             \t * exponential -- use 'insert' blocks\n"
-										+ "             \t * quadratic -- use a loop of switch statements\n",
-								"exponential", null));
-
-		params
-				.setAllowedParam(
-						"def",
-						new POpts(
-								POpts.MULTISTRING,
-								"--def        \t Vars to define for the C preprocessor.\n"
-										+ "             \t Consider also using the 'safer' option --D VAR value\n"
-										+ "             \t Example use:  '--def _FOO=1 --def _BAR=false ...'",
-								null, null));
-
-		Map<String, String> phases = new HashMap<String, String>();
-		phases.put("parse", "After parsing");
-		phases.put("preproc", " After preprocessing.");
-		phases.put("lowering", " Previous to Symbolic execution.");
-		phases.put("postproc",
-				" After partially evaluating the generated code (ugly).");
-		phases
-				.put("taelim",
-						" After eliminating transitive assignments (before cse, ugly).");
-		phases.put("final", " After all optimizations.");
-		params
-				.setAllowedParam(
-						"showphase",
-						new POpts(
-								POpts.TOKEN,
-								"--showphase OPT\t Show the partially evaluated code after the indicated phase of pre or post processing.",
-								"5", phases));
-
-		Map<String, String> solvers = new HashMap<String, String>();
-		solvers.put("MINI", "MiniSat solver");
-		solvers.put("ABC", "ABC solver");
-		params.setAllowedParam("synth", new POpts(POpts.TOKEN,
-				"--synth OPT\t SAT solver to use for synthesis.", "MINI",
-				solvers));
-		params.setAllowedParam("verif", new POpts(POpts.TOKEN,
-				"--verif OPT\t SAT solver to use for verification.", "MINI",
-				solvers));
-
-		Map<String, String> failurePolicies = new HashMap<String, String>();
-		failurePolicies.put("wrsilent_rdzero",
-				"Read a zero, silently ignore writes");
-		failurePolicies.put("assertions",
-				"Fail assertions for reads and writes");
-		params.setAllowedParam("arrayOOBPolicy", new POpts(POpts.TOKEN,
-				"--arrayOOBPolicy policy \t What to do when an array access would be out\n"
-						+ "                        \t of bounds.",
-				"wrsilent_rdzero", failurePolicies));
-		
-		Map<String, String> intModelings = new HashMap<String, String>();
-		intModelings.put("int", "Model int type with integer");
-		intModelings.put("bv", "Model int type with bit-vector");
-		params.setAllowedParam("modelint", new POpts(POpts.STRING,
-                "--modelint model\t model can be int or bv", "bv", intModelings));
-	}
-
 	protected Program doBackendPasses(Program prog) {
-		if (params.hasFlag("outputcode")) {
+		if (options.feOpts.outputCode) {
 			prog = (Program) prog.accept(new AssembleInitializers());
 			prog = (Program) prog.accept(new BitVectorPreprocessor(varGen));
 			// prog.accept(new SimpleCodePrinter());
@@ -887,8 +584,7 @@ public class SequentialSMTSketchMain {
 	}
 	
 	public void processing() {
-	    prog = (Program) prog
-                .accept(new ConstantReplacer(params.varValues("D")));
+        prog = (Program) prog.accept(new ConstantReplacer(null));
         // dump (prog, "After replacing constants:");
         if (!SemanticChecker.check(prog, isParallel()))
             throw new IllegalStateException("Semantic check failed");
@@ -902,16 +598,16 @@ public class SequentialSMTSketchMain {
 	}
 	
 	public void generateDAG() throws IOException {
-	    loop = new CEGISLoop(programName, params, stat, internalRControl());
-	    solver = loop.selectBackend(params.sValue("backend"), 
-                "bv".equals(params.sValue("modelint"))
-                , params.hasFlag("trace"), true);
+	    loop = new CEGISLoop(programName, options, stat, internalRControl());
+	    solver = loop.selectBackend(options.smtOpts.backend, 
+                "bv".equals(options.smtOpts.intmodel)
+                , options.debugOpts.trace, true);
 
-        solver.setIntNumBits(params.flagValue("intbits"));
+        solver.setIntNumBits(options.bndOpts.intbits);
 
         vtype = solver.createFormula(
-                params.flagValue("intbits"), params.flagValue("inbits"), params
-                        .flagValue("cbits"), params.hasFlag("theoryofarray"), stat, varGen);
+                options.bndOpts.intbits, options.bndOpts.inbits,
+                options.bndOpts.cbits, options.smtOpts.theoryOfArray, stat, varGen);
 
         ProduceSMTCode partialEval = getPartialEvaluator(vtype);
         prog.accept(partialEval);
@@ -928,55 +624,11 @@ public class SequentialSMTSketchMain {
 
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
 		ProduceSMTCode partialEval = new ProduceSMTCode(vtype, varGen,
-		        params.hasFlag("theoryofarray"),
-		        params.sValue("modelint").equals("bv"),
-				params.flagValue("unrollamnt"), 
-				internalRControl(), params
-						.hasFlag("trace"));
+		        options.smtOpts.theoryOfArray,
+		        options.smtOpts.intmodel == IntModel.bv,
+		        options.bndOpts.unrollAmnt,
+				internalRControl(), options.debugOpts.trace);
 		return partialEval;
-	}
-
-
-	protected void backendParameters(List<String> commandLineOptions) {
-		if (params.hasFlag("inbits")) {
-			commandLineOptions.add("-overrideInputs");
-			commandLineOptions.add("" + params.flagValue("inbits"));
-		}
-		if (params.hasFlag("seed")) {
-			commandLineOptions.add("-seed");
-			commandLineOptions.add("" + params.flagValue("seed"));
-		}
-		if (params.hasFlag("cex")) {
-			commandLineOptions.add("-showinputs");
-		}
-		if (params.hasFlag("verbosity")) {
-			commandLineOptions.add("-verbosity");
-			commandLineOptions.add("" + params.flagValue("verbosity"));
-		}
-		if (params.hasFlag("synth")) {
-			commandLineOptions.add("-synth");
-			commandLineOptions.add("" + params.sValue("synth"));
-		}
-		if (params.hasFlag("verif")) {
-			commandLineOptions.add("-verif");
-			commandLineOptions.add("" + params.sValue("verif"));
-		}
-	}
-	
-	/*
-	 * Helper functions
-	 */
-	public static void dump(Program prog) {
-		dump(prog, "");
-	}
-
-	public static void dump(Program prog, String message) {
-		System.out
-				.println("=============================================================");
-		System.out.println("  ----- " + message + " -----");
-		prog.accept(new SimpleCodePrinter());
-		System.out
-				.println("=============================================================");
 	}
 
 	public static void main(String[] args) {

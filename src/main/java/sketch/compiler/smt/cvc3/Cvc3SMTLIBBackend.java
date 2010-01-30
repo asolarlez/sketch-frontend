@@ -3,9 +3,9 @@ package sketch.compiler.smt.cvc3;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
@@ -22,10 +22,10 @@ import sketch.util.SynchronousTimedProcess;
  */
 public class Cvc3SMTLIBBackend extends Cvc3Backend {
 
-	public Cvc3SMTLIBBackend(CommandLineParamManager params, String tmpFilePath,
+	public Cvc3SMTLIBBackend(SMTSketchOptions options, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing)
 			throws IOException {
-		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		super(options, tmpFilePath, rcontrol, varGen, tracing);
 	}
 	
 	@Override
@@ -33,13 +33,12 @@ public class Cvc3SMTLIBBackend extends Cvc3Backend {
 		String command;
 		
 		if (Cvc3Backend.USE_FILE_SYSTEM) {
-			command = params.sValue("smtpath") + " -lang smtlib" + " " + getTmpFilePath();
+			command = options.smtOpts.solverpath + " -lang smtlib" + " " + getTmpFilePath();
 		} else {
-			command = params.sValue("smtpath") + " -lang smtlib";
+			command = options.smtOpts.solverpath + " -lang smtlib";
 		}
 		String[] commandLine = command.split(" ");
-		return (new SynchronousTimedProcess(params
-				.flagValue("timeout"), commandLine));
+		return (new SynchronousTimedProcess(options.solverOpts.timeout, commandLine));
 	}
 	
 	@Override

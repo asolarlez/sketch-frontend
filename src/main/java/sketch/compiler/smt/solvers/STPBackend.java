@@ -8,9 +8,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
@@ -24,11 +24,11 @@ import sketch.util.SynchronousTimedProcess;
 public class STPBackend extends SMTBackend {
 
     
-	public STPBackend(CommandLineParamManager params, String tmpFilePath,
+	public STPBackend(SMTSketchOptions options, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing)
 			throws IOException {
-		super(params, tmpFilePath, rcontrol, varGen, tracing);
-		solverPath = params.sValue("smtpath");
+		super(options, tmpFilePath, rcontrol, varGen, tracing);
+		solverPath = options.smtOpts.solverpath;
 	}
 
 	private final static boolean USE_FILE_SYSTEM = true;
@@ -43,7 +43,7 @@ public class STPBackend extends SMTBackend {
 			command = solverPath + " -p "  + getTimeStatFlag(); 
 		}
 		String[] commandLine = command.split(" ");
-		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
+		return new SynchronousTimedProcess(options.solverOpts.timeout, commandLine);
 	}
 
 	@Override

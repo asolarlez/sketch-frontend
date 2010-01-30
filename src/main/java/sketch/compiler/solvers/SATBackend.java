@@ -46,13 +46,11 @@ public class SATBackend {
 	}
 	
 	public String[] getBackendCommandline(Vector<String> commandLineOptions){
-        String cegisBinary = PlatformLocalization.getLocalization().getCegisPath();
+	    PlatformLocalization pl = PlatformLocalization.getLocalization();
+        String cegisBinary = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisBinary, 0);
-        if (options.feOpts.output == null) {
-            options.feOpts.output = options.args[0].replace(".sk", "");
-        }
-        commandLineOptions.add(options.feOpts.output);
-        commandLineOptions.add(options.feOpts.output + ".tmp");
+        commandLineOptions.add(options.getTmpSketchFilename());
+        commandLineOptions.add(options.getTmpSketchFilename() + ".tmp");
         return commandLineOptions.toArray(new String[0]);
     }
 
@@ -74,13 +72,14 @@ public class SATBackend {
 		assert oracle != null;
 		try
 		{
-			OutputStream outStream;
+			OutputStream outStream = null;
             if (options.debugOpts.fakeSolver)
 				outStream = NullStream.INSTANCE;
-            else if (options.feOpts.output != null)
-                outStream = new FileOutputStream(options.feOpts.output);
-			else
-				outStream = System.out;
+            else // if (options.getTmpName != null)
+                outStream = new FileOutputStream(options.getTmpSketchFilename());
+            // else
+//			    DebugOut.assertFalse("no temporary filename defined.");
+//				outStream = System.out;
 
 			// visit the program and write out the program in the backend's input format.
 			partialEval(prog, outStream);
@@ -99,7 +98,7 @@ public class SATBackend {
 		boolean worked = options.debugOpts.fakeSolver || solve(oracle);
 
 		{
-			java.io.File fd = new File(options.feOpts.output);
+			java.io.File fd = new File(options.getTmpSketchFilename());
 			if(fd.exists() && !options.feOpts.keepTmp){
 				boolean t = fd.delete();
 				if(!t){
@@ -114,7 +113,7 @@ public class SATBackend {
 			throw new RuntimeException("The sketch could not be resolved.");
 		}
 
-		String fname = options.feOpts.output + ".tmp";
+		String fname = options.getTmpSketchFilename() + ".tmp";
 		extractOracleFromOutput(fname);
 		return worked;
 	}

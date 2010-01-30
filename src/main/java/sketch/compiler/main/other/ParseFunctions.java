@@ -2,7 +2,6 @@ package sketch.compiler.main.other;
 
 import java.io.File;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.printers.FunctionDeclPrinter;
 
@@ -14,7 +13,8 @@ public class ParseFunctions extends SequentialSketchMain {
     @Override
     public void run() {
         parseProgram();
-        FunctionDeclPrinter printer = new FunctionDeclPrinter(new File("function_list.xml"));
+        FunctionDeclPrinter printer =
+                new FunctionDeclPrinter(new File("function_list.xml"));
         prog.accept(printer);
         printer.write();
     }
@@ -24,13 +24,7 @@ public class ParseFunctions extends SequentialSketchMain {
         for (String arg : args) {
             System.out.println("processing file " + arg);
             String[] new_args = { arg };
-            try {
-                CommandLineParamManager.reset_singleton();
-                new ParseFunctions(new_args).run();
-            } catch (RuntimeException e) {
-                System.err.println("[ERROR] [SKETCH] Failed with exception "
-                        + e.getMessage());
-            }
+            new ParseFunctions(new_args).run();
         }
     }
 }

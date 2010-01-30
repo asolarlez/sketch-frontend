@@ -1,15 +1,16 @@
 package sketch.compiler.smt;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.cmdline.SMTOptions.SMTSolver;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.PlatformLocalization;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.beaver.BeaverBVBackend;
 import sketch.compiler.smt.cvc3.Cvc3BVBackend;
 import sketch.compiler.smt.cvc3.Cvc3Backend;
@@ -40,7 +41,7 @@ public class CEGISLoop {
 	protected Program mProg;
 	protected GeneralStatistics mStat;
 	protected SmtValueOracle mBestOracle;
-	protected CommandLineParamManager mParams;
+	protected final SMTSketchOptions options;
 	protected RecursionControl mRControl;
 	private String mProgramName;
 	protected TempVarGen mTmpVarGen;
@@ -53,16 +54,16 @@ public class CEGISLoop {
 	
 	private static Logger log = Logger.getLogger(CEGISLoop.class.getCanonicalName());
 	
-	public CEGISLoop(String programName, CommandLineParamManager params, GeneralStatistics stat, RecursionControl rControl) {
+	public CEGISLoop(String programName, SMTSketchOptions options, GeneralStatistics stat, RecursionControl rControl) {
 		mProgramName = programName;
-		mParams = params;
+        this.options = options;
 		mRControl = rControl;
 		
 		mTmpVarGen = new TempVarGen("__sa");
 		mStat = stat;
 		mLoopTimer = new Stopwatch();
 		
-		mIntNumBits = params.flagValue("intbits");
+		mIntNumBits = options.bndOpts.intbits;
 
 		
 	}
@@ -171,7 +172,9 @@ public class CEGISLoop {
 
 		try {
 			solver.init();
-			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-v" + mStat.getLong(CEGIS_ITR) + ".smt";
+            String tmpFile =
+                PlatformLocalization.getLocalization().getTempPathString(
+                        mProgramName + "-v" + mStat.getLong(CEGIS_ITR) + ".smt");
 			solver.setTmpFilePath(tmpFile);
 			
 			log.fine("Generating formula");
@@ -210,8 +213,10 @@ public class CEGISLoop {
 	
 		try {
 			solver.init();
-			String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-s" + mStat.getLong(CEGIS_ITR) + ".smt";
-			solver.setTmpFilePath(tmpFile);
+            String tmpFile =
+                    PlatformLocalization.getLocalization().getTempPathString(
+                            mProgramName + "-s" + mStat.getLong(CEGIS_ITR) + ".smt");
+            solver.setTmpFilePath(tmpFile);
 			
 			PrintStream ps = new PrintStream(solver.createStreamToSolver());
 //			FormulaPrinter printer = vtype.new FormulaPrinter(ps, true);
@@ -242,66 +247,67 @@ public class CEGISLoop {
 		return solver.getOracle();
 	}
 
-	public SMTBackend selectBackend(String backend, boolean bv,
+	public SMTBackend selectBackend(SMTSolver backend, boolean bv,
 			boolean tracing, boolean isSynthesis) throws IOException {
-		String tmpFile = mParams.sValue("tmpdir") + File.separator + mProgramName + "-" + 
-		(isSynthesis ? "s" : "v") + mStat.getLong(CEGIS_ITR);
-		
-		if (mParams.hasFlag("fakesolver")) {
-			return new FakeSolverBackend(mParams,
-					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".fake" : null,
+        String tmpFile = PlatformLocalization.getLocalization().getTempPathString(
+                        mProgramName + "-" + (isSynthesis ? "s" : "v") +
+                        mStat.getLong(CEGIS_ITR));
+
+		if (options.debugOpts.fakeSolver) {
+			return new FakeSolverBackend(options,
+					options.feOpts.keepTmp ? tmpFile + ".fake" : null,
 					mRControl, mTmpVarGen, tracing);
-		} else if (backend.equals("cvc3")) {
+		} else if (backend == SMTSolver.cvc3) {
 			if (bv)
-				return new Cvc3BVBackend(mParams,
-						mParams.hasFlag("keeptmpfiles") ? tmpFile + ".cvc3"
+				return new Cvc3BVBackend(options,
+						options.feOpts.keepTmp ? tmpFile + ".cvc3"
 								: null, mRControl, mTmpVarGen, tracing);
 			else
-				return new Cvc3Backend(mParams,
-						mParams.hasFlag("keeptmpfiles") ? tmpFile + ".cvc3"
+				return new Cvc3Backend(options,
+						options.feOpts.keepTmp ? tmpFile + ".cvc3"
 								: null, mRControl, mTmpVarGen, tracing);
-		} else if (backend.equals("cvc3smtlib")) {
+		} else if (backend == SMTSolver.cvc3smtlib) {
 			return new Cvc3SMTLIBBackend(
-					mParams,
-					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+			        options,
+					options.feOpts.keepTmp ? tmpFile + ".smtlib" : null,
 					mRControl, mTmpVarGen, tracing);
-		} else if (backend.equals("z3")) {
+		} else if (backend == SMTSolver.z3) {
 			return new Z3BVBackend(
-					mParams,
-					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+			        options,
+					options.feOpts.keepTmp ? tmpFile + ".smtlib" : null,
 					mRControl, mTmpVarGen, tracing);
-		} else if (backend.equals("beaver")) {
+		} else if (backend == SMTSolver.beaver) {
 			return new BeaverBVBackend(
-					mParams,
-					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+			        options,
+					options.feOpts.keepTmp ? tmpFile + ".smtlib" : null,
 					mRControl, mTmpVarGen, tracing);
-		} else if (backend.equals("yices")) {
+		} else if (backend == SMTSolver.yices) {
 			return new YicesBVBackend(
-					mParams,
-					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+			        options,
+					options.feOpts.keepTmp ? tmpFile + ".smtlib" : null,
 					mRControl, mTmpVarGen, 1, tracing);
-		} else if (backend.equals("yices2")) {
+		} else if (backend == SMTSolver.yices2) {
 		    if (bv)
 		        return new YicesBVBackend(
-                    mParams,
-                    mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+		                options,
+                    options.feOpts.keepTmp ? tmpFile + ".smtlib" : null,
                     mRControl, mTmpVarGen, 2, tracing);
 		    else
               return new YicesIntBackend(
-                      mParams,
-                      mParams.hasFlag("keeptmpfiles") ? tmpFile + ".smtlib" : null,
+                      options,
+                      options.feOpts.keepTmp ? tmpFile + ".smtlib" : null,
                       mRControl, mTmpVarGen, 2, tracing);
 		        
-		} else if (backend.equals("stp")) {
+		} else if (backend == SMTSolver.stp) {
 //			return new StpSmtlibBackend(
 			return new STPBackend(
-					mParams,
-					mParams.hasFlag("keeptmpfiles") ? tmpFile + ".stp" : null,
+			        options,
+					options.feOpts.keepTmp ? tmpFile + ".stp" : null,
 					mRControl, mTmpVarGen, tracing);
-		} else if (backend.equals("stpyices2")) {
+		} else if (backend == SMTSolver.stpyices2) {
 	            return new STPYicesBackend(
-	                    mParams,
-	                    mParams.hasFlag("keeptmpfiles") ? tmpFile + ".stp" : null,
+	                    options,
+	                    options.feOpts.keepTmp ? tmpFile + ".stp" : null,
 	                    mRControl, mTmpVarGen, tracing);
 		} else {
 		    

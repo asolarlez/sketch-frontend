@@ -9,9 +9,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -34,11 +34,11 @@ public class Cvc3Backend extends SMTBackend {
     protected SequentialSMTSketchMain sketch;
     String solverOutput;
 
-    public Cvc3Backend(CommandLineParamManager params, String tmpFilePath,
+    public Cvc3Backend(SMTSketchOptions options, String tmpFilePath,
             RecursionControl rcontrol, TempVarGen varGen, boolean tracing)
             throws IOException
     {
-        super(params, tmpFilePath, rcontrol, varGen, tracing);
+        super(options, tmpFilePath, rcontrol, varGen, tracing);
     }
 
     @Override
@@ -100,12 +100,12 @@ public class Cvc3Backend extends SMTBackend {
     protected SynchronousTimedProcess createSolverProcess() throws IOException {
         String command;
         if (USE_FILE_SYSTEM) {
-            command = params.sValue("smtpath") + " -model " + getTmpFilePath();
+            command = options.smtOpts.solverpath + " -model " + getTmpFilePath();
         } else {
-            command = params.sValue("smtpath") + " -model ";
+            command = options.smtOpts.solverpath + " -model ";
         }
         String[] commandLine = command.split(" ");
-        return (new SynchronousTimedProcess(params.flagValue("timeout"),
+        return (new SynchronousTimedProcess(options.solverOpts.timeout,
                 commandLine));
     }
 

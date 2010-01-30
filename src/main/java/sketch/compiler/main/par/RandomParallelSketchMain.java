@@ -19,8 +19,8 @@ public class RandomParallelSketchMain extends ParallelSketchMain {
 		super (args);
 	}
 
-	public Synthesizer createSynth(Program p){
-		return new RandomSynthesizer (params, varGen);
+	public Synthesizer createSynth(Program p) {
+		return new RandomSynthesizer (options, varGen);
 	}
 
 	public static void main(String[] args) {

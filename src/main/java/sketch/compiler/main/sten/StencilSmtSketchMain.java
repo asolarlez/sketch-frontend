@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.cmdline.SMTOptions.IntModel;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
@@ -70,9 +70,6 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 	
 	Program originalProg;
 	
-	public static final CommandLineParamManager params = CommandLineParamManager
-			.getParams();
-	
 	private static Logger log = Logger.getLogger(SequentialSMTSketchMain.class.getCanonicalName());
 	protected Map<String, Integer> numGridAccesses;
 	
@@ -102,8 +99,10 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 
 		//dump (prog, "After first elimination of multi-dim arrays:");
-		lprog = (Program) lprog.accept( new PreprocessSketch( varGen, params.flagValue("unrollamnt"), visibleRControl() ) );
-		if(params.flagEquals("showphase", "preproc")) dump (prog, "After Preprocessing");
+        lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl()));
+        if (showPhaseOpt("preproc"))
+            dump(prog, "After Preprocessing");
 		prog = lprog;
         originalProg = prog;
     	
@@ -146,7 +145,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 //        dump(prog, "After functionalize");
         
         CollectInputArrayStat pe = new CollectInputArrayStat(fs.getGlobalInVars(),
-				varGen, false, params.flagValue("unrollamnt"), visibleRControl(prog));
+				varGen, false, options.bndOpts.unrollAmnt, visibleRControl(prog));
         prog.accept(pe);
         
         numGridAccesses = pe.getNumGridAccesses();
@@ -168,7 +167,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 
 
     	Program tmp = (Program) prog.accept(
-    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  params.flagValue("unrollamnt"), visibleRControl(prog) ){
+    			new DataflowWithFixpoint(new IntVtype(), varGen, true,  options.bndOpts.unrollAmnt, visibleRControl(prog) ){
     				protected List<Function> functionsToAnalyze(StreamSpec spec){
     				    return new LinkedList<Function>(spec.getFuncs());
     			    }
@@ -189,7 +188,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
     	tmp = (Program) tmp.accept(new SeparateInitializers());
     	tmp = (Program) tmp.accept( new ScalarizeVectorAssignments(varGen, true) );
     	
-    	if(params.flagEquals("showphase", "lowering")){
+    	if( showPhaseOpt("lowering")){
     		dump(tmp, "After transformations");
     	}
     	
@@ -209,11 +208,10 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 	@Override
 	protected ProduceSMTCode getPartialEvaluator(NodeToSmtVtype vtype) {
 		ProduceSMTCode partialEval = new ProduceSMTStencilCode(vtype, numGridAccesses, varGen,
-		        params.hasFlag("theoryofarray"),
-		        params.sValue("modelint").equals("bv"),
-				params.flagValue("unrollamnt"),
-				internalRControl(), params
-						.hasFlag("trace"));
+		        options.smtOpts.theoryOfArray,
+		        options.smtOpts.intmodel == IntModel.bv,
+				options.bndOpts.unrollAmnt,
+				internalRControl(), options.debugOpts.trace);
 		return partialEval;
 	}
 	

@@ -6,11 +6,11 @@ import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
@@ -61,9 +61,9 @@ public class FakeSolverBackend extends SMTBackend {
 	private AbstractValueOracle oracle;
 	private OutputStream outputStreamToSolver;
 
-	public FakeSolverBackend(CommandLineParamManager params,
+	public FakeSolverBackend(SMTSketchOptions options,
 			String tmpFilePath, RecursionControl rcontrol, TempVarGen varGen, boolean tracing) throws IOException {
-		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		super(options, tmpFilePath, rcontrol, varGen, tracing);
 		outputStreamToSolver = getOutputStreamToSolver();
 	}
 

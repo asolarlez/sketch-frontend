@@ -8,9 +8,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -30,16 +30,16 @@ public class YicesBVBackend extends SMTBackend {
 	private final static boolean USE_FILE_SYSTEM = true;
 	private int mVersion;
 	
-	public YicesBVBackend(CommandLineParamManager params, String tmpFilePath,
+	public YicesBVBackend(SMTSketchOptions options, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, int version, boolean tracing) throws IOException {
-		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		super(options, tmpFilePath, rcontrol, varGen, tracing);
 		mVersion = version;
 		if (version == 1)
 		    mSwitch = V1_SWICHES;
 		else
 		    mSwitch = V2_SWICHES;
 		
-		solverPath = params.sValue("smtpath");
+		solverPath = options.smtOpts.solverpath;
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class YicesBVBackend extends SMTBackend {
 			command = solverPath + mSwitch; 
 		}
 		String[] commandLine = command.split(" ");
-		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
+		return new SynchronousTimedProcess(options.solverOpts.timeout, commandLine);
 	}
 
 	@Override

@@ -3,7 +3,7 @@ package sketch.util;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 
 public class TruncatedOutputStream extends OutputStream {
 	StringBuffer sbuf = new StringBuffer();	
@@ -11,7 +11,6 @@ public class TruncatedOutputStream extends OutputStream {
 	char [] cb = new char[sz];
 	int idx  =0;
 	int beg = 0;
-	int verbo = CommandLineParamManager.getParams().flagValue("verbosity");
 	
 	@Override
 	public void write(byte[] b, int s, int f) throws IOException{
@@ -20,7 +19,7 @@ public class TruncatedOutputStream extends OutputStream {
 	
 	@Override
 	public void write(int arg0) throws IOException {
-	    if(verbo > 2){
+	    if(SequentialSketchOptions.getSingleton().debugOpts.verbosity > 2){
 	        System.out.write(arg0);
 	    }
 		if(sbuf.length() < sz){

@@ -6,9 +6,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.logging.Logger;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.GeneralStatistics;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.BlastArrayVtype;
@@ -21,7 +21,7 @@ import sketch.util.SynchronousTimedProcess;
 
 public abstract class SMTBackend {
 
-	protected final CommandLineParamManager params;
+	protected final SMTSketchOptions options;
 	String solverErrorStr;
 	protected final RecursionControl rcontrol;
 	protected final TempVarGen varGen;
@@ -158,9 +158,9 @@ public abstract class SMTBackend {
 	/*
 	 * Constructors
 	 */
-	public SMTBackend(CommandLineParamManager params, String tmpFilePath,
+	public SMTBackend(SMTSketchOptions options, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing) throws IOException {
-		this.params = params;
+		this.options = options;
 		this.rcontrol = rcontrol;
 		this.varGen = varGen;
 		this.tracing = tracing;
@@ -185,7 +185,7 @@ public abstract class SMTBackend {
 	public abstract SolutionStatistics solve(NodeToSmtVtype formula) throws IOException, InterruptedException, SolverFailedException;
 
 	protected boolean verbose() {
-		return params.flagValue("verbosity") >= 3;
+		return options.debugOpts.verbosity >= 3;
 	}
 
 	// TODO: duplication is absurd now, need to use the Logger class
@@ -194,7 +194,7 @@ public abstract class SMTBackend {
 	}
 
 	protected void log(int level, String msg) {
-		if (params.flagValue("verbosity") >= level)
+		if (options.debugOpts.verbosity >= level)
 			System.out.println("[SATBackend] " + msg);
 	}
 

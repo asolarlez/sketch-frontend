@@ -7,9 +7,9 @@ import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.seq.SMTSketchOptions;
 import sketch.compiler.smt.SolverFailedException;
 import sketch.compiler.smt.partialeval.FormulaPrinter;
 import sketch.compiler.smt.partialeval.NodeToSmtVtype;
@@ -21,18 +21,18 @@ import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
 
 public class BeaverBVBackend extends SMTBackend {
-	
-	public BeaverBVBackend(CommandLineParamManager params, String tmpFilePath,
+
+	public BeaverBVBackend(SMTSketchOptions options, String tmpFilePath,
 			RecursionControl rcontrol, TempVarGen varGen, boolean tracing) throws IOException {
-		super(params, tmpFilePath, rcontrol, varGen, tracing);
+		super(options, tmpFilePath, rcontrol, varGen, tracing);
 	}
 
 	@Override
 	protected SynchronousTimedProcess createSolverProcess() throws IOException {
 		// -m tells Beaver to output the model, and --model-file tells where to put it
-		String command = params.sValue("smtpath") + " -m" + " --model-file=" + getModelFilename();
+		String command = options.smtOpts.solverpath + " -m" + " --model-file=" + getModelFilename();
 		String[] commandLine = command.split(" ");
-		return new SynchronousTimedProcess(params.flagValue("timeout"), commandLine);
+		return new SynchronousTimedProcess(options.solverOpts.timeout, commandLine);
 	}
 
 	@Override
