@@ -1,4 +1,4 @@
-pragma options "--intbits 12";
+pragma options "--bnd-intbits 12";
 
 int Win=16;
 int Wout=8;

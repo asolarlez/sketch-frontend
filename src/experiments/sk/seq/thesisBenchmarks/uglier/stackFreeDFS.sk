@@ -1,4 +1,4 @@
-pragma options "-olevel 7 --synth ABC --verif ABC --unrollamnt 5";
+pragma options "-olevel 7 --slv-synth ABC --slv-verif ABC --bnd-unroll-amnt 5";
 
 int DAGNODES = 4;
 int N = 4;

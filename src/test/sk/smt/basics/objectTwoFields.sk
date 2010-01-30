@@ -1,4 +1,4 @@
-pragma options "--intbits 21 --cbits 21";
+pragma options "--bnd-intbits 21 --bnd-cbits 21";
 
 struct Person {
 	int age;

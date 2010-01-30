@@ -1,4 +1,4 @@
-pragma options "--simplifySpin";
+pragma options "--par-simplify-spin";
 
 int sp () { return 1; }
 

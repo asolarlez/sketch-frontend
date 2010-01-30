@@ -1,4 +1,4 @@
-pragma options "--reorderEncoding quadratic";
+pragma options "--slv-reorder-encoding quadratic";
 
 #include "queue.skh"
 

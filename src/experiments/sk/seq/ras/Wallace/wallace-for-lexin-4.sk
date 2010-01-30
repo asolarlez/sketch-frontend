@@ -1,4 +1,4 @@
-pragma options "--cex --seed 1 --inbits 4 --cbits 4 --synth ABC --verif MINI";  
+pragma options "--debug-cex --slv-seed 1 --bnd-inbits 4 --bnd-cbits 4 --slv-synth ABC --slv-verif MINI";  
 int W=4;  // --inbits must be set to W 
 int WW=8;
 int log3Wsq = 3;

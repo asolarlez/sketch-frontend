@@ -1,4 +1,4 @@
-pragma options "--verbosity 7";
+pragma options "--debug-verbosity 7";
 
 bit dequeue (Node prevHead) { /* automatically rewritten */
     Node tmp = null;

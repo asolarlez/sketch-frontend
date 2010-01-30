@@ -1,4 +1,4 @@
-pragma options "--intbits 5";
+pragma options "--bnd-intbits 5";
 
 struct foo{
 	int[3] x;	

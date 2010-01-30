@@ -1,5 +1,5 @@
 
-pragma options "--unrollamnt 6";
+pragma options "--bnd-unroll-amnt 6";
 
 
 bit[16] transpose(bit[16] mx){

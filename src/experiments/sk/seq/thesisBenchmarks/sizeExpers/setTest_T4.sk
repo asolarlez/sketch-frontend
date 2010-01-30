@@ -1,3 +1,3 @@
-pragma options "--unrollamnt 5 --inbits 3 ";
+pragma options "--bnd-unroll-amnt 5 --bnd-inbits 3 ";
 int T = 4;
 #include "SetTest.skh"

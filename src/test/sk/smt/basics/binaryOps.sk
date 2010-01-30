@@ -1,4 +1,4 @@
-pragma options "--intbits 11";
+pragma options "--bnd-intbits 11";
 
 void main(int dummy) implements one {
 	int a = ??; // 20

@@ -1,4 +1,4 @@
-pragma options "--inlineamnt 5 --reorderEncoding quadratic --vectorszGuess 16384 --seed 7";
+pragma options "--bnd-inline-amnt 5 --slv-reorder-encoding quadratic --par-vectorsz-guess 16384 --slv-seed 7";
 
 struct Object {
     int tid;

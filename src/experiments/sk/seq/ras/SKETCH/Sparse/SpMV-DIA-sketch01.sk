@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
+pragma options "--bnd-unroll-amnt 3 --slv-synth ABC --slv-verif ABC --bnd-inbits 1 --bnd-cbits 2 --bnd-heap-size 1 --slv-seed 10 --debug-cex -ufunSymmetry --sem-array-OOB-policy assertions";
 
 // Notes on sketching SpMV(DIA)
 //

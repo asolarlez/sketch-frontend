@@ -1,4 +1,4 @@
-pragma options "--intbits 20 --cbits 32";
+pragma options "--bnd-intbits 20 --bnd-cbits 32";
 
 int N = 2;
 int K = 2;

@@ -1,4 +1,4 @@
-pragma options "--verbosity 5 --showphase preproc --seed 5";
+pragma options "--debug-verbosity 5 --debug-show-phase preproc --slv-seed 5";
 
 struct account {
     int balance;

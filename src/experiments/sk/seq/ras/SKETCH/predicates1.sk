@@ -1,4 +1,4 @@
-pragma options "--inbits 3 --keepasserts --arrayOOBPolicy assertions";
+pragma options "--bnd-inbits 3 --fe-keep-asserts --sem-array-OOB-policy assertions";
 
 #define K 10
 

@@ -1,4 +1,4 @@
-pragma options "--inbits 20 --cbits 4 --synth MINI --verif MINI --keepasserts --keeptmpfiles";
+pragma options "--bnd-inbits 20 --bnd-cbits 4 --slv-synth MINI --slv-verif MINI --fe-keep-asserts --fe-keep-tmp";
 
 // This problem was posed by Satish Chandra:
 //  SEND

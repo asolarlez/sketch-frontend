@@ -1,5 +1,5 @@
 /*
-pragma options "--inbits 2 --cbits 3 --synth MINI";  // synthesizes in 0.3 seconds for W=2
+pragma options "--bnd-inbits 2 --bnd-cbits 3 --slv-synth MINI";  // synthesizes in 0.3 seconds for W=2
 int W=2;
 int WW=4;
 int log3Wsq = 2;
@@ -7,13 +7,13 @@ int log3Wsq = 2;
 
 /*
 // synthesizes in 0.3 seconds for W=3
-pragma options "--cex --seed 1 --inbits 3 --cbits 4 --synth MINI --verif MINI";  
+pragma options "--debug-cex --slv-seed 1 --bnd-inbits 3 --bnd-cbits 4 --slv-synth MINI --slv-verif MINI";  
 int W=3;
 int WW=6;
 int log3Wsq = 2;
 */
 
-pragma options "--cex --seed 1 --inbits 4 --cbits 4 --synth MINI --verif MINI";  
+pragma options "--debug-cex --slv-seed 1 --bnd-inbits 4 --bnd-cbits 4 --slv-synth MINI --slv-verif MINI";  
 int W=4;  // --inbits must be set to W 
 int WW=8;
 int log3Wsq = 3;

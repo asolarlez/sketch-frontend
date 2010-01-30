@@ -1,6 +1,6 @@
 //@Description Sketches a remove method from a doubly linked list.
 
-pragma options "--main_names main";
+pragma options "--sem-main-names main";
 
 int N=4;
 

@@ -1,4 +1,4 @@
-pragma options "--inbits 8";
+pragma options "--bnd-inbits 8";
 bit[8] test(int x) implements spec{
 	if( x >=128){ x = 127; }
 	bit[1024] tmp = ??;

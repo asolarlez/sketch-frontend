@@ -1,4 +1,4 @@
-pragma options "--intbits 32 --cbits 64";
+pragma options "--bnd-intbits 32 --bnd-cbits 64";
 int N = 4;
 
 generator bit[N] intToBit(int v){ /* automatically rewritten */

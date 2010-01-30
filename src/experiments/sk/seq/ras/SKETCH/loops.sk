@@ -1,4 +1,4 @@
-pragma options "--synth MINI --verif MINI --inbits 1 --cbits 4 --unrollamnt 10 --keepasserts --arrayOOBPolicy assertions";
+pragma options "--slv-synth MINI --slv-verif MINI --bnd-inbits 1 --bnd-cbits 4 --bnd-unroll-amnt 10 --fe-keep-asserts --sem-array-OOB-policy assertions";
 
 #define N 5
 

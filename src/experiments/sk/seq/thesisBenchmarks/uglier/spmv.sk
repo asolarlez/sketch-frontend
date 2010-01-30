@@ -1,5 +1,5 @@
 
-pragma options "--inbits 2";
+pragma options "--bnd-inbits 2";
 
 #define N 3
 

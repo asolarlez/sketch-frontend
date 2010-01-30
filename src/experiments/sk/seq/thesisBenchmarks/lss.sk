@@ -1,5 +1,5 @@
 
-pragma options "--inlineamnt 5 --inbits 3 ";
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 ";
 
 int W = 4;
 

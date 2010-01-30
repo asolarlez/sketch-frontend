@@ -1,4 +1,4 @@
-pragma options "--intbits 32";
+pragma options "--bnd-intbits 32";
 
 struct Box{
 	int v;	

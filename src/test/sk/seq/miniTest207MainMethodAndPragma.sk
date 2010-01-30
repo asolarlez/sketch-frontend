@@ -1,4 +1,4 @@
-pragma options "--main_names main,main2";
+pragma options "--sem-main-names main,main2";
 
 generator void main1(int x) { /* automatically rewritten */
     assert(x - x + ?? == 3);

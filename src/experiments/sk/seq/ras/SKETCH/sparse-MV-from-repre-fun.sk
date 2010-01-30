@@ -1,7 +1,7 @@
 // Here we experiment with Mooly's idea of inserting a rpresentation function 
 // into the dense MV kernel
 
-pragma options "--trace --showphase preproc --inbits 2 --cbits 2 --forcecodegen --outputtest --arrayOOBPolicy assertions";
+pragma options "--debug-trace --debug-show-phase preproc --bnd-inbits 2 --bnd-cbits 2 --fe-force-codegen --fe-output-test --sem-array-OOB-policy assertions";
 
 #define N 2
 

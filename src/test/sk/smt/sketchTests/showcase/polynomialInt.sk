@@ -1,5 +1,5 @@
 // This benchmark requires --inlineamnt  > 5 in order to resolve.
-pragma options "--inlineamnt 6";
+pragma options "--bnd-inline-amnt 6";
 
 generator int poly(int n, int x) { /* automatically rewritten */	
 	if (n <= 0) return ??; 

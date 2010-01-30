@@ -1,6 +1,6 @@
 int W = 17;
 
-pragma options "--inlineamnt 5 --inbits 3 --intbits 6";
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-intbits 6";
 //pragma options "--unrollamnt 18 --inlineamnt 6 --inbits 3 --intbits 6";
 
 bit dup(int[W] in) {

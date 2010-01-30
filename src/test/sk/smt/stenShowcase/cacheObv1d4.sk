@@ -1,4 +1,4 @@
-pragma options "--intbits 8 --cbits 3 --inbits 4 --branchamnt 33  --inlineamnt 6 --unrollamnt 4    ";
+pragma options "--bnd-intbits 8 --bnd-cbits 3 --bnd-inbits 4 --bnd-branch-amnt 33  --bnd-inline-amnt 6 --bnd-unroll-amnt 4    ";
 
 
 int N;

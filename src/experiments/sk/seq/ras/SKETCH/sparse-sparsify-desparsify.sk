@@ -1,4 +1,4 @@
-pragma options "--inbits 2 --cbits 2 --verif ABC --synth ABC --arrayOOBPolicy assertions";
+pragma options "--bnd-inbits 2 --bnd-cbits 2 --slv-verif ABC --slv-synth ABC --sem-array-OOB-policy assertions";
 
 #define N 3
 

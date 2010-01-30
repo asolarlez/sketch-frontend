@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 4 --seed 10";
+pragma options "--bnd-unroll-amnt 4 --slv-seed 10";
 int N = 3;
 
 struct node{

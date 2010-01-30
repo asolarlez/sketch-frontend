@@ -1,4 +1,4 @@
-pragma options "--cbits 7 --intbits 7";
+pragma options "--bnd-cbits 7 --bnd-intbits 7";
 void main(int dummy) implements one {
 	int a = foo();
 	

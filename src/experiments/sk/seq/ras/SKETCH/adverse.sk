@@ -1,4 +1,4 @@
-pragma options "--cex --synth ABC  --inbits 12 --cbits 12 --showphase final --keepasserts --verbosity 1";
+pragma options "--debug-cex --slv-synth ABC  --bnd-inbits 12 --bnd-cbits 12 --debug-show-phase final --fe-keep-asserts --debug-verbosity 1";
 
 void main(int x) implements one{
 	int r;

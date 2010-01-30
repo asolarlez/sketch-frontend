@@ -1,4 +1,4 @@
-pragma options "--seed 7 --synth ABC --verif ABC";
+pragma options "--slv-seed 7 --slv-synth ABC --slv-verif ABC";
 
 bit one(int[25] mat, int i, int j){
 return 1;	

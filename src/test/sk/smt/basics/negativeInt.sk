@@ -1,4 +1,4 @@
-pragma options "--cbits 11 --intbits 11";
+pragma options "--bnd-cbits 11 --bnd-intbits 11";
 
 void main(boolean dummy) implements one {
 	int a = -1;

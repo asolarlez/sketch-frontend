@@ -1,4 +1,4 @@
-pragma options "--reorderEncoding quadratic";
+pragma options "--slv-reorder-encoding quadratic";
 
 int spec (int in) {
     return (((in + 1) * 2) / 3);

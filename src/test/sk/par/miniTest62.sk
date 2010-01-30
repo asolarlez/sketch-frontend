@@ -1,4 +1,4 @@
-pragma options "--verbosity 5";
+pragma options "--debug-verbosity 5";
 
 generator bit await (barrier b, bit relPhase) { /* automatically rewritten */
     int lastCount;

@@ -1,4 +1,4 @@
-pragma options "--inbits 2 --cbits 2";  // --arrayOOBPolicy assertions
+pragma options "--bnd-inbits 2 --bnd-cbits 2";  // --sem-array-OOB-policy assertions
 
 #define N 3
 

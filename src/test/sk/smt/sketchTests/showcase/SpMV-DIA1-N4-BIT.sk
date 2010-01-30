@@ -1,6 +1,6 @@
 // option for ToSBit
-pragma options "--unrollamnt 4 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
-pragma options "--intbits 6";
+pragma options "--bnd-unroll-amnt 4 --slv-synth ABC --slv-verif ABC --bnd-inbits 1 --bnd-cbits 2 --bnd-heap-size 1 --slv-seed 10 --debug-cex -ufunSymmetry --sem-array-OOB-policy assertions";
+pragma options "--bnd-intbits 6";
 //pragma options "--unrollamnt 3 --synth ABC --verif ABC --inbits 1 --cbits 2 --heapsize 1 --seed 10 --cex -ufunSymmetry --arrayOOBPolicy assertions";
 
 // Notes on sketching SpMV(DIA)

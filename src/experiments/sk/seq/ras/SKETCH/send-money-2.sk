@@ -1,4 +1,4 @@
-pragma options "--verbosity 7 --inbits 16 --cbits 4 --synth ABC --verif MINI --keepasserts --keeptmpfiles";
+pragma options "--debug-verbosity 7 --bnd-inbits 16 --bnd-cbits 4 --slv-synth ABC --slv-verif MINI --fe-keep-asserts --fe-keep-tmp";
 
 // This problem was posed by Satish Chandra:
 //  SEND

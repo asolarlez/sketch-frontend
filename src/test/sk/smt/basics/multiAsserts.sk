@@ -1,4 +1,4 @@
-pragma options "--intbits 32 --cbits 32";
+pragma options "--bnd-intbits 32 --bnd-cbits 32";
 void main(int a, int b) implements one{
 	int x, y;
 	if (a + b == 42) {

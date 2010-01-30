@@ -6,7 +6,7 @@
 #define BA 4    
 
 // pragma options "--cbits 4 --inlineamnt 2 --unrollamnt 16 --heapsize 16 --seed 3 --inbits 2 --synth MINI --branchamnt 3 --showphase lowering --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
-pragma options "--cbits 4 --intbits 6 --inbits 3 --inlineamnt 2 --unrollamnt 5 --heapsize 5 --seed 3 --synth MINI --branchamnt 3 --showphase lowering --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
+pragma options "--bnd-cbits 4 --bnd-intbits 6 --bnd-inbits 3 --bnd-inline-amnt 2 --bnd-unroll-amnt 5 --bnd-heap-size 5 --slv-seed 3 --slv-synth MINI --bnd-branch-amnt 3 --debug-show-phase lowering --fe-keep-asserts --debug-verbosity 1 --sem-array-OOB-policy assertions";
 
 
 

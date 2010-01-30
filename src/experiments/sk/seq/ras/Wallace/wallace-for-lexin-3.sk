@@ -1,5 +1,5 @@
 // synthesizes in 0.3 seconds for W=3
-pragma options "--unrollamnt 20 --inbits 3 --cbits 4";  
+pragma options "--bnd-unroll-amnt 20 --bnd-inbits 3 --bnd-cbits 4";  
 int W=3;
 int WW=6;
 int log3Wsq = 2;

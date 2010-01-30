@@ -1,4 +1,4 @@
-pragma options "--seed 1 --inbits 1 --cbits 3 --cex --keeptmpfiles --keepasserts --verbosity 6 --arrayOOBPolicy assertions";
+pragma options "--slv-seed 1 --bnd-inbits 1 --bnd-cbits 3 --debug-cex --fe-keep-tmp --fe-keep-asserts --debug-verbosity 6 --sem-array-OOB-policy assertions";
 
 #define LOGN 3
 #define N (1<<LOGN)  // size of array

@@ -1,4 +1,4 @@
-pragma options "--cbits 2";
+pragma options "--bnd-cbits 2";
 
 bit one(int dummy) {
 	return 1;

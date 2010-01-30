@@ -1,4 +1,4 @@
-pragma options "-ufunSymmetry --synth ABC --verif ABC --seed 10 --cex --inbits 1 --cbits 1 --intbits 6 --unrollamnt 3 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "-ufunSymmetry --slv-synth ABC --slv-verif ABC --slv-seed 10 --debug-cex --bnd-inbits 1 --bnd-cbits 1 --bnd-intbits 6 --bnd-unroll-amnt 3 --bnd-heap-size 1 --sem-array-OOB-policy assertions";
 
 #define MODEL_BIT 1
 

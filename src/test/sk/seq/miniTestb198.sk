@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 6 ";
+pragma options "--bnd-unroll-amnt 6 ";
 
 struct node{	
 	node n;

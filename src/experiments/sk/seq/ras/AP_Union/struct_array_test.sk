@@ -1,4 +1,4 @@
-pragma options "--verbosity 4 --synth ABC --verif ABC --cbits 7 --branchamnt 10 --inlineamnt 4 --arrayOOBPolicy assertions --keepasserts";
+pragma options "--debug-verbosity 4 --slv-synth ABC --slv-verif ABC --bnd-cbits 7 --bnd-branch-amnt 10 --bnd-inline-amnt 4 --sem-array-OOB-policy assertions --fe-keep-asserts";
 
 int dummy() { return 1; }
 

@@ -1,4 +1,4 @@
-pragma options "--intbits 32";
+pragma options "--bnd-intbits 32";
 
 generator int moo(int i){ /* automatically rewritten */
 	assert i > i-1;

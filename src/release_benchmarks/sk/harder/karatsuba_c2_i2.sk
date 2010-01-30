@@ -1,5 +1,5 @@
 
-pragma options "--inlineamnt 5 --inbits 2 --cbits 2";
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 2";
 
 int N = 8;
 int No2 = 4;

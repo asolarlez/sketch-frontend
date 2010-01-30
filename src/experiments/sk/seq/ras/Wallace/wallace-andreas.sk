@@ -1,4 +1,4 @@
-pragma options "--cbits 4 --synth MINI";  // synthesizes in 1.3 seconds for W=4
+pragma options "--bnd-cbits 4 --slv-synth MINI";  // synthesizes in 1.3 seconds for W=4
 //   pragma options "--cbits 3  -inbits 8 --synth ABC --verif MINI";  // synthesizes in X seconds for W=8
 
 

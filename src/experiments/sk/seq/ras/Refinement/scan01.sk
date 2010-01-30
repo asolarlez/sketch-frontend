@@ -1,4 +1,4 @@
-pragma options "--seed 1 --inbits 1 --cex --cbits 3 -showinputs --keeptmpfiles --keepasserts --verbosity 10 --arrayOOBPolicy assertions";
+pragma options "--slv-seed 1 --bnd-inbits 1 --debug-cex --bnd-cbits 3 -showinputs --fe-keep-tmp --fe-keep-asserts --debug-verbosity 10 --sem-array-OOB-policy assertions";
 //pragma options "-simplifycex NOSIM"
 
 #define LOGN 3

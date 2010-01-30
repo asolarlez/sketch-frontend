@@ -1,4 +1,4 @@
-pragma options "--keeptmpfiles"; 
+pragma options "--fe-keep-tmp"; 
 
 struct S {
    S next;

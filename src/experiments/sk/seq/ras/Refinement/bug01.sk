@@ -1,6 +1,6 @@
 // i++ is not handled properly (i is not incremented)
 
-pragma options "--keepasserts --showphase preproc";
+pragma options "--fe-keep-asserts --debug-show-phase preproc";
 
 void dummy(int x) { return; }
 void harness (int x) implements dummy {

@@ -1,6 +1,6 @@
 //@Description Sketch to transpose a 4X4 matrix of integers
 
-pragma options "--unrollamnt 6 --inbits 3 ";
+pragma options "--bnd-unroll-amnt 6 --bnd-inbits 3 ";
 
 int[16] transpose(int[16] mx){
 	int x, y;

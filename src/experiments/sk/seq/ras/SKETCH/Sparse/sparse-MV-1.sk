@@ -1,4 +1,4 @@
-pragma options "--verif MINI --inbits 1 --cbits 2 --heapsize 1 --arrayOOBPolicy assertions";
+pragma options "--slv-verif MINI --bnd-inbits 1 --bnd-cbits 2 --bnd-heap-size 1 --sem-array-OOB-policy assertions";
 
 #define N 4
 

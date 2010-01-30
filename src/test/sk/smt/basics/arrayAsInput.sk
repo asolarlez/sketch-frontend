@@ -1,4 +1,4 @@
-pragma options "--intbits 32 --cbits 32 --inbits 7";
+pragma options "--bnd-intbits 32 --bnd-cbits 32 --bnd-inbits 7";
 
 void main(int[2] dummy) implements one{
 	

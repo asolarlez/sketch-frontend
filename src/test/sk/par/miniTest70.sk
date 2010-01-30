@@ -1,4 +1,4 @@
-pragma options "--reorderEncoding quadratic --heapsize 10 --seed 10";
+pragma options "--slv-reorder-encoding quadratic --bnd-heap-size 10 --slv-seed 10";
 
 //
 // QUEUE.SKH

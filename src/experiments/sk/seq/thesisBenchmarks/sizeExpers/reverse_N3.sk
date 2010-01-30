@@ -1,3 +1,3 @@
-pragma options "--unrollamnt 4";
+pragma options "--bnd-unroll-amnt 4";
 int N = 3;
 #include "listReverse.skh"

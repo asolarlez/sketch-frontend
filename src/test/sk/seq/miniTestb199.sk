@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 6 ";
+pragma options "--bnd-unroll-amnt 6 ";
 
 bit VOID(bit a, bit b, bit c){
 	return (a & !b) & (!b & c);

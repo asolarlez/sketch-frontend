@@ -1,4 +1,4 @@
-pragma options "--intbits 6 --cbits 6";
+pragma options "--bnd-intbits 6 --bnd-cbits 6";
 
 #define N 10
 //int N = 3;

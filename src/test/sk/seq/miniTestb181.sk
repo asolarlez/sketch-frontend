@@ -1,4 +1,4 @@
-pragma options "--inbits 11";
+pragma options "--bnd-inbits 11";
 
 bit[8] test(int x) implements spec{	
 	bit[1024] tmp = ??;

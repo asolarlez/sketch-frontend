@@ -1,4 +1,4 @@
-pragma options "--unrollamnt 6 ";
+pragma options "--bnd-unroll-amnt 6 ";
 
 #ifndef __SKETCH__
 #error This file was only intended to be run with the SKETCH compiler

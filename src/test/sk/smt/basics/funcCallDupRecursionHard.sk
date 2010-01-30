@@ -1,4 +1,4 @@
-pragma options "--cbits 2 --inbits 2 --intbits 32 --inlineamnt 1000 --unrollamnt 20";
+pragma options "--bnd-cbits 2 --bnd-inbits 2 --bnd-intbits 32 --bnd-inline-amnt 1000 --bnd-unroll-amnt 20";
 
 int main(int dummy) implements one{
 	

@@ -1,4 +1,4 @@
-pragma options "--arrayOOBPolicy wrsilent_rdzero";
+pragma options "--sem-array-OOB-policy wrsilent_rdzero";
 int foo(int x, int y){
 	
 	return y + 4;	

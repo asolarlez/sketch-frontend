@@ -1,5 +1,5 @@
-pragma options "-ufunSymmetry --synth MINI --verif MINI --seed 10 --cex --inbits 1 --cbits 1 --unrollamnt 3 --heapsize 1 --arrayOOBPolicy assertions";
-pragma options "--intbits 5";
+pragma options "-ufunSymmetry --slv-synth MINI --slv-verif MINI --slv-seed 10 --debug-cex --bnd-inbits 1 --bnd-cbits 1 --bnd-unroll-amnt 3 --bnd-heap-size 1 --sem-array-OOB-policy assertions";
+pragma options "--bnd-intbits 5";
 #define MODEL_BIT 1
 #define N 3
 

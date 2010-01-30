@@ -1,4 +1,4 @@
-pragma options "--inbits 2";  // inbits must be set to W
+pragma options "--bnd-inbits 2";  // inbits must be set to W
 
 int W=2;
 int WW=4;

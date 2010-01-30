@@ -1,4 +1,4 @@
-pragma options "--intbits 20 --cbits 32 --unrollamnt 3";
+pragma options "--bnd-intbits 20 --bnd-cbits 32 --bnd-unroll-amnt 3";
 
 
 

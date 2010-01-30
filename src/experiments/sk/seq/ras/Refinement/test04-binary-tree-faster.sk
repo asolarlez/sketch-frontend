@@ -1,4 +1,4 @@
-pragma options "--cbits 4 --inlineamnt 2 --unrollamnt 17 --heapsize 16 --seed 3 --inbits 2 --synth MINI --branchamnt 3 --showphase final --keepasserts --verbosity 1 --arrayOOBPolicy assertions";
+pragma options "--bnd-cbits 4 --bnd-inline-amnt 2 --bnd-unroll-amnt 17 --bnd-heap-size 16 --slv-seed 3 --bnd-inbits 2 --slv-synth MINI --bnd-branch-amnt 3 --debug-show-phase final --fe-keep-asserts --debug-verbosity 1 --sem-array-OOB-policy assertions";
 
 int dummy(int x) { return 1; }
 

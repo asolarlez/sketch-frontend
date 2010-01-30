@@ -1,4 +1,4 @@
-pragma options "--cbits 10 --keeptmpfiles --branchamnt 20000 --inlineamnt 12";
+pragma options "--bnd-cbits 10 --fe-keep-tmp --bnd-branch-amnt 20000 --bnd-inline-amnt 12";
 
 int dummy(int x) { return 1; }
 

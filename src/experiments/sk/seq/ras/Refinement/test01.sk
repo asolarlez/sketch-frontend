@@ -1,4 +1,4 @@
-pragma options "--synth ABC --cbits 7	 --showphase final --keepasserts --unrollamnt 31 --verbosity 1";
+pragma options "--slv-synth ABC --bnd-cbits 7	 --debug-show-phase final --fe-keep-asserts --bnd-unroll-amnt 31 --debug-verbosity 1";
 
 int dummy(int x) { return 1; }
 
