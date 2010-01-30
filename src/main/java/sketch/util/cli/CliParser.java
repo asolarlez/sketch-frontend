@@ -1,23 +1,26 @@
 package sketch.util.cli;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import sketch.compiler.main.PlatformLocalization;
 import sketch.util.DebugOut;
 
 /**
  * parse command line with a number of option groups.
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class CliParser extends org.apache.commons.cli.PosixParser {
-    public LinkedList<CliOptionGroup> opt_groups =
-            new LinkedList<CliOptionGroup>();
+    public LinkedList<CliOptionGroup> opt_groups = new LinkedList<CliOptionGroup>();
     public LinkedList<CliAnnotatedOptionGroup> set_on_parse =
             new LinkedList<CliAnnotatedOptionGroup>();
     public CommandLine cmd_line;
@@ -28,7 +31,7 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
         super();
         this.args = args;
     }
-    
+
     public CliParser(String[] args, String usage) {
         super();
         this.args = args;
@@ -42,13 +45,13 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
         // add names
         Options options = getOptionsList();
         try {
-            cmd_line = super.parse(options, args, true);
+            cmd_line = super.parse(options, args, false);
             boolean print_help = cmd_line.hasOption("help");
             for (String arg : cmd_line.getArgs()) {
                 if (arg.equals("--")) {
                     break;
                 } else if (arg.startsWith("--")) {
-                    DebugOut.print("unrecognized argument", arg);
+                    DebugOut.print(String.format("unrecognized argument '%s'", arg));
                     print_help = true;
                 }
             }
@@ -64,32 +67,36 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
             elt.set_values();
         }
     }
-    
+
     public void printHelpAndExit(String error_msg) {
         printHelpInner(getOptionsList(), error_msg);
     }
 
     private void printHelpInner(Options options, String error_msg) {
         HelpFormatter hf = new HelpFormatter();
-        String cols = System.getenv("COLUMNS");
-        if (cols != null && !cols.equals("")) {
-            try {
-                hf.setWidth(Integer.parseInt(cols));
-            } catch (Exception e) {
+
+        // sort it by long name instead of short name
+        hf.setOptionComparator(new Comparator<Option>() {
+            public int compare(Option opt1, Option opt2) {
+                return opt1.getLongOpt().compareTo(opt2.getLongOpt());
             }
-        } else {
-            hf.setWidth(100);
-        }
+        });
+
+        // format the columns in the environment
+        hf.setWidth(PlatformLocalization.trygetenv(90, "COLUMNS", "COLS"));
+
+        // generate descriptions of the option groups
         StringBuilder description = new StringBuilder();
         description.append("\n");
         for (CliOptionGroup group : opt_groups) {
-            description.append(group.prefix + " - " + group.description
-                    + "\n");
+            description.append(group.prefix + " - " + group.description + "\n");
         }
         description.append(" \n");
+
         if (error_msg != "") {
             error_msg = "\n\n[ERROR] [SKETCH] " + error_msg;
         }
+
         hf.printHelp(usageStr, description.toString(), options, error_msg);
         System.exit(1); // @code standards ignore
     }

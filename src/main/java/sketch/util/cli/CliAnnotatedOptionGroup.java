@@ -4,6 +4,7 @@ import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.print_exception;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -54,9 +55,17 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
 
     public final void add_fields() {
         if (!fields.isEmpty()) {
-            assertFalse("CliAnnotatedOptionGroup -- double add fields.");
+            // don't double-add fields
+            return;
         }
-        for (Field field : this.getClass().getDeclaredFields()) {
+
+        // NOTE / ntung -- allow class inheritance. Option fields must be public.
+        final Class<? extends CliAnnotatedOptionGroup> this_cls = this.getClass();
+        HashSet<Field> fields = new HashSet<Field>();
+        fields.addAll(Arrays.asList(this_cls.getFields()));
+        fields.addAll(Arrays.asList(this_cls.getDeclaredFields()));
+
+        for (Field field : fields) {
             CliParameter cli_annotation = field.getAnnotation(CliParameter.class);
             if (cli_annotation != null) {
                 try {
@@ -64,7 +73,8 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                             new CliOption(cmdlineName(field), field.getType(),
                                     field.get(this), cli_annotation.help(), this);
                     opt.setAdditionalInfo(cli_annotation.required(),
-                            cli_annotation.metavar(), cli_annotation.inlinesep());
+                            cli_annotation.metavar(), cli_annotation.inlinesep(),
+                            cli_annotation.shortname());
                     addOption(opt);
                     fields.add(field);
                 } catch (Exception e) {

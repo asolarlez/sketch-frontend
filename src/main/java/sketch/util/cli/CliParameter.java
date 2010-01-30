@@ -10,4 +10,5 @@ public @interface CliParameter {
     boolean required() default false;
     String metavar() default "";
     String inlinesep() default "";
+    String shortname() default "";
 }

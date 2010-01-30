@@ -27,6 +27,7 @@ public final class CliOption {
     public boolean isRequired = true;
     public String metavarName;
     public String inlinesep;
+    public String shortname;
 
     public CliOption(String name, Class<?> typ, Object defaultValue, String help,
             CliOptionGroup group)
@@ -61,11 +62,12 @@ public final class CliOption {
     }
 
     public void setAdditionalInfo(final boolean isRequired, final String metavarName,
-            final String inlinesep)
+            final String inlinesep, String shortname)
     {
         this.isRequired = isRequired;
         this.metavarName = metavarName;
         this.inlinesep = inlinesep;
+        this.shortname = shortname;
     }
 
     public String full_name() {
@@ -82,7 +84,10 @@ public final class CliOption {
         } else if (has_name) {
             help += " [default " + defaultValue.toString() + "]";
         }
-        Option result = new Option(null, full_name(), has_name, help);
+        if (shortname != null && shortname.equals("")) {
+            shortname = null;
+        }
+        Option result = new Option(shortname, full_name(), has_name, help);
         if (isRequired) {
             result.setRequired(true);
         }
@@ -115,10 +120,10 @@ public final class CliOption {
             } else {
                 final Object[] values = getValues(subtyp, cmd_line, no_defaults);
                 if (!inlinesep.equals("")) {
-                    assert(subtyp.equals(String.class));
+                    assert (subtyp.equals(String.class));
                     Vector<String> result = new Vector<String>();
                     for (Object value : values) {
-                        for (String entry : ((String)value).split(inlinesep)) {
+                        for (String entry : ((String) value).split(inlinesep)) {
                             result.add(entry);
                         }
                     }
