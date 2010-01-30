@@ -74,10 +74,12 @@ osc: assemble-noarch
 	python ../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
 	rm -rf java-build
 
-system-install: assemble-arch # usage: make system-install DESTDIR=/usr/bin
+system-install: # usage: make system-install DESTDIR=/usr/bin [SUDOINSTALL=1]
 	[ "$(DESTDIR)" ] || { echo "no destination directory defined. try make help."; exit 1; }
+	make assemble-file FILE=platform_jar_assembly.xml
+	make assemble-file FILE=launchers_assembly.xml
 	mkdir -p $(DESTDIR)
-	DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers.dir/dist/* && install -m 644 *jar "$$DESTDIR" && install -m 755 sketch psketch stensk "$$DESTDIR"
+	sudo=; [ "$(SUDOINSTALL)" ] && { sudo=sudo; }; DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers-*.dir/dist/* && $$sudo install -m 644 *jar "$$DESTDIR" && $$sudo install -m 755 sketch psketch stensk "$$DESTDIR"
 
 ### testing
 

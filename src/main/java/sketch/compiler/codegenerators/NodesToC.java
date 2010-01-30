@@ -28,6 +28,7 @@ public class NodesToC extends NodesToJava {
 
 	private String filename;
 	private boolean isBool = true;
+  private boolean lhsBitvec = false;
 
 	protected boolean addIncludes = true;
 
@@ -40,55 +41,55 @@ public class NodesToC extends NodesToJava {
 
 
 
-	public Object visitExprBinary(ExprBinary exp)
+  public Object visitExprBinary(ExprBinary exp)
+  {
+    StringBuffer result=new StringBuffer();
+    String op = null;
+    if(binOpLevel>0) result.append("(");
+    binOpLevel++;
+    Type tmptype = null;
+    switch (exp.getOp())
     {
-        StringBuffer result=new StringBuffer();
-        String op = null;
-        if(binOpLevel>0) result.append("(");
-        binOpLevel++;
-        Type tmptype = null;
-        switch (exp.getOp())
-        {
-        case ExprBinary.BINOP_NEQ:
-        case ExprBinary.BINOP_EQ:
-        	Type t1 = getType(exp.getLeft());
-        	Type t2 = getType(exp.getRight());
-        	while(t1 instanceof TypeArray){ t1 = ((TypeArray)t1).getBase();}
-        	while(t2 instanceof TypeArray){ t2 = ((TypeArray)t2).getBase();}
-        	if(t1 == TypePrimitive.inttype || t2 == TypePrimitive.inttype){
-        		tmptype = ctype;
-            	ctype = TypePrimitive.inttype;
-        	}else{
-        		tmptype = ctype;
-            	ctype = t1;
-        	}
-
-        	break;
-        case ExprBinary.BINOP_LT:
-        case ExprBinary.BINOP_LE:
-        case ExprBinary.BINOP_GT:
-        case ExprBinary.BINOP_GE:
-        	tmptype = ctype;
-        	ctype = TypePrimitive.inttype;
-        }
-        String left = (String)exp.getLeft().accept(this);
-
-        // TODO: Is this the place to make the change for test 23?
-        if(exp.getOp()== ExprBinary.BINOP_LSHIFT || exp.getOp()== ExprBinary.BINOP_RSHIFT){
-        	tmptype = ctype;
-        	ctype = TypePrimitive.inttype;
-        }
-        String right = (String)exp.getRight().accept(this);
-        if(tmptype != null){
-        	ctype = tmptype;
+      case ExprBinary.BINOP_NEQ:
+      case ExprBinary.BINOP_EQ:
+        Type t1 = getType(exp.getLeft());
+        Type t2 = getType(exp.getRight());
+        while(t1 instanceof TypeArray){ t1 = ((TypeArray)t1).getBase();}
+        while(t2 instanceof TypeArray){ t2 = ((TypeArray)t2).getBase();}
+        if(t1 == TypePrimitive.inttype || t2 == TypePrimitive.inttype){
+          tmptype = ctype;
+          ctype = TypePrimitive.inttype;
+        }else{
+          tmptype = ctype;
+          ctype = t1;
         }
 
+        break;
+      case ExprBinary.BINOP_LT:
+      case ExprBinary.BINOP_LE:
+      case ExprBinary.BINOP_GT:
+      case ExprBinary.BINOP_GE:
+        tmptype = ctype;
+        ctype = TypePrimitive.inttype;
+    }
+    String left = (String)exp.getLeft().accept(this);
 
-        switch (exp.getOp())
-        {
-	        case ExprBinary.BINOP_ADD: op = "+";
-	        if(exp.getLeft() instanceof ExprArrayInit){
-	        	ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
+    // TODO: Is this the place to make the change for test 23?
+    if(exp.getOp()== ExprBinary.BINOP_LSHIFT || exp.getOp()== ExprBinary.BINOP_RSHIFT){
+      tmptype = ctype;
+      ctype = TypePrimitive.inttype;
+    }
+    String right = (String)exp.getRight().accept(this);
+    if(tmptype != null){
+      ctype = tmptype;
+    }
+
+
+    switch (exp.getOp())
+    {
+      case ExprBinary.BINOP_ADD: op = "+";
+                                 if(exp.getLeft() instanceof ExprArrayInit){
+                                   ExprArrayInit eai = (ExprArrayInit) exp.getLeft();
 	        	int sz = eai.getElements().size();
 	        	left = "bitvec<" + sz + ">(" + left + ")";
 	        }
@@ -533,47 +534,53 @@ public class NodesToC extends NodesToJava {
     {
       String op;
       switch(stmt.getOp())
-        {
-	        case 0: op = " = "; break;
-	        case ExprBinary.BINOP_ADD: op = " += "; break;
-	        case ExprBinary.BINOP_SUB: op = " -= "; break;
-	        case ExprBinary.BINOP_MUL: op = " *= "; break;
-	        case ExprBinary.BINOP_DIV: op = " /= "; break;
-	        case ExprBinary.BINOP_BOR: op = " |= "; break;
-	        case ExprBinary.BINOP_BAND: op = " &= "; break;
-	        case ExprBinary.BINOP_BXOR: op = " ^= "; break;
-	        default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
-        }
-        // Assume both sides are the right type.
+      {
+        case 0: op = " = "; break;
+        case ExprBinary.BINOP_ADD: op = " += "; break;
+        case ExprBinary.BINOP_SUB: op = " -= "; break;
+        case ExprBinary.BINOP_MUL: op = " *= "; break;
+        case ExprBinary.BINOP_DIV: op = " /= "; break;
+        case ExprBinary.BINOP_BOR: op = " |= "; break;
+        case ExprBinary.BINOP_BAND: op = " &= "; break;
+        case ExprBinary.BINOP_BXOR: op = " ^= "; break;
+        default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
+      }
+      // Assume both sides are the right type.
 
-        ctype = getType(stmt.getLHS());
-        while(ctype instanceof TypeArray){
-        	ctype = ((TypeArray)ctype).getBase();
-        }
+      ctype = getType(stmt.getLHS());
+      while(ctype instanceof TypeArray){
+        ctype = ((TypeArray)ctype).getBase();
+      }
 
-        isLHS = true;
-        String lhs = (String)stmt.getLHS().accept(this);
+      isLHS = true;
+      String lhs = (String)stmt.getLHS().accept(this);
+      isLHS = false;
+      // JY: We need to have some special cases for casting.
+      if ((ctype instanceof TypeArray) &&
+          (((TypeArray)ctype).getBase().equals(TypePrimitive.bittype))) {
+        lhsBitvec = true;
+      }
+      String rhs = (String)stmt.getRHS().accept(this);
+      lhsBitvec = false;
+      return lhs + op + rhs ;
+    }
+
+  boolean isLHS = false;
+
+
+  public Object visitExprArrayRange(ExprArrayRange exp){
+    Expression base=exp.getBase();
+    List ranges=exp.getMembers();
+    if(ranges.size()==0) throw new IllegalStateException();
+    if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
+    Object o=ranges.get(0);
+    if(o instanceof RangeLen)
+    {
+      RangeLen range=(RangeLen) o;
+      if(isLHS) {
         isLHS = false;
-        String rhs = (String)stmt.getRHS().accept(this);
-        return lhs + op + rhs ;
-	}
-
-	boolean isLHS = false;
-
-
-	public Object visitExprArrayRange(ExprArrayRange exp){
-		Expression base=exp.getBase();
-		List ranges=exp.getMembers();
-		if(ranges.size()==0) throw new IllegalStateException();
-		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
-		Object o=ranges.get(0);
-		if(o instanceof RangeLen)
-		{
-			RangeLen range=(RangeLen) o;
-			if(isLHS) {
-				isLHS = false;
-				Type tmptype = ctype;
-				ctype = TypePrimitive.inttype;
+        Type tmptype = ctype;
+        ctype = TypePrimitive.inttype;
 				String tmp = (String) range.start().accept(this);
 				ctype = tmptype;
 				isLHS = true;

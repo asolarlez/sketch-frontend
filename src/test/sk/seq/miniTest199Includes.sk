@@ -6,6 +6,6 @@ pragma options "--bnd-unroll-amnt 6 ";
 
 #include "miniTest199Includes.skh"
 
-bit main(bit a, bit b, bit c) implements VOID{
+bit main_fun(bit a, bit b, bit c) implements VOID{
         return (a & c) & !b;
 }

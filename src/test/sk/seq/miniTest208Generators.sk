@@ -1,9 +1,0 @@
-
-generator int innerfcn() {
-    return ??;
-}
-
-void main() {
-    assert(innerfcn() == 0);
-    assert(innerfcn() == 1);
-}

@@ -1,5 +1,4 @@
-//@Description Given a bit-vector and a bit-mask, the task is select from the bit-vector all the bits selected by the bit-mask and pack them in the beginning of the word.
-
+pragma options "--inbits 8";
 int W = 8;
 
 bit[W] compress(bit[W] x, bit[W] m){
@@ -15,13 +14,13 @@ bit[W] compress(bit[W] x, bit[W] m){
 }
 
 
-generator bit[W] fixedMask(bit[W] x){ /* automatically rewritten */
+bit[W] fixedMask(bit[W] x){
    bit[W] mask = {0, 1, 0, 0, 1, 0, 0, 1};
    return  compress(x, mask);
 }
 
 
-generator bit[W] xor_reduce(bit[W] in){ /* automatically rewritten */
+bit[W] xor_reduce(bit[W] in){
   bit[W] out = 0;
   out[0] = in[0];
   for(int i=1; i<W; ++i){
@@ -30,7 +29,7 @@ generator bit[W] xor_reduce(bit[W] in){ /* automatically rewritten */
   return out;
 }
 
-generator bit[W] maskedShift(bit[W] in, bit[W] mask, int s){ /* automatically rewritten */
+bit[W] maskedShift(bit[W] in, bit[W] mask, int s){
 	bit[W] t = in & mask;
 	return (in ^ t) | t >> s;
 }
