@@ -7,7 +7,7 @@ import java.util.HashMap;
 import org.junit.After;
 import org.junit.Before;
 
-import sketch.compiler.CommandLineParamManager;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.smt.partialeval.SmtValueOracle;
 
 public class TestHarness {
@@ -27,7 +27,7 @@ public class TestHarness {
 	
 	@After
 	public void cleanup() {
-		CommandLineParamManager.getParams().clear();
+	    SequentialSketchOptions.resetSingleton();
 	}
 	
 	protected String[] toArgArray(HashMap<String,String> argsMap) {

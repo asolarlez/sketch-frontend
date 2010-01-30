@@ -12,10 +12,11 @@ import org.junit.runners.model.Statement;
 
 /**
  * junit test case to run a sketch
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public abstract class SketchRunner extends TestCase {
     public static final long timeout = 60000;
@@ -44,7 +45,15 @@ public abstract class SketchRunner extends TestCase {
     public void runTestStatement() {
         System.err.println("[SKETCH] running test " + path);
         String[] args = { path };
-        runSketch(args);
+        try {
+            runSketch(args);
+        } catch (RuntimeException e) {
+            System.err.println(e.getStackTrace());
+            System.err.println("[ERROR] [SKETCH] " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println(e.getStackTrace());
+            System.err.println("[ERROR] [SKETCH] " + e.getMessage());
+        }
     }
 
     protected abstract void runSketch(String[] args);

@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Test;
 
-import sketch.compiler.CommandLineParamManager;
 import sketch.compiler.main.seq.SequentialSMTSketchMain;
+import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.smt.HoleSorter;
 import sketch.compiler.smt.SmtOracle;
 
@@ -30,7 +30,7 @@ public class LoopTOAInt {
 	
 	@After
 	public void cleanup() {
-		CommandLineParamManager.getParams().clear();
+	    SequentialSketchOptions.resetSingleton();
 	}
 	
 	
