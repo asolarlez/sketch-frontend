@@ -1,4 +1,4 @@
-#Fri Jan 29 11:20:26 PST 2010
+#Fri Jan 29 13:40:47 PST 2010
 eclipse.preferences.version=1
 org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.5
 org.eclipse.jdt.core.compiler.compliance=1.5
@@ -36,16 +36,16 @@ org.eclipse.jdt.core.formatter.blank_lines_before_package=0
 org.eclipse.jdt.core.formatter.blank_lines_between_import_groups=1
 org.eclipse.jdt.core.formatter.blank_lines_between_type_declarations=1
 org.eclipse.jdt.core.formatter.brace_position_for_annotation_type_declaration=end_of_line
-org.eclipse.jdt.core.formatter.brace_position_for_anonymous_type_declaration=end_of_line
+org.eclipse.jdt.core.formatter.brace_position_for_anonymous_type_declaration=next_line_on_wrap
 org.eclipse.jdt.core.formatter.brace_position_for_array_initializer=end_of_line
-org.eclipse.jdt.core.formatter.brace_position_for_block=end_of_line
+org.eclipse.jdt.core.formatter.brace_position_for_block=next_line_on_wrap
 org.eclipse.jdt.core.formatter.brace_position_for_block_in_case=end_of_line
-org.eclipse.jdt.core.formatter.brace_position_for_constructor_declaration=end_of_line
+org.eclipse.jdt.core.formatter.brace_position_for_constructor_declaration=next_line_on_wrap
 org.eclipse.jdt.core.formatter.brace_position_for_enum_constant=end_of_line
 org.eclipse.jdt.core.formatter.brace_position_for_enum_declaration=end_of_line
-org.eclipse.jdt.core.formatter.brace_position_for_method_declaration=end_of_line
+org.eclipse.jdt.core.formatter.brace_position_for_method_declaration=next_line_on_wrap
 org.eclipse.jdt.core.formatter.brace_position_for_switch=end_of_line
-org.eclipse.jdt.core.formatter.brace_position_for_type_declaration=end_of_line
+org.eclipse.jdt.core.formatter.brace_position_for_type_declaration=next_line_on_wrap
 org.eclipse.jdt.core.formatter.comment.clear_blank_lines_in_block_comment=true
 org.eclipse.jdt.core.formatter.comment.clear_blank_lines_in_javadoc_comment=true
 org.eclipse.jdt.core.formatter.comment.format_block_comments=true

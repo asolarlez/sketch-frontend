@@ -49,7 +49,7 @@ public abstract class CliOptionGroup {
 
     public void addOption(CliOption opt) {
         if (opt_set.put(opt.name, opt) != null) {
-            assertFalse("already contained option", opt);
+            assertFalse("INTERNAL ERROR -- already contained option", opt);
         }
     }
 

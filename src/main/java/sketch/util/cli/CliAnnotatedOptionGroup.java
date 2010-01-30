@@ -57,6 +57,8 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
         if (!fields.isEmpty()) {
             // don't double-add fields
             return;
+        } else if (!opt_set.isEmpty()) {
+            assertFalse("opt_set should be empty if fields is empty");
         }
 
         // NOTE / ntung -- allow class inheritance. Option fields must be public.
@@ -76,7 +78,7 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                             cli_annotation.metavar(), cli_annotation.inlinesep(),
                             cli_annotation.shortname());
                     addOption(opt);
-                    fields.add(field);
+                    this.fields.add(field);
                 } catch (Exception e) {
                     e.printStackTrace();
                     assertFalse("error accessing field", field);
