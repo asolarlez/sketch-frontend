@@ -88,6 +88,7 @@ public class DebugOut {
     public static void assertFalse(Object... description) {
         print_err_colored(BASH_RED, "[ASSERT FAILURE] ", " ", false,
                 description);
+        inAssertFalse = false;
         assert (false);
         throw new java.lang.IllegalStateException("please enable asserts.");
     }

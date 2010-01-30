@@ -82,19 +82,19 @@ system-install: assemble-arch # usage: make system-install DESTDIR=/usr/bin
 ### testing
 
 test:
-	mvn test | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	mvn test | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-seq:
-	set -o pipefail; mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	set -o pipefail; mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-par:
-	set -o pipefail; mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	set -o pipefail; mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-sten:
-	set -o pipefail; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]"
+	set -o pipefail; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-release-benchmarks:
-	for i in src/release_benchmarks/sk/*.sk; do make run-local-seq EXEC_ARGS="$$i"; done | tee target/test_output.txt | grep -E "Benchmark = src/release_benchmarks|\[ERROR\]"
+	for i in src/release_benchmarks/sk/*.sk; do make run-local-seq EXEC_ARGS="$$i"; done | tee target/test_output.txt | grep -E "Benchmark = src/release_benchmarks|\[ERROR\]|ASSERT FAILURE"
 
 ### manually running sketches using the development versions; use $(make <target> EXEC_ARGS=args)
 
