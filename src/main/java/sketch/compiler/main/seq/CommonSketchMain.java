@@ -67,7 +67,7 @@ public class CommonSketchMain {
     protected void processDirectives(Set<Directive> D) {
         for (Directive d : D)
             if (d instanceof OptionsDirective)
-                options.appendArgsAndReparse(((OptionsDirective) d).options());
+                options.appendArgsAndReparse(((OptionsDirective) d).options(), false);
     }
 
     protected void log(String msg) {

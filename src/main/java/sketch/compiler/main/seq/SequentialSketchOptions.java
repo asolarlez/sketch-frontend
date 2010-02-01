@@ -42,10 +42,10 @@ public class SequentialSketchOptions {
         _singleton = this;
     }
 
-    public void appendArgsAndReparse(String[] additionalArgs) {
+    public void appendArgsAndReparse(String[] additionalArgs, boolean errorOnUnknown) {
         Vector<String> allArgs = new Vector<String>(Arrays.asList(inArgs));
         allArgs.addAll(Arrays.asList(additionalArgs));
-        parseCommandline(new CliParser(allArgs.toArray(new String[0])));
+        parseCommandline(new CliParser(allArgs.toArray(new String[0]), errorOnUnknown));
     }
 
     public void parseCommandline(CliParser parser) {
