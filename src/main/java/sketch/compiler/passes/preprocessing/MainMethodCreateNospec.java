@@ -9,17 +9,24 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
- * create an artificial nospec() function if there is a main function present
- * (that doesn't have a specification).
+ * create an artificial nospec() function if there is a main function present (that
+ * doesn't have a specification).
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class MainMethodCreateNospec extends FEReplacer {
     public final Vector<Function> mainFcns = new Vector<Function>();
@@ -38,7 +45,6 @@ public class MainMethodCreateNospec extends FEReplacer {
         }
     }
 
-    @SuppressWarnings( { "deprecation", "unchecked" })
     @Override
     public Object visitStreamSpec(StreamSpec spec) {
         // see super for how to create a new one
@@ -47,10 +53,9 @@ public class MainMethodCreateNospec extends FEReplacer {
             ArrayList<Function> newFcns = new ArrayList<Function>();
             newFcns.addAll(spec.getFuncs());
             for (Function mainFcn : mainFcns) {
-                newFcns.add(Function.newStatic(FEContext.artificalFrom(
-                        "nospec", mainFcn), mainFcn.getSpecification(),
-                        TypePrimitive.voidtype, mainFcn.getParams(), null,
-                        new StmtBlock(Collections.EMPTY_LIST)));
+                Function wrapperFcn = getWrapperFunction(mainFcn);
+                newFcns.add(wrapperFcn);
+                newFcns.add(getNospecFunction(wrapperFcn));
             }
             return new StreamSpec(spec, spec.getType(), spec.getStreamType(),
                     spec.getName(), spec.getParams(), spec.getVars(),
@@ -60,32 +65,45 @@ public class MainMethodCreateNospec extends FEReplacer {
         }
     }
 
+    @SuppressWarnings( { "deprecation", "unchecked" })
+    protected Function getNospecFunction(Function mainWrapperFcn) {
+        return Function.newStatic(FEContext.artificalFrom("nospec", mainWrapperFcn),
+                mainWrapperFcn.getSpecification(), TypePrimitive.voidtype,
+                mainWrapperFcn.getParams(), null, new StmtBlock(Collections.EMPTY_LIST));
+    }
+
+    @SuppressWarnings( { "deprecation" })
+    protected Function getWrapperFunction(Function mainFcn) {
+        final FEContext artificalFrom = FEContext.artificalFrom("mainwrapper", mainFcn);
+        Vector<Statement> stmts = new Vector<Statement>();
+        Vector<Expression> vars = new Vector<Expression>();
+        for (Parameter param : mainFcn.getParams()) {
+            vars.add(new ExprVar(artificalFrom, param.getName()));
+        }
+        stmts.add(new StmtExpr(new ExprFunCall(artificalFrom, mainFcn.getName(),
+                Collections.unmodifiableList(vars))));
+        return Function.newStatic(artificalFrom, mainFcn.getName() + "__Wrapper",
+                TypePrimitive.voidtype, mainFcn.getParams(), mainFcn.getName() +
+                        "__WrapperNospec", new StmtBlock(
+                        Collections.unmodifiableList(stmts)));
+    }
+
     @Override
     public Object visitFunction(Function func) {
         boolean isMainName = mainNames.contains(func.getName());
-        if (isMainName && func.getSpecification() == null
-                && func.getReturnType().equals(TypePrimitive.voidtype))
+        if (isMainName && func.getSpecification() == null)
         {
-            return add_main_fcn(func);
+            mainFcns.add(func);
         } else if (isMainName) {
             if (func.getSpecification() != null) {
-                System.err.println("WARNING -- didn't replace 'main' function "
-                        + "because it already has an implements");
+                System.err.println("WARNING -- didn't replace 'main' function " +
+                        func.getName() +
+                        "because it already has an implements specified.");
             } else {
-                System.err.println("WARNING -- didn't replace 'main' function "
-                        + "because it doesn't have a void return type");
+                System.err.println("WARNING -- didn't replace 'main' function " +
+                        func.getName());
             }
         }
         return super.visitFunction(func);
-    }
-
-    public Function add_main_fcn(Function func) {
-        String nospecName = "nospec" + Math.abs((rand).nextInt());
-        Function next =
-                new Function(func, func.getCls(), func.getName(), func
-                        .getReturnType(), func.getParams(), nospecName, func
-                        .getBody());
-        mainFcns.add(next);
-        return next;
     }
 }
