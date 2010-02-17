@@ -215,8 +215,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
-		
-		//dump (prog, "bef fpe:");
+		prog = (Program)prog.accept(new ReplaceSketchesWithSpecs());
+		dump (prog, "after replskwspecs:");
 		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		// dump (prog, "MBB:");

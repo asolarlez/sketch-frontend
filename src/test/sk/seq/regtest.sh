@@ -8,6 +8,7 @@ SATSOLVER="MINI"
 fi
 
 echo "USING SATSOLVER " $SATSOLVER;
+ls mini*.sk | sed 's\.sk\.sk.output\g'> ref
 
 time for x in `ls mini*.sk`
 do 
@@ -20,7 +21,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash sketch   -synth $SATSOLVER -verif $SATSOLVER  --incremental 6  ${x} &> ${x}.output ;
+bash sketch  --slv-synth $SATSOLVER --slv-verif $SATSOLVER   ${x} &> ${x}.output ;
 
 done;
 
