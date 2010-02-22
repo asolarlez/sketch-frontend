@@ -64,17 +64,17 @@ generator int chose(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, i
 	return rv;
 }
 
-generator bit generator(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){ /* automatically rewritten */
+generator bit generatorFcn(int[No2] arr1, int idx1,  int[No2] arr2, int idx2, int x3, int x4){ /* automatically rewritten */
 	int t = ??;
 	bit rv = 0;
 	if( t==0){
-		bit x = generator(arr1, idx1, arr2, idx2, x3, x4);
+		bit x = generatorFcn(arr1, idx1, arr2, idx2, x3, x4);
 		if(x){
-			rv = generator(arr1, idx1, arr2, idx2, x3, x4);
+			rv = generatorFcn(arr1, idx1, arr2, idx2, x3, x4);
 		}
 	}
 	if( t==1){
-		rv = !generator(arr1, idx1, arr2, idx2, x3, x4);
+		rv = !generatorFcn(arr1, idx1, arr2, idx2, x3, x4);
 	}
 	if( t==2){
 		rv = chose(arr1, idx1, arr2, idx2, x3, x4) < chose(arr1, idx1, arr2, idx2, x3, x4); //36 choices
@@ -94,7 +94,7 @@ int[N] MergeSort(int[N] input)implements sort{
 		int y=0;
 		for(int i=0; i<N; ++i){
 			//  
-			if(generator(firstHalf, x, secondHalf, y, N, No2) ){
+			if(generatorFcn(firstHalf, x, secondHalf, y, N, No2) ){
 				output[i] = firstHalf[x]; x = x+1;
 			}else{
 				output[i] = secondHalf[y]; y = y+1;
