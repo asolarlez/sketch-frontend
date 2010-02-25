@@ -50,7 +50,7 @@ public class CliOptionResult {
 
     public String[] get_args() {
         parser.parse();
-        return parser.cmd_line.getArgs();
+        return parser.getArgs();
     }
 
     public boolean is_set(String name) {

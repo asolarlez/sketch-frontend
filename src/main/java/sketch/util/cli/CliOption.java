@@ -24,7 +24,7 @@ public final class CliOption {
     public final Object defaultValue;
     public final String help;
     public final CliOptionGroup group;
-    public boolean isRequired = true;
+    public boolean isRequired = false;
     public String metavarName;
     public String inlinesep;
     public String shortname;

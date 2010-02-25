@@ -2,7 +2,7 @@ package sketch.compiler.main.seq;
 
 import sketch.compiler.cmdline.SMTBoundOptions;
 import sketch.compiler.cmdline.SMTOptions;
-import sketch.util.cli.CliParser;
+import sketch.util.cli.SketchCliParser;
 
 public class SMTSketchOptions extends SequentialSketchOptions {
     public SMTOptions smtOpts;
@@ -13,7 +13,7 @@ public class SMTSketchOptions extends SequentialSketchOptions {
     }
 
     @Override
-    public void parseCommandline(CliParser parser) {
+    public void parseCommandline(SketchCliParser parser) {
         super.bndOpts = bndOpts = new SMTBoundOptions();
         smtOpts = new SMTOptions();
         smtOpts.parse(parser);

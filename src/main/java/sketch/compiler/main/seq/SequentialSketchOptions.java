@@ -11,7 +11,7 @@ import sketch.compiler.cmdline.FrontendOptions;
 import sketch.compiler.cmdline.SemanticsOptions;
 import sketch.compiler.cmdline.SolverOptions;
 import sketch.compiler.main.PlatformLocalization;
-import sketch.util.cli.CliParser;
+import sketch.util.cli.SketchCliParser;
 
 /**
  * organized options for the sequential frontend. See ParallelSketchOptions for how to
@@ -33,28 +33,33 @@ public class SequentialSketchOptions {
     public final String[] inArgs;
     public Vector<String> backendOptions;
     public String sketchName;
+    public Vector<String> backendArgs;
+    protected String[] currentArgs;
     protected static SequentialSketchOptions _singleton;
 
     public SequentialSketchOptions(String[] inArgs) {
         this.inArgs = inArgs;
-        CliParser parser = new CliParser(inArgs);
+        SketchCliParser parser = new SketchCliParser(inArgs);
         parseCommandline(parser);
         _singleton = this;
     }
 
-    public void appendArgsAndReparse(String[] additionalArgs, boolean errorOnUnknown) {
-        Vector<String> allArgs = new Vector<String>(Arrays.asList(inArgs));
-        allArgs.addAll(Arrays.asList(additionalArgs));
-        parseCommandline(new CliParser(allArgs.toArray(new String[0]), errorOnUnknown));
+    public void prependArgsAndReparse(String[] additionalArgs, boolean errorOnUnknown) {
+        Vector<String> allArgs = new Vector<String>(Arrays.asList(additionalArgs));
+        allArgs.addAll(Arrays.asList(currentArgs));
+        parseCommandline(new SketchCliParser(allArgs.toArray(new String[0]),
+                errorOnUnknown));
     }
 
-    public void parseCommandline(CliParser parser) {
-        System.err.println(Arrays.toString(parser.args));
+    public void parseCommandline(SketchCliParser parser) {
+        this.currentArgs = parser.inArgs;
+        System.err.println(Arrays.toString(parser.inArgs));
         bndOpts.parse(parser);
         debugOpts.parse(parser);
         feOpts.parse(parser);
         semOpts.parse(parser);
         args = solverOpts.parse(parser).get_args();
+        this.backendArgs = parser.backendArgs;
         if (args.length < 1 || args[0].equals("")) {
             parser.printHelpAndExit("no files specified");
         }

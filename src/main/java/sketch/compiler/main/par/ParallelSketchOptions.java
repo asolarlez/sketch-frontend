@@ -2,7 +2,7 @@ package sketch.compiler.main.par;
 
 import sketch.compiler.cmdline.ParallelOptions;
 import sketch.compiler.main.seq.SequentialSketchOptions;
-import sketch.util.cli.CliParser;
+import sketch.util.cli.SketchCliParser;
 
 /**
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
@@ -18,7 +18,7 @@ public class ParallelSketchOptions extends SequentialSketchOptions {
     }
 
     @Override
-    public void parseCommandline(CliParser parser) {
+    public void parseCommandline(SketchCliParser parser) {
         parOpts = new ParallelOptions();
         parOpts.parse(parser);
         super.parseCommandline(parser);

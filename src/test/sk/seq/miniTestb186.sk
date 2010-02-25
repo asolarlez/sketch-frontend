@@ -1,4 +1,3 @@
-pragma options " -ufunSymmetry";
 
 generator int ufu(int a);/* Uninterpreted function */ /* automatically rewritten */
 

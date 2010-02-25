@@ -3,6 +3,7 @@ package sketch.util.cli;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Vector;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -11,7 +12,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import sketch.compiler.main.PlatformLocalization;
-import sketch.util.DebugOut;
 
 /**
  * parse command line with a number of option groups.
@@ -26,7 +26,8 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
     public LinkedList<CliAnnotatedOptionGroup> set_on_parse =
             new LinkedList<CliAnnotatedOptionGroup>();
     public CommandLine cmd_line;
-    public final String[] args;
+    public final String[] inArgs;
+    public String[] outArgs; // non-option command line entries
     public String usageStr = "[options]";
     public final boolean errorOnUnknown;
 
@@ -42,10 +43,10 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
         this(args, null, errorOnUnknown);
     }
 
-    public CliParser(String[] args, String usage, boolean errorOnUnknown) {
+    public CliParser(String[] inArgs, String usage, boolean errorOnUnknown) {
         super();
         this.errorOnUnknown = errorOnUnknown;
-        this.args = args;
+        this.inArgs = inArgs;
         if (usage != null) {
             this.usageStr = usage;
         }
@@ -58,29 +59,64 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
         // add names
         Options options = getOptionsList();
         try {
-            cmd_line = super.parse(options, args, false);
-            boolean print_help = cmd_line.hasOption("help");
-            if (errorOnUnknown) {
-                for (String arg : cmd_line.getArgs()) {
-                    if (arg.equals("--")) {
-                        break;
-                    } else if (arg.startsWith("--")) {
-                        DebugOut.print(String.format("unrecognized argument '%s'", arg));
-                        print_help = true;
-                    }
-                }
-            }
-            if (print_help) {
+            cmd_line = super.parse(options, inArgs, false);
+            if (cmd_line.hasOption("help")) {
                 printHelpInner(options, "");
             }
+            Vector<String> outArgs = new Vector<String>();
+            boolean tailArgs = false;
+            for (String arg : cmd_line.getArgs()) {
+                if (tailArgs || arg.equals("--")) {
+                    outArgs.add(arg);
+                    tailArgs = true;
+                } else if (arg.startsWith("--")) {
+                    handleUnknownLongarg(arg, null, options);
+                } else if (arg.startsWith("-")) {
+                    handleUnknownShortarg(arg, null, options);
+                } else {
+                    outArgs.add(arg);
+                }
+            }
+            this.outArgs = outArgs.toArray(new String[0]);
         } catch (org.apache.commons.cli.ParseException e) {
-            printHelpInner(options, e.getMessage());
+            printHelpInner(options, "Apache CLI error: " + e.getMessage());
             System.exit(1); // @ code standards ignore
         }
         CliAnnotatedOptionGroup[] set_on_parse_arr =
                 set_on_parse.toArray(new CliAnnotatedOptionGroup[0]);
         for (CliAnnotatedOptionGroup elt : set_on_parse_arr) {
             elt.set_values();
+        }
+    }
+
+    /** default action for both short and long args */
+    protected void baseHandleUnknownArg(String arg, String next, Options options) {
+        if (errorOnUnknown) {
+            printHelpInner(options, "unknown argument " + arg);
+        } else {
+            System.out.println("WARNING -- unknown argument " + arg);
+        }
+    }
+
+    /** returns true if the argument $next was consumed */
+    protected boolean handleUnknownLongarg(String arg, String next, Options options) {
+        baseHandleUnknownArg(arg, next, options);
+        return true;
+    }
+
+    /** returns true if the argument $next was consumed */
+    protected boolean handleUnknownShortarg(String arg, String next, Options options) {
+        baseHandleUnknownArg(arg, next, options);
+        return true;
+    }
+
+    /** returns true if the argument $next was consumed */
+    protected boolean handleUnknownArg(String arg, String next, Options options) {
+        assert arg.startsWith("-") : "non-option";
+        if (arg.startsWith("--")) {
+            return handleUnknownLongarg(arg, next, options);
+        } else {
+            return handleUnknownShortarg(arg, next, options);
         }
     }
 
@@ -132,16 +168,27 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
     @Override
     protected void processOption(String arg, ListIterator iter) throws ParseException {
         boolean hasOption = getOptions().hasOption(arg);
-        if (!hasOption && !this.errorOnUnknown) {
+        if (!hasOption) {
+            String nextArg = null;
             if (iter.hasNext()) {
                 String str = (String) iter.next();
                 if (str.startsWith("-")) {
                     // got an option
                     iter.previous();
+                } else {
+                    nextArg = str;
                 }
+            }
+            if (!this.handleUnknownArg(arg, nextArg, getOptions()) && (nextArg != null)) {
+                iter.previous();
             }
         } else {
             super.processOption(arg, iter);
         }
+    }
+
+    public String[] getArgs() {
+        assert outArgs != null : "out args null";
+        return outArgs;
     }
 }

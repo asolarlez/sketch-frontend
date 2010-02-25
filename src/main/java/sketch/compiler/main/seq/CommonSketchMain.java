@@ -31,6 +31,9 @@ public class CommonSketchMain {
         options.backendOptions = new Vector<String>();
         Vector<String> backendOptions = options.backendOptions;
 
+        // pass all short-style arguments to the backend
+        backendOptions.addAll(options.backendArgs);
+
         backendOptions.add("-overrideInputs");
         backendOptions.add("" + options.bndOpts.inbits);
 
@@ -67,7 +70,7 @@ public class CommonSketchMain {
     protected void processDirectives(Set<Directive> D) {
         for (Directive d : D)
             if (d instanceof OptionsDirective)
-                options.appendArgsAndReparse(((OptionsDirective) d).options(), false);
+                options.prependArgsAndReparse(((OptionsDirective) d).options(), false);
     }
 
     protected void log(String msg) {
