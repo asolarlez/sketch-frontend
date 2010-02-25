@@ -215,8 +215,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
-		
-		//dump (prog, "bef fpe:");
+		prog = (Program)prog.accept(new ReplaceSketchesWithSpecs());
+		//dump (prog, "after replskwspecs:");
 		
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		// dump (prog, "MBB:");
@@ -226,7 +226,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
-		dump (prog, "Extract Vectors in Casts:");
+		//dump (prog, "Extract Vectors in Casts:");
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
 		//dump (prog, "Extract Vectors in Casts:");
 		prog = (Program)prog.accept(new SeparateInitializers());
@@ -348,21 +348,21 @@ public class SequentialSketchMain extends CommonSketchMain
 		if (options.feOpts.outputXml){
 		    eliminate_star.dump_xml();
         }
-		dump(finalCode, "after elim star");
+		//dump(finalCode, "after elim star");
         finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(), true));
-		dump(finalCode, "After partially evaluating generated code.");
+		//dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
         if (showPhaseOpt("postproc")) {
             dump(finalCode, "After Flattening.");
         }
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
-		//if(showPhaseOpt"taelim")) 
+		if(showPhaseOpt("taelim")) 
 			dump(finalCode, "After Eliminating transitive assignments.");
         finalCode = (Program) finalCode.accept(new EliminateDeadCode(
                         options.feOpts.keepAsserts));
-		dump(finalCode, "After Dead Code elimination.");
+		//dump(finalCode, "After Dead Code elimination.");
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
