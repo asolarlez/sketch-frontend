@@ -12,7 +12,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash sketch --outputtest  --outputcode --keepasserts -synth ABC -verif ABC  --incremental 6 --seed 10 ${x} &> ${x}.output ;
+bash sketch --fe-output-test  --fe-output-code --fe-keep-asserts  --slv-seed 10 ${x} &> ${x}.output ;
 bash script bname >> runoutput;
 done;
 
