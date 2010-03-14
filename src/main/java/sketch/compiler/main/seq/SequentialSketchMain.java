@@ -19,8 +19,10 @@ package sketch.compiler.main.seq;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.Directive;
@@ -51,6 +53,7 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
+import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
@@ -411,7 +414,7 @@ public class SequentialSketchMain extends CommonSketchMain
 					outWriter.close();
 				}
                 if (options.feOpts.outputTest) {
-					String testcode=(String)beforeUnvectorizing.accept(new NodesToCTest(resultFile));
+					String testcode=(String)finalCode.accept(new NodesToCTest(resultFile));
 					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + "_test.cpp");
 					outWriter.write(testcode);
 					outWriter.flush();
@@ -469,7 +472,9 @@ public class SequentialSketchMain extends CommonSketchMain
 //			prog=(Program) prog.accept(new BitTypeRemover(varGen));
 //			prog=(Program) prog.accept(new SimplifyExpressions());
 //		}
-		return prog;
+	    Map<String, String> rm = new HashMap<String, String>();
+	    rm.put("main", "_main");	    
+		return (Program) prog.accept(new MethodRename(rm));
 	}
 
 	public void generateCode(){
@@ -532,6 +537,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public static void main(String[] args)
 	{
+	    long beg = System.currentTimeMillis();	    
 	    checkJavaVersion(1, 6);
         try {
             new SequentialSketchMain(args).run();
@@ -540,6 +546,7 @@ public class SequentialSketchMain extends CommonSketchMain
                     + e.getMessage());
             throw e;
         }
+        System.out.println("Tot time = " + (System.currentTimeMillis() - beg));
 	}
 }
 

@@ -310,32 +310,50 @@ public class NodesToCTest extends NodesToJava {
 		addIndent();
 		List<Parameter> paramsList=func.getParams();
 		List<Parameter> inPars=new ArrayList<Parameter>();
-		Parameter outPar=paramsList.get(paramsList.size()-1);
-		for(int i=0;i<paramsList.size()-1;i++)
-			inPars.add(paramsList.get(i));
+		Parameter outPar = null;
+		for(Parameter p : paramsList){
+		    if(p.isParameterInput()){
+		        assert !p.isParameterOutput() : "Can't have ref parameters for top level functions.";
+		        inPars.add(p);
+		    }else{
+		        outPar = p;
+		    }
+		}
 		
 		for(int i=0;i<inPars.size();i++) {
 			Type inType=inPars.get(i).getType();
 			declareVar(IN+i,inType);
 		}
-		Type outType=outPar.getType();
-		declareVar(OUTSK,outType);
-		declareVar(OUTSP,outType);
+		Type outType= outPar != null ? outPar.getType() : null;
+		if(outPar != null){
+		    declareVar(OUTSK,outType);
+		    declareVar(OUTSP,outType);
+		}
 		writeLine("for(int _test_=0;_test_<"+NTESTS+";_test_++) {");
 		addIndent();
 		for(int i=0;i<inPars.size();i++) {
 			Type inType=inPars.get(i).getType();
 			initVar(IN+i,inType,true);
 		}
-		initVar(OUTSK,outType,false);
-		initVar(OUTSP,outType,false);
+		if(outPar != null){
+		    initVar(OUTSK,outType,false);
+		    initVar(OUTSP,outType,false);
+		}
 		String strInputs="";
-		for(int i=0;i<inPars.size();i++) strInputs+=IN+i+",";
-		writeLine(func.getName()+"("+strInputs+OUTSK+");");
-		writeLine(func.getSpecification()+"("+strInputs+OUTSP+");");
-		//this.padVar(OUTSK, outType);
-		//this.padVar(OUTSP, outType);
-		doCompare(OUTSK,OUTSP,outType,fname,inPars,outPar);
+        for(int i=0;i<inPars.size();i++){
+            if(i != 0){ strInputs += ","; }
+            strInputs+=IN+i;            
+        }
+		if(outPar != null){		
+    		writeLine(func.getName()+"("+strInputs+", "+OUTSK+");");
+    		writeLine(func.getSpecification()+"("+strInputs+", "+OUTSP+");");
+    		//this.padVar(OUTSK, outType);
+    		//this.padVar(OUTSP, outType);
+    		doCompare(OUTSK,OUTSP,outType,fname,inPars,outPar);
+		}else{
+		    writeLine(func.getName()+"("+strInputs+");");
+	        writeLine(func.getSpecification()+"("+strInputs+");");
+		}
 		unIndent();
 		writeLine("}");
 
