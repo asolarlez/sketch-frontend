@@ -141,9 +141,11 @@ public final class CliOption {
     public Object getValue(Class<?> typ, CommandLine cmd_line, boolean no_defaults) {
         final Object[] values = getValues(typ, cmd_line, no_defaults);
         if (values.length != 1) {
-            assertFalse("multiple values provided for command line option", this);
+            System.err.println(String.format(
+                    "NOTE -- multiple values provided for command line option '%s'; using '%s'",
+                    this.full_name(), values[values.length - 1]));
         }
-        return values[0];
+        return values[values.length - 1];
     }
 
     public Object[] getValues(Class<?> typ, CommandLine cmd_line, boolean no_defaults) {

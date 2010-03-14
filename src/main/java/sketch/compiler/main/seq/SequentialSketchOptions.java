@@ -53,7 +53,6 @@ public class SequentialSketchOptions {
 
     public void parseCommandline(SketchCliParser parser) {
         this.currentArgs = parser.inArgs;
-        System.err.println(Arrays.toString(parser.inArgs));
         bndOpts.parse(parser);
         debugOpts.parse(parser);
         feOpts.parse(parser);

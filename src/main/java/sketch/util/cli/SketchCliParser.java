@@ -31,10 +31,7 @@ public class SketchCliParser extends CliParser {
     @Override
     protected boolean handleUnknownLongarg(String arg, String next, Options options) {
         if (!arg.startsWith("--be")) {
-            if (errorOnUnknown) {
-                printHelpAndExit("unknown argument " + arg);
-            }
-            return false;
+            return super.handleUnknownLongarg(arg, next, options);
         }
         if (arg.startsWith("--beopt:")) {
             backendArgs.add("-" + arg.substring(8));
