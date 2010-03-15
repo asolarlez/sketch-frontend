@@ -1,0 +1,21 @@
+pragma options "--sem-main-names test1";
+
+
+struct foo{
+    int x;
+    int y;
+}
+
+void test1(int x){
+    foo[3] f = null;
+    
+    f[0] = new foo();
+    f[0].x = 5;
+    f[0].y = x;
+    f[1] = new foo();
+    f[??].x = ??;
+    f[1].y = x + 1;
+    
+    assert f[0].x + f[0].y == f[1].x + f[1].y;
+    
+}
