@@ -1,0 +1,11 @@
+void test() implements main {
+  int i = 1;
+  while (??) {
+    i = 10;
+  }
+  return;
+}
+
+void main() {
+  return;
+}
