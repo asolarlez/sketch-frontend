@@ -79,7 +79,7 @@ system-install: # usage: make system-install DESTDIR=/usr/bin [SUDOINSTALL=1]
 	make assemble-file FILE=platform_jar_assembly.xml
 	make assemble-file FILE=launchers_assembly.xml
 	mkdir -p $(DESTDIR)
-	sudo=; [ "$(SUDOINSTALL)" ] && { sudo=sudo; }; DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers-*.dir/dist/* && $$sudo install -m 644 *jar "$$DESTDIR" && $$sudo install -m 755 sketch psketch stensk "$$DESTDIR"
+	sudo=; [ "$(SUDOINSTALL)" ] && { sudo=sudo; }; DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers-*/dist/* && $$sudo install -m 644 *jar "$$DESTDIR" && $$sudo install -m 755 sketch psketch stensk "$$DESTDIR"
 
 ### testing
 
