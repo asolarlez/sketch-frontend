@@ -284,4 +284,13 @@ public class Function extends FENode
     {
     	return returnType+" "+name+"("+params+")"+(fImplements!=null? " implements "+fImplements:"");
     }
+    public int hashCode(){
+        return name.hashCode();
+    }
+    public boolean equals(Object o){
+        if(o instanceof Function){
+        return name.equals(((Function)o).getName());
+        }
+        return false;
+    }
 }
