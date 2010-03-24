@@ -27,6 +27,12 @@ public class SketchCliParser extends CliParser {
         super(array, errorOnUnknown);
     }
 
+    @Override
+    protected String getDescription() {
+        return "\nadvanced flags: --be:flag --beopt:option value\n\n" +
+                super.getDescription();
+    }
+
     /** returns true if the argument $next was consumed */
     @Override
     protected boolean handleUnknownLongarg(String arg, String next, Options options) {

@@ -137,20 +137,25 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
         // format the columns in the environment
         hf.setWidth(PlatformLocalization.trygetenv(90, "COLUMNS", "COLS"));
 
-        // generate descriptions of the option groups
+        String description = getDescription();
+
+        if (error_msg != "") {
+            error_msg = "\n\n[ERROR] [SKETCH] " + error_msg;
+        }
+
+        hf.printHelp(usageStr, description, options, error_msg);
+        System.exit(1); // @code standards ignore
+    }
+
+    /** generate descriptions of the option groups */
+    protected String getDescription() {
         StringBuilder description = new StringBuilder();
         description.append("\n");
         for (CliOptionGroup group : opt_groups) {
             description.append(group.prefix + " - " + group.description + "\n");
         }
         description.append(" \n");
-
-        if (error_msg != "") {
-            error_msg = "\n\n[ERROR] [SKETCH] " + error_msg;
-        }
-
-        hf.printHelp(usageStr, description.toString(), options, error_msg);
-        System.exit(1); // @code standards ignore
+        return description.toString();
     }
 
     private Options getOptionsList() {

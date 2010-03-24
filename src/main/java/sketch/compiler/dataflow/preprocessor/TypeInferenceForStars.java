@@ -16,10 +16,12 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtDoWhile;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -49,6 +51,18 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     	Expression ie = stmt.getCond();
     	ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
     	return super.visitStmtIfThen(stmt);
+    }
+
+    public Object visitStmtWhile(StmtWhile stmt){
+      Expression ie = stmt.getCond();
+      ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+      return super.visitStmtWhile(stmt);
+    }
+
+    public Object visitStmtDoWhile(StmtDoWhile stmt){
+      Expression ie = stmt.getCond();
+      ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+      return super.visitStmtDoWhile(stmt);
     }
 
     @Override
