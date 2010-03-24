@@ -4,14 +4,15 @@ pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 ";
 
 int W = 4;
 
+
+
 int lss(int[W] in) {
-	for(int i=0; i<W; ++i){ in[i] = in[i] - 3; }
 	int sum = 0;
 	int maxsum = 0;
 	for(int i = 0;i<W; i++) {
 		sum = 0;
 		for(int j = i; j<W; j++) {
-			sum = sum + in[j];
+			sum = sum + in[j]-3;
 			if(sum > maxsum) maxsum = sum;
 		}
 	}
