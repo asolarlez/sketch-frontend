@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.1 http://maven.apache.org/xsd/assembly-1.1.1.xsd">
 
-    <id>launchers-${osfamily}</id>
+    <id>launchers-${osfamily}-${os.arch}</id>
     <formats>
         <format>dir</format>
     </formats>
@@ -13,14 +13,16 @@
     <fileSets>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <outputDirectory></outputDirectory>
             <includes>
                 <include>sketch-${version}-all-${os.name}-${os.arch}.jar</include>
             </includes>
+            <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
             <directory>${basedir}/scripts/${osfamily}/final</directory>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <outputDirectory></outputDirectory>
+            <fileMode>0755</fileMode>
             <filtered>true</filtered>
         </fileSet>
     </fileSets>
@@ -29,13 +31,15 @@
     <files>
         <file>
             <source>README</source>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <outputDirectory></outputDirectory>
             <filtered>true</filtered>
+            <fileMode>0644</fileMode>
         </file>
         <file>
             <source>COPYING</source>
-            <outputDirectory>dist/${os.name}-${os.arch}</outputDirectory>
+            <outputDirectory></outputDirectory>
             <filtered>true</filtered>
+            <fileMode>0644</fileMode>
         </file>
     </files>
 </assembly>

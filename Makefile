@@ -41,26 +41,21 @@ renamer-script: #HIDDEN
 
 ### distribution
 
-assemble-file: # internal step
-	cp $(FILE) tmp-assembly.xml
-	mvn -e assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
+assemble-file: #HIDDEN
+	cp scripts/build/assembly/$(FILE) tmp-assembly.xml
+	mvn -e compile assembly:assembly -Dsketch-backend-proj=../sketch-backend -Dmaven.test.skip=true
 	rm tmp-assembly.xml
 
 assemble-noarch:
 	make assemble-file FILE=jar_assembly.xml
+	make assemble-file FILE=noarch_launchers_assembly.xml
+	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.4.0-noarch-launchers*)"
 
 assemble-arch:
 	make assemble-file FILE=platform_jar_assembly.xml
 	make assemble-file FILE=launchers_assembly.xml
 	make assemble-file FILE=tar_src_assembly.xml
-
-assemble: # build all related jar files, assuming sketch-backend is at ../sketch-backend
-	mvn -e -q clean compile
-	make assemble-noarch assemble-arch
-	chmod 755 target/sketch-*-launchers.dir/dist/*/install
-	cd target; tar cf sketch-$(VERSION).tar sketch-*-all-*.jar
-
-dist: assemble # alias for assemble
+	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.4.0-launchers*)"
 
 win-installer: assemble-arch
 	basedir=$$(pwd); cd target/*-launchers-windows.dir/dist/*; mv COPYING *jar installer; cd installer; /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensis sketch-installer.nsi; cp *exe "$$basedir"
