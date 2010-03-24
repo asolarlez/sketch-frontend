@@ -187,13 +187,9 @@ public class PlatformLocalization {
         String canonicalName = null;
         try {
             canonicalName = path.getCanonicalPath();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        if (path.exists()) {
-            return canonicalName;
-        } else {
-            try {
+            if (path.exists() && (path.length() == fileIn.available())) {
+                return canonicalName;
+            } else {
                 FileOutputStream fileOut = new FileOutputStream(path);
                 byte[] buffer = new byte[8192];
                 int len;
@@ -209,9 +205,9 @@ public class PlatformLocalization {
                     assert (proc.waitFor() == 0) : "couldn't make cegis executable";
                 }
                 return canonicalName;
-            } catch (Exception e) {
-                System.err.println("couldn't extract cegis binary; " + e);
             }
+        } catch (Exception e) {
+            System.err.println("couldn't extract cegis binary; " + e);
         }
         return null;
     }
