@@ -84,4 +84,9 @@ public class Pair<T1, T2> extends AssertedClass
     {
         return second;
     }
+    
+    @Override
+    public int hashCode() {
+        return first.hashCode() * 271877868 + second.hashCode();
+    }
 }

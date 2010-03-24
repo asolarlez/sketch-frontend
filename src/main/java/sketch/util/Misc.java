@@ -111,4 +111,9 @@ public class Misc extends AssertedClass
 
 		return groups;
 	}
+	
+	public static <T> T nonnull(T obj) {
+	    assert obj != null : "nonnull assert";
+	    return obj;
+	}
 }
