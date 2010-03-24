@@ -200,6 +200,8 @@ public class PlatformLocalization {
                 while ((len = fileIn.read(buffer)) > 0) {
                     fileOut.write(buffer, 0, len);
                 }
+                fileOut.flush();
+                fileOut.close();
                 assert (fileIn.available() == 0) : "didn't read all of file";
                 if (!isWin()) {
                     Process proc =
