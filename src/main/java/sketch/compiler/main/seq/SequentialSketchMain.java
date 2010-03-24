@@ -215,7 +215,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		beforeUnvectorizing = prog;
 		
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
-		
+				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		prog = (Program)prog.accept(new ReplaceSketchesWithSpecs());
@@ -236,7 +236,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		//dump (prog, "SeparateInitializers:");
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
-		// dump (prog, "ScalarizeVectorAssns");
+		//dump (prog, "ScalarizeVectorAssns");
 
 		// By default, we don't protect array accesses in SKETCH
 		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
@@ -321,9 +321,10 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
-		// dump (lprog, "After first elimination of multi-dim arrays:");
+		
         lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl()));
+        
         if (showPhaseOpt("preproc")) {
             dump(lprog, "After Preprocessing");
         }
@@ -354,7 +355,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		//dump(finalCode, "after elim star");
         finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(), true));
-		//dump(finalCode, "After partially evaluating generated code.");
+		dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
         if (showPhaseOpt("postproc")) {
             dump(finalCode, "After Flattening.");

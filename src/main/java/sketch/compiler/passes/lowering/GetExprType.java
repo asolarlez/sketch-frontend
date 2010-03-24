@@ -80,7 +80,7 @@ public class GetExprType extends FENullVisitor
     	exp.assertTrue (exp.getMembers ().size () == 1,
     			"Array Range expressions not yet implemented; check "+exp);
     	Type base = (Type)exp.getBase().accept(this);
-
+    	
 		List l=exp.getMembers();
 		Expression expr = null;
 		for(int i=0;i<l.size();i++) {
@@ -444,10 +444,10 @@ public class GetExprType extends FENullVisitor
 
         Type rv = tl.leastCommonPromotion(tr);
         
-        if(rv == null && (tl instanceof TypeStructRef || tl instanceof TypeStruct || tr instanceof TypeStruct || tr instanceof TypeStructRef) && (tl == TypePrimitive.inttype || tr == TypePrimitive.inttype)){
+        if(rv == null && (tl instanceof TypeStructRef || tl instanceof TypeStruct || tr instanceof TypeStruct || tr instanceof TypeStructRef) && (tl == TypePrimitive.bittype || tr == TypePrimitive.bittype ||   tl == TypePrimitive.inttype || tr == TypePrimitive.inttype)){
         	return TypePrimitive.inttype;
         }
-        
+
 
         assert rv != null : left.getCx() + ": Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
 
