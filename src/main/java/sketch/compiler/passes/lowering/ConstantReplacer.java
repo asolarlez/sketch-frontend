@@ -1,6 +1,7 @@
 package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -17,6 +19,7 @@ import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -32,6 +35,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 public class ConstantReplacer extends FEReplacer {
 
 	private HashMap<String,Integer> constants;
+    protected HashSet<String> assignedVars;
 
 	public ConstantReplacer(Map<String, Integer> subs) {
 		constants=new HashMap<String,Integer>();
@@ -45,6 +49,9 @@ public class ConstantReplacer extends FEReplacer {
 		init=(Expression) init.accept(this);
 		if(init instanceof ExprConstInt) {
 			if(constants.get(name)!=null) return false;
+            if (assignedVars.contains(name)) {
+                return false;
+            }
 			constants.put(name,((ExprConstInt)init).getVal());
 			return true;
 		}
@@ -89,6 +96,7 @@ public class ConstantReplacer extends FEReplacer {
 			String name=field.getName(i);
 			Expression init=field.getInit(i);
 			if(!addConstant(type,name,init)) {
+			    // add it to a list to put back into the FieldDecls
 				types.add(type);
 				names.add(name);
 				inits.add(init);
@@ -207,4 +215,32 @@ public class ConstantReplacer extends FEReplacer {
 		return super.visitStmtVarDecl(stmt);
 	}
 
+    @Override
+    public Object visitProgram(Program prog) {
+        final GetValDefs getValDefs = new GetValDefs();
+        getValDefs.visitProgram(prog);
+        this.assignedVars = getValDefs.vars;
+        return super.visitProgram(prog);
+    }
+
+    public static class GetValDefs extends FEReplacer {
+        public HashSet<String> vars = new HashSet<String>();
+        protected boolean isInAssign;
+
+        @Override
+        public Object visitStmtAssign(StmtAssign stmt) {
+            isInAssign = true;
+            stmt.getLHS().accept(this);
+            isInAssign = false;
+            return super.visitStmtAssign(stmt);
+        }
+
+        @Override
+        public Object visitExprVar(ExprVar exp) {
+            if (isInAssign) {
+                vars.add(exp.getName());
+            }
+            return super.visitExprVar(exp);
+        }
+    }
 }
