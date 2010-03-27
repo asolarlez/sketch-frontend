@@ -9,6 +9,6 @@ void fcn(int[N] arr1, int x) {
 
 void main() {
     int[N] tmp = ??;
-    fcn(tmp, ??);
+    fcn(tmp, 4);
     fcn(tmp, ??);
 }

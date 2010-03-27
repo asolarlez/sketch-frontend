@@ -29,7 +29,7 @@ import sketch.compiler.passes.streamit_old.SJWeightedRR;
  *
  * @author liviu
  */
-public class SNodesToFortran implements FEVisitor {
+public class SNodesToFortran extends FENullVisitor {
 
 	private static class VarCollector extends FEReplacer {
 		private final List<String> ret;
@@ -739,6 +739,4 @@ public class SNodesToFortran implements FEVisitor {
     public Object visitExprRegen(ExprRegen e) { throw new UnsupportedOperationException(); }
 
 	public Object visitStmtSwitch(StmtSwitch sw) {	throw new UnsupportedOperationException();	}
-
-	
 }

@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 
 /**
  * create an artificial nospec() function if there is a main function present (that
@@ -28,6 +29,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
+@CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class MainMethodCreateNospec extends FEReplacer {
     public final Vector<Function> mainFcns = new Vector<Function>();
     public final HashSet<String> mainNames;
@@ -91,8 +93,7 @@ public class MainMethodCreateNospec extends FEReplacer {
     @Override
     public Object visitFunction(Function func) {
         boolean isMainName = mainNames.contains(func.getName());
-        if (isMainName && func.getSpecification() == null)
-        {
+        if (isMainName && func.getSpecification() == null) {
             mainFcns.add(func);
         } else if (isMainName) {
             if (func.getSpecification() != null) {

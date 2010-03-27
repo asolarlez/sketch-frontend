@@ -26,6 +26,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtDoWhile;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtMinLoop;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 
 /**
@@ -117,5 +118,14 @@ public class MakeBodiesBlocks extends FEReplacer
         if (newBody == stmt.getBody())
             return stmt;
         return new StmtWhile(stmt, stmt.getCond(), newBody);
+    }
+    
+    @Override
+    public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) {
+        Statement newBody = (Statement)stmtMinLoop.getBody().accept(this);
+        newBody = buildBlock(newBody);
+        if (newBody == stmtMinLoop.getBody())
+            return stmtMinLoop;
+        return new StmtMinLoop(stmtMinLoop, newBody);
     }
 }

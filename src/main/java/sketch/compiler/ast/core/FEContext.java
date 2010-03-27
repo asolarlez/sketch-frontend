@@ -128,7 +128,12 @@ public class FEContext
     }
 
     public static FEContext artificalFrom(String name, FENode node0) {
-        FEContext cx0 = node0.getCx();
+        FEContext cx0;
+        if (node0 == null) {
+            cx0 = new FEContext("null context");
+        } else {
+            cx0 = node0.getCx();
+        }
         return new FEContext(String.format("artificially inserted %s, from %s",
                 name, cx0.getFileName(), cx0.getLineNumber(), cx0
                         .getColumnNumber()));

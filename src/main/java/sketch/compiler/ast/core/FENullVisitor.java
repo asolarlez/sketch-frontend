@@ -108,4 +108,6 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return null; }
 	public Object visitStmtSwitch(StmtSwitch sw) { return null; }
+	public Object visitMinimize(StmtMinimize stmtMinimize) { return null; }
+    public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
 }

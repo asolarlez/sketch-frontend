@@ -16,6 +16,7 @@
 
 package sketch.compiler.main.seq;
 
+
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
@@ -51,6 +53,7 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
@@ -237,6 +240,9 @@ public class SequentialSketchMain extends CommonSketchMain
 		//prog = (Program)prog.accept(new NoRefTypes());
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 		// dump (prog, "ScalarizeVectorAssns");
+		
+		// add cost for loop-loops
+		//prog = 
 
 		// By default, we don't protect array accesses in SKETCH
 		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
@@ -285,7 +291,29 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	}
 
-	protected Program preprocessProgram(Program lprog) {
+	/** hack to check deps across stages; accessed by CompilerStage */
+    public final HashSet<Class<? extends FEVisitor>> runClasses =
+            new HashSet<Class<? extends FEVisitor>>();
+
+    public class PreProcStage1 extends CompilerStage {
+        public PreProcStage1() {
+            super(SequentialSketchMain.this);
+            FEVisitor[] passes2 =
+                    { new ReplaceMinLoops(varGen),
+                            new MainMethodCreateNospec(options.semOpts.mainNames) };
+            passes = passes2;
+        }
+    }
+
+    public class IRStage1 extends CompilerStage {
+        public IRStage1() {
+            super(SequentialSketchMain.this);
+            FEVisitor[] passes2 = { new GlobalsToParams(varGen) };
+            passes = passes2;
+        }
+    }
+
+    protected Program preprocessProgram(Program lprog) {
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 		//invoke post-parse passes
@@ -298,8 +326,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-		lprog = (Program)lprog.accept(new MainMethodCreateNospec(
-		        options.semOpts.mainNames));
+		lprog = (new PreProcStage1()).run(lprog);
 		//dump (lprog, "~regens");
 		
 		//dump (lprog, "extract clc");
@@ -321,7 +348,10 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
-		// dump (lprog, "After first elimination of multi-dim arrays:");
+
+        lprog = (new IRStage1()).run(lprog);
+
+        // dump (lprog, "After first elimination of multi-dim arrays:");
         lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl()));
         if (showPhaseOpt("preproc")) {
@@ -544,9 +574,10 @@ public class SequentialSketchMain extends CommonSketchMain
         } catch (RuntimeException e) {
             System.err.println("[ERROR] [SKETCH] Failed with exception "
                     + e.getMessage());
+            e.printStackTrace();
             throw e;
         }
-        System.out.println("Tot time = " + (System.currentTimeMillis() - beg));
+        System.out.println("Total time = " + (System.currentTimeMillis() - beg));
 	}
 }
 

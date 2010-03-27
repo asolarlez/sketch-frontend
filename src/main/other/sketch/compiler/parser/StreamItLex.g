@@ -42,7 +42,7 @@ tokens {
 	"fork";
 	"insert";
 	"into";
-	"loop"; "repeat";
+	"loop"; "repeat"; "minrepeat";
 	"new";
 	"null";
 	"reorder";

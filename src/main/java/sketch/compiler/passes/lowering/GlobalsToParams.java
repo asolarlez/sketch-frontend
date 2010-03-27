@@ -1,0 +1,334 @@
+package sketch.compiler.passes.lowering;
+
+import java.util.HashMap;
+import java.util.Vector;
+import java.util.Map.Entry;
+
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.structure.CallGraph;
+import sketch.util.Pair;
+import sketch.util.datastructures.HashmapSet;
+import sketch.util.datastructures.TypedHashMap;
+import sketch.util.datastructures.TypedHashSet;
+
+/**
+ * convert global variables to inout parameters, with a static initializer function.
+ * 
+ * <pre>
+ * int G = 4;
+ * int G2 = ??;
+ * 
+ * void fcn()
+ *      x = G;
+ *      G = ??;
+ * </pre>
+ * 
+ * to
+ * 
+ * <pre>
+ * void fcn(ref G)
+ * 
+ * void getGInitial() { return G; }
+ * 
+ * main implements ...
+ *     G = getGInitial()
+ *     fcn(G)
+ * </pre>
+ * 
+ * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+ * @license This file is licensed under BSD license, available at
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
+ */
+@CompilerPassDeps(runsAfter = {}, runsBefore = {})
+public class GlobalsToParams extends FEReplacer {
+    protected CallGraph callGraph;
+    protected GlobalFieldNames fldNames;
+    protected FcnToParamsMap newParamsForCall = new FcnToParamsMap();
+    protected GlobalExprs glblExprs;
+    protected final TempVarGen varGen;
+    protected final TypedHashMap<String, Function> glblInitFcns =
+            new TypedHashMap<String, Function>();
+    protected final TypedHashSet<Function> fcnsToAdd = new TypedHashSet<Function>();
+    protected Function enclosingFcn;
+
+    public GlobalsToParams(TempVarGen varGen) {
+        this.varGen = varGen;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Entry<Function, HashMap<String, AddedParam>> v : newParamsForCall.entrySet())
+        {
+            sb.append("=== new params for " + v.getKey().getName() + " ===\n");
+            for (AddedParam param : v.getValue().values()) {
+                sb.append("    glbl " + param.globalVar + " =: " + param.paramName + "\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public Object visitProgram(Program prog) {
+        this.callGraph = new CallGraph(prog);
+        this.fldNames = new GlobalFieldNames();
+        this.glblExprs = new GlobalExprs();
+        prog.accept(this.fldNames);
+        prog.accept(this.glblExprs);
+
+        // add all base expressions
+        for (Pair<Function, Function> closureEdge : callGraph.closureEdges.edges) {
+            final Function callee = closureEdge.getSecond();
+            final HashMap<String, AddedParam> calleeParams =
+                    newParamsForCall.getCreate(callee);
+            for (String globalVarName : this.glblExprs.globalVarRefs.getOrEmpty(callee)) {
+                calleeParams.put(globalVarName, fldNames.createParam(globalVarName));
+            }
+        }
+
+        // add all necessary params for callers (closure of above)
+        for (Pair<Function, Function> closureEdge : callGraph.closureEdges.edges) {
+            final Function caller = closureEdge.getFirst();
+            final Function callee = closureEdge.getSecond();
+            final HashMap<String, AddedParam> callerParams =
+                    newParamsForCall.getCreate(caller);
+            final HashMap<String, AddedParam> calleeParams =
+                    newParamsForCall.getCreate(callee);
+            for (AddedParam calleeParam : calleeParams.values()) {
+                if (!callerParams.containsKey(calleeParam.globalVar)) {
+                    callerParams.put(calleeParam.globalVar, new AddedParam(
+                            calleeParam.globalVar, calleeParam.typ));
+                }
+            }
+        }
+
+        // add all initialization functions
+        for (String fldName : this.fldNames.getFieldNames()) {
+            final Function initFcn =
+                    getInitFcn(fldName, fldNames.getType(fldName),
+                            fldNames.getFieldInit(fldName));
+            glblInitFcns.put(fldName, initFcn);
+            fcnsToAdd.add(initFcn);
+        }
+
+        // replace all function calls
+        System.err.println(this);
+        final Object result = super.visitProgram(prog);
+        assert fcnsToAdd.isEmpty();
+        return result;
+    }
+
+    @Override
+    public Object visitStreamSpec(StreamSpec spec) {
+        spec = (StreamSpec) super.visitStreamSpec(spec);
+        final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
+        for (Function fcn : this.fcnsToAdd) {
+            fcns.add(fcn);
+        }
+        this.fcnsToAdd.clear();
+        return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
+                spec.getParams(), spec.getVars(), fcns);
+    }
+
+    @Override
+    public Object visitFunction(Function inputFcn) {
+        enclosingFcn = inputFcn;
+        final Function fcn = (Function) super.visitFunction(inputFcn);
+
+        // the hashmap only contains keys for the old function.
+        // NOTE -- a litte messy, please add better ideas if you have them.
+        if (newParamsForCall.containsKey(inputFcn)) {
+            if (fcn.getSpecification() == null) {
+                final Vector<Parameter> params = new Vector<Parameter>(fcn.getParams());
+
+                // same here, need to look up the old function
+                params.addAll(getParametersForFcn(inputFcn));
+                return new Function(fcn, fcn.getCls(), fcn.getName(),
+                        fcn.getReturnType(), params, fcn.getBody());
+            } else {
+                StmtBlock body = (StmtBlock) fcn.getBody();
+                Vector<Statement> stmts = new Vector<Statement>(body.getStmts());
+                for (AddedParam param : newParamsForCall.get(inputFcn).values()) {
+                    // typ x;
+                    stmts.insertElementAt(new StmtVarDecl(fcn, param.typ,
+                            param.paramName, null), 0);
+
+                    // init(&x)
+                    ExprVar ref = new ExprVar(fcn, param.paramName);
+                    stmts.insertElementAt(new StmtExpr(param.getInitVarCall(body, ref)),
+                            1);
+                }
+                body = new StmtBlock(stmts);
+                return new Function(fcn, fcn.getCls(), fcn.getName(),
+                        fcn.getReturnType(), fcn.getParams(), fcn.getSpecification(),
+                        body);
+            }
+        } else {
+            return fcn;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public Object visitExprFunCall(ExprFunCall call) {
+        Vector<Expression> fcnArgs = new Vector<Expression>(call.getParams());
+        Function caller = callGraph.getEnclosing(call);
+        Function callee = callGraph.getTarget(call);
+        for (AddedParam param : newParamsForCall.get(callee).values()) {
+            String localVarName =
+                    newParamsForCall.get(caller).get(param.globalVar).paramName;
+            fcnArgs.add(new ExprVar(FEContext.artificalFrom("ref-" + localVarName, call),
+                    localVarName));
+        }
+        return new ExprFunCall(call, call.getName(), fcnArgs);
+    }
+
+    @Override
+    public Object visitExprVar(ExprVar exp) {
+        if (fldNames.hasName(exp.getName())) {
+            return new ExprVar(exp,
+                    newParamsForCall.get(enclosingFcn).get(exp.getName()).paramName);
+        } else {
+            return super.visitExprVar(exp);
+        }
+    }
+
+    @SuppressWarnings( { "deprecation" })
+    public Function getInitFcn(String glblName, Type type, Expression expression) {
+        if (expression.getCx() == null) {
+            assert false;
+        }
+        final FEContext ctx = FEContext.artificalFrom("global_init_fcn", expression);
+
+        String tmpName = varGen.nextVar(glblName);
+        Vector<Parameter> params = new Vector<Parameter>();
+        Parameter outvar = new Parameter(type, tmpName, Parameter.OUT);
+        params.add(outvar);
+        StmtAssign assign = new StmtAssign(new ExprVar(ctx, tmpName), expression);
+
+        StmtBlock body = new StmtBlock(assign);
+        return Function.newStatic(ctx, varGen.nextVar("glblInit_" + glblName), type,
+                params, null, body);
+    }
+
+    public class AddedParam {
+        public final String globalVar;
+        public final Type typ;
+        public final String paramName;
+
+        public AddedParam(String globalVar, Type typ, String paramName) {
+            this.globalVar = globalVar;
+            this.typ = typ;
+            this.paramName = paramName;
+        }
+
+        @SuppressWarnings( { "deprecation" })
+        public ExprFunCall getInitVarCall(StmtBlock ctx, ExprVar param) {
+            final Function fcn = glblInitFcns.get(globalVar);
+            Vector<Expression> args = new Vector<Expression>();
+            args.add(param);
+            return new ExprFunCall(FEContext.artificalFrom("init var call", ctx),
+                    fcn.getName(), args);
+        }
+
+        public AddedParam(String globalVar, Type typ) {
+            this(globalVar, typ, varGen.nextVar(globalVar));
+        }
+    }
+
+    public String getTmpVarForGlobal(Function function, String globalName) {
+        return newParamsForCall.get(function).get(globalName).paramName;
+    }
+
+    public Vector<Parameter> getParametersForFcn(Function fcn) {
+        Vector<Parameter> newParams = new Vector<Parameter>();
+        for (AddedParam param : newParamsForCall.get(fcn).values()) {
+            newParams.add(new Parameter(param.typ, param.paramName, Parameter.REF));
+        }
+        return newParams;
+    }
+
+    public class GlobalFieldNames extends FEReplacer {
+        private final TypedHashSet<String> fieldNames = new TypedHashSet<String>();
+        private final TypedHashMap<String, Type> fieldTypes =
+                new TypedHashMap<String, Type>();
+        private final TypedHashMap<String, Expression> fieldInits =
+                new TypedHashMap<String, Expression>();
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Object visitFieldDecl(FieldDecl field) {
+            this.getFieldNames().addAll(field.getNames());
+            fieldTypes.addZipped(field.getNames(), field.getTypes());
+            fieldInits.addZipped(field.getNames(), field.getInits());
+            return field;
+        }
+
+        public boolean hasName(String name) {
+            return fieldNames.contains(name);
+        }
+
+        public AddedParam createParam(String globalVar) {
+            return new AddedParam(globalVar, fieldTypes.get(globalVar));
+        }
+
+        public TypedHashSet<String> getFieldNames() {
+            return fieldNames;
+        }
+
+        public Type getType(String glblName) {
+            return fieldTypes.get(glblName);
+        }
+
+        public Expression getFieldInit(String glblName) {
+            return fieldInits.get(glblName);
+        }
+    }
+
+    public class GlobalExprs extends FEReplacer {
+        HashmapSet<Function, String> globalVarRefs = new HashmapSet<Function, String>();
+        protected Function enclosing;
+
+        @Override
+        public Object visitFunction(Function func) {
+            this.enclosing = func;
+            return super.visitFunction(func);
+        }
+
+        @Override
+        public Object visitExprVar(ExprVar exp) {
+            if (fldNames.getFieldNames().contains(exp.getName())) {
+                System.err.println("adding global var ref " + exp.getName());
+                globalVarRefs.add(enclosing, exp.getName());
+            }
+            return super.visitExprVar(exp);
+        }
+    }
+
+    public static class FcnToParamsMap extends
+            TypedHashMap<Function, HashMap<String, AddedParam>>
+    {
+        @Override
+        public HashMap<String, AddedParam> createValue() {
+            return new HashMap<String, AddedParam>();
+        }
+    }
+}

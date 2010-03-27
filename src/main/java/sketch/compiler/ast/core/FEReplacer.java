@@ -862,4 +862,24 @@ public class FEReplacer implements FEVisitor
 		// TODO add visitSwmtSwitch
 		throw new RuntimeException("Not yet implemented");
 	}
+
+    /** generic tree replacement code */
+    public Object visitMinimize(StmtMinimize stmtMinimize) {
+        final Expression newVariable =
+                (Expression) stmtMinimize.getMinimizeExpr().accept(this);
+        if (newVariable == stmtMinimize.getMinimizeExpr()) {
+            return stmtMinimize;
+        } else {
+            return new StmtMinimize(newVariable);
+        }
+    }
+
+    public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) {
+        final Statement newBody = (Statement) stmtMinLoop.getBody().accept(this);
+        if (newBody == stmtMinLoop.getBody()) {
+            return stmtMinLoop;
+        } else {
+            return new StmtMinLoop(stmtMinLoop, newBody);
+        }
+    }
 }

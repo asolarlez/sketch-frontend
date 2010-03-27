@@ -262,6 +262,10 @@ loop_statement returns [Statement s] { s = null; Expression exp; Statement b; To
 	{ s = new StmtLoop(getContext(x), exp, b); }
 	;
 
+minrepeat_statement returns [Statement s] { s = null; Statement b; Token x=null;}
+    : (t2:TK_minrepeat{x=t2;}) b=pseudo_block
+    { s = new StmtMinLoop(getContext(x), b); }
+    ;
 
 fork_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
 	: t:TK_fork LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block

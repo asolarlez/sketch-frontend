@@ -111,4 +111,6 @@ public interface FEVisitor
     public Object visitStmtReorderBlock(StmtReorderBlock block);
     public Object visitStmtSwitch(StmtSwitch sw);
     public Object visitExprNullPtr(ExprNullPtr nptr);
+    public Object visitMinimize(StmtMinimize stmtMinimize);
+    public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
 }
