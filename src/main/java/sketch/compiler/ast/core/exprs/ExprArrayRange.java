@@ -8,6 +8,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.passes.structure.GetAssignLHS;
 
 /**
  * An array-range reference. A[0:2] means the first 3 elements of A, and
@@ -238,19 +239,9 @@ public class ExprArrayRange extends Expression  implements ExprArray
         return indices;
     }
 
-
-
-	public ExprVar getAbsoluteBase(){
-		Expression base= getBase();
-		if (base instanceof ExprArrayRange) {
-        	return ((ExprArrayRange)base).getAbsoluteBase();
-        } else if (base instanceof ExprVar) {
-        	return ((ExprVar)base);
-        } else {
-        	report ("unexpected array base: "+ this + ", of type");
-        	throw new RuntimeException ();
-        }
-	}
+    public ExprVar getAbsoluteBase() {
+        return (new GetAssignLHS()).visitExprArrayRange(this);
+    }
 
 	/**
 	 * @return the bottom-level object being indexed; e.g:

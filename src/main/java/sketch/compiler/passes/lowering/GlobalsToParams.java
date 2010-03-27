@@ -122,11 +122,13 @@ public class GlobalsToParams extends FEReplacer {
 
         // add all initialization functions
         for (String fldName : this.fldNames.getFieldNames()) {
-            final Function initFcn =
-                    getInitFcn(fldName, fldNames.getType(fldName),
-                            fldNames.getFieldInit(fldName));
-            glblInitFcns.put(fldName, initFcn);
-            fcnsToAdd.add(initFcn);
+            final Expression fieldInit = fldNames.getFieldInit(fldName);
+            if (fieldInit != null) {
+                final Function initFcn =
+                        getInitFcn(fldName, fldNames.getType(fldName), fieldInit);
+                glblInitFcns.put(fldName, initFcn);
+                fcnsToAdd.add(initFcn);
+            }
         }
 
         // replace all function calls
@@ -172,9 +174,11 @@ public class GlobalsToParams extends FEReplacer {
                             param.paramName, null), 0);
 
                     // init(&x)
-                    ExprVar ref = new ExprVar(fcn, param.paramName);
-                    stmts.insertElementAt(new StmtExpr(param.getInitVarCall(body, ref)),
-                            1);
+                    if (param.hasInitCall()) {
+                        ExprVar ref = new ExprVar(fcn, param.paramName);
+                        stmts.insertElementAt(new StmtExpr(
+                                param.getInitVarCall(body, ref)), 1);
+                    }
                 }
                 body = new StmtBlock(stmts);
                 return new Function(fcn, fcn.getCls(), fcn.getName(),
@@ -203,9 +207,10 @@ public class GlobalsToParams extends FEReplacer {
 
     @Override
     public Object visitExprVar(ExprVar exp) {
-        if (fldNames.hasName(exp.getName())) {
-            return new ExprVar(exp,
-                    newParamsForCall.get(enclosingFcn).get(exp.getName()).paramName);
+        if (fldNames.hasName(exp.getName()) && (enclosingFcn != null)) {
+            final HashMap<String, AddedParam> fcnGlbls =
+                    newParamsForCall.get(enclosingFcn);
+            return new ExprVar(exp, fcnGlbls.get(exp.getName()).paramName);
         } else {
             return super.visitExprVar(exp);
         }
@@ -240,6 +245,10 @@ public class GlobalsToParams extends FEReplacer {
             this.paramName = paramName;
         }
 
+        public boolean hasInitCall() {
+            return glblInitFcns.get(globalVar) != null;
+        }
+
         @SuppressWarnings( { "deprecation" })
         public ExprFunCall getInitVarCall(StmtBlock ctx, ExprVar param) {
             final Function fcn = glblInitFcns.get(globalVar);
@@ -266,6 +275,7 @@ public class GlobalsToParams extends FEReplacer {
         return newParams;
     }
 
+    /** find the names of global variables */
     public class GlobalFieldNames extends FEReplacer {
         private final TypedHashSet<String> fieldNames = new TypedHashSet<String>();
         private final TypedHashMap<String, Type> fieldTypes =
@@ -303,6 +313,7 @@ public class GlobalsToParams extends FEReplacer {
         }
     }
 
+    /** detect references to global variables, and record the enclosing functions */
     public class GlobalExprs extends FEReplacer {
         HashmapSet<Function, String> globalVarRefs = new HashmapSet<Function, String>();
         protected Function enclosing;

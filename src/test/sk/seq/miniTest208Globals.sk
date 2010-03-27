@@ -9,6 +9,8 @@ void fcn(int[N] arr1, int x) {
 
 void main() {
     int[N] tmp = ??;
+    // G = 4
     fcn(tmp, 4);
+    // G = 8; assert(?? == 8)
     fcn(tmp, ??);
 }

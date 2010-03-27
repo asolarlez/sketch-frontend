@@ -18,7 +18,9 @@ package sketch.compiler.ast.core.stmts;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.passes.structure.GetAssignLHS;
 
 /**
  * A statement that assigns a value to an expression.  This has a
@@ -71,6 +73,10 @@ public class StmtAssign extends Statement
     public StmtAssign(FENode cx, Expression lhs, Expression rhs)
     {
         this(cx, lhs, rhs, 0);
+    }
+    
+    public ExprVar getLhsBase() {
+        return (new GetAssignLHS()).visitStmtAssign(this);
     }
 
     /** Returns the left-hand side of this. */

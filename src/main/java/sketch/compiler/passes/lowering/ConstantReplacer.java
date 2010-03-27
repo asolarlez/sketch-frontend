@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FEVisitorException;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
@@ -229,18 +230,10 @@ public class ConstantReplacer extends FEReplacer {
 
         @Override
         public Object visitStmtAssign(StmtAssign stmt) {
-            isInAssign = true;
-            stmt.getLHS().accept(this);
-            isInAssign = false;
+            try {
+                vars.add(stmt.getLhsBase().getName());
+            } catch (FEVisitorException e) {}
             return super.visitStmtAssign(stmt);
-        }
-
-        @Override
-        public Object visitExprVar(ExprVar exp) {
-            if (isInAssign) {
-                vars.add(exp.getName());
-            }
-            return super.visitExprVar(exp);
         }
     }
 }
