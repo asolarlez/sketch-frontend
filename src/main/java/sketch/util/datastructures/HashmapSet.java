@@ -1,6 +1,5 @@
 package sketch.util.datastructures;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -11,7 +10,7 @@ import java.util.HashSet;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class HashmapSet<K, V> extends HashMap<K, HashSet<V>> {
+public class HashmapSet<K, V> extends TypedHashMap<K, HashSet<V>> {
     private static final long serialVersionUID = 1L;
 
     public boolean add(final K key, final V value) {

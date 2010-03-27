@@ -1,6 +1,5 @@
 package sketch.util.datastructures;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -11,7 +10,7 @@ import java.util.Vector;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class HashmapList<K, V> extends HashMap<K, Vector<V>> {
+public class HashmapList<K, V> extends TypedHashMap<K, Vector<V>> {
     private static final long serialVersionUID = 1L;
 
     public void append(final K key, final V value) {
