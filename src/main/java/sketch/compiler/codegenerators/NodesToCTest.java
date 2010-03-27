@@ -344,9 +344,12 @@ public class NodesToCTest extends NodesToJava {
             if(i != 0){ strInputs += ","; }
             strInputs+=IN+i;            
         }
-		if(outPar != null){		
-    		writeLine(func.getName()+"("+strInputs+", "+OUTSK+");");
-    		writeLine(func.getSpecification()+"("+strInputs+", "+OUTSP+");");
+		if(outPar != null){	
+		    if(strInputs.length() > 0){
+		        strInputs += ",";
+		    }
+    		writeLine(func.getName()+"("+strInputs+OUTSK+");");
+    		writeLine(func.getSpecification()+"("+strInputs+OUTSP+");");
     		//this.padVar(OUTSK, outType);
     		//this.padVar(OUTSP, outType);
     		doCompare(OUTSK,OUTSP,outType,fname,inPars,outPar);

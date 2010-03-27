@@ -115,6 +115,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 state.pushLevel();
                 fun = (Function)this.visitFunction(newFun);
                 state.popLevel();
+                newFuns.put(specName, fun);
             }
         }
         if (fun != null) {
