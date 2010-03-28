@@ -15,7 +15,15 @@ import java.util.Set;
  *          changes, please consider contributing back!
  */
 public class TypedHashMap<K, V> {
-    private final HashMap<K, V> base = new HashMap<K, V>();
+    private final HashMap<K, V> base;
+
+    public TypedHashMap() {
+        base = new HashMap<K, V>();
+    }
+
+    public TypedHashMap(int initialCapacity) {
+        base = new HashMap<K, V>(initialCapacity);
+    }
 
     public void clear() { base.clear(); }
     public boolean containsKey(K key) { return base.containsKey(key); }

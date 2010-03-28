@@ -1,0 +1,71 @@
+
+
+// === Python code ===
+
+// def computeF(x0):
+//     G = [0]
+// 
+//     def g(x):
+//         if (x % 2 == 0):
+//             G[0] += 1
+//             f(x - 2)
+//         else: f(x - 1)
+// 
+//     def f(x):
+//         if x > 0:
+//             G[0] += 1
+//             g(x - 1)
+// 
+//     f(x0)
+//     return G[0]
+// 
+// print("\n".join("f(%s) = %s" %(v, computeF(v)) for v in range(10)))
+
+// === Value of G (if it started at zero) ===
+
+// f(0) = 0
+// f(1) = 2
+// f(2) = 1
+// f(3) = 2
+// f(4) = 2
+// f(5) = 3
+// f(6) = 3
+// f(7) = 4
+// f(8) = 4
+// f(9) = 5
+
+// === Expected results ===
+// G = 2, G2 = 0, G3 = 5
+
+
+
+// need to create an accessor even though it's not assigned to
+int G = 0;
+int G2 = ??;
+int G3 = ??;
+
+void g(int numToRecurse) {
+    if (numToRecurse % 2 == 0) {
+        G += 1;
+        f(numToRecurse - 2);
+    } else {
+        f(numToRecurse - 1);
+    }
+}
+
+void f(int numToRecurse) {
+    if (numToRecurse > 0) {
+        G += 1;
+        g(numToRecurse - 1);
+    }
+}
+
+pragma options "--sem-main-names main1,main2,main3"; 
+void main1() {
+    // TODO -- assert G == 7 and init G = ??
+    // f(9);
+    // assert G == 5;
+}
+
+void main2() { assert G3 % 2 == 1; }
+void main3() { assert (4 <= G3) && (G3 <= 6); }

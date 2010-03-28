@@ -4,6 +4,7 @@ import static sketch.util.DebugOut.assertFalse;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -263,6 +264,23 @@ public class PlatformLocalization {
         } catch (IOException e) {
             assertFalse("canonicalPath failed for subpaths", subpaths);
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * @param name
+     *            e.g. "detailed stack trace"
+     */
+    public void writeDebugMsg(String name, String contents, String... subpaths) {
+        final File filePath = path(tmpdir, subpaths);
+        try {
+            FileWriter writer = new FileWriter(filePath);
+            writer.write(contents);
+            writer.close();
+            System.err.println("[DEBUG] [SKETCH] " + name + " written to file: " +
+                    filePath.getPath());
+        } catch (IOException e) {
+            System.err.println("[ERROR] [SKETCH] couldn't write output file " + filePath);
         }
     }
 }

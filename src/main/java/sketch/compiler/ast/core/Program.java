@@ -18,6 +18,7 @@ package sketch.compiler.ast.core;
 import java.util.List;
 
 import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 
 /**
  * An entire StreamIt program.  This includes all of the program's
@@ -59,5 +60,8 @@ public class Program extends FENode
     {
         return v.visitProgram(this);
     }
-}
 
+    public void debugDump() {
+        System.out.println((new SimpleCodePrinter()).visitProgram(this));
+    }
+}

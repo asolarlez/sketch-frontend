@@ -66,7 +66,8 @@ import sketch.compiler.stencilSK.EliminateStarStatic;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
-import sketch.util.ProgramParseException;
+import sketch.util.exceptions.ProgramParseException;
+import sketch.util.exceptions.SketchException;
 
 
 
@@ -268,7 +269,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		{
             Pair<Program, Set<Directive>> res = parseFiles(options.argsAsList);
             if (res == null) {
-                throw new ProgramParseException();
+                throw new ProgramParseException("could not parse program");
             }
             prog = res.getFirst();
             processDirectives(res.getSecond());
@@ -336,13 +337,11 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
-		//dump (lprog, "tifs:");
-		lprog = (Program)lprog.accept(new TypeInferenceForStars());
-		//dump (lprog, "tifs:");
 
         lprog = (new IRStage1()).run(lprog);
-        // lprog.debugDump();
-        // System.exit(0);
+
+        lprog = (Program) lprog.accept(new TypeInferenceForStars());
+        // dump (lprog, "tifs:");
 
 		lprog.accept(new PerformFlowChecks());
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
@@ -564,9 +563,8 @@ public class SequentialSketchMain extends CommonSketchMain
         checkJavaVersion(1, 6);
         try {
             new SequentialSketchMain(args).run();
-        } catch (ProgramParseException e) {
-            System.err.println("[ERROR] [SKETCH] Failed with exception; message: " +
-                    e.getMessage());
+        } catch (SketchException e) {
+            e.print();
             System.exit(1);
         } catch (RuntimeException e) {
             System.err.println("[ERROR] [SKETCH] Failed with exception; message: " +

@@ -1,5 +1,6 @@
 package sketch.compiler.passes.lowering;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Map.Entry;
@@ -23,13 +24,14 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
-import sketch.util.Pair;
+import sketch.compiler.passes.structure.CallGraph.CallEdge;
 import sketch.util.datastructures.HashmapSet;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.datastructures.TypedHashSet;
 
 /**
  * convert global variables to inout parameters, with a static initializer function.
+ * deletes all global variables afterwards.
  * 
  * <pre>
  * int G = 4;
@@ -89,14 +91,17 @@ public class GlobalsToParams extends FEReplacer {
     @Override
     public Object visitProgram(Program prog) {
         this.callGraph = new CallGraph(prog);
+        // prog.debugDump();
+        // System.out.println(callGraph.toString());
+        // System.exit(0);
         this.fldNames = new GlobalFieldNames();
         this.glblExprs = new GlobalExprs();
         prog.accept(this.fldNames);
         prog.accept(this.glblExprs);
 
         // add all base expressions
-        for (Pair<Function, Function> closureEdge : callGraph.closureEdges.edges) {
-            final Function callee = closureEdge.getSecond();
+        for (CallEdge closureEdge : callGraph.closureEdges.edges) {
+            final Function callee = closureEdge.target();
             final HashMap<String, AddedParam> calleeParams =
                     newParamsForCall.getCreate(callee);
             for (String globalVarName : this.glblExprs.globalVarRefs.getOrEmpty(callee)) {
@@ -105,9 +110,9 @@ public class GlobalsToParams extends FEReplacer {
         }
 
         // add all necessary params for callers (closure of above)
-        for (Pair<Function, Function> closureEdge : callGraph.closureEdges.edges) {
-            final Function caller = closureEdge.getFirst();
-            final Function callee = closureEdge.getSecond();
+        for (CallEdge closureEdge : callGraph.closureEdges.edges) {
+            final Function caller = closureEdge.caller();
+            final Function callee = closureEdge.target();
             final HashMap<String, AddedParam> callerParams =
                     newParamsForCall.getCreate(caller);
             final HashMap<String, AddedParam> calleeParams =
@@ -132,7 +137,7 @@ public class GlobalsToParams extends FEReplacer {
         }
 
         // replace all function calls
-        System.err.println(this);
+        // System.err.println(this);
         final Object result = super.visitProgram(prog);
         assert fcnsToAdd.isEmpty();
         return result;
@@ -147,7 +152,7 @@ public class GlobalsToParams extends FEReplacer {
         }
         this.fcnsToAdd.clear();
         return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
-                spec.getParams(), spec.getVars(), fcns);
+                spec.getParams(), Collections.EMPTY_LIST, fcns);
     }
 
     @Override
@@ -327,7 +332,7 @@ public class GlobalsToParams extends FEReplacer {
         @Override
         public Object visitExprVar(ExprVar exp) {
             if (fldNames.getFieldNames().contains(exp.getName())) {
-                System.err.println("adding global var ref " + exp.getName());
+                // System.err.println("adding global var ref " + exp.getName());
                 globalVarRefs.add(enclosing, exp.getName());
             }
             return super.visitExprVar(exp);
