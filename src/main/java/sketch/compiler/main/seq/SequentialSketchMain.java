@@ -275,19 +275,17 @@ public class SequentialSketchMain extends CommonSketchMain
 
             if (showPhaseOpt("parse"))
                 dump(prog, "After parsing");
-        } catch (ProgramParseException e) {
+        } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
 			//e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
 
-		if (prog == null)
-		{
-			System.err.println("Compilation didn't generate a parse tree.");
-			throw new IllegalStateException();
-		}
-		return prog;
+        if (prog == null) {
+            throw new ProgramParseException("Compilation didn't generate a parse tree.");
+        }
+        return prog;
 
 	}
 
@@ -343,8 +341,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		//dump (lprog, "tifs:");
 
         lprog = (new IRStage1()).run(lprog);
-        lprog.debugDump();
-        System.exit(0);
+        // lprog.debugDump();
+        // System.exit(0);
 
 		lprog.accept(new PerformFlowChecks());
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
@@ -526,10 +524,9 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
-		if (!SemanticChecker.check(prog, isParallel ()))
-			throw new IllegalStateException("Semantic check failed");
-		
-		
+        if (!SemanticChecker.check(prog, isParallel()))
+            throw new ProgramParseException("Semantic check failed");
+
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
@@ -538,7 +535,6 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		if (prog == null)
 			throw new IllegalStateException();
-		
 	}
 
     String solverErrorStr;
@@ -569,9 +565,12 @@ public class SequentialSketchMain extends CommonSketchMain
         try {
             new SequentialSketchMain(args).run();
         } catch (ProgramParseException e) {
+            System.err.println("[ERROR] [SKETCH] Failed with exception; message: " +
+                    e.getMessage());
             System.exit(1);
         } catch (RuntimeException e) {
-            System.err.println("[ERROR] [SKETCH] Failed with exception " + e.getMessage());
+            System.err.println("[ERROR] [SKETCH] Failed with exception; message: " +
+                    e.getMessage());
             e.printStackTrace();
             throw e;
         }
