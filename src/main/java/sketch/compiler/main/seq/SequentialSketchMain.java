@@ -54,7 +54,6 @@ import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
-import sketch.compiler.passes.preprocessing.ForbidStarsInFieldDecls;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
@@ -67,6 +66,7 @@ import sketch.compiler.stencilSK.EliminateStarStatic;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
+import sketch.util.ProgramParseException;
 
 
 
@@ -267,14 +267,17 @@ public class SequentialSketchMain extends CommonSketchMain
 		try
 		{
             Pair<Program, Set<Directive>> res = parseFiles(options.argsAsList);
+            if (res == null) {
+                throw new ProgramParseException();
+            }
             prog = res.getFirst();
             processDirectives(res.getSecond());
 
             if (showPhaseOpt("parse"))
                 dump(prog, "After parsing");
-		}
-		catch (Exception e)
-		{
+        } catch (ProgramParseException e) {
+            throw e;
+        } catch (Exception e) {
 			//e.printStackTrace(System.err);
 			throw new RuntimeException(e);
 		}
@@ -315,8 +318,6 @@ public class SequentialSketchMain extends CommonSketchMain
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 		//invoke post-parse passes
 
-		lprog.accept(new ForbidStarsInFieldDecls());		
-		
 		//dump (lprog, "before:");
 		lprog = (Program)lprog.accept(new SeparateInitializers ());
 		lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
@@ -340,12 +341,13 @@ public class SequentialSketchMain extends CommonSketchMain
 		//dump (lprog, "tifs:");
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 		//dump (lprog, "tifs:");
-		
-		lprog.accept(new PerformFlowChecks());
-		
-		
-		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
+
         lprog = (new IRStage1()).run(lprog);
+        lprog.debugDump();
+        System.exit(0);
+
+		lprog.accept(new PerformFlowChecks());
+		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
         lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl()));
         
@@ -561,18 +563,18 @@ public class SequentialSketchMain extends CommonSketchMain
     }
 
 	public static void main(String[] args)
-	{
-	    long beg = System.currentTimeMillis();	    
-	    checkJavaVersion(1, 6);
+ {
+        long beg = System.currentTimeMillis();
+        checkJavaVersion(1, 6);
         try {
             new SequentialSketchMain(args).run();
+        } catch (ProgramParseException e) {
+            System.exit(1);
         } catch (RuntimeException e) {
-            System.err.println("[ERROR] [SKETCH] Failed with exception "
-                    + e.getMessage());
+            System.err.println("[ERROR] [SKETCH] Failed with exception " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
         System.out.println("Total time = " + (System.currentTimeMillis() - beg));
-	}
+    }
 }
-
