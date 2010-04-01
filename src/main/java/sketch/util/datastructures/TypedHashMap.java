@@ -25,6 +25,10 @@ public class TypedHashMap<K, V> {
         base = new HashMap<K, V>(initialCapacity);
     }
 
+    protected TypedHashMap(HashMap<K, V> base) {
+        this.base = base;
+    }
+
     public void clear() { base.clear(); }
     public boolean containsKey(K key) { return base.containsKey(key); }
     public boolean containsValue(V value) { return base.containsValue(value); }
@@ -58,5 +62,14 @@ public class TypedHashMap<K, V> {
             put(keyIter.next(), valueIter.next());
         }
         assert !valueIter.hasNext();
+    }
+
+    @SuppressWarnings("unchecked")
+    public TypedHashMap<K, V> immutable() {
+        if (this instanceof ImmutableTypedHashMap) {
+            return this;
+        } else {
+            return new ImmutableTypedHashMap<K, V>(this.base);
+        }
     }
 }

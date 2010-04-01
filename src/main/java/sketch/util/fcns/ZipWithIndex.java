@@ -43,7 +43,7 @@ public class ZipWithIndex<T> implements Iterable<ZipIdxEnt<T>> {
 
         public ZipIdxEnt<T> next() {
             final ZipIdxEnt<T> result =
-                    new ZipIdxEnt<T>(prev, idx, sz, iterator.next(), iterator.hasNext());
+                    new ZipIdxEnt<T>(prev, idx, sz, iterator.next(), !iterator.hasNext());
             idx += 1;
             prev = result.entry;
             return result;
