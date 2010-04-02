@@ -58,7 +58,7 @@ assemble-arch:
 	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.4.0-launchers*)"
 
 win-installer: assemble-arch
-	basedir=$$(pwd); cd target/*-launchers-windows.dir/dist/*; mv COPYING *jar installer; cd installer; /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensis sketch-installer.nsi; cp *exe "$$basedir"
+	basedir=$$(pwd); cd target/*-launchers-windows.dir; mv COPYING *jar installer; cd installer; /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensis sketch-installer.nsi; cp *exe "$$basedir"
 	@ls -l *exe
 
 deploy: compile
@@ -74,7 +74,7 @@ system-install: # usage: make system-install DESTDIR=/usr/bin [SUDOINSTALL=1]
 	make assemble-file FILE=platform_jar_assembly.xml
 	make assemble-file FILE=launchers_assembly.xml
 	mkdir -p $(DESTDIR)
-	sudo=; [ "$(SUDOINSTALL)" ] && { sudo=sudo; }; DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers-*/dist/* && $$sudo install -m 644 *jar "$$DESTDIR" && $$sudo install -m 755 sketch psketch stensk "$$DESTDIR"
+	sudo=; [ "$(SUDOINSTALL)" ] && { sudo=sudo; }; DESTDIR="$$(readlink -f "$(DESTDIR)")"; cd target/sketch-*-launchers-* && $$sudo install -m 644 *jar "$$DESTDIR" && $$sudo install -m 755 sketch psketch stensk "$$DESTDIR"
 
 ### testing
 
