@@ -138,9 +138,11 @@ public class GlobalsToParams extends FEReplacer {
 
         // replace all function calls
         // System.err.println(this);
-        final Object result = super.visitProgram(prog);
+        prog = (Program) super.visitProgram(prog);
         assert fcnsToAdd.isEmpty();
-        return result;
+        // System.err.println(this.toString());
+        // prog.debugDump();
+        return prog;
     }
 
     @Override
@@ -197,17 +199,18 @@ public class GlobalsToParams extends FEReplacer {
 
     @SuppressWarnings("deprecation")
     @Override
-    public Object visitExprFunCall(ExprFunCall call) {
+    public Object visitExprFunCall(ExprFunCall callParam) {
+        ExprFunCall call = (ExprFunCall) super.visitExprFunCall(callParam);
         Vector<Expression> fcnArgs = new Vector<Expression>(call.getParams());
-        Function caller = callGraph.getEnclosing(call);
-        Function callee = callGraph.getTarget(call);
+        Function caller = callGraph.getEnclosing(callParam);
+        Function callee = callGraph.getTarget(callParam);
         for (AddedParam param : newParamsForCall.get(callee).values()) {
             String localVarName =
                     newParamsForCall.get(caller).get(param.globalVar).paramName;
-            fcnArgs.add(new ExprVar(FEContext.artificalFrom("ref-" + localVarName, call),
-                    localVarName));
+            fcnArgs.add(new ExprVar(FEContext.artificalFrom("ref-" + localVarName,
+                    callParam), localVarName));
         }
-        return new ExprFunCall(call, call.getName(), fcnArgs);
+        return new ExprFunCall(callParam, callParam.getName(), fcnArgs);
     }
 
     @Override
