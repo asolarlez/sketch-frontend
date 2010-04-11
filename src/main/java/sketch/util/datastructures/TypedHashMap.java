@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * avoid annoying untyped lookups.
@@ -14,7 +15,7 @@ import java.util.Set;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class TypedHashMap<K, V> {
+public class TypedHashMap<K, V> implements Cloneable {
     private final HashMap<K, V> base;
 
     public TypedHashMap() {
@@ -29,7 +30,25 @@ public class TypedHashMap<K, V> {
         this.base = base;
     }
 
+    /** WARNING -- not a clone constructor. Created since base is private. */
+    protected TypedHashMap(TypedHashMap<K, V> prev) {
+        this.base = prev.base;
+    }
+
+    @Override
+    public String toString() {
+        String result = " " + super.toString() + " {";
+        for (Entry<K, V> ent : this.entrySet()) {
+            result += "    " + ent.getKey() + ": " + ent.getValue() + ",\n"; 
+        }
+        return result + " }";
+    }
+
     public void clear() { base.clear(); }
+    @SuppressWarnings("unchecked")
+    protected HashMap<K, V> baseClone() { return (HashMap<K, V>) base.clone(); }
+    /** recreate this method using baseClone() for any extending classes */
+    public TypedHashMap<K, V> clone() { return new TypedHashMap<K, V>(baseClone()); }
     public boolean containsKey(K key) { return base.containsKey(key); }
     public boolean containsValue(V value) { return base.containsValue(value); }
     public Set<java.util.Map.Entry<K, V>> entrySet() { return base.entrySet(); }
@@ -62,6 +81,14 @@ public class TypedHashMap<K, V> {
             put(keyIter.next(), valueIter.next());
         }
         assert !valueIter.hasNext();
+    }
+
+    /** NOTE -- uses asserts only, run with -ea if you need it! */
+    public void addAssertDiscrete(final TypedHashMap<K, V> other) {
+        for (Entry<K, V> ent : other.entrySet()) {
+            assert !this.containsKey(ent.getKey());
+            this.put(ent.getKey(), ent.getValue());
+        }
     }
 
     @SuppressWarnings("unchecked")
