@@ -20,11 +20,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.util.datastructures.ObjPairBase;
 
 /**
  * A hetereogeneous structure type.  This type has a name for itself,
@@ -185,5 +188,24 @@ public class TypeStruct extends Type
     {
         return name + "_ST";
     }
+
+    public List<StructFieldEnt> getFieldEntries() {
+        Vector<StructFieldEnt> result = new Vector<StructFieldEnt>();
+        for (Entry<String, Type> ent : this.types.entrySet()) {
+            result.add(new StructFieldEnt(ent.getKey(), ent.getValue()));
+        }
+        return result;
+    }
+
+    // [start] StructFieldEnt = (String, Type)
+    public static class StructFieldEnt extends ObjPairBase<String, Type> {
+        public StructFieldEnt(String left, Type right) {
+            super(left, right);
+        }
+        
+        public String getName() { return left; }
+        public Type getType() { return right; }
+    }
+    // [end]
 }
 

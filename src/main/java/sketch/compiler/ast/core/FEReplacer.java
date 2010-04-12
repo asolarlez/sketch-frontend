@@ -370,25 +370,15 @@ public class FEReplacer implements FEVisitor
     }
 
 
+    public Object visitProgram(Program prog) {
+        List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
+        for (StreamSpec ssOrig : prog.getStreams()) {
+            newStreams.add((StreamSpec) ssOrig.accept(this));
+        }
 
-    public Object visitProgram(Program prog)
-    {
-        List<StreamSpec> newStreams = new ArrayList<StreamSpec> ();
-        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
-            newStreams.add((StreamSpec) ((FENode)(iter.next())).accept(this));
-
-        List<TypeStruct> newStructs = new ArrayList<TypeStruct> ();
-        for (Iterator iter = prog.getStructs ().iterator (); iter.hasNext ();) {
-        	// XXX: we assume the field names won't change
-        	TypeStruct ts = (TypeStruct) iter.next ();
-        	List<Type> newFieldTypes = new ArrayList<Type> ();
-
-        	for (int i = 0; i < ts.getNumFields (); ++i)
-        		newFieldTypes.add ((Type) ts.getType (ts.getField (i)).accept (this));
-
-        	newStructs.add (new TypeStruct (ts.getContext (), ts.getName (),
-        					new ArrayList<String> (ts.getFields ()),
-        					newFieldTypes));
+        List<TypeStruct> newStructs = new ArrayList<TypeStruct>();
+        for (TypeStruct tsOrig : prog.getStructs()) {
+            newStructs.add((TypeStruct) tsOrig.accept(this));
         }
 
         return new Program(prog, newStreams, newStructs);

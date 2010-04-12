@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 
 public class SimpleCodePrinter extends CodePrinter
@@ -212,5 +214,13 @@ public class SimpleCodePrinter extends CodePrinter
 		return block;
 	}
 
-
+	@Override
+	public Object visitTypeStruct(TypeStruct ts) {
+	    printLine("struct " + ts.getName() + " {");
+	    for (StructFieldEnt ent : ts.getFieldEntries()) {
+	        printLine("    " + ent.getType().toString() + " " + ent.getName() + ";");
+	    }
+	    printLine("}");
+	    return ts;
+	}
 }
