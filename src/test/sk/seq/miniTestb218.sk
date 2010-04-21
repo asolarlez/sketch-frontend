@@ -1,0 +1,10 @@
+void main(int i){
+    
+    i = i-4;
+    if(i < 0){ return; }
+    while(i != 0){
+        i = i-1;
+    }
+    assert i == 0;        
+    
+}

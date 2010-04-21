@@ -224,10 +224,12 @@ public class NtsbVtype extends IntVtype {
         }
         
         Iterator<Parameter> formalParams = fun.getParams().iterator();
+        boolean hasout = false;
         while(formalParams.hasNext()){
             Parameter param = formalParams.next();      
             if( param.isParameterOutput()){
                 {
+                    hasout = true;
                     if(param.getType().isArray()){
                         TypeArray ta = (TypeArray)param.getType();
                         int lnt = ta.getLength().getIValue();
@@ -244,6 +246,10 @@ public class NtsbVtype extends IntVtype {
             }
         }
         
+        if(!hasout){
+            String par = "___GaRbAgE" +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
+            out.println(par);
+        }
         
     }
     

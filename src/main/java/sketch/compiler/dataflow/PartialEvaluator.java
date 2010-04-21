@@ -443,11 +443,13 @@ public class PartialEvaluator extends FEReplacer {
         }
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
         vtype.funcall(fun, avlist, outSlist, state.pathCondition());
+        
         assert outSlist.size() == outNmList.size(): "The funcall in vtype should populate the outSlist with 1 element per output parameter";
         Iterator<String> nmIt = outNmList.iterator();
         for( Iterator<abstractValue> it = outSlist.iterator(); it.hasNext();   ){
             state.setVarValue(nmIt.next(), it.next());
         }
+        
         //assert !isReplacer : "A replacer should really do something different with function calls.";
         exprRV = isReplacer ?  new ExprFunCall(exp, name, nparams)  : exp ;
         return  vtype.BOTTOM();
