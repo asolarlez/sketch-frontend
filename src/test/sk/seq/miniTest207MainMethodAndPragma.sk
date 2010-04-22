@@ -1,10 +1,8 @@
-pragma options "--sem-main-names main1,main2";
-
-generator void main1(int x) { /* automatically rewritten */
+harness void main1(int x) { /* automatically rewritten */
     assert(x - x + ?? == 3);
 }
 
-generator int main2(int x) { /* automatically rewritten */
+harness int main2(int x) { /* automatically rewritten */
     int v = ??;
     assert(v + 1 == 3 - 1);
     return v;

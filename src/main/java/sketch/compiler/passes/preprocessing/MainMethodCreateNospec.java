@@ -32,19 +32,9 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 @CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class MainMethodCreateNospec extends FEReplacer {
     public final Vector<Function> mainFcns = new Vector<Function>();
-    public final HashSet<String> mainNames;
     public final Random rand = new Random();
 
-    public MainMethodCreateNospec(String csvMainNames) {
-        String[] mainNamesArray = csvMainNames.split(",");
-        if (csvMainNames.equals("")) {
-            mainNamesArray = new String[0];
-        }
-        mainNames = new HashSet<String>(mainNamesArray.length);
-        for (String name : mainNamesArray) {
-            assert !name.contains(";") && !name.contains(" ") : "illegal chars in main name, use commas to separate values";
-            mainNames.add(name);
-        }
+    public MainMethodCreateNospec() {
     }
 
     @Override
@@ -92,18 +82,11 @@ public class MainMethodCreateNospec extends FEReplacer {
 
     @Override
     public Object visitFunction(Function func) {
-        boolean isMainName = mainNames.contains(func.getName());
-        if (isMainName && func.getSpecification() == null) {
-            mainFcns.add(func);
-        } else if (isMainName) {
-            if (func.getSpecification() != null) {
-                System.err.println("WARNING -- didn't replace 'main' function " +
-                        func.getName() +
-                        "because it already has an implements specified.");
-            } else {
-                System.err.println("WARNING -- didn't replace 'main' function " +
-                        func.getName());
-            }
+        if (func.isSketch()) {
+            Function staticReplacement = Function.newStatic(func, func.getName(),
+                    func.getReturnType(), func.getParams(), null, func.getBody());
+            mainFcns.add(staticReplacement);
+            return super.visitFunction(staticReplacement);
         }
         return super.visitFunction(func);
     }

@@ -62,7 +62,7 @@ generator T[N] scanWithResourceConstraintsSmallerLessRegular(T[N] x) /* automati
 }
 
 int dummy(int x) { return 1; }
-int harness(int x) 
+int harnessfcn(int x) 
 implements dummy 
 {
 	T[N] input = { 
@@ -79,7 +79,7 @@ implements dummy
 	return 1;
 }
 
-generator int harness2(int x) /* automatically rewritten */
+generator int harnessfcn2(int x) /* automatically rewritten */
 // implements dummy
 {
 	return 1;

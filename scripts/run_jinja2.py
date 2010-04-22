@@ -19,8 +19,7 @@ except:
 def main():
     mvnfile = Path("pom.xml")
     assert mvnfile.exists(), "please run in project root (with ./pom.xml)"
-    from amara import bindery
-    version = str(bindery.parse(mvnfile.read()).project.version)
+    version = "1.4.0"
     files = [v for v in Path("scripts").walk_files() if v.endswith(".jinja2")]
     def outfcn(fname, output):
         Path(fname.parent().subpath("final", fname.basename().strip(".jinja2"))).write(output)
