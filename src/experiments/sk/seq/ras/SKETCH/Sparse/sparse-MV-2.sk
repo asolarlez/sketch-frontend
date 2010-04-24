@@ -1,4 +1,4 @@
-pragma options "--debug-show-phase final --debug-verbosity 7 --bnd-inbits 1 --bnd-cbits 3 --slv-verif ABC --slv-synth ABC --fe-output-test --sem-main-names --sem-array-OOB-policy assertions";  
+pragma options "--debug-show-phase final --debug-verbosity 7 --bnd-inbits 1 --bnd-cbits 3 --slv-verif ABC --slv-synth ABC --fe-output-test --sem-array-OOB-policy assertions";  
 
 #define N 2
 

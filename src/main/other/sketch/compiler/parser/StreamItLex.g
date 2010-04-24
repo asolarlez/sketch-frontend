@@ -62,6 +62,7 @@ tokens {
 	"assert";
 	"h_assert";
 	"generator";
+	"harness";
     // Compiler directives:
     "include";
     "pragma";

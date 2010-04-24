@@ -20,9 +20,6 @@ public class SemanticsOptions extends CliAnnotatedOptionGroup {
             + "array access would be out of bounds. Options: 'assertions' to fail, "
             + "'wrsilent_rdzero' to read zeros and ignore writes.")
     public ArrayOobPolicy arrayOobPolicy = ArrayOobPolicy.assertions;
-    @CliParameter(help = "set names for 'main' methods -- methods without a "
-            + "specification (using only asserts). Comma separated.")
-    public String mainNames = "main";
 
     public enum ArrayOobPolicy {
         assertions, wrsilent_rdzero

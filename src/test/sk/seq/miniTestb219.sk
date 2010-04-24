@@ -1,8 +1,4 @@
-pragma options "--sem-main-names lala";
-
-
-
-void lala(int x)
+harness void lala(int x)
 {
   int t = x * ??;
   assert (t == x + x);

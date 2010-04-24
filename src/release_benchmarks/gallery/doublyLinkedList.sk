@@ -1,7 +1,5 @@
 //@Description Sketches a remove method from a doubly linked list.
 
-pragma options "--sem-main-names main";
-
 int N=4;
 
 struct node{
@@ -110,7 +108,7 @@ generator list newList(){ /* automatically rewritten */
 }
 
 
-generator void main(bit[N] elems, int addP, bit addV, int rem){ /* automatically rewritten */
+harness void main(bit[N] elems, int addP, bit addV, int rem){ /* automatically rewritten */
 	list l = newList();
 	node[N] nodes;
 	node prevn = null;

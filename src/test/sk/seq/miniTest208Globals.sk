@@ -1,4 +1,3 @@
-
 int N = 5;
 int G = 4;
 
@@ -7,7 +6,7 @@ void fcn(int[N] arr1, int x) {
     G = x + 4;
 }
 
-void main() {
+harness void main() {
     int[N] tmp = ??;
     // G = 4
     fcn(tmp, 4);

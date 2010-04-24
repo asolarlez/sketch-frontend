@@ -170,7 +170,7 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  (TK_generator return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  ((TK_harness | TK_generator)? return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -339,8 +339,9 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isGenerator=false; }
+function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isHarness=false; boolean isGenerator=false; }
 	:
+	(TK_harness { isHarness=true; })?
 	(TK_generator { isGenerator=true;} )?
 	rt=return_type
 	id:ID
@@ -348,9 +349,13 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
 	(TK_implements impl:ID)?
 	( s=block
 	{
+			assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
 			if (isGenerator) {
                 f = Function.newHelper(getContext(id), id.getText(), rt, l,
                     impl==null ? null : impl.getText(), s);
+			} else if (isHarness) {
+                assert impl == null;
+				f = Function.newHarnessMain(getContext(id), id.getText(), rt, l, s);
 			} else {
                 f = Function.newStatic(getContext(id), id.getText(), rt, l,
                     impl==null ? null : impl.getText(), s);

@@ -3,12 +3,12 @@
 #include "TreeSet.skh"
 #include "HashSetComplete.skh"
 
-pragma options "--bnd-unroll-amnt 5 --bnd-inbits 3 --sem-main-names main";
+pragma options "--bnd-unroll-amnt 5 --bnd-inbits 3";
 
 
 int T = 4;
 
-generator void main(int[T] vals, int tval){ /* automatically rewritten */
+harness void main(int[T] vals, int tval){ /* automatically rewritten */
 	
 	HashTable ht = newHashTable();
 	Tree t = newTree();

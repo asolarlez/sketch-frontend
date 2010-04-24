@@ -299,7 +299,7 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new ReplaceMinLoops(varGen),
-                            new MainMethodCreateNospec(options.semOpts.mainNames) };
+                            new MainMethodCreateNospec() };
             passes = passes2;
         }
     }

@@ -45,6 +45,7 @@ public class Function extends FENode
     public static final int FUNC_UNINTERP = 9;
     public static final int FUNC_ASYNC = 10;
     public static final int FUNC_STATIC = 11;
+    public static final int FUNC_SKETCHMAIN = 12;
 
 
     private int cls;
@@ -53,47 +54,54 @@ public class Function extends FENode
     private List<Parameter> params;
     private Statement body;
 
-    private String fImplements=null;
+    private String fImplements = null;
 
     /** Internal constructor to create a new Function from all parts.
      * This is public so that visitors that want to create new objects
      * can, but you probably want one of the other creator functions. */
-    public Function(FENode context, int cls, String name,
-                    Type returnType, List<Parameter> params, Statement body)
+    public Function(FENode context, int cls, String name, Type returnType,
+            List<Parameter> params, Statement body)
     {
-    	this (context, cls, name, returnType, params, null, body);
-    }
-
-    /** Internal constructor to create a new Function from all parts.
-     * This is public so that visitors that want to create new objects
-     * can, but you probably want one of the other creator functions.
-     * @deprecated
-     */
-    public Function(FEContext context, int cls, String name,
-                    Type returnType, List<Parameter> params, Statement body)
-    {
-		super(context);
-		this.cls = cls;
-		this.name = name;
-		this.returnType = returnType;
-		this.params = params;
-		this.body = body;
+        this(context, cls, name, returnType, params, null, body);
     }
 
     /**
-     *
+     * Internal constructor to create a new Function from all parts. This is public so
+     * that visitors that want to create new objects can, but you probably want one of the
+     * other creator functions.
+     * 
+     * @deprecated
      */
-    public Function(FENode context, int cls, String name,
-            Type returnType, List<Parameter> params, String fImplements, Statement body)
-	{
-		super(context);
-		this.cls = cls;
-		this.name = name;
-		this.returnType = returnType;
-		this.params = params;
-		this.body = body;
-		this.fImplements = fImplements;
-	}
+    public Function(FEContext context, int cls, String name, Type returnType,
+            List<Parameter> params, Statement body)
+    {
+        this(context, cls, name, returnType, params, null, body);
+    }
+
+    public Function(FENode context, int cls, String name, Type returnType,
+            List<Parameter> params, String fImplements, Statement body)
+    {
+        super(context);
+        this.cls = cls;
+        this.name = name;
+        this.returnType = returnType;
+        this.params = params;
+        this.body = body;
+        this.fImplements = fImplements;
+    }
+
+    @SuppressWarnings("deprecation")
+    private Function(FEContext context, int cls, String name, Type returnType,
+            List<Parameter> params, String fImplements, Statement body)
+    {
+        super(context);
+        this.cls = cls;
+        this.name = name;
+        this.returnType = returnType;
+        this.params = params;
+        this.body = body;
+        this.fImplements = fImplements;
+    }
 
     public static Function newUninterp(String name, List<Parameter> params){
     	return new Function((FEContext) null, FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
@@ -207,22 +215,25 @@ public class Function extends FENode
         return f;
     }
 
-    /** Create a new helper function given its parts.
-     * @deprecated
-     */
-    public static Function newStatic(FEContext context, String name,
-                                     Type returnType, List<Parameter> params,
-                                     String impl, Statement body)
+    /** Create a new helper function given its parts. */
+    public static Function newHarnessMain(FEContext context, String name, Type returnType,
+            List<Parameter> params, Statement body)
     {
-        Function f=new Function(context, FUNC_STATIC, name, returnType,
-                            params, body);
-        f.fImplements=impl;
-        return f;
+        return new Function(context, FUNC_SKETCHMAIN, name, returnType, params, null,
+                body);
     }
 
-
-
-
+    /**
+     * Create a new helper function given its parts.
+     * 
+     * @deprecated
+     */
+    public static Function newStatic(FEContext context, String name, Type returnType,
+            List<Parameter> params, String fImplements, Statement body)
+    {
+        return new Function(context, FUNC_STATIC, name, returnType, params, fImplements,
+                body);
+    }
 
     public boolean isUninterp(){
     	return cls == FUNC_UNINTERP;
@@ -292,5 +303,9 @@ public class Function extends FENode
         return name.equals(((Function)o).getName());
         }
         return false;
+    }
+
+    public boolean isSketch() {
+        return this.cls == FUNC_SKETCHMAIN;
     }
 }
