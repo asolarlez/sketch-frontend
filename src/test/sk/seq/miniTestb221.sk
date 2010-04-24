@@ -1,0 +1,26 @@
+pragma options "--sem-main-names test1,test2,test3";
+
+int W = 4;
+
+bit[W] foo(){
+    return ??;
+}
+
+void test1(){
+    bit[W] t = foo();
+    assert !t[0] || t[2]; 
+    assert !t[1] || t[4];
+}
+
+void test2(){
+    bit[W] t = foo();
+    assert (!t[2] || t[3]) ^ (t[1]); 
+    bit[W] qq = ??;
+    //assert qq[3] == 0;
+}
+
+void test3(){
+    bit[W] t = foo();
+    assert (!t[2] || t[3]) ^ (!t[2]);  
+    assert ?? > 0;
+}
