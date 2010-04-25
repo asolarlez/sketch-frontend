@@ -593,8 +593,10 @@ public class NodesToC extends NodesToJava {
         String lhs = (String)base.accept(this);
         Type curType = (Type)getType(exp.getBase());
         boolean isBitvec =
-          (curType instanceof TypeArray) &&
-          ((TypeArray)curType).getBase().equals(TypePrimitive.bittype);
+          ((curType instanceof TypeArray) &&
+          ((TypeArray)curType).getBase().equals(TypePrimitive.bittype)) 
+          ||
+          curType.equals(TypePrimitive.bittype);
         if (!isBitvec && range.len()==1) {
           return lhs + ".get("+ tmp + ")";
 				} else{
