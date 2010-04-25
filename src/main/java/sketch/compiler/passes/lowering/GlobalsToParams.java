@@ -2,6 +2,7 @@ package sketch.compiler.passes.lowering;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 import java.util.Map.Entry;
 
@@ -22,6 +23,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.compiler.passes.structure.CallGraph.CallEdge;
@@ -100,12 +102,11 @@ public class GlobalsToParams extends FEReplacer {
         prog.accept(this.glblExprs);
 
         // add all base expressions
-        for (CallEdge closureEdge : callGraph.closureEdges.edges) {
-            final Function callee = closureEdge.target();
-            final HashMap<String, AddedParam> calleeParams =
-                    newParamsForCall.getCreate(callee);
-            for (String globalVarName : this.glblExprs.globalVarRefs.getOrEmpty(callee)) {
-                calleeParams.put(globalVarName, fldNames.createParam(globalVarName));
+        for (Entry<Function, HashSet<String>> ent : this.glblExprs.globalVarRefs.entrySet())
+        {
+            for (String globalVarName : ent.getValue()) {
+                newParamsForCall.getCreate(ent.getKey()).put(globalVarName,
+                        fldNames.createParam(globalVarName));
             }
         }
 
@@ -142,6 +143,7 @@ public class GlobalsToParams extends FEReplacer {
         assert fcnsToAdd.isEmpty();
         // System.err.println(this.toString());
         // prog.debugDump();
+        // System.exit(0);
         return prog;
     }
 
@@ -173,6 +175,7 @@ public class GlobalsToParams extends FEReplacer {
                 return new Function(fcn, fcn.getCls(), fcn.getName(),
                         fcn.getReturnType(), params, fcn.getBody());
             } else {
+                System.out.println("adding params for " + fcn.getName());
                 StmtBlock body = (StmtBlock) fcn.getBody();
                 Vector<Statement> stmts = new Vector<Statement>(body.getStmts());
                 for (AddedParam param : newParamsForCall.get(inputFcn).values()) {
@@ -218,7 +221,10 @@ public class GlobalsToParams extends FEReplacer {
         if (fldNames.hasName(exp.getName()) && (enclosingFcn != null)) {
             final HashMap<String, AddedParam> fcnGlbls =
                     newParamsForCall.get(enclosingFcn);
-            return new ExprVar(exp, fcnGlbls.get(exp.getName()).paramName);
+            assert fcnGlbls != null : "no key for function " + enclosingFcn;
+            final AddedParam paramvar = fcnGlbls.get(exp.getName());
+            assert paramvar != null : "no parameter variable for " + exp.getName();
+            return new ExprVar(exp, paramvar.paramName);
         } else {
             return super.visitExprVar(exp);
         }
@@ -238,7 +244,7 @@ public class GlobalsToParams extends FEReplacer {
         StmtAssign assign = new StmtAssign(new ExprVar(ctx, tmpName), expression);
 
         StmtBlock body = new StmtBlock(assign);
-        return Function.newStatic(ctx, varGen.nextVar("glblInit_" + glblName), type,
+        return Function.newStatic(ctx, varGen.nextVar("glblInit_" + glblName), TypePrimitive.voidtype,
                 params, null, body);
     }
 
