@@ -37,7 +37,7 @@ public class TypedHashMap<K, V> implements Cloneable {
 
     @Override
     public String toString() {
-        String result = " " + super.toString() + " {";
+        String result = super.toString() + " {\n";
         for (Entry<K, V> ent : this.entrySet()) {
             result += "    " + ent.getKey() + ": " + ent.getValue() + ",\n"; 
         }

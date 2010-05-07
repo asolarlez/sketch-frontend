@@ -15,6 +15,15 @@ import java.util.Iterator;
 public class TypedHashSet<K> implements Iterable<K> {
     private final HashSet<K> base = new HashSet<K>();
 
+    @Override
+    public String toString() {
+        String result = super.toString() + " {\n";
+        for (K ent : this) {
+            result += "    " + ent + ",\n";
+        }
+        return result + " }";
+    }
+
     public boolean add(K e) { return base.add(e); }
     public boolean addAll(Collection<? extends K> c) { return base.addAll(c); }
     public void clear() { base.clear(); }

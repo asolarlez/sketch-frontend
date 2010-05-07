@@ -128,6 +128,11 @@ public class CallGraph extends FEReplacer {
         public CallEdge(Function caller, Function target) {
             super(caller, target);
         }
+        
+        @Override
+        public String toString() {
+            return caller().getName() + " -:Calls-> " + target().getName();
+        }
 
         public Function caller() {
             return left;
