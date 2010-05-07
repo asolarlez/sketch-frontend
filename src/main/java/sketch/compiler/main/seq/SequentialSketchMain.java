@@ -369,16 +369,32 @@ public class SequentialSketchMain extends CommonSketchMain
 		return solver.getLastSolutionStats();
 	}
 
+	
+	public void testProg(Program p){
+	    dump(p, "Hehehe");
+	    p = (Program)p.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
+	    p = (Program)p.accept(new EliminateMultiDimArrays());
+	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
+            new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
+                    null, System.out
+                    , options.bndOpts.unrollAmnt, new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p ), false);
+        log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
+        log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
+        p.accept(partialEval);
+	    
+	}
+	
 	public void eliminateStar(){
 	    EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
 		finalCode=(Program)beforeUnvectorizing.accept(eliminate_star);
 		if (options.feOpts.outputXml){
 		    eliminate_star.dump_xml();
         }
+		//testProg(finalCode);
 		//dump(finalCode, "after elim star");
         finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(), true));
-		dump(finalCode, "After partially evaluating generated code.");
+		//dump(finalCode, "After partially evaluating generated code.");
 		finalCode = (Program)finalCode.accept(new FlattenStmtBlocks());
         if (showPhaseOpt("postproc")) {
             dump(finalCode, "After Flattening.");

@@ -1,0 +1,16 @@
+
+int hole1(){
+    return ??;
+}
+
+int hole2(){
+    return ??;
+}
+
+harness void test1(){
+    assert hole1() + hole2() == 10;    
+}
+
+harness void test2(){
+    assert hole2() == 5;
+}
