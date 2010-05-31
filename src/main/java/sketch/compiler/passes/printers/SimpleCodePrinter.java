@@ -1,9 +1,15 @@
 package sketch.compiler.passes.printers;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
@@ -37,6 +43,64 @@ public class SimpleCodePrinter extends CodePrinter
 		out.flush();
 		return func;
 	}
+	
+	
+    public Object visitStreamSpec(StreamSpec spec)
+    {
+        // Oof, there's a lot here.  At least half of it doesn't get
+        // visited...
+        StreamType newST = null;
+        StreamSpec oldSS = sspec;
+        sspec = spec;
+        if (spec.getStreamType() != null)
+            newST = (StreamType)spec.getStreamType().accept(this);
+        List<FieldDecl> newVars = new ArrayList<FieldDecl>();
+        List<Function> oldNewFuncs = newFuncs;
+        newFuncs = new ArrayList<Function>();
+
+        boolean changed = false;
+
+        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
+        {
+            FieldDecl oldVar = (FieldDecl)iter.next();
+            FieldDecl newVar = (FieldDecl)oldVar.accept(this);
+            if (oldVar != newVar) changed = true;
+            if(newVar!=null) newVars.add(newVar);
+        }
+        int nonNull = 0;
+        
+        TreeMap<String, Function> tm = new TreeMap<String, Function>();
+        for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); ){
+            Function tf = iter.next();
+            tm.put(tf.getName(), tf);
+        }
+        
+        
+        for (Iterator<Function> iter = tm.values().iterator(); iter.hasNext(); )
+        {
+            Function oldFunc = (Function)iter.next();
+            Function newFunc = (Function)oldFunc.accept(this);
+            if (oldFunc != newFunc) changed = true;
+//            if(oldFunc != null)++nonNull;
+            if(newFunc!=null) newFuncs.add(newFunc);
+        }
+
+        if(newFuncs.size() != nonNull){
+            changed = true;
+        }
+
+        sspec = oldSS;
+
+        List<Function> nf = newFuncs;
+        newFuncs = oldNewFuncs;
+        if (!changed && newST == spec.getStreamType()) return spec;
+        return new StreamSpec(spec, spec.getType(),
+                              newST, spec.getName(), spec.getParams(),
+                              newVars, nf);
+
+    }
+	
+	
 
 	public Object visitStmtFor(StmtFor stmt)
 	{
