@@ -147,7 +147,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, func);
     }
 
-    public T visitMinimize(StmtMinimize stmtMinimize) {
+    public T visitStmtMinimize(StmtMinimize stmtMinimize) {
         throw new FEVisitorException(this, stmtMinimize);
     }
 

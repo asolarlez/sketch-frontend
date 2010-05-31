@@ -15,8 +15,7 @@ public class StmtMinimize extends Statement {
 
     @Override
     public Object accept(FEVisitor v) {
-        // TODO Auto-generated method stub
-        return null;
+        return v.visitStmtMinimize(this);
     }
 
     public Expression getMinimizeExpr() {

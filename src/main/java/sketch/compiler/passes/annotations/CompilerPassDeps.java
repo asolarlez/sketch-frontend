@@ -22,4 +22,6 @@ public @interface CompilerPassDeps {
      * it's less likely, though definitely possible you need to run before a certain stage
      */
     Class<? extends FEVisitor>[] runsBefore();
+    
+    boolean debug() default false;
 }

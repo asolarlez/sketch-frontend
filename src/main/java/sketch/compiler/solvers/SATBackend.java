@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
@@ -11,17 +12,22 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
+
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.passes.optimization.CostFcnAssert;
+import sketch.compiler.passes.structure.HasMinimize;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.Misc;
 import sketch.util.NullStream;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
+import sketch.util.datastructures.IntRange;
 
 public class SATBackend {
 
@@ -64,59 +70,112 @@ public class SATBackend {
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
         prog.accept(partialEval);
     }
-	
-	public boolean partialEvalAndSolve(Program prog){
-		oracle = new ValueOracle( new StaticHoleTracker(varGen) );
-		log ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		//prog.accept(new SimpleCodePrinter());
-		assert oracle != null;
-		try
-		{
-			OutputStream outStream = null;
+
+    public boolean partialEvalAndSolve(Program prog) {
+        oracle = new ValueOracle(new StaticHoleTracker(varGen));
+        log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        // prog.accept(new SimpleCodePrinter());
+        assert oracle != null;
+        writeProgramToBackendFormat(prog);
+
+        final HasMinimize hasMinimize = new HasMinimize();
+        hasMinimize.visitProgram(prog);
+
+        final String tmpSketchFilename = options.getTmpSketchFilename();
+        File sketchOutputFile = new File(tmpSketchFilename + ".tmp");
+        File bestValueFile =
+                hasMinimize.hasMinimize() ? new File(tmpSketchFilename + ".best")
+                        : sketchOutputFile;
+
+        boolean worked = false;
+        if (options.debugOpts.fakeSolver) {
+            worked = true;
+        } else if (hasMinimize.hasMinimize()) {
+            IntRange currRange = IntRange.inclusive(0, 2 * options.bndOpts.costEstimate);
+            float timeout =
+                    Math.max(1.f, options.solverOpts.timeout) / ((float) (1 << 10));
+            for (int a = 0; a < 100 && !currRange.isEmpty(); a++) {
+                // choose a value from not-yet-inspected values
+                final int currValue = (int) currRange.middle();
+                System.err.println("current: " + currValue + " \\in " + currRange);
+                log(2, "current range: " + currValue + " \\in " + currRange);
+
+                // rewrite the minimize statements in the program
+                final CostFcnAssert costFcnAssert = new CostFcnAssert(currValue);
+                writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
+
+                // actually run the solver
+                boolean currResult = solve(oracle, timeout);
+                worked |= currResult;
+                if (!currResult) {
+                    // didn't work. explore the upper interval, and explore more if we
+                    // haven't
+                    // found any solution yet
+                    currRange = currRange.nextInfemum(currValue);
+                    if (!worked) {
+                        timeout *= 2;
+                        currRange = currRange.nextMax(currRange.max * 2);
+                        // if the sketch is buggy, don't take too much time to fail.
+                        if (a >= 10) {
+                            break;
+                        }
+                    }
+                } else {
+                    // try the next range, and save the result
+                    currRange = currRange.nextSupremum(currValue);
+                    try {
+                        FileUtils.copyFile(sketchOutputFile, bestValueFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else {
+            worked = solve(oracle, options.solverOpts.timeout);
+        }
+
+        {
+            java.io.File fd = new File(options.getTmpSketchFilename());
+            if (fd.exists() && !options.feOpts.keepTmp) {
+                boolean t = fd.delete();
+                if (!t) {
+                    log(0, "couldn't delete file" + fd.getAbsolutePath());
+                }
+            } else {
+                log("Not Deleting");
+            }
+        }
+
+        if (!worked && !options.feOpts.forceCodegen) {
+            throw new RuntimeException("The sketch could not be resolved.");
+        }
+
+        extractOracleFromOutput(bestValueFile.getPath());
+        return worked;
+    }
+
+    public void writeProgramToBackendFormat(Program prog) {
+        try {
+            OutputStream outStream = null;
             if (options.debugOpts.fakeSolver)
-				outStream = NullStream.INSTANCE;
-            else // if (options.getTmpName != null)
+                outStream = NullStream.INSTANCE;
+            else
+                // if (options.getTmpName != null)
                 outStream = new FileOutputStream(options.getTmpSketchFilename());
             // else
-//			    DebugOut.assertFalse("no temporary filename defined.");
-//				outStream = System.out;
+            // DebugOut.assertFalse("no temporary filename defined.");
+            // outStream = System.out;
 
-			// visit the program and write out the program in the backend's input format.
-			partialEval(prog, outStream);
-	
-			
-			outStream.flush();
-			outStream.close();
-		}
-		catch (java.io.IOException e)
-		{
-			//e.printStackTrace(System.err);
-			throw new RuntimeException(e);
-		}
+            // visit the program and write out the program in the backend's input format.
+            partialEval(prog, outStream);
 
-
-		boolean worked = options.debugOpts.fakeSolver || solve(oracle);
-
-		{
-			java.io.File fd = new File(options.getTmpSketchFilename());
-			if(fd.exists() && !options.feOpts.keepTmp){
-				boolean t = fd.delete();
-				if(!t){
-					log (0, "couldn't delete file" + fd.getAbsolutePath());
-				}
-			}else{
-				log ("Not Deleting");
-			}
-		}
-
-		if(!worked && !options.feOpts.forceCodegen){
-			throw new RuntimeException("The sketch could not be resolved.");
-		}
-
-		String fname = options.getTmpSketchFilename() + ".tmp";
-		extractOracleFromOutput(fname);
-		return worked;
-	}
+            outStream.flush();
+            outStream.close();
+        } catch (java.io.IOException e) {
+            // e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
+    }
 
 	
 	protected void extractOracleFromOutput(String fname){
@@ -143,7 +202,7 @@ public class SATBackend {
 
 	
 
-	private boolean solve(ValueOracle oracle){
+	private boolean solve(ValueOracle oracle, float timeoutMins){
 
 		log ("OFILE = " + options.feOpts.output);
 		
@@ -158,7 +217,7 @@ public class SATBackend {
 				backendOptions.add("" + bits);
 				String[] commandLine = getBackendCommandline(backendOptions);
 				
-				boolean ret = runSolver(commandLine, bits);
+				boolean ret = runSolver(commandLine, bits, timeoutMins);
 				if(ret){
 					isSolved = true;
 					break;
@@ -176,7 +235,7 @@ public class SATBackend {
         } else {
             Vector<String> backendOptions = options.getBackendOptions();
             String[] commandLine = getBackendCommandline(backendOptions);
-			boolean ret = runSolver(commandLine, 0);
+			boolean ret = runSolver(commandLine, 0, timeoutMins);
 			if(!ret){
 				log (0, "The sketch cannot be resolved");
 				System.err.println(solverErrorStr);
@@ -193,12 +252,12 @@ public class SATBackend {
 		log ("Launching: "+ cmdLine);
 	}
 	
-	private boolean runSolver(String[] commandLine, int i) {
+	private boolean runSolver(String[] commandLine, int i, float timeoutMins) {
 		logCmdLine(commandLine);
 		
 		ProcessStatus status = null;
 		try {
-			status = (new SynchronousTimedProcess (options.solverOpts.timeout,
+			status = (new SynchronousTimedProcess (timeoutMins,
 												   commandLine)).run (false);
 			
 			

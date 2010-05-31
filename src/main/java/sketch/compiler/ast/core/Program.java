@@ -64,4 +64,10 @@ public class Program extends FENode
     public void debugDump() {
         System.out.println((new SimpleCodePrinter()).visitProgram(this));
     }
+    
+    public void debugDump(String message) {
+        System.out.println("\n//// " + message);
+        System.out.println((new SimpleCodePrinter()).visitProgram(this));
+        System.out.println("------------------------------\n");
+    }
 }

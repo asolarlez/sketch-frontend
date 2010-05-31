@@ -1103,6 +1103,11 @@ inputState.guessing--;
 				s=loop_statement();
 				break;
 			}
+			case TK_minrepeat:
+			{
+				s=minrepeat_statement();
+				break;
+			}
 			case TK_fork:
 			{
 				s=fork_statement();
@@ -1290,6 +1295,36 @@ inputState.guessing--;
 			b=pseudo_block();
 			if ( inputState.guessing==0 ) {
 				s = new StmtLoop(getContext(x), exp, b);
+			}
+		}
+		catch (RecognitionException ex) {
+			if (inputState.guessing==0) {
+				reportError(ex);
+				recover(ex,_tokenSet_14);
+			} else {
+			  throw ex;
+			}
+		}
+		return s;
+	}
+	
+	public final Statement  minrepeat_statement() throws RecognitionException, TokenStreamException {
+		Statement s;
+		
+		Token  t1 = null;
+		s = null; Statement b; Token x=null;
+		
+		try {      // for error handling
+			{
+			t1 = LT(1);
+			match(TK_minrepeat);
+			if ( inputState.guessing==0 ) {
+				x=t1;
+			}
+			}
+			b=pseudo_block();
+			if ( inputState.guessing==0 ) {
+				s = new StmtMinLoop(getContext(x), b);
 			}
 		}
 		catch (RecognitionException ex) {
@@ -2046,36 +2081,6 @@ inputState.guessing--;
 			}
 		}
 		return sb;
-	}
-	
-	public final Statement  minrepeat_statement() throws RecognitionException, TokenStreamException {
-		Statement s;
-		
-		Token  t2 = null;
-		s = null; Statement b; Token x=null;
-		
-		try {      // for error handling
-			{
-			t2 = LT(1);
-			match(TK_minrepeat);
-			if ( inputState.guessing==0 ) {
-				x=t2;
-			}
-			}
-			b=pseudo_block();
-			if ( inputState.guessing==0 ) {
-				s = new StmtMinLoop(getContext(x), b);
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_2);
-			} else {
-			  throw ex;
-			}
-		}
-		return s;
 	}
 	
 	public final SplitterJoiner  splitter_or_joiner() throws RecognitionException, TokenStreamException {
@@ -4390,12 +4395,12 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { 649926149759036272L, 277042200576L, 0L, 0L};
+		long[] data = { 649926149759037296L, 277042200576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 652186195928804210L, 277042200576L, 0L, 0L};
+		long[] data = { 652186195928805234L, 277042200576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
@@ -4405,7 +4410,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	private static final long[] mk_tokenSet_14() {
-		long[] data = { 652177949589498738L, 277042200576L, 0L, 0L};
+		long[] data = { 652177949589499760L, 277042200576L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());

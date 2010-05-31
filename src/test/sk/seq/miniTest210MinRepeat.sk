@@ -1,0 +1,8 @@
+harness void main(int x) {
+    int s = 0;
+    minrepeat {
+        // s += ??;
+        s++;
+    }
+    assert (s >= 2);
+}

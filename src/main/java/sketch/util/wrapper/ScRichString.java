@@ -1,13 +1,18 @@
 package sketch.util.wrapper;
 
-import java.util.List;
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
+
+import java.util.Collection;
+
+import sketch.util.fcns.ZipIdxEnt;
 
 /**
  * A few string functions that Python has and Java doesn't.
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class ScRichString {
     public String str;
@@ -47,8 +52,8 @@ public class ScRichString {
                         throw e;
                     } else {
                         as_string[a] =
-                                "<couldn't get string for "
-                                        + arr[a].getClass().getName() + ">";
+                                "<couldn't get string for " +
+                                        arr[a].getClass().getName() + ">";
                     }
                 }
             }
@@ -60,9 +65,7 @@ public class ScRichString {
     public String rtrim(String trim) {
         while (true) {
             int start_idx = str.length() - trim.length();
-            if (start_idx >= str.length()
-                    || !str.substring(start_idx).equals(trim))
-            {
+            if (start_idx >= str.length() || !str.substring(start_idx).equals(trim)) {
                 break;
             }
             str = str.substring(0, start_idx);
@@ -79,14 +82,14 @@ public class ScRichString {
         return result.toString();
     }
 
-    public String join(List<String> strList) {
+    public String join(Collection<String> strList) {
         if (strList == null) {
             return "<null list>";
         }
-        String[] array = new String[strList.size()];
-        for (int a = 0; a < array.length; a++) {
-            array[a] = strList.get(a);
+        String result = "";
+        for (ZipIdxEnt<String> elt : zipwithindex(strList)) {
+            result += elt.entry + (elt.isLast ? "" : ", ");
         }
-        return join(array);
+        return result;
     }
 }

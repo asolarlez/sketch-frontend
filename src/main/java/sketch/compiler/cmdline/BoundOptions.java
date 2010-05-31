@@ -6,10 +6,11 @@ import sketch.util.cli.CliParameter;
 
 /**
  * Bounded model checking options, e.g. the number of bits for integer holes.
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class BoundOptions extends CliAnnotatedOptionGroup {
     public BoundOptions() {
@@ -38,4 +39,10 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     public int inlineAmnt = 5;
     @CliParameter(help = "The unroll ammount for loops.")
     public int unrollAmnt = 8;
+    @CliParameter(help = "Initial value to start with when minimizing "
+            + "expressions/cost functions")
+    public int costEstimate = 32;
+    @CliParameter(help = "Extra time allocated to cost minimization "
+            + "(after a working program has been found)")
+    public float costTimeMultiple = 2;
 }

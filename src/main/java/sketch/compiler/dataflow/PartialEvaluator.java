@@ -967,6 +967,12 @@ public class PartialEvaluator extends FEReplacer {
         return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper())  : stmt;
     }
 
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        stmtMinimize.getMinimizeExpr().accept(this);
+        return isReplacer ? new StmtMinimize(exprRV) : stmtMinimize;
+    }
+
     public Object visitStmtLoop(StmtLoop stmt)
     {
         /* Generate a new variable, initialized with loop expression. */

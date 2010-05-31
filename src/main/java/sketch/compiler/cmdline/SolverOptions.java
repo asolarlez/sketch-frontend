@@ -23,7 +23,8 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public SynthSolvers synth = SynthSolvers.NOT_SET;
-    @CliParameter(help = "Kills the solver after given number of minutes.")
+    @CliParameter(help = "Kills the solver after given number of minutes. " +
+    		"If there are minloops or a cost function, the default is 1 second")
     public float timeout;
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")

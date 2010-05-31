@@ -223,4 +223,18 @@ public class SimpleCodePrinter extends CodePrinter
 	    printLine("}");
 	    return ts;
 	}
+
+    @Override
+    public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) {
+        printTab();
+        print("minloop");
+        printIndentedStatement(stmtMinLoop.getBody());
+        return stmtMinLoop;
+    }
+
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        printLine("minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ")");
+        return stmtMinimize;
+    }
 }

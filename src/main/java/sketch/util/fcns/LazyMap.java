@@ -1,4 +1,4 @@
-package sketch.util.datastructures;
+package sketch.util.fcns;
 
 import java.util.Iterator;
 

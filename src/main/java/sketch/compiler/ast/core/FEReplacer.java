@@ -854,13 +854,13 @@ public class FEReplacer implements FEVisitor
 	}
 
     /** generic tree replacement code */
-    public Object visitMinimize(StmtMinimize stmtMinimize) {
-        final Expression newVariable =
-                (Expression) stmtMinimize.getMinimizeExpr().accept(this);
-        if (newVariable == stmtMinimize.getMinimizeExpr()) {
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        final Expression previous = stmtMinimize.getMinimizeExpr();
+        final Object newVariable = previous.accept(this);
+        if (newVariable == previous || !(newVariable instanceof Expression)) {
             return stmtMinimize;
         } else {
-            return new StmtMinimize(newVariable);
+            return new StmtMinimize((Expression) newVariable);
         }
     }
 

@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.util.wrapper.ScRichString;
 
 /**
  * 
@@ -142,8 +143,9 @@ public class AdvancedRControl extends RecursionControl {
 	    }
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {
-			String func = exp.getName ();
-			assert null != funmap.get(func) : "unknown function '"+ func +"'";
+            String func = exp.getName();
+            assert null != funmap.get(func) : "unknown function '" + func +
+                    "'; known functions: " + new ScRichString(", ").join(funmap.keySet());
 			if( !(funmap.get(func).isTerminal )){
 				++bfactor; // += funWeighter.funWeight.get(exp.getName());
 			}

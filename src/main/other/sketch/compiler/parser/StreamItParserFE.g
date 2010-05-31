@@ -239,6 +239,7 @@ struct_stream_decl[StreamType st] returns [StreamSpec ss]
 
 statement returns [Statement s] { s = null; }
 	:	s=loop_statement
+	|   s=minrepeat_statement
 	|   s=fork_statement	
 	|	s=insert_block
 	|	s=reorder_block
@@ -263,7 +264,7 @@ loop_statement returns [Statement s] { s = null; Expression exp; Statement b; To
 	;
 
 minrepeat_statement returns [Statement s] { s = null; Statement b; Token x=null;}
-    : (t2:TK_minrepeat{x=t2;}) b=pseudo_block
+    : (t1:TK_minrepeat{x=t1;}) b=pseudo_block
     { s = new StmtMinLoop(getContext(x), b); }
     ;
 

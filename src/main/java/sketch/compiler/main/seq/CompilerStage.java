@@ -37,7 +37,14 @@ public abstract class CompilerStage {
         for (FEVisitor pass : linearizedStages) {
             // System.out.println("[Stage " + this.getClass().getSimpleName() +
             // "] running pass " + pass.getClass().getSimpleName());
+            final CompilerPassDeps passInfo = getPassInfo(pass);
+            if (passInfo.debug()) {
+                prog.debugDump("Before pass " + pass.getClass().getSimpleName());
+            }
             prog = (Program) prog.accept(pass);
+            if (passInfo.debug()) {
+                prog.debugDump("After pass " + pass.getClass().getSimpleName());
+            }
             sketch.runClasses.add(pass.getClass());
         }
         return prog;
@@ -54,8 +61,7 @@ public abstract class CompilerStage {
             }
         }
         for (FEVisitor pass : passes) {
-            final CompilerPassDeps deps =
-                    nonnull(pass.getClass().getAnnotation(CompilerPassDeps.class));
+            final CompilerPassDeps deps = getPassInfo(pass);
             for (Class<? extends FEVisitor> passBeforeCurr : deps.runsAfter()) {
                 final FEVisitor dependentObj = objectsByClass.get(passBeforeCurr);
                 if (dependentObj != null) {
@@ -81,6 +87,10 @@ public abstract class CompilerStage {
         for (FEVisitor pass : passes) {
             addPassToVector(pass);
         }
+    }
+
+    protected CompilerPassDeps getPassInfo(FEVisitor pass) {
+        return nonnull(pass.getClass().getAnnotation(CompilerPassDeps.class));
     }
 
     protected void addPassToVector(FEVisitor pass) {

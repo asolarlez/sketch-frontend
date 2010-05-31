@@ -51,6 +51,7 @@ import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.parser.StreamItParser;
+import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
@@ -103,11 +104,11 @@ public class SequentialSketchMain extends CommonSketchMain
  * This function produces a recursion control that is used by all the user visible transformations.
  * @return
  */
-	public RecursionControl visibleRControl(){
+	public RecursionControl visibleRControl() {
 		return visibleRControl (prog);
 	}
 
-	public RecursionControl visibleRControl (Program p) {
+    public RecursionControl visibleRControl (Program p) {
 		// return new BaseRControl(params.inlineAmt);
 		return new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p);
 	}
@@ -312,6 +313,14 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    public class CleanupStage extends CompilerStage {
+        public CleanupStage() {
+            super(SequentialSketchMain.this);
+            FEVisitor[] passes2 = { new CleanupRemoveMinFcns() };
+            passes = passes2;
+        }
+    }
+
     protected Program preprocessProgram(Program lprog) {
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
@@ -324,7 +333,6 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
 		lprog = (new PreProcStage1()).run(lprog);
-		//dump (lprog, "~regens");
 		
 		//dump (lprog, "extract clc");
 		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
@@ -339,15 +347,17 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
 
         lprog = (new IRStage1()).run(lprog);
-
+        
         lprog = (Program) lprog.accept(new TypeInferenceForStars());
         // dump (lprog, "tifs:");
 
 		lprog.accept(new PerformFlowChecks());
+		
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
-        lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
-                        options.bndOpts.unrollAmnt, visibleRControl()));
         
+		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
+                        options.bndOpts.unrollAmnt, visibleRControl(lprog)));
+		
         if (showPhaseOpt("preproc")) {
             dump(lprog, "After Preprocessing");
         }
@@ -396,6 +406,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		if (showPhaseOpt("final")) {
             dump(finalCode, "After Dead Code elimination.");
         }
+		
+		finalCode = (new CleanupStage()).run(finalCode);
 	}
 
 	protected String getOutputFileName() {
