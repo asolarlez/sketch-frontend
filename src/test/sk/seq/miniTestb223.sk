@@ -1,0 +1,35 @@
+void nospec()
+{
+}
+
+int S = 2;
+
+struct Set
+{
+  bit[S] data;
+}
+
+void main() implements nospec
+{
+  Set a = new Set();
+  a.data[0] = 1;
+  Set b = new Set();
+  b.data[0] = 0;
+  assert(f(a,b));
+}
+
+bit f (Set a, Set b)
+{
+  for (int i = 0; i < S; i ++)
+  { 
+    bit x = a.data[i];
+    bit y = b.data[i];
+  
+    //if (a.data[i] || b.data[i])
+    if (x || y)
+    {
+      return 1;
+    }
+  }
+  return 1;
+}

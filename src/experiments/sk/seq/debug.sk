@@ -1,71 +1,2309 @@
-int N_1L0;
+pragma options "--bnd-heap-size 12";
 
-float[N_1L0][N_1L0][N_1L0] rec6ptSk(float[N_1L0][N_1L0][N_1L0] in_1L1 ) implements rec6pt
+#define PX 0
+#define X 1
+#define Y 2
+#define ALPHA 3
+#define BETA 4
+#define GAMMA 5
+#define EMP 6
+#define UNDEFINED 7
+#define ERROR 8
+
+struct state{
+  int root;
+  bit err;
+  bit isEmpty;
+  int[6] left;
+  int[6] right;
+  int[6] parent;
+}
+
+void spec(){
+}
+
+void trace1() implements spec{
+
+  state initState = new state();
+
+  setInitialState1(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f3(initState, f3a(initState));
+  f4(initState, f4a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f8(initState, f8a(initState));
+  f9(initState, f9a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState1(initState);
+
+}
+
+void trace2() implements spec{
+  state initState = new state();
+  
+  setInitialState1(initState);
+  
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f13(initState, f13a(initState));
+  f5(initState, f5a(initState));
+  f6(initState, f6a(initState));
+  f7(initState, f7a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+  
+
+  assertFinalState1(initState);
+
+
+}
+
+void trace3() implements spec{
+  state initState = new state();
+  
+  setInitialState1(initState);
+  
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f13(initState, f13a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f15(initState, f15a(initState));
+  f10(initState, f10a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+  
+
+  assertFinalState1(initState);
+  //assert initState.isEmpty == 0;
+
+}
+
+
+
+
+void trace6() implements spec{
+
+  state initState = new state();
+
+  setInitialState1(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f13(initState, f13a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f8(initState, f8a(initState));
+  f9(initState, f9a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState1(initState);
+
+}
+
+void trace7() implements spec{
+
+  state initState = new state();
+
+  setInitialState1(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f13(initState, f13a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f15(initState, f15a(initState));
+  f10(initState, f10a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState1(initState);
+
+}
+
+void trace8() implements spec{
+
+  state initState = new state();
+
+  setInitialState1(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f3(initState, f3a(initState));
+  f4(initState, f4a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f15(initState, f15a(initState));
+  f10(initState, f10a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState1(initState);
+
+}
+
+void trace9() implements spec{
+
+  state initState = new state();
+
+  setInitialState1(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f3(initState, f3a(initState));
+  f4(initState, f4a(initState));
+  f5(initState, f5a(initState));
+  f6(initState, f6a(initState));
+  f7(initState, f7a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState1(initState);
+
+}
+
+void trace10() implements spec{
+
+  state initState = new state();
+
+  setInitialState1(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f3(initState, f3a(initState));
+  f4(initState, f4a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f8(initState, f8a(initState));
+  f9(initState, f9a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState1(initState);
+
+}
+
+void trace11() implements spec{
+
+  state initState = new state();
+
+  setInitialState2(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f3(initState, f3a(initState));
+  f4(initState, f4a(initState));
+  f5(initState, f5a(initState));
+  f6(initState, f6a(initState));
+  f7(initState, f7a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+
+
+  assertFinalState2(initState);
+
+}
+
+void trace12() implements spec{
+
+  state initState = new state();
+
+  setInitialState2(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f13(initState, f13a(initState));
+  f5(initState, f5a(initState));
+  f6(initState, f6a(initState));
+  f7(initState, f7a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+ 
+
+
+  assertFinalState2(initState);
+
+}
+
+void trace13() implements spec{
+
+  state initState = new state();
+
+  setInitialState2(initState);
+
+  f1(initState, f1a(initState));
+  f2(initState, f2a(initState));
+  f13(initState, f13a(initState));
+  f5(initState, f5a(initState));
+  f14(initState, f14a(initState));
+  f15(initState, f15a(initState));
+  f10(initState, f10a(initState));
+  f11(initState, f11a(initState));
+  f12(initState, f12a(initState));
+ 
+
+
+  assertFinalState2(initState);
+
+}
+
+
+void f1(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f2(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f4(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f5(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f7(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f9(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f10(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f11(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+void f12(state fromState, int t){
+if(  fromState.isEmpty == 1) return;
+if(??) {fc40(fromState, t); return;}
+if(??) {fc41(fromState, t); return;}
+if(??) {fc42(fromState, t); return;}
+if(??) {fc43(fromState, t); return;}
+if(??) {fc44(fromState, t); return;}
+if(??) {fc45(fromState, t); return;}
+if(??) {fc46(fromState, t); return;}
+if(??) {fc47(fromState, t); return;}
+if(??) {fc48(fromState, t); return;}
+if(??) {fc49(fromState, t); return;}
+if(??) {fc50(fromState, t); return;}
+if(??) {fc51(fromState, t); return;}
+if(??) {fc52(fromState, t); return;}
+if(??) {fc53(fromState, t); return;}
+if(??) {fc54(fromState, t); return;}
+if(??) {fc55(fromState, t); return;}
+if(??) {fc56(fromState, t); return;}
+if(??) {fc57(fromState, t); return;}
+if(??) {fc58(fromState, t); return;}
+if(??) {fc59(fromState, t); return;}
+if(??) {fc60(fromState, t); return;}
+if(??) {fc61(fromState, t); return;}
+if(??) {fc62(fromState, t); return;}
+if(??) {fc63(fromState, t); return;}
+if(??) {fc64(fromState, t); return;}
+if(??) {fc65(fromState, t); return;}
+if(??) {fc66(fromState, t); return;}
+if(??) {fc67(fromState, t); return;}
+if(??) {fc68(fromState, t); return;}
+if(??) {fc69(fromState, t); return;}
+if(??) {fc70(fromState, t); return;}
+if(??) {fc71(fromState, t); return;}
+if(??) {fc72(fromState, t); return;}
+if(??) {fc73(fromState, t); return;}
+if(??) {fc74(fromState, t); return;}
+if(??) {fc75(fromState, t); return;}
+fc76(fromState, t);
+}
+
+int f1a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f2a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f4a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f5a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f7a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f9a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f10a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f11a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+int f12a(state fromState){
+if(  fromState.isEmpty == 1) return 10;
+if(??) {return fc1(fromState);}
+if(??) {return fc2(fromState);}
+if(??) {return fc3(fromState);}
+if(??) {return fc4(fromState);}
+if(??) {return fc5(fromState);}
+if(??) {return fc6(fromState);}
+if(??) {return fc7(fromState);}
+if(??) {return fc8(fromState);}
+if(??) {return fc9(fromState);}
+if(??) {return fc10(fromState);}
+if(??) {return fc11(fromState);}
+if(??) {return fc12(fromState);}
+if(??) {return fc13(fromState);}
+if(??) {return fc14(fromState);}
+if(??) {return fc15(fromState);}
+if(??) {return fc16(fromState);}
+if(??) {return fc17(fromState);}
+if(??) {return fc18(fromState);}
+if(??) {return fc19(fromState);}
+if(??) {return fc20(fromState);}
+if(??) {return fc21(fromState);}
+if(??) {return fc22(fromState);}
+if(??) {return fc23(fromState);}
+if(??) {return fc24(fromState);}
+if(??) {return fc25(fromState);}
+if(??) {return fc26(fromState);}
+if(??) {return fc27(fromState);}
+if(??) {return fc28(fromState);}
+if(??) {return fc29(fromState);}
+if(??) {return fc30(fromState);}
+if(??) {return fc31(fromState);}
+if(??) {return fc32(fromState);}
+if(??) {return fc33(fromState);}
+if(??) {return fc34(fromState);}
+if(??) {return fc35(fromState);}
+if(??) {return fc36(fromState);}
+if(??) {return fc37(fromState);}
+if(??) {return fc38(fromState);}
+return fc39(fromState);
+}
+
+
+
+
+
+void f13(state fromState, int t){
+  if(  fromState.isEmpty == 1) return; 
+  f3(fromState, t);
+  if(fromState.isEmpty == 1)
+    fromState.isEmpty = 0;
+  else
+    fromState.isEmpty = 1;
+}
+
+void f14(state fromState, int t){
+  if(  fromState.isEmpty == 1) return; 
+  f6(fromState, t);
+  if(fromState.isEmpty == 1)
+    fromState.isEmpty = 0;
+  else
+    fromState.isEmpty = 1;
+}
+
+void f15(state fromState, int t){
+  if(  fromState.isEmpty == 1) return; 
+  f8(fromState, t);
+  if(fromState.isEmpty == 1)
+    fromState.isEmpty = 0;
+  else
+    fromState.isEmpty = 1;
+}
+
+
+void f3(state fromState, int t){
+  if(  fromState.isEmpty == 1) return;
+  if(??) {fc77(fromState, t); return;}
+  if(??) {fc78(fromState, t); return;}
+  fc79(fromState, t);
+}
+
+void f6(state fromState, int t){
+  if(  fromState.isEmpty == 1) return;
+  if(??) {fc77(fromState, t); return;}
+  if(??) {fc78(fromState, t); return;}
+  fc79(fromState, t);
+}
+
+void f8(state fromState, int t){
+  if(  fromState.isEmpty == 1) return;
+  if(??) {fc77(fromState, t); return;}
+  if(??) {fc78(fromState, t); return;}
+  fc79(fromState, t);
+}
+
+
+int f3a(state fromState){
+  return 0;
+}
+
+int f6a(state fromState){
+  return 0;
+}
+
+int f13a(state fromState){
+  return 0;
+}
+
+int f14a(state fromState){
+  return 0;
+}
+
+int f15a(state fromState){
+  return 0;
+}
+
+int f8a(state fromState){
+  return 0;
+}
+
+
+// t = x
+int fc1(state fromState)
+{
+  return X;
+}
+
+// t = x.left
+int fc2(state fromState)
+{
+  return fromState.left[X];
+}
+
+// t = x.left.left
+int fc3(state fromState)
+{
+  if (fromState.left[X] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.left[X]];
+}
+
+// t = x.left.right
+int fc4(state fromState)
+{
+  if (fromState.left[X] >= EMP)
+    assert false;
+
+  return fromState.right[fromState.left[X]];
+}
+
+// t = x.left.parent
+int fc5(state fromState)
+{
+  if (fromState.left[X] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.left[X]];
+}
+
+// t = x.right
+int fc6(state fromState)
+{
+  return fromState.right[X];
+}
+
+// t = x.right.left
+int fc7(state fromState)
+{
+  if (fromState.right[X] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.right[X]];
+}
+
+// t = x.right.right
+int fc8(state fromState)
+{
+  if (fromState.right[X] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.right[X]];
+}
+
+// t = x.right.parent
+int fc9(state fromState)
+{
+  if (fromState.right[X] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.right[X]];
+}
+
+// t = x.parent
+int fc10(state fromState)
+{
+  return fromState.parent[X];
+}
+
+// t = x.parent.left
+int fc11(state fromState)
+{
+  if (fromState.parent[X] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.parent[X]];
+}
+
+// t = x.parent.right
+int fc12(state fromState)
+{
+  if (fromState.parent[X] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.parent[X]];
+}
+
+// t = x.parent.parent
+int fc13(state fromState)
+{
+  if (fromState.parent[X] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.parent[X]];
+}
+
+
+
+// t = y
+int fc14(state fromState)
+{
+  return Y;
+}
+
+// t = y.left
+int fc15(state fromState)
+{
+  return fromState.left[Y];
+}
+
+// t = y.left.left
+int fc16(state fromState)
+{
+  if (fromState.left[Y] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.left[Y]];
+}
+
+// t = y.left.right
+int fc17(state fromState)
+{
+  if (fromState.left[Y] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.left[Y]];
+}
+
+// t = y.left.parent
+int fc18(state fromState)
+{
+  if (fromState.left[Y] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.left[Y]];
+}
+
+// t = y.right
+int fc19(state fromState)
+{
+  return fromState.right[Y];
+}
+
+// t = y.right.left
+int fc20(state fromState)
+{
+  if (fromState.right[Y] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.right[Y]];
+}
+
+// t = y.right.right
+int fc21(state fromState)
+{
+  if (fromState.right[Y] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.right[Y]];
+}
+
+// t = y.right.parent
+int fc22(state fromState)
+{
+  if (fromState.right[Y] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.right[Y]];
+}
+
+// t = y.parent
+int fc23(state fromState)
+{
+  return fromState.parent[Y];
+}
+
+// t = y.parent.left
+int fc24(state fromState)
+{
+  if (fromState.parent[Y] >= EMP)
+    assert false;
+
+  return fromState.left[fromState.parent[Y]];
+}
+
+// t = y.parent.right
+int fc25(state fromState)
+{
+  if (fromState.parent[Y] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.parent[Y]];
+}
+
+// t = y.parent.parent
+int fc26(state fromState)
+{
+  if (fromState.parent[Y] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.parent[Y]];
+}
+
+
+// t = root
+int fc27(state fromState)
+{
+  return fromState.root;
+}
+
+// t = root.left
+int fc28(state fromState)
+{
+  if (fromState.root >= EMP)
+    assert false;
+  return fromState.left[fromState.root];
+}
+
+// t = root.left.left
+int fc29(state fromState)
+{
+  if (fromState.root >= EMP || fromState.left[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.left[fromState.root]];
+}
+
+// t = root.left.right
+int fc30(state fromState)
+{
+  if (fromState.root >= EMP || fromState.left[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.left[fromState.root]];
+}
+
+// t = root.left.parent
+int fc31(state fromState)
+{
+  if (fromState.root >= EMP || fromState.left[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.left[fromState.root]];
+}
+
+// t = root.right
+int fc32(state fromState)
+{
+  if (fromState.root >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.root];
+}
+
+
+// t = root.right.left
+int fc33(state fromState)
+{
+  if (fromState.root >= EMP || fromState.right[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.right[fromState.root]];
+}
+
+// t = root.right.right
+int fc34(state fromState)
+{
+  if (fromState.root >= EMP || fromState.right[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.right[fromState.root]];
+}
+
+// t = root.right.parent
+int fc35(state fromState)
+{
+  if (fromState.root >= EMP || fromState.right[fromState.root] >= EMP)
+    assert false;
+
+  return fromState.parent[fromState.right[fromState.root]];
+}
+
+// t = root.parent
+int fc36(state fromState)
+{
+  if (fromState.root >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.root];
+}
+
+// t = root.parent.left
+int fc37(state fromState)
+{
+  if (fromState.root >= EMP || fromState.parent[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.left[fromState.parent[fromState.root]];
+}
+
+// t = root.parent.right
+int fc38(state fromState)
+{
+  if (fromState.root >= EMP || fromState.parent[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.right[fromState.parent[fromState.root]];
+}
+
+// t = root.parent.parent
+int fc39(state fromState)
+{
+  if (fromState.root >= EMP || fromState.parent[fromState.root] >= EMP)
+    assert false;
+  
+  return fromState.parent[fromState.parent[fromState.root]];
+}
+
+
+
+// x.left = t
+void fc40(state fromState, int t)
+{
+  if(t > EMP) {assert false; return;}
+  
+  fromState.left[X] = t;
+        
+}
+
+// x.left.left = t
+void fc41(state fromState, int t)
 {
   
-  float[N_1L0][N_1L0][N_1L0] output_3L1;
-  float[N_1L0][N_1L0][N_1L0] _ret_0_3L2;
-  int _ret_1_3L3=0;
-  int _ret_2_3L4=0;
-  int _ret_3_3L5=0;
-  {
-    float[N_1L0][N_1L0][N_1L0] in_4L0_44L0=in_1L1;
-    float[N_1L0][N_1L0][N_1L0] _out_4L7_44L7=0;
-    {
-      float[N_1L0][N_1L0][N_1L0] output_6L1_45L1=in_4L0_44L0;
-      for(int i_7L0_46L0=0;i_7L0_46L0<N_1L0;++i_7L0_46L0)
-      {
-        {
-          for(int j_27L0_109L0=0;j_27L0_109L0<N_1L0;++j_27L0_109L0)
-          {
-            {
-              for(int k_37L0_130L0=0;k_37L0_130L0<N_1L0;++k_37L0_130L0)
-              {
-                {
-                  output_6L1_45L1[i_7L0_46L0][j_27L0_109L0][k_37L0_130L0] = in_4L0_44L0[((i_7L0_46L0)+(1))%(N_1L0)][j_27L0_109L0][k_37L0_130L0]
-                  +in_4L0_44L0[i_7L0_46L0][((j_27L0_109L0)+(1))%(N_1L0)][k_37L0_130L0]
-                  +in_4L0_44L0[i_7L0_46L0][j_27L0_109L0][((k_37L0_130L0)+(1))%(N_1L0)]
-                  +in_4L0_44L0[(((i_7L0_46L0)-(1))+(N_1L0))%(N_1L0)][j_27L0_109L0][k_37L0_130L0]
-                  +in_4L0_44L0[i_7L0_46L0][(((j_27L0_109L0)-(1))+(N_1L0))%(N_1L0)][k_37L0_130L0]
-                  +in_4L0_44L0[i_7L0_46L0][j_27L0_109L0][(((k_37L0_130L0)-(1))+(N_1L0))%(N_1L0)];
-                }
-              }
-            }
-          }
-        }
-      }
-      {
-        _out_4L7_44L7 = output_6L1_45L1;
-      }
-    }
-    _ret_0_3L2 = _out_4L7_44L7;
-  }
-  return _ret_0_3L2;
+  if (fromState.left[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.left[X]] = t;
+  
 }
-float[N_1L0][N_1L0][N_1L0] rec6pt(float[N_1L0][N_1L0][N_1L0] in_138L3)
-{
 
-  float[N_1L0][N_1L0][N_1L0] output_140L1;
-  for(int i_141L0=0;(i_141L0)<(N_1L0);++i_141L0)
-  {
-    {
-      for(int j_204L0=0;(j_204L0)<(N_1L0);++j_204L0)
-      {
-        {
-          for(int k_225L0=0;(k_225L0)<(N_1L0);++k_225L0)
-          {
-            {
-              output_140L1[i_141L0][j_204L0][k_225L0] = in_138L3[((i_141L0)+(1))%(N_1L0)][j_204L0][k_225L0]
-              											+in_138L3[i_141L0][((j_204L0)+(1))%(N_1L0)][k_225L0]
-              											+in_138L3[i_141L0][j_204L0][((k_225L0)+(1))%(N_1L0)]
-              											+in_138L3[(((i_141L0)-(1))+(N_1L0))%(N_1L0)][j_204L0][k_225L0]
-              											+in_138L3[i_141L0][(((j_204L0)-(1))+(N_1L0))%(N_1L0)][k_225L0]
-              											+in_138L3[i_141L0][j_204L0][(((k_225L0)-(1))+(N_1L0))%(N_1L0)];
-            }
-          }
-        }
-      }
-    }
+// x.left.right = t
+void fc42(state fromState, int t)
+{
+  
+  
+  if (fromState.left[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.left[X]] = t;
+
+  
+}
+
+
+// x.left.parent = t
+void fc43(state fromState, int t)
+{
+  
+  
+  if (fromState.left[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.left[X]] = t;
+  
+  
+}
+
+// x.right = t
+void fc44(state fromState, int t)
+{
+  
+  if(t > EMP) {assert false; return;}
+  
+  fromState.right[X] = t;
+  
+  
+}
+
+
+
+// x.right.left = t
+void fc45(state fromState, int t)
+{
+  
+  
+  if (fromState.right[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.right[X]] = t;
+  
+  
+}
+
+// x.right.right = t
+void fc46(state fromState, int t)
+{
+  
+  
+  if (fromState.right[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.right[X]] = t;
+  
+  
+}
+
+// x.right.parent = t
+void fc47(state fromState, int t)
+{
+  
+  
+  if (fromState.right[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.right[X]] = t;
+  
+  
+}
+
+// x.parent = t
+void fc48(state fromState, int t)
+{
+  
+  if(t > EMP) {assert false; return;}
+
+  fromState.parent[X] = t;
+  
+}
+
+
+
+// x.parent.left = t
+void fc49(state fromState, int t)
+{
+  
+  
+  if (fromState.parent[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.parent[X]] = t;
+  
+  
+}
+
+// x.parent.right = t
+void fc50(state fromState, int t)
+{
+  
+
+  if (fromState.parent[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.parent[X]] = t;
+  
+  
+}
+
+// x.parent.parent = t
+void fc51(state fromState, int t)
+{
+  
+  
+  if (fromState.parent[X] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.parent[X]] = t;
+  
+  
+}
+
+
+
+
+// y.left = t
+void fc52(state fromState, int t)
+{
+      
+  if(t > EMP) {assert false; return;}
+  
+  fromState.left[Y] = t;
+
+            
+}
+
+// y.left.left = t
+void fc53(state fromState, int t)
+{
+  
+  
+  if (fromState.left[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.left[Y]] = t;
+  
+  
+}
+
+// y.left.right = t
+void fc54(state fromState, int t)
+{
+  
+  
+  if (fromState.left[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.left[Y]] = t;
+  
+  
+}
+
+
+// y.left.parent = t
+void fc55(state fromState, int t)
+{
+  
+  
+  if (fromState.left[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.left[Y]] = t;
+  
+  
+}
+
+// y.right = t
+void fc56(state fromState, int t)
+{
+  
+  if(t > EMP) {assert false; return;}
+
+  fromState.right[Y] = t;
+  
+  
+}
+
+
+// y.right.left = t
+void fc57(state fromState, int t)
+{
+  
+  
+  if (fromState.right[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.right[Y]] = t;
+  
+  
+}
+
+// y.right.right = t
+void fc58(state fromState, int t)
+{
+  
+  
+  if (fromState.right[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.right[Y]] = t;
+  
+  
+}
+
+// y.right.parent = t
+void fc59(state fromState, int t)
+{
+           
+
+  if (fromState.right[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.right[Y]] = t;
+
+  
+}
+
+// y.parent = t
+void fc60(state fromState, int t)
+{
+  
+  if(t > EMP) {assert false; return;}
+  
+  fromState.parent[Y] = t;
+  
+  
+}
+
+
+// y.parent.left = t
+void fc61(state fromState, int t)
+{
+  
+  
+  if (fromState.parent[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.parent[Y]] = t;
+
+  
+}
+
+// y.parent.right = t
+void fc62(state fromState, int t)
+{
+      
+  
+  if (fromState.parent[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.parent[Y]] = t;
+  
+  
+}
+
+// y.parent.parent = t
+void fc63(state fromState, int t)
+{
+  
+  
+  if (fromState.parent[Y] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.parent[Y]] = t;
+  
+  
+}
+
+
+// root = t
+void fc64(state fromState, int t)
+{
+           
+  if(t > EMP) {assert false; return;}
+
+  fromState.root = t;
+        
+  
+}
+
+
+// root.left = t
+void fc65(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.root] = t;
+  
+  
+}
+
+// root.left.left = t
+void fc66(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.left[fromState.root]>=EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.left[fromState.root]] = t;
+  
+  
+}
+
+// root.left.right = t
+void fc67(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.left[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.left[fromState.root]] = t;
+  
+  
+}
+
+// root.left.parent = t
+void fc68(state fromState, int t)
+{
+  
+
+  if (fromState.root >= EMP || fromState.left[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.left[fromState.root]] = t;
+  
+  
+}
+
+// root.right = t
+void fc69(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.root] = t;
+  
+  
+}
+
+// root.right.left = t
+void fc70(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.right[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.right[fromState.root]] = t;
+  
+  
+}
+
+// root.right.right = t
+void fc71(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.right[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.right[fromState.root]] = t;
+  
+  
+}
+
+// root.right.parent = t
+void fc72(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.right[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.right[fromState.root]] = t;
+  
+  
+}
+
+// root.parent = t
+void fc73(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.root] = t;
+
+  
+}
+
+// root.parent.left = t
+void fc74(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.parent[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.left[fromState.parent[fromState.root]] = t;
+  
+  
+}
+
+// root.parent.right = t
+void fc75(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.parent[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.right[fromState.parent[fromState.root]] = t;
+  
+  
+}
+
+// root.parent.parent = t
+void fc76(state fromState, int t)
+{
+  
+  
+  if (fromState.root >= EMP || fromState.parent[fromState.root] >= EMP || t > EMP)
+    assert false;
+  else
+    fromState.parent[fromState.parent[fromState.root]] = t;
+  
+          
+}
+
+
+// y.left != null
+
+void fc77(state fromState, int t){
+  if(fromState.left[Y] == EMP)
+    fromState.isEmpty = 1;
+}
+
+// x.parent == null
+
+void fc78(state fromState, int t){
+  if(fromState.parent[X] != EMP)
+    fromState.isEmpty = 1;
+}
+
+
+// x == x.parent.left
+
+void fc79(state fromState, int t){
+  if(fromState.parent[X] >= EMP)
+    assert false;
+  else{
+    if(X != fromState.left[fromState.parent[X]])
+      fromState.isEmpty = 1;
   }
-  return output_140L1;
+}
+
+
+
+void setInitialState1(state initState){
+
+  initState.root = X;
+  initState.err = 0;
+  initState.isEmpty = 0;
+
+  initState.left[PX] = UNDEFINED;
+  initState.left[X] = ALPHA;
+  initState.left[Y] = BETA;
+  initState.left[ALPHA] = ALPHA;
+  initState.left[BETA] = BETA;
+  initState.left[GAMMA] = GAMMA;
+  
+  initState.right[PX] = UNDEFINED;
+  initState.right[X] = Y;
+  initState.right[ALPHA] = ALPHA;
+  initState.right[Y] = GAMMA;
+  initState.right[BETA] = BETA;
+  initState.right[GAMMA] = GAMMA;
+  
+  initState.parent[PX] = UNDEFINED;
+  initState.parent[X] = EMP;
+  initState.parent[Y] = X;
+  initState.parent[ALPHA] = X;
+  initState.parent[BETA] = Y;
+  initState.parent[GAMMA] = Y;
+}
+
+void setInitialState2(state initState){
+  initState.root = X;
+  initState.err = 0;
+  initState.isEmpty = 0;
+  
+  initState.left[PX] = UNDEFINED;
+  initState.left[X] = ALPHA;
+  initState.left[Y] = EMP;
+  initState.left[ALPHA] = ALPHA;
+  initState.left[BETA] = UNDEFINED;
+  initState.left[GAMMA] = GAMMA;
+  
+  initState.right[PX] = UNDEFINED;
+  initState.right[X] = Y;
+  initState.right[ALPHA] = ALPHA;
+  initState.right[Y] = GAMMA;
+  initState.right[BETA] = UNDEFINED;
+  initState.right[GAMMA] = GAMMA;
+  
+  initState.parent[PX] = UNDEFINED;
+  initState.parent[X] = EMP;
+  initState.parent[Y] = X;
+  initState.parent[ALPHA] = X;
+  initState.parent[BETA] = UNDEFINED;
+  initState.parent[GAMMA] = Y;
+}
+
+void setInitialState3(state initState){
+  
+  initState.root = PX;
+  initState.err = 0;
+  initState.isEmpty = 0;
+  
+  initState.left[PX] = PX;
+  initState.left[X] = ALPHA;
+  initState.left[Y] = BETA;
+  initState.left[ALPHA] = ALPHA;
+  initState.left[BETA] = BETA;
+  initState.left[GAMMA] = GAMMA;
+  
+  initState.right[PX] = X;
+  initState.right[X] = Y;
+  initState.right[ALPHA] = ALPHA;
+  initState.right[Y] = GAMMA;
+  initState.right[BETA] = BETA;
+  initState.right[GAMMA] = GAMMA;
+  
+  initState.parent[PX] = PX;
+  initState.parent[X] = PX;
+  initState.parent[Y] = X;
+  initState.parent[ALPHA] = X;
+  initState.parent[BETA] = Y;
+  initState.parent[GAMMA] = Y;
+}
+
+void setInitialState4(state initState){
+  
+  initState.root = PX;
+  initState.err = 0;
+  initState.isEmpty = 0;
+  
+  initState.left[PX] = PX;
+  initState.left[X] = ALPHA;
+  initState.left[Y] = EMP;
+  initState.left[ALPHA] = ALPHA;
+  initState.left[BETA] = UNDEFINED;
+  initState.left[GAMMA] = GAMMA;
+  
+  initState.right[PX] = X;
+  initState.right[X] = Y;
+  initState.right[ALPHA] = ALPHA;
+  initState.right[Y] = GAMMA;
+  initState.right[BETA] = UNDEFINED;
+  initState.right[GAMMA] = GAMMA;
+  
+  initState.parent[PX] = PX;
+  initState.parent[X] = PX;
+  initState.parent[Y] = X;
+  initState.parent[ALPHA] = X;
+  initState.parent[BETA] = UNDEFINED;
+  initState.parent[GAMMA] = Y;
+}
+
+void setInitialState5(state initState){
+
+  initState.root = PX;
+  initState.err = 0;
+  initState.isEmpty = 0;
+  
+  initState.left[PX] = X;
+  initState.left[X] = ALPHA;
+  initState.left[Y] = BETA;
+  initState.left[ALPHA] = ALPHA;
+  initState.left[BETA] = BETA;
+  initState.left[GAMMA] = GAMMA;
+  
+  initState.right[PX] = PX;
+  initState.right[X] = Y;
+  initState.right[ALPHA] = ALPHA;
+  initState.right[Y] = GAMMA;
+  initState.right[BETA] = BETA;
+  initState.right[GAMMA] = GAMMA;
+  
+  initState.parent[PX] = PX;
+  initState.parent[X] = PX;
+  initState.parent[Y] = X;
+  initState.parent[ALPHA] = X;
+  initState.parent[BETA] = Y;
+  initState.parent[GAMMA] = Y;
+}
+
+void setInitialState6(state initState){
+
+  initState.root = PX;
+  initState.err = 0;
+  initState.isEmpty = 0;
+  
+  initState.left[PX] = X;
+  initState.left[X] = ALPHA;
+  initState.left[Y] = EMP;
+  initState.left[ALPHA] = ALPHA;
+  initState.left[BETA] = UNDEFINED;
+  initState.left[GAMMA] = GAMMA;
+  
+  initState.right[PX] = PX;
+  initState.right[X] = Y;
+  initState.right[ALPHA] = ALPHA;
+  initState.right[Y] = GAMMA;
+  initState.right[BETA] = UNDEFINED;
+  initState.right[GAMMA] = GAMMA;
+  
+  initState.parent[PX] = PX;
+  initState.parent[X] = PX;
+  initState.parent[Y] = X;
+  initState.parent[ALPHA] = X;
+  initState.parent[BETA] = UNDEFINED;
+  initState.parent[GAMMA] = Y;
+}
+
+
+void assertFinalState1(state finalState){
+
+  if(finalState.isEmpty){
+    assert finalState.err == 0;
+    return;
+  }
+  else
+    {
+      assert finalState.root == Y;
+      assert finalState.err == 0;
+      assert finalState.isEmpty == 0;
+      assert finalState.left[X] == ALPHA;
+      assert finalState.left[Y] == X;
+      assert finalState.left[ALPHA] == ALPHA;
+      assert finalState.left[BETA] == BETA;
+      assert finalState.left[GAMMA] == GAMMA;
+      assert finalState.left[PX] == UNDEFINED;
+      
+      assert finalState.right[X] == BETA;
+      assert finalState.right[ALPHA] == ALPHA;
+      assert finalState.right[BETA] == BETA;
+      assert finalState.right[Y] == GAMMA;
+      assert finalState.right[GAMMA] == GAMMA;
+      assert finalState.right[PX] == UNDEFINED;
+      
+      assert finalState.parent[PX] == UNDEFINED;
+      assert finalState.parent[X] == Y;
+      assert finalState.parent[Y] == EMP;
+      assert finalState.parent[ALPHA] == X;
+      assert finalState.parent[BETA] == X;
+      assert finalState.parent[GAMMA] == Y;
+
+    }
+}
+
+void assertFinalState2(state finalState){
+
+  if(finalState.isEmpty==1){
+    assert finalState.err == 0;
+    return;
+  }
+  else
+    {
+      assert finalState.root == Y;
+      assert finalState.err == 0;
+      
+      assert finalState.left[X] == ALPHA;
+      assert finalState.left[Y] == X;
+      assert finalState.left[ALPHA] == ALPHA;
+      assert finalState.left[BETA] == UNDEFINED;
+      assert finalState.left[GAMMA] == GAMMA;
+      assert finalState.left[PX] == UNDEFINED;
+      
+      assert finalState.right[X] == EMP;
+      assert finalState.right[ALPHA] == ALPHA;
+      assert finalState.right[BETA] == UNDEFINED;
+      assert finalState.right[Y] == GAMMA;
+      assert finalState.right[GAMMA] == GAMMA;
+      assert finalState.right[PX] == UNDEFINED;
+      
+      assert finalState.parent[PX] == UNDEFINED;
+      assert finalState.parent[X] == Y;
+      assert finalState.parent[Y] == EMP;
+      assert finalState.parent[ALPHA] == X;
+      assert finalState.parent[BETA] == UNDEFINED;
+      assert finalState.parent[GAMMA] == Y;
+        
+    }
+}
+
+void assertFinalState3(state finalState){
+
+  if(finalState.isEmpty==1){
+    assert finalState.err == 0;
+    return;
+  }
+  else
+    {
+      assert finalState.root == PX;
+      assert finalState.err == 0;
+      
+      assert finalState.left[X] == ALPHA;
+      assert finalState.left[Y] == X;
+      assert finalState.left[ALPHA] == ALPHA;
+      assert finalState.left[BETA] == BETA;
+      assert finalState.left[GAMMA] == GAMMA;
+      assert finalState.left[PX] == PX;
+      
+      assert finalState.right[X] == BETA;
+      assert finalState.right[ALPHA] == ALPHA;
+      assert finalState.right[BETA] == BETA;
+      assert finalState.right[Y] == GAMMA;
+      assert finalState.right[GAMMA] == GAMMA;
+      assert finalState.right[PX] == Y;
+      
+      assert finalState.parent[PX] == PX;
+      assert finalState.parent[X] == Y;
+      assert finalState.parent[Y] == PX;
+      assert finalState.parent[ALPHA] == X;
+      assert finalState.parent[BETA] == X;
+      assert finalState.parent[GAMMA] == Y;
+      
+    }
+}
+
+void assertFinalState4(state finalState){
+
+  if(finalState.isEmpty==1){
+    assert finalState.err == 0;
+    return;
+  }
+  else
+    {
+      assert finalState.root == PX;
+      assert finalState.err == 0;
+      
+      assert finalState.left[X] == ALPHA;
+      assert finalState.left[Y] == X;
+      assert finalState.left[ALPHA] == ALPHA;
+      assert finalState.left[BETA] == UNDEFINED;
+      assert finalState.left[GAMMA] == GAMMA;
+      assert finalState.left[PX] == PX;
+      
+      assert finalState.right[X] == UNDEFINED;
+      assert finalState.right[ALPHA] == ALPHA;
+      assert finalState.right[BETA] == UNDEFINED;
+      assert finalState.right[Y] == GAMMA;
+      assert finalState.right[GAMMA] == GAMMA;
+      assert finalState.right[PX] == Y;
+      
+      assert finalState.parent[PX] == PX;
+      assert finalState.parent[X] == Y;
+      assert finalState.parent[Y] == PX;
+      assert finalState.parent[ALPHA] == X;
+      assert finalState.parent[BETA] == UNDEFINED;
+      assert finalState.parent[GAMMA] == Y;
+      
+
+    }
+}
+
+void assertFinalState5(state finalState){
+
+  if(finalState.isEmpty==1){
+    assert finalState.err == 0;
+    return;
+  }
+  else
+    {
+      assert finalState.root == PX;
+      assert finalState.err == 0;
+      
+      assert finalState.left[X] == ALPHA;
+      assert finalState.left[Y] == X;
+      assert finalState.left[ALPHA] == ALPHA;
+      assert finalState.left[BETA] == BETA;
+      assert finalState.left[GAMMA] == GAMMA;
+      assert finalState.left[PX] == Y;
+      
+      assert finalState.right[X] == BETA;
+      assert finalState.right[ALPHA] == ALPHA;
+      assert finalState.right[BETA] == BETA;
+      assert finalState.right[Y] == GAMMA;
+      assert finalState.right[GAMMA] == GAMMA;
+      assert finalState.right[PX] == PX;
+      
+      assert finalState.parent[PX] == PX;
+      assert finalState.parent[X] == Y;
+      assert finalState.parent[Y] == PX;
+      assert finalState.parent[ALPHA] == X;
+      assert finalState.parent[BETA] == X;
+      assert finalState.parent[GAMMA] == Y;
+
+    }
+}
+
+void assertFinalState6(state finalState){
+
+  if(finalState.isEmpty==1){
+    assert finalState.err == 0;
+    return;
+  }
+  else
+    {
+      assert finalState.root == PX;
+      assert finalState.err == 0;
+      
+      assert finalState.left[X] == ALPHA;
+      assert finalState.left[Y] == X;
+      assert finalState.left[ALPHA] == ALPHA;
+      assert finalState.left[BETA] == UNDEFINED;
+      assert finalState.left[GAMMA] == GAMMA;
+      assert finalState.left[PX] == Y;
+      
+      assert finalState.right[X] == UNDEFINED;
+      assert finalState.right[ALPHA] == ALPHA;
+      assert finalState.right[BETA] == UNDEFINED;
+      assert finalState.right[Y] == GAMMA;
+      assert finalState.right[GAMMA] == GAMMA;
+      assert finalState.right[PX] == PX;
+      
+      assert finalState.parent[PX] == PX;
+      assert finalState.parent[X] == Y;
+      assert finalState.parent[Y] == PX;
+      assert finalState.parent[ALPHA] == X;
+      assert finalState.parent[BETA] == UNDEFINED;
+      assert finalState.parent[GAMMA] == Y;
+
+
+    }
 }

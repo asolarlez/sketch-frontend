@@ -22,6 +22,8 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -1126,7 +1128,16 @@ public class PartialEvaluator extends FEReplacer {
                 abstractValue init = (abstractValue) stmt.getInit(i).accept(this);
                 ninit = exprRV;
                 state.setVarValue(nm, init);
+            }else{
+                if(!(stmt.getType(i) instanceof TypeArray)){
+                    if(stmt.getType(i) instanceof TypeStruct || stmt.getType(i) instanceof TypeStructRef ){
+                        state.setVarValue(nm, this.vtype.NULL());
+                    }else{
+                        state.setVarValue(nm, this.vtype.CONST(0));
+                    }
+                }
             }
+            
             /* else{
                 state.setVarValue(nm, this.vtype.BOTTOM("UNINITIALIZED"));
             } */

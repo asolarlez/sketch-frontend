@@ -3,6 +3,7 @@ package sketch.compiler.codegenerators;
 import java.util.Iterator;
 import java.util.List;
 
+import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
@@ -307,13 +308,21 @@ public class NodesToC extends NodesToJava {
 
 		String result = "";
 		ss = spec;
-        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
+        
+		for(FieldDecl v : spec.getVars()){
+		    result += v.accept(this);
+        }
+		
+		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
             Function oldFunc = (Function)iter.next();
             symtab.registerFn(oldFunc);
             result += (String)oldFunc.accept(this);
         }
+        
 
+        
+        
         symtab = oldSymTab;
         streamType = oldStreamType;
         return result;
@@ -328,7 +337,7 @@ public class NodesToC extends NodesToJava {
 
 
         String result = indent ;
-        if (!func.getName().equals(ss.getName()))
+        if (ss == null || !func.getName().equals(ss.getName()))
             result += convertType(func.getReturnType()) + " ";
         result += func.getName();
         String prefix = null;

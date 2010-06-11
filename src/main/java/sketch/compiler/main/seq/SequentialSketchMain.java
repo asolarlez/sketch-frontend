@@ -120,6 +120,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	 */
 	public RecursionControl internalRControl(){
 
+	    //return new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, prog);
 		return new DelayedInlineRControl(0, 0);
 	}
 
@@ -328,6 +329,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		//dump (lprog, "before:");
 		lprog = (Program)lprog.accept(new SeparateInitializers ());
+		
 		lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
