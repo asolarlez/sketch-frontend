@@ -418,10 +418,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	for (String field : fieldArrays.keySet ()) {
 	    		names.add (fieldArrays.get (field).getName ());
 	    		types.add (typeofFieldArr (field));
-	    		if (struct.getType (field).isStruct ())
-	    			inits.add (initNull (cx));
-	    		else
-	    			inits.add (initZero (cx));
+	    		Type t = struct.getType (field); 
+	    		inits.add(initField(cx, t.defaultValue()));	    		
 	    	}
 
 	    	return new StmtVarDecl (cx, types, names, inits);
@@ -487,16 +485,11 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    		getNumInstsExpr (cx));
 	    }
 
-	    /** Return a null-initializer. */
-	    private Expression initNull (FENode cx) {
-	    	return new ExprArrayInit (cx,
-	    			Collections.nCopies (heapsize, (Expression) ExprNullPtr.nullPtr));
-	    }
-
-	    /** Return a null-initializer. */
-	    private Expression initZero (FENode cx) {
-	    	return new ExprArrayInit (cx,
-	    			Collections.nCopies (heapsize, (Expression) ExprConstInt.zero));
-	    }
+	    /** Return a  field initializer. */
+        private Expression initField (FENode cx, Expression e) {
+            return new ExprArrayInit (cx,
+                    Collections.nCopies (heapsize, e));
+        }
+	    	    
 	}
 }

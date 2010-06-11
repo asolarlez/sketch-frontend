@@ -231,7 +231,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		// dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
-		// dump (prog, "After eliminating structs:");
+		//dump (prog, "After eliminating structs:");
 		prog = (Program)prog.accept(new EliminateMultiDimArrays());
 		//dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
