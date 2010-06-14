@@ -28,8 +28,7 @@ bit[W] sklog2(bit[W] in) implements log2 {
 }
 
 
-generator bit iszero(bit[W] in) /* automatically rewritten */
-{
+generator bit iszero(bit[W] in){
 	bit res=1;
 	for(int i=0;i<W;i++)
 		res=res & !in[i];
@@ -37,7 +36,7 @@ generator bit iszero(bit[W] in) /* automatically rewritten */
 }
 
 
-generator bit[W] castInt(int n){ /* automatically rewritten */
+generator bit[W] castInt(int n){ 
 	bit[W] one = 0;
 	one[0] = 1;
 	bit[W] ret = 0;
