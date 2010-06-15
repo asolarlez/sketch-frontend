@@ -42,7 +42,4 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Initial value to start with when minimizing "
             + "expressions/cost functions")
     public int costEstimate = 32;
-    @CliParameter(help = "Extra time allocated to cost minimization "
-            + "(after a working program has been found)")
-    public float costTimeMultiple = 2;
 }
