@@ -1,0 +1,384 @@
+#define N 3
+
+pragma options "--debug-verbosity 4";
+
+int[N] s(bit[N][N] rels, int x) {
+	int[N] result;
+	for(int i = 0; i < N; i++) {
+		result[i] = -1;
+	}
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(rels[x][i]) {
+			result[count] = i;
+			count++;
+		}
+	}
+	return result;
+}
+
+int countS(bit[N][N] rels, int x) {
+	int[N] result = s(rels, x);
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(result[i] == -1)
+			return count;
+		count++;
+	}
+	return count;
+}
+
+bit isPresent(int[N] arr, int x) {
+	for(int i = 0; i < N; i++) {
+		if(arr[i] == x)
+			return true;
+	}
+	return false;
+}
+
+int[N] merge(int[N] arr1, int[N] arr2) {
+	int[N] result; 
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(arr1[i] != -1) {
+			result[count] = arr1[i];
+			count++;
+		}
+	}
+	for(int i = 0; i < N; i++) {
+		if(arr2[i] != -1 && !isPresent(result, arr2[i])) {
+			result[count] = arr2[i];
+			count++;
+		}
+	}
+	for(int i = count; i < N; i++) {
+		result[i] = -1;
+	}
+	return result;
+}
+
+int[N] sPlus(bit[N][N] rels, int x) {
+	int[N] result;
+	int[N] curr;
+	int[N] processed;
+	for(int i = 0; i < N; i++) {
+		result[i] = -1;
+		curr[i] = -1;
+		processed[i] = -1;
+	}
+	curr[0] = x;
+	int count = 0;
+	int processedCount = 0;
+	while(count != -1) {
+		int[N] temp;
+		temp = s(rels, curr[0]);
+		processed[processedCount] = curr[0];
+		processedCount++;
+		for(int i = 0; i < N - 1; i++) {
+			curr[i] = curr[i + 1];
+		}
+		count--;	
+		if(temp[0] != -1) {
+			result = merge(result, temp);
+			for(int i = 0; i < N; i++) {
+				if(temp[i] != -1 && !isPresent(processed, temp[i]) && !isPresent(curr, temp[i])) {
+					count++;
+					curr[count] = temp[i];
+				}				
+			}
+		}
+	}
+	return result;
+}
+
+int countSPlus(bit[N][N] rels, int x) {
+	int[N] result = sPlus(rels, x);
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(result[i] == -1)
+			return count;
+		count++;
+	}
+	return count;
+}
+
+int[N] sStar(bit[N][N] rels, int x) {
+	int[N] result;
+	int[N] curr;
+	int[N] processed;
+	for(int i = 0; i < N; i++) {
+		result[i] = -1;
+		curr[i] = -1;
+		processed[i] = -1;
+	}
+	result[0] = x;
+	curr[0] = x;
+	int count = 0;
+	int processedCount = 0;
+	while(count != -1) {
+		int[N] temp;
+		temp = s(rels, curr[0]);
+		processed[processedCount] = curr[0];
+		processedCount++;
+		for(int i = 0; i < N - 1; i++) {
+			curr[i] = curr[i + 1];
+		}
+		count--;	
+		if(temp[0] != -1) {
+			result = merge(result, temp);
+			for(int i = 0; i < N; i++) {
+				if(temp[i] != -1 && !isPresent(processed, temp[i]) && !isPresent(curr, temp[i])) {
+					count++;
+					curr[count] = temp[i];
+				}				
+			}
+		}
+	}
+	return result;
+}
+
+int countSStar(bit[N][N] rels, int x) {
+	int[N] result = sStar(rels, x);
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(result[i] == -1)
+			return count;
+		count++;
+	}
+	return count;
+}
+
+int[N] p(bit[N][N] rels, int x) {
+	int[N] result;
+	for(int i = 0; i < N; i++) {
+		result[i] = -1;
+	}
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(rels[i][x]) {
+			result[count] = i;
+			count++;
+		}
+	}
+	return result;
+}
+
+int countP(bit[N][N] rels, int x) {
+	int[N] result = p(rels, x);
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(result[i] == -1)
+			return count;	
+		count++;
+	}
+	return count;
+}
+
+int[N] pPlus(bit[N][N] rels, int x) {
+	int[N] result;
+	int[N] curr;
+	int[N] processed;
+	for(int i = 0; i < N; i++) {
+		result[i] = -1;
+		curr[i] = -1;
+		processed[i] = -1;
+	}
+	curr[0] = x;
+	int count = 0;
+	int processedCount = 0;
+	while(count != -1) {
+		int[N] temp;
+		temp = p(rels, curr[0]);
+		processed[processedCount] = curr[0];
+		processedCount++;
+		for(int i = 0; i < N - 1; i++) {
+			curr[i] = curr[i + 1];
+		}
+		count--;	
+		if(temp[0] != -1) {
+			result = merge(result, temp);
+			for(int i = 0; i < N; i++) {
+				if(temp[i] != -1 && !isPresent(processed, temp[i]) && !isPresent(curr, temp[i])) {
+					count++;
+					curr[count] = temp[i];
+				}				
+			}
+		}
+	}
+	return result;
+}
+
+int[N] pStar(bit[N][N] rels, int x) {
+	int[N] result;
+	int[N] curr;
+	int[N] processed;
+	for(int i = 0; i < N; i++) {
+		result[i] = -1;
+		curr[i] = -1;
+		processed[i] = -1;
+	}
+	result[0] = x;
+	curr[0] = x;
+	int count = 0;
+	int processedCount = 0;
+	while(count != -1) {
+		int[N] temp;
+		temp = p(rels, curr[0]);
+		processed[processedCount] = curr[0];
+		processedCount++;
+		for(int i = 0; i < N - 1; i++) {
+			curr[i] = curr[i + 1];
+		}
+		count--;	
+		if(temp[0] != -1) {
+			result = merge(temp, result);
+			for(int i = 0; i < N; i++) {
+				if(temp[i] != -1 && !isPresent(processed, temp[i]) && !isPresent(curr, temp[i])) {
+					count++;
+					curr[count] = temp[i];
+				}				
+			}
+		}
+	}
+	return result;
+}
+
+int countPPlus(bit[N][N] rels, int x) {
+	int[N] result = pPlus(rels, x);
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(result[i] == -1)
+			return count;
+		count++;
+	}
+	return count;
+}
+
+int countPStar(bit[N][N] rels, int x) {
+	int[N] result = pStar(rels, x);
+	int count = 0;
+	for(int i = 0; i < N; i++) {
+		if(result[i] == -1)
+			return count;
+		count++;
+	}
+	return count;
+}
+
+bit isElementPresent(int[N] set, int x) {
+	for(int i = 0; i < N; i++) {
+		if(set[i] == x) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bit isSetEqual(int[N] set1, int[N] set2) {
+	for(int i = 0; i < N; i++) {
+		if(!isElementPresent(set2, set1[i]))
+			return false;
+		if(!isElementPresent(set1, set2[i]))
+			return false;
+	}
+	return true;
+}
+
+generator int[N] set(bit[N][N] edges, int x) {
+	return {| s(edges, x) | p(edges, x) | sPlus(edges, x) | pPlus(edges, x) | sStar(edges, x) | pStar(edges, x) |};
+}
+
+generator bit cond(bit[N][N] edges, int x) {
+	return {| ?? | (countS(edges, x) | countP(edges, x) | countSPlus(edges, x) | countPPlus(edges, x) | countSStar(edges, x) | countPStar(edges, x)) (!= | >) (0|1) |};	
+}
+
+bit TREEPPspec(bit[N][N] edgesC, bit[N][N] edgesP) {
+	/*root r via C*/
+	int[N] viaR = sStar(edgesC, 0);
+	for(int i = 0; i < N; i++) {
+		if(!isPresent(viaR, i))
+			return false;
+	}
+	/*Functional P*/
+	for(int i = 0; i < N; i++) {
+			int sum = 0;
+			for(int j = 0; j < N; j++) {
+				sum += (int)edgesP[i][j];
+			}
+			if(sum > 1) {
+				return false;
+			}
+	}
+	/*No self-loops*/
+	for(int i = 0; i < N; i++) {
+			if(isPresent(s(edgesC, i), i))
+				return false;
+			if(isPresent(s(edgesP, i), i))
+				return false;
+	}
+	/*1:1 C*/
+	for(int i = 0; i < N; i++) {
+			int sum = 0;
+			for(int j = 0; j < N; j++) {
+				sum += (int)edgesC[j][i];
+			}
+			if(sum > 1) {
+				return false;
+			}
+	}
+	/*\forall u(\lnot C(u, r))*/
+	for(int i = 0; i < N; i++) {
+			if(isPresent(s(edgesC, i), 0)) {
+				return false;
+			}
+	}
+	/*forall u, v (C(u, v) <--> P(u, v))*/
+	for(int i = 0; i < N; i++) {
+		for(int j = 0; j < N; j++) {
+			if(isPresent(s(edgesC, i), j) && !isPresent(s(edgesP, j), i))
+				return false;
+			if(isPresent(s(edgesP, j), i) && !isPresent(s(edgesC, i), j))
+				return false;
+		}
+	}
+	return true;
+}
+
+bit TREEPPsketch(bit[N][N] edgesC, bit[N][N] edgesP) implements TREEPPspec {
+	/*root r via C*/
+	int[N] viaR = sStar(edgesC, 0);
+	for(int i = 0; i < N; i++) {
+		if(!isPresent(viaR, i))
+			return false;
+	}
+	/*Functional P*/
+	for(int i = 0; i < N; i++) {
+			int sum = 0;
+			for(int j = 0; j < N; j++) {
+				sum += (int)edgesP[i][j];
+			}
+			if(sum > 1) {
+				return false;
+			}
+	}
+	/*No self-loops*/
+	for(int i = 0; i < N; i++) {
+			if(isPresent(s(edgesC, i), i))
+				return false;
+			if(isPresent(s(edgesP, i), i))
+				return false;
+	}
+	bit condC = {| ?? | (countS(edgesC, 0) | countP(edgesC, 0) | countSPlus(edgesC, 0) |  countPPlus(edgesC, 0) |countSStar(edgesC, 0) | countPStar(edgesC, 0)) (!= | >) (0|1) |};	
+	bit condP = {| (countS(edgesP, 0) | countP(edgesP, 0) | countSPlus(edgesP, 0) |  countPPlus(edgesP, 0) |countSStar(edgesP, 0) | countPStar(edgesP, 0)) (!= | >) (0|1) |};	
+	bit setCond = {|!isSetEqual((s(edgesC, 0) | s(edgesP, 0) | sPlus(edgesC, 0) | sStar(edgesC, 0) | sPlus(edgesP, 0) | sStar(edgesP, 0) | p(edgesC, 0) | p(edgesP, 0) | pPlus(edgesC, 0) | pPlus(edgesP, 0) | pStar(edgesC, 0) | pStar(edgesP, 0)), (s(edgesC, 0) | s(edgesP, 0) | sPlus(edgesC, 0) | sStar(edgesC, 0) | sPlus(edgesP, 0) | sStar(edgesP, 0) | p(edgesC, 0) | p(edgesP, 0) | pPlus(edgesC, 0) | pPlus(edgesP, 0) | pStar(edgesC, 0) | pStar(edgesP, 0)))|};
+	if({| condC | condP | setCond |})
+		return false;
+	for(int i = 1; i < N; i++) {
+		bit condC_ = {| ?? | (countS(edgesC, i) | countP(edgesC, i) | countSPlus(edgesC, i) |  countPPlus(edgesC, i) |countSStar(edgesC, i) | countPStar(edgesC, i)) (!= | >) (0|1) |};	
+		bit condP_ = {| ?? | (countS(edgesP, i) | countP(edgesP, i) | countSPlus(edgesP, i) |  countPPlus(edgesP, i) |countSStar(edgesP, i) | countPStar(edgesP, i)) (!= | >) (0|1) |};	
+		bit setCond_ = {|!isSetEqual((s(edgesC, i) | s(edgesP, i) | sPlus(edgesC, i) | sStar(edgesC, i) | sPlus(edgesP, i) | sStar(edgesP, i) | p(edgesC, i) | p(edgesP, i) | pPlus(edgesC, i) | pPlus(edgesP, i) | pStar(edgesC, i) | pStar(edgesP, i)), (s(edgesC, i) | s(edgesP, i) | sPlus(edgesC, i) | sStar(edgesC, i) | sPlus(edgesP, i) | sStar(edgesP, i) | p(edgesC, i) | p(edgesP, i) | pPlus(edgesC, i) | pPlus(edgesP, i) | pStar(edgesC, i) | pStar(edgesP, i)))|};
+		if({| condC_ | condP_ | setCond_ |})
+			return false;
+	}
+	return true;
+}
