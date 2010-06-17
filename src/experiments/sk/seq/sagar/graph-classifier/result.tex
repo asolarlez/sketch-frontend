@@ -9,18 +9,22 @@
 \begin{tabular}{c c c c c c}
 \hline \hline
 File & \#Nodes & Synthesized-Formula & Synthesized-Formula (OOPSLA 10) & Time & Time (OOPSLA 10)\\ \hline
-sll & 4 & $\#p_N(r) = 0 \wedge \forall v (\#p_N(v) \le 1)$ & $p_N(r) = 0 \wedge \forall v (\#p_N(v) \le 1)$ & 79.591 sec & 14 sec \\
-sll & 3 & $ \forall v (\#p_N(v) \le 1)$ & $p_N(r) = 0 \wedge \forall v (\#p_N(v) = 1)$ & 8.757 sec & 14 sec \\
-cll & 4 & $\#p_N(r) = 1 \wedge \forall v (\#p_N(v) \le 1)$ & $p_N(r) = 1$ & 72.127 sec & 11 sec \\
-cll & 3 & $\#p_N(r) = 1 \wedge \forall v (\#p_N(v) \le 1)$ & $p_N(r) = 1$ & 8.290 sec & 11 sec \\
-dll & 4 & $\#s_B(r) = 0 \wedge \forall v (p_{F^+}(v) =  s_{B^+}(v))$ & $p_F(r) = 0 \wedge \forall v (s_F(v) = p_B(v))$ & 214.656 sec & 149 sec \\
-dll & 3 & $s_B(r) = p_{F^+}(r) \wedge \forall v (p_{F^+}(v) =  s_{B^+}(v))$ & $p_F(r) = 0 \wedge \forall v (s_F(v) = p_B(v))$ & 28.043 sec & 149 sec \\
-tree & 4 & $\#p_C(r) \le 0 \wedge \forall v (\#p_C(v) \le 1)$ & $\#p_C(r) = 0 \wedge \forall v (\#p_C(v) \le 1)$ & 135.081 sec & 8 sec \\
-tree & 3 & $\#p_{C^*}(r) \le 0 \wedge \forall v (\#p_C(v) \le 1)$ & $\#p_C(r) = 0 \wedge \forall v (\#p_C(v) \le 1)$ & 3.197 sec & 8 sec \\
-treepp & 4 & $p_C(r) = s_{P^+}(r) \wedge \forall v (p_C(v) = s_P(v))$ & $\#s_P(r) = 0 \wedge \forall v (p_C(v) = s_P(v))$ & 734.438 sec & 181 sec \\
-treepp & 3 & $s_P(r) = p_{C^+}(r) \wedge \forall v (p_C(v) = s_P(v))$ & $\#s_P(r) = 0 \wedge \forall v (p_C(v) = s_P(v))$ & 38.342 sec & 181 sec \\
-sc & 4 & $\forall v (s_{E^*}(v) = p_{E^+}(v))$ & $p_{E^*}(r) = s_{E^*}(v))$ & 369.388 sec & 9 sec \\
-sc & 3 & $\forall v (s_{E^*}(v) = p_{E^+}(v))$ & $p_{E^*}(r) = s_{E^*}(v))$ & 7.896 sec & 9 sec \\
+sll & 4 & $\#p_N(r) = 0 \wedge \forall v (\#p_N(v) \le 1)$ & $\#p_N(r) = 0 \wedge \forall v (\#p_N(v) \le 1)$ & 80 sec & 14 sec \\
+sll & 3 & $ \forall v (\#s_{N^+}(v) \le 1)$ & $\#p_N(r) = 0 \wedge \forall v (\#p_N(v) \le 1)$ & 9 sec & 14 sec \\
+cll & 4 & $\#p_N(r) = 1 \wedge \forall v (\#p_N(v) \le 1)$ & $\#p_N(r) = 1$ & 72 sec & 11 sec \\
+cll & 3 & $\#p_N(r) = 1 \wedge \forall v (\#p_N(v) \le 1)$ & $\#p_N(r) = 1$ & 8 sec & 11 sec \\
+dll & 4 & $\#s_B(r) = 0 \wedge \forall v (p_{F^+}(v) =  s_{B^+}(v))$ & $\#p_F(r) = 0 \wedge \forall v (s_F(v) = p_B(v))$ & 215 sec & 149 sec \\
+dll & 3 & $s_B(r) = p_{F^+}(r) \wedge \forall v (p_{F^+}(v) =  s_{B^+}(v))$ & $\#p_F(r) = 0 \wedge \forall v (s_F(v) = p_B(v))$ & 28 sec & 149 sec \\
+tree & 4 & $\#p_C(r) \le 0 \wedge \forall v (\#p_C(v) \le 1)$ & $\#p_C(r) = 0 \wedge \forall v (\#p_C(v) \le 1)$ & 135 sec & 8 sec \\
+tree & 3 & $\#p_{C^*}(r) \le 0 \wedge \forall v (\#p_C(v) \le 1)$ & $\#p_C(r) = 0 \wedge \forall v (\#p_C(v) \le 1)$ & 4 sec & 8 sec \\
+treepp & 4 & $p_C(r) = s_{P^+}(r) \wedge \forall v (p_C(v) = s_P(v))$ & $\#s_P(r) = 0 \wedge \forall v (p_C(v) = s_P(v))$ & 734 sec & 181 sec \\
+treepp & 3 & $s_P(r) = p_{C^+}(r) \wedge \forall v (p_C(v) = s_P(v))$ & $\#s_P(r) = 0 \wedge \forall v (p_C(v) = s_P(v))$ & 38 sec & 181 sec \\
+treerp & 4 & $p_R(r) = s_{C^+}(r) \wedge \forall v (p_{R^+}(v) = p_R(v)) \wedge$ & $\#p_C(r) = 0 \wedge p_R(r) = s_{C^+}(r) \wedge$ & 494 sec & 359 sec \\
+ &  & $\forall v (\# p_C(v) \le 1)$ & $\forall v (\#p_C(v) \le 1)$ & & \\
+treerp & 3 & $s_{C^+}(r) = p_{R^+}(r) \wedge p_{R^+}(r) = p_R(r) \wedge$ & $\#p_C(r) = 0 \wedge p_R(r) = s_{C^+}(r) \wedge$ & 60 sec & 359 sec \\
+ &  & $\forall v (\# p_C(v) \le 1)$ & $\forall v (\#p_C(v) \le 1)$ & & \\
+sc & 4 & $\forall v (s_{E^*}(v) = p_{E^+}(v))$ & $p_{E^*}(r) = s_{E^*}(v)$ & 369 sec & 9 sec \\
+sc & 3 & $\forall v (s_{E^*}(v) = p_{E^+}(v))$ & $p_{E^*}(r) = s_{E^*}(v)$ & 8 sec & 9 sec \\
 \hline
 \end{tabular}
 }

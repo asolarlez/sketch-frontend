@@ -292,18 +292,18 @@ generator bit cond(bit[N][N] edges, int x) {
 	return {| ?? | (countS(edges, x) | countP(edges, x) | countSPlus(edges, x) | countPPlus(edges, x) | countSStar(edges, x) | countPStar(edges, x)) (!= | >) (0|1) |};	
 }
 
-bit TREERPspec(bit[N][N] edgesC, bit[N][N] edgesP) {
+bit TREERPspec(bit[N][N] edgesC, bit[N][N] edgesR) {
 	/*root r via C*/
 	int[N] viaR = sStar(edgesC, 0);
 	for(int i = 0; i < N; i++) {
 		if(!isPresent(viaR, i))
 			return false;
 	}
-	/*Functional P*/
+	/*Functional R*/
 	for(int i = 0; i < N; i++) {
 			int sum = 0;
 			for(int j = 0; j < N; j++) {
-				sum += (int)edgesP[i][j];
+				sum += (int)edgesR[i][j];
 			}
 			if(sum > 1) {
 				return false;
@@ -313,7 +313,7 @@ bit TREERPspec(bit[N][N] edgesC, bit[N][N] edgesP) {
 	for(int i = 0; i < N; i++) {
 			if(isPresent(s(edgesC, i), i))
 				return false;
-			if(isPresent(s(edgesP, i), i))
+			if(isPresent(s(edgesR, i), i))
 				return false;
 	}
 	/*1:1 C*/
@@ -326,26 +326,24 @@ bit TREERPspec(bit[N][N] edgesC, bit[N][N] edgesP) {
 				return false;
 			}
 	}
-	/*\forall u(\lnot R(r, u) ^ R(u, r))*/
+	/*\forall u(\lnot R(r, u) ^ \lnot C(u, r))*/
 	for(int i = 0; i < N; i++) {
-			if(!isPresent(s(edgesP, i), 0)) {
+			if(isPresent(s(edgesC, i), 0)) {
 				return false;
 			}
-			if(isPresent(s(edgesP, 0), i)) {
+			if(isPresent(s(edgesR, 0), i)) {
 				return false;
 			}
 	}
-	/*forall u, v \lnot C(u, v)*/
-	for(int i = 0; i < N; i++) {
-		for(int j = 0; j < N; j++) {
-			if(isPresent(s(edgesC, i), j))
-				return false;
-		}
+	/*forall v(R(u, r))*/
+	for(int i = 1; i < N; i++) {
+		if(!isPresent(s(edgesR, i), 0))
+			return false;
 	}
 	return true;
 }
 
-bit TREERPsketch(bit[N][N] edgesC, bit[N][N] edgesP) implements TREERPspec {
+bit TREERPsketch(bit[N][N] edgesC, bit[N][N] edgesR) implements TREERPspec {
 	/*root r via C*/
 	int[N] viaR = sStar(edgesC, 0);
 	for(int i = 0; i < N; i++) {
@@ -356,7 +354,7 @@ bit TREERPsketch(bit[N][N] edgesC, bit[N][N] edgesP) implements TREERPspec {
 	for(int i = 0; i < N; i++) {
 			int sum = 0;
 			for(int j = 0; j < N; j++) {
-				sum += (int)edgesP[i][j];
+				sum += (int)edgesR[i][j];
 			}
 			if(sum > 1) {
 				return false;
@@ -366,20 +364,22 @@ bit TREERPsketch(bit[N][N] edgesC, bit[N][N] edgesP) implements TREERPspec {
 	for(int i = 0; i < N; i++) {
 			if(isPresent(s(edgesC, i), i))
 				return false;
-			if(isPresent(s(edgesP, i), i))
+			if(isPresent(s(edgesR, i), i))
 				return false;
 	}
+	repeat(2) {
 	bit condC = {| ?? | (countS(edgesC, 0) | countP(edgesC, 0) | countSPlus(edgesC, 0) |  countPPlus(edgesC, 0) |countSStar(edgesC, 0) | countPStar(edgesC, 0)) (!= | >) (0|1) |};	
-	bit condP = {| (countS(edgesP, 0) | countP(edgesP, 0) | countSPlus(edgesP, 0) |  countPPlus(edgesP, 0) |countSStar(edgesP, 0) | countPStar(edgesP, 0)) (!= | >) (0|1) |};	
-	bit setCond = {|!isSetEqual((s(edgesC, 0) | s(edgesP, 0) | sPlus(edgesC, 0) | sStar(edgesC, 0) | sPlus(edgesP, 0) | sStar(edgesP, 0) | p(edgesC, 0) | p(edgesP, 0) | pPlus(edgesC, 0) | pPlus(edgesP, 0) | pStar(edgesC, 0) | pStar(edgesP, 0)), (s(edgesC, 0) | s(edgesP, 0) | sPlus(edgesC, 0) | sStar(edgesC, 0) | sPlus(edgesP, 0) | sStar(edgesP, 0) | p(edgesC, 0) | p(edgesP, 0) | pPlus(edgesC, 0) | pPlus(edgesP, 0) | pStar(edgesC, 0) | pStar(edgesP, 0)))|};
+	bit condP = {| (countS(edgesR, 0) | countP(edgesR, 0) | countSPlus(edgesR, 0) |  countPPlus(edgesR, 0) |countSStar(edgesR, 0) | countPStar(edgesR, 0)) (!= | >) (0|1) |};	
+	bit setCond = {|!isSetEqual((s(edgesC, 0) | s(edgesR, 0) | sPlus(edgesC, 0) | sStar(edgesC, 0) | sPlus(edgesR, 0) | sStar(edgesR, 0) | p(edgesC, 0) | p(edgesR, 0) | pPlus(edgesC, 0) | pPlus(edgesR, 0) | pStar(edgesC, 0) | pStar(edgesR, 0)), (s(edgesC, 0) | s(edgesR, 0) | sPlus(edgesC, 0) | sStar(edgesC, 0) | sPlus(edgesR, 0) | sStar(edgesR, 0) | p(edgesC, 0) | p(edgesR, 0) | pPlus(edgesC, 0) | pPlus(edgesR, 0) | pStar(edgesC, 0) | pStar(edgesR, 0)))|};
 	if({| condC | condP | setCond |})
 		return false;
 	for(int i = 1; i < N; i++) {
 		bit condC_ = {| ?? | (countS(edgesC, i) | countP(edgesC, i) | countSPlus(edgesC, i) |  countPPlus(edgesC, i) |countSStar(edgesC, i) | countPStar(edgesC, i)) (!= | >) (0|1) |};	
-		bit condP_ = {| ?? | (countS(edgesP, i) | countP(edgesP, i) | countSPlus(edgesP, i) |  countPPlus(edgesP, i) |countSStar(edgesP, i) | countPStar(edgesP, i)) (!= | >) (0|1) |};	
-		bit setCond_ = {|!isSetEqual((s(edgesC, i) | s(edgesP, i) | sPlus(edgesC, i) | sStar(edgesC, i) | sPlus(edgesP, i) | sStar(edgesP, i) | p(edgesC, i) | p(edgesP, i) | pPlus(edgesC, i) | pPlus(edgesP, i) | pStar(edgesC, i) | pStar(edgesP, i)), (s(edgesC, i) | s(edgesP, i) | sPlus(edgesC, i) | sStar(edgesC, i) | sPlus(edgesP, i) | sStar(edgesP, i) | p(edgesC, i) | p(edgesP, i) | pPlus(edgesC, i) | pPlus(edgesP, i) | pStar(edgesC, i) | pStar(edgesP, i)))|};
+		bit condP_ = {| ?? | (countS(edgesR, i) | countP(edgesR, i) | countSPlus(edgesR, i) |  countPPlus(edgesR, i) |countSStar(edgesR, i) | countPStar(edgesR, i)) (!= | >) (0|1) |};	
+		bit setCond_ = {|!isSetEqual((s(edgesC, i) | s(edgesR, i) | sPlus(edgesC, i) | sStar(edgesC, i) | sPlus(edgesR, i) | sStar(edgesR, i) | p(edgesC, i) | p(edgesR, i) | pPlus(edgesC, i) | pPlus(edgesR, i) | pStar(edgesC, i) | pStar(edgesR, i)), (s(edgesC, i) | s(edgesR, i) | sPlus(edgesC, i) | sStar(edgesC, i) | sPlus(edgesR, i) | sStar(edgesR, i) | p(edgesC, i) | p(edgesR, i) | pPlus(edgesC, i) | pPlus(edgesR, i) | pStar(edgesC, i) | pStar(edgesR, i)))|};
 		if({| condC_ | condP_ | setCond_ |})
 			return false;
+	}
 	}
 	return true;
 }
