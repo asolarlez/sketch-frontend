@@ -16,17 +16,28 @@ except:
     raise ImportError("please install gatoatigrado's utility library from "
             "bitbucket.org/gatoatigrado/gatoatigrado_lib")
 
+modpath = Path(__file__).parent()
+includepath = modpath.subpath("includes")
+
 def main():
+    from jinja2 import Environment, FileSystemLoader
+    import jinja2.ext
     mvnfile = Path("pom.xml")
     assert mvnfile.exists(), "please run in project root (with ./pom.xml)"
     version = "1.4.0"
-    files = [v for v in Path("scripts").walk_files() if v.endswith(".jinja2")]
-    def outfcn(fname, output):
-        Path(fname.parent().subpath("final", fname.basename().strip(".jinja2"))).write(output)
-    process_jinja2(files=files, glbls={"version": version}, output_fcn=outfcn)
-    for fname in files:
-        if "launchers" in fname and "unix" in fname:
-            Path(fname.replace(".jinja2", "")).chmod(0755)
+
+    paths = list(modpath.walk_files(["jinja2"]))
+    dirs = frozenset(v.parent() for v in paths).union((includepath,))
+    env = Environment(loader=FileSystemLoader(list(dirs)),
+        trim_blocks=True, extensions=[jinja2.ext.do])
+    env.globals.update({"version": version})
+
+    for fname in Path("scripts").walk_files(["jinja2"]):
+        output = env.get_template(fname.basename()).render()
+        outname = fname.parent().subpath("final", fname.basename().strip(".jinja2"))
+        Path(outname).write_if_different(output)
+        if "launchers" in fname:
+            Path(outname).chmod(0755)
 
 if __name__ == "__main__":
     import optparse

@@ -1,3 +1,4 @@
+{% macro sketch_script(main_name) %}
 #!/bin/bash
 # WARNING -- generated file, see version with ".jinja2" extension.
 
@@ -5,7 +6,7 @@ scriptname="$(readlink -f "$0")"
 dirname="$(dirname "$scriptname")"
 
 # SEARCH FOR JAR FILES
-for fname in "$dirname/sketch-1.4.0-noarch.jar" "$dirname/sketch-${version}-all-${osname}-${osarch}.jar" "$SKETCHJAR"; do
+for fname in "$dirname/sketch-{{version}}-noarch.jar" "$dirname/sketch-${version}-all-${osname}-${osarch}.jar" "$SKETCHJAR"; do
     if [ -f "$fname" ]; then
         jarname="$fname"
     fi
@@ -31,4 +32,5 @@ if [[ "$(uname)" =~ "cygwin" ]] && which cygpath.exe 2>/dev/null >/dev/null; the
     jarname="$(cygpath.exe -w "$jarname")"
 fi
 
-java -cp "$jarname" -ea sketch.compiler.main.sten.StencilSketchMain "$@"
+java -cp "$jarname" -ea sketch.compiler.main.{{ main_name }} "$@"
+{% endmacro %}
