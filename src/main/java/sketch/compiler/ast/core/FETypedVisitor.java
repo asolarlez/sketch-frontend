@@ -302,4 +302,8 @@ public class FETypedVisitor<T> implements FEVisitor {
     public T visitTypeStructRef(TypeStructRef ts) {
         throw new FEVisitorException(this, ts);
     }
+
+    public Object visitExprAbstractVariable(ExprAbstractVariable var) {
+        throw new FEVisitorException(this, var);
+    }
 }

@@ -194,6 +194,11 @@ public class PartialEvaluator extends FEReplacer {
         return exp;
     }
 
+    @Override
+    public Object visitExprAbstractVariable(ExprAbstractVariable var) {
+        return vtype.BOTTOM(var.name);
+    }
+
     public Object visitExprField(ExprField exp) {
         exp.getLeft().accept(this);
          Expression left = exprRV;

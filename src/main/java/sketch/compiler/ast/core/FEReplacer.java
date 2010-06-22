@@ -872,4 +872,8 @@ public class FEReplacer implements FEVisitor
             return new StmtMinLoop(stmtMinLoop, newBody);
         }
     }
+
+    public Object visitExprAbstractVariable(ExprAbstractVariable var) {
+        return var;
+    }
 }

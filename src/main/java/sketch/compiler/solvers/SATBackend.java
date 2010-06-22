@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.passes.optimization.AbstractCostFcnAssert;
 import sketch.compiler.passes.optimization.CostFcnAssert;
 import sketch.compiler.passes.structure.HasMinimize;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
@@ -91,44 +92,12 @@ public class SATBackend {
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
-            IntRange currRange = IntRange.inclusive(0, 2 * options.bndOpts.costEstimate);
-            float timeout =
-                    Math.max(1.f, options.solverOpts.timeout) / ((float) (1 << 10));
-            for (int a = 0; a < 100 && !currRange.isEmpty(); a++) {
-                // choose a value from not-yet-inspected values
-                final int currValue = (int) currRange.middle();
-                System.err.println("current: " + currValue + " \\in " + currRange);
-                log(2, "current range: " + currValue + " \\in " + currRange);
-
-                // rewrite the minimize statements in the program
-                final CostFcnAssert costFcnAssert = new CostFcnAssert(currValue);
+            if (options.feOpts.minimize) {
+                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
+            } else {
+                final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
-
-                // actually run the solver
-                boolean currResult = solve(oracle, timeout);
-                worked |= currResult;
-                if (!currResult) {
-                    // didn't work. explore the upper interval, and explore more if we
-                    // haven't
-                    // found any solution yet
-                    currRange = currRange.nextInfemum(currValue);
-                    if (!worked) {
-                        timeout *= 2;
-                        currRange = currRange.nextMax(currRange.max * 2);
-                        // if the sketch is buggy, don't take too much time to fail.
-                        if (a >= 10) {
-                            break;
-                        }
-                    }
-                } else {
-                    // try the next range, and save the result
-                    currRange = currRange.nextSupremum(currValue);
-                    try {
-                        FileUtils.copyFile(sketchOutputFile, bestValueFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                worked = solve(oracle, options.solverOpts.timeout);
             }
         } else {
             worked = solve(oracle, options.solverOpts.timeout);
@@ -151,6 +120,50 @@ public class SATBackend {
         }
 
         extractOracleFromOutput(bestValueFile.getPath());
+        return worked;
+    }
+
+    protected boolean frontendMinimize(Program prog, File sketchOutputFile,
+            File bestValueFile, boolean worked)
+    {
+        IntRange currRange = IntRange.inclusive(0, 2 * options.bndOpts.costEstimate);
+        float timeout = Math.max(1.f, options.solverOpts.timeout) / ((float) (1 << 10));
+        for (int a = 0; a < 100 && !currRange.isEmpty(); a++) {
+            // choose a value from not-yet-inspected values
+            final int currValue = (int) currRange.middle();
+            System.err.println("current: " + currValue + " \\in " + currRange);
+            log(2, "current range: " + currValue + " \\in " + currRange);
+
+            // rewrite the minimize statements in the program
+            final CostFcnAssert costFcnAssert = new CostFcnAssert(currValue);
+            writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
+
+            // actually run the solver
+            boolean currResult = solve(oracle, timeout);
+            worked |= currResult;
+            if (!currResult) {
+                // didn't work. explore the upper interval, and explore more if we
+                // haven't
+                // found any solution yet
+                currRange = currRange.nextInfemum(currValue);
+                if (!worked) {
+                    timeout *= 2;
+                    currRange = currRange.nextMax(currRange.max * 2);
+                    // if the sketch is buggy, don't take too much time to fail.
+                    if (a >= 10) {
+                        break;
+                    }
+                }
+            } else {
+                // try the next range, and save the result
+                currRange = currRange.nextSupremum(currValue);
+                try {
+                    FileUtils.copyFile(sketchOutputFile, bestValueFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return worked;
     }
 
