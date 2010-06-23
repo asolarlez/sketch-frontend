@@ -111,23 +111,24 @@ public class PartialEvaluator extends FEReplacer {
         }
     }
 
-
-
     public Object visitExprArrayInit(ExprArrayInit exp) {
+        List<Expression> elems = exp.getElements();
+        List<abstractValue> newElementValues = new ArrayList<abstractValue>(elems.size());
+        List<Expression> newElements = new ArrayList<Expression>(elems.size());
 
-        List elems = exp.getElements();
-        List<abstractValue> newElements = new ArrayList<abstractValue>(elems.size());;
-
-        for (int i=0; i<elems.size(); i++) {
-            Expression element = ((Expression)elems.get(i));
-            abstractValue newElement = (abstractValue) element.accept(this);
-            newElements.add(newElement);
+        for (Expression elt : elems) {
+            abstractValue newElement = (abstractValue) elt.accept(this);
+            newElementValues.add(newElement);
+            if (isReplacer) {
+                newElements.add(exprRV);
+            }
         }
 
-        exprRV = exp;
-        return vtype.ARR(newElements);
+        if (isReplacer) {
+            exprRV = new ExprArrayInit(exp, newElements);
+        }
+        return vtype.ARR(newElementValues);
     }
-
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
         assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";

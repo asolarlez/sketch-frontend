@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.passes.lowering;
+import static sketch.util.Misc.nonnull;
+
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +48,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
  */
 public class GetExprType extends FENullVisitor
 {
-    private SymbolTable symTab;
-    private StreamType streamType;
+    private final SymbolTable symTab;
     private Map structsByName;
     /** This is a mechanism for a hacky type coercion for null pointers.
      * Before structs have been eliminated, nulls have type 'null'; afterwards,
@@ -56,14 +57,13 @@ public class GetExprType extends FENullVisitor
 
     public GetExprType(SymbolTable symTab, StreamType streamType,
             Map structsByName) {
-    	this (symTab, streamType, structsByName, TypePrimitive.nulltype);
+        this(symTab, streamType, structsByName, TypePrimitive.nulltype);
     }
 
     public GetExprType(SymbolTable symTab, StreamType streamType,
                        Map structsByName, Type nullType)
     {
-        this.symTab = symTab;
-        this.streamType = streamType;
+        this.symTab = nonnull(symTab);
         this.structsByName = structsByName;
         this.nullType = nullType;
     }
@@ -413,6 +413,7 @@ public class GetExprType extends FENullVisitor
         // Look this up in the symbol table.
     	Type t;
     	try{
+    	    assert exp != null && symTab != null;
     		t = symTab.lookupVar(exp.getName());
     	}catch(UnrecognizedVariableException e){
     		throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
