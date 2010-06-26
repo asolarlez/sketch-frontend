@@ -5,10 +5,11 @@ import sketch.util.cli.CliParameter;
 
 /**
  * Options for the frontend, such as where to find cegis.
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class FrontendOptions extends CliAnnotatedOptionGroup {
     public FrontendOptions() {
@@ -17,8 +18,7 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Path to the 'cegis' binary, overriding default search paths.")
     public String cegisPath = null;
-    @CliParameter(metavar = "VAR=val", inlinesep=",", 
-            help = "If the program contains a global variable VAR, it sets its value to val.")
+    @CliParameter(metavar = "VAR=val", inlinesep = ",", help = "If the program contains a global variable VAR, it sets its value to val.")
     public String[] def = new String[0];
     @CliParameter(help = "Directory to search for include files.")
     public String[] inc = new String[0];
@@ -38,12 +38,12 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Set the name of the output C files. By default it is the "
             + "name of the first input file.")
     public String outputProgName;
-    @CliParameter(help = "Output the values of holes as XML.")
-    public boolean outputXml;
+    @CliParameter(metavar = "FILE", help = "Output the values of holes as XML to a file, \"--\" for stdout")
+    public String outputXml = null;
     @CliParameter(help = "Set the directory where you want the generated code to be written.")
     public String outputDir = "./";
     @CliParameter(help = "Produce also a harness to test the generated C code.")
     public boolean outputTest;
-//    @CliParameter(help = "Enable Fortran output")
-//    public boolean outputFortran;
+    // @CliParameter(help = "Enable Fortran output")
+    // public boolean outputFortran;
 }

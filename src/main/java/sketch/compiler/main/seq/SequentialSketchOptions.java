@@ -32,6 +32,9 @@ public class SequentialSketchOptions {
     public List<String> argsAsList;
     public final String[] inArgs;
     public Vector<String> backendOptions;
+    /** sketch file (corresponds to first arg) */
+    public File sketchFile;
+    /** nice name of the sketch */
     public String sketchName;
     public Vector<String> backendArgs;
     protected String[] currentArgs;
@@ -63,7 +66,8 @@ public class SequentialSketchOptions {
             parser.printHelpAndExit("no files specified");
         }
         argsAsList = Arrays.asList(args);
-        sketchName = new File(args[0]).getName().replaceFirst("\\.+$", "");
+        sketchFile = new File(args[0]);
+        sketchName = sketchFile.getName().replaceFirst("\\.+$", "");
     }
 
     @SuppressWarnings("unchecked")
