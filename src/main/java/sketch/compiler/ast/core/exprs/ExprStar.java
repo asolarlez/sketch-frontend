@@ -102,6 +102,11 @@ public class ExprStar extends Expression
         this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
+    public ExprStar(FENode context, int size, Type typ) {
+        this(context, size);
+        this.setType(typ);
+    }
+
 	public FENode getDepObject(int i){
 		Type t = type;
 		if(type instanceof TypePrimitive){

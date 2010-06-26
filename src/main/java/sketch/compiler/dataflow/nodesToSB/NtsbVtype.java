@@ -10,6 +10,7 @@ import java.util.Map;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -60,10 +61,15 @@ public class NtsbVtype extends IntVtype {
             for(int i=0; i<ssz; ++i){               
                 String cvar = oracle.addBinding(star.getDepObject(i));
                 String rval = "";
+
+                if (node instanceof ExprSpecialStar) {
+                    rval += ((ExprSpecialStar) node).name;
+                }
+
                 if(star.getSize() > 1)
-                    rval =  "<" + cvar + "  " + star.getSize() + isFixed+ "> ";
+                    rval +=  "<" + cvar + "  " + star.getSize() + isFixed+ "> ";
                 else
-                    rval =  "<" + cvar +  "> ";
+                    rval +=  "<" + cvar +  "> ";
                 nv = new NtsbValue(rval);
                 if(avlist != null) avlist.add(nv);
             }

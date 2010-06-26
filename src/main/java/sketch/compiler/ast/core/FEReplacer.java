@@ -873,7 +873,7 @@ public class FEReplacer implements FEVisitor
         }
     }
 
-    public Object visitExprAbstractVariable(ExprAbstractVariable var) {
-        return var;
+    public Object visitExprSpecialStar(ExprSpecialStar star) {
+        return visitExprStar(star);
     }
 }

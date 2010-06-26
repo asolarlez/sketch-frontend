@@ -1,10 +1,11 @@
 package sketch.compiler.passes.optimization;
 
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.exprs.ExprAbstractVariable;
 import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * convert minimize(expr) to assert(expr < value)
@@ -15,12 +16,9 @@ import sketch.compiler.ast.core.stmts.StmtMinimize;
  *          changes, please consider contributing back!
  */
 public class AbstractCostFcnAssert extends FEReplacer {
-    public AbstractCostFcnAssert() {
-    }
-
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         return new StmtAssert(new ExprBinary(stmtMinimize.getMinimizeExpr(), "<",
-                new ExprAbstractVariable(stmtMinimize, "MINVAR")), false);
+                new ExprSpecialStar(stmtMinimize, "MINVAR", 10, TypePrimitive.inttype)), false);
     }
 }

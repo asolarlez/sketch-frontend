@@ -303,7 +303,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, ts);
     }
 
-    public Object visitExprAbstractVariable(ExprAbstractVariable var) {
+    public Object visitExprSpecialStar(ExprSpecialStar var) {
         throw new FEVisitorException(this, var);
     }
 }
