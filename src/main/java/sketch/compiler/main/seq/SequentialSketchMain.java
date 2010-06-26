@@ -399,9 +399,9 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void eliminateStar(){
 	    EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
 		finalCode=(Program)beforeUnvectorizing.accept(eliminate_star);
-		if (options.feOpts.outputXml){
-		    eliminate_star.dump_xml();
-        }
+                if (options.feOpts.outputXml != null){
+                    eliminate_star.dump_xml(options.feOpts.outputXml);
+                }
 		//testProg(finalCode);
 		//dump(finalCode, "after elim star");
         finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,

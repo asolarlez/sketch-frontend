@@ -1,0 +1,7 @@
+int[2] f(int x,int y) { return {x,y}; }
+
+harness void main(int in_) { 
+    int[2] array2 = f(-3, 4);
+    int x = array2[??];
+    assert x + in_ == in_ + ??;
+}

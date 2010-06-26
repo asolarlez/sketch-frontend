@@ -21,6 +21,7 @@ show-info:
 clean:
 	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
 	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
+	zsh -c "setopt -G; rm -rf ~/.m2/repository/edu/berkeley/cs/sketch/sketch-frontend"
 
 compile: # build all sources with buildr (if found) or maven
 	$(OPT_BUILDR) compile

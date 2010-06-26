@@ -1,5 +1,7 @@
 package sketch.compiler.stencilSK;
 
+import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +17,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
+import sketch.util.DebugOut;
 
 public class EliminateStarStatic extends FEReplacer {
 
@@ -59,28 +62,44 @@ public class EliminateStarStatic extends FEReplacer {
     }
 
     @SuppressWarnings( { "deprecation", "unchecked" })
-    public void dump_xml() {
-        System.out.println("=== BEGIN XML OUTPUT ===\n"
-                + "<?xml version=\"1.0\"?>");
-        System.out.println("<hole_values>");
-        for (Entry<ExprStar, Object> ent : hole_values.entrySet()) {
-            FEContext ctx = ent.getKey().getContext();
-            System.out.print("    <hole_value line=\"" + ctx.getLineNumber()
-                    + "\" col=\"" + ctx.getColumnNumber() + "\" ");
-            if (ent.getKey().getType() instanceof TypeArray) {
-                List<Expression> lst = (List<Expression>) ent.getValue();
-                System.out.println("type=\"array\">");
-                for (Expression value : lst) {
-                    System.out.println("        <entry value=\""
-                            + getIntValue(value) + "\" />");
+    public void dump_xml(String filename) {
+        PrintStream out = null;
+        if (filename == "--") {
+            out = System.out;
+            out.println("=== BEGIN XML OUTPUT ===");
+        } else {
+            try {
+                final File file = new File(filename);
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
                 }
-                System.out.println("    </hole_value>");
-            } else {
-                System.out.println("type=\"int\" value=\""
-                        + getIntValue((Expression) ent.getValue()) + "\" />");
+                out = new PrintStream(file, "UTF-8");
+            } catch (Exception e) {
+                DebugOut.fail_exception("opening print stream for xml out", e);
             }
         }
-        System.out.println("</hole_values>");
-        System.out.println("------------------------------");
+
+        out.println("<?xml version=\"1.0\"?>");
+        out.println("<hole_values>");
+        for (Entry<ExprStar, Object> ent : hole_values.entrySet()) {
+            FEContext ctx = ent.getKey().getContext();
+            out.print("    <hole_value line=\"" + ctx.getLineNumber() + "\" col=\"" +
+                    ctx.getColumnNumber() + "\" ");
+            if (ent.getKey().getType() instanceof TypeArray) {
+                List<Expression> lst = (List<Expression>) ent.getValue();
+                out.println("type=\"array\">");
+                for (Expression value : lst) {
+                    out.println("        <entry value=\"" + getIntValue(value) + "\" />");
+                }
+                out.println("    </hole_value>");
+            } else {
+                out.println("type=\"int\" value=\"" +
+                        getIntValue((Expression) ent.getValue()) + "\" />");
+            }
+        }
+        out.println("</hole_values>");
+        if (filename == "--") {
+            out.println("------------------------------");
+        }
     }
 }

@@ -58,6 +58,11 @@ public class CommonSketchMain {
         if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions) {
             backendOptions.add("-assumebcheck");
         }
+        if(options.solverOpts.inline > 0){
+            backendOptions.add("-inlineamnt");
+            backendOptions.add("" + options.solverOpts.inline);
+        }
+        
         if (options.solverOpts.olevel >= 0) {
             backendOptions.add("-olevel");
             backendOptions.add("" + options.solverOpts.olevel);
@@ -65,6 +70,7 @@ public class CommonSketchMain {
         if (options.solverOpts.simpleInputs) {
             backendOptions.add("-nosim");
         }
+        
     }
 
     protected void processDirectives(Set<Directive> D) {
