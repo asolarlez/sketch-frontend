@@ -84,15 +84,14 @@ public class SATBackend {
 
         final String tmpSketchFilename = options.getTmpSketchFilename();
         File sketchOutputFile = new File(tmpSketchFilename + ".tmp");
-        File bestValueFile =
-                hasMinimize.hasMinimize() ? new File(tmpSketchFilename + ".best")
-                        : sketchOutputFile;
+        File bestValueFile = sketchOutputFile; //Over-written in front-end minimize
 
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
             if (options.feOpts.minimize) {
+                bestValueFile = new File(tmpSketchFilename + ".best");
                 worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
             } else {
                 final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
