@@ -893,7 +893,7 @@ public class PartialEvaluator extends FEReplacer {
                 nvtrue = (Statement)( new StmtAssert(stmt, ExprConstInt.zero, false) ).accept(this);
             }catch(Throwable e){
                 state.popChangeTracker();
-                throw  new RuntimeException( e.getMessage() );
+                throw new RuntimeException(e);
                 //throw e;
             }
             rcontrol.doneWithBlock(cons);
@@ -918,7 +918,7 @@ public class PartialEvaluator extends FEReplacer {
                     nvfalse = (Statement)( new StmtAssert(stmt, ExprConstInt.zero, false) ).accept(this);
                 }catch(Throwable e){
                     state.popChangeTracker();
-                    throw  new RuntimeException( e.getMessage() );
+                    throw new RuntimeException(e);
                     //throw e;
                 }
                 rcontrol.doneWithBlock(alt);
@@ -1049,7 +1049,7 @@ public class PartialEvaluator extends FEReplacer {
                     for(int i=iters; i>=0; --i){
                         ChangeTracker ipms = state.popChangeTracker();
                     }
-                    throw  new RuntimeException( e.getMessage() );
+                    throw new RuntimeException(e);
                     //throw e;
                 }
                 if(isReplacer){
