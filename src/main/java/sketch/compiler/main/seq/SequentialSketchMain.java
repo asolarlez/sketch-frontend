@@ -17,6 +17,7 @@
 package sketch.compiler.main.seq;
 
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -50,6 +51,7 @@ import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.lowering.*;
@@ -587,19 +589,32 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
-	public static void main(String[] args)
- {
+    public static void main(String[] args) {
         long beg = System.currentTimeMillis();
         checkJavaVersion(1, 6);
+        final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
         try {
-            new SequentialSketchMain(args).run();
+            sketchmain.run();
         } catch (SketchException e) {
             e.print();
             System.exit(1);
         } catch (RuntimeException e) {
-            System.err.println("[ERROR] [SKETCH] Failed with exception; message: " +
+            System.err.println("[ERROR] [SKETCH] Failed with " +
+                    e.getClass().getSimpleName() + " exception; message: " +
                     e.getMessage());
-            e.printStackTrace();
+            if (sketchmain.prog == null) {
+                System.err.println("[ERROR] [SKETCH]     program null.");
+            } else {
+                try {
+                    final PlatformLocalization loc =
+                            PlatformLocalization.getLocalization();
+                    final String out = loc.getTempPathString("error-last-program.txt");
+                    final FileOutputStream out2 = new FileOutputStream(out);
+                    (new SimpleCodePrinter(out2)).visitProgram(sketchmain.prog);
+                    System.err.println("[ERROR] [SKETCH]     program dumped to: " + out);
+                } catch (Throwable e2) {}
+            }
+            // necessary for unit tests, etc.
             throw e;
         }
         System.out.println("Total time = " + (System.currentTimeMillis() - beg));
