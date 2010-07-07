@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import sketch.compiler.main.seq.SequentialSketchOptions;
 
@@ -20,9 +21,10 @@ import sketch.compiler.main.seq.SequentialSketchOptions;
  * @author Chris Jones
  */
 public class SynchronousTimedProcess {
-	protected Process	proc;
+    protected final Process proc;
 	protected float		timeoutMins;
 	protected long		startMs;
+    public static final AtomicBoolean wasKilled = new AtomicBoolean(false);
 
 	public SynchronousTimedProcess (float timeoutMins, String... cmdLine)
 			throws IOException {
@@ -45,6 +47,18 @@ public class SynchronousTimedProcess {
 		pb.directory (new File (workDir));
 		startMs = System.currentTimeMillis ();
 		proc = pb.start ();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    proc.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    DebugOut.printDebug("killing thread");
+                    wasKilled.set(true);
+                    proc.destroy();
+                }
+            }
+        });
 		this.timeoutMins = timeoutMins;
 	}
 
@@ -57,29 +71,34 @@ public class SynchronousTimedProcess {
 		proc = _proc;
 	}
 
-	public ProcessStatus run (boolean logAllOutput) throws IOException, InterruptedException {
-		ProcessKillerThread killer = null;
-		ProcessStatus status = new ProcessStatus ();
-		System.gc();
-		try {
-			if (timeoutMins > 0){
-				killer = new ProcessKillerThread (proc, timeoutMins);
-				killer.start();
-			}
-			status.out = Misc.readStream (proc.getInputStream (), logAllOutput);
-			status.err = Misc.readStream (proc.getErrorStream (), true);
-			status.exitCode = proc.waitFor ();
-			status.execTimeMs = System.currentTimeMillis () - startMs;
-		} finally {
-			if (null != killer) {
-				killer.abort ();
-				status.killed = killer.didKill ();
-			}
-		}
+    public ProcessStatus run(boolean logAllOutput) {
+        ProcessKillerThread killer = null;
+        ProcessStatus status = new ProcessStatus();
+        System.gc();
 
-		return status;
-	}
-	
+        try {
+            if (timeoutMins > 0) {
+                killer = new ProcessKillerThread(proc, timeoutMins);
+                killer.start();
+            }
+
+            status.out = Misc.readStream(proc.getInputStream(), logAllOutput);
+            status.err = Misc.readStream(proc.getErrorStream(), true);
+            status.exitCode = proc.waitFor();
+            status.execTimeMs = System.currentTimeMillis() - startMs;
+
+        } catch (Throwable e) {
+            status.exception = e;
+        } finally {
+            if (null != killer) {
+                killer.abort();
+                status.killedByTimeout = killer.didKill();
+            }
+        }
+
+        return status;
+    }
+
 	public OutputStream getOutputStream() {
 		
 		return proc.getOutputStream();

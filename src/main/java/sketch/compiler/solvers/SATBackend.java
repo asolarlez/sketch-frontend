@@ -23,6 +23,7 @@ import sketch.compiler.passes.optimization.CostFcnAssert;
 import sketch.compiler.passes.structure.HasMinimize;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.DebugOut;
 import sketch.util.Misc;
 import sketch.util.NullStream;
 import sketch.util.ProcessStatus;
@@ -147,6 +148,9 @@ public class SATBackend {
         }
 
         if (!worked && !options.feOpts.forceCodegen) {
+            if (SynchronousTimedProcess.wasKilled.get()) {
+                System.exit(1);
+            }
             throw new RuntimeException("The sketch could not be resolved.");
         }
 
@@ -251,40 +255,50 @@ public class SATBackend {
 		for (String a : commandLine)  cmdLine += a + " ";
 		log ("Launching: "+ cmdLine);
 	}
-	
-	private boolean runSolver(String[] commandLine, int i, float timeoutMins) {
-		logCmdLine(commandLine);
-		
-		ProcessStatus status = null;
-		try {
-			status = (new SynchronousTimedProcess (timeoutMins,
-												   commandLine)).run (false);
-			
-			
-			
-			lastSolveStats = parseStats (status.out);
-			lastSolveStats.success = (0 == status.exitCode);
-			log (2, "Stats for last run:\n"+ lastSolveStats);
 
-			solverErrorStr = status.err;
-			log ("Solver exit value: "+ status.exitCode);
+    private boolean runSolver(String[] commandLine, int i, float timeoutMins) {
+        logCmdLine(commandLine);
 
-			return lastSolveStats.success;
-		}
-		catch (java.io.IOException e)	{
-			if (null != status && status.killed) {
-				System.err.println ("Warning: lost some output from backend because of timeout.");
-				return false;
-			} else {
-				//e.printStackTrace(System.err);
-				throw new RuntimeException(e);
-			}
-		}
-		catch (InterruptedException e) {
-			//e.printStackTrace(System.err);
-			throw new RuntimeException(e);
-		}
-	}
+        SynchronousTimedProcess proc;
+        try {
+            proc = new SynchronousTimedProcess(timeoutMins, commandLine);
+        } catch (IOException e) {
+            DebugOut.printFailure("Could not instantiate solver (CEGIS) process.");
+            throw new RuntimeException(e);
+        }
+
+        final ProcessStatus status = proc.run(false);
+
+        // deal with killed states
+        if (!status.killedByTimeout) {
+            if (status.exitCode != 0 && status.err.contains("I've been killed.")) {
+                DebugOut.printNote("CEGIS was killed (assuming user kill); exiting.");
+                System.exit(status.exitCode);
+            } else if (status.exception != null) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {}
+                if (SynchronousTimedProcess.wasKilled.get()) {
+                    DebugOut.printNote("CEGIS was killed (assuming user kill); exiting.");
+                    System.exit(status.exitCode);
+                } else {
+                    throw new RuntimeException(status.exception);
+                }
+            }
+        } else if (status.exception instanceof IOException) {
+            System.err.println("Warning: lost some output from backend because of timeout.");
+            return false;
+        }
+
+        lastSolveStats = parseStats(status.out);
+        lastSolveStats.success = (0 == status.exitCode) && !status.killedByTimeout;
+        log(2, "Stats for last run:\n" + lastSolveStats);
+
+        solverErrorStr = status.err;
+        log("Solver exit value: " + status.exitCode);
+
+        return lastSolveStats.success;
+    }
 
 	protected SATSolutionStatistics parseStats (String out) {
 		SATSolutionStatistics s = new SATSolutionStatistics ();

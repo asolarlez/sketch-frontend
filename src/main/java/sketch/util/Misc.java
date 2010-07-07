@@ -16,9 +16,11 @@
 
 package sketch.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -57,17 +59,21 @@ public class Misc extends AssertedClass
 		Misc.readStreamUntil(in, keyword, out);
 		return out.toString ();
 	}
-    
-    public static void readStreamUntil(InputStream in, String keyword, OutputStream _out){    	
-		PrintStream out = new PrintStream (_out);
-		for (String line : new LineReader (in)) {			
-			out.println (line);
-			if(line.contains(keyword)){
-				return;
-			}
-		}
+
+    public static void readStreamUntil(InputStream in, String keyword, OutputStream _out)
+            throws IOException
+    {
+        PrintStream out = new PrintStream(_out);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            out.println(line);
+            if (line.contains(keyword)) {
+                return;
+            }
+        }
     }
-    
+
 	/** Read all of IN into a string and return the string. */
 	public static String readStream (InputStream in, boolean logAllOutput) throws IOException {
 		
@@ -81,21 +87,33 @@ public class Misc extends AssertedClass
 		return out.toString ();
 	}
 
-	/** Dump the stream IN to the stream _OUT. */
-	public static void dumpStreamTo (InputStream in, OutputStream out) {
-		dumpStreamTo (in, out, false);
-	}
+    /**
+     * Dump the stream IN to the stream _OUT.
+     * 
+     * @throws IOException
+     */
+    public static void dumpStreamTo(InputStream in, OutputStream out) throws IOException {
+        dumpStreamTo(in, out, false);
+    }
 
-	/** Dump the stream IN to the stream _OUT, optionally with line numbers. */
-	public static void dumpStreamTo (InputStream in, OutputStream _out,
-									 boolean withLineNumbers) {
-		int lineno = 0;
-		PrintStream out = new PrintStream (_out);
-		for (String line : new LineReader (in)) {
-			if (withLineNumbers)  out.print ("["+ (++lineno) +"] ");
-			out.println (line);
-		}
-	}
+    /**
+     * Dump the stream IN to the stream _OUT, optionally with line numbers.
+     * 
+     * @throws IOException
+     */
+    public static void dumpStreamTo(InputStream in, OutputStream _out,
+            boolean withLineNumbers) throws IOException
+    {
+        int lineno = 0;
+        PrintStream out = new PrintStream(_out);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (withLineNumbers)
+                out.print("[" + (++lineno) + "] ");
+            out.println(line);
+        }
+    }
 
 	/** Returns null if the pattern wasn't found, otherwise returns a list
 	 * of the matched groups. */

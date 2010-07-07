@@ -62,7 +62,7 @@ public class InteractiveTimedProcess {
 		} finally {
 			if (null != killer) {
 				killer.abort ();
-				status.killed = killer.didKill ();
+				status.killedByTimeout = killer.didKill ();
 			}
 		}
 	}
@@ -96,7 +96,7 @@ public class InteractiveTimedProcess {
 		status.execTimeMs = System.currentTimeMillis () - startMs;
 		if (null != killer) {
 			killer.abort ();
-			status.killed = killer.didKill ();
+			status.killedByTimeout = killer.didKill ();
 		}
 	}
 	
