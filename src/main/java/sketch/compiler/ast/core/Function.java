@@ -305,7 +305,8 @@ public class Function extends FENode
         return false;
     }
 
-    public boolean isSketch() {
+    /** is a main function */
+    public boolean isSketchHarness() {
         return this.cls == FUNC_SKETCHMAIN;
     }
 }
