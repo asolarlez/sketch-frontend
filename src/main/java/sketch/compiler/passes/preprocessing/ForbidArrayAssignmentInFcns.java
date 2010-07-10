@@ -13,7 +13,6 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
-import sketch.compiler.passes.structure.GetAssignLHS;
 import sketch.compiler.passes.structure.GetImplementedFcns;
 
 @CompilerPassDeps(runsAfter = {}, runsBefore = {})
@@ -40,12 +39,15 @@ public class ForbidArrayAssignmentInFcns extends FEReplacer {
 
     public Object visitStmtAssign(StmtAssign stmt) {
         if (stmt.getLHS() instanceof ExprArrayRange) {
-            ExprVar v = (ExprVar) stmt.accept(new GetAssignLHS());
-            if (inputParameters.contains(v.getName())) {
-                printFailure("Assignments to input arrays are not allowed!",
-                        "(except on generator or main/harness functions).");
-                printFailure("Error source:", stmt.getCx().toString());
-                System.exit(1);
+            ExprArrayRange v = (ExprArrayRange)stmt.getLHS();
+            if (v.getBase() instanceof ExprVar) {
+                ExprVar v2 = (ExprVar) (v.getBase());
+                if (inputParameters.contains(v2.getName())) {
+                    printFailure("Assignments to input arrays are not allowed!",
+                            "(except on generator or main/harness functions).");
+                    printFailure("Error source:", stmt.getCx().toString());
+                    System.exit(1);
+                }
             }
         }
         return stmt;
