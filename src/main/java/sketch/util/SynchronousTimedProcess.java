@@ -53,7 +53,6 @@ public class SynchronousTimedProcess {
                 try {
                     proc.exitValue();
                 } catch (IllegalThreadStateException e) {
-                    DebugOut.printDebug("killing thread");
                     wasKilled.set(true);
                     proc.destroy();
                 }
