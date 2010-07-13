@@ -17,7 +17,7 @@
 package sketch.compiler.main.seq;
 
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -609,10 +609,9 @@ public class SequentialSketchMain extends CommonSketchMain
                 try {
                     final PlatformLocalization loc =
                             PlatformLocalization.getLocalization();
-                    final String out = loc.getTempPathString("error-last-program.txt");
-                    final FileOutputStream out2 = new FileOutputStream(out);
-                    (new SimpleCodePrinter(out2)).visitProgram(sketchmain.prog);
-                    System.err.println("[ERROR] [SKETCH]     program dumped to: " + out);
+                    File out_file = loc.getTempPath("error-last-program.txt");
+                    sketchmain.prog.debugDump(out_file);
+                    System.err.println("[ERROR] [SKETCH]     program dumped to: " + out_file);
                 } catch (Throwable e2) {}
             }
             // necessary for unit tests, etc.

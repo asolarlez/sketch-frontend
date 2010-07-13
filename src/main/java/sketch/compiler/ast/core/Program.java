@@ -15,6 +15,12 @@
  */
 
 package sketch.compiler.ast.core;
+import static sketch.util.DebugOut.printWarning;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -64,10 +70,22 @@ public class Program extends FENode
     public void debugDump() {
         System.out.println((new SimpleCodePrinter()).visitProgram(this));
     }
-    
+
     public void debugDump(String message) {
         System.out.println("\n//// " + message);
-        System.out.println((new SimpleCodePrinter()).visitProgram(this));
+        debugDump(System.out);
         System.out.println("------------------------------\n");
+    }
+
+    public void debugDump(OutputStream out) {
+        (new SimpleCodePrinter(out)).visitProgram(this);
+    }
+
+    public void debugDump(File file) {
+        try {
+            debugDump(new FileOutputStream(file));
+        } catch (FileNotFoundException e) {
+            printWarning("Dumping to file", file, "failed");
+        }
     }
 }
