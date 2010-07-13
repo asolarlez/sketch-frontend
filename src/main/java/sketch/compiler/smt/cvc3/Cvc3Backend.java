@@ -70,9 +70,6 @@ public class Cvc3Backend extends SMTBackend {
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(1);
         }
         return null;
     }
