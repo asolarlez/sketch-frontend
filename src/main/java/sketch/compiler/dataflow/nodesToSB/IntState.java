@@ -50,12 +50,12 @@ public class IntState extends varState {
 
 	@Override
 	public abstractValue newLHSvalue() {
-		return new IntAbsValue("LHS");
+        return new IntAbsValue("LHS", false);
 	}
 
 	@Override
 	public abstractValue newLHSvalue(int i) {
-		return new IntAbsValue("LHS");
+        return new IntAbsValue("LHS", false);
 	}
 
 }

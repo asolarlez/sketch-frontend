@@ -20,7 +20,7 @@ public class IntVtype extends abstractValueType {
 
 
 	public abstractValue STAR(FENode star){
-		return BOTTOM("??");
+		return BOTTOM("??", true);
 	}
 
 	public abstractValue BOTTOM(Type t){
@@ -40,16 +40,20 @@ public class IntVtype extends abstractValueType {
 		return new IntAbsValue();
 	}
 
-	public abstractValue BOTTOM(String label){
-		return new IntAbsValue(label);
+	public abstractValue BOTTOM(String label) {
+	    return BOTTOM(label, false);
 	}
+
+    public abstractValue BOTTOM(String label, boolean knownGeqZero) {
+        return new IntAbsValue(label, knownGeqZero);
+    }
 
 	public abstractValue CONST(int v){
 		return new IntAbsValue(v);
 	}
 
 	public abstractValue NULL(){
-		return BOTTOM("null");
+		return BOTTOM("null", true);
 	}
 
 	public abstractValue CONST(boolean v){
@@ -78,7 +82,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() + v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "+") );
+            return BOTTOM(opStr(v1, v2, "+"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -94,7 +98,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() * v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "*") );
+            return BOTTOM(opStr(v1, v2, "*"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -102,7 +106,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() / v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "/") );
+            return BOTTOM(opStr(v1, v2, "/"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -110,7 +114,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() % v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "%") );
+            return BOTTOM(opStr(v1, v2, "%"), true);
 		}
 	}
 
@@ -130,11 +134,11 @@ public class IntVtype extends abstractValueType {
 
 
 	public abstractValue shr(abstractValue v1, abstractValue v2){
-		return BOTTOM( v1 + ">>" + v2);
+        return BOTTOM(v1 + ">>" + v2, v1.knownGeqZero());
 	}
 
 	public abstractValue shl(abstractValue v1, abstractValue v2){
-		return BOTTOM( v1 + "<<" + v2);
+        return BOTTOM(v1 + "<<" + v2, v1.knownGeqZero());
 	}
 
 
@@ -158,7 +162,7 @@ public class IntVtype extends abstractValueType {
 					return v1;
 				}
 			}
-			return BOTTOM( opStr(v1, v2, "&") );
+            return BOTTOM(opStr(v1, v2, "&"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -182,7 +186,7 @@ public class IntVtype extends abstractValueType {
 					return v1;
 				}
 			}
-			return BOTTOM( opStr(v1, v2, "|") );
+            return BOTTOM(opStr(v1, v2, "|"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -190,7 +194,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( boolToInt(intToBool(v1.getIntVal()) ^ intToBool(v2.getIntVal())) );
 		}else{
-			return BOTTOM( opStr(v1, v2, "^") );
+            return BOTTOM(opStr(v1, v2, "^"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -198,7 +202,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() > v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, ">") );
+            return BOTTOM(opStr(v1, v2, ">"), true);
 		}
 	}
 
@@ -206,7 +210,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() < v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "<") );
+            return BOTTOM(opStr(v1, v2, "<"), true);
 		}
 	}
 
@@ -214,7 +218,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() >= v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, ">=") );
+            return BOTTOM(opStr(v1, v2, ">="), true);
 		}
 	}
 
@@ -222,7 +226,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() <= v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "<=") );
+            return BOTTOM(opStr(v1, v2, "<="), true);
 		}
 	}
 
@@ -230,7 +234,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() == v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "==") );
+            return BOTTOM(opStr(v1, v2, "=="), true);
 		}
 	}
 
@@ -381,7 +385,8 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
-			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" );
+            return BOTTOM("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
+                    vtrue.knownGeqZero() && vfalse.knownGeqZero());
 		}
 	}
 
@@ -395,7 +400,8 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
-			return BOTTOM( "(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )" );
+            return BOTTOM("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
+                    vtrue.knownGeqZero() && vfalse.knownGeqZero());
 		}
 	}
 

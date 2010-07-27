@@ -64,7 +64,7 @@ public class NtsbVtype extends IntVtype {
                     rval =  "<" + cvar + "  " + star.getSize() + isFixed+ "> ";
                 else
                     rval =  "<" + cvar +  "> ";
-                nv = new NtsbValue(rval);
+                nv = new NtsbValue(rval, true);
                 if(avlist != null) avlist.add(nv);
             }
             if(avlist != null) nv = new NtsbValue(avlist);
@@ -72,7 +72,7 @@ public class NtsbVtype extends IntVtype {
             return nv;
         }
         String cvar = oracle.addBinding(node);
-        NtsbValue nv =new NtsbValue("<" + cvar +  ">");
+        NtsbValue nv =new NtsbValue("<" + cvar +  ">", true);
         if(oracle.allowMemoization()){ memoizedValues.put(node, nv); }
         return nv;
     }
@@ -80,11 +80,7 @@ public class NtsbVtype extends IntVtype {
     public abstractValue BOTTOM(){
         return new NtsbValue();
     }
-    
-    public abstractValue BOTTOM(String label){
-        return new NtsbValue(label);
-    }
-    
+
     public abstractValue BOTTOM(Type t){
         if( t instanceof TypePrimitive ){
             return BOTTOM();
@@ -92,7 +88,12 @@ public class NtsbVtype extends IntVtype {
         assert false;
         return null;
     }
-    
+
+    @Override
+    public abstractValue BOTTOM(String label, boolean knownGeqZero) {
+        return new NtsbValue(label, knownGeqZero);
+    }
+
     public abstractValue CONST(int v){
         return new NtsbValue(v); 
     }
@@ -129,7 +130,10 @@ public class NtsbVtype extends IntVtype {
     public abstractValue plus(abstractValue v1, abstractValue v2) {
         NtsbValue rv = (NtsbValue) super.plus(v1, v2);
         if(rv.isBottom()){
-            if(v1.hasIntVal() || v2.hasIntVal()){
+            boolean c1 = v1.hasIntVal() && v2.knownGeqZero();
+            boolean c2 = v1.knownGeqZero() && v2.hasIntVal();
+            boolean c3 = v1.hasIntVal() && v2.hasIntVal();
+            if (c1 || c2 || c3) {
                 if(v2.hasIntVal()){
                     abstractValue tmp = v2;
                     v2 = v1;

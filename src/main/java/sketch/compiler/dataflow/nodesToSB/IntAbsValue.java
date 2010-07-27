@@ -12,6 +12,7 @@ public class IntAbsValue extends abstractValue {
 	public static final int LIST = 2;
 	protected int type;
 	protected Object obj;
+    protected final boolean knownGeqZero;
 
 
 	
@@ -48,10 +49,12 @@ public class IntAbsValue extends abstractValue {
 		this.obj = n.obj;
 		this.type = n.type;
 		this.isVolatile = n.isVolatile;
+        this.knownGeqZero = n.knownGeqZero;
 	}
 	
-	public IntAbsValue(String label){
+    public IntAbsValue(String label, boolean knownGeqZero) {
 		this.obj = label;
+        this.knownGeqZero = knownGeqZero;
 		this.type = BOTTOM;
 		assert label != null : "This should never happen!!!! Name should never be null.";
 	}
@@ -59,21 +62,25 @@ public class IntAbsValue extends abstractValue {
 	public IntAbsValue(){
 		this.obj = null;
 		this.type = BOTTOM;
+        this.knownGeqZero = false;
 	}
 	
 	public IntAbsValue(List<abstractValue> obj){
 		this.obj = obj;
 		this.type = LIST;
+        this.knownGeqZero = false;
 	}
 	
 	public IntAbsValue(boolean obj){
 		this.obj = obj? new Integer(1) : new Integer(0);
 		this.type = INT;
+        this.knownGeqZero = true;
 	}
 	
 	public IntAbsValue(int obj){
 		this.obj = obj;
 		this.type = INT;
+        this.knownGeqZero = obj >= 0;
 	}
 	
 	public boolean hasValue() {
@@ -102,6 +109,11 @@ public class IntAbsValue extends abstractValue {
 	public boolean hasIntVal() {
 		return type == INT;
 	}
+
+    @Override
+    public boolean knownGeqZero() {
+        return this.knownGeqZero;
+    }
 
 	@Override
 	public void makeVolatile(){
