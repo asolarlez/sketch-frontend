@@ -24,7 +24,7 @@ class fixedarrRef{
 		return *this;
 	}
 
-	T val(){ return ref[0]; }
+    T val() const { return ref[0]; }
 };
 
 template<typename T, size_t N> 
@@ -94,6 +94,12 @@ operator<< (ostream &out, fixedarr<T, Ntag> &v)
     for (int i = 0; i < Ntag; i++)
 	out << v[i].val()<<",";
     return out;
+}
+
+template <typename T>
+ostream & operator << (ostream &out, const fixedarrRef<T> &v)
+{
+    return (out << v.val());
 }
 
 #endif 

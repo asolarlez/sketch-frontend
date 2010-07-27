@@ -313,9 +313,9 @@ public class SimpleCodePrinter extends CodePrinter
     public Object visitExprTprint(ExprTprint exprTprint) {
         if (!exprTprint.expressions.isEmpty()) {
             for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
-                String line = "\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond();
+                String line = "\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl";
                 if (v.isLast) {
-                    line += " << endl;";
+                    line += ";";
                 }
                 if (v.idx == 0) {
                     printLine("cout << " + line);

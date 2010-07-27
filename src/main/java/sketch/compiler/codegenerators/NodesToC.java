@@ -696,9 +696,8 @@ public class NodesToC extends NodesToJava {
 	            if (v.idx > 0) {
 	                result.append("\n" + this.indent + "  << ");
 	            }
-	            result.append("\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond());
+	            result.append("\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl");
 	        }
-	        result.append(" << endl");
 	    }
 	    return result.toString();
 	}
