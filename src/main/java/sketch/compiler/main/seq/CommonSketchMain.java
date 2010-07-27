@@ -26,6 +26,12 @@ public class CommonSketchMain {
         return (options.debugOpts.showPhase != null) &&
                 options.debugOpts.showPhase.contains(opt);
     }
+    
+    public void debugShowPhase(String opt, String desc, Program prog) {
+        if (showPhaseOpt(opt)) {
+            prog.debugDump(desc);
+        }
+    }
 
     protected void backendParameters() {
         options.backendOptions = new Vector<String>();

@@ -113,4 +113,5 @@ public interface FEVisitor
     public Object visitExprNullPtr(ExprNullPtr nptr);
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
+    public Object visitExprTprint(ExprTprint exprTprint);
 }

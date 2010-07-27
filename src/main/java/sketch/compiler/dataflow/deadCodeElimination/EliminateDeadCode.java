@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -20,11 +21,11 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
+import sketch.util.datastructures.TprintTuple;
 
 public class EliminateDeadCode extends BackwardDataflow {
 	final private boolean keepAsserts;
@@ -55,41 +56,34 @@ public class EliminateDeadCode extends BackwardDataflow {
 		return super.visitStmtAssert(stmt);
 	}
 
-
-	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
-
-		if(stmt.isCond()){
-			abstractValue val =(abstractValue) stmt.getCond().accept(this);
-			if( val instanceof LVSet){
-				((LVSet)val).enliven();
-			}
-			if( val instanceof LiveVariableAV){
-				LiveVariableAV lv = (LiveVariableAV) val;
-				if(lv.mstate != null  ){
-					lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
-				}
-			}
-		}
-		return super.visitStmtAtomicBlock(stmt);
-
-	}
-
-  public Object visitStmtExpr(StmtExpr stmt) {
-    if (stmt.getExpression() != null) {
-      abstractValue val =(abstractValue) stmt.getExpression().accept(this);
-      if( val instanceof LVSet){
-        ((LVSet)val).enliven();
-      }
-      if( val instanceof LiveVariableAV){
-        LiveVariableAV lv = (LiveVariableAV) val;
-        if(lv.mstate != null  ){
-          lv.mstate.setVarValue(
-              lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+    public Object visitStmtAtomicBlock(StmtAtomicBlock stmt) {
+        if (stmt.isCond()) {
+            abstractValue val = (abstractValue) stmt.getCond().accept(this);
+            enliven(val);
         }
-      }
+        return super.visitStmtAtomicBlock(stmt);
     }
-    return super.visitStmtExpr(stmt);
-  }
+
+    public Object visitStmtExpr(StmtExpr stmt) {
+        if (stmt.getExpression() != null) {
+            abstractValue val = (abstractValue) stmt.getExpression().accept(this);
+            enliven(val);
+        }
+        return super.visitStmtExpr(stmt);
+    }
+
+    protected void enliven(abstractValue val) {
+        if (val instanceof LVSet) {
+            ((LVSet) val).enliven();
+        }
+        if (val instanceof LiveVariableAV) {
+            LiveVariableAV lv = (LiveVariableAV) val;
+            if (lv.mstate != null) {
+                lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV(
+                        LiveVariableAV.LIVE));
+            }
+        }
+    }
 
 	protected List<Function> functionsToAnalyze(StreamSpec spec){
 		return new LinkedList<Function>(spec.getFuncs());
@@ -152,6 +146,14 @@ public class EliminateDeadCode extends BackwardDataflow {
 
 		//state.pushVStack(new valueClass((String)null) );
 	}
+	
+	@Override
+	public Object visitExprTprint(ExprTprint exprTprint) {
+	    for (TprintTuple v : exprTprint.expressions) {
+	        enliven((abstractValue) v.getSecond().accept(this));
+	    }
+	    return super.visitExprTprint(exprTprint);
+	}
 
 	public Object visitStmtEmpty (StmtEmpty stmt) {
 		return null;
@@ -179,6 +181,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 			return null;
 		}
 	}
+
 	@Override
 	public Object visitExprFunCall(ExprFunCall exp){
 		Iterator actualParams = exp.getParams().iterator();
