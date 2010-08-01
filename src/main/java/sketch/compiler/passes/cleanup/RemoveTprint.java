@@ -12,7 +12,7 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-@CompilerPassDeps(runsAfter = {}, runsBefore = {}, debug = true)
+@CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class RemoveTprint extends FEReplacer {
     @Override
     public Object visitExprTprint(ExprTprint exprTprint) {
