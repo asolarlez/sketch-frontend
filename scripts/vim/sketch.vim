@@ -9,10 +9,10 @@ if exists("b:current_syntax")
 endif
 
 " A bunch of useful C keywords
-syn keyword	cStatement	goto break return continue asm
+syn keyword	cStatement	goto break return continue asm assert
 syn keyword	cLabel		case default
 syn keyword	cConditional	if else switch
-syn keyword	cRepeat		while for do
+syn keyword	cRepeat		while for do repeat
 
 syn keyword	cTodo		contained TODO FIXME XXX
 
@@ -171,7 +171,7 @@ if !exists("c_no_ansi") || exists("c_ansi_typedefs")
   syn keyword   cType		mbstate_t wctrans_t wint_t wctype_t
 endif
 if !exists("c_no_c99") " ISO C99
-  syn keyword	cType		bool complex
+  syn keyword	cType		bool bit complex
   syn keyword	cType		int8_t int16_t int32_t int64_t
   syn keyword	cType		uint8_t uint16_t uint32_t uint64_t
   syn keyword	cType		int_least8_t int_least16_t int_least32_t int_least64_t
@@ -186,7 +186,7 @@ if exists("c_gnu")
 endif
 
 syn keyword	cStructure	struct union enum typedef
-syn keyword	cStorageClass	static register auto volatile extern const
+syn keyword	cStorageClass	static register auto volatile extern const generator harness
 if exists("c_gnu")
   syn keyword	cStorageClass	inline __attribute__
 endif
@@ -317,6 +317,10 @@ endif
 
 syn match skStaticHole display "??"
 
+syn region jinja2 display start="{{" end="}}"
+syn region jinja2 display start="{%" end="%}"
+syn region jinja2 display start="{#" end="#}"
+
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
 hi def link cFormat		cSpecial
@@ -330,6 +334,7 @@ hi def link cRepeat		Repeat
 hi def link cCharacter		Character
 hi def link cSpecialCharacter	cSpecial
 hi def link skStaticHole cSpecial
+hi def link jinja2 Macro
 hi def link cNumber		Number
 hi def link cOctal		Number
 hi def link cOctalZero		PreProc	 " link this to Error if you want
