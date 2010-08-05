@@ -306,4 +306,8 @@ public class FETypedVisitor<T> implements FEVisitor {
     public Object visitExprSpecialStar(ExprSpecialStar var) {
         throw new FEVisitorException(this, var);
     }
+
+    public T visitExprTprint(ExprTprint exprTprint) {
+        throw new FEVisitorException(this, exprTprint);
+    }
 }

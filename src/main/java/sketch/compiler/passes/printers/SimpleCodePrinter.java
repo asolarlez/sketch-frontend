@@ -1,5 +1,7 @@
 package sketch.compiler.passes.printers;
 
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
+
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,10 +12,13 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.util.datastructures.TprintTuple;
+import sketch.util.fcns.ZipIdxEnt;
 
 public class SimpleCodePrinter extends CodePrinter
 {
@@ -227,7 +232,9 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitStmtExpr(StmtExpr stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
-		printLine(stmt.toString());
+        if (!(stmt.getExpression() instanceof ExprTprint)) {
+            printLine(stmt.toString());
+        }
 		return super.visitStmtExpr(stmt);
 	}
 
@@ -300,5 +307,25 @@ public class SimpleCodePrinter extends CodePrinter
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         printLine("minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ")");
         return stmtMinimize;
+    }
+
+    @Override
+    public Object visitExprTprint(ExprTprint exprTprint) {
+        if (!exprTprint.expressions.isEmpty()) {
+            for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
+                String line = "\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl";
+                if (v.isLast) {
+                    line += ";";
+                }
+                if (v.idx == 0) {
+                    printLine("cout << " + line);
+                    this.indent += 1;
+                } else {
+                    printLine("<< " + line);
+                }
+            }
+            this.indent -= 1;
+        }
+        return exprTprint;
     }
 }

@@ -13,8 +13,9 @@ package sketch.util;
  */
 public class ProcessStatus {
 	public int exitCode;
+	public Throwable exception;
 	public String out, err;
-	public boolean killed;
+	public boolean killedByTimeout;
 	public long execTimeMs;		// TODO: find a less unholy place to put this
 	public ProcessStatus () {}
 }

@@ -29,6 +29,8 @@ public class DebugOut {
     public static boolean no_bash_color = false;
     /** prevent infinite recursion when printing errors */
     protected static boolean inAssertFalse = false;
+    
+    protected static StrictlyMonotonicTime time_ = new StrictlyMonotonicTime(0.0001);
 
     public static String bash_code(String bash_color) {
         return "\u001b[" + bash_color + "m";
@@ -83,6 +85,39 @@ public class DebugOut {
     public static synchronized void print_mt(Object... text) {
         print_colored(BASH_LIGHT_BLUE, thread_indentation.get() + "[debug-"
                 + Thread.currentThread().getId() + "]", " ", false, text);
+    }
+
+    /** try not to go overboard with the # of these... */
+    public enum StatusPrefix {
+        NOTE, DEBUG, FAILURE, WARNING
+    }
+
+    /**
+     * try to use specialized functions, printNote, printError, etc. unless you want
+     * custom formatting
+     */
+    public static void printStatusMessage(String color, StatusPrefix prefix, String sep,
+            boolean nice_arrays, Object... description)
+    {
+        double time = time_.getTime();
+        print_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
+                nice_arrays, description);
+    }
+
+    public static void printDebug(Object... description) {
+        printStatusMessage(BASH_GREEN, StatusPrefix.DEBUG, " ", false, description);
+    }
+
+    public static void printFailure(Object... description) {
+        printStatusMessage(BASH_RED, StatusPrefix.FAILURE, " ", false, description);
+    }
+
+    public static void printNote(Object... description) {
+        printStatusMessage(BASH_BROWN, StatusPrefix.NOTE, " ", false, description);
+    }
+
+    public static void printWarning(Object... description) {
+        printStatusMessage(BASH_SALMON, StatusPrefix.WARNING, " ", false, description);
     }
 
     public static void assertFalse(Object... description) {

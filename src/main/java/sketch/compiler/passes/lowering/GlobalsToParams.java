@@ -175,7 +175,6 @@ public class GlobalsToParams extends FEReplacer {
                 return new Function(fcn, fcn.getCls(), fcn.getName(),
                         fcn.getReturnType(), params, fcn.getBody());
             } else {
-                System.out.println("adding params for " + fcn.getName());
                 StmtBlock body = (StmtBlock) fcn.getBody();
                 Vector<Statement> stmts = new Vector<Statement>(body.getStmts());
                 for (AddedParam param : newParamsForCall.get(inputFcn).values()) {

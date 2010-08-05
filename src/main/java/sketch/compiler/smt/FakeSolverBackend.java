@@ -32,8 +32,7 @@ public class FakeSolverBackend extends SMTBackend {
 		}
 
 		@Override
-		public ProcessStatus run(boolean logAllOutput) throws IOException,
-				InterruptedException {
+		public ProcessStatus run(boolean logAllOutput) {
 			ProcessStatus st = new ProcessStatus();
 			st.err = "";
 			st.out = "";

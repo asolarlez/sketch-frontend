@@ -111,4 +111,5 @@ public class FENullVisitor implements FEVisitor
 	public Object visitStmtMinimize(StmtMinimize stmtMinimize) { return null; }
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
     public Object visitExprSpecialStar(ExprSpecialStar var) { return null; }
+    public Object visitExprTprint(ExprTprint exprTprint) { return null; }
 }

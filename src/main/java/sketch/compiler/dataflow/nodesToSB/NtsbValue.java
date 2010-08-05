@@ -48,12 +48,10 @@ public class NtsbValue extends IntAbsValue {
 		this.isVolatile = n.isVolatile;
 	}
 	
-	public NtsbValue(String label){
-		this.obj = label;
-		this.type = BOTTOM;
-		assert label != null : "This should never happen!!!! Name should never be null.";
-		this.name = null;
-	}
+    public NtsbValue(String label, boolean knownGeqZero) {
+        super(label, knownGeqZero);
+        this.name = null;
+    }
 	
 	public NtsbValue(){
 		this.obj = null;
@@ -114,7 +112,7 @@ public class NtsbValue extends IntAbsValue {
 		NtsbValue nb = (NtsbValue)v;
 		if(nb.isAXPB){
 			isAXPB = true;
-			X = new NtsbValue(nb.X.toString());
+			X = new NtsbValue(nb.X.toString(), false);
 			A = nb.A;
 			B = nb.B;
 		}else{

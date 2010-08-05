@@ -114,4 +114,5 @@ public interface FEVisitor
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
     public Object visitExprSpecialStar(ExprSpecialStar exprSpecialStar);
+    public Object visitExprTprint(ExprTprint exprTprint);
 }

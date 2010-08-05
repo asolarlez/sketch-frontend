@@ -115,27 +115,21 @@ public class PerformFlowChecks extends PartialEvaluator {
     
     
     
-
-    public Object visitFunction(Function func)
-    {
+    public Object visitFunction(Function func) {
         Object o = null;
-        try{
-            o = super.visitFunction(func);
-        }catch(RuntimeException re){
-            report(false, re.getMessage());
-        }
-       
-            List<Parameter> params = func.getParams();
-            for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
-                Parameter param = it.next();
-                if(!param.isParameterInput()){
-                    CfcValue v=  (CfcValue )state.varValue(param.getName());
-                    if(! v.maybeinit()){ report(param,  "There are some paths under which the return value will not be set."); }
+        o = super.visitFunction(func);
+
+        List<Parameter> params = func.getParams();
+        for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
+            Parameter param = it.next();
+            if (!param.isParameterInput()) {
+                CfcValue v = (CfcValue) state.varValue(param.getName());
+                if (!v.maybeinit()) {
+                    report(param,
+                            "There are some paths under which the return value will not be set.");
                 }
             }
-        return o;        
+        }
+        return o;
     }
-    
-    
-    
 }

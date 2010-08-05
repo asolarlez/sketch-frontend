@@ -65,10 +65,16 @@ win-installer: assemble-arch
 deploy: compile
 	mvn deploy -Dmaven.test.skip=true
 
-osc: assemble-noarch
+osc: assemble-noarch codegen
 	mkdir -p "java-build"; cp target/sketch-$(VERSION)-noarch.jar java-build
 	python ../sketch-backend/distconfig/linux_rpm/build.py --name sketch-frontend --additional_path java-build --version $(VERSION) --no --osc --commit_msg "[incremental]"
 	rm -rf java-build
+
+install-launchers-only: #HIDDEN used for obs (the opensuse build system)
+	mkdir -p $(DESTDIR)/usr/bin
+	install -m 755 scripts/unix/final/sketch $(DESTDIR)/usr/bin
+	install -m 755 scripts/unix/final/psketch $(DESTDIR)/usr/bin
+	install -m 755 scripts/unix/final/stensk $(DESTDIR)/usr/bin
 
 system-install: # usage: make system-install DESTDIR=/usr/bin [SUDOINSTALL=1]
 	[ "$(DESTDIR)" ] || { echo "no destination directory defined. try make help."; exit 1; }

@@ -42,7 +42,7 @@ public class InteractiveSATBackend extends SATBackend {
 			proc = new InteractiveTimedProcess(options.solverOpts.timeout, commandLine);
 			proc.run();		
 		}catch (java.io.IOException e)	{
-			if (null != proc.status() && proc.status().killed) {
+			if (null != proc.status() && proc.status().killedByTimeout) {
 				System.err.println ("Warning: lost some output from backend because of timeout.");
 			} else {
 				//e.printStackTrace(System.err);

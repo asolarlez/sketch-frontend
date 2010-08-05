@@ -82,7 +82,7 @@ public class MainMethodCreateNospec extends FEReplacer {
 
     @Override
     public Object visitFunction(Function func) {
-        if (func.isSketch()) {
+        if (func.isSketchHarness()) {
             Function staticReplacement = Function.newStatic(func, func.getName(),
                     func.getReturnType(), func.getParams(), null, func.getBody());
             mainFcns.add(staticReplacement);

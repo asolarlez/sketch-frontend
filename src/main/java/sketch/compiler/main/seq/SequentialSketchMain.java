@@ -17,7 +17,9 @@
 package sketch.compiler.main.seq;
 
 
-import java.io.FileOutputStream;
+import static sketch.util.DebugOut.printNote;
+
+import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -54,9 +56,11 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
+import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
+import sketch.compiler.passes.preprocessing.ForbidArrayAssignmentInFcns;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
@@ -222,6 +226,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
 		
+		prog = (new IRStage2()).run(prog);
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
 				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
@@ -302,7 +307,7 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new ReplaceMinLoops(varGen),
+                    { new ForbidArrayAssignmentInFcns(), new ReplaceMinLoops(varGen),
                             new MainMethodCreateNospec() };
             passes = passes2;
         }
@@ -312,6 +317,14 @@ public class SequentialSketchMain extends CommonSketchMain
         public IRStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 = { new GlobalsToParams(varGen) };
+            passes = passes2;
+        }
+    }
+
+    public class IRStage2 extends CompilerStage {
+        public IRStage2() {
+            super(SequentialSketchMain.this);
+            FEVisitor[] passes2 = { new RemoveTprint() };
             passes = passes2;
         }
     }
@@ -401,10 +414,14 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void eliminateStar(){
 	    EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
 		finalCode=(Program)beforeUnvectorizing.accept(eliminate_star);
-                if (options.feOpts.outputXml != null){
-                    eliminate_star.dump_xml(options.feOpts.outputXml);
-                }
-		//testProg(finalCode);
+        
+		if (options.feOpts.outputXml != null) {
+            eliminate_star.dump_xml(options.feOpts.outputXml);
+        }
+        this.debugShowPhase("resolve", "after resolving and substituting ?? values",
+                finalCode);
+
+        //testProg(finalCode);
 		//dump(finalCode, "after elim star");
         finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(), true));
@@ -471,7 +488,8 @@ public class SequentialSketchMain extends CommonSketchMain
 				}
                 if (options.feOpts.outputTest) {
 					String testcode=(String)finalCode.accept(new NodesToCTest(resultFile));
-					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + "_test.cpp");
+					final String outputFname = options.feOpts.outputDir + resultFile + "_test.cpp";
+                    Writer outWriter = new FileWriter(outputFname);
 					outWriter.write(testcode);
 					outWriter.flush();
 					outWriter.close();
@@ -487,6 +505,7 @@ public class SequentialSketchMain extends CommonSketchMain
 					outWriter2.write("./"+resultFile+"\n");
 					outWriter2.flush();
 					outWriter2.close();
+					printNote("Wrote test harness to", outputFname);
 				}
 			}
 			catch (java.io.IOException e){
@@ -608,10 +627,9 @@ public class SequentialSketchMain extends CommonSketchMain
                 try {
                     final PlatformLocalization loc =
                             PlatformLocalization.getLocalization();
-                    final String out = loc.getTempPathString("error-last-program.txt");
-                    final FileOutputStream out2 = new FileOutputStream(out);
-                    (new SimpleCodePrinter(out2)).visitProgram(sketchmain.prog);
-                    System.err.println("[ERROR] [SKETCH]     program dumped to: " + out);
+                    File out_file = loc.getTempPath("error-last-program.txt");
+                    sketchmain.prog.debugDump(out_file);
+                    System.err.println("[ERROR] [SKETCH]     program dumped to: " + out_file);
                 } catch (Throwable e2) {}
             }
             // necessary for unit tests, etc.

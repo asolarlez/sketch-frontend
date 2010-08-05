@@ -14,7 +14,7 @@ public class Cvc3SolutionStatistics extends SolutionStatistics {
 	boolean success = false;
 	public Cvc3SolutionStatistics(ProcessStatus status) {
 		String out = status.out;
-		if (status.killed)
+		if (status.killedByTimeout)
 			this.success = false;
 		else if (out.contains("Satisfiable"))
 			this.success = true;

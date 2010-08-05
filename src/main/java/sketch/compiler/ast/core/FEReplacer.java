@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
@@ -37,6 +38,7 @@ import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
+import sketch.util.datastructures.TprintTuple;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -875,5 +877,24 @@ public class FEReplacer implements FEVisitor
 
     public Object visitExprSpecialStar(ExprSpecialStar star) {
         return visitExprStar(star);
+    }
+
+    public Object visitExprTprint(ExprTprint exprTprint) {
+        boolean changed = false;
+        Vector<TprintTuple> nextExpressions = new Vector<TprintTuple>();
+        for (TprintTuple expr : exprTprint.expressions) {
+            final Expression nextExpr = (Expression) expr.getSecond().accept(this);
+            if (nextExpr != expr.getSecond()) {
+                changed = true;
+                nextExpressions.add(new TprintTuple(expr.getFirst(), nextExpr));
+            } else {
+                nextExpressions.add(expr);
+            }
+        }
+        if (changed) {
+            return new ExprTprint(exprTprint, nextExpressions);
+        } else {
+            return exprTprint;
+        }
     }
 }

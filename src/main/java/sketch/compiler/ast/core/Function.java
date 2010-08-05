@@ -291,10 +291,14 @@ public class Function extends FENode
         return v.visitFunction(this);
     }
 
-    public String toString()
-    {
-    	return returnType+" "+name+"("+params+")"+(fImplements!=null? " implements "+fImplements:"");
+    public String toString() {
+        final String typ =
+                (this.isStatic() ? "" : (this.isSketchHarness() ? "harness "
+                        : "generator "));
+        final String impl = fImplements != null ? " implements " + fImplements : "";
+        return typ + returnType + " " + name + "(" + params + ")" + impl;
     }
+
     public int hashCode(){
         return name.hashCode();
     }
@@ -305,7 +309,8 @@ public class Function extends FENode
         return false;
     }
 
-    public boolean isSketch() {
+    /** is a main function */
+    public boolean isSketchHarness() {
         return this.cls == FUNC_SKETCHMAIN;
     }
 }

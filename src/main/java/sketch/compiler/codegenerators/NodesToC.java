@@ -1,5 +1,7 @@
 package sketch.compiler.codegenerators;
 
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,6 +26,8 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
+import sketch.util.datastructures.TprintTuple;
+import sketch.util.fcns.ZipIdxEnt;
 
 public class NodesToC extends NodesToJava {
 
@@ -682,4 +686,19 @@ public class NodesToC extends NodesToJava {
         else
             return "bitvec<1>(0U)";
     }
+	
+	@Override
+	public Object visitExprTprint(ExprTprint exprTprint) {
+	    StringBuilder result = new StringBuilder();
+	    if (!exprTprint.expressions.isEmpty()) {
+	        result.append("cout << ");
+	        for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
+	            if (v.idx > 0) {
+	                result.append("\n" + this.indent + "  << ");
+	            }
+	            result.append("\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl");
+	        }
+	    }
+	    return result.toString();
+	}
 }

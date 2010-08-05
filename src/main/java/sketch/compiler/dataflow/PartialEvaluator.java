@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -27,6 +28,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.util.datastructures.TprintTuple;
 
 class CloneHoles extends FEReplacer{
     
@@ -459,6 +461,33 @@ public class PartialEvaluator extends FEReplacer {
         exprRV = isReplacer ?  new ExprFunCall(exp, name, nparams)  : exp ;
         return  vtype.BOTTOM();
     }
+
+    public Object visitExprTprint(ExprTprint exprTprint) {
+        if (!isReplacer) {
+            exprRV = exprTprint;
+            return exprTprint;
+        } else {
+            boolean changed = false;
+            Vector<TprintTuple> nextExpressions = new Vector<TprintTuple>();
+            for (TprintTuple expr : exprTprint.expressions) {
+                expr.getSecond().accept(this);
+                final Expression nextExpr = exprRV;
+                if (nextExpr != expr.getSecond()) {
+                    changed = true;
+                    nextExpressions.add(new TprintTuple(expr.getFirst(), nextExpr));
+                } else {
+                    nextExpressions.add(expr);
+                }
+            }
+            if (changed) {
+                exprRV = new ExprTprint(exprTprint, nextExpressions);
+            } else {
+                exprRV = exprTprint;
+            }
+            return vtype.BOTTOM();
+        }
+    }
+
 
 
     public class lhsVisitor extends FEReplacer{

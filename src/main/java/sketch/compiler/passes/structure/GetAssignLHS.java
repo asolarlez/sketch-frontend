@@ -7,7 +7,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 
 /**
- * get the assigned left hand side
+ * get the main variable associated with the assigned left hand side
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

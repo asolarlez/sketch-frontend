@@ -65,9 +65,12 @@ public class SequentialSketchOptions {
         if (args.length < 1 || args[0].equals("")) {
             parser.printHelpAndExit("no files specified");
         }
+        
+        // actions
         argsAsList = Arrays.asList(args);
         sketchFile = new File(args[0]);
         sketchName = sketchFile.getName().replaceFirst("\\.+$", "");
+        feOpts.outputCode |= feOpts.outputTest;
     }
 
     @SuppressWarnings("unchecked")

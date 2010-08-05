@@ -1,0 +1,8 @@
+bit f(int pivot, int width) {
+    int[1] input = {2};
+    return input[pivot - width + 1] == 2;
+}
+
+harness void main() {
+    assert(f(1, 2));
+}
