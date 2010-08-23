@@ -1,0 +1,41 @@
+#define N 2
+
+pragma options "--debug-verbosity 3";
+
+bit[N] s(bit[N][N] rels, int x) {
+    bit[N] result;
+    for(int i = 0; i < N; i++) {
+        result[i] = rels[x][i];
+    }
+    return result;
+}
+
+bit[N] sPlus(bit[N][N] rels, int x) {
+    bit[N] result;
+    bit[N] temp;
+    temp = s(rels, x);
+    result = result | temp;
+    return result;
+}
+
+bit SLLspec(bit[N][N] edges) {
+    /*root r via N*/
+    bit[N] viaR = sPlus(edges, 0);
+    viaR[0] = 1;
+    for(int i = 0; i < N; i++) {
+        if(!viaR[i])
+            return false;
+    }
+    return true;
+}
+
+bit SLLsketch(bit[N][N] edges) implements SLLspec {
+    /*root r via N*/
+    bit[N] viaR = sPlus(edges, 0);
+    viaR[0] = 1;
+    for(int i = 0; i < N; i++) {
+        if(!viaR[i])
+            return false;
+    }
+    return true;
+}

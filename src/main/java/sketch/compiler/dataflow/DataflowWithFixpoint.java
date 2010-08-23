@@ -69,10 +69,9 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        boolean goOn = true;
 	        int iters = 0;
 	        while(goOn){
-	        	ChangeTracker changed;
+	        	ChangeTracker changed;	        	
 	        	try{
-		        	state.pushChangeTracker(null, false);
-
+		        	state.pushChangeTracker(null, false);		        	
 		        	ChangeTracker ct = null;
 
 		        	boolean lisReplacer = isReplacer;
@@ -88,9 +87,6 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 			        	if (stmt.getIncr() != null){
 				        	stmt.getIncr().accept(this);
 			        	}
-		        	}catch(RuntimeException e){
-		        		state.popChangeTracker();
-		        		throw e;
 		        	}finally{
 		        		ct = state.popChangeTracker();
 		        		isReplacer = lisReplacer;

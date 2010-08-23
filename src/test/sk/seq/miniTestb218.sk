@@ -1,5 +1,5 @@
 harness void main(int i){
-    i = i-4;
+    i = i-25;
     if(i < 0){ return; }
     while(i != 0){
         i = i-1;

@@ -1,0 +1,35 @@
+//ran in 36 seconds!! Hooray!
+
+pragma options "--bnd-unroll-amnt 20 --bnd-inbits 5 --debug-verbosity 4  --bnd-inline-amnt 5";
+
+int spec (int x)
+{
+  return 0;
+}
+
+generator int F(int x)
+{
+  int op = ??;
+  assert(op < 2);
+  if (op == 0) return x;
+  if (op == 1) return 0;
+}
+
+void checkEven(int x)
+{
+  assert(x%2 == 0);
+}
+
+void check1(int x, int ans)
+{
+  assert(1==1);
+}
+
+int main(int x) implements spec
+{
+  int answer = F(x);
+  check1(x,answer);
+  checkEven(x);
+  return answer;
+}
+

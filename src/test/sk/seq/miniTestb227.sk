@@ -1,0 +1,10 @@
+harness void main(int t){
+    int[3] A;
+    int i=0;
+    repeat(??){
+        for(int x=0; x<10; ++x){
+            A[i] = x;        
+        }
+        i = i+1;
+    }
+}

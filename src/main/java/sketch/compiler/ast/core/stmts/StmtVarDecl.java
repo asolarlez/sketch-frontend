@@ -23,6 +23,8 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
  * A variable-declaration statement.  This statement declares a
@@ -114,8 +116,9 @@ public class StmtVarDecl extends Statement
     public StmtVarDecl(FENode context, Type type, String name,
                        Expression init)
     {
+        
         this(context,
-             Collections.singletonList(type),
+             Collections.singletonList((type instanceof TypeStruct)? new TypeStructRef(((TypeStruct) type).getName()) : type),
              Collections.singletonList(name),
              Collections.singletonList(init));
     }

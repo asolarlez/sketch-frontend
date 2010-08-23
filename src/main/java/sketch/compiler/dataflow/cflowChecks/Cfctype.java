@@ -69,70 +69,70 @@ public class Cfctype extends abstractValueType {
     }
 
     public abstractValue plus(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue minus(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue times(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue over(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue mod(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
 
 
     public abstractValue shr(abstractValue v1, abstractValue v2){
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue shl(abstractValue v1, abstractValue v2){
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
 
     public abstractValue and(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue or(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue xor(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue gt(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue lt(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue ge(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue le(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue eq(abstractValue v1, abstractValue v2) {
-        return join(v1, v2);
+        return mix(v1, v2);
     }
 
     public abstractValue arracc(abstractValue arr, abstractValue idx) {
-        return join(arr, idx);
+        return mix(arr, idx);
     }
     
     
@@ -141,12 +141,12 @@ public class Cfctype extends abstractValueType {
     }
 
     public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
-        return join(arr, idx);
+        return mix(arr, idx);
     }
 
 
     protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
-        return join(arr, idx);
+        return mix(arr, idx);
     }
 
     public abstractValue cast(abstractValue v1, Type type) {
@@ -161,6 +161,16 @@ public class Cfctype extends abstractValueType {
         return v1;
     }
 
+    public abstractValue mix(abstractValue v1, abstractValue v2) {
+        CfcValue cv1 = (CfcValue) v1;
+        CfcValue cv2 = (CfcValue) v2;        
+        if(cv1.maybeinit() && cv2.maybeinit()){
+            return someinit;
+        }else{
+            return noinit;
+        }       
+    }
+    
     public abstractValue join(abstractValue v1, abstractValue v2) {
         CfcValue cv1 = (CfcValue) v1;
         CfcValue cv2 = (CfcValue) v2;
@@ -173,7 +183,7 @@ public class Cfctype extends abstractValueType {
 
 
     public abstractValue ternary(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
-        return join(cond, join(vtrue, vfalse));
+        return mix(cond, join(vtrue, vfalse));
     }
 
     public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {

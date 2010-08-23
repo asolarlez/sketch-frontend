@@ -1,0 +1,15 @@
+struct T{
+    int a;
+    T b;   
+    T[4] c;
+}
+
+harness void main(){
+    T t = new T();
+    for(int i=0; i<10; ++i){ t = new T(); }
+    assert t.a == 0;
+    assert t.b == null;
+    assert t.c[0] == null;
+    assert t.c[1] == null;
+    assert t.c[2] == null;
+}

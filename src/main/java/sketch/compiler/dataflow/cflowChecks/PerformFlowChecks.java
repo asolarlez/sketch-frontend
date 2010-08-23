@@ -8,6 +8,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -132,4 +133,9 @@ public class PerformFlowChecks extends PartialEvaluator {
         }
         return o;
     }
+    
+    protected List<Function> functionsToAnalyze(StreamSpec spec){
+        return new ArrayList<Function>(spec.getFuncs());      
+    }
+    
 }

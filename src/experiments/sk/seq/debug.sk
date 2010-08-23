@@ -1,257 +1,41 @@
-pragma options "--slv-inline 20 --bnd-branch-amnt 15 --bnd-unroll-amnt
-10 --debug-verbosity 4 --bnd-inbits 2";
 
-//===========PROBLEM STATEMENT=============//
-//Input: Array[Int]
-//Output: Length of the longest pallendrom substring
-//For example, input of [3,2,2,2,3,1,1,3] has longest
-//substring [3,2,2,2,3] that's pallendrom, we output 5
-
-
-//=============USER ASSUMPTIONS============//
-//We assume the user knows the following:
-//-The total number of longest possible pallendroms is 2n
-//-User thinks each cell is a length value
-//-The possible operator to increase pallendrom is 
-// dependent on the pallendrom itself
-//-User can code the "USER FUNCTIONS"
-//-User believe initialized value is either 0 for even
-// lengthed pallen, or 1 for odd lengthed
-//-User believe we need to max over all the values
-
-//====USER PROVIDED INPUT OUTPUT PAIRS=====//
-
-int S = 5;
-
-//size 1
-int[S] inn1 = {1,0,0,0,0};
-int out1 = 1;
-int bnd1 = 1;
-
-int[S] inn2 = {2,0,0,0,0};
-int out2 = 1;
-int bnd2 = 1;
-
-//size 2
-int[S] inn3 = {2,3,0,0,0};
-int out3 = 1;
-int bnd3 = 2;
-
-int[S] inn4 = {3,3,0,0,0};
-int out4 = 2;
-int bnd4 = 2;
-
-int[S] inn5 = {4,3,0,0,0};
-int out5 = 2;
-int bnd5 = 2;
-
-int[S] inn6 = {4,4,0,0,0};
-int out6 = 2;
-int bnd6 = 2;
-
-//size 3
-int[S] inn7 = {5,2,2,0,0};
-int out7 = 2;
-int bnd7 = 3;
-
-int[S] inn8 = {1,2,3,0,0};
-int out8 = 1;
-int bnd8 = 3;
-
-int[S] inn9 = {1,1,5,0,0};
-int out9 = 2;
-int bnd9 = 3;
-
-int[S] inn10 = {1,4,1,0,0};
-int out10 = 3;
-int bnd10 = 3;
-
-int[S] inn11 = {3,3,3,0,0};
-int out11 = 3;
-int bnd11 = 3;
-
-//size 4
-int[S] inn12 = {3,4,5,3,0};
-int out12 = 1;
-int bnd12 = 4;
-
-int[S] inn13 = {1,3,3,5,0};
-int out13 = 2;
-int bnd13 = 4;
-
-int[S] inn14 = {2,4,2,5,0};
-int out14 = 3;
-int bnd14 = 4;
-
-int[S] inn15 = {4,3,3,3,0};
-int out15 = 3;
-int bnd15 = 4;
-
-int[S] inn16 = {5,4,4,5,0};
-int out16 =  4;
-int bnd16 = 4;
-
-int[S] inn17 = {4,3,4,2,0};
-int out17 = 3;
-int bnd17 = 4;
-
-int[S] inn18 = {2,2,2,2,0};
-int out18 = 4;
-int bnd18 = 4;
-
-//size 5
-int[S] inn19 = {3,2,4,3,2};
-int out19 = 1;
-int bnd19 = 5;
-
-int[S] inn20 = {4,3,2,3,3};
-int out20 = 3;
-int bnd20 = 5;
-
-int[S] inn21 = {3,2,4,4,2};
-int out21 = 4;
-int bnd21 = 5;
-
-int[S] inn22 = {4,2,2,2,4};
-int out22 = 5;
-int bnd22 = 5;
-
-int[S] inn23 = {2,2,2,2,2};
-int out23 = 5;
-int bnd23 = 5;
-
-int[S] inn24 = {2,3,5,3,1};
-int out24 = 3;
-int bnd24 = 5;
-
-//=====USER PROVIDED FUNCTIONS====//
-
-bit oddsym(int pivot, int width, int bnd, int[S] arrayIn)
-{
-  if (pivot + width > bnd - 1) return 0;
-  if (pivot - width < 0) return 0;
-  if (arrayIn[pivot + width] == arrayIn[pivot - width]) return 1;
-  else return 0;
+int add(int in1, int in2){
+       return in1 + in2;
 }
 
-bit evesym(int pivot, int width, int bnd, int[S] arrayIn)
-{
-  if (pivot + width - 1 > bnd - 1) return 0;
-  if (pivot - width < 0) return 0;
-  if (arrayIn[pivot + width - 1] == arrayIn[pivot - width]) return 1;
-  else return 0;
+
+int ashish2() {
+       
+       int output;
+
+       output = 31;
+       
+       return output;
+
 }
 
-int grow(int x)
-{
-  return x + 2;
-}
 
-//==========TEMPLATE FUNCTIONS========//
 
-harness void main()
-{
-  assert( F(inn1, bnd1) == out1 );
-  assert( F(inn2, bnd2) == out2 );
-  assert( F(inn3, bnd3) == out3 );
-  assert( F(inn4, bnd4) == out4 ); 
-  assert( F(inn5, bnd5) == out5 );
-  assert( F(inn6, bnd6) == out6 );
-  assert( F(inn7, bnd7) == out7 );
-  assert( F(inn8, bnd8) == out8 ); 
-  assert( F(inn9, bnd9) == out9 );
-  assert( F(inn10, bnd10) == out10 );
-  assert( F(inn11, bnd11) == out11 );
-  assert( F(inn12, bnd12) == out12 ); 
-  assert( F(inn13, bnd13) == out13 );
-  assert( F(inn14, bnd14) == out14 );
-  assert( F(inn15, bnd15) == out15 );
-  assert( F(inn16, bnd16) == out16 ); 
-  assert( F(inn17, bnd17) == out17 );
-  assert( F(inn18, bnd18) == out18 );
-  assert( F(inn19, bnd19) == out19 );
-  assert( F(inn20, bnd20) == out20 );
-  assert( F(inn21, bnd21) == out21 );
-  assert( F(inn22, bnd22) == out22 );
-  assert( F(inn23, bnd23) == out23 ); 
-  assert( F(inn24, bnd24) == out24 );
-}
+int skq1() implements ashish2 {
 
-//p stands for predicate
-generator bit p1 (bit x)
-{
-  int op = ??;
-  assert (op < 4);
-  if (op == 0) return x;
-  if (op == 1) return !x;
-  if (op == 2) return 0;
-  if (op == 3) return 1;
-}
+        int output = 0; 
+        int op1 = 0;
+        int op2 = 0; 
+        int op3 = 0;
+        int op4 = 0;
+    int op5 = 0; 
+        int op6 = 0;
+        int op7 = 0;
+        int ct1 = 1;
 
-generator bit p2 (bit x, bit y)
-{
-  int op = ??;
-  assert(op < 2);
-  bit b1 = p1(x);
-  bit b2 = p1(y);
-  if (op == 0) return b1 || b2;
-  if (op == 1) return b1 && b2;
-}
+    #define vars {|ct1|op1|op2|op3|op4|op5|op6|op7|}
+    #define opvars {|op1|op2|op3|op4|op5|op6|op7|output|}
+    #define components {|add(vars,vars)|}
 
-//v stands for value
-generator int v1 (int x)
-{
-  int op = ??;
-  assert (op < 2);
-  if (op == 0) return x;
-  //usr insight
-  if (op == 1) return x + 2;
-}
-
-int F(int[S] A, int bnd)
-{
-  //usr specify 2 tapes, one for even length, one for odd
-  int[S] W1 = 0;
-  int[S] W2 = 0;
-  //hidden from usr, 2 marking tapes to keep some extra thing
-  bit[S] S1 = 0;
-  bit[S] S2 = 0;
-
-  //USR input initialized values
-  for (int i = 0; i < bnd; i++)
-  {
-    W1[i] = 1;
-  }
-
-  for (int i = 1; i <= bnd; i ++)
-  {
-    for (int j = 0; j < bnd; j++)
-    {
-      //some basic bits
-      bit b1 = oddsym(j, i, bnd, A);
-      bit b2 = evesym(j, i, bnd, A);
-      bit b3 = S1[j];
-      bit b4 = S2[j];
-
-      if (p2(b1, b3))
-      {
-        W1[j] = v1(W1[j]);
-      }
-    
-      if (p2(b2,b4))
-      {
-        W2[j] = v1(W2[j]);
-      }
+    repeat(7){
+    opvars = components;
     }
-  }
+    
 
-  //USR know he needs to do a max
-  int toReturn = 0;
-  for (int i = 0; i < S; i ++)
-  {
-    if (toReturn < W1[i]) toReturn = W1[i];
-    if (toReturn < W2[i]) toReturn = W2[i];
-  }
-  return toReturn;
+        return output;
 }
-

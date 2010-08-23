@@ -1,0 +1,28 @@
+
+int foo(int x, int y){
+    assert x != 2;
+    assert x != 3;
+    assert x != 4;
+    return x + y;
+}
+
+bit moo(int x){
+    return x > 5;
+}
+
+
+harness void main(int x){
+    int t = 0;
+    int y = ??;
+    bit q = 0;
+    if(x > 5){
+         q = moo(foo(x,y));
+    }
+    if(q || x < 2){
+        t = foo(x,y);
+    }
+    while(foo(y,x)> 5 && t < 10){
+        t = t + foo(y,x);
+    }
+    assert t > 0;    
+}

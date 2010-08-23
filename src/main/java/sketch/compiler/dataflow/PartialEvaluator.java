@@ -541,7 +541,7 @@ public class PartialEvaluator extends FEReplacer {
                     if( tlen.hasIntVal() ){
                         int size = tlen.getIntVal();
                         if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
-                            throw new ArrayIndexOutOfBoundsException("ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+                            throw new ArrayIndexOutOfBoundsException(ear.getCx() + "ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
                     }
                 }
             }
@@ -962,7 +962,7 @@ public class PartialEvaluator extends FEReplacer {
             state.procChangeTrackers(ipms, epms);
         }else{
             state.procChangeTrackers(ipms);
-        }
+        }        
         if(isReplacer){
             if(nvtrue == null && nvfalse == null){
                 return null;

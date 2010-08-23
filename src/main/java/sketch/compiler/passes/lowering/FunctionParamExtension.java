@@ -270,11 +270,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		if(body!=null && !(body instanceof StmtBlock))
 			body=new StmtBlock(stmt,Collections.singletonList(body));
 		
-		if(hasRet(body)){
+		//if(hasRet(body)){
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
 					getFalseLiteral()) );
-		}
+		//}
 		
 		if(body!=stmt.getBody() || cond != stmt.getCond())
 			stmt=new StmtWhile(stmt,cond, body);		
@@ -289,11 +289,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		if(body!=null && !(body instanceof StmtBlock))
 			body=new StmtBlock(stmt,Collections.singletonList(body));
 		
-		if(hasRet(body)){
+		//if(hasRet(body)){
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
 					getFalseLiteral()) );
-		}
+		//}
 		
 		if(body!=stmt.getBody() || cond != stmt.getCond())
 			stmt=new StmtDoWhile(stmt,body,cond);
@@ -313,11 +313,16 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			cond = new ExprBinary(cond, "&&", new ExprBinary(
 					new ExprVar(cond, getReturnFlag()), "==",
 					getFalseLiteral()) );
+			stmt=new StmtFor(stmt,stmt.getInit(),cond,stmt.getIncr(),body);
+			return super.visitStmtFor(stmt);
+		}else{
+		    if(body!=stmt.getBody() || cond != stmt.getCond())
+	            stmt=new StmtFor(stmt,stmt.getInit(),cond,stmt.getIncr(),body);
+		    return conditionWrap((Statement) super.visitStmtFor(stmt));
 		}
 		
-		if(body!=stmt.getBody() || cond != stmt.getCond())
-			stmt=new StmtFor(stmt,stmt.getInit(),cond,stmt.getIncr(),body);
-		return super.visitStmtFor(stmt);
+		
+		
 	}
 
 	@Override

@@ -134,7 +134,7 @@ public class EliminateRegens extends SymbolTableVisitor {
         ExprVar whichLhs = makeNDChoice (lhses.size (), lhs, "_whichlhs");
 
         String tmpvname = varGen.nextVar("_tmprhs");
-        addStatement( new StmtVarDecl( rhs, getType(lhses.get(0)), tmpvname , (Expression) rhs.accept (this) ));
+        addStatement( new StmtVarDecl( rhs, getTypeReal(lhses.get(0)), tmpvname , (Expression) rhs.accept (this) ));
         Expression newRHS = new ExprVar(rhs, tmpvname);
         
         for (int i = 0; i < lhses.size (); ++i) {

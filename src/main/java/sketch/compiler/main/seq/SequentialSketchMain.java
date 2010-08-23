@@ -359,9 +359,12 @@ public class SequentialSketchMain extends CommonSketchMain
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
 		//dump (lprog, "~insertblocks:");		
+		
+		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
+		
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		//dump (lprog, "fpe:");
-		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
+		
 
         lprog = (new IRStage1()).run(lprog);
         
