@@ -251,11 +251,11 @@ public class NtsbVtype extends IntVtype {
         }
         
         if(!hasout){
-            String par = "___GaRbAgE" +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
+            String par = "___GaRbAgE" + (gbgid++) +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
             out.println(par);
-        }
-        
+        }        
     }
+    int gbgid = 0; //This is a big hack!!
     
     String printType(Type t){
         if(t.equals(TypePrimitive.bittype)){

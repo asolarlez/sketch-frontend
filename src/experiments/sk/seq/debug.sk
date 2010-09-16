@@ -1,41 +1,122 @@
+#define SETBOUND 7 
+#define N 3
 
-int add(int in1, int in2){
-       return in1 + in2;
+pragma options "--bnd-inbits 3 --debug-verbosity 4 --bnd-heap-size 25";
+
+struct Set {
+    int numElements;
+    int[SETBOUND] elems;
 }
 
-
-int ashish2() {
-       
-       int output;
-
-       output = 31;
-       
-       return output;
-
+Set newSet() {
+    Set X = new Set();
+    X.numElements = 0;
+    return X;
 }
 
-
-
-int skq1() implements ashish2 {
-
-        int output = 0; 
-        int op1 = 0;
-        int op2 = 0; 
-        int op3 = 0;
-        int op4 = 0;
-    int op5 = 0; 
-        int op6 = 0;
-        int op7 = 0;
-        int ct1 = 1;
-
-    #define vars {|ct1|op1|op2|op3|op4|op5|op6|op7|}
-    #define opvars {|op1|op2|op3|op4|op5|op6|op7|output|}
-    #define components {|add(vars,vars)|}
-
-    repeat(7){
-    opvars = components;
+Set addElement(Set X, int y) {
+    Set Z = newSet();
+    for(int i = 0; i < X.numElements; i++) {
+        Z.elems[i] = X.elems[i];
     }
-    
+    Z.numElements = X.numElements;
+    for(int i = 0; i < Z.numElements; i++) {
+        if(Z.elems[i] == y) {
+            return Z;
+        }
+    }   
+    Z.elems[Z.numElements] = y;
+    //Z.numElements = Z.numElements + 1;
+    Z.numElements++;
+    return Z;
+}
 
-        return output;
+Set subElement(Set X, int y) {
+    Set Z = newSet();
+    for(int i = 0; i < X.numElements; i++) {
+        Z.elems[i] = X.elems[i];
+    }
+    Z.numElements = X.numElements;
+    for(int i = 0; i < Z.numElements; i++) {
+        if(Z.elems[i] == y) {
+            Z.elems[i] = Z.elems[Z.numElements - 1];
+            Z.numElements = Z.numElements - 1;
+            return Z;
+        }
+    }   
+    return Z;
+}
+
+bit isSetEmpty(Set X) {
+    return (X.numElements == 0);
+}
+
+bit isElemPresent(Set X, int y) {
+    for(int i = 0; i < X.numElements; i++) {
+        if(X.elems[i] == y) {
+            return true;
+        }
+    }   
+    return false;
+}
+
+int cardiniality(Set X) {
+    return X.numElements;
+}
+
+Set unionSet(Set X, Set Y) {
+    Set Z = newSet();
+    for(int i = 0; i < X.numElements; i++) {
+        Z.elems[i] = X.elems[i];
+    }
+    Z.numElements = X.numElements;
+    int currIndex = X.numElements;
+    for(int i = 0; i < Y.numElements; i++) {
+        if(!isElemPresent(Z, Y.elems[i])) {
+            Z.elems[currIndex] = Y.elems[i];
+            Z.numElements = Z.numElements + 1;
+            currIndex++;
+            //currIndex = currIndex + 1;
+        }   
+    }
+    return Z;
+}
+
+bit isEqual(Set X, Set Y) {
+    if(X.numElements != Y.numElements) {
+        return false;
+    }
+    for(int i = 0; i < X.numElements; i++) {
+        if(!isElemPresent(Y, X.elems[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void dummy(int[N] elemsT, int[N] elemsS, int a) {
+
+}
+
+generator bit cond(int a, Set S, Set T) {
+    return {| (!)?(isElemPresent((S|T), a)) | ?? |};
+}
+
+void sketch(int[N] elemsT, int[N] elemsS, int a) implements dummy{
+    Set T = newSet();
+    for(int i = 0; i < N; i++) {
+        T = addElement(T, elemsT[i]);
+    }
+    Set T_ = addElement(T, a);
+    Set S = newSet();
+    for(int i = 0; i < N; i++) {
+        S = addElement(S, elemsS[i]);
+    }
+    Set C = newSet();
+    C = unionSet(T, S);
+    if(cond(a, S, T)) {
+        C = {| addElement(C, a) | C | subElement(C, a) |};
+    }
+    Set R = unionSet(T_, S);
+    assert isEqual(C, R);
 }

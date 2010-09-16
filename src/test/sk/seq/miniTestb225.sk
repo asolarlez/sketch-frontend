@@ -11,7 +11,7 @@ bit[N] s(bit[N][N] rels, int x) {
 }
 
 bit[N] sPlus(bit[N][N] rels, int x) {
-    bit[N] result;
+    bit[N] result=0; // Without setting rhs=0, this should give an error.
     bit[N] temp;
     temp = s(rels, x);
     result = result | temp;

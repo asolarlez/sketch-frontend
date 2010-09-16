@@ -4,7 +4,7 @@ pragma options "--bnd-unroll-amnt 20 --bnd-inbits 5 --debug-verbosity 4  --bnd-i
 
 int spec (int x)
 {
-  return 0;
+  return x;
 }
 
 generator int F(int x)
@@ -22,14 +22,14 @@ void checkEven(int x)
 
 void check1(int x, int ans)
 {
-  assert(1==1);
+  assert(ans==x);
 }
 
 int main(int x) implements spec
 {
   int answer = F(x);
   check1(x,answer);
-  checkEven(x);
+  checkEven(x*2);
   return answer;
 }
 
