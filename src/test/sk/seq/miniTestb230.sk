@@ -1,0 +1,108 @@
+//===========PRAGMA OPTIONS=============//
+pragma options "--bnd-inline-amnt 1 --bnd-unroll-amnt
+5 --debug-verbosity 4 --bnd-inbits 1";
+
+//==========PROBLEM STATEMENT==========//
+//Input: A1[Int]
+//Output: decide if our grammar:
+//S=01 | 10
+//0=01
+//1=10
+//can generate it...
+
+//==========USER ASSUMPTIONS===========//
+//User can code up this function:
+//getParent(a,b)
+//that returns c if grammar has c->ab
+//that returns some junk if grammar does'nt have anything that goes to ab
+//we'll use the existing popular O(n^3) template:
+//F[i][j] =depend_on= for all k s.t. i<k<j, the pairs
+//(F[i][k], F[k][j])
+
+//===========OUR GRAMMAR==============//
+int[6] grammar = {0,0,1,1,1,0};
+
+//===========USER FUNCTIONS=============//
+int getParent (int x, int y)
+{
+  //case where x is 0 y is 1
+  if (grammar[1] == x && grammar[2] == y) return 0;
+  //case where x is 1 y is 0
+  else if (grammar[4] == x && grammar[5] == y) return 1;
+  //all other cases, return a garbage
+   else return 3;
+}
+
+//==========CHEATING SPEC HAHA=========//
+int S = 5;
+
+bit spec(int[S] A1)
+{
+  return det_F(A1);
+}
+
+bit det_F(int[S] A1)
+{
+  Grid g = new Grid();
+  for (int a = 0; a < S; a++) {
+      for (int b = 0; b < S; b++) {
+          g.data[a][b] = 0;
+      }
+  }
+  for (int i = 0; i < S; i++)
+  {
+    int toPut = A1[i];
+    putVal(i,i,toPut,g);
+  }
+  //length i from 1 to S-1
+  for (int i = 1; i < S; i++)
+  {
+    //pairs of (startPos, endPos) that are i apart
+    for (int j = 0; j+i < S; j++)
+    {
+      det_activate(j,j+i,g);
+    }
+  }
+  int startSymbol = getVal(0,S-1,g);
+  if (startSymbol != 3) return 1;
+  else return 0;
+}
+
+void det_activate(int x, int y, Grid g)
+{
+  int aggre = 3;
+  for (int i = x; i < y; i++)
+  {
+    int first = getVal(x,i,g);
+    int second = getVal(i+1,y,g);
+    int tryy = getParent(first, second);
+    if (tryy != 3)
+    {
+      aggre = tryy;
+    }
+  }
+  putVal(x,y,aggre,g);
+}
+
+//==========ELEMENTARY GRID STUFF=========//
+
+struct Grid
+{
+  int[S][S] data;
+}
+
+int getVal(int x, int y, Grid g)
+{
+  return g.data[x][y];
+}
+
+void putVal(int x, int y, int val, Grid g)
+{
+  g.data[x][y] = val;
+}
+
+//==============TEMPLATE FUNCTIONS=============//
+bit main(int[S] A1) implements spec
+{
+  return det_F(A1);
+}

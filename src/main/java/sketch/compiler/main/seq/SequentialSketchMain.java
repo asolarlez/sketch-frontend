@@ -222,7 +222,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void lowerIRToJava()
 	{
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
-
+		
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
 		
@@ -238,9 +238,9 @@ public class SequentialSketchMain extends CommonSketchMain
 		// dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
-		//dump (prog, "After eliminating structs:");
-		prog = (Program)prog.accept(new EliminateMultiDimArrays());
-		//dump (prog, "After second elimination of multi-dim arrays:");
+		
+		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen));
+		
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		//dump (prog, "Extract Vectors in Casts:");
 		prog = (Program)prog.accept(new ExtractVectorsInCasts(varGen));
@@ -373,8 +373,10 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		lprog.accept(new PerformFlowChecks());
 		
-		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
-        
+		
+		lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
+		
+		
 		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(lprog)));
 		
@@ -403,7 +405,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void testProg(Program p){
 	    dump(p, "Hehehe");
 	    p = (Program)p.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
-	    p = (Program)p.accept(new EliminateMultiDimArrays());
+	    p = (Program)p.accept(new EliminateMultiDimArrays(varGen));
 	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
             new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
                     null, System.out

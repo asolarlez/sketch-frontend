@@ -34,6 +34,13 @@ public class ExprConstInt extends ExprConstant
     public static final ExprConstInt zero = new ExprConstInt(0);
     public static final ExprConstInt one = new ExprConstInt(1);
     public static final ExprConstInt minusone = new ExprConstInt(-1);
+    
+    public static ExprConstInt createConstant(int i){
+        if(i == 0){ return zero; }
+        if(i == -1){ return minusone; }
+        if(i == 1){ return one; }
+        return new ExprConstInt((FENode)null, i);
+    }
 
     /** Create a new ExprConstInt with a specified value. */
     public ExprConstInt(FENode context, int val)

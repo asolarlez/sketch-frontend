@@ -1,122 +1,158 @@
-#define SETBOUND 7 
-#define N 3
 
-pragma options "--bnd-inbits 3 --debug-verbosity 4 --bnd-heap-size 25";
-
-struct Set {
-    int numElements;
-    int[SETBOUND] elems;
-}
-
-Set newSet() {
-    Set X = new Set();
-    X.numElements = 0;
-    return X;
-}
-
-Set addElement(Set X, int y) {
-    Set Z = newSet();
-    for(int i = 0; i < X.numElements; i++) {
-        Z.elems[i] = X.elems[i];
-    }
-    Z.numElements = X.numElements;
-    for(int i = 0; i < Z.numElements; i++) {
-        if(Z.elems[i] == y) {
-            return Z;
+class VarDB{ // One copy of this object per thread.
+    int* localDB; //this one is local
+    int* globalDB; //this buffer is shared among all threads
+    
+    
+    int setValue(int varid, int val){
+        localDB[varid] = val;
+        if(globalDB[varid]==UNSET){
+            globalDB[varid] = val;
+            return NOCONFLICT;
         }
-    }   
-    Z.elems[Z.numElements] = y;
-    //Z.numElements = Z.numElements + 1;
-    Z.numElements++;
-    return Z;
-}
-
-Set subElement(Set X, int y) {
-    Set Z = newSet();
-    for(int i = 0; i < X.numElements; i++) {
-        Z.elems[i] = X.elems[i];
-    }
-    Z.numElements = X.numElements;
-    for(int i = 0; i < Z.numElements; i++) {
-        if(Z.elems[i] == y) {
-            Z.elems[i] = Z.elems[Z.numElements - 1];
-            Z.numElements = Z.numElements - 1;
-            return Z;
+        if(value(val)==value(globalDB[varid])){            
+            return NOCONFLICT;
         }
-    }   
-    return Z;
+        return globalDB[varid]; // there is a conflict.
+    }    
 }
 
-bit isSetEmpty(Set X) {
-    return (X.numElements == 0);
-}
-
-bit isElemPresent(Set X, int y) {
-    for(int i = 0; i < X.numElements; i++) {
-        if(X.elems[i] == y) {
-            return true;
+class VarDB{
+    int getValue(int varid){
+        if(localDB[varid] == UNSET){
+            return globalDB[varid];
+        }else{
+            return localDB[varid];
         }
-    }   
-    return false;
+    }    
 }
 
-int cardiniality(Set X) {
-    return X.numElements;
+
+
+
+int N = 6;
+int SR = (1 + N + 3);
+int STEPS = 8;
+int NP = 15;
+
+int[N] CAS(int[N] input, int a, int b) {
+    int[N] output = input;
+    if ((a <= b) && (output[a] > output[b])) {
+        output[b] = input[a];
+        output[a] = input[b];
+    }
+    return output;
 }
 
-Set unionSet(Set X, Set Y) {
-    Set Z = newSet();
-    for(int i = 0; i < X.numElements; i++) {
-        Z.elems[i] = X.elems[i];
+int[N] CASR(int[N] input, int a, int b) {
+    int[N] output = input;
+    if ((a <= b) && (output[a] < output[b])) {
+        output[b] = input[a];
+        output[a] = input[b];
     }
-    Z.numElements = X.numElements;
-    int currIndex = X.numElements;
-    for(int i = 0; i < Y.numElements; i++) {
-        if(!isElemPresent(Z, Y.elems[i])) {
-            Z.elems[currIndex] = Y.elems[i];
-            Z.numElements = Z.numElements + 1;
-            currIndex++;
-            //currIndex = currIndex + 1;
-        }   
-    }
-    return Z;
+    return output;
 }
 
-bit isEqual(Set X, Set Y) {
-    if(X.numElements != Y.numElements) {
-        return false;
-    }
-    for(int i = 0; i < X.numElements; i++) {
-        if(!isElemPresent(Y, X.elems[i])) {
-            return false;
+bit[N][N] b_CAS(bit[N][N] input, int a, int b) {
+    bit[N][N] output = input;
+    output[a] = output[a] | output[b];
+    output[b] = output[a] | output[b];
+    return output;
+}
+
+// each call should have a fixed length parameter
+generator int[N] sortAtom(int[N] input, int length, int index, bit reverse, int[3] stars) {
+    int[N] output = input;
+    for (int x = index; x < index + (length / 2); x++) {
+        int expr = (stars[0] != 0 ? x + stars[1] : x - stars[2]);
+        if (reverse) {
+            output = CAS(output, x, expr);
+        } else {
+            output = CASR(output, x, expr);
         }
     }
-    return true;
+    return output;
 }
 
-void dummy(int[N] elemsT, int[N] elemsS, int a) {
-
+// each call should have a fixed length parameter
+generator bit[N][N] b_sortAtom(bit[N][N] input, int length, int index, int[3] stars) {
+    bit[N][N] output = input;
+    for (int x = index; x < index + (length / 2); x++) {
+        int expr = (stars[0] != 0 ? x + stars[1] : x - stars[2]);
+        output = b_CAS(output, x, expr);
+    }
+    return output;
 }
 
-generator bit cond(int a, Set S, Set T) {
-    return {| (!)?(isElemPresent((S|T), a)) | ?? |};
+generator int[N] sortEntireWithLength(int[N] input, int length, int[SR-1] stars) {
+    int[N] output = input;
+    assert (length > 0 && length <= N);
+    int offset = 0;
+    int idx = 0;
+    bit[N] harr = {stars[0] != 0, stars[1] != 0, stars[2] != 0, stars[3] != 0};
+    while (offset + length <= N) {
+        output = sortAtom(output, length, offset, harr[idx], stars[4::3]);
+        offset += length;
+        idx += 1;
+    }
+    return output;
 }
 
-void sketch(int[N] elemsT, int[N] elemsS, int a) implements dummy{
-    Set T = newSet();
-    for(int i = 0; i < N; i++) {
-        T = addElement(T, elemsT[i]);
+generator bit[N][N] b_sortEntireWithLength(bit[N][N] input, int length, int[SR-1] stars) {
+    bit[N][N] output = input;
+    int offset = 0;
+    while (offset + length <= N) {
+        output = b_sortAtom(output, length, offset, stars[4::3]);
+        offset += length;
     }
-    Set T_ = addElement(T, a);
-    Set S = newSet();
-    for(int i = 0; i < N; i++) {
-        S = addElement(S, elemsS[i]);
+    return output;
+}
+
+harness int[N] main(int[N] input) {
+    int[N] output = input;
+
+    int[STEPS * SR] holes = ??;
+    int[NP] points = ??;
+    int[STEPS * SR] point_belongs_to = ??;
+    for (int a = 0; a < STEPS * SR; a++) {
+        assert point_belongs_to[a] < NP;
+        assert holes[a] == (points[point_belongs_to[a]]);
     }
-    Set C = newSet();
-    C = unionSet(T, S);
-    if(cond(a, S, T)) {
-        C = {| addElement(C, a) | C | subElement(C, a) |};
+
+    output = sortEntireWithLength(output, holes[SR * 0], holes[SR * 0 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 1], holes[SR * 1 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 2], holes[SR * 2 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 3], holes[SR * 3 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 4], holes[SR * 4 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 5], holes[SR * 5 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 6], holes[SR * 6 + 1::(SR-1)]);
+    output = sortEntireWithLength(output, holes[SR * 7], holes[SR * 7 + 1::(SR-1)]);
+
+    bit[N][N] entropyValues = {
+        { 1, 0, 0, 0, 0, 0 },
+        { 0, 1, 0, 0, 0, 0 },
+        { 0, 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 0, 1 } };
+
+    bit[N][N] entropyOut = b_sortEntireWithLength(entropyValues, holes[SR * 0], holes[SR * 0 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 1], holes[SR * 1 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 2], holes[SR * 2 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 3], holes[SR * 3 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 4], holes[SR * 4 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 5], holes[SR * 5 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 6], holes[SR * 6 + 1::(SR-1)]);
+        entropyOut = b_sortEntireWithLength(entropyOut, holes[SR * 7], holes[SR * 7 + 1::(SR-1)]);
+
+    // entropy check
+    for (int a = 0; a < N; a++) {
+        assert entropyOut[a] == { 1, 1, 1, 1, 1, 1 };
     }
-    Set R = unionSet(T_, S);
-    assert isEqual(C, R);
+
+    // is sorted
+    for (int a = 0; a < N - 1; a++) {
+        assert output[a] <= output[a + 1];
+    }
+    return output;
 }

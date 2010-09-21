@@ -192,7 +192,7 @@ public class ParallelSketchMain extends SequentialSketchMain {
 		//dump (lprog, "tifs:");
 		lprog = (Program)lprog.accept(new TypeInferenceForStars());
 		//dump (lprog, "tifs:");
-		lprog = (Program) lprog.accept (new EliminateMultiDimArrays ());
+		lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
 		//dump (lprog, "After first elimination of multi-dim arrays:");
 		lprog = (Program) lprog.accept (new EliminateConditionals(varGen, TypePrimitive.nulltype));
 
