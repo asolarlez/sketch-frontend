@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -190,6 +192,24 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 			prod = new ExprBinary (prod, ExprBinary.BINOP_MUL, prod, e);
 		return prod;
 	}
+	
+	
+	   @Override
+	    public Object visitParameter(Parameter par){
+	        Type t = (Type) par.getType().accept(this);
+
+	        symtab.registerVar(par.getName(),
+	                actualType(par.getType()),
+	                par,
+	                SymbolTable.KIND_FUNC_PARAM);
+	        
+	        if( t == par.getType()){
+	            return par;
+	        }else{
+	            return new Parameter(t, par.getName(), par.getPtype() );
+	        }
+	    }
+	
 
 	/**
 	 * Currently, we only support multi-dimensional indexes of the following
