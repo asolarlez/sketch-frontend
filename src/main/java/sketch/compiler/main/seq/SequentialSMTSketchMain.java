@@ -313,7 +313,7 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 		
 		prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 //		dump (prog, "After eliminating structs:");
-		prog = (Program) prog.accept(new EliminateMultiDimArrays());
+		prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
 //		dump (prog, "After second elimination of multi-dim arrays:");
 		prog = (Program) prog.accept(new ExtractRightShifts(varGen));
 //		dump (prog, "After ExtractRightShifts");
@@ -410,7 +410,7 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 		
 		lprog.accept(new PerformFlowChecks());
 		
-		lprog = (Program) lprog.accept(new EliminateMultiDimArrays());
+		lprog = (Program) lprog.accept(new EliminateMultiDimArrays(varGen));
 //		dump (lprog, "After first elimination of multi-dim arrays:");
         lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(lprog)));

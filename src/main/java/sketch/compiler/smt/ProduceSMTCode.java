@@ -112,7 +112,11 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
         // a : ARRAY BITVECTOR(32) OF BITVECTOR(32);     // a is a global input variable
         // a_0 = a;    // a_0 is a local variable
 		for (Parameter param : func.getParams()) {
-			state.varDeclare(param.getName(), param.getType());
+		    if(param.isParameterOutput()){
+		        state.outVarDeclare(param.getName(), param.getType());
+		    }else{
+		        state.varDeclare(param.getName(), param.getType());
+		    }
 			if (param.isParameterInput()) {
 
 				NodeToSmtValue inputVal;

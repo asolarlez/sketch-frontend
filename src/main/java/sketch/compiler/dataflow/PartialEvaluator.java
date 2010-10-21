@@ -702,6 +702,9 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitFunction(Function func)
     {
+        
+        state.beginFunction(func.getName());
+        
         List<Parameter> params = func.getParams();
         List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
         for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
@@ -713,7 +716,7 @@ public class PartialEvaluator extends FEReplacer {
         }
 
 
-        state.beginFunction(func.getName());
+        
 
         Statement newBody = (Statement)func.getBody().accept(this);
 
@@ -1131,8 +1134,8 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitStmtReturn(StmtReturn stmt)
     {
-        assert false :"This opperation should not appear here!!";
-        return null;
+        state.freturn();        
+        return super.visitStmtReturn(stmt);
     }
 
     public Object visitTypeArray(TypeArray t) {
@@ -1382,28 +1385,30 @@ public class PartialEvaluator extends FEReplacer {
             String formalParamName = formalParam.getName();
 
             Type type = (Type) formalParam.getType().accept(this);
-
-            state.varDeclare(formalParamName, type);
+            
 
             switch(formalParam.getPtype()){
-                case Parameter.REF:
+                case Parameter.REF:{
+                        state.outVarDeclare(formalParamName, type);
+                        state.setVarValue(formalParamName, actualParamValue);
+                        Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
+                        addStatement((Statement)varDecl);
+                        break;
+                    }
+                    
                 case Parameter.IN:{
+                        state.varDeclare(formalParamName, type);
                         state.setVarValue(formalParamName, actualParamValue);
                         Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
                         addStatement((Statement)varDecl);
                         break;
                     }
                 case Parameter.OUT:{
-                        Expression initVal = null;
-
-                        if(type.isStruct()){
-                            initVal = ExprNullPtr.nullPtr;
-                        }else{
-                            initVal = ExprConstInt.zero;
-                        }
-
+                        state.outVarDeclare(formalParamName, type);
+                        Expression initVal = type.defaultValue();                        
                         Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), initVal);
                         addStatement((Statement)varDecl);
+                        break;
                     }
             }
 

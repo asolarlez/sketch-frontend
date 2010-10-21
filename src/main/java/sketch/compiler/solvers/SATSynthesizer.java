@@ -70,6 +70,7 @@ public class SATSynthesizer implements Synthesizer {
 	Set<Object> globalTags;
 	HashMap<String, Type> varTypes = new HashMap<String, Type>();
 
+	TempVarGen varGen;
 	ExprVar assumeFlag = new ExprVar((FENode)null, "_AF");
 
 	/**
@@ -109,6 +110,7 @@ public class SATSynthesizer implements Synthesizer {
 
 	public SATSynthesizer(Program prog_p, SequentialSketchOptions options, RecursionControl rcontrol, TempVarGen varGen) {
 		this.options = options;
+		this.varGen = varGen;		
         solver = new InteractiveSATBackend(options, rcontrol, varGen);
 		
 		
@@ -1345,7 +1347,7 @@ public class SATSynthesizer implements Synthesizer {
 
 		mergeWithCurrent((CEtrace)counterExample);
 
-		current = (Program)current.accept(new EliminateMultiDimArrays());
+		current = (Program)current.accept(new EliminateMultiDimArrays(varGen));
 /*		if (reallyVerbose ())
 			current.accept(new SimpleCodePrinter().outputTags()); */ 
 		boolean tmp = solver.partialEvalAndSolve(current);

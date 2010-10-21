@@ -21,6 +21,7 @@ import sketch.compiler.dataflow.DataflowWithFixpoint;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.spin.IdentifyModifiedVars;
 
 /**
@@ -128,6 +129,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 if(inlineStatics){
                     assert fun.isStatic() : " If you are in inlinestatics mode, you should only have statics or uninterpreted functions.";
                 }
+                
+                fun = (Function)fun.accept(new EliminateReturns());
+                
                 if (rcontrol.testCall(exp)) {
                     /* Increment inline counter. */
                     rcontrol.pushFunCall(exp, fun);

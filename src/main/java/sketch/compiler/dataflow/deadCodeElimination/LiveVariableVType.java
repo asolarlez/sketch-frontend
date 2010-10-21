@@ -32,7 +32,7 @@ public class LiveVariableVType extends abstractValueType {
 			}
 			assert false;			
 		}		
-		return null;
+		return lv;
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class LiveVariableVType extends abstractValueType {
 		if( val instanceof LiveVariableAV){
 			LiveVariableAV lv = (LiveVariableAV) val;
 			if(lv.mstate != null  ){
-				lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+				lv.mstate.setVarValueLight(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
 			}			
 		}
 
@@ -188,17 +188,37 @@ public class LiveVariableVType extends abstractValueType {
 			if( cond instanceof LiveVariableAV){
 				LiveVariableAV lv = (LiveVariableAV) cond;
 				if(lv.mstate != null){
-					lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+					lv.mstate.setVarValueLight(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
 				}
 			}
 		}
+				
 		
-		assert vtrue instanceof LiveVariableAV && vfalse instanceof LiveVariableAV ;
-		LiveVariableAV vt = ((LiveVariableAV)vtrue);
-		LiveVariableAV vf = ((LiveVariableAV)vfalse);
-		if( vt.getLiveness() == LiveVariableAV.DEAD && 
-			 vf.getLiveness() == LiveVariableAV.DEAD){
-			if(vt.hasBeenLive() || vf.hasBeenLive()){
+		boolean vtdead, vthb, vfdead, vfhb;
+		if(vtrue instanceof LiveVariableAV){
+		    LiveVariableAV vt = ((LiveVariableAV)vtrue);
+		    vtdead =vt.getLiveness() == LiveVariableAV.DEAD;
+		    vthb = vt.hasBeenLive();
+		}else{
+		    assert vtrue instanceof joinAV;
+		    vtdead = ((joinAV)vtrue).liveness == LiveVariableAV.DEAD;
+		    vthb = false;
+		}
+		
+		if(vfalse instanceof LiveVariableAV){
+            LiveVariableAV vf = ((LiveVariableAV)vfalse);
+            vfdead =vf.getLiveness() == LiveVariableAV.DEAD;
+            vfhb = vf.hasBeenLive();
+        }else{
+            assert vfalse instanceof joinAV;
+            vfdead = ((joinAV)vfalse).liveness == LiveVariableAV.DEAD;
+            vfhb = false;
+        }
+		
+				
+		if( vtdead && 
+			 vfdead){
+			if(vthb || vfhb){
 				return new joinAV(LiveVariableAV.HBLDEAD);	
 			}
 			return new joinAV(LiveVariableAV.DEAD);

@@ -2,7 +2,6 @@ package sketch.compiler.dataflow.cflowChecks;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
@@ -11,6 +10,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
@@ -61,9 +61,12 @@ public class PerformFlowChecks extends PartialEvaluator {
      @Override
      public Object visitStmtReturn(StmtReturn stmt)
         {           
-            CfcValue rhs = null;            
-            rhs = (CfcValue) stmt.getValue().accept(this);
-            if(! rhs.maybeinit()){ report(stmt,  "There is a variable in the return expression that may not have been initialized. All variables must be statically initialized."); }
+            CfcValue rhs = null;      
+            Expression e = stmt.getValue();
+            if(e != null){
+                rhs = (CfcValue) e.accept(this);
+                if(! rhs.maybeinit()){ report(stmt,  "There is a variable in the return expression that may not have been initialized. All variables must be statically initialized."); }
+            }
             return super.visitStmtReturn(stmt);
         }
                 
@@ -102,7 +105,7 @@ public class PerformFlowChecks extends PartialEvaluator {
      
     @Override
     public Object visitParameter(Parameter param){
-        state.varDeclare(param.getName() , param.getType());
+        state.outVarDeclare(param.getName() , param.getType());
         if(param.isParameterInput()){
             state.setVarValue(param.getName(), Cfctype.allinit);
         }
@@ -117,12 +120,21 @@ public class PerformFlowChecks extends PartialEvaluator {
     
     
     public Object visitFunction(Function func) {
-        Object o = null;
-        o = super.visitFunction(func);
+        state.beginFunction(func.getName());
+        
+        
+        List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
+        for(Parameter param : func.getParams() ){            
+            Parameter p  = (Parameter) param.accept(this);
+            if(isReplacer){
+                nparams.add(p);
+            }           
+        }
+        
+        Statement newBody = (Statement)func.getBody().accept(this);
 
-        List<Parameter> params = func.getParams();
-        for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
-            Parameter param = it.next();
+        
+        for(Parameter param : func.getParams() ){ 
             if (!param.isParameterInput()) {
                 CfcValue v = (CfcValue) state.varValue(param.getName());
                 if (!v.maybeinit()) {
@@ -131,7 +143,16 @@ public class PerformFlowChecks extends PartialEvaluator {
                 }
             }
         }
-        return o;
+        
+        state.endFunction();
+
+        return isReplacer? new Function(func, func.getCls(),
+                            func.getName(), func.getReturnType(),
+                            nparams, func.getSpecification(), newBody) : null;
+        
+        
+        
+                
     }
     
     protected List<Function> functionsToAnalyze(StreamSpec spec){

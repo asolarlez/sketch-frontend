@@ -72,6 +72,10 @@ public class StmtReturn extends Statement
         return v.visitStmtReturn(this);
     }
     public String toString(){
-    	return "return " + value;
+        if(value != null){
+            return "return " + value + ";";
+        }else{
+            return "return;";
+        }
     }
 }

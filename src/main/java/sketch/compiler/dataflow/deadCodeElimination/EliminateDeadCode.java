@@ -8,6 +8,7 @@ import java.util.List;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTprint;
@@ -66,6 +67,10 @@ public class EliminateDeadCode extends BackwardDataflow {
 
     public Object visitStmtExpr(StmtExpr stmt) {
         if (stmt.getExpression() != null) {
+            Expression e = stmt.getExpression();
+            if(e instanceof ExprConstInt || e instanceof ExprVar){
+                return null;
+            }            
             abstractValue val = (abstractValue) stmt.getExpression().accept(this);
             enliven(val);
         }
@@ -79,7 +84,7 @@ public class EliminateDeadCode extends BackwardDataflow {
         if (val instanceof LiveVariableAV) {
             LiveVariableAV lv = (LiveVariableAV) val;
             if (lv.mstate != null) {
-                lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV(
+                lv.mstate.setVarValueLight(lv.mstate.untransName(lv.name), new joinAV(
                         LiveVariableAV.LIVE));
             }
         }
@@ -119,11 +124,15 @@ public class EliminateDeadCode extends BackwardDataflow {
 
 	public Object visitFunction(Function func)
 	{
+	    
+	    
+	    state.beginFunction(func.getName());
+	    
 		List<Parameter> params = func.getParams();
 		List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
 		for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
 			Parameter param = it.next();
-			state.varDeclare(param.getName() , param.getType());
+			state.outVarDeclare(param.getName() , param.getType());
 			if( isReplacer){
 				Type ntype = (Type)param.getType().accept(this);
 				nparams.add( new Parameter(ntype, transName(param.getName()), param.getPtype()));
@@ -134,7 +143,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 		}
 
 
-		state.beginFunction(func.getName());
+		
 
 		Statement newBody = (Statement)func.getBody().accept(this);
 

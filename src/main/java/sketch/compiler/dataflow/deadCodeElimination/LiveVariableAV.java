@@ -79,7 +79,7 @@ public class LiveVariableAV extends abstractValue {
         if( v instanceof LiveVariableAV){
             LiveVariableAV lv = (LiveVariableAV) v; 
             if(lv.mstate != null  ){
-                mstate.setVarValue(mstate.untransName(lv.name), new joinAV(LIVE));
+                mstate.setVarValueLight(mstate.untransName(lv.name), new joinAV(LIVE));
             }
         }
         if( v instanceof LVSet){

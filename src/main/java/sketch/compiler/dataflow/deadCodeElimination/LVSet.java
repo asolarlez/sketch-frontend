@@ -53,7 +53,7 @@ public class LVSet extends abstractValue {
 		while(it.hasNext()){
 			LiveVariableAV lv = it.next();
 			if(lv.mstate != null){
-				lv.mstate.setVarValue(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
+				lv.mstate.setVarValueLight(lv.mstate.untransName(lv.name), new joinAV( LiveVariableAV.LIVE));
 			}
 		}
 	}

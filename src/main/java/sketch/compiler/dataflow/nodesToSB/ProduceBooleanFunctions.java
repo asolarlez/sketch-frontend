@@ -120,8 +120,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             out.print(printType(param.getType()) + " ");
             String lhs = param.getName();
             
-            
-            state.varDeclare(lhs , param.getType());
+            if(param.isParameterOutput()){
+                state.outVarDeclare(lhs , param.getType());
+            }else{
+                state.varDeclare(lhs , param.getType());
+            }
             IntAbsValue inval = (IntAbsValue)state.varValue(lhs);
             
             if( param.getType() instanceof TypeArray ){
@@ -242,20 +245,21 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         opsizes = new ArrayList<Integer>();
         opnames = new ArrayList<String>();
         
+        state.beginFunction(func.getName());
         doParams(func.getParams());
 
         
         ((NtsbVtype)this.vtype).out.println("{");               
-        state.beginFunction(func.getName());
+        
         
         Statement newBody = (Statement)func.getBody().accept(this);
         
-        state.endFunction();
+        
         
         doOutParams(func.getParams());
         
         ((NtsbVtype)this.vtype).out.println("}");
-        
+        state.endFunction();
         
         opsizes = tmpopsz;
         opnames = tmpopnm;

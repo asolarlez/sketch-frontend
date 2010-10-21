@@ -1,0 +1,20 @@
+harness void main(int[5] x){
+    int t;
+    helper(x, t);
+        
+    assert x[t] < 5;    
+}
+
+void helper(ref int[5]x, ref int t){
+    if(t < 0){ return; }
+    t = x[0];
+    if(t >=5) t = 3;    
+    x[t] = t;
+    int i=0;
+    if(??){ return; } 
+    repeat(??){        
+        x[i] = ??;
+        i = i+1;
+    }
+    assert x[0] == 0;
+}

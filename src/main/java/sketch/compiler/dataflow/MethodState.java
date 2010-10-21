@@ -1,14 +1,18 @@
 package sketch.compiler.dataflow;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 
 
@@ -21,7 +25,27 @@ public class MethodState {
         protected abstractValue condition;
         protected Map<String, varState> deltas;
         protected int methodBoundary = 0;
+        varState rvf = null;
 
+        public void freturn(abstractValue v){
+            if(rvf == null){
+                rvf = MethodState.this.getRvflag().getDeltaClone(vtype);
+            }
+            rvf.update(v, vtype);
+        }
+        
+        public varState getRvflag(){
+            if(rvf != null){
+                return rvf;
+            }else{
+                if(kid != null){
+                    return kid.getRvflag();
+                }else{
+                    return MethodState.this.rvflag;
+                }
+            }
+        }
+        
         public void pushMethodBoundary(){
             methodBoundary++;
         }
@@ -160,7 +184,10 @@ public class MethodState {
     }
 
     public String untransName(String nm){
-        String otpt = varTranslator.untransName(nm);
+        if(nm.equals(rvname)){ 
+            return nm; 
+        }
+        String otpt = varTranslator.untransName(nm);        
         // System.out.println(nm + " = " +  otpt);
         return  otpt;
     }
@@ -174,6 +201,7 @@ public class MethodState {
     private void UTsetVarValue(String var, abstractValue val){
         varState tv =  vars.get(var);
         assert(tv != null) : ( " This should never happen, because before seting the value of "+ var + ", you should have requested a LHS name. Or, alternatively, if this is a ++ increment, then you can't increment if it doesn't have an initial value, in which case tv would also not be null.");
+                        
         if(changeTracker != null){
             changeTracker.setVarValue(var, val);
         }else{
@@ -181,6 +209,18 @@ public class MethodState {
         }
     }
 
+    public void freturn(){
+        freturn(vtype.CONST(1));        
+    }
+    
+    public void freturn(abstractValue v){
+        if(changeTracker != null){
+            changeTracker.freturn(v);
+        }else{
+            rvflag.update(v, vtype);            
+        }
+    }
+    
     private void UTsetVarValue(String var, abstractValue idx, abstractValue val){
         if(changeTracker != null){
             changeTracker.setVarValue(var, idx, val);
@@ -211,6 +251,14 @@ public class MethodState {
     }
 
 
+    public varState getRvflag(){
+        if(changeTracker == null){
+            return rvflag;
+        }else{
+            return changeTracker.getRvflag();
+        }
+    }
+    
 
 
     public void procChangeTrackersConservative (ChangeTracker ch1){
@@ -239,6 +287,10 @@ public class MethodState {
             mmap.put(me.getKey(), merged);
         }
 
+        if(ch1.rvf != null){
+            this.freturn(this.getRvflag().condjoin(ch1.condition,ch1.rvf , vtype).state(vtype));
+        }
+        
         for(Entry<String, varState> me : mmap.entrySet()){
             varState merged = me.getValue();
             if( merged.isArr() ){
@@ -271,14 +323,30 @@ public class MethodState {
             }
         }
         //Now, at this point, we have removed from ch2 all the items
-        //that were also in ch1. So all the ones that are left in ms2
-        //Are the ones that are in ms2 alone.
+        //that were also in ch1. So all the ones that are left in ch2
+        //Are the ones that are in ch2 alone.
         for(Entry<String, varState> me : ch2.deltas.entrySet()){
             varState av2 = me.getValue();
             varState oldstate = this.UTvarState(me.getKey());
             varState merged = oldstate.condjoin(ch2.condition, av2, vtype);
             mmap.put(me.getKey(), merged);
         }
+        
+        
+        if(ch1.rvf != null){
+            if(ch2.rvf == null){
+                this.freturn(this.getRvflag().condjoin(ch1.condition,ch1.rvf , vtype).state(vtype));
+            }else{
+                this.freturn(ch2.rvf.condjoin(ch1.condition, ch1.rvf, vtype).state(vtype));
+            }            
+        }else{
+            if(ch2.rvf != null){
+                this.freturn(this.getRvflag().condjoin(ch2.condition,ch2.rvf , vtype).state(vtype));
+            }
+        }
+        
+        
+        
         for(Entry<String, varState> me : mmap.entrySet()){
             varState merged = me.getValue();
             if( merged.isArr() ){
@@ -360,7 +428,7 @@ public class MethodState {
             nestCond = vtype.CONST(0);
         }
         if(tmpTracker.kid == null){
-            return nestCond;
+            return vtype.or(nestCond, getRvflag().state(vtype));
         }else{
             return vtype.or(nestCond, assertHelper(tmpTracker.kid, isSuper) );
         }       
@@ -371,6 +439,10 @@ public class MethodState {
         
         if(changeTracker != null && isSuper != StmtAssert.UBER){        
             val = vtype.or(val, assertHelper(changeTracker, isSuper==StmtAssert.SUPER) );
+        }else{
+            if(isSuper != StmtAssert.UBER){
+                val = vtype.or(val, getRvflag().state(vtype) );
+            }
         }
 
         /*
@@ -388,8 +460,64 @@ public class MethodState {
         vtype.Assert(val, msg);
     }
 
+
+    
+    public void setVarValueLight(String var, abstractValue val){
+        if(var.equals(rvname)){
+            freturn(val);
+            return;
+        }
+       var = this.transName(var);       
+       UTsetVarValue(var,val);
+    }
+    
+    
+    public void setVarValue(String var, abstractValue val){
+        if(var.equals(rvname)){
+            freturn(val);
+            return;
+        }
+       var = this.transName(var);
+       if(cvmap.contains(var)){
+           if(val.isVect()){
+               val = getVecTernaryValue(var, val);
+           }else{
+               val = vtype.ternary(getRvflag().state(vtype), UTvarValue(var), val) ;
+           }
+       }
+       UTsetVarValue(var,val);
+    }
+    
+    private abstractValue getVecTernaryValue(String var, abstractValue val){
+        List<abstractValue> lv = val.getVectValue();
+        abstractValue av = UTvarValue(var);
+        List<abstractValue> ov = av.getVectValue();
+        assert av.isVect() : "NYI";
+        assert lv.size() == ov.size() : "NYI";
+        List<abstractValue> tt = new ArrayList<abstractValue>(ov.size());
+        Iterator<abstractValue> lvit = lv.iterator();
+        for(abstractValue ovit : ov){
+            assert lvit.hasNext() : "UNREACHABLE";
+            tt.add(vtype.ternary(getRvflag().state(vtype), ovit, lvit.next()));                    
+        }
+        return vtype.ARR(tt);
+    }
+    
     public void setVarValue(String var, abstractValue idx, abstractValue val){
         var = this.transName(var);
+        if(cvmap.contains(var)){
+            if(val.isVect()){
+                assert idx == null : "NYI";
+                val = getVecTernaryValue(var, val);
+            }else{
+                if(idx == null){
+                    val = vtype.ternary(getRvflag().state(vtype), UTvarValue(var), val) ;
+                }else{
+                    abstractValue oldv = UTvarValue(var);
+                    val = vtype.ternary(getRvflag().state(vtype), vtype.arracc(oldv, idx, null, true) , val) ;
+                }
+            }
+        }
         if( idx != null)
             UTsetVarValue(var, idx, val);
         else
@@ -486,6 +614,16 @@ public class MethodState {
         varState    tv = vtype.cleanState(newname, t, this);
         vars.put(newname, tv);
     }
+    
+    public void outVarDeclare(String var, Type t){
+//      System.out.println("DECLARED " + var);
+       assert var != null : "NOO!!";
+       String newname = varTranslator.varDeclare(var);
+       assert !vars.containsKey(newname): "You are redeclaring variable "  + var + ":" + t + "   " + newname;
+       varState    tv = vtype.cleanState(newname, t, this);
+       vars.put(newname, tv);
+       cvmap.add(newname);
+   }
 
 
     public abstractValue varValue(String var){
@@ -501,10 +639,10 @@ public class MethodState {
         return vs.getType();
     }
 
-    public void setVarValue(String var, abstractValue val){
-        var = this.transName(var);
-        UTsetVarValue(var,val);
-    }
+
+    
+    
+    
 
     public void pushLevel(){
         varTranslator = varTranslator.pushLevel();
@@ -530,12 +668,29 @@ public class MethodState {
         }
     }
     
+    public static final String RVFLAG = "_rvf";
+    varState rvflag;
+    int rvfcnt = 0;
+    String rvname;
+    Stack<String> rvnamestack = new Stack<String>();
+    Stack<varState> rvstack = new Stack<varState>();
+    Stack<Set<String>> outparStack = new Stack<Set<String>>();
+    Set<String> cvmap;
     public void beginFunction(String fname){
         pushLevel();
+        if(rvflag != null){ rvstack.push(rvflag); }
+        if(cvmap != null){outparStack.push(cvmap);} 
+        if(rvname != null){ rvnamestack.push(rvname); }
+        rvname = RVFLAG + rvfcnt;
+        rvflag = vtype.cleanState(rvname, TypePrimitive.bittype, this);
+        rvflag.update(vtype.CONST(0), vtype);
+        
+        cvmap = new HashSet<String>();        
     }
 
     public void endFunction(){
         popLevel();
+        if(!rvstack.isEmpty()){ rvflag = rvstack.pop(); rvname = rvnamestack.pop() ; cvmap = outparStack.pop(); }else{ rvflag = null; }
     }
 
 }

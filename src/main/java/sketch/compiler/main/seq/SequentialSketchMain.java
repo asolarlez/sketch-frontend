@@ -363,7 +363,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
 		
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
-		//dump (lprog, "fpe:");
+		// dump (lprog, "fpe:");
 		
 
         lprog = (new IRStage1()).run(lprog);
@@ -380,6 +380,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(lprog)));
 		
+		//dump (lprog, "fpe:");
+		
         if (showPhaseOpt("preproc")) {
             dump(lprog, "After Preprocessing");
         }
@@ -387,6 +389,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		return lprog;
 	}
 
+
+    
 	public SolutionStatistics partialEvalAndSolve(){
 		lowerIRToJava();
 		SATBackend solver = new SATBackend(options, internalRControl(), varGen);
