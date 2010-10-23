@@ -50,6 +50,11 @@ public class StmtEmpty extends Statement
         super(context);
     }
 
+    @Override
+    public String toString() {
+        return "{ }";
+    }
+    
     public Object accept(FEVisitor v)
     {
         return v.visitStmtEmpty(this);

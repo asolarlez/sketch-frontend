@@ -1,0 +1,15 @@
+{% import "jinja2_macros.txt" as macros with context %}
+Source: {{ name }}
+Section: devel
+Priority: optional
+Maintainer: {{ macros.maintainer }}
+Build-Depends: {{ macros.deb_build_deps }}
+
+Package: {{ name }}
+Architecture: all
+Depends: {{ macros.deps }}
+Description: {{ macros.summary -}}
+{% filter indent(1) %}{{ "" }}
+{{ macros.description() }}
+{%- endfilter %}
+

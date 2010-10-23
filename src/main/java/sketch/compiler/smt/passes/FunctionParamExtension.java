@@ -35,8 +35,8 @@ public class FunctionParamExtension extends
 		}
 	}
 	
-	@Override
-	protected Expression getFalseLiteral() {
-		return ExprConstBoolean.FALSE;
-	}
+	// @Override
+	// protected Expression getFalseLiteral() {
+    //     return ExprConstBoolean.FALSE;
+	// }
 }
