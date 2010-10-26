@@ -134,4 +134,11 @@ public class Misc extends AssertedClass
 	    assert obj != null : "nonnull assert";
 	    return obj;
 	}
+	
+    public static <T> T nonnull(T obj, String message) {
+        if (obj == null) {
+            DebugOut.printFailure(message);
+        }
+        return obj;
+    }
 }

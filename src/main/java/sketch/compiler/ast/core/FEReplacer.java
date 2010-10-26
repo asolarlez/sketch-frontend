@@ -31,6 +31,8 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCAnon;
@@ -892,5 +894,13 @@ public class FEReplacer implements FEVisitor
         } else {
             return exprTprint;
         }
+    }
+
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        return cudaSyncthreads;
+    }
+
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        return cudaThreadIdx;
     }
 }

@@ -90,7 +90,8 @@ public abstract class CompilerStage {
     }
 
     protected CompilerPassDeps getPassInfo(FEVisitor pass) {
-        return nonnull(pass.getClass().getAnnotation(CompilerPassDeps.class));
+        return nonnull(pass.getClass().getAnnotation(CompilerPassDeps.class), "stage " +
+                pass.getClass() + " needs to be annotated.");
     }
 
     protected void addPassToVector(FEVisitor pass) {

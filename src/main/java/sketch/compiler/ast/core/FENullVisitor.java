@@ -22,6 +22,8 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCAnon;
@@ -111,4 +113,6 @@ public class FENullVisitor implements FEVisitor
 	public Object visitStmtMinimize(StmtMinimize stmtMinimize) { return null; }
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
     public Object visitExprTprint(ExprTprint exprTprint) { return null; }
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) { return null; }
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) { return null; }
 }

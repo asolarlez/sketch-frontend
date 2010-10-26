@@ -37,6 +37,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -454,5 +455,9 @@ public class GetExprType extends FENullVisitor
 
         return rv;
 	}
-
+	
+	@Override
+	public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+	    return TypePrimitive.inttype;
+	}
 }

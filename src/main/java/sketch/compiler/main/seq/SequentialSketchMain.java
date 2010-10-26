@@ -60,7 +60,7 @@ import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
-import sketch.compiler.passes.preprocessing.ForbidArrayAssignmentInFcns;
+import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
@@ -307,7 +307,9 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new ForbidArrayAssignmentInFcns(), new ReplaceMinLoops(varGen),
+                    {
+                        new ConvertArrayAssignmentsToInout(),
+                        new ReplaceMinLoops(varGen),
                             new MainMethodCreateNospec() };
             passes = passes2;
         }

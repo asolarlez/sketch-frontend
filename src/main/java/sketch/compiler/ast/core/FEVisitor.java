@@ -22,6 +22,8 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCAnon;
@@ -114,4 +116,6 @@ public interface FEVisitor
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
     public Object visitExprTprint(ExprTprint exprTprint);
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx);
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads);
 }

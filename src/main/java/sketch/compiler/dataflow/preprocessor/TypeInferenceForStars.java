@@ -12,16 +12,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
-import sketch.compiler.ast.core.stmts.StmtDoWhile;
-import sketch.compiler.ast.core.stmts.StmtFor;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtLoop;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -97,7 +88,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     			"internal error: " + lt + "   " + rt);
     	stmt.assertTrue (
     			rt.promotesTo(lt),
-    			"Type missmatch " + lt +" !>= " + rt);
+    			"Type mismatch " + lt +" !>= " + rt);
         return lt;
     }
     public void upgradeStarToInt(Expression exp, Type ftype){
