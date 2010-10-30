@@ -22,6 +22,7 @@ import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
  * A primitive type.  This can be int, float, or complex, depending on
@@ -105,6 +106,11 @@ public class TypePrimitive extends Type
      */
     private TypePrimitive(int type)
     {
+        this(CudaMemoryType.UNDEFINED, type);
+    }
+    
+    private TypePrimitive(CudaMemoryType cudaMemType, int type) {
+        super(cudaMemType);
         this.type = type;
     }
 

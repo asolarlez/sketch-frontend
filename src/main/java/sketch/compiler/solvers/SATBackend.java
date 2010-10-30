@@ -73,6 +73,7 @@ public class SATBackend {
     }
 
     public boolean partialEvalAndSolve(Program prog) {
+        prog.debugDump("Program before solving");
         oracle = new ValueOracle(new StaticHoleTracker(varGen));
         log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         // prog.accept(new SimpleCodePrinter());

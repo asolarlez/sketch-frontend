@@ -27,6 +27,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.util.datastructures.ObjPairBase;
 
 /**
@@ -52,25 +53,35 @@ public class TypeStruct extends Type
     private Map<String, Type> types;
 
     /**
-     * Creates a new structured type.  The fields and ftypes lists must
-     * be the same length; a field in a given position in the fields
-     * list has the type in the equivalent position in the ftypes list.
-     *
-     * @param context  file and line number the structure was declared in
-     * @param name     name of the structure
-     * @param fields   list of <code>String</code> containing the names
-     *                 of the fields
-     * @param ftypes   list of <code>Type</code> containing the types of
-     *                 the fields
+     * Creates a new structured type. The fields and ftypes lists must be the same length;
+     * a field in a given position in the fields list has the type in the equivalent
+     * position in the ftypes list.
+     * 
+     * @param context
+     *            file and line number the structure was declared in
+     * @param name
+     *            name of the structure
+     * @param fields
+     *            list of <code>String</code> containing the names of the fields
+     * @param ftypes
+     *            list of <code>Type</code> containing the types of the fields
      */
-    public TypeStruct(FEContext context, String name, List<String> fields, List<Type> ftypes)
+    public TypeStruct(CudaMemoryType typ, FEContext context, String name,
+            List<String> fields, List<Type> ftypes)
     {
+        super(typ);
         this.context = context;
         this.name = name;
         this.fields = fields;
-        this.types = new HashMap<String, Type> ();
+        this.types = new HashMap<String, Type>();
         for (int i = 0; i < fields.size(); i++)
             this.types.put(fields.get(i), ftypes.get(i));
+    }
+
+    public TypeStruct(FEContext context, String name, List<String> fields,
+            List<Type> ftypes)
+    {
+        this(CudaMemoryType.UNDEFINED, context, name, fields, ftypes);
     }
 
     public boolean isStruct () { return true; }

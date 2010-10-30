@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -195,6 +196,14 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitExprConstStr(ExprConstStr exp) {
         report(false, "NYS");
         return exp;
+    }
+    
+    @Override
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        if (isReplacer) {
+            exprRV = (Expression) super.visitCudaThreadIdx(cudaThreadIdx);
+        }
+        return vtype.BOTTOM(TypePrimitive.inttype);
     }
 
     public Object visitExprField(ExprField exp) {

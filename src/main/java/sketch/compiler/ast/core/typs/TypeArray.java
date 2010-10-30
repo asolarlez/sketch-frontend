@@ -15,12 +15,15 @@
  */
 
 package sketch.compiler.ast.core.typs;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
  * A fixed-length homogenous array type.  This type has a base type and
@@ -36,27 +39,37 @@ public class TypeArray extends Type
     private Expression length;
     private List<Expression> dims;
 
-    /** Creates an array type of the specified base type with the
-     * specified length. */
-    public TypeArray(Type base, Expression length)
-    {
+    /**
+     * Creates an array type of the specified base type with the specified length.
+     */
+    public TypeArray(Type base, Expression length) {
+        super(CudaMemoryType.UNDEFINED);
         this.base = base;
         this.length = length;
     }
 
     /**
-     * Create an array with the given base type, length, and dimensions.
-     *
-     * It is assumed, but not checked, that \product{dims} = length.
-     *
-     * @param base		base type of the array
-     * @param length	number of elements of the base type
-     * @param dims		the "virtual dimensions" of the array
+     * Create an array with the given base type, length, and dimensions. It is assumed,
+     * but not checked, that \product{dims} = length.
+     * 
+     * @param base
+     *            base type of the array
+     * @param length
+     *            number of elements of the base type
+     * @param dims
+     *            the "virtual dimensions" of the array
      */
-    public TypeArray (Type base, Expression length, Collection<Expression> dims) {
-    	this.base = base;
-    	this.length = length;
-    	this.dims = new ArrayList<Expression> (dims);
+    public TypeArray(Type base, Expression length, Collection<Expression> dims) {
+        this(CudaMemoryType.UNDEFINED, base, length, dims);
+    }
+
+    public TypeArray(CudaMemoryType cuda_mem_typ, Type base, Expression length,
+            Collection<Expression> dims)
+    {
+        super(cuda_mem_typ);
+        this.base = base;
+        this.length = length;
+        this.dims = unmodifiableList(new ArrayList<Expression>(dims));
     }
 
     public boolean isArray () { return true; }

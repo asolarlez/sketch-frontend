@@ -16,6 +16,8 @@
 
 package sketch.compiler.ast.core.typs;
 
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+
 /**
  * A message-portal type.  This is a type used to send messages; it
  * appears in the portals list of
@@ -41,6 +43,7 @@ public class TypePortal extends Type
      */
     public TypePortal(String name)
     {
+        super(CudaMemoryType.UNDEFINED);
         this.name = name;
     }
     

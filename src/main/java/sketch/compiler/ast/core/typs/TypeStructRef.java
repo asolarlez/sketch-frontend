@@ -18,6 +18,7 @@ package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
  * A named reference to a structure type, as defined in TypeStruct.
@@ -32,9 +33,14 @@ public class TypeStructRef extends Type
     private String name;
 
     /** Creates a new reference to a structured type. */
-    public TypeStructRef(String name)
-    {
+    public TypeStructRef(CudaMemoryType typ, String name) {
+        super(typ);
         this.name = name;
+    }
+
+    /** Creates a new reference to a structured type. */
+    public TypeStructRef(String name) {
+        this(CudaMemoryType.UNDEFINED, name);
     }
 
     public Object accept(FEVisitor v)

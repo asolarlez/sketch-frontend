@@ -3,6 +3,7 @@ package sketch.compiler.smt.partialeval;
 import java.util.HashMap;
 
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 public class SmtType extends Type {
 	
@@ -45,6 +46,7 @@ public class SmtType extends Type {
 	}
 	
 	private SmtType(Type realType, int numBits) {
+	    super(CudaMemoryType.UNDEFINED);
 		assert realType != null : "realType can not be null";
 		assert !(realType instanceof SmtType) : "realType can not be another SmtType";
 

@@ -17,6 +17,7 @@
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
  * Base class for variable data types.
@@ -26,6 +27,12 @@ import sketch.compiler.ast.core.exprs.Expression;
  */
 public abstract class Type
 {
+    private final CudaMemoryType memtyp;
+
+    public Type(CudaMemoryType memtyp) {
+        this.memtyp = memtyp;
+    }
+    
     /** Returns true if this type is a complex type. */
     public boolean isComplex() { return false; }
 
@@ -34,6 +41,10 @@ public abstract class Type
 
     /** @return true iff this type is an array type. */
     public boolean isArray () { return false; }
+
+    public CudaMemoryType getCudaMemType() {
+        return memtyp;
+    }
 
     public Expression defaultValue () {
     	assert false : "Implement me!";
