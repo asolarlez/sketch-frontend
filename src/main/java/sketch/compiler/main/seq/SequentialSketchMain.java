@@ -57,6 +57,8 @@ import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
+import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
+import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
@@ -307,10 +309,9 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    {
-                        new ConvertArrayAssignmentsToInout(),
-                        new ReplaceMinLoops(varGen),
-                            new MainMethodCreateNospec() };
+                    { new ConvertArrayAssignmentsToInout(), new ReplaceMinLoops(varGen),
+                            new MainMethodCreateNospec(),
+                            new CopyCudaMemTypeToFcnReturn() };
             passes = passes2;
         }
     }
@@ -326,7 +327,11 @@ public class SequentialSketchMain extends CommonSketchMain
     public class IRStage2 extends CompilerStage {
         public IRStage2() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { new RemoveTprint() };
+            FEVisitor[] passes2 =
+                    {
+                            new RemoveTprint(),
+                            new GenerateAllOrSomeThreadsFunctions(
+                                    SequentialSketchMain.this.options) };
             passes = passes2;
         }
     }
@@ -352,18 +357,18 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
 		lprog = (new PreProcStage1()).run(lprog);
-		
+
 		//dump (lprog, "extract clc");
 		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
-		
+
 		// prog = (Program)prog.accept(new NoRefTypes());
 		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
 		//dump (lprog, "~reorderblocks:");
 		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
 		//dump (lprog, "~insertblocks:");		
-		
+
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
-		
+
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		// dump (lprog, "fpe:");
 		

@@ -9,17 +9,25 @@ package sketch.compiler.ast.cuda.typs;
  *          changes, please consider contributing back!
  */
 public enum CudaMemoryType {
-    GLOBAL("Global or shared memory"), LOCAL("Thread-local variables"), UNDEFINED(
-            "Code added for compatibility; these nodes should not be encountered for mem type checking passes");
+    GLOBAL("Global or shared memory", "global"), LOCAL("Thread-local variables", "local"), LOCAL_TARR(
+            "Thread-local variables, already converted into an array", "local-arr"), UNDEFINED(
+            "Code added for compatibility; these nodes should not be encountered for mem type checking passes",
+            "");
 
     private final String description;
+    public final String syntaxName;
 
-    private CudaMemoryType(String description) {
+    private CudaMemoryType(String description, String syntaxName) {
         this.description = description;
+        this.syntaxName = syntaxName;
     }
 
     @Override
     public String toString() {
         return description;
+    }
+
+    public String syntaxNameSpace() {
+        return this.syntaxName + (this.syntaxName.isEmpty() ? "" : " ");
     }
 }

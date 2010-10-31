@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.ast.core.typs;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -218,5 +219,14 @@ public class TypeStruct extends Type
         public Type getType() { return right; }
     }
     // [end]
+
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        List<Type> typesLst = new ArrayList<Type>();
+        for (String s : fields) {
+            typesLst.add(types.get(s));
+        }
+        return new TypeStruct(memtyp, context, name, fields, typesLst);
+    }
 }
 

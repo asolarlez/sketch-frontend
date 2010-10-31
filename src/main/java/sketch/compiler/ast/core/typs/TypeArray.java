@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
@@ -43,9 +44,7 @@ public class TypeArray extends Type
      * Creates an array type of the specified base type with the specified length.
      */
     public TypeArray(Type base, Expression length) {
-        super(CudaMemoryType.UNDEFINED);
-        this.base = base;
-        this.length = length;
+        this(CudaMemoryType.UNDEFINED, base, length, null);
     }
 
     /**
@@ -69,7 +68,13 @@ public class TypeArray extends Type
         super(cuda_mem_typ);
         this.base = base;
         this.length = length;
-        this.dims = unmodifiableList(new ArrayList<Expression>(dims));
+        if (dims != null) {
+            this.dims = unmodifiableList(new ArrayList<Expression>(dims));
+        }
+    }
+
+    public TypeArray(CudaMemoryType mem_typ, Type type, int i) {
+        this(mem_typ, type, new ExprConstInt(i), null);
     }
 
     public boolean isArray () { return true; }
@@ -92,7 +97,7 @@ public class TypeArray extends Type
 
     public String toString()
     {
-        return base + "[" + length + "]";
+        return this.getCudaMemType().syntaxNameSpace() + this.getBase() + "[" + length + "]";
     }
 
     public boolean promotesTo(Type other)
@@ -161,5 +166,10 @@ public class TypeArray extends Type
 
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypeArray(this);
+    }
+
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        return new TypeArray(memtyp, base, length, dims);
     }
 }

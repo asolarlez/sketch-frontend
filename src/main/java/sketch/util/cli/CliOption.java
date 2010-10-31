@@ -3,6 +3,7 @@ package sketch.util.cli;
 import static sketch.util.DebugOut.assertFalse;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.util.Vector;
 
 import org.apache.commons.cli.CommandLine;
@@ -186,6 +187,17 @@ public final class CliOption {
                 return null;
             } else {
                 if (!typ.equals(String.class)) {
+                    Constructor<?> constr;
+                    try {
+                        constr = typ.getConstructor(String.class);
+                        result_vector.add(constr.newInstance(v));
+                    } catch (NoSuchMethodException e) {
+                        assertFalse("Custom class", typ.getName(), " for parameter ",
+                                full_name(), " doesn't have a new(string) constructor");
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                     DebugOut.assertFalse("can't parse option type ", typ);
                 }
                 result_vector.add(v);

@@ -129,7 +129,11 @@ public class TypePrimitive extends Type
         return type == TYPE_COMPLEX;
     }
 
-    public String toString()
+    public String toString() {
+        return this.getCudaMemType().syntaxNameSpace() + toString2();
+    }
+
+    public String toString2()
     {
         switch (type)
         {
@@ -280,5 +284,10 @@ public class TypePrimitive extends Type
 
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypePrimitive(this);
+    }
+    
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        return new TypePrimitive(memtyp, this.type);
     }
 }

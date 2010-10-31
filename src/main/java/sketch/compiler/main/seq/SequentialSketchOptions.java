@@ -12,6 +12,8 @@ import sketch.compiler.cmdline.SemanticsOptions;
 import sketch.compiler.cmdline.SolverOptions;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.util.cli.SketchCliParser;
+import sketch.util.cuda.CudaThreadBlockDim;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * organized options for the sequential frontend. See ParallelSketchOptions for how to
@@ -90,5 +92,10 @@ public class SequentialSketchOptions {
     public String getTmpSketchFilename() {
         return PlatformLocalization.getLocalization().getTempPathString(
                 sketchName + ".tmp");
+    }
+
+    /** for inheriting classes */
+    public CudaThreadBlockDim getCudaBlockDim() {
+        throw new NotImplementedException();
     }
 }

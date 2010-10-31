@@ -13,7 +13,7 @@ import sketch.compiler.ast.core.exprs.Expression;
  *          changes, please consider contributing back!
  */
 public class CudaThreadIdx extends Expression {
-    protected final String indexName;
+    private final String indexName;
 
     @SuppressWarnings("deprecation")
     public CudaThreadIdx(FEContext context, String indexName) {
@@ -24,5 +24,9 @@ public class CudaThreadIdx extends Expression {
     @Override
     public Object accept(FEVisitor v) {
         return v.visitCudaThreadIdx(this);
+    }
+
+    public String getIndexName() {
+        return indexName;
     }
 }

@@ -89,4 +89,9 @@ public class TypeStructRef extends Type
     {
         return name;
     }
+    
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        return new TypeStructRef(memtyp, name);
+    }
 }
