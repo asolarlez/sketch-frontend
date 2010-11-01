@@ -1,7 +1,6 @@
 package sketch.compiler.passes.cuda;
 
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.typs.Type;
@@ -32,8 +31,6 @@ public class CopyCudaMemTypeToFcnReturn extends SymbolTableVisitor {
     @Override
     public Object visitStmtReturn(StmtReturn stmt) {
         final Expression rv = stmt.getValue();
-        ExprArrayRange rv2 = (ExprArrayRange) rv;
-        final Type typ2 = this.getType(rv2.getBase());
         final Type retTyp = this.getType(rv);
         final CudaMemoryType cudaMemType = retTyp.getCudaMemType();
         if (cudaMemType != CudaMemoryType.UNDEFINED) {

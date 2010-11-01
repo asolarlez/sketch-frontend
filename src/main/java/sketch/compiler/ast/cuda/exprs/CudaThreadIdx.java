@@ -22,6 +22,11 @@ public class CudaThreadIdx extends Expression {
     }
 
     @Override
+    public String toString() {
+        return "threadIdx." + indexName;
+    }
+    
+    @Override
     public Object accept(FEVisitor v) {
         return v.visitCudaThreadIdx(this);
     }

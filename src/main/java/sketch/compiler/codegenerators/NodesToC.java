@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
@@ -700,5 +701,10 @@ public class NodesToC extends NodesToJava {
 	        }
 	    }
 	    return result.toString();
+	}
+	
+	@Override
+	public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+	    return cudaThreadIdx.toString();
 	}
 }

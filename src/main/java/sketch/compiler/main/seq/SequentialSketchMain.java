@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEReplacer;
@@ -55,14 +56,12 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
-import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
-import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
-import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
@@ -228,7 +227,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
 		beforeUnvectorizing = prog;
 		
-		prog = (new IRStage2()).run(prog);
+		prog = (getIRStage2()).run(prog);
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
 				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
@@ -309,10 +308,9 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new ConvertArrayAssignmentsToInout(), new ReplaceMinLoops(varGen),
-                            new MainMethodCreateNospec(),
-                            new CopyCudaMemTypeToFcnReturn() };
-            passes = passes2;
+                    { new ReplaceMinLoops(varGen),
+                            new MainMethodCreateNospec() };
+            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
 
@@ -320,19 +318,15 @@ public class SequentialSketchMain extends CommonSketchMain
         public IRStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 = { new GlobalsToParams(varGen) };
-            passes = passes2;
+            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
 
     public class IRStage2 extends CompilerStage {
         public IRStage2() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 =
-                    {
-                            new RemoveTprint(),
-                            new GenerateAllOrSomeThreadsFunctions(
-                                    SequentialSketchMain.this.options) };
-            passes = passes2;
+            FEVisitor[] passes2 = { new RemoveTprint() };
+            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
 
@@ -340,9 +334,27 @@ public class SequentialSketchMain extends CommonSketchMain
         public CleanupStage() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 = { new CleanupRemoveMinFcns() };
-            passes = passes2;
+            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
+
+    // [start] function overloads for stage classes
+    public PreProcStage1 getPreProcStage1() {
+        return new PreProcStage1();
+    }
+
+    public IRStage1 getIRStage1() {
+        return new IRStage1();
+    }
+
+    public IRStage2 getIRStage2() {
+        return new IRStage2();
+    }
+
+    public CleanupStage getCleanupStage() {
+        return new CleanupStage();
+    }
+    // [end]
 
     protected Program preprocessProgram(Program lprog) {
         boolean useInsertEncoding =
@@ -356,7 +368,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
 		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-		lprog = (new PreProcStage1()).run(lprog);
+		lprog = (getPreProcStage1()).run(lprog);
 
 		//dump (lprog, "extract clc");
 		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
@@ -373,7 +385,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		// dump (lprog, "fpe:");
 		
 
-        lprog = (new IRStage1()).run(lprog);
+        lprog = (getIRStage1()).run(lprog);
         
         lprog = (Program) lprog.accept(new TypeInferenceForStars());
         // dump (lprog, "tifs:");
@@ -460,7 +472,7 @@ public class SequentialSketchMain extends CommonSketchMain
             dump(finalCode, "After Dead Code elimination.");
         }
 		
-		finalCode = (new CleanupStage()).run(finalCode);
+		finalCode = (getCleanupStage()).run(finalCode);
 	}
 
 	protected String getOutputFileName() {
@@ -590,8 +602,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
-        if (!SemanticChecker.check(prog, isParallel()))
-            throw new ProgramParseException("Semantic check failed");
+        (new SemanticCheckPass()).visitProgram(prog);
 
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());
@@ -602,6 +613,16 @@ public class SequentialSketchMain extends CommonSketchMain
 		if (prog == null)
 			throw new IllegalStateException();
 	}
+
+	@CompilerPassDeps(runsBefore = {}, runsAfter = {})
+    public class SemanticCheckPass extends FEReplacer {
+        @Override
+        public Object visitProgram(Program prog) {
+            if (!SemanticChecker.check(prog, isParallel()))
+                throw new ProgramParseException("Semantic check failed");
+            return prog;
+        }
+    }
 
     String solverErrorStr;
 

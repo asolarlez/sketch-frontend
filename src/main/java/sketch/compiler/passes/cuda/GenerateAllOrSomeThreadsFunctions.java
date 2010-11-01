@@ -11,10 +11,12 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
@@ -29,6 +31,7 @@ import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.cuda.CudaThreadBlockDim;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * Generate functions which all threads will enter.
@@ -44,25 +47,26 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected Vector<Function> oldThreadFcns;
     protected Vector<Function> allThreadsFcns;
     protected Vector<Function> someThreadsFcns;
+    protected Vector<String> specFcns;
 
-    public GenerateAllOrSomeThreadsFunctions(SequentialSketchOptions opts) {
+    // protected final TempVarGen varGen;
+
+    public GenerateAllOrSomeThreadsFunctions(SequentialSketchOptions opts/*
+                                                                          * , TempVarGen
+                                                                          * varGen
+                                                                          */) {
         super(null);
+        // this.varGen = varGen;
         this.cudaBlockDim = opts.getCudaBlockDim();
     }
 
-    // @Override
-    // public Object visitProgram(Program prog) {
-    // prog = (Program) (new AllThreadsTransform(symtab)).visitProgram(prog);
-    // return prog;
-    // }
-
     @Override
     public Object visitFunction(Function fcn) {
-        if (fcn.getSpecification() != null) {
+        if (fcn.getSpecification() != null || specFcns.contains(fcn.getName())) {
             oldThreadFcns.add((Function) super.visitFunction(fcn));
         } else {
-            allThreadsFcns.add((Function) new AllThreadsTransform(symtab).visitFunction(fcn));
-            someThreadsFcns.add((Function) new SomeThreadsTransform(symtab).visitFunction(fcn));
+            allThreadsFcns.add((Function) new AllThreadsTransform(null).visitFunction(fcn));
+            someThreadsFcns.add((Function) new SomeThreadsTransform(null).visitFunction(fcn));
         }
         return fcn;
     }
@@ -72,12 +76,23 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         oldThreadFcns = new Vector<Function>();
         allThreadsFcns = new Vector<Function>();
         someThreadsFcns = new Vector<Function>();
+        specFcns = new Vector<String>();
+        for (Function f : spec.getFuncs()) {
+            if (f.getSpecification() != null) {
+                specFcns.add(f.getSpecification());
+            }
+        }
 
         spec = (StreamSpec) super.visitStreamSpec(spec);
         Vector<Function> allFcns = new Vector<Function>();
         allFcns.addAll(oldThreadFcns);
         allFcns.addAll(allThreadsFcns);
         allFcns.addAll(someThreadsFcns);
+
+        for (Function f : allFcns) {
+            assert f != null;
+        }
+
         return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
                 spec.getParams(), spec.getVars(), allFcns);
     }
@@ -101,24 +116,21 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitStmtVarDecl(StmtVarDecl decl) {
-            decl = (StmtVarDecl) super.visitStmtVarDecl(decl);
             if (decl.getType(0).getCudaMemType() == CudaMemoryType.LOCAL) {
-                assert decl.getTypes().size() == 0;
+                assert decl.getTypes().size() == 1;
                 final Type type = localArrayType(decl.getType(0));
-                return new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
+                decl = new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
             }
-            return decl;
+            return super.visitStmtVarDecl(decl);
         }
 
         @Override
         public Object visitParameter(Parameter par) {
-            par = (Parameter) super.visitParameter(par);
             if (par.getType().getCudaMemType() == CudaMemoryType.LOCAL) {
                 final Type type = localArrayType(par.getType());
-                return new Parameter(type, par.getName(), par.getPtype());
-            } else {
-                return par;
+                par = new Parameter(type, par.getName(), par.getPtype());
             }
+            return super.visitParameter(par);
         }
 
         private TypeArray localArrayType(Type base) {
@@ -135,15 +147,16 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         /** Create a loop over all threads for simple functions */
         public Statement createThreadLoop(Vector<Statement> stmts) {
-            ExprVar allExpr = new ExprVar(stmts.get(0), "ThreadIdx_All");
+            final Statement ctx = stmts.get(0);
+            ExprVar allExpr = new ExprVar(ctx, "ThreadIdx_All");
             StmtVarDecl xDecl =
-                    new StmtVarDecl(stmts.get(0), TypePrimitive.inttype, "ThreadIdx_X",
+                    new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_X",
                             cudaBlockDim.getXFromAll(allExpr));
             StmtVarDecl yDecl =
-                    new StmtVarDecl(stmts.get(0), TypePrimitive.inttype, "ThreadIdx_Y",
+                    new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_Y",
                             cudaBlockDim.getYFromAll(allExpr));
             StmtVarDecl zDecl =
-                    new StmtVarDecl(stmts.get(0), TypePrimitive.inttype, "ThreadIdx_Z",
+                    new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_Z",
                             cudaBlockDim.getZFromAll(allExpr));
             stmts.insertElementAt(xDecl, 0);
             stmts.insertElementAt(yDecl, 1);
@@ -185,7 +198,32 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
-            return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
+
+            // for local expressions that aren't already vectors, copy them many times
+            Vector<Expression> nextParams = new Vector<Expression>();
+            for (Expression e : exp.getParams()) {
+                final CudaMemoryType mt = getType(e).getCudaMemType();
+                if (mt == CudaMemoryType.LOCAL || mt == CudaMemoryType.UNDEFINED) {
+                    Vector<Expression> e_dupl = new Vector<Expression>();
+                    for (int a = 0; a < cudaBlockDim.all(); a++) {
+                        e_dupl.add(e);
+                    }
+                    nextParams.add(new ExprArrayInit(exp, e_dupl));
+                } else {
+                    nextParams.add(e);
+                }
+            }
+            assert nextParams.size() == exp.getParams().size();
+            // end copy
+
+            return new ExprFunCall(exp, "allthreads_" + exp.getName(), nextParams);
+        }
+
+        @Override
+        public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+            throw new ExceptionAtNode(
+                    "Cuda thread index should be removed by AllThreadsTransform",
+                    cudaThreadIdx);
         }
     }
 
@@ -197,7 +235,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         @Override
         public Object visitExprVar(ExprVar exp) {
             exp = (ExprVar) super.visitExprVar(exp);
-            if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL) {
+            if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL_TARR) {
                 return new ExprArrayRange(exp, new ExprVar(exp, "ThreadIdx_All"));
             } else {
                 return exp;
@@ -206,15 +244,12 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitFunction(Function func) {
-            Vector<Parameter> params = new Vector<Parameter>(func.getParams());
-            params.insertElementAt(new Parameter(TypePrimitive.inttype, "ThreadIdx_X",
-                    Parameter.IN), 0);
-            params.insertElementAt(new Parameter(TypePrimitive.inttype, "ThreadIdx_Y",
-                    Parameter.IN), 1);
-            params.insertElementAt(new Parameter(TypePrimitive.inttype, "ThreadIdx_Z",
-                    Parameter.IN), 2);
-            params.insertElementAt(new Parameter(TypePrimitive.inttype, "ThreadIdx_All",
-                    Parameter.IN), 3);
+            Vector<Parameter> params = new Vector<Parameter>();
+            for (String threadIndexName : CudaThreadBlockDim.indexNames) {
+                params.add(new Parameter(TypePrimitive.inttype, threadIndexName,
+                        Parameter.IN));
+            }
+            params.addAll(func.getParams());
             Function f2 =
                     new Function(func, func.getCls(), "somethreads_" + func.getName(),
                             func.getReturnType(), params, func.getSpecification(),
@@ -226,6 +261,16 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
             return new ExprVar(cudaThreadIdx, "ThreadIdx_" +
                     cudaThreadIdx.getIndexName().toUpperCase());
+        }
+
+        @Override
+        public Object visitExprFunCall(ExprFunCall exp) {
+            Vector<Expression> nextArgs = new Vector<Expression>();
+            for (String threadIndexName : CudaThreadBlockDim.indexNames) {
+                nextArgs.add(new ExprVar(exp, threadIndexName));
+            }
+            nextArgs.addAll(exp.getParams());
+            return new ExprFunCall(exp, "somethreads_" + exp.getName(), nextArgs);
         }
     }
 

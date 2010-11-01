@@ -12,6 +12,8 @@ public class CudaThreadBlockDim {
     public final int x;
     public final int y;
     public final int z;
+    public static final String[] indexNames =
+            { "ThreadIdx_X", "ThreadIdx_Y", "ThreadIdx_Z", "ThreadIdx_All" };
 
     public CudaThreadBlockDim(int x, int y, int z) {
         this.x = x;

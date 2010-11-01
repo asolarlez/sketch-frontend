@@ -25,7 +25,8 @@ public abstract class CompilerStage {
         sketch = sequentialSketchMain;
     }
 
-    public FEVisitor[] passes;
+    public Vector<FEVisitor> passes;
+    /** pass $1 depends on pass $2, i.e. $2 must run before $1 */
     protected HashmapList<FEVisitor, FEVisitor> stageRequires =
             new HashmapList<FEVisitor, FEVisitor>();
     protected Vector<FEVisitor> linearizedStages = new Vector<FEVisitor>();
@@ -33,7 +34,7 @@ public abstract class CompilerStage {
     /** you probably don't want to modify this */
     public Program run(Program prog) {
         generateDeps();
-        assert linearizedStages.size() == passes.length;
+        assert linearizedStages.size() == passes.size();
         for (FEVisitor pass : linearizedStages) {
             // System.out.println("[Stage " + this.getClass().getSimpleName() +
             // "] running pass " + pass.getClass().getSimpleName());
