@@ -17,7 +17,7 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.cuda.CudaThreadBlockDim;
 import sketch.util.datastructures.TypedHashSet;
 
-@CompilerPassDeps(runsBefore = {}, runsAfter = { GenerateAllOrSomeThreadsFunctions.class }, debug = true)
+@CompilerPassDeps(runsBefore = {}, runsAfter = { GenerateAllOrSomeThreadsFunctions.class })
 public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     protected StreamSpec spec;
     protected CudaThreadBlockDim cudaBlockDim;

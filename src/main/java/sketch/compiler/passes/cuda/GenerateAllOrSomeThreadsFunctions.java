@@ -41,7 +41,7 @@ import sketch.util.exceptions.ExceptionAtNode;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-@CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class }, debug = true)
+@CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class })
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
     protected Vector<Function> oldThreadFcns;
