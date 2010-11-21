@@ -1,0 +1,8 @@
+To see when this file has been updated, run
+
+   >>> hg log reports/currently-failing-unit-tests
+
+The following unit tests are failing. Please add information if you have any,
+
+   * src/test/sk/seq/miniTestb228.sk
+   * src/test/sk/seq/miniTestb230.sk
