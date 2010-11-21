@@ -12,7 +12,7 @@ public class IntAbsValue extends abstractValue {
 	public static final int LIST = 2;
 	protected int type;
 	protected Object obj;
-    protected final boolean knownGeqZero;
+    protected boolean knownGeqZero;
 
 
 	
@@ -129,7 +129,8 @@ public class IntAbsValue extends abstractValue {
 		assert ntsv.type == type  || ntsv.type == BOTTOM || type == BOTTOM : "Updating with incompatible values " +  v + " <> " + this;
 		{
 			obj = ntsv.obj;
-			type = ntsv.type;	
+			type = ntsv.type;
+			knownGeqZero = ntsv.knownGeqZero();
 		}
 	}
 	public String toString(){

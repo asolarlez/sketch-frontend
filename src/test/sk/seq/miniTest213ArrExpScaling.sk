@@ -1,0 +1,52 @@
+
+bit all(bit[2] test) { return test[0] && test[1]; }
+
+int NT = 2;
+
+#define TL(INNER) for (int tid = 0; tid < NT; tid++) { INNER; }
+
+void upstep(ref int[16] arr) {
+    int N = 10;
+    int[2] delta = {1, 1};
+    bit[2] C = {delta[0] < N, delta[1] < N};
+
+    while (all(C)) {
+        int holeValue1_t1 = ??;
+        int holeValue1_t2 = holeValue1_t1;
+        
+        int a_i_t1 = delta[0] * (1) + holeValue1_t1;
+        int a_i_t2 = delta[1] * (3) + holeValue1_t2;
+        
+        int holeValue2_t1 = ??;
+        int holeValue2_t2 = holeValue2_t1;
+        
+        int b_i_t1 = delta[0] * (2) + holeValue2_t1;
+        int b_i_t2 = delta[1] * (4) + holeValue2_t2;
+        
+        assert a_i_t1 < b_i_t1;
+        assert a_i_t2 < b_i_t2;
+        
+        // thread1 routine
+        if (b_i_t1 < N) {
+            arr[b_i_t1] += arr[a_i_t1];
+        }
+        delta[0] *= 2;
+        C[0] = delta[0] < N;
+
+        
+        // thread1 routine
+        if (b_i_t2 < N) {
+            arr[b_i_t2] += arr[a_i_t2];
+        }
+        delta[1] *= 2;
+        C[1] = delta[1] < N;
+    }
+}
+
+void vectoradd(ref int[16] arr) { upstep(arr); }
+
+harness void main() {
+    int[16] testArr = {1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0};
+    vectoradd(testArr);
+    assert (testArr[0] == 1);
+}
