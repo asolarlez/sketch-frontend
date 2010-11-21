@@ -38,6 +38,7 @@ public class ExprStar extends Expression
 	private int size;
 	public Expression vectorSize;
 	Vector<FENode> depObjects;
+	/** fixed domain of values */
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
@@ -96,7 +97,13 @@ public class ExprStar extends Expression
      */
     public ExprStar(FEContext context, int size)
     {
-        super(context);
+        this(context, size, null);
+    }
+    
+    @Deprecated
+    public ExprStar(FEContext ctx, int size, Type typ) {
+        super(ctx);
+        this.type = typ;
         this.size = size;
         isFixed = true;
         this.starName = HOLE_BASE + (NEXT_UID++);

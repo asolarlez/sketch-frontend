@@ -198,9 +198,9 @@ public final class CliOption {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    DebugOut.assertFalse("can't parse option type ", typ);
+                } else {
+                    result_vector.add(v);
                 }
-                result_vector.add(v);
             }
         }
         return result_vector.toArray();

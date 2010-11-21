@@ -22,6 +22,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -115,4 +116,5 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprTprint(ExprTprint exprTprint) { return null; }
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) { return null; }
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) { return null; }
+    public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) { return null; }
 }

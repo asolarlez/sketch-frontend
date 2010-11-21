@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.typs.TypePortal;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.lowering.GetExprType;
@@ -1286,4 +1287,8 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return "null"; }
+
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        return "__syncthreads()";
+    }
 }

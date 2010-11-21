@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -315,5 +316,9 @@ public class FETypedVisitor<T> implements FEVisitor {
 
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
         throw new FEVisitorException(this, cudaThreadIdx);
+    }
+    
+    public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) {
+        throw new FEVisitorException(this, cudaBlockDim);
     }
 }

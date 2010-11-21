@@ -16,6 +16,7 @@ import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
@@ -327,5 +328,11 @@ public class SimpleCodePrinter extends CodePrinter
             this.indent -= 1;
         }
         return exprTprint;
+    }
+    
+    @Override
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        print("__syncthreads()");
+        return cudaSyncthreads;
     }
 }

@@ -27,6 +27,7 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     public boolean fakeSolver = false;
     @CliParameter(shortname = "p", help = "Show the partially evaluated code after the indicated "
             + "phase of pre or post processing.\n"
+            + "'parse' for after parsing;\n"
             + "'final' for after all optimizations;\n"
             + "'lowering' for before to symbolic execution;\n"
             + "'postproc' for after partially evaluating the generated code (ugly);\n"

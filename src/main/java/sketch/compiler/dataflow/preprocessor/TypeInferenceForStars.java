@@ -137,7 +137,10 @@ class UpgradeStarToInt extends FEReplacer{
 	}
 
 	public Object visitExprStar(ExprStar star) {
-	    star.setType(type);
+	    if (star.getType() == null) {
+	        // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
+	        star.setType(type);
+	    }
 		return star;
 	}
 

@@ -48,6 +48,11 @@ public abstract class CompilerStage {
             }
             sketch.runClasses.add(pass.getClass());
         }
+        prog = postRun(prog);
+        return prog;
+    }
+
+    protected Program postRun(Program prog) {
         return prog;
     }
 

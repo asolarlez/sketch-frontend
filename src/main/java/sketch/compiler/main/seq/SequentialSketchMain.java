@@ -228,6 +228,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		beforeUnvectorizing = prog;
 		
 		prog = (getIRStage2()).run(prog);
+		prog.debugDump(new File("after-irstage-2.sk"));
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
 				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
@@ -603,6 +604,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
         (new SemanticCheckPass()).visitProgram(prog);
+        this.showPhaseOpt("parse");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
 		//prog.accept(new SimpleCodePrinter());

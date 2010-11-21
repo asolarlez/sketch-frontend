@@ -319,4 +319,9 @@ public class StreamSpec extends FENode
     {
         return v.visitStreamSpec(this);
     }
+
+    public StreamSpec newFromFcns(List<Function> fcns) {
+        return new StreamSpec(this, this.getType(), this.getStreamType(), this.getName(),
+                this.getParams(), this.getVars(), Collections.unmodifiableList(fcns));
+    }
 }

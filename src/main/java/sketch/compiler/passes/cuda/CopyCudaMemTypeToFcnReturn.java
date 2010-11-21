@@ -8,7 +8,7 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
-@CompilerPassDeps(runsBefore = {}, runsAfter = {}, debug=true)
+@CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class CopyCudaMemTypeToFcnReturn extends SymbolTableVisitor {
     public Type returnType;
     

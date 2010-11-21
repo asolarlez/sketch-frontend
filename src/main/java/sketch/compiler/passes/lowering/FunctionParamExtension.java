@@ -31,6 +31,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 
 
 /**
@@ -39,6 +40,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
  *
  * @author liviu
  */
+@CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class FunctionParamExtension extends SymbolTableVisitor
 {
 

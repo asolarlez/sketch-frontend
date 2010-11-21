@@ -682,7 +682,8 @@ public class PartialEvaluator extends FEReplacer {
         state.pushLevel();
         try{
             s = (Statement)super.visitStmtBlock(stmt);
-        }finally{
+        }
+        finally{
             if( s == null){
                 s = stmt;
             }

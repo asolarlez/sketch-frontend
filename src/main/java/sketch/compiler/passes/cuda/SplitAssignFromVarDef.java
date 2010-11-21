@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 
-@CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class }, runsAfter = {}, debug = true)
+@CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class }, runsAfter = {})
 public class SplitAssignFromVarDef extends FEReplacer {
     @Override
     public Object visitStmtVarDecl(StmtVarDecl stmt) {

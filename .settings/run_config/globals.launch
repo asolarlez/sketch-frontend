@@ -15,7 +15,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="sketch.compiler.main.seq.SequentialSketchMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/home/gatoatigrado/sandbox/sketch-frontend/src/test/sk/seq/miniTest68.sk"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/tmp/gatoatigrado/1289704856/nothing.sk"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="sketch-frontend"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -Xmx1024M"/>

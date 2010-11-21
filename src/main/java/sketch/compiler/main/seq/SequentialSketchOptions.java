@@ -32,7 +32,7 @@ public class SequentialSketchOptions {
     public SolverOptions solverOpts = new SolverOptions();
     public String[] args;
     public List<String> argsAsList;
-    public final String[] inArgs;
+    public String[] inArgs;
     public Vector<String> backendOptions;
     /** sketch file (corresponds to first arg) */
     public File sketchFile;
@@ -44,10 +44,14 @@ public class SequentialSketchOptions {
 
     public SequentialSketchOptions(String[] inArgs) {
         this.inArgs = inArgs;
+        preinit();
         SketchCliParser parser = new SketchCliParser(inArgs);
         parseCommandline(parser);
         _singleton = this;
     }
+
+    /** let subclasses set different default values */
+    public void preinit() {}
 
     public void prependArgsAndReparse(String[] additionalArgs, boolean errorOnUnknown) {
         Vector<String> allArgs = new Vector<String>(Arrays.asList(additionalArgs));
@@ -67,7 +71,7 @@ public class SequentialSketchOptions {
         if (args.length < 1 || args[0].equals("")) {
             parser.printHelpAndExit("no files specified");
         }
-        
+
         // actions
         argsAsList = Arrays.asList(args);
         sketchFile = new File(args[0]);
