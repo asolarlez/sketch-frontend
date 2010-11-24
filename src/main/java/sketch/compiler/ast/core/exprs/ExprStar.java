@@ -97,14 +97,17 @@ public class ExprStar extends Expression
      */
     public ExprStar(FEContext context, int size)
     {
-        this(context, size, null);
+        super(context);
+        isFixed = true;
+        this.size = size;
+        this.starName = HOLE_BASE + (NEXT_UID++);
     }
-    
+
     @Deprecated
-    public ExprStar(FEContext ctx, int size, Type typ) {
+    public ExprStar(FEContext ctx, Type typ, int domainsize) {
         super(ctx);
         this.type = typ;
-        this.size = size;
+        this.size = domainsize;// (int) Math.ceil(Math.log(domainsize) / Math.log(2));
         isFixed = true;
         this.starName = HOLE_BASE + (NEXT_UID++);
     }

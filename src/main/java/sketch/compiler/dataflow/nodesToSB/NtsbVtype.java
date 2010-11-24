@@ -1,5 +1,7 @@
 package sketch.compiler.dataflow.nodesToSB;
 
+import static sketch.util.DebugOut.printWarning;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,6 +156,8 @@ public class NtsbVtype extends IntVtype {
                 rv.A = A;
                 rv.B = B;
                 rv.X = X;
+            } else if (v1.hasIntVal() || v2.hasIntVal()) {
+                printWarning("skipping ax+b optimization for nodes", v1, v2);
             }
         }
         return rv;
