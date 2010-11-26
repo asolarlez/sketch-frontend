@@ -113,6 +113,7 @@ public class FENullVisitor implements FEVisitor
 	public Object visitStmtSwitch(StmtSwitch sw) { return null; }
 	public Object visitStmtMinimize(StmtMinimize stmtMinimize) { return null; }
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
+    public Object visitExprSpecialStar(ExprSpecialStar var) { return null; }
     public Object visitExprTprint(ExprTprint exprTprint) { return null; }
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) { return null; }
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) { return null; }

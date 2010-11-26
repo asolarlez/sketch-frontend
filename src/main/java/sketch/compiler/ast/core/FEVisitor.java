@@ -116,6 +116,7 @@ public interface FEVisitor
     public Object visitExprNullPtr(ExprNullPtr nptr);
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
+    public Object visitExprSpecialStar(ExprSpecialStar exprSpecialStar);
     public Object visitExprTprint(ExprTprint exprTprint);
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx);
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim);

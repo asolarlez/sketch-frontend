@@ -206,6 +206,8 @@ public class PartialEvaluator extends FEReplacer {
         return vtype.BOTTOM(TypePrimitive.inttype);
     }
 
+
+
     public Object visitExprField(ExprField exp) {
         exp.getLeft().accept(this);
          Expression left = exprRV;

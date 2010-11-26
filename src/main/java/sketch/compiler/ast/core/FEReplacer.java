@@ -878,6 +878,10 @@ public class FEReplacer implements FEVisitor
         }
     }
 
+    public Object visitExprSpecialStar(ExprSpecialStar star) {
+        return visitExprStar(star);
+    }
+
     public Object visitExprTprint(ExprTprint exprTprint) {
         boolean changed = false;
         Vector<TprintTuple> nextExpressions = new Vector<TprintTuple>();

@@ -1,5 +1,7 @@
 package sketch.compiler.dataflow.preprocessor;
 
+import static sketch.util.DebugOut.printNote;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,9 +139,11 @@ class UpgradeStarToInt extends FEReplacer{
 	}
 
 	public Object visitExprStar(ExprStar star) {
-	    if (star.getType() == null) {
+	    if (!star.typeWasSetByScala) {
 	        // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
 	        star.setType(type);
+	    } else {
+	        printNote("skipping setting star type", star, type);
 	    }
 		return star;
 	}

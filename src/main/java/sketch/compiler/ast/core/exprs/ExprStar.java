@@ -43,6 +43,7 @@ public class ExprStar extends Expression
 	private Type type;
 	public int INT_SIZE=5;
 	private String starName="ANON";
+    public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
 	private static String HOLE_BASE="H__";
 	
@@ -110,6 +111,12 @@ public class ExprStar extends Expression
         this.size = domainsize;// (int) Math.ceil(Math.log(domainsize) / Math.log(2));
         isFixed = true;
         this.starName = HOLE_BASE + (NEXT_UID++);
+        this.typeWasSetByScala = true;
+    }
+
+    public ExprStar(FENode context, int size, Type typ) {
+        this(context, size);
+        this.setType(typ);
     }
 
 	public FENode getDepObject(int i){
