@@ -88,8 +88,9 @@ system-install: # usage: make system-install DESTDIR=/usr/bin [SUDOINSTALL=1]
 test:
 	mvn test | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
-test-seq:
-	set -o pipefail; mkdir -p target; mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+test-seq: compile
+	set -o pipefail; mkdir -p target
+	time mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-par:
 	set -o pipefail; mkdir -p target; mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"

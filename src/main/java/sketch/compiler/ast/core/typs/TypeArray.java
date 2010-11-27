@@ -84,6 +84,16 @@ public class TypeArray extends Type
     {
         return base;
     }
+    
+    /** Gets base type of multi-dim arrays */
+    public Type getAbsoluteBase() {
+        Type t=this;
+        while(t instanceof TypeArray) {
+            TypeArray ta=(TypeArray) t;
+            t=ta.getBase();
+        }
+        return t;
+    }
 
     /** Gets the length of this. */
     public Expression getLength()
