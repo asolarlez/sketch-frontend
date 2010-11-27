@@ -242,7 +242,6 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		
 		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen));
-		prog = (Program) prog.accept(new TypeInferenceForStars());
 		
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		//dump (prog, "Extract Vectors in Casts:");
