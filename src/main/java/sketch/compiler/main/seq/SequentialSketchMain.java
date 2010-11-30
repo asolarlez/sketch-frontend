@@ -17,6 +17,7 @@
 package sketch.compiler.main.seq;
 
 
+import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printNote;
 
 import java.io.File;
@@ -404,6 +405,10 @@ public class SequentialSketchMain extends CommonSketchMain
 		
         if (showPhaseOpt("preproc")) {
             dump(lprog, "After Preprocessing");
+        }
+        if (options.debugOpts.dumpPreproc != null) {
+            printDebug("Dumping preprocessed program to ", options.debugOpts.dumpPreproc);
+            lprog.debugDump(new File(options.debugOpts.dumpPreproc));
         }
 
 		return lprog;

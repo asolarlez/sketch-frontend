@@ -39,4 +39,6 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     @CliParameter(shortname = "V", help = "Sets the level of verbosity for the output. 0 is "
             + "quiet mode 5 is the most verbose.")
     public int verbosity = 1;
+    @CliParameter(help="Output debugging after preproc to a file")
+    public String dumpPreproc = null;
 }

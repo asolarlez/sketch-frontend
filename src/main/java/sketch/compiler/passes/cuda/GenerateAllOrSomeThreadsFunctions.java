@@ -74,11 +74,16 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         Parameter param =
                 new Parameter(new TypeArray(CudaMemoryType.GLOBAL, TypePrimitive.bittype,
                         cudaBlockDim.all()), "arg");
+        final ExprVar arrvar = new ExprVar(ctx, param.getName());
+        ExprBinary curr = getAllOrNoneExpr(value, arrvar);
+        return Function.newStatic(ctx, name, TypePrimitive.bittype, Arrays.asList(param),
+                null, new StmtReturn(ctx, curr));
+    }
+
+    protected ExprBinary getAllOrNoneExpr(boolean value, final ExprVar arrvar) {
         ExprBinary curr = null;
         for (int a = 0; a < cudaBlockDim.all(); a++) {
-            final ExprArrayRange deref =
-                    new ExprArrayRange(new ExprVar(ctx, param.getName()),
-                            new ExprConstInt(a));
+            final ExprArrayRange deref = new ExprArrayRange(arrvar, new ExprConstInt(a));
             ExprBinary next = new ExprBinary(deref, "==", new ExprConstBoolean(value));
             if (curr == null) {
                 curr = next;
@@ -86,8 +91,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                 curr = new ExprBinary(curr, "&&", next);
             }
         }
-        return Function.newStatic(ctx, name, TypePrimitive.bittype, Arrays.asList(param),
-                null, new StmtReturn(ctx, curr));
+        return curr;
     }
 
     @Override
@@ -107,8 +111,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         allFcns.addAll(oldThreadFcns);
         allFcns.addAll(allThreadsFcns);
         allFcns.addAll(someThreadsFcns);
-        allFcns.add(createThreadDeltaFcn(spec, "__threadAll", true));
-        allFcns.add(createThreadDeltaFcn(spec, "__threadNone", false));
+        // allFcns.add(createThreadDeltaFcn(spec, "__threadAll", true));
+        // allFcns.add(createThreadDeltaFcn(spec, "__threadNone", false));
 
         for (Function f : allFcns) {
             assert f != null;
@@ -233,8 +237,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                     flushAndAdd(statements, threadLoopStmts, asBlock.getStmts().toArray(
                             new Statement[0]));
 
-                    ExprFunCall allCond = new ExprFunCall(c, "__threadAll", vref);
-                    ExprFunCall noneCond = new ExprFunCall(c, "__threadNone", vref);
+                    ExprBinary allCond = getAllOrNoneExpr(true, vref);
+                    ExprBinary noneCond = getAllOrNoneExpr(false, vref);
                     final Statement allthreadsAlt =
                             (Statement) ((StmtIfThen) stmt).getAlt().accept(this);
                     final Statement allthreadsThen =
@@ -267,8 +271,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                             firstAsBlock.getStmts().toArray(new Statement[0]));
 
                     // change the while statement so it recomputes the condition variables
-                    ExprFunCall allCond = new ExprFunCall(c, "__threadAll", vref);
-                    ExprFunCall noneCond = new ExprFunCall(c, "__threadNone", vref);
+                    ExprBinary allCond = getAllOrNoneExpr(true, vref);
+                    ExprBinary noneCond = getAllOrNoneExpr(false, vref);
                     Vector<Statement> stmts =
                             new Vector<Statement>(((StmtBlock) ws.getBody()).getStmts());
                     stmts.add(cond_assn);
