@@ -81,8 +81,8 @@ public class SynchronousTimedProcess {
                 killer.start();
             }
 
-            status.out = Misc.readStream(proc.getInputStream(), logAllOutput);
-            status.err = Misc.readStream(proc.getErrorStream(), true);
+            status.out = Misc.readStream(proc.getInputStream(), logAllOutput, null);
+            // status.err = Misc.readStream(proc.getErrorStream(), true, System.err);
             status.exitCode = proc.waitFor();
             status.execTimeMs = System.currentTimeMillis() - startMs;
 

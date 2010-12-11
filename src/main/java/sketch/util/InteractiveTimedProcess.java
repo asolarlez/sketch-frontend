@@ -75,7 +75,7 @@ public class InteractiveTimedProcess {
 		}
 		status.exitCode = proc.exitValue();
 		try {
-			status.err = Misc.readStream (proc.getErrorStream (), true);
+			status.err = Misc.readStream (proc.getErrorStream (), true, System.err);
 		}catch(IOException ioe){
 			
 		}
@@ -86,8 +86,8 @@ public class InteractiveTimedProcess {
 	public void cleanup(){
 		try {
 		status.exitCode = proc.waitFor ();
-		status.out = Misc.readStream (proc.getInputStream (), true);
-		status.err = Misc.readStream (proc.getErrorStream (), true);		
+		status.out = Misc.readStream (proc.getInputStream (), true, null);
+		status.err = Misc.readStream (proc.getErrorStream (), true, System.err);		
 		}catch(InterruptedException ie){
 			
 		}catch(IOException ioe){

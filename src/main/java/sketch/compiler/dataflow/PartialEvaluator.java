@@ -1017,7 +1017,7 @@ public class PartialEvaluator extends FEReplacer {
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         stmtMinimize.getMinimizeExpr().accept(this);
-        return isReplacer ? new StmtMinimize(exprRV) : stmtMinimize;
+        return isReplacer ? new StmtMinimize(exprRV, stmtMinimize.userGenerated) : stmtMinimize;
     }
 
     public Object visitStmtLoop(StmtLoop stmt)

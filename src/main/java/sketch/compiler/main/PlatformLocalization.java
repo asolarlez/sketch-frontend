@@ -95,7 +95,7 @@ public class PlatformLocalization {
     }
 
     public String getCegisPath() {
-        String cegisName = "cegis" + (isWin() ? ".exe" : "");
+        String cegisName = "cegis.py";
         SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
         Vector<File> all_files = new Vector<File>();
         if (options.feOpts.cegisPath != null) {

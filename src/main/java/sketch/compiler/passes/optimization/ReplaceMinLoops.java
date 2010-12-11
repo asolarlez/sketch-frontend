@@ -135,7 +135,7 @@ public class ReplaceMinLoops extends FEReplacer {
                 expr = new ExprBinary(new ExprVar(ctx, name), "+", expr);
             }
 
-            StmtBlock body = new StmtBlock(new StmtMinimize(expr));
+            StmtBlock body = new StmtBlock(new StmtMinimize(expr, false));
 
             final List<Parameter> params = Collections.emptyList();
             minimizeFcn =

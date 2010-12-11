@@ -65,6 +65,7 @@ import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
+import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
@@ -608,6 +609,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
+	    prog = (Program)prog.accept(new MinimizeFcnCall());
         (new SemanticCheckPass()).visitProgram(prog);
         this.showPhaseOpt("parse");
 

@@ -129,7 +129,7 @@ public class FEContext
 
     public static FEContext artificalFrom(String name, FENode node0) {
         FEContext cx0;
-        if (node0 == null) {
+        if (node0 == null || (node0.getCx() == null)) {
             cx0 = new FEContext("null context");
         } else {
             cx0 = node0.getCx();

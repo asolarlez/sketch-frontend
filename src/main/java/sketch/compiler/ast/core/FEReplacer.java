@@ -865,7 +865,7 @@ public class FEReplacer implements FEVisitor
         if (newVariable == previous || !(newVariable instanceof Expression)) {
             return stmtMinimize;
         } else {
-            return new StmtMinimize((Expression) newVariable);
+            return new StmtMinimize((Expression) newVariable, stmtMinimize.userGenerated);
         }
     }
 

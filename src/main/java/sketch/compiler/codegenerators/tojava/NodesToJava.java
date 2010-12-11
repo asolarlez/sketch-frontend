@@ -1291,4 +1291,9 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
         return "__syncthreads()";
     }
+    
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        return "minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ")";
+    }
 }

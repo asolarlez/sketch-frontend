@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -53,12 +54,14 @@ public class SATBackend {
 		tracing = true;
 	}
 	
-	public String[] getBackendCommandline(Vector<String> commandLineOptions){
+	public String[] getBackendCommandline(Vector<String> commandLineOptions, String... additional){
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
-        String cegisBinary = pl.getCegisPath();
-        commandLineOptions.insertElementAt(cegisBinary, 0);
+        String cegisScript = pl.getCegisPath();
+        commandLineOptions.insertElementAt(cegisScript, 0);
         commandLineOptions.add(options.getTmpSketchFilename());
-        commandLineOptions.add(options.getTmpSketchFilename() + ".tmp");
+        commandLineOptions.add("-o");
+        commandLineOptions.add(options.getSolutionsString());
+        commandLineOptions.addAll(Arrays.asList(additional));
         return commandLineOptions.toArray(new String[0]);
     }
 
@@ -79,29 +82,29 @@ public class SATBackend {
         log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         // prog.accept(new SimpleCodePrinter());
         assert oracle != null;
-        writeProgramToBackendFormat(prog);
 
         final HasMinimize hasMinimize = new HasMinimize();
         hasMinimize.visitProgram(prog);
-
-        final String tmpSketchFilename = options.getTmpSketchFilename();
-        File sketchOutputFile = new File(tmpSketchFilename + ".tmp");
-        File bestValueFile = sketchOutputFile; //Over-written in front-end minimize
+        options.cleanTemp();
 
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
             if (options.feOpts.minimize) {
-                bestValueFile = new File(tmpSketchFilename + ".best");
-                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
+                assert false : "deprecated";
+                // use the frontend
+//                bestValueFile = new File(tmpSketchFilename + ".best");
+//                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
             } else {
+                // use the backend
                 final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
-                worked = solve(oracle, options.solverOpts.timeout);
+                worked = solve(oracle, true, options.solverOpts.timeout);
             }
         } else {
-            worked = solve(oracle, options.solverOpts.timeout);
+            writeProgramToBackendFormat(prog);
+            worked = solve(oracle, false, options.solverOpts.timeout);
         }
 
         {
@@ -123,7 +126,8 @@ public class SATBackend {
             throw new RuntimeException("The sketch could not be resolved.");
         }
 
-        extractOracleFromOutput(bestValueFile.getPath());
+        File[] solutions = options.getSolutionsFiles();
+        extractOracleFromOutput(solutions[0].getPath());
         return worked;
     }
 
@@ -143,7 +147,7 @@ public class SATBackend {
             writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
 
             // actually run the solver
-            boolean currResult = solve(oracle, timeout);
+            boolean currResult = solve(oracle, false, timeout);
             worked |= currResult;
             if (!currResult) {
                 // didn't work. explore the upper interval, and explore more if we
@@ -188,6 +192,7 @@ public class SATBackend {
 
             outStream.flush();
             outStream.close();
+            assert (new File(options.getTmpSketchFilename())).isFile() : "didn't appear to write file";
         } catch (java.io.IOException e) {
             // e.printStackTrace(System.err);
             throw new RuntimeException(e);
@@ -218,22 +223,31 @@ public class SATBackend {
 
 
 	
+    private boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
+        log("OFILE = " + options.feOpts.output);
 
-	private boolean solve(ValueOracle oracle, float timeoutMins){
+        // minimize
+        if (hasMinimize) {
+            Vector<String> backendOptions = options.getBackendOptions();
+            String[] commandLine =
+                    getBackendCommandline(backendOptions, "--use-minimize");
+            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            if (!ret) {
+                log(0, "The sketch cannot be resolved");
+                System.err.println(solverErrorStr);
+                return false;
+            }
 
-		log ("OFILE = " + options.feOpts.output);
-		
-		if (options.bndOpts.incremental.isSet) {
+        // TODO -- move incremental to Python backend
+        } else if (options.bndOpts.incremental.isSet) {
 			boolean isSolved = false;
 			int bits=0;
 			int maxBits = options.bndOpts.incremental.value;
 			for(bits=1; bits<=maxBits; ++bits){
 				log ("TRYING SIZE " + bits);			
-				Vector<String> backendOptions = options.getBackendOptions();
-				backendOptions.add("-overrideCtrls");
-				backendOptions.add("" + bits);
-				String[] commandLine = getBackendCommandline(backendOptions);
-				
+                Vector<String> backendOptions = options.getBackendOptions();
+                String[] commandLine =
+                        getBackendCommandline(backendOptions, "--bnd-cbits=" + bits);
 				boolean ret = runSolver(commandLine, bits, timeoutMins);
 				if(ret){
 					isSolved = true;
@@ -249,17 +263,19 @@ public class SATBackend {
 			}
 			log ("Succeded with " + bits + " bits for integers");
 			oracle.capStarSizes(bits);
+
+		// default
         } else {
             Vector<String> backendOptions = options.getBackendOptions();
             String[] commandLine = getBackendCommandline(backendOptions);
-			boolean ret = runSolver(commandLine, 0, timeoutMins);
-			if(!ret){
-				log (0, "The sketch cannot be resolved");
-				System.err.println(solverErrorStr);
-				return false;
-			}
-		}
-		return true;
+            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            if (!ret) {
+                log(0, "The sketch cannot be resolved");
+                System.err.println(solverErrorStr);
+                return false;
+            }
+        }
+        return true;
 	}
 
 

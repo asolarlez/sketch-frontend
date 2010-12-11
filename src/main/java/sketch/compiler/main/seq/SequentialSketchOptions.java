@@ -1,9 +1,12 @@
 package sketch.compiler.main.seq;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+
+import org.apache.commons.io.FileUtils;
 
 import sketch.compiler.cmdline.BoundOptions;
 import sketch.compiler.cmdline.DebugOptions;
@@ -94,8 +97,34 @@ public class SequentialSketchOptions {
     }
 
     public String getTmpSketchFilename() {
-        return PlatformLocalization.getLocalization().getTempPathString(
-                sketchName + ".tmp");
+        final File sktmpdir = sktmpdir();
+        assert sktmpdir.mkdirs() || sktmpdir.isDirectory();
+        return PlatformLocalization.getLocalization().getTempPathString(sketchName,
+                "input.tmp");
+    }
+
+    public String getSolutionsString() {
+        return PlatformLocalization.getLocalization().getTempPathString(sketchName,
+                "solution-%(num)s");
+    }
+
+    public File[] getSolutionsFiles() {
+        FilenameFilter f = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.startsWith("solution-");
+            }
+        };
+        File[] files = sktmpdir().listFiles(f);
+        Arrays.sort(files);
+        return files;
+    }
+    
+    public void cleanTemp() {
+        FileUtils.deleteQuietly(sktmpdir());
+    }
+
+    protected File sktmpdir() {
+        return PlatformLocalization.getLocalization().getTempPath(sketchName);
     }
 
     /** for inheriting classes */
