@@ -2,6 +2,8 @@
  *
  */
 package sketch.compiler.passes.lowering;
+import static sketch.util.DebugOut.assertFalse;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -113,6 +116,26 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	    
 	}
 	
+    @Override
+    public Object visitExprStar(ExprStar star) {
+        Type ts = star.getType();
+        if (ts instanceof TypeArray) {
+            TypeArray tsa = (TypeArray) ts;
+            List<Expression> dims = tsa.getDimensions();
+            if (dims.size() > 1) {
+                int total = 1;
+                for (Expression e : dims) {
+                    if (!(e instanceof ExprConstInt)) {
+                        assertFalse("dimension variable not exprconstint type");
+                    }
+                    total *= ((ExprConstInt) e).getVal();
+                }
+                star.setType(new TypeArray(tsa.getAbsoluteBase(), new ExprConstInt(total)));
+                return star;
+            }
+        }
+        return super.visitExprStar(star);
+    }
 
 	/** Flatten multi-dimensional array types */
 	public Object visitTypeArray (TypeArray t) {
