@@ -45,6 +45,7 @@ import sketch.compiler.solvers.constructs.ValueOracle;
  */
 public class ProduceBooleanFunctions extends PartialEvaluator {
     boolean tracing = false;
+    ExprConstInt maxArrSize;
     class SpecSketch{
         public final String spec;
         public final String sketch;
@@ -61,6 +62,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if(tracing){
             rcontrol.activateTracing();
         }
+        maxArrSize = ExprConstInt.createConstant(10);
     }
     
     private String convertType(Type type) {
@@ -104,6 +106,19 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     List<String> opnames;
     List<Integer> opsizes;
     
+    public Object visitTypeArray(TypeArray t) {
+        Type nbase = (Type)t.getBase().accept(this);
+        abstractValue avlen = (abstractValue) t.getLength().accept(this);
+        Expression nlen;
+        if(avlen.isBottom()){
+            nlen = maxArrSize;
+        }else{
+            nlen = ExprConstInt.createConstant(avlen.getIntVal());
+        }
+        if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
+        return new TypeArray(nbase, nlen) ;
+    }
+    
     
     public void doParams(List<Parameter> params) {
         PrintStream out = ((NtsbVtype)this.vtype).out;
@@ -113,24 +128,23 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
         for(Iterator<Parameter> iter = params.iterator(); iter.hasNext(); ){
             Parameter param = iter.next();
-            
+            Type ptype = (Type) param.getType().accept(this);
             if (!first) out.print(", ");
             first = false;
             if(param.isParameterOutput()) out.print("! ");
-            out.print(printType(param.getType()) + " ");
+            out.print(printType(ptype) + " ");
             String lhs = param.getName();
             
             if(param.isParameterOutput()){
-                state.outVarDeclare(lhs , param.getType());
+                state.outVarDeclare(lhs , ptype);
             }else{
-                state.varDeclare(lhs , param.getType());
+                state.varDeclare(lhs , ptype);
             }
             IntAbsValue inval = (IntAbsValue)state.varValue(lhs);
             
-            if( param.getType() instanceof TypeArray ){
-                TypeArray ta = (TypeArray) param.getType();
-                IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);               
-                report(tmp.hasIntVal(), "The array size must be a compile time constant !! \n" );
+            if( ptype instanceof TypeArray ){
+                TypeArray ta = (TypeArray) ptype;
+                IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);                                             
                 assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
                 int sz = tmp.getIntVal();
                 if(param.isParameterOutput()){                    
@@ -159,9 +173,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             
             if(param.isParameterInput() && param.isParameterOutput()){
                 out.print(", ");
-                out.print(printType(param.getType()) + " ");
-                if( param.getType() instanceof TypeArray ){
-                    TypeArray ta = (TypeArray) param.getType();
+                out.print(printType(ptype) + " ");
+                if( ptype instanceof TypeArray ){
+                    TypeArray ta = (TypeArray) ptype;
                     IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);               
                     assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
                     int sz = tmp.getIntVal();                    

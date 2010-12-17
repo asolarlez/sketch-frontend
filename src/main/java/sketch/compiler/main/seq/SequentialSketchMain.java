@@ -264,7 +264,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 
 		prog = (Program)prog.accept(new EliminateNestedArrAcc());
-		//dump (prog, "After lowerIR:");
+		dump (prog, "After lowerIR:");
 	}
 
 
@@ -369,7 +369,7 @@ public class SequentialSketchMain extends CommonSketchMain
         lprog = (new IRStage1()).run(lprog);
         
         lprog = (Program) lprog.accept(new TypeInferenceForStars());
-        // dump (lprog, "tifs:");
+        //dump (lprog, "tifs:");
 
 		lprog.accept(new PerformFlowChecks());
 		
