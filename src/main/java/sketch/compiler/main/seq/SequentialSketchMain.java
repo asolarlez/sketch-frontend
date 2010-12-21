@@ -43,6 +43,7 @@ import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
 import sketch.compiler.codegenerators.NodesToC;
 import sketch.compiler.codegenerators.NodesToCTest;
+import sketch.compiler.codegenerators.NodesToCUDA;
 import sketch.compiler.codegenerators.NodesToH;
 import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
@@ -67,6 +68,7 @@ import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
@@ -509,7 +511,11 @@ public class SequentialSketchMain extends CommonSketchMain
             finalCode.accept(new SimpleCodePrinter());
 			//System.out.println(hcode);
 			//System.out.println(ccode);
-		}else{
+		} else {
+		    if (new ContainsCudaCode().run(finalCode)) {
+		        String cucode = (String)finalCode.accept(new NodesToCUDA(varGen, options.feOpts.outputDir + resultFile + ".cu"));
+		        printDebug("CUDA code", cucode);
+		    }
 			try{
 				{
 					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + ".h");
