@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 
@@ -138,8 +139,7 @@ public class StreamSpec extends FENode
                       String name, List params, Statement init)
     {
         this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.newInit(init,
-                                                        init)));
+             Collections.singletonList(Function.creator(init, "init", FcnType.Init).create()));
     }
 
     /**
@@ -164,8 +164,7 @@ public class StreamSpec extends FENode
                       String name, List params, Statement init)
     {
         this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.newInit(init,
-                                                        init)));
+             Collections.singletonList(Function.creator(init, "init", FcnType.Init).create()));
     }
 
     /**
@@ -263,7 +262,7 @@ public class StreamSpec extends FENode
         for (Iterator iter = funcs.iterator(); iter.hasNext(); )
         {
             Function func = (Function)iter.next();
-            if (func.getCls() == Function.FUNC_INIT)
+            if (func.getFcnType() == FcnType.Init)
                 return func;
         }
         return null;
@@ -282,7 +281,7 @@ public class StreamSpec extends FENode
         for (Iterator iter = funcs.iterator(); iter.hasNext(); )
         {
             Function func = (Function)iter.next();
-            if (func.getCls() == Function.FUNC_WORK)
+            if (func instanceof FuncWork)
                 return (FuncWork)func;
         }
         return null;

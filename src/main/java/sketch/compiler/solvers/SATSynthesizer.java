@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -816,10 +817,15 @@ public class SATSynthesizer implements Synthesizer {
 
 		Statement body = new StmtBlock(current, lst);
 
-		Function spec = Function.newHelper(current, "spec", TypePrimitive.inttype ,outPar, new StmtAssign(new ExprVar(current, opname), ExprConstInt.one));
+        final StmtBlock specBody =
+                new StmtBlock(current, new StmtAssign(new ExprVar(current, opname),
+                        ExprConstInt.one));
+        Function spec =
+                Function.creator(current, "spec", FcnType.Static).returnType(
+                        TypePrimitive.inttype).params(outPar).body(specBody).create();
+        // Function.newHelper(current, "spec", TypePrimitive.inttype ,outPar, new StmtAssign(new ExprVar(current, opname), ExprConstInt.one));
 
-		Function sketch = Function.newHelper(current, "sketch", TypePrimitive.inttype ,
-				outPar, "spec", body);
+		Function sketch = Function.creator(current, "sketch", FcnType.Static).params(outPar).spec("spec").body(body).create();
 
 		List<Function> funcs = new ArrayList<Function>();
 

@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -29,7 +31,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	
 	Function newFloatFunction(String flName){
-		return Function.newUninterp(flName, TypePrimitive.bittype, new ArrayList<Parameter>(0));
+	    return Function.creator((FEContext) null, flName, FcnType.Uninterp).returnType(TypePrimitive.bittype).create();
 	}
 	
 	

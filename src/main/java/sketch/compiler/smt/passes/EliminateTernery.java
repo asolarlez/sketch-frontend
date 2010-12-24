@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -95,8 +96,9 @@ public class EliminateTernery extends SymbolTableVisitor {
 		
 		
 		StmtBlock body = new StmtBlock(new StmtReturn(exp, exp));
-		Function helper = Function.newHelper(exp, funcName, getType(exp), 
-				params, body);
+        Function helper =
+                Function.creator(exp, funcName, FcnType.Generator).returnType(getType(exp)).params(
+                        params).body(body).create();
 		
 		newFuncs.add(helper);
 		

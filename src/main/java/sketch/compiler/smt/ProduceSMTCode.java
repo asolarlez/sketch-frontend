@@ -83,7 +83,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 		List<Function> l = new LinkedList<Function>();
 		for (Function f : spec.getFuncs()) {
 			if (f.getName().equals(AddWrapper._MAIN) && 
-					f.getCls() == Function.FUNC_BUILTIN_HELPER)
+			        f.isGenerator())
 				l.add(f);
 		}
 		return l;

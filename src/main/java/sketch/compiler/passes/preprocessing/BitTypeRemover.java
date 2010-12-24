@@ -300,7 +300,7 @@ public class BitTypeRemover extends SymbolTableVisitor
             	newParams.add(param);
         }
         if(change)
-        	func=new Function(func,func.getCls(),func.getName(),func.getReturnType(),newParams,func.getSpecification(),func.getBody());
+            func = func.creator().params(newParams).create();
 		Object ret=super.visitFunction(func);
 		preSymtab=oldPST;
 		return ret;

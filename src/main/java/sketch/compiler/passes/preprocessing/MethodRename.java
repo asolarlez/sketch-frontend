@@ -17,9 +17,7 @@ public class MethodRename extends FEReplacer {
     {
         Function rv = (Function) super.visitFunction(func);
         if(oldToNew.containsKey(rv.getName())){
-            return new Function(rv, rv.getCls(),
-                    oldToNew.get(rv.getName()), rv.getReturnType(),
-                    rv.getParams(), rv.getSpecification(), rv.getBody());
+            return rv.creator().name(oldToNew.get(rv.getName())).create();
         }else{
             return rv;
         }        

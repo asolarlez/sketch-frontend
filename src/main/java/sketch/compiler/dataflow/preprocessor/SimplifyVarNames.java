@@ -78,13 +78,8 @@ public class SimplifyVarNames extends FEReplacer {
     	
     	
     	Statement newBody = (Statement)func.getBody().accept(this);
-    	    	
 
-        return  new Function(func, func.getCls(),
-                            func.getName(), func.getReturnType(),
-                            nparams, func.getSpecification(), newBody);
-    	
-    	//state.pushVStack(new valueClass((String)null) );
+    	return func.creator().params(nparams).body(newBody).create();
     }
 	
 	

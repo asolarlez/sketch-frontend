@@ -555,7 +555,7 @@ public class NodesToJava extends SymbolTableVisitor
             result += convertType(func.getReturnType()) + " ";
         result += func.getName();
         String prefix = null;
-        if (func.getCls() == Function.FUNC_INIT) prefix = "final";
+        if (func.isInit()) prefix = "final";
         result += doParams(func.getParams(), prefix) + " ";
         result += (String)func.getBody().accept(this);
         result += "\n";
@@ -905,8 +905,8 @@ public class NodesToJava extends SymbolTableVisitor
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
             Function func = (Function)iter.next();
-            if (func.getCls() == Function.FUNC_HANDLER)
-                handlers.add(func);
+//            if (func.getFcnType() == )
+//                handlers.add(func);
         }
         if (handlers.isEmpty())
             return null;

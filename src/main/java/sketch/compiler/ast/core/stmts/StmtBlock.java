@@ -70,6 +70,11 @@ public class StmtBlock extends Statement
     	this (cx, Arrays.asList (stmts));
     }
 
+    /** Create a new StmtBlock for a variable number of statements. */
+    public StmtBlock (FEContext cx, Statement... stmts) {
+        this (cx, Arrays.asList (stmts));
+    }
+
     /** Create a new StmtBlock for a pair of statements. */
     public StmtBlock(Statement stmt1, Statement stmt2)
     {

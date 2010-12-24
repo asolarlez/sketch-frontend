@@ -49,9 +49,7 @@ public class EliminateRegens extends SymbolTableVisitor {
         Function f = (Function) super.visitFunction(func);
         if(globalDecls.size()>0){
             globalDecls.add(f.getBody());
-            return new Function(f, f.getCls(),
-                    f.getName(), f.getReturnType(),
-                    f.getParams(), f.getSpecification(), new StmtBlock(globalDecls));
+            return f.creator().body(new StmtBlock(globalDecls)).create();
         }
         return f;        
     }

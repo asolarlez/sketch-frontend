@@ -3,6 +3,7 @@ package sketch.util.wrapper;
 import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 import java.util.Collection;
+import java.util.Vector;
 
 import sketch.util.fcns.ZipIdxEnt;
 
@@ -21,7 +22,7 @@ public class ScRichString {
         str = base;
     }
 
-    public String join(String[] arr) {
+    public String join(String... arr) {
         if (arr == null) {
             return "<null list>";
         }
@@ -35,7 +36,7 @@ public class ScRichString {
         return b.toString();
     }
 
-    public String join(Object[] arr) {
+    public String join(Object... arr) {
         if (arr == null) {
             return "<null list>";
         }
@@ -54,6 +55,34 @@ public class ScRichString {
                         as_string[a] =
                                 "<couldn't get string for " +
                                         arr[a].getClass().getName() + ">";
+                    }
+                }
+            }
+        }
+        return join(as_string);
+    }
+
+    public String joinNonempty(Object... arr) {
+        if (arr == null) {
+            return "<null list>";
+        }
+        Vector<String> as_string = new Vector<String>();
+        for (int a = 0; a < arr.length; a++) {
+            if (arr[a] == null) {
+                as_string.add("<null>");
+            } else {
+                try {
+                    String val = arr[a].toString();
+                    if (!val.isEmpty()) {
+                        as_string.add(val);
+                    }
+                } catch (IllegalStateException e) {
+                    if (!e.getMessage().contains("please enable asserts")) {
+                        System.err.println("re-throwing exception");
+                        throw e;
+                    } else {
+                        as_string.add("<couldn't get string for " +
+                                arr[a].getClass().getName() + ">");
                     }
                 }
             }
@@ -88,7 +117,7 @@ public class ScRichString {
         }
         String result = "";
         for (ZipIdxEnt<String> elt : zipwithindex(strList)) {
-            result += elt.entry + (elt.isLast ? "" : ", ");
+            result += elt.entry + (elt.isLast ? "" : str);
         }
         return result;
     }

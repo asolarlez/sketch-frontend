@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Insert I/O rate declarations into filters' init functions.  For
@@ -69,6 +70,8 @@ public class InsertIODecls extends InitMunger
      */
     public static Function findWork(List fns, boolean init)
     {
+        throw new NotImplementedException();
+        /*
         Function work = null;
         for (Iterator iter = fns.iterator(); iter.hasNext(); )
         {
@@ -83,6 +86,7 @@ public class InsertIODecls extends InitMunger
             }
         }
         return work;
+        */
     }
 
     public Object visitStreamSpec(StreamSpec spec)

@@ -17,13 +17,13 @@
 package sketch.compiler.codegenerators.tojava;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 
@@ -43,14 +43,12 @@ abstract public class InitMunger extends FEReplacer
         for (Iterator iter = fns.iterator(); iter.hasNext(); )
         {
             Function fn = (Function)iter.next();
-            if (fn.getCls() == Function.FUNC_INIT)
+            if (fn.isInit())
                 return fn;
         }
 
         // No init function; create an empty one.
-        return Function.newInit(context,
-                                new StmtBlock(context,
-                                              Collections.EMPTY_LIST));
+        return Function.creator(context, null, FcnType.Init).body(new StmtBlock(context)).create();
     }
 
     /**
@@ -68,9 +66,7 @@ abstract public class InitMunger extends FEReplacer
         List newStmts = new ArrayList(stmts);
         newStmts.addAll(oldBody.getStmts());
         Statement newBody = new StmtBlock(oldBody, newStmts);
-        init = new Function(init, init.getCls(),
-                            init.getName(), init.getReturnType(),
-                            init.getParams(), newBody);
+        init = init.creator().body(newBody).create();
         fns.add(init);
         return fns;
     }

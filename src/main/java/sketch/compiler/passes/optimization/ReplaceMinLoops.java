@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprStar;
@@ -115,8 +116,7 @@ public class ReplaceMinLoops extends FEReplacer {
             stmts.insertElementAt(minFcnCall, 0);
             body = new StmtBlock(stmts);
 
-            return new Function(fcn, fcn.getCls(), fcn.getName(), fcn.getReturnType(),
-                    fcn.getParams(), fcn.getSpecification(), body);
+            return fcn.creator().body(body).create();
         } else {
             return fcn;
         }
@@ -139,8 +139,8 @@ public class ReplaceMinLoops extends FEReplacer {
 
             final List<Parameter> params = Collections.emptyList();
             minimizeFcn =
-                    Function.newStatic(ctx, fcnName, TypePrimitive.voidtype, params,
-                            null, body);
+                    Function.creator(ctx, fcnName, FcnType.Static).name(fcnName).params(
+                            params).body(body).create();
         }
         return minimizeFcn;
     }

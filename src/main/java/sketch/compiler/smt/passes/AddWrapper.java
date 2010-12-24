@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -20,7 +21,6 @@ import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class AddWrapper extends FEReplacer {
 	
@@ -145,10 +145,6 @@ public class AddWrapper extends FEReplacer {
 		}
 		
 		StmtBlock bodyBlk = new StmtBlock(mainBody);
-		Function synthesisWrapper = new Function(spec, Function.FUNC_BUILTIN_HELPER, _MAIN, TypePrimitive.voidtype, params, bodyBlk);
-		return synthesisWrapper;
+		return Function.creator(spec, _MAIN, FcnType.Generator).create();
 	}
-	
-	
-
 }

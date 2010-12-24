@@ -15,14 +15,13 @@
  */
 
 package sketch.compiler.passes.lowering;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 
 /**
@@ -42,16 +41,13 @@ public class CreateInitFunctions extends FEReplacer
         for (Iterator iter = ss.getFuncs().iterator(); iter.hasNext(); )
         {
             Function func = (Function)iter.next();
-            if (func.getCls() == Function.FUNC_INIT)
+            if (func.isInit())
                 hasInit = true;
         }
         if (!hasInit)
         {
-            List newFuncs = new java.util.ArrayList();
-            newFuncs.addAll(ss.getFuncs());
-            Statement body = new StmtBlock(ss,
-                                           Collections.EMPTY_LIST);
-            newFuncs.add(Function.newInit(ss, body));
+            List<Function> newFuncs = new java.util.ArrayList<Function>(ss.getFuncs());
+            newFuncs.add(Function.creator(ss, null, FcnType.Init).body(new StmtBlock(ss)).create());
             ss = new StreamSpec(ss, ss.getType(),
                                 ss.getStreamType(), ss.getName(),
                                 ss.getParams(), ss.getVars(), newFuncs);

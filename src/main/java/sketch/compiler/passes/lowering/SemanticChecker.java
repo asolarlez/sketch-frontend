@@ -218,20 +218,10 @@ public class SemanticChecker
 				String name = func.getName();
 				if (name == null)
 				{
-					switch(func.getCls())
-					{
-					case Function.FUNC_INIT: name = "init"; break;
-					case Function.FUNC_WORK: name = "work"; break;
-					case Function.FUNC_PREWORK: name = "prework"; break;
-					case Function.FUNC_HANDLER:
-						report(func, "message handlers must have names");
-						break;
-					case Function.FUNC_HELPER:
-						report(func, "helper functions must have names");
-						break;
-					default:
-						// is BUILTIN_HELPER and CONST_HELPER.  Ignore
-					}
+				    name = func.getFcnType().cCodeName;
+				    if (name.isEmpty()) {
+				        report(func, "helper functions must have names");
+				    }
 				}
 				if (name != null)
 					checkADupFieldName(localNames, streamNames,
@@ -344,7 +334,7 @@ public class SemanticChecker
 			// correct vs. the type of statement.
 			public Object visitStmtAdd(StmtAdd stmt)
 			{
-				if ((func.getCls() != Function.FUNC_INIT) ||
+				if ((!func.isInit()) ||
 						(spec.getType() != StreamSpec.STREAM_PIPELINE &&
 								spec.getType() != StreamSpec.STREAM_SPLITJOIN))
 					report(stmt,
@@ -355,7 +345,7 @@ public class SemanticChecker
 
 			public Object visitStmtBody(StmtBody stmt)
 			{
-				if (func.getCls() != Function.FUNC_INIT ||
+				if ((!func.isInit()) ||
 						spec.getType() != StreamSpec.STREAM_FEEDBACKLOOP)
 					report(stmt,
 							"body statement only allowed " +

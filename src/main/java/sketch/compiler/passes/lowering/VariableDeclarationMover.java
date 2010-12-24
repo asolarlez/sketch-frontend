@@ -44,9 +44,7 @@ public class VariableDeclarationMover extends FEReplacer
 		bodyStmts.addAll(bodyBlock.getStmts());
 		variables.clear();
 		varTypes.clear();
-		return new Function(func, func.getCls(), func.getName(),
-			func.getReturnType(), func.getParams(), func.getSpecification(),
-			new StmtBlock(bodyBlock, bodyStmts));
+        return func.creator().body(new StmtBlock(bodyBlock, bodyStmts)).create();
 	}
 
 	public Object visitStmtFor(StmtFor stmt)

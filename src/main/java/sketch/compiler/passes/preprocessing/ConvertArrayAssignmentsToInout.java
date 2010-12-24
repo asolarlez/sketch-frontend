@@ -47,9 +47,7 @@ public class ConvertArrayAssignmentsToInout extends FEReplacer {
                         newParams.add(param);
                     }
                 }
-                return new Function(fcn, fcn.getCls(), fcn.getName(),
-                        fcn.getReturnType(), newParams, fcn.getSpecification(),
-                        fcn.getBody());
+                return fcn.creator().params(newParams).create();
             }
         }
     }

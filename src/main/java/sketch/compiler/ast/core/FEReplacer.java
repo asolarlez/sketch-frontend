@@ -352,10 +352,8 @@ public class FEReplacer implements FEVisitor
     	}
         Statement newBody = (Statement)func.getBody().accept(this);        
         if(newBody == null) newBody = new StmtEmpty(func);
-        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;        
-        return new Function(func, func.getCls(),
-                            func.getName(), rtype,
-                            newParam, func.getSpecification(), newBody);
+        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
+        return func.creator().returnType(rtype).params(newParam).body(newBody).create();
     }
 
     public Object visitFuncWork(FuncWork func)
@@ -370,7 +368,7 @@ public class FEReplacer implements FEVisitor
         if (newBody == func.getBody() && newPeek == func.getPeekRate() &&
             newPop == func.getPopRate() && newPush == func.getPushRate())
             return func;
-        return new FuncWork(func, func.getCls(), func.getName(),
+        return new FuncWork(func, func.getInfo(), func.getName(),
                             newBody, newPeek, newPop, newPush);
     }
 

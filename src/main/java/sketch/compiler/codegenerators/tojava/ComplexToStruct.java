@@ -117,12 +117,7 @@ public class ComplexToStruct extends FEReplacer
             newParams.add(param);
         }
         Type returnType = remapType(func.getReturnType());
-        return super.visitFunction(new Function(func,
-                                                func.getCls(),
-                                                func.getName(),
-                                                returnType,
-                                                newParams, func.getSpecification(),
-                                                func.getBody()));
+        return super.visitFunction(func.creator().returnType(returnType).params(newParams).create());
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)

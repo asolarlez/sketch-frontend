@@ -23,8 +23,7 @@ public class CopyCudaMemTypeToFcnReturn extends SymbolTableVisitor {
         if (returnType == null) {
             return func;
         } else {
-            return new Function(func, func.getCls(), func.getName(), returnType,
-                    func.getParams(), func.getSpecification(), func.getBody());
+            return func.creator().returnType(returnType).create();
         }
     }
     

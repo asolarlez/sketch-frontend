@@ -195,7 +195,7 @@ public class ConstantReplacer extends FEReplacer {
 			}
 		}
 		if(changed)
-			func=new Function(func,func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
+		    func = func.creator().params(params).create();
 		return super.visitFunction(func);
 	}
 

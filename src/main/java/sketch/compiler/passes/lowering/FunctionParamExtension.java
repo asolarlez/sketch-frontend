@@ -68,9 +68,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			List<Statement> stmts = new ArrayList<Statement> (body.getStmts().size()+2);
 			stmts.add(decl);
 			stmts.addAll(body.getStmts());
-			return new Function(func,func.getCls(),func.getName(),func.getReturnType(),
-				func.getParams(),func.getSpecification(),
-				new StmtBlock(body,stmts));
+            return func.creator().body(new StmtBlock(body, stmts)).create();
 		}
 		@Override
 		public Object visitFunction(Function func)
@@ -93,8 +91,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					func=addVarCopy(func,param,newName);
 				}
 			}
-			return new Function(func, func.getCls(), func.getName(),
-				func.getReturnType(), parameters, func.getSpecification(), func.getBody());
+			return func.creator().params(parameters).create();
 		}
 		public Object visitStmtAssign(StmtAssign stmt)
 		{
@@ -169,8 +166,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			if(!retType.equals(TypePrimitive.voidtype)){
 				params.add(new Parameter(retType,getOutParamName(),Parameter.OUT));
 			}
-			funs.add(new Function(fun, fun.getCls(), fun.getName(), fun.getReturnType(),
-				params, fun.getSpecification(), fun.getBody()));
+			funs.add(fun.creator().params(params).create());
 		}
 		spec=new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
 		return super.visitStreamSpec(spec);
@@ -225,9 +221,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				}
 			}
 		}
-		func=new Function(func,func.getCls(),func.getName(),
-				TypePrimitive.voidtype, func.getParams(),
-				func.getSpecification(), new StmtBlock(func,stmts));
+        func =
+                func.creator().returnType(TypePrimitive.voidtype).body(
+                        new StmtBlock(func, stmts)).create();
 		return func;
 	}
 

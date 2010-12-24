@@ -53,9 +53,7 @@ public class MakeBodiesBlocks extends FEReplacer
         Statement newBody = (Statement)func.getBody().accept(this);
         newBody = buildBlock(newBody);
         if (newBody == func.getBody()) return func;
-        return new Function(func, func.getCls(),
-                            func.getName(), func.getReturnType(),
-                            func.getParams(),  func.getSpecification(),newBody);
+        return func.creator().body(newBody).create();
     }
     
     public Object visitFuncWork(FuncWork func)
@@ -64,7 +62,7 @@ public class MakeBodiesBlocks extends FEReplacer
         newBody = buildBlock(newBody);
         if (newBody == func.getBody())
             return func;
-        return new FuncWork(func, func.getCls(), func.getName(),
+        return new FuncWork(func, func.getInfo(), func.getName(),
                             newBody, func.getPeekRate(), func.getPopRate(),
                             func.getPushRate());
     }

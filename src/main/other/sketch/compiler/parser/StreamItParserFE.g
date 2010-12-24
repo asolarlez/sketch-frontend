@@ -351,16 +351,23 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
 	( s=block
 	{
 			assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
+			Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
+			    rt).params(l).body(s);
+
+			// function type
 			if (isGenerator) {
-                f = Function.newHelper(getContext(id), id.getText(), rt, l,
-                    impl==null ? null : impl.getText(), s);
+			    fc = fc.type(Function.FcnType.Helper);
 			} else if (isHarness) {
-                assert impl == null;
-				f = Function.newHarnessMain(getContext(id), id.getText(), rt, l, s);
-			} else {
-                f = Function.newStatic(getContext(id), id.getText(), rt, l,
-                    impl==null ? null : impl.getText(), s);
+                assert impl == null : "harness functions cannot have implements";
+                fc = fc.type(Function.FcnType.Harness);
+			} else if (impl != null) {
+			    fc = fc.spec(impl.getText());
 			}
+
+			// cuda type annotations
+			// TBD
+
+			f = fc.create();
 	}
 	| SEMI  { f = Function.newUninterp(getContext(id),id.getText(), rt, l);   })
 	;
@@ -371,9 +378,9 @@ return_type returns [Type t] { t=null; }
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
 Type t = TypePrimitive.voidtype;
-int cls = Function.FUNC_HANDLER; }
+Function.FcnType cls = Function.FcnType.Handler; }
 	:	TK_handler id:ID l=param_decl_list s=block
-		{ f = new Function(getContext(id), cls, id.getText(), t, l, s); }
+		{ f = Function.creator(getContext(id), id.getText(), typ).returnType(t).params(l).body(s).create(); }
 	;
 
 param_decl_list returns [List l] { l = new ArrayList(); Parameter p; }

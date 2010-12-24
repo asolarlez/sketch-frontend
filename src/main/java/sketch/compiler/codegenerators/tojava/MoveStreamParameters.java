@@ -26,6 +26,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -37,7 +38,6 @@ import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
@@ -80,10 +80,7 @@ public class MoveStreamParameters extends InitMunger
         Statement stmtSuper = new StmtExpr(context, funCall);
         Statement stmtBlock =
             new StmtBlock(context, Collections.singletonList(stmtSuper));
-        Function fn =
-            Function.newHelper(context, name,
-            					TypePrimitive.voidtype,
-                               params, stmtBlock);
+        Function fn = Function.creator(context, name, FcnType.Generator).params(params).body(stmtBlock).create();
         return fn;
     }
 
@@ -152,8 +149,7 @@ public class MoveStreamParameters extends InitMunger
         Statement newBody = new StmtBlock(oldBody, body);
 
         // Too many parts here, don't use Function.newInit().
-        return new Function(context, init.getCls(), init.getName(),
-                            init.getReturnType(), newParams, init.getSpecification(), newBody);
+        return init.creator().params(newParams).body(newBody).create();
     }
 
     // Return a function just like init, but with params as its
@@ -191,8 +187,7 @@ public class MoveStreamParameters extends InitMunger
         body.addAll(oldBody.getStmts());
         Statement newBody = new StmtBlock(oldBody, body);
 
-        return new Function(context, init.getCls(), init.getName(),
-                            init.getReturnType(), newParams, init.getSpecification(), newBody);
+        return init.creator().params(newParams).body(newBody).create();
     }
 
     public Object visitStreamSpec(StreamSpec spec)

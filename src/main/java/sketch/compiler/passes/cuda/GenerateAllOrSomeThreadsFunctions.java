@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstBoolean;
@@ -76,8 +77,9 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                         cudaBlockDim.all()), "arg");
         final ExprVar arrvar = new ExprVar(ctx, param.getName());
         ExprBinary curr = getAllOrNoneExpr(value, arrvar);
-        return Function.newStatic(ctx, name, TypePrimitive.bittype, Arrays.asList(param),
-                null, new StmtReturn(ctx, curr));
+        return Function.creator(ctx, name, FcnType.Static).returnType(
+                TypePrimitive.bittype).params(Arrays.asList(param)).body(
+                new StmtReturn(ctx, curr)).create();
     }
 
     protected ExprBinary getAllOrNoneExpr(boolean value, final ExprVar arrvar) {
@@ -165,9 +167,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         @Override
         public Object visitFunction(Function fcn) {
             Function func = (Function) super.visitFunction(fcn);
-            return new Function(func, func.getCls(), "allthreads_" + func.getName(),
-                    func.getReturnType(), func.getParams(), func.getSpecification(),
-                    func.getBody());
+            return func.creator().name("allthreads_" + func.getName()).create();
         }
 
         /**
@@ -349,10 +349,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                         Parameter.IN));
             }
             params.addAll(func.getParams());
-            Function f2 =
-                    new Function(func, func.getCls(), "somethreads_" + func.getName(),
-                            func.getReturnType(), params, func.getSpecification(),
-                            func.getBody());
+            Function f2 = func.creator().name("somethreads_" + func.getName()).params(params).create();
             return super.visitFunction(f2);
         }
 

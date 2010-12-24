@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -147,10 +148,7 @@ public class ModelGridWithUFun extends FEReplacer {
 					List<Parameter> newParams = new LinkedList<Parameter>(
 							mNewParamsToAdd);
 					newParams.addAll(ret.getParams());
-					ret = new Function(ret, ret.getCls(), ret.getName(), ret
-							.getReturnType(), newParams,
-							ret.getSpecification(), ret.getBody());
-
+					ret = ret.creator().params(newParams).create();
 				}
 
 				return ret;
@@ -272,8 +270,9 @@ public class ModelGridWithUFun extends FEReplacer {
 			paramList.add(new Parameter(ufun.getReturnType(), "r",
 					Parameter.OUT));
 
-			mModelingFunc = new Function(ufun, Function.FUNC_BUILTIN_HELPER,
-					name, TypePrimitive.voidtype, paramList, funBody);
+            mModelingFunc =
+                    Function.creator(ufun, name, FcnType.Generator).params(paramList).body(
+                            funBody).create();
 
 			return mModelingFunc;
 		}

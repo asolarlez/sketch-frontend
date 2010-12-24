@@ -38,13 +38,13 @@ public class FuncWork extends Function
     /** Creates a new work function given its name (or null), body,
      * and I/O rates.  The I/O rates may be null if declarations are
      * omitted from the original source. */
-    public FuncWork(FENode context, int cls,
+    public FuncWork(FENode context, FcnInfo cls,
                     String name, Statement body,
                     Expression peek, Expression pop, Expression push)
     {
         super(context, cls, name,
         		TypePrimitive.voidtype,
-              Collections.EMPTY_LIST, body);
+              Collections.EMPTY_LIST, null, body);
         peekRate = peek;
         popRate = pop;
         pushRate = push;
@@ -55,13 +55,13 @@ public class FuncWork extends Function
      * omitted from the original source.
      * @deprecated
      */
-    public FuncWork(FEContext context, int cls,
+    public FuncWork(FEContext context, FcnInfo cls,
                     String name, Statement body,
                     Expression peek, Expression pop, Expression push)
     {
         super(context, cls, name,
         		TypePrimitive.voidtype,
-              Collections.EMPTY_LIST, body);
+              Collections.EMPTY_LIST, null, body);
         peekRate = peek;
         popRate = pop;
         pushRate = push;

@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -356,9 +357,9 @@ public class FunctionalizeStencils extends FEReplacer {
 				lst.add( new StmtAssert( new ExprUnary("!",  new ExprVar(body, name)  ), false) );
 			}
 			
-			Function fun=Function.newHelper(f,f.getName(),TypePrimitive.voidtype,
-				driverParams, f.getSpecification(),
-				new StmtBlock(lst));
+            Function fun =
+                    f.creator().returnType(TypePrimitive.voidtype).params(driverParams).body(
+                            new StmtBlock(lst)).type(FcnType.Generator).create();
 			functions.add(fun);
 		}
 		return prog;
@@ -471,7 +472,9 @@ public class FunctionalizeStencils extends FEReplacer {
 							fparams.add(new Parameter(TypePrimitive.inttype, "idx_" + i));
 						}
 
-						Function ufun = Function.newUninterp(param.getName(), ptype, fparams);
+                        Function ufun =
+                                Function.creator(func, param.getName(), FcnType.Uninterp).returnType(
+                                        ptype).params(fparams).create();
 
 						inVars.put(param.getName(), ufun);
 						/////////////////

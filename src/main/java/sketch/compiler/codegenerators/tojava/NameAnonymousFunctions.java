@@ -19,6 +19,7 @@ package sketch.compiler.codegenerators.tojava;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FuncWork;
 import sketch.compiler.ast.core.Function;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Pass to replace anonymous functions with named ones.  This assigns
@@ -32,6 +33,8 @@ public class NameAnonymousFunctions extends FEReplacer
 {
     public Object visitFunction(Function func)
     {
+        throw new NotImplementedException();
+        /*
         func = (Function)super.visitFunction(func);
         if (func.getName() != null) return func;
         String name = null;
@@ -47,21 +50,25 @@ public class NameAnonymousFunctions extends FEReplacer
         return new Function(func, func.getCls(),
                             name, func.getReturnType(),
                             func.getParams(), func.getSpecification(), func.getBody());
+                            */
     }
     
     public Object visitFuncWork(FuncWork func)
     {
+        throw new NotImplementedException();
+        /*
         func = (FuncWork)super.visitFuncWork(func);
         if (func.getName() != null) return func;
-	String name = null;
-        switch(func.getCls())
+        String name = null;
+        switch(func.getFcnType())
         {
-        case Function.FUNC_WORK: name = "work"; break;
-        case Function.FUNC_PREWORK: name = "prework"; break;
-        default: return func;
+            case Function.FUNC_WORK: name = "work"; break;
+            case Function.FUNC_PREWORK: name = "prework"; break;
+            default: return func;
         }
         return new FuncWork(func, func.getCls(), name,
                             func.getBody(), func.getPeekRate(),
                             func.getPopRate(), func.getPushRate());
+                            */
     }
 }

@@ -5,8 +5,8 @@ package sketch.compiler.parser;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +22,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SplitterJoiner;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
@@ -35,19 +36,14 @@ import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
-
-import antlr.TokenBuffer;
-import antlr.TokenStreamException;
-import antlr.TokenStreamIOException;
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
 import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
 import antlr.ParserSharedInputState;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.Token;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import antlr.collections.impl.BitSet;
 @SuppressWarnings("deprecation")
 public class StreamItParserFE extends antlr.LLkParser       implements StreamItParserFETokenTypes
@@ -439,17 +435,24 @@ inputState.guessing--;
 				s=block();
 				if ( inputState.guessing==0 ) {
 					
-								assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
-								if (isGenerator) {
-					f = Function.newHelper(getContext(id), id.getText(), rt, l,
-					impl==null ? null : impl.getText(), s);
-								} else if (isHarness) {
-					assert impl == null;
-									f = Function.newHarnessMain(getContext(id), id.getText(), rt, l, s);
-								} else {
-					f = Function.newStatic(getContext(id), id.getText(), rt, l,
-					impl==null ? null : impl.getText(), s);
-								}
+		            assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
+		            Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
+		                rt).params(l).body(s);
+
+		            // function type
+		            if (isGenerator) {
+		                fc = fc.type(Function.FcnType.Generator);
+		            } else if (isHarness) {
+		                assert impl == null : "harness functions cannot have implements";
+		                fc = fc.type(Function.FcnType.Harness);
+		            } else if (impl != null) {
+		                fc = fc.spec(impl.getText());
+		            }
+
+		            // cuda type annotations
+		            // TBD
+
+		            f = fc.create();
 						
 				}
 				break;
@@ -458,7 +461,7 @@ inputState.guessing--;
 			{
 				match(SEMI);
 				if ( inputState.guessing==0 ) {
-					f = Function.newUninterp(getContext(id),id.getText(), rt, l);
+					f = Function.creator(getContext(id), id.getText(), FcnType.Uninterp).returnType(rt).params(l).create();
 				}
 				break;
 			}
@@ -2400,7 +2403,8 @@ inputState.guessing--;
 		Token  id = null;
 		List l; Statement s; f = null;
 		Type t = TypePrimitive.voidtype;
-		int cls = Function.FUNC_HANDLER;
+		assert false : "Handler functions no longer supported";
+		//type = Fcun
 		
 		try {      // for error handling
 			match(TK_handler);
@@ -2409,7 +2413,7 @@ inputState.guessing--;
 			l=param_decl_list();
 			s=block();
 			if ( inputState.guessing==0 ) {
-				f = new Function(getContext(id), cls, id.getText(), t, l, s);
+				//f = new Function(getContext(id), cls, id.getText(), t, l, s);
 			}
 		}
 		catch (RecognitionException ex) {

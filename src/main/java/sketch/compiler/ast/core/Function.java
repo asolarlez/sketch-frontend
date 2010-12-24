@@ -1,88 +1,164 @@
-/*
- * Copyright 2003 by the Massachusetts Institute of Technology.
- *
- * Permission to use, copy, modify, and distribute this
- * software and its documentation for any purpose and without
- * fee is hereby granted, provided that the above copyright
- * notice appear in all copies and that both that copyright
- * notice and this permission notice appear in supporting
- * documentation, and that the name of M.I.T. not be used in
- * advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.
- * M.I.T. makes no representations about the suitability of
- * this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- */
-
 package sketch.compiler.ast.core;
+
 import java.util.Collections;
 import java.util.List;
 
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.util.wrapper.ScRichString;
 
 /**
- * A function declaration in a StreamIt program.  This may be an init
- * function, work function, helper function, or message handler.  A
- * function has a class (one of the above), an optional name, an
- * optional parameter list, a return type (void for anything other
- * than helper functions), and a body.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
- * @version $Id$
+ * A function declaration.
+ * 
+ * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+ * @license This file is licensed under BSD license, available at
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
-public class Function extends FENode
-{
-    // Classes:
-    public static final int FUNC_INIT = 1;
-    public static final int FUNC_WORK = 2;
-    public static final int FUNC_HANDLER = 3;
-    public static final int FUNC_HELPER = 4;
-    public static final int FUNC_CONST_HELPER = 5;
-    public static final int FUNC_BUILTIN_HELPER = 6;
-    public static final int FUNC_PREWORK = 8;
-    public static final int FUNC_UNINTERP = 9;
-    public static final int FUNC_ASYNC = 10;
-    public static final int FUNC_STATIC = 11;
-    public static final int FUNC_SKETCHMAIN = 12;
+public class Function extends FENode {
+    public static enum FcnType {
+        Uninterp("ininterp"), Async("async"), Static(""), Harness("harness"), Generator(
+                "generator"), Init("init");
 
+        /** identifier appearing in C code */
+        public final String cCodeName;
 
-    private int cls;
-    private String name; // or null
-    private Type returnType;
-    private List<Parameter> params;
-    private Statement body;
-
-    private String fImplements = null;
-
-    /** Internal constructor to create a new Function from all parts.
-     * This is public so that visitors that want to create new objects
-     * can, but you probably want one of the other creator functions. */
-    public Function(FENode context, int cls, String name, Type returnType,
-            List<Parameter> params, Statement body)
-    {
-        this(context, cls, name, returnType, params, null, body);
+        private FcnType(String cCodeName) {
+            this.cCodeName = cCodeName;
+        }
     }
 
-    /**
-     * Internal constructor to create a new Function from all parts. This is public so
-     * that visitors that want to create new objects can, but you probably want one of the
-     * other creator functions.
-     * 
-     * @deprecated
-     */
-    public Function(FEContext context, int cls, String name, Type returnType,
-            List<Parameter> params, Statement body)
-    {
-        this(context, cls, name, returnType, params, null, body);
+    public static enum LibraryFcnType {
+        Library, Default, Deterministic
     }
 
-    public Function(FENode context, int cls, String name, Type returnType,
+    public static enum CudaFcnType {
+        Default(""), DeviceInline("inline __device__"), Global("__global__");
+
+        /** identifier appearing in C code */
+        public final String cCodeName;
+
+        private CudaFcnType(String cCodeName) {
+            this.cCodeName = cCodeName;
+        }
+    }
+
+    protected static class FcnInfo {
+        public final FcnType fcnType;
+        public final LibraryFcnType libraryType;
+        public final CudaFcnType cudaType;
+
+        public FcnInfo(FcnType fcnType, LibraryFcnType libraryType, CudaFcnType cudaType)
+        {
+            this.fcnType = fcnType;
+            this.libraryType = libraryType;
+            this.cudaType = cudaType;
+        }
+
+        public FcnInfo(FcnType fcnType) {
+            this.fcnType = fcnType;
+            this.libraryType = LibraryFcnType.Default;
+            this.cudaType = CudaFcnType.Default;
+        }
+    }
+
+    private final String name; // or null
+    private final Type returnType;
+    private final List<Parameter> params;
+    private final Statement body;
+    private final String fImplements;
+    private final FcnInfo fcnInfo;
+
+    public static class FunctionCreator {
+        private Object base;
+        private String name;
+        private Type returnType;
+        private List<Parameter> params;
+        private Statement body;
+        private String implementsName;
+        private FcnInfo fcnInfo;
+
+        protected FunctionCreator(Function base) {
+            this.base = base;
+            this.name = base.name;
+            this.returnType = base.returnType;
+            this.params = base.params;
+            this.body = base.body;
+            this.implementsName = base.fImplements;
+            this.fcnInfo = base.getInfo();
+        }
+
+        public FunctionCreator(Object n) {
+            assert (n == null) || (n instanceof FENode) || (n instanceof FEContext) : "node argument must be FENode or FEContext";
+            this.base = n;
+            this.name = null;
+            this.returnType = TypePrimitive.voidtype;
+            this.params = null;
+            this.body = null;
+            this.implementsName = null;
+            this.fcnInfo = new FcnInfo(FcnType.Static);
+        }
+
+        public FunctionCreator name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public FunctionCreator returnType(Type returnType) {
+            this.returnType = returnType;
+            return this;
+        }
+
+        public FunctionCreator params(List<Parameter> params) {
+            this.params = params;
+            return this;
+        }
+
+        public FunctionCreator body(Statement body) {
+            this.body = body;
+            return this;
+        }
+
+        public FunctionCreator spec(String specName) {
+            this.implementsName = specName;
+            return this;
+        }
+
+        public FunctionCreator type(FcnType typ) {
+            this.fcnInfo =
+                    new FcnInfo(typ, this.fcnInfo.libraryType, this.fcnInfo.cudaType);
+            return this;
+        }
+
+        public Function create() {
+            if (base == null || base instanceof FEContext) {
+                return new Function((FEContext) base, fcnInfo, name, returnType, params,
+                        implementsName, body);
+            } else {
+                return new Function((FENode) base, fcnInfo, name, returnType, params,
+                        implementsName, body);
+            }
+        }
+    }
+
+    public FunctionCreator creator() {
+        return new FunctionCreator(this);
+    }
+
+    public static FunctionCreator creator(FENode n, String name, FcnType type) {
+        return (new FunctionCreator(n)).name(name).type(type);
+    }
+
+    public static FunctionCreator creator(FEContext ctx, String name, FcnType type) {
+        return (new FunctionCreator(ctx)).name(name).type(type);
+    }
+
+    protected Function(FENode context, FcnInfo fcnInfo, String name, Type returnType,
             List<Parameter> params, String fImplements, Statement body)
     {
         super(context);
-        this.cls = cls;
+        this.fcnInfo = fcnInfo;
         this.name = name;
         this.returnType = returnType;
         this.params = params;
@@ -91,11 +167,11 @@ public class Function extends FENode
     }
 
     @SuppressWarnings("deprecation")
-    private Function(FEContext context, int cls, String name, Type returnType,
+    protected Function(FEContext context, FcnInfo fcnInfo, String name, Type returnType,
             List<Parameter> params, String fImplements, Statement body)
     {
         super(context);
-        this.cls = cls;
+        this.fcnInfo = fcnInfo;
         this.name = name;
         this.returnType = returnType;
         this.params = params;
@@ -103,214 +179,85 @@ public class Function extends FENode
         this.fImplements = fImplements;
     }
 
-    public static Function newUninterp(String name, List<Parameter> params){
-    	return new Function((FEContext) null, FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
+    public boolean isUninterp() {
+        return getFcnType() == FcnType.Uninterp;
     }
 
-    public static Function newUninterp(String name, Type rettype, List<Parameter> params){
-    	return new Function((FEContext) null, FUNC_UNINTERP, name,rettype, params, null);
-    }
-    public static Function newUninterp(FENode cx, String name, Type rettype, List<Parameter> params){
-    	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
-    }
-    /**
-     *
-     * @param cx
-     * @param name
-     * @param rettype
-     * @param params
-     * @return
-     * @deprecated
-     */
-    public static Function newUninterp(FEContext cx, String name, Type rettype, List<Parameter> params){
-    	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
+    public boolean isStatic() {
+        return getFcnType() == FcnType.Static;
     }
 
-    /** Create a new init function given its body. */
-    public static Function newInit(FENode context, Statement body)
-    {
-        return new Function(context, FUNC_INIT, null,
-        					TypePrimitive.voidtype,
-                            Collections.EMPTY_LIST, body);
+    public boolean isInit() {
+        return getFcnType() == FcnType.Init;
     }
-
-    /** Create a new init function given its body.
-     * @deprecated
-     */
-    public static Function newInit(FEContext context, Statement body)
-    {
-        return new Function(context, FUNC_INIT, null,
-        					TypePrimitive.voidtype,
-                            Collections.EMPTY_LIST, body);
+    
+    public boolean isSketchHarness() {
+        return getFcnType() == FcnType.Harness;
     }
-
-    /** Create a new message handler given its name (not null), parameters,
-     * and body. */
-    public static Function newHandler(FENode context, String name,
-                                      List<Parameter> params, Statement body)
-    {
-        return new Function(context, FUNC_HANDLER, name,
-        					TypePrimitive.voidtype,
-                            params, body);
-    }
-
-    /** Create a new helper function given its parts. */
-    public static Function newHelper(FENode context, String name,
-                                     Type returnType, List<Parameter> params,
-                                     Statement body)
-    {
-        return new Function(context, FUNC_HELPER, name, returnType,
-                            params, body);
-    }
-
-    /** Create a new helper function given its parts.
-     * @deprecated
-     */
-    public static Function newHelper(FEContext context, String name,
-                                     Type returnType, List<Parameter> params,
-                                     Statement body)
-    {
-        return new Function(context, FUNC_HELPER, name, returnType,
-                            params, body);
-    }
-
-
-
-
-
-    /** Create a new helper function given its parts. */
-    public static Function newHelper(FENode context, String name,
-                                     Type returnType, List<Parameter> params,
-                                     String impl, Statement body)
-    {
-        Function f=new Function(context, FUNC_HELPER, name, returnType,
-                            params, body);
-        f.fImplements=impl;
-        return f;
-    }
-
-    /** Create a new helper function given its parts.
-     * @deprecated
-     */
-    public static Function newHelper(FEContext context, String name,
-                                     Type returnType, List<Parameter> params,
-                                     String impl, Statement body)
-    {
-        Function f=new Function(context, FUNC_HELPER, name, returnType,
-                            params, body);
-        f.fImplements=impl;
-        return f;
-    }
-
-
-
-    /** Create a new helper function given its parts. */
-    public static Function newStatic(FENode context, String name,
-                                     Type returnType, List<Parameter> params,
-                                     String impl, Statement body)
-    {
-        Function f=new Function(context, FUNC_STATIC, name, returnType,
-                            params, body);
-        f.fImplements=impl;
-        return f;
-    }
-
-    /** Create a new helper function given its parts. */
-    public static Function newHarnessMain(FEContext context, String name, Type returnType,
-            List<Parameter> params, Statement body)
-    {
-        return new Function(context, FUNC_SKETCHMAIN, name, returnType, params, null,
-                body);
-    }
-
-    /**
-     * Create a new helper function given its parts.
-     * 
-     * @deprecated
-     */
-    public static Function newStatic(FEContext context, String name, Type returnType,
-            List<Parameter> params, String fImplements, Statement body)
-    {
-        return new Function(context, FUNC_STATIC, name, returnType, params, fImplements,
-                body);
-    }
-
-    public boolean isUninterp(){
-    	return cls == FUNC_UNINTERP;
-    }
-
-    public boolean isStatic(){
-    	return cls == FUNC_STATIC;
-    }
-
-
-    /** Returns the class of this function as an integer. */
-    public int getCls()
-    {
-        return cls;
+    
+    public boolean isGenerator() {
+        return getFcnType() == FcnType.Generator;
     }
 
     /** Returns the name of this function, or null if it is anonymous. */
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    /** Returns the parameters of this function, as a List of Parameter
-     * objects. */
-    public List<Parameter> getParams()
-    {
+    /**
+     * Returns the parameters of this function, as a List of Parameter objects.
+     */
+    public List<Parameter> getParams() {
         return Collections.unmodifiableList(params);
     }
 
     /** Returns the return type of this function. */
-    public Type getReturnType()
-    {
+    public Type getReturnType() {
         return returnType;
     }
 
-    /** Returns the body of this function, as a single statement
-     * (likely a StmtBlock). */
-    public Statement getBody()
-    {
+    /**
+     * Returns the body of this function, as a single statement (likely a StmtBlock).
+     */
+    public Statement getBody() {
         return body;
     }
 
     /**
-     * Returns the specification for this function. May be null, meaning this is
-     * a spec or an unbound sketch.
+     * Returns the specification for this function. May be null, meaning this is a spec or
+     * an unbound sketch.
      */
-    public String getSpecification()
-    {
-    	return fImplements;
+    public String getSpecification() {
+        return fImplements;
     }
 
     /** Accepts a front-end visitor. */
-    public Object accept(FEVisitor v)
-    {
+    public Object accept(FEVisitor v) {
         return v.visitFunction(this);
     }
 
     public String toString() {
-        final String typ =
-                (this.isStatic() ? "" : (this.isSketchHarness() ? "harness "
-                        : "generator "));
         final String impl = fImplements != null ? " implements " + fImplements : "";
-        return typ + returnType + " " + name + "(" + params + ")" + impl;
+        return new ScRichString(" ").joinNonempty(fcnInfo.cudaType.cCodeName,
+                fcnInfo.fcnType.cCodeName, returnType, name, "(" + params + ")", impl);
     }
 
-    public int hashCode(){
+    public int hashCode() {
         return name.hashCode();
     }
-    public boolean equals(Object o){
-        if(o instanceof Function){
-        return name.equals(((Function)o).getName());
+
+    public boolean equals(Object o) {
+        if (o instanceof Function) {
+            return name.equals(((Function) o).getName());
         }
         return false;
     }
 
-    /** is a main function */
-    public boolean isSketchHarness() {
-        return this.cls == FUNC_SKETCHMAIN;
+    public FcnInfo getInfo() {
+        return fcnInfo;
+    }
+
+    public FcnType getFcnType() {
+        return fcnInfo.fcnType;
     }
 }

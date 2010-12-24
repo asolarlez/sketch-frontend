@@ -7,6 +7,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -256,8 +257,8 @@ public class AbstractArray {
 			}
 		}
 		Statement body=new StmtBlock((FEContext) null,stmts);
-		Function ret=Function.newHelper(body,getFullName(),arrType,params,body);
-		return ret;
+        return Function.creator(body, getFullName(), FcnType.Generator).returnType(arrType).params(
+                params).body(body).create();
 	}
 
 }
