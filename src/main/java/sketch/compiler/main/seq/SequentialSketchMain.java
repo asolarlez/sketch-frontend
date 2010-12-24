@@ -67,6 +67,7 @@ import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
+import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.solvers.SATBackend;
@@ -313,8 +314,8 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new ReplaceMinLoops(varGen),
-                            new MainMethodCreateNospec() };
+                    { new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
+                            new SetDeterministicFcns() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }

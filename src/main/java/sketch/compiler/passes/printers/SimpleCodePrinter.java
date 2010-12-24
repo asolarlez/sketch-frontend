@@ -4,9 +4,10 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
@@ -75,19 +76,20 @@ public class SimpleCodePrinter extends CodePrinter
         }
         int nonNull = 0;
         
-        TreeMap<String, Function> tm = new TreeMap<String, Function>();
-        for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); ){
-            Function tf = iter.next();
-            tm.put(tf.getName(), tf);
-        }
-        
-        
-        for (Iterator<Function> iter = tm.values().iterator(); iter.hasNext(); )
+        TreeSet<Function> orderedFuncs = new TreeSet<Function>(new Comparator<Function>()
         {
-            Function oldFunc = (Function)iter.next();
+            public int compare(Function o1, Function o2) {
+                final int det_order =
+                        o1.getInfo().determinsitic.compareTo(o2.getInfo().determinsitic);
+                return det_order + (det_order == 0 ? 1 : 0) *
+                        o1.getName().compareTo(o2.getName());
+            }
+        });
+        orderedFuncs.addAll(spec.getFuncs());
+
+        for (Function oldFunc : orderedFuncs) {
             Function newFunc = (Function)oldFunc.accept(this);
             if (oldFunc != newFunc) changed = true;
-//            if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
 

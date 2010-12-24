@@ -30,7 +30,11 @@ public class Function extends FENode {
     }
 
     public static enum LibraryFcnType {
-        Library, Default, Deterministic
+        Library, Default
+    }
+
+    public static enum FcnSourceDeterministic {
+        Deterministic, Unknown, Nondeterministic;
     }
 
     public static enum CudaFcnType {
@@ -44,22 +48,26 @@ public class Function extends FENode {
         }
     }
 
-    protected static class FcnInfo {
+    public static class FcnInfo {
         public final FcnType fcnType;
         public final LibraryFcnType libraryType;
         public final CudaFcnType cudaType;
+        public final FcnSourceDeterministic determinsitic;
 
-        public FcnInfo(FcnType fcnType, LibraryFcnType libraryType, CudaFcnType cudaType)
+        public FcnInfo(FcnType fcnType, LibraryFcnType libraryType, CudaFcnType cudaType,
+                FcnSourceDeterministic determinsitic)
         {
             this.fcnType = fcnType;
             this.libraryType = libraryType;
             this.cudaType = cudaType;
+            this.determinsitic = determinsitic;
         }
 
         public FcnInfo(FcnType fcnType) {
             this.fcnType = fcnType;
             this.libraryType = LibraryFcnType.Default;
             this.cudaType = CudaFcnType.Default;
+            this.determinsitic = FcnSourceDeterministic.Unknown;
         }
     }
 
@@ -100,34 +108,56 @@ public class Function extends FENode {
             this.fcnInfo = new FcnInfo(FcnType.Static);
         }
 
-        public FunctionCreator name(String name) {
+        public FunctionCreator name(final String name) {
             this.name = name;
             return this;
         }
 
-        public FunctionCreator returnType(Type returnType) {
+        public FunctionCreator returnType(final Type returnType) {
             this.returnType = returnType;
             return this;
         }
 
-        public FunctionCreator params(List<Parameter> params) {
+        public FunctionCreator params(final List<Parameter> params) {
             this.params = params;
             return this;
         }
 
-        public FunctionCreator body(Statement body) {
+        public FunctionCreator body(final Statement body) {
             this.body = body;
             return this;
         }
 
-        public FunctionCreator spec(String specName) {
+        public FunctionCreator spec(final String specName) {
             this.implementsName = specName;
             return this;
         }
 
-        public FunctionCreator type(FcnType typ) {
+        public FunctionCreator type(final FcnType typ) {
             this.fcnInfo =
-                    new FcnInfo(typ, this.fcnInfo.libraryType, this.fcnInfo.cudaType);
+                    new FcnInfo(typ, this.fcnInfo.libraryType, this.fcnInfo.cudaType,
+                            this.fcnInfo.determinsitic);
+            return this;
+        }
+
+        public FunctionCreator libraryType(final LibraryFcnType typ) {
+            this.fcnInfo =
+                    new FcnInfo(this.fcnInfo.fcnType, typ, this.fcnInfo.cudaType,
+                            this.fcnInfo.determinsitic);
+            return this;
+        }
+
+        public FunctionCreator cudaType(final CudaFcnType typ) {
+            this.fcnInfo =
+                    new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType, typ,
+                            this.fcnInfo.determinsitic);
+            return this;
+        }
+
+        public FunctionCreator deterministicType(final FcnSourceDeterministic typ) {
+            this.fcnInfo =
+                    new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType,
+                            this.fcnInfo.cudaType, typ);
             return this;
         }
 
@@ -190,11 +220,11 @@ public class Function extends FENode {
     public boolean isInit() {
         return getFcnType() == FcnType.Init;
     }
-    
+
     public boolean isSketchHarness() {
         return getFcnType() == FcnType.Harness;
     }
-    
+
     public boolean isGenerator() {
         return getFcnType() == FcnType.Generator;
     }
