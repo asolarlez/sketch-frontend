@@ -31,6 +31,7 @@ import sketch.util.NullStream;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
 import sketch.util.datastructures.IntRange;
+import sketch.util.exceptions.SketchNotResolvedException;
 
 public class SATBackend {
 
@@ -123,7 +124,7 @@ public class SATBackend {
             if (SynchronousTimedProcess.wasKilled.get()) {
                 System.exit(1);
             }
-            throw new RuntimeException("The sketch could not be resolved.");
+            throw new SketchNotResolvedException();
         }
 
         File[] solutions = options.getSolutionsFiles();
@@ -233,8 +234,8 @@ public class SATBackend {
                     getBackendCommandline(backendOptions, "--use-minimize");
             boolean ret = runSolver(commandLine, 0, timeoutMins);
             if (!ret) {
-                log(0, "The sketch cannot be resolved");
-                System.err.println(solverErrorStr);
+                log(5, "Backend returned error code");
+                // System.err.println(solverErrorStr);
                 return false;
             }
 
@@ -257,8 +258,8 @@ public class SATBackend {
 				}
 			}
 			if(!isSolved){
-				log (0, "The sketch cannot be resolved");
-				System.err.println(solverErrorStr);
+				log (5, "The sketch cannot be resolved.");
+				// System.err.println(solverErrorStr);
 				return false;
 			}
 			log ("Succeded with " + bits + " bits for integers");
@@ -270,8 +271,8 @@ public class SATBackend {
             String[] commandLine = getBackendCommandline(backendOptions);
             boolean ret = runSolver(commandLine, 0, timeoutMins);
             if (!ret) {
-                log(0, "The sketch cannot be resolved");
-                System.err.println(solverErrorStr);
+                log(5, "The sketch cannot be resolved");
+                // System.err.println(solverErrorStr);
                 return false;
             }
         }

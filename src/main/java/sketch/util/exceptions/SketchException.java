@@ -12,6 +12,10 @@ public abstract class SketchException extends RuntimeException {
     public void print() {
         System.err.println("[ERROR] [SKETCH] " + this.messageClass() + ": " +
                 this.getMessage());
+        dumpStackTraceToFile();
+    }
+
+    public void dumpStackTraceToFile() {
         final StackTraceElement[] stackTrace = this.getStackTrace();
         String stackTraceSting = "";
         for (StackTraceElement elt : stackTrace) {

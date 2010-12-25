@@ -233,7 +233,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		beforeUnvectorizing = prog;
 		
 		prog = (getIRStage2()).run(prog);
-		prog.debugDump(new File("after-irstage-2.sk"));
+		// prog.debugDump(new File("after-irstage-2.sk"));
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
 				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
