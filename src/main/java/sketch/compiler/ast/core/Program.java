@@ -78,7 +78,7 @@ public class Program extends FENode
     }
 
     public void debugDump(OutputStream out) {
-        (new SimpleCodePrinter(out)).visitProgram(this);
+        (new SimpleCodePrinter(out, true)).visitProgram(this);
     }
 
     public void debugDump(File file) {

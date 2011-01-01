@@ -63,6 +63,8 @@ tokens {
 	"h_assert";
 	"generator";
 	"harness";
+    "library";
+    "printfcn";
     // Compiler directives:
     "include";
     "pragma";

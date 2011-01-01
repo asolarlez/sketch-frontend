@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.Function.LibraryFcnType;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -25,6 +26,7 @@ import sketch.util.fcns.ZipIdxEnt;
 public class SimpleCodePrinter extends CodePrinter
 {
 	boolean outtags = false;
+    protected final boolean printLibraryFunctions;
 	public SimpleCodePrinter outputTags(){
 
 		outtags = true;
@@ -32,11 +34,12 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 	public SimpleCodePrinter() {
-		this(System.out);
+		this(System.out, false);
 	}
 
-	public SimpleCodePrinter(OutputStream os) {
+	public SimpleCodePrinter(OutputStream os, boolean printLibraryFunctions) {
 		super (os);
+        this.printLibraryFunctions = printLibraryFunctions;
 	}
 
 	public Object visitFunction(Function func)
@@ -88,9 +91,13 @@ public class SimpleCodePrinter extends CodePrinter
         orderedFuncs.addAll(spec.getFuncs());
 
         for (Function oldFunc : orderedFuncs) {
-            Function newFunc = (Function)oldFunc.accept(this);
-            if (oldFunc != newFunc) changed = true;
-            if(newFunc!=null) newFuncs.add(newFunc);
+            if (oldFunc.getInfo().libraryType != LibraryFcnType.Library || printLibraryFunctions) {
+                Function newFunc = (Function)oldFunc.accept(this);
+                if (oldFunc != newFunc) changed = true;
+                if(newFunc!=null) newFuncs.add(newFunc);
+            } else {
+                newFuncs.add(oldFunc);
+            }
         }
 
         if(newFuncs.size() != nonNull){

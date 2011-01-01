@@ -31,9 +31,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
+
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
@@ -42,6 +45,7 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
 import sketch.compiler.codegenerators.NodesToC;
+import sketch.compiler.codegenerators.NodesToCPrintTest;
 import sketch.compiler.codegenerators.NodesToCTest;
 import sketch.compiler.codegenerators.NodesToCUDA;
 import sketch.compiler.codegenerators.NodesToH;
@@ -68,8 +72,10 @@ import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
+import sketch.compiler.passes.preprocessing.TprintFcnCall;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ContainsCudaCode;
+import sketch.compiler.passes.structure.GetPrintFcns;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
@@ -79,6 +85,8 @@ import sketch.compiler.stencilSK.EliminateStarStatic;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
+import sketch.util.ProcessStatus;
+import sketch.util.SynchronousTimedProcess;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
 
@@ -507,12 +515,43 @@ public class SequentialSketchMain extends CommonSketchMain
 		String resultFile = getOutputFileName();
 		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
+		
+        for (Function f : GetPrintFcns.run(finalCode)) {
+            assert f.getParams().size() == 0 : "printfcn's cannot have parameters";
+            String testCode =
+                    (String) finalCode.accept(new NodesToCPrintTest(varGen, resultFile,
+                            f.getName()));
+            String ccfilename = options.getTmpFilename(getOutputFileName() + ".cc");
+            String hfilename = options.getTmpFilename(getOutputFileName() + ".h");
+            try {
+                FileUtils.copyFile(new File("src/runtime/include/bitvec.h"), new File(options.getTmpFilename("bitvec.h")));
+                FileUtils.copyFile(new File("src/runtime/include/fixedarr.h"), new File(options.getTmpFilename("fixedarr.h")));
+                FileWriter cc_writer = new FileWriter(ccfilename);
+                FileWriter h_writer = new FileWriter(hfilename);
+                cc_writer.write(testCode);
+                h_writer.write(hcode);
+                cc_writer.close();
+                h_writer.close();
 
-		if (!options.feOpts.outputCode) {
+                SynchronousTimedProcess cxx = new SynchronousTimedProcess(options.sktmpdir().getAbsolutePath(), 0,
+                        "g++", "-g", "-O0", "-o", "testPrintBin", ccfilename);
+                assert cxx.run(true).exitCode == 0 : "g++ failed; command line:\n" + cxx;
+
+                SynchronousTimedProcess runOutput = new SynchronousTimedProcess(options.sktmpdir().getAbsolutePath(), 0,
+                        options.getTmpFilename("testPrintBin"));
+                final ProcessStatus runOutputStatus = runOutput.run(true);
+                assert runOutputStatus.exitCode == 0 : "running print function failed; command line:\n" + runOutput;
+                printNote("print output from function " + f.getName() + "\n" + runOutputStatus.out + "------------------------------");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+		if (!options.feOpts.outputCode && !options.feOpts.noOutputPrint) {
             finalCode.accept(new SimpleCodePrinter());
 			//System.out.println(hcode);
 			//System.out.println(ccode);
-		} else {
+		} else if (!options.feOpts.noOutputPrint) {
 		    if (new ContainsCudaCode().run(finalCode)) {
 		        String cucode = (String)finalCode.accept(new NodesToCUDA(varGen, options.feOpts.outputDir + resultFile + ".cu"));
 		        printDebug("CUDA code", cucode);
@@ -617,6 +656,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
 	    prog = (Program)prog.accept(new MinimizeFcnCall());
+	    prog = (Program)prog.accept(new TprintFcnCall());
         (new SemanticCheckPass()).visitProgram(prog);
         this.showPhaseOpt("parse");
 

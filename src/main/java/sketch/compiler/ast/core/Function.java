@@ -33,6 +33,10 @@ public class Function extends FENode {
         Library, Default
     }
 
+    public static enum PrintFcnType {
+        Printfcn, Default
+    }
+
     public static enum FcnSourceDeterministic {
         Deterministic, Unknown, Nondeterministic;
     }
@@ -53,21 +57,21 @@ public class Function extends FENode {
         public final LibraryFcnType libraryType;
         public final CudaFcnType cudaType;
         public final FcnSourceDeterministic determinsitic;
+        public final PrintFcnType printType;
 
         public FcnInfo(FcnType fcnType, LibraryFcnType libraryType, CudaFcnType cudaType,
-                FcnSourceDeterministic determinsitic)
+                FcnSourceDeterministic determinsitic, PrintFcnType printType)
         {
             this.fcnType = fcnType;
             this.libraryType = libraryType;
             this.cudaType = cudaType;
             this.determinsitic = determinsitic;
+            this.printType = printType;
         }
 
         public FcnInfo(FcnType fcnType) {
-            this.fcnType = fcnType;
-            this.libraryType = LibraryFcnType.Default;
-            this.cudaType = CudaFcnType.Default;
-            this.determinsitic = FcnSourceDeterministic.Unknown;
+            this(fcnType, LibraryFcnType.Default, CudaFcnType.Default,
+                    FcnSourceDeterministic.Unknown, PrintFcnType.Default);
         }
     }
 
@@ -136,28 +140,35 @@ public class Function extends FENode {
         public FunctionCreator type(final FcnType typ) {
             this.fcnInfo =
                     new FcnInfo(typ, this.fcnInfo.libraryType, this.fcnInfo.cudaType,
-                            this.fcnInfo.determinsitic);
+                            this.fcnInfo.determinsitic, this.fcnInfo.printType);
             return this;
         }
 
         public FunctionCreator libraryType(final LibraryFcnType typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, typ, this.fcnInfo.cudaType,
-                            this.fcnInfo.determinsitic);
+                            this.fcnInfo.determinsitic, this.fcnInfo.printType);
             return this;
         }
 
         public FunctionCreator cudaType(final CudaFcnType typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType, typ,
-                            this.fcnInfo.determinsitic);
+                            this.fcnInfo.determinsitic, this.fcnInfo.printType);
             return this;
         }
 
         public FunctionCreator deterministicType(final FcnSourceDeterministic typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType,
-                            this.fcnInfo.cudaType, typ);
+                            this.fcnInfo.cudaType, typ, this.fcnInfo.printType);
+            return this;
+        }
+
+        public FunctionCreator printType(final PrintFcnType typ) {
+            this.fcnInfo =
+                    new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType,
+                            this.fcnInfo.cudaType, this.fcnInfo.determinsitic, typ);
             return this;
         }
 

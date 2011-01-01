@@ -654,8 +654,12 @@ bitvec<N>::bitvec (const bitvec<Ntag> &bv)
 template <size_t Ntag> ostream &
 operator<< (ostream &out, const bitvec<Ntag> &bv)
 {
-    for (int i = 0; i < Ntag; i++)
-	out << (bv[i] ? "1" : "0");
+    out << "[ ";
+    for (int i = 0; i < Ntag; i++) {
+        out << bv[i] ? "1" : "0";
+        if (i != Ntag - 1) { out << ", "; }
+    }
+    out << " ]";
     return out;
 }
 

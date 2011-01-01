@@ -1,12 +1,10 @@
 package sketch.compiler.passes.preprocessing;
 
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.Function;
+import java.util.List;
+
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
-import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * replace minimize(arg) with a special node
@@ -16,30 +14,13 @@ import sketch.util.exceptions.ExceptionAtNode;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class MinimizeFcnCall extends FEReplacer {
-    @Override
-    public Object visitFunction(Function func) {
-        if (func.getName().equals("minimize")) {
-            throw new ExceptionAtNode("minimize() is a reserved function name", func);
-        }
-        return super.visitFunction(func);
+public class MinimizeFcnCall extends BuiltinFcnCall {
+    public MinimizeFcnCall() {
+        super("minimize", 1);
     }
 
     @Override
-    public Object visitExprFunCall(ExprFunCall exp) {
-        if (exp.getName().equals("minimize")) {
-            assert exp.getParams().size() == 1 : "built-in minimize() takes 1 argument";
-            return new StmtMinimize(exp.getParams().get(0), true);
-        }
-        return exp;
-    }
-    
-    @Override
-    public Object visitStmtExpr(StmtExpr stmt) {
-        Object inner = stmt.getExpression().accept(this);
-        if (inner instanceof Statement) {
-            return inner;
-        }
-        return super.visitStmtExpr(stmt);
+    public Object builtinReplacement(ExprFunCall call, List<Expression> args) {
+        return new StmtMinimize(args.get(0), true);
     }
 }

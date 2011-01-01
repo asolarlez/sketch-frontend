@@ -32,7 +32,7 @@ import sketch.util.fcns.ZipIdxEnt;
 
 public class NodesToC extends NodesToJava {
 
-	private String filename;
+	protected String filename;
 	private boolean isBool = true;
   private boolean lhsBitvec = false;
 

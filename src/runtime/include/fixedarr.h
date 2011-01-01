@@ -91,8 +91,12 @@ public:
 template <typename T, size_t Ntag> ostream &
 operator<< (ostream &out, fixedarr<T, Ntag> &v)
 {
-    for (int i = 0; i < Ntag; i++)
-	out << v[i].val()<<",";
+    out << "[ ";
+    for (int i = 0; i < Ntag; i++) {
+        out << v[i].val();
+        if (i != Ntag - 1) { out << ", "; }
+    }
+    out << " ]";
     return out;
 }
 

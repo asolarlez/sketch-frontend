@@ -48,4 +48,6 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     // public boolean outputFortran;
     @CliParameter(help = "Disable the new Python backend to minimize expressions")
     public boolean minimize = false;
+    @CliParameter(help = "Do not print out code (useful when using printfcn's")
+    public boolean noOutputPrint = false;
 }

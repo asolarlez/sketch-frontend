@@ -96,16 +96,19 @@ public class SequentialSketchOptions {
         _singleton = null;
     }
 
-    public String getTmpSketchFilename() {
+    public String getTmpFilename(String basename) {
         final File sktmpdir = sktmpdir();
         assert sktmpdir.mkdirs() || sktmpdir.isDirectory();
         return PlatformLocalization.getLocalization().getTempPathString(sketchName,
-                "input.tmp");
+                basename);
+    }
+
+    public String getTmpSketchFilename() {
+        return getTmpFilename("input.tmp");
     }
 
     public String getSolutionsString() {
-        return PlatformLocalization.getLocalization().getTempPathString(sketchName,
-                "solution-%(num)s");
+        return getTmpFilename("solution-%(num)s");
     }
 
     public File[] getSolutionsFiles() {

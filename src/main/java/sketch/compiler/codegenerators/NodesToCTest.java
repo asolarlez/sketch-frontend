@@ -38,7 +38,7 @@ public class NodesToCTest extends NodesToJava {
 		testFuncs=new ArrayList<String>();
 	}
 	
-	private void writeLine(String s) {
+	protected void writeLine(String s) {
 		output.append(indent);
 		output.append(s);
 		output.append("\n");

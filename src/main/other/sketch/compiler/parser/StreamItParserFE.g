@@ -170,7 +170,7 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  ((TK_harness | TK_generator)? return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  ((TK_harness | TK_generator | TK_library | TK_printfcn)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -340,10 +340,22 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isHarness=false; boolean isGenerator=false; }
+function_decl returns [Function f] {
+    Type rt;
+    List l;
+    StmtBlock s;
+    f = null;
+    boolean isHarness = false;
+    boolean isLibrary = false;
+    boolean isPrintfcn = false;
+    boolean isGenerator = false;
+}
 	:
-	(TK_harness { isHarness=true; })?
-	(TK_generator { isGenerator=true;} )?
+	(
+        TK_harness { isHarness = true; } |
+        TK_generator { isGenerator = true; }  |
+        TK_library { isLibrary = true; }  |
+        TK_printfcn { isHarness = true; isPrintfcn = true; } )*
 	rt=return_type
 	id:ID
 	l=param_decl_list
@@ -356,7 +368,7 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
 
 			// function type
 			if (isGenerator) {
-			    fc = fc.type(Function.FcnType.Helper);
+			    fc = fc.type(Function.FcnType.Generator);
 			} else if (isHarness) {
                 assert impl == null : "harness functions cannot have implements";
                 fc = fc.type(Function.FcnType.Harness);
@@ -364,12 +376,22 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
 			    fc = fc.spec(impl.getText());
 			}
 
+            // library type
+            if (isLibrary) {
+                fc = fc.libraryType(Function.LibraryFcnType.Library);
+            }
+
+            // print function
+            if (isPrintfcn) {
+                fc = fc.printType(Function.PrintFcnType.Printfcn);
+            }
+
 			// cuda type annotations
 			// TBD
 
 			f = fc.create();
 	}
-	| SEMI  { f = Function.newUninterp(getContext(id),id.getText(), rt, l);   })
+	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).create(); })
 	;
 
 return_type returns [Type t] { t=null; }
@@ -378,9 +400,10 @@ return_type returns [Type t] { t=null; }
 
 handler_decl returns [Function f] { List l; Statement s; f = null;
 Type t = TypePrimitive.voidtype;
-Function.FcnType cls = Function.FcnType.Handler; }
+assert false : "Handler functions no longer supported";
+ }
 	:	TK_handler id:ID l=param_decl_list s=block
-		{ f = Function.creator(getContext(id), id.getText(), typ).returnType(t).params(l).body(s).create(); }
+		{ throw new RuntimeException("Handler functions not used anymore!"); }
 	;
 
 param_decl_list returns [List l] { l = new ArrayList(); Parameter p; }
