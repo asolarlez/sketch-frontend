@@ -13,7 +13,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="sketch.compiler.main.seq.SequentialSketchMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/home/gatoatigrado/sandbox/gpu_sketches/prefixsum/prefix_sum.sk"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--fe-no-output-print /home/gatoatigrado/sandbox/gpu_sketches/histogram/sketch/recursive.sk"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="sketch-frontend"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea"/>

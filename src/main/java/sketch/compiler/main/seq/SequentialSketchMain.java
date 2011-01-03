@@ -87,6 +87,7 @@ import sketch.util.ControlFlowException;
 import sketch.util.Pair;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
+import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
 
@@ -398,7 +399,6 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
 		// dump (lprog, "fpe:");
 		
-
         lprog = (getIRStage1()).run(lprog);
         
         lprog = (Program) lprog.accept(new TypeInferenceForStars());
@@ -517,7 +517,9 @@ public class SequentialSketchMain extends CommonSketchMain
 		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
 		
         for (Function f : GetPrintFcns.run(finalCode)) {
-            assert f.getParams().size() == 0 : "printfcn's cannot have parameters";
+            if (f.getParams().size() != 0) {
+                throw new ExceptionAtNode("printfcn's cannot have parameters", f);
+            }
             String testCode =
                     (String) finalCode.accept(new NodesToCPrintTest(varGen, resultFile,
                             f.getName()));
@@ -541,7 +543,7 @@ public class SequentialSketchMain extends CommonSketchMain
                         options.getTmpFilename("testPrintBin"));
                 final ProcessStatus runOutputStatus = runOutput.run(true);
                 assert runOutputStatus.exitCode == 0 : "running print function failed; command line:\n" + runOutput;
-                printNote("print output from function " + f.getName() + "\n" + runOutputStatus.out + "------------------------------");
+                printNote("print output from function " + f.getName().replace("__Wrapper", "") + "\n" + runOutputStatus.out + "------------------------------");
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -41,7 +42,13 @@ public class MainMethodCreateNospec extends FEReplacer {
         spec = (StreamSpec) super.visitStreamSpec(spec);
         if (!mainFcns.isEmpty()) {
             ArrayList<Function> newFcns = new ArrayList<Function>();
-            newFcns.addAll(spec.getFuncs());
+            for (Function f : spec.getFuncs()) {
+                if (f.getInfo().printType == PrintFcnType.Default) {
+                    newFcns.add(f);
+                } else {
+                    newFcns.add(f.creator().printType(PrintFcnType.Default).create());
+                }
+            }
             for (Function mainFcn : mainFcns) {
                 Function wrapperFcn = getWrapperFunction(mainFcn);
                 newFcns.add(wrapperFcn);
@@ -55,7 +62,6 @@ public class MainMethodCreateNospec extends FEReplacer {
         }
     }
 
-    @SuppressWarnings( { "deprecation", "unchecked" })
     protected Function getNospecFunction(Function mainWrapperFcn) {
         final FEContext ctx = FEContext.artificalFrom("nospec", mainWrapperFcn);
         return Function.creator(ctx, mainWrapperFcn.getSpecification(), FcnType.Static).body(
@@ -75,7 +81,8 @@ public class MainMethodCreateNospec extends FEReplacer {
         return Function.creator(artificalFrom, mainFcn.getName() + "__Wrapper",
                 FcnType.Static).params(mainFcn.getParams()).spec(
                 mainFcn.getName() + "__WrapperNospec").body(
-                new StmtBlock(artificalFrom, stmts)).create();
+                new StmtBlock(artificalFrom, stmts)).printType(
+                mainFcn.getInfo().printType).create();
     }
 
     @Override

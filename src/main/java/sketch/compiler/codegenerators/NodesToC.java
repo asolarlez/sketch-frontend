@@ -29,6 +29,7 @@ import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
+import sketch.util.wrapper.ScRichString;
 
 public class NodesToC extends NodesToJava {
 
@@ -687,24 +688,26 @@ public class NodesToC extends NodesToJava {
         else
             return "bitvec<1>(0U)";
     }
-	
-	@Override
-	public Object visitExprTprint(ExprTprint exprTprint) {
-	    StringBuilder result = new StringBuilder();
-	    if (!exprTprint.expressions.isEmpty()) {
-	        result.append("cout << ");
-	        for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
-	            if (v.idx > 0) {
-	                result.append("\n" + this.indent + "  << ");
-	            }
-	            result.append("\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl");
-	        }
-	    }
-	    return result.toString();
-	}
-	
-	@Override
-	public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
-	    return cudaThreadIdx.toString();
-	}
+
+    @Override
+    public Object visitExprTprint(ExprTprint exprTprint) {
+        StringBuilder result = new StringBuilder();
+        if (!exprTprint.expressions.isEmpty()) {
+            result.append("cout << ");
+            for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
+                if (v.idx > 0) {
+                    result.append("\n" + this.indent + "  << ");
+                }
+                final String name = v.entry.getFirst();
+                result.append("\"" + ScRichString.padLeft(name, 30) + ": \" << " +
+                        v.entry.getSecond() + " << endl");
+            }
+        }
+        return result.toString();
+    }
+
+    @Override
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        return cudaThreadIdx.toString();
+    }
 }

@@ -141,7 +141,7 @@ public class NtsbVtype extends IntVtype {
             boolean c1 = v1.hasIntVal() && v2.knownGeqZero();
             boolean c2 = v1.knownGeqZero() && v2.hasIntVal();
             boolean c3 = v1.hasIntVal() && v2.hasIntVal();
-            boolean c_original = v1.hasIntVal() || v2.hasIntVal();
+            // boolean c_original = v1.hasIntVal() || v2.hasIntVal();
             if (c1 || c2 || c3) {
                 if(v2.hasIntVal()){
                     abstractValue tmp = v2;
@@ -163,9 +163,10 @@ public class NtsbVtype extends IntVtype {
                 rv.A = A;
                 rv.B = B;
                 rv.X = X;
-            } else if (c_original) {
-                printWarning("skipping ax+b optimization for nodes", v1, v2);
             }
+            // else if (c_original) {
+                // printWarning("skipping ax+b optimization for nodes", v1, v2);
+            // }
         }
         return rv;
     }

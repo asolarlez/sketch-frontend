@@ -1,5 +1,6 @@
 package sketch.util.exceptions;
 
+import static sketch.util.DebugOut.printError;
 import sketch.compiler.ast.core.FENode;
 
 public class ExceptionAtNode extends SketchException {
@@ -9,6 +10,13 @@ public class ExceptionAtNode extends SketchException {
     public ExceptionAtNode(String message, FENode node) {
         super(message + " (at " + node.getCx() + ")");
         this.node = node;
+    }
+    
+    @Override
+    public void print() {
+        super.print();
+        printError("[SKETCH]", "Class of node related to failure:", this.node.getClass());
+        printError("[SKETCH]", "Node related to failure:", this.node);
     }
 
     @Override

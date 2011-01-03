@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.CudaFcnType;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -32,6 +33,7 @@ import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.cuda.CudaThreadBlockDim;
+import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
@@ -45,6 +47,7 @@ import sketch.util.exceptions.ExceptionAtNode;
 @CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class })
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
+    protected TypedHashMap<String, Function> oldFunctions;
     protected Vector<Function> oldThreadFcns;
     protected Vector<Function> allThreadsFcns;
     protected Vector<Function> someThreadsFcns;
@@ -62,7 +65,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
     @Override
     public Object visitFunction(Function fcn) {
-        if (fcn.getSpecification() != null || specFcns.contains(fcn.getName())) {
+        if (fcn.getInfo().cudaType == CudaFcnType.Default) {
             oldThreadFcns.add((Function) super.visitFunction(fcn));
         } else {
             allThreadsFcns.add((Function) new AllThreadsTransform(symtab).visitFunction(fcn));
@@ -103,6 +106,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         someThreadsFcns = new Vector<Function>();
         specFcns = new Vector<String>();
         for (Function f : spec.getFuncs()) {
+            oldFunctions.put(f.getName(), f);
             if (f.getSpecification() != null) {
                 specFcns.add(f.getSpecification());
             }
@@ -127,7 +131,11 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     // [start] Anything here is for transforming the harness function
     @Override
     public Object visitExprFunCall(ExprFunCall exp) {
-        return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
+        if (oldFunctions.get(exp.getName()).getInfo().cudaType == CudaFcnType.Default) {
+            return exp;
+        } else {
+            return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
+        }
     }
 
     // [end]
@@ -303,6 +311,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
+            Function callee = oldFunctions.get(exp.getName());
             return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
         }
 

@@ -89,7 +89,7 @@ public class DebugOut {
 
     /** try not to go overboard with the # of these... */
     public enum StatusPrefix {
-        NOTE, DEBUG, FAILURE, WARNING
+        NOTE, DEBUG, FAILURE, WARNING, ERROR
     }
 
     /**
@@ -110,6 +110,10 @@ public class DebugOut {
 
     public static void printFailure(Object... description) {
         printStatusMessage(BASH_RED, StatusPrefix.FAILURE, " ", false, description);
+    }
+
+    public static void printError(Object... description) {
+        printStatusMessage(BASH_RED, StatusPrefix.ERROR, " ", false, description);
     }
 
     public static void printNote(Object... description) {

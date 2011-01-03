@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.Function.LibraryFcnType;
+import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -48,7 +49,7 @@ public class SimpleCodePrinter extends CodePrinter
 		printTab(); 
 		out.println("/*" + func.getCx() + "*/");
 		printTab();
-		out.println(func.toString());
+		out.println((func.getInfo().printType == PrintFcnType.Printfcn ? "printfcn " : "") + func.toString());
 		super.visitFunction(func);
 		out.flush();
 		return func;
