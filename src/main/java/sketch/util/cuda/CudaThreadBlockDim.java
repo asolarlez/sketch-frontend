@@ -1,5 +1,7 @@
 package sketch.util.cuda;
 
+import static sketch.util.DebugOut.assertFalse;
+
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +51,19 @@ public class CudaThreadBlockDim {
 
     public int all() {
         return x * y * z;
+    }
+
+    public Expression blockDimConstInt(String name) {
+        switch (name.charAt(0)) {
+            case 'x':
+                return new ExprConstInt(x);
+            case 'y':
+                return new ExprConstInt(y);
+            case 'z':
+                return new ExprConstInt(z);
+        }
+        assertFalse("unknown name", name);
+        return null;
     }
 
     public Expression getXFromAll(Expression all) {

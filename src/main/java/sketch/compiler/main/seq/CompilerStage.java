@@ -2,6 +2,7 @@ package sketch.compiler.main.seq;
 
 import static sketch.util.Misc.nonnull;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -25,11 +26,15 @@ public abstract class CompilerStage {
         sketch = sequentialSketchMain;
     }
 
-    public Vector<FEVisitor> passes;
+    public Vector<FEVisitor> passes = new Vector<FEVisitor>();
     /** pass $1 depends on pass $2, i.e. $2 must run before $1 */
     protected HashmapList<FEVisitor, FEVisitor> stageRequires =
             new HashmapList<FEVisitor, FEVisitor>();
     protected Vector<FEVisitor> linearizedStages = new Vector<FEVisitor>();
+    
+    protected void addPasses(FEVisitor... passes2) {
+        passes.addAll(Arrays.asList(passes2));
+    }
 
     /** you probably don't want to modify this */
     public Program run(Program prog) {

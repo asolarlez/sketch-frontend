@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.exprs.ExprConstStr;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.datastructures.TprintTuple;
 
 /**
@@ -17,6 +18,7 @@ import sketch.util.datastructures.TprintTuple;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
+@CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class TprintFcnCall extends BuiltinFcnCall {
     static final String usageStr =
             "tprint usage: tprint(\"identifier 1\", value 1, \"identifier 2\", value 2, ...)";

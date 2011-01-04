@@ -1,13 +1,17 @@
 package sketch.compiler.dataflow.preprocessor;
 
 import static sketch.util.DebugOut.printNote;
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -18,6 +22,8 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.datastructures.TypedHashMap;
+import sketch.util.fcns.ZipIdxEnt;
 /**
  * This visitor distinguishes between int stars and bit stars, and labels each star with its
  * appropriate type.
@@ -27,9 +33,18 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
  *
  */
 public class TypeInferenceForStars extends SymbolTableVisitor {
+    public TypedHashMap<String, Function> functions = new TypedHashMap<String, Function>();
 
 	public TypeInferenceForStars(){
 		super(null);
+	}
+	
+	@Override
+	public Object visitStreamSpec(StreamSpec spec) {
+	    for (Function f : spec.getFuncs()) {
+	        functions.put(f.getName(), f);
+	    }
+	    return super.visitStreamSpec(spec);
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
@@ -128,6 +143,16 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
         return result;
     }
+	
+	@Override
+	public Object visitExprFunCall(ExprFunCall exp) {
+	    exp = (ExprFunCall) super.visitExprFunCall(exp);
+	    Function callee = functions.get(exp.getName());
+	    for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
+	        upgradeStarToInt(arg.entry, callee.getParams().get(arg.idx).getType());
+	    }
+	    return exp;
+	}
 }
 
 class UpgradeStarToInt extends FEReplacer{

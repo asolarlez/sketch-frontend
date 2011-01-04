@@ -57,6 +57,7 @@ tokens {
 // Intrinsic values:
 	//"pi";
 	"true"; "false";
+
 	//sketching stuff
 	"implements";
 	"assert";
@@ -65,6 +66,9 @@ tokens {
 	"harness";
     "library";
     "printfcn";
+    "device";
+    "global";
+
     // Compiler directives:
     "include";
     "pragma";

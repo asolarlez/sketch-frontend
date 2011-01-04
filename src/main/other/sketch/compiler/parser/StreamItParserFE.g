@@ -170,7 +170,7 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  ((TK_harness | TK_generator | TK_library | TK_printfcn)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  ((TK_device | TK_global | TK_harness | TK_generator | TK_library | TK_printfcn)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -349,13 +349,18 @@ function_decl returns [Function f] {
     boolean isLibrary = false;
     boolean isPrintfcn = false;
     boolean isGenerator = false;
+    boolean isDevice = false;
+    boolean isGlobal = false;
 }
 	:
 	(
+        TK_device { isDevice = true; } |
+        TK_global { isGlobal = true; } |
         TK_harness { isHarness = true; } |
         TK_generator { isGenerator = true; }  |
         TK_library { isLibrary = true; }  |
-        TK_printfcn { isHarness = true; isPrintfcn = true; } )*
+        TK_printfcn { isHarness = true; isPrintfcn = true; }
+    )*
 	rt=return_type
 	id:ID
 	l=param_decl_list
@@ -388,6 +393,11 @@ function_decl returns [Function f] {
 
 			// cuda type annotations
 			// TBD
+            if (isDevice) {
+                fc = fc.cudaType(Function.CudaFcnType.DeviceInline);
+            } else if (isGlobal) {
+                fc = fc.cudaType(Function.CudaFcnType.Global);
+            }
 
 			f = fc.create();
 	}

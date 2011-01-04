@@ -1,4 +1,6 @@
 package sketch.compiler.passes.lowering;
+import static sketch.util.DebugOut.assertFalse;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -216,6 +218,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					assert outParam.isParameterOutput();
 
 					Expression defaultValue = getDefaultValue(func.getReturnType());
+					assert defaultValue != null : "[FunctionParamExtension] default value null!";
+					if (defaultValue == null) { assertFalse(); }
 					
 					stmts.add(0, new StmtAssign(new ExprVar(func, outParamName), defaultValue));
 				}
@@ -257,6 +261,10 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		}
 		// now we create a temp (or several?) to store the result
 
+		// FIXME -- hack so this class can be run twice
+		if (fun.getReturnType().equals(TypePrimitive.voidtype)) {
+		    return exp;
+		}
 
 		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
 		List<Expression> existingArgs=exp.getParams();
@@ -287,6 +295,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					tempVars.add(ev);
 				}
 				if(ptype == Parameter.REF){
+				    assert ev != null;
 					refAssigns.add(new StmtAssign(oldArg, ev  ));
 				}
 			}
@@ -319,6 +328,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	public Object visitStmtReturn(StmtReturn stmt) {
 		FENode cx=stmt;
 		List<Statement> oldns = newStatements;
+		
+		if (stmt.getValue() == null) {
+		    // NOTE -- ignore if already processed...
+		    return stmt;
+		}
 		
 		this.newStatements = new ArrayList<Statement> ();		
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);

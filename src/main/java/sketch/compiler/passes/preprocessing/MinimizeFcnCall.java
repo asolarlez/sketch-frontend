@@ -5,6 +5,7 @@ import java.util.List;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 
 /**
  * replace minimize(arg) with a special node
@@ -14,6 +15,7 @@ import sketch.compiler.ast.core.stmts.StmtMinimize;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
+@CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class MinimizeFcnCall extends BuiltinFcnCall {
     public MinimizeFcnCall() {
         super("minimize", 1);

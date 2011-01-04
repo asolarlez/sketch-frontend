@@ -61,6 +61,7 @@ import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.PlatformLocalization;
+import sketch.compiler.main.cuda.CudaSketchMain;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
@@ -318,6 +319,14 @@ public class SequentialSketchMain extends CommonSketchMain
 	/** hack to check deps across stages; accessed by CompilerStage */
     public final HashSet<Class<? extends FEVisitor>> runClasses =
             new HashSet<Class<? extends FEVisitor>>();
+    
+    public class BeforeSemanticCheckStage extends CompilerStage {
+        public BeforeSemanticCheckStage() {
+            super(SequentialSketchMain.this);
+            FEVisitor[] passes2 = { new MinimizeFcnCall(), new TprintFcnCall() };
+            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
+        }
+    }
 
     public class PreProcStage1 extends CompilerStage {
         public PreProcStage1() {
@@ -354,6 +363,10 @@ public class SequentialSketchMain extends CommonSketchMain
     }
 
     // [start] function overloads for stage classes
+    public BeforeSemanticCheckStage getBeforeSemanticCheckStage() {
+        return new BeforeSemanticCheckStage();
+    }
+    
     public PreProcStage1 getPreProcStage1() {
         return new PreProcStage1();
     }
@@ -657,8 +670,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
-	    prog = (Program)prog.accept(new MinimizeFcnCall());
-	    prog = (Program)prog.accept(new TprintFcnCall());
+	    prog = (getBeforeSemanticCheckStage()).run(prog);
         (new SemanticCheckPass()).visitProgram(prog);
         this.showPhaseOpt("parse");
 
@@ -706,7 +718,7 @@ public class SequentialSketchMain extends CommonSketchMain
     public static void main(String[] args) {
         long beg = System.currentTimeMillis();
         checkJavaVersion(1, 6);
-        final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
+        final SequentialSketchMain sketchmain = new CudaSketchMain(args);
         try {
             sketchmain.run();
         } catch (SketchException e) {

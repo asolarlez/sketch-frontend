@@ -1,5 +1,6 @@
 package sketch.compiler.passes.cuda;
 
+import static sketch.util.DebugOut.assertSlow;
 import static sketch.util.DebugOut.printWarning;
 
 import java.util.Arrays;
@@ -47,7 +48,7 @@ import sketch.util.exceptions.ExceptionAtNode;
 @CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class })
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
-    protected TypedHashMap<String, Function> oldFunctions;
+    protected TypedHashMap<String, Function> oldFunctions = new TypedHashMap<String, Function>();
     protected Vector<Function> oldThreadFcns;
     protected Vector<Function> allThreadsFcns;
     protected Vector<Function> someThreadsFcns;
@@ -312,6 +313,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             Function callee = oldFunctions.get(exp.getName());
+            assertSlow(callee.getInfo().cudaType != CudaFcnType.Default,
+                    "calling non-cuda function", callee, "from expression", exp);
             return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
         }
 
@@ -406,6 +409,12 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitCudaSyncthreads(CudaSyncthreads stmt) {
+            contains = true;
+            return stmt;
+        }
+        
+        @Override
+        public Object visitStmtReturn(StmtReturn stmt) {
             contains = true;
             return stmt;
         }
