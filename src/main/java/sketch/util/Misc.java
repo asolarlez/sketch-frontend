@@ -133,7 +133,7 @@ public class Misc extends AssertedClass
 	
     public static <T> T nonnull(T obj, String message) {
         if (obj == null) {
-            DebugOut.printFailure(message);
+            DebugOut.assertFalse("nonnull() --", message);
         }
         return obj;
     }

@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import sketch.compiler.Directive;
+import sketch.compiler.Directive.InstrumentationDirective;
 import sketch.compiler.Directive.OptionsDirective;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
@@ -13,6 +14,7 @@ import sketch.compiler.passes.printers.SimpleCodePrinter;
 
 public class CommonSketchMain {
     public SequentialSketchOptions options;
+    protected Vector<InstrumentationDirective> directives = new Vector<InstrumentationDirective>();
 
     public CommonSketchMain(SequentialSketchOptions options) {
         this.options = options;
@@ -86,6 +88,9 @@ public class CommonSketchMain {
         for (Directive d : D)
             if (d instanceof OptionsDirective)
                 options.prependArgsAndReparse(((OptionsDirective) d).options(), false);
+            else if (d instanceof InstrumentationDirective) {
+                this.directives.add((InstrumentationDirective) d);
+            }
     }
 
     protected void log(String msg) {

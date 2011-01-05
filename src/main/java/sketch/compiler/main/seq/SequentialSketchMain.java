@@ -417,6 +417,7 @@ public class SequentialSketchMain extends CommonSketchMain
         lprog = (Program) lprog.accept(new TypeInferenceForStars());
         // dump (lprog, "tifs:");
 
+        prog = lprog; // save before flow checks, so a good program is written out for debugging
 		lprog.accept(new PerformFlowChecks());
 		
 		

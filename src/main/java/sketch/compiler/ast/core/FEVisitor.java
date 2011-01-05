@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
+import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -121,4 +122,5 @@ public interface FEVisitor
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx);
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim);
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads);
+    public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall);
 }

@@ -80,12 +80,18 @@ public class ExprFunCall extends Expression
     	this (context, name, Collections.singletonList (param));
     }
 
-    /** Creates a new function call with the specified name and
-     * two specified parameters. */
-    public ExprFunCall(FENode context, String name,
-                       Expression p1, Expression p2)
-    {
-    	this (context, name, Arrays.asList(new Expression[] {p1,p2}));
+    /**
+     * Creates a new function call with the specified name and two specified parameters.
+     */
+    public ExprFunCall(FENode context, String name, Expression... params) {
+        this(context, name, Arrays.asList(params));
+    }
+
+    /**
+     * Creates a new function call with the specified name and two specified parameters.
+     */
+    public ExprFunCall(FEContext context, String name, Expression... params) {
+        this(context, name, Arrays.asList(params));
     }
 
     /** Returns the name of the function being called. */

@@ -25,11 +25,24 @@ public class CPreprocessedFileStream extends ByteArrayInputStream {
     {
         super(preprocessFile(filename, cppDefs).getBytes());
     }
+    
+    public static class Preproc2 extends Preprocessor {
+        public Preproc2(File f) throws IOException {
+            super(f);
+        }
+        
+        @Override
+        protected void pragma(Token name, List<Token> value) throws IOException,
+                LexerException
+        {
+            // allow all pragmas
+        }
+    }
 
     public static String preprocessFile(String filename,
             List<String> additionalDefs) throws IOException, LexerException
     {
-        Preprocessor preproc = new Preprocessor(new File(filename));
+        Preproc2 preproc = new Preproc2(new File(filename));
         preproc.addFeature(Feature.LINEMARKERS);
         ArrayList<String> cppDefs = new ArrayList<String>();
         cppDefs.add("__SKETCH__");

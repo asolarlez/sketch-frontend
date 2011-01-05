@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
@@ -495,6 +496,21 @@ public class PartialEvaluator extends FEReplacer {
             }
             return vtype.BOTTOM();
         }
+    }
+    
+    @Override
+    public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
+        if (isReplacer) {
+            instrumentCall.getToImplement().accept(this);
+            ExprVar expr2 = (ExprVar) exprRV;
+            if (expr2 != instrumentCall.getToImplement()) {
+                exprRV = new CudaInstrumentCall(instrumentCall, expr2, instrumentCall.getImplName());
+            } else {
+                exprRV = instrumentCall;
+            }
+            return exprRV;
+        }
+        return vtype.BOTTOM();
     }
 
 

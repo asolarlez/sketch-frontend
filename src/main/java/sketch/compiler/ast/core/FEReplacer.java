@@ -32,6 +32,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
+import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -105,6 +106,10 @@ public class FEReplacer implements FEVisitor
     protected void addStatement(Statement stmt)
     {
         newStatements.add(stmt);
+    }
+
+    protected void addExprStatement(Expression expr) {
+        addStatement(new StmtExpr(expr));
     }
 
     /**
@@ -909,5 +914,13 @@ public class FEReplacer implements FEVisitor
     
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) {
         return cudaBlockDim;
+    }
+    
+    public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
+        ExprVar expr2 = (ExprVar) instrumentCall.getToImplement().accept(this);
+        if (expr2 != instrumentCall.getToImplement()) {
+            return new CudaInstrumentCall(instrumentCall, expr2, instrumentCall.getImplName());
+        }
+        return instrumentCall;
     }
 }

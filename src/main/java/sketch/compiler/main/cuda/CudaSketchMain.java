@@ -3,8 +3,11 @@ package sketch.compiler.main.cuda;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
+import sketch.compiler.passes.cuda.DeleteInstrumentCalls;
 import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
 import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
+import sketch.compiler.passes.cuda.InstrumentFcnCall;
+import sketch.compiler.passes.cuda.LowerInstrumentation;
 import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
@@ -15,7 +18,7 @@ import sketch.compiler.solvers.constructs.ValueOracle;
 
 /**
  * cuda main functions
- *
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
@@ -25,11 +28,11 @@ public class CudaSketchMain extends SequentialSketchMain {
     public CudaSketchMain(String[] args) {
         super(new CudaSketchOptions(args));
     }
-    
+
     public class CudaBeforeSemanticCheckStage extends BeforeSemanticCheckStage {
         public CudaBeforeSemanticCheckStage() {
             super();
-            addPasses(new ThreadIdReplacer(options));
+            addPasses(new ThreadIdReplacer(options), new InstrumentFcnCall());
         }
     }
 
@@ -41,15 +44,19 @@ public class CudaSketchMain extends SequentialSketchMain {
         }
     }
 
-    public class GxlIRStage2 extends IRStage2 {
-        public GxlIRStage2() {
+    public class CudaIRStage1 extends IRStage1 {
+        public CudaIRStage1() {
+            super();
+            addPasses(new LowerInstrumentation(varGen, directives));
+        }
+    }
+
+    public class CudaIRStage2 extends IRStage2 {
+        public CudaIRStage2() {
             super();
             this.passes.add(new SplitAssignFromVarDef());
-            this.passes.add(new GenerateAllOrSomeThreadsFunctions(
-                    CudaSketchMain.this.options,
-                    CudaSketchMain.this.varGen));
-            this.passes.add(new GlobalToLocalImplicitCasts(
-                    CudaSketchMain.this.options));
+            this.passes.add(new GenerateAllOrSomeThreadsFunctions(options, varGen));
+            this.passes.add(new GlobalToLocalImplicitCasts(options));
         }
 
         @Override
@@ -69,7 +76,7 @@ public class CudaSketchMain extends SequentialSketchMain {
             return prog;
         }
     }
-    
+
     @Override
     public BeforeSemanticCheckStage getBeforeSemanticCheckStage() {
         return new CudaBeforeSemanticCheckStage();
@@ -79,22 +86,30 @@ public class CudaSketchMain extends SequentialSketchMain {
     public PreProcStage1 getPreProcStage1() {
         return new CudaPreProcStage1();
     }
+    
+    @Override
+    public IRStage1 getIRStage1() {
+        return new CudaIRStage1();
+    }
 
     @Override
     public IRStage2 getIRStage2() {
-        return new GxlIRStage2();
+        return new CudaIRStage2();
     }
 
     @Override
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
         this.parseProgram();
-//        this.prog =
-//                (Program) (new ReplaceBlockDimAndGridDim(this.options)).visitProgram(this.prog);
+        // this.prog =
+        // (Program) (new
+        // ReplaceBlockDimAndGridDim(this.options)).visitProgram(this.prog);
         this.preprocAndSemanticCheck();
 
         this.oracle = new ValueOracle(new StaticHoleTracker(this.varGen));
         this.partialEvalAndSolve();
+        beforeUnvectorizing =
+                (Program) (new DeleteInstrumentCalls()).visitProgram(beforeUnvectorizing);
         this.eliminateStar();
 
         this.generateCode();

@@ -27,7 +27,7 @@ public class CallGraph extends FEReplacer {
     public CGEdgeSet edges = new CGEdgeSet();
     public CGEdgeSet closureEdges = new CGEdgeSet();
 
-    protected final HashMap<ExprFunCall, Function> fcnCalls =
+    protected final HashMap<ExprFunCall, Function> fcnCallEnclosing =
             new HashMap<ExprFunCall, Function>();
     protected final HashMap<String, Function> fcnDefs = new HashMap<String, Function>();
 
@@ -56,15 +56,19 @@ public class CallGraph extends FEReplacer {
     }
 
     public Function getEnclosing(ExprFunCall call) {
-        return nonnull(fcnCalls.get(call));
+        return nonnull(fcnCallEnclosing.get(call));
     }
 
     public Function getTarget(ExprFunCall call) {
         return nonnull(fcnDefs.get(call.getName()));
     }
+    
+    public Function getByName(String name) {
+        return nonnull(fcnDefs.get(name));
+    }
 
     protected void buildEdges() {
-        for (Entry<ExprFunCall, Function> ent : fcnCalls.entrySet()) {
+        for (Entry<ExprFunCall, Function> ent : fcnCallEnclosing.entrySet()) {
             final Function caller = ent.getValue();
             final Function target = fcnDefs.get(ent.getKey().getName());
             edges.add(new CallEdge(caller, target));
@@ -88,7 +92,7 @@ public class CallGraph extends FEReplacer {
     @Override
     public Object visitExprFunCall(ExprFunCall exp) {
         assert enclosing != null : "function call not within a function?";
-        fcnCalls.put(exp, enclosing);
+        fcnCallEnclosing.put(exp, enclosing);
         return exp;
     }
 
