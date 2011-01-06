@@ -1,6 +1,5 @@
 package sketch.compiler.passes.cuda;
 
-import static sketch.util.DebugOut.assertSlow;
 import static sketch.util.DebugOut.printWarning;
 
 import java.util.Arrays;
@@ -11,10 +10,10 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.CudaFcnType;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -33,8 +32,8 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.cuda.CudaThreadBlockDim;
-import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
@@ -48,11 +47,10 @@ import sketch.util.exceptions.ExceptionAtNode;
 @CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class })
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
-    protected TypedHashMap<String, Function> oldFunctions = new TypedHashMap<String, Function>();
+    protected CallGraph cg;
     protected Vector<Function> oldThreadFcns;
     protected Vector<Function> allThreadsFcns;
     protected Vector<Function> someThreadsFcns;
-    protected Vector<String> specFcns;
 
     protected final TempVarGen varGen;
 
@@ -66,11 +64,11 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
     @Override
     public Object visitFunction(Function fcn) {
-        if (fcn.getInfo().cudaType == CudaFcnType.Default) {
-            oldThreadFcns.add((Function) super.visitFunction(fcn));
-        } else {
+        if (fcn.isParallel()) {
             allThreadsFcns.add((Function) new AllThreadsTransform(symtab).visitFunction(fcn));
             someThreadsFcns.add((Function) new SomeThreadsTransform(symtab).visitFunction(fcn));
+        } else {
+            oldThreadFcns.add((Function) super.visitFunction(fcn));
         }
         return fcn;
     }
@@ -101,41 +99,37 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     }
 
     @Override
+    public Object visitProgram(Program prog) {
+        cg = new CallGraph(prog);
+        return super.visitProgram(prog);
+    }
+
+    @Override
     public Object visitStreamSpec(StreamSpec spec) {
         oldThreadFcns = new Vector<Function>();
         allThreadsFcns = new Vector<Function>();
         someThreadsFcns = new Vector<Function>();
-        specFcns = new Vector<String>();
-        for (Function f : spec.getFuncs()) {
-            oldFunctions.put(f.getName(), f);
-            if (f.getSpecification() != null) {
-                specFcns.add(f.getSpecification());
-            }
-        }
 
         spec = (StreamSpec) super.visitStreamSpec(spec);
         Vector<Function> allFcns = new Vector<Function>();
         allFcns.addAll(oldThreadFcns);
         allFcns.addAll(allThreadsFcns);
         allFcns.addAll(someThreadsFcns);
-        // allFcns.add(createThreadDeltaFcn(spec, "__threadAll", true));
-        // allFcns.add(createThreadDeltaFcn(spec, "__threadNone", false));
 
         for (Function f : allFcns) {
             assert f != null;
         }
 
-        return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
-                spec.getParams(), spec.getVars(), allFcns);
+        return spec.newFromFcns(allFcns);
     }
 
     // [start] Anything here is for transforming the harness function
     @Override
     public Object visitExprFunCall(ExprFunCall exp) {
-        if (oldFunctions.get(exp.getName()).getInfo().cudaType == CudaFcnType.Default) {
-            return exp;
-        } else {
+        if (cg.getTarget(exp).isParallel()) {
             return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
+        } else {
+            return exp;
         }
     }
 
@@ -312,10 +306,23 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
-            Function callee = oldFunctions.get(exp.getName());
-            assertSlow(callee.getInfo().cudaType != CudaFcnType.Default,
-                    "calling non-cuda function", callee, "from expression", exp);
-            return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
+            Function callee = cg.getTarget(exp);
+            switch (callee.getInfo().cudaType) {
+                case DeviceInline:
+                    return new ExprFunCall(exp, "allthreads_" + exp.getName(),
+                            exp.getParams());
+                case Serial:
+                    return exp;
+                case Global:
+                    throw new ExceptionAtNode("Use \"device\" to designate "
+                            + "CUDA subfunctions, not \"global\"", exp);
+                default:
+                    throw new ExceptionAtNode(
+                            "Cannot call a non-cuda function from a CUDA function. "
+                                    + "Use \"serial\" if you are intending to do this for code "
+                                    + "that will disappear before CUDA code generation.",
+                            exp);
+            }
         }
 
         @Override
@@ -361,7 +368,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                         Parameter.IN));
             }
             params.addAll(func.getParams());
-            Function f2 = func.creator().name("somethreads_" + func.getName()).params(params).create();
+            Function f2 =
+                    func.creator().name("somethreads_" + func.getName()).params(params).create();
             return super.visitFunction(f2);
         }
 
@@ -373,12 +381,17 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
-            Vector<Expression> nextArgs = new Vector<Expression>();
-            for (String threadIndexName : CudaThreadBlockDim.indexNames) {
-                nextArgs.add(new ExprVar(exp, threadIndexName));
+            Function target = cg.getTarget(exp);
+            if (target.isStatic()) {
+                return new StmtAssert(new ExprConstBoolean(false), false);
+            } else {
+                Vector<Expression> nextArgs = new Vector<Expression>();
+                for (String threadIndexName : CudaThreadBlockDim.indexNames) {
+                    nextArgs.add(new ExprVar(exp, threadIndexName));
+                }
+                nextArgs.addAll(exp.getParams());
+                return new ExprFunCall(exp, "somethreads_" + exp.getName(), nextArgs);
             }
-            nextArgs.addAll(exp.getParams());
-            return new ExprFunCall(exp, "somethreads_" + exp.getName(), nextArgs);
         }
 
         @Override
@@ -412,7 +425,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
             contains = true;
             return stmt;
         }
-        
+
         @Override
         public Object visitStmtReturn(StmtReturn stmt) {
             contains = true;

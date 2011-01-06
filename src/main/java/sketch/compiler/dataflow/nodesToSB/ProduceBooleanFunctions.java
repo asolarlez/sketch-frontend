@@ -23,10 +23,13 @@ import sketch.compiler.ast.core.typs.TypePortal;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.dataflow.PartialEvaluator;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.exceptions.ExceptionAtNode;
 /**
  * This class translates the ast into a boolean function which is output to a file.
  * The format is suitable for the SBitII backend solver.<BR>
@@ -392,7 +395,18 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssign(s);
         
     }
-    
-    
-    
+
+    @Override
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        throw new ExceptionAtNode("Cuda threadIdx should be erased by now! "
+                + "Did you forget to add a \"device\" qualifier to the function?",
+                cudaThreadIdx);
+    }
+
+    @Override
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        throw new ExceptionAtNode("Cuda __syncthreads() should be erased by now! "
+                + "Did you forget to add a \"device\" qualifier to the function?",
+                cudaSyncthreads);
+    }
 }

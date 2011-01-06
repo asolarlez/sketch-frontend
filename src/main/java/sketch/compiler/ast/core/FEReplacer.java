@@ -596,12 +596,21 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtEmpty(StmtEmpty stmt) { return stmt; }
 
-    public Object visitStmtExpr(StmtExpr stmt)
-    {
-        Expression newExpr = doExpression(stmt.getExpression());
-        if( newExpr == null) return null;
-        if (newExpr == stmt.getExpression()) return stmt;
-        return new StmtExpr(stmt, newExpr);
+    public Object visitStmtExpr(StmtExpr stmt) {
+        Object nextInner = stmt.getExpression().accept(this);
+        if (nextInner == null) {
+            return null;
+        } else if (nextInner instanceof Expression) {
+            Expression newExpr = (Expression) nextInner;
+            if (newExpr == stmt.getExpression())
+                return stmt;
+            return new StmtExpr(stmt, newExpr);
+        } else if (nextInner instanceof Statement) {
+            return (Statement) nextInner;
+        } else {
+            throw new RuntimeException("unknown return value from stmt expr: " +
+                    nextInner);
+        }
     }
 
     public Object visitStmtFor(StmtFor stmt)

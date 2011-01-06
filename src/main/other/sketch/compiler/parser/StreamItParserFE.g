@@ -55,6 +55,7 @@ import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
+import static sketch.util.DebugOut.assertFalse;
 }
 
 {@SuppressWarnings("deprecation")}
@@ -170,7 +171,7 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  ((TK_device | TK_global | TK_harness | TK_generator | TK_library | TK_printfcn)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  ((TK_device | TK_global | TK_serial | TK_harness | TK_generator | TK_library | TK_printfcn)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -351,11 +352,13 @@ function_decl returns [Function f] {
     boolean isGenerator = false;
     boolean isDevice = false;
     boolean isGlobal = false;
+    boolean isSerial = false;
 }
 	:
 	(
         TK_device { isDevice = true; } |
         TK_global { isGlobal = true; } |
+        TK_serial { isSerial = true; } |
         TK_harness { isHarness = true; } |
         TK_generator { isGenerator = true; }  |
         TK_library { isLibrary = true; }  |
@@ -393,10 +396,15 @@ function_decl returns [Function f] {
 
 			// cuda type annotations
 			// TBD
+            if ((isDevice && isGlobal) || (isGlobal && isSerial) || (isDevice && isSerial)) {
+                assertFalse("Only one of \"global\", \"device\", or \"serial\" qualifiers is allowed.");
+            }
             if (isDevice) {
                 fc = fc.cudaType(Function.CudaFcnType.DeviceInline);
             } else if (isGlobal) {
                 fc = fc.cudaType(Function.CudaFcnType.Global);
+            } else if (isSerial) {
+                fc = fc.cudaType(Function.CudaFcnType.Serial);
             }
 
 			f = fc.create();

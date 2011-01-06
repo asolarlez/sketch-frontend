@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
@@ -14,13 +15,24 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.cuda.CudaThreadBlockDim;
 import sketch.util.datastructures.TypedHashSet;
 
+/**
+ * implicitly upcast e.g. "x : Int" to "{ x, x, x ... } : Int[NTHREADS]" for function
+ * arguments
+ * 
+ * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+ * @license This file is licensed under BSD license, available at
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
+ */
 @CompilerPassDeps(runsBefore = {}, runsAfter = { GenerateAllOrSomeThreadsFunctions.class })
 public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     protected StreamSpec spec;
     protected CudaThreadBlockDim cudaBlockDim;
+    protected CallGraph cg;
 
     public GlobalToLocalImplicitCasts(SequentialSketchOptions opts) {
         super(null);
@@ -28,8 +40,13 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     }
 
     @Override
+    public Object visitProgram(Program prog) {
+        cg = new CallGraph(prog);
+        return super.visitProgram(prog);
+    }
+
+    @Override
     public Object visitStreamSpec(StreamSpec spec) {
-        this.spec = spec;
         super.visitStreamSpec(spec);
 
         final CallReplacer cr = new CallReplacer(symtab);
@@ -41,12 +58,6 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
             if (!fcn.getName().startsWith("somethreads")) {
                 fcns.add(fcn);
             }
-            // if (cr.visitedFcns.contains(fcn.getName()) ||
-            // fcn.getSpecification() != null ||
-            // fcn.getName().equals("generated_nospec"))
-            // {
-            // fcns.add(fcn);
-            // }
         }
         return spec1.newFromFcns(fcns);
     }
@@ -63,7 +74,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
             this.visitedFcns.add(exp.getName());
             // for local expressions that aren't already vectors, copy them many times
             Vector<Expression> nextParams = new Vector<Expression>();
-            Function funcSigParams = spec.getFuncNamed(exp.getName());
+            Function funcSigParams = cg.getTarget(exp);
             Iterator<Parameter> iter = funcSigParams.getParams().iterator();
             for (Expression e : exp.getParams()) {
                 Parameter param = iter.next();

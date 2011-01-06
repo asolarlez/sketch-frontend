@@ -12,12 +12,15 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -31,7 +34,7 @@ import sketch.util.exceptions.ExceptionAtNode;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-@CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class }, runsAfter = {})
+@CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class, GlobalsToParams.class }, runsAfter = { })
 public class LowerInstrumentation extends FEReplacer {
     protected final TypedHashMap<String, InstrumentationDirective> directivesByName =
             new TypedHashMap<String, InstrumentationDirective>();
@@ -60,7 +63,13 @@ public class LowerInstrumentation extends FEReplacer {
 
     @Override
     public Object visitStmtBlock(StmtBlock stmt) {
-        Object newBlock = super.visitStmtBlock(stmt);
+        StmtBlock newBlock = (StmtBlock) super.visitStmtBlock(stmt);
+        if (this.activeInstrumentation != null) {
+            Vector<Statement> stmts = new Vector<Statement>(newBlock.getStmts());
+            stmts.add(new StmtExpr(new ExprFunCall(stmt, activeInstrumentation.end,
+                    instrumentationStructInst)));
+            newBlock = new StmtBlock(newBlock, stmts);
+        }
         this.activeInstrumentation = null;
         return newBlock;
     }

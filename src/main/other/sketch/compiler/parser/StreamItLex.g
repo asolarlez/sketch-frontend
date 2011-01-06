@@ -68,6 +68,7 @@ tokens {
     "printfcn";
     "device";
     "global";
+    "serial";
 
     // Compiler directives:
     "include";

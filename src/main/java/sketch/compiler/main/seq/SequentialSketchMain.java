@@ -716,6 +716,19 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    public static void dumpProgramToFile(final Program prog) {
+        if (prog == null) {
+            System.err.println("[ERROR] [SKETCH]     program null.");
+        } else {
+            try {
+                final PlatformLocalization loc = PlatformLocalization.getLocalization();
+                File out_file = loc.getTempPath("error-last-program.txt");
+                prog.debugDump(out_file);
+                System.err.println("[ERROR] [SKETCH] program dumped to: " + out_file);
+            } catch (Throwable e2) {}
+        }
+    }
+
     public static void main(String[] args) {
         long beg = System.currentTimeMillis();
         checkJavaVersion(1, 6);
@@ -724,22 +737,13 @@ public class SequentialSketchMain extends CommonSketchMain
             sketchmain.run();
         } catch (SketchException e) {
             e.print();
+            dumpProgramToFile(sketchmain.prog);
             System.exit(1);
         } catch (RuntimeException e) {
             System.err.println("[ERROR] [SKETCH] Failed with " +
                     e.getClass().getSimpleName() + " exception; message: " +
                     e.getMessage());
-            if (sketchmain.prog == null) {
-                System.err.println("[ERROR] [SKETCH]     program null.");
-            } else {
-                try {
-                    final PlatformLocalization loc =
-                            PlatformLocalization.getLocalization();
-                    File out_file = loc.getTempPath("error-last-program.txt");
-                    sketchmain.prog.debugDump(out_file);
-                    System.err.println("[ERROR] [SKETCH]     program dumped to: " + out_file);
-                } catch (Throwable e2) {}
-            }
+            dumpProgramToFile(sketchmain.prog);
             // necessary for unit tests, etc.
             throw e;
         }

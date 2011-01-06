@@ -70,7 +70,8 @@ public class CallGraph extends FEReplacer {
     protected void buildEdges() {
         for (Entry<ExprFunCall, Function> ent : fcnCallEnclosing.entrySet()) {
             final Function caller = ent.getValue();
-            final Function target = fcnDefs.get(ent.getKey().getName());
+            final String name = ent.getKey().getName();
+            final Function target = nonnull(fcnDefs.get(name), "Unknown function \"" + name + "\" called");
             edges.add(new CallEdge(caller, target));
         }
 

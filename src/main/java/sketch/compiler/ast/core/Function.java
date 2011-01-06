@@ -42,7 +42,7 @@ public class Function extends FENode {
     }
 
     public static enum CudaFcnType {
-        Default(""), DeviceInline("inline __device__"), Global("__global__");
+        Default(""), DeviceInline("inline __device__"), Global("__global__"), Serial("SERIAL");
 
         /** identifier appearing in C code */
         public final String cCodeName;
@@ -300,5 +300,11 @@ public class Function extends FENode {
 
     public FcnType getFcnType() {
         return fcnInfo.fcnType;
+    }
+
+    /** if the function is a SPMD subroutine, namely "device" or "global" */
+    public boolean isParallel() {
+        return fcnInfo.cudaType == CudaFcnType.DeviceInline ||
+                fcnInfo.cudaType == CudaFcnType.Global;
     }
 }
