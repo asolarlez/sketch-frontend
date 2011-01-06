@@ -3,11 +3,13 @@ package sketch.compiler.passes.cuda;
 import static sketch.util.DebugOut.printWarning;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
@@ -32,9 +34,12 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
-import sketch.compiler.passes.structure.CallGraph;
+import sketch.compiler.passes.structure.ASTObjQuery;
+import sketch.compiler.passes.structure.ASTQuery;
 import sketch.util.cuda.CudaThreadBlockDim;
+import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
+import sketch.util.fcns.CopyableIterator;
 
 /**
  * Generate functions which all threads will enter.
@@ -44,10 +49,11 @@ import sketch.util.exceptions.ExceptionAtNode;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-@CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class })
+@CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class,
+        FlattenStmtBlocks2.class })
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
-    protected CallGraph cg;
+    protected CudaCallGraph cg;
     protected Vector<Function> oldThreadFcns;
     protected Vector<Function> allThreadsFcns;
     protected Vector<Function> someThreadsFcns;
@@ -100,7 +106,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
     @Override
     public Object visitProgram(Program prog) {
-        cg = new CallGraph(prog);
+        cg = new CudaCallGraph(prog);
         return super.visitProgram(prog);
     }
 
@@ -179,26 +185,33 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
          */
         @SuppressWarnings("unchecked")
         public Statement createThreadLoop(final Vector<Statement> stmts_) {
-            Vector<Statement> stmts = (Vector<Statement>) stmts_.clone();
+            final SomeThreadsTransform tf = new SomeThreadsTransform(symtab);
+            Vector<Statement> stmts =
+                    new Vector<Statement>(
+                            tf.visitStmtList((Vector<Statement>) stmts_.clone()));
             final Statement ctx = stmts.get(0);
             ExprVar allExpr = new ExprVar(ctx, "ThreadIdx_All");
-            StmtVarDecl xDecl =
-                    new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_X",
-                            cudaBlockDim.getXFromAll(allExpr));
-            StmtVarDecl yDecl =
-                    new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_Y",
-                            cudaBlockDim.getYFromAll(allExpr));
-            StmtVarDecl zDecl =
-                    new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_Z",
-                            cudaBlockDim.getZFromAll(allExpr));
 
             // load the symbol table, create assignments to x, y, and z from all
-            stmts.insertElementAt(xDecl, 0);
-            stmts.insertElementAt(yDecl, 0);
-            stmts.insertElementAt(zDecl, 0);
+            if (tf.usedThreadIndices.contains("X")) {
+                stmts.add(0, new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_X",
+                        cudaBlockDim.getXFromAll(allExpr)));
+            }
+            if (tf.usedThreadIndices.contains("Y")) {
+                stmts.add(0, new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_Y",
+                        cudaBlockDim.getYFromAll(allExpr)));
+            }
+            if (tf.usedThreadIndices.contains("Z")) {
+                stmts.add(0, new StmtVarDecl(ctx, TypePrimitive.inttype, "ThreadIdx_Z",
+                        cudaBlockDim.getZFromAll(allExpr)));
+            }
 
             return new StmtFor("ThreadIdx_All", new ExprConstInt(cudaBlockDim.all()),
                     new StmtBlock(stmts));
+        }
+
+        public Statement createThreadLoop(Statement... stmts) {
+            return createThreadLoop(new Vector<Statement>(Arrays.asList(stmts)));
         }
 
         /** should be closure visitStmtBlock */
@@ -218,13 +231,67 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitStmtBlock(StmtBlock block) {
+            // final accumulator
             final Vector<Statement> statements = new Vector<Statement>();
+            // somethreads logic that will be looped
             final Vector<Statement> threadLoopStmts = new Vector<Statement>();
 
-            for (Statement stmt : block.getStmts()) {
-                boolean containsAllThreadsElt = ContainsAllThreadsElt.run(stmt);
+            CopyableIterator<Statement> it =
+                    new CopyableIterator<Statement>(block.getStmts());
+            while (it.hasNext()) {
+                Vector<Statement> nextSomethreadsStatments = new Vector<Statement>();
+                Statement nextAllthreadsStatement = null;
+                List<Statement> afterSomethreadsStatements = Collections.emptyList();
 
-                if (stmt instanceof CudaSyncthreads) {
+                // do a first pass -- queue up any statements that don't have sync's or
+                // returns,
+                // and don't call functions that have sync's
+                while (it.hasNext()) {
+                    List<Statement> t = it.peekAllNext();
+                    Statement s = it.next();
+                    if ((new ContainsAllthreadsElt()).run(s)) {
+                        nextAllthreadsStatement = s;
+                        afterSomethreadsStatements = t;
+                        break;
+                    } else {
+                        nextSomethreadsStatments.add(s);
+                    }
+                }
+
+                // find all referenced variables after ...
+                TypedHashSet<String> varrefs =
+                        (new GetVariableRefSet()).run(new StmtBlock(
+                                afterSomethreadsStatements));
+
+                // find all variables declared in somethreads section
+                TypedHashSet<String> vardefs =
+                        (new GetVariableDeclSet()).run(new StmtBlock(
+                                nextSomethreadsStatments));
+
+                // remove variable declarations referenced later
+                TypedHashSet<String> referencedLater =
+                        vardefs.intersect(varrefs.asCollection());
+                if (!referencedLater.isEmpty()) {
+                    Iterator<Statement> it2 = nextSomethreadsStatments.iterator();
+                    while (it2.hasNext()) {
+                        Statement s = it2.next();
+                        if ((new ContainsVarDeclWithName(referencedLater)).run(s)) {
+                            it2.remove();
+                            // order doesn't really matter here so long as this is first
+                            statements.add((Statement) s.accept(this));
+                        }
+                    }
+                }
+
+                // add remaining stuff to somethreads queue
+                threadLoopStmts.addAll(nextSomethreadsStatments);
+
+                // process the next allthreads statement
+                Statement stmt = nextAllthreadsStatement;
+
+                if (stmt == null) {
+                    assert !it.hasNext();
+                } else if (stmt instanceof CudaSyncthreads) {
                     flushAndAdd(statements, threadLoopStmts);
                 } else if (stmt instanceof StmtIfThen) {
                     String newVarName = varGen.nextVar("cond");
@@ -242,19 +309,19 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
                     ExprBinary allCond = getAllOrNoneExpr(true, vref);
                     ExprBinary noneCond = getAllOrNoneExpr(false, vref);
+                    final Statement alt = ((StmtIfThen) stmt).getAlt();
                     final Statement allthreadsAlt =
-                            (Statement) ((StmtIfThen) stmt).getAlt().accept(this);
+                            (alt == null) ? null : (Statement) alt.accept(this);
                     final Statement allthreadsThen =
                             (Statement) ((StmtIfThen) stmt).getCons().accept(this);
 
                     StmtIfThen someThreadsCond =
                             new StmtIfThen(stmt, vref, ((StmtIfThen) stmt).getCons(),
                                     ((StmtIfThen) stmt).getAlt());
-                    final Statement someThreadsLoop =
-                            createThreadLoop(new Vector<Statement>(
-                                    Arrays.asList(somethreads(someThreadsCond))));
-                    StmtIfThen notAllLevel =
-                            new StmtIfThen(stmt, noneCond, allthreadsAlt, someThreadsLoop);
+                    final Statement someThreadsLoop = createThreadLoop(someThreadsCond);
+                    Statement notAllLevel =
+                            (alt == null) ? someThreadsLoop : new StmtIfThen(stmt,
+                                    noneCond, allthreadsAlt, someThreadsLoop);
                     StmtIfThen topLevel =
                             new StmtIfThen(stmt, allCond, allthreadsThen, notAllLevel);
                     flushAndAdd(statements, threadLoopStmts, topLevel);
@@ -287,13 +354,11 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                     StmtWhile next_ws = new StmtWhile(ws, allCond, nextBody);
                     StmtAssert none_at_end = new StmtAssert(noneCond, false);
                     flushAndAdd(statements, threadLoopStmts, next_ws, none_at_end);
-                } else if (containsAllThreadsElt) {
-                    flushAndAdd(statements, threadLoopStmts,
-                            (Statement) stmt.accept(this));
+                } else {
                     printWarning("Assuming that subtree transformers "
                             + "will take care of loop nest for", stmt.getClass());
-                } else {
-                    threadLoopStmts.add(somethreads(stmt));
+                    flushAndAdd(statements, threadLoopStmts,
+                            (Statement) stmt.accept(this));
                 }
             }
             flushAndAdd(statements, threadLoopStmts);
@@ -339,6 +404,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     }
 
     public class SomeThreadsTransform extends SymbolTableVisitor {
+        public final TypedHashSet<String> usedThreadIndices = new TypedHashSet<String>();
+
         @SuppressWarnings("deprecation")
         public SomeThreadsTransform(SymbolTable symtab) {
             super(symtab);
@@ -348,6 +415,11 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                 super.visitStmtVarDecl(new StmtVarDecl(new FEContext("---"),
                         TypePrimitive.inttype, name, null));
             }
+        }
+
+        /** visit a list of nodes / statements / etc. */
+        public List<Statement> visitStmtList(List<Statement> lst) {
+            return ((StmtBlock) (new StmtBlock(lst)).accept(this)).getStmts();
         }
 
         @Override
@@ -375,16 +447,18 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
-            return new ExprVar(cudaThreadIdx, "ThreadIdx_" +
-                    cudaThreadIdx.getIndexName().toUpperCase());
+            final String letter = cudaThreadIdx.getIndexName().toUpperCase();
+            usedThreadIndices.add(letter);
+            return new ExprVar(cudaThreadIdx, "ThreadIdx_" + letter);
         }
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             Function target = cg.getTarget(exp);
-            if (target.isStatic()) {
+            if (!target.isParallel()) {
                 return new StmtAssert(new ExprConstBoolean(false), false);
             } else {
+                usedThreadIndices.addAll(Arrays.asList("X", "Y", "Z"));
                 Vector<Expression> nextArgs = new Vector<Expression>();
                 for (String threadIndexName : CudaThreadBlockDim.indexNames) {
                     nextArgs.add(new ExprVar(exp, threadIndexName));
@@ -405,37 +479,63 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         }
     }
 
-    protected static class ContainsAllThreadsElt extends FEReplacer {
-        boolean contains = false;
-
+    protected class ContainsAllthreadsElt extends ASTQuery {
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
-            contains = true;
+            if (!result & cg.callsFcnWithSyncthreads(exp)) {
+                result = true;
+            }
             return exp;
         }
 
         @Override
-        public Object visitStmtVarDecl(StmtVarDecl stmt) {
-            contains = true;
-            return stmt;
-        }
-
-        @Override
         public Object visitCudaSyncthreads(CudaSyncthreads stmt) {
-            contains = true;
+            result = true;
             return stmt;
         }
 
         @Override
         public Object visitStmtReturn(StmtReturn stmt) {
-            contains = true;
+            result = true;
             return stmt;
         }
+    }
 
-        public static boolean run(FENode n) {
-            ContainsAllThreadsElt inst = new ContainsAllThreadsElt();
-            n.accept(inst);
-            return inst.contains;
+    protected static class GetVariableDeclSet extends ASTObjQuery<TypedHashSet<String>> {
+        public GetVariableDeclSet() {
+            super(new TypedHashSet<String>());
+        }
+
+        @Override
+        public Object visitStmtVarDecl(StmtVarDecl stmt) {
+            result.addAll(stmt.getNames());
+            return stmt;
+        }
+    }
+
+    protected static class GetVariableRefSet extends ASTObjQuery<TypedHashSet<String>> {
+        public GetVariableRefSet() {
+            super(new TypedHashSet<String>());
+        }
+
+        @Override
+        public Object visitExprVar(ExprVar exp) {
+            result.add(exp.getName());
+            return exp;
+        }
+    }
+
+    protected static class ContainsVarDeclWithName extends ASTQuery {
+        protected final TypedHashSet<String> names;
+
+        public ContainsVarDeclWithName(TypedHashSet<String> names) {
+            this.names = names;
+        }
+
+        @Override
+        public Object visitStmtVarDecl(StmtVarDecl stmt) {
+            result |= !names.intersect(stmt.getNames()).isEmpty();
+            return stmt;
         }
     }
 }

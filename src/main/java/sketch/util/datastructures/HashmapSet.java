@@ -1,6 +1,8 @@
 package sketch.util.datastructures;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * multimap to hashset. consider multimap to lists also.
@@ -22,8 +24,9 @@ public class HashmapSet<K, V> extends TypedHashMap<K, HashSet<V>> {
         return values.add(value);
     }
 
-    public HashSet<V> getOrEmpty(final K key) {
-        HashSet<V> values = this.get(key);
-        return (values == null) ? new HashSet<V>() : values;
+    @SuppressWarnings("unchecked")
+    public Set<V> getOrEmpty(final K key) {
+        Set<V> values = this.get(key);
+        return ((values == null) ? (Set<V>)Collections.emptySet() : values);
     }
 }

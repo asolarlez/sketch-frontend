@@ -111,7 +111,7 @@ public class GlobalsToParams extends FEReplacer {
         }
 
         // add all necessary params for callers (closure of above)
-        for (CallEdge closureEdge : callGraph.closureEdges.edges) {
+        for (CallEdge closureEdge : callGraph.closureEdges) {
             final Function caller = closureEdge.caller();
             final Function callee = closureEdge.target();
             final HashMap<String, AddedParam> callerParams =

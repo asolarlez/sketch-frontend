@@ -3,6 +3,8 @@ package sketch.compiler.passes.structure;
 import static sketch.util.Misc.nonnull;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
@@ -12,6 +14,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.util.datastructures.HashmapSet;
 import sketch.util.datastructures.ObjPairBase;
 import sketch.util.datastructures.TypedHashSet;
+import sketch.util.fcns.IsChanging;
 
 /**
  * determines which functions call which functions, and the closure. debug print code
@@ -24,8 +27,8 @@ import sketch.util.datastructures.TypedHashSet;
  *          changes, please consider contributing back!
  */
 public class CallGraph extends FEReplacer {
-    public CGEdgeSet edges = new CGEdgeSet();
-    public CGEdgeSet closureEdges = new CGEdgeSet();
+    public CGEdgeSet<CallEdge> edges = new CGEdgeSet<CallEdge>();
+    public CGEdgeSet<CallEdge> closureEdges = new CGEdgeSet<CallEdge>();
 
     protected final HashMap<ExprFunCall, Function> fcnCallEnclosing =
             new HashMap<ExprFunCall, Function>();
@@ -35,6 +38,13 @@ public class CallGraph extends FEReplacer {
     protected Function enclosing;
 
     public CallGraph(Program prog) {
+        init(prog);
+    }
+
+    /** subclasses should call this [implicitly] so they get their fields initialized before buildEdges */
+    protected CallGraph() {}
+
+    protected void init(Program prog) {
         prog.accept(this);
         buildEdges();
     }
@@ -42,7 +52,7 @@ public class CallGraph extends FEReplacer {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("=== edges ===\n");
-        for (CallEdge edge : edges.edges) {
+        for (CallEdge edge : edges) {
             result.append("    " + edge.caller().getName() + " -> " +
                     edge.target().getName() + "\n");
         }
@@ -53,41 +63,6 @@ public class CallGraph extends FEReplacer {
                     edge.target().getName() + "\n");
         }
         return result.toString();
-    }
-
-    public Function getEnclosing(ExprFunCall call) {
-        return nonnull(fcnCallEnclosing.get(call));
-    }
-
-    public Function getTarget(ExprFunCall call) {
-        return nonnull(fcnDefs.get(call.getName()));
-    }
-    
-    public Function getByName(String name) {
-        return nonnull(fcnDefs.get(name));
-    }
-
-    protected void buildEdges() {
-        for (Entry<ExprFunCall, Function> ent : fcnCallEnclosing.entrySet()) {
-            final Function caller = ent.getValue();
-            final String name = ent.getKey().getName();
-            final Function target = nonnull(fcnDefs.get(name), "Unknown function \"" + name + "\" called");
-            edges.add(new CallEdge(caller, target));
-        }
-
-        // compute closure
-        for (CallEdge edge : edges.edges) {
-            addClosure(edge);
-        }
-    }
-
-    protected void addClosure(CallEdge edge) {
-        if (!closureEdges.edges.contains(edge)) {
-            closureEdges.add(edge);
-            for (Function next : edges.multiEdges.getOrEmpty(edge.target())) {
-                addClosure(new CallEdge(edge.caller(), next));
-            }
-        }
     }
 
     @Override
@@ -105,6 +80,45 @@ public class CallGraph extends FEReplacer {
         return super.visitFunction(func);
     }
 
+    public Function getEnclosing(ExprFunCall call) {
+        return nonnull(fcnCallEnclosing.get(call));
+    }
+
+    public Function getTarget(ExprFunCall call) {
+        return nonnull(fcnDefs.get(call.getName()));
+    }
+
+    public Function getByName(String name) {
+        return nonnull(fcnDefs.get(name));
+    }
+
+    protected void buildEdges() {
+        for (Entry<ExprFunCall, Function> ent : fcnCallEnclosing.entrySet()) {
+            final Function caller = ent.getValue();
+            final String name = ent.getKey().getName();
+            final Function target =
+                    nonnull(fcnDefs.get(name), "Unknown function \"" + name + "\" called");
+            edges.add(new CallEdge(caller, target));
+        }
+
+        // compute closure
+        IsChanging ic = new IsChanging();
+        while (ic.cond(edges.edges.size())) {
+            for (CallEdge edge : edges) {
+                addClosure(edge);
+            }
+        }
+    }
+
+    protected void addClosure(CallEdge edge) {
+        if (!closureEdges.edges.contains(edge)) {
+            closureEdges.add(edge);
+            for (Function next : edges.targetsFrom(edge.target())) {
+                addClosure(new CallEdge(edge.caller(), next));
+            }
+        }
+    }
+
     /**
      * see addClosure() for contains queries
      * 
@@ -113,18 +127,29 @@ public class CallGraph extends FEReplacer {
      *          http://creativecommons.org/licenses/BSD/. While not required, if you make
      *          changes, please consider contributing back!
      */
-    public static class CGEdgeSet {
-        public TypedHashSet<CallEdge> edges;
-        public HashmapSet<Function, Function> multiEdges;
+    public static class CGEdgeSet<T extends CallEdge> implements Iterable<T> {
+        protected TypedHashSet<T> edges = new TypedHashSet<T>();
+        private HashmapSet<Function, Function> outgoingEdges =
+                new HashmapSet<Function, Function>();
+        private HashmapSet<Function, Function> reverseEdges =
+                new HashmapSet<Function, Function>();
 
-        public CGEdgeSet() {
-            this.edges = new TypedHashSet<CallEdge>();
-            this.multiEdges = new HashmapSet<Function, Function>();
+        public boolean add(T edge) {
+            this.reverseEdges.add(edge.target(), edge.caller());
+            this.outgoingEdges.add(edge.caller(), edge.target());
+            return this.edges.add(edge);
         }
 
-        public void add(CallEdge edge) {
-            this.edges.add(edge);
-            this.multiEdges.add(edge.caller(), edge.target());
+        public Set<Function> targetsFrom(Function source) {
+            return outgoingEdges.getOrEmpty(source);
+        }
+
+        public Set<Function> callersTo(Function target) {
+            return reverseEdges.getOrEmpty(target);
+        }
+
+        public Iterator<T> iterator() {
+            return edges.iterator();
         }
     }
 
@@ -133,7 +158,7 @@ public class CallGraph extends FEReplacer {
         public CallEdge(Function caller, Function target) {
             super(caller, target);
         }
-        
+
         @Override
         public String toString() {
             return caller().getName() + " -:Calls-> " + target().getName();

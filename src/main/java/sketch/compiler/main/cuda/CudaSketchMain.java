@@ -4,6 +4,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.DeleteInstrumentCalls;
+import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
 import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
 import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
 import sketch.compiler.passes.cuda.InstrumentFcnCall;
@@ -12,6 +13,7 @@ import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
+import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
@@ -32,7 +34,7 @@ public class CudaSketchMain extends SequentialSketchMain {
     public class CudaBeforeSemanticCheckStage extends BeforeSemanticCheckStage {
         public CudaBeforeSemanticCheckStage() {
             super();
-            addPasses(new ThreadIdReplacer(options), new InstrumentFcnCall());
+            addPasses(new ThreadIdReplacer(options), new InstrumentFcnCall(), new SyncthreadsCall());
         }
     }
 
@@ -55,6 +57,7 @@ public class CudaSketchMain extends SequentialSketchMain {
         public CudaIRStage2() {
             super();
             this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new FlattenStmtBlocks2());
             this.passes.add(new GenerateAllOrSomeThreadsFunctions(options, varGen));
             this.passes.add(new GlobalToLocalImplicitCasts(options));
         }

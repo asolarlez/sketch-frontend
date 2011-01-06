@@ -50,16 +50,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
         super.visitStreamSpec(spec);
 
         final CallReplacer cr = new CallReplacer(symtab);
-        // FIXME -- return this when everything works
-        StreamSpec spec1 = (StreamSpec) cr.visitStreamSpec(spec);
-        Vector<Function> fcns = new Vector<Function>();
-        for (Function fcn : spec1.getFuncs()) {
-            // FIXME -- HACK!!!!!!!!
-            if (!fcn.getName().startsWith("somethreads")) {
-                fcns.add(fcn);
-            }
-        }
-        return spec1.newFromFcns(fcns);
+        return cr.visitStreamSpec(spec);
     }
 
     protected class CallReplacer extends SymbolTableVisitor {

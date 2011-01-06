@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -34,7 +35,8 @@ import sketch.util.exceptions.ExceptionAtNode;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-@CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class, GlobalsToParams.class }, runsAfter = { })
+@CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class,
+        GlobalsToParams.class }, runsAfter = {})
 public class LowerInstrumentation extends FEReplacer {
     protected final TypedHashMap<String, InstrumentationDirective> directivesByName =
             new TypedHashMap<String, InstrumentationDirective>();
@@ -89,7 +91,29 @@ public class LowerInstrumentation extends FEReplacer {
                 }
             }
         }
-        return super.visitStmtAssign(stmt);
+
+        // do not visit LHS
+        Expression rhs = doExpression(stmt.getRHS());
+        if (rhs != stmt.getRHS()) {
+            stmt = new StmtAssign(stmt, stmt.getLHS(), rhs, stmt.getOp());
+        }
+
+        return stmt;
+    }
+
+    @Override
+    public Object visitExprArrayRange(ExprArrayRange exp) {
+        if (activeInstrumentation != null) {
+            if (exp.getAbsoluteBase().getName().equals(instrumentedVar)) {
+                if (!(exp.getBase() instanceof ExprVar)) {
+                    throw new ExceptionAtNode("multi-dimensional array "
+                            + "instrumentation is not yet supported", exp);
+                }
+                addExprStatement(new ExprFunCall(exp, activeInstrumentation.read,
+                        instrumentationStructInst, exp.getOffset()));
+            }
+        }
+        return super.visitExprArrayRange(exp);
     }
 
     @Override
@@ -109,6 +133,8 @@ public class LowerInstrumentation extends FEReplacer {
                 new ExprVar(instrumentCall, instrumentationStructInstName);
         addStatement(new StmtAssign(instrumentCall, instrumentationStructInst,
                 new ExprNew(instrumentCall, structref)));
+        addStatement(new StmtExpr(new ExprFunCall(instrumentCall,
+                activeInstrumentation.init, instrumentationStructInst)));
         return null;// super.visitCudaInstrumentCall(instrumentCall);
     }
 }
