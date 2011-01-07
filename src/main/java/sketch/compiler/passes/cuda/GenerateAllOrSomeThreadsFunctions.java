@@ -229,6 +229,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         final Type localBit = TypePrimitive.bittype.withMemType(CudaMemoryType.LOCAL);
 
+        @SuppressWarnings("deprecation")
         @Override
         public Object visitStmtBlock(StmtBlock block) {
             // create a new symbol table
@@ -356,7 +357,9 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                     final StmtBlock nextBody =
                             (StmtBlock) visitStmtBlock(new StmtBlock(ws.getBody(), stmts));
                     StmtWhile next_ws = new StmtWhile(ws, allCond, nextBody);
-                    StmtAssert none_at_end = new StmtAssert(noneCond, false);
+                    StmtAssert none_at_end =
+                            new StmtAssert(FEContext.artificalFrom(
+                                    "allthreads while loop", stmt), noneCond, false);
                     flushAndAdd(statements, threadLoopStmts, next_ws, none_at_end);
                 } else {
                     if (!(stmt instanceof StmtReturn)) {
@@ -456,13 +459,15 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
             return new ExprVar(cudaThreadIdx, "ThreadIdx_" + letter);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             // transform args, e.g. indexing into threadlocal arrays
             exp = (ExprFunCall) super.visitExprFunCall(exp);
             Function target = cg.getTarget(exp);
             if (!target.isParallel()) {
-                return new StmtAssert(new ExprConstBoolean(false), false);
+                return new StmtAssert(FEContext.artificalFrom("nonParallelCall", exp),
+                        new ExprConstBoolean(false), false);
             } else {
                 usedThreadIndices.addAll(Arrays.asList("X", "Y", "Z"));
                 Vector<Expression> nextArgs = new Vector<Expression>();
@@ -474,9 +479,12 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
             }
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
-            return new StmtAssert(new ExprConstBoolean(false), false);
+            return new StmtAssert(
+                    FEContext.artificalFrom("syncthreads", cudaSyncthreads),
+                    new ExprConstBoolean(false), false);
         }
 
         @Override

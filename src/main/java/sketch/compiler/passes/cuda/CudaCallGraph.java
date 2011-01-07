@@ -2,6 +2,7 @@ package sketch.compiler.passes.cuda;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.Function.CudaFcnType;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.passes.structure.CallGraph;
@@ -16,7 +17,7 @@ import sketch.util.datastructures.TypedHashSet;
  *          changes, please consider contributing back!
  */
 public class CudaCallGraph extends CallGraph {
-    protected final TypedHashSet<Function> fcnsCallingFcnsWithSyncthreads =
+    protected final TypedHashSet<Function> fcnsCallingFcnsWithSyncthreadsOrSerial =
             new TypedHashSet<Function>();
 
     public CudaCallGraph(Program prog) {
@@ -24,7 +25,7 @@ public class CudaCallGraph extends CallGraph {
     }
 
     public boolean callsFcnWithSyncthreads(Function f) {
-        return fcnsCallingFcnsWithSyncthreads.contains(f);
+        return fcnsCallingFcnsWithSyncthreadsOrSerial.contains(f);
     }
 
     public boolean callsFcnWithSyncthreads(ExprFunCall exp) {
@@ -34,7 +35,7 @@ public class CudaCallGraph extends CallGraph {
     @Override
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
         assert enclosing != null;
-        fcnsCallingFcnsWithSyncthreads.add(enclosing);
+        fcnsCallingFcnsWithSyncthreadsOrSerial.add(enclosing);
         return super.visitCudaSyncthreads(cudaSyncthreads);
     }
 
@@ -42,9 +43,15 @@ public class CudaCallGraph extends CallGraph {
     protected void buildEdges() {
         super.buildEdges();
 
-        for (Function f : fcnsCallingFcnsWithSyncthreads) {
+        for (Function f : super.allFcns) {
+            if (f.getInfo().cudaType == CudaFcnType.Serial) {
+                fcnsCallingFcnsWithSyncthreadsOrSerial.add(f);
+            }
+        }
+
+        for (Function f : fcnsCallingFcnsWithSyncthreadsOrSerial.clone()) {
             for (Function e : closureEdges.callersTo(f)) {
-                fcnsCallingFcnsWithSyncthreads.add(e);
+                fcnsCallingFcnsWithSyncthreadsOrSerial.add(e);
             }
         }
     }

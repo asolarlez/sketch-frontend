@@ -134,8 +134,7 @@ public class FEContext
         } else {
             cx0 = node0.getCx();
         }
-        return new FEContext(String.format("artificially inserted %s, from %s",
-                name, cx0.getFileName(), cx0.getLineNumber(), cx0
-                        .getColumnNumber()));
+        return new FEContext(String.format("artificially inserted %s, from %s", name,
+                cx0.getFileName()), cx0.getLineNumber(), cx0.getColumnNumber());
     }
 }

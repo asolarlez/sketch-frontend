@@ -5,6 +5,7 @@ import static sketch.util.Misc.nonnull;
 import java.util.Vector;
 
 import sketch.compiler.Directive.InstrumentationDirective;
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
@@ -17,9 +18,12 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.structure.CallGraph;
@@ -60,42 +64,75 @@ public class LowerInstrumentation extends FEReplacer {
     @Override
     public Object visitProgram(Program prog) {
         this.callGraph = new CallGraph(prog);
-        return super.visitProgram(prog);
+        return super.visitProgram((Program) (new FlattenStmtBlocks()).visitProgram(prog));
     }
 
     @Override
     public Object visitStmtBlock(StmtBlock stmt) {
+        InstrumentationDirective oldInstrumentation = this.activeInstrumentation;
         StmtBlock newBlock = (StmtBlock) super.visitStmtBlock(stmt);
-        if (this.activeInstrumentation != null) {
+        if (this.activeInstrumentation != oldInstrumentation) {
             Vector<Statement> stmts = new Vector<Statement>(newBlock.getStmts());
-            stmts.add(new StmtExpr(new ExprFunCall(stmt, activeInstrumentation.end,
-                    instrumentationStructInst)));
+            if (!(stmts.lastElement() instanceof StmtReturn)) {
+                stmts.add(endCall(stmt));
+            }
             newBlock = new StmtBlock(newBlock, stmts);
+            this.activeInstrumentation = oldInstrumentation;
         }
-        this.activeInstrumentation = null;
         return newBlock;
+    }
+
+    protected StmtExpr endCall(FENode node) {
+        return new StmtExpr(new ExprFunCall(node, activeInstrumentation.end,
+                instrumentationStructInst));
+    }
+
+    @Override
+    public Object visitStmtReturn(StmtReturn stmt) {
+        if (activeInstrumentation != null) {
+            addStatement(endCall(stmt));
+        }
+        return super.visitStmtReturn(stmt);
     }
 
     @Override
     public Object visitStmtAssign(StmtAssign stmt) {
+        // Compute RHS through superclass. LHS is handled manually below.
+        Expression rhs = doExpression(stmt.getRHS());
+        if (rhs != stmt.getRHS()) {
+            stmt = new StmtAssign(stmt, stmt.getLHS(), rhs, stmt.getOp());
+        }
+
         if (activeInstrumentation != null) {
             if (stmt.getLHS() instanceof ExprArrayRange) {
+                // run LHS recursively in case an array access is used in determining
+                // indices
                 ExprArrayRange access = (ExprArrayRange) stmt.getLHS();
+                Expression offset = doExpression(access.getOffset());
+                if (offset != access.getOffset()) {
+                    access = new ExprArrayRange(access, access.getBase(), offset);
+                }
                 if (access.getAbsoluteBase().getName().equals(instrumentedVar)) {
                     if (!(access.getBase() instanceof ExprVar)) {
                         throw new ExceptionAtNode("multi-dimensional array "
                                 + "instrumentation is not yet supported", stmt);
                     }
+                    // support +=, etc. -- read the element first
+                    if (stmt.getOp() != 0) {
+                        addExprStatement(new ExprFunCall(stmt,
+                                activeInstrumentation.read, instrumentationStructInst,
+                                access.getOffset()));
+                    }
+
                     addExprStatement(new ExprFunCall(stmt, activeInstrumentation.write,
                             instrumentationStructInst, access.getOffset()));
                 }
+            } else {
+                Expression lhs = doExpression(stmt.getLHS());
+                if (lhs != stmt.getLHS()) {
+                    stmt = new StmtAssign(stmt, lhs, stmt.getRHS(), stmt.getOp());
+                }
             }
-        }
-
-        // do not visit LHS
-        Expression rhs = doExpression(stmt.getRHS());
-        if (rhs != stmt.getRHS()) {
-            stmt = new StmtAssign(stmt, stmt.getLHS(), rhs, stmt.getOp());
         }
 
         return stmt;
@@ -126,7 +163,8 @@ public class LowerInstrumentation extends FEReplacer {
         this.instrumentationStructInstName =
                 varGen.nextVar("instr_" + directive.name + "_" +
                         instrumentCall.getToImplement().getName());
-        final TypeStructRef structref = new TypeStructRef(directive.struct);
+        final TypeStructRef structref =
+                new TypeStructRef(CudaMemoryType.GLOBAL, directive.struct);
         addStatement(new StmtVarDecl(instrumentCall, structref,
                 instrumentationStructInstName, null));
         this.instrumentationStructInst =

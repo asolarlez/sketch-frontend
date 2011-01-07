@@ -29,6 +29,7 @@ import sketch.util.fcns.IsChanging;
 public class CallGraph extends FEReplacer {
     public CGEdgeSet<CallEdge> edges = new CGEdgeSet<CallEdge>();
     public CGEdgeSet<CallEdge> closureEdges = new CGEdgeSet<CallEdge>();
+    public TypedHashSet<Function> allFcns = new TypedHashSet<Function>();
 
     protected final HashMap<ExprFunCall, Function> fcnCallEnclosing =
             new HashMap<ExprFunCall, Function>();
@@ -76,6 +77,7 @@ public class CallGraph extends FEReplacer {
     public Object visitFunction(Function func) {
         final Function putResult = fcnDefs.put(func.getName(), func);
         assert putResult == null;
+        allFcns.add(func);
         enclosing = func;
         return super.visitFunction(func);
     }

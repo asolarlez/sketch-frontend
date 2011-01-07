@@ -24,6 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.compiler.passes.structure.CallGraph.CallEdge;
@@ -251,7 +252,7 @@ public class GlobalsToParams extends FEReplacer {
 
         public AddedParam(String globalVar, Type typ, String paramName) {
             this.globalVar = globalVar;
-            this.typ = typ;
+            this.typ = typ.withMemType(CudaMemoryType.GLOBAL);
             this.paramName = paramName;
         }
 

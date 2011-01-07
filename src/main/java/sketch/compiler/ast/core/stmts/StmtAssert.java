@@ -199,7 +199,8 @@ public class StmtAssert extends Statement
      * @return the msg
      */
     public String getMsg() {
-        if(msg == null && getCx() != null) return getCx().toString();
+        if (msg == null || msg.isEmpty())
+            return "Assert at " + getCx();
         return msg;
     }
 }
