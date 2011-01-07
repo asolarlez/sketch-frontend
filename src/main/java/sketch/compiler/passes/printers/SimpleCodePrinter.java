@@ -342,7 +342,7 @@ public class SimpleCodePrinter extends CodePrinter
     
     @Override
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
-        print("__syncthreads()");
+        printLine("__syncthreads();");
         return cudaSyncthreads;
     }
 }

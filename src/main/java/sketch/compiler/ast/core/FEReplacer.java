@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -161,6 +162,14 @@ public class FEReplacer implements FEVisitor
         return (Expression)expr.accept(this);
     }
 
+    public List<Statement> visitStatementsAsBlock(Vector<Statement> s) {
+        return ((StmtBlock) (new StmtBlock(s)).accept(this)).getStmts();
+    }
+
+    public Statement[] visitStatementsAsBlock(Statement... s) {
+        return ((StmtBlock) (new StmtBlock(Arrays.asList(s))).accept(this)).getStmts().toArray(
+                new Statement[0]);
+    }
 
     public Object visitExprNew(ExprNew expNew){
     	Type nt = (Type)expNew.getTypeToConstruct().accept(this);

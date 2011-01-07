@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.passes.lowering;
+import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printFailure;
 
 import java.util.HashMap;
@@ -1001,7 +1002,7 @@ public class SemanticChecker
 
 
 				if(!isIncrByOne(stmt.getIncr())){
-					report(stmt, "Increment in for loop should be either increment or decrement by one.");
+                    printDebug("ignoring old requirement that loop increment by one...");
 				}
 
 				return (stmt);

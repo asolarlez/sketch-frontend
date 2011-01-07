@@ -302,14 +302,14 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
                     // save to a variable, and transform it so it becomes thread local
                     StmtVarDecl cond_decl =
-                            new StmtVarDecl(stmt, localBit, newVarName, null);
+                            (StmtVarDecl) (new StmtVarDecl(stmt, localBit, newVarName,
+                                    null)).accept(this);
                     final Expression c = ((StmtIfThen) stmt).getCond();
                     final ExprVar vref = new ExprVar(stmt, newVarName);
                     StmtAssign cond_assn = new StmtAssign(vref, c);
-                    StmtBlock condAsVar = new StmtBlock(cond_decl, cond_decl, cond_assn);
-                    StmtBlock asBlock = (StmtBlock) visitStmtBlock(condAsVar);
-                    flushAndAdd(statements, threadLoopStmts, asBlock.getStmts().toArray(
-                            new Statement[0]));
+                    Statement[] assignLoop = visitStatementsAsBlock(cond_assn);
+                    flushAndAdd(statements, threadLoopStmts, cond_decl);
+                    flushAndAdd(statements, threadLoopStmts, assignLoop);
 
                     ExprBinary allCond = getAllOrNoneExpr(true, vref);
                     ExprBinary noneCond = getAllOrNoneExpr(false, vref);
@@ -336,13 +336,13 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
                     // save to a variable, and transform it so it becomes thread local
                     StmtVarDecl cond_decl =
-                            new StmtVarDecl(stmt, localBit, newVarName, null);
+                            (StmtVarDecl) (new StmtVarDecl(stmt, localBit, newVarName,
+                                    null)).accept(this);
                     final ExprVar vref = new ExprVar(stmt, newVarName);
                     StmtAssign cond_assn = new StmtAssign(vref, c);
-                    StmtBlock condAsVar = new StmtBlock(cond_decl, cond_decl, cond_assn);
-                    StmtBlock firstAsBlock = (StmtBlock) visitStmtBlock(condAsVar);
-                    flushAndAdd(statements, threadLoopStmts,
-                            firstAsBlock.getStmts().toArray(new Statement[0]));
+                    Statement[] assignLoop = visitStatementsAsBlock(cond_assn);
+                    flushAndAdd(statements, threadLoopStmts, cond_decl);
+                    flushAndAdd(statements, threadLoopStmts, assignLoop);
 
                     // change the while statement so it recomputes the condition variables
                     ExprBinary allCond = getAllOrNoneExpr(true, vref);
@@ -359,8 +359,11 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                     StmtAssert none_at_end = new StmtAssert(noneCond, false);
                     flushAndAdd(statements, threadLoopStmts, next_ws, none_at_end);
                 } else {
-                    printWarning("Assuming that subtree transformers "
-                            + "will take care of loop nest for", stmt.getClass());
+                    if (!(stmt instanceof StmtReturn)) {
+                        printWarning("Assuming that subtree transformers "
+                                + "will take care of allthreads version of ",
+                                stmt.getClass());
+                    }
                     flushAndAdd(statements, threadLoopStmts,
                             (Statement) stmt.accept(this));
                 }
