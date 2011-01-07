@@ -14,6 +14,15 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.GetImplementedFcns;
 import sketch.util.datastructures.TypedHashSet;
 
+/**
+ * since SKETCH arrays are by default read-only when used as parameters, we convert the
+ * parameter types to ref's so they can be written like normal arrays
+ * 
+ * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+ * @license This file is licensed under BSD license, available at
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
+ */
 @CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class ConvertArrayAssignmentsToInout extends FEReplacer {
     protected Vector<String> inputParameters;

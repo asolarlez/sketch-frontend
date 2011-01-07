@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.passes.lowering;
+import static sketch.util.DebugOut.printFailure;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -484,7 +486,8 @@ public class SemanticChecker
 					Parameter formal = (Parameter) form.next();
 					Type lt = getType(param);
 					if(! lt.promotesTo(formal.getType())){
-						report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + lt + "  " + fun);
+					    printFailure("Semantic Failure here:", exp, "at", exp.getCx(), "\ncalling function", fun);
+						report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + lt + "  " + fun);
 					}
 				}
 

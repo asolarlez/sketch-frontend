@@ -231,6 +231,10 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitStmtBlock(StmtBlock block) {
+            // create a new symbol table
+            SymbolTable oldSymTab = symtab;
+            symtab = new SymbolTable(symtab);
+
             // final accumulator
             final Vector<Statement> statements = new Vector<Statement>();
             // somethreads logic that will be looped
@@ -269,15 +273,15 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                                 nextSomethreadsStatments));
 
                 // remove variable declarations referenced later
-                TypedHashSet<String> referencedLater =
-                        vardefs.intersect(varrefs.asCollection());
+                TypedHashSet<String> referencedLater = vardefs.intersect(varrefs);
                 if (!referencedLater.isEmpty()) {
                     Iterator<Statement> it2 = nextSomethreadsStatments.iterator();
                     while (it2.hasNext()) {
                         Statement s = it2.next();
                         if ((new ContainsVarDeclWithName(referencedLater)).run(s)) {
                             it2.remove();
-                            // order doesn't really matter here so long as this is first
+                            // order doesn't really matter here so long as the
+                            // declarations come first
                             statements.add((Statement) s.accept(this));
                         }
                     }
@@ -362,11 +366,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                 }
             }
             flushAndAdd(statements, threadLoopStmts);
+            symtab = oldSymTab;
             return new StmtBlock(statements);
-        }
-
-        protected Statement somethreads(Statement stmt) {
-            return (Statement) stmt.accept(new SomeThreadsTransform(symtab));
         }
 
         @Override
@@ -454,6 +455,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
+            // transform args, e.g. indexing into threadlocal arrays
+            exp = (ExprFunCall) super.visitExprFunCall(exp);
             Function target = cg.getTarget(exp);
             if (!target.isParallel()) {
                 return new StmtAssert(new ExprConstBoolean(false), false);

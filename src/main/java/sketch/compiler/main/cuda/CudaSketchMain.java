@@ -9,6 +9,7 @@ import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
 import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
 import sketch.compiler.passes.cuda.InstrumentFcnCall;
 import sketch.compiler.passes.cuda.LowerInstrumentation;
+import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
 import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
@@ -41,6 +42,7 @@ public class CudaSketchMain extends SequentialSketchMain {
     public class CudaPreProcStage1 extends PreProcStage1 {
         public CudaPreProcStage1() {
             super();
+            addPasses(new SetDefaultCudaMemoryTypes());
             addPasses(new ConvertArrayAssignmentsToInout());
             addPasses(new CopyCudaMemTypeToFcnReturn());
         }
