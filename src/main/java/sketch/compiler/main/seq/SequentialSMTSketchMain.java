@@ -56,6 +56,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.BitTypeRemover;
 import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
@@ -586,7 +587,8 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 	public void processing() {
         prog = (Program) prog.accept(new ConstantReplacer(null));
         // dump (prog, "After replacing constants:");
-        if (!SemanticChecker.check(prog, isParallel()))
+        ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
+        if (!SemanticChecker.check(prog, parallelCheck))
             throw new IllegalStateException("Semantic check failed");
 
         prog = preprocessProgram(prog); // perform prereq transformations

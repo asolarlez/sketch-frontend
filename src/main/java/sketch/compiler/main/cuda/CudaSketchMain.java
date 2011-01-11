@@ -4,7 +4,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.cuda.*;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
-import sketch.compiler.passes.lowering.FunctionParamExtension;
+import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
@@ -27,7 +27,8 @@ public class CudaSketchMain extends SequentialSketchMain {
     public class CudaBeforeSemanticCheckStage extends BeforeSemanticCheckStage {
         public CudaBeforeSemanticCheckStage() {
             super();
-            addPasses(new ThreadIdReplacer(options), new InstrumentFcnCall(), new SyncthreadsCall());
+            addPasses(new ThreadIdReplacer(options), new InstrumentFcnCall(),
+                    new SyncthreadsCall());
         }
     }
 
@@ -61,14 +62,15 @@ public class CudaSketchMain extends SequentialSketchMain {
             CudaSketchMain.this.debugShowPhase("threads",
                     "After transforming threads to loops", prog);
 
-            final SemanticCheckPass semanticCheck = new SemanticCheckPass();
+            final SemanticCheckPass semanticCheck =
+                    new SemanticCheckPass(ParallelCheckOption.DONTCARE);
             ExtractComplexLoopConditions ec =
                     new ExtractComplexLoopConditions(CudaSketchMain.this.varGen);
-            final FunctionParamExtension paramExt = new FunctionParamExtension();
+            // final FunctionParamExtension paramExt = new FunctionParamExtension();
 
             prog = (Program) semanticCheck.visitProgram(prog);
             prog = (Program) ec.visitProgram(prog);
-            prog = (Program) paramExt.visitProgram(prog);
+            // prog = (Program) paramExt.visitProgram(prog);
 
             return prog;
         }
@@ -83,7 +85,7 @@ public class CudaSketchMain extends SequentialSketchMain {
     public PreProcStage1 getPreProcStage1() {
         return new CudaPreProcStage1();
     }
-    
+
     @Override
     public IRStage1 getIRStage1() {
         return new CudaIRStage1();
@@ -108,7 +110,7 @@ public class CudaSketchMain extends SequentialSketchMain {
         beforeUnvectorizing =
                 (Program) (new DeleteInstrumentCalls()).visitProgram(beforeUnvectorizing);
         beforeUnvectorizing =
-            (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
+                (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
         this.eliminateStar();
 
         this.generateCode();

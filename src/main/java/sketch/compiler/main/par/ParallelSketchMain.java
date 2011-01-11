@@ -12,6 +12,7 @@ import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.parallelEncoder.LockPreprocessing;
 import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.CompilationStatistics;
 import sketch.compiler.solvers.CounterExample;
@@ -81,7 +82,8 @@ public class ParallelSketchMain extends SequentialSketchMain {
 
 			prog = (Program)prog.accept(new LockPreprocessing());
 			//dump (prog, "After replacing constants:");
-			if (!SemanticChecker.check(prog, isParallel ()))
+			ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
+			if (!SemanticChecker.check(prog, parallelCheck))
 				throw new IllegalStateException("Semantic check failed");
 
 			prog=preprocessProgram(prog); // perform prereq transformations

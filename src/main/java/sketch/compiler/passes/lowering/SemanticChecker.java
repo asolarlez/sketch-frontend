@@ -65,8 +65,10 @@ public class SemanticChecker
 	 * @returns     <code>true</code> if no errors are detected
 	 */
 	public static boolean check(Program prog) {
-		return check (prog, false);
+		return check (prog, ParallelCheckOption.SERIAL);
 	}
+
+    public enum ParallelCheckOption { PARALLEL, SERIAL, DONTCARE; }
 
 	/**
 	 * Check a SKETCH/PSKETCH program for semantic correctness.  This
@@ -77,7 +79,7 @@ public class SemanticChecker
 	 * @param parallel  are parallel constructs allowed?
 	 * @returns     <code>true</code> if no errors are detected
 	 */
-	public static boolean check(Program prog, boolean parallel)
+	public static boolean check(Program prog, ParallelCheckOption parallel)
 	{
 		SemanticChecker checker = new SemanticChecker();
 		Map streamNames = checker.checkStreamNames(prog);
@@ -87,10 +89,12 @@ public class SemanticChecker
 		//checker.checkStatementPlacement(prog);
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
-		if (parallel)
-			checker.checkParallelConstructs (prog);
-		else
-			checker.banParallelConstructs (prog);
+            switch (parallel) {
+                case PARALLEL:
+                    checker.checkParallelConstructs(prog);
+                case SERIAL:
+                    checker.banParallelConstructs(prog);
+            }
 		checker.checkStatementCounts(prog);
 		} catch (UnrecognizedVariableException uve) {
 			// Don't care about this exception during type checking

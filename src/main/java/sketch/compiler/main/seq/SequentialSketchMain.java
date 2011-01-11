@@ -65,6 +65,7 @@ import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
@@ -672,7 +673,8 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void preprocAndSemanticCheck() {
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
-        (new SemanticCheckPass()).visitProgram(prog);
+	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
+        (new SemanticCheckPass(parallelCheck)).visitProgram(prog);
         this.showPhaseOpt("parse");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
@@ -687,9 +689,15 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	@CompilerPassDeps(runsBefore = {}, runsAfter = {})
     public class SemanticCheckPass extends FEReplacer {
+        private final ParallelCheckOption checkopt;
+
+        public SemanticCheckPass(ParallelCheckOption checkopt) {
+            this.checkopt = checkopt;
+        }
+
         @Override
         public Object visitProgram(Program prog) {
-            if (!SemanticChecker.check(prog, isParallel()))
+            if (!SemanticChecker.check(prog, checkopt))
                 throw new ProgramParseException("Semantic check failed");
             return prog;
         }
