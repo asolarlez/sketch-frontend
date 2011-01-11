@@ -15,9 +15,6 @@
  */
 
 package sketch.compiler.passes.lowering;
-import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printFailure;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +40,9 @@ import sketch.compiler.controlflow.CFGBuilder;
 import sketch.compiler.controlflow.CountLattice;
 import sketch.compiler.controlflow.StatementCounter;
 import sketch.util.ControlFlowException;
+
+import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printFailure;
 
 /**
  * Perform checks on the semantic correctness of a StreamIt program.
@@ -879,7 +879,9 @@ public class SemanticChecker
 					if (type instanceof TypeArray && init!=null) {
 						// check that initializer is array initializer
 						// (I guess it could also be conditional expression?  Don't bother.)
-						if (!(init instanceof ExprArrayInit)) {
+                        if (init instanceof ExprStar) {
+                            // don't do anything, the star will take on whatever type it needs to
+                        } else if (!(init instanceof ExprArrayInit)) {
 							report (field, "array initialized to non-array type");
 						} else {
 							// check that lengths match

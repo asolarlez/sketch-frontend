@@ -176,7 +176,7 @@ public class NodesToCTest extends NodesToJava {
     
     private void declareVar(String name, Type t) {
     	
-    	String line = _converter.typeForDecl(t, name);
+    	String line = _converter.typeForDecl(t) + " " + name;
     	/*int len=typeLen(t);
     	boolean isArr = typeIsArr(t);
     	String line=translateType(t);

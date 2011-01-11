@@ -17,9 +17,6 @@
 package sketch.compiler.main.seq;
 
 
-import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printNote;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
@@ -91,6 +88,9 @@ import sketch.util.SynchronousTimedProcess;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
+
+import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printNote;
 
 
 

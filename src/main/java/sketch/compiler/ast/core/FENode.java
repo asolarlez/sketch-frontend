@@ -115,6 +115,11 @@ public abstract class FENode
      */
     abstract public Object accept(FEVisitor v);
 
+    @SuppressWarnings("unchecked")
+    public <T> T accept(FETypedVisitor<T> v) {
+        return (T) (accept((FEVisitor) v));
+    }
+
     /**
      * Assert that COND must be true for this node.  If it is false,
      * an appropriate error is printed and a runtime exception is thrown.

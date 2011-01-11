@@ -1,0 +1,13 @@
+#include "choice_lib.h"
+
+CHOICE_INT(x1)
+
+harness void main() {
+    assert choice(x1) == 1;
+    assert choice(x1) == 0;
+
+    int[6] choiceArr;
+    setChoiceArr(x1, choiceArr, 6)
+    assert choiceArr[0] == 1;
+    assert choiceArr[1] == 3;
+}

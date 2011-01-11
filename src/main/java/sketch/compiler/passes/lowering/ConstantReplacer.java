@@ -13,17 +13,19 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.passes.structure.ASTObjQuery;
+import sketch.compiler.passes.structure.GetAssignLHS;
 
 /**
  * Takes numeric constants defined at the beginning of the program and
@@ -218,22 +220,33 @@ public class ConstantReplacer extends FEReplacer {
 
     @Override
     public Object visitProgram(Program prog) {
-        final GetValDefs getValDefs = new GetValDefs();
-        getValDefs.visitProgram(prog);
-        this.assignedVars = getValDefs.vars;
+        this.assignedVars = (new GetValDefs()).run(prog);
         return super.visitProgram(prog);
     }
 
-    public static class GetValDefs extends FEReplacer {
-        public HashSet<String> vars = new HashSet<String>();
-        protected boolean isInAssign;
+    public static class GetValDefs extends ASTObjQuery<HashSet<String>> {
+        public GetValDefs() {
+            super(new HashSet<String>());
+        }
 
         @Override
         public Object visitStmtAssign(StmtAssign stmt) {
             try {
-                vars.add(stmt.getLhsBase().getName());
+                result.add(stmt.getLhsBase().getName());
             } catch (FEVisitorException e) {}
             return super.visitStmtAssign(stmt);
+        }
+
+        @Override
+        public Object visitExprUnary(ExprUnary exp) {
+            switch (exp.getOp()) {
+                case ExprUnary.UNOP_POSTDEC:
+                case ExprUnary.UNOP_POSTINC:
+                case ExprUnary.UNOP_PREDEC:
+                case ExprUnary.UNOP_PREINC:
+                    result.add(exp.getExpr().accept(new GetAssignLHS()).getName());
+            }
+            return super.visitExprUnary(exp);
         }
     }
 }

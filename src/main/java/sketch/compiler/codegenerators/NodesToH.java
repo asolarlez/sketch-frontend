@@ -28,7 +28,7 @@ public class NodesToH extends NodesToC {
     	{
     		String name = struct.getField(i);
     		Type type = struct.getType(name);
-    		result += indent + typeForDecl(type, name) + ";\n";
+    		result += indent + typeForDecl(type) + " " + name + ";\n";
     	}
     	unIndent();
     	result += indent + "};\n";
