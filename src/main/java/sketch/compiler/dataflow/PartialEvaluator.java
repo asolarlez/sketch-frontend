@@ -865,7 +865,9 @@ public class PartialEvaluator extends FEReplacer {
                     stmt.getIncr().accept(this);
                 }
                 vcond = (abstractValue) stmt.getCond().accept(this);
-                report(iters <= (1<<13), "This is probably a bug, why would it go around so many times? " + stmt);
+                if (iters > (1 << 13)) {
+                    printWarning("Loop seems to repeat more than 2^13 times", stmt.getCx());
+                }
             }
 
             if(vcond.isBottom()){
