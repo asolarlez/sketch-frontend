@@ -707,16 +707,17 @@ public class NodesToC extends NodesToJava {
     @Override
     public Object visitExprTprint(ExprTprint exprTprint) {
         StringBuilder result = new StringBuilder();
-        if (!exprTprint.expressions.isEmpty()) {
-            result.append("cout << ");
-            for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
-                if (v.idx > 0) {
-                    result.append("\n" + this.indent + "  << ");
-                }
-                final String name = v.entry.getFirst();
-                result.append("\"" + ScRichString.padLeft(name, 30) + ": \" << " +
-                        v.entry.getSecond() + " << endl");
+        result.append("cout << ");
+        for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
+            if (v.idx > 0) {
+                result.append("\n" + this.indent + "  << ");
             }
+            final String name = v.entry.getFirst();
+            result.append("\"" + ScRichString.padLeft(name, 30) + ": \" << " +
+                    v.entry.getSecond() + " << endl");
+        }
+        if (exprTprint.expressions.isEmpty()) {
+            result.append("endl;");
         }
         return result.toString();
     }
