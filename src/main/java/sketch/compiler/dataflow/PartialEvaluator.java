@@ -1,7 +1,5 @@
 package sketch.compiler.dataflow;
 
-import static sketch.util.DebugOut.printWarning;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +33,8 @@ import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.util.datastructures.TprintTuple;
+
+import static sketch.util.DebugOut.printWarning;
 
 class CloneHoles extends FEReplacer{
     
@@ -708,16 +708,12 @@ public class PartialEvaluator extends FEReplacer {
             lvl = state.pushLevel(new BlockLevel("PartialEvaluator level"));
             s = (Statement)super.visitStmtBlock(stmt);
         }
-        catch(Exception e1) { e = e1; }
+        // catch(Exception e1) { e = e1; }
         finally{
             if( s == null){
                 s = stmt;
             }
-            int l2 = state.getLevel();
-//            Stack<String> beforePop = state.getLevelStack();
             state.popLevel(lvl);
-            assert lvl.isDead;
-            assert state.getLevel() == l2 - 1 : "pop did nothing!!!";
 //            if (level != state.getLevel()) {
 //                printFailure("Somewhere we lost a level!!");
 //                printFailure("Expected", prevLS);
@@ -914,7 +910,7 @@ public class PartialEvaluator extends FEReplacer {
                 }
             }
         }
-        catch(Exception e) { printWarning("suppressing", e); }
+        // catch(Exception e) { printWarning("suppressing", e); }
         finally{
             state.popLevel(lvl);
         }
