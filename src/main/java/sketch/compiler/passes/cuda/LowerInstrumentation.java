@@ -1,7 +1,5 @@
 package sketch.compiler.passes.cuda;
 
-import static sketch.util.Misc.nonnull;
-
 import java.util.Vector;
 
 import sketch.compiler.Directive.InstrumentationDirective;
@@ -22,6 +20,7 @@ import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
@@ -29,6 +28,7 @@ import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
+import static sketch.util.Misc.nonnull;
 
 /**
  * lower CudaInstrument AST nodes to reads and writes. hopefully they're more primitive by
@@ -40,7 +40,7 @@ import sketch.util.exceptions.ExceptionAtNode;
  *          changes, please consider contributing back!
  */
 @CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class,
-        GlobalsToParams.class }, runsAfter = {})
+        GlobalsToParams.class }, runsAfter = {}, debug=true)
 public class LowerInstrumentation extends FEReplacer {
     protected final TypedHashMap<String, InstrumentationDirective> directivesByName =
             new TypedHashMap<String, InstrumentationDirective>();
@@ -74,7 +74,9 @@ public class LowerInstrumentation extends FEReplacer {
         if (this.activeInstrumentation != oldInstrumentation) {
             Vector<Statement> stmts = new Vector<Statement>(newBlock.getStmts());
             if (!(stmts.lastElement() instanceof StmtReturn)) {
-                stmts.add(endCall(stmt));
+                if (activeInstrumentation.end != null) {
+                    stmts.add(endCall(stmt));
+                }
             }
             newBlock = new StmtBlock(newBlock, stmts);
             this.activeInstrumentation = oldInstrumentation;
@@ -90,10 +92,20 @@ public class LowerInstrumentation extends FEReplacer {
     @Override
     public Object visitStmtReturn(StmtReturn stmt) {
         if (activeInstrumentation != null) {
-            addStatement(endCall(stmt));
+            if (activeInstrumentation.end != null) {
+                addStatement(endCall(stmt));
+            }
         }
         return super.visitStmtReturn(stmt);
     }
+
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        if (activeInstrumentation != null && activeInstrumentation.syncthreads != null) {
+            addStatement(new StmtExpr(new ExprFunCall(cudaSyncthreads,
+                    activeInstrumentation.syncthreads, instrumentationStructInst)));
+        }
+        return cudaSyncthreads;
+    };
 
     @Override
     public Object visitStmtAssign(StmtAssign stmt) {

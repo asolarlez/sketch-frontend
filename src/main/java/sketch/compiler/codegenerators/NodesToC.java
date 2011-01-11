@@ -707,18 +707,21 @@ public class NodesToC extends NodesToJava {
     @Override
     public Object visitExprTprint(ExprTprint exprTprint) {
         StringBuilder result = new StringBuilder();
-        result.append("cout << ");
+        result.append("cout");
         for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
             if (v.idx > 0) {
-                result.append("\n" + this.indent + "  << ");
+                result.append("\n" + this.indent);
             }
             final String name = v.entry.getFirst();
-            result.append("\"" + ScRichString.padLeft(name, 30) + ": \" << " +
-                    v.entry.getSecond() + " << endl");
+            final String name2;
+            if (exprTprint.expressions.size() <= 1) {
+                name2 = ScRichString.padLeft(name, 30) + ": ";
+            } else {
+                name2 = (v.idx == 0 ? "" : " ") + name + " ";
+            }
+            result.append(" << \"" + name2 + "\" << " + v.entry.getSecond());
         }
-        if (exprTprint.expressions.isEmpty()) {
-            result.append("endl;");
-        }
+            result.append(" << endl");
         return result.toString();
     }
 

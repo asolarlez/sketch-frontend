@@ -22,6 +22,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import static sketch.util.Misc.nonnull;
 
 /**
  * A call to a particular named function.  This contains the name of
@@ -52,7 +53,7 @@ public class ExprFunCall extends Expression
     public ExprFunCall(FENode context, String name, List<Expression> params)
     {
         super(context);
-        this.name = name;
+        this.name = nonnull(name, "Cannot construct a function call without a name!");
         this.params = Collections.unmodifiableList(params);
         if(context instanceof ExprFunCall){
         	this.callid = ((ExprFunCall)context).callid;
@@ -68,7 +69,7 @@ public class ExprFunCall extends Expression
     public ExprFunCall(FEContext context, String name, List<Expression> params)
     {
         super(context);
-        this.name = name;
+        this.name = nonnull(name, "Cannot construct a function call without a name!");
         this.params = Collections.unmodifiableList(params);
         this.callid = NEXT_UID++;
     }

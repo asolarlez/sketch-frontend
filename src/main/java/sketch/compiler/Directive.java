@@ -3,8 +3,8 @@
  */
 package sketch.compiler;
 
-import static sketch.util.Misc.nonnull;
 import sketch.util.datastructures.TypedHashMap;
+import static sketch.util.Misc.nonnull;
 
 /**
  * An odd little class for interpreting compiler directives, such as
@@ -67,14 +67,17 @@ public abstract class Directive {
         public static final String NAME = "instrumentation";
         public static final String USAGE = "instrumentation usage: #pragma " +
         		"instrumentation \"name=X struct=Y init=initFcn read=readFcn " +
-        		"write=writeFcn end=endFcn\"";
+        		"write=writeFcn [end=endFcn] [syncthreads=syncthreadsFcn]\"";
 
         public final String name;
         public final String struct;
         public final String init;
         public final String read;
         public final String write;
+        /** may be null if no end function is to be called */
         public final String end;
+        /** may be null if no syncthreads function is to be called */
+        public final String syncthreads;
 
         public InstrumentationDirective (String pragma, String args) {
             super (pragma, args);
@@ -89,7 +92,8 @@ public abstract class Directive {
             this.init = nonnull(namedValues.get("init"), USAGE);
             this.read = nonnull(namedValues.get("read"), USAGE);
             this.write = nonnull(namedValues.get("write"), USAGE);
-            this.end = nonnull(namedValues.get("end"), USAGE);
+            this.end = namedValues.get("end");
+            this.syncthreads = namedValues.get("syncthreads");
         }
     }
 }

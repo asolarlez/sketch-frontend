@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.util.wrapper.ScRichString;
+import static sketch.util.Misc.nonnull;
 
 /**
  * A function declaration.
@@ -200,7 +201,7 @@ public class Function extends FENode {
     {
         super(context);
         this.fcnInfo = fcnInfo;
-        this.name = name;
+        this.name = nonnull(name, "It's not allowed to create a function without a name");
         this.returnType = returnType;
         this.params = params;
         this.body = body;
@@ -213,7 +214,7 @@ public class Function extends FENode {
     {
         super(context);
         this.fcnInfo = fcnInfo;
-        this.name = name;
+        this.name = nonnull(name, "It's not allowed to create a function without a name");
         this.returnType = returnType;
         this.params = params;
         this.body = body;

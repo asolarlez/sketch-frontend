@@ -87,7 +87,7 @@ public class SymbolTableVisitor extends FEReplacer
      */
     public SymbolTableVisitor(SymbolTable symtab, StreamType st)
     {
-        this.symtab = symtab;
+        this.symtab = (symtab == null ? new SymbolTable(null) : symtab);
         this.streamType = st;
         this.structsByName = new java.util.HashMap();
     }
