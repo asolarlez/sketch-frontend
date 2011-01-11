@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.smt.partialeval.BitVectUtil;
@@ -152,9 +153,9 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 			}
 		}
 
-		state.beginFunction(func.getName());
+		Level lvl3 = state.beginFunction(func.getName());
 		func.getBody().accept(this);
-		state.endFunction();
+		state.endFunction(lvl3);
 
 		return func;
 	}	
@@ -251,16 +252,17 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 //		String[] comment = { "Inlining :" + funccall };
 //		vtype.addBlockComment(comment);
 				
-		state.pushLevel();
+		Level lvl = state.pushLevel("producesmtcode inlinefunction");
 		List<Statement> oldNewStatements = newStatements;
 		newStatements = new ArrayList<Statement>();
 		try {
+		    Level lvl2;
 			{
 				Iterator<Expression> actualParams = exp.getParams()
 						.iterator();
 				Iterator<Parameter> formalParams = fun.getParams()
 						.iterator();
-				inParameterSetter(exp, formalParams, actualParams,
+				lvl2 = inParameterSetter(exp, formalParams, actualParams,
 						false);
 			}
 			Statement body = null;
@@ -268,14 +270,14 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 
 				body = (Statement) fun.getBody().accept(this);
 			} catch (RuntimeException ex) {
-				state.popLevel(); // This is to compensate for a
+				state.popLevel(lvl); // This is to compensate for a
 				// pushLevel in inParamSetter.
 				// Under normal circumstances, this gets offset by a
 				// popLevel in outParamSetter, but not in the
 				// pressence of exceptions.
 				throw ex;
 			} catch (AssertionError e) {
-				state.popLevel(); // This is to compensate for a
+				state.popLevel(lvl); // This is to compensate for a
 				// pushLevel in inParamSetter.
 				// Under normal circumstances, this gets offset by a
 				// popLevel in outParamSetter, but not in the
@@ -300,14 +302,14 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 				vtype.putHashedFuncCall(funccall, outletNodes);
 				
 				outParameterSetter(formalParams, actualParams,
-						false);
+						false, lvl2);
 			}
 		} finally {
 
 //			String[] comment2 = { "Done inlining :" + funccall };
 //			vtype.addBlockComment(comment2);
 
-			state.popLevel();
+			state.popLevel(lvl);
 			newStatements = oldNewStatements;
 			rcontrol.popFunCall(exp);
 		}

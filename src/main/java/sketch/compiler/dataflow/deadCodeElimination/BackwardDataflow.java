@@ -13,9 +13,10 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
+import sketch.compiler.dataflow.MethodState.ChangeTracker;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.abstractValueType;
-import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 
 
@@ -83,7 +84,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     	 *
     	 */
         // Put context label at the start of the block, too.
-    	state.pushLevel();
+    	Level lvl = state.pushLevel("backwarddataflow block");
     	//First, we declare the variables in the block.
     	for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
         {
@@ -130,7 +131,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     		if( rs == null){
     			rs = stmt;
     		}
-    		state.popLevel();
+    		state.popLevel(lvl);
     	}
         return rs;
     }
@@ -143,7 +144,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
         StmtVarDecl ndecl = null;
         Expression niter = null;
     	try{
-	    	state.pushLevel();
+	    	Level lvl = state.pushLevel("backwarddataflow fork");
 	    	varDecl(loop.getLoopVarDecl());
 
 	        try{
@@ -155,7 +156,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	        		ndecl = loop.getLoopVarDecl();
 	        	}
 	        }finally{
-	    		state.popLevel();
+	    		state.popLevel(lvl);
 	    	}
 
     	}finally{
@@ -168,7 +169,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 
     public Object visitStmtFor(StmtFor stmt)
     {
-    	state.pushLevel();
+    	Level lvl = state.pushLevel("backwarddataflow for");
     	Statement ninit = null;
 		Expression ncond = null;
 		Statement nincr = null;
@@ -237,7 +238,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
 	            ninit = (Statement) stmt.getInit().accept(this);
 	        }
     	}finally{
-    		state.popLevel();
+    		state.popLevel(lvl);
     	}
     	if(nbody == null && ninit == null && nincr == null) return null;
     	return new StmtFor(stmt, ninit, ncond, nincr, nbody);

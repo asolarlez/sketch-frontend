@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtReorderBlock;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 
 public class DataflowWithFixpoint extends PartialEvaluator {
@@ -58,7 +59,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 
 	public Object visitStmtFor(StmtFor stmt)
     {
-    	state.pushLevel();
+    	Level lvl = state.pushLevel("dataflowwithfixedpoint for");
     	Statement ninit = null;
 		Expression ncond = null;
 		Statement nincr = null;
@@ -106,6 +107,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 	        }
 	        abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
 	        ncond = exprRV;
+	        // printDebug("DataflowWithFixedpoint last stack elt 1", state.getLevelStack().peek());
 	        if(vcond.hasIntVal() && vcond.getIntVal() == 0){
 	        	nbody = null;
 	        }else{
@@ -114,8 +116,12 @@ public class DataflowWithFixpoint extends PartialEvaluator {
 		        	nincr = (Statement) stmt.getIncr().accept(this);
 	        	}
 	        }
+	        // printDebug("DataflowWithFixedpoint last stack elt 2", state.getLevelStack().peek());
+    	} catch(Exception ex) {
+    	    // printDebug("DataflowWithFixedpoint encountered error", ex.getMessage());
     	}finally{
-    		state.popLevel();
+    	    // printDebug("DataflowWithFixedpoint last stack elt 3", state.getLevelStack().peek());
+    		state.popLevel(lvl);
     	}
     	if(nbody == null) return null;
     	return isReplacer?  new StmtFor(stmt, ninit, ncond, nincr, nbody) : stmt;

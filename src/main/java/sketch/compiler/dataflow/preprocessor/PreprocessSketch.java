@@ -1,5 +1,7 @@
 package sketch.compiler.dataflow.preprocessor;
 
+import static sketch.util.DebugOut.printFailure;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,6 +20,7 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -113,9 +116,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 fun = newFuns.get(specName);
             }else{
                 Function newFun = ss.getFuncNamed(specName);
-                state.pushLevel();
-                fun = (Function)this.visitFunction(newFun);
-                state.popLevel();
+                Level lvl = state.pushLevel("ExprFunCall(" + exp.getName() + ")");
+                try {
+                    fun = (Function)this.visitFunction(newFun);
+                } catch (Throwable e) {
+                    printFailure("error in visitExprFunCall for ", exp);
+                }
+                state.popLevel(lvl);
                 newFuns.put(specName, fun);
             }
         }
@@ -141,12 +148,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     Statement result = null;
                     int level = state.getLevel();
                     int ctlevel = state.getCTlevel();
-                    state.pushLevel();
+                    Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
                     try{
+                        Level lvl2;
                         {
                             Iterator<Expression> actualParams = exp.getParams().iterator();
                             Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            inParameterSetter(exp, formalParams, actualParams, false);
+                            lvl2 = inParameterSetter(exp, formalParams, actualParams, false);
                         }
                         try{
                             Statement body = (Statement) fun.getBody().accept(this);
@@ -154,11 +162,11 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                         }finally{
                             Iterator<Expression> actualParams = exp.getParams().iterator();
                             Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            outParameterSetter(formalParams, actualParams, false);
+                            outParameterSetter(formalParams, actualParams, false, lvl2);
                         }
                         result = new StmtBlock(exp, newStatements);
                     }finally{
-                        state.popLevel();
+                        state.popLevel(lvl);
                         assert level == state.getLevel() : "Somewhere we lost a level!!";
                         assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
                         newStatements = oldNewStatements;

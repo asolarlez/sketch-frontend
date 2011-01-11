@@ -1,11 +1,11 @@
 package sketch.compiler.passes.cuda;
 
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 
 /**
- * delete instrument calls
+ * delete syncthreads
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
@@ -13,9 +13,9 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
  *          changes, please consider contributing back!
  */
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
-public class DeleteInstrumentCalls extends FEReplacer {
+public class DeleteCudaSyncthreads extends FEReplacer {
     @Override
-    public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
         return null;
     }
 }

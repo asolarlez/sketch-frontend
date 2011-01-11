@@ -16,6 +16,7 @@ import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.PartialEvaluator;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 
@@ -120,7 +121,7 @@ public class PerformFlowChecks extends PartialEvaluator {
     
     
     public Object visitFunction(Function func) {
-        state.beginFunction(func.getName());
+        Level lvl = state.beginFunction(func.getName());
         
         
         List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
@@ -144,7 +145,7 @@ public class PerformFlowChecks extends PartialEvaluator {
             }
         }
         
-        state.endFunction();
+        state.endFunction(lvl);
 
         return isReplacer ? func.creator().params(nparams).body(newBody).create() : null;
     }

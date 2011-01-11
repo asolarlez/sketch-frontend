@@ -2,15 +2,7 @@ package sketch.compiler.main.cuda;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.main.seq.SequentialSketchMain;
-import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
-import sketch.compiler.passes.cuda.DeleteInstrumentCalls;
-import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
-import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
-import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
-import sketch.compiler.passes.cuda.InstrumentFcnCall;
-import sketch.compiler.passes.cuda.LowerInstrumentation;
-import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
-import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
+import sketch.compiler.passes.cuda.*;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
@@ -115,6 +107,8 @@ public class CudaSketchMain extends SequentialSketchMain {
         this.partialEvalAndSolve();
         beforeUnvectorizing =
                 (Program) (new DeleteInstrumentCalls()).visitProgram(beforeUnvectorizing);
+        beforeUnvectorizing =
+            (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
         this.eliminateStar();
 
         this.generateCode();

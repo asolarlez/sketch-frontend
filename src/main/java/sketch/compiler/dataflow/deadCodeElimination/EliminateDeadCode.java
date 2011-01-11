@@ -24,6 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.util.datastructures.TprintTuple;
@@ -126,7 +127,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 	{
 	    
 	    
-	    state.beginFunction(func.getName());
+	    Level lvl = state.beginFunction(func.getName());
 	    
 		List<Parameter> params = func.getParams();
 		List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
@@ -147,7 +148,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 
 		Statement newBody = (Statement)func.getBody().accept(this);
 
-		state.endFunction();
+		state.endFunction(lvl);
 		if(newBody == null) newBody = new StmtEmpty(func);
 		return isReplacer? func.creator().params(nparams).body(newBody).create() : null;
 

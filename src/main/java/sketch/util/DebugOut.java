@@ -64,6 +64,16 @@ public class DebugOut {
     {
         System.err.flush();
         System.out.flush();
+        print_colored(color, prefix, sep, nice_arrays, text);
+        System.err.flush();
+        System.out.flush();
+    }
+
+    public static void print_assert_false_colored(String color, String prefix,
+            String sep, boolean nice_arrays, Object... text)
+    {
+        System.err.flush();
+        System.out.flush();
         if (inAssertFalse) {
             return;
         } else {
@@ -104,28 +114,40 @@ public class DebugOut {
                 nice_arrays, description);
     }
 
+    /**
+     * try to use specialized functions, printNote, printError, etc. unless you want
+     * custom formatting
+     */
+    public static void printErrStatusMessage(String color, StatusPrefix prefix, String sep,
+            boolean nice_arrays, Object... description)
+    {
+        double time = time_.getTime();
+        print_err_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
+                nice_arrays, description);
+    }
+
     public static void printDebug(Object... description) {
-        printStatusMessage(BASH_GREEN, StatusPrefix.DEBUG, " ", false, description);
+        printErrStatusMessage(BASH_GREEN, StatusPrefix.DEBUG, " ", false, description);
     }
 
     public static void printFailure(Object... description) {
-        printStatusMessage(BASH_RED, StatusPrefix.FAILURE, " ", false, description);
+        printErrStatusMessage(BASH_RED, StatusPrefix.FAILURE, " ", false, description);
     }
 
     public static void printError(Object... description) {
-        printStatusMessage(BASH_RED, StatusPrefix.ERROR, " ", false, description);
+        printErrStatusMessage(BASH_RED, StatusPrefix.ERROR, " ", false, description);
     }
 
     public static void printNote(Object... description) {
-        printStatusMessage(BASH_BROWN, StatusPrefix.NOTE, " ", false, description);
+        printErrStatusMessage(BASH_BROWN, StatusPrefix.NOTE, " ", false, description);
     }
 
     public static void printWarning(Object... description) {
-        printStatusMessage(BASH_SALMON, StatusPrefix.WARNING, " ", false, description);
+        printErrStatusMessage(BASH_SALMON, StatusPrefix.WARNING, " ", false, description);
     }
 
     public static void assertFalse(Object... description) {
-        print_err_colored(BASH_RED, "[ASSERT FAILURE] ", " ", false,
+        print_assert_false_colored(BASH_RED, "[ASSERT FAILURE] ", " ", false,
                 description);
         inAssertFalse = false;
         assert (false);
@@ -199,7 +221,7 @@ public class DebugOut {
     }
 
     public static void fail_exception(String text, Exception e) {
-        print_err_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
+        print_assert_false_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
         e.printStackTrace();
         throw new RuntimeException(e);
     }

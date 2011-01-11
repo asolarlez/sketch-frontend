@@ -1,5 +1,7 @@
 package sketch.compiler.dataflow;
 
+import static sketch.util.DebugOut.printWarning;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.FENode;
@@ -29,6 +32,7 @@ import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.util.datastructures.TprintTuple;
 
@@ -696,20 +700,49 @@ public class PartialEvaluator extends FEReplacer {
         // Put context label at the start of the block, too.
         Statement s = null;
         int level = state.getLevel();
+        Stack<String> prevLS = state.getLevelStack();
         int ctlevel = state.getCTlevel();
-        state.pushLevel();
+        Level lvl = null;
+        Exception e = null;
         try{
+            lvl = state.pushLevel(new BlockLevel("PartialEvaluator level"));
             s = (Statement)super.visitStmtBlock(stmt);
         }
+        catch(Exception e1) { e = e1; }
         finally{
             if( s == null){
                 s = stmt;
             }
-            state.popLevel();
+            int l2 = state.getLevel();
+//            Stack<String> beforePop = state.getLevelStack();
+            state.popLevel(lvl);
+            assert lvl.isDead;
+            assert state.getLevel() == l2 - 1 : "pop did nothing!!!";
+//            if (level != state.getLevel()) {
+//                printFailure("Somewhere we lost a level!!");
+//                printFailure("Expected", prevLS);
+//                printFailure("Actual", state.getLevelStack());
+//                printFailure("Before popping", beforePop);
+//                printFailure("Approximate source location", stmt.getCx());
+//                printFailure("Block", stmt);
+//                printFailure("related exception", e);
+//                assertFalse();
+//            }
             assert level == state.getLevel() : "Somewhere we lost a level!!";
             assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
         }
         return s;
+    }
+    
+    protected static class BlockLevel extends Level {
+        public BlockLevel(String msg) {
+            super(msg);
+        }
+        
+        @Override
+        public String toString() {
+            return "BlockLevel[" + msg + ", isDead=" + isDead + "]";
+        }
     }
 
     public Object visitStmtReorderBlock(StmtReorderBlock block){
@@ -731,7 +764,7 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitFunction(Function func)
     {
         
-        state.beginFunction(func.getName());
+        Level lvl = state.beginFunction(func.getName());
         
         List<Parameter> params = func.getParams();
         List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
@@ -748,7 +781,7 @@ public class PartialEvaluator extends FEReplacer {
 
         Statement newBody = (Statement)func.getBody().accept(this);
 
-        state.endFunction();
+        state.endFunction(lvl);
 
         return isReplacer ? func.creator().params(nparams).body(newBody).create() : null;
 
@@ -801,14 +834,14 @@ public class PartialEvaluator extends FEReplacer {
         StmtVarDecl ndecl = null;
         Expression niter = null;
         try{
-            state.pushLevel();
+            Level lvl = state.pushLevel("StmtFork");
             abstractValue viter = (abstractValue) loop.getIter().accept(this);
             niter = exprRV;
             try{
                 ndecl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
                 nbody = (Statement)loop.getBody().accept(this);
             }finally{
-                state.popLevel();
+                state.popLevel(lvl);
             }
         }finally{
             state.popParallelSection();
@@ -818,7 +851,7 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitStmtFor(StmtFor stmt)
     {
-        state.pushLevel();
+        Level lvl = state.pushLevel("StmtFor");
         try{
             if (stmt.getInit() != null)
                 stmt.getInit().accept(this);
@@ -878,9 +911,10 @@ public class PartialEvaluator extends FEReplacer {
                     as.accept(this);
                 }
             }
-
-        }finally{
-            state.popLevel();
+        }
+        catch(Exception e) { printWarning("suppressing", e); }
+        finally{
+            state.popLevel(lvl);
         }
         assert !isReplacer : "No replacement policy for this yet.";
         return stmt;
@@ -1311,7 +1345,7 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitStreamSpec(StreamSpec spec)
     {
 
-        state.pushLevel();
+        Level lvl = state.pushLevel("visitStreamSpec");
 
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
@@ -1359,7 +1393,7 @@ public class PartialEvaluator extends FEReplacer {
 
         ss = oldSS;
 
-        state.popLevel();
+        state.popLevel(lvl);
 
 
         //assert preFil.size() == 0 : "This should never happen";
@@ -1391,13 +1425,13 @@ public class PartialEvaluator extends FEReplacer {
 
 
 
-    public void inParameterSetter(FENode cx,  Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, boolean checkError){
+    public Level inParameterSetter(FENode cx,  Iterator<Parameter> formalParamIterator, Iterator<Expression> actualParamIterator, boolean checkError){
         List<Expression> actualsList = new ArrayList<Expression>();
         List<abstractValue> actualsValList = new ArrayList<abstractValue>();
 
         evalInParam(formalParamIterator, actualParamIterator, actualsList, actualsValList);
 
-        state.pushLevel();
+        Level lvl = state.pushLevel("inParameter");
 
         Iterator<Expression> actualIterator = actualsList.iterator();
         Iterator<abstractValue> actualValIterator = actualsValList.iterator();
@@ -1439,10 +1473,12 @@ public class PartialEvaluator extends FEReplacer {
             }
 
         }
+        
+        return lvl;
     }
 
 
-    public void outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError){
+    public void outParameterSetter(Iterator formalParamIterator, Iterator actualParamIterator, boolean checkError, Level lvl){
         FENode context = null;
         List<abstractValue> formalList = new ArrayList<abstractValue>();
         List<String> formalTransNames = new ArrayList<String>();
@@ -1459,7 +1495,7 @@ public class PartialEvaluator extends FEReplacer {
             }
         }
 
-        state.popLevel();
+        state.popLevel(lvl);
 
         Iterator<abstractValue> vcIt = formalList.iterator();
         Iterator<String> fTransNamesIt = formalTransNames.iterator();

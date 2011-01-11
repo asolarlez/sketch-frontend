@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.PartialEvaluator;
 import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -96,14 +97,15 @@ public class CollectInputArrayStat extends PartialEvaluator {
 
 					List<Statement> oldNewStatements = newStatements;
 					newStatements = new ArrayList<Statement>();
-					state.pushLevel();
+					Level lvl = state.pushLevel("CollectInputOutputArray...");
+					Level lvl2;
 					try {
 						{
 							Iterator<Expression> actualParams = exp.getParams()
 									.iterator();
 							Iterator<Parameter> formalParams = fun.getParams()
 									.iterator();
-							inParameterSetter(exp, formalParams, actualParams,
+							lvl2 = inParameterSetter(exp, formalParams, actualParams,
 									false);
 						}
 						Statement body = null;
@@ -111,7 +113,7 @@ public class CollectInputArrayStat extends PartialEvaluator {
 
 							body = (Statement) fun.getBody().accept(this);
 						} catch (RuntimeException ex) {
-							state.popLevel(); // This is to compensate for a
+							state.popLevel(lvl); // This is to compensate for a
 												// pushLevel in inParamSetter.
 							// Under normal circumstances, this gets offset by a
 							// popLevel in outParamSetter, but not in the
@@ -125,10 +127,10 @@ public class CollectInputArrayStat extends PartialEvaluator {
 							Iterator<Parameter> formalParams = fun.getParams()
 									.iterator();
 							outParameterSetter(formalParams, actualParams,
-									false);
+									false, lvl2);
 						}
 					} finally {
-						state.popLevel();
+						state.popLevel(lvl);
 						newStatements = oldNewStatements;
 					}
 					rcontrol.popFunCall(exp);

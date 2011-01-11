@@ -1,5 +1,6 @@
 package sketch.compiler.passes.cuda;
 
+import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printWarning;
 
 import java.util.Arrays;
@@ -469,6 +470,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                 return new StmtAssert(FEContext.artificalFrom("nonParallelCall", exp),
                         new ExprConstBoolean(false), false);
             } else {
+                printDebug("used all thread indices for function", exp);
                 usedThreadIndices.addAll(Arrays.asList("X", "Y", "Z"));
                 Vector<Expression> nextArgs = new Vector<Expression>();
                 for (String threadIndexName : CudaThreadBlockDim.indexNames) {

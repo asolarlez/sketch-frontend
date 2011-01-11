@@ -739,7 +739,7 @@ public class SequentialSketchMain extends CommonSketchMain
             e.print();
             dumpProgramToFile(sketchmain.prog);
             System.exit(1);
-        } catch (RuntimeException e) {
+        } catch (java.lang.Error e) {
             System.err.println("[ERROR] [SKETCH] Failed with " +
                     e.getClass().getSimpleName() + " exception; message: " +
                     e.getMessage());
