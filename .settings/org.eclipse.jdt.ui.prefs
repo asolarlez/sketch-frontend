@@ -1,4 +1,4 @@
-#Fri Jan 29 11:20:41 PST 2010
+#Mon Jan 10 20:29:04 PST 2011
 cleanup.add_default_serial_version_id=true
 cleanup.add_generated_serial_version_id=false
 cleanup.add_missing_annotations=true
@@ -56,7 +56,7 @@ editor_save_participant_org.eclipse.jdt.ui.postsavelistener.cleanup=true
 formatter_profile=_ntung
 formatter_settings_version=11
 org.eclipse.jdt.ui.ignorelowercasenames=true
-org.eclipse.jdt.ui.importorder=java;javax;org;com;
+org.eclipse.jdt.ui.importorder=java;javax;org;com;\#sketch.util.DebugOut;
 org.eclipse.jdt.ui.ondemandthreshold=10
 org.eclipse.jdt.ui.staticondemandthreshold=10
 sp_cleanup.add_default_serial_version_id=true
@@ -66,6 +66,7 @@ sp_cleanup.add_missing_deprecated_annotations=true
 sp_cleanup.add_missing_methods=false
 sp_cleanup.add_missing_nls_tags=false
 sp_cleanup.add_missing_override_annotations=true
+sp_cleanup.add_missing_override_annotations_interface_methods=false
 sp_cleanup.add_serial_version_id=false
 sp_cleanup.always_use_blocks=true
 sp_cleanup.always_use_parentheses_in_expressions=false

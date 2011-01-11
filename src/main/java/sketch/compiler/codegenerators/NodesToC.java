@@ -1,9 +1,8 @@
 package sketch.compiler.codegenerators;
 
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
@@ -20,6 +19,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -30,14 +30,16 @@ import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 public class NodesToC extends NodesToJava {
 
 	protected String filename;
 	private boolean isBool = true;
-  private boolean lhsBitvec = false;
 
 	protected boolean addIncludes = true;
+	// FIXME hack for bad code generation
+    private boolean convertBoolConstants;
 
 	public NodesToC(TempVarGen varGen, String filename) {
 		super(false, varGen);
@@ -240,8 +242,8 @@ public class NodesToC extends NodesToJava {
 
 	public Object visitExprConstInt(ExprConstInt exp)
     {
-		if(ctype == TypePrimitive.bittype){
-			return "bitvec<1>("+ exp.getVal() +"U)" ;
+        if (ctype.equals(TypePrimitive.bittype)) {
+            return "bitvec<1>(" + exp.getVal() + "U)";
 		}else{
 			return exp.getVal() + "";
 		}
@@ -424,61 +426,42 @@ public class NodesToC extends NodesToJava {
 
 
 
-    public String typeForDecl(Type type, String name){
-    	String postFix = "";
+    public String typeForDecl(Type type){
         if(type instanceof TypeArray){
         	Type otype = type;
         	type = ((TypeArray)type).getBase();
         	if(type.equals(TypePrimitive.bittype)){
-        		return "bitvec<" + ((TypeArray)otype).getLength() + "> " + name + postFix ;
+        		return "bitvec<" + ((TypeArray)otype).getLength() + "> ";
         	}else{
-        		return "fixedarr<" + convertType(type) + ", " + ((TypeArray)otype).getLength() + "> " + name;
+        		return "fixedarr<" + convertType(type) + ", " + ((TypeArray)otype).getLength() + "> ";
         	}
         }
-        return convertType(type) +  " " + name + postFix ;
+        return convertType(type) +  " " ;
     }
 
-    public Object visitStmtVarDecl(StmtVarDecl stmt)
-    {
-        String result = "";
-        for (int i = 0; i < stmt.getNumVars(); i++)
-        {
-        	if(i > 0){
-        		result += "; ";
-        	}
-        	symtab.registerVar(stmt.getName(i),
-                    actualType(stmt.getType(i)),
-                    stmt,
+    public Object visitStmtVarDecl(StmtVarDecl stmt) {
+        Vector<String> decls = new Vector<String>();
+        for (VarDeclEntry decl : stmt) {
+            symtab.registerVar(decl.getName(), actualType(decl.getType()), stmt,
                     SymbolTable.KIND_LOCAL);
-            Type type = stmt.getType(i);
-            if(type instanceof TypeArray){
-	            if( !((TypeArray)type).getBase().equals( TypePrimitive.bittype )){
-	            	isBool = false;
-	            }
-            }
-            result += typeForDecl(type,   stmt.getName(i));
-            ctype = type;
-            while(ctype instanceof TypeArray){
-            	ctype = ((TypeArray)ctype).getBase();
-            }
-            if (stmt.getInit(i) != null) {
-              String typeAsStr = "";
-              // NOTE(JY): Added cast.
-              if(type instanceof TypeArray){
-                Type otype = type;
-                type = ((TypeArray)type).getBase();
-                if(!type.equals(TypePrimitive.bittype)){
-                  typeAsStr = "(fixedarr<" + convertType(type) + ", " +
-                    ((TypeArray)otype).getLength() + ">)" ;
+            Type type = decl.getType();
+            if (type instanceof TypeArray) {
+                if (!((TypeArray) type).getBase().equals(TypePrimitive.bittype)) {
+                    isBool = false;
                 }
-              }
-              result += " = " + typeAsStr +
-                (String)stmt.getInit(i).accept(this);
-              isBool = true;
             }
+            String result = typeForDecl(type);
+            setCtype(type);
+            if (decl.getInit() != null) {
+                result += " " + processAssign(decl.getVarRefToName(),
+                        decl.getInit(), type, "=");
+            } else {
+                result += " " + decl.getName();
+            }
+            decls.add(result);
         }
-            return result;
-  }
+        return (new ScRichString(", ")).join(decls);
+    }
 
 	public Object visitExprFunCall(ExprFunCall exp)
     {
@@ -559,25 +542,57 @@ public class NodesToC extends NodesToJava {
         case ExprBinary.BINOP_BAND: op = " &= "; break;
         case ExprBinary.BINOP_BXOR: op = " ^= "; break;
         default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
-      }
-      // Assume both sides are the right type.
+        }
+        // Assume both sides are the right type.
 
-      ctype = getType(stmt.getLHS());
-      while(ctype instanceof TypeArray){
-        ctype = ((TypeArray)ctype).getBase();
-      }
+        // method also used by StmtVarDecl
+        return processAssign(stmt.getLHS(), stmt.getRHS(), getType(stmt.getLHS()), op);
+    }
 
-      isLHS = true;
-      String lhs = (String)stmt.getLHS().accept(this);
-      isLHS = false;
-      // JY: We need to have some special cases for casting.
-      if ((ctype instanceof TypeArray) &&
-          (((TypeArray)ctype).getBase().equals(TypePrimitive.bittype))) {
-        lhsBitvec = true;
-      }
-      String rhs = (String)stmt.getRHS().accept(this);
-      lhsBitvec = false;
-      return lhs + op + rhs ;
+    private String processAssign(Expression lhs, Expression rhs, Type lhsType, String op)
+    {
+        setCtype(lhsType);
+
+        isLHS = true;
+        String lhsStr = (String) lhs.accept(this);
+        isLHS = false;
+        String rhsStr = (String) rhs.accept(this);
+
+        if (lhsType instanceof TypeArray) {
+            Type otype = lhsType;
+            lhsType = ((TypeArray) lhsType).getBase();
+            if (!lhsType.equals(TypePrimitive.bittype)) {
+                rhsStr =
+                        "(fixedarr<" + convertType(lhsType) + ", " +
+                                ((TypeArray) otype).getLength() + ">)" + rhsStr;
+            }
+        } else if (lhsType.equals(TypePrimitive.bittype)) {
+            assert ctype.equals(TypePrimitive.bittype);
+//            boolean oldConvertBoolConstants = this.convertBoolConstants;
+//            this.convertBoolConstants = true;
+//            rhsStr = "CASTHERE " + getType(rhs) + rhsStr;
+//            this.convertBoolConstants = oldConvertBoolConstants;
+        }
+
+        return lhsStr + op + rhsStr;
+    }
+
+    protected void setCtype(Type type) {
+        ctype = type;
+
+        /*
+         * FIXME -- what's going on here??
+         */
+        while (ctype instanceof TypeArray) {
+            ctype = ((TypeArray) ctype).getBase();
+        }
+
+        /** generate char arrays for bit vector constants */
+        if (type instanceof TypeArray) {
+            if (((TypeArray) type).getBase().equals(TypePrimitive.bittype)) {
+                isBool = true;
+            }
+        }
     }
 
   boolean isLHS = false;

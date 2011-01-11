@@ -263,7 +263,7 @@ public:
      */
 public:
     bitvec (void);
-    bitvec (const unsigned w);
+    bitvec (const unsigned int w);
     bitvec (char *s);
     template <size_t Ntag> bitvec (const bitvec<Ntag> &bv);
 

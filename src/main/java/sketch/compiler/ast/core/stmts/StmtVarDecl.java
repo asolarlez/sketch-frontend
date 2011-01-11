@@ -16,15 +16,21 @@
 
 package sketch.compiler.ast.core.stmts;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * A variable-declaration statement.  This statement declares a
@@ -34,7 +40,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class StmtVarDecl extends Statement
+public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
 {
     private List<Type> types;
     private List<String> names;
@@ -297,5 +303,54 @@ public class StmtVarDecl extends Statement
                 result.append("=" + inits.get(i));
         }
         return result.toString();
+    }
+
+    public class VarDeclEntry {
+        protected final int idx;
+
+        public VarDeclEntry(int idx) {
+            this.idx = idx;
+            if (idx >= getNumVars()) {
+                throw new NoSuchElementException();
+            }
+        }
+
+        public String getName() {
+            return StmtVarDecl.this.getName(idx);
+        }
+        
+        public ExprVar getVarRefToName() {
+            return new ExprVar(StmtVarDecl.this, getName());
+        }
+
+        public Type getType() {
+            return StmtVarDecl.this.getType(idx);
+        }
+
+        public Expression getInit() {
+            return StmtVarDecl.this.getInit(idx);
+        }
+    }
+
+    public class VarDeclEntryIterator implements Iterator<VarDeclEntry> {
+        int idx = 0;
+
+        public boolean hasNext() {
+            return idx < getNumVars();
+        }
+
+        public VarDeclEntry next() {
+            final VarDeclEntry vde = new VarDeclEntry(idx);
+            idx += 1;
+            return vde;
+        }
+
+        public void remove() {
+            assertFalse();
+        }
+    }
+
+    public Iterator<VarDeclEntry> iterator() {
+        return new VarDeclEntryIterator();
     }
 }
