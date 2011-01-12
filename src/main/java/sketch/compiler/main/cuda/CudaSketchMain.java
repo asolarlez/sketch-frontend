@@ -111,6 +111,7 @@ public class CudaSketchMain extends SequentialSketchMain {
                 (Program) (new DeleteInstrumentCalls()).visitProgram(beforeUnvectorizing);
         beforeUnvectorizing =
                 (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
+        runPrintFunctions();
         this.eliminateStar();
 
         this.generateCode();

@@ -1,7 +1,5 @@
 package sketch.compiler.dataflow;
 
-import static sketch.util.DebugOut.printFailure;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +13,9 @@ import java.util.Stack;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printFailure;
 
 
 
@@ -683,7 +684,7 @@ public class MethodState {
             printFailure("to pop", toPop);
             Exception ex = new Exception();
             ex.printStackTrace();
-            System.exit(1);
+            assertFalse();
         }
         varTranslator = varTranslator.popLevel(vars, changeTracker);
         assert levels.pop() == toPop;

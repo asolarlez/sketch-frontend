@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtMinimize;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
@@ -728,5 +729,12 @@ public class NodesToC extends NodesToJava {
     @Override
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
         return cudaThreadIdx.toString();
+    }
+
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        return (new ExprTprint(stmtMinimize, new TprintTuple("[line " +
+                stmtMinimize.getCx().getLineNumber() + "] minimize() value",
+                stmtMinimize.getMinimizeExpr()))).accept(this);
     }
 }

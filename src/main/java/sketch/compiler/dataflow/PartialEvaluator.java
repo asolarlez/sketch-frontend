@@ -479,7 +479,7 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitExprTprint(ExprTprint exprTprint) {
         if (!isReplacer) {
             exprRV = exprTprint;
-            return exprTprint;
+            return null;
         } else {
             boolean changed = false;
             Vector<TprintTuple> nextExpressions = new Vector<TprintTuple>();

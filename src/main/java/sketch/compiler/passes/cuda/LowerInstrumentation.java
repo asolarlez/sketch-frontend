@@ -40,7 +40,7 @@ import static sketch.util.Misc.nonnull;
  *          changes, please consider contributing back!
  */
 @CompilerPassDeps(runsBefore = { GenerateAllOrSomeThreadsFunctions.class,
-        GlobalsToParams.class }, runsAfter = {}, debug=true)
+        GlobalsToParams.class }, runsAfter = {})
 public class LowerInstrumentation extends FEReplacer {
     protected final TypedHashMap<String, InstrumentationDirective> directivesByName =
             new TypedHashMap<String, InstrumentationDirective>();

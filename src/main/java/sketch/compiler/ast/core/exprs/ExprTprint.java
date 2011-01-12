@@ -1,5 +1,6 @@
 package sketch.compiler.ast.core.exprs;
 
+import java.util.Arrays;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEContext;
@@ -27,6 +28,11 @@ public class ExprTprint extends Expression {
     public ExprTprint(FENode context, List<TprintTuple> expressions) {
         super(context);
         this.expressions = expressions;
+    }
+
+    public ExprTprint(FENode context, TprintTuple... expressions) {
+        super(context);
+        this.expressions = Arrays.asList(expressions);
     }
 
     @Override

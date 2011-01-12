@@ -91,6 +91,7 @@ import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
 
 import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printError;
 import static sketch.util.DebugOut.printNote;
 
 
@@ -109,6 +110,7 @@ import static sketch.util.DebugOut.printNote;
 public class SequentialSketchMain extends CommonSketchMain
 {
     protected Program beforeUnvectorizing = null;
+    private Program afterCudaSequentialLowering;
 
     public SequentialSketchMain(String[] args) {
         super(new SequentialSketchOptions(args));
@@ -244,6 +246,11 @@ public class SequentialSketchMain extends CommonSketchMain
 		beforeUnvectorizing = prog;
 		
 		prog = (getIRStage2()).run(prog);
+        this.afterCudaSequentialLowering = prog;
+        
+        // remove tprint here
+        prog = (getIRStage3()).run(prog);
+
 		// prog.debugDump(new File("after-irstage-2.sk"));
 		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
 				
@@ -350,6 +357,14 @@ public class SequentialSketchMain extends CommonSketchMain
     public class IRStage2 extends CompilerStage {
         public IRStage2() {
             super(SequentialSketchMain.this);
+            FEVisitor[] passes2 = { };
+            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
+        }
+    }
+
+    public class IRStage3 extends CompilerStage {
+        public IRStage3() {
+            super(SequentialSketchMain.this);
             FEVisitor[] passes2 = { new RemoveTprint() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
@@ -378,6 +393,10 @@ public class SequentialSketchMain extends CommonSketchMain
 
     public IRStage2 getIRStage2() {
         return new IRStage2();
+    }
+
+    public IRStage3 getIRStage3() {
+        return new IRStage3();
     }
 
     public CleanupStage getCleanupStage() {
@@ -524,19 +543,21 @@ public class SequentialSketchMain extends CommonSketchMain
 		return resultFile;
 	}
 
-	protected void outputCCode() {
+    protected void runPrintFunctions() {
+        EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
+        finalCode = (Program) beforeUnvectorizing.accept(eliminate_star);
+        Program serializedCode =
+                (Program) this.afterCudaSequentialLowering.accept(eliminate_star);
 
+        String resultFile = getOutputFileName();
 
-		String resultFile = getOutputFileName();
-		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
-		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
-		
-        for (Function f : GetPrintFcns.run(finalCode)) {
+        for (Function f : GetPrintFcns.run(serializedCode)) {
+            String serHcode = (String) serializedCode.accept(new NodesToH(resultFile));
             if (f.getParams().size() != 0) {
                 throw new ExceptionAtNode("printfcn's cannot have parameters", f);
             }
             String testCode =
-                    (String) finalCode.accept(new NodesToCPrintTest(varGen, resultFile,
+                    (String) serializedCode.accept(new NodesToCPrintTest(varGen, resultFile,
                             f.getName()));
             String ccfilename = options.getTmpFilename(getOutputFileName() + ".cc");
             String hfilename = options.getTmpFilename(getOutputFileName() + ".h");
@@ -546,7 +567,7 @@ public class SequentialSketchMain extends CommonSketchMain
                 FileWriter cc_writer = new FileWriter(ccfilename);
                 FileWriter h_writer = new FileWriter(hfilename);
                 cc_writer.write(testCode);
-                h_writer.write(hcode);
+                h_writer.write(serHcode);
                 cc_writer.close();
                 h_writer.close();
 
@@ -563,6 +584,17 @@ public class SequentialSketchMain extends CommonSketchMain
                 throw new RuntimeException(e);
             }
         }
+    }
+
+	protected void outputCCode() {
+        if (finalCode == null) {
+            printError("Final code generation encountered error, skipping output");
+            return;
+        }
+
+        String resultFile = getOutputFileName();
+        String hcode = (String) finalCode.accept(new NodesToH(resultFile));
+        String ccode = (String) finalCode.accept(new NodesToC(varGen, resultFile));
 
 		if (!options.feOpts.outputCode && !options.feOpts.noOutputPrint) {
             finalCode.accept(new SimpleCodePrinter());
@@ -663,6 +695,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		oracle = new ValueOracle( new StaticHoleTracker(varGen)/* new SequentialHoleTracker(varGen) */);
 		partialEvalAndSolve();
+		runPrintFunctions();
 		eliminateStar();
 
 		generateCode();
@@ -705,7 +738,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
     String solverErrorStr;
 
-	public static void checkJavaVersion(int... gt_tuple) {
+    public static void checkJavaVersion(int... gt_tuple) {
         String java_version = System.getProperty("java.version");
         String[] version_numbers = java_version.split("\\.");
         for (int a = 0; a < gt_tuple.length; a++) {
@@ -714,11 +747,11 @@ public class SequentialSketchMain extends CommonSketchMain
                 String required = "";
                 for (int c = 0; c < gt_tuple.length; c++) {
                     required +=
-                            String.valueOf(gt_tuple[c])
-                                    + ((c != gt_tuple.length - 1) ? "." : "");
+                            String.valueOf(gt_tuple[c]) +
+                                    ((c != gt_tuple.length - 1) ? "." : "");
                 }
-                System.err.println("your java version is out of date. Version "
-                        + required + " required");
+                System.err.println("your java version is out of date. Version " +
+                        required + " required");
                 System.exit(1);
             }
         }
@@ -737,6 +770,14 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    protected static void handleErr(final SequentialSketchMain sketchmain,
+            Throwable e)
+    {
+        System.err.println("[ERROR] [SKETCH] Failed with " +
+                e.getClass().getSimpleName() + " exception; message: " + e.getMessage());
+        dumpProgramToFile(sketchmain.prog);
+    }
+
     public static void main(String[] args) {
         long beg = System.currentTimeMillis();
         checkJavaVersion(1, 6);
@@ -748,11 +789,11 @@ public class SequentialSketchMain extends CommonSketchMain
             dumpProgramToFile(sketchmain.prog);
             System.exit(1);
         } catch (java.lang.Error e) {
-            System.err.println("[ERROR] [SKETCH] Failed with " +
-                    e.getClass().getSimpleName() + " exception; message: " +
-                    e.getMessage());
-            dumpProgramToFile(sketchmain.prog);
+            handleErr(sketchmain, e);
             // necessary for unit tests, etc.
+            throw e;
+        } catch (RuntimeException e) {
+            handleErr(sketchmain, e);
             throw e;
         }
         System.out.println("Total time = " + (System.currentTimeMillis() - beg));
