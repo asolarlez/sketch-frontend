@@ -254,15 +254,16 @@ public class NodesToC extends NodesToJava {
     {
 
 		if(isBool){
+            assert getType(exp.getElements().get(0)).equals(TypePrimitive.bittype) : "bit initializer not a bit";
 			StringBuffer sb = new StringBuffer();
-			sb.append("(char*) \"");
+			sb.append("((char*) \"");
 
 			List elems = exp.getElements();
 			for (int i=0; i<elems.size(); i++) {
 			    sb.append(elems.get(i));
 			}
 
-			sb.append("\"");
+			sb.append("\")");
 	        return sb.toString();
 		}else{
 			StringBuffer sb = new StringBuffer();
@@ -452,6 +453,7 @@ public class NodesToC extends NodesToJava {
                 }
             }
             String result = typeForDecl(type);
+            boolean oldIsBool = this.isBool;
             setCtype(type);
             if (decl.getInit() != null) {
                 result += " " + processAssign(decl.getVarRefToName(),
@@ -460,6 +462,7 @@ public class NodesToC extends NodesToJava {
                 result += " " + decl.getName();
             }
             decls.add(result);
+            this.isBool = oldIsBool;
         }
         return (new ScRichString(", ")).join(decls);
     }
@@ -552,6 +555,7 @@ public class NodesToC extends NodesToJava {
 
     private String processAssign(Expression lhs, Expression rhs, Type lhsType, String op)
     {
+        boolean oldIsBool = isBool;
         setCtype(lhsType);
 
         isLHS = true;
@@ -574,6 +578,8 @@ public class NodesToC extends NodesToJava {
 //            rhsStr = "CASTHERE " + getType(rhs) + rhsStr;
 //            this.convertBoolConstants = oldConvertBoolConstants;
         }
+        
+        this.isBool = oldIsBool;
 
         return lhsStr + op + rhsStr;
     }
