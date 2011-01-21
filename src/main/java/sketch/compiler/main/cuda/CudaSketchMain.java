@@ -54,7 +54,7 @@ public class CudaSketchMain extends SequentialSketchMain {
             this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new FlattenStmtBlocks2());
             this.passes.add(new GenerateAllOrSomeThreadsFunctions(options, varGen));
-            this.passes.add(new GlobalToLocalImplicitCasts(options));
+            this.passes.add(new GlobalToLocalImplicitCasts(varGen, options));
         }
 
         @Override

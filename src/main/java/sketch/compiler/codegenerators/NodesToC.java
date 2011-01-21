@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprTprint.CudaType;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
@@ -739,7 +740,7 @@ public class NodesToC extends NodesToJava {
 
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
-        return (new ExprTprint(stmtMinimize, new TprintTuple("[line " +
+        return (new ExprTprint(stmtMinimize, CudaType.Unknown, new TprintTuple("[line " +
                 stmtMinimize.getCx().getLineNumber() + "] minimize() value",
                 stmtMinimize.getMinimizeExpr()))).accept(this);
     }

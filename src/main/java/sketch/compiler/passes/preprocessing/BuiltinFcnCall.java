@@ -12,10 +12,11 @@ import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * replace a certain function call
+ * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public abstract class BuiltinFcnCall extends FEReplacer {
     protected final String name;
@@ -25,7 +26,7 @@ public abstract class BuiltinFcnCall extends FEReplacer {
         this.name = name;
         this.numArgs = numArgs;
     }
-    
+
     @Override
     public Object visitFunction(Function func) {
         if (func.getName().equals(name)) {
@@ -45,7 +46,7 @@ public abstract class BuiltinFcnCall extends FEReplacer {
         }
         return exp;
     }
-    
+
     /** sometimes, expressions are converted to statements */
     @Override
     public Object visitStmtExpr(StmtExpr stmt) {
@@ -55,6 +56,6 @@ public abstract class BuiltinFcnCall extends FEReplacer {
         }
         return super.visitStmtExpr(stmt);
     }
-    
+
     public abstract Object builtinReplacement(ExprFunCall call, List<Expression> args);
 }

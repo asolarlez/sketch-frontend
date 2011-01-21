@@ -22,6 +22,10 @@ public enum CudaMemoryType {
         this.syntaxName = syntaxName;
     }
 
+    public boolean isLocalOrUndefined() {
+        return (this == LOCAL) || (this == UNDEFINED);
+    }
+
     @Override
     public String toString() {
         return description;

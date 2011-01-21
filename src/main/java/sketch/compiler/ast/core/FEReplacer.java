@@ -916,7 +916,7 @@ public class FEReplacer implements FEVisitor
             }
         }
         if (changed) {
-            return new ExprTprint(exprTprint, nextExpressions);
+            return new ExprTprint(exprTprint, exprTprint.cuda_type, nextExpressions);
         } else {
             return exprTprint;
         }

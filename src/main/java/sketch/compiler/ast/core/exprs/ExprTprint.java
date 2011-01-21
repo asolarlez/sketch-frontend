@@ -19,19 +19,28 @@ import sketch.util.datastructures.TprintTuple;
 public class ExprTprint extends Expression {
     public final List<TprintTuple> expressions;
 
+    public enum CudaType {
+        Unknown, Allthreads, Somethreads
+    };
+
+    public final CudaType cuda_type;
+
     @SuppressWarnings("deprecation")
-    public ExprTprint(FEContext context, List<TprintTuple> expressions) {
+    public ExprTprint(FEContext context, CudaType typ, List<TprintTuple> expressions) {
         super(context);
+        cuda_type = typ;
         this.expressions = expressions;
     }
 
-    public ExprTprint(FENode context, List<TprintTuple> expressions) {
+    public ExprTprint(FENode context, CudaType typ, List<TprintTuple> expressions) {
         super(context);
+        cuda_type = typ;
         this.expressions = expressions;
     }
 
-    public ExprTprint(FENode context, TprintTuple... expressions) {
+    public ExprTprint(FENode context, CudaType typ, TprintTuple... expressions) {
         super(context);
+        cuda_type = typ;
         this.expressions = Arrays.asList(expressions);
     }
 

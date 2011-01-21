@@ -67,6 +67,7 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
+import sketch.compiler.passes.preprocessing.AllthreadsTprintFcnCall;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
@@ -331,7 +332,9 @@ public class SequentialSketchMain extends CommonSketchMain
     public class BeforeSemanticCheckStage extends CompilerStage {
         public BeforeSemanticCheckStage() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { new MinimizeFcnCall(), new TprintFcnCall() };
+            FEVisitor[] passes2 =
+                    { new MinimizeFcnCall(), new TprintFcnCall(),
+                            new AllthreadsTprintFcnCall() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }

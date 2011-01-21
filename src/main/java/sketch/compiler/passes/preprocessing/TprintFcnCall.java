@@ -6,6 +6,7 @@ import java.util.Vector;
 import sketch.compiler.ast.core.exprs.ExprConstStr;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTprint;
+import sketch.compiler.ast.core.exprs.ExprTprint.CudaType;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.datastructures.TprintTuple;
@@ -22,9 +23,14 @@ import sketch.util.datastructures.TprintTuple;
 public class TprintFcnCall extends BuiltinFcnCall {
     static final String usageStr =
             "tprint usage: tprint(\"identifier 1\", value 1, \"identifier 2\", value 2, ...)";
+    protected CudaType cuda_type = CudaType.Unknown;
 
     public TprintFcnCall() {
-        super("tprint", -1);
+        this("tprint");
+    }
+
+    protected TprintFcnCall(String name) {
+        super(name, -1);
     }
 
     @Override
@@ -36,8 +42,9 @@ public class TprintFcnCall extends BuiltinFcnCall {
             Expression value = args.get(2 * a + 1);
             assert (name instanceof ExprConstStr) : usageStr;
             final String nameStr = ((ExprConstStr) name).getVal();
-            tprintArgs.add(new TprintTuple(nameStr.substring(1, nameStr.length() - 1), value));
+            tprintArgs.add(new TprintTuple(nameStr.substring(1, nameStr.length() - 1),
+                    value));
         }
-        return new ExprTprint(ctx.getCx(), tprintArgs);
+        return new ExprTprint(ctx.getCx(), this.cuda_type, tprintArgs);
     }
 }

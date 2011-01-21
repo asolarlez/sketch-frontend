@@ -35,6 +35,7 @@ class fixedarrRef{
 #undef FIXEDREF_OPERATOR
 
     T val() const { return ref[0]; }
+    operator const T&() const { return ref[0]; }
 };
 
 template<typename T, size_t N> 

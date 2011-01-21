@@ -63,6 +63,15 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
             if (cmd_line.hasOption("help")) {
                 printHelpInner(options, "");
             }
+            for (CliOptionGroup group : opt_groups) {
+                if (cmd_line.hasOption("help:" + group.prefix)) {
+                    Options options2 = new Options();
+                    for (CliOption cmd_opt : group.opt_set.values()) {
+                        options2.addOption(cmd_opt.as_option(group.prefix));
+                    }
+                    printHelpInner(options2, "");
+                }
+            }
             Vector<String> outArgs = new Vector<String>();
             boolean tailArgs = false;
             for (String arg : cmd_line.getArgs()) {
@@ -165,6 +174,8 @@ public class CliParser extends org.apache.commons.cli.PosixParser {
             for (CliOption cmd_opt : group.opt_set.values()) {
                 options.addOption(cmd_opt.as_option(group.prefix));
             }
+            options.addOption(null, "help:" + group.prefix, false, "help for " +
+                    group.description);
         }
         return options;
     }

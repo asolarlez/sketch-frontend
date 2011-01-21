@@ -1,8 +1,5 @@
 package sketch.compiler.passes.cuda;
 
-import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printWarning;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,17 +9,19 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstBoolean;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTprint;
+import sketch.compiler.ast.core.exprs.ExprTprint.CudaType;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
@@ -42,6 +41,9 @@ import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.CopyableIterator;
 
+import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printWarning;
+
 /**
  * Generate functions which all threads will enter.
  * 
@@ -51,7 +53,7 @@ import sketch.util.fcns.CopyableIterator;
  *          changes, please consider contributing back!
  */
 @CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class,
-        FlattenStmtBlocks2.class })
+        FlattenStmtBlocks2.class }, debug = true)
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
     protected CudaCallGraph cg;
@@ -514,6 +516,16 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         public Object visitStmtReturn(StmtReturn stmt) {
             result = true;
             return stmt;
+        }
+
+        @Override
+        public Object visitExprTprint(ExprTprint exprTprint) {
+            printDebug("ContainsAllthreadsElt visit expr tprint", exprTprint.getCx(),
+                    ", cuda type", exprTprint.cuda_type);
+            if (exprTprint.cuda_type == CudaType.Allthreads) {
+                result = true;
+            }
+            return super.visitExprTprint(exprTprint);
         }
     }
 

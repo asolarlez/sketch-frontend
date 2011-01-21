@@ -494,7 +494,7 @@ public class PartialEvaluator extends FEReplacer {
                 }
             }
             if (changed) {
-                exprRV = new ExprTprint(exprTprint, nextExpressions);
+                exprRV = new ExprTprint(exprTprint, exprTprint.cuda_type, nextExpressions);
             } else {
                 exprRV = exprTprint;
             }

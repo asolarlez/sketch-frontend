@@ -1,7 +1,5 @@
 package sketch.compiler.main.seq;
 
-import static sketch.util.Misc.nonnull;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
@@ -11,6 +9,10 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.datastructures.HashmapList;
 
+import static sketch.util.DebugOut.printNote;
+
+import static sketch.util.Misc.nonnull;
+
 /**
  * compiler stage with annotation-based dependency declarations
  * 
@@ -18,12 +20,14 @@ import sketch.util.datastructures.HashmapList;
  */
 public abstract class CompilerStage {
     protected final SequentialSketchMain sketch;
+    protected final String name;
 
     /**
      * @param sequentialSketchMain
      */
     CompilerStage(SequentialSketchMain sequentialSketchMain) {
         sketch = sequentialSketchMain;
+        this.name = this.getClass().getSimpleName();
     }
 
     public Vector<FEVisitor> passes = new Vector<FEVisitor>();
@@ -38,9 +42,13 @@ public abstract class CompilerStage {
 
     /** you probably don't want to modify this */
     public Program run(Program prog) {
+        if (sketch.options.debugOpts.printPasses) {
+            printNote("Running stage", name);
+        }
         generateDeps();
         assert linearizedStages.size() == passes.size();
         for (FEVisitor pass : linearizedStages) {
+            printNote("Running pass", pass.getClass().getSimpleName());
             // System.out.println("[Stage " + this.getClass().getSimpleName() +
             // "] running pass " + pass.getClass().getSimpleName());
             final CompilerPassDeps passInfo = getPassInfo(pass);
