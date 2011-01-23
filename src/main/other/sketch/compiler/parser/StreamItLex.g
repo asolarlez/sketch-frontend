@@ -51,12 +51,18 @@ tokens {
 	// Complicated types:
 	"struct"; // "template";
 	"ref";
+
 	// Control flow:
 	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break"; "do";
 	"continue"; "return";
-// Intrinsic values:
+
+    // Intrinsic values:
 	//"pi";
 	"true"; "false";
+
+    // data-parallel control flow
+    "parfor";
+    "to";
 
 	//sketching stuff
 	"implements";
@@ -76,6 +82,7 @@ tokens {
 }
 
 ARROW :	"->" ;
+LARROW :	"<-" ;
 
 WS	:	(' '
 	|	'\t'

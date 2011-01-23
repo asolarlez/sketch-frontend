@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core;
 
+
 /**
  * Any node in the tree created by the front-end's parser.  This is
  * the root of the front-end class tree.  Derived classes include
@@ -118,6 +119,12 @@ public abstract class FENode
     @SuppressWarnings("unchecked")
     public <T> T accept(FETypedVisitor<T> v) {
         return (T) (accept((FEVisitor) v));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T acceptAndCast(FEVisitor v) {
+        Object rv = this.accept(v);
+        return (T) rv;
     }
 
     /**

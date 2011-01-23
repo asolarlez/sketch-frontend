@@ -21,7 +21,9 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCAnon;
@@ -329,5 +331,13 @@ public class FETypedVisitor<T> implements FEVisitor {
 
     public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
         throw new FEVisitorException(this, instrumentCall);
+    }
+
+    public Object visitExprRange(ExprRange exprRange) {
+        throw new FEVisitorException(this, exprRange);
+    }
+
+    public Object visitStmtParfor(StmtParfor stmtParfor) {
+        throw new FEVisitorException(this, stmtParfor);
     }
 }

@@ -63,6 +63,7 @@ import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
+import sketch.compiler.passes.cuda.ReplaceParforLoops;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
@@ -344,7 +345,8 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
-                            new SetDeterministicFcns() };
+                            new SetDeterministicFcns(),
+                            new ReplaceParforLoops(options.getCudaBlockDim()) };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }

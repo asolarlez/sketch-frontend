@@ -35,7 +35,9 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCAnon;
@@ -940,5 +942,31 @@ public class FEReplacer implements FEVisitor
             return new CudaInstrumentCall(instrumentCall, expr2, instrumentCall.getImplName());
         }
         return instrumentCall;
+    }
+
+    public Object visitExprRange(ExprRange exprRange) {
+        Expression nextFrom = (Expression) exprRange.getFrom().accept(this);
+        Expression nextTo = (Expression) exprRange.getTo().accept(this);
+        if (nextFrom != exprRange.getFrom() || nextTo != exprRange.getTo()) {
+            return new ExprRange(exprRange, nextFrom, nextTo);
+        }
+        return exprRange;
+    }
+
+    public Object visitStmtParfor(StmtParfor stmtParfor) {
+        final StmtVarDecl iterVarDecl = stmtParfor.getIterVarDecl();
+        StmtVarDecl nextVarDecl = null;
+        if (iterVarDecl != null) {
+            nextVarDecl = iterVarDecl.acceptAndCast(this);
+        }
+        ExprRange nextRange = stmtParfor.getRange().acceptAndCast(this);
+        Statement nextBody = stmtParfor.getBody().acceptAndCast(this);
+
+        if (nextVarDecl != iterVarDecl || nextRange != stmtParfor.getRange() ||
+                nextBody != stmtParfor.getBody())
+        {
+            return stmtParfor.next(nextVarDecl, nextRange, nextBody);
+        }
+        return stmtParfor;
     }
 }

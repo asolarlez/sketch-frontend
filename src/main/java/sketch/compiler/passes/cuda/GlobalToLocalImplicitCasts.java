@@ -40,7 +40,7 @@ import static sketch.util.DebugOut.assertFalse;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-@CompilerPassDeps(runsBefore = {}, runsAfter = { GenerateAllOrSomeThreadsFunctions.class }, debug=true)
+@CompilerPassDeps(runsBefore = {}, runsAfter = { GenerateAllOrSomeThreadsFunctions.class })
 public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     protected StreamSpec spec;
     protected CudaThreadBlockDim cudaBlockDim;

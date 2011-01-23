@@ -42,14 +42,14 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SplitterJoiner;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
+
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
-import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePortal;
-import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
-import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.core.typs.*;
+import sketch.compiler.ast.cuda.exprs.*;
+import sketch.compiler.ast.cuda.stmts.*;
+import sketch.compiler.ast.cuda.typs.*;
+
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
@@ -242,6 +242,7 @@ statement returns [Statement s] { s = null; }
 	:	s=loop_statement
 	|   s=minrepeat_statement
 	|   s=fork_statement	
+    |   s=parfor_statement
 	|	s=insert_block
 	|	s=reorder_block
 	|	s=atomic_block
@@ -274,6 +275,15 @@ fork_statement returns [Statement s] { s = null; Statement ivar; Expression exp;
 	{ s = new StmtFork(getContext(t), (StmtVarDecl) ivar, exp, b); }
 	;
 
+parfor_statement returns [Statement s] { s = null; Expression ivar; Expression exp; Statement b; }
+    : t:TK_parfor LPAREN ivar=var_expr LARROW exp=range_exp RPAREN b=pseudo_block
+    { s = new StmtParfor(getContext(t), ivar, exp, b); }
+    ;
+
+range_exp returns [Expression e] { e = null; Expression from; Expression to; }
+    : from=right_expr t:TK_to to=left_expr
+    { e = new ExprRange(getContext(t), from, to); }
+    ;
 
 
 

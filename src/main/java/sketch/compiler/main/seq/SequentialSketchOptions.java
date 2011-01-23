@@ -16,7 +16,7 @@ import sketch.compiler.cmdline.SolverOptions;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.util.cli.SketchCliParser;
 import sketch.util.cuda.CudaThreadBlockDim;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sketch.util.exceptions.NotImplementedException;
 
 /**
  * organized options for the sequential frontend. See ParallelSketchOptions for how to

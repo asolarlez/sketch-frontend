@@ -19,7 +19,7 @@ package sketch.compiler.codegenerators.tojava;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FuncWork;
 import sketch.compiler.ast.core.Function;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sketch.util.exceptions.NotImplementedException;
 
 /**
  * Pass to replace anonymous functions with named ones.  This assigns

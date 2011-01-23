@@ -29,7 +29,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sketch.util.exceptions.NotImplementedException;
 
 /**
  * Insert I/O rate declarations into filters' init functions.  For

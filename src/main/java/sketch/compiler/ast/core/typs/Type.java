@@ -18,7 +18,7 @@ package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sketch.util.exceptions.NotImplementedException;
 
 /**
  * Base class for variable data types.
