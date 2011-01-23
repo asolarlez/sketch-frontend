@@ -41,6 +41,7 @@ import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.CopyableIterator;
 
+import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printWarning;
 
@@ -53,7 +54,7 @@ import static sketch.util.DebugOut.printWarning;
  *          changes, please consider contributing back!
  */
 @CompilerPassDeps(runsBefore = {}, runsAfter = { SplitAssignFromVarDef.class,
-        FlattenStmtBlocks2.class }, debug = true)
+        FlattenStmtBlocks2.class })
 public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
     protected CudaCallGraph cg;
@@ -75,7 +76,14 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     public Object visitFunction(Function fcn) {
         if (fcn.isParallel()) {
             allThreadsFcns.add((Function) new AllThreadsTransform(symtab).visitFunction(fcn));
-            someThreadsFcns.add((Function) new SomeThreadsTransform(symtab).visitFunction(fcn));
+
+            // only add somethreads version if possibly necessary
+            for (Function f : cg.edges.callersTo(fcn)) {
+                if (f.isParallel()) {
+                    someThreadsFcns.add((Function) new SomeThreadsTransform(symtab).visitFunction(fcn));
+                    break;
+                }
+            }
         } else {
             oldThreadFcns.add((Function) super.visitFunction(fcn));
         }
@@ -462,15 +470,17 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
             return new ExprVar(cudaThreadIdx, "ThreadIdx_" + letter);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             // transform args, e.g. indexing into threadlocal arrays
             exp = (ExprFunCall) super.visitExprFunCall(exp);
             Function target = cg.getTarget(exp);
             if (!target.isParallel()) {
-                return new StmtAssert(FEContext.artificalFrom("nonParallelCall", exp),
-                        new ExprConstBoolean(false), false);
+                assertFalse("illegal call to non-parallel function", target.getName(),
+                        "from", exp.getCx());
+                return null;
+                // return new StmtAssert(FEContext.artificalFrom("nonParallelCall", exp),
+                // new ExprConstBoolean(false), false);
             } else {
                 printDebug("used all thread indices for function", exp);
                 usedThreadIndices.addAll(Arrays.asList("X", "Y", "Z"));

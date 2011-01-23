@@ -474,12 +474,16 @@ public class NodesToC extends NodesToJava {
         String name = exp.getName();
         result = name + "(";
         boolean first = true;
-        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
-            if (!first) result += ", ";
+        for (Iterator iter = exp.getParams().iterator(); iter.hasNext();) {
+            Expression param = (Expression) iter.next();
+            boolean oldIsBool = this.isBool;
+            this.isBool = false;
+            if (!first)
+                result += ", ";
             first = false;
-            result += (String)param.accept(this);
+            result += (String) param.accept(this);
+            this.isBool = oldIsBool;
+
         }
         result += ")";
         return result;

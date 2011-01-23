@@ -17,16 +17,24 @@ import sketch.compiler.ast.core.exprs.Expression;
 public class CudaInstrumentCall extends Expression {
     protected final ExprVar toImplement;
 
+    private final ExprVar implVariable;
     protected final String implName;
 
-    public CudaInstrumentCall(FENode prev, ExprVar toImplement, String implName) {
+    public CudaInstrumentCall(final FENode prev, final ExprVar toImplement,
+            final ExprVar implVariable, final String implName)
+    {
         super(prev);
         this.toImplement = toImplement;
+        this.implVariable = implVariable;
         this.implName = implName;
     }
 
     public ExprVar getToImplement() {
         return toImplement;
+    }
+
+    public ExprVar getImplVariable() {
+        return implVariable;
     }
 
     public String getImplName() {

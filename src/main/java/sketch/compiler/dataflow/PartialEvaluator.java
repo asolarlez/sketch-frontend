@@ -507,8 +507,13 @@ public class PartialEvaluator extends FEReplacer {
         if (isReplacer) {
             instrumentCall.getToImplement().accept(this);
             ExprVar expr2 = (ExprVar) exprRV;
-            if (expr2 != instrumentCall.getToImplement()) {
-                exprRV = new CudaInstrumentCall(instrumentCall, expr2, instrumentCall.getImplName());
+            instrumentCall.getImplVariable().accept(this);
+            ExprVar expr3 = (ExprVar) exprRV;
+            if (expr2 != instrumentCall.getToImplement() ||
+                    expr3 != instrumentCall.getImplVariable())
+            {
+                return new CudaInstrumentCall(instrumentCall, expr2, expr3,
+                        instrumentCall.getImplName());
             } else {
                 exprRV = instrumentCall;
             }

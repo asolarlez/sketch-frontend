@@ -1,10 +1,10 @@
 package sketch.util.datastructures;
 
-import static sketch.util.Misc.nonnull;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import static sketch.util.Misc.nonnull;
 
 /**
  * get rid of the very annoying untyped queries from Java hash sets
@@ -21,7 +21,7 @@ public class TypedHashSet<K> implements Iterable<K>, Cloneable {
         base = new HashSet<K>();
     }
     
-    private TypedHashSet(HashSet<K> base) {
+    protected TypedHashSet(HashSet<K> base) {
         this.base = nonnull(base);
     }
     

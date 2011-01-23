@@ -35,7 +35,7 @@ public abstract class CompilerStage {
     protected HashmapList<FEVisitor, FEVisitor> stageRequires =
             new HashmapList<FEVisitor, FEVisitor>();
     protected Vector<FEVisitor> linearizedStages = new Vector<FEVisitor>();
-    
+
     protected void addPasses(FEVisitor... passes2) {
         passes.addAll(Arrays.asList(passes2));
     }
@@ -48,15 +48,21 @@ public abstract class CompilerStage {
         generateDeps();
         assert linearizedStages.size() == passes.size();
         for (FEVisitor pass : linearizedStages) {
-            printNote("Running pass", pass.getClass().getSimpleName());
+            String passName = pass.getClass().getSimpleName();
+            if (sketch.options.debugOpts.printPasses) {
+                printNote("Running pass", pass.getClass().getSimpleName());
+            }
             // System.out.println("[Stage " + this.getClass().getSimpleName() +
             // "] running pass " + pass.getClass().getSimpleName());
             final CompilerPassDeps passInfo = getPassInfo(pass);
-            if (passInfo.debug()) {
+            if (passInfo.debug() ||
+                    sketch.options.debugOpts.dumpBefore.contains(passName))
+            {
                 prog.debugDump("Before pass " + pass.getClass().getSimpleName());
             }
             prog = (Program) prog.accept(pass);
-            if (passInfo.debug()) {
+            if (passInfo.debug() || sketch.options.debugOpts.dumpAfter.contains(passName))
+            {
                 prog.debugDump("After pass " + pass.getClass().getSimpleName());
             }
             sketch.runClasses.add(pass.getClass());

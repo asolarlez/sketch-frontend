@@ -457,10 +457,6 @@ public class SequentialSketchMain extends CommonSketchMain
         if (showPhaseOpt("preproc")) {
             dump(lprog, "After Preprocessing");
         }
-        if (options.debugOpts.dumpPreproc != null) {
-            printDebug("Dumping preprocessed program to ", options.debugOpts.dumpPreproc);
-            lprog.debugDump(new File(options.debugOpts.dumpPreproc));
-        }
 
 		return lprog;
 	}

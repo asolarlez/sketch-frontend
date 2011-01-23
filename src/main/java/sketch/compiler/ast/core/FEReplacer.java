@@ -937,9 +937,13 @@ public class FEReplacer implements FEVisitor
     }
     
     public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
-        ExprVar expr2 = (ExprVar) instrumentCall.getToImplement().accept(this);
-        if (expr2 != instrumentCall.getToImplement()) {
-            return new CudaInstrumentCall(instrumentCall, expr2, instrumentCall.getImplName());
+        ExprVar expr2 = instrumentCall.getToImplement().acceptAndCast(this);
+        ExprVar expr3 = instrumentCall.getImplVariable().acceptAndCast(this);
+        if (expr2 != instrumentCall.getToImplement() ||
+                expr3 != instrumentCall.getImplVariable())
+        {
+            return new CudaInstrumentCall(instrumentCall, expr2, expr3,
+                    instrumentCall.getImplName());
         }
         return instrumentCall;
     }

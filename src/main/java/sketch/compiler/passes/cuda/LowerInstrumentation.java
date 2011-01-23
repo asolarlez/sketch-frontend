@@ -17,7 +17,6 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtReturn;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
@@ -177,14 +176,9 @@ public class LowerInstrumentation extends FEReplacer {
                         instrumentCall.getToImplement().getName());
         final TypeStructRef structref =
                 new TypeStructRef(CudaMemoryType.GLOBAL, directive.struct);
-        addStatement(new StmtVarDecl(instrumentCall, structref,
-                instrumentationStructInstName, null));
-        this.instrumentationStructInst =
-                new ExprVar(instrumentCall, instrumentationStructInstName);
+        this.instrumentationStructInst = instrumentCall.getImplVariable();
         addStatement(new StmtAssign(instrumentCall, instrumentationStructInst,
                 new ExprNew(instrumentCall, structref)));
-        addStatement(new StmtExpr(new ExprFunCall(instrumentCall,
-                activeInstrumentation.init, instrumentationStructInst)));
         return null;// super.visitCudaInstrumentCall(instrumentCall);
     }
 }
