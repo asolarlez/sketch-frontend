@@ -973,4 +973,21 @@ public class FEReplacer implements FEVisitor
         }
         return stmtParfor;
     }
+
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {
+        return decl;
+    }
+
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
+        Expression sub = exprNamedParam.getExpr().acceptAndCast(this);
+        if (sub != exprNamedParam.getExpr()) {
+            return exprNamedParam.next(sub);
+        }
+        return exprNamedParam;
+    }
+
+    public Object visitExprType(ExprType exprtyp) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

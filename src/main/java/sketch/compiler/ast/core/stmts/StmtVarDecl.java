@@ -32,6 +32,8 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 
 import static sketch.util.DebugOut.assertFalse;
 
+import static sketch.util.Misc.nonnull;
+
 /**
  * A variable-declaration statement.  This statement declares a
  * sequence of variables, each of which has a name, a type, and an
@@ -122,11 +124,11 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
     public StmtVarDecl(FENode context, Type type, String name,
                        Expression init)
     {
-        
-        this(context,
-             Collections.singletonList((type instanceof TypeStruct)? new TypeStructRef(((TypeStruct) type).getName()) : type),
-             Collections.singletonList(name),
-             Collections.singletonList(init));
+        this(context, Collections.singletonList(nonnull(
+                (type instanceof TypeStruct) ? new TypeStructRef(
+                        ((TypeStruct) type).getName()) : type,
+                "null type for StmtVarDecl ctor")), Collections.singletonList(name),
+                Collections.singletonList(init));
     }
 
     /**

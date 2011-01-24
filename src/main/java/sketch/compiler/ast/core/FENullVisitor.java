@@ -124,4 +124,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitCudaInstrumentCall(CudaInstrumentCall cudaInstrumentCall) { return null; }
     public Object visitExprRange(ExprRange exprRange) { return null; }
     public Object visitStmtParfor(StmtParfor stmtParfor) { return null; }
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) { return null; }
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) { return null; }
+    public Object visitExprType(ExprType exprtyp) { return null; }
 }

@@ -127,4 +127,7 @@ public interface FEVisitor
     public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall);
     public Object visitExprRange(ExprRange exprRange);
     public Object visitStmtParfor(StmtParfor stmtParfor);
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl);
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam);
+    public Object visitExprType(ExprType exprtyp);
 }

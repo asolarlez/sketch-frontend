@@ -154,6 +154,7 @@ BITWISE_AND: "&";
 BITWISE_OR: "|";
 BITWISE_XOR: "^";
 ASSIGN: '=';
+DEF_ASSIGN: ":=";
 EQUAL: "==";
 NOT_EQUAL: "!=";
 LESS_THAN: '<';

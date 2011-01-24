@@ -10,7 +10,6 @@ endif
 
 " A bunch of useful C keywords
 syn keyword	cStatement	goto break return continue asm assert
-syn keyword	cLabel		case default
 syn keyword	cConditional	if else switch
 syn keyword	cRepeat		while for do repeat
 
@@ -22,9 +21,8 @@ syn cluster	cCommentGroup	contains=cTodo
 " String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match	cSpecial	display contained "\\\(x\x\+\|\o\{1,3}\|.\|$\)"
-if !exists("c_no_utf")
-  syn match	cSpecial	display contained "\\\(u\x\{4}\|U\x\{8}\)"
-endif
+syn match	cSpecial	display contained "\\\(u\x\{4}\|U\x\{8}\)"
+
 if exists("c_no_cformat")
   syn region	cString		start=+L\="+ skip=+\\\\\|\\"+ end=+"+ contains=cSpecial,@Spell
   " cCppString: same as cString, but ends at end of line
@@ -265,8 +263,8 @@ if !exists("c_no_c99") " ISO C99
 endif
 
 " Accept %: for # (C99)
-syn region	cPreCondit	start="^\s*\(%:\|#\)\s*\(if\|ifdef\|ifndef\|elif\)\>" skip="\\$" end="$" end="//"me=s-1 contains=cComment,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
-syn match	cPreCondit	display "^\s*\(%:\|#\)\s*\(else\|endif\)\>"
+syn region	cPreCondit	start="^\s*\(#\)\s*\(if\|ifdef\|ifndef\|elif\)\>" skip="\\$" end="$" end="//"me=s-1 contains=cComment,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
+syn match	cPreCondit	display "^\s*\(#\)\s*\(else\|endif\)\>"
 if !exists("c_no_if0")
   if !exists("c_no_if0_fold")
     syn region	cCppOut		start="^\s*\(%:\|#\)\s*if\s\+0\+\>" end=".\@=\|$" contains=cCppOut2 fold
@@ -288,11 +286,6 @@ syn region	cPreProc	start="^\s*\(%:\|#\)\s*\(pragma\>\|line\>\|warning\>\|warn\>
 syn cluster	cMultiGroup	contains=cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserCont,cUserLabel,cBitField,cOctalZero,cCppOut,cCppOut2,cCppSkip,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom,cCppParen,cCppBracket,cCppString
 syn region	cMulti		transparent start='?' skip='::' end=':' contains=ALLBUT,@cMultiGroup,@Spell
 " Avoid matching foo::bar() in C++ by requiring that the next char is not ':'
-syn cluster	cLabelGroup	contains=cUserLabel
-syn match	cUserCont	display "^\s*\I\i*\s*:$" contains=@cLabelGroup
-syn match	cUserCont	display ";\s*\I\i*\s*:$" contains=@cLabelGroup
-syn match	cUserCont	display "^\s*\I\i*\s*:[^:]"me=e-1 contains=@cLabelGroup
-syn match	cUserCont	display ";\s*\I\i*\s*:[^:]"me=e-1 contains=@cLabelGroup
 
 syn match	cUserLabel	display "\I\i*" contained
 
@@ -327,8 +320,6 @@ hi def link cFormat		cSpecial
 hi def link cCppString		cString
 hi def link cCommentL		cComment
 hi def link cCommentStart	cComment
-hi def link cLabel		Label
-hi def link cUserLabel		Label
 hi def link cConditional	Conditional
 hi def link cRepeat		Repeat
 hi def link cCharacter		Character

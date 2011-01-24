@@ -346,7 +346,8 @@ public class SequentialSketchMain extends CommonSketchMain
             FEVisitor[] passes2 =
                     { new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
                             new SetDeterministicFcns(),
-                            new ReplaceParforLoops(options.getCudaBlockDim()) };
+                            new ReplaceParforLoops(options.getCudaBlockDim()),
+                            new ReplaceImplicitVarDecl() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }

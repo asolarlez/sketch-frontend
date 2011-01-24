@@ -324,7 +324,7 @@ public class FETypedVisitor<T> implements FEVisitor {
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
         throw new FEVisitorException(this, cudaThreadIdx);
     }
-    
+
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) {
         throw new FEVisitorException(this, cudaBlockDim);
     }
@@ -339,5 +339,17 @@ public class FETypedVisitor<T> implements FEVisitor {
 
     public Object visitStmtParfor(StmtParfor stmtParfor) {
         throw new FEVisitorException(this, stmtParfor);
+    }
+
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {
+        throw new FEVisitorException(this, decl);
+    }
+
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
+        throw new FEVisitorException(this, exprNamedParam);
+    }
+
+    public Object visitExprType(ExprType exprtyp) {
+        throw new FEVisitorException(this, exprtyp);
     }
 }
