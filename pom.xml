@@ -57,7 +57,7 @@
         <repository>
             <id>uc berkeley cobol</id>
             <name>UC Berkeley Maven2 Repository</name>
-            <url>http://cobol.cs.berkeley.edu/mvn</url>
+            <url>http://ntung.com/mvn</url>
         </repository>
     </repositories>
 
