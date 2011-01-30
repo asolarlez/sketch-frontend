@@ -11,7 +11,7 @@ endif
 " A bunch of useful C keywords
 syn keyword	cStatement	goto break return continue asm assert
 syn keyword	cConditional	if else switch
-syn keyword	cRepeat		while for do repeat
+syn keyword	cRepeat		while for do repeat parfor
 
 syn keyword	cTodo		contained TODO FIXME XXX
 
