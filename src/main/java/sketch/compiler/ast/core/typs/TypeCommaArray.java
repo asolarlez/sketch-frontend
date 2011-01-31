@@ -4,14 +4,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
+import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.util.fcns.ZipEnt;
 import sketch.util.fcns.ZipIdxEnt;
 
 import static sketch.util.DebugOut.assertFalse;
 
+import static sketch.util.fcns.Zip.zip;
 import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 /**
@@ -74,5 +77,38 @@ public class TypeCommaArray extends Type implements TypeArrayInterface {
         }
         assertFalse("Cannot find index named", name);
         return 0;
+    }
+
+    @Override
+    public boolean promotesTo(Type that) {
+        if (that instanceof TypeCommaArray) {
+            TypeCommaArray taOther = (TypeCommaArray) that;
+
+            if (!taOther.getBase().promotesTo(getBase())) {
+                return false;
+            }
+
+            if (taOther.getLengthParams().size() != this.getLengthParams().size()) {
+                return false;
+            }
+
+            // try to get the sizes of the dimensions
+            for (ZipEnt<Expression, Expression> paramz : zip(this.getLengthParams(),
+                    taOther.getLengthParams()))
+            {
+                Integer i1 = paramz.left.getIValue();
+                Integer i2 = paramz.right.getIValue();
+                if ((i1 != null) && (i2 != null) && (i1.intValue() != i2.intValue())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.promotesTo(that);
+    }
+
+    @Override
+    public Object accept(FEVisitor visitor) {
+        return visitor.visitTypeCommaArray(this);
     }
 }

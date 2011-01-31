@@ -51,4 +51,8 @@ public class ExprNamedParam extends Expression {
         return new ExprNamedParam(this, this.name, sub);
     }
 
+    @Override
+    public Integer getIValue() {
+        return this.getExpr().getIValue();
+    }
 }

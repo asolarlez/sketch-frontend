@@ -1,7 +1,6 @@
 package sketch.compiler.passes.lowering;
 
 import java.util.Arrays;
-import java.util.Vector;
 
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -11,8 +10,6 @@ import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeCommaArray;
@@ -40,29 +37,20 @@ public class FlattenCommaMultidimArrays extends SymbolTableVisitor {
         super(symtab);
     }
 
+    /*
+     * @Override public Object visitStmtVarDecl(StmtVarDecl stmt) { // NOTE -- we will
+     * still register the variable as a comma array. StmtVarDecl decl = (StmtVarDecl)
+     * super.visitStmtVarDecl(stmt); Vector<VarDeclEntry> next = new
+     * Vector<VarDeclEntry>(); boolean changed = false; for (VarDeclEntry e : decl) { if
+     * (e.getType() instanceof TypeCommaArray) { TypeCommaArray t = (TypeCommaArray)
+     * e.getType(); Type nextType = new TypeArray(t.getBase(), t.getProdLength());
+     * next.add(e.nextWithType(nextType)); changed = true; } else { next.add(e); } } if
+     * (changed) { return new StmtVarDecl(decl, next); } else { return stmt; } }
+     */
+    
     @Override
-    public Object visitStmtVarDecl(StmtVarDecl stmt) {
-        // NOTE -- we will still register the variable as a comma array.
-        StmtVarDecl decl = (StmtVarDecl) super.visitStmtVarDecl(stmt);
-
-        Vector<VarDeclEntry> next = new Vector<VarDeclEntry>();
-        boolean changed = false;
-        for (VarDeclEntry e : decl) {
-            if (e.getType() instanceof TypeCommaArray) {
-                TypeCommaArray t = (TypeCommaArray) e.getType();
-                Type nextType = new TypeArray(t.getBase(), t.getProdLength());
-                next.add(e.nextWithType(nextType));
-                changed = true;
-            } else {
-                next.add(e);
-            }
-        }
-
-        if (changed) {
-            return new StmtVarDecl(decl, next);
-        } else {
-            return stmt;
-        }
+    public Object visitTypeCommaArray(TypeCommaArray t) {
+        return new TypeArray(t.getBase(), t.getProdLength());
     }
 
     @Override

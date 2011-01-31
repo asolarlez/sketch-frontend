@@ -1,0 +1,32 @@
+void assertOkay(int[4, 3] multidim, int[12] input) {
+    assert multidim[0, 0] == input[0];
+    assert multidim[0, 1] == input[1];
+    assert multidim[0, 2] == input[2];
+    assert multidim[1, 0] == input[3];
+    assert multidim[1, 1] == input[4];
+    assert multidim[1, 2] == input[5];
+    assert multidim[2, 0] == input[6];
+    assert multidim[2, 1] == input[7];
+    assert multidim[2, 2] == input[8];
+    assert multidim[3, 0] == input[9];
+    assert multidim[3, 1] == input[10];
+    assert multidim[3, 2] == input[11];
+}
+
+harness void main(int[12] input) {
+    int[4, 3] multidim = 0;
+    multidim[0, 0] = input[0];
+    multidim[0, 1] = input[1];
+    multidim[0, 2] = input[2];
+    multidim[1, 0] = input[3];
+    multidim[1, 1] = input[4];
+    multidim[1, 2] = input[5];
+    multidim[2, 0] = input[6];
+    multidim[2, 1] = input[7];
+    multidim[2, 2] = input[8];
+    multidim[3, 0] = input[9];
+    multidim[3, 1] = input[10];
+    multidim[3, 2] = input[11];
+
+    assertOkay(multidim, input);
+}

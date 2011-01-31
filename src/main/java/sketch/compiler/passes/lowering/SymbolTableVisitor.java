@@ -213,20 +213,17 @@ public class SymbolTableVisitor extends FEReplacer
 
 
 	@Override
-	public Object visitParameter(Parameter par){
-		Type t = (Type) par.getType().accept(this);
-
-		symtab.registerVar(par.getName(),
-                actualType(t),
-                par,
+    public Object visitParameter(Parameter par) {
+        symtab.registerVar(par.getName(), actualType(par.getType()), par,
                 SymbolTable.KIND_FUNC_PARAM);
-		
-		if( t == par.getType()){
-    		return par;
-    	}else{
-    		return new Parameter(t, par.getName(), par.getPtype() );
-    	}
-	}
+
+        Type t = (Type) par.getType().accept(this);
+        if (t == par.getType()) {
+            return par;
+        } else {
+            return new Parameter(t, par.getName(), par.getPtype());
+        }
+    }
 
 
     public Object visitFunction(Function func)

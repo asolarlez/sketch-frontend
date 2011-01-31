@@ -84,6 +84,7 @@ abstract public class Expression extends FENode
     	return (Expression) this.accept(visit);
     }
 
+    // [start] subnode getters
     /** get the inner value if this is a named param */
     public Expression thisOrNamedExpr() {
         if (this instanceof ExprNamedParam) {
@@ -91,4 +92,5 @@ abstract public class Expression extends FENode
         }
         return this;
     }
+    // [end]
 }

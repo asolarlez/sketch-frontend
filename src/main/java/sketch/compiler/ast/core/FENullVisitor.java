@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeCommaArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -127,4 +128,5 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) { return null; }
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) { return null; }
     public Object visitExprType(ExprType exprtyp) { return null; }
+    public Object visitTypeCommaArray(TypeCommaArray typ) { return null; }
 }

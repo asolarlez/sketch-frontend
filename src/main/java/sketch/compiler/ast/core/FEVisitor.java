@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeCommaArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -130,4 +131,5 @@ public interface FEVisitor
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl);
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam);
     public Object visitExprType(ExprType exprtyp);
+    public Object visitTypeCommaArray(TypeCommaArray typ);
 }

@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeCommaArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -992,5 +993,9 @@ public class FEReplacer implements FEVisitor
     public Object visitExprType(ExprType exprtyp) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public Object visitTypeCommaArray(TypeCommaArray typ) {
+        return typ;
     }
 }
