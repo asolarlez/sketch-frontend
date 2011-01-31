@@ -23,6 +23,7 @@ import java.util.Stack;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.CommaIndex;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
@@ -31,6 +32,7 @@ import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeArrayInterface;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -40,6 +42,7 @@ import sketch.compiler.controlflow.CFGBuilder;
 import sketch.compiler.controlflow.CountLattice;
 import sketch.compiler.controlflow.StatementCounter;
 import sketch.util.ControlFlowException;
+import sketch.util.exceptions.ExceptionAtNode;
 
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printFailure;
@@ -109,6 +112,7 @@ public class SemanticChecker
 
 	protected void report(FENode node, String message)
 	{
+        (new ExceptionAtNode(message, node)).print();
 		report(node.getCx(), message);
 	}
 
@@ -778,7 +782,7 @@ public class SemanticChecker
 				Type bt = getType((Expression)expr.getBase().accept(this));
 				if (bt != null)
 				{
-					if (!(bt instanceof TypeArray))
+					if (!(bt instanceof TypeArrayInterface))
 						report(expr, "array access with a non-array base");
 				}else{
 					report(expr, "array access with a non-array base");
@@ -789,21 +793,26 @@ public class SemanticChecker
 					return super.visitExprArrayRange(expr);
 				}
 				Object idx = l.get(0);
-				if(!(idx instanceof RangeLen)){
-					report(expr, "Ranges are not yet supported");
-					return super.visitExprArrayRange(expr);
-				}
-				RangeLen rl = (RangeLen)idx;
-				Type ot = getType((Expression)rl.start().accept(this));
-				if (ot != null)
-				{
-					if (!ot.promotesTo
-							(TypePrimitive.inttype))
-						report(expr, "array index must be an int");
-				}else{
-					report(expr, "array index must be an int");
-				}
-				return (expr);
+                if (idx instanceof RangeLen) {
+                    RangeLen rl = (RangeLen) idx;
+                    Type ot = getType((Expression) rl.start().accept(this));
+                    if (ot != null) {
+                        if (!ot.promotesTo(TypePrimitive.inttype))
+                            report(expr, "array index must be an int");
+                    } else {
+                        report(expr, "array index must be an int");
+                    }
+                    return (expr);
+                } else if (idx instanceof CommaIndex) {
+                    CommaIndex commaIdx = (CommaIndex) idx;
+                    for (Expression e : commaIdx) {
+                        e.accept(this);
+                    }
+                    return (expr);
+                } else {
+                    report(expr, "Ranges are not yet supported");
+                    return super.visitExprArrayRange(expr);
+                }
 			}
 
 			/*			public Object visitExprArray(ExprArray expr)

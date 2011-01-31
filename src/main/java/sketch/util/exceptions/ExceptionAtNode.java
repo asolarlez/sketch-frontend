@@ -1,8 +1,17 @@
 package sketch.util.exceptions;
 
-import static sketch.util.DebugOut.printError;
 import sketch.compiler.ast.core.FENode;
 
+import static sketch.util.DebugOut.printError;
+
+/**
+ * An exception that's related to an AST node
+ * 
+ * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+ * @license This file is licensed under BSD license, available at
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
+ */
 public class ExceptionAtNode extends SketchException {
     private static final long serialVersionUID = 1L;
     protected final FENode node;
@@ -11,7 +20,11 @@ public class ExceptionAtNode extends SketchException {
         super(message + " (at " + node.getCx() + ")");
         this.node = node;
     }
-    
+
+    public ExceptionAtNode(FENode node, String format, Object... args) {
+        this(String.format(format, args), node);
+    }
+
     @Override
     public void print() {
         super.print();

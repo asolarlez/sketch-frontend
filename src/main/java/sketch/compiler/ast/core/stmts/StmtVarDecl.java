@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
@@ -151,6 +152,19 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
              Collections.singletonList(type),
              Collections.singletonList(name),
              Collections.singletonList(init));
+    }
+
+    public StmtVarDecl(FENode node, Vector<VarDeclEntry> next) {
+        super(node);
+        this.types = new Vector<Type>(next.size());
+        this.names = new Vector<String>(next.size());
+        this.inits = new Vector<Expression>(next.size());
+
+        for (VarDeclEntry e : next) {
+            this.types.add(e.getType());
+            this.names.add(e.getName());
+            this.inits.add(e.getInit());
+        }
     }
 
     /**
@@ -307,10 +321,30 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
         return result.toString();
     }
 
-    public class VarDeclEntry {
+    public static abstract class VarDeclEntry {
+        public abstract String getName();
+
+        public abstract Type getType();
+
+        public abstract Expression getInit();
+        
+        public ExprVar getVarRefToName(FENode ref) {
+            return new ExprVar(ref, getName());
+        }
+
+        public VarDeclEntry nextWithType(Type t) {
+            return new VarDeclEntryWithNames(getName(), t, getInit());
+        }
+
+        public VarDeclEntry nextWithInit(Expression init) {
+            return new VarDeclEntryWithNames(getName(), getType(), init);
+        }
+    }
+
+    public class VarDeclEntryInst extends VarDeclEntry {
         protected final int idx;
 
-        public VarDeclEntry(int idx) {
+        public VarDeclEntryInst(int idx) {
             this.idx = idx;
             if (idx >= getNumVars()) {
                 throw new NoSuchElementException();
@@ -319,10 +353,6 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
 
         public String getName() {
             return StmtVarDecl.this.getName(idx);
-        }
-        
-        public ExprVar getVarRefToName() {
-            return new ExprVar(StmtVarDecl.this, getName());
         }
 
         public Type getType() {
@@ -334,6 +364,30 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
         }
     }
 
+    public static class VarDeclEntryWithNames extends VarDeclEntry {
+        public final String name;
+        public final Type type;
+        public final Expression init;
+
+        public VarDeclEntryWithNames(String name, Type type, Expression init) {
+            this.name = name;
+            this.type = type;
+            this.init = init;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public Type getType() {
+            return this.type;
+        }
+
+        public Expression getInit() {
+            return this.init;
+        }
+   }
+
     public class VarDeclEntryIterator implements Iterator<VarDeclEntry> {
         int idx = 0;
 
@@ -342,7 +396,7 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
         }
 
         public VarDeclEntry next() {
-            final VarDeclEntry vde = new VarDeclEntry(idx);
+            final VarDeclEntry vde = new VarDeclEntryInst(idx);
             idx += 1;
             return vde;
         }

@@ -28,6 +28,11 @@ public class ExprNamedParam extends Expression {
         this.name = name;
         this.expr = expr;
     }
+    
+    @Override
+    public String toString() {
+        return name + "=" + expr;
+    }
 
     @Override
     public Object accept(FEVisitor v) {

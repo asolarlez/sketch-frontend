@@ -3,12 +3,16 @@
  */
 package sketch.compiler.ast.core.exprs;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.passes.structure.GetAssignLHS;
+import sketch.util.datastructures.LockableVector;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * An array-range reference. A[0:2] means the first 3 elements of A, and
@@ -45,12 +49,14 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		}
 		public RangeLen(Expression start, int len)
 		{
+            assert !(start instanceof ExprNamedParam);
 			this.start=start;
 			this.len=len;
 			this.lenExpr= null;
 		}
 		public RangeLen(Expression start, Expression len)
 		{
+            assert !(start instanceof ExprNamedParam);
 			this.start=start;
 			Integer i = len.getIValue();
 			if(i!= null){
@@ -78,6 +84,40 @@ public class ExprArrayRange extends Expression  implements ExprArray
 			return start+"::"+len;
 		}
 	}
+
+    /**
+     * for new-style array accesses
+     * 
+     * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+     * @license This file is licensed under BSD license, available at
+     *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+     *          changes, please consider contributing back!
+     */
+    public static class CommaIndex extends LockableVector<Expression> {
+        private static final long serialVersionUID = 7118534346648945245L;
+
+        public CommaIndex(List<Expression> indices) {
+            super(indices);
+            this.lock();
+        }
+
+        public CommaIndex(Expression... indices) {
+            this(Arrays.asList(indices));
+        }
+
+        public CommaIndex(Object old, Expression next) {
+            if (old instanceof RangeLen) {
+                final Expression expr = ((RangeLen) old).start();
+                this.addAll(expr, next);
+            } else if (old instanceof CommaIndex) {
+                this.addAll(((CommaIndex) old));
+                this.add(next);
+            } else {
+                assertFalse("unknown type of old object", old.getClass().getSimpleName());
+            }
+            this.lock();
+        }
+    }
 
 	private Expression base;
 	private List members;
@@ -122,6 +162,9 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		this(node, base, Collections.singletonList(new RangeLen(offset)));
 		setUnchecked(unchecked);
 	}
+	public ExprArrayRange(FENode node, Expression base, CommaIndex index) {
+	    this(node, base, Collections.singletonList(index));
+	}
 
 
 	public Expression getOffset(){
@@ -160,10 +203,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	 */
 	public ExprArrayRange(Expression base, List members)
 	{
-		super(base);
-		this.base=base;
-		this.members=members;
-		if(members.isEmpty()) throw new IllegalArgumentException();
+	    this(base, members, false);
 	}
 	public ExprArrayRange(Expression base, List members, boolean unchecked)
 	{

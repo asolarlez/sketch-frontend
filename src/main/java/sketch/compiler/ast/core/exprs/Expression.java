@@ -83,4 +83,12 @@ abstract public class Expression extends FENode
     public Expression doExpr(FEVisitor visit){
     	return (Expression) this.accept(visit);
     }
+
+    /** get the inner value if this is a named param */
+    public Expression thisOrNamedExpr() {
+        if (this instanceof ExprNamedParam) {
+            return ((ExprNamedParam) this).getExpr();
+        }
+        return this;
+    }
 }

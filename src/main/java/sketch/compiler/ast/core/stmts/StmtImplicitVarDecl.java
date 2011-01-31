@@ -24,6 +24,11 @@ public class StmtImplicitVarDecl extends Statement {
     }
 
     @Override
+    public String toString() {
+        return name + " := " + initExpr;
+    }
+
+    @Override
     public Object accept(FEVisitor v) {
         return v.visitStmtImplicitVarDecl(this);
     }

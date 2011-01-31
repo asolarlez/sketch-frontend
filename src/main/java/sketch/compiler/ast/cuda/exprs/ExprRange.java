@@ -4,6 +4,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
+import static sketch.util.Misc.nonnull;
 
 /**
  * Range of numbers, similar to Scala syntax
@@ -15,19 +16,22 @@ import sketch.compiler.ast.core.exprs.Expression;
  */
 public class ExprRange extends Expression {
     private final Expression from;
-    private final Expression to;
+    private final Expression until;
+    private final Expression by;
 
     @SuppressWarnings("deprecation")
-    public ExprRange(FEContext context, Expression from, Expression to) {
+    public ExprRange(FEContext context, Expression from, Expression until, Expression by) {
         super(context);
-        this.from = from;
-        this.to = to;
+        this.from = nonnull(from);
+        this.until = nonnull(until);
+        this.by = nonnull(by);
     }
 
-    public ExprRange(FENode exprRange, Expression from, Expression to) {
+    public ExprRange(FENode exprRange, Expression from, Expression until, Expression by) {
         super(exprRange);
-        this.from = from;
-        this.to = to;
+        this.from = nonnull(from);
+        this.until = nonnull(until);
+        this.by = nonnull(by);
     }
 
     @Override
@@ -39,7 +43,11 @@ public class ExprRange extends Expression {
         return from;
     }
 
-    public Expression getTo() {
-        return to;
+    public Expression getUntil() {
+        return until;
+    }
+
+    public Expression getBy() {
+        return by;
     }
 }

@@ -46,8 +46,10 @@ tokens {
 	"new";
 	"null";
 	"reorder";
+
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
+
 	// Complicated types:
 	"struct"; // "template";
 	"ref";
@@ -62,7 +64,8 @@ tokens {
 
     // data-parallel control flow
     "parfor";
-    "to";
+    "until";
+    "by";
 
 	//sketching stuff
 	"implements";

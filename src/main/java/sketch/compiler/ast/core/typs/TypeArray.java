@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.ast.core.typs;
-import static java.util.Collections.unmodifiableList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +23,7 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * A fixed-length homogenous array type.  This type has a base type and
@@ -34,7 +33,7 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class TypeArray extends Type
+public class TypeArray extends Type implements TypeArrayInterface
 {
     private Type base;
     private Expression length;

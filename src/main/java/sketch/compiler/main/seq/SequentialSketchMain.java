@@ -74,6 +74,7 @@ import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.TprintFcnCall;
+import sketch.compiler.passes.preprocessing.WarnAmbiguousImplicitVarDecl;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.GetPrintFcns;
@@ -335,7 +336,8 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
-                            new AllthreadsTprintFcnCall() };
+                            new AllthreadsTprintFcnCall(),
+                            new WarnAmbiguousImplicitVarDecl() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
@@ -346,7 +348,7 @@ public class SequentialSketchMain extends CommonSketchMain
             FEVisitor[] passes2 =
                     { new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
                             new SetDeterministicFcns(),
-                            new ReplaceParforLoops(options.getCudaBlockDim()),
+                            new ReplaceParforLoops(options.getCudaBlockDim(), varGen),
                             new ReplaceImplicitVarDecl() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
@@ -355,7 +357,8 @@ public class SequentialSketchMain extends CommonSketchMain
     public class IRStage1 extends CompilerStage {
         public IRStage1() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { new GlobalsToParams(varGen) };
+            FEVisitor[] passes2 =
+                    { new GlobalsToParams(varGen), new FlattenCommaMultidimArrays(null) };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }

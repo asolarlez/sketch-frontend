@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEContext;
@@ -284,9 +285,9 @@ parfor_statement returns [Statement s] { s = null; Expression ivar; Expression e
     { s = new StmtParfor(getContext(t), ivar, exp, b); }
     ;
 
-range_exp returns [Expression e] { e = null; Expression from; Expression to; }
-    : from=right_expr t:TK_to to=left_expr
-    { e = new ExprRange(getContext(t), from, to); }
+range_exp returns [Expression e] { e = null; Expression from; Expression until; Expression by = new ExprConstInt(1); }
+    : from=right_expr t:TK_until until=right_expr (TK_by by=right_expr)? { }
+    { e = new ExprRange(getContext(t), from, until, by); }
     ;
 
 
@@ -318,14 +319,22 @@ splitter_or_joiner returns [SplitterJoiner sj]
 	;
 
 
-data_type returns [Type t] { t = null; Expression x; }
+data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; }
 	:	(t=primitive_type | id:ID { t = new TypeStructRef(id.getText()); })
 		(	l:LSQUARE
-			(x=right_expr { t = new TypeArray(t, x); }
-			| { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); }
+			(
+                (x=expr_named_param { params.add(x); }
+                    | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
+                ( COMMA x=expr_named_param { params.add(x); } )*
 			)
-			RSQUARE
+            RSQUARE
+            {
+                if (params.size() == 1) { t = new TypeArray(t, params.get(0)); }
+                else { t = new TypeCommaArray(t, params); }
+                params.clear();
+            }
 		)*
+
 	|	TK_void { t =  TypePrimitive.voidtype; }
 	|	TK_portal LESS_THAN pn:ID MORE_THAN
 		{ t = new TypePortal(pn.getText()); }
@@ -579,6 +588,10 @@ expr_named_param returns [ Expression x ] { x = null; Token t = null; }
         }
     ;
 
+expr_named_param_only returns [ Expression x ] { x = null; Token t = null; }
+    :   id:ID ASSIGN x=right_expr { x = new ExprNamedParam(getContext(id), id.getText(), x); }
+    ;
+
 left_expr returns [Expression x] { x = null; }
 	:	x=minic_value_exprnofo
 	;
@@ -813,19 +826,31 @@ value returns [Expression x] { x = null; List rlist; }
 		)*
 	;
 */
+
 array_range_list returns [List l] { l=new ArrayList(); Object r;}
 :r=array_range {l.add(r);}
 ;
 
 array_range returns [Object x] { x=null; Expression start,end,l; }
-:start=right_expr {x=new ExprArrayRange.RangeLen(start);}
-(COLON
-(end=right_expr {x=new ExprArrayRange.Range(start,end);}
-|COLON
-((NUMBER) => len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
-|l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
-))?
-;
+    : start=expr_named_param {
+        if (start instanceof ExprNamedParam) {
+            x = new ExprArrayRange.CommaIndex(start);
+        } else {
+            x = new ExprArrayRange.RangeLen(start);
+        }
+      }
+      // (
+        ( COMMA start=expr_named_param { x = new ExprArrayRange.CommaIndex(x, start); } )*
+        // |
+        (COLON { assert !(x instanceof ExprArrayRange.CommaIndex) : "cannot mix ranges and comma indices yet"; }
+            (end=right_expr { x=new ExprArrayRange.Range(start,end); }
+            | COLON
+                ((NUMBER) => len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
+                | l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
+            )
+        )?
+      // )
+    ;
 
 constantExpr returns [Expression x] { x = null; }
 	:	h:HQUAN

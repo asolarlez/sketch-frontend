@@ -950,9 +950,12 @@ public class FEReplacer implements FEVisitor
 
     public Object visitExprRange(ExprRange exprRange) {
         Expression nextFrom = (Expression) exprRange.getFrom().accept(this);
-        Expression nextTo = (Expression) exprRange.getTo().accept(this);
-        if (nextFrom != exprRange.getFrom() || nextTo != exprRange.getTo()) {
-            return new ExprRange(exprRange, nextFrom, nextTo);
+        Expression nextTo = (Expression) exprRange.getUntil().accept(this);
+        Expression nextBy = exprRange.getBy().acceptAndCast(this);
+        if (nextFrom != exprRange.getFrom() || nextTo != exprRange.getUntil() ||
+                nextBy != exprRange.getBy())
+        {
+            return new ExprRange(exprRange, nextFrom, nextTo, nextBy);
         }
         return exprRange;
     }

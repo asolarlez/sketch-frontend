@@ -457,8 +457,10 @@ public class NodesToC extends NodesToJava {
             boolean oldIsBool = this.isBool;
             setCtype(type);
             if (decl.getInit() != null) {
-                result += " " + processAssign(decl.getVarRefToName(),
-                        decl.getInit(), type, "=");
+                result +=
+                        " " +
+                                processAssign(decl.getVarRefToName(stmt), decl.getInit(),
+                                        type, "=");
             } else {
                 result += " " + decl.getName();
             }

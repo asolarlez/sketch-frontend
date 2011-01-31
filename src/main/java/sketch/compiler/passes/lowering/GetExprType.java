@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.passes.lowering;
-import static sketch.util.Misc.nonnull;
-
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +24,7 @@ import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.CommaIndex;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
@@ -34,10 +33,15 @@ import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeArrayInterface;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+
+import static sketch.util.DebugOut.assertFalse;
+
+import static sketch.util.Misc.nonnull;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -84,6 +88,8 @@ public class GetExprType extends FENullVisitor
     	
 		List l=exp.getMembers();
 		Expression expr = null;
+        assert l.size() >= 1;
+
 		for(int i=0;i<l.size();i++) {
 			Object obj=l.get(i);
 			if(obj instanceof Range) {
@@ -100,25 +106,36 @@ public class GetExprType extends FENullVisitor
 			}
 			else if(obj instanceof RangeLen) {
 				RangeLen range=(RangeLen) obj;
-				Type start = (Type)range.start().accept(this);
+				range.start().accept(this);
 				if(expr == null){
 					expr = new ExprConstInt(range.len());
 				}else{
 					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
 				}
-			}
-		}
-		if(!(base instanceof TypeArray)) return null;
-        // ASSERT: base is a TypeArray.
+            } else if (obj instanceof CommaIndex) {
+                // NOTE -- only single indices are supported with commas (not subarray
+                // ranges)
+                expr = new ExprConstInt(1);
+                for (Expression e : (CommaIndex) obj) {
+                    e.accept(this);
+                }
+            } else {
+                assertFalse("unknwon type of object", obj);
+            }
+            assert expr != null;
+     }
 
-		Type baseType = ((TypeArray)base).getBase();
+        if (base instanceof TypeArrayInterface) {
+            Type baseType = ((TypeArrayInterface) base).getBase();
 
-
-
-		if(expr.getIValue() == 1){
-			return baseType;
-		}else{
-			return new TypeArray(baseType, expr);
+            final Integer iValue = expr.getIValue();
+            if ((iValue != null) && (iValue == 1)) {
+                return baseType;
+            } else {
+                return new TypeArray(baseType, expr);
+            }
+        } else {
+            return null;
 		}
     }
 
@@ -420,6 +437,11 @@ public class GetExprType extends FENullVisitor
     		throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
     	}
         return t;
+    }
+
+    @Override
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
+        return exprNamedParam.getExpr().accept(this);
     }
 
 	private Type binopType (int op, Expression left, Expression right) {

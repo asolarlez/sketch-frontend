@@ -184,8 +184,8 @@ public class TypePrimitive extends Type
         if (super.promotesTo(that))
             return true;
         if (!(that instanceof TypePrimitive)){
-        	if(that instanceof TypeArray){
-        		return this.promotesTo(((TypeArray)that).getBase());
+        	if(that instanceof TypeArrayInterface){
+        		return this.promotesTo(((TypeArrayInterface)that).getBase());
         	}else{
         		if(this.type == TYPE_NULLPTR && that.isStruct ())
         			return true;
