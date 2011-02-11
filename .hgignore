@@ -4,6 +4,7 @@ target/*
 *.pyc
 *.swp
 *installer*.exe
+dist/*
 
 distconfig/linux_rpm/sketch-frontend.spec
 tmp-assembly.xml
@@ -11,10 +12,11 @@ function_list.xml
 sketch-noarch.jar
 
 syntax: regexp
-^[^\\/]+\.sk$
+^[^\\/]+\.(sk|skh|h)$
 
 # parser generator things
 src/main/java/sketch/compiler/parser/StreamItLex.smap
 src/main/java/sketch/compiler/parser/StreamItLexTokenTypes.txt
 src/main/java/sketch/compiler/parser/StreamItParserFE.smap
 src/main/java/sketch/compiler/parser/StreamItParserFETokenTypes.txt
+Session.vim
