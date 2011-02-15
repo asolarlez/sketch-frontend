@@ -8,16 +8,7 @@ import java.util.List;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprTypeCast;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -46,36 +37,24 @@ public class RegularizeTypesByTypeCheck extends SymbolTableVisitor {
 		
 		Expression base = (Expression) exp.getBase().accept(this);
 
-		List members = new LinkedList();
+		
 		boolean changed = false;
-		for (Object o : exp.getMembers()) {
-			Object newO = null;
-			if (o instanceof Range) {
-				newO = visitRange((Range) o);
-			} else if (o instanceof RangeLen) {
-				newO = visitRangeLen((RangeLen) o);
+		
+		    RangeLen newO = null;
+			{
+				newO = visitRangeLen(exp.getSelection());
 			}
-			if (o != newO) changed = true;
-			members.add(newO);
-		}
+			if (exp.getSelection() != newO) changed = true;
+			
+		
 		
 		if (changed 
 				|| base != exp.getBase())
-			exp = new ExprArrayRange(exp, base, members);
+			exp = new ExprArrayRange(exp, base, newO);
 		return exp;
 	}
 	
-	protected Range visitRange(Range r) {
-		Expression start = (Expression) r.start().accept(this);
-		Expression end = (Expression) r.end().accept(this);
-		
-		start = castIfTypeIncorrect(TypePrimitive.inttype, start);
-		end = castIfTypeIncorrect(TypePrimitive.inttype, end);
-		
-		if (start != r.start() || end != r.end())
-			r = new Range(start, end);
-		return r;
-	}
+	
 	
 	protected RangeLen visitRangeLen(RangeLen rl) {
 		
@@ -84,14 +63,14 @@ public class RegularizeTypesByTypeCheck extends SymbolTableVisitor {
 		
 		
 		Expression len = rl.getLenExpression();
-		if (rl.hasLenExpression()) {
+		if (rl.hasLen()) {
 			len = (Expression) len.accept(this);
 			len = castIfTypeIncorrect(TypePrimitive.inttype, len);
 			if (start != rl.start() || len != rl.getLenExpression())
 				rl = new RangeLen(start, len);
 		} else {
 			if (start != rl.start())
-				rl = new RangeLen(start, rl.len());
+				rl = new RangeLen(start);
 		}
 		
 		

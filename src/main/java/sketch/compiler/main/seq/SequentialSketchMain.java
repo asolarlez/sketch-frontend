@@ -56,6 +56,7 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
+import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
@@ -227,7 +228,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		beforeUnvectorizing = prog;
 		
 		prog = (new IRStage2()).run(prog);
-		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
+		
+		prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
 				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
@@ -237,6 +239,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		// dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
+		
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		
 		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen));
@@ -258,13 +261,12 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		// dump (prog, "After protecting array accesses.");
 		
+		prog = (Program)prog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+		
 		if (showPhaseOpt("lowering")) {
-		    dump(prog, "Lowering the code previous to Symbolic execution.");
-		}
+            dump(prog, "Lowering the code previous to Symbolic execution.");
+        }
 
-
-		prog = (Program)prog.accept(new EliminateNestedArrAcc());
-		dump (prog, "After lowerIR:");
 	}
 
 
@@ -373,6 +375,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		lprog.accept(new PerformFlowChecks());
 		
+		lprog = (Program)lprog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));		 
 		
 		lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
 		
@@ -407,15 +410,18 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	
 	public void testProg(Program p){
-	    dump(p, "Hehehe");
+	    
 	    p = (Program)p.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
 	    p = (Program)p.accept(new EliminateMultiDimArrays(varGen));
 	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
             new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
                     null, System.out
-                    , options.bndOpts.unrollAmnt, new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p ), false);
+                    , options.bndOpts.unrollAmnt 
+                    , options.bndOpts.arrSize
+                    ,new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p ), false);
         log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
+        log("MAX ARRAY SIZE  = " + options.bndOpts.arrSize);
         p.accept(partialEval);
 	    
 	}
@@ -439,13 +445,15 @@ public class SequentialSketchMain extends CommonSketchMain
         if (showPhaseOpt("postproc")) {
             dump(finalCode, "After Flattening.");
         }
+        finalCode = (Program)finalCode.accept(new MakeCastsExplicit());
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(showPhaseOpt("taelim")) 
 			dump(finalCode, "After Eliminating transitive assignments.");
+		
         finalCode = (Program) finalCode.accept(new EliminateDeadCode(
                         options.feOpts.keepAsserts));
-		//dump(finalCode, "After Dead Code elimination.");
+		
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
@@ -475,17 +483,19 @@ public class SequentialSketchMain extends CommonSketchMain
 	protected void outputCCode() {
 
 
-		String resultFile = getOutputFileName();
-		String hcode = (String)finalCode.accept(new NodesToH(resultFile));
-		String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
-
+		
 		if (!options.feOpts.outputCode) {
             finalCode.accept(new SimpleCodePrinter());
 			//System.out.println(hcode);
 			//System.out.println(ccode);
 		}else{
-			try{
+            String resultFile = getOutputFileName();
+            String hcode = (String)finalCode.accept(new NodesToH(resultFile));      
+            String ccode = (String)finalCode.accept(new NodesToC(varGen,resultFile));
+
+		    try{
 				{
+
 					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + ".h");
 					outWriter.write(hcode);
 					outWriter.flush();

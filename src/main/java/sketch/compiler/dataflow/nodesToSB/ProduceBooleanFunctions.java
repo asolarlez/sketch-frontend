@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -55,14 +56,21 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
     }
     List<SpecSketch> assertions = new ArrayList<SpecSketch>();
+    List<Statement> todoStmts = new ArrayList<Statement>();
+    private void dischargeTodo(){
+        for(Statement s : todoStmts){
+            s.accept(this);
+        }
+        todoStmts.clear();
+    }
     public ProduceBooleanFunctions(TempVarGen varGen, 
-            ValueOracle oracle, PrintStream out, int maxUnroll, RecursionControl rcontrol, boolean tracing){
+            ValueOracle oracle, PrintStream out, int maxUnroll, int maxArrSize, RecursionControl rcontrol, boolean tracing){
         super(new NtsbVtype(oracle, out), varGen, false, maxUnroll, rcontrol);
         this.tracing = tracing;
         if(tracing){
             rcontrol.activateTracing();
         }
-        maxArrSize = ExprConstInt.createConstant(10);
+        this.maxArrSize = ExprConstInt.createConstant(maxArrSize);
     }
     
     private String convertType(Type type) {
@@ -109,9 +117,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     public Object visitTypeArray(TypeArray t) {
         Type nbase = (Type)t.getBase().accept(this);
         abstractValue avlen = (abstractValue) t.getLength().accept(this);
+        Expression elen = t.getLength();
         Expression nlen;
         if(avlen.isBottom()){
             nlen = maxArrSize;
+            String msg = "Arrays are not big enough" + elen + ">" + nlen;
+            todoStmts.add(new StmtAssert(new ExprBinary(elen, "<=", nlen), msg , false));
         }else{
             nlen = ExprConstInt.createConstant(avlen.getIntVal());
         }
@@ -265,7 +276,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         
         ((NtsbVtype)this.vtype).out.println("{");               
         
-        
+        dischargeTodo();
         Statement newBody = (Statement)func.getBody().accept(this);
         
         
@@ -304,8 +315,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
         }
         if (fun != null) {   
-            if( fun.isUninterp()  ){                
-                return super.visitExprFunCall(exp);
+            if( fun.isUninterp()  ){          
+                Object o = super.visitExprFunCall(exp);
+                dischargeTodo();
+                return  o; 
             }else{
                 if (rcontrol.testCall(exp)) {
                     /* Increment inline counter. */
@@ -343,8 +356,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 }else{
                     if(rcontrol.leaveCallsBehind()){
 //                        System.out.println("        Stopped recursion:  " + fun.getName());
-                        funcsToAnalyze.add(fun);                    
-                        return super.visitExprFunCall(exp); 
+                        funcsToAnalyze.add(fun);   
+                        Object o = super.visitExprFunCall(exp);
+                        dischargeTodo();
+                        return  o;
                     }else{
                         StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero, false);
                         sas.setMsg( (exp!=null?exp.getCx().toString() : "" ) + exp.getName()  );
@@ -387,7 +402,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 }
             //}
         }
-        return super.visitStmtVarDecl(s);
+        Object o = super.visitStmtVarDecl(s);
+        dischargeTodo();
+        return o;
     }
     
     public Object visitStmtAssert(StmtAssert sa){       

@@ -3,9 +3,11 @@ package sketch.compiler.dataflow;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -28,6 +30,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
 
 class CloneHoles extends FEReplacer{
@@ -132,35 +135,47 @@ public class PartialEvaluator extends FEReplacer {
         return vtype.ARR(newElementValues);
     }
 
-    public Object visitExprArrayRange(ExprArrayRange exp) {
-        assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
-        RangeLen rl = (RangeLen)exp.getMembers().get(0);
+    public Object visitExprArrayRange(ExprArrayRange exp) {        
+        RangeLen rl = exp.getSelection();
         abstractValue newStart = (abstractValue) rl.start().accept(this);
         Expression nstart = exprRV;
         abstractValue newBase = (abstractValue) exp.getBase().accept(this);
         Expression nbase = exprRV;
+        
+        abstractValue newLen = null;
+        Expression nlen = null;
+        if(rl.hasLen()){
+             newLen = (abstractValue) rl.getLenExpression().accept(this);
+             nlen = exprRV;
+        }
+        
         if(isReplacer ){
 
             if(nbase instanceof ExprArrayInit && newStart.hasIntVal()){
-                if(rl.len() == 1){
+                if(!rl.hasLen()){
                     ExprArrayInit eai = (ExprArrayInit) nbase;
                     exprRV = eai.getElements().get(newStart.getIntVal());
                 }else{
-                    int i= newStart.getIntVal();
-                    List<Expression> elems = new ArrayList<Expression>(rl.len());
-                    ExprArrayInit aib = (ExprArrayInit) nbase;
-                    for(int t=0; t<rl.len(); ++t ){
-                        elems.add( aib.getElements().get(i+t) );
+                    Integer ln = rl.getLenExpression().getIValue();
+                    if(ln != null){
+                        int i= newStart.getIntVal();
+                        List<Expression> elems = new ArrayList<Expression>(ln);
+                        ExprArrayInit aib = (ExprArrayInit) nbase;
+                        for(int t=0; t<ln; ++t ){
+                            elems.add( aib.getElements().get(i+t) );
+                        }
+                        exprRV = new ExprArrayInit(exp, elems);
+                    }else{
+                        exprRV = new ExprArrayRange(exp, nbase, new RangeLen(nstart, nlen), exp.isUnchecked());
                     }
-                    exprRV = new ExprArrayInit(exp, elems);
                 }
             }else{
-                exprRV = new ExprArrayRange(exp, nbase, new RangeLen(nstart, rl.len()), exp.isUnchecked());
+                exprRV = new ExprArrayRange(exp, nbase, new RangeLen(nstart, nlen), exp.isUnchecked());
             }
         }
 
         try{
-            return vtype.arracc(newBase, newStart, vtype.CONST( rl.len() ), exp.isUnchecked() || uncheckedArrays);
+            return vtype.arracc(newBase, newStart, newLen, exp.isUnchecked() || uncheckedArrays);
         }catch(ArrayIndexOutOfBoundsException e){
             throw new ArrayIndexOutOfBoundsException( exp.getCx() + ":"  + e.getMessage() + ":" + exp );
         }
@@ -411,9 +426,15 @@ public class PartialEvaluator extends FEReplacer {
         Function fun = ss.getFuncNamed(name);
         assert fun != null : " The function " + name + " does not exist!! funcall: " + exp;
         Iterator<Parameter> formalParams = fun.getParams().iterator();
+        Map<String, Expression> pmap = new HashMap<String, Expression>();
+        VarReplacer vrep = new VarReplacer(pmap);
+        List<Parameter> nplist = new ArrayList<Parameter>();
         while(actualParams.hasNext()){
             Expression actual = actualParams.next();
-            Parameter param = formalParams.next();
+            Parameter param = formalParams.next();            
+            Type paramType = (Type) ((Type)param.getType().accept(vrep)).accept(this);            
+            pmap.put(param.getName(), actual);
+            nplist.add(new Parameter(paramType, param.getName(), param.getPtype()));
             boolean addedAlready = false;
             if( param.isParameterOutput()){
 
@@ -428,8 +449,8 @@ public class PartialEvaluator extends FEReplacer {
                 if(!addedAlready){
                     nparams.add(exprRV);
                 }
-                if(param.getType() instanceof TypeArray ){
-                    TypeArray ta = (TypeArray) param.getType();
+                if(paramType instanceof TypeArray ){
+                    TypeArray ta = (TypeArray) paramType;
                     if(av.isVect()){
                         List<abstractValue> lv = av.getVectValue();
                         if(lv.size() == ta.getLength().getIValue()){
@@ -447,7 +468,8 @@ public class PartialEvaluator extends FEReplacer {
             }
         }
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
-        vtype.funcall(fun, avlist, outSlist, state.pathCondition());
+        Function nfun = new Function(fun,fun.getCls(), fun.getName(), fun.getReturnType(), nplist, fun.getBody());
+        vtype.funcall(nfun, avlist, outSlist, state.pathCondition());
         
         assert outSlist.size() == outNmList.size(): "The funcall in vtype should populate the outSlist with 1 element per output parameter";
         Iterator<String> nmIt = outNmList.iterator();
@@ -522,7 +544,7 @@ public class PartialEvaluator extends FEReplacer {
         public Object visitExprArrayRange(ExprArrayRange ear){
             Expression base = ear.getBase();
             Expression nbase = (Expression) base.accept(this);
-            RangeLen rl = (RangeLen)ear.getMembers().get(0);
+            RangeLen rl = ear.getSelection();
             abstractValue olidx=null;
             olidx = lhsIdx;
             lhsIdx = (abstractValue)rl.start().accept(PartialEvaluator.this);
@@ -546,15 +568,25 @@ public class PartialEvaluator extends FEReplacer {
                 }
             }
 
-            rlen = rl.len();
-            if(isReplacer){
-                if(rlen == 1){
+            if(rl.hasLen()){
+                abstractValue lenav = (abstractValue) rl.getLenExpression().accept(PartialEvaluator.this);
+                if(lenav.hasIntVal()){
+                    rlen = lenav.getIntVal();
+                }else{
+                    rlen = -2;
+                }
+                if(isReplacer){                                        
+                    return  new ExprArrayRange(ear, nbase, new RangeLen(idxExpr, PartialEvaluator.this.exprRV), ear.isUnchecked());                    
+                }else{
+                    return ear;
+                } 
+            }else{
+                rlen = 1;
+                if(isReplacer){
                     return  new ExprArrayRange(ear, nbase, idxExpr, ear.isUnchecked());
                 }else{
-                    return  new ExprArrayRange(ear, nbase, new RangeLen(idxExpr, rlen), ear.isUnchecked());
+                    return ear;
                 }
-            }else{
-                return ear;
             }
         }
         public Object visitExprVar(ExprVar expr){
@@ -627,7 +659,9 @@ public class PartialEvaluator extends FEReplacer {
 
     protected void assignmentToLocal(abstractValue rhs, String lhsName,
             abstractValue lhsIdx, int rlen) {
-        if( rlen <= 1){
+        if(rlen == -2){
+            state.setVarValue(lhsName, vtype.BOTTOM(), rhs);
+        }else if( rlen <= 1){
             state.setVarValue(lhsName, lhsIdx, rhs);
         }else{
             List<abstractValue> lst = null;
@@ -691,9 +725,9 @@ public class PartialEvaluator extends FEReplacer {
 
     @Override
     public Object visitParameter(Parameter param){
-        state.varDeclare(param.getName() , param.getType());
-        if(isReplacer){
-            Type ntype = (Type)param.getType().accept(this);
+        Type ntype = (Type)param.getType().accept(this);
+        state.varDeclare(param.getName() , ntype);
+        if(isReplacer){            
              return new Parameter(ntype, transName(param.getName()), param.getPtype());
         }else{
             return param;
@@ -1167,6 +1201,16 @@ public class PartialEvaluator extends FEReplacer {
                         state.setVarValue(nm, this.vtype.NULL());
                     }else{
                         state.setVarValue(nm, this.vtype.CONST(0));
+                    }
+                }else{                    
+                    TypeArray tar = (TypeArray) vt;
+                    Integer iv = tar.getLength().getIValue();                    
+                    if(iv != null ){                        
+                        int n = iv;
+                        List<abstractValue> vals = new ArrayList<abstractValue>();
+                        abstractValue dv = (abstractValue)tar.getBase().defaultValue().accept(this);
+                        for(int i1 = 0; i1<n; ++i1){  vals.add(dv);  }
+                        state.setVarValue(nm, this.vtype.ARR(vals));
                     }
                 }
             }

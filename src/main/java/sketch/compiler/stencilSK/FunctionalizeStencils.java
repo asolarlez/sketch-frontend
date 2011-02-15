@@ -13,13 +13,13 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -1106,11 +1106,8 @@ class ProcessStencil extends FEReplacer {
 	        if(base instanceof ExprArrayRange) {
 	        	indices.addAll(getArrayIndices((ExprArrayRange) base));
 	        }
-	        List memb=array.getMembers();
-	        assert memb.size()==1: "In stencil mode, we permit only single-element indexing, i.e. no a[1,3,4]";
-	        assert memb.get(0) instanceof RangeLen: "In stencil mode, array ranges (a[1:4]) are not allowed";
-	        RangeLen rl=(RangeLen) memb.get(0);
-	        assert rl.len()==1: "In stencil mode, array ranges (a[1::2]) are not allowed";
+	        RangeLen rl= array.getSelection();
+	        assert !rl.hasLen(): "In stencil mode, array ranges (a[1::2]) are not allowed";
 	        indices.add(rl.start());
 	        return indices;
 	    }

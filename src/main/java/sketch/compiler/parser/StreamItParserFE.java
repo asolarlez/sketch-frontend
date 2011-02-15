@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): "StreamItParserFE.g" -> "StreamItParserFE.java"$
+// $ANTLR 2.7.7 (20060906): "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
 package sketch.compiler.parser;
 
@@ -584,7 +584,7 @@ inputState.guessing--;
 			match(ID);
 			match(LCURLY);
 			{
-			_loop205:
+			_loop202:
 			do {
 				if ((_tokenSet_6.member(LA(1)))) {
 					p=param_decl();
@@ -594,7 +594,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop205;
+					break _loop202;
 				}
 				
 			} while (true);
@@ -2799,7 +2799,7 @@ inputState.guessing--;
 		
 		Token  field = null;
 		Token  l = null;
-		x = null; List rlist;
+		x = null; ExprArrayRange.RangeLen rl;
 		
 		try {      // for error handling
 			x=uminic_value_expr();
@@ -2821,9 +2821,9 @@ inputState.guessing--;
 				{
 					l = LT(1);
 					match(LSQUARE);
-					rlist=array_range_list();
+					rl=array_range();
 					if ( inputState.guessing==0 ) {
-						x = new ExprArrayRange(x, rlist);
+						x = new ExprArrayRange(x, x, rl);
 					}
 					match(RSQUARE);
 					break;
@@ -3661,7 +3661,7 @@ inputState.guessing--;
 		
 		Token  field = null;
 		Token  l = null;
-		x = null; List rlist;
+		x = null; ExprArrayRange.RangeLen rl;
 		
 		try {      // for error handling
 			x=tminic_value_expr();
@@ -3683,9 +3683,9 @@ inputState.guessing--;
 				{
 					l = LT(1);
 					match(LSQUARE);
-					rlist=array_range_list();
+					rl=array_range();
 					if ( inputState.guessing==0 ) {
-						x = new ExprArrayRange(x, rlist);
+						x = new ExprArrayRange(x, x, rl);
 					}
 					match(RSQUARE);
 					break;
@@ -3796,15 +3796,77 @@ inputState.guessing--;
 		return x;
 	}
 	
-	public final List  array_range_list() throws RecognitionException, TokenStreamException {
-		List l;
+	public final ExprArrayRange.RangeLen  array_range() throws RecognitionException, TokenStreamException {
+		ExprArrayRange.RangeLen x;
 		
-		l=new ArrayList(); Object r;
+		x=null; Expression start,end,l;
 		
 		try {      // for error handling
-			r=array_range();
+			start=right_expr();
 			if ( inputState.guessing==0 ) {
-				l.add(r);
+				x=new ExprArrayRange.RangeLen(start);
+			}
+			{
+			switch ( LA(1)) {
+			case COLON:
+			{
+				match(COLON);
+				{
+				switch ( LA(1)) {
+				case TK_new:
+				case TK_null:
+				case TK_true:
+				case TK_false:
+				case LPAREN:
+				case LCURLY:
+				case INCREMENT:
+				case MINUS:
+				case DECREMENT:
+				case BANG:
+				case NDVAL:
+				case NDVAL2:
+				case REGEN:
+				case CHAR_LITERAL:
+				case STRING_LITERAL:
+				case HQUAN:
+				case NUMBER:
+				case ID:
+				case TK_pi:
+				{
+					end=right_expr();
+					if ( inputState.guessing==0 ) {
+						x=new ExprArrayRange.RangeLen(start,new ExprBinary(end, "-", start));
+					}
+					break;
+				}
+				case COLON:
+				{
+					match(COLON);
+					{
+					l=right_expr();
+					if ( inputState.guessing==0 ) {
+						x=new ExprArrayRange.RangeLen(start,l);
+					}
+					}
+					break;
+				}
+				default:
+				{
+					throw new NoViableAltException(LT(1), getFilename());
+				}
+				}
+				}
+				break;
+			}
+			case RSQUARE:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
 			}
 		}
 		catch (RecognitionException ex) {
@@ -3815,7 +3877,7 @@ inputState.guessing--;
 			  throw ex;
 			}
 		}
-		return l;
+		return x;
 	}
 	
 	public final Expression  uminic_value_expr() throws RecognitionException, TokenStreamException {
@@ -4109,120 +4171,6 @@ inputState.guessing--;
 			if (inputState.guessing==0) {
 				reportError(ex);
 				recover(ex,_tokenSet_25);
-			} else {
-			  throw ex;
-			}
-		}
-		return x;
-	}
-	
-	public final Object  array_range() throws RecognitionException, TokenStreamException {
-		Object x;
-		
-		Token  len = null;
-		x=null; Expression start,end,l;
-		
-		try {      // for error handling
-			start=right_expr();
-			if ( inputState.guessing==0 ) {
-				x=new ExprArrayRange.RangeLen(start);
-			}
-			{
-			switch ( LA(1)) {
-			case COLON:
-			{
-				match(COLON);
-				{
-				switch ( LA(1)) {
-				case TK_new:
-				case TK_null:
-				case TK_true:
-				case TK_false:
-				case LPAREN:
-				case LCURLY:
-				case INCREMENT:
-				case MINUS:
-				case DECREMENT:
-				case BANG:
-				case NDVAL:
-				case NDVAL2:
-				case REGEN:
-				case CHAR_LITERAL:
-				case STRING_LITERAL:
-				case HQUAN:
-				case NUMBER:
-				case ID:
-				case TK_pi:
-				{
-					end=right_expr();
-					if ( inputState.guessing==0 ) {
-						x=new ExprArrayRange.Range(start,end);
-					}
-					break;
-				}
-				case COLON:
-				{
-					match(COLON);
-					{
-					boolean synPredMatched200 = false;
-					if (((LA(1)==NUMBER))) {
-						int _m200 = mark();
-						synPredMatched200 = true;
-						inputState.guessing++;
-						try {
-							{
-							match(NUMBER);
-							}
-						}
-						catch (RecognitionException pe) {
-							synPredMatched200 = false;
-						}
-						rewind(_m200);
-inputState.guessing--;
-					}
-					if ( synPredMatched200 ) {
-						len = LT(1);
-						match(NUMBER);
-						if ( inputState.guessing==0 ) {
-							x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));
-						}
-					}
-					else if ((_tokenSet_8.member(LA(1)))) {
-						l=right_expr();
-						if ( inputState.guessing==0 ) {
-							x=new ExprArrayRange.RangeLen(start,l);
-						}
-					}
-					else {
-						throw new NoViableAltException(LT(1), getFilename());
-					}
-					
-					}
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
-				break;
-			}
-			case RSQUARE:
-			{
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			}
-			}
-		}
-		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
-				reportError(ex);
-				recover(ex,_tokenSet_37);
 			} else {
 			  throw ex;
 			}

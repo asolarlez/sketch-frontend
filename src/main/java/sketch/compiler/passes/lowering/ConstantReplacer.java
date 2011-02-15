@@ -2,7 +2,6 @@ package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,14 +11,12 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
@@ -59,30 +56,7 @@ public class ConstantReplacer extends FEReplacer {
 		return false;
 	}
 
-	@Override
-	public Object visitExprArrayRange(ExprArrayRange exp)
-	{
-		List newMembers=new ArrayList(exp.getMembers().size()+1);
-		boolean change=false;
-		for(Iterator members=exp.getMembers().iterator();members.hasNext();)
-		{
-			Object m=members.next();
-			if(m instanceof RangeLen) {
-				RangeLen range=(RangeLen) m;
-				if(range.hasLenExpression()) {
-					Expression l=(Expression) range.getLenExpression().accept(this);
-					assert l instanceof ExprConstInt : "Range Length expressions can not be Variables. They must be constants";
-					range=new RangeLen(range.start(),((ExprConstInt)l).getVal());
-					change=true;
-				}
-				newMembers.add(range);
-			}
-			else
-				newMembers.add(m);
-		}
-		if(change) exp=new ExprArrayRange(exp.getBase(),newMembers);
-		return super.visitExprArrayRange(exp);
-	}
+
 
 	@SuppressWarnings("unchecked")
 	public Object visitFieldDecl(FieldDecl field) {

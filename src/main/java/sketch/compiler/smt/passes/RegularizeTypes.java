@@ -8,7 +8,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -284,41 +283,22 @@ public class RegularizeTypes extends SymbolTableVisitor {
 		final Expression newBase=doExpression(exp.getBase());
 		if(newBase!=exp.getBase()) change=true;
 		
-		final List l=exp.getMembers();
-		
-		List newList=new ArrayList(l.size()+1);
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Range range=(Range) obj;
-				
-				throw new IllegalStateException("unsupported Range AST");
-				
-				// the desired type for index is int
-//				desiredType = TypePrimitive.inttype;
-//				
-//				Expression newStart=doExpression(range.start());
-//				Expression newEnd=doExpression(range.end());
-//				if(newStart!=range.start() || newEnd!=range.end()) {
-//					range=new Range(newStart,newEnd);
-//					change=true;
-//				}
-//				newList.add(range);
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				desiredType = TypePrimitive.inttype;
-				Expression newStart=doExpression(range.start());
-				if(newStart!=range.start()) {
-					range=new RangeLen(newStart,range.len());
-					change=true;
-				}
-				newList.add(range);
-			}
-		}
 		
 		
-		ExprArrayRange newRangeExpr = new ExprArrayRange(newBase, newList); 
+		
+        RangeLen range=exp.getSelection();
+        desiredType = TypePrimitive.inttype;
+        Expression newStart=doExpression(range.start());
+        Expression newLen = doExpression(range.getLenExpression());
+        if(newStart!=range.start() || newLen != range.getLenExpression()) {
+            range=new RangeLen(newStart,newLen);
+            change=true;
+        }
+    
+        
+		
+		
+		ExprArrayRange newRangeExpr = new ExprArrayRange(exp, newBase, range); 
 		Type rangeExprType = getType(newRangeExpr);
 		if (!rangeExprType.equals(oldDesiredType)) {
 			return new ExprTypeCast(exp, oldDesiredType, newRangeExpr);

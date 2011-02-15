@@ -1,28 +1,16 @@
 package sketch.compiler.dataflow.preprocessor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
-import sketch.compiler.ast.core.stmts.StmtDoWhile;
-import sketch.compiler.ast.core.stmts.StmtFor;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtLoop;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 /**
@@ -135,6 +123,13 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
         return result;
     }
+	@Override
+	public Object visitTypeArray(TypeArray ta){
+	    Expression ie = ta.getLength();
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );
+	    return super.visitTypeArray(ta);
+	}
+	
 }
 
 class UpgradeStarToInt extends FEReplacer{
@@ -230,44 +225,27 @@ class UpgradeStarToInt extends FEReplacer{
     	boolean change=false;
 		Expression newBase=doExpression(exp.getBase());
 		if(newBase!=exp.getBase()) change=true;
-		List l=exp.getMembers();
-		List<Object> newList=new ArrayList<Object>();
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Expression newStart = null;
-				Expression newEnd = null;
-				Range range=(Range) obj;
-				{
-					Type oldType = type;
-					type = TypePrimitive.inttype;
-					newStart=doExpression(range.start());
-					type = oldType;
-				}
-				{
-					Type oldType = type;
-					type = TypePrimitive.inttype;
-			    	newEnd=doExpression(range.end());
-			    	type = oldType;
-				}
-				newList.add(new Range(newStart,newEnd));
-				if(newStart!=range.start()) change=true;
-				else if(newEnd!=range.end()) change=true;
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				Expression newStart = null;
-				{
-					Type oldType = type;
-					type = TypePrimitive.inttype;
-			    	newStart=doExpression(range.start());
-			    	type = oldType;
-				}
-				newList.add(new RangeLen(newStart,range.len()));
-				if(newStart!=range.start()) change=true;
-			}
-		}
+		
+		RangeLen range=exp.getSelection();
+        Expression newStart = null;
+        {
+            Type oldType = type;
+            type = TypePrimitive.inttype;
+            newStart=doExpression(range.start());
+            type = oldType;
+        }
+        if(newStart!=range.start()) change=true;
+        
+        Expression newLen = null;
+        if(range.hasLen()){
+            Type oldType = type;
+            type = TypePrimitive.inttype;
+            newLen=doExpression(range.getLenExpression());
+            type = oldType;
+        }
+        if(range.getLenExpression() != newLen) change = true;
+		
 		if(!change) return exp;
-		return new ExprArrayRange(newBase,newList);
+		return new ExprArrayRange(exp, newBase,new RangeLen(newStart, newLen));
     }
 }

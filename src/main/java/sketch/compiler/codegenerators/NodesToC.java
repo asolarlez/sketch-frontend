@@ -583,13 +583,11 @@ public class NodesToC extends NodesToJava {
 
   public Object visitExprArrayRange(ExprArrayRange exp){
     Expression base=exp.getBase();
-    List ranges=exp.getMembers();
-    if(ranges.size()==0) throw new IllegalStateException();
-    if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
-    Object o=ranges.get(0);
-    if(o instanceof RangeLen)
+    
+    
+    
     {
-      RangeLen range=(RangeLen) o;
+      RangeLen range=exp.getSelection();
       if(isLHS) {
         isLHS = false;
         Type tmptype = ctype;
@@ -610,14 +608,13 @@ public class NodesToC extends NodesToJava {
           ((TypeArray)curType).getBase().equals(TypePrimitive.bittype)) 
           ||
           curType.equals(TypePrimitive.bittype);
-        if (!isBitvec && range.len()==1) {
-          return lhs + ".get("+ tmp + ")";
+            if (!isBitvec && !range.hasLen()) {
+              return lhs + ".get("+ tmp + ")";
 				} else{
-					return lhs + ".sub<" + range.len() + ">("+ tmp + ")";
+					return lhs + ".sub<" + range.getLenExpression() + ">("+ tmp + ")";
 				}
 			}
-		}
-		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
+		}		
 	}
 
 	public Object visitExprField(ExprField exp)

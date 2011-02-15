@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
@@ -150,7 +149,10 @@ public class FEReplacer implements FEVisitor
      */
     protected Expression doExpression(Expression expr)
     {
-        return (Expression)expr.accept(this);
+        if(expr != null)
+            return (Expression)expr.accept(this);
+        else
+            return null;
     }
 
 
@@ -769,35 +771,19 @@ public class FEReplacer implements FEVisitor
 	}
 
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		boolean change=false;
+		
 		final Expression newBase=doExpression(exp.getBase());
-		if(newBase!=exp.getBase()) change=true;
-		final List l=exp.getMembers();
-		List newList=new ArrayList(l.size()+1);
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Range range=(Range) obj;
-				Expression newStart=doExpression(range.start());
-				Expression newEnd=doExpression(range.end());
-				if(newStart!=range.start() || newEnd!=range.end()) {
-					range=new Range(newStart,newEnd);
-					change=true;
-				}
-				newList.add(range);
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				Expression newStart=doExpression(range.start());
-				if(newStart!=range.start()) {
-					range=new RangeLen(newStart,range.len());
-					change=true;
-				}
-				newList.add(range);
-			}
+		
+		RangeLen range = exp.getSelection();
+		Expression newStart=doExpression(range.start());
+		Expression newLen = null;
+		if(range.hasLen()){
+		    newLen = doExpression(range.getLenExpression());
 		}
-		if(!change) return exp;
-		return new ExprArrayRange(newBase,newList);
+		if(newBase!=exp.getBase() || newStart != range.start() || (newLen != null && newLen != range.getLenExpression())){
+		    return new ExprArrayRange(exp, newBase, new RangeLen(newStart, newLen));
+		}
+		return exp;		
 	}
 
 	public Object visitType(Type t) {

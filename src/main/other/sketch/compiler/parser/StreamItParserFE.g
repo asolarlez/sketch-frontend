@@ -665,21 +665,21 @@ value_expr returns [Expression x] { x = null; boolean neg = false; }
 
 
 
-minic_value_expr returns [Expression x] { x = null; List rlist; }
+minic_value_expr returns [Expression x] { x = null; ExprArrayRange.RangeLen rl; }
 	:	x=tminic_value_expr
 		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
 		|	l:LSQUARE
-					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
+					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
 		)*
 	;
 
 
-minic_value_exprnofo returns [Expression x] { x = null; List rlist; }
+minic_value_exprnofo returns [Expression x] { x = null; ExprArrayRange.RangeLen rl; }
 	:	x=uminic_value_expr
 		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
 		|	l:LSQUARE
-					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
+					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
 		)*
 	;
@@ -726,17 +726,13 @@ value returns [Expression x] { x = null; List rlist; }
 		)*
 	;
 */
-array_range_list returns [List l] { l=new ArrayList(); Object r;}
-:r=array_range {l.add(r);}
-;
 
-array_range returns [Object x] { x=null; Expression start,end,l; }
+array_range returns [ExprArrayRange.RangeLen x] { x=null; Expression start,end,l; }
 :start=right_expr {x=new ExprArrayRange.RangeLen(start);}
 (COLON
-(end=right_expr {x=new ExprArrayRange.Range(start,end);}
+(end=right_expr {x=new ExprArrayRange.RangeLen(start,new ExprBinary(end, "-", start));}
 |COLON
-((NUMBER) => len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
-|l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
+(l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
 ))?
 ;
 

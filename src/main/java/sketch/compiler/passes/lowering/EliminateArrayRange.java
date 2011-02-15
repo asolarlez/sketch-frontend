@@ -1,13 +1,9 @@
 package sketch.compiler.passes.lowering;
-import java.util.ArrayList;
-import java.util.List;
-
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
@@ -56,19 +52,18 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 		Statement postAssign=null;
 		if( stmt.getLHS() instanceof ExprArrayRange ){
 			ExprArrayRange arng = (ExprArrayRange) stmt.getLHS();
-			assert arng.getMembers().size() == 1 && arng.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
-			RangeLen rl = (RangeLen)arng.getMembers().get(0);
-			if(rl.len() != 1){
+			
+			RangeLen rl = arng.getSelection();
+			if(rl.hasLen()){
 				TypeArray arrType = (TypeArray) getType(arng.getBase());
 				Type baseType = arrType.getBase();
-				Type type = new TypeArray(baseType, new ExprConstInt(rl.len()));
+				Type type = new TypeArray(baseType, rl.getLenExpression());
 
 				Expression newBase=doExpression(arng.getBase());
 				Expression newIndex = doExpression(rl.start());
-				if( newIndex != rl.start() || newBase != arng.getBase() ){
-					List lst = new ArrayList();
-					lst.add( new RangeLen(newIndex, rl.len()) );
-					arng = new ExprArrayRange(newBase, lst);
+				Expression newLen = doExpression(rl.getLenExpression());
+				if( newIndex != rl.start() || newLen != rl.getLenExpression() || newBase != arng.getBase() ){					
+					arng = new ExprArrayRange(arng, newBase, new RangeLen(newIndex, newLen));
 				}
 				String newName = varGen.nextVar();
 				StmtVarDecl decl = new StmtVarDecl(arng, type, newName, null);
@@ -91,24 +86,22 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 
 
 
-	public Object visitExprArrayRange(ExprArrayRange exp){
-    	assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
-    	RangeLen rl = (RangeLen)exp.getMembers().get(0);
-    	if( rl.len() == 1 ){
+	public Object visitExprArrayRange(ExprArrayRange exp){    	
+    	RangeLen rl =  exp.getSelection();
+    	if( !rl.hasLen() ){
     		Expression newBase=doExpression(exp.getBase());
     		Expression newIndex = doExpression(rl.start());
     		return new ExprArrayRange(exp, newBase, newIndex);
     	}else{
 			TypeArray arrType = (TypeArray) getType(exp.getBase());
 			Type baseType = arrType.getBase();
-			Type type = new TypeArray(baseType, new ExprConstInt(rl.len()));
+			Type type = new TypeArray(baseType, doExpression(rl.getLenExpression()));
 
 			Expression newBase=doExpression(exp.getBase());
 			Expression newIndex = doExpression(rl.start());
-			if( newIndex != rl.start() || newBase != exp.getBase() ){
-				List lst = new ArrayList();
-				lst.add( new RangeLen(newIndex, rl.len()) );
-				exp = new ExprArrayRange(newBase, lst);
+			Expression newLen = doExpression(rl.getLenExpression());
+			if( newIndex != rl.start() ||  newLen != rl.getLenExpression() || newBase != exp.getBase() ){				
+				exp = new ExprArrayRange(exp, newBase, new RangeLen(newIndex, newLen));
 			}
 			String newName = varGen.nextVar();
 			StmtVarDecl decl = new StmtVarDecl(exp, type, newName, null);

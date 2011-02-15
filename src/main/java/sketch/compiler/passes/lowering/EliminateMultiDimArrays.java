@@ -13,13 +13,13 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -165,16 +165,16 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
 		for (RangeLen rl : oldIndices) {
 			Expression newStart = doExpression (rl.start ());
-
-			if(newStart != rl.start ())
-				rl = new RangeLen (newStart, rl.len ());
+			Expression newLen = doExpression(rl.getLenExpression());
+			if(newLen != rl.getLenExpression() || newStart != rl.start ())
+				rl = new RangeLen (newStart, newLen);
 			indices.add(rl);
 		}
 		
 		Type xt = getType (ear.getAbsoluteBaseExpr ());
 		List<Expression> dims = xt instanceof TypeArray? 
 			((TypeArray) xt).getDimensions () : null;
-		if (dims ==null || 1 == dims.size ()) {
+		if (dims ==null || (1 == dims.size () && indices.size() == 1 )) {
 			return new ExprArrayRange (ear, base, indices.get (0));
 		}
 
@@ -194,11 +194,17 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 					 	  		    product (dims, idx),
 					 	  		    rl.start ()));
 		}
-
-		Expression size =
-			new ExprBinary (idx, ExprBinary.BINOP_MUL,
-					new ExprConstInt (idx, indices.get (indices.size ()-1).len ()),
+		Expression lastLen = indices.get (indices.size ()-1).getLenExpression(); 
+		Expression size = null;
+		if(lastLen != null){
+			size = new ExprBinary (idx, ExprBinary.BINOP_MUL,
+			        lastLen,
 					product (dims, idx));
+		}else{
+		    if(dims.size() > 0){
+		        size = product (dims, idx);
+		    }
+		}
 		RangeLen flatRl = new RangeLen (idx, size);
 
 		return new ExprArrayRange (ear, base, flatRl);
@@ -246,7 +252,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	 */
 	private boolean isSupportedIndex (List<RangeLen> indices) {
 		for (int i = 0; i < (indices.size () - 1); ++i)
-			if (indices.get (i).len () != 1)
+			if (indices.get (i).hasLen())
 				return false;
 		return true;
 	}

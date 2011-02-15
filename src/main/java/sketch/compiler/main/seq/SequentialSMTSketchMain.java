@@ -349,7 +349,7 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
         if (showPhaseOpt("lowering"))
             dump(prog, "Lowering the code previous to Symbolic execution.");
 
-		prog = (Program) prog.accept(new EliminateNestedArrAcc());
+		prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 //		 dump (prog, "After lowerIR:");
 		return prog;
 	}

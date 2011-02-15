@@ -1,0 +1,27 @@
+pragma options "--bnd-inbits 3";
+
+
+int[N] test10(int N, int[N] in){
+  int[N] out;
+  for(int i=0; i<N; ++i){
+  	if(i>0 && i<N-1) out[i] = in[i-1] + in[i+1];
+  	else out[i] = 1;
+  }
+  return out;
+}
+
+
+int[N] testSK10(int N, int[N] in) implements test10 {    
+  int[N] out;
+  if(N>0){
+      out[??] = 1;
+      if(??){
+      out[N-??] = 1;
+      }
+  }
+  for(int i=??; i<N-??; ++i){  	
+  	out[i] = in[i-1] + in[i+1];
+  }
+  
+  return out;
+}

@@ -111,7 +111,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
     	prog= (Program)prog.accept(new PropagateFinals());
     	prog = (Program)prog.accept(new EliminateDeadCode(true));
 
-        prog = (Program) prog.accept(new ReplaceFloatsWithBits());
+        prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         //prog = (Program)prog.accept(new VariableDisambiguator());
         
         prog = (Program) prog.accept(new MatchParamNames());

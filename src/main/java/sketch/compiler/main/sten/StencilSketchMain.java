@@ -92,7 +92,7 @@ public class StencilSketchMain extends SequentialSketchMain
 //    	System.out.println("=============================================================");
 //    	prog.accept( new SimpleCodePrinter() );
 
-        prog = (Program) prog.accept(new ReplaceFloatsWithBits());
+        prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         //prog = (Program)prog.accept(new VariableDisambiguator());
 //        System.out.println(" After preprocessing level 1. ");
         prog = (Program) prog.accept(new MatchParamNames());

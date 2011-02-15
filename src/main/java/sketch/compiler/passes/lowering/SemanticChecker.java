@@ -784,18 +784,8 @@ public class SemanticChecker
 						report(expr, "array access with a non-array base");
 				}else{
 					report(expr, "array access with a non-array base");
-				}
-				List l=expr.getMembers();
-				if(l.size() != 1){
-					report(expr, "Ranges are not yet supported");
-					return super.visitExprArrayRange(expr);
-				}
-				Object idx = l.get(0);
-				if(!(idx instanceof RangeLen)){
-					report(expr, "Ranges are not yet supported");
-					return super.visitExprArrayRange(expr);
-				}
-				RangeLen rl = (RangeLen)idx;
+				}				
+				RangeLen rl = expr.getSelection();
 				Type ot = getType((Expression)rl.start().accept(this));
 				if (ot != null)
 				{
@@ -934,9 +924,7 @@ public class SemanticChecker
 				Type rt = getType((Expression)stmt.getRHS().accept(this));
 				String lhsn = null;
 				Expression lhsExp = stmt.getLHS();
-				if(lhsExp instanceof ExprArray){
-					lhsExp = ((ExprArray)stmt.getLHS()).getBase();
-				}
+				
 				if(lhsExp instanceof ExprArrayRange){
 					lhsExp = ((ExprArrayRange)stmt.getLHS()).getBase();
 				}

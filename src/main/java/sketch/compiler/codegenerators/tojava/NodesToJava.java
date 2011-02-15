@@ -1262,21 +1262,16 @@ public class NodesToJava extends SymbolTableVisitor
 	}
 
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		Expression base=exp.getBase();
-		List ranges=exp.getMembers();
-		if(ranges.size()==0) throw new IllegalStateException();
-		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
-		Object o=ranges.get(0);
-		if(o instanceof RangeLen)
+		Expression base=exp.getBase();		
 		{
-			RangeLen range=(RangeLen) o;
-			if(range.len()==1) {
+			RangeLen range=exp.getSelection();
+			if(!range.hasLen()) {
 				return base.accept(this)+"["+range.start().accept(this)+"]";
 			}else{
-				return base.accept(this)+"["+range.start().accept(this)+"::" + range.len() + "]";
+				return base.accept(this)+"["+range.start().accept(this)+"::" + range.getLenExpression() + "]";
 			}
 		}
-		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
+		
 	}
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }

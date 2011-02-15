@@ -1,10 +1,13 @@
 package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -16,22 +19,26 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 
 
 public class VarReplacer extends FEReplacer{
-	String oldName;
-	Expression newName;
+    Map<String, Expression> repl;
+	
 
 	public VarReplacer(String oldName, String newName){
-		this.oldName = oldName;
-		this.newName = new ExprVar((FEContext) null, newName);
+	    repl = new HashMap<String, Expression>();
+	    repl.put(oldName, new ExprVar((FENode) null, newName));		
 	}
 
 	public VarReplacer(String oldName, Expression newName){
-		this.oldName = oldName;
-		this.newName = newName;
+	    repl = new HashMap<String, Expression>();
+	    repl.put(oldName, newName);
+	}
+	
+	public VarReplacer(Map<String, Expression> repl){
+	    this.repl = repl;
 	}
 
 	public Object visitExprVar(ExprVar exp) {
-		if( exp.getName().equals(oldName)){
-			return newName;
+		if( repl.containsKey(exp.getName())){
+			return repl.get(exp.getName());
 		}else{
 			return exp;
 		}
@@ -62,6 +69,11 @@ public class VarReplacer extends FEReplacer{
         List<Expression> newInits = new ArrayList<Expression>();
         List<String> newNames = new ArrayList<String>();
         boolean changed = false;
+        assert repl.size() == 1 : "NYI";
+        Entry<String, Expression> ent = repl.entrySet().iterator().next();
+        String oldName = ent.getKey();
+        Expression newName = ent.getValue(); 
+        
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             Expression init = stmt.getInit(i);

@@ -3,7 +3,6 @@
  */
 package sketch.compiler.ast.core.exprs;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
@@ -17,70 +16,40 @@ import sketch.compiler.passes.structure.GetAssignLHS;
  *
  * @author liviu
  */
-public class ExprArrayRange extends Expression  implements ExprArray
-{
-	public static class Range
-	{
-		private final Expression start,end;
-		public Range(Expression start, Expression end)
-		{
-			this.start=start;
-			this.end=end;
-		}
-		public String toString()
-		{
-			return start+":"+end;
-		}
-		public Expression start() {return start;}
-		public Expression end() {return end;}
-	}
+public class ExprArrayRange extends Expression
+{	
 	public static class RangeLen
 	{
-		private final Expression start;
-		private final int len;
-		private final Expression lenExpr;
+		private final Expression start;		
+		private final Expression lenExpr;		
 		public RangeLen(Expression start)
 		{
-			this(start,1);
+			this(start, null);
 		}
 		public RangeLen(Expression start, int len)
 		{
-			this.start=start;
-			this.len=len;
-			this.lenExpr= null;
+			this.start=start;			
+			this.lenExpr= ExprConstInt.createConstant(len);
 		}
 		public RangeLen(Expression start, Expression len)
 		{
-			this.start=start;
-			Integer i = len.getIValue();
-			if(i!= null){
-				this.len = i;
-				this.lenExpr = null;
-			}else{
-				this.len=0;
-				this.lenExpr=len;
-			}
+			this.start=start;			
+			this.lenExpr=len;			
 		}
-		public Expression start() {return start;}
-		public int len()
-		{
-			if(lenExpr!=null) throw new IllegalStateException("RangeLen len parameter has not been resolved to an int");
-			return len;
-		}
+		public Expression start() {return start;}		
 		public Expression getLenExpression() {
-			if(lenExpr != null){ return lenExpr; }
-			return new ExprConstInt(len);			
+			return lenExpr;
 		}
-		public boolean hasLenExpression() {return lenExpr!=null;}
+		public boolean hasLen() {return lenExpr!=null;}
 		public String toString()
-		{
-			if(len==1) return start.toString();
-			return start+"::"+len;
+		{			
+			if(lenExpr != null) return start+"::"+lenExpr; 
+			return start.toString();
 		}
 	}
 
 	private Expression base;
-	private List members;
+	private RangeLen index;
 	 private boolean unchecked=false;
 	/**
 	 * @param unchecked The unchecked to set.
@@ -97,7 +66,7 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	}
 	public ExprArrayRange(Expression base, Expression offset)
 	{
-		this(base, Collections.singletonList(new RangeLen(offset)));
+		this(base, base, new RangeLen(offset));
 	}
 
 	/*
@@ -106,73 +75,41 @@ public class ExprArrayRange extends Expression  implements ExprArray
 	 */
 	public ExprArrayRange(FENode node, Expression base, Expression offset)
 	{
-		this(node, base, Collections.singletonList(new RangeLen(offset)));
+		this(node, base, new RangeLen(offset));
 	}
 	public ExprArrayRange(FENode node, Expression base, RangeLen rl)
 	{
-		this(node, base, Collections.singletonList(rl));
+		this(node, base, rl, false);
 	}
 	public ExprArrayRange(FENode node, Expression base, RangeLen rl, boolean unchecked)
 	{
-		this(node, base, Collections.singletonList(rl), unchecked);
+	    super(node);
+        this.base=base;
+        this.index=rl;        
+        setUnchecked(unchecked);
 	}
 
+	
 	public ExprArrayRange(FENode node, Expression base, Expression offset, boolean unchecked)
 	{
-		this(node, base, Collections.singletonList(new RangeLen(offset)));
-		setUnchecked(unchecked);
+		this(node, base, new RangeLen(offset), unchecked);		
 	}
 
 
-	public Expression getOffset(){
-		assert members.size() == 1;
-		assert members.get(0) instanceof RangeLen;
-		RangeLen rl = (RangeLen)members.get(0);
-		assert rl.len == 1;
+	public Expression getOffset(){	    
+		RangeLen rl = index;
+		assert !rl.hasLen();
 		return rl.start;
 	}
 
-
-	/**
-	 * Construct a new array range Expression. "members" must be a
-	 * list containing Range and RangeLen objects.
-	 */
-	public ExprArrayRange(FENode cx, Expression base, List members)
-	{
-		super(cx);
-		this.base=base;
-		this.members=members;
-		if(members.isEmpty()) throw new IllegalArgumentException();
+	public RangeLen getSelection(){
+	    return index;
 	}
-	public ExprArrayRange(FENode cx, Expression base, List members, boolean unchecked)
-	{
-		super(cx);
-		this.base=base;
-		this.members=members;
-		if(members.isEmpty()) throw new IllegalArgumentException();
-		setUnchecked(unchecked);
-	}
+	
+	
 
 
-	/**
-	 * Construct a new array range Expression. "members" must be a
-	 * list containing Range and RangeLen objects.
-	 */
-	public ExprArrayRange(Expression base, List members)
-	{
-		super(base);
-		this.base=base;
-		this.members=members;
-		if(members.isEmpty()) throw new IllegalArgumentException();
-	}
-	public ExprArrayRange(Expression base, List members, boolean unchecked)
-	{
-		super(base);
-		this.base=base;
-		this.members=members;
-		if(members.isEmpty()) throw new IllegalArgumentException();
-		setUnchecked(unchecked);
-	}
+	
 
 	/* (non-Javadoc)
 	 * @see sketch.compiler.nodes.FENode#accept(sketch.compiler.nodes.FEVisitor)
@@ -182,44 +119,27 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		return v.visitExprArrayRange(this);
 	}
 
-	/**
-	 * Returns a list containing Range and RangeLen objects. You must
-	 * use instanceof to handle them separately.
-	 */
-	public List getMembers() {
-		return members;
-	}
+	
 
 	public String toString()
 	{
 		StringBuffer ret=new StringBuffer();
 		ret.append(base);
 		ret.append('[');
-		ret.append(members.get(0));
-		for(int i=1;i<members.size();i++)
-		{
-			ret.append(',');
-			ret.append(members.get(i));
-		}
+		ret.append(index);		
 		ret.append(']');
 		return ret.toString();
 	}
 
 	public List<RangeLen> getArraySelections () {
 		List<RangeLen> sels = new ArrayList<RangeLen> ();
-		List memb = getMembers ();
-
+		
 		Expression base = getBase ();
 		if (base instanceof ExprArrayRange) {
 			sels.addAll (((ExprArrayRange) base).getArraySelections ());
-		}
+		}		
 
-		if (memb.size () > 1) {
-			report ("sorry, mult-index (e.g., a[1, 2]) is not supported");
-			assert false;
-		}
-
-		sels.add ((RangeLen) memb.get (0));
+		sels.add (index);
 
 		return sels;
 	}
@@ -230,11 +150,8 @@ public class ExprArrayRange extends Expression  implements ExprArray
         if(base instanceof ExprArrayRange) {
         	indices.addAll(((ExprArrayRange) base).getArrayIndices());
         }
-        List memb= getMembers();
-        assert memb.size()==1: "In stencil mode, we permit only single-element indexing, i.e. no a[1,3,4]";
-        assert memb.get(0) instanceof RangeLen: "In stencil mode, array ranges (a[1:4]) are not allowed";
-        RangeLen rl=(RangeLen) memb.get(0);
-        assert rl.len()==1: "In stencil mode, array ranges (a[1::2]) are not allowed";
+        RangeLen rl=index;
+        assert !rl.hasLen(): "In stencil mode, array ranges (a[1::2]) are not allowed";
         indices.add(rl.start());
         return indices;
     }
@@ -257,12 +174,9 @@ public class ExprArrayRange extends Expression  implements ExprArray
 		return base;
 	}
 
-	public Expression getSingleIndex() {
-		if(members.size()!=1) return null;
-		Object o=members.get(0);
-		if(!(o instanceof RangeLen)) return null;
-		RangeLen r=(RangeLen) o;
-		if(r.len!=1) return null;
+	public Expression getSingleIndex() {		
+		RangeLen r=index;
+		if(r.hasLen()) return null;
 		return r.start;
 	}
 

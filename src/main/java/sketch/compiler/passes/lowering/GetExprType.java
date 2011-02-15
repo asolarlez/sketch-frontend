@@ -26,7 +26,6 @@ import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
@@ -76,49 +75,28 @@ public class GetExprType extends FENullVisitor
     	return ret;
     }
 
-    public Object visitExprArrayRange(ExprArrayRange exp) {
-    	exp.assertTrue (exp.getMembers ().size () == 1,
-    			"Array Range expressions not yet implemented; check "+exp);
+    public Object visitExprArrayRange(ExprArrayRange exp) {    	
     	Type base = (Type)exp.getBase().accept(this);
     	
-		List l=exp.getMembers();
+		
 		Expression expr = null;
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Range range = (Range) obj;
-				Type start = (Type)((Range) obj).start().accept(this);
-				Type end = (Type)((Range) obj).end().accept(this);
-				if(expr == null){
-					expr = new ExprBinary(exp, ExprBinary.BINOP_SUB, range.end(), range.start());
-				}else{
-					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr,
-							new ExprBinary(exp, ExprBinary.BINOP_SUB, range.end(), range.start())
-					);
-				}
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				Type start = (Type)range.start().accept(this);
-				if(expr == null){
-					expr = new ExprConstInt(range.len());
-				}else{
-					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
-				}
-			}
-		}
+		
+            RangeLen range=exp.getSelection();
+            Type start = (Type)range.start().accept(this);
+            
+            expr = range.getLenExpression();
+            
+        
 		if(!(base instanceof TypeArray)) return null;
         // ASSERT: base is a TypeArray.
 
 		Type baseType = ((TypeArray)base).getBase();
-
-
-
-		if(expr.getIValue() == 1){
-			return baseType;
+		
+		if(range.hasLen()){
+		    return new TypeArray(baseType, expr);
 		}else{
-			return new TypeArray(baseType, expr);
-		}
+		    return baseType;
+		}		
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp)

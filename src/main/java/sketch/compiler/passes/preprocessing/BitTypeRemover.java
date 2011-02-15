@@ -12,7 +12,6 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -80,17 +79,13 @@ public class BitTypeRemover extends SymbolTableVisitor
     			StmtAssign ass = new StmtAssign(ev, arr  );
     			this.preStmts.add( (Statement) rhsDecl.accept(BitTypeRemover.this)  );
     			this.preStmts.add( (Statement) ass.accept(BitTypeRemover.this)  );
-    			return new ExprArrayRange(ev,Collections.singletonList(
-    					new RangeLen( index)
-    				));
+    			return new ExprArrayRange(arr, ev, new RangeLen( index) );
     		}
     	}
 
     	public Object visitExprVar(ExprVar exp) {
     		if (getVarType(exp) instanceof TypeArray)
-    			return new ExprArrayRange(exp,Collections.singletonList(
-    					new RangeLen( index)
-    				));
+    			return new ExprArrayRange(exp, exp, new RangeLen( index));
     		else
     			return exp;
     	}
@@ -250,14 +245,14 @@ public class BitTypeRemover extends SymbolTableVisitor
     		ExprBinary binExp=(ExprBinary) start;
     		if(binExp.getOp()==ExprBinary.BINOP_ADD) {
     			if(binExp.getLeft() instanceof ExprBinary && ((ExprBinary)binExp.getLeft()).getOp()==ExprBinary.BINOP_MUL) {
-    				LinearRange subrange=analyzeRange(new RangeLen(binExp.getLeft(),range.len()));
+    				LinearRange subrange=analyzeRange(new RangeLen(binExp.getLeft(),range.getLenExpression()));
     				if(subrange!=null && binExp.getRight() instanceof ExprConstInt) {
     					subrange.startOffset+=((ExprConstInt)binExp.getRight()).getVal();
     					return subrange;
     				}
     			}
     			else if(binExp.getRight() instanceof ExprBinary && ((ExprBinary)binExp.getRight()).getOp()==ExprBinary.BINOP_MUL) {
-    				LinearRange subrange=analyzeRange(new RangeLen(binExp.getRight(),range.len()));
+    				LinearRange subrange=analyzeRange(new RangeLen(binExp.getRight(),range.getLenExpression()));
     				if(subrange!=null && binExp.getLeft() instanceof ExprConstInt) {
     					subrange.startOffset+=((ExprConstInt)binExp.getLeft()).getVal();
     					return subrange;
@@ -266,13 +261,13 @@ public class BitTypeRemover extends SymbolTableVisitor
     		}
     		else if(binExp.getOp()==ExprBinary.BINOP_MUL) {
 				if(binExp.getLeft() instanceof ExprConstInt && binExp.getRight() instanceof ExprConstInt) {
-					return new LinearRange(0,null,((ExprConstInt)binExp.getLeft()).getVal()*((ExprConstInt)binExp.getRight()).getVal(),range.len());
+					return new LinearRange(0,null,((ExprConstInt)binExp.getLeft()).getVal()*((ExprConstInt)binExp.getRight()).getVal(),range.getLenExpression().getIValue());
 				}
 				else if(binExp.getLeft() instanceof ExprConstInt) {
-					return new LinearRange(((ExprConstInt)binExp.getLeft()).getVal(),binExp.getRight(),0,range.len());
+					return new LinearRange(((ExprConstInt)binExp.getLeft()).getVal(),binExp.getRight(),0,range.getLenExpression().getIValue());
 				}
 				else if(binExp.getRight() instanceof ExprConstInt) {
-					return new LinearRange(((ExprConstInt)binExp.getRight()).getVal(),binExp.getLeft(),0,range.len());
+					return new LinearRange(((ExprConstInt)binExp.getRight()).getVal(),binExp.getLeft(),0,range.getLenExpression().getIValue());
 				}
     		}
     	}
@@ -345,10 +340,10 @@ public class BitTypeRemover extends SymbolTableVisitor
 		int ws=(isArray)?getArrayWordsize(type):getWordsize(type);
 		Expression index = this.doExpression(start);
 		if(isArray) {
-			base=new ExprArrayRange(base,Collections.singletonList(
+			base=new ExprArrayRange(base, base,
 				new RangeLen(new ExprBinary(oldExpr,ExprBinary.BINOP_DIV,
 						index, new ExprConstInt(oldExpr,ws)))
-			));
+			);
 
 		}
 		//assert type instanceof TypePrimitive;
@@ -372,26 +367,11 @@ public class BitTypeRemover extends SymbolTableVisitor
 
 	public Object visitExprArrayRange(ExprArrayRange exp)
 	{
-		List ranges=exp.getMembers();
-		if(ranges.size()==0) throw new IllegalStateException();
-		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
-		Object o=ranges.get(0);
-		if(o instanceof RangeLen)
+		
 		{
-			RangeLen range=(RangeLen) o;
-			return convertArrayRange(exp,range.start(),range.len());
-		}
-		else
-		{
-			Range range=(Range) o;
-			if(!(range.start() instanceof ExprConstInt) || !(range.end() instanceof ExprConstInt))
-				throw new UnsupportedOperationException("Cannot deal with array range indexing if the indexes are not statically computable.");
-			int start=((ExprConstInt)range.start()).getVal();
-			int end=((ExprConstInt)range.end()).getVal();
-			int len=end-start+1;
-			assert len>0;
-			return convertArrayRange(exp,range.start(),len);
-		}
+			RangeLen range=exp.getSelection();
+			return convertArrayRange(exp,range.start(),range.getLenExpression().getIValue());
+		}		
 		//throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
 	}
 
@@ -408,9 +388,9 @@ public class BitTypeRemover extends SymbolTableVisitor
 		final Expression newLhs;
 		if(isArray) {
 			Expression wsExp=new ExprConstInt(index,ws);
-			newLhs=new ExprArrayRange(lhsBase,Collections.singletonList(new RangeLen(
+			newLhs=new ExprArrayRange(stmt, lhsBase,new RangeLen(
 				new ExprBinary(index,ExprBinary.BINOP_DIV,index,wsExp)
-			)));
+			));
 		}
 		else {
 			//lhs is an array that fits into a single word
@@ -421,8 +401,8 @@ public class BitTypeRemover extends SymbolTableVisitor
 
 		final Type rhsType = getType(stmt.getRHS());
 		if( rhsType instanceof TypeArray ){
-			newRhs=new ExprArrayRange(newRhs,Collections.singletonList(new RangeLen(
-					new ExprConstInt(stmt,0))));
+			newRhs=new ExprArrayRange(stmt, newRhs,new RangeLen(
+					new ExprConstInt(stmt,0)));
 		}
 
 
@@ -539,18 +519,18 @@ public class BitTypeRemover extends SymbolTableVisitor
 		if(cond){
 			if( len == rhws ){
 			Expression zero = ExprConstInt.zero;
-			Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(zero))); ;// lhs[0];
+			Expression lhsNew = new ExprArrayRange(lhs, lhs,new RangeLen(zero)); ;// lhs[0];
 			Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, rhws) );
-			Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(sdivRWS))); ; // rhs[start/rhsws];
+			Expression rhsNew =new ExprArrayRange(rhs, rhs,new RangeLen(sdivRWS)); ; // rhs[start/rhsws];
 			return new StmtAssign(lhsNew, rhsNew); // lhsNew = rhsNew;
 			}else{
 				int sz = len/rhws;
 				String var=varGen.nextVar();
 				ExprVar evar = new ExprVar(context,var);
-				Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(evar)));// lhs[0];
+				Expression lhsNew = new ExprArrayRange(lhs, lhs,new RangeLen(evar));// lhs[0];
 				Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, rhws) );
 				sdivRWS = new ExprBinary(context, ExprBinary.BINOP_ADD, sdivRWS, evar );
-				Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(sdivRWS))); ; // rhs[start/rhsws];
+				Expression rhsNew =new ExprArrayRange(rhs, rhs,new RangeLen(sdivRWS)); ; // rhs[start/rhsws];
 				Statement body= new StmtAssign(lhsNew, rhsNew); // lhsNew = rhsNew;
 				return makeForLoop(var, new ExprConstInt(sz) ,body);
 			}
@@ -576,8 +556,8 @@ public class BitTypeRemover extends SymbolTableVisitor
 		if(cond){
 			Expression zero = ExprConstInt.zero;
 			Expression sdivRWS = new ExprBinary(context, ExprBinary.BINOP_DIV, start, new ExprConstInt(context, ws) );
-			Expression lhsNew = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(sdivRWS))); ;// lhs[0];
-			Expression rhsNew =new ExprArrayRange(rhs,Collections.singletonList(new RangeLen(zero))); ; // rhs[start/rhsws];
+			Expression lhsNew = new ExprArrayRange(lhs, lhs,new RangeLen(sdivRWS)); ;// lhs[0];
+			Expression rhsNew =new ExprArrayRange(rhs, rhs,new RangeLen(zero)); ; // rhs[start/rhsws];
 			return new StmtAssign(lhsNew, rhsNew); // lhsNew = rhsNew;
 		}
 		Expression end = new ExprBinary(context,ExprBinary.BINOP_ADD,start,new ExprConstInt(context,len-1));
@@ -623,35 +603,22 @@ public class BitTypeRemover extends SymbolTableVisitor
 				return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,index,1);
 			}
 			else {
-				// general case: a[i:j]=x
-				Object ro=expArray.getMembers().get(0);
-				if(ro instanceof Range) //a[s:e]
-				{
-					Range range=(Range) ro;
-					if(!((lhsType instanceof TypeArray)))
-						return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,range.start(),0,range.end());
-					if(staticEvaluation(range.start())!=null && staticEvaluation(range.end())!=null) {
-						int start=staticEvaluation(range.start());
-						int end=staticEvaluation(range.end());
-						if(start/ws==end/ws) //special case: the entire range is contained within a word
-							return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,range.start(),end-start+1);
-					}
-					return callSK_bitArrayCopy(expArray.getBase(), range.start(), range.end(), stmt.getRHS(), ws);
-				}
-				else if(ro instanceof RangeLen) //a[s::l]
+				// general case: a[i::j]=x
+			    RangeLen ro=expArray.getSelection();				
 				{
 					RangeLen range=(RangeLen) ro;
+	                int len = range.getLenExpression().getIValue();
 					if(!((lhsType instanceof TypeArray)))
-						return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,range.start(),range.len());
+						return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,range.start(),len);
+
 					if(staticEvaluation(range.start())!=null) {
-						int start=staticEvaluation(range.start()).intValue();
-						int end=start+range.len()-1;
+						int start=staticEvaluation(range.start()).intValue();					
+						int end=start+len-1;
 						if(start/ws==end/ws) //special case: the entire range is contained within a word
-							return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,range.start(),range.len());
+							return translateSingleWordAssignment(stmt,expArray.getBase(),lhsType,ws,range.start(),len);
 					}
-					return callSK_bitArrayCopy(expArray.getBase(), range.start(), range.len(), stmt.getRHS(), ws);
-				}
-				else throw new IllegalStateException(); //must be either Range or RangeLen
+					return callSK_bitArrayCopy(expArray.getBase(), range.start(), len, stmt.getRHS(), ws);
+				}				
 			}
 		}
 		else if(stmt.getRHS() instanceof ExprArrayRange)
@@ -667,15 +634,9 @@ public class BitTypeRemover extends SymbolTableVisitor
 				int rhws=(rhsType instanceof TypeArray)?getArrayWordsize(rhsType):getWordsize(rhsType);
 				assert rhws>1;
 
-				Object ro=expArray.getMembers().get(0);
-				if(ro instanceof Range) //a[s:e]
+				
 				{
-					Range range=(Range) ro;
-					return callSK_bitArrayCopyInv(stmt.getLHS(), range.start(), range.end(), expArray.getBase(), ws, rhws, ((TypeArray)lhsPType).getLength());
-				}
-				else if(ro instanceof RangeLen) //a[s::l]
-				{
-					RangeLen range=(RangeLen) ro;
+					RangeLen range=expArray.getSelection();
 //					LinearRange lr=analyzeRange(range);
 //					if(lr!=null && lr.multiplier==ws)
 //					{
@@ -690,8 +651,9 @@ public class BitTypeRemover extends SymbolTableVisitor
 //					}
 					if(staticEvaluation(range.start())!=null) {
 						int start=staticEvaluation(range.start()).intValue();
-						int end=start+range.len()-1;
-						if(start/rhws==end/rhws && range.len()<=ws) //special case: the entire range is contained within a word (and fits in the lhs word)
+						int len = range.getLenExpression().getIValue();
+						int end=start+len-1;
+						if(start/rhws==end/rhws && len<=ws) //special case: the entire range is contained within a word (and fits in the lhs word)
 						{
 							Expression newRhs;
 							final boolean isArrayRHS=rhsType instanceof TypeArray; //true if we're dealing with an array of integers (big integer); false if a single integer
@@ -700,9 +662,9 @@ public class BitTypeRemover extends SymbolTableVisitor
 								//compute the "new" rhs expression (the word that we will read from)
 								if(isArrayRHS) {
 									Expression wsExp=new ExprConstInt(rhws);
-									newRhs=new ExprArrayRange(expArray.getBase(),Collections.singletonList(new RangeLen(
+									newRhs=new ExprArrayRange(expArray, expArray.getBase(),new RangeLen(
 										new ExprBinary(stmt,ExprBinary.BINOP_DIV,new ExprConstInt(start),wsExp)
-									)));
+									));
 								}else {
 									//lhs is an array that fits into a single word
 									newRhs=expArray.getBase();
@@ -725,15 +687,15 @@ public class BitTypeRemover extends SymbolTableVisitor
 							{
 								if(isArrayLHS) {
 									Expression wsExp=new ExprConstInt(lhs,ws);
-									newLhs=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(zero)));
+									newLhs=new ExprArrayRange(lhs, lhs,new RangeLen(zero));
 								}
 							}
 							return new StmtAssign(newLhs,newRhs);
 						}
 					}
-					return callSK_bitArrayCopyInv(stmt.getLHS(), range.start(), range.len(), expArray.getBase(), ws, rhws, ((TypeArray)lhsPType).getLength());
+					return callSK_bitArrayCopyInv(stmt.getLHS(), range.start(), range.getLenExpression().getIValue(), expArray.getBase(), ws, rhws, ((TypeArray)lhsPType).getLength());
 				}
-				else throw new IllegalStateException(); //must be either Range or RangeLen
+				
 			}
 		}
 		else if(lhs instanceof ExprVar)
@@ -761,8 +723,8 @@ public class BitTypeRemover extends SymbolTableVisitor
 						if(rhsPType.equals(lhsPType) && llen != null && llen.intValue() % ws == 0){
 							String var=varGen.nextVar();
 							Statement body=new StmtAssign(
-								new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt,var)))),
-								new ExprArrayRange(stmt.getRHS(),Collections.singletonList(new RangeLen(new ExprVar(stmt,var))))
+								new ExprArrayRange(lhs, lhs,new RangeLen(new ExprVar(stmt,var))),
+								new ExprArrayRange(stmt, stmt.getRHS(),new RangeLen(new ExprVar(stmt,var)))
 							);
 							return makeForLoop(var,lengthLHS,body);
 						}else{
@@ -780,7 +742,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 				{
 					Expression length=((TypeArray)lhsType).getLength();
 					String var=varGen.nextVar();
-					Expression arrayElem=new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt,var))));
+					Expression arrayElem=new ExprArrayRange(lhs, lhs,new RangeLen(new ExprVar(stmt,var)));
 					Expression zero=new ExprConstInt(stmt,0);
 					String allones="0x"+Long.toHexString((1<<ws)-1)+(32>=64?"ull":"u");
 					Expression one=new ExprLiteral(stmt,allones);
@@ -819,7 +781,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 					if(lhsType instanceof TypeArray)
 					{
 						Expression zero=new ExprConstInt(stmt,0);
-						left = new ExprArrayRange(left,Collections.singletonList(new RangeLen(zero)));
+						left = new ExprArrayRange(left, left,new RangeLen(zero));
 					}
 					Expression val=makeHexString(exp,0,ws);
 					return new StmtAssign(left,val);
@@ -828,7 +790,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 					assert lhsType instanceof TypeArray: "This can't happen";
 					String name=((ExprVar)lhs).getName();
 					for(int k=0;k<nb/ws;k++) {
-						Expression elem=new ExprArrayRange(new ExprVar(lhs,name),Collections.singletonList(new RangeLen(new ExprConstInt(lhs,k))));
+						Expression elem=new ExprArrayRange(lhs, new ExprVar(lhs,name),new RangeLen(new ExprConstInt(lhs,k)));
 						Expression val=makeHexString(exp,k,ws);
 						addStatement(new StmtAssign(elem,val));
 					}
@@ -854,7 +816,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 								Expression indexVar = new ExprVar(stmt,var);
 								Expression newBinExp = (new Indexify(indexVar, ws)).indexify(binExp);
 								Statement body=new StmtAssign(
-									new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt,var)))),
+									new ExprArrayRange(lhs, lhs,new RangeLen(new ExprVar(stmt,var))),
 									newBinExp
 								);
 								return makeForLoop(var,length,body);
@@ -871,14 +833,14 @@ public class BitTypeRemover extends SymbolTableVisitor
 							assert lhsType instanceof TypeArray && ((TypeArray)lhsType).getLength().getIValue() == 1 : "NYI";
 							int pad=ws-getBitlength((TypeArray) lhsPType);
 							Expression zero=new ExprConstInt(stmt,0);
-							Expression lhsZero = new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(zero)));
+							Expression lhsZero = new ExprArrayRange(lhs, lhs,new RangeLen(zero));
 							Expression left = doExpression(binExp.getLeft());
 							Expression right = doExpression(binExp.getRight());
 							if( getType(left) instanceof TypeArray){
-								left = new ExprArrayRange(left,Collections.singletonList(new RangeLen(zero)));
+								left = new ExprArrayRange(left, left,new RangeLen(zero));
 							}
 							if( getType(right) instanceof TypeArray){
-								right = new ExprArrayRange(right,Collections.singletonList(new RangeLen(zero)));
+								right = new ExprArrayRange(right, right,new RangeLen(zero));
 							}
 
 							Statement body=new StmtAssign(
@@ -907,9 +869,9 @@ public class BitTypeRemover extends SymbolTableVisitor
 					assert unExp.getOp() == ExprUnary.UNOP_NOT || unExp.getOp() == ExprUnary.UNOP_BNOT : "Not yet implemented";
 					String var=varGen.nextVar();
 					Statement body=new StmtAssign(
-							new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt,var)))),
+							new ExprArrayRange(lhs, lhs,new RangeLen(new ExprVar(stmt,var))),
 							new ExprUnary(stmt,ExprUnary.UNOP_BNOT,
-								new ExprArrayRange(unExp.getExpr(),Collections.singletonList(new RangeLen(new ExprVar(stmt,var))))
+								new ExprArrayRange(unExp, unExp.getExpr(),new RangeLen(new ExprVar(stmt,var)))
 							)
 						);
 					return makeForLoop(var,length,body);
@@ -936,8 +898,8 @@ public class BitTypeRemover extends SymbolTableVisitor
 						if(rhsPType.equals(lhsPType) && llen != null && llen.intValue() % ws == 0){
 							String var=varGen.nextVar();
 							Statement body=new StmtAssign(
-								new ExprArrayRange(lhs,Collections.singletonList(new RangeLen(new ExprVar(stmt,var)))),
-								new ExprArrayRange(rhsNewCast,Collections.singletonList(new RangeLen(new ExprVar(stmt,var))))
+								new ExprArrayRange(lhs, lhs,new RangeLen(new ExprVar(stmt,var))),
+								new ExprArrayRange(rhsNewCast, rhsNewCast,new RangeLen(new ExprVar(stmt,var)))
 							);
 							return makeForLoop(var,lengthLHS,body);
 						}else{
@@ -958,7 +920,7 @@ public class BitTypeRemover extends SymbolTableVisitor
         Expression expr = doExpression(exp.getExpr());
         if(getType(expr) instanceof TypeArray){
         	Expression zero=new ExprConstInt(exp,0);
-        	expr = new ExprArrayRange(expr,Collections.singletonList(new RangeLen(zero)));
+        	expr = new ExprArrayRange(expr, expr,new RangeLen(zero));
         }
         if (expr == exp.getExpr())
             return exp;
