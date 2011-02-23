@@ -1,0 +1,9 @@
+harness void main() {
+    int[2] X = { ??, ?? };
+    test(X);
+    assert X[0] == 2;
+    assert X[1] == ??;
+}
+void test(int[2] t){
+    
+}

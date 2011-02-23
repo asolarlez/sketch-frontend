@@ -1,6 +1,10 @@
 package sketch.compiler.dataflow.preprocessor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -221,6 +225,24 @@ class UpgradeStarToInt extends FEReplacer{
     }
 
 
+    public Object visitExprArrayInit(ExprArrayInit eai){
+        Type oldType = type;
+        assert type instanceof TypeArray;
+        type = ((TypeArray)type).getBase();
+        List<Expression> le = new ArrayList<Expression>();
+        boolean change = false;
+        for(Expression e : eai.getElements()){
+            Expression 
+            newElem=doExpression(e);
+            le.add(newElem);
+            if(newElem != e){ change = true; }
+        }
+        type = oldType;
+        if(change){ return new ExprArrayInit(eai, le);}
+        return eai;
+    }
+    
+    
     public Object visitExprArrayRange(ExprArrayRange exp){
     	boolean change=false;
 		Expression newBase=doExpression(exp.getBase());
