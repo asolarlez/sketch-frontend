@@ -1,6 +1,6 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 2 --bnd-unroll-amnt 16 --bnd-arr-size 16";
+pragma options "--bnd-inline-amnt 2";
 
-float[N][N] test0(int N, float[N][N] a){
+stencil float[N][N] test0(int N, float[N][N] a){
   float[N][N] out=0;
   for(int i=0; i<N; ++i){
   	for(int j=0; j<i+1; ++j){
@@ -38,7 +38,7 @@ generator int hole(int i, int N){ /* automatically rewritten */
 
 
 
-float[N][N] testSK0(int N, float[N][N] a) implements test0 {
+stencil float[N][N] testSK0(int N, float[N][N] a) implements test0 {
   float[N][N] out=0;
   for(int i=hole(0, N); i<hole(0, N); ++i){
   	for(int j=hole(i, N); j<hole(i, N); ++j){

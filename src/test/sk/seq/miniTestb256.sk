@@ -1,7 +1,7 @@
 pragma options "--bnd-inbits 2 --bnd-unroll-amnt 64 --bnd-arr-size 64";
 
 
-bit[2*N][2*N] MGinter(int N, bit[N][N] in, bit half, bit fourth){
+stencil bit[2*N][2*N] MGinter(int N, bit[N][N] in, bit half, bit fourth){
 
 	bit[2*N][2*N]  output=0;
 		for(int j=0; j<2*N-2; ++j){
@@ -27,7 +27,7 @@ bit[2*N][2*N] MGinter(int N, bit[N][N] in, bit half, bit fourth){
 
 
 
-bit[2*N][2*N] skMGinter(int N, bit[N][N] in, bit half, bit fourth)implements MGinter
+stencil bit[2*N][2*N] skMGinter(int N, bit[N][N] in, bit half, bit fourth)implements MGinter
 {
 
 	bit[2*N][2*N]  output=0;	

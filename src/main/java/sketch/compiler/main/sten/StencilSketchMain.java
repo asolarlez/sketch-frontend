@@ -173,7 +173,7 @@ public class StencilSketchMain extends SequentialSketchMain
 
 //        prog.accept(new SimpleCodePrinter());
 
-        FunctionalizeStencils fs = new FunctionalizeStencils();
+        FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
 
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
 

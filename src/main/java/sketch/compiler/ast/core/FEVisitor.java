@@ -24,7 +24,6 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -71,9 +70,8 @@ public interface FEVisitor
     public Object visitExprVar(ExprVar exp);
     public Object visitFieldDecl(FieldDecl field);
     public Object visitFunction(Function func);
-    public Object visitFuncWork(FuncWork func);
-    public Object visitProgram(Program prog);
-    public Object visitSCAnon(SCAnon creator);
+    
+    public Object visitProgram(Program prog);    
     public Object visitSCSimple(SCSimple creator);
     public Object visitSJDuplicate(SJDuplicate sj);
     public Object visitSJRoundRobin(SJRoundRobin sj);

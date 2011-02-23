@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FuncWork;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -58,16 +57,6 @@ public class MakeBodiesBlocks extends FEReplacer
                             func.getParams(),  func.getSpecification(),newBody);
     }
     
-    public Object visitFuncWork(FuncWork func)
-    {
-        Statement newBody = (Statement)func.getBody().accept(this);
-        newBody = buildBlock(newBody);
-        if (newBody == func.getBody())
-            return func;
-        return new FuncWork(func, func.getCls(), func.getName(),
-                            newBody, func.getPeekRate(), func.getPopRate(),
-                            func.getPushRate());
-    }
 
     public Object visitStmtDoWhile(StmtDoWhile stmt)
     {

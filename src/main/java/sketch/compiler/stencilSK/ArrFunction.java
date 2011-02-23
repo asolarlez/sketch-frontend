@@ -218,7 +218,7 @@ public class ArrFunction{
 		}
 		Statement body=new StmtBlock(stmts);
 
-		Function ret=Function.newHelper(body,getFullName(), arrType,params,body);
+		Function ret=Function.newStatic(body,getFullName(), arrType,params,null, body);
 		return ret;
 	}
 

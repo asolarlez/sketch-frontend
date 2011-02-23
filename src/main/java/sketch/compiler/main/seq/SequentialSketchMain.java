@@ -71,6 +71,8 @@ import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.compiler.stencilSK.FunctionalizeStencils;
+import sketch.compiler.stencilSK.MatchParamNames;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
@@ -207,6 +209,24 @@ public class SequentialSketchMain extends CommonSketchMain
 		return new Pair<Program, Set<Directive>> (prog, pragmas);
 	}
 
+	protected Program stencilTransforms(Program p){
+	    
+	    p = (Program) p.accept(new MatchParamNames());
+	    
+	    p = (Program)p.accept(new EliminateNestedArrAcc(true));
+	    
+        
+	    //dump(p, "BEFORE Stencilification");
+	    FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
+
+        p = (Program)p.accept(fs); //convert Function's to ArrFunction's
+
+        p = fs.processFuns(p, varGen); //process the ArrFunction's and create new Function's
+        //dump(p);
+        return p;
+	}
+	
+	
 	/**
 	 * Transform front-end code to have the Java syntax.  Goes through
 	 * a series of lowering passes to convert an IR tree from the
@@ -228,9 +248,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		beforeUnvectorizing = prog;
 		
 		prog = (new IRStage2()).run(prog);
-		
-		prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
-				
+								
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		prog = (Program)prog.accept(new ReplaceSketchesWithSpecs());
@@ -241,8 +259,12 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
 		
 		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
+
 		
-		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen));
+		
+		prog = stencilTransforms(prog);
+		
+		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen)); 
 		
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		//dump (prog, "Extract Vectors in Casts:");
@@ -254,6 +276,12 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 		// dump (prog, "ScalarizeVectorAssns");
 		
+		
+		
+		
+        
+        prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
+		
 		// By default, we don't protect array accesses in SKETCH
 		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
@@ -262,6 +290,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		// dump (prog, "After protecting array accesses.");
 		
 		prog = (Program)prog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+		
+		
 		
 		if (showPhaseOpt("lowering")) {
             dump(prog, "Lowering the code previous to Symbolic execution.");
@@ -377,8 +407,10 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		lprog = (Program)lprog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));		 
 		
-		lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
-		
+		//dump (lprog, "before emd:");
+		// lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
+		lprog = (Program) lprog.accept (new MakeMultiDimExplicit(varGen));
+		//dump (lprog, "after emd:");
 		
 		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(lprog)));

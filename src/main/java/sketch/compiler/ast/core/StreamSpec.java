@@ -15,7 +15,6 @@
  */
 
 package sketch.compiler.ast.core;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -134,13 +133,13 @@ public class StreamSpec extends FENode
      * @param init     statement containing initialization code for
      *                 the object
      */
-    public StreamSpec(FENode context, int type, StreamType st,
+ /*   public StreamSpec(FENode context, int type, StreamType st,
                       String name, List params, Statement init)
     {
         this(context, type, st, name, params, Collections.EMPTY_LIST,
              Collections.singletonList(Function.newInit(init,
                                                         init)));
-    }
+    } */
 
     /**
      * Creates a new stream specification given its name and the text
@@ -160,13 +159,13 @@ public class StreamSpec extends FENode
      *                 the object
      * @deprecated
      */
-    public StreamSpec(FEContext context, int type, StreamType st,
+   /* public StreamSpec(FEContext context, int type, StreamType st,
                       String name, List params, Statement init)
     {
         this(context, type, st, name, params, Collections.EMPTY_LIST,
              Collections.singletonList(Function.newInit(init,
                                                         init)));
-    }
+    }*/
 
     /**
      * Returns the type of this, as one of the integer constants above.
@@ -251,42 +250,9 @@ public class StreamSpec extends FENode
         return funcs;
     }
 
-    /**
-     * Returns the init function declared in this, or null.  If multiple
-     * init functions are declared (probably an error), returns one
-     * arbitrarily.
-     *
-     * @return  function containing the initialiation code
-     */
-    public Function getInitFunc()
-    {
-        for (Iterator iter = funcs.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            if (func.getCls() == Function.FUNC_INIT)
-                return func;
-        }
-        return null;
-    }
 
-    /**
-     * Returns the work function declared in this, or null.  If multiple
-     * work functions are declared (probably an error), returns one
-     * arbitrarily.
-     *
-     * @return  function containing steady-state work code, or null for
-     *          non-filters
-     */
-    public FuncWork getWorkFunc()
-    {
-        for (Iterator iter = funcs.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            if (func.getCls() == Function.FUNC_WORK)
-                return (FuncWork)func;
-        }
-        return null;
-    }
+
+
 
     /**
      * Returns the function with a given name contained in this, or

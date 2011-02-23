@@ -170,7 +170,7 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  ((TK_harness | TK_generator)? return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  ((TK_harness | TK_generator | TK_stencil)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -220,20 +220,6 @@ stream_type_decl returns [StreamType st] { st = null; Type in, out; }
 		{ st = new StreamType(getContext(t), in, out); }
 	;
 
-struct_stream_decl[StreamType st] returns [StreamSpec ss]
-{ ss = null; int type = 0;
-	List params = Collections.EMPTY_LIST; Statement body; }
-	:	( TK_pipeline { type = StreamSpec.STREAM_PIPELINE; }
-		| TK_splitjoin { type = StreamSpec.STREAM_SPLITJOIN; }
-		| TK_feedbackloop { type = StreamSpec.STREAM_FEEDBACKLOOP; }
-		| TK_sbox { type = StreamSpec.STREAM_TABLE; }
-		)
-		id:ID
-		(params=param_decl_list)?
-		body=block
-		{ ss = new StreamSpec(st.getContext(), type, st, id.getText(),
-				params, body); }
-	;
 
 
 
@@ -340,10 +326,11 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isHarness=false; boolean isGenerator=false; }
+function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boolean isHarness=false; boolean isGenerator=false; boolean isStencil=false; }
 	:
-	(TK_harness { isHarness=true; })?
-	(TK_generator { isGenerator=true;} )?
+	( (TK_harness { isHarness=true; }) |
+	(TK_generator { isGenerator=true;} ) |
+	(TK_stencil { isStencil=true;} ) )*
 	rt=return_type
 	id:ID
 	l=param_decl_list
@@ -361,19 +348,13 @@ function_decl returns [Function f] { Type rt; List l; StmtBlock s; f = null; boo
                 f = Function.newStatic(getContext(id), id.getText(), rt, l,
                     impl==null ? null : impl.getText(), s);
 			}
+			if(isStencil){ f.makeStencil(); }
 	}
 	| SEMI  { f = Function.newUninterp(getContext(id),id.getText(), rt, l);   })
 	;
 
 return_type returns [Type t] { t=null; }
 	: 	t=data_type
-	;
-
-handler_decl returns [Function f] { List l; Statement s; f = null;
-Type t = TypePrimitive.voidtype;
-int cls = Function.FUNC_HANDLER; }
-	:	TK_handler id:ID l=param_decl_list s=block
-		{ f = new Function(getContext(id), cls, id.getText(), t, l, s); }
 	;
 
 param_decl_list returns [List l] { l = new ArrayList(); Parameter p; }

@@ -9,6 +9,7 @@ import java.util.Set;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FuncType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -272,7 +273,7 @@ public class ModelGridWithUFun extends FEReplacer {
 			paramList.add(new Parameter(ufun.getReturnType(), "r",
 					Parameter.OUT));
 
-			mModelingFunc = new Function(ufun, Function.FUNC_BUILTIN_HELPER,
+			mModelingFunc = new Function(ufun, FuncType.FUNC_BUILTIN_HELPER,
 					name, TypePrimitive.voidtype, paramList, funBody);
 
 			return mModelingFunc;

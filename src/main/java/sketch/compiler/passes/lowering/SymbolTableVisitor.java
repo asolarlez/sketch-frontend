@@ -18,7 +18,15 @@ package sketch.compiler.passes.lowering;
 import java.util.Iterator;
 import java.util.Map;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -229,24 +237,21 @@ public class SymbolTableVisitor extends FEReplacer
         return result;
     }
 
-    public Object visitFuncWork(FuncWork func)
-    {
-        SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);
-        Object result = super.visitFuncWork(func);
-        symtab = oldSymTab;
-        return result;
-    }
+   
 
     public Object visitProgram(Program prog)
     {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
         // Examine and register structure members, then recurse normally.
         for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
         {
             TypeStruct struct = (TypeStruct)iter.next();
             structsByName.put(struct.getName(), struct);
         }
-        return super.visitProgram(prog);
+        Object o = super.visitProgram(prog); 
+        symtab = oldSymTab;
+        return o;
     }
 
     public Object visitStmtBlock(StmtBlock block)

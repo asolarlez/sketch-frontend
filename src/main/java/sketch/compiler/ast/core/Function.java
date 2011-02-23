@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import sketch.compiler.ast.core.stmts.Statement;
@@ -35,31 +36,33 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 public class Function extends FENode
 {
     // Classes:
-    public static final int FUNC_INIT = 1;
-    public static final int FUNC_WORK = 2;
-    public static final int FUNC_HANDLER = 3;
-    public static final int FUNC_HELPER = 4;
-    public static final int FUNC_CONST_HELPER = 5;
-    public static final int FUNC_BUILTIN_HELPER = 6;
-    public static final int FUNC_PREWORK = 8;
-    public static final int FUNC_UNINTERP = 9;
-    public static final int FUNC_ASYNC = 10;
-    public static final int FUNC_STATIC = 11;
-    public static final int FUNC_SKETCHMAIN = 12;
+    
+    public enum FuncType{
+     FUNC_HELPER, // Used as Generator. Also helper functions for PROMELA.
+     FUNC_BUILTIN_HELPER,  // Used for SMT.
+     FUNC_UNINTERP, // Uninterpreted Function
+     FUNC_ASYNC, //Async functions used in promela to model forks.
+     FUNC_STATIC, // Static function, non-generator.
+     FUNC_SKETCHMAIN,  // Harness function. Also static.
+     FUNC_STENCIL
+    }
 
-
-    private int cls;
+    private EnumSet<FuncType> cls;
     private String name; // or null
     private Type returnType;
     private List<Parameter> params;
-    private Statement body;
-
+    private Statement body;    
     private String fImplements = null;
 
     /** Internal constructor to create a new Function from all parts.
      * This is public so that visitors that want to create new objects
      * can, but you probably want one of the other creator functions. */
-    public Function(FENode context, int cls, String name, Type returnType,
+    public Function(FENode context, FuncType cls, String name, Type returnType,
+            List<Parameter> params, Statement body)
+    {
+        this(context, EnumSet.of(cls), name, returnType, params, null, body);
+    }
+    public Function(FENode context, EnumSet<FuncType>  cls, String name, Type returnType,
             List<Parameter> params, Statement body)
     {
         this(context, cls, name, returnType, params, null, body);
@@ -72,13 +75,18 @@ public class Function extends FENode
      * 
      * @deprecated
      */
-    public Function(FEContext context, int cls, String name, Type returnType,
+    public Function(FEContext context, FuncType cls, String name, Type returnType,
+            List<Parameter> params, Statement body)
+    {
+        this(context, EnumSet.of(cls), name, returnType, params, null, body);
+    }
+    public Function(FEContext context, EnumSet<FuncType> cls, String name, Type returnType,
             List<Parameter> params, Statement body)
     {
         this(context, cls, name, returnType, params, null, body);
     }
 
-    public Function(FENode context, int cls, String name, Type returnType,
+    public Function(FENode context, EnumSet<FuncType> cls, String name, Type returnType,
             List<Parameter> params, String fImplements, Statement body)
     {
         super(context);
@@ -88,10 +96,15 @@ public class Function extends FENode
         this.params = params;
         this.body = body;
         this.fImplements = fImplements;
+    }
+    public Function(FENode context, FuncType cls, String name, Type returnType,
+            List<Parameter> params, String fImplements, Statement body)
+    {
+        this(context, EnumSet.of(cls), name, returnType, params, fImplements, body);
     }
 
     @SuppressWarnings("deprecation")
-    private Function(FEContext context, int cls, String name, Type returnType,
+    private Function(FEContext context, EnumSet<FuncType> cls, String name, Type returnType,
             List<Parameter> params, String fImplements, Statement body)
     {
         super(context);
@@ -102,16 +115,23 @@ public class Function extends FENode
         this.body = body;
         this.fImplements = fImplements;
     }
+    @SuppressWarnings("deprecation")
+    private Function(FEContext context, FuncType cls, String name, Type returnType,
+            List<Parameter> params, String fImplements, Statement body)
+    {
+        this(context, EnumSet.of(cls), name, returnType, params, fImplements, body);
+    }
+    
 
     public static Function newUninterp(String name, List<Parameter> params){
-    	return new Function((FEContext) null, FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
+    	return new Function((FEContext) null, FuncType.FUNC_UNINTERP, name,TypePrimitive.voidtype , params, null);
     }
 
     public static Function newUninterp(String name, Type rettype, List<Parameter> params){
-    	return new Function((FEContext) null, FUNC_UNINTERP, name,rettype, params, null);
+    	return new Function((FEContext) null, FuncType.FUNC_UNINTERP, name,rettype, params, null);
     }
     public static Function newUninterp(FENode cx, String name, Type rettype, List<Parameter> params){
-    	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
+    	return new Function(cx, FuncType.FUNC_UNINTERP, name,rettype, params, null);
     }
     /**
      *
@@ -123,43 +143,18 @@ public class Function extends FENode
      * @deprecated
      */
     public static Function newUninterp(FEContext cx, String name, Type rettype, List<Parameter> params){
-    	return new Function(cx, FUNC_UNINTERP, name,rettype, params, null);
+    	return new Function(cx, FuncType.FUNC_UNINTERP, name,rettype, params, null);
     }
 
-    /** Create a new init function given its body. */
-    public static Function newInit(FENode context, Statement body)
-    {
-        return new Function(context, FUNC_INIT, null,
-        					TypePrimitive.voidtype,
-                            Collections.EMPTY_LIST, body);
-    }
 
-    /** Create a new init function given its body.
-     * @deprecated
-     */
-    public static Function newInit(FEContext context, Statement body)
-    {
-        return new Function(context, FUNC_INIT, null,
-        					TypePrimitive.voidtype,
-                            Collections.EMPTY_LIST, body);
-    }
 
-    /** Create a new message handler given its name (not null), parameters,
-     * and body. */
-    public static Function newHandler(FENode context, String name,
-                                      List<Parameter> params, Statement body)
-    {
-        return new Function(context, FUNC_HANDLER, name,
-        					TypePrimitive.voidtype,
-                            params, body);
-    }
 
     /** Create a new helper function given its parts. */
     public static Function newHelper(FENode context, String name,
                                      Type returnType, List<Parameter> params,
                                      Statement body)
     {
-        return new Function(context, FUNC_HELPER, name, returnType,
+        return new Function(context, FuncType.FUNC_HELPER, name, returnType,
                             params, body);
     }
 
@@ -170,7 +165,7 @@ public class Function extends FENode
                                      Type returnType, List<Parameter> params,
                                      Statement body)
     {
-        return new Function(context, FUNC_HELPER, name, returnType,
+        return new Function(context, FuncType.FUNC_HELPER, name, returnType,
                             params, body);
     }
 
@@ -183,7 +178,7 @@ public class Function extends FENode
                                      Type returnType, List<Parameter> params,
                                      String impl, Statement body)
     {
-        Function f=new Function(context, FUNC_HELPER, name, returnType,
+        Function f=new Function(context, FuncType.FUNC_HELPER, name, returnType,
                             params, body);
         f.fImplements=impl;
         return f;
@@ -196,7 +191,7 @@ public class Function extends FENode
                                      Type returnType, List<Parameter> params,
                                      String impl, Statement body)
     {
-        Function f=new Function(context, FUNC_HELPER, name, returnType,
+        Function f=new Function(context, FuncType.FUNC_HELPER, name, returnType,
                             params, body);
         f.fImplements=impl;
         return f;
@@ -209,7 +204,7 @@ public class Function extends FENode
                                      Type returnType, List<Parameter> params,
                                      String impl, Statement body)
     {
-        Function f=new Function(context, FUNC_STATIC, name, returnType,
+        Function f=new Function(context, FuncType.FUNC_STATIC, name, returnType,
                             params, body);
         f.fImplements=impl;
         return f;
@@ -219,7 +214,7 @@ public class Function extends FENode
     public static Function newHarnessMain(FEContext context, String name, Type returnType,
             List<Parameter> params, Statement body)
     {
-        return new Function(context, FUNC_SKETCHMAIN, name, returnType, params, null,
+        return new Function(context, EnumSet.of(FuncType.FUNC_SKETCHMAIN, FuncType.FUNC_STATIC), name, returnType, params, null,
                 body);
     }
 
@@ -231,21 +226,21 @@ public class Function extends FENode
     public static Function newStatic(FEContext context, String name, Type returnType,
             List<Parameter> params, String fImplements, Statement body)
     {
-        return new Function(context, FUNC_STATIC, name, returnType, params, fImplements,
+        return new Function(context, FuncType.FUNC_STATIC, name, returnType, params, fImplements,
                 body);
     }
 
     public boolean isUninterp(){
-    	return cls == FUNC_UNINTERP;
+    	return cls.contains(FuncType.FUNC_UNINTERP);
     }
 
     public boolean isStatic(){
-    	return cls == FUNC_STATIC;
+    	return cls.contains(FuncType.FUNC_STATIC);
     }
 
 
     /** Returns the class of this function as an integer. */
-    public int getCls()
+    public EnumSet<FuncType> getCls()
     {
         return cls;
     }
@@ -299,6 +294,13 @@ public class Function extends FENode
         return typ + returnType + " " + name + "(" + params + ")" + impl;
     }
 
+    public void makeStencil(){
+        cls.add(FuncType.FUNC_STENCIL);
+    }
+    
+    public boolean isStencil(){
+        return cls.contains(FuncType.FUNC_STENCIL);
+    }
     public int hashCode(){
         return name.hashCode();
     }
@@ -311,6 +313,6 @@ public class Function extends FENode
 
     /** is a main function */
     public boolean isSketchHarness() {
-        return this.cls == FUNC_SKETCHMAIN;
+        return cls.contains(FuncType.FUNC_SKETCHMAIN);
     }
 }

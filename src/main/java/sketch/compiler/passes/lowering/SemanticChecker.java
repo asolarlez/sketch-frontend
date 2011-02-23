@@ -35,10 +35,6 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.controlflow.CFG;
-import sketch.compiler.controlflow.CFGBuilder;
-import sketch.compiler.controlflow.CountLattice;
-import sketch.compiler.controlflow.StatementCounter;
 import sketch.util.ControlFlowException;
 
 /**
@@ -88,7 +84,7 @@ public class SemanticChecker
 			checker.checkParallelConstructs (prog);
 		else
 			checker.banParallelConstructs (prog);
-		checker.checkStatementCounts(prog);
+		
 		} catch (UnrecognizedVariableException uve) {
 			// Don't care about this exception during type checking
 			assert !checker.good;
@@ -218,20 +214,7 @@ public class SemanticChecker
 				String name = func.getName();
 				if (name == null)
 				{
-					switch(func.getCls())
-					{
-					case Function.FUNC_INIT: name = "init"; break;
-					case Function.FUNC_WORK: name = "work"; break;
-					case Function.FUNC_PREWORK: name = "prework"; break;
-					case Function.FUNC_HANDLER:
-						report(func, "message handlers must have names");
-						break;
-					case Function.FUNC_HELPER:
-						report(func, "helper functions must have names");
-						break;
-					default:
-						// is BUILTIN_HELPER and CONST_HELPER.  Ignore
-					}
+					report(func, "Functions must have names");
 				}
 				if (name != null)
 					checkADupFieldName(localNames, streamNames,
@@ -330,38 +313,9 @@ public class SemanticChecker
 				return result;
 			}
 
-			public Object visitFuncWork(FuncWork func2)
-			{
-				Function oldFunc = func;
-				func = func2;
-				Object result = super.visitFuncWork(func2);
-				func = oldFunc;
-				return result;
-			}
+			
 
-			// So the remainder of this just needs to check
-			// spec.getType() and func.getCls() and that they're
-			// correct vs. the type of statement.
-			public Object visitStmtAdd(StmtAdd stmt)
-			{
-				if ((func.getCls() != Function.FUNC_INIT) ||
-						(spec.getType() != StreamSpec.STREAM_PIPELINE &&
-								spec.getType() != StreamSpec.STREAM_SPLITJOIN))
-					report(stmt,
-							"add statement only allowed " +
-					"in pipeline/splitjoin");
-				return super.visitStmtAdd(stmt);
-			}
-
-			public Object visitStmtBody(StmtBody stmt)
-			{
-				if (func.getCls() != Function.FUNC_INIT ||
-						spec.getType() != StreamSpec.STREAM_FEEDBACKLOOP)
-					report(stmt,
-							"body statement only allowed " +
-					"in feedbackloop");
-				return super.visitStmtBody(stmt);
-			}
+			
 		});
 	}
 
@@ -1087,64 +1041,8 @@ public class SemanticChecker
 		});
 	}
 
-	/**
-	 * Checks that statements that must be invoked some number
-	 * of times in fact are.  This includes checking that split-join
-	 * and feedback loop init functions have exactly one splitter
-	 * and exactly one joiner.
-	 *
-	 * @param prog  parsed program object to check
-	 */
-	public void checkStatementCounts(Program prog)
-	{
-		// Look for init functions in split-joins and feedback loops:
-		prog.accept(new FEReplacer() {
-			public Object visitStreamSpec(StreamSpec ss)
-			{
-				if (ss.getType() == StreamSpec.STREAM_FEEDBACKLOOP)
-				{
-					exactlyOneStatement
-					(ss, "body",
-							new StatementCounter() {
-						public boolean
-						statementQualifies(Statement stmt)
-						{ return stmt instanceof StmtBody; }
-					});
-					exactlyOneStatement
-					(ss, "loop",
-							new StatementCounter() {
-						public boolean
-						statementQualifies(Statement stmt)
-						{ return stmt instanceof StmtLoop; }
-					});
-				}
-				return super.visitStreamSpec(ss);
-			}
-		});
-	}
-
-	private void exactlyOneStatement(StreamSpec ss, String stype,
-			StatementCounter sc)
-	{
-		Function init = ss.getInitFunc();
-		assert init != null;
-		CFG cfg = CFGBuilder.buildCFG(init);
-		Map splitCounts = sc.run(cfg);
-		// TODO: modularize this analysis; report the first place
-		// where there's a second split/join, and/or the first place
-		// where there's ambiguity (bottom).  This would be easier if
-		// Java had lambdas.
-		CountLattice exitVal = (CountLattice)splitCounts.get(cfg.getExit());
-		if (exitVal.isTop())
-			report(init, "weird failure: " + stype + " exit value is top");
-		else if (exitVal.isBottom())
-			report(init, "couldn't determine number of " + stype +
-			" statements");
-		else if (exitVal.getValue() == 0)
-			report(init, "no " + stype + " statements");
-		else if (exitVal.getValue() > 1)
-			report(init, "more than one " + stype + " statement");
-	}
+	
+	
 
 	/**
 	 * Check that variables are declared and used correctly.  In

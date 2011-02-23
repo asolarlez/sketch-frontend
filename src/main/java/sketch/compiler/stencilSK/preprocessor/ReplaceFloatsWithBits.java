@@ -48,6 +48,8 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 		return "FL_" + name;
 	}
 	
+	
+	
 	public Object visitExprConstFloat(ExprConstFloat fexp){
 		String name = null;
 		

@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FuncType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
@@ -155,7 +156,7 @@ public class Preprocessor extends FEReplacer {
     	}
     	Statement body = (Statement) loop.getBody().accept(this);
     	String fname = varGen.nextVar (PROC_PFX);
-    	Function fun = new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
+    	Function fun = new Function(cx, FuncType.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
 
     	generatedFuncs.add(fun);
 

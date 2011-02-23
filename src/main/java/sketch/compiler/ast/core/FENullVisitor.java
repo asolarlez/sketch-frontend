@@ -24,7 +24,6 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -65,10 +64,8 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprUnary(ExprUnary exp) { return null; }
     public Object visitExprVar(ExprVar exp) { return null; }
     public Object visitFieldDecl(FieldDecl field) { return null; }
-    public Object visitFunction(Function func) { return null; }
-    public Object visitFuncWork(FuncWork func) { return null; }
-    public Object visitProgram(Program prog) { return null; }
-    public Object visitSCAnon(SCAnon creator) { return null; }
+    public Object visitFunction(Function func) { return null; }    
+    public Object visitProgram(Program prog) { return null; }    
     public Object visitSCSimple(SCSimple creator) { return null; }
     public Object visitSJDuplicate(SJDuplicate sj) { return null; }
     public Object visitSJRoundRobin(SJRoundRobin sj) { return null; }

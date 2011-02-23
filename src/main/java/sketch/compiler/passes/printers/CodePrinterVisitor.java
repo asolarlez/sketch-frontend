@@ -554,8 +554,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		// TODO: doesn't fully visit the stream spec
 		for (FieldDecl f : ss.getVars ())
 			f.accept (this);
-		if (null != ss.getInitFunc ())
-			ss.getInitFunc ().accept (this);
+		
 		for (Function f : ss.getFuncs ())
 			f.accept (this);
 

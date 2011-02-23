@@ -3,15 +3,7 @@ package sketch.compiler.stencilSK;
 import java.util.*;
 import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.FEContext;
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -32,7 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.dataflow.SelectFunctionsToAnalyze;
+import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 
@@ -166,6 +158,9 @@ public class FunctionalizeStencils extends FEReplacer {
 	private List<Function> userFuns;
 	private StreamSpec ss;
 
+	private TempVarGen varGen;
+	
+	
 	/**
 	 * Maps a function name to a map of input grid names to abstract grids.
 	 */
@@ -188,8 +183,9 @@ public class FunctionalizeStencils extends FEReplacer {
 	
 	
 	
-	public FunctionalizeStencils() {
+	public FunctionalizeStencils(TempVarGen varGen) {
 		super();
+		this.varGen = varGen;
 		superParams = new TreeMap<String, Type>();
 		funmap = new HashMap<String, ArrFunction>();
 		globalInVars = new HashMap<String, Map<String, Function> >();
@@ -233,12 +229,15 @@ public class FunctionalizeStencils extends FEReplacer {
 	}
 
 	public Program processFuns(Program prog, TempVarGen varGen){
+	    
+	    if(funmap.isEmpty()){ return prog; }
+	    
 		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
 		strs.getVars().clear();
 		List<Function> functions=strs.getFuncs();
 		for(Iterator<Function> it = functions.iterator(); it.hasNext(); ){
 			Function fun = it.next();
-			if(!fun.isUninterp()){
+			if(fun.isStencil()){
 				it.remove();
 			}
 		}
@@ -381,6 +380,29 @@ public class FunctionalizeStencils extends FEReplacer {
 		}
 	}
 
+	
+
+	
+	
+	public List<Function> selectFunctions(StreamSpec spec){
+        List<Function> result = new LinkedList<Function>();
+        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
+        {
+           Function oldFunc = (Function)iter.next();
+           if(oldFunc.isStencil()){
+               result.add(oldFunc);
+               String specname = oldFunc.getSpecification();
+               if( specname != null){
+                   Function f = spec.getFuncNamed(specname);
+                   if(!f.isStencil()){ throw new RuntimeException("If a stencil implements another function, that function must be a stencil too. ");} 
+               }
+           }
+           
+           
+           
+        }
+        return result;
+    }
 
 
 
@@ -395,12 +417,14 @@ public class FunctionalizeStencils extends FEReplacer {
 
 	        StreamSpec oldSS = ss;
 	        ss = spec;
-
-	        SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
-		    List<Function> funcs = funSelector.selectFunctions(spec);
-
+	        
+		    List<Function> funcs = selectFunctions(spec);
+		    FEVisitor v1 = new ScalarizeVectorAssignments(varGen, true);
+		    FEVisitor v2 =new EliminateCompoundAssignments();
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
-	        	Function f = iter.next();
+	        	Function f = iter.next();	        	
+	        	f = ((Function)f.accept(v1));
+	        	f = ((Function)f.accept(v2));	        	
 	        	f.accept(this);
 	        }
 

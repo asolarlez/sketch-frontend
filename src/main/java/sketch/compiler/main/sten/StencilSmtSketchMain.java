@@ -138,7 +138,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 //      dump(prog, "After EliminateCompoundAssignments");
 
         
-        FunctionalizeStencils fs = new FunctionalizeStencils();
+        FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
         
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
         prog = fs.processFuns(prog, varGen); //process the ArrFunction's and create new Function's

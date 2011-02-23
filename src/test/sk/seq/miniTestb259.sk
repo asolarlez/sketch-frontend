@@ -1,6 +1,6 @@
-pragma options "--bnd-inbits 3";
 
-int[N] test5(int N, int[N] in){
+
+stencil int[N] test5(int N, int[N] in){
   int[N] out;
   for(int i=0; i<N; ++i){
   	if(i>0 && i<N-1) out[i] = in[i-1] + in[i+1];
@@ -10,7 +10,7 @@ int[N] test5(int N, int[N] in){
 }
 
 
-int[N] testSK5(int N, int[N] in) implements test5{
+stencil int[N] testSK5(int N, int[N] in) implements test5{
   int[N] out;
   int t0;
   if(N>??){

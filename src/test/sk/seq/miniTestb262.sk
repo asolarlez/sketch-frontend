@@ -1,6 +1,6 @@
-pragma options "--bnd-inbits 3";
 
-int[N] test8(int N, int[N] in, int a, int b){
+
+stencil int[N] test8(int N, int[N] in, int a, int b){
   int[N] out;
   for(int i=0; i<N; ++i){
   	if(i>0 && i<N-1) out[i] = a*in[i-1] + b*in[i+1];
@@ -9,7 +9,7 @@ int[N] test8(int N, int[N] in, int a, int b){
   return out;
 }
 
-int[N] testSK8(int N, int[N] in, int a, int b) implements test8 {
+stencil int[N] testSK8(int N, int[N] in, int a, int b) implements test8 {
   int[N] out = 0;
   for(int i=??; i<(N-??); ++i){
   	out[i] = a*in[i-1] + b*in[i+1];  	

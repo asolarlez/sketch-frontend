@@ -24,7 +24,7 @@ public class StencilSemanticChecker extends SemanticChecker {
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
 		//checker.checkStreamConnectionTyping(prog);//I don't want this one in StreamBit
-		checker.checkStatementCounts(prog);
+		
 		//       checker.checkIORates(prog);
 		return checker.good;
 	}

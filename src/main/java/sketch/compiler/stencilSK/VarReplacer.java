@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.Type;
 
 
 
@@ -68,6 +69,7 @@ public class VarReplacer extends FEReplacer{
     {
         List<Expression> newInits = new ArrayList<Expression>();
         List<String> newNames = new ArrayList<String>();
+        List<Type> newTypes = new ArrayList<Type>();
         boolean changed = false;
         assert repl.size() == 1 : "NYI";
         Entry<String, Expression> ent = repl.entrySet().iterator().next();
@@ -82,6 +84,10 @@ public class VarReplacer extends FEReplacer{
                 init = doExpression(init);
             if( oinit != init) changed = true;
             newInits.add(init);
+            Type otype = stmt.getType(i);
+            Type ntype = (Type)otype.accept(this);
+            if(otype != ntype ) changed = true;
+            newTypes.add(ntype);
             String name = stmt.getName(i);
 
             if( newName instanceof ExprVar ){
@@ -114,7 +120,7 @@ public class VarReplacer extends FEReplacer{
             newNames.add(name);
         }
         if( !changed ) return stmt;
-        return new StmtVarDecl(stmt, stmt.getTypes(),
+        return new StmtVarDecl(stmt, newTypes,
                                stmt.getNames(), newInits);
     }
 

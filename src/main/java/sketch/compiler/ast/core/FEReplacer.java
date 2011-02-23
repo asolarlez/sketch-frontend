@@ -32,7 +32,6 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -347,7 +346,10 @@ public class FEReplacer implements FEVisitor
 
     	if( func.getBody() == null  ){
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
-    		return func;
+    		if(samePars && rtype == func.getReturnType()) return func;  
+    		return new Function(func, func.getCls(),
+                    func.getName(), rtype,
+                    newParam, func.getSpecification(), null);
     	}
         Statement newBody = (Statement)func.getBody().accept(this);        
         if(newBody == null) newBody = new StmtEmpty(func);
@@ -357,21 +359,7 @@ public class FEReplacer implements FEVisitor
                             newParam, func.getSpecification(), newBody);
     }
 
-    public Object visitFuncWork(FuncWork func)
-    {
-        Statement newBody = (Statement)func.getBody().accept(this);
-        Expression newPeek = (func.getPeekRate() != null) ?
-            (Expression)func.getPeekRate().accept(this) : null;
-        Expression newPop = (func.getPopRate() != null) ?
-            (Expression)func.getPopRate().accept(this) : null;
-        Expression newPush = (func.getPushRate() != null) ?
-            (Expression)func.getPushRate().accept(this) : null;
-        if (newBody == func.getBody() && newPeek == func.getPeekRate() &&
-            newPop == func.getPopRate() && newPush == func.getPushRate())
-            return func;
-        return new FuncWork(func, func.getCls(), func.getName(),
-                            newBody, newPeek, newPop, newPush);
-    }
+   
 
 
     public Object visitProgram(Program prog) {
@@ -388,13 +376,6 @@ public class FEReplacer implements FEVisitor
         return new Program(prog, newStreams, newStructs);
     }
 
-    public Object visitSCAnon(SCAnon creator)
-    {
-        StreamSpec newSpec = (StreamSpec)creator.getSpec().accept(this);
-        if (newSpec == creator.getSpec()) return creator;
-        return new SCAnon(creator, newSpec,
-                          creator.getPortals());
-    }
 
     public Object visitSCSimple(SCSimple creator)
     {
