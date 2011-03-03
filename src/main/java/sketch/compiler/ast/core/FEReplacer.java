@@ -748,6 +748,13 @@ public class FEReplacer implements FEVisitor
     public Object visitOther(FENode node) { return node; }
 
 	public Object visitExprStar(ExprStar star) {
+	 /*   if(star.getType() != null){
+	        Type t = (Type) star.getType().accept(this);
+	        if(t != star.getType()){
+	            ExprStar s = new ExprStar(star);
+	            s.setType(t);	           
+	        }
+	    }*/
 		return star;
 	}
 

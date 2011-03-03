@@ -216,7 +216,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	    p = (Program)p.accept(new EliminateNestedArrAcc(true));
 	    
         
-	    //dump(p, "BEFORE Stencilification");
+	    // dump(p, "BEFORE Stencilification");
 	    FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
 
         p = (Program)p.accept(fs); //convert Function's to ArrFunction's
@@ -263,6 +263,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		
 		prog = stencilTransforms(prog);
+		// dump (prog, "After Stencilification.");
 		
 		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen)); 
 		
@@ -291,7 +292,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		prog = (Program)prog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
 		
-		
+		//dump (prog, "After protecting array accesses.");
 		
 		if (showPhaseOpt("lowering")) {
             dump(prog, "Lowering the code previous to Symbolic execution.");
@@ -407,10 +408,10 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		lprog = (Program)lprog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));		 
 		
-		//dump (lprog, "before emd:");
+//		dump (lprog, "before emd:");
 		// lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
 		lprog = (Program) lprog.accept (new MakeMultiDimExplicit(varGen));
-		//dump (lprog, "after emd:");
+//		dump (lprog, "after emd:");
 		
 		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(lprog)));

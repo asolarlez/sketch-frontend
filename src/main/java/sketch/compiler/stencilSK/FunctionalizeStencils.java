@@ -24,8 +24,12 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
+import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
+import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 
 
@@ -265,6 +269,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		// prog.accept(new SimpleCodePrinter());
 
 		//convert all functions to procedures, translating calls and returns appropriately
+		prog = (Program) prog.accept(new MakeBodiesBlocks());
 		prog = (Program) prog.accept(new FunctionParamExtension(true));
 		strs=(StreamSpec)prog.getStreams().get(0);
 		functions=strs.getFuncs();
@@ -419,14 +424,43 @@ public class FunctionalizeStencils extends FEReplacer {
 	        ss = spec;
 	        
 		    List<Function> funcs = selectFunctions(spec);
+		    final List<Function> nfuns = new ArrayList<Function>();
+		    PreprocessSketch v0 = new PreprocessSketch(varGen, 10, new BaseRControl(10), true, true);
+		    v0.ss = spec;
 		    FEVisitor v1 = new ScalarizeVectorAssignments(varGen, true);
 		    FEVisitor v2 =new EliminateCompoundAssignments();
+		    
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
-	        	Function f = iter.next();	        	
+	        	Function f = iter.next();
+	        	f = ((Function)f.accept(v0));	        	
 	        	f = ((Function)f.accept(v1));
-	        	f = ((Function)f.accept(v2));	        	
-	        	f.accept(this);
+	        	//f.accept(new SimpleCodePrinter());
+	        	//System.out.println(f.toString());
+	        	f = ((Function)f.accept(v2));	
+	        	f = (Function)f.accept(new EliminateReturns());
+	        	nfuns.add(f);	        	
 	        }
+	        
+	        MatchParamNames v3 = new MatchParamNames(){
+	            public Function getFuncNamed(String name){
+	                for (Function func : nfuns)
+	                {	                    
+	                    String fname = func.getName();
+	                    if (fname != null && fname.equals(name))
+	                        return func;
+	                }
+	                return null;
+	            }
+	        };
+            
+	        
+	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
+                Function f = iter.next();                                
+                f = ((Function)f.accept(v3));
+                //System.out.println("After: "+ f.toString());
+                f.accept(this);
+            }
+	        	        
 
 	        ss = oldSS;
 	        return spec;
@@ -805,7 +839,7 @@ class ProcessStencil extends FEReplacer {
 
 
 	    public StmtMax newStmtMax(int i, List<Expression> indices, ArrFunction fun){
-	    	assert indices.size() == fun.idxParams.size();
+	    	assert indices.size() == fun.idxParams.size() : " " + fun.getFullName();
 	    	String newVar = ArrFunction.IDX_VAR + i;
 	    	ExprVar idxi = new ExprVar(cnode, newVar);
 	    	//"idx_i := max{expr1==t, idx < in_idx, conds }; "
@@ -829,11 +863,35 @@ class ProcessStencil extends FEReplacer {
 	    	}
 	    	//Put additional primary constraints for the loop variables for loops outside the declaration site.
 
+	    	{
+	    	    int jj = 0;
+    	    	for(PathIterator iterIt = currentTN.limitedPathIter(); iterIt.hasNext();jj++){
+    	    	    ParamTree.treeNode iterPar = iterIt.tnNext();	      	    	    
+                    Expression cinit = iterPar.vdecl.getInit(0);
+                    Expression ccond = iterPar.highCond();                    
+    	    	    smax.vlist.add(new StmtMax.vInfo(cinit, ccond, iterPar.vdecl.getName(0)));
+    	    	}
+    	    	jj = 0;
+                for(PathIterator iterIt = currentTN.limitedPathIter(); iterIt.hasNext();jj++){
+                    StmtVarDecl iterPar = iterIt.next();
+                    
+                    ExprArrayRange ear = new ExprArrayRange(cnode, new ExprVar(cnode, newVar), new ExprConstInt(2*jj+1));
+                    VarReplacer vr = new VarReplacer(iterPar.getName(0), ear );
+                    ArrReplacer ar = new ArrReplacer(idxi);
+                    
+                    StmtMax.vInfo vi = smax.vlist.get(jj);
+                    vi.start = (Expression) vi.start.accept(vr);
+                    vi.start = (Expression) vi.start.accept(ar);
+                    vi.pred = (Expression) vi.pred.accept(vr);
+                    vi.pred = (Expression) vi.pred.accept(ar);
+                }
+	    	}
+	    	
 	    	if( fun.declarationSite != this.ptree.getRoot()  ){
 	    		boolean found = false;
 	    		int jj=0;
 		    	for(PathIterator iterIt = currentTN.limitedPathIter(); iterIt.hasNext(); jj++){
-		    		ParamTree.treeNode iterPar = iterIt.tnNext();
+		    		ParamTree.treeNode iterPar = iterIt.tnNext();		    		
 		    		ExprArrayRange ear = new ExprArrayRange(cnode, new ExprVar((FEContext) null, newVar), new ExprConstInt(2*jj+1));
 		    		Expression cindex = new ExprBinary(cnode, ExprBinary.BINOP_EQ, ear, new ExprVar(cnode, iterPar.vdecl.getName(0)));
 		    		smax.primC.add(cindex);
@@ -1180,6 +1238,8 @@ class ProcessStencil extends FEReplacer {
 	    }
 
 
+	 Stack<StmtFor> forstack;   
+	    
 	 public Object visitStmtFor(StmtFor stmt)
 	    {
 		 	cnode = stmt;

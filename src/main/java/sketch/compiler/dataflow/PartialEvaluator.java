@@ -61,7 +61,7 @@ class CloneHoles extends FEReplacer{
 }
 
 public class PartialEvaluator extends FEReplacer {
-    protected StreamSpec ss;
+    public StreamSpec ss;
     protected MethodState state;
     protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
@@ -957,6 +957,10 @@ public class PartialEvaluator extends FEReplacer {
                 state.popChangeTracker();
                 state.pushChangeTracker (vcond, false);
                 nvtrue = (Statement)( new StmtAssert(stmt, ExprConstInt.zero, false) ).accept(this);
+            }catch(ArithmeticException e){
+                state.popChangeTracker();
+                state.pushChangeTracker (vcond, false);
+                nvtrue = (Statement)( new StmtAssert(stmt, ExprConstInt.zero, false) ).accept(this);
             }catch(Throwable e){
                 state.popChangeTracker();
                 throw new RuntimeException(e);
@@ -1435,7 +1439,7 @@ public class PartialEvaluator extends FEReplacer {
                 case Parameter.REF:{
                         state.outVarDeclare(formalParamName, type);
                         state.setVarValue(formalParamName, actualParamValue);
-                        Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
+                        Statement varDecl=new StmtVarDecl(cx,type,transName(formalParam.getName()),actualParam);
                         addStatement((Statement)varDecl);
                         break;
                     }
@@ -1443,14 +1447,14 @@ public class PartialEvaluator extends FEReplacer {
                 case Parameter.IN:{
                         state.varDeclare(formalParamName, type);
                         state.setVarValue(formalParamName, actualParamValue);
-                        Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()),actualParam);
+                        Statement varDecl=new StmtVarDecl(cx,type,transName(formalParam.getName()),actualParam);
                         addStatement((Statement)varDecl);
                         break;
                     }
                 case Parameter.OUT:{
                         state.outVarDeclare(formalParamName, type);
                         Expression initVal = type.defaultValue();                        
-                        Statement varDecl=new StmtVarDecl(cx,type,state.transName(formalParam.getName()), initVal);
+                        Statement varDecl=new StmtVarDecl(cx,type,transName(formalParam.getName()), initVal);
                         addStatement((Statement)varDecl);
                         break;
                     }

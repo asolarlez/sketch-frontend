@@ -1,4 +1,4 @@
-
+pragma options "--bnd-unroll-amnt 32 ";
 
 stencil int[N] test5(int N, int[N] in){
   int[N] out;

@@ -5,6 +5,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -60,11 +61,19 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
             tblen = ExprConstInt.one;
         }
         String nv = varGen.nextVar();       
-        String rhv = varGen.nextVar();
         
-        addStatement((Statement)new StmtVarDecl(sa.getRHS(), tb, rhv, null).accept(this));
-        Expression rhexp = new ExprVar(sa.getRHS(), rhv);
-        addStatement((Statement) new StmtAssign(rhexp, sa.getRHS()).accept(this));
+        Expression rhexp;
+        if(sa.getRHS() instanceof ExprConstant){
+            rhexp = sa.getRHS(); 
+        }else{
+            String rhv = varGen.nextVar();
+            addStatement((Statement)new StmtVarDecl(sa.getRHS(), tb, rhv, null).accept(this));
+            rhexp = new ExprVar(sa.getRHS(), rhv);
+            addStatement((Statement) new StmtAssign(rhexp, sa.getRHS()).accept(this));
+        }
+        
+        
+        
          
         
         StmtAssign nas;
@@ -77,14 +86,20 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
                     new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),
                     rhexp);
         }
-        StmtAssign nasdef = new StmtAssign(
-                new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),
-                taar.defaultValue());
-                        
-        StmtIfThen sit = new StmtIfThen(sa, new ExprBinary(new ExprVar(sa, nv), "<", tblen), 
-                new StmtBlock(nas), 
-                new StmtBlock(nasdef)
-        );
+        Statement sit;
+        if(rhexp.equals(taar.defaultValue())){
+            sit = new StmtBlock(nas);
+        }else{
+            StmtAssign nasdef = new StmtAssign(
+                    new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),
+                    taar.defaultValue());
+                            
+            sit = new StmtIfThen(sa, new ExprBinary(new ExprVar(sa, nv), "<", tblen), 
+                    new StmtBlock(nas), 
+                    new StmtBlock(nasdef)
+            );    
+        }
+        
         return new StmtFor(nv, taar.getLength(), new StmtBlock(sit) ).accept(this);
         
     }

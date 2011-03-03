@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -245,10 +246,18 @@ class UpgradeStarToInt extends FEReplacer{
     
     public Object visitExprArrayRange(ExprArrayRange exp){
     	boolean change=false;
+    	Type oType = type;
+    	RangeLen range=exp.getSelection();
+    	Expression l = range.getLenExpression();
+    	if(l == null){ 
+    	    l = ExprConstInt.one;
+    	    type = new TypeArray(type, new ExprBinary(range.start(), "+", l));
+    	}     
 		Expression newBase=doExpression(exp.getBase());
+		type = oType;
 		if(newBase!=exp.getBase()) change=true;
 		
-		RangeLen range=exp.getSelection();
+		
         Expression newStart = null;
         {
             Type oldType = type;
