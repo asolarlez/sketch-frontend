@@ -111,4 +111,10 @@ public class TypeCommaArray extends Type implements TypeArrayInterface {
     public Object accept(FEVisitor visitor) {
         return visitor.visitTypeCommaArray(this);
     }
+
+    @Override
+    public TypeCommaArray withMemType(CudaMemoryType memtyp) {
+        return new TypeCommaArray(memtyp, this.getBase(), new Vector<Expression>(
+                this.getLengthParams()));
+    }
 }
