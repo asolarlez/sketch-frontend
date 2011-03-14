@@ -783,6 +783,8 @@ public class SequentialSketchMain extends CommonSketchMain
         dumpProgramToFile(sketchmain.prog);
     }
 
+    public static boolean isTest = false;
+
     public static void main(String[] args) {
         long beg = System.currentTimeMillis();
         checkJavaVersion(1, 6);
@@ -792,7 +794,11 @@ public class SequentialSketchMain extends CommonSketchMain
         } catch (SketchException e) {
             e.print();
             dumpProgramToFile(sketchmain.prog);
-            System.exit(1);
+            if (isTest) {
+                throw e;
+            } else {
+                System.exit(1);
+            }
         } catch (java.lang.Error e) {
             handleErr(sketchmain, e);
             // necessary for unit tests, etc.

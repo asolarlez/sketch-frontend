@@ -2,6 +2,7 @@ package sketch.compiler.test;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import sketch.compiler.main.seq.SequentialSketchMain;
 
 /**
  * Run all tests in src/test/sk/seq/miniTest*.sk
@@ -13,6 +14,7 @@ import junit.framework.TestSuite;
 public class SequentialJunitTest extends SketchTestSuite {
     public SequentialJunitTest() throws Exception {
         super("seq");
+        SequentialSketchMain.isTest = true;
     }
 
     public static TestSuite suite() throws Exception {
