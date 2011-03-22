@@ -18,6 +18,7 @@ import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
+import sketch.util.DebugOut;
 
 public class NtsbVtype extends IntVtype {
     public PrintStream out;
@@ -114,7 +115,7 @@ public class NtsbVtype extends IntVtype {
     public void Assert(abstractValue val, String msg){
          if( val.hasIntVal() ){
              if(val.getIntVal() == 0){
-                 throw new RuntimeException( "Assertion failure: " + msg);
+                 DebugOut.printWarning("This assertion will fail unconditionally when you call this function: " + msg);
              }
              if(val.getIntVal() == 1){
                  return;

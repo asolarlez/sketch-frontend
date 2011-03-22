@@ -1,9 +1,9 @@
 generator bit foo(bit[4] in){ /* automatically rewritten */
-	return in[{*}];
+	return in[??];
 }
 
 bit reverseSketch(bit[4] in) implements reverse {	
-	int tt = ??;	assert tt == 3;
+	int tt = ??(3);	assert tt == 3;
 	return 	foo(in) ^ in[tt];
 }
 

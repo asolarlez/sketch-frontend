@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
@@ -398,7 +398,7 @@ public class MethodState {
 
 
     public abstractValue pathCondition(){
-        abstractValue val = null;
+        abstractValue val = vtype.not(getRvflag().state(vtype));
         for (ChangeTracker tmpTracker = changeTracker;
                 tmpTracker != null; tmpTracker = tmpTracker.kid )
         {
