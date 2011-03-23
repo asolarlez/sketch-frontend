@@ -33,6 +33,8 @@ import sketch.util.SynchronousTimedProcess;
 import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
 
+import static sketch.util.DebugOut.assertFalse;
+
 public class SATBackend {
 
 	String solverErrorStr;
@@ -128,6 +130,9 @@ public class SATBackend {
         }
 
         File[] solutions = options.getSolutionsFiles();
+        if (solutions.length == 0) {
+            assertFalse("No solutions found in folder", options.sktmpdir());
+        }
         extractOracleFromOutput(solutions[0].getPath());
         return worked;
     }

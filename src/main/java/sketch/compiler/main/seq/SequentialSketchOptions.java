@@ -126,7 +126,7 @@ public class SequentialSketchOptions {
         FileUtils.deleteQuietly(sktmpdir());
     }
 
-    protected File sktmpdir() {
+    public File sktmpdir() {
         return PlatformLocalization.getLocalization().getTempPath(sketchName);
     }
 

@@ -45,21 +45,18 @@ public class CommonSketchMain {
         backendOptions.add("--verbosity=" + options.debugOpts.verbosity);
 
         if (options.solverOpts.seed != 0) {
-            assert false : "need to convert old style command line args";
-            backendOptions.add("-seed");
-            backendOptions.add("" + options.solverOpts.seed);
+            backendOptions.add("--seed=" + options.solverOpts.seed);
         }
         if (options.debugOpts.cex) {
-            assert false : "need to convert old style command line args";
-            backendOptions.add("-showinputs");
+            backendOptions.add("--print-cex");
         }
         if (options.solverOpts.synth != SynthSolvers.NOT_SET) {
-            assert false : "need to convert old style command line args";
+            assert false : "solver opts synth need to convert old style command line args";
             backendOptions.add("-synth");
             backendOptions.add("" + options.solverOpts.synth.toString());
         }
         if (options.solverOpts.verif != VerifSolvers.NOT_SET) {
-            assert false : "need to convert old style command line args";
+            assert false : "solver opts verif need to convert old style command line args";
             backendOptions.add("-verif");
             backendOptions.add("" + options.solverOpts.verif.toString());
         }
@@ -73,9 +70,7 @@ public class CommonSketchMain {
         }
         
         if (options.solverOpts.olevel >= 0) {
-            assert false : "need to convert old style command line args";
-            backendOptions.add("-olevel");
-            backendOptions.add("" + options.solverOpts.olevel);
+            backendOptions.add("--olevel=" + options.solverOpts.olevel);
         }
         if (options.solverOpts.simpleInputs) {
             assert false : "need to convert old style command line args";
