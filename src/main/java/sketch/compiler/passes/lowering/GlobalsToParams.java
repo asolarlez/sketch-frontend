@@ -3,18 +3,18 @@ package sketch.compiler.passes.lowering;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -168,7 +168,7 @@ public class GlobalsToParams extends FEReplacer {
         // the hashmap only contains keys for the old function.
         // NOTE -- a litte messy, please add better ideas if you have them.
         if (newParamsForCall.containsKey(inputFcn)) {
-            if (fcn.getSpecification() == null) {
+            if (!callGraph.isSketchOrSpec(fcn)) {
                 final Vector<Parameter> params = new Vector<Parameter>(fcn.getParams());
 
                 // same here, need to look up the old function

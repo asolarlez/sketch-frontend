@@ -1,11 +1,8 @@
 package sketch.compiler.passes.structure;
 
-import static sketch.util.Misc.nonnull;
-
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -13,8 +10,10 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.util.datastructures.HashmapSet;
 import sketch.util.datastructures.ObjPairBase;
+import sketch.util.datastructures.TypedHashMap;
 import sketch.util.datastructures.TypedHashSet;
 import sketch.util.fcns.IsChanging;
+import static sketch.util.Misc.nonnull;
 
 /**
  * determines which functions call which functions, and the closure. debug print code
@@ -31,9 +30,13 @@ public class CallGraph extends FEReplacer {
     public CGEdgeSet<CallEdge> closureEdges = new CGEdgeSet<CallEdge>();
     public TypedHashSet<Function> allFcns = new TypedHashSet<Function>();
 
-    protected final HashMap<ExprFunCall, Function> fcnCallEnclosing =
-            new HashMap<ExprFunCall, Function>();
-    protected final HashMap<String, Function> fcnDefs = new HashMap<String, Function>();
+    /** functions in which the call is made */
+    protected final TypedHashMap<ExprFunCall, Function> fcnCallEnclosing =
+            new TypedHashMap<ExprFunCall, Function>();
+    protected final TypedHashMap<String, Function> fcnDefs =
+            new TypedHashMap<String, Function>();
+    protected final TypedHashMap<Function, Function> sketchOfSpec =
+            new TypedHashMap<Function, Function>();
 
     /** for the visitor only */
     protected Function enclosing;
@@ -94,6 +97,14 @@ public class CallGraph extends FEReplacer {
         return nonnull(fcnDefs.get(name));
     }
 
+    public Function getSketchOfSpec(Function spec) {
+        return nonnull(sketchOfSpec.get(spec));
+    }
+
+    public boolean isSketchOrSpec(Function fcn) {
+        return (fcn.getSpecification() != null) || (sketchOfSpec.containsKey(fcn));
+    }
+
     protected void buildEdges() {
         for (Entry<ExprFunCall, Function> ent : fcnCallEnclosing.entrySet()) {
             final Function caller = ent.getValue();
@@ -108,6 +119,13 @@ public class CallGraph extends FEReplacer {
         while (ic.cond(edges.edges.size())) {
             for (CallEdge edge : edges) {
                 addClosure(edge);
+            }
+        }
+
+        // compute sketch relations
+        for (Function ent : fcnDefs.values()) {
+            if (ent.getSpecification() != null) {
+                sketchOfSpec.put(getByName(ent.getSpecification()), ent);
             }
         }
     }
