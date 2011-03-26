@@ -95,7 +95,15 @@ public class PlatformLocalization {
     }
 
     public String getCegisPath() {
-        String cegisName = "cegis.py";
+        SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
+        String scriptingBinary = getCegisPathInner("cegis.py");
+        if (options.solverOpts.useScripting && scriptingBinary != null) {
+            return scriptingBinary;
+        }
+        return getCegisPathInner("cegis");
+    }
+
+    public String getCegisPathInner(String cegisName) {
         SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
         Vector<File> all_files = new Vector<File>();
         if (options.feOpts.cegisPath != null) {
@@ -141,12 +149,14 @@ public class PlatformLocalization {
                 }
             }
         }
-        System.err.println("Could not find cegis binary. "
-                + "Searched the following paths (in order):");
-        for (File path : all_files) {
-            System.err.println("    " + path);
-        }
-        return cegisName;
+        //--------------------------------------------------
+        // System.err.println("Could not find cegis binary. "
+        //         + "Searched the following paths (in order):");
+        // for (File path : all_files) {
+        //     System.err.println("    " + path);
+        // }
+        //-------------------------------------------------- 
+        return null;
     }
 
     /** make directories if they don't already exist, return $dirname$ or null */

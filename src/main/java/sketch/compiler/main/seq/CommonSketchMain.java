@@ -45,7 +45,8 @@ public class CommonSketchMain {
         backendOptions.add("--verbosity=" + options.debugOpts.verbosity);
 
         if (options.solverOpts.seed != 0) {
-            backendOptions.add("--seed=" + options.solverOpts.seed);
+            backendOptions.add("--seed");
+            backendOptions.add("" + options.solverOpts.seed);
         }
         if (options.debugOpts.cex) {
             backendOptions.add("--print-cex");
@@ -61,16 +62,18 @@ public class CommonSketchMain {
             backendOptions.add("" + options.solverOpts.verif.toString());
         }
         if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions) {
-            backendOptions.add("--sem-array-OOB-policy=assertions");
+            backendOptions.add("--assumebcheck");
         } else if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.wrsilent_rdzero) {
-            backendOptions.add("--sem-array-OOB-policy=wrsilent_rdzero");
+            // backendOptions.add("--sem-array-OOB-policy=wrsilent_rdzero");
         }
         if(options.bndOpts.inlineAmnt > 0){
-            backendOptions.add("--bnd-inline-amnt=" + options.bndOpts.inlineAmnt);
+            backendOptions.add("--bnd-inline-amnt");
+            backendOptions.add("" + options.bndOpts.inlineAmnt);
         }
         
         if (options.solverOpts.olevel >= 0) {
-            backendOptions.add("--olevel=" + options.solverOpts.olevel);
+            backendOptions.add("--olevel");
+            backendOptions.add("" + options.solverOpts.olevel);
         }
         if (options.solverOpts.simpleInputs) {
             assert false : "need to convert old style command line args";

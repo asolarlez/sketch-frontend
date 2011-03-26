@@ -108,7 +108,9 @@ public class SequentialSketchOptions {
     }
 
     public String getSolutionsString() {
-        return getTmpFilename("solution-%(num)s");
+        // return getTmpFilename("solution-%(num)s");
+        // FIXME -- restore multiple solution generality
+        return getTmpFilename("solution-0");
     }
 
     public File[] getSolutionsFiles() {

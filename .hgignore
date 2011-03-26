@@ -12,7 +12,7 @@ function_list.xml
 sketch-noarch.jar
 
 syntax: regexp
-^[^\\/]+\.(sk|skh|h)$
+^[^\\/]+\.(sk|skh|h|txt)$
 
 # parser generator things
 src/main/java/sketch/compiler/parser/StreamItLex.smap

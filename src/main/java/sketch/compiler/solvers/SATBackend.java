@@ -61,9 +61,9 @@ public class SATBackend {
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
-        commandLineOptions.add(options.getTmpSketchFilename());
         commandLineOptions.add("-o");
         commandLineOptions.add(options.getSolutionsString());
+        commandLineOptions.add(options.getTmpSketchFilename());
         commandLineOptions.addAll(Arrays.asList(additional));
         return commandLineOptions.toArray(new String[0]);
     }
