@@ -62,6 +62,7 @@ import sketch.compiler.main.cuda.CudaSketchMain;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
+import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.ReplaceParforLoops;
 import sketch.compiler.passes.lowering.*;
@@ -84,6 +85,8 @@ import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.compiler.stencilSK.FunctionalizeStencils;
+import sketch.compiler.stencilSK.MatchParamNames;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.util.ControlFlowException;
 import sketch.util.Pair;
@@ -228,6 +231,24 @@ public class SequentialSketchMain extends CommonSketchMain
 		return new Pair<Program, Set<Directive>> (prog, pragmas);
 	}
 
+	protected Program stencilTransforms(Program p){
+	    
+	    p = (Program) p.accept(new MatchParamNames());
+	    
+	    p = (Program)p.accept(new EliminateNestedArrAcc(true));
+	    
+        
+	    // dump(p, "BEFORE Stencilification");
+	    FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
+
+        p = (Program)p.accept(fs); //convert Function's to ArrFunction's
+
+        p = fs.processFuns(p, varGen); //process the ArrFunction's and create new Function's
+        //dump(p);
+        return p;
+	}
+	
+	
 	/**
 	 * Transform front-end code to have the Java syntax.  Goes through
 	 * a series of lowering passes to convert an IR tree from the
@@ -253,10 +274,6 @@ public class SequentialSketchMain extends CommonSketchMain
         
         // remove tprint here
         prog = (getIRStage3()).run(prog);
-
-		// prog.debugDump(new File("after-irstage-2.sk"));
-		prog = (Program) prog.accept(new ReplaceFloatsWithBits());
-				
 		// prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
 		
 		prog = (Program)prog.accept(new ReplaceSketchesWithSpecs());
@@ -265,9 +282,15 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new MakeBodiesBlocks());
 		// dump (prog, "MBB:");
 		prog = (Program)prog.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
-		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
 		
-		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen));
+		prog = (Program)prog.accept(new DisambiguateUnaries(varGen));
+
+		
+		
+		prog = stencilTransforms(prog);
+		// dump (prog, "After Stencilification.");
+		
+		prog = (Program)prog.accept(new EliminateMultiDimArrays(varGen)); 
 		
 		prog = (Program)prog.accept(new ExtractRightShifts(varGen));
 		//dump (prog, "Extract Vectors in Casts:");
@@ -279,6 +302,12 @@ public class SequentialSketchMain extends CommonSketchMain
 		prog = (Program)prog.accept(new ScalarizeVectorAssignments(varGen, true));
 		// dump (prog, "ScalarizeVectorAssns");
 		
+		
+		
+		
+        
+        prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
+		
 		// By default, we don't protect array accesses in SKETCH
 		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
 			prog = (Program) prog.accept(new ProtectArrayAccesses(
@@ -286,13 +315,14 @@ public class SequentialSketchMain extends CommonSketchMain
 
 		// dump (prog, "After protecting array accesses.");
 		
+		prog = (Program)prog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+		
+		//dump (prog, "After protecting array accesses.");
+		
 		if (showPhaseOpt("lowering")) {
-		    dump(prog, "Lowering the code previous to Symbolic execution.");
-		}
+            dump(prog, "Lowering the code previous to Symbolic execution.");
+        }
 
-
-		prog = (Program)prog.accept(new EliminateNestedArrAcc());
-		//dump (prog, "After lowerIR:");
 	}
 
 
@@ -357,8 +387,9 @@ public class SequentialSketchMain extends CommonSketchMain
     public class IRStage1 extends CompilerStage {
         public IRStage1() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 =
-                    { new GlobalsToParams(varGen), new FlattenCommaMultidimArrays(null) };
+            FEVisitor[] passes2 = { new GlobalsToParams(varGen)
+            // , new FlattenCommaMultidimArrays(null)
+                    };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
@@ -444,14 +475,17 @@ public class SequentialSketchMain extends CommonSketchMain
         lprog = (getIRStage1()).run(lprog);
         
         lprog = (Program) lprog.accept(new TypeInferenceForStars());
-        // dump (lprog, "tifs:");
+        //dump (lprog, "tifs:");
 
         prog = lprog; // save before flow checks, so a good program is written out for debugging
 		lprog.accept(new PerformFlowChecks());
 		
+		lprog = (Program)lprog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));		 
 		
-		lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
-		
+//		dump (lprog, "before emd:");
+		// lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
+		lprog = (Program) lprog.accept (new MakeMultiDimExplicit(varGen));
+//		dump (lprog, "after emd:");
 		
 		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(lprog)));
@@ -483,15 +517,18 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	
 	public void testProg(Program p){
-	    dump(p, "Hehehe");
+	    
 	    p = (Program)p.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
 	    p = (Program)p.accept(new EliminateMultiDimArrays(varGen));
 	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
             new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
                     null, System.out
-                    , options.bndOpts.unrollAmnt, new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p ), false);
+                    , options.bndOpts.unrollAmnt 
+                    , options.bndOpts.arrSize
+                    ,new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p ), false);
         log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
+        log("MAX ARRAY SIZE  = " + options.bndOpts.arrSize);
         p.accept(partialEval);
 	    
 	}
@@ -515,10 +552,12 @@ public class SequentialSketchMain extends CommonSketchMain
         if (showPhaseOpt("postproc")) {
             dump(finalCode, "After Flattening.");
         }
+        finalCode = (Program)finalCode.accept(new MakeCastsExplicit());
 		finalCode = (Program)finalCode.accept(new EliminateTransAssns());
 		//System.out.println("=========  After ElimTransAssign  =========");
 		if(showPhaseOpt("taelim")) 
 			dump(finalCode, "After Eliminating transitive assignments.");
+		
         finalCode = (Program) finalCode.accept(new EliminateDeadCode(
                         options.feOpts.keepAsserts));
 		//dump(finalCode, "After Dead Code elimination.");
@@ -612,6 +651,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		    }
 			try{
 				{
+
 					Writer outWriter = new FileWriter(options.feOpts.outputDir + resultFile + ".h");
 					outWriter.write(hcode);
 					outWriter.flush();

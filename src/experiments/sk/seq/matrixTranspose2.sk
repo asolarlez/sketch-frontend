@@ -1,0 +1,66 @@
+int N = 16;
+int P = 4;
+
+#define PARALLEL for(int p=0; p<P; ++p)
+
+bit[N][N] transpose(bit[N][N] input){
+    bit[N][N] output=0;
+    for(int i=0; i<N; ++i){
+        for(int j=0; j<N; ++j){
+            output[i][j] = input[j][i];
+        }
+    }
+    return output;
+}
+
+bit[N][N] ptrans (bit[N][N] in) implements transpose{
+    bit[N][N] out;
+    for (int p=0; p< P-1; ++p){
+        communicate(p, in, out);
+        //barrier.post();
+        localTrans(p, out);
+        //barrier.wait();
+    }
+    localTrans(P, out);
+    return out;
+}
+
+
+void communicate(int s, bit[N][N] in, ref bit[N][N] out){
+    PARALLEL{
+        for(int j=expr(p,s,N,P); j<expr(p,s,N,P); ++j){
+            for(int k=expr(p,s,N,P); k<expr(p,s,N,P); ++k){    
+                out[expr2(p,s,j,k,N,P)][expr2(p,s,j,k,N,P)] = in[expr2(p,s,j,k,N,P)][expr2(p,s,j,k,N,P)];
+            }
+        }
+    }
+}
+
+
+void localTrans(int s, ref bit[N][N] out){
+    PARALLEL{
+        for(int j=expr(p,s,N,P); j<expr(p,s,N,P); ++j){
+            for(int k=expr(p,s,N,P); k<expr(p,s,N,P); ++k){    
+                out[expr2(p,s,j,k,N,P)][expr2(p,s,j,k,N,P)] = out[expr2(p,s,j,k,N,P)][expr2(p,s,j,k,N,P)];
+            }
+        }
+    }
+}
+
+
+
+generator int expr(int a, int b, int c, int d){
+    if(??){
+        return {| a | b | c | d | ??  |};
+    }else{
+        return expr(a,b,c,d)*?? + expr(a,b,c,d)*??;
+    }
+}
+
+generator int expr2(int a, int b, int c, int d, int e, int f){
+    if(??){
+        return {| a | b | c | d | e | f | ?? |};
+    }else{
+        return expr2(a,b,c,d, e, f)*?? + expr2(a,b,c,d, e, f)*??;
+    }    
+}

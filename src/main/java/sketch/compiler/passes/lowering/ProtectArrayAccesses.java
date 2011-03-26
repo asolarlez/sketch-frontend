@@ -5,6 +5,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
@@ -12,7 +13,6 @@ import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -174,7 +174,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			cond = makeGuard (base, idx);		
 			near = new ExprArrayRange(base, idx);
 		}else{
-			RangeLen rl = (RangeLen)ear.getMembers().get(0);
+			RangeLen rl = ear.getSelection();
 			Expression ofst = (Expression) rl.getLenExpression().accept(this);
 			cond = makeGuard (base, ofst  ,idx);		
 			near = new ExprArrayRange(ear, base, new RangeLen(idx, ofst));
@@ -203,7 +203,7 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 				cond = makeGuard (base, idx);		
 				near = new ExprArrayRange(base, idx);
 			}else{
-				RangeLen rl = (RangeLen)ear.getMembers().get(0);
+				RangeLen rl = ear.getSelection();
 				Expression ofst = (Expression) rl.getLenExpression().accept(this);
 				cond = makeGuard (base, ofst  ,idx);		
 				near = new ExprArrayRange(ear, base, new RangeLen(idx, ofst));
@@ -336,9 +336,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	}
 
 	protected Expression makeLocalIndex (ExprArrayRange ear) {
-		String nname = varGen.nextVar("_pac");		
-		assert ear.getMembers().size() == 1 : "Currently only accept arrays with one selection";
-		RangeLen rl =(RangeLen) ear.getMembers().get(0); 
+		String nname = varGen.nextVar("_pac");				
+		RangeLen rl =ear.getSelection(); 
 		Expression nofset = (Expression) rl.start()/*.accept(this)*/;
 		Type t = getType(nofset);
 		addStatement((Statement)(new StmtVarDecl(ear, t, nname,  nofset).accept(this)));

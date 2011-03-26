@@ -39,6 +39,11 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     public int inlineAmnt = 5;
     @CliParameter(help = "The unroll ammount for loops.")
     public int unrollAmnt = 8;
+    
+    @CliParameter(help = "Max Size for arrays of unknown size.")
+    public int arrSize = 10;
+    
+    
     @CliParameter(help = "Initial value to start with when minimizing "
             + "expressions/cost functions")
     public int costEstimate = 32;

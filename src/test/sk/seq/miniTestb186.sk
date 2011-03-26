@@ -1,5 +1,4 @@
-
-generator int ufu(int a);/* Uninterpreted function */ /* automatically rewritten */
+int ufu(int a);/* Uninterpreted function */ /* automatically rewritten */
 
 int faa(int s){	
 	return ufu(s) * ufu(s+1); 

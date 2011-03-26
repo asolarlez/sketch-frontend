@@ -2,44 +2,57 @@ package sketch.compiler.stencilSK.preprocessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+
+import static sketch.util.DebugOut.printDebug;
 
 public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	public static final Type FLOAT = TypePrimitive.floattype;
 	
+	TempVarGen varGen;
 	
 	Map<Float, Function> floatConstants = new HashMap<Float, Function>();		
 	
-	public ReplaceFloatsWithBits(){
+	public ReplaceFloatsWithBits(TempVarGen varGen){
 		super(null);
+		this.varGen = varGen;
 	}
-	
-	
-	Function newFloatFunction(String flName){
-	    return Function.creator((FEContext) null, flName, FcnType.Uninterp).returnType(TypePrimitive.bittype).create();
-	}
-	
+
+    Function newFloatFunction(String flName) {
+        printDebug("newFloatFunction", flName);
+        List<Parameter> pl = new ArrayList<Parameter>(1);
+        pl.add(new Parameter(TypePrimitive.bittype, "_out", Parameter.OUT));
+        return Function.creator((FEContext) null, flName, FcnType.Uninterp).returnType(
+                TypePrimitive.bittype).params(pl).create();
+    }
 	
 	String fName(Float fl){
 		String name = fl.toString();
 		name  = name.replace('.', '_');
 		return "FL_" + name;
 	}
+	
+	
 	
 	public Object visitExprConstFloat(ExprConstFloat fexp){
 		String name = null;
@@ -51,7 +64,12 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 			name = fName(fl);			
 			floatConstants.put(fl, newFloatFunction(name));			
 		}
-		return new ExprFunCall(fexp, name, new ArrayList<Expression>(0) );
+		List<Expression> pl = new ArrayList<Expression>(1);
+		ExprVar ev = new ExprVar(fexp, varGen.nextVar());
+		pl.add(ev);
+		addStatement(new StmtVarDecl(fexp, TypePrimitive.bittype, ev.getName(), null));
+		addStatement(new StmtExpr( new ExprFunCall(fexp, name, pl ) ));
+		return ev;
 	}
 	
 	

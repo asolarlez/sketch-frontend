@@ -34,7 +34,6 @@ import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -555,7 +554,7 @@ public class NodesToJava extends SymbolTableVisitor
             result += convertType(func.getReturnType()) + " ";
         result += func.getName();
         String prefix = null;
-        if (func.isInit()) prefix = "final";
+        
         result += doParams(func.getParams(), prefix) + " ";
         result += (String)func.getBody().accept(this);
         result += "\n";
@@ -563,11 +562,6 @@ public class NodesToJava extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitFuncWork(FuncWork func)
-    {
-        // Nothing special here; we get to ignore the I/O rates.
-        return visitFunction(func);
-    }
 
 
     public String outputStructure(TypeStruct struct){
@@ -603,10 +597,6 @@ public class NodesToJava extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitSCAnon(SCAnon creator)
-    {
-        return creator.getSpec().accept(this);
-    }
 
     public Object visitSCSimple(SCSimple creator)
     {
@@ -893,281 +883,10 @@ public class NodesToJava extends SymbolTableVisitor
             ") " + (String)stmt.getBody().accept(this);
     }
 
-    /**
-     * For a non-anonymous StreamSpec, check to see if it has any
-     * message handlers.  If it does, then generate a Java interface
-     * containing the handlers named (StreamName)Interface, and
-     * a portal class named (StreamName)Portal.
-     */
-    private String maybeGeneratePortal(StreamSpec spec)
-    {
-        List handlers = new java.util.ArrayList();
-        for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-//            if (func.getFcnType() == )
-//                handlers.add(func);
-        }
-        if (handlers.isEmpty())
-            return null;
-
-        // Okay.  Assemble the interface:
-        StringBuffer result = new StringBuffer();
-        result.append(indent + "interface " + spec.getName() +
-                      "Interface {\n");
-        addIndent();
-        for (Iterator iter = handlers.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            result.append(indent + "public ");
-            result.append(convertType(func.getReturnType()) + " ");
-            result.append(func.getName());
-            result.append(doParams(func.getParams(), null));
-            result.append(";\n");
-        }
-        unIndent();
-        result.append(indent + "}\n");
-
-        // Assemble the portal:
-        result.append(indent + "class " + spec.getName() +
-                      "Portal extends Portal implements " + spec.getName() +
-                      "Interface {\n");
-        addIndent();
-        for (Iterator iter = handlers.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            result.append(indent + "public ");
-            result.append(convertType(func.getReturnType()) + " ");
-            result.append(func.getName());
-            result.append(doParams(func.getParams(), null));
-            result.append(" { }\n");
-        }
-	if(libraryFormat) {
-	    //implement fireMessage
-	    result.append(indent+"protected void fireMessage(int message,Object[] args) {\n");
-	    addIndent();
-	    result.append(indent+"System.out.println(\"Firing Message: \"+message);\n");
-	    unIndent();
-	    result.append(indent+"}\n");
-	}
-	unIndent();
-        result.append(indent + "}\n");
-
-        return result.toString();
-    }
-
-    /**
-     * For a non-anonymous StreamSpec in the library path, generate
-     * extra functions we need to construct the object.  In the
-     * compiler path, generate an empty constructor.
-     */
-    private String maybeGenerateConstruct(StreamSpec spec)
-    {
-        StringBuffer result = new StringBuffer();
-
-        // The StreamSpec at this point has no parameters; we need to
-        // find the parameters of the init function.
-        Function init = spec.getInitFunc();
-        // (ASSERT: init != null)
-        List params = init.getParams();
-
-        // In the library path, generate the __construct() mechanism:
-        if (libraryFormat)
-        {
-            // Generate fields for each of the parameters.
-            for (Iterator iter = params.iterator(); iter.hasNext(); )
-            {
-                Parameter param = (Parameter)iter.next();
-                result.append(indent + "private " +
-                              convertType(param.getType()) +
-                              " __param_" + param.getName() + ";\n");
-            }
-
-            // Generate a __construct() method that saves these.
-            result.append(indent + "public static " + spec.getName() +
-                          " __construct(");
-            boolean first = true;
-            for (Iterator iter = params.iterator(); iter.hasNext(); )
-            {
-                Parameter param = (Parameter)iter.next();
-                if (!first) result.append(", ");
-                first = false;
-                result.append(convertType(param.getType()) + " " +
-                              param.getName());
-            }
-            result.append(")\n" + indent + "{\n");
-            addIndent();
-            result.append(indent + spec.getName() + " __obj = new " +
-                          spec.getName() + "();\n");
-            for (Iterator iter = params.iterator(); iter.hasNext(); )
-            {
-                Parameter param = (Parameter)iter.next();
-                String name = param.getName();
-                result.append(indent + "__obj.__param_" + name + " = " +
-                              name + ";\n");
-            }
-            result.append(indent + "return __obj;\n");
-            unIndent();
-            result.append(indent + "}\n");
-
-            // Generate a callInit() method.
-            result.append(indent + "protected void callInit()\n" +
-                          indent + "{\n");
-            addIndent();
-            result.append(indent + "init(");
-            first = true;
-            for (Iterator iter = params.iterator(); iter.hasNext(); )
-            {
-                Parameter param = (Parameter)iter.next();
-                if (!first) result.append(", ");
-                first = false;
-                result.append("__param_" + param.getName());
-            }
-            result.append(");\n");
-            unIndent();
-            result.append(indent + "}\n");
-        }
-        // In the compiler path, generate an empty constructor.
-        else // (!libraryFormat)
-        {
-            result.append(indent + "public " + spec.getName() + "(");
-            boolean first = true;
-            for (Iterator iter = params.iterator(); iter.hasNext(); )
-            {
-                Parameter param = (Parameter)iter.next();
-                if (!first) result.append(", ");
-                first = false;
-                result.append(convertType(param.getType()) + " " +
-                              param.getName());
-            }
-            result.append(")\n" + indent + "{\n" + indent + "}\n");
-        }
-
-        return result.toString();
-    }
-
     public Object visitStreamSpec(StreamSpec spec)
     {
 
-
-
-    	StreamType oldStreamType = streamType;
-        SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);
-        streamType = spec.getStreamType();
-	// register parameters
-        for (Iterator iter = spec.getParams().iterator(); iter.hasNext(); )
-        {
-            Parameter param = (Parameter)iter.next();
-            symtab.registerVar(param.getName(),
-                               actualType(param.getType()),
-                               param,
-                               SymbolTable.KIND_STREAM_PARAM);
-        }
-
-
-
-
-
         String result = "";
-        // Anonymous classes look different from non-anonymous ones.
-        // This appears in two places: (a) as a top-level (named)
-        // stream; (b) in an anonymous stream creator (SCAnon).
-        if (spec.getName() != null)
-        {
-            // Non-anonymous stream.  Maybe it has interfaces.
-            String ifaces = maybeGeneratePortal(spec);
-            if (ifaces == null)
-                ifaces = "";
-            else
-            {
-                result += ifaces;
-                ifaces = " implements " + spec.getName() + "Interface";
-            }
-            result += indent;
-            // This is only public if it's the top-level stream,
-            // meaning it has type void->void.
-            StreamType st = spec.getStreamType();
-            if (st != null &&
-                st.getIn() instanceof TypePrimitive &&
-                ((TypePrimitive)st.getIn()).getType() ==
-                TypePrimitive.TYPE_VOID &&
-                st.getOut() instanceof TypePrimitive &&
-                ((TypePrimitive)st.getOut()).getType() ==
-                TypePrimitive.TYPE_VOID)
-            {
-                result += "public class " + spec.getName() +
-                    " extends StreamIt" + spec.getTypeString() + ifaces;
-                if(printSourceLines && spec!=null)
-                	result += " // " + spec;
-                result += "\n";
-                result += indent + "{\n";
-                addIndent();
-                result += indent + "public static void main(String[] args) {\n";
-                addIndent();
-                result += indent + spec.getName() + " program = new " +
-                    spec.getName() + "();\n";
-                result += indent + "program.run(args);\n";
-                unIndent();
-                result += indent + "}\n";
-            }
-            else
-            {
-                result += "class " + spec.getName() + " extends ";
-                if (spec.getType() == StreamSpec.STREAM_FILTER)
-                {
-                    // Need to notice now if this is a phased filter.
-                    FuncWork work = spec.getWorkFunc();
-                    if (work.getPushRate() == null &&
-                        work.getPopRate() == null &&
-                        work.getPeekRate() == null)
-                        result += "PhasedFilter";
-                    else
-                        result += "Filter";
-                }
-                else
-                    switch (spec.getType())
-                    {
-                    case StreamSpec.STREAM_PIPELINE:
-                        result += "Pipeline";
-                        break;
-                    case StreamSpec.STREAM_SPLITJOIN:
-                        result += "SplitJoin";
-                        break;
-                    case StreamSpec.STREAM_FEEDBACKLOOP:
-                        result += "FeedbackLoop";
-                        break;
-                    }
-                result += ifaces;
-                if(printSourceLines && spec!=null)
-                	result += " // " + spec;
-                result += "\n";
-                result += indent + "{\n";
-                addIndent();
-                // If we're in the library backend, we need a construct()
-                // method too; in the compiler backend, a constructor.
-                result += maybeGenerateConstruct(spec);
-            }
-        }
-        else
-        {
-            // Anonymous stream:
-            result += "new ";
-            switch (spec.getType())
-            {
-            case StreamSpec.STREAM_FILTER: result += "Filter";
-                break;
-            case StreamSpec.STREAM_PIPELINE: result += "Pipeline";
-                break;
-            case StreamSpec.STREAM_SPLITJOIN: result += "SplitJoin";
-                break;
-            case StreamSpec.STREAM_FEEDBACKLOOP: result += "FeedbackLoop";
-                break;
-            }
-            result += "() {\n" + indent;
-            addIndent();
-        }
-
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
         StreamSpec oldSS = ss;
@@ -1217,29 +936,6 @@ public class NodesToJava extends SymbolTableVisitor
             result += ")";
             return result;
         }
-        if (node instanceof StmtAddPhase)
-        {
-            StmtAddPhase ap = (StmtAddPhase)node;
-            String result;
-            if (ap.isInit())
-                result = "addInitPhase";
-            else result = "addSteadyPhase";
-            result += "(";
-            if (ap.getPeek() == null)
-                result += "0, ";
-            else
-                result += (String)ap.getPeek().accept(this) + ", ";
-            if (ap.getPop() == null)
-                result += "0, ";
-            else
-                result += (String)ap.getPop().accept(this) + ", ";
-            if (ap.getPush() == null)
-                result += "0, ";
-            else
-                result += (String)ap.getPush().accept(this) + ", ";
-            result += "\"" + ap.getName() + "\")";
-            return result;
-        }
         if (node instanceof StmtSetTypes)
         {
             StmtSetTypes sst = (StmtSetTypes)node;
@@ -1263,21 +959,16 @@ public class NodesToJava extends SymbolTableVisitor
 	}
 
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		Expression base=exp.getBase();
-		List ranges=exp.getMembers();
-		if(ranges.size()==0) throw new IllegalStateException();
-		if(ranges.size()>1) throw new UnsupportedOperationException("Multi-range indexing not currently supported.");
-		Object o=ranges.get(0);
-		if(o instanceof RangeLen)
+		Expression base=exp.getBase();		
 		{
-			RangeLen range=(RangeLen) o;
-			if(range.len()==1) {
+			RangeLen range=exp.getSelection();
+			if(!range.hasLen()) {
 				return base.accept(this)+"["+range.start().accept(this)+"]";
 			}else{
-				return base.accept(this)+"["+range.start().accept(this)+"::" + range.len() + "]";
+				return base.accept(this)+"["+range.start().accept(this)+"::" + range.getLenExpression() + "]";
 			}
 		}
-		throw new UnsupportedOperationException("Cannot translate complicated array indexing.");
+		
 	}
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }

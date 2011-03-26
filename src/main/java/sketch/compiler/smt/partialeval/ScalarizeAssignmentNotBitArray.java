@@ -1,11 +1,8 @@
 package sketch.compiler.smt.partialeval;
 
-import java.util.List;
-
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
@@ -27,16 +24,8 @@ public class ScalarizeAssignmentNotBitArray extends ScalarizeVectorAssignments {
 		
 		@Override
 		public Object visitExprArrayRange(ExprArrayRange exp) {
-			List members = exp.getMembers();
-			
-			for (Object o : members) {
-				if (o instanceof RangeLen) {
-					isRangeIdx = true;
-					return exp;
-				}
-			}
-			
-			return super.visitExprArrayRange(exp);
+			isRangeIdx = true;
+			return exp;
 		}
 	}
 	

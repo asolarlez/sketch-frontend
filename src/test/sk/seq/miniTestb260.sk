@@ -1,0 +1,21 @@
+
+
+stencil int[N] test6(int N, int[N] in){
+  int[N] out;
+  for(int i=0; i<N; ++i){
+  	if(i>0 && i<N-1) out[i] = in[i-1] + in[i+1];
+  	else out[i] = 0;
+  }
+  return out;
+}
+
+stencil int[N] testSK6(int N, int[N] in) implements test6 {
+  int[N] out = 0;
+  for(int i=??; i<N-??; ++i){  	
+  	out[i+1] = in[i];
+  }
+  for(int i=??; i<N-??; ++i){  
+    	out[i-1] += in[i];
+  }
+  return out;
+}

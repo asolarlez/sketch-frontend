@@ -175,7 +175,9 @@ program	 returns [Program p]
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
 }
-	:	(  ((TK_device | TK_global | TK_serial | TK_harness | TK_generator | TK_library | TK_printfcn)* return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+	:	(  ((TK_device | TK_global | TK_serial | TK_harness |
+                     TK_generator | TK_library | TK_printfcn | TK_stencil)*
+                    return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
@@ -225,20 +227,6 @@ stream_type_decl returns [StreamType st] { st = null; Type in, out; }
 		{ st = new StreamType(getContext(t), in, out); }
 	;
 
-struct_stream_decl[StreamType st] returns [StreamSpec ss]
-{ ss = null; int type = 0;
-	List params = Collections.EMPTY_LIST; Statement body; }
-	:	( TK_pipeline { type = StreamSpec.STREAM_PIPELINE; }
-		| TK_splitjoin { type = StreamSpec.STREAM_SPLITJOIN; }
-		| TK_feedbackloop { type = StreamSpec.STREAM_FEEDBACKLOOP; }
-		| TK_sbox { type = StreamSpec.STREAM_TABLE; }
-		)
-		id:ID
-		(params=param_decl_list)?
-		body=block
-		{ ss = new StreamSpec(st.getContext(), type, st, id.getText(),
-				params, body); }
-	;
 
 
 
@@ -329,9 +317,10 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
 			)
             RSQUARE
             {
-                if (params.size() == 1) { t = new TypeArray(t, params.get(0)); }
-                else { t = new TypeCommaArray(t, params); }
-                params.clear();
+                while (!params.isEmpty()) {
+                    t = new TypeArray(t, params.lastElement());
+                    params.remove(params.size() - 1);
+                }
             }
 		)*
 
@@ -381,36 +370,37 @@ function_decl returns [Function f] {
     boolean isDevice = false;
     boolean isGlobal = false;
     boolean isSerial = false;
+    boolean isStencil = false;
 }
 	:
-	(
-        TK_device { isDevice = true; } |
-        TK_global { isGlobal = true; } |
-        TK_serial { isSerial = true; } |
-        TK_harness { isHarness = true; } |
-        TK_generator { isGenerator = true; }  |
-        TK_library { isLibrary = true; }  |
-        TK_printfcn { isHarness = true; isPrintfcn = true; }
-    )*
+	( TK_device { isDevice = true; } |
+          TK_global { isGlobal = true; } |
+          TK_serial { isSerial = true; } |
+          TK_harness { isHarness = true; } |
+          TK_generator { isGenerator = true; }  |
+          TK_library { isLibrary = true; }  |
+          TK_printfcn { isHarness = true; isPrintfcn = true; } |
+          TK_stencil { isStencil = true; }
+        )*
 	rt=return_type
 	id:ID
 	l=param_decl_list
 	(TK_implements impl:ID)?
 	( s=block
 	{
-			assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
-			Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
-			    rt).params(l).body(s);
+            assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
+            Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
+                rt).params(l).body(s);
 
-			// function type
-			if (isGenerator) {
-			    fc = fc.type(Function.FcnType.Generator);
-			} else if (isHarness) {
+            // function type
+            if (isGenerator) {
+                fc = fc.type(Function.FcnType.Generator);
+            } else if (isHarness) {
                 assert impl == null : "harness functions cannot have implements";
                 fc = fc.type(Function.FcnType.Harness);
-			} else if (impl != null) {
-			    fc = fc.spec(impl.getText());
-			}
+            } else if (impl != null) {
+                fc = fc.spec(impl.getText());
+            }
 
             // library type
             if (isLibrary) {
@@ -422,8 +412,7 @@ function_decl returns [Function f] {
                 fc = fc.printType(Function.PrintFcnType.Printfcn);
             }
 
-			// cuda type annotations
-			// TBD
+            // cuda type annotations
             if ((isDevice && isGlobal) || (isGlobal && isSerial) || (isDevice && isSerial)) {
                 assertFalse("Only one of \"global\", \"device\", or \"serial\" qualifiers is allowed.");
             }
@@ -435,21 +424,18 @@ function_decl returns [Function f] {
                 fc = fc.cudaType(Function.CudaFcnType.Serial);
             }
 
-			f = fc.create();
+            // stencil type
+            if (isStencil) {
+                fc = fc.solveType(Function.FcnSolveType.Stencil);
+            }
+
+            f = fc.create();
 	}
 	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).create(); })
 	;
 
 return_type returns [Type t] { t=null; }
 	: 	t=data_type
-	;
-
-handler_decl returns [Function f] { List l; Statement s; f = null;
-Type t = TypePrimitive.voidtype;
-assert false : "Handler functions no longer supported";
- }
-	:	TK_handler id:ID l=param_decl_list s=block
-		{ throw new RuntimeException("Handler functions not used anymore!"); }
 	;
 
 param_decl_list returns [List l] { l = new ArrayList(); Parameter p; }
@@ -765,21 +751,21 @@ value_expr returns [Expression x] { x = null; boolean neg = false; }
 
 
 
-minic_value_expr returns [Expression x] { x = null; List rlist; }
+minic_value_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
 	:	x=tminic_value_expr
 		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
 		|	l:LSQUARE
-					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
+					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
 		)*
 	;
 
 
-minic_value_exprnofo returns [Expression x] { x = null; List rlist; }
+minic_value_exprnofo returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
 	:	x=uminic_value_expr
 		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
 		|	l:LSQUARE
-					rlist=array_range_list { x = new ExprArrayRange(x, rlist); }
+					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
 		)*
 	;
@@ -827,29 +813,24 @@ value returns [Expression x] { x = null; List rlist; }
 	;
 */
 
-array_range_list returns [List l] { l=new ArrayList(); Object r;}
-:r=array_range {l.add(r);}
-;
-
-array_range returns [Object x] { x=null; Expression start,end,l; }
+array_range returns [Vector<ExprArrayRange.RangeLen> x] { x=null; Expression start,end,l; }
     : start=expr_named_param {
-        if (start instanceof ExprNamedParam) {
-            x = new ExprArrayRange.CommaIndex(start);
-        } else {
-            x = new ExprArrayRange.RangeLen(start);
-        }
+        assert (!(start instanceof ExprNamedParam));
+        x = new Vector<ExprArrayRange.RangeLen>();
+        x.add(new ExprArrayRange.RangeLen(start));
       }
-      // (
-        ( COMMA start=expr_named_param { x = new ExprArrayRange.CommaIndex(x, start); } )*
-        // |
-        (COLON { assert !(x instanceof ExprArrayRange.CommaIndex) : "cannot mix ranges and comma indices yet"; }
-            (end=right_expr { x=new ExprArrayRange.Range(start,end); }
-            | COLON
-                ((NUMBER) => len:NUMBER {x=new ExprArrayRange.RangeLen(start,Integer.parseInt(len.getText()));}
-                | l=right_expr {x=new ExprArrayRange.RangeLen(start,l);})
-            )
-        )?
-      // )
+        ( COMMA start=expr_named_param { x.add(new ExprArrayRange.RangeLen(start)); } )*
+        (COLON
+		  ( end=right_expr {
+		  		assert x.size() == 1 : "cannot mix comma indices and array ranges yet";
+		  		x.set(0, new ExprArrayRange.RangeLen(start,
+		  			new ExprBinary(end, "-", start))); }
+		    | COLON
+		    l=right_expr {
+		    	assert x.size() == 1 : "cannot mix comma indices and array ranges yet";
+		    	x.set(0, new ExprArrayRange.RangeLen(start,l)); }
+		  )
+		)?
     ;
 
 constantExpr returns [Expression x] { x = null; }

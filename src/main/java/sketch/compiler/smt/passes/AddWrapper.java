@@ -6,8 +6,8 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -145,6 +145,8 @@ public class AddWrapper extends FEReplacer {
 		}
 		
 		StmtBlock bodyBlk = new StmtBlock(mainBody);
-		return Function.creator(spec, _MAIN, FcnType.Generator).create();
+        // synthesis wrapper
+        return Function.creator(spec, _MAIN, FcnType.BuiltinHelper).params(params).body(
+                bodyBlk).create();
 	}
 }

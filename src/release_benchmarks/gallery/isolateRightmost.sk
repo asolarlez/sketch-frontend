@@ -12,7 +12,7 @@ bit[W] isolate0 (bit[W] x) {
 bit[W] isolate0sk (bit[W] x)  implements isolate0 {	
 	bit[W] tmp=x;
 	bit[W] tmp2=x;
-	loop(??){ 
+	repeat(??){ 
 		if(??){ {| tmp | tmp2 |} = {| tmp | tmp2 |} + ??; }
 		if(??){ {| tmp | tmp2 |} = !{| tmp | tmp2 |};  }
 		if(??){ {| tmp | tmp2 |} = {| (tmp | tmp2) (& | ^) (tmp | tmp2) |};  }

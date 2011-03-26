@@ -152,13 +152,6 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 
 	// === EXPRESSIONS ===
 
-	public Object visitExprArray (ExprArray ea) {
-		ea.getBase ().accept (this);
-		print ("[");
-		ea.getOffset ().accept (this);
-		print ("]");
-		return ea;
-	}
 
 	public Object visitExprArrayInit (ExprArrayInit eai) {
 		List<Expression> elems = eai.getElements ();
@@ -174,14 +167,11 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 	}
 
 	public Object visitExprArrayRange (ExprArrayRange ear) {
-		List members = ear.getMembers ();
+		
 
 		ear.getBase ().accept (this);
 		print ("[");
-		// TODO: this doesn't properly visit the Range and RangeLen children
-		// of the array range
-		for (int i = 0; i < members.size (); ++i)
-			print (((i != 0) ? ", " : "") + members.get (i));
+		print(ear.getSelection().toString());
 		print ("]");
 
 		return ear;
@@ -564,8 +554,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		// TODO: doesn't fully visit the stream spec
 		for (FieldDecl f : ss.getVars ())
 			f.accept (this);
-		if (null != ss.getInitFunc ())
-			ss.getInitFunc ().accept (this);
+		
 		for (Function f : ss.getFuncs ())
 			f.accept (this);
 

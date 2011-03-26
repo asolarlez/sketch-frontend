@@ -1,0 +1,49 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 64 --bnd-arr-size 64";
+
+
+stencil bit[2*N][2*N] MGinter(int N, bit[N][N] in, bit half, bit fourth){
+
+	bit[2*N][2*N]  output=0;
+		for(int j=0; j<2*N-2; ++j){
+		for(int i=0; i<2*N-2; ++i){
+		 if( i%2==0 && j%2==0 ) output[i][j] = in[i/2][j/2];
+		 
+		 if( i%2==1 && j%2==0 ) output[i][j] = 
+		 									half & (in[i/2][j/2] );
+		 if( i%2==0 && j%2==1 ) output[i][j] = 
+		 									half & (in[i/2][j/2] );		 
+		 
+		 if( i%2==1 && j%2==1 ) output[i][j] = 
+		 									fourth & 
+		 									(in[i/2][j/2] ^ in[i/2+1][j/2+1] ^
+		 										in[i/2][j/2+1] );		 
+		}
+		}
+	return output;
+}
+
+
+
+
+
+
+stencil bit[2*N][2*N] skMGinter(int N, bit[N][N] in, bit half, bit fourth)implements MGinter
+{
+
+	bit[2*N][2*N]  output=0;	
+	for(int j=??; j<(N-2)+??; ++j){
+		for(int i=??; i<(N-2)+??; ++i){
+				output[i*2+??][j*2+??]  = in[i+??][j+??]; //
+				output[i*2+??][j*2+??]  = half & ( in[i+??][j+??] );
+				output[i*2+??][j*2+??]  = half & ( in[i+??][j+??] );
+				output[i*2+??][j*2+??]  = fourth & ( in[i+??][j+??] ^ in[i+??][j+??] ^ in[i+??][j+??]);
+											
+		}
+	}
+	return output;
+}
+
+
+
+
+

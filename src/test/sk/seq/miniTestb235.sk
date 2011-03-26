@@ -1,0 +1,19 @@
+pragma options "--bnd-inbits 3";
+
+
+int[N] test1(int N, int[N] in){
+  int[N] out = 0 ;
+  for(int i=1; i<N-1; ++i){
+  	out[i] = in[i-1] + in[i+1];  	
+  }
+  return out;
+}
+
+int[N] testSK1(int N, int[N] in) implements test1 {
+  int[N] out = 0;
+  for(int i=??; i<(N-??); ++i){
+  	out[i] = in[i-1] + in[i+1];  	
+  }
+  return out;
+}
+

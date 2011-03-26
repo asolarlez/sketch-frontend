@@ -15,11 +15,11 @@
  */
 
 package sketch.compiler.ast.core;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 
@@ -119,55 +119,6 @@ public class StreamSpec extends FENode
     }
 
     /**
-     * Creates a new stream specification given its name and the text
-     * of its init function.  Useful for composite streams that have
-     * no other functions.
-     *
-     * @param context  front-end context indicating file and line
-     *                 number for the specification
-     * @param type     STREAM_* constant indicating the type of
-     *                 stream object
-     * @param st       stream type giving input and output types of
-     *                 the stream object
-     * @param name     string name of the object
-     * @param params   list of <code>Parameter</code> that are formal
-     *                 parameters to the stream object
-     * @param init     statement containing initialization code for
-     *                 the object
-     */
-    public StreamSpec(FENode context, int type, StreamType st,
-                      String name, List params, Statement init)
-    {
-        this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.creator(init, "init", FcnType.Init).create()));
-    }
-
-    /**
-     * Creates a new stream specification given its name and the text
-     * of its init function.  Useful for composite streams that have
-     * no other functions.
-     *
-     * @param context  front-end context indicating file and line
-     *                 number for the specification
-     * @param type     STREAM_* constant indicating the type of
-     *                 stream object
-     * @param st       stream type giving input and output types of
-     *                 the stream object
-     * @param name     string name of the object
-     * @param params   list of <code>Parameter</code> that are formal
-     *                 parameters to the stream object
-     * @param init     statement containing initialization code for
-     *                 the object
-     * @deprecated
-     */
-    public StreamSpec(FEContext context, int type, StreamType st,
-                      String name, List params, Statement init)
-    {
-        this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.creator(init, "init", FcnType.Init).create()));
-    }
-
-    /**
      * Returns the type of this, as one of the integer constants above.
      *
      * @return  integer type of the stream object
@@ -250,42 +201,6 @@ public class StreamSpec extends FENode
         return funcs;
     }
 
-    /**
-     * Returns the init function declared in this, or null.  If multiple
-     * init functions are declared (probably an error), returns one
-     * arbitrarily.
-     *
-     * @return  function containing the initialiation code
-     */
-    public Function getInitFunc()
-    {
-        for (Iterator iter = funcs.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            if (func.getFcnType() == FcnType.Init)
-                return func;
-        }
-        return null;
-    }
-
-    /**
-     * Returns the work function declared in this, or null.  If multiple
-     * work functions are declared (probably an error), returns one
-     * arbitrarily.
-     *
-     * @return  function containing steady-state work code, or null for
-     *          non-filters
-     */
-    public FuncWork getWorkFunc()
-    {
-        for (Iterator iter = funcs.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            if (func instanceof FuncWork)
-                return (FuncWork)func;
-        }
-        return null;
-    }
 
     /**
      * Returns the function with a given name contained in this, or

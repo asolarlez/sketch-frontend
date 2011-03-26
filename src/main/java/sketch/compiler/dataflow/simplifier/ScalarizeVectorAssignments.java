@@ -169,7 +169,8 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 							ExprConstInt.zero);
 				}
 			}else{
-				if( len.getIValue()== 1 ){
+			    Integer iv = len.getIValue();
+				if( iv != null && iv <= 1  ){
 					return exp;
 				}else{
 					return new ExprTernary(exp,
@@ -215,9 +216,8 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			}
 	    }
 
-		public Object visitExprArrayRange(ExprArrayRange exp){
-			assert exp.getMembers().size() == 1 && exp.getMembers().get(0) instanceof RangeLen : "Complex indexing not yet implemented.";
-			RangeLen rl = (RangeLen)exp.getMembers().get(0);
+		public Object visitExprArrayRange(ExprArrayRange exp){			
+			RangeLen rl = exp.getSelection();
 			Type t = getType(exp);
 			Expression tl = typeLen(t);
 			Integer itl = tl.getIValue();

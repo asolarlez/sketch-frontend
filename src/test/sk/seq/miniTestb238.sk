@@ -1,0 +1,19 @@
+pragma options "--bnd-inbits 3";
+
+float[N] test12(int N, float[N] in){
+  float[N] out;
+  for(int i=0; i<N-3; ++i){
+  	out[i] = in[i+3];
+  }
+  return out;
+}
+
+float[N] testSK12(int N, float[N] in) implements test12 {
+  float[N] out;
+  for(int i=0; i<N-??; ++i){
+  	out[i] = in[i+??];
+  }
+  return out;
+}
+
+    

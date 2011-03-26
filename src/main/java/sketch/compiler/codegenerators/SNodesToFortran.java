@@ -16,7 +16,6 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -620,17 +619,11 @@ public class SNodesToFortran extends FENullVisitor {
 	    return null;
     }
 
-	public Object visitFuncWork(FuncWork func) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitOther(FENode node) {
 	    throw new IllegalStateException();
     }
 
-	public Object visitSCAnon(SCAnon creator) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitSCSimple(SCSimple creator) {
 	    throw new IllegalStateException();

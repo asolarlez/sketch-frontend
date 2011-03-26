@@ -1,0 +1,7 @@
+pragma options "--bnd-inbits 3";
+
+harness void test(int N, int [N] a){
+    
+    int[N+??] b = a;
+    assert b[N] == 0;    
+}

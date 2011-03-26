@@ -9,11 +9,11 @@ import java.util.Set;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -271,7 +271,7 @@ public class ModelGridWithUFun extends FEReplacer {
 					Parameter.OUT));
 
             mModelingFunc =
-                    Function.creator(ufun, name, FcnType.Generator).params(paramList).body(
+                    Function.creator(ufun, name, FcnType.BuiltinHelper).params(paramList).body(
                             funBody).create();
 
 			return mModelingFunc;

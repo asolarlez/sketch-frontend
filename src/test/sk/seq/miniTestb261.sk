@@ -1,0 +1,24 @@
+pragma options "--bnd-inbits 4";
+
+stencil int[N][N] test7(int N, int[N][N] in){
+  int[N][N] out;
+  for(int i=0; i<N; ++i){
+    for(int j=0; j<N; ++j){
+    	if(i>0 && i<N-1 && j>0 && j<N-1) out[i][j] = in[i-1][j] + in[i+1][j] + in[i][ j-1] + in[i][j+1];
+  		else out[i][j] = 0;
+    }
+  }
+  return out;
+}
+
+
+stencil int[N][N] testSK7(int N, int[N][N] in) implements test7{
+  int[N][N] out=0;
+  for(int i=??; i<N-??; ++i){
+    for(int j=??; j<N-??; ++j){
+    	out[i+??][j+??] =  in[i+1][j] + in[i][j+1];
+    	out[i][j] += in[i-1][j] + in[i][ j-1];
+    }  	
+  }
+  return out;
+}

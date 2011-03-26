@@ -1,6 +1,7 @@
 package sketch.compiler.stencilSK.preprocessor;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class ReplaceFloatsWithUFuns extends ReplaceFloatsWithBits {
@@ -13,7 +14,8 @@ public class ReplaceFloatsWithUFuns extends ReplaceFloatsWithBits {
 	
 	
 	
-	public ReplaceFloatsWithUFuns(){
+	public ReplaceFloatsWithUFuns(TempVarGen varGen){
+	    super(varGen);
 		
 	}
 	

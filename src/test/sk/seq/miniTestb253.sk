@@ -1,0 +1,17 @@
+pragma options "--bnd-inbits 3";
+
+stencil int[N] test0(int N, int[N] in){
+  for(int i=0; i<N-1; ++i){
+  	in[i] = in[i] + in[i+1];
+  }
+  return in;
+}
+
+stencil int[N] testSK0(int N, int[N] in) implements test0 {
+  for(int i=0; i<N-??; ++i){
+  	in[i] = in[i] + in[i+1];
+  }
+  return in;
+}
+
+    

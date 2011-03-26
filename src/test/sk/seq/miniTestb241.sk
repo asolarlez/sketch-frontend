@@ -1,0 +1,23 @@
+pragma options "--bnd-inbits 3";
+
+int[N] test15(int N, int[N+3] in){
+  int[N] out=0;
+  for(int i=0; i<N; ++i){
+  	out[i] = in[i+3];
+  	if( i==0) out[i] = in[0];
+  	if( i==N-1) out[i] = in[N-1];
+  }
+  return out;
+}
+
+int[N] testSK15(int N, int[N+3] in) implements test15 {
+  int[N] out=0;
+  if(N>0){
+      out[??] = in[0];
+      out[N-??] = in[N-??];
+      for(int i=1; i<N-??; ++i){
+      	out[i] = in[i+??];
+      }
+  }
+  return out;
+}

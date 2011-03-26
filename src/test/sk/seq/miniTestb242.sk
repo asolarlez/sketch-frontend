@@ -1,0 +1,18 @@
+pragma options "--bnd-inbits 3";
+
+float[N] test1(int N, float[N] in){
+  float[N] out = 0 ;
+  for(int i=1; i<N-1; ++i){
+  	out[i] = 0.5*in[i-1] + 0.5*in[i+1];  	
+  }
+  return out;
+}
+
+float[N] testSK1(int N, float[N] in) implements test1 {
+  float[N] out = 0;
+  for(int i=1; i<(N-1); ++i){
+  	out[i] = 0.5*in[i-1] + 0.5*in[i+1];  	
+  }
+  return out;
+}
+

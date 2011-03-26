@@ -1,0 +1,15 @@
+
+generator int opp(int x){    
+    if(??){
+        return opp(x+1);
+    }
+    if(??){
+        return opp(x) % opp(x);
+    }
+    return {| x | ??|};
+}
+
+harness void test(int i){
+    int t = opp(i);
+    assert t == ((i + 5) % 3);
+}

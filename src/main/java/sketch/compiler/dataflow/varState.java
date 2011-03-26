@@ -3,8 +3,8 @@ package sketch.compiler.dataflow;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -191,6 +191,7 @@ abstract public class varState {
 				assert false : "NYI";
 			}else{
 				absVal.update(vtype.BOTTOM());
+				return;
 			}
 		}
 		if( idx.hasIntVal() ){

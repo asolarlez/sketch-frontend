@@ -1,0 +1,49 @@
+pragma options "--bnd-inline-amnt 2";
+
+stencil float[N][N] test0(int N, float[N][N] a){
+  float[N][N] out=0;
+  for(int i=0; i<N; ++i){
+  	for(int j=0; j<i+1; ++j){
+  		out[i][j] = a[i][j];
+  	}
+  }
+  return out;
+}
+
+
+generator int hole(int i, int N){ /* automatically rewritten */
+	int rv = 0;
+	int t = ??;
+	bit s = ??;
+	if(t==0){
+		rv = N;
+	}
+	if(t==1){
+		if(s){
+			rv = i;	
+		}else{
+			rv = ??;	
+		}
+	}
+	if(t==2){
+		if(s){
+			rv = hole(i, N) + hole(i, N);	
+		}else{
+			rv = hole(i, N) - hole(i, N);	
+		}
+	}
+	return rv;	
+}
+
+
+
+
+stencil float[N][N] testSK0(int N, float[N][N] a) implements test0 {
+  float[N][N] out=0;
+  for(int i=hole(0, N); i<hole(0, N); ++i){
+  	for(int j=hole(i, N); j<hole(i, N); ++j){
+  		out[i][j] = a[i][j];
+  	}
+  }
+  return out;
+}

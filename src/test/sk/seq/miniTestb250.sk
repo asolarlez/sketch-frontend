@@ -1,0 +1,21 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 18 --bnd-arr-size 16";
+
+stencil float[N][N] test0(int N, float[N][N] a){
+  float[N][N] out=0.0;
+  for(int i=0; i<N; ++i){
+  	for(int j=0; j<i; ++j){
+  		out[i][j] = a[i][j];
+  	}
+  }
+  return out;
+}
+
+stencil float[N][N] testSK0(int N, float[N][N] a) implements test0 {
+  float[N][N] out=0.0;
+  for(int i=0; i<N; ++i){
+  	for(int j=0; j<i; ++j){
+  		out[i][j] = a[i][j];
+  	}
+  }
+  return out;
+}

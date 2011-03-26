@@ -4,8 +4,10 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -62,24 +64,47 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 			return false;
 		}
 	}
+	boolean isStencil = false;
+	
+	@Override
+	public Object visitFunction(Function f){
+	    isStencil = f.isStencil();
+	    return super.visitFunction(f);	    
+	}
+	
 	
 	@Override
 	public Object visitStmtFor(StmtFor sf){
 		
 		if(isComplexExpr(sf.getCond())  ||  isComplexExpr(sf.getIncr()) || isComplexExpr(sf.getInit()) ){
-			List<Statement> bl = new ArrayList<Statement>();
-			bl.add(sf.getInit());
+		    
+			
 			String nm = vgen.nextVar();
-			bl.add(new StmtVarDecl(sf.getCond(), TypePrimitive.bittype, nm, sf.getCond()));
 			
-			List<Statement> lbody = new ArrayList<Statement>();
-			
-			lbody.add((Statement)sf.getBody().accept(this));
-			lbody.add(sf.getIncr());
 			Expression tmpvar = new ExprVar(sf.getCond(), nm);
-			lbody.add(new StmtAssign(sf.getCond(), tmpvar, sf.getCond()));			
-			StmtBlock sb = new StmtBlock(sf, lbody);
-			bl.add(new StmtWhile(sf, tmpvar, sb ));
+			
+			List<Statement> bl = new ArrayList<Statement>();
+			if(isStencil){
+			    assert sf.getCond() instanceof ExprBinary : "For stencils, all loop conditions must be of the form i < X where X is loop invariant";
+			    ExprBinary cnd = (ExprBinary) sf.getCond();
+			    assert cnd.getOp() == ExprBinary.BINOP_LE || cnd.getOp() == ExprBinary.BINOP_LT :  "For stencils, all loop conditions must be of the form i < X or i<= X where X is loop invariant";
+			    assert cnd.getLeft() instanceof ExprVar : "For stencils, all loop conditions must be of the form i < X where X is loop invariant";
+			    
+			    bl.add(new StmtVarDecl(sf.getCond(), TypePrimitive.inttype, nm, cnd.getRight()));
+			    bl.add(new StmtFor(sf, sf.getInit(), new ExprBinary(cnd, cnd.getOp(), cnd.getLeft(), tmpvar), sf.getIncr(), (Statement)sf.getBody().accept(this)));
+			}else{
+			    List<Statement> lbody = new ArrayList<Statement>();
+	            
+	            lbody.add((Statement)sf.getBody().accept(this));
+	            lbody.add(sf.getIncr());
+	            
+	            lbody.add(new StmtAssign(sf.getCond(), tmpvar, sf.getCond()));         
+	            StmtBlock sb = new StmtBlock(sf, lbody);
+	            
+                bl.add(sf.getInit());
+                bl.add(new StmtVarDecl(sf.getCond(), TypePrimitive.bittype, nm, sf.getCond()));
+    			bl.add(new StmtWhile(sf, tmpvar, sb ));
+			}
 			return new StmtBlock(sf, bl);
 		}else{
 			return super.visitStmtFor(sf);

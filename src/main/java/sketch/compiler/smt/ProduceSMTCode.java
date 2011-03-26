@@ -10,6 +10,7 @@ import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
@@ -83,8 +84,8 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 	protected List<Function> functionsToAnalyze(StreamSpec spec) {
 		List<Function> l = new LinkedList<Function>();
 		for (Function f : spec.getFuncs()) {
-			if (f.getName().equals(AddWrapper._MAIN) && 
-			        f.isGenerator())
+            if (f.getName().equals(AddWrapper._MAIN) &&
+                    f.getFcnType() == FcnType.BuiltinHelper)
 				l.add(f);
 		}
 		return l;

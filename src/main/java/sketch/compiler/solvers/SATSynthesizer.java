@@ -12,14 +12,13 @@ import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -471,20 +470,10 @@ public class SATSynthesizer implements Synthesizer {
 				doExpression(exp.getBase());
 				isLeft = tmpLeft;
 
-
-				final List l=exp.getMembers();
-				for(int i=0;i<l.size();i++) {
-					Object obj=l.get(i);
-					if(obj instanceof Range) {
-						Range range=(Range) obj;
-						tmpLeft = isLeft;
-					 	isLeft = false;
-						doExpression(range.start());
-						doExpression(range.end());
-						isLeft = tmpLeft;
-					}
-					else if(obj instanceof RangeLen) {
-						RangeLen range=(RangeLen) obj;
+				
+				{					
+					{
+						RangeLen range=exp.getSelection();
 						tmpLeft = isLeft;
 					 	isLeft = false;
 						doExpression(range.start());

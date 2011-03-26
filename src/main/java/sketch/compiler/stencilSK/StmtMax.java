@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -17,6 +18,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
@@ -46,6 +48,18 @@ public class StmtMax extends Statement{
 	 */
 	List<Expression> terC;
 
+	public static class vInfo{
+	    Expression start;
+	    Expression pred;
+	    String var;
+	    public vInfo(Expression start, Expression pred, String var){
+	      this.start = start;
+	      this.pred = pred;
+	      this.var = var;
+	    }
+	}
+	
+	List<vInfo> vlist = new ArrayList<StmtMax.vInfo>();
 
 	/**
 	 * If the StmtMax was successfully converted to a set of assignments,
@@ -155,7 +169,7 @@ public class StmtMax extends Statement{
 	 *
 	 * @return whether or not the symbolic solver succeeded in replacing the max.
 	 */
-	public boolean resolve(){
+	public boolean resolveBis(){
 		ResolveMax rmax = new ResolveMax(this);
 		rmax.run();
 		rmax.removeDependencies();
@@ -299,4 +313,124 @@ public class StmtMax extends Statement{
 	}
 
 
+	
+	   /**
+     * Calls the symbolic solver to produce a sequence of gurarded assignments
+     * to replace the max statement.
+     *
+     * @return whether or not the symbolic solver succeeded in replacing the max.
+     */
+    public boolean resolve(){
+        ResolveMax rmax = new ResolveMax(this);
+        rmax.run();
+        rmax.removeDependencies();
+        for(int i=0; i<dim; ++i){
+            if( rmax.expArr[i] == null && ( rmax.meArr[i] == null || rmax.tainted[i]!= null ) )
+                return false;
+        }
+        List<Statement> statements = new ArrayList<Statement>();
+        ExprVar base = new ExprVar((FEContext) null, this.lhsvar);
+
+
+        // int lhsvar[dim];
+        statements.add(  new StmtVarDecl((FEContext) null, new TypeArray( TypePrimitive.inttype, new ExprConstInt(dim) ), this.lhsvar, null) );
+        // int indvar;
+        statements.add(  new StmtVarDecl((FEContext) null, TypePrimitive.bittype, this.indvar, ExprConstInt.zero) );
+        //First, we set all the entries that are known.
+
+        class ukvarInfo{
+            ExprVar iv;
+            Statement incr;
+            Statement init;
+            Expression cond;
+            int i;
+            Statement ass;
+        }
+        List<ukvarInfo> fl = new ArrayList<ukvarInfo>();
+       
+        for(int i=0; i<dim; ++i){
+            if( rmax.expArr[i] != null){
+                ExprArrayRange ea = new ExprArrayRange(base, new ExprConstInt(i));
+                // lhsvar[i] =  rmax.expArr[i];
+                StmtAssign ass = new StmtAssign(ea, rmax.expArr[i]);
+                statements.add(ass);
+            }else{
+                ExprArrayRange ea = new ExprArrayRange(base, new ExprConstInt(i));
+                // lhsvar[i] =  0;
+                ExprVar iv = new ExprVar(base, "T_"+i);
+                ukvarInfo uv = new ukvarInfo();
+                uv.iv = iv;
+                uv.i = i;
+                StmtAssign ass = new StmtAssign(ea, iv);
+                uv.ass =ass;
+                vInfo vinf = vlist.get(i/2);
+                Expression init = ((ExprBinary)vinf.pred).getRight();
+                init = new ExprBinary(init, "-", ExprConstInt.one);
+                uv.init = new StmtVarDecl(base, TypePrimitive.inttype, "T_"+i, init);
+                uv.cond = new ExprBinary(iv, ">=", vinf.start);
+                uv.incr = new StmtAssign(iv, new ExprBinary(iv, "-", ExprConstInt.one));
+                fl.add(0,uv);
+            }
+        }
+        //Finally, we check that lhsvar satisfies the conditions.
+        ExprVar indicator  = new ExprVar((FEContext) null, this.indvar);
+        Expression cond = null;
+        for(Iterator<Expression> eit = primC.iterator(); eit.hasNext(); ){
+            if( cond == null)
+                cond = eit.next();
+            else
+                cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
+        }
+        for(Iterator<Expression> eit = secC.iterator(); eit.hasNext(); ){
+            if( cond == null)
+                cond = eit.next();
+            else
+                cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
+        }
+        List<Statement> slist = new ArrayList<Statement>();
+        {
+            StmtAssign ass = new StmtAssign(indicator,cond);
+            slist.add(ass);
+        }
+        cond = null;
+        for(Iterator<Expression> eit = terC.iterator(); eit.hasNext(); ){
+            if( cond == null)
+                cond = eit.next();
+            else
+                cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
+        }
+        if( cond != null){
+            StmtAssign ass = new StmtAssign(indicator,cond);
+            StmtIfThen sit = new StmtIfThen(indicator, indicator, ass, null);
+            slist.add(sit);
+        }
+        
+        if(fl.isEmpty()){
+            Statement check = new StmtBlock((FEContext) null, slist);
+            statements.add(check);
+        }else{
+            for(ukvarInfo uv : fl){
+                slist.add(0, uv.ass);
+            }
+            Statement check = new StmtBlock((FEContext) null, slist);
+            for(ukvarInfo uv : fl){
+                List<Statement> bl = new ArrayList<Statement>();
+                bl.add(check);                
+                bl.add(uv.incr);
+                StmtWhile wh = new StmtWhile(this, new ExprBinary(uv.cond, "&&", new ExprUnary("!", indicator)), new StmtBlock(bl));
+                
+                List<Statement> b2 = new ArrayList<Statement>();
+                b2.add(uv.init);
+                b2.add(wh);
+                check = new StmtBlock(b2);
+            }
+            statements.add(check);
+        }
+                
+        maxAssign = new StmtBlock((FEContext) null, statements);
+        return true;
+    }
+	
+	
+	
 }

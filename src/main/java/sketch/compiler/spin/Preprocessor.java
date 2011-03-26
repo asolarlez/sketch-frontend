@@ -11,11 +11,11 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -156,7 +156,8 @@ public class Preprocessor extends FEReplacer {
     	String fname = varGen.nextVar (PROC_PFX);
         Function fun =
                 Function.creator(cx, fname, FcnType.Async).params(pars).body(body).create();
-    	    //new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
+        // new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars,
+        // body);
 
     	generatedFuncs.add(fun);
 

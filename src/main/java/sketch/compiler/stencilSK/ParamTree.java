@@ -9,6 +9,7 @@ import java.util.Map;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
@@ -31,6 +32,10 @@ public class ParamTree{
 		private int level = -1;
 
 
+		public Expression highCond(){
+		    return lh.high;
+		}
+		
 		public int getStage(){
 			return lh.stage;
 		}

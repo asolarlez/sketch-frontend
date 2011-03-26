@@ -126,7 +126,7 @@ public class IntAbsValue extends abstractValue {
 		if(isVolatile){ return; }// If the variable is volatile, the update has no effect.
 		assert v instanceof IntAbsValue;
 		IntAbsValue ntsv = ((IntAbsValue)v);
-		assert ntsv.type == type  || ntsv.type == BOTTOM || type == BOTTOM : "Updating with incompatible values " +  v + " <> " + this;
+		//assert ntsv.type == type  || ntsv.type == BOTTOM || type == BOTTOM : "Updating with incompatible values " +  v + " <> " + this;
 		{
 			obj = ntsv.obj;
 			type = ntsv.type;

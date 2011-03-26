@@ -111,7 +111,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
     	prog= (Program)prog.accept(new PropagateFinals());
     	prog = (Program)prog.accept(new EliminateDeadCode(true));
 
-        prog = (Program) prog.accept(new ReplaceFloatsWithBits());
+        prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         //prog = (Program)prog.accept(new VariableDisambiguator());
         
         prog = (Program) prog.accept(new MatchParamNames());
@@ -138,7 +138,7 @@ public class StencilSmtSketchMain extends SequentialSMTSketchMain {
 //      dump(prog, "After EliminateCompoundAssignments");
 
         
-        FunctionalizeStencils fs = new FunctionalizeStencils();
+        FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
         
         prog = (Program)prog.accept(fs); //convert Function's to ArrFunction's
         prog = fs.processFuns(prog, varGen); //process the ArrFunction's and create new Function's

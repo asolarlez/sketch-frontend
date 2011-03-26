@@ -1,0 +1,55 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 18 --bnd-arr-size 16";
+
+
+
+float[N_][N_] rec6ptSk(int N_, float[N_][N_] in_ ) implements rec6pt
+{
+  
+  float[N_][N_] output_;
+  float[N_][N_] _ret_0_;
+  int _ret_1_=0;
+  int _ret_2_=0;
+  int _ret_3_=0;
+  
+    float[N_][N_] in__=in_;
+
+      float[N_][N_] output__=in__;
+      for(int i__=0;i__<N_;++i__)
+      {
+        {
+          for(int j__=0;j__<N_;++j__)
+          {
+            {
+              
+                  output__[i__][j__] = in__[((i__)+(1))%(N_)][j__]
+                  +in__[i__][((j__)+(1))%(N_)]
+                  +in__[i__][j__]
+                  +in__[(((i__)-(1))+(N_))%(N_)][j__]
+                  +in__[i__][(((j__)-(1))+(N_))%(N_)]
+                  +in__[i__][j__];
+               
+            }
+          }
+        }
+      }
+     
+  return output__;
+}
+float[N_][N_] rec6pt(int N_, float[N_][N_] in_)
+{
+
+  float[N_][N_] output_;
+  for(int i_=0;(i_)<(N_);++i_)
+  {
+      for(int j_=0;(j_)<(N_);++j_)
+      {
+              output_[i_][j_] = in_[((i_)+(1))%(N_)][j_]
+								+in_[i_][((j_)+(1))%(N_)]
+								+in_[i_][j_]
+								+in_[(((i_)-(1))+(N_))%(N_)][j_]
+								+in_[i_][(((j_)-(1))+(N_))%(N_)]
+								+in_[i_][j_];
+      }
+  }
+  return output_;
+}

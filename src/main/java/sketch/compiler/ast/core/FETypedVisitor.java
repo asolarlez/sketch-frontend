@@ -27,7 +27,6 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -146,10 +145,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, field);
     }
 
-    public T visitFuncWork(FuncWork func) {
-        throw new FEVisitorException(this, func);
-    }
-
+   
     public T visitFunction(Function func) {
         throw new FEVisitorException(this, func);
     }
@@ -170,9 +166,6 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, prog);
     }
 
-    public T visitSCAnon(SCAnon creator) {
-        throw new FEVisitorException(this, creator);
-    }
 
     public T visitSCSimple(SCSimple creator) {
         throw new FEVisitorException(this, creator);

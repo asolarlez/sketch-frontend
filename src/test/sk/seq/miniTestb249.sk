@@ -1,0 +1,24 @@
+//pragma options "--bnd-inbits 3";
+
+
+stencil float[N] test0(int N, float[N] a){
+  float[N] out;
+  for(int i=0; i<N; ++i){
+  	out[i] = a[i];
+  }
+  return out;
+}
+
+stencil float[N] testSK0(int N, float[N] a) implements test0 {
+  float[N] out;
+  int tt = 0;
+  if(??){
+  	tt = N;
+  }
+  for(int i=0; i<tt; ++i){
+  	out[i] = a[i];
+  }
+  return out;
+}
+
+    

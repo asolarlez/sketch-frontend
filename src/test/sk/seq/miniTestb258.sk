@@ -1,0 +1,33 @@
+
+
+stencil int[N] test4(int N, int[N] in){
+  int[N] out;
+  for(int i=0; i<N; ++i){
+  	if(i>0 && i<N-1) out[i] = in[i-1] + in[i+1];
+  	else out[i] = 0;
+  }
+  return out;
+}
+
+
+stencil int[N] testSK4(int N, int[N] in) implements test4{
+  int[N] out;
+  int[N+1] t0 ;
+  if(N>0){
+      t0[??] = in[0];
+      int[N+1] t1 ;
+      if(N>1){
+          t1[??] = in[1];
+          out[0] = 0;
+          out[N-1] = 0;
+          int [N+1] t2;
+          for(int i=??; i<N-??; ++i){
+            t2[i] = in[i+1]; 
+          	out[i] = t0[i] + t2[i];
+          	t0[i+1] = t1[i];
+          	t1[i+1] = t2[i];
+          }
+      }
+  }
+  return out;
+}

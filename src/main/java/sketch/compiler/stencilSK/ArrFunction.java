@@ -7,8 +7,8 @@ import java.util.List;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -219,7 +219,7 @@ public class ArrFunction{
 		}
 		Statement body=new StmtBlock(stmts);
 
-        return Function.creator(body, getFullName(), FcnType.Generator).returnType(arrType).params(
+        return Function.creator(body, getFullName(), FcnType.Static).returnType(arrType).params(
                 params).body(body).create();
 	}
 

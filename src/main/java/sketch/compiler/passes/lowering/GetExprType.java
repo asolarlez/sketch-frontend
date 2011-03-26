@@ -24,8 +24,6 @@ import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.CommaIndex;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
@@ -33,14 +31,10 @@ import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypeArrayInterface;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
-
-import static sketch.util.DebugOut.assertFalse;
-
 import static sketch.util.Misc.nonnull;
 
 /**
@@ -81,62 +75,27 @@ public class GetExprType extends FENullVisitor
     	return ret;
     }
 
-    public Object visitExprArrayRange(ExprArrayRange exp) {
-    	exp.assertTrue (exp.getMembers ().size () == 1,
-    			"Array Range expressions not yet implemented; check "+exp);
+    public Object visitExprArrayRange(ExprArrayRange exp) {    	
     	Type base = (Type)exp.getBase().accept(this);
     	
-		List l=exp.getMembers();
+		
 		Expression expr = null;
-        assert l.size() >= 1;
+            RangeLen range=exp.getSelection();
+            Type start = (Type)range.start().accept(this);
+            
+            expr = range.getLenExpression();
+            
+        
+		if(!(base instanceof TypeArray)) return null;
+        // ASSERT: base is a TypeArray.
 
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Range range = (Range) obj;
-				Type start = (Type)((Range) obj).start().accept(this);
-				Type end = (Type)((Range) obj).end().accept(this);
-				if(expr == null){
-					expr = new ExprBinary(exp, ExprBinary.BINOP_SUB, range.end(), range.start());
-				}else{
-					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr,
-							new ExprBinary(exp, ExprBinary.BINOP_SUB, range.end(), range.start())
-					);
-				}
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				range.start().accept(this);
-				if(expr == null){
-					expr = new ExprConstInt(range.len());
-				}else{
-					expr = new ExprBinary(exp, ExprBinary.BINOP_ADD, expr, new ExprConstInt(range.len()));
-				}
-            } else if (obj instanceof CommaIndex) {
-                // NOTE -- only single indices are supported with commas (not subarray
-                // ranges)
-                expr = new ExprConstInt(1);
-                for (Expression e : (CommaIndex) obj) {
-                    e.accept(this);
-                }
-            } else {
-                assertFalse("unknwon type of object", obj);
-            }
-            assert expr != null;
-     }
-
-        if (base instanceof TypeArrayInterface) {
-            Type baseType = ((TypeArrayInterface) base).getBase();
-
-            final Integer iValue = expr.getIValue();
-            if ((iValue != null) && (iValue == 1)) {
-                return baseType;
-            } else {
-                return new TypeArray(baseType, expr);
-            }
-        } else {
-            return null;
-		}
+		Type baseType = ((TypeArray)base).getBase();
+		
+		if(range.hasLen()){
+		    return new TypeArray(baseType, expr);
+		}else{
+		    return baseType;
+		}		
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp)

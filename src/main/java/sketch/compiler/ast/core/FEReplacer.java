@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
@@ -41,7 +40,6 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCAnon;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
@@ -162,7 +160,10 @@ public class FEReplacer implements FEVisitor
      */
     protected Expression doExpression(Expression expr)
     {
-        return (Expression)expr.accept(this);
+        if(expr != null)
+            return (Expression)expr.accept(this);
+        else
+            return null;
     }
 
     public List<Statement> visitStatementsAsBlock(Vector<Statement> s) {
@@ -365,7 +366,9 @@ public class FEReplacer implements FEVisitor
 
     	if( func.getBody() == null  ){
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
-    		return func;
+            if (samePars && rtype == func.getReturnType())
+                return func;
+            return func.creator().returnType(rtype).params(newParam).create();
     	}
         Statement newBody = (Statement)func.getBody().accept(this);        
         if(newBody == null) newBody = new StmtEmpty(func);
@@ -373,21 +376,6 @@ public class FEReplacer implements FEVisitor
         return func.creator().returnType(rtype).params(newParam).body(newBody).create();
     }
 
-    public Object visitFuncWork(FuncWork func)
-    {
-        Statement newBody = (Statement)func.getBody().accept(this);
-        Expression newPeek = (func.getPeekRate() != null) ?
-            (Expression)func.getPeekRate().accept(this) : null;
-        Expression newPop = (func.getPopRate() != null) ?
-            (Expression)func.getPopRate().accept(this) : null;
-        Expression newPush = (func.getPushRate() != null) ?
-            (Expression)func.getPushRate().accept(this) : null;
-        if (newBody == func.getBody() && newPeek == func.getPeekRate() &&
-            newPop == func.getPopRate() && newPush == func.getPushRate())
-            return func;
-        return new FuncWork(func, func.getInfo(), func.getName(),
-                            newBody, newPeek, newPop, newPush);
-    }
 
 
     public Object visitProgram(Program prog) {
@@ -404,13 +392,6 @@ public class FEReplacer implements FEVisitor
         return new Program(prog, newStreams, newStructs);
     }
 
-    public Object visitSCAnon(SCAnon creator)
-    {
-        StreamSpec newSpec = (StreamSpec)creator.getSpec().accept(this);
-        if (newSpec == creator.getSpec()) return creator;
-        return new SCAnon(creator, newSpec,
-                          creator.getPortals());
-    }
 
     public Object visitSCSimple(SCSimple creator)
     {
@@ -792,39 +773,30 @@ public class FEReplacer implements FEVisitor
     public Object visitOther(FENode node) { return node; }
 
 	public Object visitExprStar(ExprStar star) {
+	 /*   if(star.getType() != null){
+	        Type t = (Type) star.getType().accept(this);
+	        if(t != star.getType()){
+	            ExprStar s = new ExprStar(star);
+	            s.setType(t);	           
+	        }
+	    }*/
 		return star;
 	}
 
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		boolean change=false;
+		
 		final Expression newBase=doExpression(exp.getBase());
-		if(newBase!=exp.getBase()) change=true;
-		final List l=exp.getMembers();
-		List newList=new ArrayList(l.size()+1);
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Range range=(Range) obj;
-				Expression newStart=doExpression(range.start());
-				Expression newEnd=doExpression(range.end());
-				if(newStart!=range.start() || newEnd!=range.end()) {
-					range=new Range(newStart,newEnd);
-					change=true;
-				}
-				newList.add(range);
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				Expression newStart=doExpression(range.start());
-				if(newStart!=range.start()) {
-					range=new RangeLen(newStart,range.len());
-					change=true;
-				}
-				newList.add(range);
-			}
+		
+		RangeLen range = exp.getSelection();
+		Expression newStart=doExpression(range.start());
+		Expression newLen = null;
+		if(range.hasLen()){
+		    newLen = doExpression(range.getLenExpression());
 		}
-		if(!change) return exp;
-		return new ExprArrayRange(newBase,newList);
+		if(newBase!=exp.getBase() || newStart != range.start() || (newLen != null && newLen != range.getLenExpression())){
+		    return new ExprArrayRange(exp, newBase, new RangeLen(newStart, newLen));
+		}
+		return exp;		
 	}
 
 	public Object visitType(Type t) {

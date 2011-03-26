@@ -1,0 +1,27 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 18";
+
+
+float[N][N] sten13(int N, float[N][N]  in, int a){
+   float[N][N] out=0;
+   for(int i=a; i<N; ++i){
+     for(int j=a; j<N; ++j){
+      out[i][j] = in[i][j];
+     }
+   }
+   return out; 
+}
+
+
+float[N][N] stenSK13(int N, float[N][N]  in, int a) implements sten13{
+   float[N][N] out=0;   
+   for(int i=a; i<N; ++i){
+	float t = in[i][a];
+     for(int j=a; j<N; ++j){
+      out[i][j] = t;
+      if(j<N-1){
+          t = in[i][j+1];
+      }
+     }
+   }
+   return out; 
+}

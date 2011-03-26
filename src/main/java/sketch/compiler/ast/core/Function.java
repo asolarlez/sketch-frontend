@@ -19,13 +19,41 @@ import static sketch.util.Misc.nonnull;
  */
 public class Function extends FENode {
     public static enum FcnType {
-        Uninterp("ininterp"), Async("async"), Static(""), Harness("harness"), Generator(
-                "generator"), Init("init");
+        // Uninterpreted Function
+        Uninterp("uninterp"),
+        // Async functions used in promela to model forks.
+        Async("async"),
+        // Static function, non-generator.
+        Static(""),
+        // Harness function. Also static.
+        Harness("harness"),
+        // Used for SMT solver, which is now unused. Email developers or look for notes on
+        // wiki.
+        BuiltinHelper("builtin helper"),
+        // Function that is inlined, producing more star values. Also helper functions for
+        // PROMELA.
+        Generator("generator");
+        // Init("init");
 
         /** identifier appearing in C code */
         public final String cCodeName;
 
         private FcnType(String cCodeName) {
+            this.cCodeName = cCodeName;
+        }
+    }
+
+    public static enum FcnSolveType {
+        // none if uninterpreted
+        // use general SAT synthesis routine.
+        Default(""),
+        // stencil function
+        Stencil("stencil");
+
+        /** identifier appearing in C code */
+        public final String cCodeName;
+
+        private FcnSolveType(String cCodeName) {
             this.cCodeName = cCodeName;
         }
     }
@@ -43,7 +71,8 @@ public class Function extends FENode {
     }
 
     public static enum CudaFcnType {
-        Default(""), DeviceInline("inline __device__"), Global("__global__"), Serial("SERIAL");
+        Default(""), DeviceInline("inline __device__"), Global("__global__"), Serial(
+                "SERIAL");
 
         /** identifier appearing in C code */
         public final String cCodeName;
@@ -59,20 +88,24 @@ public class Function extends FENode {
         public final CudaFcnType cudaType;
         public final FcnSourceDeterministic determinsitic;
         public final PrintFcnType printType;
+        public final FcnSolveType solveType;
 
         public FcnInfo(FcnType fcnType, LibraryFcnType libraryType, CudaFcnType cudaType,
-                FcnSourceDeterministic determinsitic, PrintFcnType printType)
+                FcnSourceDeterministic determinsitic, PrintFcnType printType,
+                FcnSolveType solveType)
         {
             this.fcnType = fcnType;
             this.libraryType = libraryType;
             this.cudaType = cudaType;
             this.determinsitic = determinsitic;
             this.printType = printType;
+            this.solveType = solveType;
         }
 
         public FcnInfo(FcnType fcnType) {
             this(fcnType, LibraryFcnType.Default, CudaFcnType.Default,
-                    FcnSourceDeterministic.Unknown, PrintFcnType.Default);
+                    FcnSourceDeterministic.Unknown, PrintFcnType.Default,
+                    FcnSolveType.Default);
         }
     }
 
@@ -141,35 +174,48 @@ public class Function extends FENode {
         public FunctionCreator type(final FcnType typ) {
             this.fcnInfo =
                     new FcnInfo(typ, this.fcnInfo.libraryType, this.fcnInfo.cudaType,
-                            this.fcnInfo.determinsitic, this.fcnInfo.printType);
+                            this.fcnInfo.determinsitic, this.fcnInfo.printType,
+                            this.fcnInfo.solveType);
             return this;
         }
 
         public FunctionCreator libraryType(final LibraryFcnType typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, typ, this.fcnInfo.cudaType,
-                            this.fcnInfo.determinsitic, this.fcnInfo.printType);
+                            this.fcnInfo.determinsitic, this.fcnInfo.printType,
+                            this.fcnInfo.solveType);
             return this;
         }
 
         public FunctionCreator cudaType(final CudaFcnType typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType, typ,
-                            this.fcnInfo.determinsitic, this.fcnInfo.printType);
+                            this.fcnInfo.determinsitic, this.fcnInfo.printType,
+                            this.fcnInfo.solveType);
             return this;
         }
 
         public FunctionCreator deterministicType(final FcnSourceDeterministic typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType,
-                            this.fcnInfo.cudaType, typ, this.fcnInfo.printType);
+                            this.fcnInfo.cudaType, typ, this.fcnInfo.printType,
+                            this.fcnInfo.solveType);
             return this;
         }
 
         public FunctionCreator printType(final PrintFcnType typ) {
             this.fcnInfo =
                     new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType,
-                            this.fcnInfo.cudaType, this.fcnInfo.determinsitic, typ);
+                            this.fcnInfo.cudaType, this.fcnInfo.determinsitic, typ,
+                            this.fcnInfo.solveType);
+            return this;
+        }
+
+        public FunctionCreator solveType(final FcnSolveType typ) {
+            this.fcnInfo =
+                    new FcnInfo(this.fcnInfo.fcnType, this.fcnInfo.libraryType,
+                            this.fcnInfo.cudaType, this.fcnInfo.determinsitic,
+                            this.fcnInfo.printType, typ);
             return this;
         }
 
@@ -229,8 +275,8 @@ public class Function extends FENode {
         return getFcnType() == FcnType.Static;
     }
 
-    public boolean isInit() {
-        return getFcnType() == FcnType.Init;
+    public boolean isStencil() {
+        return getSolveType() == FcnSolveType.Stencil;
     }
 
     public boolean isSketchHarness() {
@@ -284,6 +330,15 @@ public class Function extends FENode {
                 fcnInfo.fcnType.cCodeName, returnType, name, "(" + params + ")", impl);
     }
 
+    public Function makeStencil() {
+        return this.creator().solveType(FcnSolveType.Stencil).create();
+    }
+
+    /*
+     * public void makeStencil(){ cls.add(FuncType.FUNC_STENCIL); } public boolean
+     * isStencil(){ return cls.contains(FuncType.FUNC_STENCIL); }
+     */
+
     public int hashCode() {
         return name.hashCode();
     }
@@ -301,6 +356,10 @@ public class Function extends FENode {
 
     public FcnType getFcnType() {
         return fcnInfo.fcnType;
+    }
+
+    public FcnSolveType getSolveType() {
+        return fcnInfo.solveType;
     }
 
     /** if the function is a SPMD subroutine, namely "device" or "global" */

@@ -67,17 +67,24 @@ tokens {
     "until";
     "by";
 
-	//sketching stuff
-	"implements";
-	"assert";
-	"h_assert";
-	"generator";
-	"harness";
+    // general sketching
+    "implements";
+    "assert";
+    "h_assert";
+    "generator";
+    "harness";
+
+    // suppress function in output, run tprint() calls
     "library";
     "printfcn";
+
+    // cuda
     "device";
     "global";
     "serial";
+
+    // solving methods
+    "stencil";
 
     // Compiler directives:
     "include";

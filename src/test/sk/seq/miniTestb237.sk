@@ -1,0 +1,26 @@
+pragma options "--bnd-inbits 3";
+
+
+int[N] test11(int N, int[N] in){
+  int[N] out;
+  for(int i=0; i<N-3; ++i){
+  	out[i] = in[i+3] + in[i+3];
+  }
+  return out;
+}
+
+generator int foo(int x){ /* automatically rewritten */
+	return x + x;
+}
+
+
+int[N] testSK11(int N, int[N] in) implements test11 {
+  int[N] out;
+  for(int i=0; i<N-??; ++i){
+ 	int a = ??;
+  	out[i] = foo(in[i+a]);
+  }
+  return out;
+}
+
+

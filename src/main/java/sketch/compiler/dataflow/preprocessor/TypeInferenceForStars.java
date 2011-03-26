@@ -1,29 +1,24 @@
 package sketch.compiler.dataflow.preprocessor;
 
-import static sketch.util.DebugOut.printNote;
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.exprs.ExprArrayRange.Range;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.fcns.ZipIdxEnt;
+
+import static sketch.util.DebugOut.printNote;
+
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 /**
  * This visitor distinguishes between int stars and bit stars, and labels each star with its
  * appropriate type.
@@ -153,6 +148,12 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	    }
 	    return exp;
 	}
+	@Override
+	public Object visitTypeArray(TypeArray ta){
+	    Expression ie = ta.getLength();
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );
+	    return super.visitTypeArray(ta);
+	}
 }
 
 class UpgradeStarToInt extends FEReplacer{
@@ -249,48 +250,57 @@ class UpgradeStarToInt extends FEReplacer{
     }
 
 
+    public Object visitExprArrayInit(ExprArrayInit eai){
+        Type oldType = type;
+        assert type instanceof TypeArray;
+        type = ((TypeArray)type).getBase();
+        List<Expression> le = new ArrayList<Expression>();
+        boolean change = false;
+        for(Expression e : eai.getElements()){
+            Expression 
+            newElem=doExpression(e);
+            le.add(newElem);
+            if(newElem != e){ change = true; }
+        }
+        type = oldType;
+        if(change){ return new ExprArrayInit(eai, le);}
+        return eai;
+    }
+    
+    
     public Object visitExprArrayRange(ExprArrayRange exp){
     	boolean change=false;
+    	Type oType = type;
+    	RangeLen range=exp.getSelection();
+    	Expression l = range.getLenExpression();
+    	if(l == null){ 
+    	    l = ExprConstInt.one;
+    	    type = new TypeArray(type, new ExprBinary(range.start(), "+", l));
+    	}     
 		Expression newBase=doExpression(exp.getBase());
+		type = oType;
 		if(newBase!=exp.getBase()) change=true;
-		List l=exp.getMembers();
-		List<Object> newList=new ArrayList<Object>();
-		for(int i=0;i<l.size();i++) {
-			Object obj=l.get(i);
-			if(obj instanceof Range) {
-				Expression newStart = null;
-				Expression newEnd = null;
-				Range range=(Range) obj;
-				{
-					Type oldType = type;
-					type = TypePrimitive.inttype;
-					newStart=doExpression(range.start());
-					type = oldType;
-				}
-				{
-					Type oldType = type;
-					type = TypePrimitive.inttype;
-			    	newEnd=doExpression(range.end());
-			    	type = oldType;
-				}
-				newList.add(new Range(newStart,newEnd));
-				if(newStart!=range.start()) change=true;
-				else if(newEnd!=range.end()) change=true;
-			}
-			else if(obj instanceof RangeLen) {
-				RangeLen range=(RangeLen) obj;
-				Expression newStart = null;
-				{
-					Type oldType = type;
-					type = TypePrimitive.inttype;
-			    	newStart=doExpression(range.start());
-			    	type = oldType;
-				}
-				newList.add(new RangeLen(newStart,range.len()));
-				if(newStart!=range.start()) change=true;
-			}
-		}
+		
+		
+        Expression newStart = null;
+        {
+            Type oldType = type;
+            type = TypePrimitive.inttype;
+            newStart=doExpression(range.start());
+            type = oldType;
+        }
+        if(newStart!=range.start()) change=true;
+        
+        Expression newLen = null;
+        if(range.hasLen()){
+            Type oldType = type;
+            type = TypePrimitive.inttype;
+            newLen=doExpression(range.getLenExpression());
+            type = oldType;
+        }
+        if(range.getLenExpression() != newLen) change = true;
+		
 		if(!change) return exp;
-		return new ExprArrayRange(newBase,newList);
+		return new ExprArrayRange(exp, newBase,new RangeLen(newStart, newLen));
     }
 }

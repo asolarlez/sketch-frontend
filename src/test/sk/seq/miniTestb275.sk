@@ -1,0 +1,17 @@
+void foo(){
+    assert false;
+}
+
+harness void test(){
+    return;
+    foo();
+}
+
+void foo2(int i){
+    assert i<=3; 
+}
+
+harness void test2(int i){
+    if(i>3){ return; }
+    foo2(i);
+}
