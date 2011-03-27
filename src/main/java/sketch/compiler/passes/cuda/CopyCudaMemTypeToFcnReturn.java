@@ -10,7 +10,7 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class CopyCudaMemTypeToFcnReturn extends SymbolTableVisitor {
-    public Type returnType;
+    public CudaMemoryType returnType;
     
     public CopyCudaMemTypeToFcnReturn() {
         super(null);
@@ -23,7 +23,8 @@ public class CopyCudaMemTypeToFcnReturn extends SymbolTableVisitor {
         if (returnType == null) {
             return func;
         } else {
-            return func.creator().returnType(returnType).create();
+            Type nextType = func.getReturnType().withMemType(returnType);
+            return func.creator().returnType(nextType).create();
         }
     }
     
@@ -33,7 +34,7 @@ public class CopyCudaMemTypeToFcnReturn extends SymbolTableVisitor {
         final Type retTyp = this.getType(rv);
         final CudaMemoryType cudaMemType = retTyp.getCudaMemType();
         if (cudaMemType != CudaMemoryType.UNDEFINED) {
-            this.returnType = retTyp;
+            this.returnType = cudaMemType;
         }
         return super.visitStmtReturn(stmt);
     }

@@ -679,7 +679,7 @@ public class NodesToC extends NodesToJava {
 			}
 
         } else if (type instanceof TypeArray) {
-    		TypeArray t = (TypeArray)type;
+            TypeArray t = (TypeArray)type;
             Type typBase = t.getBase();
             if (typBase.equals(TypePrimitive.bittype)) {
                 return "bitvec<" + t.getLength() + ">";
