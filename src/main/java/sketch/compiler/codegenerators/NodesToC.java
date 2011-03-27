@@ -417,33 +417,13 @@ public class NodesToC extends NodesToJava {
     }
 
     public String typeForParam(Type type, boolean isOutput){
-    	String postfix = isOutput? "&" : "";
-        if(type instanceof TypeArray){
-        	TypeArray otype = (TypeArray)type;
-        	type = ((TypeArray)type).getBase();
-        	if(type.equals(TypePrimitive.bittype)){
-        		return "bitvec<" + (otype).getLength() + "> " + postfix;
-        	}else{
-        		return "fixedarr<" + convertType(type) + ", " + (otype).getLength() + "> " + postfix;
-        	}
-        }else{
-        	return convertType(type) + postfix;
-        }
+        return convertType(type) + (isOutput ? "&" : "");
     }
 
 
 
-    public String typeForDecl(Type type){
-        if(type instanceof TypeArray){
-        	Type otype = type;
-        	type = ((TypeArray)type).getBase();
-        	if(type.equals(TypePrimitive.bittype)){
-        		return "bitvec<" + ((TypeArray)otype).getLength() + "> ";
-        	}else{
-        		return "fixedarr<" + convertType(type) + ", " + ((TypeArray)otype).getLength() + "> ";
-        	}
-        }
-        return convertType(type) +  " " ;
+    public String typeForDecl(Type type) {
+        return convertType(type) +  " ";
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt) {
@@ -672,37 +652,22 @@ public class NodesToC extends NodesToJava {
         return result;
     }
 
-	public Object visitExprTypeCast(ExprTypeCast exp)
-    {
-
-    	if( exp.getType() instanceof TypeArray ){
-    		TypeArray t = (TypeArray)exp.getType();
-            Type typBase = t.getBase();
-            if (typBase.equals(TypePrimitive.bittype)) {
-                return "bitvec<" + t.getLength() + ">(" +
-                (String)exp.getExpr().accept(this) + ")";
-            } else if (typBase.equals(TypePrimitive.inttype)) {
-                return "fixedarr<" + t.getLength() + ">(" +
-                (String)exp.getExpr().accept(this) + ")";
-            } else {
-                assertFalse("unknown type", t, "for type cast", exp);
-            }
-    	}
-
-        return "((" + convertType(exp.getType()) + ")(" +
-            (String)exp.getExpr().accept(this) + "))";
+	public Object visitExprTypeCast(ExprTypeCast exp) {
+        String exprInner = (String)exp.getExpr().accept(this);
+        if (exp.getType() instanceof TypeArray) {
+            return convertType(exp.getType()) + "(" + exprInner + ")";
+        }
+        return "((" + convertType(exp.getType()) + ")(" + exprInner + "))";
     }
 
 
 	@Override
 	public String convertType(Type type)
 	{
-	    assert type instanceof TypePrimitive || type instanceof TypeStructRef || type instanceof TypeStruct;
-		if(type instanceof TypeStructRef){
+        if (type instanceof TypeStructRef) {
 			return type.toString() + "*";
-		}
 
-		if(type instanceof TypePrimitive) {
+        } else if (type instanceof TypePrimitive) {
 			switch(((TypePrimitive)type).getType()) {
 				case TypePrimitive.TYPE_INT8:  return "unsigned char";
 				case TypePrimitive.TYPE_INT16: return "unsigned short int";
@@ -712,9 +677,23 @@ public class NodesToC extends NodesToJava {
 				case TypePrimitive.TYPE_BIT:   return "bitvec<1>";
 	            case TypePrimitive.TYPE_SIGINT: return "int";
 			}
-		}
+
+        } else if (type instanceof TypeArray) {
+    		TypeArray t = (TypeArray)type;
+            Type typBase = t.getBase();
+            if (typBase.equals(TypePrimitive.bittype)) {
+                return "bitvec<" + t.getLength() + ">";
+            } else {
+                return "fixedarr<" + convertType(typBase) + ", " + t.getLength() + ">";
+            }
+
+		} else {
+            assertFalse("unknown type to convert: ", type);
+        }
+
 		return super.convertType(type);
 	}
+
 	public Object visitExprNullPtr(ExprNullPtr nptr){ return "NULL"; }
 	public Object visitExprConstBoolean(ExprConstBoolean exp)
     {
