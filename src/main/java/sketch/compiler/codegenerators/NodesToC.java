@@ -34,6 +34,10 @@ import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
 import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printNote;
+
 public class NodesToC extends NodesToJava {
 
 	protected String filename;
@@ -673,11 +677,16 @@ public class NodesToC extends NodesToJava {
 
     	if( exp.getType() instanceof TypeArray ){
     		TypeArray t = (TypeArray)exp.getType();
-    		assert t.getBase().equals(TypePrimitive.bittype): "TASDVAS " + exp;
-
-    		return "bitvec<" + t.getLength() + ">(" +
-            (String)exp.getExpr().accept(this) + ")";
-
+            Type typBase = t.getBase();
+            if (typBase.equals(TypePrimitive.bittype)) {
+                return "bitvec<" + t.getLength() + ">(" +
+                (String)exp.getExpr().accept(this) + ")";
+            } else if (typBase.equals(TypePrimitive.inttype)) {
+                return "fixedarr<" + t.getLength() + ">(" +
+                (String)exp.getExpr().accept(this) + ")";
+            } else {
+                assertFalse("unknown type", t, "for type cast", exp);
+            }
     	}
 
         return "((" + convertType(exp.getType()) + ")(" +
