@@ -22,7 +22,7 @@ public class NodesToH extends NodesToC {
 	
 	public String outputStructure(TypeStruct struct){
     	String result = "";
-    	result += indent + "class " + struct.getName() + "{\n  public:";
+    	result += indent + "class " + escapeCName(struct.getName()) + "{\n  public:";
     	addIndent();
     	for (int i = 0; i < struct.getNumFields(); i++)
     	{
@@ -49,7 +49,7 @@ public class NodesToH extends NodesToC {
 		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
         {
             TypeStruct struct = (TypeStruct)iter.next();
-            ret += "class " + struct.getName() + "; \n";            
+            ret += "class " + escapeCName(struct.getName()) + "; \n";            
         }
 		
 		ret+=super.visitProgram(prog);
@@ -72,7 +72,7 @@ public class NodesToH extends NodesToC {
 	{
 		String result = indent + "extern ";
 		result += _converter.convertType(func.getReturnType()) + " ";
-		result += func.getName();
+		result += escapeCName(func.getName());
 		String prefix = null;
 		result += _converter.doParams(func.getParams(), prefix) + ";\n";
 		return result;

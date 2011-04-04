@@ -343,18 +343,25 @@ public class NodesToC extends NodesToJava {
         return result;
 	}
 
+    public String escapeCName(String s) {
+        if (s.equals("main")) {
+            return "main_c_escape";
+        } else if (s.equals("operator")) {
+            return "operator_c_escape";
+        } else {
+            return s;
+        }
+    }
+
 	public Object visitFunction(Function func)
     {
-
-
 		SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-
 
         String result = indent ;
         if (ss == null || !func.getName().equals(ss.getName()))
             result += convertType(func.getReturnType()) + " ";
-        result += func.getName();
+        result += escapeCName(func.getName());
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";
 
@@ -366,7 +373,7 @@ public class NodesToC extends NodesToJava {
    		 	for(Iterator<Parameter> it = l.iterator(); it.hasNext(); ){
    		 		Parameter p = it.next();
    		 		if(p.isParameterOutput()){
-   		 			Statement r = new StmtAssign(new ExprVar(func, p.getName()), ExprConstInt.zero);
+   		 			Statement r = new StmtAssign(new ExprVar(func, escapeCName(p.getName())), ExprConstInt.zero);
    		 			result += "\t" + (String) r.accept(this) + ";\n";
    		 		}
    		 	}
@@ -399,7 +406,7 @@ public class NodesToC extends NodesToJava {
             Type type = param.getType();
 
             if(symtab != null){
-	            symtab.registerVar(param.getName(),
+	            symtab.registerVar(escapeCName(param.getName()),
 	                    actualType(param.getType()),
 	                    param,
 	                    SymbolTable.KIND_FUNC_PARAM);
@@ -409,7 +416,7 @@ public class NodesToC extends NodesToJava {
             if (prefix != null) result += prefix + " ";
             result += typeForParam(type, param.isParameterOutput());
             result += " ";
-            result += param.getName();
+            result += escapeCName(param.getName());
             first = false;
         }
         result += ")";
@@ -429,7 +436,7 @@ public class NodesToC extends NodesToJava {
     public Object visitStmtVarDecl(StmtVarDecl stmt) {
         Vector<String> decls = new Vector<String>();
         for (VarDeclEntry decl : stmt) {
-            symtab.registerVar(decl.getName(), actualType(decl.getType()), stmt,
+            symtab.registerVar(escapeCName(decl.getName()), actualType(decl.getType()), stmt,
                     SymbolTable.KIND_LOCAL);
             Type type = decl.getType();
             if (type instanceof TypeArray) {
@@ -446,7 +453,7 @@ public class NodesToC extends NodesToJava {
                                 processAssign(decl.getVarRefToName(stmt), decl.getInit(),
                                         type, "=");
             } else {
-                result += " " + decl.getName();
+                result += " " + escapeCName(decl.getName());
             }
             decls.add(result);
             this.isBool = oldIsBool;
@@ -457,7 +464,7 @@ public class NodesToC extends NodesToJava {
 	public Object visitExprFunCall(ExprFunCall exp)
     {
 		String result = "";
-        String name = exp.getName();
+        String name = escapeCName(exp.getName());
         result = name + "(";
         boolean first = true;
         for (Iterator iter = exp.getParams().iterator(); iter.hasNext();) {
@@ -648,7 +655,7 @@ public class NodesToC extends NodesToJava {
           }
         }
         result += "->";
-        result += (String)exp.getName();
+        result += escapeCName((String)exp.getName());
         return result;
     }
 
