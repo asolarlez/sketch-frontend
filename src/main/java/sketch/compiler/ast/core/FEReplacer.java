@@ -28,7 +28,6 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypeCommaArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -45,6 +44,8 @@ import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
 import sketch.util.datastructures.TprintTuple;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -963,11 +964,7 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprType(ExprType exprtyp) {
-        // TODO Auto-generated method stub
+        assertFalse("Not implemented: visitExprType()");
         return null;
-    }
-
-    public Object visitTypeCommaArray(TypeCommaArray typ) {
-        return typ;
     }
 }

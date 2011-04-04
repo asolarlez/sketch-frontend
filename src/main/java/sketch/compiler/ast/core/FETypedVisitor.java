@@ -15,7 +15,6 @@ import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypeCommaArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -345,9 +344,5 @@ public class FETypedVisitor<T> implements FEVisitor {
 
     public Object visitExprType(ExprType exprtyp) {
         throw new FEVisitorException(this, exprtyp);
-    }
-
-    public Object visitTypeCommaArray(TypeCommaArray typ) {
-        throw new FEVisitorException(this, typ);
     }
 }
