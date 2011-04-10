@@ -43,6 +43,7 @@ public class CommonSketchMain {
         backendOptions.addAll(options.backendArgs);
         backendOptions.add("--bnd-inbits=" + options.bndOpts.inbits);
         backendOptions.add("--verbosity=" + options.debugOpts.verbosity);
+        backendOptions.add("--print-version"); // run by default
 
         if (options.solverOpts.seed != 0) {
             backendOptions.add("--seed");

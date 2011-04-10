@@ -826,8 +826,10 @@ public class SequentialSketchMain extends CommonSketchMain
     public static boolean isTest = false;
 
     public static void main(String[] args) {
+        System.out.println("SKETCH version features: tprint, cuda-model, vlarrays");
         long beg = System.currentTimeMillis();
         checkJavaVersion(1, 6);
+        // TODO -- change class names so this is clear
         final SequentialSketchMain sketchmain = new CudaSketchMain(args);
         try {
             sketchmain.run();
