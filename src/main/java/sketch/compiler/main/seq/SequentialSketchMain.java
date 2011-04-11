@@ -79,6 +79,8 @@ import sketch.compiler.passes.preprocessing.WarnAmbiguousImplicitVarDecl;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.GetPrintFcns;
+import sketch.compiler.passes.structure.GetTprintIdentifiers;
+import sketch.compiler.passes.structure.TprintIdentifier;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
@@ -92,6 +94,7 @@ import sketch.util.ControlFlowException;
 import sketch.util.Pair;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
+import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
@@ -594,20 +597,47 @@ public class SequentialSketchMain extends CommonSketchMain
                 (Program) this.afterCudaSequentialLowering.accept(eliminate_star);
 
         String resultFile = getOutputFileName();
+        final boolean tprintPyStyle = options.feOpts.tprintPython != null;
+        StringBuilder pyCode = new StringBuilder();
+
+        // initial python code
+        pyCode.append("class Message(object):\n"
+                + "    def __init__(self, value, **kwargs):\n"
+                + "        self.value = value\n"
+                + "        [setattr(self, k, v) for k, v in kwargs.items()]\n"
+                + "    def __repr__(self):\n"
+                + "        return \"%s%s\" %(self.__class__.__name__, self.__dict__)\n"
+                + "    __str__ = __repr__\n");
+        TypedHashSet<String> s = new TypedHashSet<String>();
+        StringBuilder isInstanceFcns = new StringBuilder();
+        for (TprintIdentifier id : (new GetTprintIdentifiers()).run(serializedCode)) {
+            if (s.add(id.id())) {
+                String name = NodesToC.pyClassName(id.id());
+                pyCode.append("class " + name + "(Message): pass\n");
+                isInstanceFcns.append("is" + NodesToC.pyFieldName(id.id()) +
+                        " = lambda a: isinstance(a, " + name + ")\n");
+            }
+        }
+        pyCode.append(isInstanceFcns);
+        pyCode.append("\n");
 
         for (Function f : GetPrintFcns.run(serializedCode)) {
-            String serHcode = (String) serializedCode.accept(new NodesToH(resultFile));
+            String serHcode =
+                    (String) serializedCode.accept(new NodesToH(resultFile, tprintPyStyle));
             if (f.getParams().size() != 0) {
                 throw new ExceptionAtNode("printfcn's cannot have parameters", f);
             }
             String testCode =
-                    (String) serializedCode.accept(new NodesToCPrintTest(varGen, resultFile,
-                            f.getName()));
+                    (String) serializedCode.accept(new NodesToCPrintTest(varGen,
+                            resultFile, f.getName(), tprintPyStyle));
             String ccfilename = options.getTmpFilename(getOutputFileName() + ".cc");
             String hfilename = options.getTmpFilename(getOutputFileName() + ".h");
+
             try {
-                FileUtils.copyFile(new File("src/runtime/include/bitvec.h"), new File(options.getTmpFilename("bitvec.h")));
-                FileUtils.copyFile(new File("src/runtime/include/fixedarr.h"), new File(options.getTmpFilename("fixedarr.h")));
+                FileUtils.copyFile(new File("src/runtime/include/bitvec.h"), new File(
+                        options.getTmpFilename("bitvec.h")));
+                FileUtils.copyFile(new File("src/runtime/include/fixedarr.h"), new File(
+                        options.getTmpFilename("fixedarr.h")));
                 FileWriter cc_writer = new FileWriter(ccfilename);
                 FileWriter h_writer = new FileWriter(hfilename);
                 cc_writer.write(testCode);
@@ -615,18 +645,36 @@ public class SequentialSketchMain extends CommonSketchMain
                 cc_writer.close();
                 h_writer.close();
 
-                SynchronousTimedProcess cxx = new SynchronousTimedProcess(options.sktmpdir().getAbsolutePath(), 0,
-                        "g++", "-g", "-O0", "-o", "testPrintBin", ccfilename);
+                SynchronousTimedProcess cxx =
+                        new SynchronousTimedProcess(options.sktmpdir().getAbsolutePath(),
+                                0, "g++", "-g", "-O0", "-o", "testPrintBin", ccfilename);
                 assert cxx.run(true).exitCode == 0 : "g++ failed; command line:\n" + cxx;
 
-                SynchronousTimedProcess runOutput = new SynchronousTimedProcess(options.sktmpdir().getAbsolutePath(), 0,
-                        options.getTmpFilename("testPrintBin"));
+                SynchronousTimedProcess runOutput =
+                        new SynchronousTimedProcess(options.sktmpdir().getAbsolutePath(),
+                                0, options.getTmpFilename("testPrintBin"));
                 final ProcessStatus runOutputStatus = runOutput.run(true);
-                assert runOutputStatus.exitCode == 0 : "running print function failed; command line:\n" + runOutput;
-                printNote("print output from function " + f.getName().replace("__Wrapper", "") + "\n" + runOutputStatus.out + "------------------------------");
+                assert runOutputStatus.exitCode == 0 : "running print function failed; command line:\n" +
+                        runOutput;
+                final String out = runOutputStatus.out;
+                final String cleanedName = f.getName().replace("__Wrapper", "");
+                if (tprintPyStyle) {
+                    pyCode.append(cleanedName + "_messages = [\n");
+                    pyCode.append(out.substring(0, out.length() - 2));
+                    pyCode.append(" ]\n\n");
+                } else {
+                    printNote("print output from function " + cleanedName + "\n" + out +
+                            "------------------------------");
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        // final output of py code
+        if (tprintPyStyle) {
+            System.out.println("python code:\n\n" + pyCode +
+                    "------------------------------\n");
         }
     }
 
@@ -637,8 +685,10 @@ public class SequentialSketchMain extends CommonSketchMain
         }
 
         String resultFile = getOutputFileName();
-        String hcode = (String) finalCode.accept(new NodesToH(resultFile));
-        String ccode = (String) finalCode.accept(new NodesToC(varGen, resultFile));
+        final boolean tprintPyStyle = options.feOpts.tprintPython != null;
+        String hcode = (String) finalCode.accept(new NodesToH(resultFile, tprintPyStyle));
+        String ccode =
+                (String) finalCode.accept(new NodesToC(varGen, resultFile, tprintPyStyle));
 
 		if (!options.feOpts.outputCode && !options.feOpts.noOutputPrint) {
             finalCode.accept(new SimpleCodePrinter());
@@ -646,7 +696,10 @@ public class SequentialSketchMain extends CommonSketchMain
 			//System.out.println(ccode);
 		} else if (!options.feOpts.noOutputPrint) {
 		    if (new ContainsCudaCode().run(finalCode)) {
-		        String cucode = (String)finalCode.accept(new NodesToCUDA(varGen, options.feOpts.outputDir + resultFile + ".cu"));
+                String cucode =
+                        (String) finalCode.accept(new NodesToCUDA(varGen,
+                                options.feOpts.outputDir + resultFile + ".cu",
+                                tprintPyStyle));
 		        printDebug("CUDA code", cucode);
 		    }
 			try{
@@ -662,7 +715,9 @@ public class SequentialSketchMain extends CommonSketchMain
 					outWriter.close();
 				}
                 if (options.feOpts.outputTest) {
-					String testcode=(String)finalCode.accept(new NodesToCTest(resultFile));
+                    String testcode =
+                            (String) finalCode.accept(new NodesToCTest(resultFile,
+                                    tprintPyStyle));
 					final String outputFname = options.feOpts.outputDir + resultFile + "_test.cpp";
                     Writer outWriter = new FileWriter(outputFname);
 					outWriter.write(testcode);

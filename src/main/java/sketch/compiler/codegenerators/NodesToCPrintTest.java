@@ -6,8 +6,10 @@ import sketch.compiler.ast.core.TempVarGen;
 public class NodesToCPrintTest extends NodesToC {
     protected final String fcnToTest;
 
-    public NodesToCPrintTest(TempVarGen varGen, String filename, String fcnToTest) {
-        super(varGen, filename);
+    public NodesToCPrintTest(TempVarGen varGen, String filename, String fcnToTest,
+            boolean pythonPrintStatements)
+    {
+        super(varGen, filename, pythonPrintStatements);
         this.fcnToTest = fcnToTest;
     }
 

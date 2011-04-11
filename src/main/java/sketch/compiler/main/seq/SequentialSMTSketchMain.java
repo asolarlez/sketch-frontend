@@ -464,6 +464,7 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 	protected void outputCCode() {
 
 		String resultFile = getOutputFileName();
+        final boolean tprintPyStyle = options.feOpts.tprintPython != null;
 		
 		if (!options.feOpts.outputCode) {
 			 finalCode.accept( new SimpleCodePrinter() );
@@ -472,10 +473,13 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 		} else {
 			try {
 				{
-					String hcode = (String) finalCode.accept(new NodesToH(resultFile));
-					String ccode = (String) finalCode.accept(new NodesToC(varGen,
-							resultFile));
-					
+                    String hcode =
+                            (String) finalCode.accept(new NodesToH(resultFile,
+                                    tprintPyStyle));
+                    String ccode =
+                            (String) finalCode.accept(new NodesToC(varGen, resultFile,
+                                    tprintPyStyle));
+
 					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + ".h");
 					outWriter.write(hcode);
@@ -488,8 +492,9 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 					outWriter.close();
 				}
 				if (options.feOpts.outputTest) {
-					String testcode = (String) beforeUnvectorizing
-							.accept(new NodesToCTest(resultFile));
+                    String testcode =
+                            (String) beforeUnvectorizing.accept(new NodesToCTest(
+                                    resultFile, tprintPyStyle));
 					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + "_test.cpp");
 					outWriter.write(testcode);

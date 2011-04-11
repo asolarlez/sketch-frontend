@@ -445,7 +445,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return    An allocation guard
 	     */
 	    public StmtAssert makeAllocationGuard (FENode cx) {
-	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx), "Heap is too small. Make it bigger with the --heapsize flag", false);
+	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx), "Heap is too small. Make it bigger with the --bnd-heap-size flag", false);
 	    }
 
 	    /**

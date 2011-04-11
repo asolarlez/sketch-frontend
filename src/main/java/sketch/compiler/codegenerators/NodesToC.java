@@ -32,11 +32,11 @@ import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printNote;
+import static sketch.util.DebugOut.printWarning;
+
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 public class NodesToC extends NodesToJava {
 
@@ -46,10 +46,12 @@ public class NodesToC extends NodesToJava {
 	protected boolean addIncludes = true;
 	// FIXME hack for bad code generation
     private boolean convertBoolConstants;
+    protected final boolean pythonPrintStatements;
 
-	public NodesToC(TempVarGen varGen, String filename) {
+    public NodesToC(TempVarGen varGen, String filename, boolean pythonPrintStatements) {
 		super(false, varGen);
 		this.filename=filename;
+        this.pythonPrintStatements = pythonPrintStatements;
 	}
 
 
@@ -633,6 +635,10 @@ public class NodesToC extends NodesToJava {
             if (!isBitvec && !range.hasLen()) {
               return lhs + ".get("+ tmp + ")";
 				} else{
+                    if (range.getLenExpression() == null) {
+                        printWarning("don't know range of", lhs);
+                        return lhs + ".sub<1>(" + tmp + ")";
+                    }
 					return lhs + ".sub<" + range.getLenExpression() + ">("+ tmp + ")";
 				}
 			}
@@ -718,17 +724,60 @@ public class NodesToC extends NodesToJava {
             if (v.idx > 0) {
                 result.append("\n" + this.indent);
             }
-            final String name = v.entry.getFirst();
-            final String name2;
-            if (exprTprint.expressions.size() <= 1) {
-                name2 = ScRichString.padLeft(name, 30) + ": ";
+            final String name;
+            final int nexpr = exprTprint.expressions.size();
+            if (pythonPrintStatements) {
+                name = tprintFmtPy(nexpr, v.idx == 0, v.entry.getFirst());
+                result.append(" << \"" + name + "\" << " + v.entry.getSecond());
             } else {
-                name2 = (v.idx == 0 ? "" : " ") + name + " ";
+                name = tprintFmt(nexpr, v.idx == 0, v.entry.getFirst());
+                result.append(" << \"" + name + "\" << " + v.entry.getSecond());
             }
-            result.append(" << \"" + name2 + "\" << " + v.entry.getSecond());
         }
+        if (pythonPrintStatements) {
+            result.append(" << \"),\" << endl");
+        } else {
             result.append(" << endl");
+        }
         return result.toString();
+    }
+
+    public String tprintFmt(int nexpr, boolean isFirst, final String name) {
+        if (nexpr <= 1) {
+            return ScRichString.padLeft(name, 30) + ": ";
+        } else {
+            return (isFirst ? "" : " ") + name + " ";
+        }
+    }
+
+    public String tprintFmtPy(int nexpr, boolean isFirst, final String name) {
+        if (isFirst) {
+            return "    " + pyClassName(name) + "(";
+        } else {
+            return ", " + pyFieldName(name) + "=";
+        }
+    }
+
+    /** capitalized name */
+    public static String pyClassName(String name) {
+        String result = String.valueOf(name.charAt(0)).toUpperCase();
+        boolean nextCapital = false;
+        for (int a = 1; a < name.length(); a++) {
+            char c = name.charAt(a);
+            if (c == ' ') {
+                nextCapital = true;
+            } else if (nextCapital) {
+                result += Character.toUpperCase(c);
+                nextCapital = false;
+            } else {
+                result += c;
+            }
+        }
+        return result;
+    }
+
+    public static String pyFieldName(String name) {
+        return name.replace(' ', '_').toLowerCase();
     }
 
     @Override

@@ -29,10 +29,10 @@ public class NodesToCTest extends NodesToJava {
 	private static final String OUTSP="outsp";
 	private static final int NTESTS=100;
 
-	public NodesToCTest(String filename) {
+    public NodesToCTest(String filename, boolean pythonPrintStatements) {
 		super(false, new TempVarGen());
 		this.filename=filename;
-		_converter=new NodesToC(null,filename);
+        _converter = new NodesToC(null, filename, pythonPrintStatements);
 		output=new StringBuffer();
 		fMap=new HashMap<String,Function>();
 		testFuncs=new ArrayList<String>();

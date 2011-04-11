@@ -184,7 +184,7 @@ if exists("c_gnu")
 endif
 
 syn keyword	cStructure	struct union enum typedef
-syn keyword	cStorageClass	static register auto volatile extern const generator harness
+syn keyword	cStorageClass	static register auto volatile extern const generator harness library printfcn device serial global
 if exists("c_gnu")
   syn keyword	cStorageClass	inline __attribute__
 endif

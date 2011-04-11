@@ -13,9 +13,9 @@ public class NodesToH extends NodesToC {
 	private NodesToC _converter;
 	private String filename; 
 	
-	public NodesToH(String filename) {
-		super(null,filename);
-		_converter=new NodesToC(null,filename);
+    public NodesToH(String filename, boolean pythonPrintStatements) {
+        super(null, filename, pythonPrintStatements);
+        _converter = new NodesToC(null, filename, pythonPrintStatements);
 		this.filename=filename;
 		this.addIncludes = false;
 	}

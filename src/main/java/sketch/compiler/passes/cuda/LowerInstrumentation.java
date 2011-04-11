@@ -5,6 +5,8 @@ import java.util.Vector;
 import sketch.compiler.Directive.InstrumentationDirective;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.CudaFcnType;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -27,6 +29,9 @@ import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
+
+import static sketch.util.DebugOut.assertFalse;
+
 import static sketch.util.Misc.nonnull;
 
 /**
@@ -100,6 +105,10 @@ public class LowerInstrumentation extends FEReplacer {
 
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
         if (activeInstrumentation != null && activeInstrumentation.syncthreads != null) {
+            Function fcn = callGraph.getByName(activeInstrumentation.syncthreads);
+            if (!(fcn.getInfo().cudaType == CudaFcnType.Serial)) {
+                assertFalse("[LowerInstrumentation] CUDA sync functions should be serial or else they will be run per-thread.");
+            }
             addStatement(new StmtExpr(new ExprFunCall(cudaSyncthreads,
                     activeInstrumentation.syncthreads, instrumentationStructInst)));
         }
