@@ -8,7 +8,7 @@ import sketch.compiler.passes.lowering.SemanticChecker;
 public class StencilSemanticChecker extends SemanticChecker {
 
 	public StencilSemanticChecker() {
-		super();
+        super(true);
 		// TODO Auto-generated constructor stub
 	}
 
