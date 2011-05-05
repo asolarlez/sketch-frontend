@@ -1,7 +1,5 @@
 package sketch.compiler.main;
 
-import static sketch.util.DebugOut.assertFalse;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -13,6 +11,8 @@ import java.util.Properties;
 import java.util.Vector;
 
 import sketch.compiler.main.seq.SequentialSketchOptions;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * get any variables related to this specific compile, e.g. version number, and resolve
@@ -97,10 +97,11 @@ public class PlatformLocalization {
     public String getCegisPath() {
         SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
         String scriptingBinary = getCegisPathInner("cegis.py");
-        if (options.solverOpts.useScripting && scriptingBinary != null) {
+        if (options.solverOpts.useScripting) {
             return scriptingBinary;
+        } else {
+            return getCegisPathInner("cegis");
         }
-        return getCegisPathInner("cegis");
     }
 
     public String getCegisPathInner(String cegisName) {
@@ -156,7 +157,7 @@ public class PlatformLocalization {
         //     System.err.println("    " + path);
         // }
         //-------------------------------------------------- 
-        return null;
+        return cegisName;
     }
 
     /** make directories if they don't already exist, return $dirname$ or null */

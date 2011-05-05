@@ -34,6 +34,7 @@ import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
 
 import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
 
@@ -101,6 +102,8 @@ public class SATBackend {
 //                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
             } else {
                 // use the backend
+                printNote("enabling scripting backend due to presence of minimize()");
+                options.solverOpts.useScripting = true;
                 final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
                 worked = solve(oracle, true, options.solverOpts.timeout);
