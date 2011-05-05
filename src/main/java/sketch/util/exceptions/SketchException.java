@@ -2,6 +2,8 @@ package sketch.util.exceptions;
 
 import sketch.compiler.main.PlatformLocalization;
 
+import static sketch.util.DebugOut.printError;
+
 public abstract class SketchException extends RuntimeException {
     private static final long serialVersionUID = 2823359528414432108L;
 
@@ -10,8 +12,7 @@ public abstract class SketchException extends RuntimeException {
     }
 
     public void print() {
-        System.err.println("[ERROR] [SKETCH] " + this.messageClass() + ": " +
-                this.getMessage());
+        printError("[ERROR] [SKETCH] " + this.messageClass() + ": " + this.getMessage());
         dumpStackTraceToFile();
     }
 

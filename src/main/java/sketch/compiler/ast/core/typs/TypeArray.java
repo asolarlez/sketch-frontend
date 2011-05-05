@@ -131,6 +131,7 @@ public class TypeArray extends Type implements TypeArrayInterface
     }
 
 
+    // public boolean equals(Object other, Vector<Pair<Parameter, Parameter>> eqParams)
     public boolean equals(Object other)
     {
         if (!(other instanceof TypeArray))
@@ -140,6 +141,18 @@ public class TypeArray extends Type implements TypeArrayInterface
             return false;
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
+        // // FIXME -- hack!!!
+        // if (thisLen instanceof ExprVar && thatLen instanceof ExprVar) {
+        // ExprVar thisLen1 = (ExprVar)thisLen;
+        // ExprVar thatLen1 = (ExprVar)thatLen;
+        // for (Pair<Parameter, Parameter> p : eqParams) {
+        // if (p.getFirst().getName().equals(thisLen1.getName()) &&
+        // p.getSecond().getName().equals(thatLen1.getName()))
+        // {
+        // return true;
+        // }
+        // }
+        // }
         if(thisLen.getIValue() != null && thatLen.getIValue() != null){
         	return thisLen.getIValue().equals(thatLen.getIValue());
         }
@@ -147,6 +160,10 @@ public class TypeArray extends Type implements TypeArrayInterface
             return false;
         return true;
     }
+
+    // public boolean equals(Object other) {
+    // return equals(other, new Vector<Pair<Parameter, Parameter>>());
+    // }
 
     public int hashCode()
     {

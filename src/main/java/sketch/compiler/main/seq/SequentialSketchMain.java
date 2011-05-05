@@ -96,6 +96,7 @@ import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
 import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
+import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
 
@@ -807,7 +808,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	    prog = (Program)prog.accept(new ConstantReplacer(null));
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
-        (new SemanticCheckPass(parallelCheck)).visitProgram(prog);
+        (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
         this.showPhaseOpt("parse");
 
 		prog=preprocessProgram(prog); // perform prereq transformations
@@ -823,15 +824,21 @@ public class SequentialSketchMain extends CommonSketchMain
 	@CompilerPassDeps(runsBefore = {}, runsAfter = {})
     public class SemanticCheckPass extends FEReplacer {
         private final ParallelCheckOption checkopt;
+        protected final boolean isParseCheck;
 
-        public SemanticCheckPass(ParallelCheckOption checkopt) {
+        public SemanticCheckPass(ParallelCheckOption checkopt, boolean isParseCheck) {
             this.checkopt = checkopt;
+            this.isParseCheck = isParseCheck;
         }
 
         @Override
         public Object visitProgram(Program prog) {
-            if (!SemanticChecker.check(prog, checkopt))
-                throw new ProgramParseException("Semantic check failed");
+            if (!SemanticChecker.check(prog, checkopt, isParseCheck))
+                if (isParseCheck) {
+                    throw new ProgramParseException("Semantic check failed");
+                } else {
+                    throw new InternalSketchException("AST fails second semantic check.");
+                }
             return prog;
         }
     }

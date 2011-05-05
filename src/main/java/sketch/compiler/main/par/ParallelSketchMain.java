@@ -83,7 +83,7 @@ public class ParallelSketchMain extends SequentialSketchMain {
 			prog = (Program)prog.accept(new LockPreprocessing());
 			//dump (prog, "After replacing constants:");
 			ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
-			if (!SemanticChecker.check(prog, parallelCheck))
+            if (!SemanticChecker.check(prog, parallelCheck, true))
 				throw new IllegalStateException("Semantic check failed");
 
 			prog=preprocessProgram(prog); // perform prereq transformations

@@ -158,7 +158,7 @@ public final class CliOption {
                 assertFalse("CliOption - no_defaults set, but no option", this);
             }
             if (defaultValue == null) {
-                DebugOut.print_colored(DebugOut.BASH_RED, "", " ", false, "argument",
+                DebugOut.print_stderr_colored(DebugOut.BASH_RED, "", " ", false, "argument",
                         name, "is required.\n    argument info:", this);
                 System.exit(1); // @code standards ignore
             } else if (CliOptionType.class.isAssignableFrom(typ)) {

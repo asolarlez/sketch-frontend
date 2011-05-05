@@ -36,7 +36,7 @@ public class DebugOut {
         return "\u001b[" + bash_color + "m";
     }
 
-    public static void print_colored(String color, String prefix, String sep,
+    public static void print_stderr_colored(String color, String prefix, String sep,
             boolean nice_arrays, Object... text)
     {
         if (nice_arrays) {
@@ -64,7 +64,7 @@ public class DebugOut {
     {
         System.err.flush();
         System.out.flush();
-        print_colored(color, prefix, sep, nice_arrays, text);
+        print_stderr_colored(color, prefix, sep, nice_arrays, text);
         System.err.flush();
         System.out.flush();
     }
@@ -79,13 +79,13 @@ public class DebugOut {
         } else {
             inAssertFalse = true;
         }
-        print_colored(color, prefix, sep, nice_arrays, text);
+        print_stderr_colored(color, prefix, sep, nice_arrays, text);
         System.err.flush();
         System.out.flush();
     }
 
     public static void print(Object... text) {
-        print_colored(BASH_BLUE, "[debug]", " ", false, text);
+        print_stderr_colored(BASH_BLUE, "[debug]", " ", false, text);
     }
 
     public static void fmt(String fmt, Object... args) {
@@ -93,7 +93,7 @@ public class DebugOut {
     }
 
     public static synchronized void print_mt(Object... text) {
-        print_colored(BASH_LIGHT_BLUE, thread_indentation.get() + "[debug-"
+        print_stderr_colored(BASH_LIGHT_BLUE, thread_indentation.get() + "[debug-"
                 + Thread.currentThread().getId() + "]", " ", false, text);
     }
 
@@ -110,7 +110,7 @@ public class DebugOut {
             boolean nice_arrays, Object... description)
     {
         double time = time_.getTime();
-        print_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
+        print_stderr_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
                 nice_arrays, description);
     }
 
@@ -169,7 +169,7 @@ public class DebugOut {
     }
 
     public static void todo(Object... what) {
-        print_colored(BASH_BROWN, "[TODO] ", " ", false, what);
+        print_stderr_colored(BASH_BROWN, "[TODO] ", " ", false, what);
     }
 
     protected static class ThreadIndentation extends ThreadLocal<String> {
@@ -216,7 +216,7 @@ public class DebugOut {
             new ThreadIndentation();
 
     public static void print_exception(String text, Exception e) {
-        print_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
+        print_stderr_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
         e.printStackTrace();
     }
 

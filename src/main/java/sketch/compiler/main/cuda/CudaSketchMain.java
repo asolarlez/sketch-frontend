@@ -63,7 +63,7 @@ public class CudaSketchMain extends SequentialSketchMain {
                     "After transforming threads to loops", prog);
 
             final SemanticCheckPass semanticCheck =
-                    new SemanticCheckPass(ParallelCheckOption.DONTCARE);
+                    new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
             ExtractComplexLoopConditions ec =
                     new ExtractComplexLoopConditions(CudaSketchMain.this.varGen);
             // final FunctionParamExtension paramExt = new FunctionParamExtension();

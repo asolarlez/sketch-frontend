@@ -62,8 +62,8 @@ public class SemanticChecker
 	 * @param prog  parsed program object to check
 	 * @returns     <code>true</code> if no errors are detected
 	 */
-	public static boolean check(Program prog) {
-		return check (prog, ParallelCheckOption.SERIAL);
+    public static boolean check(Program prog, boolean isParseCheck) {
+        return check(prog, ParallelCheckOption.SERIAL, isParseCheck);
 	}
 
     public enum ParallelCheckOption { PARALLEL, SERIAL, DONTCARE; }
@@ -77,9 +77,10 @@ public class SemanticChecker
 	 * @param parallel  are parallel constructs allowed?
 	 * @returns     <code>true</code> if no errors are detected
 	 */
-	public static boolean check(Program prog, ParallelCheckOption parallel)
+    public static boolean check(Program prog, ParallelCheckOption parallel,
+            boolean isParseCheck)
 	{
-		SemanticChecker checker = new SemanticChecker();
+        SemanticChecker checker = new SemanticChecker(isParseCheck);
 		Map streamNames = checker.checkStreamNames(prog);
 
 		try {
@@ -103,9 +104,13 @@ public class SemanticChecker
 
 	// true if we haven't found any errors
 	protected boolean good;
+    protected final boolean isParseCheck;
 
 	protected void report(FENode node, String message)
 	{
+        if (!isParseCheck) {
+            message = "INTERNAL ERROR " + message;
+        }
         (new ExceptionAtNode(message, node)).print();
 		report(node.getCx(), message);
 	}
@@ -123,9 +128,10 @@ public class SemanticChecker
 				+" in alternative selections '"+ f1 +"', '"+ f2 +"'");
 	}
 
-	public SemanticChecker()
+    public SemanticChecker(boolean isParseCheck)
 	{
-		good = true;
+        this.isParseCheck = isParseCheck;
+        good = true;
 	}
 
 	/**
@@ -404,9 +410,29 @@ public class SemanticChecker
 						report(func, "Number of parameters of spec and sketch don't match " + parent + " vs.  " + func);
 						return super.visitFunction(func);
 					}
+
+                    // Vector<Pair<Parameter, Parameter>> knownEqVars =
+                    // new Vector<Pair<Parameter, Parameter>>();
 					while(formals1.hasNext()){
 						Parameter f1 = (Parameter) formals1.next();
 						Parameter f2 = (Parameter) formals2.next();
+                        if ((f1.getType() instanceof TypeArray) &&
+                                (f2.getType() instanceof TypeArray))
+                        {
+                            TypeArray f1t = (TypeArray)f1.getType();
+                            TypeArray f2t = (TypeArray)f2.getType();
+                            if (f1t.getBase().equals(f2t.getBase())) {
+                                continue;
+                            }
+                        }
+                        // knownEqVars.add(new Pair<Parameter, Parameter>(f1, f2));
+                        // if (f1.getType() instanceof TypeArray) {
+                        // if (((TypeArray) f1.getType()).equals(f2.getType(),
+                        // knownEqVars))
+                        // {
+                        // continue;
+                        // }
+                        // }
 						if(! f1.getType().equals(f2.getType())){
 							report(func, "Parameters of spec and sketch don't match: " + f1 + " vs. " + f2);
 							return super.visitFunction(func);
