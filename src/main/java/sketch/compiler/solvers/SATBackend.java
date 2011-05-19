@@ -34,6 +34,7 @@ import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
 
 import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
@@ -58,14 +59,15 @@ public class SATBackend {
 		tracing = true;
 	}
 	
-	public String[] getBackendCommandline(Vector<String> commandLineOptions, String... additional){
+	public String[] getBackendCommandline(Vector<String> commandLineOptions_, String... additional){
+        Vector<String> commandLineOptions = (Vector<String>) commandLineOptions_.clone();
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
         commandLineOptions.add("-o");
         commandLineOptions.add(options.getSolutionsString());
-        commandLineOptions.add(options.getTmpSketchFilename());
         commandLineOptions.addAll(Arrays.asList(additional));
+        commandLineOptions.add(options.getTmpSketchFilename());
         return commandLineOptions.toArray(new String[0]);
     }
 
@@ -233,14 +235,23 @@ public class SATBackend {
 
 	
     private boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
+        Vector<String> backendOptions = options.getBackendOptions();
         log("OFILE = " + options.feOpts.output);
 
         // minimize
         if (hasMinimize) {
-            Vector<String> backendOptions = options.getBackendOptions();
-            String[] commandLine =
-                    getBackendCommandline(backendOptions, "--use-minimize");
-            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            boolean ret = false;
+            for (int a = 32; a < options.bndOpts.intRange; a *= 2) {
+                String[] commandLine = getBackendCommandline(backendOptions,
+                    "--use-minimize", "--bnd-int-range", a + "");
+                ret = runSolver(commandLine, 0, timeoutMins);
+                if (ret) {
+                    break;
+                } else {
+                    printDebug("Trying next int range bound", 2 * a);
+                }
+            }
+
             if (!ret) {
                 log(5, "Backend returned error code");
                 // System.err.println(solverErrorStr);
@@ -254,7 +265,6 @@ public class SATBackend {
 			int maxBits = options.bndOpts.incremental.value;
 			for(bits=1; bits<=maxBits; ++bits){
 				log ("TRYING SIZE " + bits);			
-                Vector<String> backendOptions = options.getBackendOptions();
                 String[] commandLine =
                         getBackendCommandline(backendOptions, "--bnd-cbits=" + bits);
 				boolean ret = runSolver(commandLine, bits, timeoutMins);
@@ -275,13 +285,17 @@ public class SATBackend {
 
 		// default
         } else {
-            Vector<String> backendOptions = options.getBackendOptions();
-            String[] commandLine = getBackendCommandline(backendOptions);
-            boolean ret = runSolver(commandLine, 0, timeoutMins);
-            if (!ret) {
-                log(5, "The sketch cannot be resolved");
-                // System.err.println(solverErrorStr);
-                return false;
+
+            boolean ret = false;
+            for (int a = 32; a < options.bndOpts.intRange; a *= 2) {
+                String[] commandLine = getBackendCommandline(backendOptions,
+                    "--bnd-int-range", a + "");
+                ret = runSolver(commandLine, 0, timeoutMins);
+                if (ret) {
+                    break;
+                } else {
+                    printDebug("Trying next int range bound", 2 * a);
+                }
             }
         }
         return true;

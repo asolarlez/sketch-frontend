@@ -47,4 +47,7 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Initial value to start with when minimizing "
             + "expressions/cost functions")
     public int costEstimate = 32;
+
+    @CliParameter(help = "Maximum integer value to emulate; default usually good")
+    public int intRange = 8092;
 }
