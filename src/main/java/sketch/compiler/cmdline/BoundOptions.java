@@ -50,4 +50,6 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Maximum integer value to emulate; default usually good")
     public int intRange = 8092;
+    @CliParameter(help = "Initial integer range; default usually good")
+    public int intRange0 = 128;
 }

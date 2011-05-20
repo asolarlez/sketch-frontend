@@ -238,10 +238,16 @@ public class SATBackend {
         Vector<String> backendOptions = options.getBackendOptions();
         log("OFILE = " + options.feOpts.output);
 
+        int rangeStart = options.bndOpts.intRange0;
+        int rangeMax = options.bndOpts.intRange;
+        if (rangeMax < rangeStart) {
+            rangeMax = rangeStart;
+        }
+
         // minimize
         if (hasMinimize) {
             boolean ret = false;
-            for (int a = 32; a < options.bndOpts.intRange; a *= 2) {
+            for (int a = rangeStart; a <= rangeMax; a *= 2) {
                 String[] commandLine = getBackendCommandline(backendOptions,
                     "--use-minimize", "--bnd-int-range", a + "");
                 ret = runSolver(commandLine, 0, timeoutMins);
@@ -287,7 +293,7 @@ public class SATBackend {
         } else {
 
             boolean ret = false;
-            for (int a = 32; a < options.bndOpts.intRange; a *= 2) {
+            for (int a = rangeStart; a <= rangeMax; a *= 2) {
                 String[] commandLine = getBackendCommandline(backendOptions,
                     "--bnd-int-range", a + "");
                 ret = runSolver(commandLine, 0, timeoutMins);

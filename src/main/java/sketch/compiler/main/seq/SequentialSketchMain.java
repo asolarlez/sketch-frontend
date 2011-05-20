@@ -635,10 +635,13 @@ public class SequentialSketchMain extends CommonSketchMain
             String hfilename = options.getTmpFilename(getOutputFileName() + ".h");
 
             try {
-                FileUtils.copyFile(new File("src/runtime/include/bitvec.h"), new File(
-                        options.getTmpFilename("bitvec.h")));
-                FileUtils.copyFile(new File("src/runtime/include/fixedarr.h"), new File(
-                        options.getTmpFilename("fixedarr.h")));
+                PlatformLocalization pl = PlatformLocalization.getLocalization();
+                String bitVecH = pl.new ResolveRuntime("bitvec.h").resolve();
+                String fixedArrH = pl.new ResolveRuntime("fixedarr.h").resolve();
+                FileUtils.copyFile(new File(bitVecH),
+                        new File(options.getTmpFilename("bitvec.h")));
+                FileUtils.copyFile(new File(fixedArrH),
+                        new File(options.getTmpFilename("fixedarr.h")));
                 FileWriter cc_writer = new FileWriter(ccfilename);
                 FileWriter h_writer = new FileWriter(hfilename);
                 cc_writer.write(testCode);
