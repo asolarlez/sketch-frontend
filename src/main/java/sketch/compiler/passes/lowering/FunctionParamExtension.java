@@ -1,6 +1,4 @@
 package sketch.compiler.passes.lowering;
-import static sketch.util.DebugOut.assertFalse;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +12,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
@@ -34,6 +31,9 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.util.exceptions.UnrecognizedVariableException;
+
+import static sketch.util.DebugOut.assertFalse;
 
 
 /**
@@ -255,9 +255,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		// resolve the function being called
 		Function fun;
 		try{
-		fun =symtab.lookupFn(exp.getName());
+            fun = symtab.lookupFn(exp.getName(), exp);
 		}catch(UnrecognizedVariableException e){
-			throw new UnrecognizedVariableException(exp + ": Function name " + e.getMessage() + " not found"  );
+            // FIXME -- restore error noise
+            throw e;
+            // throw new UnrecognizedVariableException(exp + ": Function name " +
+            // e.getMessage() + " not found" );
 		}
 		// now we create a temp (or several?) to store the result
 

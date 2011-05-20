@@ -22,6 +22,7 @@ import java.util.Map;
 
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
  * A symbol table for StreamIt programs.  This keeps a mapping from a
@@ -94,14 +95,15 @@ public class SymbolTable
         this.makeShared = makeShared;
     }
 
-
     /**
      * This function will upgrade the type of a variable to a new
+     * 
      * @param name
      * @param newType
+     * @param errSource
      */
-    public void upgradeVar(String name, Type newType){
-    	Type oldType = lookupVar(name);
+    public void upgradeVar(String name, Type newType, FENode errSource) {
+        Type oldType = lookupVar(name, errSource);
     	Type lcpType = oldType.leastCommonPromotion(newType);
     	registerVar(name, lcpType);
     }
@@ -160,38 +162,41 @@ public class SymbolTable
     }
 
     /**
-     * Looks up the type for a symbol.  If that symbol is not in the
-     * current symbol table, search in the parent.
-     *
-     * @param   name  name of the variable to search for
-     * @return  the front-end type of the variable, if defined
-     * @throws  UnrecognizedVariableException if the variable
-     *          is defined in neither this nor any of its ancestor
-     *          symbol tables
+     * Looks up the type for a symbol. If that symbol is not in the current symbol table,
+     * search in the parent.
+     * 
+     * @param name
+     *            name of the variable to search for
+     * @param errSource
+     *            A source node if the name is not found
+     * @return the front-end type of the variable, if defined
+     * @throws UnrecognizedVariableException
+     *             if the variable is defined in neither this nor any of its ancestor
+     *             symbol tables
      */
-    public Type lookupVar(String name)
+    public Type lookupVar(String name, FENode errSource)
     {
         VarInfo info = lookupVarInfo(name);
         if (info != null)
             return info.type;
-        throw new UnrecognizedVariableException(name);
+        throw new UnrecognizedVariableException(name, errSource);
     }
 
 
-    public boolean isVarShared(String name){
+    public boolean isVarShared(String name, FENode errSource) {
 
-    	return isVarShared(name, false);
+    	return isVarShared(name, false, errSource);
 
 
     }
 
-    public boolean isVarShared(String name, boolean isShared){
+    public boolean isVarShared(String name, boolean isShared, FENode errSource) {
     	   VarInfo info = (VarInfo)vars.get(name);
            if (info != null)
                return isShared;
            if (parent != null)
-               return parent.isVarShared(name, makeShared || isShared);
-           throw new UnrecognizedVariableException(name);
+            return parent.isVarShared(name, makeShared || isShared, errSource);
+        throw new UnrecognizedVariableException(name, errSource);
     }
 
 
@@ -211,56 +216,62 @@ public class SymbolTable
         VarInfo info = lookupVarInfo(var.getName());
         if (info != null)
             return info.type;
-        throw new UnrecognizedVariableException(var);
+        throw new UnrecognizedVariableException(var.getName(), var);
     }
 
     /**
-     * Finds the object that declared a particular symbol.  If that
-     * symbol is not in the current symbol table, search in the parent.
-     *
-     * @param   name  name of the variable to search for
-     * @return  the object that declares the variable, if defined
-     * @throws  UnrecognizedVariableException if the variable
-     *          is defined in neither this nor any of its ancestor
-     *          symbol tables
+     * Finds the object that declared a particular symbol. If that symbol is not in the
+     * current symbol table, search in the parent.
+     * 
+     * @param name
+     *            name of the variable to search for
+     * @param errSource
+     * @return the object that declares the variable, if defined
+     * @throws UnrecognizedVariableException
+     *             if the variable is defined in neither this nor any of its ancestor
+     *             symbol tables
      */
-    public Object lookupOrigin(String name)
+    public Object lookupOrigin(String name, FENode errSource)
     {
         VarInfo info = lookupVarInfo(name);
         if (info != null)
             return info.origin;
-        throw new UnrecognizedVariableException(name);
+        throw new UnrecognizedVariableException(name, errSource);
     }
 
     /**
-     * Gets the kind (local, field, etc.) of a particular symbol.  If
-     * that symbol is not in the current symbol table, search in the
-     * parent.
-     *
-     * @param   name  name of the variable to search for
-     * @return  KIND_* constant describing the variable
-     * @throws  UnrecognizedVariableException if the variable
-     *          is defined in neither this nor any of its ancestor
-     *          symbol tables
+     * Gets the kind (local, field, etc.) of a particular symbol. If that symbol is not in
+     * the current symbol table, search in the parent.
+     * 
+     * @param name
+     *            name of the variable to search for
+     * @param errSource
+     * @return KIND_* constant describing the variable
+     * @throws UnrecognizedVariableException
+     *             if the variable is defined in neither this nor any of its ancestor
+     *             symbol tables
      */
-    public int lookupKind(String name)
+    public int lookupKind(String name, FENode errSource)
     {
         VarInfo info = lookupVarInfo(name);
         if (info != null)
             return info.kind;
-        throw new UnrecognizedVariableException(name);
+        throw new UnrecognizedVariableException(name, errSource);
     }
 
-    /** Looks up the function corresponding to a particular name.  If
-     * that name is not in the symbol table, searches the parent, and
-     * then each of the symbol tables in includedFns, depth-first, in
-     * order.  Throws an UnrecognizedVariableException if the function
-     * doesn't exist. */
-    public Function lookupFn(String name)
+    /**
+     * Looks up the function corresponding to a particular name. If that name is not in
+     * the symbol table, searches the parent, and then each of the symbol tables in
+     * includedFns, depth-first, in order. Throws an UnrecognizedVariableException if the
+     * function doesn't exist.
+     * 
+     * @param errSource
+     */
+    public Function lookupFn(String name, FENode errSource)
     {
         Function fn = doLookupFn(name);
         if (fn != null) return fn;
-        throw new UnrecognizedVariableException(name);
+        throw new UnrecognizedVariableException(name, errSource);
     }
 
     private Function doLookupFn(String name)

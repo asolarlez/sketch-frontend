@@ -148,11 +148,11 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
     public boolean isGlobal(ExprVar ev){
-    	return symtab.isVarShared(ev.getName());
+        return symtab.isVarShared(ev.getName(), ev);
     }
 
-    public boolean isGlobal(String name){
-    	return symtab.isVarShared(name);
+    public boolean isGlobal(String name, FENode errSource) {
+        return symtab.isVarShared(name, errSource);
     }
 
 

@@ -98,7 +98,6 @@ import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
-import sketch.util.exceptions.SketchException;
 
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printError;
@@ -370,8 +369,7 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
-                            new AllthreadsTprintFcnCall(),
-                            new WarnAmbiguousImplicitVarDecl() };
+                            new AllthreadsTprintFcnCall() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
@@ -380,7 +378,8 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
+                    { new WarnAmbiguousImplicitVarDecl(), new ReplaceMinLoops(varGen),
+                            new MainMethodCreateNospec(),
                             new SetDeterministicFcns(),
                             new ReplaceParforLoops(options.getCudaBlockDim(), varGen),
                             new ReplaceImplicitVarDecl() };
@@ -896,24 +895,24 @@ public class SequentialSketchMain extends CommonSketchMain
         checkJavaVersion(1, 6);
         // TODO -- change class names so this is clear
         final SequentialSketchMain sketchmain = new CudaSketchMain(args);
-        try {
+        // try {
             sketchmain.run();
-        } catch (SketchException e) {
-            e.print();
-            dumpProgramToFile(sketchmain.prog);
-            if (isTest) {
-                throw e;
-            } else {
-                System.exit(1);
-            }
-        } catch (java.lang.Error e) {
-            handleErr(sketchmain, e);
-            // necessary for unit tests, etc.
-            throw e;
-        } catch (RuntimeException e) {
-            handleErr(sketchmain, e);
-            throw e;
-        }
+        // } catch (SketchException e) {
+        // e.print();
+        // dumpProgramToFile(sketchmain.prog);
+        // if (isTest) {
+        // throw e;
+        // } else {
+        // System.exit(1);
+        // }
+        // } catch (java.lang.Error e) {
+        // handleErr(sketchmain, e);
+        // // necessary for unit tests, etc.
+        // throw e;
+        // } catch (RuntimeException e) {
+        // handleErr(sketchmain, e);
+        // throw e;
+        // }
         System.out.println("Total time = " + (System.currentTimeMillis() - beg));
     }
 }

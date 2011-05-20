@@ -51,4 +51,12 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Passes to dump the program before  "
             + "(N.B. only modern passes)", inlinesep = ",")
     public CmdLineHashSet dumpBefore = new CmdLineHashSet();
+
+    @Override
+    public void post_set_values() {
+        super.post_set_values();
+        if (verbosity >= 5) {
+            printPasses = true;
+        }
+    }
 }

@@ -38,6 +38,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.ExceptionAtNode;
+import sketch.util.exceptions.UnrecognizedVariableException;
 
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printFailure;
@@ -95,8 +96,11 @@ public class SemanticChecker
                     checker.banParallelConstructs(prog);
             }
 		} catch (UnrecognizedVariableException uve) {
+            if (checker.good) {
+                throw uve;
+            }
 			// Don't care about this exception during type checking
-			assert !checker.good;
+            // assert !checker.good;
 		}
 
 		return checker.good;
@@ -397,7 +401,7 @@ public class SemanticChecker
 
 					// check spec presence
 					try{
-						parent = this.symtab.lookupFn(func.getSpecification());
+                        parent = this.symtab.lookupFn(func.getSpecification(), func);
 					}catch(UnrecognizedVariableException e){
 						report(func, "Spec of "+ func.getName() + "() not found");
 						return super.visitFunction(func);
@@ -461,7 +465,7 @@ public class SemanticChecker
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
 				Function fun;
 				try {
-					fun = this.symtab.lookupFn(exp.getName());
+                    fun = this.symtab.lookupFn(exp.getName(), exp);
 				} catch (UnrecognizedVariableException e) {
 					report (exp, "unknown function "+ exp.getName ());
 					throw e;
@@ -1104,11 +1108,11 @@ public class SemanticChecker
 				return super.visitExprVar(var);
 			}
 
-			private boolean isStreamParam(String name)
+            private boolean isStreamParam(String name, FENode errSource)
 			{
 				try
 				{
-					int kind = symtab.lookupKind(name);
+                    int kind = symtab.lookupKind(name, errSource);
 					if (kind == SymbolTable.KIND_STREAM_PARAM)
 						return true;
 				}
@@ -1141,7 +1145,7 @@ public class SemanticChecker
 				{
 					ExprVar lhsv = (ExprVar)lhs;
 					String name = lhsv.getName();
-					if (isStreamParam(name))
+                    if (isStreamParam(name, lhs))
 						report(stmt, "assignment to stream parameter");
 				}
 				return super.visitStmtAssign(stmt);
@@ -1159,7 +1163,7 @@ public class SemanticChecker
 				{
 					ExprVar var = (ExprVar)child;
 					String name = var.getName();
-					if (isStreamParam(name))
+                    if (isStreamParam(name, var))
 						report(expr, "modification of stream parameter");
 				}
 				return super.visitExprUnary(expr);

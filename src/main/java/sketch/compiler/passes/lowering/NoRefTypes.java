@@ -19,16 +19,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
-import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
  * Replace "reference" types with their actual types.  Currently, this
@@ -47,11 +48,11 @@ public class NoRefTypes extends FEReplacer
     // maps name of structure to TypeStruct
     private HashMap structs;
 
-    private Type remapType(Type type)
+    private Type remapType(Type type, FENode srcErrInfo)
     {
 	if (type instanceof TypeArray) {
 	    TypeArray ta = (TypeArray)type;
-	    Type newBase = remapType(ta.getBase());
+            Type newBase = remapType(ta.getBase(), srcErrInfo);
 	    type = new TypeArray(newBase, ta.getLength());
 	}
         if (type instanceof TypeStructRef)
@@ -59,7 +60,7 @@ public class NoRefTypes extends FEReplacer
             TypeStructRef tsr = (TypeStructRef)type;
             String name = tsr.getName();
             if (!structs.containsKey(name))
-                throw new UnrecognizedVariableException(name);
+                throw new UnrecognizedVariableException(name, srcErrInfo);
             type = (Type)structs.get(name);
         }
         return type;
@@ -89,7 +90,7 @@ public class NoRefTypes extends FEReplacer
             for (int i = 0; i < struct.getNumFields(); i++)
             {           
             	String name = struct.getField(i);
-                Type type = remapType(struct.getType(name));
+                Type type = remapType(struct.getType(name), FENode.anonTypeNode(struct));
                 struct.setType(name, type);
             }           
         }
@@ -98,8 +99,8 @@ public class NoRefTypes extends FEReplacer
     }
 
     
-    public Object visitType(Type t){
-    	return remapType(t);
+    public Object visitType(Type t, FENode errSource) {
+        return remapType(t, errSource);
     }
 
     public Object visitStreamSpec(StreamSpec ss)
@@ -110,7 +111,7 @@ public class NoRefTypes extends FEReplacer
         for (Iterator iter = ss.getParams().iterator(); iter.hasNext(); )
         {
             Parameter param = (Parameter)iter.next();
-            Type type = remapType(param.getType());
+            Type type = remapType(param.getType(), param);
             param = new Parameter(type, param.getName(), param.getPtype());
             newParams.add(param);
         }
@@ -126,8 +127,7 @@ public class NoRefTypes extends FEReplacer
     public Object visitStreamType(StreamType st)
     {
         return new StreamType(st,
-                              remapType(st.getIn()),
-                              remapType(st.getOut()),
-                              remapType(st.getLoop()));
+ remapType(st.getIn(), st), remapType(st.getOut(), st),
+                remapType(st.getLoop(), st));
     }
 }

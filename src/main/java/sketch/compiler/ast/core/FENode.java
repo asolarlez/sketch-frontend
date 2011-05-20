@@ -16,6 +16,9 @@
 
 package sketch.compiler.ast.core;
 
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.util.exceptions.NotImplementedException;
+
 
 /**
  * Any node in the tree created by the front-end's parser.  This is
@@ -149,5 +152,14 @@ public abstract class FENode
     
     public void setCx(FEContext cx){
     	context = cx;
+    }
+
+    public static FENode anonTypeNode(TypeStruct struct) {
+        return new FENode(struct.getContext()) {
+            public Object accept(FEVisitor v) {
+                throw new NotImplementedException(
+                        "FENode anonTypeNode is just a source location reference!");
+            }
+        };
     }
 }

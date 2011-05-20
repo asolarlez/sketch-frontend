@@ -22,7 +22,6 @@ import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
@@ -35,6 +34,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.util.exceptions.UnrecognizedVariableException;
 import static sketch.util.Misc.nonnull;
 
 /**
@@ -297,7 +297,7 @@ public class GetExprType extends FENullVisitor
     	// Has SymbolTable given us a function declaration?
     	try
     	{
-    		Function fn = symTab.lookupFn(exp.getName());
+            Function fn = symTab.lookupFn(exp.getName(), exp);
     		return fn.getReturnType();
     	} catch (UnrecognizedVariableException e) {
     		// ignore
@@ -388,14 +388,15 @@ public class GetExprType extends FENullVisitor
     public Object visitExprVar(ExprVar exp)
     {
         // Look this up in the symbol table.
-    	Type t;
-    	try{
+        // Type t;
+        // try{
     	    assert exp != null && symTab != null;
-    		t = symTab.lookupVar(exp.getName());
-    	}catch(UnrecognizedVariableException e){
-    		throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
-    	}
-        return t;
+        return symTab.lookupVar(exp.getName(), exp);
+        // }
+    	// catch(UnrecognizedVariableException e){
+    		// throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
+    	// }
+        // return t;
     }
 
     @Override
