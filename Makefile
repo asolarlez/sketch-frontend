@@ -4,7 +4,7 @@ SHELL = /bin/bash
 
 VERSION = 1.4.0
 
-OPT_BUILDR = $(shell (which buildr >/dev/null && which buildr) || which mvn)
+OPT_BUILDR = $(shell (which buildr 2>/dev/null >/dev/null && which buildr) || which mvn)
 
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
