@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.typs.Type;
@@ -93,6 +94,29 @@ public class SymbolTable
         this.parent = parent;
         this.includedFns = null;
         this.makeShared = makeShared;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Vars\n");
+        for (Entry<String, VarInfo> ent : vars.entrySet()) {
+            sb.append("    ");
+            sb.append(ent.getKey());
+            sb.append(" : ");
+            sb.append(ent.getValue().type.toString());
+            sb.append("\n");
+        }
+        sb.append("=== Functions\n");
+        for (Entry<String, Function> ent : fns.entrySet()) {
+            sb.append("    ");
+            sb.append(ent.getValue().toString());
+            sb.append("\n");
+        }
+        if (parent != null) {
+            sb.append(parent.toString());
+        }
+        return sb.toString();
     }
 
     /**
