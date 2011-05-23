@@ -1,0 +1,30 @@
+pragma options "--bnd-inbits 1 --bnd-inline-amnt 2"; 
+
+#define N 4
+#define LIMIT 3
+
+int spec(int y) {
+	if (y>=LIMIT) return 0;
+	for (int i = 0; i < N; i ++) {
+		y = 2*y;
+	}
+	return y;
+}
+
+int main(int y) implements spec {
+	if (y>=LIMIT) return 0;
+	for (int i = 0; i < N; i ++) {
+		y = E(y,y);
+	}
+	return y;
+}
+
+generator int E(int a, int b) {
+	int choice = ??;
+	if (choice == 0) return ??;
+	if (choice == 1) return a;
+	if (choice == 2) return b;
+	if (choice == 3) return E(a,b) + E(a,b);
+	if (choice == 4) return E(a,b) - E(a,b);
+	assert false;
+}
