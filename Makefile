@@ -109,7 +109,7 @@ run-platform-seq: # run a test using the platform jar
 
 run-local-seq:
 	export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx600m -ea -server"
-	mvn -q exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+	mvn -e -q compile exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
 
 dump-fcn-info: # dump information about functions to a file. usage: EXEC_ARGS=filename.sk
 	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.other.ParseFunctions" "-Dexec.args=$(EXEC_ARGS)"
