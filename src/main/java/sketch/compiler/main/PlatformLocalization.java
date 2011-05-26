@@ -138,7 +138,11 @@ public class PlatformLocalization {
         public File[] searchEnvVar(String... envVars) {
             Vector<File> all_files = new Vector<File>();
             for (String envVar : envVars) {
-                for (String pathDir : System.getenv(envVar).split(File.pathSeparator)) {
+                String envString = System.getenv(envVar);
+                if (envString == null) {
+                    continue;
+                }
+                for (String pathDir : envString.split(File.pathSeparator)) {
                     addEnvVarDirToVec(all_files, pathDir);
                 }
             }

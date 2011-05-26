@@ -34,6 +34,7 @@ import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
 
 import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.assertFalseMsg;
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printNote;
 
@@ -342,6 +343,8 @@ public class SATBackend {
                 } else {
                     throw new RuntimeException(status.exception);
                 }
+            } else if (status.exitCode == 103) {
+                assertFalseMsg("[FAILURE] ", "Out of memory!");
             }
         } else if (status.exception instanceof IOException) {
             System.err.println("Warning: lost some output from backend because of timeout.");

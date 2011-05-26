@@ -146,12 +146,15 @@ public class DebugOut {
         printErrStatusMessage(BASH_SALMON, StatusPrefix.WARNING, " ", false, description);
     }
 
-    public static void assertFalse(Object... description) {
-        print_assert_false_colored(BASH_RED, "[ASSERT FAILURE] ", " ", false,
-                description);
+    public static void assertFalseMsg(String msg, Object... description) {
+        print_assert_false_colored(BASH_RED, msg, " ", false, description);
         inAssertFalse = false;
         assert (false);
         throw new java.lang.IllegalStateException("please enable asserts.");
+    }
+
+    public static void assertFalse(Object... description) {
+        assertFalseMsg("[ASSERT FAILURE] ", description);
     }
 
     /** NOTE - don't use this in fast loops, as arrays are created */
