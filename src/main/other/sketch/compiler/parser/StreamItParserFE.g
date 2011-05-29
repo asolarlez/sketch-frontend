@@ -240,7 +240,7 @@ statement returns [Statement s] { s = null; }
 	|	s=atomic_block
 	|	s=block
 	|	(data_type ID) => s=variable_decl SEMI!
-    |   (ID DEF_ASSIGN) => s=implicit_type_variable_decl SEMI!
+    // |   (ID DEF_ASSIGN) => s=implicit_type_variable_decl SEMI!
 	|	(expr_statement) => s=expr_statement SEMI!
 	|	tb:TK_break SEMI { s = new StmtBreak(getContext(tb)); }
 	|	tc:TK_continue SEMI { s = new StmtContinue(getContext(tc)); }
@@ -353,10 +353,10 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-implicit_type_variable_decl returns [Statement s] { s = null; Expression init = null; }
-    : id:ID DEF_ASSIGN init=type_or_var_initializer
-    { s = new StmtImplicitVarDecl(getContext(id), id.getText(), init); }
-;
+// implicit_type_variable_decl returns [Statement s] { s = null; Expression init = null; }
+//     : id:ID DEF_ASSIGN init=type_or_var_initializer
+//     { s = new StmtImplicitVarDecl(getContext(id), id.getText(), init); }
+// ;
 
 function_decl returns [Function f] {
     Type rt;
@@ -523,7 +523,7 @@ for_statement returns [Statement s]
 
 for_init_statement returns [Statement s] { s = null; }
 	:	(variable_decl) => s=variable_decl
-    |   (implicit_type_variable_decl) => s=implicit_type_variable_decl
+    // |   (implicit_type_variable_decl) => s=implicit_type_variable_decl
 	|	(expr_statement) => s=expr_statement
 	|   (t:SEMI) /* empty */ => { s = new StmtEmpty(getContext(t)); }
 	;
