@@ -19,6 +19,7 @@ package sketch.compiler.main.seq;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -677,8 +678,13 @@ public class SequentialSketchMain extends CommonSketchMain
 
         // final output of py code
         if (tprintPyStyle) {
-            System.out.println("python code:\n\n" + pyCode +
-                    "------------------------------\n");
+            try {
+                FileWriter fw = new FileWriter(options.feOpts.tprintPython);
+                fw.write(pyCode.toString());
+                fw.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
