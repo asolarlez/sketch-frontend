@@ -254,7 +254,7 @@ public class SATBackend {
                 ret = runSolver(commandLine, 0, timeoutMins);
                 if (ret) {
                     break;
-                } else {
+                } else if (2 * a <= rangeMax) {
                     printDebug("Trying next int range bound", 2 * a);
                 }
             }
@@ -300,9 +300,15 @@ public class SATBackend {
                 ret = runSolver(commandLine, 0, timeoutMins);
                 if (ret) {
                     break;
-                } else {
+                } else if (2 * a <= rangeMax) {
                     printDebug("Trying next int range bound", 2 * a);
                 }
+            }
+
+            if (!ret) {
+                log(5, "Backend returned error code");
+                // System.err.println(solverErrorStr);
+                return false;
             }
         }
         return true;

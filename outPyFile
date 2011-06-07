@@ -1,0 +1,20 @@
+class Message(object):
+    def __init__(self, value, **kwargs):
+        self.value = value
+        [setattr(self, k, v) for k, v in kwargs.items()]
+    def __repr__(self):
+        return "%s%s" %(self.__class__.__name__, self.__dict__)
+    __str__ = __repr__
+class Factor(Message): pass
+class Sync(Message): pass
+isfactor = lambda a: isinstance(a, Factor)
+issync = lambda a: isinstance(a, Sync)
+
+main_messages = [
+    Factor(0, src=0),
+    Sync(0),
+    Factor(8, src=1),
+    Factor(16, src=2),
+    Factor(24, src=3),
+    Sync(0) ]
+
