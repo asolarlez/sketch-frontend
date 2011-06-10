@@ -107,8 +107,19 @@ public class ExprFunCall extends Expression
         return v.visitExprFunCall(this);
     }
 
+    public String printParams(){
+        String s = "";
+        boolean notf = false;
+        for(Expression p : params){
+            if(notf){ s += ", "; }
+            s += p.toString();
+            notf = true;
+        }
+        return s;
+    }
+    
     public String toString()
     {
-    	return name+"("+params+")";
+    	return name+"("+printParams()+")";
     }
 }

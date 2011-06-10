@@ -285,13 +285,24 @@ public class Function extends FENode
     {
         return v.visitFunction(this);
     }
+    public String printParams(){
+        String s = "";
+        boolean notf = false;
+        for(Parameter p : params){
+            if(notf){ s +=", "; }
+            if(p.isParameterOutput()){ s += "ref "; }
+            s += p.getType() + " " + p.getName();
+            notf = true;
+        }
+        return s;
+    }
 
     public String toString() {
         final String typ =
                 (this.isStatic() ? "" : (this.isSketchHarness() ? "harness "
                         : "generator "));
         final String impl = fImplements != null ? " implements " + fImplements : "";
-        return typ + returnType + " " + name + "(" + params + ")" + impl;
+        return typ + returnType + " " + name + "(" + printParams() + ")" + impl;
     }
 
     public void makeStencil(){

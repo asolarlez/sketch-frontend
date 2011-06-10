@@ -1,0 +1,25 @@
+/*
+This is to test function inlining, and the handling of cycles in tests.
+*/
+
+
+int foo(int x, int y){
+    assert x >= y;
+    return (x + y)/2;    
+}
+
+int comp(int x, int y){
+    int t;
+    if(x > y){
+        t = foo(x, y);
+    }else{
+        t = foo(y, x);
+    }
+    if(t >= x){ return t + foo(y,x); } 
+    return t + foo(x, y);
+}
+
+harness void main1(int x, int y){
+    assert comp(x, y) == comp(y, x);
+
+}

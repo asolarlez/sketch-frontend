@@ -233,7 +233,7 @@ public class SimpleCodePrinter extends CodePrinter
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
         if (!(stmt.getExpression() instanceof ExprTprint)) {
-            printLine(stmt.toString());
+            printLine(stmt.toString() + ";");
         }
 		return super.visitStmtExpr(stmt);
 	}
