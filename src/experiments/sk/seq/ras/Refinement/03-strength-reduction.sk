@@ -1,0 +1,70 @@
+
+pragma options "--bnd-inbits 4 --bnd-inline-amnt 2 --slv-seed 1";  // FAILS with seed=1
+//pragma options "--bnd-inbits 4 --bnd-inline-amnt 2 --slv-seed 2";  // SUCCEEDS with seed=2
+
+#define N 4
+#define LIMIT 1
+
+harness 
+int main(int y) {
+	if (y>=LIMIT) return 0;
+	
+	int[N] intermediateValues;
+
+	int sum1 = 0;
+	for (int i = 0; i < N; i ++) {
+		int y1 = exp(y,i);
+		intermediateValues[i] = y1;
+		sum1 += y1;
+	}
+
+	int sum2 = 0;
+	int t = 1;  // loop-carried value for strength reduction
+	for (int i = 0; i < N; i ++) {
+		assert intermediateValues[i] == t;   // this assertion captures that the second loop is a refinement of the first one.
+		sum2 += t;
+		t = BigGen0(y,t,true);
+	}
+	assert sum1 == sum2;
+	return sum2;
+}
+
+int exp(int x, int d) {
+	int t = 1;
+	for (int i = 0; i < d; i++) {
+		t = t * x;
+	}
+	return t;
+}
+generator 
+int E(int a, int b) {
+	int choice = ??;
+	if (choice == 0) return ??;
+	if (choice == 1) return a;
+	if (choice == 2) return b;
+	
+	if (choice == 3) return E(a,b) * E(a,b);
+	if (choice == 4) return E(a,b) + E(a,b);
+	if (choice == 5) return E(a,b) - E(a,b);
+	assert false;
+}
+
+generator 
+int BigGen0(int A_0, int A_1, bit times){ 
+  if (??){ 
+    bit tms = ??; 
+    int xa = BigGen0(A_0, A_1, times && !tms);
+    int xb = BigGen0(A_0, A_1, times && !tms);
+    if(tms && times){
+      return xa * xb;
+    }
+    if(??){
+       return xa + xb;
+    }
+    if(??){
+       return xa - xb;
+    }
+  }
+ int ti = ??(2); 
+ return {|A_0| A_1| ti |}; 
+}

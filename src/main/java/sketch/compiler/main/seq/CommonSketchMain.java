@@ -39,41 +39,43 @@ public class CommonSketchMain {
 
         // pass all short-style arguments to the backend
         backendOptions.addAll(options.backendArgs);
-
-        backendOptions.add("-overrideInputs");
-        backendOptions.add("" + options.bndOpts.inbits);
-
-        backendOptions.add("-verbosity");
-        backendOptions.add("" + options.debugOpts.verbosity);
+        backendOptions.add("--bnd-inbits=" + options.bndOpts.inbits);
+        backendOptions.add("--verbosity=" + options.debugOpts.verbosity);
+        backendOptions.add("--print-version"); // run by default
 
         if (options.solverOpts.seed != 0) {
-            backendOptions.add("-seed");
+            backendOptions.add("--seed");
             backendOptions.add("" + options.solverOpts.seed);
         }
         if (options.debugOpts.cex) {
-            backendOptions.add("-showinputs");
+            backendOptions.add("--print-cex");
         }
         if (options.solverOpts.synth != SynthSolvers.NOT_SET) {
+            assert false : "solver opts synth need to convert old style command line args";
             backendOptions.add("-synth");
             backendOptions.add("" + options.solverOpts.synth.toString());
         }
         if (options.solverOpts.verif != VerifSolvers.NOT_SET) {
+            assert false : "solver opts verif need to convert old style command line args";
             backendOptions.add("-verif");
             backendOptions.add("" + options.solverOpts.verif.toString());
         }
         if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions) {
-            backendOptions.add("-assumebcheck");
+            backendOptions.add("--assumebcheck");
+        } else if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.wrsilent_rdzero) {
+            // backendOptions.add("--sem-array-OOB-policy=wrsilent_rdzero");
         }
-        if(options.solverOpts.inline > 0){
-            backendOptions.add("-inlineamnt");
-            backendOptions.add("" + options.solverOpts.inline);
+        if(options.bndOpts.inlineAmnt > 0){
+            backendOptions.add("--bnd-inline-amnt");
+            backendOptions.add("" + options.bndOpts.inlineAmnt);
         }
         
         if (options.solverOpts.olevel >= 0) {
-            backendOptions.add("-olevel");
+            backendOptions.add("--olevel");
             backendOptions.add("" + options.solverOpts.olevel);
         }
         if (options.solverOpts.simpleInputs) {
+            assert false : "need to convert old style command line args";
             backendOptions.add("-nosim");
         }
         

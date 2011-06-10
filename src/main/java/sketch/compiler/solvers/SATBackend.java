@@ -54,10 +54,11 @@ public class SATBackend {
 	
 	public String[] getBackendCommandline(Vector<String> commandLineOptions){
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
-        String cegisBinary = pl.getCegisPath();
-        commandLineOptions.insertElementAt(cegisBinary, 0);
-        commandLineOptions.add(options.getTmpSketchFilename());
+        String cegisScript = pl.getCegisPath();
+        commandLineOptions.insertElementAt(cegisScript, 0);
+        commandLineOptions.add("-o");
         commandLineOptions.add(options.getTmpSketchFilename() + ".tmp");
+        commandLineOptions.add(options.getTmpSketchFilename());
         return commandLineOptions.toArray(new String[0]);
     }
 
