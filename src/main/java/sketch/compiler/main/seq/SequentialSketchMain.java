@@ -614,10 +614,11 @@ public class SequentialSketchMain extends CommonSketchMain
         StringBuilder isInstanceFcns = new StringBuilder();
         for (TprintIdentifier id : (new GetTprintIdentifiers()).run(serializedCode)) {
             if (s.add(id.id())) {
-                String name = NodesToC.pyClassName(id.id());
-                pyCode.append("class " + name + "(Message): pass\n");
-                isInstanceFcns.append("is" + NodesToC.pyFieldName(id.id()) +
-                        " = lambda a: isinstance(a, " + name + ")\n");
+                String clsName = NodesToC.pyClassName(id.id());
+                pyCode.append("class " + clsName + "(Message): pass\n");
+                final String isInstName = NodesToC.pyFieldName(id.id());
+                isInstanceFcns.append("is" + (isInstName.contains("_") ? "_" : "") +
+                        isInstName + " = lambda a: isinstance(a, " + clsName + ")\n");
             }
         }
         pyCode.append(isInstanceFcns);
