@@ -23,8 +23,7 @@ public class QuickTest extends TestSuite {
     }
 
     public static TestSuite suite() throws Exception {
-        TestSuite[] suites =
-                { new SequentialJunitTest(), new ParallelJunitTest() };
+        TestSuite[] suites = { new SequentialJunitTest() };
         return new QuickTest(suites, 16);
     }
 }
