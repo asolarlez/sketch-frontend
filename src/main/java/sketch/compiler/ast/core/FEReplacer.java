@@ -380,6 +380,7 @@ public class FEReplacer implements FEVisitor
 
 
     public Object visitProgram(Program prog) {
+        assert prog != null : "FEReplacer.visitProgram: argument null!";
         List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
         for (StreamSpec ssOrig : prog.getStreams()) {
             newStreams.add((StreamSpec) ssOrig.accept(this));

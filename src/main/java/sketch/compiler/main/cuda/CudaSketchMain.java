@@ -1,15 +1,22 @@
 package sketch.compiler.main.cuda;
 
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.main.seq.SequentialSketchMain;
-import sketch.compiler.passes.cuda.*;
+import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
+import sketch.compiler.passes.cuda.DeleteInstrumentCalls;
+import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
+import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
+import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
+import sketch.compiler.passes.cuda.InstrumentFcnCall;
+import sketch.compiler.passes.cuda.LowerInstrumentation;
+import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
+import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
-import sketch.compiler.solvers.constructs.StaticHoleTracker;
-import sketch.compiler.solvers.constructs.ValueOracle;
 
 /**
  * cuda main functions
@@ -48,7 +55,7 @@ public class CudaSketchMain extends SequentialSketchMain {
         }
     }
 
-    public class CudaIRStage2 extends IRStage2 {
+    public class CudaIRStage2 extends IRStage2_LLC {
         public CudaIRStage2() {
             super();
             this.passes.add(new SplitAssignFromVarDef());
@@ -92,29 +99,29 @@ public class CudaSketchMain extends SequentialSketchMain {
     }
 
     @Override
-    public IRStage2 getIRStage2() {
+    public IRStage2_LLC getIRStage2_LLC() {
         return new CudaIRStage2();
     }
 
     @Override
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
-        this.parseProgram();
-        // this.prog =
-        // (Program) (new
-        // ReplaceBlockDimAndGridDim(this.options)).visitProgram(this.prog);
-        this.preprocAndSemanticCheck();
+        Program prog = this.parseProgram();
+        prog = this.preprocAndSemanticCheck(prog);
 
-        this.oracle = new ValueOracle(new StaticHoleTracker(this.varGen));
-        this.partialEvalAndSolve();
-        beforeUnvectorizing =
-                (Program) (new DeleteInstrumentCalls()).visitProgram(beforeUnvectorizing);
-        beforeUnvectorizing =
-                (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
-        runPrintFunctions();
-        this.eliminateStar();
+        SynthesisResult synthResult = this.partialEvalAndSolve(prog);
+        prog = synthResult.lowered.result;
+        runPrintFunctions(synthResult.lowered, synthResult.solution);
 
-        this.generateCode();
+        Program finalCleaned =
+                (Program) (new DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
+        // beforeUnvectorizing =
+        // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
+        Program substituted =
+                (new SubstituteSolution(varGen, options, synthResult.solution,
+                        visibleRControl(finalCleaned))).visitProgram(finalCleaned);
+
+        generateCode(substituted);
         this.log(1, "[SKETCH] DONE");
     }
 }

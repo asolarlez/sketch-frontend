@@ -4,7 +4,7 @@ SHELL = /bin/bash
 
 VERSION = 1.4.0
 
-OPT_BUILDR = $(shell (which buildr 2>/dev/null >/dev/null && which buildr) || which mvn)
+MVN_PATH = $(shell which mvn)
 
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
@@ -16,15 +16,15 @@ help-all: # show uncommon commands as well
 
 show-info:
 	@echo "version = $(VERSION)"
-	@echo "buildr or maven = $(OPT_BUILDR)"
+	@echo "buildr or maven = $(MVN_PATH)"
 
 clean:
 	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
 	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
 	zsh -c "setopt -G; rm -rf ~/.m2/repository/edu/berkeley/cs/sketch/sketch-frontend"
 
-compile: # build all sources with buildr (if found) or maven
-	$(OPT_BUILDR) compile
+compile: # compile all sources
+	$(MVN_PATH) compile
 
 maven-install: compile
 	mvn install -Dmaven.test.skip=true

@@ -213,7 +213,7 @@ public class ParallelSketchMain extends SequentialSketchMain {
 		prog = (Program) prog.accept (new MakeAllocsAtomic (varGen));
 		Program tmp = prog; 
 		prog = (Program) prog.accept( new PreprocessSketch( varGen, options.bndOpts.unrollAmnt, visibleRControl(), true, true ) );
-		super.lowerIRToJava();
+		super.lowerToSketch();
 		beforeUnvectorizing = tmp;
 		prog = (Program) prog.accept (new EliminateConditionals(varGen));
 		// dump (prog, "elim conds");
