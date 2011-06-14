@@ -2,7 +2,7 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.EliminateArrayRange;
 import sketch.compiler.passes.lowering.EliminateBitSelector;
 
@@ -15,7 +15,7 @@ import sketch.compiler.passes.lowering.EliminateBitSelector;
  *          changes, please consider contributing back!
  */
 public class LowerToHLC extends MetaStage {
-    public LowerToHLC(TempVarGen varGen, SequentialSketchOptions options) {
+    public LowerToHLC(TempVarGen varGen, SketchOptions options) {
         super(varGen, options);
     }
 

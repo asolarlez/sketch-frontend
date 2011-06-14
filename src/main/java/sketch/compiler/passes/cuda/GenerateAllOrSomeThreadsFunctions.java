@@ -31,7 +31,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.ASTObjQuery;
@@ -64,7 +64,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
     protected final TempVarGen varGen;
 
-    public GenerateAllOrSomeThreadsFunctions(SequentialSketchOptions opts,
+    public GenerateAllOrSomeThreadsFunctions(SketchOptions opts,
             TempVarGen varGen)
     {
         super(null);

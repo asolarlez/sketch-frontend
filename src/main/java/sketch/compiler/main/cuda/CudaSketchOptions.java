@@ -1,10 +1,10 @@
 package sketch.compiler.main.cuda;
 
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.util.cli.SketchCliParser;
 import sketch.util.cuda.CudaThreadBlockDim;
 
-public class CudaSketchOptions extends SequentialSketchOptions {
+public class CudaSketchOptions extends SketchOptions {
     protected CudaOptions cudaOpts;
 
     public CudaSketchOptions(final String[] inArgs) {
@@ -27,8 +27,8 @@ public class CudaSketchOptions extends SequentialSketchOptions {
     }
 
     public static CudaSketchOptions getSingleton() {
-        assert SequentialSketchOptions._singleton != null : "no singleton instance";
-        return (CudaSketchOptions) SequentialSketchOptions._singleton;
+        assert SketchOptions._singleton != null : "no singleton instance";
+        return (CudaSketchOptions) SketchOptions._singleton;
     }
 
     @Override

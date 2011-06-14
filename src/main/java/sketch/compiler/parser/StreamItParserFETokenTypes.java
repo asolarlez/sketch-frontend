@@ -32,7 +32,7 @@ import sketch.compiler.ast.cuda.stmts.*;
 import sketch.compiler.ast.cuda.typs.*;
 
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;

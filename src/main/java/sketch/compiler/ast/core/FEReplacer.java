@@ -391,7 +391,7 @@ public class FEReplacer implements FEVisitor
             newStructs.add((TypeStruct) tsOrig.accept(this));
         }
 
-        return new Program(prog, newStreams, newStructs);
+        return prog.creator().streams(newStreams).structs(newStructs).create();
     }
 
 

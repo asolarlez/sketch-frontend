@@ -2,7 +2,7 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.EliminateNestedArrAcc;
 import sketch.compiler.stencilSK.FunctionalizeStencils;
 import sketch.compiler.stencilSK.MatchParamNames;
@@ -16,7 +16,7 @@ import sketch.compiler.stencilSK.MatchParamNames;
  *          changes, please consider contributing back!
  */
 public class StencilTransforms extends MetaStage {
-    public StencilTransforms(TempVarGen varGen, SequentialSketchOptions options) {
+    public StencilTransforms(TempVarGen varGen, SketchOptions options) {
         super(varGen, options);
     }
 

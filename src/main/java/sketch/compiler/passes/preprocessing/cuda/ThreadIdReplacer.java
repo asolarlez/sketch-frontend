@@ -5,7 +5,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.cuda.CudaThreadBlockDim;
 
@@ -21,7 +21,7 @@ import sketch.util.cuda.CudaThreadBlockDim;
 public class ThreadIdReplacer extends FEReplacer {
     private CudaThreadBlockDim cudaBlockDim;
 
-    public ThreadIdReplacer(final SequentialSketchOptions opts) {
+    public ThreadIdReplacer(final SketchOptions opts) {
         this.cudaBlockDim = opts.getCudaBlockDim();
     }
 

@@ -3,7 +3,7 @@ package sketch.compiler.main.passes;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 /**
  * A meta-stage of compilation
@@ -15,9 +15,9 @@ import sketch.compiler.main.seq.SequentialSketchOptions;
  */
 public abstract class MetaStage extends FEReplacer {
     protected final TempVarGen varGen;
-    protected final SequentialSketchOptions options;
+    protected final SketchOptions options;
 
-    public MetaStage(TempVarGen varGen, SequentialSketchOptions options) {
+    public MetaStage(TempVarGen varGen, SketchOptions options) {
         this.varGen = varGen;
         this.options = options;
     }

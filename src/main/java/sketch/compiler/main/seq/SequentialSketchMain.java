@@ -20,32 +20,28 @@ package sketch.compiler.main.seq;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
-import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprStar;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.cuda.CudaSketchMain;
 import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.LowerToHLC;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
+import sketch.compiler.main.passes.ParseProgramStage;
 import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
-import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
@@ -70,7 +66,6 @@ import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.stencilSK.EliminateStarStatic;
 import sketch.util.ControlFlowException;
-import sketch.util.Pair;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
@@ -94,11 +89,11 @@ import static sketch.util.Misc.nonnull;
 public class SequentialSketchMain extends CommonSketchMain
 {
     public SequentialSketchMain(String[] args) {
-        super(new SequentialSketchOptions(args));
+        super(new SketchOptions(args));
     }
 
 	/** for subclasses */
-    public SequentialSketchMain(SequentialSketchOptions options) {
+    public SequentialSketchMain(SketchOptions options) {
         super(options);
     }
 
@@ -123,109 +118,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	}
 
 
-	/**
-	 * Generate a Program object that includes built-in structures
-	 * and streams with code, but no user code.
-	 *
-	 * @returns a StreamIt program containing only built-in code
-	 */
-	public static Program emptyProgram()
-	{
-		List<StreamSpec> streams = new java.util.ArrayList<StreamSpec>();
-		List<TypeStruct> structs = new java.util.ArrayList<TypeStruct>();
-
-		// Complex structure type:
-//		List<String> fields = new java.util.ArrayList<String>();
-//		List<Type> ftypes = new java.util.ArrayList<Type>();
-
-		// We don't support the Complex type in SKETCH
-//			Type floattype = TypePrimitive.floattype ;
-//			fields.add("real");
-//			ftypes.add(floattype);
-//			fields.add("imag");
-//			ftypes.add(floattype);
-//			TypeStruct complexStruct =
-//				new TypeStruct(null, "Complex", fields, ftypes);
-//			structs.add(complexStruct);
-
-		return new Program(null, streams, structs);
-	}
-
-	/**
-	 * Read, parse, and combine all of the StreamIt code in a list of
-	 * files.  Reads each of the files in <code>inputFiles</code> in
-	 * turn and runs <code>sketch.compiler.StreamItParserFE</code>
-	 * over it.  This produces a
-	 * <code>sketch.compiler.nodes.Program</code> containing lists
-	 * of structures and streams; combine these into a single
-	 * <code>sketch.compiler.nodes.Program</code> with all of the
-	 * structures and streams.
-	 *
-	 * @param inputFiles  list of strings naming the files to be read
-	 * @returns a representation of the entire program, composed of the
-	 *          code in all of the input files
-	 * @throws java.io.IOException if an error occurs reading the input
-	 *         files
-	 * @throws antlr.RecognitionException if an error occurs parsing
-	 *         the input files; that is, if the code is syntactically
-	 *         incorrect
-	 * @throws antlr.TokenStreamException if an error occurs producing
-	 *         the input token stream
-	 */
-	public Pair<Program, Set<Directive>> parseFiles(List<String> inputFiles)
-	throws java.io.IOException, antlr.RecognitionException, antlr.TokenStreamException
-	{
-		Program prog = emptyProgram();
-		boolean useCpp = true;
-		List<String> cppDefs = Arrays.asList(options.feOpts.def);
-		Set<Directive> pragmas = new HashSet<Directive> ();
-
-		for (String inputFile : inputFiles) {
-			StreamItParser parser = new StreamItParser (inputFile, useCpp, cppDefs);
-			Program pprog = parser.parse ();
-			if (pprog==null)
-				return null;
-
-			List<StreamSpec> newStreams = new java.util.ArrayList<StreamSpec> ();
-			List<TypeStruct> newStructs = new java.util.ArrayList<TypeStruct> ();
-			newStreams.addAll(prog.getStreams());
-			newStreams.addAll(pprog.getStreams());
-			newStructs.addAll(prog.getStructs());
-			newStructs.addAll(pprog.getStructs());
-			pragmas.addAll (parser.getDirectives ());
-			prog = new Program(null, newStreams, newStructs);
-		}
-		return new Pair<Program, Set<Directive>> (prog, pragmas);
-	}
-
 	protected TempVarGen varGen = new TempVarGen();
-
-	public Program parseProgram(){
-        Program prog;
-		try
-		{
-            Pair<Program, Set<Directive>> res = parseFiles(options.argsAsList);
-            if (res == null) {
-                throw new ProgramParseException("could not parse program");
-            }
-            prog = res.getFirst();
-            processDirectives(res.getSecond());
-
-            if (showPhaseOpt("parse"))
-                dump(prog, "After parsing");
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-			//e.printStackTrace(System.err);
-			throw new RuntimeException(e);
-		}
-
-        if (prog == null) {
-            throw new ProgramParseException("Compilation didn't generate a parse tree.");
-        }
-        return prog;
-
-	}
 
 	/** hack to check deps across stages; accessed by CompilerStage */
     public final HashSet<Class<? extends FEVisitor>> runClasses =
@@ -400,7 +293,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	    
 	}
 
-    public static String getOutputFileName(SequentialSketchOptions options) {
+    public static String getOutputFileName(SketchOptions options) {
         if (options.feOpts.outputProgName == null) {
             options.feOpts.outputProgName = options.sketchName;
         }
@@ -469,7 +362,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	public void run()
 	{
 		log(1, "Benchmark = " + benchmarkName());
-        Program prog = parseProgram();
+        Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);
         prog = preprocAndSemanticCheck(prog, true);
 		
         SynthesisResult synthResult = partialEvalAndSolve(prog);

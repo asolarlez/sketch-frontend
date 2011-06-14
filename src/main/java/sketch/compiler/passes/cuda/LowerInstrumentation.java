@@ -2,6 +2,7 @@ package sketch.compiler.passes.cuda;
 
 import java.util.Vector;
 
+import sketch.compiler.Directive;
 import sketch.compiler.Directive.InstrumentationDirective;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -56,18 +57,20 @@ public class LowerInstrumentation extends FEReplacer {
     protected String instrumentedVar;
     protected ExprVar instrumentationStructInst;
 
-    public LowerInstrumentation(TempVarGen varGen,
-            Vector<InstrumentationDirective> directives)
+    public LowerInstrumentation(TempVarGen varGen)
     {
         this.varGen = varGen;
-        for (InstrumentationDirective d : directives) {
-            directivesByName.put(d.name, d);
-        }
     }
 
     @Override
     public Object visitProgram(Program prog) {
         this.callGraph = new CallGraph(prog);
+        for (Directive d : prog.getDirectives()) {
+            if (d instanceof InstrumentationDirective) {
+                InstrumentationDirective instrd = (InstrumentationDirective) d;
+                directivesByName.put(instrd.name, instrd);
+            }
+        }
         return super.visitProgram((Program) (new FlattenStmtBlocks()).visitProgram(prog));
     }
 

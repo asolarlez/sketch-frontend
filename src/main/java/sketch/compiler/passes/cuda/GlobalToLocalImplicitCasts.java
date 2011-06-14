@@ -21,7 +21,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions.AllThreadsTransform;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -46,9 +46,9 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     protected CudaThreadBlockDim cudaBlockDim;
     protected CallGraph cg;
     protected final TempVarGen varGen;
-    protected final SequentialSketchOptions options;
+    protected final SketchOptions options;
 
-    public GlobalToLocalImplicitCasts(TempVarGen varGen, SequentialSketchOptions opts) {
+    public GlobalToLocalImplicitCasts(TempVarGen varGen, SketchOptions opts) {
         super(null);
         this.varGen = varGen;
         this.options = opts;

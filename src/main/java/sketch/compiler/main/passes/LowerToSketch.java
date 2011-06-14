@@ -4,7 +4,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
@@ -12,7 +12,7 @@ import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 public class LowerToSketch extends MetaStage {
     protected final MetaStage stencilTransform;
 
-    public LowerToSketch(TempVarGen varGen, SequentialSketchOptions options,
+    public LowerToSketch(TempVarGen varGen, SketchOptions options,
             MetaStage stencilTransform)
     {
         super(varGen, options);

@@ -91,8 +91,7 @@ public class ComplexToStruct extends FEReplacer
                                     newNames, newTypes);
             newStructs.add(struct);
         }
-        prog = new Program(prog, prog.getStreams(), newStructs);
-        return super.visitProgram(prog);
+        return super.visitProgram(prog.creator().structs(newStructs).create());
     }
 
     public Object visitFieldDecl(FieldDecl field)

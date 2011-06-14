@@ -6,11 +6,11 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -34,8 +34,8 @@ import sketch.compiler.controlflow.CFG;
 import sketch.compiler.controlflow.CFGNode;
 import sketch.compiler.controlflow.CFGNode.EdgePair;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.par.ParallelSketchOptions;
-import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.parallelEncoder.AtomizeConditionals;
 import sketch.compiler.parallelEncoder.BreakParallelFunction;
 import sketch.compiler.parallelEncoder.CFGforPloop;
@@ -102,13 +102,13 @@ public class SATSynthesizer implements Synthesizer {
 	StmtFork ploop = null;
 
 	int nthreads;
-    public final SequentialSketchOptions options;
+    public final SketchOptions options;
 	
 	public void initialize(){
 		solver.initializeSolver();
 	}
 
-	public SATSynthesizer(Program prog_p, SequentialSketchOptions options, RecursionControl rcontrol, TempVarGen varGen) {
+	public SATSynthesizer(Program prog_p, SketchOptions options, RecursionControl rcontrol, TempVarGen varGen) {
 		this.options = options;
 		this.varGen = varGen;		
         solver = new InteractiveSATBackend(options, rcontrol, varGen);
@@ -823,7 +823,8 @@ public class SATSynthesizer implements Synthesizer {
 
 		List<StreamSpec> streams = Collections.singletonList(
 				new StreamSpec(current, StreamSpec.STREAM_FILTER, null, "MAIN",Collections.EMPTY_LIST , Collections.EMPTY_LIST ,funcs));
-		current = new Program(current,streams, Collections.EMPTY_LIST);
+        current =
+                current.creator().streams(streams).structs(Collections.EMPTY_LIST).create();
 
 
 	}

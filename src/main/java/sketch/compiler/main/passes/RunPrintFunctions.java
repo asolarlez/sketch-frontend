@@ -13,8 +13,8 @@ import sketch.compiler.codegenerators.NodesToC;
 import sketch.compiler.codegenerators.NodesToCPrintTest;
 import sketch.compiler.codegenerators.NodesToH;
 import sketch.compiler.main.PlatformLocalization;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.SequentialSketchMain;
-import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.structure.GetPrintFcns;
 import sketch.compiler.passes.structure.GetTprintIdentifiers;
 import sketch.compiler.passes.structure.TprintIdentifier;
@@ -35,7 +35,7 @@ import static sketch.util.DebugOut.printNote;
  *          changes, please consider contributing back!
  */
 public class RunPrintFunctions extends MetaStage {
-    public RunPrintFunctions(TempVarGen varGen, SequentialSketchOptions options) {
+    public RunPrintFunctions(TempVarGen varGen, SketchOptions options) {
         super(varGen, options);
     }
 

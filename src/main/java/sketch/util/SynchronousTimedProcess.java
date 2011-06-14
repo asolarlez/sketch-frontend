@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 
 /**
@@ -42,7 +42,7 @@ public class SynchronousTimedProcess {
         this.cmdLine = cmdLine;
         for (String s : cmdLine)
             assert s != null : "Null elt of command: '" + cmdLine + "'";
-        if (SequentialSketchOptions.getSingleton().debugOpts.verbosity > 2) {
+        if (SketchOptions.getSingleton().debugOpts.verbosity > 2) {
             System.err.println("starting command line: " + cmdLine.toString());
         }
 		ProcessBuilder pb = new ProcessBuilder (cmdLine);

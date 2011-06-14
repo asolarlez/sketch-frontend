@@ -8,8 +8,8 @@ import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.CompilerStage;
-import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.lowering.*;
 
 /**
@@ -24,7 +24,7 @@ public class PreprocessStage extends MetaStage {
     protected final RecursionControl rctrl;
     protected final boolean partialEval;
 
-    public PreprocessStage(TempVarGen varGen, SequentialSketchOptions options,
+    public PreprocessStage(TempVarGen varGen, SketchOptions options,
             CompilerStage preproc1, CompilerStage ir1, RecursionControl rctrl,
             boolean partialEval)
     {

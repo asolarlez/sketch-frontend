@@ -19,7 +19,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.PlatformLocalization;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.optimization.AbstractCostFcnAssert;
 import sketch.compiler.passes.optimization.CostFcnAssert;
 import sketch.compiler.passes.structure.HasMinimize;
@@ -46,9 +46,9 @@ public class SATBackend {
 	protected ValueOracle oracle;
 	private boolean tracing = false;
 	private SATSolutionStatistics lastSolveStats;
-    public final SequentialSketchOptions options;
+    public final SketchOptions options;
 
-	public SATBackend(SequentialSketchOptions options, 
+	public SATBackend(SketchOptions options, 
 	        RecursionControl rcontrol, TempVarGen varGen)
 	{
 		this.options = options;

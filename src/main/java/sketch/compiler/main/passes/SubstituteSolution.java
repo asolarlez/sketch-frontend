@@ -8,7 +8,7 @@ import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.solvers.constructs.ValueOracle;
@@ -26,7 +26,7 @@ public class SubstituteSolution extends MetaStage {
     protected final ValueOracle solution;
     protected final RecursionControl rctrl;
 
-    public SubstituteSolution(TempVarGen varGen, SequentialSketchOptions options,
+    public SubstituteSolution(TempVarGen varGen, SketchOptions options,
             ValueOracle solution, RecursionControl rctrl)
     {
         super(varGen, options);

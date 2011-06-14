@@ -142,6 +142,8 @@
                         <exclude>sketch/compiler/main/par/ParallelSketchMain.java</exclude>
                         <exclude>sketch/compiler/main/par/RandomParallelSketchMain.java</exclude>
                         <exclude>sketch/compiler/main/par/old/*.java</exclude>
+                        <exclude>sketch/compiler/main/seq/SequentialSMTSketchMain.java</exclude>
+                        <exclude>sketch/compiler/smt/**/*.java</exclude>
                         <exclude>sketch/compiler/main/sten/*.java</exclude>
                     </excludes>
                 </configuration>

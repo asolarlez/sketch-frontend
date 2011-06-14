@@ -23,7 +23,7 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 /**
  * An integer-valued constant.  This can be freely promoted to an
@@ -204,7 +204,7 @@ public class ExprStar extends Expression
 			tt = ((TypeArray)tt).getBase();
 		}
 		if( ( tt.equals(TypePrimitive.inttype) ) && !isFixed ){
-			setSize( SequentialSketchOptions.getSingleton().bndOpts.cbits  );
+			setSize( SketchOptions.getSingleton().bndOpts.cbits  );
 		}
 	}
 

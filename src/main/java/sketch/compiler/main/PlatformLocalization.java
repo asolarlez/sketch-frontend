@@ -10,7 +10,7 @@ import java.security.CodeSource;
 import java.util.Properties;
 import java.util.Vector;
 
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -95,7 +95,7 @@ public class PlatformLocalization {
     }
 
     public String getCegisPath() {
-        SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
+        SketchOptions options = SketchOptions.getSingleton();
         String scriptingBinary = getCegisPathInner("cegis.py");
         if (options.solverOpts.useScripting) {
             return scriptingBinary;
@@ -182,7 +182,7 @@ public class PlatformLocalization {
         }
 
         public String doResolve(File[][] paths) {
-            SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
+            SketchOptions options = SketchOptions.getSingleton();
             for (File[] lst : paths) {
                 for (File file : lst) {
                     if (file != null && file.isFile()) {
@@ -249,7 +249,7 @@ public class PlatformLocalization {
     }
 
     public String getCegisPathInner(String name) {
-        SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
+        SketchOptions options = SketchOptions.getSingleton();
         if (options.feOpts.cegisPath != null) {
             return (new ResolveFromPATH(name, path(options.feOpts.cegisPath))).resolve();
         } else {

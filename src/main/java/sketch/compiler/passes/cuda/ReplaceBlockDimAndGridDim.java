@@ -3,7 +3,7 @@ package sketch.compiler.passes.cuda;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.util.cuda.CudaThreadBlockDim;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -18,7 +18,7 @@ import sketch.util.exceptions.ExceptionAtNode;
 public class ReplaceBlockDimAndGridDim extends FEReplacer {
     protected CudaThreadBlockDim cudaBlockDim;
 
-    public ReplaceBlockDimAndGridDim(SequentialSketchOptions opts) {
+    public ReplaceBlockDimAndGridDim(SketchOptions opts) {
         this.cudaBlockDim = opts.getCudaBlockDim();
     }
 

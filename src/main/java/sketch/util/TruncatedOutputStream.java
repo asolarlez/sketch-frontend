@@ -3,7 +3,7 @@ package sketch.util;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 public class TruncatedOutputStream extends OutputStream {
 	StringBuffer sbuf = new StringBuffer();	
@@ -19,7 +19,7 @@ public class TruncatedOutputStream extends OutputStream {
 	
 	@Override
 	public void write(int arg0) throws IOException {
-	    if(SequentialSketchOptions.getSingleton().debugOpts.verbosity > 2){
+	    if(SketchOptions.getSingleton().debugOpts.verbosity > 2){
 	        System.out.write(arg0);
 	    }
 		if(sbuf.length() < sz){

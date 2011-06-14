@@ -1,6 +1,7 @@
 package sketch.compiler.main.cuda;
 
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.main.passes.ParseProgramStage;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
@@ -51,7 +52,7 @@ public class CudaSketchMain extends SequentialSketchMain {
     public class CudaIRStage1 extends IRStage1 {
         public CudaIRStage1() {
             super();
-            addPasses(new LowerInstrumentation(varGen, directives));
+            addPasses(new LowerInstrumentation(varGen));
         }
     }
 
@@ -106,7 +107,7 @@ public class CudaSketchMain extends SequentialSketchMain {
     @Override
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
-        Program prog = this.parseProgram();
+        Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
         prog = this.preprocAndSemanticCheck(prog, true);
 

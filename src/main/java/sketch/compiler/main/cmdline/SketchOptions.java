@@ -1,4 +1,4 @@
-package sketch.compiler.main.seq;
+package sketch.compiler.main.cmdline;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -19,15 +19,15 @@ import sketch.util.cuda.CudaThreadBlockDim;
 import sketch.util.exceptions.NotImplementedException;
 
 /**
- * organized options for the sequential frontend. See ParallelSketchOptions for how to
- * inherit options effectively and concisely.
+ * organized options for the new clojure frontend, which replaces most frontends. See
+ * ParallelSketchOptions for how to inherit options effectively and concisely.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class SequentialSketchOptions {
+public class SketchOptions {
     public BoundOptions bndOpts = new BoundOptions();
     public DebugOptions debugOpts = new DebugOptions();
     public FrontendOptions feOpts = new FrontendOptions();
@@ -43,9 +43,9 @@ public class SequentialSketchOptions {
     public String sketchName;
     public Vector<String> backendArgs;
     protected String[] currentArgs;
-    protected static SequentialSketchOptions _singleton;
+    protected static SketchOptions _singleton;
 
-    public SequentialSketchOptions(String[] inArgs) {
+    public SketchOptions(String[] inArgs) {
         this.inArgs = inArgs;
         preinit();
         SketchCliParser parser = new SketchCliParser(inArgs);
@@ -87,7 +87,7 @@ public class SequentialSketchOptions {
         return (Vector<String>) backendOptions.clone();
     }
 
-    public static SequentialSketchOptions getSingleton() {
+    public static SketchOptions getSingleton() {
         assert _singleton != null : "no singleton instance";
         return _singleton;
     }
@@ -123,7 +123,7 @@ public class SequentialSketchOptions {
         Arrays.sort(files);
         return files;
     }
-    
+
     public void cleanTemp() {
         FileUtils.deleteQuietly(sktmpdir());
     }

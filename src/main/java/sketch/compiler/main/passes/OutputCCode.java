@@ -9,8 +9,8 @@ import sketch.compiler.codegenerators.NodesToC;
 import sketch.compiler.codegenerators.NodesToCTest;
 import sketch.compiler.codegenerators.NodesToCUDA;
 import sketch.compiler.codegenerators.NodesToH;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.SequentialSketchMain;
-import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 
@@ -27,7 +27,7 @@ import static sketch.util.DebugOut.printNote;
  *          changes, please consider contributing back!
  */
 public class OutputCCode extends MetaStage {
-    public OutputCCode(TempVarGen varGen, SequentialSketchOptions options) {
+    public OutputCCode(TempVarGen varGen, SketchOptions options) {
         super(varGen, options);
     }
 

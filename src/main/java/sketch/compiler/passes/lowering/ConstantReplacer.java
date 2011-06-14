@@ -34,7 +34,7 @@ import sketch.compiler.passes.structure.GetAssignLHS;
  */
 public class ConstantReplacer extends FEReplacer {
 
-	private HashMap<String,Integer> constants;
+    protected HashMap<String, Integer> constants;
     protected HashSet<String> assignedVars;
 
 	public ConstantReplacer(Map<String, Integer> subs) {
@@ -83,13 +83,20 @@ public class ConstantReplacer extends FEReplacer {
 		return new FieldDecl(field,types,names,inits);
 	}
 
+    /** can be overridden by subclasses */
+    public Expression replaceConstantExpr(ExprVar exp, int val) {
+        return new ExprConstInt(exp, val);
+    }
 
 	public Object visitExprVar(ExprVar exp) {
 		// TODO we should not be rewritign l-values right?  Add the code below?
 		// if (exp.isLValue()) return exp;
 		Integer val=constants.get(exp.getName());
-		if(val==null) return exp;
-		return new ExprConstInt(exp,val);
+        if (val == null) {
+            return exp;
+        } else {
+            return replaceConstantExpr(exp, val);
+        }
 	}
 
 

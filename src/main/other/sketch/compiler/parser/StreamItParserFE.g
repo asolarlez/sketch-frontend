@@ -52,7 +52,7 @@ import sketch.compiler.ast.cuda.stmts.*;
 import sketch.compiler.ast.cuda.typs.*;
 
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
@@ -125,7 +125,7 @@ options {
     {
         try {
             List<String> incList = Arrays.asList(
-                    SequentialSketchOptions.getSingleton().feOpts.inc);
+                    SketchOptions.getSingleton().feOpts.inc);
         	Iterator<String> lit = null;
         	if(incList != null){ lit = incList.iterator(); }
         	File f = new File (name);
@@ -191,7 +191,15 @@ program	 returns [Program p]
  				new StreamType((FEContext) null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN",
  				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
-				 if (!hasError) p = new Program(null, Collections.singletonList(ss), structs); }
+                if (!hasError) {
+                    if (p == null) {
+                        p = Program.emptyProgram();
+                    }
+                    p =
+                            p.creator().streams(Collections.singletonList(ss)).structs(
+                                    structs).create();
+                }
+                }
 	;
 
 include_stmt    returns [String f]  { f = null; }

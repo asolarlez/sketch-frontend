@@ -13,8 +13,8 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
 import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.par.ParallelSketchOptions;
-import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.parallelEncoder.ParallelPreprocessor;
 import sketch.compiler.passes.lowering.HoistDeclarations;
 import sketch.compiler.passes.lowering.LowerLoopsToWhileLoops;
@@ -70,7 +70,7 @@ public class SpinVerifier implements Verifier {
 		while (true) {
 			Executer spin = Executer.makeExecuter (
 					spinify (oracle), config, reallyVerbose (), cleanup);
-			try { spin.run ( SequentialSketchOptions.getSingleton().solverOpts.timeout ); } catch (IOException ioe) {
+			try { spin.run ( SketchOptions.getSingleton().solverOpts.timeout ); } catch (IOException ioe) {
 				throw new RuntimeException ("Fatal error invoking spin", ioe);
 			}
 

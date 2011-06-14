@@ -94,8 +94,7 @@ public class NoRefTypes extends FEReplacer
                 struct.setType(name, type);
             }           
         }
-        prog = new Program(prog, prog.getStreams(), newStructs);
-        return super.visitProgram(prog);
+        return super.visitProgram(prog.creator().structs(newStructs).create());
     }
 
     
