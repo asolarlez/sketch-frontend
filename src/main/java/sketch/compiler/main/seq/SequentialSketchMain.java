@@ -479,7 +479,7 @@ public class SequentialSketchMain extends CommonSketchMain
         Program substituted =
                 (new SubstituteSolution(varGen, options, synthResult.solution,
                         visibleRControl(prog))).visitProgram(prog);
-        substituted = (getCleanupStage()).run(prog);
+        substituted = (getCleanupStage()).run(substituted);
 
         generateCode(substituted);
 		log(1, "[SKETCH] DONE");

@@ -125,7 +125,7 @@ public class CudaSketchMain extends SequentialSketchMain {
         Program substituted =
                 (new SubstituteSolution(varGen, options, synthResult.solution,
                         visibleRControl(finalCleaned))).visitProgram(finalCleaned);
-        substituted = (getCleanupStage()).run(prog);
+        substituted = (getCleanupStage()).run(substituted);
 
         generateCode(substituted);
         this.log(1, "[SKETCH] DONE");
