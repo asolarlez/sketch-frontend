@@ -32,7 +32,7 @@ public class OutputCCode extends MetaStage {
     }
 
     @Override
-    public Program visitProgram(Program prog) {
+    public Program visitProgramInner(Program prog) {
         if (prog == null) {
             printError("Final code generation encountered error, skipping output");
             return prog;

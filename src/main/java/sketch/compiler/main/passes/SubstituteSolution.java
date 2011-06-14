@@ -35,7 +35,7 @@ public class SubstituteSolution extends MetaStage {
     }
 
     @Override
-    public Program visitProgram(Program prog) {
+    public Program visitProgramInner(Program prog) {
         EliminateStarStatic eliminate_star = new EliminateStarStatic(solution);
         Program p = (Program) prog.accept(eliminate_star);
 

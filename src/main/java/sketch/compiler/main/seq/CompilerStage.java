@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.datastructures.HashmapList;
 
+import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printNote;
 
 import static sketch.util.Misc.nonnull;
@@ -92,9 +93,11 @@ public abstract class CompilerStage {
                 if (dependentObj != null) {
                     stageRequires.append(pass, dependentObj);
                 } else {
-                    assert sketch.runClasses.contains(passBeforeCurr) : "required pass " +
-                            passBeforeCurr.getSimpleName() + " not run before " +
-                            pass.getClass().getSimpleName() + "!";
+                    if (!sketch.runClasses.contains(passBeforeCurr)) {
+                        printDebug("Broken check: required pass " +
+                                passBeforeCurr.getSimpleName() + " not run before " +
+                                pass.getClass().getSimpleName() + "!");
+                    }
                 }
             }
             // opposite dependencies
@@ -103,9 +106,11 @@ public abstract class CompilerStage {
                 if (dependingObj != null) {
                     stageRequires.append(dependingObj, pass);
                 } else {
-                    assert !sketch.runClasses.contains(passAfterCurr) : "pass " +
-                            passAfterCurr.getSimpleName() + " already run before " +
-                            pass.getClass().getSimpleName() + "!";
+                    if (sketch.runClasses.contains(passAfterCurr)) {
+                        printDebug("Broken check: pass " + passAfterCurr.getSimpleName() +
+                                " already run before " + pass.getClass().getSimpleName() +
+                                "!");
+                    }
                 }
             }
         }

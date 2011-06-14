@@ -40,7 +40,7 @@ public class RunPrintFunctions extends MetaStage {
     }
 
     @Override
-    public Program visitProgram(Program serializedCode) {
+    public Program visitProgramInner(Program serializedCode) {
         String resultFile = SequentialSketchMain.getOutputFileName(options);
         final boolean tprintPyStyle = options.feOpts.tprintPython != null;
         StringBuilder pyCode = new StringBuilder();

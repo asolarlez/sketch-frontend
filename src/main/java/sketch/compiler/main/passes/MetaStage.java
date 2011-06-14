@@ -22,5 +22,10 @@ public abstract class MetaStage extends FEReplacer {
         this.options = options;
     }
 
-    public abstract Program visitProgram(Program prog);
+    // TODO -- insert debugging code here
+    public final Program visitProgram(Program prog) {
+        return visitProgramInner(prog);
+    }
+
+    public abstract Program visitProgramInner(Program prog);
 }

@@ -19,7 +19,7 @@ public class LowerToHLC extends MetaStage {
         super(varGen, options);
     }
 
-    public Program visitProgram(Program prog) {
+    public Program visitProgramInner(Program prog) {
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
         prog = (Program) prog.accept(new EliminateArrayRange(varGen));
         return prog;

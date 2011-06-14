@@ -107,7 +107,12 @@ public class CudaSketchMain extends SequentialSketchMain {
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = this.parseProgram();
-        prog = this.preprocAndSemanticCheck(prog);
+        // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
+        prog = this.preprocAndSemanticCheck(prog, true);
+
+        // withoutConstsReplaced =
+        // prog =
+        // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
 
         SynthesisResult synthResult = this.partialEvalAndSolve(prog);
         prog = synthResult.lowered.result;
@@ -120,6 +125,7 @@ public class CudaSketchMain extends SequentialSketchMain {
         Program substituted =
                 (new SubstituteSolution(varGen, options, synthResult.solution,
                         visibleRControl(finalCleaned))).visitProgram(finalCleaned);
+        substituted = (getCleanupStage()).run(prog);
 
         generateCode(substituted);
         this.log(1, "[SKETCH] DONE");

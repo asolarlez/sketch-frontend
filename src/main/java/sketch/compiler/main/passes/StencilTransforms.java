@@ -21,7 +21,7 @@ public class StencilTransforms extends MetaStage {
     }
 
     @Override
-    public Program visitProgram(Program p) {
+    public Program visitProgramInner(Program p) {
         p = (Program) p.accept(new MatchParamNames());
         p = (Program) p.accept(new EliminateNestedArrAcc(true));
 

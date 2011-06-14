@@ -20,7 +20,7 @@ public class LowerToSketch extends MetaStage {
     }
 
     @Override
-    public Program visitProgram(Program prog) {
+    public Program visitProgramInner(Program prog) {
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 

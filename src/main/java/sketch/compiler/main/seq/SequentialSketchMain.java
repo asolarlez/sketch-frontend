@@ -33,11 +33,6 @@ import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.typs.TypeStruct;
-import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
-import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
-import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
-import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
-import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -46,6 +41,7 @@ import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.LowerToHLC;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
+import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
@@ -54,7 +50,12 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.ReplaceParforLoops;
-import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.lowering.ConstantReplacer;
+import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
+import sketch.compiler.passes.lowering.EliminateStructs;
+import sketch.compiler.passes.lowering.GlobalsToParams;
+import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
+import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.AllthreadsTprintFcnCall;
@@ -319,60 +320,10 @@ public class SequentialSketchMain extends CommonSketchMain
     }
     // [end]
 
-    protected Program preprocessProgram(Program lprog) {
-        boolean useInsertEncoding =
-                (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
-		//invoke post-parse passes
-
-		//dump (lprog, "before:");
-		lprog = (Program)lprog.accept(new SeparateInitializers ());
-		
-		lprog = (Program)lprog.accept(new BlockifyRewriteableStmts ());
-
-		lprog = (Program)lprog.accept(new ExtractComplexLoopConditions (varGen));
-		lprog = (Program)lprog.accept(new EliminateRegens(varGen));
-		lprog = (getPreProcStage1()).run(lprog);
-
-		//dump (lprog, "extract clc");
-		// lprog = (Program)lprog.accept (new BoundUnboundedLoops (varGen, params.flagValue ("unrollamnt")));
-
-		// prog = (Program)prog.accept(new NoRefTypes());
-		lprog = (Program)lprog.accept(new EliminateReorderBlocks(varGen, useInsertEncoding));
-		//dump (lprog, "~reorderblocks:");
-		lprog = (Program)lprog.accept(new EliminateInsertBlocks(varGen));
-		//dump (lprog, "~insertblocks:");		
-
-		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
-
-		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
-		// dump (lprog, "fpe:");
-		
-        lprog = (getIRStage1()).run(lprog);
-        
-        lprog = (Program) lprog.accept(new TypeInferenceForStars());
-        //dump (lprog, "tifs:");
-
-		lprog.accept(new PerformFlowChecks());
-		
-		lprog = (Program)lprog.accept(new EliminateNestedArrAcc(options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));		 
-		
-//		dump (lprog, "before emd:");
-		// lprog = (Program) lprog.accept (new EliminateMultiDimArrays (varGen));
-		lprog = (Program) lprog.accept (new MakeMultiDimExplicit(varGen));
-//		dump (lprog, "after emd:");
-		
-		lprog = (Program) lprog.accept(new PreprocessSketch(varGen,
-                        options.bndOpts.unrollAmnt, visibleRControl(lprog)));
-		
-		//dump (lprog, "fpe:");
-		
-        if (showPhaseOpt("preproc")) {
-            dump(lprog, "After Preprocessing");
-        }
-
-		return lprog;
-	}
-
+    protected Program preprocessProgram(Program lprog, boolean partialEval) {
+        return (new PreprocessStage(varGen, options, getPreProcStage1(), getIRStage1(),
+                visibleRControl(lprog), partialEval)).visitProgram(lprog);
+    }
 
     
     public SynthesisResult partialEvalAndSolve(Program prog) {
@@ -514,11 +465,12 @@ public class SequentialSketchMain extends CommonSketchMain
         outputCCode(prog);
     }
 
+    // NOTE: This function is not used, see CudaSketchMain!!
 	public void run()
 	{
 		log(1, "Benchmark = " + benchmarkName());
         Program prog = parseProgram();
-        prog = preprocAndSemanticCheck(prog);
+        prog = preprocAndSemanticCheck(prog, true);
 		
         SynthesisResult synthResult = partialEvalAndSolve(prog);
         prog = synthResult.lowered.result;
@@ -527,20 +479,24 @@ public class SequentialSketchMain extends CommonSketchMain
         Program substituted =
                 (new SubstituteSolution(varGen, options, synthResult.solution,
                         visibleRControl(prog))).visitProgram(prog);
+        substituted = (getCleanupStage()).run(prog);
 
         generateCode(substituted);
 		log(1, "[SKETCH] DONE");
 
 	}
 
-    public Program preprocAndSemanticCheck(Program prog) {
-	    prog = (Program)prog.accept(new ConstantReplacer(null));
+    public Program preprocAndSemanticCheck(Program prog, boolean replaceConstants) {
+        if (replaceConstants) {
+            prog = (Program) prog.accept(new ConstantReplacer(null));
+        }
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
         this.showPhaseOpt("parse");
 
-		prog=preprocessProgram(prog); // perform prereq transformations
+        prog = preprocessProgram(prog, replaceConstants); // perform prereq
+                                                          // transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
