@@ -64,6 +64,7 @@ import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.ForbidArrayAssignmentInFcns;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
+import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
@@ -242,6 +243,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	 */
 	public void lowerIRToJava()
 	{
+	    
 		prog = (Program)prog.accept(new EliminateBitSelector(varGen));
 		
 		prog = (Program)prog.accept(new EliminateArrayRange(varGen));
@@ -396,7 +398,7 @@ public class SequentialSketchMain extends CommonSketchMain
 		lprog = (Program)lprog.accept(new DisambiguateUnaries(varGen));
 		
 		lprog = (Program)lprog.accept(new FunctionParamExtension(true));
-		// dump (lprog, "fpe:");
+		
 		
 
         lprog = (new IRStage1()).run(lprog);
@@ -470,7 +472,7 @@ public class SequentialSketchMain extends CommonSketchMain
                 finalCode);
 
         //testProg(finalCode);
-		//dump(finalCode, "after elim star");
+		//dump(beforeUnvectorizing, "after elim star");
         finalCode = (Program) finalCode.accept(new PreprocessSketch(varGen,
                         options.bndOpts.unrollAmnt, visibleRControl(), true));
 		//dump(finalCode, "After partially evaluating generated code.");
@@ -489,6 +491,8 @@ public class SequentialSketchMain extends CommonSketchMain
 		
 		//System.out.println("=========  After ElimDeadCode  =========");
 		finalCode = (Program)finalCode.accept(new SimplifyVarNames());
+		finalCode = (Program)finalCode.accept(new AssembleInitializers());
+		finalCode = (Program)finalCode.accept(new RemoveShallowTempVars());
 		finalCode = (Program)finalCode.accept(new AssembleInitializers());
 		if (showPhaseOpt("final")) {
             dump(finalCode, "After Dead Code elimination.");

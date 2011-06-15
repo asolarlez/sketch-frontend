@@ -295,10 +295,11 @@ public class FEReplacer implements FEVisitor
     public Object visitExprTypeCast(ExprTypeCast exp)
     {
         Expression expr = doExpression(exp.getExpr());
-        if (expr == exp.getExpr())
+        Type t = (Type) exp.getType().accept(this);
+        if (expr == exp.getExpr() && t == exp.getType())
             return exp;
         else
-            return new ExprTypeCast(exp, exp.getType(), expr);
+            return new ExprTypeCast(exp,t, expr);
     }
 
     public Object visitExprUnary(ExprUnary exp)

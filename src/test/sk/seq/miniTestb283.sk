@@ -1,0 +1,53 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 3 ";
+
+
+int BASE = 4;
+
+int[2*N] mult(int N, int[N] x, int[N] y){
+
+    int[2*N] out = 0;
+    for(int i=0; i<N; ++i){
+      out[i] = x[i];
+      out[i + N] = y[i]; 
+    }       
+    return out;
+}
+
+
+
+
+
+
+int [N] ident(int N, int[N] in){
+    return in;
+}
+
+int[2*N] karatsuba(int N, int[N] x, int[N] y)  implements mult{  
+    
+    int[2*N] out = 0;
+    
+    out = ident(2*N, mult(N, x, y));
+    return out;
+    
+    /*
+    if(N % 2 != 0){ return mult(N, x, y); }
+    int[N/2] x1, x2, y1, y2;
+    int[N]  a=0, b=0, c=0, d=0;
+    int[2*N] out = 0;
+    
+    x1=x[0::N/2];  x2=x[N/2::N/2];
+    y1=y[0::N/2];  y2=y[N/2::N/2];
+    
+    a = mult(N/2, x1, y1);
+    b = mult(N/2, x2, y2);
+    c = mult(N/2, x1, y2);
+    d = mult(N/2, x2, y1);
+    
+    repeat(??){
+        int[N] t = sel(N, sel(N, a, b), sel(N, c, d));
+        out = plus(2*N,  out, shiftVect(2*N, t  , {|N | N/2 | 0|} )  );    
+    }
+    
+    return out;
+    */
+}

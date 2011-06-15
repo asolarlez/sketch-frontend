@@ -31,7 +31,6 @@ import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 
 
@@ -461,7 +460,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-                f.accept(new SimpleCodePrinter());
+                // f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }

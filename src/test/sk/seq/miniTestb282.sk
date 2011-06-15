@@ -1,0 +1,12 @@
+pragma options "--bnd-inbits 3 --bnd-arr-size 20 --bnd-unroll-amnt 20";
+// int N = 5;
+
+harness void test(int N, int[N] x){
+    int[2*N] out = 0;
+    if(N > 2){
+        
+        out[2] = out[2] + 3;
+        
+        assert out[??] == 3;
+    }    
+}
