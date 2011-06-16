@@ -298,8 +298,18 @@ public class ExprBinary extends Expression
     public String toString()
     {
         String theOp = getOpString();
-        return "(" + left.toString() + ")" + theOp +
-            "(" + right.toString() + ")";
+        String lstr, rstr;
+        if(left instanceof ExprConstInt || left instanceof ExprVar){
+            lstr = left.toString();
+        }else{
+            lstr = "(" + left.toString() + ")";
+        }
+        if(right instanceof ExprConstInt || right instanceof ExprVar){
+            rstr = right.toString();
+        }else{
+            rstr = "(" + right.toString() + ")";
+        }
+        return lstr + " " + theOp + " " + rstr;
     }
 
     /** Return the precedence of OP (higher means evaluated sooner). */

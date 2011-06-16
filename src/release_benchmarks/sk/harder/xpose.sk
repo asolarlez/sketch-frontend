@@ -1,4 +1,3 @@
-
 pragma options "--bnd-unroll-amnt 6 --bnd-inbits 3 ";
 
 int[16] transpose(int[16] mx){

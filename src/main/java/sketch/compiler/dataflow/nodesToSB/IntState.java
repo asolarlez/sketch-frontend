@@ -28,8 +28,9 @@ public class IntState extends varState {
 			if( av.hasIntVal() ){
 				int arrsz = av.getIntVal();
 				init( arrsz );
-			}else{			    
-				init( newLHSvalue() );
+			}else{	
+			    init(-1);
+				// init( newLHSvalue() );
 			}
 		} else
 		if( t instanceof TypeStructRef || t instanceof TypeStruct){			

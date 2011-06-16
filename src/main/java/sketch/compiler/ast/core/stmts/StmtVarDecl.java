@@ -316,7 +316,7 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
                 result.append("; ");
             result.append(types.get(i) + " " + names.get(i));
             if (inits.get(i) != null)
-                result.append("=" + inits.get(i));
+                result.append(" = " + inits.get(i));
         }
         return result.toString();
     }

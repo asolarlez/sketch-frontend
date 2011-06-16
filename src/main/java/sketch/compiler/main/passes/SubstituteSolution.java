@@ -12,6 +12,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 import sketch.compiler.stencilSK.EliminateStarStatic;
 
 /**
@@ -59,6 +60,8 @@ public class SubstituteSolution extends MetaStage {
         // System.out.println("=========  After ElimDeadCode  =========");
         p = (Program) p.accept(new SimplifyVarNames());
         p = (Program) p.accept(new AssembleInitializers());
+        p = (Program)p.accept(new RemoveShallowTempVars());
+        p = (Program)p.accept(new AssembleInitializers());
 
         // TODO: integrate these?
         // if( false && params.hasFlag("outputcode") ) {

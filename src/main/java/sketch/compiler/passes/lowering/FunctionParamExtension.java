@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
@@ -34,6 +35,7 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 import static sketch.util.DebugOut.assertFalse;
+import sketch.compiler.stencilSK.VarReplacer;
 
 
 /**
@@ -141,10 +143,24 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return "_out";
 	}
 
-	private String getNewOutID() {
-		return "_ret_"+(outCounter++);
+	String rvname = null;
+	private String getNewOutID(String nm) {
+	    if(rvname != null && nm.contains("_out")){
+	        return rvname + "_r_"+(outCounter++);
+	    }else{
+	        return nm+"_r_"+(outCounter++);
+	    }
 	}
 
+	public Object visitStmtAssign(StmtAssign sa){
+	    if(sa.getLHS() instanceof ExprVar){
+	        rvname = sa.getLHS().toString();
+	    }
+	    Object o = super.visitStmtAssign(sa);
+	    rvname = null;
+	    return o;
+	    
+	}
 	
 
 	private String getNewInCpID(String oldName) {
@@ -277,6 +293,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		List<Expression> tempVars = new ArrayList<Expression>();
 		List<Statement> refAssigns = new ArrayList<Statement>();
 
+		Map<String, Expression> pmap = new HashMap<String, Expression>();
+        VarReplacer vrep = new VarReplacer(pmap);
+		
 		int psz = 0;
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
@@ -286,13 +305,16 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				oldArg=(Expression) existingArgs.get(psz);
 				++psz;
 			}
+			
 			if(oldArg != null && oldArg instanceof ExprVar || (oldArg instanceof ExprConstInt && !p.isParameterOutput())){
 				args.add(oldArg);
+				pmap.put(p.getName(), oldArg);
 			}else{
-				String tempVar = getNewOutID();
-				Statement decl = new StmtVarDecl(exp, p.getType(), tempVar, oldArg);
+				String tempVar = getNewOutID(p.getName());
+				Statement decl = new StmtVarDecl(exp, (Type)p.getType().accept(vrep), tempVar, oldArg);
 				ExprVar ev =new ExprVar(exp,tempVar);
 				args.add(ev);
+				pmap.put(p.getName(), ev);
 				addStatement(decl);
 				if(ptype == Parameter.OUT){
 					tempVars.add(ev);

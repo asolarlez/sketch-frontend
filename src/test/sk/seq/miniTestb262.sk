@@ -1,4 +1,4 @@
-
+pragma options "--bnd-inbits 4";
 
 stencil int[N] test8(int N, int[N] in, int a, int b){
   int[N] out;

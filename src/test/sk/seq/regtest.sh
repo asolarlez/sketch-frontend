@@ -21,7 +21,7 @@ rm -f ${bname}.cpp
 rm -f ${bname}.h
 
 
-bash sketch  --slv-synth $SATSOLVER --slv-verif $SATSOLVER   ${x} &> ${x}.output ;
+bash sketch -V 5 --slv-synth $SATSOLVER --slv-verif $SATSOLVER   ${x} &> ${x}.output ;
 
 done;
 

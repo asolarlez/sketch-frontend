@@ -1,0 +1,32 @@
+/*
+This is to test function inlining, and the handling of cycles in tests.
+*/
+
+
+int foo(int x, int y, ref int o1){    
+    o1 = (x + y)/2;
+    return x;
+}
+
+int id(int t){
+    return 0;    
+}
+
+harness void main1(int x, int y){
+    int t = 0, v=x;
+    if(x < y){
+        v = foo(x, y, t);
+        if(v>1){
+            t = t/2;
+        }
+    }
+    if(t < 3){
+        t = id(t)+t;
+    }
+    if(t<5){
+        int q = 0;
+        v = foo(x, y, q);
+        t = t + q;
+    }
+    assert t <= v+y;
+}

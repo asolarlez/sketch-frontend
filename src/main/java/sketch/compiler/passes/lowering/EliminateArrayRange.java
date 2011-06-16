@@ -42,12 +42,18 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 		this.varGen = varGen;
 	}
 
-
+	String lhsname = null;
 
 	public Object visitStmtAssign(StmtAssign stmt)
     {
+	    if(stmt.getLHS() instanceof ExprVar){
+	        lhsname = stmt.getLHS().toString();
+	    }
+	    
 		Expression newRHS = doExpression(stmt.getRHS());
-
+		
+		lhsname = null;
+		
 		Expression newLHS;
 		Statement postAssign=null;
 		if( stmt.getLHS() instanceof ExprArrayRange ){
@@ -103,7 +109,7 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 			if( newIndex != rl.start() ||  newLen != rl.getLenExpression() || newBase != exp.getBase() ){				
 				exp = new ExprArrayRange(exp, newBase, new RangeLen(newIndex, newLen));
 			}
-			String newName = varGen.nextVar();
+			String newName = varGen.nextVar(lhsname);
 			StmtVarDecl decl = new StmtVarDecl(exp, type, newName, null);
 			this.addStatement(decl);
 			Statement assign = new StmtAssign(new ExprVar(exp, newName), exp);

@@ -31,6 +31,7 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
+import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 
 
@@ -428,12 +429,14 @@ public class FunctionalizeStencils extends FEReplacer {
 		    final List<Function> nfuns = new ArrayList<Function>();
 		    PreprocessSketch v0 = new PreprocessSketch(varGen, 10, new BaseRControl(10), true, true);
 		    v0.ss = spec;
+		    FEVisitor v01 = new SeparateInitializers();
 		    FEVisitor v1 = new ScalarizeVectorAssignments(varGen, true);
 		    FEVisitor v2 =new EliminateCompoundAssignments();
 		    
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();
-	        	f = ((Function)f.accept(v0));	        	
+	        	f = ((Function)f.accept(v0));
+	        	f = ((Function)f.accept(v01));
 	        	f = ((Function)f.accept(v1));
 	        	//f.accept(new SimpleCodePrinter());
 	        	//System.out.println(f.toString());
@@ -458,6 +461,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
+                // f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }

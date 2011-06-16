@@ -1,0 +1,38 @@
+// Illustrates the scalability benefits of refienement.
+// The refinement assertion accelerates solving from 13 sec
+// to 4.6 seconds, on N=5, LIMIT = 4.
+
+pragma options "--bnd-inbits 3 --bnd-inline-amnt 2"; 
+
+#define N 5
+#define LIMIT 4
+
+harness int main(int y) {
+	int[N] intermediateValues;
+
+	int y1 = y;
+	if (y1>=LIMIT) return 0;
+	for (int i = 0; i < N; i ++) {
+		intermediateValues[i] = y1;
+		y1 = 2*y1;
+	}
+
+	int y2 = y;
+	if (y2>=LIMIT) return 0;
+	for (int i = 0; i < N; i ++) {
+		assert intermediateValues[i] == y2;   // this assertion captures that the second loop is a refinement of the first one.
+		y2 = E(y2,y2);
+	}
+	assert y1 == y2;
+	return y2;
+}
+
+generator int E(int a, int b) {
+	int choice = ??;
+	if (choice == 0) return ??;
+	if (choice == 1) return a;
+	if (choice == 2) return b;
+	if (choice == 3) return E(a,b) + E(a,b);
+	if (choice == 4) return E(a,b) - E(a,b);
+	assert false;
+}

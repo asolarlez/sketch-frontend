@@ -18,22 +18,37 @@ import sketch.compiler.ast.core.typs.Type;
 public class SimplifyVarNames extends FEReplacer {
 
 	Map<String, Integer> nmMap = new HashMap<String, Integer>();
+	Map<String, String> newNm = new HashMap<String, String>();
 	
 	String transName(String name){
-		int idx = name.indexOf('_');		
-		String s1 = name.substring(0, idx);
-		if(s1.length() == 0){
-			s1 = "s";
-		}
-		String s2 = name.substring(idx);
-		if( nmMap.containsKey(s2)){
-			s1 += "_" + nmMap.get(s2);
-		}else{
-			int sz = nmMap.size();
-			nmMap.put(s2, sz);
-			s1 += "_" + sz;
-		}				
-		return s1;
+	    
+	    if(newNm.containsKey(name)){
+	        return newNm.get(name);
+	    }else{
+	        int idx = name.indexOf('_');       
+	        String s1 = name.substring(0, idx);
+	        if(s1.length() == 0){
+	            if(name.contains("_out")){
+	                s1 = "_out";
+	            }else{
+	                s1 = "s";
+	                if(!nmMap.containsKey(s1)){
+	                    nmMap.put(s1, 0);
+	                }
+	            }
+	        }
+	        if(nmMap.containsKey(s1)){
+	            int id = nmMap.get(s1).intValue();
+	            nmMap.put(s1, id+1);
+	            s1 += "_" + id;
+	            newNm.put(name, s1);
+	            return s1;
+	        }else{
+	            nmMap.put(s1, 0);
+	            newNm.put(name, s1);
+                return s1;
+	        }
+	    }	    
 	}
 	
 	public Object visitExprVar(ExprVar exp) {

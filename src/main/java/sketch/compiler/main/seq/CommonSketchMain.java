@@ -37,8 +37,10 @@ public class CommonSketchMain {
 
         // pass all short-style arguments to the backend
         backendOptions.addAll(options.backendArgs);
-        backendOptions.add("--bnd-inbits=" + options.bndOpts.inbits);
-        backendOptions.add("--verbosity=" + options.debugOpts.verbosity);
+        backendOptions.add("--bnd-inbits");
+        backendOptions.add(""+ options.bndOpts.inbits);
+        backendOptions.add("--verbosity");
+        backendOptions.add(""+ options.debugOpts.verbosity);
         backendOptions.add("--print-version"); // run by default
 
         if (options.solverOpts.seed != 0) {
@@ -49,12 +51,12 @@ public class CommonSketchMain {
             backendOptions.add("--print-cex");
         }
         if (options.solverOpts.synth != SynthSolvers.NOT_SET) {
-            assert false : "solver opts synth need to convert old style command line args";
+            // assert false : "solver opts synth need to convert old style command line args";
             backendOptions.add("-synth");
             backendOptions.add("" + options.solverOpts.synth.toString());
         }
         if (options.solverOpts.verif != VerifSolvers.NOT_SET) {
-            assert false : "solver opts verif need to convert old style command line args";
+            // assert false : "solver opts verif need to convert old style command line args";
             backendOptions.add("-verif");
             backendOptions.add("" + options.solverOpts.verif.toString());
         }
@@ -73,7 +75,7 @@ public class CommonSketchMain {
             backendOptions.add("" + options.solverOpts.olevel);
         }
         if (options.solverOpts.simpleInputs) {
-            assert false : "need to convert old style command line args";
+            // assert false : "need to convert old style command line args";
             backendOptions.add("-nosim");
         }
         

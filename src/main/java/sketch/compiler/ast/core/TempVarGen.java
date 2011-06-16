@@ -170,7 +170,11 @@ public class TempVarGen
      * @return				A unique variable name
      */
     public String nextVar (String startingWith) {
-    	return "__s"+ startingWith + nextVarNum ();
+        if(startingWith != null){
+            return startingWith + "__s" + nextVarNum ();
+        }else{
+            return nextVar();
+        }        
     }
 }
 

@@ -324,10 +324,22 @@ public class Function extends FENode {
         return v.visitFunction(this);
     }
 
+    public String printParams(){
+        String s = "";
+        boolean notf = false;
+        for(Parameter p : params){
+            if(notf){ s +=", "; }
+            if(p.isParameterOutput()){ s += "ref "; }
+            s += p.getType() + " " + p.getName();
+            notf = true;
+        }
+        return s;
+    }
+
     public String toString() {
         final String impl = fImplements != null ? " implements " + fImplements : "";
         return new ScRichString(" ").joinNonempty(fcnInfo.cudaType.cCodeName,
-                fcnInfo.fcnType.cCodeName, returnType, name, "(" + params + ")", impl);
+                fcnInfo.fcnType.cCodeName, returnType, name, "(" + printParams() + ")", impl);
     }
 
     public Function makeStencil() {
