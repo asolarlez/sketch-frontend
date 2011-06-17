@@ -411,18 +411,17 @@ public class SequentialSketchMain extends CommonSketchMain
             sketchmain.run();
         } catch (SketchException e) {
             e.print();
-            ErrorHandling.dumpProgramToFile(null);
             if (isTest) {
                 throw e;
             } else {
                 System.exit(1);
             }
         } catch (java.lang.Error e) {
-            ErrorHandling.handleErr(null, e);
+            ErrorHandling.handleErr(e);
             // necessary for unit tests, etc.
             throw e;
         } catch (RuntimeException e) {
-            ErrorHandling.handleErr(null, e);
+            ErrorHandling.handleErr(e);
             throw e;
         }
         System.out.println("Total time = " + (System.currentTimeMillis() - beg));

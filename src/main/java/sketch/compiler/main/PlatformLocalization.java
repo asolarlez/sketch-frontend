@@ -13,6 +13,7 @@ import java.util.Vector;
 import sketch.compiler.main.cmdline.SketchOptions;
 
 import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printDebug;
 
 /**
  * get any variables related to this specific compile, e.g. version number, and resolve
@@ -131,7 +132,7 @@ public class PlatformLocalization {
             File jarpath = get_jarpath();
             File[] r =
                     { path(jarpath, "cegis", "src", "SketchSolver", this.name),
-                path(jarpath, this.name) };
+                            path(jarpath, this.name) };
             return r;
         }
 
@@ -188,8 +189,8 @@ public class PlatformLocalization {
                     if (file != null && file.isFile()) {
                         try {
                             if (options.debugOpts.verbosity > 2) {
-                                System.out.println("resolved " + this.name +
-                                    " to path " + file.getCanonicalPath());
+                                System.out.println("resolved " + this.name + " to path " +
+                                        file.getCanonicalPath());
                             }
                             return file.getCanonicalPath();
                         } catch (IOException e) {
@@ -211,7 +212,8 @@ public class PlatformLocalization {
         public void addEnvVarDirToVec(Vector<File> vec, String pathDir) {
             vec.add(path(pathDir, this.name));
             vec.add(path(pathDir, "src", "SketchSolver", this.name));
-            vec.add(path(pathDir, "..", "sketch-backend", "src", "SketchSolver", this.name));
+            vec.add(path(pathDir, "..", "sketch-backend", "src", "SketchSolver",
+                    this.name));
         }
 
         @Override
@@ -385,8 +387,7 @@ public class PlatformLocalization {
             FileWriter writer = new FileWriter(filePath);
             writer.write(contents);
             writer.close();
-            System.err.println("[DEBUG] [SKETCH] " + name + " written to file: " +
-                    filePath.getPath());
+            printDebug("[SKETCH] " + name + " written to file: " + filePath.getPath());
         } catch (IOException e) {
             System.err.println("[ERROR] [SKETCH] couldn't write output file " + filePath);
         }

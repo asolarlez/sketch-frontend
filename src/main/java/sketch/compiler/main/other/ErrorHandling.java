@@ -4,6 +4,9 @@ import java.io.File;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.main.PlatformLocalization;
+import sketch.util.exceptions.LastGoodProgram;
+
+import static sketch.util.DebugOut.printDebug;
 
 /**
  * A few miscellany error handling functions for main methods
@@ -33,22 +36,24 @@ public class ErrorHandling {
         }
     }
 
-    public static void dumpProgramToFile(final Program prog) {
+    public static void dumpProgramToFile(LastGoodProgram lastGoodProg) {
+        String name = lastGoodProg.stageName;
+        Program prog = lastGoodProg.prog;
         if (prog == null) {
-            System.err.println("[ERROR] [SKETCH]     program null.");
+            printDebug("[SKETCH] program null.");
         } else {
             try {
                 final PlatformLocalization loc = PlatformLocalization.getLocalization();
                 File out_file = loc.getTempPath("error-last-program.txt");
                 prog.debugDump(out_file);
-                System.err.println("[ERROR] [SKETCH] program dumped to: " + out_file);
+                printDebug("[SKETCH] Last good program, from before stage", name +
+                        ", dumped to: ", out_file);
             } catch (Throwable e2) {}
         }
     }
 
-    public static void handleErr(final Program prog, Throwable e) {
+    public static void handleErr(Throwable e) {
         System.err.println("[ERROR] [SKETCH] Failed with " +
                 e.getClass().getSimpleName() + " exception; message: " + e.getMessage());
-        dumpProgramToFile(prog);
     }
 }

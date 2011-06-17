@@ -4,6 +4,8 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.exceptions.LastGoodProgram;
+import sketch.util.exceptions.SketchException;
 
 /**
  * A meta-stage of compilation
@@ -22,9 +24,14 @@ public abstract class MetaStage extends FEReplacer {
         this.options = options;
     }
 
-    // TODO -- insert debugging code here
     public final Program visitProgram(Program prog) {
-        return visitProgramInner(prog);
+        try {
+            return visitProgramInner(prog);
+        } catch (SketchException e) {
+            e.setLastGoodProgram(new LastGoodProgram(this.getClass().getSimpleName(),
+                    prog));
+            throw e;
+        }
     }
 
     public abstract Program visitProgramInner(Program prog);
