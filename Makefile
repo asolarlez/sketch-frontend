@@ -90,11 +90,11 @@ test:
 
 test-seq: compile
 	set -o pipefail; mkdir -p target
-	time mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+	time mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|ERROR\]|ASSERT FAILURE"
 
 test-med-release-benchmarks: compile
 	set -o pipefail; mkdir -p target
-	time mvn test "-Dtest=MediumReleaseBenchmarks" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+	time mvn test "-Dtest=MediumReleaseBenchmarks" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|ERROR\]|ASSERT FAILURE"
 
 # test-sten:
 # 	set -o pipefail; mkdir -p target; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"

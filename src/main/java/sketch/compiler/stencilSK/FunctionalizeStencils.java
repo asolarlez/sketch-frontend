@@ -33,6 +33,7 @@ import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
+import sketch.util.exceptions.ExceptionAtNode;
 
 
 
@@ -641,7 +642,9 @@ class ProcessStencil extends FEReplacer {
 		public Object visitStmtFor(StmtFor stmt)
 		{
 			FENode context = stmt;
-			assert stmt.getInit() instanceof StmtVarDecl;
+            if (!(stmt.getInit() instanceof StmtVarDecl)) {
+                throw new ExceptionAtNode("FunctionalizeStencils:645", stmt);
+            }
 			StmtVarDecl init = (StmtVarDecl) stmt.getInit();
 			assert init.getNumVars() == 1;
 			String indVar = init.getName(0);
