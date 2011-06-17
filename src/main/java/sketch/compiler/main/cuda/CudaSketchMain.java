@@ -104,7 +104,6 @@ public class CudaSketchMain extends SequentialSketchMain {
         return new CudaIRStage2();
     }
 
-    @Override
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);

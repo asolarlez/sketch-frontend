@@ -37,11 +37,9 @@ import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.LowerToHLC;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
-import sketch.compiler.main.passes.ParseProgramStage;
 import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
-import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
@@ -358,27 +356,6 @@ public class SequentialSketchMain extends CommonSketchMain
         outputCCode(prog);
     }
 
-    // NOTE: This function is not used, see CudaSketchMain!!
-	public void run()
-	{
-		log(1, "Benchmark = " + benchmarkName());
-        Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);
-        prog = preprocAndSemanticCheck(prog, true);
-		
-        SynthesisResult synthResult = partialEvalAndSolve(prog);
-        prog = synthResult.lowered.result;
-		runPrintFunctions(synthResult.lowered, synthResult.solution);
-		
-        Program substituted =
-                (new SubstituteSolution(varGen, options, synthResult.solution,
-                        visibleRControl(prog))).visitProgram(prog);
-        substituted = (getCleanupStage()).run(substituted);
-
-        generateCode(substituted);
-		log(1, "[SKETCH] DONE");
-
-	}
-
     public Program preprocAndSemanticCheck(Program prog, boolean replaceConstants) {
         if (replaceConstants) {
             prog = (Program) prog.accept(new ConstantReplacer(null));
@@ -429,7 +406,7 @@ public class SequentialSketchMain extends CommonSketchMain
         long beg = System.currentTimeMillis();
         ErrorHandling.checkJavaVersion(1, 6);
         // TODO -- change class names so this is clear
-        final SequentialSketchMain sketchmain = new CudaSketchMain(args);
+        final CudaSketchMain sketchmain = new CudaSketchMain(args);
         try {
             sketchmain.run();
         } catch (SketchException e) {

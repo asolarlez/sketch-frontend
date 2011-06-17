@@ -445,7 +445,8 @@ public class PartialEvaluator extends FEReplacer {
             boolean addedAlready = false;
             if( param.isParameterOutput()){
 
-                assert actual instanceof ExprVar : "unsupported function parameter type: " + actual.getClass();
+                assert actual instanceof ExprVar : "unsupported function argument, AST type: " +
+                        actual.getClass();
                 String pnm = ((ExprVar)actual).getName();
                 outNmList.add(pnm);
                 nparams.add(new ExprVar(exp,  transName(pnm)  ));
