@@ -198,7 +198,7 @@ public class SequentialSketchMain extends CommonSketchMain
         return new IRStage1();
     }
 
-    public IRStage2_LLC getIRStage2_LLC() {
+    public IRStage2_LLC getIRStage2_LLC(Program prog) {
         return new IRStage2_LLC();
     }
 
@@ -266,7 +266,7 @@ public class SequentialSketchMain extends CommonSketchMain
     protected SketchLoweringResult lowerToSketch(Program prog) {
         prog = (new LowerToHLC(varGen, options)).visitProgram(prog);
         Program highLevelC = prog;
-        prog = getIRStage2_LLC().run(prog);
+        prog = getIRStage2_LLC(prog).run(prog);
         Program afterSPMDSeq = prog;
         prog = getIRStage3().run(prog);
         StencilTransforms stenTf = new StencilTransforms(varGen, options);

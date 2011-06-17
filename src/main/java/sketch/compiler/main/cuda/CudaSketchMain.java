@@ -18,6 +18,10 @@ import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
+import sketch.compiler.passes.structure.ContainsCudaCode;
+import sketch.compiler.passes.structure.ContainsStencilFunction;
+import sketch.util.exceptions.LastGoodProgram;
+import sketch.util.exceptions.UnsupportedSketchException;
 
 /**
  * cuda main functions
@@ -100,8 +104,20 @@ public class CudaSketchMain extends SequentialSketchMain {
     }
 
     @Override
-    public IRStage2_LLC getIRStage2_LLC() {
-        return new CudaIRStage2();
+    public IRStage2_LLC getIRStage2_LLC(Program prog) {
+        if (new ContainsStencilFunction().run(prog)) {
+            if ((new ContainsCudaCode()).run(prog)) {
+                final UnsupportedSketchException exception =
+                        new UnsupportedSketchException(
+                                "Program contains both CUDA and stencil code");
+                exception.setLastGoodProgram(new LastGoodProgram(
+                        "CudaSketchMain/getIRStage2_LLC()", prog));
+                throw exception;
+            }
+            return super.getIRStage2_LLC(prog);
+        } else {
+            return new CudaIRStage2();
+        }
     }
 
     public void run() {

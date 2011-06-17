@@ -643,7 +643,7 @@ class ProcessStencil extends FEReplacer {
 		{
 			FENode context = stmt;
             if (!(stmt.getInit() instanceof StmtVarDecl)) {
-                throw new ExceptionAtNode("FunctionalizeStencils:645", stmt);
+                throw new ExceptionAtNode("FunctionalizeStencils:645", stmt.getInit());
             }
 			StmtVarDecl init = (StmtVarDecl) stmt.getInit();
 			assert init.getNumVars() == 1;

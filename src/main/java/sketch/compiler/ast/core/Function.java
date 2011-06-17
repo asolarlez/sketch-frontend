@@ -338,7 +338,8 @@ public class Function extends FENode {
 
     public String toString() {
         final String impl = fImplements != null ? " implements " + fImplements : "";
-        return new ScRichString(" ").joinNonempty(fcnInfo.cudaType.cCodeName,
+        return new ScRichString(" ").joinNonempty(fcnInfo.solveType.cCodeName,
+                fcnInfo.cudaType.cCodeName,
                 fcnInfo.fcnType.cCodeName, returnType, name, "(" + printParams() + ")", impl);
     }
 
