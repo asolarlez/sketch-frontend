@@ -32,10 +32,10 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 import static sketch.util.DebugOut.assertFalse;
-import sketch.compiler.stencilSK.VarReplacer;
 
 
 /**
@@ -279,11 +279,6 @@ public class FunctionParamExtension extends SymbolTableVisitor
             // e.getMessage() + " not found" );
 		}
 		// now we create a temp (or several?) to store the result
-
-		// FIXME -- hack so this class can be run twice
-		if (fun.getReturnType().equals(TypePrimitive.voidtype)) {
-		    return exp;
-		}
 
 		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
 		List<Expression> existingArgs=exp.getParams();
