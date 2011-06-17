@@ -5,21 +5,21 @@ import junit.framework.TestSuite;
 import sketch.compiler.main.seq.SequentialSketchMain;
 
 /**
- * Run tests src/test/sk/seq/miniTest*.sk
+ * Run tests src/release_benchmarks/sk/medium/*.sk
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class SequentialJunitTest extends SketchTestSuite {
-    public SequentialJunitTest() throws Exception {
-        super(BasicFileFilter.miniTests("src", "test", "sk", "seq"));
+public class MediumReleaseBenchmarks extends SketchTestSuite {
+    public MediumReleaseBenchmarks() throws Exception {
+        super(BasicFileFilter.sketches("src", "release_benchmarks", "sk", "medium"));
         SequentialSketchMain.isTest = true;
     }
 
     public static TestSuite suite() throws Exception {
-        return new SequentialJunitTest();
+        return new MediumReleaseBenchmarks();
     }
 
     @Override

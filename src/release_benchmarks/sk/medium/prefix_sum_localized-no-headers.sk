@@ -1,0 +1,261 @@
+pragma options "--slv-use-scripting";
+
+int NBANKS = 4;
+
+
+
+
+
+
+
+generator int synthFunc_2_E2_S1(int a, int b) {
+    int star1 = 4;
+    assert star1 < 7;
+    if (??) { return a; }
+    if (??) { return b; }
+    if (??) { return star1; }
+    if (??) { return -(a); }
+    if (??) { return -(b); }
+    if (??) { return -(star1); }
+    if (??) { return (a) + (b); }
+    if (??) { return (a) - (b); }
+    if (??) { return (a) * (b); }
+    if (??) { return (a) + (star1); }
+    if (??) { return (a) - (star1); }
+    if (??) { return (a) * (star1); }
+    if (??) { return (a) / (star1); }
+    if (??) { return (b) - (a); }
+    if (??) { return (b) + (star1); }
+    if (??) { return (b) - (star1); }
+    if (??) { return (b) * (star1); }
+    if (??) { return (b) / (star1); }
+    if (??) { return (star1) - (a); }
+    if (??) { return (star1) - (b); }
+    if (??) { return -((a) + (b)); }
+    if (??) { return -((a) * (b)); }
+    if (??) { return -((a) + (star1)); }
+    if (??) { return -((a) * (star1)); }
+    if (??) { return -((a) / (star1)); }
+    if (??) { return -((b) + (star1)); }
+    if (??) { return -((b) * (star1)); }
+    if (??) { return -((b) / (star1)); }
+    if (??) { return (a) + ((a) + (b)); }
+    if (??) { return (a) - ((a) + (b)); }
+    if (??) { return (a) * ((a) + (b)); }
+    if (??) { return (a) / ((a) + (b)); }
+    if (??) { return (a) + ((a) - (b)); }
+    if (??) { return (a) * ((a) - (b)); }
+    if (??) { return (a) / ((a) - (b)); }
+    if (??) { return (a) + ((a) * (b)); }
+    if (??) { return (a) - ((a) * (b)); }
+    if (??) { return (a) + ((a) + (star1)); }
+    if (??) { return (a) - ((a) + (star1)); }
+    if (??) { return (a) * ((a) + (star1)); }
+    if (??) { return (a) / ((a) + (star1)); }
+    if (??) { return (a) + ((a) - (star1)); }
+    if (??) { return (a) * ((a) - (star1)); }
+    if (??) { return (a) / ((a) - (star1)); }
+    if (??) { return (a) + ((a) * (star1)); }
+    if (??) { return (a) - ((a) * (star1)); }
+    if (??) { return (a) + ((a) / (star1)); }
+    if (??) { return (a) - ((a) / (star1)); }
+    if (??) { return (a) * ((b) - (a)); }
+    if (??) { return (a) / ((b) - (a)); }
+    if (??) { return (a) + ((b) + (star1)); }
+    if (??) { return (a) - ((b) + (star1)); }
+    if (??) { return (a) * ((b) + (star1)); }
+    if (??) { return (a) / ((b) + (star1)); }
+    if (??) { return (a) + ((b) - (star1)); }
+    if (??) { return (a) - ((b) - (star1)); }
+    if (??) { return (a) * ((b) - (star1)); }
+    if (??) { return (a) / ((b) - (star1)); }
+    if (??) { return (a) + ((b) * (star1)); }
+    if (??) { return (a) - ((b) * (star1)); }
+    if (??) { return (a) + ((b) / (star1)); }
+    if (??) { return (a) - ((b) / (star1)); }
+    if (??) { return (a) * ((star1) - (a)); }
+    if (??) { return (a) / ((star1) - (a)); }
+    if (??) { return (a) * ((star1) - (b)); }
+    if (??) { return (a) / ((star1) - (b)); }
+    if (??) { return (b) - ((a) + (b)); }
+    if (??) { return (b) * ((a) + (b)); }
+    if (??) { return (b) / ((a) + (b)); }
+    if (??) { return (b) - ((a) - (b)); }
+    if (??) { return (b) * ((a) - (b)); }
+    if (??) { return (b) / ((a) - (b)); }
+    if (??) { return (b) + ((a) * (b)); }
+    if (??) { return (b) - ((a) * (b)); }
+    if (??) { return (b) - ((a) + (star1)); }
+    if (??) { return (b) * ((a) + (star1)); }
+    if (??) { return (b) / ((a) + (star1)); }
+    if (??) { return (b) - ((a) - (star1)); }
+    if (??) { return (b) * ((a) - (star1)); }
+    if (??) { return (b) / ((a) - (star1)); }
+    if (??) { return (b) + ((a) * (star1)); }
+    if (??) { return (b) - ((a) * (star1)); }
+    if (??) { return (b) + ((a) / (star1)); }
+    if (??) { return (b) - ((a) / (star1)); }
+    if (??) { return (b) * ((b) - (a)); }
+    if (??) { return (b) / ((b) - (a)); }
+    if (??) { return (b) + ((b) + (star1)); }
+    if (??) { return (b) - ((b) + (star1)); }
+    if (??) { return (b) * ((b) + (star1)); }
+    if (??) { return (b) / ((b) + (star1)); }
+    if (??) { return (b) + ((b) - (star1)); }
+    if (??) { return (b) * ((b) - (star1)); }
+    if (??) { return (b) / ((b) - (star1)); }
+    if (??) { return (b) + ((b) * (star1)); }
+    if (??) { return (b) - ((b) * (star1)); }
+    if (??) { return (b) + ((b) / (star1)); }
+    if (??) { return (b) - ((b) / (star1)); }
+    if (??) { return (b) * ((star1) - (a)); }
+    if (??) { return (b) / ((star1) - (a)); }
+    if (??) { return (b) * ((star1) - (b)); }
+    if (??) { return (b) / ((star1) - (b)); }
+    if (??) { return (star1) - ((a) + (b)); }
+    if (??) { return (star1) * ((a) + (b)); }
+    if (??) { return (star1) / ((a) + (b)); }
+    if (??) { return (star1) * ((a) - (b)); }
+    if (??) { return (star1) / ((a) - (b)); }
+    if (??) { return (star1) + ((a) * (b)); }
+    if (??) { return (star1) - ((a) * (b)); }
+    if (??) { return (star1) - ((a) + (star1)); }
+    if (??) { return (star1) * ((a) + (star1)); }
+    if (??) { return (star1) / ((a) + (star1)); }
+    if (??) { return (star1) - ((a) - (star1)); }
+    if (??) { return (star1) * ((a) - (star1)); }
+    if (??) { return (star1) / ((a) - (star1)); }
+    if (??) { return (star1) + ((a) * (star1)); }
+    if (??) { return (star1) - ((a) * (star1)); }
+    if (??) { return (star1) + ((a) / (star1)); }
+    if (??) { return (star1) - ((a) / (star1)); }
+    if (??) { return (star1) * ((b) - (a)); }
+    if (??) { return (star1) / ((b) - (a)); }
+    if (??) { return (star1) - ((b) + (star1)); }
+    if (??) { return (star1) * ((b) + (star1)); }
+    if (??) { return (star1) / ((b) + (star1)); }
+    if (??) { return (star1) - ((b) - (star1)); }
+    if (??) { return (star1) * ((b) - (star1)); }
+    if (??) { return (star1) / ((b) - (star1)); }
+    if (??) { return (star1) + ((b) * (star1)); }
+    if (??) { return (star1) - ((b) * (star1)); }
+    if (??) { return (star1) + ((b) / (star1)); }
+    if (??) { return (star1) - ((b) / (star1)); }
+    if (??) { return (star1) * ((star1) - (a)); }
+    if (??) { return (star1) / ((star1) - (a)); }
+    if (??) { return (star1) * ((star1) - (b)); }
+    if (??) { return (star1) / ((star1) - (b)); }
+    if (??) { return (-(a)) - (b); }
+    if (??) { return (-(a)) - (star1); }
+    if (??) { return (-(b)) - (star1); }
+    if (??) { return ((a) + (b)) / (star1); }
+    if (??) { return ((a) - (b)) - (a); }
+    if (??) { return ((a) - (b)) - (b); }
+    if (??) { return ((a) - (b)) - (star1); }
+    if (??) { return ((a) - (b)) / (star1); }
+    if (??) { return ((a) * (b)) - (a); }
+    if (??) { return ((a) * (b)) - (b); }
+    if (??) { return ((a) * (b)) - (star1); }
+    if (??) { return ((a) + (star1)) / (star1); }
+    if (??) { return ((a) - (star1)) - (a); }
+    if (??) { return ((a) - (star1)) - (b); }
+    if (??) { return ((a) - (star1)) - (star1); }
+    if (??) { return ((a) - (star1)) / (star1); }
+    if (??) { return ((a) * (star1)) - (a); }
+    if (??) { return ((a) * (star1)) - (b); }
+    if (??) { return ((a) * (star1)) - (star1); }
+    if (??) { return ((a) / (star1)) - (a); }
+    if (??) { return ((a) / (star1)) - (b); }
+    if (??) { return ((a) / (star1)) - (star1); }
+    if (??) { return ((b) - (a)) - (a); }
+    if (??) { return ((b) - (a)) - (b); }
+    if (??) { return ((b) - (a)) - (star1); }
+    if (??) { return ((b) - (a)) / (star1); }
+    if (??) { return ((b) + (star1)) / (star1); }
+    if (??) { return ((b) - (star1)) - (a); }
+    if (??) { return ((b) - (star1)) - (b); }
+    if (??) { return ((b) - (star1)) - (star1); }
+    if (??) { return ((b) - (star1)) / (star1); }
+    if (??) { return ((b) * (star1)) - (a); }
+    if (??) { return ((b) * (star1)) - (b); }
+    if (??) { return ((b) * (star1)) - (star1); }
+    if (??) { return ((b) / (star1)) - (a); }
+    if (??) { return ((b) / (star1)) - (b); }
+    if (??) { return ((b) / (star1)) - (star1); }
+    if (??) { return ((star1) - (a)) - (a); }
+    if (??) { return ((star1) - (a)) - (b); }
+    if (??) { return ((star1) - (a)) - (star1); }
+    if (??) { return ((star1) - (a)) / (star1); }
+    if (??) { return ((star1) - (b)) - (a); }
+    if (??) { return ((star1) - (b)) - (b); }
+    if (??) { return ((star1) - (b)) - (star1); }
+    else { return ((star1) - (b)) / (star1); }
+}
+
+int N = 8;
+
+
+
+int exprPhi(int idx) {
+    return synthFunc_2_E2_S1(idx, idx);
+}
+
+
+
+harness void checkInjectivity_phi(int a, int b) { if ((a >= 0) && (a < N) && (b >= 0) && (b < N)) { assert exprPhi(a) < 2 * N; assert exprPhi(a) >= 0; if (exprPhi(a) == exprPhi(b)) { assert a == b; } } }
+int map_bank(int idx) {
+
+    return idx % NBANKS;
+}
+
+int nConflicts(int[4] indices, int n) {
+    int max = 0;
+    for (int bank = 0; bank < NBANKS; bank++) {
+
+        int s = 0;
+        for (int idx = 0; idx < n; idx++) {
+            int i = indices[idx];
+            if (map_bank(i) == bank) {
+                s += 1;
+            }
+        }
+
+        if (s > max) { max = s; }
+    }
+    return max;
+}
+
+harness void main() {
+    int nconfl_max = 4;
+    int nconfl_total = 0;
+
+
+    int[4] indices;
+
+
+    indices = 0;
+    indices[0] = exprPhi(3);
+    indices[1] = exprPhi(7);
+    nconfl_total += nConflicts(indices, 2);
+
+
+
+    indices = 0;
+    indices[0] = exprPhi(1);
+    indices[1] = exprPhi(3);
+    indices[2] = exprPhi(5);
+    indices[3] = exprPhi(7);
+    nconfl_total += nConflicts(indices, 4);
+
+
+
+    indices = 0;
+    indices[0] = exprPhi(2);
+    indices[1] = exprPhi(4);
+    indices[2] = exprPhi(6);
+    nconfl_total += nConflicts(indices, 3);
+
+
+
+    assert nconfl_total < nconfl_max;
+}

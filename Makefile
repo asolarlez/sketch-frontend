@@ -92,11 +92,12 @@ test-seq: compile
 	set -o pipefail; mkdir -p target
 	time mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
-test-par:
-	set -o pipefail; mkdir -p target; mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+test-med-release-benchmarks: compile
+	set -o pipefail; mkdir -p target
+	time mvn test "-Dtest=MediumReleaseBenchmarks" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
-test-sten:
-	set -o pipefail; mkdir -p target; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+# test-sten:
+# 	set -o pipefail; mkdir -p target; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-release-benchmarks:
 	for i in src/release_benchmarks/sk/*.sk; do make run-local-seq EXEC_ARGS="$$i"; done | tee target/test_output.txt | grep -E "Benchmark = src/release_benchmarks|\[ERROR\]|ASSERT FAILURE"
