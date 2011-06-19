@@ -58,7 +58,6 @@ import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.TprintFcnCall;
-import sketch.compiler.passes.preprocessing.WarnAmbiguousImplicitVarDecl;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
@@ -136,7 +135,7 @@ public class SequentialSketchMain extends CommonSketchMain
         public PreProcStage1() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new WarnAmbiguousImplicitVarDecl(), new ReplaceMinLoops(varGen),
+                    { new ReplaceMinLoops(varGen),
                             new MainMethodCreateNospec(),
                             new SetDeterministicFcns(),
                             new ReplaceParforLoops(options.getCudaBlockDim(), varGen),
