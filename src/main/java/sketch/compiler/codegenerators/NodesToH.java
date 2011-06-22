@@ -1,6 +1,7 @@
 package sketch.compiler.codegenerators;
 
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
@@ -24,12 +25,10 @@ public class NodesToH extends NodesToC {
     	String result = "";
     	result += indent + "class " + escapeCName(struct.getName()) + "{\n  public:";
     	addIndent();
-    	for (int i = 0; i < struct.getNumFields(); i++)
-    	{
-    		String name = struct.getField(i);
-    		Type type = struct.getType(name);
-    		result += indent + typeForDecl(type) + " " + name + ";\n";
-    	}
+        for (Entry<String, Type> entry : struct) {
+            result +=
+                    indent + typeForDecl(entry.getValue()) + " " + entry.getKey() + ";\n";
+        }
     	unIndent();
     	result += indent + "};\n";
     	return result;

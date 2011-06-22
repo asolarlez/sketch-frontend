@@ -41,7 +41,7 @@ import static sketch.util.DebugOut.printWarning;
 public class Program extends FENode
 {
     private List<StreamSpec> streams;
-    private List<TypeStruct> structs;
+    private final List<TypeStruct> structs;
     protected final Set<Directive> directives;
 
     public static class ProgramCreator {

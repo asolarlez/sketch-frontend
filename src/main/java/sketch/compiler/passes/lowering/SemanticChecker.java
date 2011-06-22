@@ -19,9 +19,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
@@ -243,9 +252,10 @@ public class SemanticChecker
 		{
 			TypeStruct ts = (TypeStruct)iter.next();
 			Map localNames = new HashMap();
-			for (int i = 0; i < ts.getNumFields(); i++)
-				checkADupFieldName(localNames, streamNames,
-						ts.getField(i), ts.getContext ());
+            for (Entry<String, Type> entry : ts) {
+                checkADupFieldName(localNames, streamNames, entry.getKey(),
+                        ts.getContext());
+            }
 		}
 	}
 
@@ -742,12 +752,12 @@ public class SemanticChecker
 					TypeStruct ts = (TypeStruct)lt;
 					String rn = expr.getName();
 					boolean found = false;
-					for (int i = 0; i < ts.getNumFields(); i++)
-						if (ts.getField(i).equals(rn))
-						{
-							found = true;
-							break;
-						}
+                    for (Entry<String, Type> entry : ts) {
+                        if (entry.getKey().equals(rn)) {
+                            found = true;
+                            break;
+                        }
+                    }
 
 					if (!found)
 						report(expr,

@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * avoid annoying untyped lookups.
@@ -15,7 +15,7 @@ import java.util.Map.Entry;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class TypedHashMap<K, V> implements Cloneable {
+public class TypedHashMap<K, V> implements Cloneable, Iterable<Entry<K, V>> {
     private final HashMap<K, V> base;
 
     public TypedHashMap() {
@@ -91,12 +91,15 @@ public class TypedHashMap<K, V> implements Cloneable {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public TypedHashMap<K, V> immutable() {
+    public ImmutableTypedHashMap<K, V> immutable() {
         if (this instanceof ImmutableTypedHashMap) {
-            return this;
+            return (ImmutableTypedHashMap<K, V>) this;
         } else {
             return new ImmutableTypedHashMap<K, V>(this.base);
         }
+    }
+
+    public Iterator<Entry<K, V>> iterator() {
+        return entrySet().iterator();
     }
 }

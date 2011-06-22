@@ -18,6 +18,7 @@ package sketch.compiler.codegenerators.tojava;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.exprs.*;
@@ -569,12 +570,10 @@ public class NodesToJava extends SymbolTableVisitor
     	result += indent + "class " + struct.getName() +
         " extends Structure {\n";
     	addIndent();
-    	for (int i = 0; i < struct.getNumFields(); i++)
-    	{
-    		String name = struct.getField(i);
-    		Type type = struct.getType(name);
-    		result += indent + convertType(type) + " " + name + ";\n";
-    	}
+        for (Entry<String, Type> entry : struct) {
+            result +=
+                    indent + convertType(entry.getValue()) + " " + entry.getKey() + ";\n";
+        }
     	unIndent();
     	result += indent + "}\n";
     	return result;

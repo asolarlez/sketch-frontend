@@ -2,15 +2,9 @@
  *
  */
 package sketch.compiler.passes.lowering;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -321,12 +315,12 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
-	    	for (int i = 0; i < struct.getNumFields (); ++i) {
-	    		String field = struct.getField (i);
-	    		fieldArrays.put (field,
-	    				new ExprVar (cx,
-	    						varGen.nextVar ("_"+struct.getName () +"_"+ field +"_")));
-	    	}
+            for (Entry<String, Type> entry : struct) {
+                fieldArrays.put(
+                        entry.getKey(),
+                        new ExprVar(cx, varGen.nextVar("_" + struct.getName() + "_" +
+                                entry.getKey() + "_")));
+            }
 	    }
 
 

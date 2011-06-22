@@ -11,8 +11,8 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.lowering.AssembleInitializers;
-import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
+import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.stencilSK.EliminateStarStatic;
 
 /**

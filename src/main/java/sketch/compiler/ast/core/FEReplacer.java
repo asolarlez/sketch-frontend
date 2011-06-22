@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
@@ -44,6 +45,7 @@ import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
 import sketch.util.datastructures.TprintTuple;
+import sketch.util.datastructures.TypedHashMap;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -816,17 +818,18 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitTypeStruct (TypeStruct ts) {
-    	for (int i = 0; i < ts.getNumFields (); ++i) {
-    		String f = ts.getField (i);
-    		Type oldType = ts.getType (f);
-    		Type newType = (Type) oldType.accept (this);
-
-    		if (newType != oldType) {
-    			ts.setType (f, newType);
-    		}
-    	}
-
-    	return ts;
+        boolean changed = false;
+        TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        for (Entry<String, Type> entry : ts) {
+            Type type = (Type) entry.getValue().accept (this);
+            changed |= (type != entry.getValue());
+            map.put(entry.getKey(), type);
+        }
+        if (changed) {
+            return new TypeStruct(ts.getCudaMemType(), ts.getContext(), ts.getName(), map);
+        } else {
+            return ts;
+        }
     }
 
     public Object visitTypeStructRef (TypeStructRef tsr) {

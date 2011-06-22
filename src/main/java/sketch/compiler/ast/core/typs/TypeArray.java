@@ -35,9 +35,9 @@ import static java.util.Collections.unmodifiableList;
  */
 public class TypeArray extends Type implements TypeArrayInterface
 {
-    private Type base;
-    private Expression length;
-    private List<Expression> dims;
+    private final Type base;
+    private final Expression length;
+    private final List<Expression> dims;
 
     /**
      * Creates an array type of the specified base type with the specified length.
@@ -69,6 +69,8 @@ public class TypeArray extends Type implements TypeArrayInterface
         this.length = length;
         if (dims != null) {
             this.dims = unmodifiableList(new ArrayList<Expression>(dims));
+        } else {
+            this.dims = null;
         }
     }
 

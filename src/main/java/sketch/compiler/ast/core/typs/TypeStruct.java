@@ -15,21 +15,20 @@
  */
 
 package sketch.compiler.ast.core.typs;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.util.datastructures.ImmutableTypedHashMap;
 import sketch.util.datastructures.ObjPairBase;
+import sketch.util.datastructures.TypedHashMap;
 
 /**
  * A hetereogeneous structure type.  This type has a name for itself,
@@ -46,12 +45,11 @@ import sketch.util.datastructures.ObjPairBase;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class TypeStruct extends Type
+public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
 {
-    private FEContext context;
-    private String name;
-    private List<String> fields;
-    private Map<String, Type> types;
+    private final FEContext context;
+    private final String name;
+    private final ImmutableTypedHashMap<String, Type> fieldTypMap;
 
     /**
      * Creates a new structured type. The fields and ftypes lists must be the same length;
@@ -73,10 +71,19 @@ public class TypeStruct extends Type
         super(typ);
         this.context = context;
         this.name = name;
-        this.fields = fields;
-        this.types = new HashMap<String, Type>();
+        TypedHashMap<String, Type> types = new TypedHashMap<String, Type>();
         for (int i = 0; i < fields.size(); i++)
-            this.types.put(fields.get(i), ftypes.get(i));
+            types.put(fields.get(i), ftypes.get(i));
+        this.fieldTypMap = types.immutable();
+    }
+
+    public TypeStruct(CudaMemoryType typ, FEContext context, String name,
+            TypedHashMap<String, Type> map)
+    {
+        super(typ);
+        this.context = context;
+        this.name = name;
+        this.fieldTypMap = map.immutable();
     }
 
     public TypeStruct(FEContext context, String name, List<String> fields,
@@ -114,23 +121,12 @@ public class TypeStruct extends Type
      */
     public int getNumFields()
     {
-        return fields.size();
-    }
-
-    /**
-     * Returns the name of the specified field.
-     *
-     * @param n zero-based index of the field to get the name of
-     * @return  the name of the nth field
-     */
-    public String getField(int n)
-    {
-        return fields.get(n);
+        return getFieldTypMap().size();
     }
 
     public Collection<String> getFields ()
     {
-    	return Collections.unmodifiableCollection (fields);
+        return fieldTypMap.keySet();
     }
 
     /**
@@ -141,23 +137,12 @@ public class TypeStruct extends Type
      */
     public Type getType(String f)
     {
-        return types.get(f);
+        return getFieldTypMap().get(f);
     }
 
     /** Return true iff F is a field of this struct. */
     public boolean hasField (String f) {
-    	return types.containsKey (f);
-    }
-
-    /**
-     * Set the type of field 'f' to 't'.
-     *
-     * @param f
-     * @param t
-     * @deprecated
-     */
-    public void setType (String f, Type t) {
-    	types.put (f, t);
+        return getFieldTypMap().containsKey(f);
     }
 
     public Expression defaultValue () {
@@ -203,7 +188,7 @@ public class TypeStruct extends Type
 
     public List<StructFieldEnt> getFieldEntries() {
         Vector<StructFieldEnt> result = new Vector<StructFieldEnt>();
-        for (Entry<String, Type> ent : this.types.entrySet()) {
+        for (Entry<String, Type> ent : this.getFieldTypMap().entrySet()) {
             result.add(new StructFieldEnt(ent.getKey(), ent.getValue()));
         }
         return result;
@@ -222,11 +207,21 @@ public class TypeStruct extends Type
 
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
-        List<Type> typesLst = new ArrayList<Type>();
-        for (String s : fields) {
-            typesLst.add(types.get(s));
-        }
-        return new TypeStruct(memtyp, context, name, fields, typesLst);
+        /*
+         * if updating is desired TypedHashMap<String, Type> fields2 = new
+         * TypedHashMap<String, Type>(); for (Entry<String, Type> v :
+         * fieldTypMap.entrySet()) { fields2.put(v.getKey(),
+         * v.getValue().withMemType(memtyp)); }
+         */
+        return new TypeStruct(memtyp, context, name, fieldTypMap);
+    }
+
+    public ImmutableTypedHashMap<String, Type> getFieldTypMap() {
+        return fieldTypMap;
+    }
+
+    public Iterator<Entry<String, Type>> iterator() {
+        return fieldTypMap.iterator();
     }
 }
 

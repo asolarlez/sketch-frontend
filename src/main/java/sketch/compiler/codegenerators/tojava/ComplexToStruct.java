@@ -18,6 +18,7 @@ package sketch.compiler.codegenerators.tojava;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
@@ -80,11 +81,9 @@ public class ComplexToStruct extends FEReplacer
             TypeStruct struct = (TypeStruct)iter.next();
             List newNames = new java.util.ArrayList();
             List newTypes = new java.util.ArrayList();
-            for (int i = 0; i < struct.getNumFields(); i++)
-            {
-                String name = struct.getField(i);
-                Type type = remapType(struct.getType(name));
-                newNames.add(name);
+            for (Entry<String, Type> fld : struct) {
+                Type type = remapType(fld.getValue());
+                newNames.add(fld.getKey());
                 newTypes.add(type);
             }
             struct = new TypeStruct(struct.getContext (), struct.getName(),
