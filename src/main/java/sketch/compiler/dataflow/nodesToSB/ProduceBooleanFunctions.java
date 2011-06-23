@@ -20,7 +20,6 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePortal;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -106,10 +105,6 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             case TypePrimitive.TYPE_COMPLEX: return "Complex";
             case TypePrimitive.TYPE_VOID: return "void";
             }
-        }
-        else if (type instanceof TypePortal)
-        {
-            return ((TypePortal)type).getName() + "Portal";
         }
         return null;
     }

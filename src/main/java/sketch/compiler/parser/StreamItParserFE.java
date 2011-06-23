@@ -313,7 +313,7 @@ inputState.guessing--;
 								funcs.add(f);
 							}
 						}
-						else if ((_tokenSet_2.member(LA(1))) && (LA(2)==LSQUARE||LA(2)==LESS_THAN||LA(2)==ID)) {
+						else if ((_tokenSet_2.member(LA(1))) && (LA(2)==LSQUARE||LA(2)==ID)) {
 							fd=field_decl();
 							match(SEMI);
 							if ( inputState.guessing==0 ) {
@@ -785,7 +785,6 @@ inputState.guessing--;
 		
 		Token  id = null;
 		Token  l = null;
-		Token  pn = null;
 		t = null; Vector<Expression> params = new Vector<Expression>(); Expression x;
 		
 		try {      // for error handling
@@ -914,18 +913,6 @@ inputState.guessing--;
 				match(TK_void);
 				if ( inputState.guessing==0 ) {
 					t =  TypePrimitive.voidtype;
-				}
-				break;
-			}
-			case TK_portal:
-			{
-				match(TK_portal);
-				match(LESS_THAN);
-				pn = LT(1);
-				match(ID);
-				match(MORE_THAN);
-				if ( inputState.guessing==0 ) {
-					t = new TypePortal(pn.getText());
 				}
 				break;
 			}
@@ -1132,7 +1119,7 @@ inputState.guessing--;
 			}
 			default:
 				boolean synPredMatched21 = false;
-				if (((_tokenSet_2.member(LA(1))) && (LA(2)==LSQUARE||LA(2)==LESS_THAN||LA(2)==ID))) {
+				if (((_tokenSet_2.member(LA(1))) && (LA(2)==LSQUARE||LA(2)==ID))) {
 					int _m21 = mark();
 					synPredMatched21 = true;
 					inputState.guessing++;
@@ -2530,7 +2517,6 @@ inputState.guessing--;
 			case TK_complex:
 			case TK_ref:
 			case ID:
-			case TK_portal:
 			{
 				p=param_decl();
 				if ( inputState.guessing==0 ) {
@@ -2602,7 +2588,6 @@ inputState.guessing--;
 			case TK_double:
 			case TK_complex:
 			case ID:
-			case TK_portal:
 			{
 				break;
 			}
@@ -2638,7 +2623,7 @@ inputState.guessing--;
 		
 		try {      // for error handling
 			boolean synPredMatched96 = false;
-			if (((_tokenSet_2.member(LA(1))) && (LA(2)==LSQUARE||LA(2)==LESS_THAN||LA(2)==ID))) {
+			if (((_tokenSet_2.member(LA(1))) && (LA(2)==LSQUARE||LA(2)==ID))) {
 				int _m96 = mark();
 				synPredMatched96 = true;
 				inputState.guessing++;
@@ -4518,22 +4503,21 @@ inputState.guessing--;
 		"an identifier",
 		"TK_roundrobin",
 		"TK_duplicate",
-		"TK_portal",
 		"TK_pi"
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 1121501862412288L, 39582418599936L, 0L, 0L};
+		long[] data = { 1121501862412288L, 4398046511104L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 4612807520289800192L, 39582419648512L, 0L, 0L};
+		long[] data = { 4612807520289800192L, 4398046511104L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { 2080768L, 39582418599936L, 0L, 0L};
+		long[] data = { 2080768L, 4398046511104L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
@@ -4548,7 +4532,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { 4499201585037314L, 39582418599936L, 0L, 0L};
+		long[] data = { 4499201585037314L, 4398046511104L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
@@ -4558,7 +4542,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 6275072L, 39582418599936L, 0L, 0L};
+		long[] data = { 6275072L, 4398046511104L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
@@ -4568,17 +4552,17 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { 3746994941511866368L, 78319265513516L, 0L, 0L};
+		long[] data = { 3746994941511866368L, 43134893424684L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { 1441151932298172416L, 78319265513516L, 0L, 0L};
+		long[] data = { 1441151932298172416L, 43134893424684L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { 8358680959941335040L, 113524541816173L, 0L, 0L};
+		long[] data = { 8358680959941335040L, 43155797638509L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
@@ -4593,27 +4577,27 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	private static final long[] mk_tokenSet_14() {
-		long[] data = { 6052837950727641088L, 113503906103998L, 0L, 0L};
+		long[] data = { 6052837950727641088L, 43135161926334L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
 	private static final long[] mk_tokenSet_15() {
-		long[] data = { 3746998273460662128L, 39616845447204L, 0L, 0L};
+		long[] data = { 3746998273460662128L, 4432473358372L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
 	private static final long[] mk_tokenSet_16() {
-		long[] data = { 1441155264230190960L, 39616845447204L, 0L, 0L};
+		long[] data = { 1441155264230190960L, 4432473358372L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
 	private static final long[] mk_tokenSet_17() {
-		long[] data = { 3751497475043618674L, 39616845447204L, 0L, 0L};
+		long[] data = { 3751497475043618674L, 4432473358372L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
 	private static final long[] mk_tokenSet_18() {
-		long[] data = { 6052837950727641088L, 113503906037804L, 0L, 0L};
+		long[] data = { 6052837950727641088L, 43135161860140L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
@@ -4628,7 +4612,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_20 = new BitSet(mk_tokenSet_20());
 	private static final long[] mk_tokenSet_21() {
-		long[] data = { 8363183545010618354L, 113503974261438L, 0L, 0L};
+		long[] data = { 8363183545010618354L, 43135229035198L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_21 = new BitSet(mk_tokenSet_21());
@@ -4648,7 +4632,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_24 = new BitSet(mk_tokenSet_24());
 	private static final long[] mk_tokenSet_25() {
-		long[] data = { 2017612684601595904L, 78319265513516L, 0L, 0L};
+		long[] data = { 2017612684601595904L, 43134893424684L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_25 = new BitSet(mk_tokenSet_25());
@@ -4663,7 +4647,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_27 = new BitSet(mk_tokenSet_27());
 	private static final long[] mk_tokenSet_28() {
-		long[] data = { -288230324610017280L, 113524508261741L, 0L, 0L};
+		long[] data = { -288230324610017280L, 43155764084077L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_28 = new BitSet(mk_tokenSet_28());
@@ -4698,7 +4682,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_34 = new BitSet(mk_tokenSet_34());
 	private static final long[] mk_tokenSet_35() {
-		long[] data = { 8358680959941335042L, 113524340489581L, 0L, 0L};
+		long[] data = { 8358680959941335042L, 43155596311917L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_35 = new BitSet(mk_tokenSet_35());
@@ -4758,12 +4742,12 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_46 = new BitSet(mk_tokenSet_46());
 	private static final long[] mk_tokenSet_47() {
-		long[] data = { 1441151932298172416L, 78318728642568L, 0L, 0L};
+		long[] data = { 1441151932298172416L, 43134356553736L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_47 = new BitSet(mk_tokenSet_47());
 	private static final long[] mk_tokenSet_48() {
-		long[] data = { -288229912293156862L, 113524575370605L, 0L, 0L};
+		long[] data = { -288229912293156862L, 43155831192941L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_48 = new BitSet(mk_tokenSet_48());

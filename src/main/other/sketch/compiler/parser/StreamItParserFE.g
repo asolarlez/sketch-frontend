@@ -333,8 +333,6 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
 		)*
 
 	|	TK_void { t =  TypePrimitive.voidtype; }
-	|	TK_portal LESS_THAN pn:ID MORE_THAN
-		{ t = new TypePortal(pn.getText()); }
 	;
 
 primitive_type returns [Type t] { t = null; }

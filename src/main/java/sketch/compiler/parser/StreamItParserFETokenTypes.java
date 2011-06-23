@@ -146,6 +146,5 @@ public interface StreamItParserFETokenTypes {
 	int ID = 106;
 	int TK_roundrobin = 107;
 	int TK_duplicate = 108;
-	int TK_portal = 109;
-	int TK_pi = 110;
+	int TK_pi = 109;
 }

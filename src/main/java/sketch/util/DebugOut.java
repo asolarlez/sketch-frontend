@@ -153,8 +153,9 @@ public class DebugOut {
         throw new java.lang.IllegalStateException("please enable asserts.");
     }
 
-    public static void assertFalse(Object... description) {
+    public static <T> T assertFalse(Object... description) {
         assertFalseMsg("[ASSERT FAILURE] ", description);
+        return null;
     }
 
     /** NOTE - don't use this in fast loops, as arrays are created */
@@ -164,11 +165,11 @@ public class DebugOut {
         }
     }
 
-    public static void not_implemented(Object... what) {
+    public static <T> T not_implemented(Object... what) {
         Object[] what_prefixed = new Object[what.length + 1];
         what_prefixed[0] = "Not implemented -";
         System.arraycopy(what, 0, what_prefixed, 1, what.length);
-        assertFalse(what_prefixed);
+        return assertFalse(what_prefixed);
     }
 
     public static void todo(Object... what) {

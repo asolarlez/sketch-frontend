@@ -155,25 +155,19 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         return v.visitTypeStruct (this);
     }
 
-    // Remember, equality and such only test on the name.
-    public boolean equals(Object other)
-    {
-        if (other instanceof TypeStruct)
-        {
-            TypeStruct that = (TypeStruct)other;
-            return this.name.equals(that.name);
+    @Override
+    public TypeComparisonResult compare(Type other) {
+        if (other instanceof TypeStruct) {
+            TypeStruct that = (TypeStruct) other;
+            return TypeComparisonResult.knownOrNeq(name.equals(that.getName()));
         }
 
-        if (other instanceof TypeStructRef)
-        {
-            TypeStructRef that = (TypeStructRef)other;
-            return name.equals(that.getName());
+        if (other instanceof TypeStructRef) {
+            TypeStructRef that = (TypeStructRef) other;
+            return TypeComparisonResult.knownOrNeq(this.name.equals(that.getName()));
         }
 
-        if (this.isComplex() && other instanceof Type)
-            return ((Type)other).isComplex();
-
-        return false;
+        return TypeComparisonResult.knownOrNeq(this.isComplex() && other.isComplex());
     }
 
     public int hashCode()

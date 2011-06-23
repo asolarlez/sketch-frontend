@@ -3,6 +3,7 @@ package sketch.compiler.smt.partialeval;
 import java.util.HashMap;
 
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeComparisonResult;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 public class SmtType extends Type {
@@ -76,20 +77,15 @@ public class SmtType extends Type {
 		return this.getRealType().promotesTo(((SmtType) that).getRealType());
 	}
 	
-	
-
-	@Override
-	public boolean equals(Object obj) {
-	    if (this == obj) return true;
-	    
-		if (obj instanceof SmtType) {
-			SmtType t2 = (SmtType) obj;
-			return this.getRealType().equals(t2.getRealType());
-			
-		} else {
-			return this.getRealType().equals(obj);
-		}
-	}
+    public TypeComparisonResult compare(Type obj) {
+        if (obj instanceof SmtType) {
+            SmtType t2 = (SmtType) obj;
+            return TypeComparisonResult.knownOrNeq(this.getRealType().equals(
+                    t2.getRealType()));
+        } else {
+            return TypeComparisonResult.knownOrNeq(this.getRealType().equals(obj));
+        }
+    }
 	
 	@Override
 	public int hashCode() {

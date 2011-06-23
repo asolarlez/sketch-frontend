@@ -235,22 +235,14 @@ public class TypePrimitive extends Type
         }
     }
 
-    public boolean equals(Object other)
+    public TypeComparisonResult compare(Type that)
     {
-        // Two cases.  One, this is complex, and so is that:
-        if (other instanceof Type)
-        {
-            Type that = (Type)other;
-            if (this.isComplex() && that.isComplex())
-                return true;
+        if (this.isComplex() && that.isComplex())
+            return TypeComparisonResult.EQ;
+        if (that instanceof TypePrimitive) {
+            return TypeComparisonResult.knownOrNeq(this.type == ((TypePrimitive) that).type);
         }
-        // Two, these are both primitive types with the same type code.
-        if (!(other instanceof TypePrimitive))
-            return false;
-        TypePrimitive that = (TypePrimitive)other;
-        if (this.type != that.type)
-            return false;
-        return true;
+        return TypeComparisonResult.NEQ;
     }
 
     public Expression defaultValue () {

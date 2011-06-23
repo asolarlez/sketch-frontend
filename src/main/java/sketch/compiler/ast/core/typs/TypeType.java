@@ -2,6 +2,8 @@ package sketch.compiler.ast.core.typs;
 
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
+import static sketch.util.DebugOut.not_implemented;
+
 /**
  * type of a type. For example, if we have
  * 
@@ -31,5 +33,10 @@ public class TypeType extends Type {
 
     public Type maybeGetBase() {
         return base;
+    }
+
+    @Override
+    public TypeComparisonResult compare(Type that) {
+        return not_implemented();
     }
 }

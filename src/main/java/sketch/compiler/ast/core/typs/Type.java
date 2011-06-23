@@ -67,6 +67,19 @@ public abstract class Type
         return false;
     }
 
+    public final boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Type) {
+            return compare((Type) obj) == TypeComparisonResult.EQ;
+        } else {
+            return false;
+        }
+    }
+
+    public abstract TypeComparisonResult compare(Type that);
+
     /**
      * Find the lowest type that two types can promote to.
      *

@@ -134,33 +134,25 @@ public class TypeArray extends Type implements TypeArrayInterface
 
 
     // public boolean equals(Object other, Vector<Pair<Parameter, Parameter>> eqParams)
-    public boolean equals(Object other)
+    public TypeComparisonResult compare(Type other)
     {
         if (!(other instanceof TypeArray))
-            return false;
+            return TypeComparisonResult.NEQ;
+
         TypeArray that = (TypeArray)other;
-        if (!(this.getBase().equals(that.getBase())))
-            return false;
+        if (this.getBase().compare(that.getBase()) == TypeComparisonResult.NEQ) {
+            return TypeComparisonResult.NEQ;
+        }
+
+        // bases match, now compare lengths
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
-        // // FIXME -- hack!!!
-        // if (thisLen instanceof ExprVar && thatLen instanceof ExprVar) {
-        // ExprVar thisLen1 = (ExprVar)thisLen;
-        // ExprVar thatLen1 = (ExprVar)thatLen;
-        // for (Pair<Parameter, Parameter> p : eqParams) {
-        // if (p.getFirst().getName().equals(thisLen1.getName()) &&
-        // p.getSecond().getName().equals(thatLen1.getName()))
-        // {
-        // return true;
-        // }
-        // }
-        // }
-        if(thisLen.getIValue() != null && thatLen.getIValue() != null){
-        	return thisLen.getIValue().equals(thatLen.getIValue());
+        if (thisLen.getIValue() != null && thatLen.getIValue() != null) {
+            // both length expressions have integer values
+            return TypeComparisonResult.knownOrNeq(thisLen.getIValue().equals(
+                    thatLen.getIValue()));
         }
-        if (!(thisLen.equals(thatLen)))
-            return false;
-        return true;
+        return TypeComparisonResult.knownOrMaybe(thisLen.equals(thatLen));
     }
 
     // public boolean equals(Object other) {

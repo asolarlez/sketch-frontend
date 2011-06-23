@@ -41,6 +41,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeArrayInterface;
+import sketch.compiler.ast.core.typs.TypeComparisonResult;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -447,7 +448,8 @@ public class SemanticChecker
                         // continue;
                         // }
                         // }
-						if(! f1.getType().equals(f2.getType())){
+                        if (f1.getType().compare(f2.getType()) == TypeComparisonResult.NEQ)
+                        {
 							report(func, "Parameters of spec and sketch don't match: " + f1 + " vs. " + f2);
 							return super.visitFunction(func);
 						}

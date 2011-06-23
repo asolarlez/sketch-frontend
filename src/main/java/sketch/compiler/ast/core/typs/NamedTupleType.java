@@ -9,6 +9,9 @@ import sketch.compiler.ast.core.exprs.ExprType;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.util.fcns.ZipEnt;
+
+import static sketch.util.DebugOut.not_implemented;
+
 import static sketch.util.Misc.nonnull;
 import static sketch.util.fcns.Zip.zip;
 
@@ -89,5 +92,10 @@ public class NamedTupleType extends Type {
             }
             return this;
         }
+    }
+
+    @Override
+    public TypeComparisonResult compare(Type that) {
+        return not_implemented();
     }
 }

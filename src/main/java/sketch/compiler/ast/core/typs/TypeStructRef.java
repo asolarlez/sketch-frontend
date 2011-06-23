@@ -54,26 +54,6 @@ public class TypeStructRef extends Type
         return name;
     }
 
-    public boolean equals(Object other)
-    {
-        if (other instanceof TypeStruct)
-        {
-            TypeStruct that = (TypeStruct)other;
-            return name.equals(that.getName());
-        }
-
-        if (other instanceof TypeStructRef)
-        {
-            TypeStructRef that = (TypeStructRef)other;
-            return this.name.equals(that.name);
-        }
-
-        if (this.isComplex() && other instanceof Type)
-            return ((Type)other).isComplex();
-
-        return false;
-    }
-
     public boolean isStruct () { return true; }
 
     public Expression defaultValue () {
@@ -93,5 +73,20 @@ public class TypeStructRef extends Type
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
         return new TypeStructRef(memtyp, name);
+    }
+
+    @Override
+    public TypeComparisonResult compare(Type other) {
+        if (other instanceof TypeStruct) {
+            TypeStruct that = (TypeStruct) other;
+            return TypeComparisonResult.knownOrNeq(name.equals(that.getName()));
+        }
+
+        if (other instanceof TypeStructRef) {
+            TypeStructRef that = (TypeStructRef) other;
+            return TypeComparisonResult.knownOrNeq(this.name.equals(that.name));
+        }
+
+        return TypeComparisonResult.knownOrNeq(this.isComplex() && other.isComplex());
     }
 }
