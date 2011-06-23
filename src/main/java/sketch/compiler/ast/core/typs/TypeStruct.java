@@ -167,7 +167,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
             return TypeComparisonResult.knownOrNeq(this.name.equals(that.getName()));
         }
 
-        return TypeComparisonResult.knownOrNeq(this.isComplex() && other.isComplex());
+        return TypeComparisonResult.NEQ;
     }
 
     public int hashCode()

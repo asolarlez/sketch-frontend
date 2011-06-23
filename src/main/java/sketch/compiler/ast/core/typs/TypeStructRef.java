@@ -87,6 +87,6 @@ public class TypeStructRef extends Type
             return TypeComparisonResult.knownOrNeq(this.name.equals(that.name));
         }
 
-        return TypeComparisonResult.knownOrNeq(this.isComplex() && other.isComplex());
+        return TypeComparisonResult.NEQ;
     }
 }

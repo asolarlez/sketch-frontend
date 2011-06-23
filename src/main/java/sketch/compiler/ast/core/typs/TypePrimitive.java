@@ -237,8 +237,6 @@ public class TypePrimitive extends Type
 
     public TypeComparisonResult compare(Type that)
     {
-        if (this.isComplex() && that.isComplex())
-            return TypeComparisonResult.EQ;
         if (that instanceof TypePrimitive) {
             return TypeComparisonResult.knownOrNeq(this.type == ((TypePrimitive) that).type);
         }

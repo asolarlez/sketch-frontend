@@ -285,39 +285,12 @@ public class NodesToJava extends SymbolTableVisitor
     public String doAssignment(Expression lhs, Expression rhs,
                                SymbolTable symtab)
     {
-        // If the left-hand-side is a complex variable, we need to
-        // properly decompose the right-hand side.
-        // We can use a null stream type here since the left-hand
-        // side shouldn't contain pushes, pops, or peeks.
         GetExprType eType = new GetExprType(symtab, ss.getStreamType(),
                                             new java.util.HashMap());
         Type lhsType = (Type)lhs.accept(eType);
-        if (lhsType.isComplex())
-        {
-            Expression real = new ExprField(lhs, lhs, "real");
-            Expression imag = new ExprField(lhs, lhs, "imag");
-            // If the right hand side is complex too (at this point
-            // just test the run-time type of the expression), then we
-            // should do field copies; otherwise we only have a real part.
-            if (rhs instanceof ExprComplex)
-            {
-                ExprComplex cplx = (ExprComplex)rhs;
-                return real.accept(this) + " = " +
-                    cplx.getReal().accept(this) + ";\n" +
-                    imag.accept(this) + " = " +
-                    cplx.getImag().accept(this);
-            }
-            else
-                return real.accept(this) + " = " +
-                    rhs.accept(this) + ";\n" +
-                    imag.accept(this) + " = 0.0";
-        }
-        else
-        {
-            // Might want to special-case structures and arrays;
-            // ignore for now.
-            return lhs.accept(this) + " = " + rhs.accept(this);
-        }
+        // Might want to special-case structures and arrays;
+        // ignore for now.
+        return lhs.accept(this) + " = " + rhs.accept(this);
     }
 
 

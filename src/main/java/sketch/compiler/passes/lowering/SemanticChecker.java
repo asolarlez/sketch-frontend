@@ -734,20 +734,10 @@ public class SemanticChecker
 
 				Type lt = getType((Expression)expr.getLeft().accept(this));
 
-				// Either lt is complex, or it's a structure
-				// type, or it's null, or it's an error.
+                // Either lt is a structure type, or it's null, or it's an error.
 				if (lt == null)
 				{
 					// pass
-				}
-				else if (lt.isComplex())
-				{
-					String rn = expr.getName();
-					if (!rn.equals("real") &&
-							!rn.equals("imag"))
-						report(expr,
-								"complex variables have only "+
-						"'real' and 'imag' fields");
 				}
 				else if (lt instanceof TypeStruct)
 				{

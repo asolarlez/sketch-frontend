@@ -33,9 +33,6 @@ public abstract class Type
     public Type(CudaMemoryType memtyp) {
         this.memtyp = memtyp;
     }
-    
-    /** Returns true if this type is a complex type. */
-    public boolean isComplex() { return false; }
 
     /** @return true iff this type is a struct type. */
     public boolean isStruct () { return false; }
@@ -94,13 +91,6 @@ public abstract class Type
         if (that.promotesTo(this))
             return this;
         return null;
-    }
-    public Type makeNonDet()
-    {
-        return null;
-    }
-    public boolean isNonDet(){
-    	return false;
     }
 
     public Object accept(FEVisitor visitor){
