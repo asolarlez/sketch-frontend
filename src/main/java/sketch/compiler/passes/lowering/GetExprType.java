@@ -394,7 +394,7 @@ public class GetExprType extends FENullVisitor
     	    assert exp != null && symTab != null;
     		t = symTab.lookupVar(exp.getName());
     	}catch(UnrecognizedVariableException e){
-    		throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
+    		throw new UnrecognizedVariableException(exp.getCx() + ": The variable " + e.getMessage() + " has not been defined.");
     	}
         return t;
     }

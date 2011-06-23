@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -114,9 +115,31 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     List<String> opnames;
     List<Integer> opsizes;
     
+    private boolean visitingALen=false;
+    
+    public Object visitExprVar(ExprVar ev){
+        if(!visitingALen){
+            return super.visitExprVar(ev);
+        }else{
+            abstractValue avlen = (abstractValue)super.visitExprVar(ev);
+            if(avlen.isBottom()){  
+                this.exprRV = maxArrSize;
+                return maxArrSize.accept(this);
+            }else{
+                return avlen;
+            }
+        }
+    }
+    
     public Object visitTypeArray(TypeArray t) {
         Type nbase = (Type)t.getBase().accept(this);
-        abstractValue avlen = (abstractValue) t.getLength().accept(this);
+        visitingALen = true;
+        abstractValue avlen = null;
+        try{
+            avlen = (abstractValue) t.getLength().accept(this);
+        }finally{
+            visitingALen = false;
+        }
         Expression elen = t.getLength();
         Expression nlen;
         if(avlen.isBottom()){
@@ -128,6 +151,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
         return new TypeArray(nbase, nlen) ;
+    }
+    
+    protected Expression interpretActualParam(Expression e){
+        return maxArrSize;
     }
     
     

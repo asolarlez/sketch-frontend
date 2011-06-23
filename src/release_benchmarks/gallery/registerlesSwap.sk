@@ -2,25 +2,15 @@
 
 int W = 32;
 
-generator bit one(bit[W] x, bit[W] y){ return 1; } /* automatically rewritten */
-
-bit[2*W] swap(bit[W] x, bit[W] y){		
-	bit[2*W] out = 0;
-	out[0::W] = y;
-	out[W::W] = x;		
-	return out;
+void swap(ref bit[W] x, ref bit[W] y){		
+    int t = ??;
+    repeat(t){
+        if(??){ x = x ^ y;}else{ y = x ^ y; } 
+    }
 }
 
-
-bit[2*W] swapSK(bit[W] x, bit[W] y) implements swap{
-	int t = ??;
-	repeat(t){
-		if(??){ x = x ^ y;}else{ y = x ^ y; } 
-	}
-			
-	assert t < 5;
-	bit[2*W] out = 0;
-	out[0::W] = x;
-	out[W::W] = y;
-	return out;			
+harness void main(bit[W] x, bit[W] y){
+    bit[W] tx = x; bit[W] ty = y;
+    swap(x, y);
+    assert x==ty && y == tx;
 }

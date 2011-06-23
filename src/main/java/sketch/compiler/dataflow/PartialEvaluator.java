@@ -255,8 +255,9 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitExprTypeCast(ExprTypeCast exp) {
         abstractValue childExp = (abstractValue) exp.getExpr().accept(this);
         Expression narg = exprRV;
-        if(isReplacer) exprRV = new ExprTypeCast(exp, exp.getType(), exprRV );
-        return vtype.cast(childExp, exp.getType());
+        Type t = (Type) exp.getType().accept(this);
+        if(isReplacer) exprRV = new ExprTypeCast(exp, t, narg );
+        return vtype.cast(childExp, t);
     }
 
     public Object visitExprVar(ExprVar exp) {
@@ -415,6 +416,10 @@ public class PartialEvaluator extends FEReplacer {
         exprRV = star;
         return vtype.STAR(star);
     }
+    
+    protected Expression interpretActualParam(Expression e){
+        return e;
+    }
 
     public Object visitExprFunCall(ExprFunCall exp)
     {
@@ -433,7 +438,7 @@ public class PartialEvaluator extends FEReplacer {
             Expression actual = actualParams.next();
             Parameter param = formalParams.next();            
             Type paramType = (Type) ((Type)param.getType().accept(vrep)).accept(this);            
-            pmap.put(param.getName(), actual);
+            pmap.put(param.getName(), interpretActualParam(actual));
             nplist.add(new Parameter(paramType, param.getName(), param.getPtype()));
             boolean addedAlready = false;
             if( param.isParameterOutput()){
@@ -451,16 +456,19 @@ public class PartialEvaluator extends FEReplacer {
                 }
                 if(paramType instanceof TypeArray ){
                     TypeArray ta = (TypeArray) paramType;
+                    
+                    abstractValue fav = null;
                     if(av.isVect()){
                         List<abstractValue> lv = av.getVectValue();
                         if(lv.size() == ta.getLength().getIValue()){
-                            avlist.add(av);
+                            fav=(av);
                         }else{
-                            avlist.add(vtype.cast(av, ta));
+                            fav=(vtype.cast(av, ta));
                         }
                     }else{
-                        avlist.add(vtype.cast(av, ta));
+                        fav=(vtype.cast(av, ta));
                     }
+                    avlist.add(fav);
                 }else{
                     assert !av.isVect() || av.getVectValue().size() == 1;
                     avlist.add(av);
