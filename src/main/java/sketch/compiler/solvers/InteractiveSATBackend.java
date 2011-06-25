@@ -9,14 +9,14 @@ import java.util.Vector;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.InteractiveTimedProcess;
 
 public class InteractiveSATBackend extends SATBackend {
 
-	public InteractiveSATBackend(SequentialSketchOptions options,
+	public InteractiveSATBackend(SketchOptions options,
 			RecursionControl rcontrol, TempVarGen varGen) {
 		super(options, rcontrol, varGen);
 		ht = new StaticHoleTracker(varGen);

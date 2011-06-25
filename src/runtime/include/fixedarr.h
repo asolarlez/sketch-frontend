@@ -18,13 +18,24 @@ class fixedarrRef{
 		}
 		return *this;
 	}
-	
-	const fixedarrRef<T> &operator=(const T &v){
-		ref[0] = v;
-		return *this;
-	}
+
+#define FIXEDREF_OPERATOR(OPSTR) \
+    const fixedarrRef<T> &operator OPSTR(const T &v) { \
+        ref[0] OPSTR v; \
+        return *this; \
+    }
+    FIXEDREF_OPERATOR(=)
+    FIXEDREF_OPERATOR(+=)
+    FIXEDREF_OPERATOR(-=)
+    FIXEDREF_OPERATOR(*=)
+    FIXEDREF_OPERATOR(/=)
+    FIXEDREF_OPERATOR(%=)
+    FIXEDREF_OPERATOR(|=)
+    FIXEDREF_OPERATOR(&=)
+#undef FIXEDREF_OPERATOR
 
     T val() const { return ref[0]; }
+    operator const T&() const { return ref[0]; }
 };
 
 template<typename T, size_t N> 
@@ -46,6 +57,16 @@ public:
         arr[i] = ar.arr[i];
       }
    }
+
+    template <size_t Nprev> fixedarr(const fixedarr<T, Nprev>& ar) {
+        for(int i = 0; i < N; ++i) {
+            if (i < Nprev) {
+                arr[i] = ar.arr[i];
+            } else {
+                arr[i] = 0;
+            }
+        }
+    }
 
    template <size_t Ntag> const fixedarr<T,Ntag> sub (size_t offset) const{
       fixedarr<T, Ntag> tmp;
@@ -91,8 +112,12 @@ public:
 template <typename T, size_t Ntag> ostream &
 operator<< (ostream &out, fixedarr<T, Ntag> &v)
 {
-    for (int i = 0; i < Ntag; i++)
-	out << v[i].val()<<",";
+    out << "[ ";
+    for (int i = 0; i < Ntag; i++) {
+        out << v[i].val();
+        if (i != Ntag - 1) { out << ", "; }
+    }
+    out << " ]";
     return out;
 }
 

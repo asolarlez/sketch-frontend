@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Function.FuncType;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
@@ -132,9 +132,7 @@ public class Preprocessor extends FEReplacer {
     	}
         Statement newBody = (Statement)func.getBody().accept(this);
         if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
-        return new Function(func, func.getCls(),
-                            func.getName(), rtype,
-                            newParam, func.getSpecification(), newBody);
+        return func.creator().returnType(rtype).params(newParam).body(newBody).create();
     }
 
     public Object visitStmtFork(StmtFork loop){
@@ -156,7 +154,10 @@ public class Preprocessor extends FEReplacer {
     	}
     	Statement body = (Statement) loop.getBody().accept(this);
     	String fname = varGen.nextVar (PROC_PFX);
-    	Function fun = new Function(cx, FuncType.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars, body);
+        Function fun =
+                Function.creator(cx, fname, FcnType.Async).params(pars).body(body).create();
+        // new Function(cx, Function.FUNC_ASYNC, fname ,TypePrimitive.voidtype, pars,
+        // body);
 
     	generatedFuncs.add(fun);
 

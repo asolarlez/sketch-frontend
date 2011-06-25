@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -399,7 +400,7 @@ public class ProduceParallelModel extends FEReplacer {
 
 		bodyL.add(finalIf);
 
-		restFunction = Function.newHelper(ploop, funName, TypePrimitive.voidtype, parList, new StmtBlock((FEContext) null, bodyL));
+		restFunction = Function.creator(ploop, funName, FcnType.Generator).params(parList).body(new StmtBlock(bodyL)).create();
 
 		//So now we have build the rest function, but while we are at it, we are also going to build the main function.
 
@@ -491,7 +492,8 @@ public class ProduceParallelModel extends FEReplacer {
 		formals.add(new Parameter(new TypeArray(sType, SchedLen),SCHEDULE));
 		formals.add(outPar);
 		bodyL.add(0, new StmtAssign(new ExprVar((FEContext) null, outPar.getName()), ExprConstInt.zero));
-		return Function.newHelper((FEContext) null, oriName, TypePrimitive.voidtype, formals, specName, new StmtBlock((FEContext) null, bodyL));
+        return Function.creator((FEContext) null, oriName, FcnType.Generator).params(formals).spec(
+                specName).body(new StmtBlock(bodyL)).create();
 	}
 
 

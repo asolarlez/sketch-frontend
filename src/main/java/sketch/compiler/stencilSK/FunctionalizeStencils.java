@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -32,6 +33,7 @@ import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
+import sketch.util.exceptions.ExceptionAtNode;
 
 
 
@@ -361,9 +363,9 @@ public class FunctionalizeStencils extends FEReplacer {
 				lst.add( new StmtAssert( new ExprUnary("!",  new ExprVar(body, name)  ), false) );
 			}
 			
-			Function fun=Function.newHelper(f,f.getName(),TypePrimitive.voidtype,
-				driverParams, f.getSpecification(),
-				new StmtBlock(lst));
+            Function fun =
+                    f.creator().returnType(TypePrimitive.voidtype).params(driverParams).body(
+                            new StmtBlock(lst)).type(FcnType.Generator).create();
 			functions.add(fun);
 		}
 		return prog;
@@ -533,7 +535,9 @@ public class FunctionalizeStencils extends FEReplacer {
 							fparams.add(new Parameter(TypePrimitive.inttype, "idx_" + i));
 						}
 
-						Function ufun = Function.newUninterp(param.getName(), ptype, fparams);
+                        Function ufun =
+                                Function.creator(func, param.getName(), FcnType.Uninterp).returnType(
+                                        ptype).params(fparams).create();
 
 						inVars.put(param.getName(), ufun);
 						/////////////////
@@ -638,7 +642,9 @@ class ProcessStencil extends FEReplacer {
 		public Object visitStmtFor(StmtFor stmt)
 		{
 			FENode context = stmt;
-			assert stmt.getInit() instanceof StmtVarDecl;
+            if (!(stmt.getInit() instanceof StmtVarDecl)) {
+                throw new ExceptionAtNode("FunctionalizeStencils:645", stmt.getInit());
+            }
 			StmtVarDecl init = (StmtVarDecl) stmt.getInit();
 			assert init.getNumVars() == 1;
 			String indVar = init.getName(0);

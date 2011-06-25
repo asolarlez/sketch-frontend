@@ -1,20 +1,18 @@
 package sketch.compiler.main.seq;
 
-import java.util.Set;
 import java.util.Vector;
 
-import sketch.compiler.Directive;
-import sketch.compiler.Directive.OptionsDirective;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.cmdline.SolverOptions.SynthSolvers;
 import sketch.compiler.cmdline.SolverOptions.VerifSolvers;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 
 public class CommonSketchMain {
-    public SequentialSketchOptions options;
+    public SketchOptions options;
 
-    public CommonSketchMain(SequentialSketchOptions options) {
+    public CommonSketchMain(SketchOptions options) {
         this.options = options;
     }
 
@@ -81,12 +79,6 @@ public class CommonSketchMain {
             backendOptions.add("-nosim");
         }
         
-    }
-
-    protected void processDirectives(Set<Directive> D) {
-        for (Directive d : D)
-            if (d instanceof OptionsDirective)
-                options.prependArgsAndReparse(((OptionsDirective) d).options(), false);
     }
 
     protected void log(String msg) {

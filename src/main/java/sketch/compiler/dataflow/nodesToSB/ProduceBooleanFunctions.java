@@ -20,14 +20,17 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePortal;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
+import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.PartialEvaluator;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.exceptions.ExceptionAtNode;
 /**
  * This class translates the ast into a boolean function which is output to a file.
  * The format is suitable for the SBitII backend solver.<BR>
@@ -102,10 +105,6 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             case TypePrimitive.TYPE_COMPLEX: return "Complex";
             case TypePrimitive.TYPE_VOID: return "void";
             }
-        }
-        else if (type instanceof TypePortal)
-        {
-            return ((TypePortal)type).getName() + "Portal";
         }
         return null;
     }
@@ -270,7 +269,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         opsizes = new ArrayList<Integer>();
         opnames = new ArrayList<String>();
         
-        state.beginFunction(func.getName());
+        Level lvl = state.beginFunction(func.getName());
         doParams(func.getParams());
 
         
@@ -284,7 +283,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         doOutParams(func.getParams());
         
         ((NtsbVtype)this.vtype).out.println("}");
-        state.endFunction();
+        state.endFunction(lvl);
         
         opsizes = tmpopsz;
         opnames = tmpopnm;
@@ -326,19 +325,20 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 
                     List<Statement>  oldNewStatements = newStatements;
                     newStatements = new ArrayList<Statement> ();                    
-                    state.pushFunCall();
+                    Level lvl2 = state.pushFunCall(exp.getName());
                     try{
+                        Level lvl;
                         {
                             Iterator<Expression> actualParams = exp.getParams().iterator();                                     
                             Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            inParameterSetter(exp ,formalParams, actualParams, false);
+                            lvl = inParameterSetter(exp ,formalParams, actualParams, false);
                         }
                         Statement body = null;
                         try{
                             
                             body = (Statement) fun.getBody().accept(this);
                         }catch(RuntimeException ex){
-                            state.popLevel(); // This is to compensate for a pushLevel in inParamSetter. 
+                            state.popLevel(lvl); // This is to compensate for a pushLevel in inParamSetter. 
                             // Under normal circumstances, this gets offset by a popLevel in outParamSetter, but not in the pressence of exceptions.
                             throw ex;
                         }
@@ -346,10 +346,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                         {
                             Iterator<Expression> actualParams = exp.getParams().iterator();                                     
                             Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            outParameterSetter(formalParams, actualParams, false);
+                            outParameterSetter(formalParams, actualParams, false, lvl);
                         }                       
                     }finally{
-                        state.popFunCall();
+                        state.popFunCall(lvl2);
                         newStatements = oldNewStatements;
                     }
                     rcontrol.popFunCall(exp);
@@ -423,7 +423,18 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssign(s);
         
     }
-    
-    
-    
+
+    @Override
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        throw new ExceptionAtNode("Cuda threadIdx should be erased by now! "
+                + "Did you forget to add a \"device\" qualifier to the function?",
+                cudaThreadIdx);
+    }
+
+    @Override
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        throw new ExceptionAtNode("Cuda __syncthreads() should be erased by now! "
+                + "Did you forget to add a \"device\" qualifier to the function?",
+                cudaSyncthreads);
+    }
 }

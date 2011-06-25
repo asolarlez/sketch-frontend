@@ -16,15 +16,24 @@
 
 package sketch.compiler.ast.core.stmts;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+
+import static sketch.util.DebugOut.assertFalse;
+
+import static sketch.util.Misc.nonnull;
 
 /**
  * A variable-declaration statement.  This statement declares a
@@ -34,7 +43,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class StmtVarDecl extends Statement
+public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
 {
     private List<Type> types;
     private List<String> names;
@@ -116,11 +125,11 @@ public class StmtVarDecl extends Statement
     public StmtVarDecl(FENode context, Type type, String name,
                        Expression init)
     {
-        
-        this(context,
-             Collections.singletonList((type instanceof TypeStruct)? new TypeStructRef(((TypeStruct) type).getName()) : type),
-             Collections.singletonList(name),
-             Collections.singletonList(init));
+        this(context, Collections.singletonList(nonnull(
+                (type instanceof TypeStruct) ? new TypeStructRef(
+                        ((TypeStruct) type).getName()) : type,
+                "null type for StmtVarDecl ctor")), Collections.singletonList(name),
+                Collections.singletonList(init));
     }
 
     /**
@@ -143,6 +152,19 @@ public class StmtVarDecl extends Statement
              Collections.singletonList(type),
              Collections.singletonList(name),
              Collections.singletonList(init));
+    }
+
+    public StmtVarDecl(FENode node, Vector<VarDeclEntry> next) {
+        super(node);
+        this.types = new Vector<Type>(next.size());
+        this.names = new Vector<String>(next.size());
+        this.inits = new Vector<Expression>(next.size());
+
+        for (VarDeclEntry e : next) {
+            this.types.add(e.getType());
+            this.names.add(e.getName());
+            this.inits.add(e.getInit());
+        }
     }
 
     /**
@@ -297,5 +319,94 @@ public class StmtVarDecl extends Statement
                 result.append(" = " + inits.get(i));
         }
         return result.toString();
+    }
+
+    public static abstract class VarDeclEntry {
+        public abstract String getName();
+
+        public abstract Type getType();
+
+        public abstract Expression getInit();
+        
+        public ExprVar getVarRefToName(FENode ref) {
+            return new ExprVar(ref, getName());
+        }
+
+        public VarDeclEntry nextWithType(Type t) {
+            return new VarDeclEntryWithNames(getName(), t, getInit());
+        }
+
+        public VarDeclEntry nextWithInit(Expression init) {
+            return new VarDeclEntryWithNames(getName(), getType(), init);
+        }
+    }
+
+    public class VarDeclEntryInst extends VarDeclEntry {
+        protected final int idx;
+
+        public VarDeclEntryInst(int idx) {
+            this.idx = idx;
+            if (idx >= getNumVars()) {
+                throw new NoSuchElementException();
+            }
+        }
+
+        public String getName() {
+            return StmtVarDecl.this.getName(idx);
+        }
+
+        public Type getType() {
+            return StmtVarDecl.this.getType(idx);
+        }
+
+        public Expression getInit() {
+            return StmtVarDecl.this.getInit(idx);
+        }
+    }
+
+    public static class VarDeclEntryWithNames extends VarDeclEntry {
+        public final String name;
+        public final Type type;
+        public final Expression init;
+
+        public VarDeclEntryWithNames(String name, Type type, Expression init) {
+            this.name = name;
+            this.type = type;
+            this.init = init;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public Type getType() {
+            return this.type;
+        }
+
+        public Expression getInit() {
+            return this.init;
+        }
+   }
+
+    public class VarDeclEntryIterator implements Iterator<VarDeclEntry> {
+        int idx = 0;
+
+        public boolean hasNext() {
+            return idx < getNumVars();
+        }
+
+        public VarDeclEntry next() {
+            final VarDeclEntry vde = new VarDeclEntryInst(idx);
+            idx += 1;
+            return vde;
+        }
+
+        public void remove() {
+            assertFalse();
+        }
+    }
+
+    public Iterator<VarDeclEntry> iterator() {
+        return new VarDeclEntryIterator();
     }
 }

@@ -1,7 +1,5 @@
 package sketch.compiler.main;
 
-import static sketch.util.DebugOut.assertFalse;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -12,7 +10,10 @@ import java.security.CodeSource;
 import java.util.Properties;
 import java.util.Vector;
 
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
+
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printDebug;
 
 /**
  * get any variables related to this specific compile, e.g. version number, and resolve
@@ -81,7 +82,7 @@ public class PlatformLocalization {
         return jarpath;
     }
 
-    public String load_from_jar(String cegisName) {
+    public File load_from_jar(String cegisName) {
         try {
             URL rc_url = getCompilerRc(cegisName);
             if (rc_url != null) {
@@ -95,58 +96,167 @@ public class PlatformLocalization {
     }
 
     public String getCegisPath() {
-        String cegisName = "cegis" + (isWin() ? ".exe" : "");
-        SequentialSketchOptions options = SequentialSketchOptions.getSingleton();
-        Vector<File> all_files = new Vector<File>();
-        if (options.feOpts.cegisPath != null) {
-            all_files.add(path(options.feOpts.cegisPath));
+        SketchOptions options = SketchOptions.getSingleton();
+        String scriptingBinary = getCegisPathInner("cegis.py");
+        if (options.solverOpts.useScripting) {
+            return scriptingBinary;
         } else {
-            String jarfile = "";
+            return getCegisPathInner("cegis");
+        }
+    }
+
+    public abstract class ResolvePath {
+        public final String name;
+        protected final File[] otherPaths;
+
+        public ResolvePath(String name, File[] otherPaths) {
+            this.name = name;
+            this.otherPaths = otherPaths;
+        }
+
+        public File[] searchJarfile() {
+            File[] rv = {};
             if (platformMatchesJava() && tmpdir != null) {
                 // try to get it from the jar
-                jarfile = load_from_jar(cegisName);
+                File[] r = { load_from_jar(this.name) };
+                rv = r;
             } else if (isSet && tmpdir != null) {
                 System.err.println("Your system doesn't match the " +
                         "localization strings of the SKETCH jar: " + osname + ", " +
                         osarch);
             }
-            File jarpath = get_jarpath();
-            File[] files =
-                    {
-                            path(jarfile),
-                            path(jarpath, "cegis", "src", "SketchSolver", cegisName),
-                            path(jarpath, cegisName),
-                            path(".", "cegis", "src", "SketchSolver", cegisName),
-                            path("..", "sketch-backend", "src", "SketchSolver", cegisName),
-                            path(cegisName),
-                            path(usersketchdir, cegisName + "-" + version),
-                            path(usersketchdir, cegisName) };
-            for (File file : files) {
-                all_files.add(file);
-            }
-            for (String pathDir : System.getenv("PATH").split(File.pathSeparator)) {
-                all_files.add(path(pathDir, cegisName));
-            }
+            return rv;
         }
-        for (File file : all_files) {
-            if (file != null && file.isFile()) {
-                try {
-                    if (options.debugOpts.verbosity > 2) {
-                        System.out.println("resolved cegis to path " +
-                                file.getCanonicalPath());
-                    }
-                    return file.getCanonicalPath();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+
+        public File[] searchJarpath() {
+            File jarpath = get_jarpath();
+            File[] r =
+                    { path(jarpath, "cegis", "src", "SketchSolver", this.name),
+                            path(jarpath, this.name) };
+            return r;
+        }
+
+        public File[] searchEnvVar(String... envVars) {
+            Vector<File> all_files = new Vector<File>();
+            for (String envVar : envVars) {
+                String envString = System.getenv(envVar);
+                if (envString == null) {
+                    continue;
+                }
+                for (String pathDir : envString.split(File.pathSeparator)) {
+                    addEnvVarDirToVec(all_files, pathDir);
                 }
             }
+            return all_files.toArray(new File[0]);
         }
-        System.err.println("Could not find cegis binary. "
-                + "Searched the following paths (in order):");
-        for (File path : all_files) {
-            System.err.println("    " + path);
+
+        /** override me */
+        public void addEnvVarDirToVec(Vector<File> vec, String pathDir) {
+            vec.add(path(pathDir, this.name));
         }
-        return cegisName;
+
+        public abstract File[] searchEnvVars();
+
+        public File[] fromDefaultPaths(String... paths) {
+            Vector<File> all_files = new Vector<File>();
+            for (String path : paths) {
+                String[] v = path.split(File.separator);
+                String[] v2 = new String[v.length];
+                for (int a = 1; a < v.length; a++) {
+                    v2[a - 1] = v[a];
+                }
+                v2[v.length - 1] = this.name;
+                all_files.add(path(v[0], v2));
+            }
+            all_files.add(path(usersketchdir, this.name + "-" + version));
+            all_files.add(path(usersketchdir, this.name));
+            return all_files.toArray(new File[0]);
+        }
+
+        public abstract File[] searchDefaultPaths();
+
+        public String resolve() {
+            File[][] paths =
+                    { otherPaths, searchJarfile(), searchJarpath(), searchDefaultPaths(),
+                            searchEnvVars() };
+            return doResolve(paths);
+        }
+
+        public String doResolve(File[][] paths) {
+            SketchOptions options = SketchOptions.getSingleton();
+            for (File[] lst : paths) {
+                for (File file : lst) {
+                    if (file != null && file.isFile()) {
+                        try {
+                            if (options.debugOpts.verbosity > 2) {
+                                System.out.println("resolved " + this.name + " to path " +
+                                        file.getCanonicalPath());
+                            }
+                            return file.getCanonicalPath();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+            return this.name;
+        }
+    }
+
+    public class ResolveFromPATH extends ResolvePath {
+        public ResolveFromPATH(String name, File... otherPaths) {
+            super(name, otherPaths);
+        }
+
+        @Override
+        public void addEnvVarDirToVec(Vector<File> vec, String pathDir) {
+            vec.add(path(pathDir, this.name));
+            vec.add(path(pathDir, "src", "SketchSolver", this.name));
+            vec.add(path(pathDir, "..", "sketch-backend", "src", "SketchSolver",
+                    this.name));
+        }
+
+        @Override
+        public File[] searchEnvVars() {
+            return searchEnvVar("PATH", "SKETCH_HOME");
+        }
+
+        @Override
+        public File[] searchDefaultPaths() {
+            return fromDefaultPaths("cegis/src/SketchSolver",
+                    "../sketch-backend/src/SketchSolver");
+        }
+    }
+
+    public class ResolveRuntime extends ResolvePath {
+        public ResolveRuntime(String name, File... otherPaths) {
+            super(name, otherPaths);
+        }
+
+        @Override
+        public File[] searchEnvVars() {
+            return searchEnvVar("SKETCH_HOME");
+        }
+
+        @Override
+        public void addEnvVarDirToVec(Vector<File> vec, String pathDir) {
+            vec.add(path(pathDir, this.name));
+            vec.add(path(pathDir, "src", "runtime", "include", this.name));
+        }
+
+        @Override
+        public File[] searchDefaultPaths() {
+            return fromDefaultPaths("src/runtime/include");
+        }
+    }
+
+    public String getCegisPathInner(String name) {
+        SketchOptions options = SketchOptions.getSingleton();
+        if (options.feOpts.cegisPath != null) {
+            return (new ResolveFromPATH(name, path(options.feOpts.cegisPath))).resolve();
+        } else {
+            return (new ResolveFromPATH(name)).resolve();
+        }
     }
 
     /** make directories if they don't already exist, return $dirname$ or null */
@@ -182,14 +292,14 @@ public class PlatformLocalization {
         }
     }
 
-    protected String loadTempFile(InputStream fileIn, String cegisName) {
+    protected File loadTempFile(InputStream fileIn, String cegisName) {
         // try to extract it to the operating system temporary directory
         File path = new File(tmpdir, cegisName);
         String canonicalName = null;
         try {
             canonicalName = path.getCanonicalPath();
             if (path.exists() && (path.length() == fileIn.available())) {
-                return canonicalName;
+                return path;
             } else {
                 FileOutputStream fileOut = new FileOutputStream(path);
                 byte[] buffer = new byte[8192];
@@ -205,7 +315,7 @@ public class PlatformLocalization {
                             (new ProcessBuilder("chmod", "755", canonicalName)).start();
                     assert (proc.waitFor() == 0) : "couldn't make cegis executable";
                 }
-                return canonicalName;
+                return path;
             }
         } catch (Exception e) {
             System.err.println("couldn't extract cegis binary; " + e);
@@ -277,8 +387,7 @@ public class PlatformLocalization {
             FileWriter writer = new FileWriter(filePath);
             writer.write(contents);
             writer.close();
-            System.err.println("[DEBUG] [SKETCH] " + name + " written to file: " +
-                    filePath.getPath());
+            printDebug("[SKETCH] " + name + " written to file: " + filePath.getPath());
         } catch (IOException e) {
             System.err.println("[ERROR] [SKETCH] couldn't write output file " + filePath);
         }

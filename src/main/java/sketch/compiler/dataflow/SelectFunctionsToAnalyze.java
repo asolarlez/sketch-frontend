@@ -1,5 +1,7 @@
 package sketch.compiler.dataflow;
 
+import static sketch.util.Misc.nonnull;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +21,8 @@ public class SelectFunctionsToAnalyze {
            String specname = oldFunc.getSpecification();
            if( specname != null  ){
         	   result.add(oldFunc);
-        	   result.add(spec.getFuncNamed(specname));
+        	   result.add(nonnull(spec.getFuncNamed(specname),
+        	           "function named " + specname + " not found."));
            }
         }
 		return result;

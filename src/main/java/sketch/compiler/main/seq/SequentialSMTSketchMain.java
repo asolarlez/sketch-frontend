@@ -56,6 +56,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.BitTypeRemover;
 import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
 import sketch.compiler.passes.preprocessing.SimplifyExpressions;
@@ -463,6 +464,7 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 	protected void outputCCode() {
 
 		String resultFile = getOutputFileName();
+        final boolean tprintPyStyle = options.feOpts.tprintPython != null;
 		
 		if (!options.feOpts.outputCode) {
 			 finalCode.accept( new SimpleCodePrinter() );
@@ -471,10 +473,13 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 		} else {
 			try {
 				{
-					String hcode = (String) finalCode.accept(new NodesToH(resultFile));
-					String ccode = (String) finalCode.accept(new NodesToC(varGen,
-							resultFile));
-					
+                    String hcode =
+                            (String) finalCode.accept(new NodesToH(resultFile,
+                                    tprintPyStyle));
+                    String ccode =
+                            (String) finalCode.accept(new NodesToC(varGen, resultFile,
+                                    tprintPyStyle));
+
 					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + ".h");
 					outWriter.write(hcode);
@@ -487,8 +492,9 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 					outWriter.close();
 				}
 				if (options.feOpts.outputTest) {
-					String testcode = (String) beforeUnvectorizing
-							.accept(new NodesToCTest(resultFile));
+                    String testcode =
+                            (String) beforeUnvectorizing.accept(new NodesToCTest(
+                                    resultFile, tprintPyStyle));
 					Writer outWriter = new FileWriter(options.feOpts.outputDir
 							+ resultFile + "_test.cpp");
 					outWriter.write(testcode);
@@ -586,7 +592,8 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 	public void processing() {
         prog = (Program) prog.accept(new ConstantReplacer(null));
         // dump (prog, "After replacing constants:");
-        if (!SemanticChecker.check(prog, isParallel()))
+        ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
+        if (!SemanticChecker.check(prog, parallelCheck, true))
             throw new IllegalStateException("Semantic check failed");
 
         prog = preprocessProgram(prog); // perform prereq transformations

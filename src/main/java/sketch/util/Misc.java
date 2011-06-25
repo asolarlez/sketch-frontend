@@ -75,7 +75,7 @@ public class Misc extends AssertedClass
     }
 
 	/** Read all of IN into a string and return the string. */
-	public static String readStream (InputStream in, boolean logAllOutput) throws IOException {
+	public static String readStream (InputStream in, boolean logAllOutput, PrintStream altOut) throws IOException {
 		
 		OutputStream out;
 		if(logAllOutput){
@@ -83,18 +83,9 @@ public class Misc extends AssertedClass
 		}else{
 			out = new TruncatedOutputStream ();
 		}
-		Misc.dumpStreamTo (in, out);
+		Misc.dumpStreamTo (in, out, false, altOut);
 		return out.toString ();
 	}
-
-    /**
-     * Dump the stream IN to the stream _OUT.
-     * 
-     * @throws IOException
-     */
-    public static void dumpStreamTo(InputStream in, OutputStream out) throws IOException {
-        dumpStreamTo(in, out, false);
-    }
 
     /**
      * Dump the stream IN to the stream _OUT, optionally with line numbers.
@@ -102,16 +93,21 @@ public class Misc extends AssertedClass
      * @throws IOException
      */
     public static void dumpStreamTo(InputStream in, OutputStream _out,
-            boolean withLineNumbers) throws IOException
+            boolean withLineNumbers, PrintStream altOut) throws IOException
     {
-        int lineno = 0;
+        int lineno = 1;
         PrintStream out = new PrintStream(_out);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
         while ((line = reader.readLine()) != null) {
-            if (withLineNumbers)
-                out.print("[" + (++lineno) + "] ");
+            if (withLineNumbers) {
+                line = String.format("[%3d] %s", lineno, line);
+                lineno += 1;
+            }
             out.println(line);
+            if (altOut != null) {
+                altOut.println(line);
+            }
         }
     }
 
@@ -134,4 +130,11 @@ public class Misc extends AssertedClass
 	    assert obj != null : "nonnull assert";
 	    return obj;
 	}
+	
+    public static <T> T nonnull(T obj, String message) {
+        if (obj == null) {
+            DebugOut.assertFalse("nonnull() --", message);
+        }
+        return obj;
+    }
 }

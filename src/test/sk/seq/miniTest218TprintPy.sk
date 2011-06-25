@@ -1,0 +1,11 @@
+pragma options "-n -y outPyFile";
+
+printfcn void main() {
+    for (int x = 0; x < 4; x++) {
+        int v = ?? * x;
+        tprint("factor", v, "src", x);
+        if (x % 3 == 0) {
+            tprint("sync", 0);
+        }
+    }
+}

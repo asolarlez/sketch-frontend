@@ -41,7 +41,7 @@ public class EliminateLockUnlock extends FEReplacer {
 			StmtVarDecl svd = new StmtVarDecl(fun, new TypeArray(TypePrimitive.inttype, lockLen  ), locksVar.getName(), ExprConstInt.zero);
 			StmtBlock sb = new StmtBlock(svd, f.getBody());
 
-			f = new Function(f, f.getCls(), f.getName(), f.getReturnType(), f.getParams(), f.getSpecification(), sb);
+			f = f.creator().body(sb).create();
 
 		}
 		return f;

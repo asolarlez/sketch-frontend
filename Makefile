@@ -4,7 +4,7 @@ SHELL = /bin/bash
 
 VERSION = 1.4.0
 
-OPT_BUILDR = $(shell (which buildr 2>/dev/null >/dev/null && which buildr) || which mvn)
+MVN_PATH = $(shell which mvn)
 
 help:
 	@echo "NOTE - this makefile is mostly unix aliases. Use 'mvn install' to build."
@@ -16,15 +16,15 @@ help-all: # show uncommon commands as well
 
 show-info:
 	@echo "version = $(VERSION)"
-	@echo "buildr or maven = $(OPT_BUILDR)"
+	@echo "buildr or maven = $(MVN_PATH)"
 
 clean:
 	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
 	zsh -c "setopt -G; rm -rf **/(bin|target) .gen **/gen/ **/reports/junit"
 	zsh -c "setopt -G; rm -rf ~/.m2/repository/edu/berkeley/cs/sketch/sketch-frontend"
 
-compile: # build all sources with buildr (if found) or maven
-	$(OPT_BUILDR) compile
+compile: # compile all sources
+	$(MVN_PATH) compile
 
 maven-install: compile
 	mvn install -Dmaven.test.skip=true
@@ -90,13 +90,14 @@ test:
 
 test-seq: compile
 	set -o pipefail; mkdir -p target
-	time mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+	time mvn test "-Dtest=SequentialJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|ERROR\]|ASSERT FAILURE"
 
-test-par:
-	set -o pipefail; mkdir -p target; mvn test "-Dtest=ParallelJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+test-med-release-benchmarks: compile
+	set -o pipefail; mkdir -p target
+	time mvn test "-Dtest=MediumReleaseBenchmarks" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|ERROR\]|ASSERT FAILURE"
 
-test-sten:
-	set -o pipefail; mkdir -p target; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
+# test-sten:
+# 	set -o pipefail; mkdir -p target; mvn test "-Dtest=StencilJunitTest" | tee target/test_output.txt | grep -E "\[SKETCH\] running test|\[ERROR\]|ASSERT FAILURE"
 
 test-release-benchmarks:
 	for i in src/release_benchmarks/sk/*.sk; do make run-local-seq EXEC_ARGS="$$i"; done | tee target/test_output.txt | grep -E "Benchmark = src/release_benchmarks|\[ERROR\]|ASSERT FAILURE"
@@ -108,8 +109,7 @@ run-platform-seq: # run a test using the platform jar
 	java -cp target/sketch-*-all-*.jar -ea sketch.compiler.main.seq.SequentialSketchMain $(EXEC_ARGS)
 
 run-local-seq:
-	export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx600m -ea -server"
-	mvn -e -q compile exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+	@export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx600m -ea -server"; mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
 
 dump-fcn-info: # dump information about functions to a file. usage: EXEC_ARGS=filename.sk
 	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.other.ParseFunctions" "-Dexec.args=$(EXEC_ARGS)"

@@ -1,5 +1,7 @@
 package sketch.compiler.dataflow.nodesToSB;
 
+import static sketch.util.DebugOut.printWarning;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +12,7 @@ import java.util.Map;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -61,8 +64,13 @@ public class NtsbVtype extends IntVtype {
             for(int i=0; i<ssz; ++i){               
                 String cvar = oracle.addBinding(star.getDepObject(i));
                 String rval = "";
+
+                if (node instanceof ExprSpecialStar) {
+                    rval += ((ExprSpecialStar) node).name;
+                }
+
                 if(star.getSize() > 1)
-                    rval =  "<" + cvar + "  " + star.getSize() + isFixed+ "> ";
+                    rval +=  "<" + cvar + "  " + star.getSize() + isFixed+ "> ";
                 else
                     rval =  "<" + cvar +  "> ";
                 nv = new NtsbValue(rval, true);
@@ -134,6 +142,7 @@ public class NtsbVtype extends IntVtype {
             boolean c1 = v1.hasIntVal() && v2.knownGeqZero();
             boolean c2 = v1.knownGeqZero() && v2.hasIntVal();
             boolean c3 = v1.hasIntVal() && v2.hasIntVal();
+            // boolean c_original = v1.hasIntVal() || v2.hasIntVal();
             if (c1 || c2 || c3) {
                 if(v2.hasIntVal()){
                     abstractValue tmp = v2;
@@ -156,6 +165,9 @@ public class NtsbVtype extends IntVtype {
                 rv.B = B;
                 rv.X = X;
             }
+            // else if (c_original) {
+                // printWarning("skipping ax+b optimization for nodes", v1, v2);
+            // }
         }
         return rv;
     }

@@ -22,6 +22,7 @@ import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
  * A primitive type.  This can be int, float, or complex, depending on
@@ -105,6 +106,11 @@ public class TypePrimitive extends Type
      */
     private TypePrimitive(int type)
     {
+        this(CudaMemoryType.UNDEFINED, type);
+    }
+    
+    private TypePrimitive(CudaMemoryType cudaMemType, int type) {
+        super(cudaMemType);
         this.type = type;
     }
 
@@ -123,7 +129,11 @@ public class TypePrimitive extends Type
         return type == TYPE_COMPLEX;
     }
 
-    public String toString()
+    public String toString() {
+        return this.getCudaMemType().syntaxNameSpace() + toString2();
+    }
+
+    public String toString2()
     {
         switch (type)
         {
@@ -174,8 +184,8 @@ public class TypePrimitive extends Type
         if (super.promotesTo(that))
             return true;
         if (!(that instanceof TypePrimitive)){
-        	if(that instanceof TypeArray){
-        		return this.promotesTo(((TypeArray)that).getBase());
+        	if(that instanceof TypeArrayInterface){
+        		return this.promotesTo(((TypeArrayInterface)that).getBase());
         	}else{
         		if(this.type == TYPE_NULLPTR && that.isStruct ())
         			return true;
@@ -225,22 +235,12 @@ public class TypePrimitive extends Type
         }
     }
 
-    public boolean equals(Object other)
+    public TypeComparisonResult compare(Type that)
     {
-        // Two cases.  One, this is complex, and so is that:
-        if (other instanceof Type)
-        {
-            Type that = (Type)other;
-            if (this.isComplex() && that.isComplex())
-                return true;
+        if (that instanceof TypePrimitive) {
+            return TypeComparisonResult.knownOrNeq(this.type == ((TypePrimitive) that).type);
         }
-        // Two, these are both primitive types with the same type code.
-        if (!(other instanceof TypePrimitive))
-            return false;
-        TypePrimitive that = (TypePrimitive)other;
-        if (this.type != that.type)
-            return false;
-        return true;
+        return TypeComparisonResult.NEQ;
     }
 
     public Expression defaultValue () {
@@ -274,5 +274,10 @@ public class TypePrimitive extends Type
 
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypePrimitive(this);
+    }
+    
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        return new TypePrimitive(memtyp, this.type);
     }
 }

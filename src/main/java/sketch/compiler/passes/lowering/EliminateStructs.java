@@ -2,15 +2,9 @@
  *
  */
 package sketch.compiler.passes.lowering;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -133,9 +127,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        newBodyStmts.add (oldBody);
 	        StmtBlock newBody = new StmtBlock (oldBody, newBodyStmts);
 
-	        newFuncs.add( new Function (func2, func2.getCls (), func2.getName (),
-	        			func2.getReturnType (), newParams,
-	        			func2.getSpecification (), newBody));
+	        newFuncs.add(func2.creator().params(newParams).body(newBody).create());
 		}
 
 
@@ -178,9 +170,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        	newName = newName + "_2";
 	        }
 
-	        newFuncs.add(new Function (func2, func2.getCls (), newName,
-	        			func2.getReturnType (), newParams,
-	        			func2.getSpecification (), newBody));
+            newFuncs.add(func2.creator().name(newName).params(newParams).body(newBody).create());
         }
 		return null;
 	}
@@ -325,12 +315,12 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
-	    	for (int i = 0; i < struct.getNumFields (); ++i) {
-	    		String field = struct.getField (i);
-	    		fieldArrays.put (field,
-	    				new ExprVar (cx,
-	    						varGen.nextVar ("_"+struct.getName () +"_"+ field +"_")));
-	    	}
+            for (Entry<String, Type> entry : struct) {
+                fieldArrays.put(
+                        entry.getKey(),
+                        new ExprVar(cx, varGen.nextVar("_" + struct.getName() + "_" +
+                                entry.getKey() + "_")));
+            }
 	    }
 
 
@@ -449,7 +439,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return    An allocation guard
 	     */
 	    public StmtAssert makeAllocationGuard (FENode cx) {
-	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx), "Heap is too small. Make it bigger with the --heapsize flag", false);
+	    	return new StmtAssert (cx, this.getAllocationSafetyCheck (cx), "Heap is too small. Make it bigger with the --bnd-heap-size flag", false);
 	    }
 
 	    /**

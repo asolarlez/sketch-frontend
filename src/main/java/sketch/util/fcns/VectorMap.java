@@ -3,7 +3,7 @@ package sketch.util.fcns;
 import java.util.Vector;
 
 /**
- * lazily map values from one iterator to another.
+ * map values from one iterator to another.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

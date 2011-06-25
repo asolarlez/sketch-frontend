@@ -36,7 +36,7 @@ public class DebugOut {
         return "\u001b[" + bash_color + "m";
     }
 
-    public static void print_colored(String color, String prefix, String sep,
+    public static void print_stderr_colored(String color, String prefix, String sep,
             boolean nice_arrays, Object... text)
     {
         if (nice_arrays) {
@@ -64,18 +64,28 @@ public class DebugOut {
     {
         System.err.flush();
         System.out.flush();
+        print_stderr_colored(color, prefix, sep, nice_arrays, text);
+        System.err.flush();
+        System.out.flush();
+    }
+
+    public static void print_assert_false_colored(String color, String prefix,
+            String sep, boolean nice_arrays, Object... text)
+    {
+        System.err.flush();
+        System.out.flush();
         if (inAssertFalse) {
             return;
         } else {
             inAssertFalse = true;
         }
-        print_colored(color, prefix, sep, nice_arrays, text);
+        print_stderr_colored(color, prefix, sep, nice_arrays, text);
         System.err.flush();
         System.out.flush();
     }
 
     public static void print(Object... text) {
-        print_colored(BASH_BLUE, "[debug]", " ", false, text);
+        print_stderr_colored(BASH_BLUE, "[debug]", " ", false, text);
     }
 
     public static void fmt(String fmt, Object... args) {
@@ -83,13 +93,13 @@ public class DebugOut {
     }
 
     public static synchronized void print_mt(Object... text) {
-        print_colored(BASH_LIGHT_BLUE, thread_indentation.get() + "[debug-"
+        print_stderr_colored(BASH_LIGHT_BLUE, thread_indentation.get() + "[debug-"
                 + Thread.currentThread().getId() + "]", " ", false, text);
     }
 
     /** try not to go overboard with the # of these... */
     public enum StatusPrefix {
-        NOTE, DEBUG, FAILURE, WARNING
+        NOTE, DEBUG, FAILURE, WARNING, ERROR
     }
 
     /**
@@ -100,32 +110,52 @@ public class DebugOut {
             boolean nice_arrays, Object... description)
     {
         double time = time_.getTime();
-        print_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
+        print_stderr_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
+                nice_arrays, description);
+    }
+
+    /**
+     * try to use specialized functions, printNote, printError, etc. unless you want
+     * custom formatting
+     */
+    public static void printErrStatusMessage(String color, StatusPrefix prefix, String sep,
+            boolean nice_arrays, Object... description)
+    {
+        double time = time_.getTime();
+        print_err_colored(color, String.format("[%.4f - %s]", time, prefix), sep,
                 nice_arrays, description);
     }
 
     public static void printDebug(Object... description) {
-        printStatusMessage(BASH_GREEN, StatusPrefix.DEBUG, " ", false, description);
+        printErrStatusMessage(BASH_GREEN, StatusPrefix.DEBUG, " ", false, description);
     }
 
     public static void printFailure(Object... description) {
-        printStatusMessage(BASH_RED, StatusPrefix.FAILURE, " ", false, description);
+        printErrStatusMessage(BASH_RED, StatusPrefix.FAILURE, " ", false, description);
+    }
+
+    public static void printError(Object... description) {
+        printErrStatusMessage(BASH_RED, StatusPrefix.ERROR, " ", false, description);
     }
 
     public static void printNote(Object... description) {
-        printStatusMessage(BASH_BROWN, StatusPrefix.NOTE, " ", false, description);
+        printErrStatusMessage(BASH_BROWN, StatusPrefix.NOTE, " ", false, description);
     }
 
     public static void printWarning(Object... description) {
-        printStatusMessage(BASH_SALMON, StatusPrefix.WARNING, " ", false, description);
+        printErrStatusMessage(BASH_SALMON, StatusPrefix.WARNING, " ", false, description);
     }
 
-    public static void assertFalse(Object... description) {
-        print_err_colored(BASH_RED, "[ASSERT FAILURE] ", " ", false,
-                description);
+    public static void assertFalseMsg(String msg, Object... description) {
+        print_assert_false_colored(BASH_RED, msg, " ", false, description);
         inAssertFalse = false;
         assert (false);
         throw new java.lang.IllegalStateException("please enable asserts.");
+    }
+
+    public static <T> T assertFalse(Object... description) {
+        assertFalseMsg("[ASSERT FAILURE] ", description);
+        return null;
     }
 
     /** NOTE - don't use this in fast loops, as arrays are created */
@@ -135,15 +165,15 @@ public class DebugOut {
         }
     }
 
-    public static void not_implemented(Object... what) {
+    public static <T> T not_implemented(Object... what) {
         Object[] what_prefixed = new Object[what.length + 1];
         what_prefixed[0] = "Not implemented -";
         System.arraycopy(what, 0, what_prefixed, 1, what.length);
-        assertFalse(what_prefixed);
+        return assertFalse(what_prefixed);
     }
 
     public static void todo(Object... what) {
-        print_colored(BASH_BROWN, "[TODO] ", " ", false, what);
+        print_stderr_colored(BASH_BROWN, "[TODO] ", " ", false, what);
     }
 
     protected static class ThreadIndentation extends ThreadLocal<String> {
@@ -190,12 +220,12 @@ public class DebugOut {
             new ThreadIndentation();
 
     public static void print_exception(String text, Exception e) {
-        print_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
+        print_stderr_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
         e.printStackTrace();
     }
 
     public static void fail_exception(String text, Exception e) {
-        print_err_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
+        print_assert_false_colored(BASH_RED, "[EXCEPTION]", "\n", false, text);
         e.printStackTrace();
         throw new RuntimeException(e);
     }

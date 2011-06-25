@@ -22,6 +22,12 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
+import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
@@ -107,5 +113,15 @@ public class FENullVisitor implements FEVisitor
 	public Object visitStmtSwitch(StmtSwitch sw) { return null; }
 	public Object visitStmtMinimize(StmtMinimize stmtMinimize) { return null; }
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
+    public Object visitExprSpecialStar(ExprSpecialStar var) { return null; }
     public Object visitExprTprint(ExprTprint exprTprint) { return null; }
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) { return null; }
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) { return null; }
+    public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) { return null; }
+    public Object visitCudaInstrumentCall(CudaInstrumentCall cudaInstrumentCall) { return null; }
+    public Object visitExprRange(ExprRange exprRange) { return null; }
+    public Object visitStmtParfor(StmtParfor stmtParfor) { return null; }
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) { return null; }
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) { return null; }
+    public Object visitExprType(ExprType exprtyp) { return null; }
 }

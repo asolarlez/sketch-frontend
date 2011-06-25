@@ -1,9 +1,8 @@
 package sketch.compiler.codegenerators;
 
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
@@ -15,31 +14,44 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprTprint.CudaType;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtMinimize;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
+import sketch.util.wrapper.ScRichString;
+
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printWarning;
+
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 public class NodesToC extends NodesToJava {
 
-	private String filename;
+	protected String filename;
 	private boolean isBool = true;
-  private boolean lhsBitvec = false;
 
 	protected boolean addIncludes = true;
+	// FIXME hack for bad code generation
+    private boolean convertBoolConstants;
+    protected final boolean pythonPrintStatements;
 
-	public NodesToC(TempVarGen varGen, String filename) {
+    public NodesToC(TempVarGen varGen, String filename, boolean pythonPrintStatements) {
 		super(false, varGen);
 		this.filename=filename;
+        this.pythonPrintStatements = pythonPrintStatements;
 	}
 
 
@@ -238,8 +250,8 @@ public class NodesToC extends NodesToJava {
 
 	public Object visitExprConstInt(ExprConstInt exp)
     {
-		if(ctype == TypePrimitive.bittype){
-			return "bitvec<1>("+ exp.getVal() +"U)" ;
+        if (ctype.equals(TypePrimitive.bittype)) {
+            return "bitvec<1>(" + exp.getVal() + "U)";
 		}else{
 			return exp.getVal() + "";
 		}
@@ -249,15 +261,16 @@ public class NodesToC extends NodesToJava {
     {
 
 		if(isBool){
+            assert getType(exp.getElements().get(0)).equals(TypePrimitive.bittype) : "bit initializer not a bit";
 			StringBuffer sb = new StringBuffer();
-			sb.append("(char*) \"");
+			sb.append("((char*) \"");
 
 			List elems = exp.getElements();
 			for (int i=0; i<elems.size(); i++) {
 			    sb.append(elems.get(i));
 			}
 
-			sb.append("\"");
+			sb.append("\")");
 	        return sb.toString();
 		}else{
 			StringBuffer sb = new StringBuffer();
@@ -332,18 +345,25 @@ public class NodesToC extends NodesToJava {
         return result;
 	}
 
+    public String escapeCName(String s) {
+        if (s.equals("main")) {
+            return "main_c_escape";
+        } else if (s.equals("operator")) {
+            return "operator_c_escape";
+        } else {
+            return s;
+        }
+    }
+
 	public Object visitFunction(Function func)
     {
-
-
 		SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-
 
         String result = indent ;
         if (ss == null || !func.getName().equals(ss.getName()))
             result += convertType(func.getReturnType()) + " ";
-        result += func.getName();
+        result += escapeCName(func.getName());
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";
 
@@ -355,7 +375,7 @@ public class NodesToC extends NodesToJava {
    		 	for(Iterator<Parameter> it = l.iterator(); it.hasNext(); ){
    		 		Parameter p = it.next();
    		 		if(p.isParameterOutput()){
-   		 			Statement r = new StmtAssign(new ExprVar(func, p.getName()), ExprConstInt.zero);
+   		 			Statement r = new StmtAssign(new ExprVar(func, escapeCName(p.getName())), ExprConstInt.zero);
    		 			result += "\t" + (String) r.accept(this) + ";\n";
    		 		}
    		 	}
@@ -388,7 +408,7 @@ public class NodesToC extends NodesToJava {
             Type type = param.getType();
 
             if(symtab != null){
-	            symtab.registerVar(param.getName(),
+	            symtab.registerVar(escapeCName(param.getName()),
 	                    actualType(param.getType()),
 	                    param,
 	                    SymbolTable.KIND_FUNC_PARAM);
@@ -398,7 +418,7 @@ public class NodesToC extends NodesToJava {
             if (prefix != null) result += prefix + " ";
             result += typeForParam(type, param.isParameterOutput());
             result += " ";
-            result += param.getName();
+            result += escapeCName(param.getName());
             first = false;
         }
         result += ")";
@@ -406,90 +426,59 @@ public class NodesToC extends NodesToJava {
     }
 
     public String typeForParam(Type type, boolean isOutput){
-    	String postfix = isOutput? "&" : "";
-        if(type instanceof TypeArray){
-        	TypeArray otype = (TypeArray)type;
-        	type = ((TypeArray)type).getBase();
-        	if(type.equals(TypePrimitive.bittype)){
-        		return "bitvec<" + (otype).getLength() + "> " + postfix;
-        	}else{
-        		return "fixedarr<" + convertType(type) + ", " + (otype).getLength() + "> " + postfix;
-        	}
-        }else{
-        	return convertType(type) + postfix;
-        }
+        return convertType(type) + (isOutput ? "&" : "");
     }
 
 
 
-    public String typeForDecl(Type type, String name){
-    	String postFix = "";
-        if(type instanceof TypeArray){
-        	Type otype = type;
-        	type = ((TypeArray)type).getBase();
-        	if(type.equals(TypePrimitive.bittype)){
-        		return "bitvec<" + ((TypeArray)otype).getLength() + "> " + name + postFix ;
-        	}else{
-        		return "fixedarr<" + convertType(type) + ", " + ((TypeArray)otype).getLength() + "> " + name;
-        	}
-        }
-        return convertType(type) +  " " + name + postFix ;
+    public String typeForDecl(Type type) {
+        return convertType(type) +  " ";
     }
 
-    public Object visitStmtVarDecl(StmtVarDecl stmt)
-    {
-        String result = "";
-        for (int i = 0; i < stmt.getNumVars(); i++)
-        {
-        	if(i > 0){
-        		result += "; ";
-        	}
-        	symtab.registerVar(stmt.getName(i),
-                    actualType(stmt.getType(i)),
-                    stmt,
+    public Object visitStmtVarDecl(StmtVarDecl stmt) {
+        Vector<String> decls = new Vector<String>();
+        for (VarDeclEntry decl : stmt) {
+            symtab.registerVar(escapeCName(decl.getName()), actualType(decl.getType()), stmt,
                     SymbolTable.KIND_LOCAL);
-            Type type = stmt.getType(i);
-            if(type instanceof TypeArray){
-	            if( !((TypeArray)type).getBase().equals( TypePrimitive.bittype )){
-	            	isBool = false;
-	            }
-            }
-            result += typeForDecl(type,   stmt.getName(i));
-            ctype = type;
-            while(ctype instanceof TypeArray){
-            	ctype = ((TypeArray)ctype).getBase();
-            }
-            if (stmt.getInit(i) != null) {
-              String typeAsStr = "";
-              // NOTE(JY): Added cast.
-              if(type instanceof TypeArray){
-                Type otype = type;
-                type = ((TypeArray)type).getBase();
-                if(!type.equals(TypePrimitive.bittype)){
-                  typeAsStr = "(fixedarr<" + convertType(type) + ", " +
-                    ((TypeArray)otype).getLength() + ">)" ;
+            Type type = decl.getType();
+            if (type instanceof TypeArray) {
+                if (!((TypeArray) type).getBase().equals(TypePrimitive.bittype)) {
+                    isBool = false;
                 }
-              }
-              result += " = " + typeAsStr +
-                (String)stmt.getInit(i).accept(this);
-              isBool = true;
             }
+            String result = typeForDecl(type);
+            boolean oldIsBool = this.isBool;
+            setCtype(type);
+            if (decl.getInit() != null) {
+                result +=
+                        " " +
+                                processAssign(decl.getVarRefToName(stmt), decl.getInit(),
+                                        type, "=");
+            } else {
+                result += " " + escapeCName(decl.getName());
+            }
+            decls.add(result);
+            this.isBool = oldIsBool;
         }
-            return result;
-  }
+        return (new ScRichString(", ")).join(decls);
+    }
 
 	public Object visitExprFunCall(ExprFunCall exp)
     {
 		String result = "";
-        String name = exp.getName();
+        String name = escapeCName(exp.getName());
         result = name + "(";
         boolean first = true;
-        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
-            if (!first) result += ", ";
+        for (Iterator iter = exp.getParams().iterator(); iter.hasNext();) {
+            Expression param = (Expression) iter.next();
+            boolean oldIsBool = this.isBool;
+            this.isBool = false;
+            if (!first)
+                result += ", ";
             first = false;
-            result += (String)param.accept(this);
+            result += (String) param.accept(this);
+            this.isBool = oldIsBool;
+
         }
         result += ")";
         return result;
@@ -557,25 +546,60 @@ public class NodesToC extends NodesToJava {
         case ExprBinary.BINOP_BAND: op = " &= "; break;
         case ExprBinary.BINOP_BXOR: op = " ^= "; break;
         default: throw new IllegalStateException(stmt.toString()+" opcode="+stmt.getOp());
-      }
-      // Assume both sides are the right type.
+        }
+        // Assume both sides are the right type.
 
-      ctype = getType(stmt.getLHS());
-      while(ctype instanceof TypeArray){
-        ctype = ((TypeArray)ctype).getBase();
-      }
+        // method also used by StmtVarDecl
+        return processAssign(stmt.getLHS(), stmt.getRHS(), getType(stmt.getLHS()), op);
+    }
 
-      isLHS = true;
-      String lhs = (String)stmt.getLHS().accept(this);
-      isLHS = false;
-      // JY: We need to have some special cases for casting.
-      if ((ctype instanceof TypeArray) &&
-          (((TypeArray)ctype).getBase().equals(TypePrimitive.bittype))) {
-        lhsBitvec = true;
-      }
-      String rhs = (String)stmt.getRHS().accept(this);
-      lhsBitvec = false;
-      return lhs + op + rhs ;
+    private String processAssign(Expression lhs, Expression rhs, Type lhsType, String op)
+    {
+        boolean oldIsBool = isBool;
+        setCtype(lhsType);
+
+        isLHS = true;
+        String lhsStr = (String) lhs.accept(this);
+        isLHS = false;
+        String rhsStr = (String) rhs.accept(this);
+
+        if (lhsType instanceof TypeArray) {
+            Type otype = lhsType;
+            lhsType = ((TypeArray) lhsType).getBase();
+            if (!lhsType.equals(TypePrimitive.bittype)) {
+                rhsStr =
+                        "(fixedarr<" + convertType(lhsType) + ", " +
+                                ((TypeArray) otype).getLength() + ">)" + rhsStr;
+            }
+        } else if (lhsType.equals(TypePrimitive.bittype)) {
+            assert ctype.equals(TypePrimitive.bittype);
+//            boolean oldConvertBoolConstants = this.convertBoolConstants;
+//            this.convertBoolConstants = true;
+//            rhsStr = "CASTHERE " + getType(rhs) + rhsStr;
+//            this.convertBoolConstants = oldConvertBoolConstants;
+        }
+        
+        this.isBool = oldIsBool;
+
+        return lhsStr + op + rhsStr;
+    }
+
+    protected void setCtype(Type type) {
+        ctype = type;
+
+        /*
+         * FIXME -- what's going on here??
+         */
+        while (ctype instanceof TypeArray) {
+            ctype = ((TypeArray) ctype).getBase();
+        }
+
+        /** generate char arrays for bit vector constants */
+        if (type instanceof TypeArray) {
+            if (((TypeArray) type).getBase().equals(TypePrimitive.bittype)) {
+                isBool = true;
+            }
+        }
     }
 
   boolean isLHS = false;
@@ -611,6 +635,10 @@ public class NodesToC extends NodesToJava {
             if (!isBitvec && !range.hasLen()) {
               return lhs + ".get("+ tmp + ")";
 				} else{
+                    if (range.getLenExpression() == null) {
+                        printWarning("don't know range of", lhs);
+                        return lhs + ".sub<1>(" + tmp + ")";
+                    }
 					return lhs + ".sub<" + range.getLenExpression() + ">("+ tmp + ")";
 				}
 			}
@@ -633,36 +661,26 @@ public class NodesToC extends NodesToJava {
           }
         }
         result += "->";
-        result += (String)exp.getName();
+        result += escapeCName((String)exp.getName());
         return result;
     }
 
-	public Object visitExprTypeCast(ExprTypeCast exp)
-    {
-
-    	if( exp.getType() instanceof TypeArray ){
-    		TypeArray t = (TypeArray)exp.getType();
-    		assert t.getBase().equals(TypePrimitive.bittype): "TASDVAS " + exp;
-
-    		return "bitvec<" + t.getLength() + ">(" +
-            (String)exp.getExpr().accept(this) + ")";
-
-    	}
-
-        return "((" + convertType(exp.getType()) + ")(" +
-            (String)exp.getExpr().accept(this) + "))";
+	public Object visitExprTypeCast(ExprTypeCast exp) {
+        String exprInner = (String)exp.getExpr().accept(this);
+        if (exp.getType() instanceof TypeArray) {
+            return convertType(exp.getType()) + "(" + exprInner + ")";
+        }
+        return "((" + convertType(exp.getType()) + ")(" + exprInner + "))";
     }
 
 
 	@Override
 	public String convertType(Type type)
 	{
-	    assert type instanceof TypePrimitive || type instanceof TypeStructRef || type instanceof TypeStruct;
-		if(type instanceof TypeStructRef){
+        if (type instanceof TypeStructRef) {
 			return type.toString() + "*";
-		}
 
-		if(type instanceof TypePrimitive) {
+        } else if (type instanceof TypePrimitive) {
 			switch(((TypePrimitive)type).getType()) {
 				case TypePrimitive.TYPE_INT8:  return "unsigned char";
 				case TypePrimitive.TYPE_INT16: return "unsigned short int";
@@ -672,9 +690,23 @@ public class NodesToC extends NodesToJava {
 				case TypePrimitive.TYPE_BIT:   return "bitvec<1>";
 	            case TypePrimitive.TYPE_SIGINT: return "int";
 			}
-		}
+
+        } else if (type instanceof TypeArray) {
+            TypeArray t = (TypeArray)type;
+            Type typBase = t.getBase();
+            if (typBase.equals(TypePrimitive.bittype)) {
+                return "bitvec<" + t.getLength() + ">";
+            } else {
+                return "fixedarr<" + convertType(typBase) + ", " + t.getLength() + ">";
+            }
+
+		} else {
+            assertFalse("unknown type to convert: ", type);
+        }
+
 		return super.convertType(type);
 	}
+
 	public Object visitExprNullPtr(ExprNullPtr nptr){ return "NULL"; }
 	public Object visitExprConstBoolean(ExprConstBoolean exp)
     {
@@ -683,19 +715,80 @@ public class NodesToC extends NodesToJava {
         else
             return "bitvec<1>(0U)";
     }
-	
-	@Override
-	public Object visitExprTprint(ExprTprint exprTprint) {
-	    StringBuilder result = new StringBuilder();
-	    if (!exprTprint.expressions.isEmpty()) {
-	        result.append("cout << ");
-	        for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
-	            if (v.idx > 0) {
-	                result.append("\n" + this.indent + "  << ");
-	            }
-	            result.append("\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl");
-	        }
-	    }
-	    return result.toString();
-	}
+
+    @Override
+    public Object visitExprTprint(ExprTprint exprTprint) {
+        StringBuilder result = new StringBuilder();
+        result.append("cout");
+        for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
+            if (v.idx > 0) {
+                result.append("\n" + this.indent);
+            }
+            final String name;
+            final int nexpr = exprTprint.expressions.size();
+            if (pythonPrintStatements) {
+                name = tprintFmtPy(nexpr, v.idx == 0, v.entry.getFirst());
+                result.append(" << \"" + name + "\" << " + v.entry.getSecond());
+            } else {
+                name = tprintFmt(nexpr, v.idx == 0, v.entry.getFirst());
+                result.append(" << \"" + name + "\" << " + v.entry.getSecond());
+            }
+        }
+        if (pythonPrintStatements) {
+            result.append(" << \"),\" << endl");
+        } else {
+            result.append(" << endl");
+        }
+        return result.toString();
+    }
+
+    public String tprintFmt(int nexpr, boolean isFirst, final String name) {
+        if (nexpr <= 1) {
+            return ScRichString.padLeft(name, 30) + ": ";
+        } else {
+            return (isFirst ? "" : " ") + name + " ";
+        }
+    }
+
+    public String tprintFmtPy(int nexpr, boolean isFirst, final String name) {
+        if (isFirst) {
+            return "    " + pyClassName(name) + "(";
+        } else {
+            return ", " + pyFieldName(name) + "=";
+        }
+    }
+
+    /** capitalized name */
+    public static String pyClassName(String name) {
+        String result = String.valueOf(name.charAt(0)).toUpperCase();
+        boolean nextCapital = false;
+        for (int a = 1; a < name.length(); a++) {
+            char c = name.charAt(a);
+            if (c == ' ') {
+                nextCapital = true;
+            } else if (nextCapital) {
+                result += Character.toUpperCase(c);
+                nextCapital = false;
+            } else {
+                result += c;
+            }
+        }
+        return result;
+    }
+
+    public static String pyFieldName(String name) {
+        return name.replace(' ', '_').toLowerCase();
+    }
+
+    @Override
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        return cudaThreadIdx.toString();
+    }
+
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        return (new ExprTprint(stmtMinimize, CudaType.Unknown, new TprintTuple("[line " +
+                stmtMinimize.getCx().getLineNumber() + "] minimize() value",
+                stmtMinimize.getMinimizeExpr()))).accept(this);
+    }
 }

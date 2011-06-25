@@ -21,6 +21,8 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.passes.structure.ASTObjQuery;
+import sketch.compiler.passes.structure.GetAssignLHS;
 
 /**
  * Takes numeric constants defined at the beginning of the program and
@@ -32,7 +34,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
  */
 public class ConstantReplacer extends FEReplacer {
 
-	private HashMap<String,Integer> constants;
+    protected HashMap<String, Integer> constants;
     protected HashSet<String> assignedVars;
 
 	public ConstantReplacer(Map<String, Integer> subs) {
@@ -81,13 +83,20 @@ public class ConstantReplacer extends FEReplacer {
 		return new FieldDecl(field,types,names,inits);
 	}
 
+    /** can be overridden by subclasses */
+    public Expression replaceConstantExpr(ExprVar exp, int val) {
+        return new ExprConstInt(exp, val);
+    }
 
 	public Object visitExprVar(ExprVar exp) {
 		// TODO we should not be rewritign l-values right?  Add the code below?
 		// if (exp.isLValue()) return exp;
 		Integer val=constants.get(exp.getName());
-		if(val==null) return exp;
-		return new ExprConstInt(exp,val);
+        if (val == null) {
+            return exp;
+        } else {
+            return replaceConstantExpr(exp, val);
+        }
 	}
 
 
@@ -169,7 +178,7 @@ public class ConstantReplacer extends FEReplacer {
 			}
 		}
 		if(changed)
-			func=new Function(func,func.getCls(),func.getName(),func.getReturnType(),params,func.getSpecification(),func.getBody());
+		    func = func.creator().params(params).create();
 		return super.visitFunction(func);
 	}
 
@@ -192,22 +201,33 @@ public class ConstantReplacer extends FEReplacer {
 
     @Override
     public Object visitProgram(Program prog) {
-        final GetValDefs getValDefs = new GetValDefs();
-        getValDefs.visitProgram(prog);
-        this.assignedVars = getValDefs.vars;
+        this.assignedVars = (new GetValDefs()).run(prog);
         return super.visitProgram(prog);
     }
 
-    public static class GetValDefs extends FEReplacer {
-        public HashSet<String> vars = new HashSet<String>();
-        protected boolean isInAssign;
+    public static class GetValDefs extends ASTObjQuery<HashSet<String>> {
+        public GetValDefs() {
+            super(new HashSet<String>());
+        }
 
         @Override
         public Object visitStmtAssign(StmtAssign stmt) {
             try {
-                vars.add(stmt.getLhsBase().getName());
+                result.add(stmt.getLhsBase().getName());
             } catch (FEVisitorException e) {}
             return super.visitStmtAssign(stmt);
+        }
+
+        @Override
+        public Object visitExprUnary(ExprUnary exp) {
+            switch (exp.getOp()) {
+                case ExprUnary.UNOP_POSTDEC:
+                case ExprUnary.UNOP_POSTINC:
+                case ExprUnary.UNOP_PREDEC:
+                case ExprUnary.UNOP_PREINC:
+                    result.add(exp.getExpr().accept(new GetAssignLHS()).getName());
+            }
+            return super.visitExprUnary(exp);
         }
     }
 }

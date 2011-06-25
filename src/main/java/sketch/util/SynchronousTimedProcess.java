@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 
 /**
@@ -25,6 +25,7 @@ public class SynchronousTimedProcess {
 	protected float		timeoutMins;
 	protected long		startMs;
     public static final AtomicBoolean wasKilled = new AtomicBoolean(false);
+    protected final List<String> cmdLine;
 
 	public SynchronousTimedProcess (float timeoutMins, String... cmdLine)
 			throws IOException {
@@ -38,9 +39,10 @@ public class SynchronousTimedProcess {
 
 	public SynchronousTimedProcess (String workDir, float timeoutMins,
 				List<String> cmdLine) throws IOException {
+        this.cmdLine = cmdLine;
         for (String s : cmdLine)
             assert s != null : "Null elt of command: '" + cmdLine + "'";
-        if (SequentialSketchOptions.getSingleton().debugOpts.verbosity > 2) {
+        if (SketchOptions.getSingleton().debugOpts.verbosity > 2) {
             System.err.println("starting command line: " + cmdLine.toString());
         }
 		ProcessBuilder pb = new ProcessBuilder (cmdLine);
@@ -68,7 +70,14 @@ public class SynchronousTimedProcess {
 	public SynchronousTimedProcess (Process _proc, int _timeoutMins) {
 		timeoutMins = 0;
 		proc = _proc;
+		cmdLine = null;
 	}
+
+    @Override
+    public String toString() {
+        return "SynchronousTimedProcess[" + this.cmdLine + ", timeout=" + this.timeoutMins +
+                "]";
+    }
 
     public ProcessStatus run(boolean logAllOutput) {
         ProcessKillerThread killer = null;
@@ -81,8 +90,8 @@ public class SynchronousTimedProcess {
                 killer.start();
             }
 
-            status.out = Misc.readStream(proc.getInputStream(), logAllOutput);
-            status.err = Misc.readStream(proc.getErrorStream(), true);
+            status.out = Misc.readStream(proc.getInputStream(), logAllOutput, null);
+            status.err = Misc.readStream(proc.getErrorStream(), true, System.err);
             status.exitCode = proc.waitFor();
             status.execTimeMs = System.currentTimeMillis() - startMs;
 

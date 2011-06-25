@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -52,8 +53,14 @@ public class LockPreprocessing extends SymbolTableVisitor {
 		StreamSpec sspec = (StreamSpec)super.visitStreamSpec(spec);
 
 		sspec.getVars().add(new FieldDecl(spec, TypePrimitive.inttype, NTYPES.getName(), new ExprConstInt(lockedTypes.size())));
-		sspec.getFuncs().add(Function.newUninterp("lock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.inttype, "mem"))));
-		sspec.getFuncs().add(Function.newUninterp("unlock", TypePrimitive.voidtype, Collections.singletonList(new Parameter(TypePrimitive.inttype, "mem"))));
+        sspec.getFuncs().add(
+                Function.creator((FEContext) null, "lock", FcnType.Uninterp).params(
+                        Collections.singletonList(new Parameter(TypePrimitive.inttype,
+                                "mem"))).create());
+        sspec.getFuncs().add(
+                Function.creator((FEContext) null, "unlock", FcnType.Uninterp).params(
+                        Collections.singletonList(new Parameter(TypePrimitive.inttype,
+                                "mem"))).create());
 
 		return sspec;
     }

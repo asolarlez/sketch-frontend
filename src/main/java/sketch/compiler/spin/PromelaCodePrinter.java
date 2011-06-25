@@ -10,7 +10,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Function.FuncType;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
@@ -84,7 +84,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		println ("");
 
 		for (Function f : (List<Function>) ss.getFuncs ()) {
-			if (f.getCls ().contains(FuncType.FUNC_ASYNC))
+			if (f.getFcnType() == FcnType.Async)
 				emitProcess (f);
 			else if (null != f.getSpecification ()) {
 				f.assertTrue (!sawInit, "sorry, only one 'main()' function allowed");

@@ -2,8 +2,6 @@
  *
  */
 package sketch.compiler.passes.lowering;
-import static sketch.util.DebugOut.assertFalse;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +26,8 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * Rewrites array types and array accesses so that we are left with

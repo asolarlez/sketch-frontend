@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.ast.core;
+
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -117,57 +119,6 @@ public class StreamSpec extends FENode
     }
 
     /**
-     * Creates a new stream specification given its name and the text
-     * of its init function.  Useful for composite streams that have
-     * no other functions.
-     *
-     * @param context  front-end context indicating file and line
-     *                 number for the specification
-     * @param type     STREAM_* constant indicating the type of
-     *                 stream object
-     * @param st       stream type giving input and output types of
-     *                 the stream object
-     * @param name     string name of the object
-     * @param params   list of <code>Parameter</code> that are formal
-     *                 parameters to the stream object
-     * @param init     statement containing initialization code for
-     *                 the object
-     */
- /*   public StreamSpec(FENode context, int type, StreamType st,
-                      String name, List params, Statement init)
-    {
-        this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.newInit(init,
-                                                        init)));
-    } */
-
-    /**
-     * Creates a new stream specification given its name and the text
-     * of its init function.  Useful for composite streams that have
-     * no other functions.
-     *
-     * @param context  front-end context indicating file and line
-     *                 number for the specification
-     * @param type     STREAM_* constant indicating the type of
-     *                 stream object
-     * @param st       stream type giving input and output types of
-     *                 the stream object
-     * @param name     string name of the object
-     * @param params   list of <code>Parameter</code> that are formal
-     *                 parameters to the stream object
-     * @param init     statement containing initialization code for
-     *                 the object
-     * @deprecated
-     */
-   /* public StreamSpec(FEContext context, int type, StreamType st,
-                      String name, List params, Statement init)
-    {
-        this(context, type, st, name, params, Collections.EMPTY_LIST,
-             Collections.singletonList(Function.newInit(init,
-                                                        init)));
-    }*/
-
-    /**
      * Returns the type of this, as one of the integer constants above.
      *
      * @return  integer type of the stream object
@@ -251,9 +202,6 @@ public class StreamSpec extends FENode
     }
 
 
-
-
-
     /**
      * Returns the function with a given name contained in this, or
      * null.  name should not be null.  If multiple functions are
@@ -284,5 +232,10 @@ public class StreamSpec extends FENode
     public Object accept(FEVisitor v)
     {
         return v.visitStreamSpec(this);
+    }
+
+    public StreamSpec newFromFcns(List<Function> fcns) {
+        return new StreamSpec(this, this.getType(), this.getStreamType(), this.getName(),
+                this.getParams(), this.getVars(), Collections.unmodifiableList(fcns));
     }
 }

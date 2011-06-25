@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -18,29 +19,34 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.PlatformLocalization;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.compiler.passes.optimization.AbstractCostFcnAssert;
 import sketch.compiler.passes.optimization.CostFcnAssert;
 import sketch.compiler.passes.structure.HasMinimize;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
-import sketch.util.DebugOut;
 import sketch.util.Misc;
 import sketch.util.NullStream;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
 import sketch.util.datastructures.IntRange;
+import sketch.util.exceptions.SketchNotResolvedException;
+import sketch.util.exceptions.SketchSolverException;
+
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
 
-	String solverErrorStr;
+    String solverErrorStr;
 	final RecursionControl rcontrol;
 	final TempVarGen varGen;
 	protected ValueOracle oracle;
 	private boolean tracing = false;
 	private SATSolutionStatistics lastSolveStats;
-    public final SequentialSketchOptions options;
+    public final SketchOptions options;
 
-	public SATBackend(SequentialSketchOptions options, 
+	public SATBackend(SketchOptions options, 
 	        RecursionControl rcontrol, TempVarGen varGen)
 	{
 		this.options = options;
@@ -52,12 +58,14 @@ public class SATBackend {
 		tracing = true;
 	}
 	
-	public String[] getBackendCommandline(Vector<String> commandLineOptions){
+	public String[] getBackendCommandline(Vector<String> commandLineOptions_, String... additional){
+        Vector<String> commandLineOptions = (Vector<String>) commandLineOptions_.clone();
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
         commandLineOptions.add("-o");
-        commandLineOptions.add(options.getTmpSketchFilename() + ".tmp");
+        commandLineOptions.add(options.getSolutionsString());
+        commandLineOptions.addAll(Arrays.asList(additional));
         commandLineOptions.add(options.getTmpSketchFilename());
         return commandLineOptions.toArray(new String[0]);
     }
@@ -74,66 +82,48 @@ public class SATBackend {
     }
 
     public boolean partialEvalAndSolve(Program prog) {
+        // prog.debugDump("Program before solving");
         oracle = new ValueOracle(new StaticHoleTracker(varGen));
         log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         // prog.accept(new SimpleCodePrinter());
         assert oracle != null;
-        writeProgramToBackendFormat(prog);
 
         final HasMinimize hasMinimize = new HasMinimize();
         hasMinimize.visitProgram(prog);
-
-        final String tmpSketchFilename = options.getTmpSketchFilename();
-        File sketchOutputFile = new File(tmpSketchFilename + ".tmp");
-        File bestValueFile =
-                hasMinimize.hasMinimize() ? new File(tmpSketchFilename + ".best")
-                        : sketchOutputFile;
+        options.cleanTemp();
 
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
-            IntRange currRange = IntRange.inclusive(0, 2 * options.bndOpts.costEstimate);
-            float timeout =
-                    Math.max(1.f, options.solverOpts.timeout) / ((float) (1 << 10));
-            for (int a = 0; a < 100 && !currRange.isEmpty(); a++) {
-                // choose a value from not-yet-inspected values
-                final int currValue = (int) currRange.middle();
-                System.err.println("current: " + currValue + " \\in " + currRange);
-                log(2, "current range: " + currValue + " \\in " + currRange);
-
-                // rewrite the minimize statements in the program
-                final CostFcnAssert costFcnAssert = new CostFcnAssert(currValue);
+            if (options.feOpts.minimize) {
+                assert false : "deprecated";
+                // use the frontend
+//                bestValueFile = new File(tmpSketchFilename + ".best");
+//                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
+            } else {
+                // use the backend
+                printNote("enabling scripting backend due to presence of minimize()");
+                options.solverOpts.useScripting = true;
+                final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
-
-                // actually run the solver
-                boolean currResult = solve(oracle, timeout);
-                worked |= currResult;
-                if (!currResult) {
-                    // didn't work. explore the upper interval, and explore more if we
-                    // haven't
-                    // found any solution yet
-                    currRange = currRange.nextInfemum(currValue);
-                    if (!worked) {
-                        timeout *= 2;
-                        currRange = currRange.nextMax(currRange.max * 2);
-                        // if the sketch is buggy, don't take too much time to fail.
-                        if (a >= 10) {
-                            break;
-                        }
-                    }
-                } else {
-                    // try the next range, and save the result
-                    currRange = currRange.nextSupremum(currValue);
-                    try {
-                        FileUtils.copyFile(sketchOutputFile, bestValueFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    worked = solve(oracle, true, options.solverOpts.timeout);
+                } catch (SketchSolverException e) {
+                    e.setBackendTempPath(options.getTmpSketchFilename());
                 }
             }
         } else {
-            worked = solve(oracle, options.solverOpts.timeout);
+            writeProgramToBackendFormat(prog);
+            try {
+                worked = solve(oracle, false, options.solverOpts.timeout);
+            } catch (SketchSolverException e) {
+                e.setBackendTempPath(options.getTmpSketchFilename());
+            }
+        }
+
+        if (!worked && !options.feOpts.forceCodegen) {
+            throw new SketchNotResolvedException(options.getTmpSketchFilename());
         }
 
         {
@@ -148,14 +138,55 @@ public class SATBackend {
             }
         }
 
-        if (!worked && !options.feOpts.forceCodegen) {
-            if (SynchronousTimedProcess.wasKilled.get()) {
-                System.exit(1);
-            }
-            throw new RuntimeException("The sketch could not be resolved.");
+        File[] solutions = options.getSolutionsFiles();
+        if (solutions.length == 0) {
+            assertFalse("No solutions found in folder", options.sktmpdir());
         }
+        extractOracleFromOutput(solutions[0].getPath());
+        return worked;
+    }
 
-        extractOracleFromOutput(bestValueFile.getPath());
+    protected boolean frontendMinimize(Program prog, File sketchOutputFile,
+            File bestValueFile, boolean worked)
+    {
+        IntRange currRange = IntRange.inclusive(0, 2 * options.bndOpts.costEstimate);
+        float timeout = Math.max(1.f, options.solverOpts.timeout) / ((float) (1 << 10));
+        for (int a = 0; a < 100 && !currRange.isEmpty(); a++) {
+            // choose a value from not-yet-inspected values
+            final int currValue = (int) currRange.middle();
+            System.err.println("current: " + currValue + " \\in " + currRange);
+            log(2, "current range: " + currValue + " \\in " + currRange);
+
+            // rewrite the minimize statements in the program
+            final CostFcnAssert costFcnAssert = new CostFcnAssert(currValue);
+            writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
+
+            // actually run the solver
+            boolean currResult = solve(oracle, false, timeout);
+            worked |= currResult;
+            if (!currResult) {
+                // didn't work. explore the upper interval, and explore more if we
+                // haven't
+                // found any solution yet
+                currRange = currRange.nextInfemum(currValue);
+                if (!worked) {
+                    timeout *= 2;
+                    currRange = currRange.nextMax(currRange.max * 2);
+                    // if the sketch is buggy, don't take too much time to fail.
+                    if (a >= 10) {
+                        break;
+                    }
+                }
+            } else {
+                // try the next range, and save the result
+                currRange = currRange.nextSupremum(currValue);
+                try {
+                    FileUtils.copyFile(sketchOutputFile, bestValueFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return worked;
     }
 
@@ -176,6 +207,7 @@ public class SATBackend {
 
             outStream.flush();
             outStream.close();
+            assert (new File(options.getTmpSketchFilename())).isFile() : "didn't appear to write file";
         } catch (java.io.IOException e) {
             // e.printStackTrace(System.err);
             throw new RuntimeException(e);
@@ -206,22 +238,47 @@ public class SATBackend {
 
 
 	
+    private boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
+        Vector<String> backendOptions = options.getBackendOptions();
+        log("OFILE = " + options.feOpts.output);
 
-	private boolean solve(ValueOracle oracle, float timeoutMins){
+        int rangeStart = options.bndOpts.intRange0;
+        int rangeMax = options.bndOpts.intRange;
+        if (rangeMax < rangeStart) {
+            rangeMax = rangeStart;
+        }
 
-		log ("OFILE = " + options.feOpts.output);
-		
-		if (options.bndOpts.incremental.isSet) {
+        // minimize
+        if (hasMinimize) {
+            String[] commandLine =
+                    getBackendCommandline(backendOptions, "--use-minimize");
+            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            // for (int a = rangeStart; a <= rangeMax; a *= 2) {
+            // String[] commandLine = getBackendCommandline(backendOptions,
+            // "--use-minimize", "--bnd-int-range", a + "");
+            // ret = runSolver(commandLine, 0, timeoutMins);
+            // if (ret) {
+            // break;
+            // } else if (2 * a <= rangeMax) {
+            // printDebug("Trying next int range bound", 2 * a);
+            // }
+            // }
+
+            if (!ret) {
+                log(5, "Backend returned error code");
+                // System.err.println(solverErrorStr);
+                return false;
+            }
+
+        // TODO -- move incremental to Python backend
+        } else if (options.bndOpts.incremental.isSet) {
 			boolean isSolved = false;
 			int bits=0;
 			int maxBits = options.bndOpts.incremental.value;
 			for(bits=1; bits<=maxBits; ++bits){
 				log ("TRYING SIZE " + bits);			
-				Vector<String> backendOptions = options.getBackendOptions();
-				backendOptions.add("-overrideCtrls");
-				backendOptions.add("" + bits);
-				String[] commandLine = getBackendCommandline(backendOptions);
-				
+                String[] commandLine =
+                        getBackendCommandline(backendOptions, "--bnd-cbits=" + bits);
 				boolean ret = runSolver(commandLine, bits, timeoutMins);
 				if(ret){
 					isSolved = true;
@@ -231,23 +288,35 @@ public class SATBackend {
 				}
 			}
 			if(!isSolved){
-				log (0, "The sketch cannot be resolved");
-				System.err.println(solverErrorStr);
+				log (5, "The sketch cannot be resolved.");
+				// System.err.println(solverErrorStr);
 				return false;
 			}
 			log ("Succeded with " + bits + " bits for integers");
 			oracle.capStarSizes(bits);
+
+		// default
         } else {
-            Vector<String> backendOptions = options.getBackendOptions();
             String[] commandLine = getBackendCommandline(backendOptions);
-			boolean ret = runSolver(commandLine, 0, timeoutMins);
-			if(!ret){
-				log (0, "The sketch cannot be resolved");
-				System.err.println(solverErrorStr);
-				return false;
-			}
-		}
-		return true;
+            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            // for (int a = rangeStart; a <= rangeMax; a *= 2) {
+            // String[] commandLine = getBackendCommandline(backendOptions,
+            // "--bnd-int-range", a + "");
+            // ret = runSolver(commandLine, 0, timeoutMins);
+            // if (ret) {
+            // break;
+            // } else if (2 * a <= rangeMax) {
+            // printDebug("Trying next int range bound", 2 * a);
+            // }
+            // }
+
+            if (!ret) {
+                log(5, "Backend returned error code");
+                // System.err.println(solverErrorStr);
+                return false;
+            }
+        }
+        return true;
 	}
 
 
@@ -264,8 +333,8 @@ public class SATBackend {
         try {
             proc = new SynchronousTimedProcess(timeoutMins, commandLine);
         } catch (IOException e) {
-            DebugOut.printFailure("Could not instantiate solver (CEGIS) process.");
-            throw new RuntimeException(e);
+            throw new SketchSolverException(
+                    "Could not instantiate solver (CEGIS) process.", e);
         }
 
         final ProcessStatus status = proc.run(false);
@@ -273,18 +342,20 @@ public class SATBackend {
         // deal with killed states
         if (!status.killedByTimeout) {
             if (status.exitCode != 0 && status.err.contains("I've been killed.")) {
-                DebugOut.printNote("CEGIS was killed (assuming user kill); exiting.");
-                System.exit(status.exitCode);
+                throw new SketchSolverException(
+                        "CEGIS was killed (assuming user kill); exiting.");
             } else if (status.exception != null) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {}
                 if (SynchronousTimedProcess.wasKilled.get()) {
-                    DebugOut.printNote("CEGIS was killed (assuming user kill); exiting.");
-                    System.exit(status.exitCode);
+                    throw new SketchSolverException(
+                            "CEGIS was killed (assuming user kill); exiting.");
                 } else {
                     throw new RuntimeException(status.exception);
                 }
+            } else if (status.exitCode == 103) {
+                throw new SketchSolverException("CEGIS ran out of memory");
             }
         } else if (status.exception instanceof IOException) {
             System.err.println("Warning: lost some output from backend because of timeout.");

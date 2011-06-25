@@ -2,10 +2,9 @@
 
 modpath="$(dirname "$(readlink -f "$0")")"
 
+set -v
 mkdir -p ~/.vim/syntax
+mkdir -p ~/.vim/ftdetect
 rm -f ~/.vim/syntax/sketch.vim
-ln -s "$modpath"/sketch.vim ~/.vim/syntax
-if ! [ -f ~/.vimrc ] || ! grep 'au BufNewFile,BufRead \*\.sk,\*\.sk\.jinja2 setf sketch' ~/.vimrc; then
-    echo "echo 'au BufNewFile,BufRead *.sk,*.sk.jinja2 setf sketch' >> ~/.vimrc"
-    echo 'au BufNewFile,BufRead *.sk,*.sk.jinja2 setf sketch' >> ~/.vimrc
-fi
+ln -s "$modpath"/syntax/sketch.vim ~/.vim/syntax
+ln -s "$modpath"/ftdetect/sketch.vim ~/.vim/ftdetect

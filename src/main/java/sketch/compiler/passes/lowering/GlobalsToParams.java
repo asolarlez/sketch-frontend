@@ -3,13 +3,14 @@ package sketch.compiler.passes.lowering;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -23,7 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.compiler.passes.structure.CallGraph.CallEdge;
@@ -111,7 +112,7 @@ public class GlobalsToParams extends FEReplacer {
         }
 
         // add all necessary params for callers (closure of above)
-        for (CallEdge closureEdge : callGraph.closureEdges.edges) {
+        for (CallEdge closureEdge : callGraph.closureEdges) {
             final Function caller = closureEdge.caller();
             final Function callee = closureEdge.target();
             final HashMap<String, AddedParam> callerParams =
@@ -167,13 +168,12 @@ public class GlobalsToParams extends FEReplacer {
         // the hashmap only contains keys for the old function.
         // NOTE -- a litte messy, please add better ideas if you have them.
         if (newParamsForCall.containsKey(inputFcn)) {
-            if (fcn.getSpecification() == null) {
+            if (!callGraph.isSketchOrSpec(fcn)) {
                 final Vector<Parameter> params = new Vector<Parameter>(fcn.getParams());
 
                 // same here, need to look up the old function
                 params.addAll(getParametersForFcn(inputFcn));
-                return new Function(fcn, fcn.getCls(), fcn.getName(),
-                        fcn.getReturnType(), params, fcn.getBody());
+                return fcn.creator().params(params).create();
             } else {
                 StmtBlock body = (StmtBlock) fcn.getBody();
                 Vector<Statement> stmts = new Vector<Statement>(body.getStmts());
@@ -190,9 +190,7 @@ public class GlobalsToParams extends FEReplacer {
                     }
                 }
                 body = new StmtBlock(stmts);
-                return new Function(fcn, fcn.getCls(), fcn.getName(),
-                        fcn.getReturnType(), fcn.getParams(), fcn.getSpecification(),
-                        body);
+                return fcn.creator().body(body).create();
             }
         } else {
             return fcn;
@@ -243,8 +241,8 @@ public class GlobalsToParams extends FEReplacer {
         StmtAssign assign = new StmtAssign(new ExprVar(ctx, tmpName), expression);
 
         StmtBlock body = new StmtBlock(assign);
-        return Function.newStatic(ctx, varGen.nextVar("glblInit_" + glblName), TypePrimitive.voidtype,
-                params, null, body);
+        return Function.creator(ctx, varGen.nextVar("glblInit_" + glblName),
+                FcnType.Static).params(params).body(body).create();
     }
 
     public class AddedParam {
@@ -254,7 +252,7 @@ public class GlobalsToParams extends FEReplacer {
 
         public AddedParam(String globalVar, Type typ, String paramName) {
             this.globalVar = globalVar;
-            this.typ = typ;
+            this.typ = typ.withMemType(CudaMemoryType.GLOBAL);
             this.paramName = paramName;
         }
 

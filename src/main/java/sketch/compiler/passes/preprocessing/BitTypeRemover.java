@@ -205,7 +205,7 @@ public class BitTypeRemover extends SymbolTableVisitor
     private Type getVarType(Expression e)
     {
     	if(e instanceof ExprVar) {
-    		return symtab.lookupVar(((ExprVar)e).getName());
+            return symtab.lookupVar(((ExprVar) e).getName(), e);
     	}
     	else if(e instanceof ExprArrayRange) {
     		return getVarType(((ExprArrayRange)e).getBase());
@@ -224,7 +224,7 @@ public class BitTypeRemover extends SymbolTableVisitor
     private Type getVarPType(Expression e)
     {
     	if(e instanceof ExprVar) {
-    		return preSymtab.lookupVar(((ExprVar)e).getName());
+            return preSymtab.lookupVar(((ExprVar) e).getName(), e);
     	}
     	else if(e instanceof ExprArrayRange) {
     		return getVarPType(((ExprArrayRange)e).getBase());
@@ -295,7 +295,7 @@ public class BitTypeRemover extends SymbolTableVisitor
             	newParams.add(param);
         }
         if(change)
-        	func=new Function(func,func.getCls(),func.getName(),func.getReturnType(),newParams,func.getSpecification(),func.getBody());
+            func = func.creator().params(newParams).create();
 		Object ret=super.visitFunction(func);
 		preSymtab=oldPST;
 		return ret;

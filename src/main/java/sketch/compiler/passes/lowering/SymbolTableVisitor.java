@@ -31,11 +31,14 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtImplicitVarDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 
 /**
@@ -95,10 +98,16 @@ public class SymbolTableVisitor extends FEReplacer
      */
     public SymbolTableVisitor(SymbolTable symtab, StreamType st)
     {
-        this.symtab = symtab;
+        this.symtab = (symtab == null ? new SymbolTable(null) : symtab);
         this.streamType = st;
         this.structsByName = new java.util.HashMap();
     }
+
+    public Type getTypeOrNotYetComputed(Expression expr) {
+        Type t = getType(expr);
+        return (t == null) ? new NotYetComputedType(CudaMemoryType.UNDEFINED) : t;
+    }
+
     /**
      * Get the type of an <code>Expression</code>.
      *
@@ -139,11 +148,11 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
     public boolean isGlobal(ExprVar ev){
-    	return symtab.isVarShared(ev.getName());
+        return symtab.isVarShared(ev.getName(), ev);
     }
 
-    public boolean isGlobal(String name){
-    	return symtab.isVarShared(name);
+    public boolean isGlobal(String name, FENode errSource) {
+        return symtab.isVarShared(name, errSource);
     }
 
 
@@ -212,20 +221,17 @@ public class SymbolTableVisitor extends FEReplacer
 
 
 	@Override
-	public Object visitParameter(Parameter par){
-		Type t = (Type) par.getType().accept(this);
-
-		symtab.registerVar(par.getName(),
-                actualType(t),
-                par,
+    public Object visitParameter(Parameter par) {
+        symtab.registerVar(par.getName(), actualType(par.getType()), par,
                 SymbolTable.KIND_FUNC_PARAM);
-		
-		if( t == par.getType()){
-    		return par;
-    	}else{
-    		return new Parameter(t, par.getName(), par.getPtype() );
-    	}
-	}
+
+        Type t = (Type) par.getType().accept(this);
+        if (t == par.getType()) {
+            return par;
+        } else {
+            return new Parameter(t, par.getName(), par.getPtype());
+        }
+    }
 
 
     public Object visitFunction(Function func)
@@ -280,6 +286,13 @@ public class SymbolTableVisitor extends FEReplacer
                                stmt,
                                SymbolTable.KIND_LOCAL);
         return super.visitStmtVarDecl(stmt);
+    }
+
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {
+        Type t = getTypeOrNotYetComputed(decl.getInitExpr());
+        symtab.registerVar(decl.getName(), t, decl, SymbolTable.KIND_LOCAL);
+        // printDebug("[SymbolTableVisitor] implicit type for ", decl.getName(), t);
+        return super.visitStmtImplicitVarDecl(decl);
     }
 
     public Object visitStreamSpec(StreamSpec spec)

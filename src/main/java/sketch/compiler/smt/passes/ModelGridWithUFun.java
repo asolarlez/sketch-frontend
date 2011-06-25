@@ -9,7 +9,7 @@ import java.util.Set;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Function.FuncType;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -148,10 +148,7 @@ public class ModelGridWithUFun extends FEReplacer {
 					List<Parameter> newParams = new LinkedList<Parameter>(
 							mNewParamsToAdd);
 					newParams.addAll(ret.getParams());
-					ret = new Function(ret, ret.getCls(), ret.getName(), ret
-							.getReturnType(), newParams,
-							ret.getSpecification(), ret.getBody());
-
+					ret = ret.creator().params(newParams).create();
 				}
 
 				return ret;
@@ -273,8 +270,9 @@ public class ModelGridWithUFun extends FEReplacer {
 			paramList.add(new Parameter(ufun.getReturnType(), "r",
 					Parameter.OUT));
 
-			mModelingFunc = new Function(ufun, FuncType.FUNC_BUILTIN_HELPER,
-					name, TypePrimitive.voidtype, paramList, funBody);
+            mModelingFunc =
+                    Function.creator(ufun, name, FcnType.BuiltinHelper).params(paramList).body(
+                            funBody).create();
 
 			return mModelingFunc;
 		}

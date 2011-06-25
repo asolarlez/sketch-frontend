@@ -4,20 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprStar;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.datastructures.TypedHashMap;
+import sketch.util.fcns.ZipIdxEnt;
+
+import static sketch.util.DebugOut.printNote;
+
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 /**
  * This visitor distinguishes between int stars and bit stars, and labels each star with its
  * appropriate type.
@@ -27,9 +28,18 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
  *
  */
 public class TypeInferenceForStars extends SymbolTableVisitor {
+    public TypedHashMap<String, Function> functions = new TypedHashMap<String, Function>();
 
 	public TypeInferenceForStars(){
 		super(null);
+	}
+	
+	@Override
+	public Object visitStreamSpec(StreamSpec spec) {
+	    for (Function f : spec.getFuncs()) {
+	        functions.put(f.getName(), f);
+	    }
+	    return super.visitStreamSpec(spec);
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
@@ -90,7 +100,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     			"internal error: " + lt + "   " + rt);
     	stmt.assertTrue (
     			rt.promotesTo(lt),
-    			"Type missmatch " + lt +" !>= " + rt);
+    			"Type mismatch " + lt +" !>= " + rt);
         return lt;
     }
     public void upgradeStarToInt(Expression exp, Type ftype){
@@ -128,13 +138,22 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
         return result;
     }
+	
+	@Override
+	public Object visitExprFunCall(ExprFunCall exp) {
+	    exp = (ExprFunCall) super.visitExprFunCall(exp);
+	    Function callee = functions.get(exp.getName());
+	    for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
+	        upgradeStarToInt(arg.entry, callee.getParams().get(arg.idx).getType());
+	    }
+	    return exp;
+	}
 	@Override
 	public Object visitTypeArray(TypeArray ta){
 	    Expression ie = ta.getLength();
         ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );
 	    return super.visitTypeArray(ta);
 	}
-	
 }
 
 class UpgradeStarToInt extends FEReplacer{
@@ -146,7 +165,12 @@ class UpgradeStarToInt extends FEReplacer{
 	}
 
 	public Object visitExprStar(ExprStar star) {
-	    star.setType(type);
+	    if (!star.typeWasSetByScala) {
+	        // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
+	        star.setType(type);
+	    } else {
+	        printNote("skipping setting star type", star, type);
+	    }
 		return star;
 	}
 

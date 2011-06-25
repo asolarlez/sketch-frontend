@@ -21,10 +21,10 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
  * Front-end visitor pass to find free variables in anonymous streams.
@@ -81,11 +81,11 @@ public class FindFreeVariables extends SymbolTableVisitor
                 oldFreeVars.add(name);
             // Look up the variable in the symbol table; only print
             // if it's a local.
-            else if (symtab.lookupKind(name) == SymbolTable.KIND_LOCAL)
+            else if (symtab.lookupKind(name, spec) == SymbolTable.KIND_LOCAL)
             {
                 final String was = name;
                 final String wrapped = "_final_" + name;
-                Type type = symtab.lookupVar(name);
+                Type type = symtab.lookupVar(name, spec);
                 result = ((FENode)result).accept
                     (new SymbolTableVisitor(new SymbolTable(null)) {
                         public Object visitExprVar(ExprVar expr)
@@ -93,7 +93,7 @@ public class FindFreeVariables extends SymbolTableVisitor
                             Object result = super.visitExprVar(expr);
                             try
                             {
-                                symtab.lookupVar(expr.getName());
+                                    symtab.lookupVar(expr.getName(), expr);
                             }
                             catch (UnrecognizedVariableException e)
                             {

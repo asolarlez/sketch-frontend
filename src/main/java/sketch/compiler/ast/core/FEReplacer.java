@@ -16,10 +16,12 @@
 
 package sketch.compiler.ast.core;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
@@ -30,6 +32,12 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
+import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
@@ -37,6 +45,9 @@ import sketch.compiler.passes.streamit_old.SJDuplicate;
 import sketch.compiler.passes.streamit_old.SJRoundRobin;
 import sketch.compiler.passes.streamit_old.SJWeightedRR;
 import sketch.util.datastructures.TprintTuple;
+import sketch.util.datastructures.TypedHashMap;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -102,6 +113,10 @@ public class FEReplacer implements FEVisitor
         newStatements.add(stmt);
     }
 
+    protected void addExprStatement(Expression expr) {
+        addStatement(new StmtExpr(expr));
+    }
+
     /**
      * Adds a sequence of statements to the list of statements that
      * replace the current one.  This should be called inside a
@@ -154,6 +169,14 @@ public class FEReplacer implements FEVisitor
             return null;
     }
 
+    public List<Statement> visitStatementsAsBlock(Vector<Statement> s) {
+        return ((StmtBlock) (new StmtBlock(s)).accept(this)).getStmts();
+    }
+
+    public Statement[] visitStatementsAsBlock(Statement... s) {
+        return ((StmtBlock) (new StmtBlock(Arrays.asList(s))).accept(this)).getStmts().toArray(
+                new Statement[0]);
+    }
 
     public Object visitExprNew(ExprNew expNew){
     	Type nt = (Type)expNew.getTypeToConstruct().accept(this);
@@ -347,23 +370,20 @@ public class FEReplacer implements FEVisitor
 
     	if( func.getBody() == null  ){
     		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
-    		if(samePars && rtype == func.getReturnType()) return func;  
-    		return new Function(func, func.getCls(),
-                    func.getName(), rtype,
-                    newParam, func.getSpecification(), null);
+            if (samePars && rtype == func.getReturnType())
+                return func;
+            return func.creator().returnType(rtype).params(newParam).create();
     	}
         Statement newBody = (Statement)func.getBody().accept(this);        
         if(newBody == null) newBody = new StmtEmpty(func);
-        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;        
-        return new Function(func, func.getCls(),
-                            func.getName(), rtype,
-                            newParam, func.getSpecification(), newBody);
+        if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
+        return func.creator().returnType(rtype).params(newParam).body(newBody).create();
     }
 
-   
 
 
     public Object visitProgram(Program prog) {
+        assert prog != null : "FEReplacer.visitProgram: argument null!";
         List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
         for (StreamSpec ssOrig : prog.getStreams()) {
             newStreams.add((StreamSpec) ssOrig.accept(this));
@@ -374,7 +394,7 @@ public class FEReplacer implements FEVisitor
             newStructs.add((TypeStruct) tsOrig.accept(this));
         }
 
-        return new Program(prog, newStreams, newStructs);
+        return prog.creator().streams(newStreams).structs(newStructs).create();
     }
 
 
@@ -574,12 +594,21 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtEmpty(StmtEmpty stmt) { return stmt; }
 
-    public Object visitStmtExpr(StmtExpr stmt)
-    {
-        Expression newExpr = doExpression(stmt.getExpression());
-        if( newExpr == null) return null;
-        if (newExpr == stmt.getExpression()) return stmt;
-        return new StmtExpr(stmt, newExpr);
+    public Object visitStmtExpr(StmtExpr stmt) {
+        Object nextInner = stmt.getExpression().accept(this);
+        if (nextInner == null) {
+            return null;
+        } else if (nextInner instanceof Expression) {
+            Expression newExpr = (Expression) nextInner;
+            if (newExpr == stmt.getExpression())
+                return stmt;
+            return new StmtExpr(stmt, newExpr);
+        } else if (nextInner instanceof Statement) {
+            return (Statement) nextInner;
+        } else {
+            throw new RuntimeException("unknown return value from stmt expr: " +
+                    nextInner);
+        }
     }
 
     public Object visitStmtFor(StmtFor stmt)
@@ -789,17 +818,18 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitTypeStruct (TypeStruct ts) {
-    	for (int i = 0; i < ts.getNumFields (); ++i) {
-    		String f = ts.getField (i);
-    		Type oldType = ts.getType (f);
-    		Type newType = (Type) oldType.accept (this);
-
-    		if (newType != oldType) {
-    			ts.setType (f, newType);
-    		}
-    	}
-
-    	return ts;
+        boolean changed = false;
+        TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        for (Entry<String, Type> entry : ts) {
+            Type type = (Type) entry.getValue().accept (this);
+            changed |= (type != entry.getValue());
+            map.put(entry.getKey(), type);
+        }
+        if (changed) {
+            return new TypeStruct(ts.getCudaMemType(), ts.getContext(), ts.getName(), map);
+        } else {
+            return ts;
+        }
     }
 
     public Object visitTypeStructRef (TypeStructRef tsr) {
@@ -837,7 +867,7 @@ public class FEReplacer implements FEVisitor
         if (newVariable == previous || !(newVariable instanceof Expression)) {
             return stmtMinimize;
         } else {
-            return new StmtMinimize((Expression) newVariable);
+            return new StmtMinimize((Expression) newVariable, stmtMinimize.userGenerated);
         }
     }
 
@@ -848,6 +878,10 @@ public class FEReplacer implements FEVisitor
         } else {
             return new StmtMinLoop(stmtMinLoop, newBody);
         }
+    }
+
+    public Object visitExprSpecialStar(ExprSpecialStar star) {
+        return visitExprStar(star);
     }
 
     public Object visitExprTprint(ExprTprint exprTprint) {
@@ -863,9 +897,79 @@ public class FEReplacer implements FEVisitor
             }
         }
         if (changed) {
-            return new ExprTprint(exprTprint, nextExpressions);
+            return new ExprTprint(exprTprint, exprTprint.cuda_type, nextExpressions);
         } else {
             return exprTprint;
         }
+    }
+
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        return cudaSyncthreads;
+    }
+
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+        return cudaThreadIdx;
+    }
+    
+    public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) {
+        return cudaBlockDim;
+    }
+    
+    public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
+        ExprVar expr2 = instrumentCall.getToImplement().acceptAndCast(this);
+        ExprVar expr3 = instrumentCall.getImplVariable().acceptAndCast(this);
+        if (expr2 != instrumentCall.getToImplement() ||
+                expr3 != instrumentCall.getImplVariable())
+        {
+            return new CudaInstrumentCall(instrumentCall, expr2, expr3,
+                    instrumentCall.getImplName());
+        }
+        return instrumentCall;
+    }
+
+    public Object visitExprRange(ExprRange exprRange) {
+        Expression nextFrom = (Expression) exprRange.getFrom().accept(this);
+        Expression nextTo = (Expression) exprRange.getUntil().accept(this);
+        Expression nextBy = exprRange.getBy().acceptAndCast(this);
+        if (nextFrom != exprRange.getFrom() || nextTo != exprRange.getUntil() ||
+                nextBy != exprRange.getBy())
+        {
+            return new ExprRange(exprRange, nextFrom, nextTo, nextBy);
+        }
+        return exprRange;
+    }
+
+    public Object visitStmtParfor(StmtParfor stmtParfor) {
+        final StmtVarDecl iterVarDecl = stmtParfor.getIterVarDecl();
+        StmtVarDecl nextVarDecl = null;
+        if (iterVarDecl != null) {
+            nextVarDecl = iterVarDecl.acceptAndCast(this);
+        }
+        ExprRange nextRange = stmtParfor.getRange().acceptAndCast(this);
+        Statement nextBody = stmtParfor.getBody().acceptAndCast(this);
+
+        if (nextVarDecl != iterVarDecl || nextRange != stmtParfor.getRange() ||
+                nextBody != stmtParfor.getBody())
+        {
+            return stmtParfor.next(nextVarDecl, nextRange, nextBody);
+        }
+        return stmtParfor;
+    }
+
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {
+        return decl;
+    }
+
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
+        Expression sub = exprNamedParam.getExpr().acceptAndCast(this);
+        if (sub != exprNamedParam.getExpr()) {
+            return exprNamedParam.next(sub);
+        }
+        return exprNamedParam;
+    }
+
+    public Object visitExprType(ExprType exprtyp) {
+        assertFalse("Not implemented: visitExprType()");
+        return null;
     }
 }

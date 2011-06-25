@@ -3,6 +3,7 @@
  */
 package sketch.compiler.ast.core.exprs;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
@@ -17,7 +18,7 @@ import sketch.compiler.passes.structure.GetAssignLHS;
  * @author liviu
  */
 public class ExprArrayRange extends Expression
-{	
+{
 	public static class RangeLen
 	{
 		private final Expression start;		
@@ -48,6 +49,7 @@ public class ExprArrayRange extends Expression
 		}
 	}
 
+
 	private Expression base;
 	private RangeLen index;
 	 private boolean unchecked=false;
@@ -66,7 +68,7 @@ public class ExprArrayRange extends Expression
 	}
 	public ExprArrayRange(Expression base, Expression offset)
 	{
-		this(base, base, new RangeLen(offset));
+        this(base, base, Collections.singletonList(new RangeLen(offset)));
 	}
 
 	/*
@@ -75,28 +77,48 @@ public class ExprArrayRange extends Expression
 	 */
 	public ExprArrayRange(FENode node, Expression base, Expression offset)
 	{
-		this(node, base, new RangeLen(offset));
+        this(node, base, Collections.singletonList(new RangeLen(offset)));
 	}
-	public ExprArrayRange(FENode node, Expression base, RangeLen rl)
+
+    public ExprArrayRange(FENode node, Expression base, List<RangeLen> rl)
 	{
 		this(node, base, rl, false);
 	}
-	public ExprArrayRange(FENode node, Expression base, RangeLen rl, boolean unchecked)
-	{
-	    super(node);
-        this.base=base;
-        this.index=rl;        
+
+    /**
+     * NOTE -- vector of array ranges for comma arrays. Since arr[x, y] = (arr[x])[y], we
+     * want to set (arr[x]) as the new base, and y as the index.
+     */
+    public ExprArrayRange(FENode node, Expression base, List<RangeLen> rl,
+            boolean unchecked)
+    {
+        super(node);
+        if (rl.size() == 1) {
+            this.base = base;
+        } else {
+            this.base = new ExprArrayRange(node, base, rl.subList(0, rl.size() - 1));
+        }
+        this.index = rl.get(0);
         setUnchecked(unchecked);
 	}
 
 	
 	public ExprArrayRange(FENode node, Expression base, Expression offset, boolean unchecked)
 	{
-		this(node, base, new RangeLen(offset), unchecked);		
+        this(node, base, Collections.singletonList(new RangeLen(offset)), unchecked);
 	}
 
+    public ExprArrayRange(FENode node, Expression nbase, RangeLen rangeLen,
+            boolean unchecked2)
+    {
+        this(node, nbase, Collections.singletonList(rangeLen), unchecked2);
+    }
 
-	public Expression getOffset(){	    
+    public ExprArrayRange(FENode node, Expression base2, RangeLen flatRl) {
+        this(node, base2, Collections.singletonList(flatRl));
+    }
+
+    public Expression getOffset() {
 		RangeLen rl = index;
 		assert !rl.hasLen();
 		return rl.start;
@@ -108,8 +130,6 @@ public class ExprArrayRange extends Expression
 	
 	
 
-
-	
 
 	/* (non-Javadoc)
 	 * @see sketch.compiler.nodes.FENode#accept(sketch.compiler.nodes.FEVisitor)

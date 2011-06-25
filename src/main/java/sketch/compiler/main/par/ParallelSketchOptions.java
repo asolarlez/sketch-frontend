@@ -1,7 +1,7 @@
 package sketch.compiler.main.par;
 
 import sketch.compiler.cmdline.ParallelOptions;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.util.cli.SketchCliParser;
 
 /**
@@ -10,7 +10,7 @@ import sketch.util.cli.SketchCliParser;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class ParallelSketchOptions extends SequentialSketchOptions {
+public class ParallelSketchOptions extends SketchOptions {
     public ParallelOptions parOpts;
 
     public ParallelSketchOptions(String[] inArgs) {

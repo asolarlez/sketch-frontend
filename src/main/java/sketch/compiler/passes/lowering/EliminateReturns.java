@@ -165,9 +165,7 @@ public class EliminateReturns extends SymbolTableVisitor{
         List<Statement> stmts=new ArrayList<Statement>(((StmtBlock)func.getBody()).getStmts());
         //add a declaration for the "return flag"
         stmts.add(0,new StmtVarDecl(func.getBody(),TypePrimitive.bittype,getReturnFlag(),new ExprConstInt(0)));
-        func=new Function(func,func.getCls(),func.getName(),
-                func.getReturnType(), func.getParams(),
-                func.getSpecification(), new StmtBlock(func,stmts));
+        func = func.creator().body(new StmtBlock(func,stmts)).create();
         return func;
     }
     

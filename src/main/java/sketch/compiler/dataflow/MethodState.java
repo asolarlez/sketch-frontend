@@ -14,6 +14,9 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printFailure;
+
 
 
 
@@ -163,11 +166,31 @@ public class MethodState {
      */
     private ChangeTracker changeTracker;
 
-    private int level = 0;
+    public static class Level {
+        public final String msg;
+        public boolean isDead;
+
+        public Level(String msg) {
+            this.msg = msg;
+            this.isDead = false;
+        }
+        
+        @Override
+        public String toString() {
+            return msg;
+        }
+    }
+
+    private Stack<Level> levels = new Stack<Level>();
     private int changeTrackers = 0;
 
     public int getLevel(){
-        return level;
+        return levels.size();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Stack<String> getLevelStack() {
+        return (Stack<String>) levels.clone();
     }
 
     public int getCTlevel(){
@@ -644,24 +667,39 @@ public class MethodState {
     
     
 
-    public void pushLevel(){
+    public Level pushLevel(String msg) {
+        return pushLevel(new Level(msg));
+    }
+    
+    public Level pushLevel(Level lvl) {
         varTranslator = varTranslator.pushLevel();
-        level++;
+        levels.push(lvl);
+        return lvl;
     }
 
-    public void popLevel(){
+    public void popLevel(Level toPop) {
+        assert !toPop.isDead : "already popped " + toPop;
+        if (!(levels.peek() == toPop)) {
+            printFailure("popLevel() wasn't called by", levels.peek());
+            printFailure("to pop", toPop);
+            Exception ex = new Exception();
+            ex.printStackTrace();
+            assertFalse();
+        }
         varTranslator = varTranslator.popLevel(vars, changeTracker);
-        level--;
+        assert levels.pop() == toPop;
+        toPop.isDead = true;
     }
 
-    public void pushFunCall(){
-        pushLevel();
+    public Level pushFunCall(String comment) {
+        Level lvl = pushLevel("[pushFunCall] " + comment);
         if(changeTracker != null){
             changeTracker.pushMethodBoundary();
         }
+        return lvl;
     }
-    public void popFunCall(){
-        popLevel();
+    public void popFunCall(Level lvl){
+        popLevel(lvl);
         if(changeTracker != null){
             assert changeTracker.isMethodBoundary();
             changeTracker.popMethodBoundary();
@@ -676,8 +714,8 @@ public class MethodState {
     Stack<varState> rvstack = new Stack<varState>();
     Stack<Set<String>> outparStack = new Stack<Set<String>>();
     Set<String> cvmap;
-    public void beginFunction(String fname){
-        pushLevel();
+    public Level beginFunction(String fname){
+        Level lvl = pushLevel("[beginFunction] " + fname);
         if(rvflag != null){ rvstack.push(rvflag); }
         if(cvmap != null){outparStack.push(cvmap);} 
         if(rvname != null){ rvnamestack.push(rvname); }
@@ -685,11 +723,12 @@ public class MethodState {
         rvflag = vtype.cleanState(rvname, TypePrimitive.bittype, this);
         rvflag.update(vtype.CONST(0), vtype);
         
-        cvmap = new HashSet<String>();        
+        cvmap = new HashSet<String>();   
+        return lvl;
     }
 
-    public void endFunction(){
-        popLevel();
+    public void endFunction(Level lvl){
+        popLevel(lvl);
         if(!rvstack.isEmpty()){ rvflag = rvstack.pop(); rvname = rvnamestack.pop() ; cvmap = outparStack.pop(); }else{ rvflag = null; }
     }
 

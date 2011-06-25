@@ -2,9 +2,10 @@ package sketch.compiler.main.seq;
 
 import sketch.compiler.cmdline.SMTBoundOptions;
 import sketch.compiler.cmdline.SMTOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.util.cli.SketchCliParser;
 
-public class SMTSketchOptions extends SequentialSketchOptions {
+public class SMTSketchOptions extends SketchOptions {
     public SMTOptions smtOpts;
     public SMTBoundOptions bndOpts;
 

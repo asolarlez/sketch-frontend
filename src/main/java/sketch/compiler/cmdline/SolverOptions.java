@@ -17,9 +17,8 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     }
 
     
-    @CliParameter(help = "Determines the level of inlining in the backend.")
-    public int inline = 3;
-    
+    @CliParameter(help = "Use the scripting backend if both are installed.")
+    public boolean useScripting = false;
     @CliParameter(help = "Sets the optimization level for the compiler.")
     public int olevel = -1;
     @CliParameter(help = "Seeds the random number generator")

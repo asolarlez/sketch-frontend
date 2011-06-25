@@ -19,9 +19,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
@@ -31,11 +40,19 @@ import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeArrayInterface;
+import sketch.compiler.ast.core.typs.TypeComparisonResult;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.util.ControlFlowException;
+import sketch.util.exceptions.ExceptionAtNode;
+import sketch.util.exceptions.UnrecognizedVariableException;
+
+import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printError;
+import static sketch.util.DebugOut.printFailure;
 
 /**
  * Perform checks on the semantic correctness of a StreamIt program.
@@ -57,9 +74,11 @@ public class SemanticChecker
 	 * @param prog  parsed program object to check
 	 * @returns     <code>true</code> if no errors are detected
 	 */
-	public static boolean check(Program prog) {
-		return check (prog, false);
+    public static boolean check(Program prog, boolean isParseCheck) {
+        return check(prog, ParallelCheckOption.SERIAL, isParseCheck);
 	}
+
+    public enum ParallelCheckOption { PARALLEL, SERIAL, DONTCARE; }
 
 	/**
 	 * Check a SKETCH/PSKETCH program for semantic correctness.  This
@@ -70,9 +89,10 @@ public class SemanticChecker
 	 * @param parallel  are parallel constructs allowed?
 	 * @returns     <code>true</code> if no errors are detected
 	 */
-	public static boolean check(Program prog, boolean parallel)
+    public static boolean check(Program prog, ParallelCheckOption parallel,
+            boolean isParseCheck)
 	{
-		SemanticChecker checker = new SemanticChecker();
+        SemanticChecker checker = new SemanticChecker(isParseCheck);
 		Map streamNames = checker.checkStreamNames(prog);
 
 		try {
@@ -80,14 +100,18 @@ public class SemanticChecker
 		//checker.checkStatementPlacement(prog);
 		checker.checkVariableUsage(prog);
 		checker.checkBasicTyping(prog);
-		if (parallel)
-			checker.checkParallelConstructs (prog);
-		else
-			checker.banParallelConstructs (prog);
-		
+            switch (parallel) {
+                case PARALLEL:
+                    checker.checkParallelConstructs(prog);
+                case SERIAL:
+                    checker.banParallelConstructs(prog);
+            }
 		} catch (UnrecognizedVariableException uve) {
+            if (checker.good) {
+                throw uve;
+            }
 			// Don't care about this exception during type checking
-			assert !checker.good;
+            // assert !checker.good;
 		}
 
 		return checker.good;
@@ -95,16 +119,21 @@ public class SemanticChecker
 
 	// true if we haven't found any errors
 	protected boolean good;
+    protected final boolean isParseCheck;
 
 	protected void report(FENode node, String message)
 	{
-		report(node.getCx(), message);
+        if (!isParseCheck) {
+            message = "INTERNAL ERROR " + message;
+        }
+        (new ExceptionAtNode(message, node)).printNoStacktrace();
+        good = false;
 	}
 
 	protected void report(FEContext ctx, String message)
 	{
 		good = false;
-		System.err.println(ctx + ": " + message);
+        printError(ctx + ":", message);
 	}
 
 	/** Report incompatible alternative field selections. */
@@ -114,9 +143,10 @@ public class SemanticChecker
 				+" in alternative selections '"+ f1 +"', '"+ f2 +"'");
 	}
 
-	public SemanticChecker()
+    public SemanticChecker(boolean isParseCheck)
 	{
-		good = true;
+        this.isParseCheck = isParseCheck;
+        good = true;
 	}
 
 	/**
@@ -212,10 +242,9 @@ public class SemanticChecker
 				// Some functions get alternate names if their real
 				// name is null:
 				String name = func.getName();
-				if (name == null)
-				{
-					report(func, "Functions must have names");
-				}
+                if (name == null) {
+                    report(func, "Functions must have names");
+                }
 				if (name != null)
 					checkADupFieldName(localNames, streamNames,
 							name, func.getCx ());
@@ -225,9 +254,10 @@ public class SemanticChecker
 		{
 			TypeStruct ts = (TypeStruct)iter.next();
 			Map localNames = new HashMap();
-			for (int i = 0; i < ts.getNumFields(); i++)
-				checkADupFieldName(localNames, streamNames,
-						ts.getField(i), ts.getContext ());
+            for (Entry<String, Type> entry : ts) {
+                checkADupFieldName(localNames, streamNames, entry.getKey(),
+                        ts.getContext());
+            }
 		}
 	}
 
@@ -312,10 +342,6 @@ public class SemanticChecker
 				func = oldFunc;
 				return result;
 			}
-
-			
-
-			
 		});
 	}
 
@@ -387,7 +413,7 @@ public class SemanticChecker
 
 					// check spec presence
 					try{
-						parent = this.symtab.lookupFn(func.getSpecification());
+                        parent = this.symtab.lookupFn(func.getSpecification(), func);
 					}catch(UnrecognizedVariableException e){
 						report(func, "Spec of "+ func.getName() + "() not found");
 						return super.visitFunction(func);
@@ -397,13 +423,36 @@ public class SemanticChecker
 					Iterator formals1 = func.getParams().iterator();
 					Iterator formals2 = parent.getParams().iterator();
 					if(func.getParams().size() != parent.getParams().size() ){
-						report(func, "Number of parameters of spec and sketch don't match " + parent + " vs.  " + func);
+                        report(func,
+                                "Number of parameters of spec and sketch don't match:\n" +
+                                        parent + " vs.  " + func);
 						return super.visitFunction(func);
 					}
+
+                    // Vector<Pair<Parameter, Parameter>> knownEqVars =
+                    // new Vector<Pair<Parameter, Parameter>>();
 					while(formals1.hasNext()){
 						Parameter f1 = (Parameter) formals1.next();
 						Parameter f2 = (Parameter) formals2.next();
-						if(! f1.getType().equals(f2.getType())){
+                        if ((f1.getType() instanceof TypeArray) &&
+                                (f2.getType() instanceof TypeArray))
+                        {
+                            TypeArray f1t = (TypeArray)f1.getType();
+                            TypeArray f2t = (TypeArray)f2.getType();
+                            if (f1t.getBase().equals(f2t.getBase())) {
+                                continue;
+                            }
+                        }
+                        // knownEqVars.add(new Pair<Parameter, Parameter>(f1, f2));
+                        // if (f1.getType() instanceof TypeArray) {
+                        // if (((TypeArray) f1.getType()).equals(f2.getType(),
+                        // knownEqVars))
+                        // {
+                        // continue;
+                        // }
+                        // }
+                        if (f1.getType().compare(f2.getType()) == TypeComparisonResult.NEQ)
+                        {
 							report(func, "Parameters of spec and sketch don't match: " + f1 + " vs. " + f2);
 							return super.visitFunction(func);
 						}
@@ -431,7 +480,7 @@ public class SemanticChecker
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
 				Function fun;
 				try {
-					fun = this.symtab.lookupFn(exp.getName());
+                    fun = this.symtab.lookupFn(exp.getName(), exp);
 				} catch (UnrecognizedVariableException e) {
 					report (exp, "unknown function "+ exp.getName ());
 					throw e;
@@ -448,7 +497,8 @@ public class SemanticChecker
 					Parameter formal = (Parameter) form.next();
 					Type lt = getType(param);
 					if(! lt.promotesTo(formal.getType())){
-						report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + lt + "  " + fun);
+					    printFailure("Semantic Failure here:", exp, "at", exp.getCx(), "\ncalling function", fun);
+						report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + lt + "  " + fun);
 					}
 				}
 
@@ -687,32 +737,22 @@ public class SemanticChecker
 
 				Type lt = getType((Expression)expr.getLeft().accept(this));
 
-				// Either lt is complex, or it's a structure
-				// type, or it's null, or it's an error.
+                // Either lt is a structure type, or it's null, or it's an error.
 				if (lt == null)
 				{
 					// pass
-				}
-				else if (lt.isComplex())
-				{
-					String rn = expr.getName();
-					if (!rn.equals("real") &&
-							!rn.equals("imag"))
-						report(expr,
-								"complex variables have only "+
-						"'real' and 'imag' fields");
 				}
 				else if (lt instanceof TypeStruct)
 				{
 					TypeStruct ts = (TypeStruct)lt;
 					String rn = expr.getName();
 					boolean found = false;
-					for (int i = 0; i < ts.getNumFields(); i++)
-						if (ts.getField(i).equals(rn))
-						{
-							found = true;
-							break;
-						}
+                    for (Entry<String, Type> entry : ts) {
+                        if (entry.getKey().equals(rn)) {
+                            found = true;
+                            break;
+                        }
+                    }
 
 					if (!found)
 						report(expr,
@@ -734,7 +774,7 @@ public class SemanticChecker
 				Type bt = getType((Expression)expr.getBase().accept(this));
 				if (bt != null)
 				{
-					if (!(bt instanceof TypeArray))
+					if (!(bt instanceof TypeArrayInterface))
 						report(expr, "array access with a non-array base");
 				}else{
 					report(expr, "array access with a non-array base");
@@ -829,7 +869,9 @@ public class SemanticChecker
 					if (type instanceof TypeArray && init!=null) {
 						// check that initializer is array initializer
 						// (I guess it could also be conditional expression?  Don't bother.)
-						if (!(init instanceof ExprArrayInit)) {
+                        if (init instanceof ExprStar) {
+                            // don't do anything, the star will take on whatever type it needs to
+                        } else if (!(init instanceof ExprArrayInit)) {
 							report (field, "array initialized to non-array type");
 						} else {
 							// check that lengths match
@@ -950,7 +992,7 @@ public class SemanticChecker
 
 
 				if(!isIncrByOne(stmt.getIncr())){
-					report(stmt, "Increment in for loop should be either increment or decrement by one.");
+                    printDebug("ignoring old requirement that loop increment by one...");
 				}
 
 				return (stmt);
@@ -1071,11 +1113,11 @@ public class SemanticChecker
 				return super.visitExprVar(var);
 			}
 
-			private boolean isStreamParam(String name)
+            private boolean isStreamParam(String name, FENode errSource)
 			{
 				try
 				{
-					int kind = symtab.lookupKind(name);
+                    int kind = symtab.lookupKind(name, errSource);
 					if (kind == SymbolTable.KIND_STREAM_PARAM)
 						return true;
 				}
@@ -1108,7 +1150,7 @@ public class SemanticChecker
 				{
 					ExprVar lhsv = (ExprVar)lhs;
 					String name = lhsv.getName();
-					if (isStreamParam(name))
+                    if (isStreamParam(name, lhs))
 						report(stmt, "assignment to stream parameter");
 				}
 				return super.visitStmtAssign(stmt);
@@ -1126,7 +1168,7 @@ public class SemanticChecker
 				{
 					ExprVar var = (ExprVar)child;
 					String name = var.getName();
-					if (isStreamParam(name))
+                    if (isStreamParam(name, var))
 						report(expr, "modification of stream parameter");
 				}
 				return super.visitExprUnary(expr);

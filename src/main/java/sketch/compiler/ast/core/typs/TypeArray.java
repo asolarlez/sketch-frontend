@@ -20,7 +20,10 @@ import java.util.Collection;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * A fixed-length homogenous array type.  This type has a base type and
@@ -30,33 +33,49 @@ import sketch.compiler.ast.core.exprs.Expression;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class TypeArray extends Type
+public class TypeArray extends Type implements TypeArrayInterface
 {
-    private Type base;
-    private Expression length;
-    private List<Expression> dims;
+    private final Type base;
+    private final Expression length;
+    private final List<Expression> dims;
 
-    /** Creates an array type of the specified base type with the
-     * specified length. */
-    public TypeArray(Type base, Expression length)
-    {
-        this.base = base;
-        this.length = length;
+    /**
+     * Creates an array type of the specified base type with the specified length.
+     */
+    public TypeArray(Type base, Expression length) {
+        this(CudaMemoryType.UNDEFINED, base, length, null);
     }
 
     /**
-     * Create an array with the given base type, length, and dimensions.
-     *
-     * It is assumed, but not checked, that \product{dims} = length.
-     *
-     * @param base		base type of the array
-     * @param length	number of elements of the base type
-     * @param dims		the "virtual dimensions" of the array
+     * Create an array with the given base type, length, and dimensions. It is assumed,
+     * but not checked, that \product{dims} = length.
+     * 
+     * @param base
+     *            base type of the array
+     * @param length
+     *            number of elements of the base type
+     * @param dims
+     *            the "virtual dimensions" of the array
      */
-    public TypeArray (Type base, Expression length, Collection<Expression> dims) {
-    	this.base = base;
-    	this.length = length;
-    	this.dims = new ArrayList<Expression> (dims);
+    public TypeArray(Type base, Expression length, Collection<Expression> dims) {
+        this(CudaMemoryType.UNDEFINED, base, length, dims);
+    }
+
+    public TypeArray(CudaMemoryType cuda_mem_typ, Type base, Expression length,
+            Collection<Expression> dims)
+    {
+        super(cuda_mem_typ);
+        this.base = base;
+        this.length = length;
+        if (dims != null) {
+            this.dims = unmodifiableList(new ArrayList<Expression>(dims));
+        } else {
+            this.dims = null;
+        }
+    }
+
+    public TypeArray(CudaMemoryType mem_typ, Type type, int i) {
+        this(mem_typ, type, new ExprConstInt(i), null);
     }
 
     public boolean isArray () { return true; }
@@ -89,7 +108,7 @@ public class TypeArray extends Type
 
     public String toString()
     {
-        return base + "[" + length + "]";
+        return this.getCudaMemType().syntaxNameSpace() + this.getBase() + "[" + length + "]";
     }
 
     public boolean promotesTo(Type other)
@@ -114,22 +133,31 @@ public class TypeArray extends Type
     }
 
 
-    public boolean equals(Object other)
+    // public boolean equals(Object other, Vector<Pair<Parameter, Parameter>> eqParams)
+    public TypeComparisonResult compare(Type other)
     {
         if (!(other instanceof TypeArray))
-            return false;
+            return TypeComparisonResult.NEQ;
+
         TypeArray that = (TypeArray)other;
-        if (!(this.getBase().equals(that.getBase())))
-            return false;
+        if (this.getBase().compare(that.getBase()) == TypeComparisonResult.NEQ) {
+            return TypeComparisonResult.NEQ;
+        }
+
+        // bases match, now compare lengths
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
-        if(thisLen.getIValue() != null && thatLen.getIValue() != null){
-        	return thisLen.getIValue().equals(thatLen.getIValue());
+        if (thisLen.getIValue() != null && thatLen.getIValue() != null) {
+            // both length expressions have integer values
+            return TypeComparisonResult.knownOrNeq(thisLen.getIValue().equals(
+                    thatLen.getIValue()));
         }
-        if (!(thisLen.equals(thatLen)))
-            return false;
-        return true;
+        return TypeComparisonResult.knownOrMaybe(thisLen.equals(thatLen));
     }
+
+    // public boolean equals(Object other) {
+    // return equals(other, new Vector<Pair<Parameter, Parameter>>());
+    // }
 
     public int hashCode()
     {
@@ -158,5 +186,10 @@ public class TypeArray extends Type
 
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypeArray(this);
+    }
+
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        return new TypeArray(memtyp, base, length, dims);
     }
 }

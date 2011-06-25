@@ -17,6 +17,8 @@
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.util.exceptions.NotImplementedException;
 
 /**
  * Base class for variable data types.
@@ -26,14 +28,21 @@ import sketch.compiler.ast.core.exprs.Expression;
  */
 public abstract class Type
 {
-    /** Returns true if this type is a complex type. */
-    public boolean isComplex() { return false; }
+    private final CudaMemoryType memtyp;
+
+    public Type(CudaMemoryType memtyp) {
+        this.memtyp = memtyp;
+    }
 
     /** @return true iff this type is a struct type. */
     public boolean isStruct () { return false; }
 
     /** @return true iff this type is an array type. */
     public boolean isArray () { return false; }
+
+    public CudaMemoryType getCudaMemType() {
+        return memtyp;
+    }
 
     public Expression defaultValue () {
     	assert false : "Implement me!";
@@ -55,6 +64,19 @@ public abstract class Type
         return false;
     }
 
+    public final boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Type) {
+            return compare((Type) obj) == TypeComparisonResult.EQ;
+        } else {
+            return false;
+        }
+    }
+
+    public abstract TypeComparisonResult compare(Type that);
+
     /**
      * Find the lowest type that two types can promote to.
      *
@@ -70,16 +92,12 @@ public abstract class Type
             return this;
         return null;
     }
-    public Type makeNonDet()
-    {
-        return null;
-    }
-    public boolean isNonDet(){
-    	return false;
-    }
 
     public Object accept(FEVisitor visitor){
     	return visitor.visitType(this);
     }
 
+    public Type withMemType(CudaMemoryType memtyp) {
+        throw new NotImplementedException();
+    }
 }

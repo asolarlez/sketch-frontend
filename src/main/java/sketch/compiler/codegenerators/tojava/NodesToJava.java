@@ -18,6 +18,7 @@ package sketch.compiler.codegenerators.tojava;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.exprs.*;
@@ -25,10 +26,10 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePortal;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.lowering.GetExprType;
@@ -135,10 +136,6 @@ public class NodesToJava extends SymbolTableVisitor
             case TypePrimitive.TYPE_VOID: return "void";
             default: assert false : type; return null;
             }
-        }
-        else if (type instanceof TypePortal)
-        {
-            return ((TypePortal)type).getName() + "Portal";
         }
         else
         {
@@ -288,39 +285,12 @@ public class NodesToJava extends SymbolTableVisitor
     public String doAssignment(Expression lhs, Expression rhs,
                                SymbolTable symtab)
     {
-        // If the left-hand-side is a complex variable, we need to
-        // properly decompose the right-hand side.
-        // We can use a null stream type here since the left-hand
-        // side shouldn't contain pushes, pops, or peeks.
         GetExprType eType = new GetExprType(symtab, ss.getStreamType(),
                                             new java.util.HashMap());
         Type lhsType = (Type)lhs.accept(eType);
-        if (lhsType.isComplex())
-        {
-            Expression real = new ExprField(lhs, lhs, "real");
-            Expression imag = new ExprField(lhs, lhs, "imag");
-            // If the right hand side is complex too (at this point
-            // just test the run-time type of the expression), then we
-            // should do field copies; otherwise we only have a real part.
-            if (rhs instanceof ExprComplex)
-            {
-                ExprComplex cplx = (ExprComplex)rhs;
-                return real.accept(this) + " = " +
-                    cplx.getReal().accept(this) + ";\n" +
-                    imag.accept(this) + " = " +
-                    cplx.getImag().accept(this);
-            }
-            else
-                return real.accept(this) + " = " +
-                    rhs.accept(this) + ";\n" +
-                    imag.accept(this) + " = 0.0";
-        }
-        else
-        {
-            // Might want to special-case structures and arrays;
-            // ignore for now.
-            return lhs.accept(this) + " = " + rhs.accept(this);
-        }
+        // Might want to special-case structures and arrays;
+        // ignore for now.
+        return lhs.accept(this) + " = " + rhs.accept(this);
     }
 
 
@@ -568,12 +538,10 @@ public class NodesToJava extends SymbolTableVisitor
     	result += indent + "class " + struct.getName() +
         " extends Structure {\n";
     	addIndent();
-    	for (int i = 0; i < struct.getNumFields(); i++)
-    	{
-    		String name = struct.getField(i);
-    		Type type = struct.getType(name);
-    		result += indent + convertType(type) + " " + name + ";\n";
-    	}
+        for (Entry<String, Type> entry : struct) {
+            result +=
+                    indent + convertType(entry.getValue()) + " " + entry.getKey() + ";\n";
+        }
     	unIndent();
     	result += indent + "}\n";
     	return result;
@@ -977,4 +945,13 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return "null"; }
+
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        return "__syncthreads()";
+    }
+    
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        return "minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ")";
+    }
 }

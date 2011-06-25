@@ -39,9 +39,7 @@ public class HoistDeclarations extends FEReplacer {
 			List<Statement> newBody =
 				new ArrayList<Statement> (((StmtBlock) newF.getBody ()).getStmts ());
 			newBody.addAll (0, declList);
-			newF =  new Function (newF, newF.getCls (), newF.getName (),
-						newF.getReturnType (), newF.getParams (), newF.getSpecification (),
-						new StmtBlock (newF.getBody (), newBody));
+            newF = newF.creator().body(new StmtBlock(newF.getBody(), newBody)).create();
 		}
 
 		declList = null;

@@ -2,6 +2,7 @@ package sketch.compiler.cmdline;
 
 import sketch.util.cli.CliAnnotatedOptionGroup;
 import sketch.util.cli.CliParameter;
+import sketch.util.datastructures.CmdLineHashSet;
 
 /**
  * options controlling debug printout, etc.
@@ -27,6 +28,7 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     public boolean fakeSolver = false;
     @CliParameter(shortname = "p", help = "Show the partially evaluated code after the indicated "
             + "phase of pre or post processing.\n"
+            + "'parse' for after parsing;\n"
             + "'final' for after all optimizations;\n"
             + "'lowering' for before to symbolic execution;\n"
             + "'postproc' for after partially evaluating the generated code (ugly);\n"
@@ -38,4 +40,23 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     @CliParameter(shortname = "V", help = "Sets the level of verbosity for the output. 0 is "
             + "quiet mode 5 is the most verbose.")
     public int verbosity = 1;
+
+    @CliParameter(help = "Dump debug output to a file")
+    public boolean dumpToFile = false;
+    @CliParameter(help = "Print passes as they execute (N.B. only modern passes)")
+    public boolean printPasses = false;
+    @CliParameter(help = "Passes to dump the program after  "
+            + "(N.B. only modern passes)", inlinesep = ",")
+    public CmdLineHashSet dumpAfter = new CmdLineHashSet();
+    @CliParameter(help = "Passes to dump the program before  "
+            + "(N.B. only modern passes)", inlinesep = ",")
+    public CmdLineHashSet dumpBefore = new CmdLineHashSet();
+
+    @Override
+    public void post_set_values() {
+        super.post_set_values();
+        if (verbosity >= 5) {
+            printPasses = true;
+        }
+    }
 }

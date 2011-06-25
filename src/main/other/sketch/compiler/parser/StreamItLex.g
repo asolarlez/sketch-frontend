@@ -46,30 +46,53 @@ tokens {
 	"new";
 	"null";
 	"reorder";
+
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex";
+
 	// Complicated types:
 	"struct"; // "template";
 	"ref";
+
 	// Control flow:
 	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break"; "do";
 	"continue"; "return";
-// Intrinsic values:
+
+    // Intrinsic values:
 	//"pi";
 	"true"; "false";
-	//sketching stuff
-	"implements";
-	"assert";
-	"h_assert";
-	"generator";
-	"harness";
-	"stencil";
+
+    // data-parallel control flow
+    "parfor";
+    "until";
+    "by";
+
+    // general sketching
+    "implements";
+    "assert";
+    "h_assert";
+    "generator";
+    "harness";
+
+    // suppress function in output, run tprint() calls
+    "library";
+    "printfcn";
+
+    // cuda
+    "device";
+    "global";
+    "serial";
+
+    // solving methods
+    "stencil";
+
     // Compiler directives:
     "include";
     "pragma";
 }
 
 ARROW :	"->" ;
+LARROW :	"<-" ;
 
 WS	:	(' '
 	|	'\t'
@@ -141,6 +164,7 @@ BITWISE_AND: "&";
 BITWISE_OR: "|";
 BITWISE_XOR: "^";
 ASSIGN: '=';
+DEF_ASSIGN: ":=";
 EQUAL: "==";
 NOT_EQUAL: "!=";
 LESS_THAN: '<';

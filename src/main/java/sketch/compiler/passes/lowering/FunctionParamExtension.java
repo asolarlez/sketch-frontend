@@ -13,7 +13,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
@@ -32,7 +31,11 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
+import sketch.util.exceptions.UnrecognizedVariableException;
+
+import static sketch.util.DebugOut.assertFalse;
 
 
 /**
@@ -41,6 +44,7 @@ import sketch.compiler.stencilSK.VarReplacer;
  *
  * @author liviu
  */
+@CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class FunctionParamExtension extends SymbolTableVisitor
 {
 
@@ -68,9 +72,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			List<Statement> stmts = new ArrayList<Statement> (body.getStmts().size()+2);
 			stmts.add(decl);
 			stmts.addAll(body.getStmts());
-			return new Function(func,func.getCls(),func.getName(),func.getReturnType(),
-				func.getParams(),func.getSpecification(),
-				new StmtBlock(body,stmts));
+            return func.creator().body(new StmtBlock(body, stmts)).create();
 		}
 		@Override
 		public Object visitFunction(Function func)
@@ -93,8 +95,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					func=addVarCopy(func,param,newName);
 				}
 			}
-			return new Function(func, func.getCls(), func.getName(),
-				func.getReturnType(), parameters, func.getSpecification(), func.getBody());
+			return func.creator().params(parameters).create();
 		}
 		public Object visitStmtAssign(StmtAssign stmt)
 		{
@@ -183,8 +184,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			if(!retType.equals(TypePrimitive.voidtype)){
 				params.add(new Parameter(retType,getOutParamName(),Parameter.OUT));
 			}
-			funs.add(new Function(fun, fun.getCls(), fun.getName(), fun.getReturnType(),
-				params, fun.getSpecification(), fun.getBody()));
+			funs.add(fun.creator().params(params).create());
 		}
 		spec=new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
 		return super.visitStreamSpec(spec);
@@ -234,14 +234,16 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					assert outParam.isParameterOutput();
 
 					Expression defaultValue = getDefaultValue(func.getReturnType());
+					assert defaultValue != null : "[FunctionParamExtension] default value null!";
+					if (defaultValue == null) { assertFalse(); }
 					
 					stmts.add(0, new StmtAssign(new ExprVar(func, outParamName), defaultValue));
 				}
 			}
 		}
-		func=new Function(func,func.getCls(),func.getName(),
-				TypePrimitive.voidtype, func.getParams(),
-				func.getSpecification(), new StmtBlock(func,stmts));
+        func =
+                func.creator().returnType(TypePrimitive.voidtype).body(
+                        new StmtBlock(func, stmts)).create();
 		return func;
 	}
 
@@ -269,12 +271,14 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		// resolve the function being called
 		Function fun;
 		try{
-		fun =symtab.lookupFn(exp.getName());
+            fun = symtab.lookupFn(exp.getName(), exp);
 		}catch(UnrecognizedVariableException e){
-			throw new UnrecognizedVariableException(exp + ": Function name " + e.getMessage() + " not found"  );
+            // FIXME -- restore error noise
+            throw e;
+            // throw new UnrecognizedVariableException(exp + ": Function name " +
+            // e.getMessage() + " not found" );
 		}
 		// now we create a temp (or several?) to store the result
-
 
 		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
 		List<Expression> existingArgs=exp.getParams();
@@ -311,6 +315,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					tempVars.add(ev);
 				}
 				if(ptype == Parameter.REF){
+				    assert ev != null;
 					refAssigns.add(new StmtAssign(oldArg, ev  ));
 				}
 			}
@@ -343,6 +348,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	public Object visitStmtReturn(StmtReturn stmt) {
 		FENode cx=stmt;
 		List<Statement> oldns = newStatements;
+		
+		if (stmt.getValue() == null) {
+		    // NOTE -- ignore if already processed...
+		    return stmt;
+		}
 		
 		this.newStatements = new ArrayList<Statement> ();		
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);

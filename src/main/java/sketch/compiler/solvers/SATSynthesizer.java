@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -33,8 +34,8 @@ import sketch.compiler.controlflow.CFG;
 import sketch.compiler.controlflow.CFGNode;
 import sketch.compiler.controlflow.CFGNode.EdgePair;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.par.ParallelSketchOptions;
-import sketch.compiler.main.seq.SequentialSketchOptions;
 import sketch.compiler.parallelEncoder.AtomizeConditionals;
 import sketch.compiler.parallelEncoder.BreakParallelFunction;
 import sketch.compiler.parallelEncoder.CFGforPloop;
@@ -101,13 +102,13 @@ public class SATSynthesizer implements Synthesizer {
 	StmtFork ploop = null;
 
 	int nthreads;
-    public final SequentialSketchOptions options;
+    public final SketchOptions options;
 	
 	public void initialize(){
 		solver.initializeSolver();
 	}
 
-	public SATSynthesizer(Program prog_p, SequentialSketchOptions options, RecursionControl rcontrol, TempVarGen varGen) {
+	public SATSynthesizer(Program prog_p, SketchOptions options, RecursionControl rcontrol, TempVarGen varGen) {
 		this.options = options;
 		this.varGen = varGen;		
         solver = new InteractiveSATBackend(options, rcontrol, varGen);
@@ -805,10 +806,15 @@ public class SATSynthesizer implements Synthesizer {
 
 		Statement body = new StmtBlock(current, lst);
 
-		Function spec = Function.newHelper(current, "spec", TypePrimitive.inttype ,outPar, new StmtAssign(new ExprVar(current, opname), ExprConstInt.one));
+        final StmtBlock specBody =
+                new StmtBlock(current, new StmtAssign(new ExprVar(current, opname),
+                        ExprConstInt.one));
+        Function spec =
+                Function.creator(current, "spec", FcnType.Static).returnType(
+                        TypePrimitive.inttype).params(outPar).body(specBody).create();
+        // Function.newHelper(current, "spec", TypePrimitive.inttype ,outPar, new StmtAssign(new ExprVar(current, opname), ExprConstInt.one));
 
-		Function sketch = Function.newHelper(current, "sketch", TypePrimitive.inttype ,
-				outPar, "spec", body);
+		Function sketch = Function.creator(current, "sketch", FcnType.Static).params(outPar).spec("spec").body(body).create();
 
 		List<Function> funcs = new ArrayList<Function>();
 
@@ -817,7 +823,8 @@ public class SATSynthesizer implements Synthesizer {
 
 		List<StreamSpec> streams = Collections.singletonList(
 				new StreamSpec(current, StreamSpec.STREAM_FILTER, null, "MAIN",Collections.EMPTY_LIST , Collections.EMPTY_LIST ,funcs));
-		current = new Program(current,streams, Collections.EMPTY_LIST);
+        current =
+                current.creator().streams(streams).structs(Collections.EMPTY_LIST).create();
 
 
 	}

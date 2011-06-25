@@ -5,6 +5,7 @@ package sketch.compiler.passes.printers;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import sketch.compiler.ast.core.FieldDecl;
@@ -16,6 +17,7 @@ import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -588,12 +590,11 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 	public Object visitTypeStruct (TypeStruct ts) {
 		printlnIndent ("struct "+ ts.getName ()+ " {");
 		indent ();
-		for (int i = 0; i < ts.getNumFields (); ++i) {
-			String f = ts.getField (i);
-			printTab ();
-			ts.getType (f).accept (this);
-			println (" "+ f +";");
-		}
+        for (Entry<String, Type> fld : ts) {
+            printTab();
+            fld.getValue().accept(this);
+            println(" " + fld.getKey() + ";");
+        }
 		dedent ();
 		printlnIndent ("}");
 		return ts;

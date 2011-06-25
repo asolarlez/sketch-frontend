@@ -2,7 +2,6 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Vector;
 
@@ -11,13 +10,14 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 
 /**
@@ -34,8 +34,7 @@ public class MainMethodCreateNospec extends FEReplacer {
     public final Vector<Function> mainFcns = new Vector<Function>();
     public final Random rand = new Random();
 
-    public MainMethodCreateNospec() {
-    }
+    public MainMethodCreateNospec() {}
 
     @Override
     public Object visitStreamSpec(StreamSpec spec) {
@@ -43,7 +42,13 @@ public class MainMethodCreateNospec extends FEReplacer {
         spec = (StreamSpec) super.visitStreamSpec(spec);
         if (!mainFcns.isEmpty()) {
             ArrayList<Function> newFcns = new ArrayList<Function>();
-            newFcns.addAll(spec.getFuncs());
+            for (Function f : spec.getFuncs()) {
+                if (f.getInfo().printType == PrintFcnType.Default) {
+                    newFcns.add(f);
+                } else {
+                    newFcns.add(f.creator().printType(PrintFcnType.Default).create());
+                }
+            }
             for (Function mainFcn : mainFcns) {
                 Function wrapperFcn = getWrapperFunction(mainFcn);
                 newFcns.add(wrapperFcn);
@@ -57,11 +62,10 @@ public class MainMethodCreateNospec extends FEReplacer {
         }
     }
 
-    @SuppressWarnings( { "deprecation", "unchecked" })
     protected Function getNospecFunction(Function mainWrapperFcn) {
-        return Function.newStatic(FEContext.artificalFrom("nospec", mainWrapperFcn),
-                mainWrapperFcn.getSpecification(), TypePrimitive.voidtype,
-                mainWrapperFcn.getParams(), null, new StmtBlock(Collections.EMPTY_LIST));
+        final FEContext ctx = FEContext.artificalFrom("nospec", mainWrapperFcn);
+        return Function.creator(ctx, mainWrapperFcn.getSpecification(), FcnType.Static).body(
+                new StmtBlock(ctx)).params(mainWrapperFcn.getParams()).create();
     }
 
     @SuppressWarnings( { "deprecation" })
@@ -74,17 +78,18 @@ public class MainMethodCreateNospec extends FEReplacer {
         }
         stmts.add(new StmtExpr(new ExprFunCall(artificalFrom, mainFcn.getName(),
                 Collections.unmodifiableList(vars))));
-        return Function.newStatic(artificalFrom, mainFcn.getName() + "__Wrapper",
-                TypePrimitive.voidtype, mainFcn.getParams(), mainFcn.getName() +
-                        "__WrapperNospec", new StmtBlock(
-                        Collections.unmodifiableList(stmts)));
+        return Function.creator(artificalFrom, mainFcn.getName() + "__Wrapper",
+                FcnType.Static).params(mainFcn.getParams()).spec(
+                mainFcn.getName() + "__WrapperNospec").body(
+                new StmtBlock(artificalFrom, stmts)).printType(
+                mainFcn.getInfo().printType).create();
     }
 
     @Override
     public Object visitFunction(Function func) {
         if (func.isSketchHarness()) {
-            Function staticReplacement = Function.newStatic(func, func.getName(),
-                    func.getReturnType(), func.getParams(), null, func.getBody());
+            Function staticReplacement =
+                    func.creator().spec(null).type(FcnType.Static).create();
             mainFcns.add(staticReplacement);
             return super.visitFunction(staticReplacement);
         }

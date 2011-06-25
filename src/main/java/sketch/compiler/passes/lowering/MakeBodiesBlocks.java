@@ -27,6 +27,7 @@ import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtMinLoop;
 import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
 
 /**
  * Front-end visitor pass to replace the bodies of compound statements
@@ -52,9 +53,7 @@ public class MakeBodiesBlocks extends FEReplacer
         Statement newBody = (Statement)func.getBody().accept(this);
         newBody = buildBlock(newBody);
         if (newBody == func.getBody()) return func;
-        return new Function(func, func.getCls(),
-                            func.getName(), func.getReturnType(),
-                            func.getParams(),  func.getSpecification(),newBody);
+        return func.creator().body(newBody).create();
     }
     
 
@@ -116,5 +115,16 @@ public class MakeBodiesBlocks extends FEReplacer
         if (newBody == stmtMinLoop.getBody())
             return stmtMinLoop;
         return new StmtMinLoop(stmtMinLoop, newBody);
+    }
+
+    @Override
+    public Object visitStmtParfor(StmtParfor stmtParfor) {
+        Statement newBody = stmtParfor.getBody().acceptAndCast(this);
+        newBody = buildBlock(newBody);
+        if (newBody != stmtParfor.getBody()) {
+            return stmtParfor.next(stmtParfor.getIterVarDecl(), stmtParfor.getRange(),
+                    newBody);
+        }
+        return stmtParfor;
     }
 }

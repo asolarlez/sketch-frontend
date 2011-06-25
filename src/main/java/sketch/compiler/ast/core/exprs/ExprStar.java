@@ -23,7 +23,7 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.main.seq.SequentialSketchOptions;
+import sketch.compiler.main.cmdline.SketchOptions;
 
 /**
  * An integer-valued constant.  This can be freely promoted to an
@@ -38,10 +38,12 @@ public class ExprStar extends Expression
 	private int size;
 	public Expression vectorSize;
 	Vector<FENode> depObjects;
+	/** fixed domain of values */
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
 	private String starName="ANON";
+    public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
 	private static String HOLE_BASE="H__";
 	
@@ -97,9 +99,24 @@ public class ExprStar extends Expression
     public ExprStar(FEContext context, int size)
     {
         super(context);
+        isFixed = true;
         this.size = size;
+        this.starName = HOLE_BASE + (NEXT_UID++);
+    }
+
+    @Deprecated
+    public ExprStar(FEContext ctx, Type typ, int domainsize) {
+        super(ctx);
+        this.type = typ;
+        this.size = domainsize;// (int) Math.ceil(Math.log(domainsize) / Math.log(2));
         isFixed = true;
         this.starName = HOLE_BASE + (NEXT_UID++);
+        this.typeWasSetByScala = true;
+    }
+
+    public ExprStar(FENode context, int size, Type typ) {
+        this(context, size);
+        this.setType(typ);
     }
 
 	public FENode getDepObject(int i){
@@ -187,7 +204,7 @@ public class ExprStar extends Expression
 			tt = ((TypeArray)tt).getBase();
 		}
 		if( ( tt.equals(TypePrimitive.inttype) ) && !isFixed ){
-			setSize( SequentialSketchOptions.getSingleton().bndOpts.cbits  );
+			setSize( SketchOptions.getSingleton().bndOpts.cbits  );
 		}
 	}
 

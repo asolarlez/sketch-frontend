@@ -3,6 +3,7 @@ package sketch.util.cli;
 import static sketch.util.DebugOut.assertFalse;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.util.Vector;
 
 import org.apache.commons.cli.CommandLine;
@@ -157,7 +158,7 @@ public final class CliOption {
                 assertFalse("CliOption - no_defaults set, but no option", this);
             }
             if (defaultValue == null) {
-                DebugOut.print_colored(DebugOut.BASH_RED, "", " ", false, "argument",
+                DebugOut.print_stderr_colored(DebugOut.BASH_RED, "", " ", false, "argument",
                         name, "is required.\n    argument info:", this);
                 System.exit(1); // @code standards ignore
             } else if (CliOptionType.class.isAssignableFrom(typ)) {
@@ -186,9 +187,20 @@ public final class CliOption {
                 return null;
             } else {
                 if (!typ.equals(String.class)) {
-                    DebugOut.assertFalse("can't parse option type ", typ);
+                    Constructor<?> constr;
+                    try {
+                        constr = typ.getConstructor(String.class);
+                        result_vector.add(constr.newInstance(v));
+                    } catch (NoSuchMethodException e) {
+                        assertFalse("Custom class", typ.getName(), " for parameter ",
+                                full_name(), " doesn't have a new(string) constructor");
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    result_vector.add(v);
                 }
-                result_vector.add(v);
             }
         }
         return result_vector.toArray();

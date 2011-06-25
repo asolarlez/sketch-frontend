@@ -29,16 +29,16 @@ public class NodesToCTest extends NodesToJava {
 	private static final String OUTSP="outsp";
 	private static final int NTESTS=100;
 
-	public NodesToCTest(String filename) {
+    public NodesToCTest(String filename, boolean pythonPrintStatements) {
 		super(false, new TempVarGen());
 		this.filename=filename;
-		_converter=new NodesToC(null,filename);
+        _converter = new NodesToC(null, filename, pythonPrintStatements);
 		output=new StringBuffer();
 		fMap=new HashMap<String,Function>();
 		testFuncs=new ArrayList<String>();
 	}
 	
-	private void writeLine(String s) {
+	protected void writeLine(String s) {
 		output.append(indent);
 		output.append(s);
 		output.append("\n");
@@ -176,7 +176,7 @@ public class NodesToCTest extends NodesToJava {
     
     private void declareVar(String name, Type t) {
     	
-    	String line = _converter.typeForDecl(t, name);
+    	String line = _converter.typeForDecl(t) + " " + name;
     	/*int len=typeLen(t);
     	boolean isArr = typeIsArr(t);
     	String line=translateType(t);

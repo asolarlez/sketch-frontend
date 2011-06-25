@@ -28,6 +28,7 @@ import sketch.compiler.ast.core.typs.Type;
  */
 public class Parameter extends FENode
 {
+    // NOTE -- don't change these, or modify ScAstModel.gm in Skalch project
 	public final static int IN = 0;
 	public final static int OUT = 1;
 	public final static int REF = 2;
@@ -96,10 +97,9 @@ public class Parameter extends FENode
         return name;
     }
 
-    public String toString()
-    {
-
-    	return (partype==OUT? "!":"") +  type.toString()+" "+name;
+    public String toString() {
+        return (partype == OUT ? "!" : (partype == REF ? "@" : "")) + type.toString() +
+                " " + name;
     }
 
     public Object accept(FEVisitor v){

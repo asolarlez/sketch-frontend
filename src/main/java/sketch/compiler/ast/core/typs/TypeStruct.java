@@ -16,18 +16,19 @@
 
 package sketch.compiler.ast.core.typs;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.util.datastructures.ImmutableTypedHashMap;
 import sketch.util.datastructures.ObjPairBase;
+import sketch.util.datastructures.TypedHashMap;
 
 /**
  * A hetereogeneous structure type.  This type has a name for itself,
@@ -44,33 +45,51 @@ import sketch.util.datastructures.ObjPairBase;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class TypeStruct extends Type
+public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
 {
-    private FEContext context;
-    private String name;
-    private List<String> fields;
-    private Map<String, Type> types;
+    private final FEContext context;
+    private final String name;
+    private final ImmutableTypedHashMap<String, Type> fieldTypMap;
 
     /**
-     * Creates a new structured type.  The fields and ftypes lists must
-     * be the same length; a field in a given position in the fields
-     * list has the type in the equivalent position in the ftypes list.
-     *
-     * @param context  file and line number the structure was declared in
-     * @param name     name of the structure
-     * @param fields   list of <code>String</code> containing the names
-     *                 of the fields
-     * @param ftypes   list of <code>Type</code> containing the types of
-     *                 the fields
+     * Creates a new structured type. The fields and ftypes lists must be the same length;
+     * a field in a given position in the fields list has the type in the equivalent
+     * position in the ftypes list.
+     * 
+     * @param context
+     *            file and line number the structure was declared in
+     * @param name
+     *            name of the structure
+     * @param fields
+     *            list of <code>String</code> containing the names of the fields
+     * @param ftypes
+     *            list of <code>Type</code> containing the types of the fields
      */
-    public TypeStruct(FEContext context, String name, List<String> fields, List<Type> ftypes)
+    public TypeStruct(CudaMemoryType typ, FEContext context, String name,
+            List<String> fields, List<Type> ftypes)
     {
+        super(typ);
         this.context = context;
         this.name = name;
-        this.fields = fields;
-        this.types = new HashMap<String, Type> ();
+        TypedHashMap<String, Type> types = new TypedHashMap<String, Type>();
         for (int i = 0; i < fields.size(); i++)
-            this.types.put(fields.get(i), ftypes.get(i));
+            types.put(fields.get(i), ftypes.get(i));
+        this.fieldTypMap = types.immutable();
+    }
+
+    public TypeStruct(CudaMemoryType typ, FEContext context, String name,
+            TypedHashMap<String, Type> map)
+    {
+        super(typ);
+        this.context = context;
+        this.name = name;
+        this.fieldTypMap = map.immutable();
+    }
+
+    public TypeStruct(FEContext context, String name, List<String> fields,
+            List<Type> ftypes)
+    {
+        this(CudaMemoryType.UNDEFINED, context, name, fields, ftypes);
     }
 
     public boolean isStruct () { return true; }
@@ -102,23 +121,12 @@ public class TypeStruct extends Type
      */
     public int getNumFields()
     {
-        return fields.size();
-    }
-
-    /**
-     * Returns the name of the specified field.
-     *
-     * @param n zero-based index of the field to get the name of
-     * @return  the name of the nth field
-     */
-    public String getField(int n)
-    {
-        return fields.get(n);
+        return getFieldTypMap().size();
     }
 
     public Collection<String> getFields ()
     {
-    	return Collections.unmodifiableCollection (fields);
+        return fieldTypMap.keySet();
     }
 
     /**
@@ -129,23 +137,12 @@ public class TypeStruct extends Type
      */
     public Type getType(String f)
     {
-        return types.get(f);
+        return getFieldTypMap().get(f);
     }
 
     /** Return true iff F is a field of this struct. */
     public boolean hasField (String f) {
-    	return types.containsKey (f);
-    }
-
-    /**
-     * Set the type of field 'f' to 't'.
-     *
-     * @param f
-     * @param t
-     * @deprecated
-     */
-    public void setType (String f, Type t) {
-    	types.put (f, t);
+        return getFieldTypMap().containsKey(f);
     }
 
     public Expression defaultValue () {
@@ -158,25 +155,19 @@ public class TypeStruct extends Type
         return v.visitTypeStruct (this);
     }
 
-    // Remember, equality and such only test on the name.
-    public boolean equals(Object other)
-    {
-        if (other instanceof TypeStruct)
-        {
-            TypeStruct that = (TypeStruct)other;
-            return this.name.equals(that.name);
+    @Override
+    public TypeComparisonResult compare(Type other) {
+        if (other instanceof TypeStruct) {
+            TypeStruct that = (TypeStruct) other;
+            return TypeComparisonResult.knownOrNeq(name.equals(that.getName()));
         }
 
-        if (other instanceof TypeStructRef)
-        {
-            TypeStructRef that = (TypeStructRef)other;
-            return name.equals(that.getName());
+        if (other instanceof TypeStructRef) {
+            TypeStructRef that = (TypeStructRef) other;
+            return TypeComparisonResult.knownOrNeq(this.name.equals(that.getName()));
         }
 
-        if (this.isComplex() && other instanceof Type)
-            return ((Type)other).isComplex();
-
-        return false;
+        return TypeComparisonResult.NEQ;
     }
 
     public int hashCode()
@@ -191,7 +182,7 @@ public class TypeStruct extends Type
 
     public List<StructFieldEnt> getFieldEntries() {
         Vector<StructFieldEnt> result = new Vector<StructFieldEnt>();
-        for (Entry<String, Type> ent : this.types.entrySet()) {
+        for (Entry<String, Type> ent : this.getFieldTypMap().entrySet()) {
             result.add(new StructFieldEnt(ent.getKey(), ent.getValue()));
         }
         return result;
@@ -207,5 +198,24 @@ public class TypeStruct extends Type
         public Type getType() { return right; }
     }
     // [end]
+
+    @Override
+    public Type withMemType(CudaMemoryType memtyp) {
+        /*
+         * if updating is desired TypedHashMap<String, Type> fields2 = new
+         * TypedHashMap<String, Type>(); for (Entry<String, Type> v :
+         * fieldTypMap.entrySet()) { fields2.put(v.getKey(),
+         * v.getValue().withMemType(memtyp)); }
+         */
+        return new TypeStruct(memtyp, context, name, fieldTypMap);
+    }
+
+    public ImmutableTypedHashMap<String, Type> getFieldTypMap() {
+        return fieldTypMap;
+    }
+
+    public Iterator<Entry<String, Type>> iterator() {
+        return fieldTypMap.iterator();
+    }
 }
 

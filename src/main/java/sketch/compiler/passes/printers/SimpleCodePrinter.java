@@ -4,18 +4,22 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.StreamType;
+import sketch.compiler.ast.core.Function.LibraryFcnType;
+import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
@@ -23,6 +27,7 @@ import sketch.util.fcns.ZipIdxEnt;
 public class SimpleCodePrinter extends CodePrinter
 {
 	boolean outtags = false;
+    protected final boolean printLibraryFunctions;
 	public SimpleCodePrinter outputTags(){
 
 		outtags = true;
@@ -30,11 +35,12 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 	public SimpleCodePrinter() {
-		this(System.out);
+		this(System.out, false);
 	}
 
-	public SimpleCodePrinter(OutputStream os) {
+	public SimpleCodePrinter(OutputStream os, boolean printLibraryFunctions) {
 		super (os);
+        this.printLibraryFunctions = printLibraryFunctions;
 	}
 
 	public Object visitFunction(Function func)
@@ -43,7 +49,7 @@ public class SimpleCodePrinter extends CodePrinter
 		printTab(); 
 		out.println("/*" + func.getCx() + "*/");
 		printTab();
-		out.println(func.toString());
+		out.println((func.getInfo().printType == PrintFcnType.Printfcn ? "printfcn " : "") + func.toString());
 		super.visitFunction(func);
 		out.flush();
 		return func;
@@ -74,20 +80,25 @@ public class SimpleCodePrinter extends CodePrinter
         }
         int nonNull = 0;
         
-        TreeMap<String, Function> tm = new TreeMap<String, Function>();
-        for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); ){
-            Function tf = iter.next();
-            tm.put(tf.getName(), tf);
-        }
-        
-        
-        for (Iterator<Function> iter = tm.values().iterator(); iter.hasNext(); )
+        TreeSet<Function> orderedFuncs = new TreeSet<Function>(new Comparator<Function>()
         {
-            Function oldFunc = (Function)iter.next();
-            Function newFunc = (Function)oldFunc.accept(this);
-            if (oldFunc != newFunc) changed = true;
-//            if(oldFunc != null)++nonNull;
-            if(newFunc!=null) newFuncs.add(newFunc);
+            public int compare(Function o1, Function o2) {
+                final int det_order =
+                        o1.getInfo().determinsitic.compareTo(o2.getInfo().determinsitic);
+                return det_order + (det_order == 0 ? 1 : 0) *
+                        o1.getName().compareTo(o2.getName());
+            }
+        });
+        orderedFuncs.addAll(spec.getFuncs());
+
+        for (Function oldFunc : orderedFuncs) {
+            if (oldFunc.getInfo().libraryType != LibraryFcnType.Library || printLibraryFunctions) {
+                Function newFunc = (Function)oldFunc.accept(this);
+                if (oldFunc != newFunc) changed = true;
+                if(newFunc!=null) newFuncs.add(newFunc);
+            } else {
+                newFuncs.add(oldFunc);
+            }
         }
 
         if(newFuncs.size() != nonNull){
@@ -327,5 +338,11 @@ public class SimpleCodePrinter extends CodePrinter
             this.indent -= 1;
         }
         return exprTprint;
+    }
+    
+    @Override
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
+        printLine("__syncthreads();");
+        return cudaSyncthreads;
     }
 }

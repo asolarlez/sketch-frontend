@@ -22,6 +22,12 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
+import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
+import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
@@ -111,5 +117,15 @@ public interface FEVisitor
     public Object visitExprNullPtr(ExprNullPtr nptr);
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
+    public Object visitExprSpecialStar(ExprSpecialStar exprSpecialStar);
     public Object visitExprTprint(ExprTprint exprTprint);
+    public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx);
+    public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim);
+    public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads);
+    public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall);
+    public Object visitExprRange(ExprRange exprRange);
+    public Object visitStmtParfor(StmtParfor stmtParfor);
+    public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl);
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam);
+    public Object visitExprType(ExprType exprtyp);
 }

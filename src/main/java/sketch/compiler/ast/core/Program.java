@@ -15,16 +15,19 @@
  */
 
 package sketch.compiler.ast.core;
-import static sketch.util.DebugOut.printWarning;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import sketch.compiler.Directive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
+
+import static sketch.util.DebugOut.printWarning;
 
 /**
  * An entire StreamIt program.  This includes all of the program's
@@ -38,15 +41,64 @@ import sketch.compiler.passes.printers.SimpleCodePrinter;
 public class Program extends FENode
 {
     private List<StreamSpec> streams;
-    private List<TypeStruct> structs;
+    private final List<TypeStruct> structs;
+    protected final Set<Directive> directives;
+
+    public static class ProgramCreator {
+        private Program base;
+        private List<StreamSpec> streams;
+        private List<TypeStruct> structs;
+        private Set<Directive> directives;
+
+        public ProgramCreator(Program base, List<StreamSpec> streams,
+                List<TypeStruct> structs, Set<Directive> directives)
+        {
+            this.base = base;
+            this.streams = streams;
+            this.structs = structs;
+            this.directives = directives;
+        }
+
+        public ProgramCreator streams(List<StreamSpec> streams) {
+            this.streams = streams;
+            return this;
+        }
+
+        public ProgramCreator structs(List<TypeStruct> structs) {
+            this.structs = structs;
+            return this;
+        }
+
+        public ProgramCreator directives(Set<Directive> directives) {
+            this.directives = directives;
+            return this;
+        }
+
+        public Program create() {
+            return new Program(this.base, this.streams, this.structs, this.directives);
+        }
+    }
+
+    public static Program emptyProgram() {
+        List<StreamSpec> streams = new java.util.ArrayList<StreamSpec>();
+        List<TypeStruct> structs = new java.util.ArrayList<TypeStruct>();
+        Set<Directive> directives = new HashSet<Directive>();
+        return new Program(null, streams, structs, directives);
+    }
 
     /** Creates a new StreamIt program, given lists of streams and
      * structures. */
-    public Program(FENode context, List<StreamSpec> streams, List<TypeStruct> structs)
+    protected Program(FENode context, List<StreamSpec> streams, List<TypeStruct> structs,
+            Set<Directive> directives)
     {
         super(context);
         this.streams = streams;
         this.structs = structs;
+        this.directives = directives;
+    }
+
+    public ProgramCreator creator() {
+        return new ProgramCreator(this, streams, structs, directives);
     }
 
     /** Returns the list of streams declared in this. */
@@ -78,7 +130,7 @@ public class Program extends FENode
     }
 
     public void debugDump(OutputStream out) {
-        (new SimpleCodePrinter(out)).visitProgram(this);
+        (new SimpleCodePrinter(out, true)).visitProgram(this);
     }
 
     public void debugDump(File file) {
@@ -87,5 +139,9 @@ public class Program extends FENode
         } catch (FileNotFoundException e) {
             printWarning("Dumping to file", file, "failed");
         }
+    }
+
+    public Set<Directive> getDirectives() {
+        return this.directives;
     }
 }

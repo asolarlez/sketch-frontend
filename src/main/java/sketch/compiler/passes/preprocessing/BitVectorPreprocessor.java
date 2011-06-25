@@ -311,7 +311,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 	public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;
-        Function fun = this.symtab.lookupFn(exp.getName());
+        Function fun = this.symtab.lookupFn(exp.getName(), exp);
         List formals = fun.getParams();
         Iterator form = formals.iterator();
         List<Expression> newParams = new ArrayList<Expression>();

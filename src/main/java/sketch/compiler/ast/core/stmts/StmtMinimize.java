@@ -6,11 +6,13 @@ import sketch.compiler.ast.core.exprs.Expression;
 
 public class StmtMinimize extends Statement {
     private final Expression minimizeExpr;
+    public final boolean userGenerated;
 
     @SuppressWarnings("deprecation")
-    public StmtMinimize(Expression minimizeExpr) {
+    public StmtMinimize(Expression minimizeExpr, final boolean userWritten) {
         super(FEContext.artificalFrom("minimize", minimizeExpr));
         this.minimizeExpr = minimizeExpr;
+        this.userGenerated = userWritten;
     }
 
     @Override

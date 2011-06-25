@@ -237,7 +237,7 @@ public class Executer {
 		if (debug) {
 			System.out.println ("------------------------------------------------");
 			System.out.println ("----- Dumping: "+ ((null != desc) ? desc : "??"));
-			Misc.dumpStreamTo (new FileInputStream (f), System.out, linenos);
+			Misc.dumpStreamTo (new FileInputStream (f), System.out, linenos, null);
 		}
 	}
 

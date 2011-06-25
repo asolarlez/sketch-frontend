@@ -134,10 +134,21 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
+                    <classifier>test</classifier>
                     <source>1.5</source>
                     <target>1.5</target>
+                    <excludes>
+                        <exclude>sketch/compiler/main/other/ParseFunctions.java</exclude>
+                        <exclude>sketch/compiler/main/par/ParallelSketchMain.java</exclude>
+                        <exclude>sketch/compiler/main/par/RandomParallelSketchMain.java</exclude>
+                        <exclude>sketch/compiler/main/par/old/*.java</exclude>
+                        <exclude>sketch/compiler/main/seq/SequentialSMTSketchMain.java</exclude>
+                        <exclude>sketch/compiler/smt/**/*.java</exclude>
+                        <exclude>sketch/compiler/main/sten/*.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
+
 
             <!-- package all dependencies -->
             <plugin>

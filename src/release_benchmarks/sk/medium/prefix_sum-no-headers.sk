@@ -1,0 +1,368 @@
+int N = 8;
+int WARPSZ = 2;
+int NWARPS = 4;
+int NBANKS = 2;
+
+
+
+
+void bank_conflict_inc(ref int[NWARPS * NBANKS] bank_use_cnts,
+    int idx, int tid)
+{
+    int warp = tid / WARPSZ;
+    int bank = idx % NBANKS;
+    bank_use_cnts[warp * NBANKS + bank] += 1;
+}
+
+device void device_bank_conflict_inc(ref int[NWARPS * NBANKS] bank_use_cnts,
+    int idx, int tid)
+{
+    int warp = tid / WARPSZ;
+    int bank = idx % NBANKS;
+    bank_use_cnts[warp * NBANKS + bank] += 1;
+}
+
+int get_num_bank_conflicts(int[NWARPS * NBANKS] bank_use_cnts) {
+    int n_bank_conflicts = 0;
+    for (int bank = 0; bank < NBANKS; bank++) {
+        for (int warp = 0; warp < NWARPS; warp++) {
+            n_bank_conflicts += max(0,
+                bank_use_cnts[warp * NBANKS + bank] - 1);
+        }
+    }
+    return n_bank_conflicts;
+}
+
+serial void device_inc_num_bank_conflicts(int[NWARPS * NBANKS] bank_use_cnts, int[1] nConflicts) {
+    int n_bank_conflicts = 0;
+    for (int bank = 0; bank < NBANKS; bank++) {
+        for (int warp = 0; warp < NWARPS; warp++) {
+            n_bank_conflicts += max(0,
+                bank_use_cnts[warp * NBANKS + bank] - 1);
+        }
+    }
+    nConflicts[0] += n_bank_conflicts;
+}
+
+
+int max(int x, int y) { if (x > y) return x; else return y; }
+
+
+
+
+bit arrayEq(int[N] a1, int[N] a2) {
+    bit rv = true;
+    for (int a = 0; a < N; a++) {
+        if (a1[a] != a2[a]) {
+            rv = false;
+        }
+    }
+    return rv;
+}
+serial int[(N)] prefixSumSpec(int[(N)] input) { int[(N)] result = input; for (int a = 0; a < (N) - 1; a++) { result[a + 1] += result[a]; } return result; }
+serial int[(N)] externalPrefixSumSpec(int[(N)] input) { int[(N)] shifted = 0; shifted[1::(N)-1] = input[0::(N)-1]; return prefixSumSpec(shifted); }
+
+int[N] segmentSumSpec(int[N] input, bit[N] flags) {
+    int[N] output = 0;
+    int sum = 0;
+    for (int a = 0; a < N; a++) {
+        if (flags[a]) {
+            sum = 0;
+        }
+        sum += input[a];
+        output[a] = sum;
+    }
+    return output;
+}
+
+int[N] externalSegmentSumSpec(int[N] input, bit[N] flags) {
+    int[N] output = 0;
+    int sum = 0;
+    for (int a = 0; a < N; a++) {
+        if (flags[a]) {
+            sum = 0;
+        }
+        output[a] = sum;
+        sum += input[a];
+    }
+    return output;
+}
+int[N] sumOfSegment1(int[N] input, bit[N] flags) {
+    int[N] output = 0;
+    int[N + 1] segSums = 0;
+    int segCtr = 0;
+    for (int a = 0; a < N; a++) {
+        if (flags[a]) {
+            segCtr += 1;
+        }
+        segSums[segCtr] += input[a];
+    }
+
+    segCtr = 0;
+    for (int a = 0; a < N; a++) {
+        if (flags[a]) {
+            segCtr += 1;
+        }
+        output[a] = segSums[segCtr];
+    }
+    return output;
+}
+
+generator int synthFunc_2_E2_S1(int a, int b) {
+    int star1 = 4;
+    assert star1 < 7;
+    if (??) { return a; }
+    if (??) { return b; }
+    if (??) { return star1; }
+    if (??) { return -(a); }
+    if (??) { return -(b); }
+    if (??) { return -(star1); }
+    if (??) { return (a) + (b); }
+    if (??) { return (a) - (b); }
+    if (??) { return (a) * (b); }
+    if (??) { return (a) + (star1); }
+    if (??) { return (a) - (star1); }
+    if (??) { return (a) * (star1); }
+    if (??) { return (a) / (star1); }
+    if (??) { return (b) - (a); }
+    if (??) { return (b) + (star1); }
+    if (??) { return (b) - (star1); }
+    if (??) { return (b) * (star1); }
+    if (??) { return (b) / (star1); }
+    if (??) { return (star1) - (a); }
+    if (??) { return (star1) - (b); }
+    if (??) { return -((a) + (b)); }
+    if (??) { return -((a) * (b)); }
+    if (??) { return -((a) + (star1)); }
+    if (??) { return -((a) * (star1)); }
+    if (??) { return -((a) / (star1)); }
+    if (??) { return -((b) + (star1)); }
+    if (??) { return -((b) * (star1)); }
+    if (??) { return -((b) / (star1)); }
+    if (??) { return (a) + ((a) + (b)); }
+    if (??) { return (a) - ((a) + (b)); }
+    if (??) { return (a) * ((a) + (b)); }
+    if (??) { return (a) / ((a) + (b)); }
+    if (??) { return (a) + ((a) - (b)); }
+    if (??) { return (a) * ((a) - (b)); }
+    if (??) { return (a) / ((a) - (b)); }
+    if (??) { return (a) + ((a) * (b)); }
+    if (??) { return (a) - ((a) * (b)); }
+    if (??) { return (a) + ((a) + (star1)); }
+    if (??) { return (a) - ((a) + (star1)); }
+    if (??) { return (a) * ((a) + (star1)); }
+    if (??) { return (a) / ((a) + (star1)); }
+    if (??) { return (a) + ((a) - (star1)); }
+    if (??) { return (a) * ((a) - (star1)); }
+    if (??) { return (a) / ((a) - (star1)); }
+    if (??) { return (a) + ((a) * (star1)); }
+    if (??) { return (a) - ((a) * (star1)); }
+    if (??) { return (a) + ((a) / (star1)); }
+    if (??) { return (a) - ((a) / (star1)); }
+    if (??) { return (a) * ((b) - (a)); }
+    if (??) { return (a) / ((b) - (a)); }
+    if (??) { return (a) + ((b) + (star1)); }
+    if (??) { return (a) - ((b) + (star1)); }
+    if (??) { return (a) * ((b) + (star1)); }
+    if (??) { return (a) / ((b) + (star1)); }
+    if (??) { return (a) + ((b) - (star1)); }
+    if (??) { return (a) - ((b) - (star1)); }
+    if (??) { return (a) * ((b) - (star1)); }
+    if (??) { return (a) / ((b) - (star1)); }
+    if (??) { return (a) + ((b) * (star1)); }
+    if (??) { return (a) - ((b) * (star1)); }
+    if (??) { return (a) + ((b) / (star1)); }
+    if (??) { return (a) - ((b) / (star1)); }
+    if (??) { return (a) * ((star1) - (a)); }
+    if (??) { return (a) / ((star1) - (a)); }
+    if (??) { return (a) * ((star1) - (b)); }
+    if (??) { return (a) / ((star1) - (b)); }
+    if (??) { return (b) - ((a) + (b)); }
+    if (??) { return (b) * ((a) + (b)); }
+    if (??) { return (b) / ((a) + (b)); }
+    if (??) { return (b) - ((a) - (b)); }
+    if (??) { return (b) * ((a) - (b)); }
+    if (??) { return (b) / ((a) - (b)); }
+    if (??) { return (b) + ((a) * (b)); }
+    if (??) { return (b) - ((a) * (b)); }
+    if (??) { return (b) - ((a) + (star1)); }
+    if (??) { return (b) * ((a) + (star1)); }
+    if (??) { return (b) / ((a) + (star1)); }
+    if (??) { return (b) - ((a) - (star1)); }
+    if (??) { return (b) * ((a) - (star1)); }
+    if (??) { return (b) / ((a) - (star1)); }
+    if (??) { return (b) + ((a) * (star1)); }
+    if (??) { return (b) - ((a) * (star1)); }
+    if (??) { return (b) + ((a) / (star1)); }
+    if (??) { return (b) - ((a) / (star1)); }
+    if (??) { return (b) * ((b) - (a)); }
+    if (??) { return (b) / ((b) - (a)); }
+    if (??) { return (b) + ((b) + (star1)); }
+    if (??) { return (b) - ((b) + (star1)); }
+    if (??) { return (b) * ((b) + (star1)); }
+    if (??) { return (b) / ((b) + (star1)); }
+    if (??) { return (b) + ((b) - (star1)); }
+    if (??) { return (b) * ((b) - (star1)); }
+    if (??) { return (b) / ((b) - (star1)); }
+    if (??) { return (b) + ((b) * (star1)); }
+    if (??) { return (b) - ((b) * (star1)); }
+    if (??) { return (b) + ((b) / (star1)); }
+    if (??) { return (b) - ((b) / (star1)); }
+    if (??) { return (b) * ((star1) - (a)); }
+    if (??) { return (b) / ((star1) - (a)); }
+    if (??) { return (b) * ((star1) - (b)); }
+    if (??) { return (b) / ((star1) - (b)); }
+    if (??) { return (star1) - ((a) + (b)); }
+    if (??) { return (star1) * ((a) + (b)); }
+    if (??) { return (star1) / ((a) + (b)); }
+    if (??) { return (star1) * ((a) - (b)); }
+    if (??) { return (star1) / ((a) - (b)); }
+    if (??) { return (star1) + ((a) * (b)); }
+    if (??) { return (star1) - ((a) * (b)); }
+    if (??) { return (star1) - ((a) + (star1)); }
+    if (??) { return (star1) * ((a) + (star1)); }
+    if (??) { return (star1) / ((a) + (star1)); }
+    if (??) { return (star1) - ((a) - (star1)); }
+    if (??) { return (star1) * ((a) - (star1)); }
+    if (??) { return (star1) / ((a) - (star1)); }
+    if (??) { return (star1) + ((a) * (star1)); }
+    if (??) { return (star1) - ((a) * (star1)); }
+    if (??) { return (star1) + ((a) / (star1)); }
+    if (??) { return (star1) - ((a) / (star1)); }
+    if (??) { return (star1) * ((b) - (a)); }
+    if (??) { return (star1) / ((b) - (a)); }
+    if (??) { return (star1) - ((b) + (star1)); }
+    if (??) { return (star1) * ((b) + (star1)); }
+    if (??) { return (star1) / ((b) + (star1)); }
+    if (??) { return (star1) - ((b) - (star1)); }
+    if (??) { return (star1) * ((b) - (star1)); }
+    if (??) { return (star1) / ((b) - (star1)); }
+    if (??) { return (star1) + ((b) * (star1)); }
+    if (??) { return (star1) - ((b) * (star1)); }
+    if (??) { return (star1) + ((b) / (star1)); }
+    if (??) { return (star1) - ((b) / (star1)); }
+    if (??) { return (star1) * ((star1) - (a)); }
+    if (??) { return (star1) / ((star1) - (a)); }
+    if (??) { return (star1) * ((star1) - (b)); }
+    if (??) { return (star1) / ((star1) - (b)); }
+    if (??) { return (-(a)) - (b); }
+    if (??) { return (-(a)) - (star1); }
+    if (??) { return (-(b)) - (star1); }
+    if (??) { return ((a) + (b)) / (star1); }
+    if (??) { return ((a) - (b)) - (a); }
+    if (??) { return ((a) - (b)) - (b); }
+    if (??) { return ((a) - (b)) - (star1); }
+    if (??) { return ((a) - (b)) / (star1); }
+    if (??) { return ((a) * (b)) - (a); }
+    if (??) { return ((a) * (b)) - (b); }
+    if (??) { return ((a) * (b)) - (star1); }
+    if (??) { return ((a) + (star1)) / (star1); }
+    if (??) { return ((a) - (star1)) - (a); }
+    if (??) { return ((a) - (star1)) - (b); }
+    if (??) { return ((a) - (star1)) - (star1); }
+    if (??) { return ((a) - (star1)) / (star1); }
+    if (??) { return ((a) * (star1)) - (a); }
+    if (??) { return ((a) * (star1)) - (b); }
+    if (??) { return ((a) * (star1)) - (star1); }
+    if (??) { return ((a) / (star1)) - (a); }
+    if (??) { return ((a) / (star1)) - (b); }
+    if (??) { return ((a) / (star1)) - (star1); }
+    if (??) { return ((b) - (a)) - (a); }
+    if (??) { return ((b) - (a)) - (b); }
+    if (??) { return ((b) - (a)) - (star1); }
+    if (??) { return ((b) - (a)) / (star1); }
+    if (??) { return ((b) + (star1)) / (star1); }
+    if (??) { return ((b) - (star1)) - (a); }
+    if (??) { return ((b) - (star1)) - (b); }
+    if (??) { return ((b) - (star1)) - (star1); }
+    if (??) { return ((b) - (star1)) / (star1); }
+    if (??) { return ((b) * (star1)) - (a); }
+    if (??) { return ((b) * (star1)) - (b); }
+    if (??) { return ((b) * (star1)) - (star1); }
+    if (??) { return ((b) / (star1)) - (a); }
+    if (??) { return ((b) / (star1)) - (b); }
+    if (??) { return ((b) / (star1)) - (star1); }
+    if (??) { return ((star1) - (a)) - (a); }
+    if (??) { return ((star1) - (a)) - (b); }
+    if (??) { return ((star1) - (a)) - (star1); }
+    if (??) { return ((star1) - (a)) / (star1); }
+    if (??) { return ((star1) - (b)) - (a); }
+    if (??) { return ((star1) - (b)) - (b); }
+    if (??) { return ((star1) - (b)) - (star1); }
+    else { return ((star1) - (b)) / (star1); }
+}
+int phi(int idx) {
+    return synthFunc_2_E2_S1(idx, idx);
+}
+
+harness void checkInjectivity_phi(int a, int b) { if ((a >= 0) && (a < N) && (b >= 0) && (b < N)) { assert phi(a) < 2 * N; assert phi(a) >= 0; if (phi(a) == phi(b)) { assert a == b; } } }
+
+
+int[N] prefixSum(int[N] array_, ref int[1] nConflicts) {
+    int[N] array = array_;
+
+    int stride = 1;
+
+    while (stride < N) {
+        int[NWARPS * NBANKS] bank_use_counts = 0;
+
+
+        for (int tid = 0; tid < N; tid++) {
+            int ai = stride * (2 * tid + 1) - 1;
+            int bi = stride * (2 * tid + 2) - 1;
+            if (bi < N) {
+                array[bi] += array[ai];
+
+
+
+                bank_conflict_inc(bank_use_counts, phi(ai), tid);
+                bank_conflict_inc(bank_use_counts, phi(bi), tid);
+                bank_conflict_inc(bank_use_counts, phi(bi), tid);
+            }
+        }
+
+
+        nConflicts[0] += get_num_bank_conflicts(bank_use_counts);
+        stride *= 2;
+    }
+
+    while (stride > 0) {
+        int[NWARPS * NBANKS] bank_use_counts = 0;
+
+        for (int tid = 0; tid < N; tid++) {
+            int ai = stride * (2 * tid + 2) - 1;
+            int bi = stride * (2 * tid + 3) - 1;
+            if (bi < N) {
+                array[bi] += array[ai];
+
+
+
+                bank_conflict_inc(bank_use_counts, phi(ai), tid);
+                bank_conflict_inc(bank_use_counts, phi(bi), tid);
+                bank_conflict_inc(bank_use_counts, phi(bi), tid);
+            }
+        }
+
+        nConflicts[0] += get_num_bank_conflicts(bank_use_counts);
+        stride /= 2;
+    }
+
+    return array;
+}
+
+
+
+printfcn void prefix_sum_main() {
+
+
+    int[N] in = {1, 1, 1, 1, 1, 1, 1, 1};
+
+    int[1] nConflicts = 0;
+    int[N] out = prefixSum(in, nConflicts);
+
+    assert nConflicts[0] < 22;
+
+    int[N] expected = {1, 2, 3, 4, 5, 6, 7, 8};
+
+    assert arrayEq(out, expected);
+}

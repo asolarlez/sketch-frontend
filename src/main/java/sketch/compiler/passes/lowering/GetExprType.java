@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.passes.lowering;
-import static sketch.util.Misc.nonnull;
-
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +22,6 @@ import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.UnrecognizedVariableException;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
@@ -36,6 +33,9 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.util.exceptions.UnrecognizedVariableException;
+import static sketch.util.Misc.nonnull;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -80,7 +80,6 @@ public class GetExprType extends FENullVisitor
     	
 		
 		Expression expr = null;
-		
             RangeLen range=exp.getSelection();
             Type start = (Type)range.start().accept(this);
             
@@ -274,10 +273,7 @@ public class GetExprType extends FENullVisitor
     public Object visitExprField(ExprField exp)
     {
         Type base = (Type)exp.getLeft().accept(this);
-        // If the base is a complex type, a field of it is float.
-        if (base.isComplex())
-            return TypePrimitive.floattype;
-        else if (base instanceof TypeStruct)
+        if (base instanceof TypeStruct)
             return ((TypeStruct)base).getType(exp.getName());
         else if (base instanceof TypeStructRef)
         {
@@ -298,7 +294,7 @@ public class GetExprType extends FENullVisitor
     	// Has SymbolTable given us a function declaration?
     	try
     	{
-    		Function fn = symTab.lookupFn(exp.getName());
+            Function fn = symTab.lookupFn(exp.getName(), exp);
     		return fn.getReturnType();
     	} catch (UnrecognizedVariableException e) {
     		// ignore
@@ -389,14 +385,20 @@ public class GetExprType extends FENullVisitor
     public Object visitExprVar(ExprVar exp)
     {
         // Look this up in the symbol table.
-    	Type t;
-    	try{
+        // Type t;
+        // try{
     	    assert exp != null && symTab != null;
-    		t = symTab.lookupVar(exp.getName());
-    	}catch(UnrecognizedVariableException e){
-    		throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
-    	}
-        return t;
+        return symTab.lookupVar(exp.getName(), exp);
+        // }
+    	// catch(UnrecognizedVariableException e){
+    		// throw new UnrecognizedVariableException(exp + ": The variable " + e.getMessage() + " has not been defined.");
+    	// }
+        // return t;
+    }
+
+    @Override
+    public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
+        return exprNamedParam.getExpr().accept(this);
     }
 
 	private Type binopType (int op, Expression left, Expression right) {
@@ -432,5 +434,9 @@ public class GetExprType extends FENullVisitor
 
         return rv;
 	}
-
+	
+	@Override
+	public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+	    return TypePrimitive.inttype;
+	}
 }
