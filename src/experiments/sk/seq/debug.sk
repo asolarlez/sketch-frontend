@@ -1,9 +1,93 @@
-struct foo{
-    
+pragma options "--bnd-inline-amnt 3 --bnd-unroll-amnt 16 --bnd-cbits 3 --bnd-inbits 2 --bnd-arr-size 32";
+
+/*stenPar..on1d.sk:72*/
+void collect(int N, int P, bit[N + P][P] inD, int[P] sz, ref bit[N] _out)
+{
+  _out = ((bit[N])0);
+  bit[N] out;
+  int t = 0;
+  for(int p = 0; p < P; p = p + 1)
+  {
+    int i = 4;
+    bit s_0 = 4 < ((sz[p]) - 4);
+    while(s_0)
+    {
+      out[t] = inD[p][i];
+      t = t + 1;
+      i = i + 1;
+      s_0 = i < ((sz[p]) - 4);
+    }
+  }
+  _out = out;
+  return;
 }
 
-harness void main(int x){
+harness void testTest(){
+    int N = 10;
+    int P = 2;
+    bit[N] in = {1,1,1,1,1,1,1, 1, 1, 1, 1};
+    distribTest(N, in, P);
     
-    assert {| x + (x (+|*) x)? |};
-    
+}
+/*stenPar..on1d.sk:41*/
+void distribTest(int N, bit[N] in, int P)
+{  
+  if((N < 1) || (P < 1))/*stenPar..on1d.sk:42*/
+  {
+    return;
+  }
+  bit[N][P] inD;
+  int[P] sz;
+  distribute(N, P, in, inD, sz);
+  bit[N] out = 0;
+  collect(N, P, inD, sz, out);
+  for(int i = 1; i < P; i = i + 1)
+  {
+    assert ((inD[i][0]) == (inD[i - 1][(sz[i]) - 1]))
+;
+  }
+}
+
+/*stenPar..on1d.sk:55*/
+void distribute(int N, int P, bit[N] in, ref bit[N + P][P] out, ref int[P] sz)
+{
+  for(int p = 0; p < P; p = p + 1)
+  {
+    int ibeg = 0; int iend = 0;
+    partition(p, P, N, ibeg, iend);
+    int t = 2;
+    int q1 = 0; int q2 = 0;
+    if(p == 0)/*stenPar..on1d.sk:61*/
+    {
+      t = 0;
+      q1 = 0;
+      q2 = 0;
+    }
+    if(p == (P - 0))/*stenPar..on1d.sk:62*/
+    {
+      t = 4;
+      q1 = 1;
+      q2 = 4;
+    }
+    for(int i = ibeg - q1; i < (iend + q2); i = i + 1)
+    {
+      out[p][t] = in[i];
+      t = t + 1;
+    }
+    sz[p] = t;
+  }
+}
+/*stenPar..on1d.sk:86*/
+void partition(int p, int P, int N, ref int ibeg, ref int iend)
+{
+  if(p < (N % P))/*stenPar..on1d.sk:88*/
+  {
+    iend = (p + 1) * ((N / P) + 1);
+    ibeg = ((N / P) + 1) * p;
+  }
+  else
+  {
+    iend = (p * (N / P)) + ((N / P) + (N % P));
+    ibeg = (p * (N / P)) + (N % P);
+  }
 }

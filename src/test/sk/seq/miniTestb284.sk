@@ -1,0 +1,17 @@
+pragma options "--bnd-inline-amnt 3 --bnd-unroll-amnt 16 --bnd-cbits 3 --bnd-inbits 2 --bnd-arr-size 32";
+
+harness void main(int N, int[N] in){
+    if(N>3){
+        int[N/2] b = (int[N/2]) in;
+        for(int i=0; i<N/2; ++i){
+            assert b[i] == in[i];
+        }        
+    }
+}
+
+harness void test(){
+    int P=3;
+    int [P] q = {1,2,3};
+    
+    main(P, q);
+}
