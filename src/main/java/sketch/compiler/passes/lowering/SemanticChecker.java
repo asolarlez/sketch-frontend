@@ -51,6 +51,7 @@ import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printError;
 import static sketch.util.DebugOut.printFailure;
 
 /**
@@ -125,14 +126,14 @@ public class SemanticChecker
         if (!isParseCheck) {
             message = "INTERNAL ERROR " + message;
         }
-        (new ExceptionAtNode(message, node)).print();
-		report(node.getCx(), message);
+        (new ExceptionAtNode(message, node)).printNoStacktrace();
+        good = false;
 	}
 
 	protected void report(FEContext ctx, String message)
 	{
 		good = false;
-		System.err.println(ctx + ": " + message);
+        printError(ctx + ":", message);
 	}
 
 	/** Report incompatible alternative field selections. */
@@ -422,7 +423,9 @@ public class SemanticChecker
 					Iterator formals1 = func.getParams().iterator();
 					Iterator formals2 = parent.getParams().iterator();
 					if(func.getParams().size() != parent.getParams().size() ){
-						report(func, "Number of parameters of spec and sketch don't match " + parent + " vs.  " + func);
+                        report(func,
+                                "Number of parameters of spec and sketch don't match:\n" +
+                                        parent + " vs.  " + func);
 						return super.visitFunction(func);
 					}
 

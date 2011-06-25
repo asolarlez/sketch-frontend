@@ -28,8 +28,10 @@ public abstract class MetaStage extends FEReplacer {
         try {
             return visitProgramInner(prog);
         } catch (SketchException e) {
-            e.setLastGoodProgram(new LastGoodProgram(this.getClass().getSimpleName(),
-                    prog));
+            if (prog != null) {
+                e.setLastGoodProgram(new LastGoodProgram(this.getClass().getSimpleName(),
+                        prog));
+            }
             throw e;
         }
     }

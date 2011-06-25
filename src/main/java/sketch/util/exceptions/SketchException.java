@@ -27,16 +27,28 @@ public abstract class SketchException extends RuntimeException {
     }
 
     public void print() {
-        if (showMessageClass()) {
-            printError("[SKETCH]", this.messageClass() + ":", this.getMessage());
-        } else {
-            printError("[SKETCH]", this.getMessage());
+        printInner(true, true, true);
+    }
+
+    public void printNoStacktrace() {
+        printInner(true, false, true);
+    }
+
+    public void printInner(boolean message, boolean stacktrace, boolean program) {
+        if (message) {
+            if (showMessageClass()) {
+                printError("[SKETCH]", this.messageClass() + ":", this.getMessage());
+            } else {
+                printError("[SKETCH]", this.getMessage());
+            }
+            if (this.getCause() != null) {
+                printError("    Caused by: ", this.getCause().getMessage());
+            }
         }
-        if (this.getCause() != null) {
-            printError("    Caused by: ", this.getCause().getMessage());
+        if (stacktrace) {
+            dumpStackTraceToFile(this.getStackTrace());
         }
-        dumpStackTraceToFile(this.getStackTrace());
-        if (lastGoodProg != null) {
+        if (program && lastGoodProg != null) {
             ErrorHandling.dumpProgramToFile(lastGoodProg);
         }
         subclassPrintEnd();

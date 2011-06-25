@@ -26,10 +26,11 @@ public class ExceptionAtNode extends SketchException {
     }
 
     @Override
-    public void print() {
-        super.print();
-        printError("[SKETCH]", "Class of node related to failure:", this.node.getClass());
-        printError("[SKETCH]", "Node related to failure:", this.node);
+    public void subclassPrintEnd() {
+        super.subclassPrintEnd();
+        printError("[SKETCH]", "    Class of node related to failure:",
+                this.node.getClass());
+        printError("[SKETCH]", "    Node related to failure:", this.node);
     }
 
     @Override
