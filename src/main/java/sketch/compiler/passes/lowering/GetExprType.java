@@ -385,12 +385,7 @@ public class GetExprType extends FENullVisitor
     public Object visitExprVar(ExprVar exp)
     {
         // Look this up in the symbol table.
-        try {
-    	    assert exp != null && symTab != null;
-    		return symTab.lookupVar(exp.getName());
-    	} catch(UnrecognizedVariableException e){
-    		throw new UnrecognizedVariableException(exp.getCx() + ": The variable " + e.getMessage() + " has not been defined.");
-    	}
+        return symTab.lookupVar(exp.getName(), exp);
     }
 
     @Override
