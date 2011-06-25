@@ -1,10 +1,12 @@
 package sketch.util.exceptions;
 
-public class SketchNotResolvedException extends SketchException {
+
+public class SketchNotResolvedException extends SketchSolverException {
     private static final long serialVersionUID = 5675449599010105839L;
 
-    public SketchNotResolvedException() {
+    public SketchNotResolvedException(String backendTempPath) {
         super("The sketch could not be resolved.");
+        this.setBackendTempPath(backendTempPath);
     }
 
     @Override
@@ -13,8 +15,7 @@ public class SketchNotResolvedException extends SketchException {
     }
 
     @Override
-    public void print() {
-        System.err.println("[ERROR] [SKETCH] The sketch could not be resolved.");
-        dumpStackTraceToFile();
+    public boolean showMessageClass() {
+        return false;
     }
 }

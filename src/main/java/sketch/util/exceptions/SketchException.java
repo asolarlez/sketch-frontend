@@ -22,16 +22,33 @@ public abstract class SketchException extends RuntimeException {
         super(msg);
     }
 
+    public SketchException(String msg, Throwable base) {
+        super(msg, base);
+    }
+
     public void print() {
-        printError("[SKETCH] " + this.messageClass() + ": " + this.getMessage());
-        dumpStackTraceToFile();
+        if (showMessageClass()) {
+            printError("[SKETCH]", this.messageClass() + ":", this.getMessage());
+        } else {
+            printError("[SKETCH]", this.getMessage());
+        }
+        if (this.getCause() != null) {
+            printError("    Caused by: ", this.getCause().getMessage());
+        }
+        dumpStackTraceToFile(this.getStackTrace());
         if (lastGoodProg != null) {
             ErrorHandling.dumpProgramToFile(lastGoodProg);
         }
+        subclassPrintEnd();
     }
 
-    public void dumpStackTraceToFile() {
-        final StackTraceElement[] stackTrace = this.getStackTrace();
+    public void subclassPrintEnd() {}
+
+    public boolean showMessageClass() {
+        return true;
+    }
+
+    public void dumpStackTraceToFile(StackTraceElement[] stackTrace) {
         String stackTraceSting = "";
         for (StackTraceElement elt : stackTrace) {
             stackTraceSting += elt.toString() + "\n";

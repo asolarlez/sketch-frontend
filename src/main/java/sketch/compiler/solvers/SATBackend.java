@@ -25,22 +25,20 @@ import sketch.compiler.passes.optimization.CostFcnAssert;
 import sketch.compiler.passes.structure.HasMinimize;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
-import sketch.util.DebugOut;
 import sketch.util.Misc;
 import sketch.util.NullStream;
 import sketch.util.ProcessStatus;
 import sketch.util.SynchronousTimedProcess;
 import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
+import sketch.util.exceptions.SketchSolverException;
 
 import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.assertFalseMsg;
-import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
 
-	String solverErrorStr;
+    String solverErrorStr;
 	final RecursionControl rcontrol;
 	final TempVarGen varGen;
 	protected ValueOracle oracle;
@@ -109,11 +107,23 @@ public class SATBackend {
                 options.solverOpts.useScripting = true;
                 final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
-                worked = solve(oracle, true, options.solverOpts.timeout);
+                try {
+                    worked = solve(oracle, true, options.solverOpts.timeout);
+                } catch (SketchSolverException e) {
+                    e.setBackendTempPath(options.getTmpSketchFilename());
+                }
             }
         } else {
             writeProgramToBackendFormat(prog);
-            worked = solve(oracle, false, options.solverOpts.timeout);
+            try {
+                worked = solve(oracle, false, options.solverOpts.timeout);
+            } catch (SketchSolverException e) {
+                e.setBackendTempPath(options.getTmpSketchFilename());
+            }
+        }
+
+        if (!worked && !options.feOpts.forceCodegen) {
+            throw new SketchNotResolvedException(options.getTmpSketchFilename());
         }
 
         {
@@ -126,13 +136,6 @@ public class SATBackend {
             } else {
                 log("Not Deleting");
             }
-        }
-
-        if (!worked && !options.feOpts.forceCodegen) {
-            if (SynchronousTimedProcess.wasKilled.get()) {
-                System.exit(1);
-            }
-            throw new SketchNotResolvedException();
         }
 
         File[] solutions = options.getSolutionsFiles();
@@ -247,17 +250,19 @@ public class SATBackend {
 
         // minimize
         if (hasMinimize) {
-            boolean ret = false;
-            for (int a = rangeStart; a <= rangeMax; a *= 2) {
-                String[] commandLine = getBackendCommandline(backendOptions,
-                    "--use-minimize", "--bnd-int-range", a + "");
-                ret = runSolver(commandLine, 0, timeoutMins);
-                if (ret) {
-                    break;
-                } else if (2 * a <= rangeMax) {
-                    printDebug("Trying next int range bound", 2 * a);
-                }
-            }
+            String[] commandLine =
+                    getBackendCommandline(backendOptions, "--use-minimize");
+            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            // for (int a = rangeStart; a <= rangeMax; a *= 2) {
+            // String[] commandLine = getBackendCommandline(backendOptions,
+            // "--use-minimize", "--bnd-int-range", a + "");
+            // ret = runSolver(commandLine, 0, timeoutMins);
+            // if (ret) {
+            // break;
+            // } else if (2 * a <= rangeMax) {
+            // printDebug("Trying next int range bound", 2 * a);
+            // }
+            // }
 
             if (!ret) {
                 log(5, "Backend returned error code");
@@ -292,18 +297,18 @@ public class SATBackend {
 
 		// default
         } else {
-
-            boolean ret = false;
-            for (int a = rangeStart; a <= rangeMax; a *= 2) {
-                String[] commandLine = getBackendCommandline(backendOptions,
-                    "--bnd-int-range", a + "");
-                ret = runSolver(commandLine, 0, timeoutMins);
-                if (ret) {
-                    break;
-                } else if (2 * a <= rangeMax) {
-                    printDebug("Trying next int range bound", 2 * a);
-                }
-            }
+            String[] commandLine = getBackendCommandline(backendOptions);
+            boolean ret = runSolver(commandLine, 0, timeoutMins);
+            // for (int a = rangeStart; a <= rangeMax; a *= 2) {
+            // String[] commandLine = getBackendCommandline(backendOptions,
+            // "--bnd-int-range", a + "");
+            // ret = runSolver(commandLine, 0, timeoutMins);
+            // if (ret) {
+            // break;
+            // } else if (2 * a <= rangeMax) {
+            // printDebug("Trying next int range bound", 2 * a);
+            // }
+            // }
 
             if (!ret) {
                 log(5, "Backend returned error code");
@@ -328,8 +333,8 @@ public class SATBackend {
         try {
             proc = new SynchronousTimedProcess(timeoutMins, commandLine);
         } catch (IOException e) {
-            DebugOut.printFailure("Could not instantiate solver (CEGIS) process.");
-            throw new RuntimeException(e);
+            throw new SketchSolverException(
+                    "Could not instantiate solver (CEGIS) process.", e);
         }
 
         final ProcessStatus status = proc.run(false);
@@ -337,20 +342,20 @@ public class SATBackend {
         // deal with killed states
         if (!status.killedByTimeout) {
             if (status.exitCode != 0 && status.err.contains("I've been killed.")) {
-                DebugOut.printNote("CEGIS was killed (assuming user kill); exiting.");
-                System.exit(status.exitCode);
+                throw new SketchSolverException(
+                        "CEGIS was killed (assuming user kill); exiting.");
             } else if (status.exception != null) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {}
                 if (SynchronousTimedProcess.wasKilled.get()) {
-                    DebugOut.printNote("CEGIS was killed (assuming user kill); exiting.");
-                    System.exit(status.exitCode);
+                    throw new SketchSolverException(
+                            "CEGIS was killed (assuming user kill); exiting.");
                 } else {
                     throw new RuntimeException(status.exception);
                 }
             } else if (status.exitCode == 103) {
-                assertFalseMsg("[FAILURE] ", "Out of memory!");
+                throw new SketchSolverException("CEGIS ran out of memory");
             }
         } else if (status.exception instanceof IOException) {
             System.err.println("Warning: lost some output from backend because of timeout.");
