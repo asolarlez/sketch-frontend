@@ -169,7 +169,7 @@ public class DebugOut {
         Object[] what_prefixed = new Object[what.length + 1];
         what_prefixed[0] = "Not implemented -";
         System.arraycopy(what, 0, what_prefixed, 1, what.length);
-        return assertFalse(what_prefixed);
+        return (T) assertFalse(what_prefixed);
     }
 
     public static void todo(Object... what) {
