@@ -1,0 +1,8 @@
+// test issue #63
+// hangs the solver
+harness void main(int[12] force)
+{
+  int a= force[10] + force[9] - force[8] + force[11] - force[2] - force[5];
+  int b= -force[2] - force[5] - force[8] + force[9] + force[10] + force[11];
+  assert(a == b);
+}
