@@ -16,7 +16,7 @@ help-all: # show uncommon commands as well
 
 show-info:
 	@echo "version = $(VERSION)"
-	@echo "buildr or maven = $(MVN_PATH)"
+	@echo "maven = $(MVN_PATH)"
 
 clean:
 	zsh -c "setopt -G; rm -f **/*timestamp **/*pyc **/*~ **/skalch/plugins/type_graph.gxl"
