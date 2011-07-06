@@ -32,40 +32,49 @@ import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
-import sketch.compiler.main.cuda.CudaSketchMain;
 import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.LowerToHLC;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
+import sketch.compiler.main.passes.ParseProgramStage;
 import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
+import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
-import sketch.compiler.passes.cuda.ReplaceParforLoops;
+import sketch.compiler.passes.cuda.*;
 import sketch.compiler.passes.lowering.ConstantReplacer;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
+import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.AllthreadsTprintFcnCall;
+import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.TprintFcnCall;
+import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
+import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
+import sketch.compiler.passes.structure.ContainsCudaCode;
+import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.stencilSK.EliminateStarStatic;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
+import sketch.util.exceptions.LastGoodProgram;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
+import sketch.util.exceptions.UnsupportedSketchException;
 
 import static sketch.util.DebugOut.printError;
 
@@ -120,35 +129,50 @@ public class SequentialSketchMain extends CommonSketchMain
 	/** hack to check deps across stages; accessed by CompilerStage */
     public final HashSet<Class<? extends FEVisitor>> runClasses =
             new HashSet<Class<? extends FEVisitor>>();
-    
+
+    /**
+     * Things that are part of the language, but not part of the syntax since they're just
+     * function calls.
+     * 
+     * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
+     * @license This file is licensed under BSD license, available at
+     *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+     *          changes, please consider contributing back!
+     */
     public class BeforeSemanticCheckStage extends CompilerStage {
         public BeforeSemanticCheckStage() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
-                            new AllthreadsTprintFcnCall() };
+                            new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
+                            new InstrumentFcnCall(), new SyncthreadsCall() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
 
-    public class PreProcStage1 extends CompilerStage {
-        public PreProcStage1() {
+    public class LowerSyntaxSugar extends CompilerStage {
+        public LowerSyntaxSugar() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new ReplaceMinLoops(varGen),
+                    {
+                            new ReplaceMinLoops(varGen),
                             new MainMethodCreateNospec(),
                             new SetDeterministicFcns(),
-                            new ReplaceParforLoops(options.getCudaBlockDim(), varGen),
-                            new ReplaceImplicitVarDecl() };
+                            new ReplaceParforLoops(options.cudaOpts.threadBlockDim,
+                                    varGen), new ReplaceImplicitVarDecl(),
+                            new SetDefaultCudaMemoryTypes(),
+                            new ConvertArrayAssignmentsToInout(),
+                            new CopyCudaMemTypeToFcnReturn() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
 
-    public class IRStage1 extends CompilerStage {
-        public IRStage1() {
+    public class LowerHighLevelConstructs extends CompilerStage {
+        public LowerHighLevelConstructs() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { new GlobalsToParams(varGen)
-            // , new FlattenCommaMultidimArrays(null)
+            FEVisitor[] passes2 =
+                    { new GlobalsToParams(varGen), new LowerInstrumentation(varGen)
+                    // , new FlattenCommaMultidimArrays(null)
                     };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
@@ -160,11 +184,39 @@ public class SequentialSketchMain extends CommonSketchMain
      * 
      * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
      */
-    public class IRStage2_LLC extends CompilerStage {
-        public IRStage2_LLC() {
+    public class LowLevelCStage extends CompilerStage {
+        public LowLevelCStage() {
             super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { };
+            FEVisitor[] passes2 = {};
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
+        }
+    }
+
+    public class CudaLowLevelCStage extends LowLevelCStage {
+        public CudaLowLevelCStage() {
+            super();
+            this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new FlattenStmtBlocks2());
+            this.passes.add(new GenerateAllOrSomeThreadsFunctions(options, varGen));
+            this.passes.add(new GlobalToLocalImplicitCasts(varGen, options));
+        }
+
+        @Override
+        protected Program postRun(Program prog) {
+            SequentialSketchMain.this.debugShowPhase("threads",
+                    "After transforming threads to loops", prog);
+
+            final SemanticCheckPass semanticCheck =
+                    new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
+            ExtractComplexLoopConditions ec =
+                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            // final FunctionParamExtension paramExt = new FunctionParamExtension();
+
+            prog = (Program) semanticCheck.visitProgram(prog);
+            prog = (Program) ec.visitProgram(prog);
+            // prog = (Program) paramExt.visitProgram(prog);
+
+            return prog;
         }
     }
 
@@ -188,17 +240,29 @@ public class SequentialSketchMain extends CommonSketchMain
     public BeforeSemanticCheckStage getBeforeSemanticCheckStage() {
         return new BeforeSemanticCheckStage();
     }
-    
-    public PreProcStage1 getPreProcStage1() {
-        return new PreProcStage1();
+
+    public LowerSyntaxSugar getPreProcStage1() {
+        return new LowerSyntaxSugar();
     }
 
-    public IRStage1 getIRStage1() {
-        return new IRStage1();
+    public LowerHighLevelConstructs getIRStage1() {
+        return new LowerHighLevelConstructs();
     }
 
-    public IRStage2_LLC getIRStage2_LLC(Program prog) {
-        return new IRStage2_LLC();
+    public LowLevelCStage getIRStage2_LLC(Program prog) {
+        if (new ContainsStencilFunction().run(prog)) {
+            if ((new ContainsCudaCode()).run(prog)) {
+                final UnsupportedSketchException exception =
+                        new UnsupportedSketchException(
+                                "Program contains both CUDA and stencil code");
+                exception.setLastGoodProgram(new LastGoodProgram(
+                        "CudaSketchMain/getIRStage2_LLC()", prog));
+                throw exception;
+            }
+            return new LowLevelCStage();
+        } else {
+            return new CudaLowLevelCStage();
+        }
     }
 
     public IRStage3 getIRStage3() {
@@ -396,6 +460,33 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    public void run() {
+        this.log(1, "Benchmark = " + this.benchmarkName());
+        Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);
+        // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
+        prog = this.preprocAndSemanticCheck(prog, true);
+
+        // withoutConstsReplaced =
+        // prog =
+        // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
+
+        SynthesisResult synthResult = this.partialEvalAndSolve(prog);
+        prog = synthResult.lowered.result;
+        runPrintFunctions(synthResult.lowered, synthResult.solution);
+
+        Program finalCleaned =
+                (Program) (new DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
+        // beforeUnvectorizing =
+        // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
+        Program substituted =
+                (new SubstituteSolution(varGen, options, synthResult.solution,
+                        visibleRControl(finalCleaned))).visitProgram(finalCleaned);
+        substituted = (getCleanupStage()).run(substituted);
+
+        generateCode(substituted);
+        this.log(1, "[SKETCH] DONE");
+    }
+
     String solverErrorStr;
 
     public static boolean isTest = false;
@@ -405,7 +496,7 @@ public class SequentialSketchMain extends CommonSketchMain
         long beg = System.currentTimeMillis();
         ErrorHandling.checkJavaVersion(1, 6);
         // TODO -- change class names so this is clear
-        final CudaSketchMain sketchmain = new CudaSketchMain(args);
+        final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
         try {
             sketchmain.run();
         } catch (SketchException e) {

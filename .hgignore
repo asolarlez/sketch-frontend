@@ -5,6 +5,7 @@ target/*
 *.swp
 *installer*.exe
 dist/*
+outPyFile
 
 distconfig/linux_rpm/sketch-frontend.spec
 tmp-assembly.xml

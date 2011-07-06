@@ -22,7 +22,7 @@ public class ThreadIdReplacer extends FEReplacer {
     private CudaThreadBlockDim cudaBlockDim;
 
     public ThreadIdReplacer(final SketchOptions opts) {
-        this.cudaBlockDim = opts.getCudaBlockDim();
+        this.cudaBlockDim = opts.cudaOpts.threadBlockDim;
     }
 
     @Override

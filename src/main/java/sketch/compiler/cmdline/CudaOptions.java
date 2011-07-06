@@ -1,4 +1,4 @@
-package sketch.compiler.main.cuda;
+package sketch.compiler.cmdline;
 
 import sketch.util.cli.CliAnnotatedOptionGroup;
 import sketch.util.cli.CliParameter;

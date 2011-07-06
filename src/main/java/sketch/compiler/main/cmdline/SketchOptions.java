@@ -9,14 +9,13 @@ import java.util.Vector;
 import org.apache.commons.io.FileUtils;
 
 import sketch.compiler.cmdline.BoundOptions;
+import sketch.compiler.cmdline.CudaOptions;
 import sketch.compiler.cmdline.DebugOptions;
 import sketch.compiler.cmdline.FrontendOptions;
 import sketch.compiler.cmdline.SemanticsOptions;
 import sketch.compiler.cmdline.SolverOptions;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.util.cli.SketchCliParser;
-import sketch.util.cuda.CudaThreadBlockDim;
-import sketch.util.exceptions.NotImplementedException;
 
 /**
  * organized options for the new clojure frontend, which replaces most frontends. See
@@ -33,6 +32,7 @@ public class SketchOptions {
     public FrontendOptions feOpts = new FrontendOptions();
     public SemanticsOptions semOpts = new SemanticsOptions();
     public SolverOptions solverOpts = new SolverOptions();
+    public CudaOptions cudaOpts = new CudaOptions();
     public String[] args;
     public List<String> argsAsList;
     public String[] inArgs;
@@ -65,10 +65,11 @@ public class SketchOptions {
 
     public void parseCommandline(SketchCliParser parser) {
         this.currentArgs = parser.inArgs;
-        bndOpts.parse(parser);
-        debugOpts.parse(parser);
-        feOpts.parse(parser);
-        semOpts.parse(parser);
+        this.bndOpts.parse(parser);
+        this.debugOpts.parse(parser);
+        this.feOpts.parse(parser);
+        this.semOpts.parse(parser);
+        this.cudaOpts.parse(parser);
         args = solverOpts.parse(parser).get_args();
         this.backendArgs = parser.backendArgs;
         if (args.length < 1 || args[0].equals("")) {
@@ -130,10 +131,5 @@ public class SketchOptions {
 
     public File sktmpdir() {
         return PlatformLocalization.getLocalization().getTempPath(sketchName);
-    }
-
-    /** for inheriting classes */
-    public CudaThreadBlockDim getCudaBlockDim() {
-        throw new NotImplementedException();
     }
 }

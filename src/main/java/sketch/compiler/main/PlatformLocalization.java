@@ -9,6 +9,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 import sketch.compiler.main.cmdline.SketchOptions;
 
@@ -160,7 +161,7 @@ public class PlatformLocalization {
         public File[] fromDefaultPaths(String... paths) {
             Vector<File> all_files = new Vector<File>();
             for (String path : paths) {
-                String[] v = path.split(File.separator);
+                String[] v = path.split(Pattern.quote(File.separator));
                 String[] v2 = new String[v.length];
                 for (int a = 1; a < v.length; a++) {
                     v2[a - 1] = v[a];

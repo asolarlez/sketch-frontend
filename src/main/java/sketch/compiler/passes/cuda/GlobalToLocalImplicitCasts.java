@@ -52,7 +52,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
         super(null);
         this.varGen = varGen;
         this.options = opts;
-        this.cudaBlockDim = opts.getCudaBlockDim();
+        this.cudaBlockDim = opts.cudaOpts.threadBlockDim;
     }
 
     @Override
