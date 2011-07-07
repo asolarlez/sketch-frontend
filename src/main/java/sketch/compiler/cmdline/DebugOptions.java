@@ -26,15 +26,6 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
             + "that take a long time to resolve if one wants to play with different "
             + "settings for code generation.")
     public boolean fakeSolver = false;
-    @CliParameter(shortname = "p", help = "Show the partially evaluated code after the indicated "
-            + "phase of pre or post processing.\n"
-            + "'parse' for after parsing;\n"
-            + "'final' for after all optimizations;\n"
-            + "'lowering' for before to symbolic execution;\n"
-            + "'postproc' for after partially evaluating the generated code (ugly);\n"
-            + "'preproc' for after preprocessing; and\n"
-            + "'taelim' for after eliminating transitive assignments (before cse, ugly).")
-    public String showPhase = null;
     @CliParameter(help = "Show a trace of the symbolic execution.")
     public boolean trace = false;
     @CliParameter(shortname = "V", help = "Sets the level of verbosity for the output. 0 is "
@@ -43,14 +34,19 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Dump debug output to a file")
     public boolean dumpToFile = false;
-    @CliParameter(help = "Print passes as they execute (N.B. only modern passes)")
+    @CliParameter(help = "Print names of stages and visitors as they execute")
     public boolean printPasses = false;
-    @CliParameter(help = "Passes to dump the program after  "
-            + "(N.B. only modern passes)", inlinesep = ",")
+    @CliParameter(shortname = "p", help = "Stages / visitors to dump the program after (comma-sep)", hide_default = true, inlinesep = ",")
     public CmdLineHashSet dumpAfter = new CmdLineHashSet();
-    @CliParameter(help = "Passes to dump the program before  "
-            + "(N.B. only modern passes)", inlinesep = ",")
+    @CliParameter(shortname = "P", help = "Stages / visitors to dump the program before (comma-sep)", hide_default = true, inlinesep = ",")
     public CmdLineHashSet dumpBefore = new CmdLineHashSet();
+
+    /*
+     * TODO
+     * @CliParameter(help =
+     * "Stages / visitors to show a program diff (requires `diff` tool)", inlinesep = ",")
+     * public CmdLineHashSet dumpDiff = new CmdLineHashSet();
+     */
 
     @Override
     public void post_set_values() {

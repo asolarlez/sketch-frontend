@@ -16,7 +16,7 @@ import sketch.compiler.passes.lowering.EliminateBitSelector;
  */
 public class LowerToHLC extends MetaStage {
     public LowerToHLC(TempVarGen varGen, SketchOptions options) {
-        super(varGen, options);
+        super("hlc", "High level C", varGen, options);
     }
 
     public Program visitProgramInner(Program prog) {

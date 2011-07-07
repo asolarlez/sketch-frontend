@@ -33,6 +33,7 @@ import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.other.ErrorHandling;
+import sketch.compiler.main.passes.CleanupFinalCode;
 import sketch.compiler.main.passes.LowerToHLC;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
@@ -203,9 +204,6 @@ public class SequentialSketchMain extends CommonSketchMain
 
         @Override
         protected Program postRun(Program prog) {
-            SequentialSketchMain.this.debugShowPhase("threads",
-                    "After transforming threads to loops", prog);
-
             final SemanticCheckPass semanticCheck =
                     new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
             ExtractComplexLoopConditions ec =
@@ -220,8 +218,8 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
-    public class IRStage3 extends CompilerStage {
-        public IRStage3() {
+    public class FinalLowLevelCLowering extends CompilerStage {
+        public FinalLowLevelCLowering() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 = { new RemoveTprint() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
@@ -265,8 +263,8 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
-    public IRStage3 getIRStage3() {
-        return new IRStage3();
+    public FinalLowLevelCLowering getIRStage3() {
+        return new FinalLowLevelCLowering();
     }
 
     public CleanupStage getCleanupStage() {
@@ -426,7 +424,6 @@ public class SequentialSketchMain extends CommonSketchMain
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
-        this.showPhaseOpt("parse");
 
         prog = preprocessProgram(prog, replaceConstants); // perform prereq
                                                           // transformations
@@ -479,9 +476,10 @@ public class SequentialSketchMain extends CommonSketchMain
         // beforeUnvectorizing =
         // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
         Program substituted =
-                (new SubstituteSolution(varGen, options, synthResult.solution,
-                        visibleRControl(finalCleaned))).visitProgram(finalCleaned);
-        substituted = (getCleanupStage()).run(substituted);
+                (new SubstituteSolution(varGen, options, synthResult.solution)).visitProgram(finalCleaned);
+        Program substitutedCleaned =
+                (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);
+        substitutedCleaned = (getCleanupStage()).run(substitutedCleaned);
 
         generateCode(substituted);
         this.log(1, "[SKETCH] DONE");

@@ -27,11 +27,15 @@ public class TypedHashSet<K> implements Iterable<K>, Cloneable {
     
     @Override
     public String toString() {
-        String result = super.toString() + " {\n";
+        String result = clsname() + "{\n";
         for (K ent : this) {
             result += "    " + ent + ",\n";
         }
         return result + " }";
+    }
+
+    protected String clsname() {
+        return super.toString() + " ";
     }
 
     public boolean add(K e) { return base.add(e); }

@@ -15,7 +15,7 @@ public class LowerToSketch extends MetaStage {
     public LowerToSketch(TempVarGen varGen, SketchOptions options,
             MetaStage stencilTransform)
     {
-        super(varGen, options);
+        super("lowering", "Lower for SKETCH backend", varGen, options);
         this.stencilTransform = stencilTransform;
     }
 

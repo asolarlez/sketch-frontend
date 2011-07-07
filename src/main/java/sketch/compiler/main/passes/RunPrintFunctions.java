@@ -36,7 +36,8 @@ import static sketch.util.DebugOut.printNote;
  */
 public class RunPrintFunctions extends MetaStage {
     public RunPrintFunctions(TempVarGen varGen, SketchOptions options) {
-        super(varGen, options);
+        super("run-tprint", "Run tprint() functions by generating C code and running it",
+                varGen, options);
     }
 
     @Override

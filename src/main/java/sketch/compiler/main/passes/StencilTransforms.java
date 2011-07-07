@@ -17,7 +17,7 @@ import sketch.compiler.stencilSK.MatchParamNames;
  */
 public class StencilTransforms extends MetaStage {
     public StencilTransforms(TempVarGen varGen, SketchOptions options) {
-        super(varGen, options);
+        super("sten", "Stencil transformations", varGen, options);
     }
 
     @Override

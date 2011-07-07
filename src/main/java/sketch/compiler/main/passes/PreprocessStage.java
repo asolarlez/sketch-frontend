@@ -28,7 +28,8 @@ public class PreprocessStage extends MetaStage {
             CompilerStage preproc1, CompilerStage ir1, RecursionControl rctrl,
             boolean partialEval)
     {
-        super(varGen, options);
+        super("preproc", "Preprocessing (used for all further transformations)", varGen,
+                options);
         this.preproc1 = preproc1;
         this.ir1 = ir1;
         this.rctrl = rctrl;

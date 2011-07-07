@@ -17,4 +17,9 @@ public class CmdLineHashSet extends TypedHashSet<String> {
     public CmdLineHashSet(String cmdline) {
         super(new HashSet<String>(Arrays.asList(cmdline.split(","))));
     }
+
+    @Override
+    protected String clsname() {
+        return "";
+    }
 }

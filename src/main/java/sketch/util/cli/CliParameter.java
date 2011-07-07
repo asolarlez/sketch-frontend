@@ -11,4 +11,5 @@ public @interface CliParameter {
     String metavar() default "";
     String inlinesep() default "";
     String shortname() default "";
+    boolean hide_default() default false;
 }

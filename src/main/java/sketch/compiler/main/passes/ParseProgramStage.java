@@ -25,7 +25,7 @@ import sketch.util.exceptions.ProgramParseException;
  */
 public class ParseProgramStage extends MetaStage {
     public ParseProgramStage(TempVarGen varGen, SketchOptions options) {
-        super(varGen, options);
+        super("parse", "Parse the program from a file", varGen, options);
     }
 
     public Program parseFiles(List<String> inputFiles) throws java.io.IOException,

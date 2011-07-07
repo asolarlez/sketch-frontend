@@ -1,12 +1,12 @@
 package sketch.util.cli;
 
-import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.print_exception;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
+
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.print_exception;
 
 public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
     CliOptionResult lazy_results;
@@ -76,7 +76,7 @@ public abstract class CliAnnotatedOptionGroup extends CliOptionGroup {
                                     field.get(this), cli_annotation.help(), this);
                     opt.setAdditionalInfo(cli_annotation.required(),
                             cli_annotation.metavar(), cli_annotation.inlinesep(),
-                            cli_annotation.shortname());
+                            cli_annotation.shortname(), cli_annotation.hide_default());
                     addOption(opt);
                     this.fields.add(field);
                 } catch (Exception e) {

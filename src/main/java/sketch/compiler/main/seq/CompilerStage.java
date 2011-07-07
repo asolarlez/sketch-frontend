@@ -10,12 +10,13 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.datastructures.HashmapList;
 
 import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printNote;
 
 import static sketch.util.Misc.nonnull;
 
 /**
- * compiler stage with annotation-based dependency declarations
+ * compiler stage with annotation-based dependency declarations. This class is broken (it
+ * relies on Java class names and the runClasses variable to track which stages have run),
+ * and eventually will be replaced with the Clojure frontend.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  */
@@ -44,14 +45,14 @@ public abstract class CompilerStage {
     /** you probably don't want to modify this */
     public Program run(Program prog) {
         if (sketch.options.debugOpts.printPasses) {
-            printNote("Running stage", name);
+            printDebug("Running stage", name);
         }
         generateDeps();
         assert linearizedStages.size() == passes.size();
         for (FEVisitor pass : linearizedStages) {
             String passName = pass.getClass().getSimpleName();
             if (sketch.options.debugOpts.printPasses) {
-                printNote("Running pass", pass.getClass().getSimpleName());
+                printDebug("   Running visitor", pass.getClass().getSimpleName());
             }
             // System.out.println("[Stage " + this.getClass().getSimpleName() +
             // "] running pass " + pass.getClass().getSimpleName());
@@ -59,12 +60,12 @@ public abstract class CompilerStage {
             if (passInfo.debug() ||
                     sketch.options.debugOpts.dumpBefore.contains(passName))
             {
-                prog.debugDump("Before pass " + pass.getClass().getSimpleName());
+                prog.debugDump("Before visitor " + pass.getClass().getSimpleName());
             }
             prog = (Program) prog.accept(pass);
             if (passInfo.debug() || sketch.options.debugOpts.dumpAfter.contains(passName))
             {
-                prog.debugDump("After pass " + pass.getClass().getSimpleName());
+                prog.debugDump("After visitor " + pass.getClass().getSimpleName());
             }
             sketch.runClasses.add(pass.getClass());
         }

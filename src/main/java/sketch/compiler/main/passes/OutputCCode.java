@@ -28,7 +28,7 @@ import static sketch.util.DebugOut.printNote;
  */
 public class OutputCCode extends MetaStage {
     public OutputCCode(TempVarGen varGen, SketchOptions options) {
-        super(varGen, options);
+        super("outputc", "Output C code (to console or file)", varGen, options);
     }
 
     @Override

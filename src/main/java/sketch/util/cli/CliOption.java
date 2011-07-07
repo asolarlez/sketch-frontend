@@ -1,7 +1,5 @@
 package sketch.util.cli;
 
-import static sketch.util.DebugOut.assertFalse;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.Vector;
@@ -10,6 +8,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 import sketch.util.DebugOut;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * A wrapper for a command line option, including a default value, name, and help string.
@@ -29,6 +29,7 @@ public final class CliOption {
     public String metavarName;
     public String inlinesep;
     public String shortname;
+    protected boolean hideDefault;
 
     public CliOption(String name, Class<?> typ, Object defaultValue, String help,
             CliOptionGroup group)
@@ -63,9 +64,10 @@ public final class CliOption {
     }
 
     public void setAdditionalInfo(final boolean isRequired, final String metavarName,
-            final String inlinesep, String shortname)
+            final String inlinesep, String shortname, boolean hideDefault)
     {
         this.isRequired = isRequired;
+        this.hideDefault = hideDefault;
         this.metavarName = metavarName;
         this.inlinesep = inlinesep;
         this.shortname = shortname;
@@ -82,7 +84,7 @@ public final class CliOption {
             if (isRequired) {
                 help += " (REQUIRED)";
             }
-        } else if (has_name) {
+        } else if (has_name && !hideDefault) {
             help += " [default " + defaultValue.toString() + "]";
         }
         if (shortname != null && shortname.equals("")) {
