@@ -60,6 +60,7 @@ import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
+import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.TprintFcnCall;
 import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
@@ -145,6 +146,7 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
+                            new RemoveFunctionParameters(),
                             new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
                             new InstrumentFcnCall(), new SyncthreadsCall() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
@@ -422,11 +424,12 @@ public class SequentialSketchMain extends CommonSketchMain
             prog = (Program) prog.accept(new ConstantReplacer(null));
         }
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
+
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
-
+        dump(prog);
         prog = preprocessProgram(prog, replaceConstants); // perform prereq
-                                                          // transformations
+        dump(prog); // transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))
@@ -460,6 +463,7 @@ public class SequentialSketchMain extends CommonSketchMain
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);
+
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
         prog = this.preprocAndSemanticCheck(prog, true);
 
@@ -481,7 +485,7 @@ public class SequentialSketchMain extends CommonSketchMain
                 (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);
         substitutedCleaned = (getCleanupStage()).run(substitutedCleaned);
 
-        generateCode(substituted);
+        generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");
     }
 

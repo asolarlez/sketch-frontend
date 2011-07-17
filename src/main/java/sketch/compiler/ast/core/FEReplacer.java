@@ -277,9 +277,7 @@ public class FEReplacer implements FEVisitor
     {
         boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
-        for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
+        for (Expression param : exp.getParams()) {
             Expression newParam = doExpression(param);
             newParams.add(newParam);
             if (param != newParam) hasChanged = true;

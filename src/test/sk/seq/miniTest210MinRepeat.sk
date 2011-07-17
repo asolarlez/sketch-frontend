@@ -4,5 +4,9 @@ harness void main(int x) {
         // s += ??;
         s++;
     }
+    minrepeat {
+        // s += ??;
+        s++;
+    }
     assert (s >= 2);
 }

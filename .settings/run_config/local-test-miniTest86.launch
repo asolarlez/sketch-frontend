@@ -35,7 +35,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="sketch.compiler.main.seq.SequentialSketchMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--fe-keep-tmp  -p preproc  --fe-keep-asserts --beopt:-bndwrand 50     --debug-cex    --fe-cegis-path &quot;C:\\Armando\\Workspace\\sketch-backend\\src\\Release\\Sketch.exe&quot; --fe-keep-asserts --fe-inc &quot;${container_loc}&quot;  --fe-keep-tmp  -V 3    &quot;${resource_loc}&quot;"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--fe-keep-tmp  -p preproc  --fe-keep-asserts      --debug-cex    --fe-cegis-path &quot;C:\\Armando\\Workspace\\sketch-backend\\src\\Release\\Sketch.exe&quot; --fe-keep-asserts --fe-inc &quot;${container_loc}&quot;  --fe-keep-tmp  -V 3    &quot;${resource_loc}&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="sketch-frontend"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -Xmx1024M"/>

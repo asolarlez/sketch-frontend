@@ -686,7 +686,7 @@ public class PartialEvaluator extends FEReplacer {
             if( !isFieldAcc ){
                 assignmentToLocal(rhs, lhsName, lhsIdx, rlen);
             }else{
-                return assignmentToField(lhsName,stmt, rhs, nlhs, nrhs);
+                    return assignmentToField(lhsName, stmt, lhsIdx, rhs, nlhs, nrhs);
             }
             break;
         }
@@ -727,7 +727,9 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
-    protected Object assignmentToField(String lhsName, StmtAssign stmt, abstractValue rhs, Expression nlhs, Expression nrhs){
+    protected Object assignmentToField(String lhsName, StmtAssign stmt,
+            abstractValue idx, abstractValue rhs, Expression nlhs, Expression nrhs)
+    {
         return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
     }
 

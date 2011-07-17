@@ -1,3 +1,4 @@
+pragma options "--bnd-inbits 2";
 // test issue #63
 // hangs the solver
 harness void main(int[12] force)
