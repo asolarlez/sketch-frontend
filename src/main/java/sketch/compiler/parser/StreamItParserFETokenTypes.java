@@ -22,7 +22,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SplitterJoiner;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
+
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;

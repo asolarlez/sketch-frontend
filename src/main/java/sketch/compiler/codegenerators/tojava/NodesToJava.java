@@ -20,7 +20,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamCreator;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -205,21 +213,8 @@ public class NodesToJava extends SymbolTableVisitor
         }
     }
 
-    // Helpers to get function names for stream types.
-    public static String pushFunction(StreamType st)
-    {
-        return annotatedFunction("output.push", st.getOut());
-    }
 
-    public static String popFunction(StreamType st)
-    {
-        return annotatedFunction("input.pop", st.getIn());
-    }
 
-    public static String peekFunction(StreamType st)
-    {
-        return annotatedFunction("input.peek", st.getIn());
-    }
 
     private static String annotatedFunction(String name, Type type)
     {
@@ -285,7 +280,7 @@ public class NodesToJava extends SymbolTableVisitor
     public String doAssignment(Expression lhs, Expression rhs,
                                SymbolTable symtab)
     {
-        GetExprType eType = new GetExprType(symtab, ss.getStreamType(),
+        GetExprType eType = new GetExprType(symtab,
                                             new java.util.HashMap());
         Type lhsType = (Type)lhs.accept(eType);
         // Might want to special-case structures and arrays;
@@ -879,11 +874,6 @@ public class NodesToJava extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitStreamType(StreamType type)
-    {
-        // Nothing to do here.
-        return "";
-    }
 
     public Object visitOther(FENode node)
     {
@@ -902,15 +892,7 @@ public class NodesToJava extends SymbolTableVisitor
                 result += ", " + (String)io.getRate2().accept(this);
             result += ")";
             return result;
-        }
-        if (node instanceof StmtSetTypes)
-        {
-            StmtSetTypes sst = (StmtSetTypes)node;
-            return "setIOTypes(" + typeToClass(sst.getInType()) +
-                ", " + typeToClass(sst.getOutType()) + ")";
-        }
-        else
-        {
+        } else {
             assert false : node;
             return "";
         }

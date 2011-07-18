@@ -64,7 +64,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         }
         sspec = oldSS;
-        return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
+        return new StreamSpec(spec, spec.getType(), spec.getName(),
                 spec.getParams(), spec.getVars(), nflist);
     }
 

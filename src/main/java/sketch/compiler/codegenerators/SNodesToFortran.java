@@ -6,7 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FENullVisitor;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
@@ -687,9 +695,6 @@ public class SNodesToFortran extends FENullVisitor {
 	    return null;
     }
 
-	public Object visitStreamType(StreamType type) {
-	    throw new IllegalStateException();
-    }
 
 	public String convertType(Type type)
 	{

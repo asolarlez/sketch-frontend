@@ -822,7 +822,9 @@ public class SATSynthesizer implements Synthesizer {
 		funcs.add(sketch);
 
 		List<StreamSpec> streams = Collections.singletonList(
-				new StreamSpec(current, StreamSpec.STREAM_FILTER, null, "MAIN",Collections.EMPTY_LIST , Collections.EMPTY_LIST ,funcs));
+new StreamSpec(current,
+                        StreamSpec.STREAM_FILTER, "MAIN", Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST, funcs));
         current =
                 current.creator().streams(streams).structs(Collections.EMPTY_LIST).create();
 

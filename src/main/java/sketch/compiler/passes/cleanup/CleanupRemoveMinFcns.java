@@ -1,7 +1,5 @@
 package sketch.compiler.passes.cleanup;
 
-import static sketch.util.fcns.VectorMap.vecmap_nonnull;
-
 import java.util.Vector;
 
 import sketch.compiler.ast.core.FEReplacer;
@@ -10,6 +8,7 @@ import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.fcns.VectorMap.VectorMapFcn;
+import static sketch.util.fcns.VectorMap.vecmap_nonnull;
 
 /**
  * remove minimize functions from final code printout
@@ -33,7 +32,7 @@ public class CleanupRemoveMinFcns extends FEReplacer {
                         return (Function) ((isMinFcn) ? null : result);
                     }
                 });
-        return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
+        return new StreamSpec(spec, spec.getType(), spec.getName(),
                 spec.getParams(), spec.getVars(), newFcns);
     }
 

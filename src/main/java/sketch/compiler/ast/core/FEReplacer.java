@@ -729,11 +729,10 @@ public class FEReplacer implements FEVisitor
     {
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
-        StreamType newST = null;
+
         StreamSpec oldSS = sspec;
         sspec = spec;
-        if (spec.getStreamType() != null)
-            newST = (StreamType)spec.getStreamType().accept(this);
+
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
         List<Function> oldNewFuncs = newFuncs;
         newFuncs = new ArrayList<Function>();
@@ -765,14 +764,15 @@ public class FEReplacer implements FEVisitor
 
         List<Function> nf = newFuncs;
         newFuncs = oldNewFuncs;
-        if (!changed && newST == spec.getStreamType()) return spec;
+        if (!changed)
+            return spec;
         return new StreamSpec(spec, spec.getType(),
-                              newST, spec.getName(), spec.getParams(),
+ spec.getName(), spec.getParams(),
                               newVars, nf);
 
     }
 
-    public Object visitStreamType(StreamType type) { return type; }
+
     public Object visitOther(FENode node) { return node; }
 
 	public Object visitExprStar(ExprStar star) {

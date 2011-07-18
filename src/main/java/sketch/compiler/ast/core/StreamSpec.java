@@ -40,7 +40,6 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 public class StreamSpec extends FENode
 {
     private int type;
-    private StreamType st;
     private String name;
     private List params;
     private List<FieldDecl> vars;
@@ -65,8 +64,6 @@ public class StreamSpec extends FENode
      *                 number for the specification
      * @param type     STREAM_* constant indicating the type of
      *                 stream object
-     * @param st       stream type giving input and output types of
-     *                 the stream object
      * @param name     string name of the object
      * @param params   list of <code>Parameter</code> that are formal
      *                 parameters to the stream object
@@ -75,12 +72,11 @@ public class StreamSpec extends FENode
      * @param funcs    list of <code>Function</code> that are member
      *                 functions of the stream object
      */
-    public StreamSpec(FENode context, int type, StreamType st,
+    public StreamSpec(FENode context, int type,
                       String name, List params, List vars, List funcs)
     {
         super(context);
         this.type = type;
-        this.st = st;
         this.name = name;
         this.params = params;
         this.vars = vars;
@@ -95,8 +91,6 @@ public class StreamSpec extends FENode
      *                 number for the specification
      * @param type     STREAM_* constant indicating the type of
      *                 stream object
-     * @param st       stream type giving input and output types of
-     *                 the stream object
      * @param name     string name of the object
      * @param params   list of <code>Parameter</code> that are formal
      *                 parameters to the stream object
@@ -106,12 +100,11 @@ public class StreamSpec extends FENode
      *                 functions of the stream object
      * @deprecated
      */
-    public StreamSpec(FEContext context, int type, StreamType st,
+    public StreamSpec(FEContext context, int type,
                       String name, List params, List vars, List funcs)
     {
         super(context);
         this.type = type;
-        this.st = st;
         this.name = name;
         this.params = params;
         this.vars = vars;
@@ -147,17 +140,7 @@ public class StreamSpec extends FENode
 	return null;
     }
 
-    /**
-     * Returns the stream type (I/O data types) of this.
-     *
-     * @return  stream type containing input and output types of the
-     *          stream, or null if a stream type was not explicitly
-     *          included in the code
-     */
-    public StreamType getStreamType()
-    {
-        return st;
-    }
+
 
     /**
      * Returns the name of this, or null if this is an anonymous stream.
@@ -235,7 +218,7 @@ public class StreamSpec extends FENode
     }
 
     public StreamSpec newFromFcns(List<Function> fcns) {
-        return new StreamSpec(this, this.getType(), this.getStreamType(), this.getName(),
+        return new StreamSpec(this, this.getType(), this.getName(),
                 this.getParams(), this.getVars(), Collections.unmodifiableList(fcns));
     }
 }

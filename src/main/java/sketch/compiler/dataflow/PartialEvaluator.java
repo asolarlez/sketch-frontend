@@ -9,7 +9,6 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -408,7 +407,19 @@ public class PartialEvaluator extends FEReplacer {
             if(rv.hasIntVal() ){
                 exprRV = new ExprConstInt(rv.getIntVal());
             }else{
-                exprRV = new ExprBinary(exp, exp.getOp(), nleft, nright);
+                if (exp.getOp() == ExprBinary.BINOP_ADD) {
+                    if (nright.equals(ExprConstInt.zero)) {
+                        exprRV = nleft;
+                    } else {
+                        if (nleft.equals(ExprConstInt.zero)) {
+                            exprRV = nright;
+                        } else {
+                            exprRV = new ExprBinary(exp, exp.getOp(), nleft, nright);
+                        }
+                    }
+                } else {
+                    exprRV = new ExprBinary(exp, exp.getOp(), nleft, nright);
+                }
             }
         }
 
@@ -1402,7 +1413,6 @@ public class PartialEvaluator extends FEReplacer {
 
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
-        StreamType newST = null;
         StreamSpec oldSS = ss;
         ss = spec;
         // Output field definitions:
@@ -1452,7 +1462,7 @@ public class PartialEvaluator extends FEReplacer {
         //assert preFil.size() == 0 : "This should never happen";
 
         return isReplacer? new StreamSpec(spec, spec.getType(),
-                newST, spec.getName(), spec.getParams(),
+                spec.getName(), spec.getParams(),
                 newVars, newFuncs) : spec;
     }
 

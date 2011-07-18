@@ -13,7 +13,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
@@ -565,14 +564,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return ss;
 	}
 
-	public Object visitStreamType (StreamType st) {
-		print ("/* Stream type: in ");
-		st.getIn ().accept (this);
-		print (", out ");
-		st.getOut ().accept (this);
-		print ("*/");
-		return st;
-	}
+
 
 	public Object visitTypeArray (TypeArray ta) {
 		ta.getBase ().accept (this);

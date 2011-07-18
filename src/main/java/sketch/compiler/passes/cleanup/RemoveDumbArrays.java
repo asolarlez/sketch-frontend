@@ -40,7 +40,8 @@ public class RemoveDumbArrays extends FEReplacer {
             if (ear.getBase() instanceof ExprVar) {
                 String base = ear.getBase().toString();
                 if (dumbArr.containsKey(base)) {
-                    if (!(ear.getOffset() instanceof ExprConstInt)) {
+                    RangeLen rl = ear.getSelection();
+                    if (rl.hasLen() || !(rl.start() instanceof ExprConstInt)) {
                         dumbArr.remove(base);
                     }
                 }

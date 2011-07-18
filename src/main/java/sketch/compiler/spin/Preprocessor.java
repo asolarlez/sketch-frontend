@@ -14,7 +14,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -224,11 +223,9 @@ public class Preprocessor extends FEReplacer {
 	public Object visitStreamSpec(StreamSpec spec){
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
-        StreamType newST = null;
         StreamSpec oldSS = sspec;
         sspec = spec;
-        if (spec.getStreamType() != null)
-            newST = (StreamType)spec.getStreamType().accept(this);
+
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
         List<Function> newFuncs = new ArrayList<Function>();
         boolean changed = false;
@@ -264,9 +261,10 @@ public class Preprocessor extends FEReplacer {
         changed |= generatedFuncs.size () > 0;
         newFuncs.addAll(generatedFuncs);
         sspec = oldSS;
-        if (!changed && newST == spec.getStreamType()) return spec;
+        if (!changed)
+            return spec;
         return new StreamSpec(spec, spec.getType(),
-                              newST, spec.getName(), spec.getParams(),
+ spec.getName(), spec.getParams(),
                               newVars, newFuncs);
 
     }

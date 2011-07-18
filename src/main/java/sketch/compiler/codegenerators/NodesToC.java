@@ -9,7 +9,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -318,10 +317,10 @@ public class NodesToC extends NodesToJava {
 
 	public Object visitStreamSpec(StreamSpec spec){
 
-		StreamType oldStreamType = streamType;
+
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-        streamType = spec.getStreamType();
+
 
 		String result = "";
 		ss = spec;
@@ -341,7 +340,7 @@ public class NodesToC extends NodesToJava {
         
         
         symtab = oldSymTab;
-        streamType = oldStreamType;
+
         return result;
 	}
 

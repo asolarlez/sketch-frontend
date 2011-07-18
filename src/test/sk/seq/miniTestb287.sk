@@ -1,0 +1,43 @@
+pragma options "--debug-show-phase parse --bnd-inline-amnt 3";
+
+/*miniTestb286.sk:3*/
+generator int choseOp (int a, int b)
+{
+  if(??/*H__0*/)/*miniTestb286.sk:4*/
+  {
+    {
+      return a + b;
+    }
+  }
+  if(??/*H__1*/)/*miniTestb286.sk:5*/
+  {
+    {
+      return a - b;
+    }
+  }
+}
+/*miniTestb286.sk:8*/
+generator int expr_choseOp (int N, int[N] pars)
+{
+  if(??/*H__2*/)/*miniTestb286.sk:9*/
+  {
+    {
+      int xa = expr_choseOp(N, pars);
+      int xb = expr_choseOp(N, pars);
+      return choseOp(xa, xb);
+    }
+  }
+  else
+  {
+    {
+      return pars[??/*H__3*/];
+    }
+  }
+}
+/*miniTestb286.sk:26*/
+harness void test (int a, int b, int c)
+{
+  int t = expr_choseOp(3, {a,b,c});
+  assert (t == (b - a))
+;
+}

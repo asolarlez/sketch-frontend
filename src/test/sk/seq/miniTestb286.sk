@@ -1,0 +1,32 @@
+pragma options "--debug-show-phase parse --bnd-inline-amnt 5";
+
+generator int choseOp(int a, int b){
+    if(??){ return a + b; }
+    if(??){ return a - b; }
+}
+
+generator int expr(int N, int[N] pars, fun op){
+    if(??){
+        int xa = expr(N, pars, op);
+        int xb = expr(N, pars, op);
+        return op(xa, xb);
+    }else{
+        return pars[??];
+    }
+}
+
+generator int plus(int a, int b){
+    return a + b;
+}
+
+generator int apply(int a, int b, fun f){    
+    return f(a, b);
+}
+
+harness void test(int a, int b, int c){
+    
+   // assert apply(a, b, plus) == a + b;
+    int t = expr(3, {a, b, c}, choseOp);
+    assert t == b-a+c;
+    // assert expr(3, {a, b, c}, choseOp) == a - c + b;    
+}

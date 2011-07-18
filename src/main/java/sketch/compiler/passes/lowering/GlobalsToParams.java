@@ -156,7 +156,7 @@ public class GlobalsToParams extends FEReplacer {
             fcns.add(fcn);
         }
         this.fcnsToAdd.clear();
-        return new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(),
+        return new StreamSpec(spec, spec.getType(), spec.getName(),
                 spec.getParams(), Collections.EMPTY_LIST, fcns);
     }
 

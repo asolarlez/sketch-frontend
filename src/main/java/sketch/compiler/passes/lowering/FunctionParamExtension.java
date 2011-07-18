@@ -186,7 +186,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 			funs.add(fun.creator().params(params).create());
 		}
-		spec=new StreamSpec(spec, spec.getType(), spec.getStreamType(), spec.getName(), spec.getParams(), spec.getVars(), funs);
+        spec =
+                new StreamSpec(spec, spec.getType(), spec.getName(), spec.getParams(),
+                        spec.getVars(), funs);
 		return super.visitStreamSpec(spec);
 	}
 

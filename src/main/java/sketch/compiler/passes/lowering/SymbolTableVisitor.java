@@ -25,7 +25,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -61,13 +60,6 @@ public class SymbolTableVisitor extends FEReplacer
      */
     protected SymbolTable symtab;
 
-    /**
-     * The current stream type.  Functions in this class keep the
-     * prevailing stream type up to date, but anonymous streams may
-     * have a null stream type.  Calling a visitor method will update
-     * the stream type if necessary and recursively visit children.
-     */
-    protected StreamType streamType;
 
     /**
      * Map resolving structure names to structure types.  This map is
@@ -78,16 +70,7 @@ public class SymbolTableVisitor extends FEReplacer
      */
     protected Map<String, TypeStruct> structsByName;
 
-    /**
-     * Create a new symbol table visitor.
-     *
-     * @param symtab  Symbol table to use if no other is available,
-     *                can be null
-     */
-    public SymbolTableVisitor(SymbolTable symtab)
-    {
-        this(symtab, null);
-    }
+
 
     /**
      * Create a new symbol table visitor.
@@ -96,10 +79,9 @@ public class SymbolTableVisitor extends FEReplacer
      *                can be null
      * @param st      Prevailing stream type, can be null
      */
-    public SymbolTableVisitor(SymbolTable symtab, StreamType st)
+    public SymbolTableVisitor(SymbolTable symtab)
     {
         this.symtab = (symtab == null ? new SymbolTable(null) : symtab);
-        this.streamType = st;
         this.structsByName = new java.util.HashMap();
     }
 
@@ -142,7 +124,7 @@ public class SymbolTableVisitor extends FEReplacer
     	if(expr == null){ return TypePrimitive.voidtype; }
 
         // To think about: should we cache GetExprType objects?
-        GetExprType get = new GetExprType(symtab, streamType, structsByName, nullType);
+        GetExprType get = new GetExprType(symtab, structsByName, nullType);
         Type type = (Type)expr.accept(get);
         return type;
     }
@@ -297,10 +279,10 @@ public class SymbolTableVisitor extends FEReplacer
 
     public Object visitStreamSpec(StreamSpec spec)
     {
-        StreamType oldStreamType = streamType;
+
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-        streamType = spec.getStreamType();
+
 	// register parameters
         for (Iterator iter = spec.getParams().iterator(); iter.hasNext(); )
         {
@@ -318,7 +300,6 @@ public class SymbolTableVisitor extends FEReplacer
 	}
         Object result = super.visitStreamSpec(spec);
         symtab = oldSymTab;
-        streamType = oldStreamType;
         return result;
     }
 

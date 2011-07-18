@@ -42,7 +42,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SplitterJoiner;
 import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
+
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
@@ -188,7 +188,7 @@ program	 returns [Program p]
 		// Can get away with no context here.
 		{
 			 StreamSpec ss=new StreamSpec((FEContext) null, StreamSpec.STREAM_FILTER,
- 				new StreamType((FEContext) null, TypePrimitive.bittype, TypePrimitive.bittype), "MAIN",
+ 				"MAIN",
  				Collections.EMPTY_LIST, vars, funcs);
  				streams.add(ss);
                 if (!hasError) {
@@ -227,13 +227,6 @@ field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 		{ f = new FieldDecl(ctx, ts, ns, xs); }
 	;
 
-
-stream_type_decl returns [StreamType st] { st = null; Type in, out; }
-	:	in=data_type t:ARROW out=data_type
-		// Again, want context from the input type, but Types aren't
-		// FENodes.
-		{ st = new StreamType(getContext(t), in, out); }
-	;
 
 
 

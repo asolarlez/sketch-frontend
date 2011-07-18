@@ -95,8 +95,11 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtAssert(StmtAssert stmt) { return null; }
     public Object visitStmtVarDecl(StmtVarDecl stmt) { return null; }
     public Object visitStmtWhile(StmtWhile stmt) { return null; }
-    public Object visitStreamSpec(StreamSpec spec) { return null; }
-    public Object visitStreamType(StreamType type) { return null; }
+
+    public Object visitStreamSpec(StreamSpec spec) {
+        return null;
+    }
+
     public Object visitOther(FENode node) { return null; }
 	public Object visitExprStar(ExprStar star) { return null; }
 	public Object visitExprArrayRange(ExprArrayRange exp) { return null; }

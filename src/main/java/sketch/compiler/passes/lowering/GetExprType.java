@@ -20,7 +20,6 @@ import java.util.Map;
 
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -54,12 +53,12 @@ public class GetExprType extends FENullVisitor
      * they will usually get type 'int'. */
     private Type nullType;
 
-    public GetExprType(SymbolTable symTab, StreamType streamType,
+    public GetExprType(SymbolTable symTab,
             Map structsByName) {
-        this(symTab, streamType, structsByName, TypePrimitive.nulltype);
+        this(symTab, structsByName, TypePrimitive.nulltype);
     }
 
-    public GetExprType(SymbolTable symTab, StreamType streamType,
+    public GetExprType(SymbolTable symTab,
                        Map structsByName, Type nullType)
     {
         this.symTab = nonnull(symTab);

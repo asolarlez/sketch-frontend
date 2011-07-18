@@ -132,7 +132,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 			// TODO: assuming ExprArrayInit is initialized with scalar constants only.
 			int len = exp.getElements ().size ();
 			Type baseType =
-				(Type) exp.getElements ().get (0).accept (new GetExprType (symtab, null, null));
+                    (Type) exp.getElements().get(0).accept(new GetExprType(symtab, null));
 			return new ExprTernary ("?:",
 					new ExprBinary (index, "<", ExprConstant.createConstant (exp, ""+ len)),
 					new ExprArrayRange (exp, index),

@@ -1,6 +1,5 @@
 package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
@@ -17,8 +16,8 @@ public class ExtractVectorsInCasts extends SymbolTableVisitor {
 		this.varGen = varGen;
 	}
 
-	public ExtractVectorsInCasts(SymbolTable symtab, StreamType st, TempVarGen varGen) {
-		super(symtab, st);
+    public ExtractVectorsInCasts(SymbolTable symtab, TempVarGen varGen) {
+        super(symtab);
 		this.varGen = varGen;
 	}
 

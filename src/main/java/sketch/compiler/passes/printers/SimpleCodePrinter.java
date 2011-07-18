@@ -1,7 +1,5 @@
 package sketch.compiler.passes.printers;
 
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
-
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,10 +9,9 @@ import java.util.TreeSet;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.Function.LibraryFcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
+import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -23,6 +20,7 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 public class SimpleCodePrinter extends CodePrinter
 {
@@ -60,11 +58,10 @@ public class SimpleCodePrinter extends CodePrinter
     {
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
-        StreamType newST = null;
+
         StreamSpec oldSS = sspec;
         sspec = spec;
-        if (spec.getStreamType() != null)
-            newST = (StreamType)spec.getStreamType().accept(this);
+
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
         List<Function> oldNewFuncs = newFuncs;
         newFuncs = new ArrayList<Function>();
@@ -109,9 +106,10 @@ public class SimpleCodePrinter extends CodePrinter
 
         List<Function> nf = newFuncs;
         newFuncs = oldNewFuncs;
-        if (!changed && newST == spec.getStreamType()) return spec;
+        if (!changed)
+            return spec;
         return new StreamSpec(spec, spec.getType(),
-                              newST, spec.getName(), spec.getParams(),
+ spec.getName(), spec.getParams(),
                               newVars, nf);
 
     }

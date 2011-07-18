@@ -278,9 +278,6 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, spec);
     }
 
-    public T visitStreamType(StreamType type) {
-        throw new FEVisitorException(this, type);
-    }
 
     public T visitType(Type t) {
         throw new FEVisitorException(this, t);

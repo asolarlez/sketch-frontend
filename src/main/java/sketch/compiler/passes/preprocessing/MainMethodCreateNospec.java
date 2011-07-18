@@ -8,10 +8,10 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -54,7 +54,7 @@ public class MainMethodCreateNospec extends FEReplacer {
                 newFcns.add(wrapperFcn);
                 newFcns.add(getNospecFunction(wrapperFcn));
             }
-            return new StreamSpec(spec, spec.getType(), spec.getStreamType(),
+            return new StreamSpec(spec, spec.getType(),
                     spec.getName(), spec.getParams(), spec.getVars(),
                     Collections.unmodifiableList(newFcns));
         } else {

@@ -1,7 +1,6 @@
 package sketch.compiler.passes.lowering;
 
 import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.StreamType;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -27,8 +26,8 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 		this.varGen = varGen;
 	}
 
-	public ExtractRightShifts(SymbolTable symtab, StreamType st, TempVarGen varGen) {
-		super(symtab, st);
+    public ExtractRightShifts(SymbolTable symtab, TempVarGen varGen) {
+        super(symtab);
 		this.varGen = varGen;
 	}
 
