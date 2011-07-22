@@ -16,10 +16,10 @@
 
 package sketch.compiler.passes.lowering;
 import java.util.List;
-import java.util.Map;
 
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -47,22 +47,22 @@ import static sketch.util.Misc.nonnull;
 public class GetExprType extends FENullVisitor
 {
     private final SymbolTable symTab;
-    private Map structsByName;
+    private NameResolver nres;
     /** This is a mechanism for a hacky type coercion for null pointers.
      * Before structs have been eliminated, nulls have type 'null'; afterwards,
      * they will usually get type 'int'. */
     private Type nullType;
 
     public GetExprType(SymbolTable symTab,
-            Map structsByName) {
-        this(symTab, structsByName, TypePrimitive.nulltype);
+ NameResolver nres) {
+        this(symTab, nres, TypePrimitive.nulltype);
     }
 
     public GetExprType(SymbolTable symTab,
-                       Map structsByName, Type nullType)
+ NameResolver nres, Type nullType)
     {
         this.symTab = nonnull(symTab);
-        this.structsByName = structsByName;
+        this.nres = nres;
         this.nullType = nullType;
     }
 
@@ -180,7 +180,7 @@ public class GetExprType extends FENullVisitor
     				tn = (Type) sc.getNext ().accept (this);
 
     			base = (tf instanceof TypeStruct) ? (TypeStruct) tf
-    	    			: (TypeStruct) structsByName.get (((TypeStructRef) tf).getName ());
+                                : nres.getStruct(((TypeStructRef) tf).getName());
     			tfn = (Type) sc.getNext ().accept (this);
     			base = oldBase;
 
@@ -200,7 +200,7 @@ public class GetExprType extends FENullVisitor
 			"field selection of non-struct");
 
     	TypeStruct base = (t instanceof TypeStruct) ? (TypeStruct) t
-    			: (TypeStruct) structsByName.get (((TypeStructRef) t).getName ());
+                        : nres.getStruct(((TypeStructRef) t).getName());
     	Type selType = (Type) ecs.accept (new GetSelectType (base));
 
     	return !ecs.getField ().isOptional () ? selType
@@ -277,7 +277,7 @@ public class GetExprType extends FENullVisitor
         else if (base instanceof TypeStructRef)
         {
             String name = ((TypeStructRef)base).getName();
-            TypeStruct str = (TypeStruct)structsByName.get(name);
+            TypeStruct str = nres.getStruct(name);
             assert str != null : base;
             return str.getType(exp.getName());
         }
@@ -293,7 +293,7 @@ public class GetExprType extends FENullVisitor
     	// Has SymbolTable given us a function declaration?
     	try
     	{
-            Function fn = symTab.lookupFn(exp.getName(), exp);
+            Function fn = nres.getFun(exp.getName(), exp);
     		return fn.getReturnType();
     	} catch (UnrecognizedVariableException e) {
     		// ignore

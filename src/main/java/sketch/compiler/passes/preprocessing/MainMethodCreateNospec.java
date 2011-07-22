@@ -54,8 +54,8 @@ public class MainMethodCreateNospec extends FEReplacer {
                 newFcns.add(wrapperFcn);
                 newFcns.add(getNospecFunction(wrapperFcn));
             }
-            return new StreamSpec(spec, spec.getType(),
-                    spec.getName(), spec.getParams(), spec.getVars(),
+            return new StreamSpec(spec, spec.getName(), spec.getStructs(),
+                    spec.getVars(),
                     Collections.unmodifiableList(newFcns));
         } else {
             return spec;

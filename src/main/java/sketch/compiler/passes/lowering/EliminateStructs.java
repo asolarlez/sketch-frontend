@@ -9,7 +9,9 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
@@ -92,7 +94,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 */
 	public Object visitFunction (Function func) {
 		boolean isMain = false;
-		if(mainFunctions.contains(func.getName())){
+        if (mainFunctions.contains(nres.getFunName(func.getName()))) {
 			isMain = true;
 	        SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
@@ -108,9 +110,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
-	        for (String name : structsByName.keySet ()) {
+            for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-					new StructTracker (structsByName.get (name), func, varGen, heapsize);
+                        new StructTracker(nres.getStruct(name), func, varGen, heapsize);
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
 				structs.put (name, tracker);
@@ -131,7 +133,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 		}
 
 
-		if(calledFunctions.contains(func.getName())){
+        if (calledFunctions.contains(nres.getFunName(func.getName()))) {
 			SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
 	        List<Parameter> newParams = new ArrayList<Parameter>();
@@ -145,9 +147,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
-	        for (String name : structsByName.keySet ()) {
+            for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-					new StructTracker (structsByName.get (name), func, varGen, heapsize);
+                        new StructTracker(nres.getStruct(name), func, varGen, heapsize);
 				tracker.registerAsParameters(symtab);
 				tracker.addParams(newParams);
 				structs.put (name, tracker);
@@ -180,7 +182,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 		String newName = fc.getName();
 
-		Function fun = this.sspec.getFuncNamed(newName) ;
+        Function fun = nres.getFun(newName);
 		if( fun.isUninterp() ){
 			return super.visitExprFunCall(fc);
 		}
@@ -188,8 +190,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 		List<Expression> newplist = new ArrayList<Expression>(fc.getParams());
 
 
-		for (String name : structsByName.keySet ()) {
-			structs.get(name).addActualParams(newplist);
+        for (StructTracker st : structs.values()) {
+            st.addActualParams(newplist);
 		}
 
 		if(mainFunctions.contains(newName)){
@@ -214,7 +216,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 			throw new RuntimeException ("reading field of non-struct");
 		}
 
-		StructTracker struct = structs.get (((TypeStruct)t).getName ());
+        StructTracker struct =
+                structs.get(nres.getStructName(((TypeStruct) t).getName()));
 		String field = ef.getName ();
 
 		return new ExprArrayRange (ef, struct.getFieldArray (field),
@@ -228,14 +231,13 @@ public class EliminateStructs extends SymbolTableVisitor {
     	expNew.assertTrue (expNew.getTypeToConstruct().isStruct(),
     			"Sorry, only structs are supported in 'new' statements.");
 
-    	StructTracker struct =
-    		structs.get (((TypeStructRef) expNew.getTypeToConstruct ()).getName ());
+        String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
+        StructTracker struct = structs.get(nres.getStructName(name));
 
     	this.addStatement (struct.makeAllocationGuard (expNew));
     	return struct.makeAllocation (expNew);
     }
 
-    /** Rewrite variables of type 'struct' into ones of type 'int'. */
     public Object visitTypeStruct (TypeStruct ts) {
     	// return TypePrimitive.inttype;
     	return ts;
@@ -253,31 +255,29 @@ public class EliminateStructs extends SymbolTableVisitor {
     final Set<String> mainFunctions = new HashSet<String>();
 
 
-    public Object visitStreamSpec(StreamSpec spec)
-    {
-    	calledFunctions.clear();
-    	for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); )
-        {
-    		Function func = iter.next();
-    		if(func.getSpecification() != null){
-    			mainFunctions.add(func.getName());
-    			mainFunctions.add(func.getSpecification());
-    		}
+    public Object visitProgram(Program p) {
+        calledFunctions.clear();
+        nres = new NameResolver(p);
+        final NameResolver lnres = nres;
+        for (StreamSpec pkg : p.getStreams()) {
+            nres.setPackage(pkg);
+            for (Function func : pkg.getFuncs()) {
+                if (func.getSpecification() != null) {
+                    mainFunctions.add(nres.getFunName(func.getName()));
+                    mainFunctions.add(nres.getFunName(func.getSpecification()));
+                }
 
-    		func.accept(new FEReplacer(){
-    			@Override
-    			public Object visitExprFunCall(ExprFunCall exp){
-    				calledFunctions.add(exp.getName());
-    				return exp;
-    			}
-    		});
+                func.accept(new FEReplacer() {
+                    @Override
+                    public Object visitExprFunCall(ExprFunCall exp) {
+                        calledFunctions.add(lnres.getFunName(exp.getName()));
+                        return exp;
+                    }
+                });
+            }
         }
-    	return super.visitStreamSpec(spec);
+        return super.visitProgram(p);
     }
-
-
-
-
 
 
     /**

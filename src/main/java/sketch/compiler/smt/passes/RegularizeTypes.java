@@ -321,7 +321,7 @@ public class RegularizeTypes extends SymbolTableVisitor {
 		Type oldDesiredType = desiredType;
 		boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
-        Function func = getFuncNamed(exp.getName());
+        Function func = nres.getFun(exp.getName());
         Iterator<Parameter> paramIter = func.getParams().iterator();
         for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
         {

@@ -66,7 +66,7 @@ public class NodesToCTest extends NodesToJava {
 	}
 
 	public Object visitStreamSpec(StreamSpec spec){
-		ss = spec;
+        nres.setPackage(spec);
 		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); ) {
 			Function func = (Function)iter.next();            
 			fMap.put(func.getName(),func);

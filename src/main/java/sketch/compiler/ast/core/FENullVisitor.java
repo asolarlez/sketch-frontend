@@ -31,9 +31,6 @@ import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Implementation of FEVisitor that always returns <code>null</code>.
@@ -73,12 +70,18 @@ public class FENullVisitor implements FEVisitor
     public Object visitFunction(Function func) { return null; }    
     public Object visitProgram(Program prog) { return null; }    
     public Object visitSCSimple(SCSimple creator) { return null; }
-    public Object visitSJDuplicate(SJDuplicate sj) { return null; }
-    public Object visitSJRoundRobin(SJRoundRobin sj) { return null; }
-    public Object visitSJWeightedRR(SJWeightedRR sj) { return null; }
-    public Object visitStmtAdd(StmtAdd stmt) { return null; }
-    public Object visitStmtAssign(StmtAssign stmt) { return null; }
-    public Object visitStmtAtomicBlock(StmtAtomicBlock stmt) { return null; }
+
+    public Object visitStmtAdd(StmtAdd stmt) {
+        return null;
+    }
+
+    public Object visitStmtAssign(StmtAssign stmt) {
+        return null;
+    }
+
+    public Object visitStmtAtomicBlock(StmtAtomicBlock stmt) {
+        return null;
+    }
     public Object visitStmtBlock(StmtBlock stmt) { return null; }
     public Object visitStmtBody(StmtBody stmt) { return null; }
     public Object visitStmtBreak(StmtBreak stmt) { return null; }

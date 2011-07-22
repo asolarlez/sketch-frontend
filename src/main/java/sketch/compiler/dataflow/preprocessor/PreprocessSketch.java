@@ -1,13 +1,12 @@
 package sketch.compiler.dataflow.preprocessor;
 
-import static sketch.util.DebugOut.printFailure;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
@@ -26,6 +25,8 @@ import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.spin.IdentifyModifiedVars;
+
+import static sketch.util.DebugOut.printFailure;
 
 /**
  *
@@ -109,13 +110,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 
 
         // Local function?
-        Function fun = ss.getFuncNamed(name);
+        Function fun = nres.getFun(name);
         if(fun.getSpecification()!= null){
             String specName = fun.getSpecification();
             if( newFuns.containsKey(specName)){
                 fun = newFuns.get(specName);
             }else{
-                Function newFun = ss.getFuncNamed(specName);
+                Function newFun = nres.getFun(specName);
                 Level lvl = state.pushLevel("ExprFunCall(" + exp.getName() + ")");
                 try {
                     fun = (Function)this.visitFunction(newFun);
@@ -136,8 +137,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 if(inlineStatics){
                     assert fun.isStatic() : " If you are in inlinestatics mode, you should only have statics or uninterpreted functions.";
                 }
-                
-                fun = (Function)fun.accept(new EliminateReturns());
+                FEReplacer elimr = new EliminateReturns();
+                elimr.setNres(nres);
+                fun = (Function) fun.accept(elimr);
                 
                 if (rcontrol.testCall(exp)) {
                     /* Increment inline counter. */

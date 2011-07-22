@@ -21,7 +21,7 @@ public class MatchParamNames extends FEReplacer {
     	Statement newBody = func.getBody();
     	List<Parameter>  newParams = func.getParams();
     	if( func.getSpecification() != null ){
-    		Function spec = this.getFuncNamed(func.getSpecification());
+            Function spec = getFuncNamed(func.getSpecification());
     		assert func.getParams().size() == spec.getParams().size() : spec.toString() + ": The size of the parameter lists for spec and sketch must match. "; 
     		List<Parameter> p1 = func.getParams();
     		List<Parameter> p2 = spec.getParams();    		

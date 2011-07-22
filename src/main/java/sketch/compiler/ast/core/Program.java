@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import sketch.compiler.Directive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 
 import static sketch.util.DebugOut.printWarning;
@@ -41,21 +40,27 @@ import static sketch.util.DebugOut.printWarning;
 public class Program extends FENode
 {
     private List<StreamSpec> streams;
-    private final List<TypeStruct> structs;
+
     protected final Set<Directive> directives;
+
+    public String toString() {
+        String res = "";
+        for (StreamSpec pkg : streams) {
+            res += pkg.toString();
+        }
+        return res;
+    }
 
     public static class ProgramCreator {
         private Program base;
         private List<StreamSpec> streams;
-        private List<TypeStruct> structs;
         private Set<Directive> directives;
 
         public ProgramCreator(Program base, List<StreamSpec> streams,
-                List<TypeStruct> structs, Set<Directive> directives)
+                Set<Directive> directives)
         {
             this.base = base;
             this.streams = streams;
-            this.structs = structs;
             this.directives = directives;
         }
 
@@ -64,10 +69,7 @@ public class Program extends FENode
             return this;
         }
 
-        public ProgramCreator structs(List<TypeStruct> structs) {
-            this.structs = structs;
-            return this;
-        }
+
 
         public ProgramCreator directives(Set<Directive> directives) {
             this.directives = directives;
@@ -75,30 +77,29 @@ public class Program extends FENode
         }
 
         public Program create() {
-            return new Program(this.base, this.streams, this.structs, this.directives);
+            return new Program(this.base, this.streams, this.directives);
         }
     }
 
     public static Program emptyProgram() {
         List<StreamSpec> streams = new java.util.ArrayList<StreamSpec>();
-        List<TypeStruct> structs = new java.util.ArrayList<TypeStruct>();
         Set<Directive> directives = new HashSet<Directive>();
-        return new Program(null, streams, structs, directives);
+        return new Program(null, streams, directives);
     }
 
     /** Creates a new StreamIt program, given lists of streams and
      * structures. */
-    protected Program(FENode context, List<StreamSpec> streams, List<TypeStruct> structs,
+    protected Program(FENode context, List<StreamSpec> streams,
             Set<Directive> directives)
     {
         super(context);
         this.streams = streams;
-        this.structs = structs;
+
         this.directives = directives;
     }
 
     public ProgramCreator creator() {
-        return new ProgramCreator(this, streams, structs, directives);
+        return new ProgramCreator(this, streams, directives);
     }
 
     /** Returns the list of streams declared in this. */
@@ -107,11 +108,7 @@ public class Program extends FENode
         return streams;
     }
 
-    /** Returns the list of structures declared in this. */
-    public List<TypeStruct> getStructs()
-    {
-        return structs;
-    }
+
 
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)

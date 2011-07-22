@@ -238,36 +238,36 @@ public class FunctionalizeStencils extends FEReplacer {
 	public Program processFuns(Program prog, TempVarGen varGen){
 	    
 	    if(funmap.isEmpty()){ return prog; }
-	    
-		StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
-		strs.getVars().clear();
-		List<Function> functions=strs.getFuncs();
-		for(Iterator<Function> it = functions.iterator(); it.hasNext(); ){
-			Function fun = it.next();
-			if(fun.isStencil()){
-				it.remove();
-			}
-		}
+        NameResolver nres = new NameResolver(prog);
+        // StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
+        for (StreamSpec strs : prog.getStreams()) {
+            strs.getVars().clear();
+            List<Function> functions = strs.getFuncs();
+            for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
+                Function fun = it.next();
+                if (fun.isStencil()) {
+                    it.remove();
+                }
+            }
+        }
+        StreamSpec strs = (StreamSpec) prog.getStreams().get(0);
+        List<Function> functions = strs.getFuncs();
+        // add the functions generated from ArrFunction objects to the program
+        for (Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext();) {
+            ArrFunction af = it.next();
+            // System.out.println(af.toString());
+            af.processMax();
+            functions.add(af.toAST());
+        }
 
-
-		//add the functions generated from ArrFunction objects to the program
-		for(Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext(); ){
-			ArrFunction af = it.next();
-			//System.out.println(af.toString());
-			af.processMax();
-			functions.add(af.toAST());
-		}
 		//collect all unique AbstractArray objects
 		Set<Function> arrys=new HashSet<Function>();
 		for(Iterator<Entry<String, Map<String, Function>>> it = globalInVars.entrySet().iterator(); it.hasNext(); ){
 			Map<String, Function> af = it.next().getValue();
 			arrys.addAll(af.values());
 		}
-		//add the functions generated from AbstractArray objects to the program
-		for(Iterator<Function> it = arrys.iterator(); it.hasNext(); ){
-			Function aa = it.next();
-			functions.add(aa);
-		}
+
+        functions.addAll(arrys);
 
 		// prog.accept(new SimpleCodePrinter());
 
@@ -276,6 +276,8 @@ public class FunctionalizeStencils extends FEReplacer {
 		prog = (Program) prog.accept(new FunctionParamExtension(true));
 		strs=(StreamSpec)prog.getStreams().get(0);
 		functions=strs.getFuncs();
+
+        NameResolver lnres = new NameResolver(prog);
 
 		//generate the "driver" functions for spec and sketch
 		for(Iterator<Function> it=userFuns.iterator();it.hasNext();) {
@@ -304,7 +306,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			callArgs.addAll(makeRefs(outf.othParams));
 			callArgs.addAll(makeRefs(outf.inputParams));
 			callArgs.add(new ExprVar(outp,outp.getName()));
-			assert(callArgs.size()==strs.getFuncNamed(outfname).getParams().size());
+            assert (callArgs.size() == lnres.getFun(outfname).getParams().size());
 
 			Statement fcall=new StmtExpr(new ExprFunCall(f,outfname,callArgs));
 			
@@ -400,8 +402,8 @@ public class FunctionalizeStencils extends FEReplacer {
            if(oldFunc.isStencil()){
                result.add(oldFunc);
                String specname = oldFunc.getSpecification();
-               if( specname != null){
-                   Function f = spec.getFuncNamed(specname);
+                if (specname != null) {
+                    Function f = nres.getFun(specname);
                    if(!f.isStencil()){ throw new RuntimeException("If a stencil implements another function, that function must be a stencil too. ");} 
                }
            }
@@ -429,11 +431,13 @@ public class FunctionalizeStencils extends FEReplacer {
 		    List<Function> funcs = selectFunctions(spec);
 		    final List<Function> nfuns = new ArrayList<Function>();
 		    PreprocessSketch v0 = new PreprocessSketch(varGen, 10, new BaseRControl(10), true, true);
-		    v0.ss = spec;
-		    FEVisitor v01 = new SeparateInitializers();
-		    FEVisitor v1 = new ScalarizeVectorAssignments(varGen, true);
-		    FEVisitor v2 =new EliminateCompoundAssignments();
-		    
+        v0.setNres(nres);
+        FEReplacer v01 = new SeparateInitializers();
+		    v01.setNres(nres);
+        FEReplacer v1 = new ScalarizeVectorAssignments(varGen, true);
+		    v1.setNres(nres);
+        FEReplacer v2 = new EliminateCompoundAssignments();
+		    v2.setNres(nres);
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();
 	        	f = ((Function)f.accept(v0));
@@ -446,7 +450,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        	nfuns.add(f);	        	
 	        }
 	        
-	        MatchParamNames v3 = new MatchParamNames(){
+        MatchParamNames v3 = new MatchParamNames() {
 	            public Function getFuncNamed(String name){
 	                for (Function func : nfuns)
 	                {	                    
@@ -456,9 +460,8 @@ public class FunctionalizeStencils extends FEReplacer {
 	                }
 	                return null;
 	            }
-	        };
-            
-	        
+        };
+        v3.setNres(nres);
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));

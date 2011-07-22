@@ -1,0 +1,14 @@
+package BOO;
+
+struct F{
+	int x;
+	int y;
+}
+
+int getX(F pthis){
+	return pthis.x;
+} 
+
+void setX(F pthis, int v){
+	pthis.x = v;
+}

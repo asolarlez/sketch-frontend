@@ -291,21 +291,21 @@ public class SymbolTable
      * 
      * @param errSource
      */
-    public Function lookupFn(String name, FENode errSource)
+    public Function lookupFnDEPRACTED(String name, FENode errSource)
     {
-        Function fn = doLookupFn(name);
+        Function fn = doLookupFnDEPRACTED(name);
         if (fn != null) return fn;
         throw new UnrecognizedVariableException(name, errSource);
     }
 
-    private Function doLookupFn(String name)
+    private Function doLookupFnDEPRACTED(String name)
     {
         Function fn = (Function)fns.get(name);
         if (fn != null)
             return fn;
         if (parent != null)
         {
-            fn = parent.doLookupFn(name);
+            fn = parent.doLookupFnDEPRACTED(name);
             if (fn != null)
                 return fn;
         }
@@ -314,7 +314,7 @@ public class SymbolTable
             for (Iterator iter = includedFns.iterator(); iter.hasNext(); )
             {
                 SymbolTable other = (SymbolTable)iter.next();
-                fn = other.doLookupFn(name);
+                fn = other.doLookupFnDEPRACTED(name);
                 if (fn != null)
                     return fn;
             }

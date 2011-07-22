@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.stmts.Statement;
 
@@ -75,6 +76,11 @@ class StackTracker{
 public abstract class RecursionControl{
 	
 	StackTracker strack = new StackTracker();
+    NameResolver nres;
+
+    public void setNameRes(NameResolver nres) {
+        this.nres = nres;
+    }
 	
 	/**
 	 * The function that is actually used for inlining decisions may be different from the

@@ -1,10 +1,8 @@
 package sketch.compiler.passes.printers;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeSet;
 
 import sketch.compiler.ast.core.FieldDecl;
@@ -59,21 +57,18 @@ public class SimpleCodePrinter extends CodePrinter
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
 
-        StreamSpec oldSS = sspec;
-        sspec = spec;
+        nres.setPackage(spec);
+        printLine("/* BEGIN PACKAGE " + spec.getName() + "*/");
 
-        List<FieldDecl> newVars = new ArrayList<FieldDecl>();
-        List<Function> oldNewFuncs = newFuncs;
-        newFuncs = new ArrayList<Function>();
-
-        boolean changed = false;
+        for (TypeStruct tsOrig : spec.getStructs()) {
+            TypeStruct ts = (TypeStruct) tsOrig.accept(this);
+        }
 
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
         {
             FieldDecl oldVar = (FieldDecl)iter.next();
             FieldDecl newVar = (FieldDecl)oldVar.accept(this);
-            if (oldVar != newVar) changed = true;
-            if(newVar!=null) newVars.add(newVar);
+
         }
         int nonNull = 0;
         
@@ -90,28 +85,11 @@ public class SimpleCodePrinter extends CodePrinter
 
         for (Function oldFunc : orderedFuncs) {
             if (oldFunc.getInfo().libraryType != LibraryFcnType.Library || printLibraryFunctions) {
-                Function newFunc = (Function)oldFunc.accept(this);
-                if (oldFunc != newFunc) changed = true;
-                if(newFunc!=null) newFuncs.add(newFunc);
-            } else {
-                newFuncs.add(oldFunc);
+                Function newFunc = (Function) oldFunc.accept(this);
             }
         }
-
-        if(newFuncs.size() != nonNull){
-            changed = true;
-        }
-
-        sspec = oldSS;
-
-        List<Function> nf = newFuncs;
-        newFuncs = oldNewFuncs;
-        if (!changed)
-            return spec;
-        return new StreamSpec(spec, spec.getType(),
- spec.getName(), spec.getParams(),
-                              newVars, nf);
-
+        printLine("/* END PACKAGE " + spec.getName() + "*/");
+        return spec;
     }
 	
 	

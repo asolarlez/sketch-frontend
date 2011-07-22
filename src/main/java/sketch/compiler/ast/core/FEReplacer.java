@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.ast.core;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,9 +42,6 @@ import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 
@@ -111,6 +109,16 @@ public class FEReplacer implements FEVisitor
     protected void addStatement(Statement stmt)
     {
         newStatements.add(stmt);
+    }
+
+    protected NameResolver nres;
+
+    protected Function getFuncNamed(String name) {
+        return nres.getFun(name);
+    }
+
+    public void setNres(NameResolver nr) {
+        nres = nr;
     }
 
     protected void addExprStatement(Expression expr) {
@@ -382,17 +390,14 @@ public class FEReplacer implements FEVisitor
 
     public Object visitProgram(Program prog) {
         assert prog != null : "FEReplacer.visitProgram: argument null!";
+        nres = new NameResolver(prog);
         List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
         for (StreamSpec ssOrig : prog.getStreams()) {
             newStreams.add((StreamSpec) ssOrig.accept(this));
         }
 
-        List<TypeStruct> newStructs = new ArrayList<TypeStruct>();
-        for (TypeStruct tsOrig : prog.getStructs()) {
-            newStructs.add((TypeStruct) tsOrig.accept(this));
-        }
 
-        return prog.creator().streams(newStreams).structs(newStructs).create();
+        return prog.creator().streams(newStreams).create();
     }
 
 
@@ -421,29 +426,8 @@ public class FEReplacer implements FEVisitor
                             creator.getTypes(), newParams, newPortals);
     }
 
-    public Object visitSJDuplicate(SJDuplicate sj) { return sj; }
 
-    public Object visitSJRoundRobin(SJRoundRobin sj)
-    {
-        Expression newWeight = doExpression(sj.getWeight());
-        if (newWeight == sj.getWeight()) return sj;
-        return new SJRoundRobin(sj, newWeight);
-    }
 
-    public Object visitSJWeightedRR(SJWeightedRR sj)
-    {
-        boolean changed = false;
-        List<Expression> newWeights = new ArrayList<Expression>();
-        for (Iterator iter = sj.getWeights().iterator(); iter.hasNext(); )
-        {
-            Expression oldWeight = (Expression)iter.next();
-            Expression newWeight = doExpression(oldWeight);
-            if (newWeight != oldWeight) changed = true;
-            newWeights.add(newWeight);
-        }
-        if (!changed) return sj;
-        return new SJWeightedRR(sj, newWeights);
-    }
 
     public Object visitStmtAdd(StmtAdd stmt)
     {
@@ -653,10 +637,7 @@ public class FEReplacer implements FEVisitor
 
     public Object visitStmtJoin(StmtJoin stmt)
     {
-        SplitterJoiner newJoiner =
-            (SplitterJoiner)stmt.getJoiner().accept(this);
-        if (newJoiner == stmt.getJoiner()) return stmt;
-        return new StmtJoin(stmt, newJoiner);
+        return stmt;
     }
 
     public Object visitStmtLoop(StmtLoop stmt)
@@ -717,21 +698,14 @@ public class FEReplacer implements FEVisitor
         return new StmtWhile(stmt, newCond, newBody);
     }
 
-    protected StreamSpec sspec;
-
-    public Function getFuncNamed(String name){
-    	return sspec.getFuncNamed(name);
-    }
 
     protected List<Function> newFuncs;
 
     public Object visitStreamSpec(StreamSpec spec)
     {
-        // Oof, there's a lot here.  At least half of it doesn't get
-        // visited...
 
-        StreamSpec oldSS = sspec;
-        sspec = spec;
+        if (nres != null)
+            nres.setPackage(spec);
 
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
         List<Function> oldNewFuncs = newFuncs;
@@ -739,13 +713,25 @@ public class FEReplacer implements FEVisitor
 
         boolean changed = false;
 
-        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
-        {
-            FieldDecl oldVar = (FieldDecl)iter.next();
-            FieldDecl newVar = (FieldDecl)oldVar.accept(this);
-            if (oldVar != newVar) changed = true;
-            if(newVar!=null) newVars.add(newVar);
+        for (Iterator iter = spec.getVars().iterator(); iter.hasNext();) {
+            FieldDecl oldVar = (FieldDecl) iter.next();
+            FieldDecl newVar = (FieldDecl) oldVar.accept(this);
+            if (oldVar != newVar)
+                changed = true;
+            if (newVar != null)
+                newVars.add(newVar);
         }
+
+        List<TypeStruct> newStructs = new ArrayList<TypeStruct>();
+        for (TypeStruct tsOrig : spec.getStructs()) {
+            TypeStruct ts = (TypeStruct) tsOrig.accept(this);
+            if (ts != tsOrig) {
+                changed = true;
+            }
+            newStructs.add(ts);
+        }
+
+
         int nonNull = 0;
         for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
@@ -760,15 +746,13 @@ public class FEReplacer implements FEVisitor
         	changed = true;
         }
 
-        sspec = oldSS;
+
 
         List<Function> nf = newFuncs;
-        newFuncs = oldNewFuncs;
+        // newFuncs = oldNewFuncs;
         if (!changed)
             return spec;
-        return new StreamSpec(spec, spec.getType(),
- spec.getName(), spec.getParams(),
-                              newVars, nf);
+        return new StreamSpec(spec, spec.getName(), newStructs, newVars, nf);
 
     }
 

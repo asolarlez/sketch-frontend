@@ -171,7 +171,7 @@ public class NodesToCOld extends NodesToJava {
 
 	public Object visitStreamSpec(StreamSpec spec){
 		String result = "";
-		ss = spec;
+        nres.setPackage(spec);
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
             Function oldFunc = (Function)iter.next();            
@@ -183,8 +183,8 @@ public class NodesToCOld extends NodesToJava {
 	public Object visitFunction(Function func)
     {
         String result = indent ;
-        if (!func.getName().equals(ss.getName()))
-            result += convertType(func.getReturnType()) + " ";
+
+        result += convertType(func.getReturnType()) + " ";
         result += func.getName();
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";

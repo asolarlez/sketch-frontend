@@ -192,7 +192,7 @@ public class ModelGridWithUFun extends FEReplacer {
 		@Override
 		public Object visitExprFunCall(ExprFunCall exp) {
 			if (mTaintedSet.contains(exp.getName())) {
-				Function callee = sspec.getFuncNamed(exp.getName());
+                Function callee = nres.getFun(exp.getName());
 
 				if (!mProcessedFuns.contains(mCurrFunc.getName())) {
 					mNewTaintedSet.add(mCurrFunc.getName());
@@ -228,7 +228,7 @@ public class ModelGridWithUFun extends FEReplacer {
 		}
 
 		Expression getRetVar(ExprFunCall exp) {
-			Function func = sspec.getFuncNamed(exp.getName());
+            Function func = nres.getFun(exp.getName());
 
 			int pos = 0;
 			for (Parameter p : func.getParams()) {

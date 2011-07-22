@@ -18,7 +18,7 @@ package sketch.compiler.ast.promela.stmts;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
-import sketch.compiler.ast.core.SplitterJoiner;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 
 /**
@@ -29,42 +29,32 @@ import sketch.compiler.ast.core.stmts.Statement;
  */
 public class StmtJoin extends Statement
 {
-    private SplitterJoiner sj;
+
+    Expression exp;
 
     /**
      * Creates a new join statement with the specified joiner type.
      *
      * @param context  file and line number this statement corresponds to
-     * @param splitter type of splitter for this stream
      */
-    public StmtJoin(FENode context, SplitterJoiner joiner)
+    public StmtJoin(FENode context, Expression e)
     {
         super(context);
-        sj = joiner;
+        exp = e;
     }
 
     /**
      * Creates a new join statement with the specified joiner type.
      *
      * @param context  file and line number this statement corresponds to
-     * @param splitter type of splitter for this stream
      * @deprecated
      */
-    public StmtJoin(FEContext context, SplitterJoiner joiner)
+    public StmtJoin(FEContext context)
     {
         super(context);
-        sj = joiner;
     }
 
-    /**
-     * Returns the joiner type for this.
-     *
-     * @return the joiner object
-     */
-    public SplitterJoiner getJoiner()
-    {
-        return sj;
-    }
+
 
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
@@ -76,16 +66,13 @@ public class StmtJoin extends Statement
     {
         if (!(other instanceof StmtJoin))
             return false;
-        return ((StmtJoin)other).sj.equals(sj);
+        return true;
     }
 
-    public int hashCode()
-    {
-        return sj.hashCode();
-    }
+
 
     public String toString()
     {
-        return "join " + sj;
+        return "join " + exp;
     }
 }

@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -28,11 +29,31 @@ public class RemoveDumbArrays extends FEReplacer {
                     Integer ln = ta.getLength().getIValue();
                     Expression init = svd.getInit(i);
                     if (ln != null && (init == null || init instanceof ExprArrayInit)) {
+                        if (init != null) {
+                            ExprArrayInit eai = (ExprArrayInit) init;
+                            if (eai.getElements().size() != ln) {
+                                continue;
+                            }
+                        }
                         dumbArr.put(svd.getName(i), ln);
                     }
                 }
             }
             return super.visitStmtVarDecl(svd);
+        }
+
+        public Object visitStmtAssign(StmtAssign sa) {
+            if (sa.getLHS() instanceof ExprVar && sa.getRHS() instanceof ExprArrayInit) {
+                String name = sa.getLHS().toString();
+                if (dumbArr.containsKey(name)) {
+                    if (dumbArr.get(name) == ((ExprArrayInit) sa.getRHS()).getElements().size())
+                    {
+                        sa.getRHS().accept(this);
+                        return sa;
+                    }
+                }
+            }
+            return super.visitStmtAssign(sa);
         }
 
         @Override
@@ -56,6 +77,7 @@ public class RemoveDumbArrays extends FEReplacer {
                 return super.visitExprArrayRange(ear);
             }
         }
+
 
         public Object visitExprVar(ExprVar ev) {
             if (dumbArr.containsKey(ev.getName())) {
@@ -120,6 +142,26 @@ public class RemoveDumbArrays extends FEReplacer {
         return new StmtVarDecl(stmt, newTypes, newNames, newInits);
     }
 
+    public Object visitStmtAssign(StmtAssign stmt)
+    {
+        String base = stmt.getLHS().toString();
+        if(fda.dumbArr.containsKey(base)){
+            int N = fda.dumbArr.get(base);
+            Expression newRHS = doExpression(stmt.getRHS());
+            assert newRHS instanceof ExprArrayInit;
+            ExprArrayInit eai = (ExprArrayInit) newRHS;
+            for(int i=0; i<N; ++i){
+                addStatement(new StmtAssign(stmt, new ExprVar(stmt.getLHS(), base + "_" +
+                        i), eai.getElements().get(i),
+                              stmt.getOp()));
+            }
+            return null;
+        }else{
+            return super.visitStmtAssign(stmt);
+        }
+        
+    }
+
 
     public Object visitExprArrayRange(ExprArrayRange ear) {
         if (ear.getBase() instanceof ExprVar) {
@@ -128,7 +170,7 @@ public class RemoveDumbArrays extends FEReplacer {
                 return new ExprVar(ear, base + "_" + ear.getOffset());
             }
         }
-        return ear;
+        return super.visitExprArrayRange(ear);
     }
 
 }

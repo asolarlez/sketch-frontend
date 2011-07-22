@@ -385,7 +385,7 @@ public class SNodesToC extends NodesToJava {
 
 	public Object visitStreamSpec(StreamSpec spec){
 		String result = "";
-		ss = spec;
+        nres.setPackage(spec);
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
             Function oldFunc = (Function)iter.next();            
@@ -398,8 +398,8 @@ public class SNodesToC extends NodesToJava {
     {
 		curFunctionReturnsArray=(func.getReturnType() instanceof TypeArray);
         String result = indent ;
-        if (!func.getName().equals(ss.getName()))
-            result += convertType(func.getReturnType(),true) + " ";
+
+        result += convertType(func.getReturnType(), true) + " ";
         result += func.getName();
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";

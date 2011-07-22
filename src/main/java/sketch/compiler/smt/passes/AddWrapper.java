@@ -33,7 +33,7 @@ public class AddWrapper extends FEReplacer {
 	public Object visitFunction(Function func) {
 		String specName = func.getSpecification();
 		if (specName != null) {
-			Function spec = getFuncNamed(specName);
+            Function spec = nres.getFun(specName);
 			Function sketch = func;
 			
 			Function mainWrapper = createWrapper(sketch, spec, sketch);

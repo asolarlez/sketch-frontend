@@ -89,6 +89,7 @@ tokens {
     // Compiler directives:
     "include";
     "pragma";
+    "package";
 }
 
 ARROW :	"->" ;

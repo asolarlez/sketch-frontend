@@ -20,15 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamCreator;
-import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -39,13 +31,9 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link
@@ -58,21 +46,9 @@ import sketch.compiler.passes.streamit_old.SJWeightedRR;
  */
 public class NodesToJava extends SymbolTableVisitor
 {
-    protected StreamSpec ss;
     protected Type ctype;
 
-    /**
-	 * @param ss The ss to set.
-	 */
-	public void setSs(StreamSpec ss) {
-		this.ss = ss;
-	}
-	/**
-	 * @return Returns the ss.
-	 */
-	public StreamSpec getSs() {
-		return ss;
-	}
+
 
 	/**
 	 * Whether or not to annotate every line with "//<sourcefile>:<sourceline>"
@@ -92,7 +68,6 @@ public class NodesToJava extends SymbolTableVisitor
     public NodesToJava(boolean libraryFormat, TempVarGen varGen, boolean printSourceLines)
     {
     	super(null);
-        this.ss = null;
         this.indent = "";
         this.libraryFormat = libraryFormat;
         this.varGen = varGen;
@@ -280,8 +255,7 @@ public class NodesToJava extends SymbolTableVisitor
     public String doAssignment(Expression lhs, Expression rhs,
                                SymbolTable symtab)
     {
-        GetExprType eType = new GetExprType(symtab,
-                                            new java.util.HashMap());
+        GetExprType eType = new GetExprType(symtab, nres);
         Type lhsType = (Type)lhs.accept(eType);
         // Might want to special-case structures and arrays;
         // ignore for now.
@@ -406,7 +380,7 @@ public class NodesToJava extends SymbolTableVisitor
 	String result;
         String name = exp.getName();
         // Local function?
-        if (ss.getFuncNamed(name) != null) {
+        if (nres.getFun(name) != null) {
             result = name + "(";
         }
 	// look for print and println statements; assume everything
@@ -514,8 +488,8 @@ public class NodesToJava extends SymbolTableVisitor
         symtab = new SymbolTable(symtab);
 
         String result = indent + "public ";
-        if (!func.getName().equals(ss.getName()))
-            result += convertType(func.getReturnType()) + " ";
+
+        result += convertType(func.getReturnType()) + " ";
         result += func.getName();
         String prefix = null;
         
@@ -548,12 +522,7 @@ public class NodesToJava extends SymbolTableVisitor
         // Nothing special here either.  Just accumulate all of the
         // structures and streams.
         String result = "";
-        for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-        {
-            TypeStruct struct = (TypeStruct)iter.next();
-            result += outputStructure(struct);
-            structsByName.put(struct.getName(), struct);
-        }
+        nres = new NameResolver(prog);
         for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
             result += (String)((StreamSpec)iter.next()).accept(this);
         return result;
@@ -594,41 +563,7 @@ public class NodesToJava extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitSJDuplicate(SJDuplicate sj)
-    {
-    	switch(sj.getType()){
-    		case SJDuplicate.DUP:
-    			return "DUPLICATE()";
-    		case SJDuplicate.XOR:
-    			return "XOR()";
-    		case SJDuplicate.OR:
-    			return "OR()";
-    		case SJDuplicate.AND:
-    			return "AND()";
-    		default:
-    			return "DUPLICATE()";
-    	}
-    }
 
-    public Object visitSJRoundRobin(SJRoundRobin sj)
-    {
-        return "ROUND_ROBIN(" + (String)sj.getWeight().accept(this) + ")";
-    }
-
-    public Object visitSJWeightedRR(SJWeightedRR sj)
-    {
-        String result = "WEIGHTED_ROUND_ROBIN(";
-        boolean first = true;
-        for (Iterator iter = sj.getWeights().iterator(); iter.hasNext(); )
-        {
-            Expression weight = (Expression)iter.next();
-            if (!first) result += ", ";
-            result += (String)weight.accept(this);
-            first = false;
-        }
-        result += ")";
-        return result;
-    }
 
     public Object doStreamCreator(String how, StreamCreator sc)
     {
@@ -788,11 +723,6 @@ public class NodesToJava extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitStmtJoin(StmtJoin stmt)
-    {
-        assert stmt.getJoiner() != null;
-        return "setJoiner(" + (String)stmt.getJoiner().accept(this) + ")";
-    }
 
     public Object visitStmtLoop(StmtLoop stmt)
     {
@@ -851,8 +781,12 @@ public class NodesToJava extends SymbolTableVisitor
         String result = "";
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
-        StreamSpec oldSS = ss;
-        ss = spec;
+        nres.setPackage(spec);
+
+        for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
+            TypeStruct struct = (TypeStruct) iter.next();
+            result += outputStructure(struct);
+        }
 
         // Output field definitions:
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -868,7 +802,6 @@ public class NodesToJava extends SymbolTableVisitor
             result += (String)((func).accept(this));
         }
 
-        ss = oldSS;
         unIndent();
         result += "}\n";
         return result;

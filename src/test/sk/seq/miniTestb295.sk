@@ -1,0 +1,18 @@
+include "miniTestb295a.skh";
+
+
+struct F{
+    int q;
+}
+
+
+harness void main( int v){
+    F tt = new F();
+    tt.q = v;
+    Big t = new Big();
+    init(t);
+    setV(t, v);
+    assert v == getV(t);
+    assert tt.q == getV(t);
+    
+}

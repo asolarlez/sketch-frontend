@@ -336,11 +336,15 @@ public class Function extends FENode {
         return s;
     }
 
-    public String toString() {
+    public String getSummary() {
         final String impl = fImplements != null ? " implements " + fImplements : "";
         return new ScRichString(" ").joinNonempty(fcnInfo.solveType.cCodeName,
                 fcnInfo.cudaType.cCodeName,
                 fcnInfo.fcnType.cCodeName, returnType, name, "(" + printParams() + ")", impl);
+    }
+
+    public String toString() {
+        return getSummary();
     }
 
     public Function makeStencil() {

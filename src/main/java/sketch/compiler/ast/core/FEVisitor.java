@@ -31,9 +31,6 @@ import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * Visitor interface for StreamIt front-end nodes.  This class
@@ -79,9 +76,6 @@ public interface FEVisitor
     
     public Object visitProgram(Program prog);    
     public Object visitSCSimple(SCSimple creator);
-    public Object visitSJDuplicate(SJDuplicate sj);
-    public Object visitSJRoundRobin(SJRoundRobin sj);
-    public Object visitSJWeightedRR(SJWeightedRR sj);
     public Object visitStmtAdd(StmtAdd stmt);
     public Object visitStmtAssign(StmtAssign stmt);
     public Object visitStmtAtomicBlock(StmtAtomicBlock stmt);

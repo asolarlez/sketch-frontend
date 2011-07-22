@@ -45,7 +45,7 @@ public class ProduceSMTStencilCode extends ProduceSMTCode {
 	@Override
 	public Object visitExprFunCall(ExprFunCall exp) {
 		
-		Function fun = super.ss.getFuncNamed(exp.getName());
+        Function fun = nres.getFun(exp.getName());
 		String funName = fun.getName();
 		if (fun.isUninterp()) {
 

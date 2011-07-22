@@ -28,7 +28,7 @@ public class ReplaceSketchesWithSpecs extends FEReplacer {
     {       
         String name = exp.getName();
         // Local function?
-        Function fun = ss.getFuncNamed(name);
+        Function fun = nres.getFun(name);
         if(fun.getSpecification()!= null){
             List<Expression> newParams = new ArrayList<Expression>();
             for (Iterator<Expression> iter = exp.getParams().iterator(); iter.hasNext(); )

@@ -1,0 +1,18 @@
+harness void test(int a, int b, int c){
+    int[3] ar={a, b, c};
+    int t;
+    if(??){
+       t=b; 
+    }else{
+        t=ar[??];
+    }
+    assert t == c;
+    
+    int q;
+    if(??){
+        q=a;
+    }else{
+        q=ar[??];
+    }
+    assert q == c;
+}

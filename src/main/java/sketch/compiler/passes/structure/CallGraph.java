@@ -33,8 +33,8 @@ public class CallGraph extends FEReplacer {
     /** functions in which the call is made */
     protected final TypedHashMap<ExprFunCall, Function> fcnCallEnclosing =
             new TypedHashMap<ExprFunCall, Function>();
-    protected final TypedHashMap<String, Function> fcnDefs =
-            new TypedHashMap<String, Function>();
+    // protected final TypedHashMap<String, Function> fcnDefs =
+    // new TypedHashMap<String, Function>();
     protected final TypedHashMap<Function, Function> sketchOfSpec =
             new TypedHashMap<Function, Function>();
 
@@ -78,10 +78,10 @@ public class CallGraph extends FEReplacer {
 
     @Override
     public Object visitFunction(Function func) {
-        final Function putResult = fcnDefs.put(func.getName(), func);
-        assert putResult == null;
-        allFcns.add(func);
+        // final Function putResult = fcnDefs.put(func.getName(), func);
+
         enclosing = func;
+        allFcns.add(func);
         return super.visitFunction(func);
     }
 
@@ -90,11 +90,11 @@ public class CallGraph extends FEReplacer {
     }
 
     public Function getTarget(ExprFunCall call) {
-        return nonnull(fcnDefs.get(call.getName()));
+        return nonnull(nres.getFun(call.getName()));
     }
 
     public Function getByName(String name) {
-        return nonnull(fcnDefs.get(name));
+        return nonnull(nres.getFun(name));
     }
 
     public Function getSketchOfSpec(Function spec) {
@@ -110,7 +110,7 @@ public class CallGraph extends FEReplacer {
             final Function caller = ent.getValue();
             final String name = ent.getKey().getName();
             final Function target =
-                    nonnull(fcnDefs.get(name), "Unknown function \"" + name + "\" called");
+                    nonnull(nres.getFun(name), "Unknown function \"" + name + "\" called");
             edges.add(new CallEdge(caller, target));
         }
 
@@ -123,7 +123,7 @@ public class CallGraph extends FEReplacer {
         }
 
         // compute sketch relations
-        for (Function ent : fcnDefs.values()) {
+        for (Function ent : allFcns) {
             if (ent.getSpecification() != null) {
                 sketchOfSpec.put(getByName(ent.getSpecification()), ent);
             }

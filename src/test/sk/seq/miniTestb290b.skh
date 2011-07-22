@@ -1,0 +1,9 @@
+package BOO_MOO;
+
+int moo(int y){
+    return y;
+}
+
+generator int boo(int x, int y){
+    return ?? * x + ?? * y;
+}

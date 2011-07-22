@@ -31,7 +31,6 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
 
 
 class FindModifiedVarsInPloops extends FEReplacer {
@@ -181,7 +180,8 @@ public class Preprocessor extends FEReplacer {
     	cmp = new ExprBinary(ivar, "<", niter);
     	incr = new StmtAssign(ivar, new ExprBinary(ivar, "+", new ExprConstInt(1)));
     	List<Statement> joinBody =
-    		Collections.singletonList ((Statement) new StmtJoin (cx, new SJRoundRobin (cx, new ExprVar (cx, ivname))));
+                Collections.singletonList((Statement) new StmtJoin(cx, new ExprVar(cx,
+                        ivname)));
     	StmtFor joinLoop = new StmtFor (cx, ndecl, cmp, incr, new StmtBlock (cx, joinBody));
 
     	addStatement (spawnLoop);
@@ -223,8 +223,7 @@ public class Preprocessor extends FEReplacer {
 	public Object visitStreamSpec(StreamSpec spec){
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
-        StreamSpec oldSS = sspec;
-        sspec = spec;
+        nres.setPackage(spec);
 
         List<FieldDecl> newVars = new ArrayList<FieldDecl>();
         List<Function> newFuncs = new ArrayList<Function>();
@@ -260,12 +259,10 @@ public class Preprocessor extends FEReplacer {
         }
         changed |= generatedFuncs.size () > 0;
         newFuncs.addAll(generatedFuncs);
-        sspec = oldSS;
+
         if (!changed)
             return spec;
-        return new StreamSpec(spec, spec.getType(),
- spec.getName(), spec.getParams(),
-                              newVars, newFuncs);
+        return new StreamSpec(spec, spec.getName(), spec.getStructs(), newVars, newFuncs);
 
     }
 

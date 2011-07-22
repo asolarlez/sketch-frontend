@@ -270,7 +270,7 @@ public class RegularizeTypesByTypeCheck extends SymbolTableVisitor {
 	
 	@Override
 	public Object visitExprFunCall(ExprFunCall exp) {
-		Function f = sspec.getFuncNamed(exp.getName());
+        Function f = nres.getFun(exp.getName());
 		
 		Iterator<Parameter> paramIter = f.getParams().iterator();
 		List<Expression> args = new LinkedList<Expression>();

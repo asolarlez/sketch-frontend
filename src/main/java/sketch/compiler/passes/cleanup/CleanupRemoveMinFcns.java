@@ -32,8 +32,8 @@ public class CleanupRemoveMinFcns extends FEReplacer {
                         return (Function) ((isMinFcn) ? null : result);
                     }
                 });
-        return new StreamSpec(spec, spec.getType(), spec.getName(),
-                spec.getParams(), spec.getVars(), newFcns);
+        return new StreamSpec(spec, spec.getName(),
+                spec.getStructs(), spec.getVars(), newFcns);
     }
 
     @Override

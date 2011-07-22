@@ -1,0 +1,9 @@
+include "miniTestb290a.skh";
+include "miniTestb290b.skh";
+
+
+
+harness void test(int a, int b){
+    int x = foo(a) + moo(b) + boo(a,b);
+    assert x == a + b + a;
+}

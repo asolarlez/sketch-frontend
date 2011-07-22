@@ -170,7 +170,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 	public Object visitExprFunCall(ExprFunCall exp) {
 		String name = exp.getName();
 		// Local function?
-		Function fun = super.ss.getFuncNamed(name);
+        Function fun = nres.getFun(name);
 		
 		if (fun != null) {
 			assert !fun.isUninterp() : "fun calls to uninterpreted functions are not supported yet.";
@@ -437,7 +437,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
 
 		@Override
 		public Object visitExprFunCall(ExprFunCall exp) {
-			Function f = super.sspec.getFuncNamed(exp.getName());
+            Function f = nres.getFun(exp.getName());
 			if (f.isUninterp() && !resultFunc.contains(f)) {
 				resultFunc.add(f);
 			}

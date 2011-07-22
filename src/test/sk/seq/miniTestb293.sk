@@ -1,0 +1,12 @@
+include "miniTestb293a.skh";
+
+
+int boo(int x, int y, fun f){
+    return ?? * f(x) + ?? * f(y);
+}
+
+
+harness void test(int a, int b){
+    int x = foo(a) + moo(b) + boo(a,b, foo);
+    assert x == a + b + a;
+}

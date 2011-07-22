@@ -27,9 +27,6 @@ import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * typed version of null visitor.
@@ -170,17 +167,6 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, creator);
     }
 
-    public T visitSJDuplicate(SJDuplicate sj) {
-        throw new FEVisitorException(this, sj);
-    }
-
-    public T visitSJRoundRobin(SJRoundRobin sj) {
-        throw new FEVisitorException(this, sj);
-    }
-
-    public T visitSJWeightedRR(SJWeightedRR sj) {
-        throw new FEVisitorException(this, sj);
-    }
 
     public T visitStmtAdd(StmtAdd stmt) {
         throw new FEVisitorException(this, stmt);

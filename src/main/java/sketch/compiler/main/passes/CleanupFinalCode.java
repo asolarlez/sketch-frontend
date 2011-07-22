@@ -13,7 +13,6 @@ import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.cleanup.RemoveDumbArrays;
 import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 
 /**
  * Substitute a solution into a program, and simplify the program.
@@ -45,7 +44,7 @@ public class CleanupFinalCode extends MetaStage {
         prog = (Program) prog.accept(new EliminateTransAssns());
         prog = (Program) prog.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
         prog = (Program) prog.accept(new RemoveDumbArrays());
-        prog.accept(new SimpleCodePrinter());
+
         prog = (Program) prog.accept(new EliminateTransAssns());
         prog = (Program) prog.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
         prog = (Program) prog.accept(new SimplifyVarNames());

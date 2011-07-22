@@ -1,0 +1,35 @@
+package BOO;
+
+struct F{
+	int x;
+	int y;
+}
+
+struct Big{
+	F f;
+}
+
+void init(Big pthis){
+	pthis.f = new F();
+}
+
+int getV(Big pthis){
+	return pthis.f.x;
+}
+
+
+void setV(Big pthis, int v){
+	pthis.f.x = v;
+}
+
+
+
+int getX(F pthis){
+	return pthis.x;
+} 
+
+void setX(F pthis, int v){
+	pthis.x = v;
+}
+
+

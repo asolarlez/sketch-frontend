@@ -46,10 +46,8 @@ public class ParseProgramStage extends MetaStage {
             List<TypeStruct> newStructs = new java.util.ArrayList<TypeStruct>();
             newStreams.addAll(prog.getStreams());
             newStreams.addAll(pprog.getStreams());
-            newStructs.addAll(prog.getStructs());
-            newStructs.addAll(pprog.getStructs());
             pragmas.addAll(parser.getDirectives());
-            prog = prog.creator().streams(newStreams).structs(newStructs).create();
+            prog = prog.creator().streams(newStreams).create();
         }
         return prog.creator().directives(pragmas).create();
     }

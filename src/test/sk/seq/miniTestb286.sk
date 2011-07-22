@@ -1,4 +1,4 @@
-pragma options "--debug-show-phase parse --bnd-inline-amnt 5";
+pragma options "--debug-show-phase parse --bnd-inline-amnt 5 --bnd-inbits 3";
 
 generator int choseOp(int a, int b){
     if(??){ return a + b; }

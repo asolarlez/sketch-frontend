@@ -320,11 +320,16 @@ public class NodesToC extends NodesToJava {
 
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-
+        nres.setPackage(spec);
 
 		String result = "";
-		ss = spec;
+
         
+        for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
+            TypeStruct struct = (TypeStruct) iter.next();
+            result += outputStructure(struct);
+        }
+
 		for(FieldDecl v : spec.getVars()){
 		    result += v.accept(this);
         }
@@ -360,8 +365,8 @@ public class NodesToC extends NodesToJava {
         symtab = new SymbolTable(symtab);
 
         String result = indent ;
-        if (ss == null || !func.getName().equals(ss.getName()))
-            result += convertType(func.getReturnType()) + " ";
+
+        result += convertType(func.getReturnType()) + " ";
         result += escapeCName(func.getName());
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";

@@ -66,6 +66,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
         super.visitStreamSpec(spec);
 
         final CallReplacer cr = new CallReplacer(symtab);
+        cr.setNres(nres);
         return cr.visitStreamSpec(spec);
     }
 

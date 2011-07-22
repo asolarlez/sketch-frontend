@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
@@ -79,8 +80,8 @@ public class ReplaceMinLoops extends FEReplacer {
 
     @Override
     public Object visitStreamSpec(StreamSpec spec) {
-        spec = (StreamSpec) (new LoopReplacer()).visitStreamSpec(spec);
-
+        spec = (StreamSpec) (new LoopReplacer(nres)).visitStreamSpec(spec);
+        nres.setPackage(spec);
         if (glblvars.isEmpty()) {
             // don't do anything if there weren't any global functions
             return spec;
@@ -99,8 +100,7 @@ public class ReplaceMinLoops extends FEReplacer {
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         fcns.add(getMinimizeFcn());
 
-        return new StreamSpec(spec, spec.getType(), spec.getName(),
-                spec.getParams(), vars, fcns);
+        return new StreamSpec(spec, spec.getName(), spec.getStructs(), vars, fcns);
     }
 
     @Override
@@ -146,6 +146,11 @@ public class ReplaceMinLoops extends FEReplacer {
     }
 
     public class LoopReplacer extends FEReplacer {
+
+        LoopReplacer(NameResolver nres) {
+            this.nres = nres;
+        }
+
         @Override
         public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) {
             if (firstMinStmt == null) {

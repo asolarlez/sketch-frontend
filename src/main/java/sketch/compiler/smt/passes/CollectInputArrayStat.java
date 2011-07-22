@@ -66,7 +66,7 @@ public class CollectInputArrayStat extends PartialEvaluator {
 	public Object visitExprFunCall(ExprFunCall exp) {
 		String name = exp.getName();
 		// Local function?
-		Function fun = ss.getFuncNamed(name);
+        Function fun = nres.getFun(name);
 		if (fun.getSpecification() != null) {
 			assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
 		}

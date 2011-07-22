@@ -84,25 +84,24 @@ public class AdvancedRControl extends RecursionControl {
 	private class PopFunMap extends FEReplacer{
 		String currentFun;
 		int currentCalls;
-		StreamSpec ss;
 		PopFunMap(){
 			funmap = new HashMap<String, FunInfo>();
 		}
-		 public Object visitStreamSpec(StreamSpec spec){
-			 ss = spec;
+
+        public Object visitStreamSpec(StreamSpec spec) {
 			 return super.visitStreamSpec(spec);
 		 }
 		public Object visitFunction(Function func){
 			String altName = null;
 			if(func.getSpecification() != null){
 				altName = func.getName();
-				Function tmp = ss.getFuncNamed(func.getSpecification());
+                Function tmp = nres.getFun(func.getSpecification());
 				if(tmp == null){					
 					throw new RuntimeException("The function " + func.getSpecification() + " does not exist.\n\t" + func);
 				}
 				func = tmp; 
 			}
-			currentFun = func.getName();
+            currentFun = nres.getFunName(func.getName());
 			currentCalls = 0;
 			Object obj = super.visitFunction(func);
 			FunInfo fin = new FunInfo(currentCalls==0);
@@ -143,7 +142,7 @@ public class AdvancedRControl extends RecursionControl {
 	    }
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {
-            String func = exp.getName();
+            String func = nres.getFunName(exp.getName());
             assert null != funmap.get(func) : "unknown function '" + func +
                     "'; known functions: " + new ScRichString(", ").join(funmap.keySet());
 			if( !(funmap.get(func).isTerminal )){
@@ -153,7 +152,7 @@ public class AdvancedRControl extends RecursionControl {
 				forbiddenCalls = true;
 			}
 			//System.out.println("Finished testing bf =" + bfactor);
-			FunInfo fi = funmap.get(exp.getName());
+            FunInfo fi = funmap.get(nres.getFunName(exp.getName()));
 			callsContained += exp.getName() +"(" + fi.rdepth  + ")"+ ", ";
 			return exp;
 	    }
@@ -202,14 +201,14 @@ public class AdvancedRControl extends RecursionControl {
 	int tt = 0; //DEBUGGING INFO
 	@Override
 	public int inlineLevel(ExprFunCall fun) {
-		FunInfo fi = funmap.get(fun.getName());
+        FunInfo fi = funmap.get(fun.getName());
 		return fi.rdepth;		
 	}
 
 	@Override
 	public void popFunCall(ExprFunCall fun) {
 		strack.popCall(fun);
-		FunInfo fi = funmap.get(fun.getName());
+        FunInfo fi = funmap.get(nres.getFunName(fun.getName()));
 		fi.rdepth--;
 		--tt;
 	}
@@ -220,7 +219,7 @@ public class AdvancedRControl extends RecursionControl {
 
 	public void pushFunCall(ExprFunCall fc, Function fun) {
 		strack.pushCall(fc);
-		FunInfo fi = funmap.get(fc.getName());
+        FunInfo fi = funmap.get(nres.getFunName(fc.getName()));
 		if( tracing && ! fi.isTerminal ){
 			for(int i=0; i<tt; ++i) System.out.print("  "); //DEBUGGING INFO
 			System.out.println(fc.getName() + "   " +  this.bfStack.peek()  /*+ "  "  +  fc.hashCode() + "  " + fc*/); //DEBUGGING INFO
@@ -243,6 +242,7 @@ public class AdvancedRControl extends RecursionControl {
 		 * function calls that will surpass their max iteration depth.
 		 */		
 		CheckBFandCalls check = new CheckBFandCalls();
+        check.setNres(nres);
 		stmt.accept(check);
 		if( ! check.forbiddenCalls ){
 			/*
@@ -275,7 +275,7 @@ public class AdvancedRControl extends RecursionControl {
 
 
 	public boolean testCall(ExprFunCall fc) {
-		FunInfo fi = funmap.get(fc.getName());	
+        FunInfo fi = funmap.get(nres.getFunName(fc.getName()));
 		/*
 		if(tracing){
 			System.out.print("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);

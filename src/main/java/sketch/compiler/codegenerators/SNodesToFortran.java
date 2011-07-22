@@ -25,9 +25,6 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
 
 /**
  * FORTRAN 77 code generator.
@@ -637,17 +634,6 @@ public class SNodesToFortran extends FENullVisitor {
 	    throw new IllegalStateException();
     }
 
-	public Object visitSJDuplicate(SJDuplicate sj) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitSJRoundRobin(SJRoundRobin sj) {
-	    throw new IllegalStateException();
-    }
-
-	public Object visitSJWeightedRR(SJWeightedRR sj) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitStmtAdd(StmtAdd stmt) {
 	    throw new IllegalStateException();

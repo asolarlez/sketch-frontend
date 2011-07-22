@@ -7,7 +7,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -57,7 +59,6 @@ class CloneHoles extends FEReplacer{
 }
 
 public class PartialEvaluator extends FEReplacer {
-    public StreamSpec ss;
     protected MethodState state;
     protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
@@ -107,7 +108,7 @@ public class PartialEvaluator extends FEReplacer {
     protected void report(boolean t, String s) {
         if(!t){
             System.err.println(s);
-            System.err.println( ss );
+            System.err.println(nres.curPkg().getCx());
             throw new RuntimeException(s);
         }
     }
@@ -446,7 +447,7 @@ public class PartialEvaluator extends FEReplacer {
         List<abstractValue> avlist = new ArrayList<abstractValue>(exp.getParams().size());
         List<String> outNmList = new ArrayList<String>(exp.getParams().size());
         List<Expression> nparams = new ArrayList<Expression>(exp.getParams().size());
-        Function fun = ss.getFuncNamed(name);
+        Function fun = nres.getFun(name);
         assert fun != null : " The function " + name + " does not exist!! funcall: " + exp;
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         Map<String, Expression> pmap = new HashMap<String, Expression>();
@@ -1371,7 +1372,7 @@ public class PartialEvaluator extends FEReplacer {
 
     protected List<Function> functionsToAnalyze(StreamSpec spec){
         SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
-        return funSelector.selectFunctions(spec);
+        return funSelector.selectFunctions(spec, nres);
     }
 
 
@@ -1404,47 +1405,88 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
+    public Object visitProgram(Program p) {
+        // List<StreamSpec> nstr = new ArrayList<StreamSpec>();
+        nres = new NameResolver(p);
+        rcontrol.setNameRes(nres);
+        funcsToAnalyze = new ArrayList<Function>();
+        Map<Function, String> pkgForFun = new HashMap<Function, String>();
+        Map<String, StreamSpec> pkgs = new HashMap<String, StreamSpec>();
+        Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
+        for (StreamSpec pkg : p.getStreams()) {
+            nres.setPackage(pkg);
+            funcsToAnalyze.addAll(functionsToAnalyze(pkg));
+            if (pkgs.containsKey(pkg.getName())) {
+                throw new RuntimeException("Duplicate package name.");
+            }
+            pkgs.put(pkg.getName(), pkg);
+            newfuns.put(pkg.getName(), new ArrayList<Function>() );
+            for (Function f : pkg.getFuncs()) {
+                pkgForFun.put(f, pkg.getName());
+            }
+        }
+        if (funcsToAnalyze.size() == 0) {
+            System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
+        }
+
+        funcsAnalyzed = new HashSet<Function>();
+        if (funcsToAnalyze.size() == 0) {
+            System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
+        }
+        while (funcsToAnalyze.size() > 0) {
+            Function f = funcsToAnalyze.get(0);
+            String pkgName = pkgForFun.get(f);
+            nres.setPackage(pkgs.get(pkgName));
+            if (!funcsAnalyzed.contains(f)) {
+
+                if (!f.isUninterp()) {
+                    Function nstmt = (Function) f.accept(this);
+                    if (isReplacer) {
+                        newfuns.get(pkgName).add(nstmt);
+                    }
+                }
+                funcsAnalyzed.add(f);
+            }
+            Function tf = funcsToAnalyze.remove(0);
+            assert tf == f;
+        }
+
+        List<StreamSpec> newPkgs = new ArrayList<StreamSpec>();
+        for (StreamSpec pkg : p.getStreams()) {
+            StreamSpec newPkg = preprocPkg(pkg);
+            String pkgName = pkg.getName();
+            newfuns.get(pkgName).addAll(newPkg.getFuncs());
+            newPkgs.add(new StreamSpec(newPkg, pkgName, newPkg.getStructs(),
+                    newPkg.getVars(), newfuns.get(pkgName)));
+        }
+
+        return p.creator().streams(newPkgs).create();
+    }
 
 
-    public Object visitStreamSpec(StreamSpec spec)
-    {
-
+    public StreamSpec preprocPkg(StreamSpec spec)
+ {
         Level lvl = state.pushLevel("visitStreamSpec");
 
         // At this point we get to ignore wholesale the stream type, except
         // that we want to save it.
-        StreamSpec oldSS = ss;
-        ss = spec;
+        nres.setPackage(spec);
         // Output field definitions:
 
         List<FieldDecl> newVars = isReplacer ? new ArrayList<FieldDecl>() : null;
         List<Function> newFuncs = isReplacer ? new ArrayList<Function>() : null;
+
+        List<TypeStruct> newStructs = new ArrayList<TypeStruct>();
+        for (TypeStruct tsOrig : spec.getStructs()) {
+            TypeStruct ts = (TypeStruct) tsOrig.accept(this);
+            newStructs.add(ts);
+        }
 
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
         {
             FieldDecl varDecl = (FieldDecl)iter.next();
             FieldDecl nstmt = (FieldDecl)varDecl.accept(this);
             if( isReplacer ){ newVars.add(nstmt); }
-        }
-
-        funcsToAnalyze = this.functionsToAnalyze(spec);
-        assert funcsToAnalyze != spec.getFuncs() :" Functions to analyze shouldn't return spec.getFuncs(). It may return a copy.";
-        funcsAnalyzed = new HashSet<Function>();
-        if(funcsToAnalyze.size() == 0){
-            System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
-        }
-        while(funcsToAnalyze.size() > 0){
-            Function f = funcsToAnalyze.get(0);
-            if( ! funcsAnalyzed.contains(f) ){
-
-                if( ! f.getName().equals("init") &&  !f.isUninterp()){
-                    Function nstmt =  (Function)f.accept(this);
-                    if( isReplacer ){ newFuncs.add(nstmt); }
-                }
-                funcsAnalyzed.add(f);
-            }
-            Function tf = funcsToAnalyze.remove(0);
-            assert tf == f;
         }
 
         for(Function sf : spec.getFuncs()){
@@ -1454,15 +1496,13 @@ public class PartialEvaluator extends FEReplacer {
         }
 
 
-        ss = oldSS;
 
         state.popLevel(lvl);
 
 
         //assert preFil.size() == 0 : "This should never happen";
 
-        return isReplacer? new StreamSpec(spec, spec.getType(),
-                spec.getName(), spec.getParams(),
+        return isReplacer ? new StreamSpec(spec, spec.getName(), newStructs,
                 newVars, newFuncs) : spec;
     }
 

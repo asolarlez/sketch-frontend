@@ -11,6 +11,8 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
@@ -42,7 +44,10 @@ public class RemoveShallowTempVars extends FEReplacer {
         }
         
         public Object visitExprArrayRange(ExprArrayRange ear){
-            isSimple = false;
+            RangeLen rl = ear.getSelection();
+            if (rl.hasLen() || !(rl.start() instanceof ExprConstInt)) {
+                isSimple = false;
+            }
             return super.visitExprArrayRange(ear);
         }
         public Object visitExprArrayInit(ExprArrayInit eai){
@@ -96,7 +101,7 @@ public class RemoveShallowTempVars extends FEReplacer {
         }
         
         public Object visitExprFunCall(ExprFunCall efc){            
-            Function f = RemoveShallowTempVars.this.getFuncNamed(efc.getName());
+            Function f = RemoveShallowTempVars.this.nres.getFun(efc.getName());
             Iterator<Parameter> piter = f.getParams().iterator();
             
             for(Expression fp : efc.getParams()){

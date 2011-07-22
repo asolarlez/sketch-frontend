@@ -10,7 +10,9 @@ import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -175,22 +177,42 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return Collections.EMPTY_LIST;
 	}
 
-	public Object visitStreamSpec(StreamSpec spec) {
-		// before we continue, we must add parameters to all the functions
-		List<Function> funs=new ArrayList<Function>();
-		for(Function fun: (List<Function>)spec.getFuncs()) {
-			Type retType=fun.getReturnType();
-			List<Parameter> params=new ArrayList<Parameter>(fun.getParams());
-			if(!retType.equals(TypePrimitive.voidtype)){
-				params.add(new Parameter(retType,getOutParamName(),Parameter.OUT));
-			}
-			funs.add(fun.creator().params(params).create());
-		}
-        spec =
-                new StreamSpec(spec, spec.getType(), spec.getName(), spec.getParams(),
-                        spec.getVars(), funs);
-		return super.visitStreamSpec(spec);
-	}
+    public Object visitProgram(Program prog) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        nres = new NameResolver();
+
+        List<StreamSpec> oldStreams = new ArrayList<StreamSpec>();
+        for (StreamSpec spec : prog.getStreams()) {
+            List<Function> funs = new ArrayList<Function>();
+            for (Function fun : (List<Function>) spec.getFuncs()) {
+                Type retType = fun.getReturnType();
+                List<Parameter> params = new ArrayList<Parameter>(fun.getParams());
+                if (!retType.equals(TypePrimitive.voidtype)) {
+                    params.add(new Parameter(retType, getOutParamName(), Parameter.OUT));
+                }
+                funs.add(fun.creator().params(params).create());
+            }
+
+            StreamSpec tpkg =
+                    new StreamSpec(spec, spec.getName(), spec.getStructs(),
+                            spec.getVars(), funs);
+            nres.populate(tpkg);
+            oldStreams.add(tpkg);
+
+        }
+
+        List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
+        for (StreamSpec ssOrig : oldStreams) {
+            newStreams.add((StreamSpec) ssOrig.accept(this));
+        }
+
+        Program o = prog.creator().streams(newStreams).create();
+
+        symtab = oldSymTab;
+        return o;
+    }
+
 
 
 	Set<String> currentRefParams = new HashSet<String>();
@@ -217,7 +239,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		currentFunction=null;
 
 		//if(func.getReturnType()==TypePrimitive.voidtype) return func;
-
+        paramCopyRes.setNres(nres);
 		func=(Function)func.accept(paramCopyRes);
 
 
@@ -273,7 +295,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		// resolve the function being called
 		Function fun;
 		try{
-            fun = symtab.lookupFn(exp.getName(), exp);
+            fun = nres.getFun(exp.getName(), exp);
 		}catch(UnrecognizedVariableException e){
             // FIXME -- restore error noise
             throw e;

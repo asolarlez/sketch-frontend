@@ -17,11 +17,11 @@
 package sketch.compiler.ast.core;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
  * Container class containing all of the state for a StreamIt stream
@@ -39,46 +39,43 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
  */
 public class StreamSpec extends FENode
 {
-    private int type;
-    private String name;
-    private List params;
-    private List<FieldDecl> vars;
-    private List<Function> funcs;
 
-    /** Stream type constant for a filter. */
-    public static final int STREAM_FILTER = 1;
-    /** Stream type constant for a pipeline. */
-    public static final int STREAM_PIPELINE = 2;
-    /** Stream type constant for a split-join. */
-    public static final int STREAM_SPLITJOIN = 3;
-    /** Stream type constant for a feedback loop. */
-    public static final int STREAM_FEEDBACKLOOP = 4;
-    /** Stream type constant for a table loop. */
-    public static final int STREAM_TABLE = 5;
+    private String name;
+    private final List<FieldDecl> vars;
+    private final List<Function> funcs;
+    private final List<TypeStruct> structs;
+
+    public String toString(){
+        String res = "package " + name + '\n';
+        for (TypeStruct ts : structs) {
+            res += "   struct " + ts.getName() + '\n';
+        }
+        for(Function f: funcs){
+            res += "   " + f.getSummary() + '\n';
+        }
+        return res;
+    }
 
     /**
-     * Creates a new stream specification given its name, a list of
-     * variables, and a list of functions.
-     *
-     * @param context  front-end context indicating file and line
-     *                 number for the specification
-     * @param type     STREAM_* constant indicating the type of
-     *                 stream object
-     * @param name     string name of the object
-     * @param params   list of <code>Parameter</code> that are formal
-     *                 parameters to the stream object
-     * @param vars     list of <code>StmtVarDecl</code> that are
-     *                 fields of a filter stream
-     * @param funcs    list of <code>Function</code> that are member
-     *                 functions of the stream object
+     * Creates a new stream specification given its name, a list of variables, and a list
+     * of functions.
+     * 
+     * @param context
+     *            front-end context indicating file and line number for the specification
+     * @param name
+     *            string name of the object
+     * @param vars
+     *            list of <code>StmtVarDecl</code> that are fields of a filter stream
+     * @param funcs
+     *            list of <code>Function</code> that are member functions of the stream
+     *            object
      */
-    public StreamSpec(FENode context, int type,
-                      String name, List params, List vars, List funcs)
+    public StreamSpec(FENode context, String name,
+            List<TypeStruct> structs, List vars, List funcs)
     {
         super(context);
-        this.type = type;
         this.name = name;
-        this.params = params;
+        this.structs = structs;
         this.vars = vars;
         this.funcs = funcs;
     }
@@ -100,45 +97,21 @@ public class StreamSpec extends FENode
      *                 functions of the stream object
      * @deprecated
      */
-    public StreamSpec(FEContext context, int type,
-                      String name, List params, List vars, List funcs)
+    public StreamSpec(FEContext context, String name,
+            List<TypeStruct> structs, List vars, List funcs)
     {
         super(context);
-        this.type = type;
+
         this.name = name;
-        this.params = params;
+
+        this.structs = structs;
         this.vars = vars;
         this.funcs = funcs;
     }
 
-    /**
-     * Returns the type of this, as one of the integer constants above.
-     *
-     * @return  integer type of the stream object
-     */
-    public int getType()
-    {
-        return type;
-    }
 
-    /**
-     * Returns the type of this, as a String (Pipeline, SplitJoin, FeedbackLoop, Filter).
-     *
-     * @return  String type of the stream object
-     */
-    public String getTypeString() {
-	switch(type) {
-	case STREAM_FILTER:
-	    return "Filter";
-	case STREAM_PIPELINE:
-	    return "Pipeline";
-	case STREAM_SPLITJOIN:
-	    return "SplitJoin";
-	case STREAM_FEEDBACKLOOP:
-	    return "FeedbackLoop";
-	}
-	return null;
-    }
+
+    
 
 
 
@@ -152,15 +125,7 @@ public class StreamSpec extends FENode
         return name;
     }
 
-    /**
-     * Returns the formal parameters of the stream object.
-     *
-     * @return  list of {@link Parameter}
-     */
-    public List getParams()
-    {
-        return params;
-    }
+
 
     /**
      * Returns the field variables declared in this, as a list of
@@ -185,24 +150,11 @@ public class StreamSpec extends FENode
     }
 
 
-    /**
-     * Returns the function with a given name contained in this, or
-     * null.  name should not be null.  If multiple functions are
-     * declared with the same name (probably an error), returns one
-     * arbitrarily.
-     *
-     * @return  function named name, or null
-     */
-    public Function getFuncNamed(String name)
-    {
-        for (Iterator iter = funcs.iterator(); iter.hasNext(); )
-        {
-            Function func = (Function)iter.next();
-            String fname = func.getName();
-            if (fname != null && fname.equals(name))
-                return func;
-        }
-        return null;
+
+
+    /** Returns the list of structures declared in this. */
+    public List<TypeStruct> getStructs() {
+        return structs;
     }
 
     /**
@@ -218,7 +170,13 @@ public class StreamSpec extends FENode
     }
 
     public StreamSpec newFromFcns(List<Function> fcns) {
-        return new StreamSpec(this, this.getType(), this.getName(),
-                this.getParams(), this.getVars(), Collections.unmodifiableList(fcns));
+        return new StreamSpec(this, this.getName(),
+                structs, this.getVars(), Collections.unmodifiableList(fcns));
+    }
+
+    public StreamSpec newFromFcns(List<Function> fcns, List<TypeStruct> structs) {
+        return new StreamSpec(this, this.getName(),
+                structs, this.getVars(),
+                Collections.unmodifiableList(fcns));
     }
 }

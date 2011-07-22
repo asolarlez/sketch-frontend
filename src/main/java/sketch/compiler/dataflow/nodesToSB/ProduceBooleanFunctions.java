@@ -7,7 +7,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -318,17 +318,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return func;
     }
     
-    
-    public Object visitStreamSpec(StreamSpec spec)
-    {  
-
-        Object tmp = super.visitStreamSpec(spec);
-
+    public Object visitProgram(Program p) {
+        Object o = super.visitProgram(p);
         for(SpecSketch s : assertions){
             ((NtsbVtype)this.vtype).out.println("assert " + s + ";");   
         }
-        return spec;
-        
+        return o;
     }
     
     
@@ -336,7 +331,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     {       
         String name = exp.getName();
         // Local function?
-        Function fun = ss.getFuncNamed(name);
+        Function fun = nres.getFun(name);
         if(fun.getSpecification()!= null){
             assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
         }

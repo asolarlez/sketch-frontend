@@ -37,7 +37,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 		}
 		public Object visitExprFunCall(ExprFunCall exp)
 	    {
-			Function fun = ss.getFuncNamed(exp.getName());
+            Function fun = nres.getFun(exp.getName());
 			assert fun != null : "Calling undefined function!!";
 			Object obj = super.visitExprFunCall(exp);
 			if(!visitedFunctions.contains(fun)){
@@ -311,7 +311,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 	public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;
-        Function fun = this.symtab.lookupFn(exp.getName(), exp);
+        Function fun = nres.getFun(exp.getName(), exp);
         List formals = fun.getParams();
         Iterator form = formals.iterator();
         List<Expression> newParams = new ArrayList<Expression>();

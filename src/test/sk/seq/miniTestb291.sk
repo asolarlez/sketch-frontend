@@ -1,0 +1,18 @@
+
+generator int foo(int x){
+    return x + x;
+}
+
+
+generator int apply(fun f, int x){
+    return f(x);
+}
+
+generator int moo(fun f, fun g, int x){
+    return f(g, x);
+}
+
+harness void test(int x){
+    int t = moo(apply, foo, x);
+    assert t == x + x;
+}

@@ -423,13 +423,15 @@ public class SequentialSketchMain extends CommonSketchMain
         if (replaceConstants) {
             prog = (Program) prog.accept(new ConstantReplacer(null));
         }
+
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
 
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
-        dump(prog);
+
         prog = preprocessProgram(prog, replaceConstants); // perform prereq
-        dump(prog); // transformations
+        // dump(prog, "AFTER PARSE");
+        // transformations
 		//prog.accept(new SimpleCodePrinter());
 		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
 		// if (!SemanticChecker.check(prog))

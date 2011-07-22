@@ -14,4 +14,8 @@ public class TypeFunction extends Type {
         return null;
     }
 
+    public String toString() {
+        return "fun";
+    }
+
 }

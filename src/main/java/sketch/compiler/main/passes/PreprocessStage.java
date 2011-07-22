@@ -57,9 +57,12 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new FunctionParamExtension(true));
         // dump (prog, "fpe:");
 
+
         prog = ir1.run(prog);
 
+
         prog = (Program) prog.accept(new TypeInferenceForStars());
+
         // dump (prog, "tifs:");
 
         if (partialEval) {
@@ -71,6 +74,7 @@ public class PreprocessStage extends MetaStage {
                         options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
+
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,

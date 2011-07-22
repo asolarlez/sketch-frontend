@@ -40,7 +40,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SplitterJoiner;
+
 import sketch.compiler.ast.core.StreamSpec;
 
 
@@ -53,9 +53,7 @@ import sketch.compiler.ast.cuda.typs.*;
 
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.main.cmdline.SketchOptions;
-import sketch.compiler.passes.streamit_old.SJDuplicate;
-import sketch.compiler.passes.streamit_old.SJRoundRobin;
-import sketch.compiler.passes.streamit_old.SJWeightedRR;
+
 import static sketch.util.DebugOut.assertFalse;
 }
 
@@ -121,7 +119,7 @@ options {
 		super.reportError(s);
 	}
 
-    public void handleInclude(String name, List funcs, List vars, List structs)
+    public void handleInclude(String name, List<StreamSpec> namespace)
     {
         try {
             List<String> incList = Arrays.asList(
@@ -151,13 +149,9 @@ options {
         StreamItParser parser =
             new StreamItParser (name, processedIncludes, preprocess, cppDefs);
         Program p = parser.parse ();
-		assert p != null;
-		assert p.getStreams().size() == 1;
-
-		StreamSpec ss = (StreamSpec) p.getStreams().get(0);
-		funcs.addAll(ss.getFuncs());
-		vars.addAll(ss.getVars());
-		structs.addAll(p.getStructs());
+		assert p != null;		
+		
+		namespace.addAll(p.getStreams());		
         directives.addAll (parser.getDirectives ());
     }
 
@@ -170,10 +164,13 @@ options {
 }// end of ANTLR header block
 
 program	 returns [Program p]
-{ p = null; List vars = new ArrayList();  List streams = new ArrayList();
+{ p = null; List vars = new ArrayList();  
 	List funcs=new ArrayList(); Function f;
+	List<StreamSpec> namespaces = new ArrayList<StreamSpec>();
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
+    String pkgName = null;
+    FEContext pkgCtxt = null;
 }
 	:	(  ((TK_device | TK_global | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil)*
@@ -181,23 +178,23 @@ program	 returns [Program p]
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
-           |    file=include_stmt { handleInclude (file, funcs, vars, structs); }
+           |    file=include_stmt { handleInclude (file, namespaces); }
+           |    TK_package id:ID SEMI
+				{ pkgCtxt = getContext(id); pkgName = (id.getText()); }
            |    pragma_stmt
         )*
 		EOF
-		// Can get away with no context here.
 		{
-			 StreamSpec ss=new StreamSpec((FEContext) null, StreamSpec.STREAM_FILTER,
- 				"MAIN",
- 				Collections.EMPTY_LIST, vars, funcs);
- 				streams.add(ss);
+			 StreamSpec ss=new StreamSpec(pkgCtxt, 
+ 				pkgName == null ? "ANONYMOUS" : pkgName,
+ 				structs, vars, funcs);
+ 				namespaces.add(ss);
                 if (!hasError) {
                     if (p == null) {
                         p = Program.emptyProgram();
                     }
                     p =
-                            p.creator().streams(Collections.singletonList(ss)).structs(
-                                    structs).create();
+                    p.creator().streams(namespaces).create();
                 }
                 }
 	;
@@ -280,32 +277,6 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
     ;
 
 
-
-splitter_or_joiner returns [SplitterJoiner sj]
-{ sj = null; Expression x; List l; }
-	: tr:TK_roundrobin
-		( (LPAREN RPAREN) => LPAREN RPAREN
-			{ sj = new SJRoundRobin(getContext(tr)); }
-		| (LPAREN right_expr RPAREN) => LPAREN x=right_expr RPAREN
-			{ sj = new SJRoundRobin(getContext(tr), x); }
-		| l=func_call_params { sj = new SJWeightedRR(getContext(tr), l); }
-		| { sj = new SJRoundRobin(getContext(tr)); }
-		)
-	| td:TK_duplicate (LPAREN RPAREN)?
-		{ sj = new SJDuplicate(getContext(td)); }
-	| tag: ID (LPAREN RPAREN)?
-		{
-			if( tag.getText().equals("xor") ){
-				sj = new SJDuplicate(getContext(tag), SJDuplicate.XOR );
-			}else if( tag.getText().equals("or") ){
-				sj = new SJDuplicate(getContext(tag), SJDuplicate.OR );
-			}else if( tag.getText().equals("and") ){
-				sj = new SJDuplicate(getContext(tag), SJDuplicate.AND );
-			}else{
-				assert false: tag.getText()+ " is not a valid splitter";
-			}
-		}
-	;
 
 
 data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; }

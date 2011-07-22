@@ -1,0 +1,9 @@
+include "miniTestb294a.skh";
+
+harness void main( int v){
+
+    F t = new F();
+    setX(t, v);
+    assert v == getX(t);
+    
+}

@@ -13,7 +13,6 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
-import sketch.util.datastructures.TypedHashMap;
 import sketch.util.fcns.ZipIdxEnt;
 
 import static sketch.util.DebugOut.printNote;
@@ -28,17 +27,14 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
  *
  */
 public class TypeInferenceForStars extends SymbolTableVisitor {
-    public TypedHashMap<String, Function> functions = new TypedHashMap<String, Function>();
+
 
 	public TypeInferenceForStars(){
 		super(null);
 	}
 	
 	@Override
-	public Object visitStreamSpec(StreamSpec spec) {
-	    for (Function f : spec.getFuncs()) {
-	        functions.put(f.getName(), f);
-	    }
+    public Object visitStreamSpec(StreamSpec spec) {
 	    return super.visitStreamSpec(spec);
 	}
 
@@ -142,7 +138,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	@Override
 	public Object visitExprFunCall(ExprFunCall exp) {
 	    exp = (ExprFunCall) super.visitExprFunCall(exp);
-	    Function callee = functions.get(exp.getName());
+        Function callee = nres.getFun(exp.getName());
 	    for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
 	        upgradeStarToInt(arg.entry, callee.getParams().get(arg.idx).getType());
 	    }

@@ -45,12 +45,8 @@ public class NodesToH extends NodesToC {
 		ret+="#include \"bitvec.h\"\n";
 		ret+="#include \"fixedarr.h\"\n";
 		
-		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-        {
-            TypeStruct struct = (TypeStruct)iter.next();
-            ret += "class " + escapeCName(struct.getName()) + "; \n";            
-        }
 		
+
 		ret+=super.visitProgram(prog);
 		ret+="\n#endif\n";
 		return ret;
@@ -58,7 +54,13 @@ public class NodesToH extends NodesToC {
 
 	public Object visitStreamSpec(StreamSpec spec){
 		String result = "";
-		ss = spec;
+        nres.setPackage(spec);
+
+        for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
+            TypeStruct struct = (TypeStruct) iter.next();
+            result += "class " + escapeCName(struct.getName()) + "; \n";
+        }
+
 		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
 		{
 			Function oldFunc = (Function)iter.next();            
@@ -69,6 +71,7 @@ public class NodesToH extends NodesToC {
 	
 	public Object visitFunction(Function func)
 	{
+        _converter.setNres(nres);
 		String result = indent + "extern ";
 		result += _converter.convertType(func.getReturnType()) + " ";
 		result += escapeCName(func.getName());

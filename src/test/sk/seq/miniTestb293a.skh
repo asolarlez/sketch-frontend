@@ -1,0 +1,13 @@
+package BOOPKG;
+
+int boo(int x){
+    return x;
+}
+
+int foo(int x){
+	return boo(x);
+}
+
+generator int moo(int x){
+	return x;
+}

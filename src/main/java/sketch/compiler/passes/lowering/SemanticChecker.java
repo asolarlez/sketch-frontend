@@ -176,11 +176,6 @@ public class SemanticChecker
 			checkAStreamName(names, spec.getName(), spec.getCx ());
 		}
 
-		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-		{
-			TypeStruct ts = (TypeStruct)iter.next();
-			checkAStreamName(names, ts.getName(), ts.getContext ());
-		}
 		return names;
 	}
 
@@ -223,12 +218,16 @@ public class SemanticChecker
 			StreamSpec spec = (StreamSpec)iter.next();
 			Map localNames = new HashMap();
 			Iterator i2;
-			for (i2 = spec.getParams().iterator(); i2.hasNext(); )
-			{
-				Parameter param = (Parameter)i2.next();
-				checkADupFieldName(localNames, streamNames,
-						param.getName(), spec.getCx ());
-			}
+
+            for (TypeStruct ts : spec.getStructs()) {
+                checkADupFieldName(localNames, streamNames, ts.getName(), ts.getContext());
+                Map fieldNames = new HashMap();
+                for (Entry<String, Type> entry : ts) {
+                    checkADupFieldName(fieldNames, streamNames, entry.getKey(),
+                            ts.getContext());
+                }
+            }
+
 			for (i2 = spec.getVars().iterator(); i2.hasNext(); )
 			{
 				FieldDecl field = (FieldDecl)i2.next();
@@ -249,15 +248,6 @@ public class SemanticChecker
 					checkADupFieldName(localNames, streamNames,
 							name, func.getCx ());
 			}
-		}
-		for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-		{
-			TypeStruct ts = (TypeStruct)iter.next();
-			Map localNames = new HashMap();
-            for (Entry<String, Type> entry : ts) {
-                checkADupFieldName(localNames, streamNames, entry.getKey(),
-                        ts.getContext());
-            }
 		}
 	}
 
@@ -413,7 +403,7 @@ public class SemanticChecker
 
 					// check spec presence
 					try{
-                        parent = this.symtab.lookupFn(func.getSpecification(), func);
+                        parent = nres.getFun(func.getSpecification(), func);
 					}catch(UnrecognizedVariableException e){
 						report(func, "Spec of "+ func.getName() + "() not found");
 						return super.visitFunction(func);
@@ -480,7 +470,7 @@ public class SemanticChecker
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprFunCall");
 				Function fun;
 				try {
-                    fun = this.symtab.lookupFn(exp.getName(), exp);
+                    fun = nres.getFun(exp.getName(), exp);
 				} catch (UnrecognizedVariableException e) {
 					report (exp, "unknown function "+ exp.getName ());
 					throw e;
@@ -630,7 +620,7 @@ public class SemanticChecker
 		    				tn = (Type) sc.getNext ().accept (this);
 
 		    			base = (tf instanceof TypeStruct) ? (TypeStruct) tf
-		    	    			: (TypeStruct) structsByName.get (((TypeStructRef) tf).getName ());
+                                        : nres.getStruct(((TypeStructRef) tf).getName());
 		    			tfn = (Type) sc.getNext ().accept (this);
 		    			base = oldBase;
 
@@ -674,7 +664,7 @@ public class SemanticChecker
 					report(exp, "field reference of a non-structure type");
 				} else {
 					TypeStruct base = (lt instanceof TypeStruct) ? (TypeStruct) lt
-							: (TypeStruct) structsByName.get (((TypeStructRef) lt).getName ());
+                                    : nres.getStruct(((TypeStructRef) lt).getName());
 					Type selType = null;
 
 					try {  selType = (Type) exp.accept (new SelectorTypeChecker (base));  }

@@ -347,8 +347,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		SymbolTable oldSymtab = symtab;
 		symtab = new SymbolTable (symtab);
 
-		for (TypeStruct s : (List<TypeStruct>) p.getStructs ())
-			s.accept (this);
+
 		for (StreamSpec s : (List<StreamSpec>) p.getStreams ())
 			s.accept (this);
 
@@ -551,6 +550,9 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 	public Object visitStreamSpec (StreamSpec ss) {
         SymbolTable oldSymtab = symtab;
         symtab = new SymbolTable (symtab);
+
+        for (TypeStruct s : ss.getStructs())
+            s.accept(this);
 
 		// TODO: doesn't fully visit the stream spec
 		for (FieldDecl f : ss.getVars ())

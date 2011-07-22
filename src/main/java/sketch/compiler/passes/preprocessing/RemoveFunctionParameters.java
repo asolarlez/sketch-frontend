@@ -11,7 +11,9 @@ import java.util.Stack;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -21,55 +23,84 @@ import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.util.exceptions.UnrecognizedVariableException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
 
     Map<String, Function> funToReplace = new HashMap<String, Function>();
-    Stack<Function> funsToVisit = new Stack<Function>();
+    Stack<String> funsToVisit = new Stack<String>();
     Map<String, Function> newFunctions = new HashMap<String, Function>();
     Set<String> visited = new HashSet<String>();
     private void checkFunParameters(Function fun) {
         for(Parameter p : fun.getParams()){
             if(p.getType() instanceof TypeFunction){
-                funToReplace.put(fun.getName(), fun);
+                funToReplace.put(nres.getFunName(fun.getName()), fun);
                 break;
             }
         }
     }
     
-    public Object visitStreamSpec(StreamSpec spec)
-    {
-        
-        StreamSpec oldSS = sspec;
-        sspec = spec;
-        for (Function fun : spec.getFuncs()) {
-            checkFunParameters(fun);
-            if (fun.isSketchHarness()) {
-                funsToVisit.add(fun);
-            }
-            if (fun.getSpecification() != null) {
-                funsToVisit.add(spec.getFuncNamed(fun.getSpecification()));
-                funsToVisit.add(fun);
+    public Object visitProgram(Program p) {
+        nres = new NameResolver(p);
+        for (StreamSpec pkg : p.getStreams()) {
+            nres.setPackage(pkg);
+            for (Function fun : pkg.getFuncs()) {
+                checkFunParameters(fun);
+                if (fun.isSketchHarness()) {
+                    funsToVisit.add(nres.getFunName(fun.getName()));
+                }
+                if (fun.getSpecification() != null) {
+                    funsToVisit.add(nres.getFunName(fun.getSpecification()));
+                    funsToVisit.add(nres.getFunName(fun.getName()));
+                }
             }
         }
 
-        List<Function> nflist = new ArrayList<Function>();
+        Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
+        Map<String, StreamSpec> pkges = new HashMap<String, StreamSpec>();
+        for (StreamSpec pkg : p.getStreams()) {
+            nflistMap.put(pkg.getName(), new ArrayList<Function>());
+            pkges.put(pkg.getName(), pkg);
+        }
+
         while (!funsToVisit.isEmpty()) {
-            Function next = funsToVisit.pop();
-            if (!visited.contains(next.getName())) {
+            String fname = funsToVisit.pop();
+            String pkgName = getPkgName(fname);
+            nres.setPackage(pkges.get(pkgName));
+            Function next = nres.getFun(fname);
+            if (!visited.contains(fname)) {
                 Function nf = (Function) next.accept(this);
-                visited.add(nf.getName());
-                nflist.add(nf);
+                visited.add(fname);
+                nflistMap.get(pkgName).add(nf);
             }
         }
-        sspec = oldSS;
-        return new StreamSpec(spec, spec.getType(), spec.getName(),
-                spec.getParams(), spec.getVars(), nflist);
+        List<StreamSpec> newPkges = new ArrayList<StreamSpec>();
+        for (StreamSpec pkg : p.getStreams()) {
+            newPkges.add(new StreamSpec(pkg, pkg.getName(), pkg.getStructs(),
+                    pkg.getVars(), nflistMap.get(pkg.getName())));
+        }
+        return p.creator().streams(newPkges).create();
+
+    }
+
+    String getPkgName(String fname) {
+        int i = fname.indexOf(":");
+        return fname.substring(0, i);
+    }
+
+    String getNameSufix(String fname) {
+        int i = fname.indexOf(":");
+        return fname.substring(i + 1);
+    }
+
+    public Object visitStreamSpec(StreamSpec spec)
+    {
+        return null;
     }
 
     String newFunName(ExprFunCall efc, Function orig) {
-        String name = orig.getName();
+        String name = nres.getFunName(orig.getName());
         Iterator<Expression> fp = efc.getParams().iterator();
         for (Parameter p : orig.getParams()) {
             Expression actual = fp.next();
@@ -163,21 +194,26 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     public Object visitExprFunCall(ExprFunCall efc) {
-        String name = efc.getName();
+
+        String name = nres.getFunName(efc.getName());
+        if (name == null) {
+            throw new UnrecognizedVariableException(efc.getName(), efc);
+        }
         if (funToReplace.containsKey(name)) {
             Function orig = funToReplace.get(name);
             String nfn = newFunName(efc, orig);
             if (newFunctions.containsKey(nfn)) {
                 return replaceCall(efc, orig, nfn);
             } else {
-                Function newFun = createCall(efc, orig, nfn);
+                Function newFun = createCall(efc, orig, getNameSufix(nfn));
+                nres.registerFun(newFun);
                 newFunctions.put(nfn, newFun);
-                funsToVisit.push(newFun);
+                funsToVisit.push(nfn);
                 return replaceCall(efc, orig, nfn);
             }
         } else {
-            if (!visited.contains(efc.getName())) {
-                funsToVisit.push(sspec.getFuncNamed(name));
+            if (!visited.contains(name)) {
+                funsToVisit.push(name);
             }
             return super.visitExprFunCall(efc);
         }

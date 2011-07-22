@@ -16,7 +16,6 @@
 
 package sketch.compiler.passes.lowering;
 import java.util.Iterator;
-import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -35,7 +34,6 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -61,14 +59,6 @@ public class SymbolTableVisitor extends FEReplacer
     protected SymbolTable symtab;
 
 
-    /**
-     * Map resolving structure names to structure types.  This map is
-     * used early in the front end: if code needs to resolve the type
-     * of a structure variable that only has a structure-reference
-     * type, before NoRefTypes has been run, this can perform that
-     * resolution.  It is populated by <code>visitProgram()</code>.
-     */
-    protected Map<String, TypeStruct> structsByName;
 
 
 
@@ -82,7 +72,7 @@ public class SymbolTableVisitor extends FEReplacer
     public SymbolTableVisitor(SymbolTable symtab)
     {
         this.symtab = (symtab == null ? new SymbolTable(null) : symtab);
-        this.structsByName = new java.util.HashMap();
+
     }
 
     public Type getTypeOrNotYetComputed(Expression expr) {
@@ -124,7 +114,7 @@ public class SymbolTableVisitor extends FEReplacer
     	if(expr == null){ return TypePrimitive.voidtype; }
 
         // To think about: should we cache GetExprType objects?
-        GetExprType get = new GetExprType(symtab, structsByName, nullType);
+        GetExprType get = new GetExprType(symtab, this.nres, nullType);
         Type type = (Type)expr.accept(get);
         return type;
     }
@@ -185,8 +175,9 @@ public class SymbolTableVisitor extends FEReplacer
         if (type instanceof TypeStructRef)
         {
             String name = ((TypeStructRef)type).getName();
-            if (structsByName.containsKey(name))
-                type = (Type)structsByName.get(name);
+            Type tmp = nres.getStruct(name);
+            if (tmp != null)
+                type = tmp;
         }
         return type;
     }
@@ -228,15 +219,9 @@ public class SymbolTableVisitor extends FEReplacer
    
 
     public Object visitProgram(Program prog)
-    {
+ {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
-        // Examine and register structure members, then recurse normally.
-        for (Iterator iter = prog.getStructs().iterator(); iter.hasNext(); )
-        {
-            TypeStruct struct = (TypeStruct)iter.next();
-            structsByName.put(struct.getName(), struct);
-        }
         Object o = super.visitProgram(prog); 
         symtab = oldSymTab;
         return o;
@@ -282,16 +267,9 @@ public class SymbolTableVisitor extends FEReplacer
 
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
+        if (nres != null)
+            nres.setPackage(spec);
 
-	// register parameters
-        for (Iterator iter = spec.getParams().iterator(); iter.hasNext(); )
-        {
-            Parameter param = (Parameter)iter.next();
-            symtab.registerVar(param.getName(),
-                               actualType(param.getType()),
-                               param,
-                               SymbolTable.KIND_STREAM_PARAM);
-        }
 	// register functions
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {

@@ -1,27 +1,25 @@
 package sketch.compiler.dataflow;
 
-import static sketch.util.Misc.nonnull;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.StreamSpec;
+import static sketch.util.Misc.nonnull;
 
 public class SelectFunctionsToAnalyze {
 	public SelectFunctionsToAnalyze() {
 		super();
 	}
-	public List<Function> selectFunctions(StreamSpec spec){
+
+    public List<Function> selectFunctions(StreamSpec spec, NameResolver nres) {
 		List<Function> result = new LinkedList<Function>();
-		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
-        {
-           Function oldFunc = (Function)iter.next();
+        for (Function oldFunc : spec.getFuncs()) {
            String specname = oldFunc.getSpecification();
            if( specname != null  ){
         	   result.add(oldFunc);
-        	   result.add(nonnull(spec.getFuncNamed(specname),
+                result.add(nonnull(nres.getFun(specname),
         	           "function named " + specname + " not found."));
            }
         }
