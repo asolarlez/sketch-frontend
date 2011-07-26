@@ -26,8 +26,6 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.spin.IdentifyModifiedVars;
 
-import static sketch.util.DebugOut.printFailure;
-
 /**
  *
  * The sketch preprocessor mainly does constant propagation and inlining of functions and unrolling of loops.
@@ -117,14 +115,14 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 fun = newFuns.get(nres.getFunName(specName));
             }else{
                 Function newFun = nres.getFun(specName);
-                Level lvl = state.pushLevel("ExprFunCall(" + exp.getName() + ")");
-                try {
-                    fun = (Function)this.visitFunction(newFun);
-                } catch (Throwable e) {
-                    printFailure("error in visitExprFunCall for ", exp);
-                }
-                state.popLevel(lvl);
-                newFuns.put(nres.getFunName(specName), fun);
+                assert newFun.isStatic();
+                fun = newFun;
+                /*
+                 * Level lvl = state.pushLevel("ExprFunCall(" + exp.getName() + ")"); try
+                 * { fun = (Function)this.visitFunction(newFun); } catch (Throwable e) {
+                 * printFailure("error in visitExprFunCall for ", exp); }
+                 * state.popLevel(lvl); newFuns.put(nres.getFunName(specName), fun);
+                 */
             }
         }
         if (fun != null) {

@@ -1,0 +1,13 @@
+include "miniTestb290a.skh";
+
+int sk(int x) implements foo{
+    return x - 2 + ??;    
+}
+
+int sk2(int x){
+    return sk(x) + sk(x);
+}
+
+int sk3(int x) implements sk2{
+    return ??*sk(x);
+}

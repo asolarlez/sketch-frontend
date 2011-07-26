@@ -14,5 +14,6 @@ generator int linexp(int N, int[N] vals){
 harness void test(int a, int b, int c){
     
     assert linexp(3, {a, b, c}) == (a+a+b+5*c);
+    assert linexp(2, {a, b}) == (a+a+b+a);
     
 }
