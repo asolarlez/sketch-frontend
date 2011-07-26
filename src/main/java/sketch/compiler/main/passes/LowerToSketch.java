@@ -24,12 +24,13 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 
+        prog = (Program) prog.accept(new AddPkgNameToNames());
+
         prog = (Program) prog.accept(new MakeBodiesBlocks());
         // dump (prog, "MBB:");
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen,
                         options.bndOpts.heapSize));
-
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         prog = stencilTransform.visitProgram(prog);

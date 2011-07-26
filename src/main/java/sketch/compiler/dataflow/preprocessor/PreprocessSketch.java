@@ -113,8 +113,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Function fun = nres.getFun(name);
         if(fun.getSpecification()!= null){
             String specName = fun.getSpecification();
-            if( newFuns.containsKey(specName)){
-                fun = newFuns.get(specName);
+            if (newFuns.containsKey(nres.getFunName(specName))) {
+                fun = newFuns.get(nres.getFunName(specName));
             }else{
                 Function newFun = nres.getFun(specName);
                 Level lvl = state.pushLevel("ExprFunCall(" + exp.getName() + ")");
@@ -124,7 +124,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     printFailure("error in visitExprFunCall for ", exp);
                 }
                 state.popLevel(lvl);
-                newFuns.put(specName, fun);
+                newFuns.put(nres.getFunName(specName), fun);
             }
         }
         if (fun != null) {
@@ -192,12 +192,12 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     
     
     public Object visitFunction(Function func){
-        if( newFuns.containsKey(func.getName()) ){
-            return newFuns.get(func.getName());
+        if (newFuns.containsKey(nres.getFunName(func.getName()))) {
+            return newFuns.get(nres.getFunName(func.getName()));
         }
         Function obj = (Function)super.visitFunction(func);
         
-        newFuns.put(obj.getName(), obj);
+        newFuns.put(nres.getFunName(obj.getName()), obj);
         return obj;
     }
 }

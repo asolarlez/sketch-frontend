@@ -344,7 +344,7 @@ public class Function extends FENode {
     }
 
     public String toString() {
-        return getSummary();
+        return getSummary() + "/*" + getCx() + "*/";
     }
 
     public Function makeStencil() {
@@ -356,16 +356,11 @@ public class Function extends FENode {
      * isStencil(){ return cls.contains(FuncType.FUNC_STENCIL); }
      */
 
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    public boolean equals(Object o) {
-        if (o instanceof Function) {
-            return name.equals(((Function) o).getName());
-        }
-        return false;
-    }
+    /*
+     * public int hashCode() { return name.hashCode(); } public boolean equals(Object o) {
+     * if (o instanceof Function) { return name.equals(((Function) o).getName()); } return
+     * false; }
+     */
 
     public FcnInfo getInfo() {
         return fcnInfo;

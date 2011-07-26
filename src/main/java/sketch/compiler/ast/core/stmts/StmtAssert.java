@@ -183,7 +183,7 @@ public class StmtAssert extends Statement
             result += ": \"" + msg + "\"";
         }
         */
-        result += "\n";
+
 
         return result;
     }

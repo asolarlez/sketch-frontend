@@ -51,7 +51,7 @@ public class StreamSpec extends FENode
             res += "   struct " + ts.getName() + '\n';
         }
         for(Function f: funcs){
-            res += "   " + f.getSummary() + '\n';
+            res += "   " + f.getSummary() + ":" + f.getCx() + '\n';
         }
         return res;
     }
@@ -71,7 +71,8 @@ public class StreamSpec extends FENode
      *            object
      */
     public StreamSpec(FENode context, String name,
-            List<TypeStruct> structs, List vars, List funcs)
+ List<TypeStruct> structs, List vars,
+            List<Function> funcs)
     {
         super(context);
         this.name = name;
@@ -98,7 +99,8 @@ public class StreamSpec extends FENode
      * @deprecated
      */
     public StreamSpec(FEContext context, String name,
-            List<TypeStruct> structs, List vars, List funcs)
+ List<TypeStruct> structs,
+            List vars, List<Function> funcs)
     {
         super(context);
 

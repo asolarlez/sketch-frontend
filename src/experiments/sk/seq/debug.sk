@@ -1,4 +1,82 @@
-
-harness void main(int x, int y) {
-    assert (!((10 <= x) && (10 <= y))) || (10 <= (x - y));
-}   
+struct BOO_F {
+     int y;
+     int x;
+}
+struct BOO_Big {
+    BOO_F f;
+}
+struct ANONYMOUS_F {
+     int q;
+}
+/*miniTestb296.sk:12*/
+void ANONYMOUS_main__WrapperNospec ( int v_1)/*miniTestb296.sk:12*/
+{
+}
+/*miniTestb296.sk:7*/
+void ANONYMOUS_setX (ANONYMOUS_F pthis_9,  int v_a)/*miniTestb296.sk:7*/
+{
+  pthis_9.q = v_a;
+}
+/*miniTes..95a.skh:16*/
+void BOO_getV (BOO_Big pthis_12, ref  int _out_13)/*miniTes..95a.skh:16*/
+{
+  _out_13 = 0;
+  _out_13 = pthis_12.f.x;
+  return;
+}
+/*miniTes..95a.skh:27*/
+void BOO_getX (BOO_F pthis_d, ref  int _out_e)/*miniTes..95a.skh:27*/
+{
+  _out_e = 0;
+  _out_e = pthis_d.x;
+  return;
+}
+/*miniTes..95a.skh:12*/
+void BOO_init (BOO_Big pthis_f)/*miniTes..95a.skh:12*/
+{
+  pthis_f.f = new BOO_F();
+}
+/*miniTes..95a.skh:21*/
+void BOO_setV (BOO_Big pthis_10,  int v_11)/*miniTes..95a.skh:21*/
+{
+  pthis_10.f.x = v_11;
+}
+/*miniTes..95a.skh:31*/
+void BOO_setX (BOO_F pthis_b,  int v_c)/*miniTes..95a.skh:31*/
+{
+  pthis_b.x = v_c;
+}
+/*miniTestb296.sk:12*/
+void ANONYMOUS_main ( int v_2)/*miniTestb296.sk:12*/
+{
+  ANONYMOUS_F tt_3;
+  tt_3 = new ANONYMOUS_F();
+  ANONYMOUS_setX(tt_3, v_2);
+  BOO_F uu_4;
+  uu_4 = new BOO_F();
+  BOO_setX(uu_4, v_2);
+   int _out_r_0_5;
+  _out_r_0_5 = 0;
+  BOO_getX(uu_4, _out_r_0_5);
+  assert (v_2 == _out_r_0_5)
+;
+  BOO_Big t_6;
+  t_6 = new BOO_Big();
+  BOO_init(t_6);
+  BOO_setV(t_6, v_2);
+   int _out_r_1_7;
+  _out_r_1_7 = 0;
+  BOO_getV(t_6, _out_r_1_7);
+  assert (v_2 == _out_r_1_7)
+;
+   int _out_r_2_8;
+  _out_r_2_8 = 0;
+  BOO_getV(t_6, _out_r_2_8);
+  assert ((tt_3.q) == _out_r_2_8)
+;
+}
+/*miniTestb296.sk:12*/
+void ANONYMOUS_main__Wrapper ( int v_0)  implements ANONYMOUS_main__WrapperNospec/*miniTestb296.sk:12*/
+{
+  ANONYMOUS_main(v_0);
+}

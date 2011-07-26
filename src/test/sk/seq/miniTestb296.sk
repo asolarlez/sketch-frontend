@@ -1,0 +1,24 @@
+include "miniTestb295a.skh";
+
+
+struct F{
+    int q;
+}
+void setX(F pthis, int v){
+    pthis.q = v;
+}
+
+
+harness void main( int v){
+    F tt = new F();
+    setX(tt, v);
+    BOO:F uu = new BOO:F();
+    BOO:setX(uu, v);
+    assert v == getX(uu);
+    Big t = new Big();
+    init(t);
+    setV(t, v);
+    assert v == getV(t);
+    assert tt.q == getV(t);
+    
+}

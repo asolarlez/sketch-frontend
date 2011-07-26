@@ -67,7 +67,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	public EliminateStructs (TempVarGen varGen_, int heapsize) {
 		super(null);
 		this.heapsize = heapsize;
-		structs = new HashMap<String, StructTracker> ();
+        structs = new HashMap<String, StructTracker>();
 		varGen = varGen_;
 	}
 
@@ -189,9 +189,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 		List<Expression> newplist = new ArrayList<Expression>(fc.getParams());
 
-
-        for (StructTracker st : structs.values()) {
-            st.addActualParams(newplist);
+        for (String name : nres.structNamesList()) {
+            structs.get(name).addActualParams(newplist);
 		}
 
 		if(mainFunctions.contains(newName)){
@@ -210,7 +209,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 * Rewrite field accesses of the form '((Foo)foo).bar' into 'Foo_bar[foo]'.
 	 */
 	public Object visitExprField (ExprField ef) {
-		Type t = getType (ef.getLeft ());
+
+        Type t = this.actualType(getType(ef.getLeft()));
 		if (false == t.isStruct ()) {
 			ef.report ("Trying to read field of non-struct variable.");
 			throw new RuntimeException ("reading field of non-struct");

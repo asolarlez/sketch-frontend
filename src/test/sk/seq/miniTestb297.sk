@@ -1,0 +1,36 @@
+include "miniTestb295a.skh";
+
+package TTT;
+
+
+struct F{
+    int q;
+}
+void setX(F pthis, int v){
+    pthis.q = v;
+}
+
+void seter(F a, BOO:F b, int v, fun s){
+    s(a, b, v);    
+}
+
+generator void sT(F a, BOO:F b, int v){
+    setX(a, v);
+}
+
+generator void sB(F a, BOO:F b, int v){
+    BOO:setX(b, v);
+}
+
+harness void main( int v){
+    F tt = new F();    
+    BOO:F uu = new BOO:F();    
+    seter(tt, uu, v, sT);
+    seter(tt, uu, v, sB);
+    assert v == getX(uu);
+    Big t = new Big();
+    init(t);
+    setV(t, v);
+    assert v == getV(t);
+    assert tt.q == getV(t);
+}
