@@ -1,6 +1,4 @@
-pragma options "--bnd-heap-size 20";
-
-int NumTuples = 19;
+int NumTuples = 3;
 #define NumPredicates 2
 
 struct LocationTuple
@@ -11,40 +9,31 @@ struct LocationTuple
   int timeEnd;
 }
 
-generator bit genLoc(LocationTuple tuple){
-    int t = tuple.location;
-    return {| t (== | !=) ?? |}; 
-}
-
-generator bit genUser(LocationTuple tuple){
-    int t = tuple.user ;
-    return {| t (== | !=) ?? |}; 
-}
-
-generator bit genTime(LocationTuple tuple){
-    int ts = tuple.timeStart;
-    int te = tuple.timeEnd;
-    bit rv;
+generator int getField(LocationTuple tuple){
     if(??){
-        rv = te > ts + ??;
-    }else{
-        rv = te == ts + ??; 
+        return tuple.location;
     }
-    return {| (!)? rv |};
+    if(??){
+        return tuple.user;
+    }
+    if(??){
+        return tuple.timeStart;
+    }
+    if(??){
+        return tuple.timeEnd;
+    }
+    assert false;
 }
-
 
 generator bit select (LocationTuple tuple) 
 {
-  bit out = 0;
+  bit out = 1;
   int cnt = 0;
-  repeat(??){
-      bit t1 = genLoc(tuple);
-      bit t2 = genTime(tuple);
-      bit t3 = genUser(tuple);
-      out = out || {| t1 | t2 | t3 | (t1 && t2) | (t1 && t3)  | (t3 && t2) | (t1 && t2 && t3)|};
+  repeat(1){
+      int t = getField(tuple);
+      out = out && {| t ( < | > | == ) ??  |};
       cnt = cnt + 1;
-      assert cnt <= 2;
+      assert cnt < 2;
   }
   return out;
 }
@@ -76,7 +65,7 @@ harness void sketch (int[NumTuples] location, int[NumTuples] user, int[NumTuples
   for (int i = 0; i < NumTuples; ++i)
   {
     LocationTuple tuple = tuples[i];
-    bit q1 = (tuple.user != 3 && tuple.location == 1 && tuple.timeEnd-tuple.timeStart > 5) || (tuple.user == 2);
+    bit q1 = (tuple.location == 1);
     bit q2 = (select(tuple) == 1); 
     assert q1 == q2;
   }    

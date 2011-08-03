@@ -1,0 +1,104 @@
+package generators;
+
+int PLUS=0;
+int MINUS=1;
+int TIMES=2;
+int DIV=3;
+int MOD=4;
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr(int N, int[N] pars, int T, int[T] ops){
+    bit isb; int choice;
+    return exprb(N, pars, T, ops, true, true, isb, choice);
+}
+
+
+/**
+ * 
+ * Generate a boolean expression based on the N operands and T operators
+ * given. 
+ * 
+ */
+
+generator bit exprBool(int N, int[N] pars, int T, int[T] ops){
+    if(??){            
+        bit xa = exprBool(N, pars, T, ops);
+        if(xa){
+            xa = exprBool(N, pars, T, ops);
+        }
+        if(??){
+            return xa;
+        }else{
+            return !xa;
+        }            
+    }
+    if(??){
+        bit a; int b;
+        int xa = exprb(N, pars, T, ops, true, true, a, b);
+        int xb = exprb(N, pars, T, ops, true, true, a, b);
+        return {| xa (< | == | !=) xb |};
+    }
+}
+
+
+generator int linexp(int N, int[N] vals){
+    int[N+1] t;
+    t[0]= (??-2)*vals[0];
+    int i=1;
+    repeat(N-1){
+        t[i] = t[i-1] + (??-2)*vals[i];
+        i = i+1;
+    }
+    return t[i-1];
+}
+
+
+generator int op(int ch, int a, int b, int N, int[N] ops, bit canplus, bit cantimes){
+    int t = ch;
+    int cop= ops[t];
+    assert cop <= MOD && cop >=0  : "Must pass a valid operator";
+    if(cop==PLUS){
+        assert canplus;
+        return a + b;
+    }
+    if(cop==MINUS){            
+        return a - b;
+    }
+    if(cop==TIMES){
+        assert cantimes;
+        return a * b;
+    }
+    if(cop==DIV){
+        return a / b;
+    }
+    if(cop==MOD){
+        return a % b;
+    }
+}
+
+
+generator int exprb(int N, int[N] pars, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice){
+    if(??){
+        assert T>0;
+        int ch = ??;
+        isbase = false;
+        bit lib, rib;
+        int lch; int rch;
+        int xa = exprb(N, pars, T, ops, ops[ch]!=PLUS, ops[ch]!=TIMES, lib, lch);
+        int xb = exprb(N, pars, T, ops, true, true, rib, rch);
+        if(lib && rib && (ops[ch] ==PLUS || ops[ch]==TIMES)){ assert lch <= rch; } 
+        return op(ch, xa, xb, T, ops, canplus, cantimes);
+    }else{
+        isbase = true;
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+}
+
+
+

@@ -30,6 +30,7 @@ public class GetAssignLHS extends FETypedVisitor<ExprVar> {
         return (ExprVar) exp.getBase().accept(this);
     }
 
+
     @Override
     public ExprVar visitExprVar(ExprVar exp) {
         return exp;

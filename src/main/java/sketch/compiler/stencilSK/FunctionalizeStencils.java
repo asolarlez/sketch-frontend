@@ -465,7 +465,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-                // f.accept(new SimpleCodePrinter());
+            // f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }
@@ -1121,19 +1121,23 @@ class ProcessStencil extends FEReplacer {
 
 
 	    	public Object visitExprArrayRange(ExprArrayRange exp) {
-	    		final ExprVar newBase= exp.getAbsoluteBase();
-	    		String bname = newBase.getName();
-	    		if(smap.containsKey(bname)){
-	    			List<Expression> mem = getArrayIndices(exp);
-		    		return doReplacement(bname, mem);
-	    		}else{
-	    			//Now, we must check whether it is an input array.
-	    			if( inVars.containsKey(bname)){
-	    				List<Expression> mem = getArrayIndices(exp);
-			    		return doInputReplacement(bname, mem);
-	    			}
-	    			return exp;
-	    		}
+            final Expression base = exp.getAbsoluteBaseExpr();
+            if (base instanceof ExprVar) {
+                ExprVar newBase = (ExprVar) base;
+                String bname = newBase.getName();
+                if (smap.containsKey(bname)) {
+                        List<Expression> mem = getArrayIndices(exp);
+                    return doReplacement(bname, mem);
+                } else {
+                    // Now, we must check whether it is an input array.
+                    if (inVars.containsKey(bname)) {
+                        List<Expression> mem = getArrayIndices(exp);
+                        return doInputReplacement(bname, mem);
+                    }
+                    return exp;
+                    }
+            }
+            return exp;
 	    	}
 	    }
 

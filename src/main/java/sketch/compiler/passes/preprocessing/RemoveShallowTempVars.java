@@ -23,6 +23,14 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
+/**
+ * Simple pass to get rid of temporary variables that only pollute the output code. We
+ * call such temporary variables shallow temporary variables; the class MarkShallowTemps
+ * determines if a temporary variable is shallow, and if it is, it gets replaced with its
+ * definition.
+ * 
+ * @author asolar
+ */
 public class RemoveShallowTempVars extends FEReplacer {
     
 
@@ -66,6 +74,11 @@ public class RemoveShallowTempVars extends FEReplacer {
     }
     
     
+    /**
+     * In order to determine whether a temporary variable is
+     * 
+     * @author asolar
+     */
     class MarkShallowTemps extends FEReplacer{
         Map<String, Boolean> isShallow = new HashMap<String, Boolean>();
         Map<String, Expression> vals = new HashMap<String, Expression>();

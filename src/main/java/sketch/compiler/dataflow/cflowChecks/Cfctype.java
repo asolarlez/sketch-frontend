@@ -12,6 +12,7 @@ import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.abstractValueType;
 import sketch.compiler.dataflow.varState;
+import sketch.util.exceptions.TypeErrorException;
 
 public class Cfctype extends abstractValueType {
 
@@ -197,8 +198,15 @@ public class Cfctype extends abstractValueType {
             Parameter param = formalParams.next();
             if( param.isParameterOutput()){
                 outSlist.add(CONST(1));
-            }else{
-                assert ((CfcValue)avlist.get(idx)).maybeinit(): "One of the input parameters was not initialized";
+            }
+
+            if (param.isParameterInput()) {
+                if (!param.isParameterOutput()) {
+                    if (!((CfcValue) avlist.get(idx)).maybeinit()) {
+                        throw new TypeErrorException("One of the input parameters to " +
+                                fun.getName() + " was not initialized");
+                    }
+                }
                 ++idx;
             }           
         }

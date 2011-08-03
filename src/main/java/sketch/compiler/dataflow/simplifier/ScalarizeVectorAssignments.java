@@ -17,7 +17,6 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /**
@@ -131,8 +130,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		public Object visitExprArrayInit (ExprArrayInit exp) {
 			// TODO: assuming ExprArrayInit is initialized with scalar constants only.
 			int len = exp.getElements ().size ();
-			Type baseType =
-                    (Type) exp.getElements().get(0).accept(new GetExprType(symtab, null));
+            TypeArray ta = (TypeArray) getType(exp);
+
+            Type baseType = ta.getBase();
 			return new ExprTernary ("?:",
 					new ExprBinary (index, "<", ExprConstant.createConstant (exp, ""+ len)),
 					new ExprArrayRange (exp, index),

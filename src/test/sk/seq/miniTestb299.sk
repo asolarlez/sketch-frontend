@@ -1,0 +1,8 @@
+include "generators.skh";
+
+pragma options "-V 5 --bnd-inline-amnt 2 --bnd-inbits 3 ";
+
+harness void testComp(int a, int b, int c){
+    bit t = (a>b) || (a+c > b+a);
+    assert exprBool(3, {a,b,c}, 1, {PLUS})==t;    
+}

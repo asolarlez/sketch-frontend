@@ -109,7 +109,7 @@ public class GetExprType extends FENullVisitor
     	// not sure what to do for base type if array is empty... try
     	// keeping it null --BFT
     	if (elems.size()==0) {
-    		base = null;
+            base = TypePrimitive.bittype;
     	} else {
     		// otherwise, take promotion over all elements declared
     		base = (Type)((Expression)elems.get(0)).accept(this);

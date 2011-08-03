@@ -61,6 +61,11 @@ public class NodesToH extends NodesToC {
             result += "class " + escapeCName(struct.getName()) + "; \n";
         }
 
+        for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
+            TypeStruct struct = (TypeStruct) iter.next();
+            result += outputStructure(struct);
+        }
+
 		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
 		{
 			Function oldFunc = (Function)iter.next();            

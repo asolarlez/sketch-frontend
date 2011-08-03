@@ -928,7 +928,14 @@ public class PartialEvaluator extends FEReplacer {
                         body = new StmtBlock(body, stmt.getIncr());
                     }
                     
-                    Statement  cur = new StmtAssert(stmt,new ExprUnary("!", stmt.getCond()) , "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.", false);
+                    Statement cur =
+                            new StmtAssert(
+                                    stmt,
+                                    new ExprUnary("!", stmt.getCond()),
+                                    stmt.getCx() + ": This loop was unrolled " +
+                                            MAX_UNROLL +
+                                            " times, but apparently that was not enough.",
+                                    false);
                     
                     for(int i=0; i<remIters; ++i){                      
                         cur = new StmtIfThen(stmt, stmt.getCond(), new StmtBlock(body, cur), null);                         
