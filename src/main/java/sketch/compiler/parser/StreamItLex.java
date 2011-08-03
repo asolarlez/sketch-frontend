@@ -358,7 +358,7 @@ tryAgain:
 						mCOLON(true);
 						theRetToken=_returnToken;
 					}
-					else if ((LA(1)=='!') && (true)) {
+					else if ((LA(1)=='!'||LA(1)=='~') && (true)) {
 						mBANG(true);
 						theRetToken=_returnToken;
 					}
@@ -1227,7 +1227,22 @@ tryAgain:
 		_ttype = BANG;
 		int _saveIndex;
 		
-		match('!');
+		switch ( LA(1)) {
+		case '!':
+		{
+			match('!');
+			break;
+		}
+		case '~':
+		{
+			match('~');
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));

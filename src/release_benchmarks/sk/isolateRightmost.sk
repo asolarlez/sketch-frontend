@@ -5,6 +5,7 @@ bit[W] isolate0 (bit[W] x) {      // W: word size
 	bit[W] ret = 0;
 	for (int i = 0; i < W; i++)  
 		if (!x[i]) { ret[i] = 1; return ret;  } 
+	return ret;
 }
 
 

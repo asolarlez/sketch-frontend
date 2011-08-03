@@ -177,7 +177,7 @@ COLON: ':';
 SEMI: ';';
 COMMA: ',';
 DOT: '.';
-BANG: '!';
+BANG: '!' | '~';
 LSHIFT: "<<";
 RSHIFT: ">>";
 NDVAL: "{*}";

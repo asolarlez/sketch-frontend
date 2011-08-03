@@ -33,7 +33,6 @@ import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
 
 import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.printWarning;
 
 import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
@@ -640,7 +639,6 @@ public class NodesToC extends NodesToJava {
               return lhs + ".get("+ tmp + ")";
 				} else{
                     if (range.getLenExpression() == null) {
-                        printWarning("don't know range of", lhs);
                         return lhs + ".sub<1>(" + tmp + ")";
                     }
 					return lhs + ".sub<" + range.getLenExpression() + ">("+ tmp + ")";

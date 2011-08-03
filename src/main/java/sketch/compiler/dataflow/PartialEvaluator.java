@@ -29,8 +29,6 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
 
-import static sketch.util.DebugOut.printWarning;
-
 class CloneHoles extends FEReplacer{
     
     public Object visitExprStar(ExprStar es){
@@ -915,7 +913,10 @@ public class PartialEvaluator extends FEReplacer {
                 }
                 vcond = (abstractValue) stmt.getCond().accept(this);
                 if (iters > (1 << 13)) {
-                    printWarning("Loop seems to repeat more than 2^13 times", stmt.getCx());
+                    // printWarning("Loop seems to repeat more than 2^13 times",
+                    // stmt.getCx());
+                    throw new ArrayIndexOutOfBoundsException(stmt.getCx() +
+                            "Loop seems to repeat more than 2^13 times");
                 }
             }
 

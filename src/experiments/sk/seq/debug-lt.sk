@@ -1,43 +1,21 @@
-int K=8;
-
-bit[K*K] sten13(bit[K*K]  in, int a, int N){
-   bit[K*K] out=0;
-   int i=a;
-   int j=0;
-   int T = 0;
-   if(N>a){ T = N-a; }
-   
-   loop(T){
-	   j=a;
-	   loop(T){
-		   out[i*K+j] = in[i*K+j];   
-		   j=j+1;
-	   }
-   i=i+1;
-   }
-   return out; 
+int W = 16;
+bit [W] most_sig1(bit[W] x) implements simple_most_sig1{
+// same sketch as before
+    bit[W] tmp=x;
+    bit[W] tmp2=x;
+    int cnt = 0;
+    repeat(??){ 
+        if(??){ {| tmp | tmp2 |} = {| tmp | tmp2 |} + ??; }
+        if(??){ {| tmp | tmp2 |} = !{| tmp | tmp2 |};  }
+        if(??){ {| tmp | tmp2 |} = {| (tmp | tmp2) (& | ^) (tmp | tmp2) |};  }
+        cnt = cnt + 1;
+        assert cnt <= 3;
+    }
+    return tmp;
 }
-
-
-bit[K*K] stenSK13(bit[K*K]  in, int a, int N) implements sten13{
-    bit[K*K] out=0;
-   int i=a;
-   int j=0;
-   int T = 0;
-   int H = ??;
-   if(N>a){ T = N-a; }
-   loop(T){
-	   bit t = in[i*K+a];
-	   j=a;
-	   loop(T){
-		   out[i*K+j] = t;   
-	         t = in[i*K+j+H];
-		   j=j+1;
-	   }
-   i=i+1;
-   } 
-   return out; 
+bit [W] simple_most_sig1(bit[W] x){    
+bit [W] ret = 0;
+for (int i = W-1; i >=0; i--)
+if (x[ i ]) { ret [ i ] = 1; return ret ; }
+return ret ;
 }
-
-
-    
