@@ -935,7 +935,7 @@ public class PartialEvaluator extends FEReplacer {
                                     new ExprUnary("!", stmt.getCond()),
                                     stmt.getCx() + ": This loop was unrolled " +
                                             MAX_UNROLL +
-                                            " times, but apparently that was not enough.",
+                                            " times, but apparently that was not enough. Use the --bnd-unroll-amnt flag for better results.",
                                     false);
                     
                     for(int i=0; i<remIters; ++i){                      

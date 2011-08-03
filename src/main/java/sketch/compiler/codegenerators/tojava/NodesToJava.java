@@ -444,13 +444,20 @@ public class NodesToJava extends SymbolTableVisitor
         String child = (String)exp.getExpr().accept(this);
         switch(exp.getOp())
         {
-        case ExprUnary.UNOP_NOT: return "!" + child;
-        case ExprUnary.UNOP_BNOT: return "~" + child;
-        case ExprUnary.UNOP_NEG: return "-" + child;
-        case ExprUnary.UNOP_PREINC: return "++" + child;
-        case ExprUnary.UNOP_POSTINC: return child + "++";
-        case ExprUnary.UNOP_PREDEC: return "--" + child;
-        case ExprUnary.UNOP_POSTDEC: return child + "--";
+            case ExprUnary.UNOP_NOT:
+                return "!(" + child + ")";
+            case ExprUnary.UNOP_BNOT:
+                return "~(" + child + ")";
+            case ExprUnary.UNOP_NEG:
+                return "-(" + child + ")";
+            case ExprUnary.UNOP_PREINC:
+                return "++(" + child + ")";
+            case ExprUnary.UNOP_POSTINC:
+                return "(" + child + ")++";
+            case ExprUnary.UNOP_PREDEC:
+                return "--(" + child + ")";
+            case ExprUnary.UNOP_POSTDEC:
+                return "(" + child + ")--";
         default: assert false : exp; return null;
         }
     }

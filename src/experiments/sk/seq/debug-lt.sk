@@ -1,21 +1,16 @@
-int W = 16;
-bit [W] most_sig1(bit[W] x) implements simple_most_sig1{
-// same sketch as before
-    bit[W] tmp=x;
-    bit[W] tmp2=x;
-    int cnt = 0;
-    repeat(??){ 
-        if(??){ {| tmp | tmp2 |} = {| tmp | tmp2 |} + ??; }
-        if(??){ {| tmp | tmp2 |} = !{| tmp | tmp2 |};  }
-        if(??){ {| tmp | tmp2 |} = {| (tmp | tmp2) (& | ^) (tmp | tmp2) |};  }
-        cnt = cnt + 1;
-        assert cnt <= 3;
-    }
-    return tmp;
+pragma options "--bnd-unroll-amnt 16 --bnd-arr-size 16 --bnd-inbits 2 ";
+generator int legen(int i , int j , int N){
+return {|??|N|}*i + {|??|N|}*j+{|??|N|};
 }
-bit [W] simple_most_sig1(bit[W] x){    
-bit [W] ret = 0;
-for (int i = W-1; i >=0; i--)
-if (x[ i ]) { ret [ i ] = 1; return ret ; }
-return ret ;
+int [N*N] transpose(int N, int [N*N] mat){
+int [N*N] out;
+for(int i=0; i<N; ++i) for(int j=0; j<N; ++j){
+out[ legen( i , j ,N) ] = mat[ legen(i , j ,N) ];
+}
+return mat;
+}
+
+harness void main(int N, int [N*N] mat, int i , int j){
+int [N*N] out = transpose(N, mat);
+assert !( i < N && j < N) || mat[i*N + j] == out[j*N + i];
 }
