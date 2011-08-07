@@ -447,6 +447,15 @@ public class FEReplacer implements FEVisitor
                               stmt.getOp());
     }
 
+    public Object visitStmtFunDecl(StmtFunDecl stmt) {
+        Function f = (Function) stmt.getDecl().accept(this);
+        if (f != stmt.getDecl()) {
+            return new StmtFunDecl(stmt, f);
+        } else {
+            return stmt;
+        }
+    }
+
     public Object visitStmtBlock(StmtBlock stmt)
     {
         List<Statement> oldStatements = newStatements;

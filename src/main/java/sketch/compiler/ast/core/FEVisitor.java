@@ -95,6 +95,7 @@ public interface FEVisitor
     public Object visitStmtAssert(StmtAssert stmt);
     public Object visitStmtVarDecl(StmtVarDecl stmt);
     public Object visitStmtWhile(StmtWhile stmt);
+    public Object visitStmtFunDecl(StmtFunDecl stmt);
     public Object visitStreamSpec(StreamSpec spec);    
     public Object visitOther(FENode node);
     public Object visitType(Type t);

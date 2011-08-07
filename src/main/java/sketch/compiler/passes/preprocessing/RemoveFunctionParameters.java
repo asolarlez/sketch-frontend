@@ -19,14 +19,112 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
+import sketch.compiler.ast.core.stmts.StmtFunDecl;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
+
+    /**
+     * Information about functions created as a result of hoisting out an inner function.
+     * 
+     * @author asolar
+     */
+    class NewFunInfo {
+        String containingFun;
+    }
+
+    class InnerFunReplacer extends FEReplacer {
+        int nfcnt = 0;
+        FunReplMap frmap = new FunReplMap(null);
+
+        class FunReplMap {
+            FunReplMap parent = null;
+            Map<String, String> frmap = new HashMap<String, String>();
+
+            FunReplMap(FunReplMap parent) {
+                this.parent = parent;
+            }
+
+            String findRepl(String old) {
+                if (frmap.containsKey(old))
+                    return frmap.get(old);
+                if (parent != null) {
+                    return parent.findRepl(old);
+                }
+                return null;
+            }
+
+            void declRepl(String old, String notold) {
+                frmap.put(old, notold);
+            }
+        }
+
+        public Object visitFunction(Function fun) {
+            FunReplMap tmp = frmap;
+            frmap = new FunReplMap(tmp);
+            for (Parameter p : fun.getParams()) {
+
+                frmap.declRepl(p.getName(), null);
+
+            }
+            Object o = super.visitFunction(fun);
+            frmap = tmp;
+            return o;
+        }
+
+        public Object visitStmtVarDecl(StmtVarDecl svd) {
+            for (int i = 0; i < svd.getNumVars(); ++i) {
+                frmap.declRepl(svd.getName(i), null);
+            }
+            return super.visitStmtVarDecl(svd);
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            String oldName = efc.getName();
+            String newName = frmap.findRepl(oldName);
+            if (newName == null) {
+                newName = oldName;
+            }
+
+            List<Expression> actuals = new ArrayList<Expression>();
+            for (Expression actual : efc.getParams()) {
+                    String nm = frmap.findRepl(actual.toString());
+                    if (nm == null) {
+                        actuals.add((Expression) actual.accept(this));
+                    } else {
+                        actuals.add(new ExprVar(actual, nm));
+                    }
+            }
+            return new ExprFunCall(efc, newName, actuals);
+        }
+
+        public Object visitStmtBlock(StmtBlock stmt) {
+            FunReplMap tmp = frmap;
+            frmap = new FunReplMap(tmp);
+            Object o = super.visitStmtBlock(stmt);
+            frmap = tmp;
+            return o;
+        }
+
+        public Object visitStmtFunDecl(StmtFunDecl sfd) {
+            String newName = sfd.getDecl().getName() + (++nfcnt);
+            frmap.declRepl(sfd.getDecl().getName(), newName);
+            Function f = (Function) sfd.getDecl().accept(this);
+            Function newFun = f.creator().name(newName).create();
+            newFuncs.add(newFun);
+            nres.registerFun(newFun);
+            return null;
+        }
+    }
+
 
     Map<String, Function> funToReplace = new HashMap<String, Function>();
     Stack<String> funsToVisit = new Stack<String>();
@@ -42,6 +140,8 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
     
     public Object visitProgram(Program p) {
+        p = (Program) p.accept(new InnerFunReplacer());
+        p.accept(new SimpleCodePrinter());
         nres = new NameResolver(p);
         for (StreamSpec pkg : p.getStreams()) {
             nres.setPackage(pkg);
@@ -192,6 +292,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         return (Function) orig.accept(renamer);
     }
+
 
     public Object visitExprFunCall(ExprFunCall efc) {
 

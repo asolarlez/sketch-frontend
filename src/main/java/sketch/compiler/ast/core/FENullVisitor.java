@@ -99,6 +99,10 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtVarDecl(StmtVarDecl stmt) { return null; }
     public Object visitStmtWhile(StmtWhile stmt) { return null; }
 
+    public Object visitStmtFunDecl(StmtFunDecl stmt) {
+        return null;
+    }
+
     public Object visitStreamSpec(StreamSpec spec) {
         return null;
     }

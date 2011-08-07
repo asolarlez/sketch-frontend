@@ -204,6 +204,10 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, stmt);
     }
 
+    public T visitStmtFunDecl(StmtFunDecl stmt) {
+        throw new FEVisitorException(this, stmt);
+    }
+
     public T visitStmtEmpty(StmtEmpty stmt) {
         throw new FEVisitorException(this, stmt);
     }

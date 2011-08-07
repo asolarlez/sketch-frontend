@@ -225,6 +225,11 @@ public class SimpleCodePrinter extends CodePrinter
 		return super.visitStmtExpr(stmt);
 	}
 
+    public Object visitStmtFunDef(StmtFunDecl stmt) {
+        printLine(stmt.toString());
+        return stmt;
+    }
+
 	@Override
 	public Object visitStmtReturn(StmtReturn stmt)
 	{
