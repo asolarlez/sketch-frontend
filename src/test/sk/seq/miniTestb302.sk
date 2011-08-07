@@ -1,0 +1,12 @@
+
+int apply(fun f){
+    return f();
+}
+
+harness void main(int in){
+    generator int foo(){ return ??; }
+    generator int moo(fun f){ return f(); }
+    assert foo() == (in + 5)-in;
+    assert apply(foo) == (in + 3)-in;
+    assert moo(foo) == (in + 5)-in;
+}

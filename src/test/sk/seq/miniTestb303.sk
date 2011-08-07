@@ -1,0 +1,24 @@
+
+int apply(fun f, fun g){
+    return f(g);
+}
+
+harness void main(int in){
+    generator int foo(){ return ??; }
+    generator int moo(fun f){ return f(); }
+    
+    assert apply(moo, foo) == (in + 3)-in;
+    
+}
+
+harness void main2(int in){
+    generator int one(){ return 1; }
+    generator int boo(){
+        generator int app2(fun f){ return f(); }
+        if(??){ return app2(boo) + 1; }
+        return one();
+    }
+    
+    assert boo() == (in + 3)-in;
+    
+}
