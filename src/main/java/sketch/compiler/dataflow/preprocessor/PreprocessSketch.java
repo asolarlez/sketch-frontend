@@ -25,6 +25,7 @@ import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.spin.IdentifyModifiedVars;
+import sketch.util.exceptions.SketchNotResolvedException;
 
 /**
  *
@@ -90,6 +91,10 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             /* Evaluate given assertion expression. */
             Expression assertCond = stmt.getCond();
             abstractValue vcond  = (abstractValue) assertCond.accept (this);
+        if (vcond.hasIntVal() && vcond.getIntVal() == 0) {
+            throw new ArrayIndexOutOfBoundsException("ASSERTION CAN NOT BE SATISFIED: " +
+                    stmt.getCx() + " " + stmt.getMsg());
+        }
             Expression ncond = exprRV;
             String msg = null;
             msg = stmt.getMsg();
@@ -143,6 +148,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     /* Increment inline counter. */
                     rcontrol.pushFunCall(exp, fun);
 
+                    try {
                     List<Statement>  oldNewStatements = newStatements;
                     newStatements = new ArrayList<Statement> ();
                     Statement result = null;
@@ -172,8 +178,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                         newStatements = oldNewStatements;
                     }
                     addStatement(result);
-
-                    rcontrol.popFunCall(exp);
+                    } finally {
+                        rcontrol.popFunCall(exp);
+                    }
                 }else{
                     StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero, false);
                     addStatement(sas);
@@ -193,7 +200,18 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         if (newFuns.containsKey(nres.getFunName(func.getName()))) {
             return newFuns.get(nres.getFunName(func.getName()));
         }
-        Function obj = (Function)super.visitFunction(func);
+        Function obj;
+        try {
+            obj = (Function) super.visitFunction(func);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            if (func.isSketchHarness() || func.getSpecification() != null) {
+                throw new SketchNotResolvedException(e.getMessage());
+            }
+            obj =
+                    func.creator().body(
+                            new StmtBlock(new StmtAssert(ExprConstInt.zero,
+                                    "This function should never be called", false))).create();
+        }
         
         newFuns.put(nres.getFunName(obj.getName()), obj);
         return obj;

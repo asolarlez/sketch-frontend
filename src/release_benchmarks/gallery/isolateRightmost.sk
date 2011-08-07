@@ -1,4 +1,5 @@
-//@Description Sketch to isolate the rightmost 0 index using only bit-vector operations. Harder version than isolateRightmost.sk
+//@Description Sketch to isolate the rightmost 0 index using only bit-vector operations.
+
 
 int W = 32;
 
@@ -8,15 +9,17 @@ bit[W] isolate0 (bit[W] x) {
 		if (!x[i]) { ret[i] = 1; return ret;  } 
 }
 
+generator bit[W] gen(bit[W] x, int bnd){
+    assert bnd > 0;
+    if(??) return x;
+    if(??) return ??;
+    if(??) return ~gen(x, bnd-1);
+    if(??){
+        return {| gen(x, bnd-1) (+ | & | ^) gen(x, bnd-1) |};
+    }
+}
 
-bit[W] isolate0sk (bit[W] x)  implements isolate0 {	
-	bit[W] tmp=x;
-	bit[W] tmp2=x;
-	repeat(??){ 
-		if(??){ {| tmp | tmp2 |} = {| tmp | tmp2 |} + ??; }
-		if(??){ {| tmp | tmp2 |} = !{| tmp | tmp2 |};  }
-		if(??){ {| tmp | tmp2 |} = {| (tmp | tmp2) (& | ^) (tmp | tmp2) |};  }
-	}
-	return tmp;
+bit[W] isolate0sk (bit[W] x)  implements isolate0 {		
+	return gen(x, 3);
 }
 

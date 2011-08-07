@@ -1,16 +1,13 @@
-pragma options "--bnd-unroll-amnt 16 --bnd-arr-size 16 --bnd-inbits 2 ";
-generator int legen(int i , int j , int N){
-return {|??|N|}*i + {|??|N|}*j+{|??|N|};
-}
-int [N*N] transpose(int N, int [N*N] mat){
-int [N*N] out;
-for(int i=0; i<N; ++i) for(int j=0; j<N; ++j){
-out[ legen( i , j ,N) ] = mat[ legen(i , j ,N) ];
-}
-return mat;
+int W = 32;
+
+void swap(ref bit[W] x, ref bit[W] y){
+   repeat(3) 
+      {| x | y |} = x ^ y; 
 }
 
-harness void main(int N, int [N*N] mat, int i , int j){
-int [N*N] out = transpose(N, mat);
-assert !( i < N && j < N) || mat[i*N + j] == out[j*N + i];
+
+harness void main(bit[W] x, bit[W] y){
+   bit[W] xold = x, yold = y;
+   swap(x,y);
+   assert y == xold && x == yold;
 }
