@@ -25,10 +25,13 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Forces code generation. Even if the sketch fails to resolve, "
             + "this flag will force the synthesizer to produce code from the latest known control values.")
     public boolean forceCodegen;
-    @CliParameter(help = "The synthesizer guarantees that all asserts will succeed. "
+    @CliParameter(help = "DEPRACATED: The synthesizer guarantees that all asserts will succeed. "
             + "For this reason, all asserts are removed from generated code by default. "
             + "However, sometimes it is useful for debugging purposes to keep the assertions around.")
     public boolean keepAsserts;
+    @CliParameter(help = "Remove all assertions from the code, since the synthesizer knows they will all succeed.")
+    public boolean killAsserts;
+
     @CliParameter(help = "Keep intermediate files. Useful for debugging the compiler.")
     public boolean keepTmp;
     @CliParameter(help = "Temporary output file used to communicate with backend solver.")

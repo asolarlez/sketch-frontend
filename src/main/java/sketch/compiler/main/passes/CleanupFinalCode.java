@@ -45,10 +45,10 @@ public class CleanupFinalCode extends MetaStage {
         prog = (Program) prog.accept(new MakeCastsExplicit());
         prog = (Program) prog.accept(new EliminateTransAssns());
         prog = (Program) prog.accept(new RemoveUselessCasts());
-        prog = (Program) prog.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
+        prog = (Program) prog.accept(new EliminateDeadCode(!options.feOpts.killAsserts));
         prog = (Program) prog.accept(new RemoveDumbArrays());
         prog = (Program) prog.accept(new EliminateTransAssns());
-        prog = (Program) prog.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
+        prog = (Program) prog.accept(new EliminateDeadCode(!options.feOpts.killAsserts));
         prog = (Program) prog.accept(new SimplifyVarNames());
         prog = (Program) prog.accept(new AssembleInitializers());
         prog = (Program) prog.accept(new RemoveShallowTempVars());
