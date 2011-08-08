@@ -1,5 +1,7 @@
 include "generators.skh";
 
+pragma options "--bnd-inline-amnt 3 "; 
+
 int N = 10;
 
 harness void main(int x, int y, int[N] firstHalf, int[N] secondHalf){

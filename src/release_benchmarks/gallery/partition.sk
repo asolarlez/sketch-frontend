@@ -1,7 +1,7 @@
 //@Description Partition the range [0, N-1] int P similar partitions.
 include "generators.skh";
 
-pragma options "-V 5 --bnd-inline-amnt 3 --bnd-inbits 3 ";
+pragma options "--bnd-inline-amnt 3 --bnd-inbits 3 ";
 
 
 void partition(int p, int P, int N, ref int ibeg, ref int iend){

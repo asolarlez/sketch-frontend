@@ -16,8 +16,10 @@
 
 package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
@@ -49,7 +51,109 @@ import sketch.compiler.ast.core.typs.TypeArray;
  */
 public class AssembleInitializers extends FEReplacer
 {
-    public Object visitStmtBlock(StmtBlock block)
+
+    class Vinfo {
+        public int declpos = 0;
+        public int firstuse = -1;
+
+        Vinfo(int declpos) {
+            this.declpos = declpos;
+        }
+
+        public String toString() {
+            return "(" + declpos + ", " + firstuse + ")";
+        }
+    }
+
+    class VarTrack {
+        VarTrack parent;
+        Map<String, Vinfo> vmap = new HashMap<String, AssembleInitializers.Vinfo>();
+        int curPos = 0;
+
+        Map<Integer, Integer> process() {
+            Map<Integer, Integer> rm = new HashMap<Integer, Integer>();
+            for (Vinfo vi : vmap.values()) {
+                if (vi.firstuse - vi.declpos > 1) {
+                    rm.put(vi.declpos, vi.firstuse);
+                }
+            }
+            return rm;
+        }
+
+        VarTrack(VarTrack parent) {
+            this.parent = parent;
+        }
+
+        void next() {
+            curPos++;
+        }
+
+        void declVar(String name) {
+            vmap.put(name, new Vinfo(curPos));
+        }
+
+        void varUsed(String name) {
+            if (vmap.containsKey(name)) {
+                Vinfo vi = vmap.get(name);
+                if (vi.firstuse < 0) {
+                    vi.firstuse = curPos;
+                }
+                return;
+            }
+            if (parent != null) {
+                parent.varUsed(name);
+            }
+        }
+
+    }
+
+    VarTrack vtrack;
+
+    public Object visitExprVar(ExprVar ev) {
+        if (vtrack != null) {
+            vtrack.varUsed(ev.getName());
+        }
+        return ev;
+    }
+
+    public Object visitStmtBlock(StmtBlock block) {
+        VarTrack oldVt = vtrack;
+        vtrack = new VarTrack(vtrack);
+
+        List<Statement> slist = new java.util.ArrayList<Statement>();
+        for (Statement s : block.getStmts()) {
+            slist.add((Statement) s.accept(this));
+            if (s instanceof StmtVarDecl) {
+                StmtVarDecl svd = (StmtVarDecl) s;
+                if (svd.getNumVars() == 1) {
+                    if (svd.getInit(0) == null || svd.getInit(0) instanceof ExprConstInt)
+                    {
+                        vtrack.declVar(svd.getName(0));
+                    }
+                }
+            }
+            vtrack.next();
+        }
+        List<Statement> olist = new java.util.ArrayList<Statement>();
+        Map<Integer, Integer> rmap = vtrack.process();
+        Map<Integer, Statement> pmap = new HashMap<Integer, Statement>();
+        int i = 0;
+        for (Statement s : slist) {
+            if (pmap.containsKey(i)) {
+                olist.add(pmap.get(i));
+            }
+            if (rmap.containsKey(i)) {
+                pmap.put(rmap.get(i), s);
+            } else {
+                olist.add(s);
+            }
+            ++i;
+        }
+        vtrack = oldVt;
+        return auxiliary(new StmtBlock(olist));
+    }
+
+    public Object auxiliary(StmtBlock block)
     {
         List oldStatements = newStatements;
         newStatements = new java.util.ArrayList<Statement>();
@@ -166,7 +270,7 @@ public class AssembleInitializers extends FEReplacer
                                        decl.getNames(),
                                        newInits);
             }
-            addStatement((Statement)stmt.accept(this));
+            addStatement((Statement) stmt);
         }
         Statement result = new StmtBlock(block, newStatements);
         newStatements = oldStatements;

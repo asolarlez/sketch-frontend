@@ -20,7 +20,8 @@ bit[W] countSketch(bit[W] in) implements countBits
 	bit[W] tmp=in;
 	repeat(??)
 	{
-		tmp=(tmp & ??) + (tmp>>?? & ??);
+	    bit[W] m = ??;
+		tmp=(tmp & m) + (tmp>>?? & ~m);
 	}
 	return tmp;
 }

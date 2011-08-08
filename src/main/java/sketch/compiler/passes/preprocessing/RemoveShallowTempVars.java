@@ -88,6 +88,7 @@ public class RemoveShallowTempVars extends FEReplacer {
      */
     class MarkShallowTemps extends FEReplacer{
         Map<String, Boolean> isShallow = new HashMap<String, Boolean>();
+        Map<String, String> dependsOn = new HashMap<String, String>();
         Map<String, Integer> useCount = new HashMap<String, Integer>();
         Map<String, Expression> vals = new HashMap<String, Expression>();
         boolean shallow(String name){
@@ -99,11 +100,17 @@ public class RemoveShallowTempVars extends FEReplacer {
         public Object visitStmtVarDecl(StmtVarDecl svd){
             for (int i = 0; i < svd.getNumVars(); i++)
             {
-                String name = svd.getName(i);
+                final String name = svd.getName(i);
                 Type t = svd.getType(i);
                 if(t instanceof TypePrimitive){
                     if(svd.getInit(i) != null && checkSimple(svd.getInit(i)) ){
                         isShallow.put(name, true);
+                        svd.getInit(i).accept(new FEReplacer() {
+                            public Object visitExprVar(ExprVar ev) {
+                                dependsOn.put(ev.getName(), name);
+                                return ev;
+                            }
+                        });
                         if (isBig(svd.getInit(i))) {
                             useCount.put(name, 1);
                         }
@@ -140,7 +147,11 @@ public class RemoveShallowTempVars extends FEReplacer {
 
         public Object visitStmtAssign(StmtAssign sa){
             if(sa.getLHS() instanceof ExprVar){
-                isShallow.put(sa.getLHS().toString(), false);
+                String name = sa.getLHS().toString();
+                isShallow.put(name, false);
+                if (dependsOn.containsKey(name)) {
+                    isShallow.put(dependsOn.get(name), false);
+                }
             }
             return super.visitStmtAssign(sa);
         }

@@ -52,7 +52,7 @@ public class CleanupFinalCode extends MetaStage {
         prog = (Program) prog.accept(new SimplifyVarNames());
         prog = (Program) prog.accept(new AssembleInitializers());
         prog = (Program) prog.accept(new RemoveShallowTempVars());
-        prog = (Program) prog.accept(new AssembleInitializers());
+        // prog = (Program) prog.accept(new AssembleInitializers());
 
         return prog;
     }
