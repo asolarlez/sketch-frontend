@@ -1,136 +1,106 @@
 //@Description Sketch to reverse a list.
-
-pragma options "--bnd-unroll-amnt 4";
+pragma options "--unrollamnt 4";
 int N = 4;
 
 struct node{
-	node next;
-	bit val;	
+    node next;
+    bit val;    
 }
 
 struct list{
-	node head;	
-	node tail;
+    node head;  
+    node tail;
 }
 
-generator list cat(list l1, list l2){ /* automatically rewritten */
-	if(l1.head == null){
-		return l2;	
-	}else{
-		if(l2.head == null){
-			return l1;	
-		}else{
-			l1.tail.next = l2.head;
-			l1.tail = l2.tail;
-			return l1;	
-		}
-	}
+list newList(){
+    list l = new list();
+    l.head = null;
+    l.tail = null;
+    return l;
 }
 
-generator node popHead(list l){ /* automatically rewritten */
-	assert l.head != null;
-	node n = l.head;
-	l.head = l.head.next;
-	if(l.head == null){ assert l.tail == n;  l.tail = null; }
-	return n;
-}
-
-
-list reverse(list l){ /* automatically rewritten */
-	if(l.head == null){
-		return l;	
-	}else{
-		node n = popHead(l);
-		list l2 = new list();
-		l2.head = n;
-		l2.tail = n;
-		n.next = null;
-		return cat( reverse(l) , l2 );
-	}
-}
-
-
-generator node hole(list l1, list l2){ /* automatically rewritten */  
-	return {| null | ( (l1 | l2)(.head | .tail) )(.next)?  |}	;
-}
-
-generator node holeB(list l1, list l2, node n){ /* automatically rewritten */
-	return 	(?? ? hole(l1, l2) : n); 
-}
-
-
-generator bit cond(list l1, list l2){ /* automatically rewritten */ 
-	node n1 = hole(l1, l2);
-	node n2 = hole(l1, l2);
-	return {| n1 (== | !=) n2 | ??  |};
-}
-
-list reverseSK(list l){ /* automatically rewritten */
-	list nl = new list();
-	nl.head = null; 
-	nl.tail = null;
-	bit c  = cond(l, nl);
-	node tmp = null;	
-	for(int i=0; c; ++i){
-		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}// 83 * 10 * 6 = 4980
-		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}
- 		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}
- 		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}
- 		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}
-		c  = cond(l, nl);
-	}	
-	return nl;
-}
-
-list populate(bit[N] elems, int n){ /* automatically rewritten */
-	list l = new list();
-	node prev = null;
-	for(int i=0; i<n; ++i){
-		node t = new node();
-		t.val = elems[i];
-		if(prev != null){ prev.next = t; }
-		prev = t;
-		if(i==0){
-			l.head = t;	
-		}
-	}
-	l.tail = prev;
-	return l;	
-}
-
-
-bit[N] serialize(list l, int n){ /* automatically rewritten */
-	bit[N] out = 0;
-	node t = l.head;
-	node prev = null;
-	for(int i=0; i<n; ++i){
-		assert t != null;
-		out[i] = t.val;
-		prev = t; 
-		t = t.next;
-	}
-	assert prev == 	 l.tail;
-	assert t == null;
-	return out;
-}
-
-
-bit[N] spec(bit[N] elems, int n){
-	if(n >= N){ n = N-1; }
-	list l = populate(elems, n);
-	l = reverse(l);
-	
-	return serialize(l, n);
+node newNode(){
+    node t = new node();
+    t.next = null;
+    t.val = 0;
+    return t;
 }
 
 
 
-bit[N] sketch(bit[N] elems, int n) implements spec{
-	if(n >= N){ n = N-1; }
-	list l = populate(elems, n);
-	l = reverseSK(l);
-	
-	return serialize(l, n);
+generator node hole(list l1, list l2){  
+    return {| null | ( (l1 | l2)(.head | .tail) )(.next)?  |}   ;
+}
+
+generator node holeB(list l1, list l2, node n){
+    return  (?? ? hole(l1, l2) : n); 
 }
 
 
+generator bit cond(list l1, list l2, node tmp){ 
+    node n1 = holeB(l1, l2, tmp);
+    node n2 = holeB(l1, l2, tmp);
+    return {| ?? | n1 (== | !=) n2   |};
+}
+
+list reverseSK(list l){
+    list nl = newList();        
+    node tmp = null;    
+    bit c  = cond(l, nl, tmp);
+    while(c){
+        if(cond(l, nl, tmp)){ {| ( tmp | (l | nl)(.head | .tail) ) (.next)? |}   = holeB(l, nl, tmp);}// 83 * 10 * 6 = 4980
+        repeat(??){
+                if(cond(l, nl, tmp)){ {| ( tmp | (l | nl)(.head | .tail) ) (.next)? |}    = holeB(l, nl, tmp);}// 83 * 10 * 6 = 4980
+        }
+        c  = cond(l, nl, tmp);
+    }   
+    return nl;
+}
+
+
+void popList(int n, list l, ref node[N] nodes){
+    for(int i=0; i<n;++i){
+        node t = newNode();
+        if(i>0){
+            l.tail.next = t;
+        }
+        l.tail = t;
+        nodes[i] = t; 
+    } 
+    l.head = nodes[0];
+}
+
+ 
+void check(int n, list l, node[N] nodes){
+    node cur = l.head;
+    int i=0;
+    while(cur != null){
+        assert cur == nodes[n-1-i];
+        cur = cur.next;     
+        i = i+1;
+    }
+    assert i == n;
+    if(n > 0){
+        assert l.head == nodes[n-1];
+        assert l.tail == nodes[0];
+        assert l.tail.next == null;
+    }else{
+        assert l.head == null;
+        assert l.tail == null;
+    }
+}
+
+harness void main(int n){
+    if(n >= N){ n = N-1; }
+    node[N] nodes = null;
+    list l = newList();
+    
+    popList(n, l, nodes);   
+    
+    l = reverseSK(l);
+    
+    if(n>0){ assert l.tail.next == null; }
+    
+    check(n, l, nodes);
+    
+}

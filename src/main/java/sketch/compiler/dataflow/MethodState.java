@@ -514,6 +514,9 @@ public class MethodState {
     private abstractValue getVecTernaryValue(String var, abstractValue val){
         List<abstractValue> lv = val.getVectValue();
         abstractValue av = UTvarValue(var);
+        if (!av.isVect()) {
+            return vtype.ternary(getRvflag().state(vtype), av, lv.get(0));
+        }
         List<abstractValue> ov = av.getVectValue();
         assert av.isVect() : "NYI";
         assert lv.size() == ov.size() : "NYI";

@@ -1,0 +1,71 @@
+//@Description Sketch of a merge sort implementation.
+/**
+ * This example provides a nice case study of the use of generators to produce 
+ * complicated expressions. It also illustrates how one can synthesize code for fixed 
+ * word sizes, and produce code that actually works for arbitrary sizes.
+ * 
+ * Recursion control is very important for this example. Using --inlineamnt > 5 for this 
+ * example will cause it to run for a very long time.
+ * 
+ * Also, you want to run with the --inbits flag with a value < 4; otherwise, you will wait for a long time.
+ * 
+ * 
+ */
+
+include "generators.skh";
+pragma options "--bnd-inline-amnt 3 --bnd-inbits 3  "; 
+
+
+int[N] sort(int N, int[N] input){
+	int[N] output=input;
+	int[N] done = 0;
+	int k=0;
+	for(int i=0; i<N; ++i){
+		for(int j=i+1; j<N; ++j){
+			if( output[j]< output[i]){
+				int tmp = output[j];
+				output[j] = output[i];
+				output[i] = tmp;
+			}
+		}
+	}
+	return output;
+}
+
+
+
+int[N] MergeSort(int N, int[N] input)implements sort{
+	int[N] output=0;
+	if(N>1){ 
+	    int No2a = N/2; int No2b = N-No2a;	    
+		int[No2a] firstHalf = input[0::No2a];
+		int[No2b] secondHalf = input[No2a::No2b];
+		firstHalf = MergeSort(No2a, firstHalf);
+		secondHalf = MergeSort(No2b, secondHalf);
+		int x=0;
+		int y=0;		
+		generator int chose(int choice){
+            choice = ??;
+            if(choice==0){ return firstHalf[x]; }
+            if(choice==1){ return secondHalf[y]; }
+            if(choice==2){ return N; }
+            if(choice==3){ return No2a; }
+            if(choice==4){ return No2b; }
+            if(choice==5){ return x; }
+            if(choice==6){ return y; }
+            assert choice <=6;
+        }
+		for(int i=0; i<N; ++i){		    
+			if(exprBoolG(chose, 0, {})){
+				output[i] = firstHalf[x]; x = x+1;
+			}else{
+				output[i] = secondHalf[y]; y = y+1;
+			}
+		}
+	}else{
+		output = input;	
+	}
+	return output;
+}
+
+

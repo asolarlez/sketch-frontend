@@ -1,0 +1,9 @@
+include "miniTestb306a.skh";
+
+harness void main(int in1, int in2, int in3){
+    generator int foo(){ return {| in1 | in2 | in3 |}; }
+    
+    
+    assert gen(foo) == (in1 + in3);
+    
+}

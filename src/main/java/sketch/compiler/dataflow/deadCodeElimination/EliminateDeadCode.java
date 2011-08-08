@@ -103,6 +103,11 @@ public class EliminateDeadCode extends BackwardDataflow {
 			if(av.getLiveness() == LiveVariableAV.DEAD){
 				return null;
 			}
+            if (stmt.getRHS() instanceof ExprVar) {
+                if (stmt.getLHS().equals(stmt.getRHS())) {
+                    return null;
+                }
+            }
 
 		}
 		return super.visitStmtAssign(stmt);

@@ -1,6 +1,6 @@
 //@Description Given a bit-vector and a bit-mask, the task is select from the bit-vector all the bits selected by the bit-mask and pack them in the beginning of the word.
 
-int W = 8;
+int W = 16;
 
 bit[W] compress(bit[W] x, bit[W] m){
   int i=0;
@@ -15,13 +15,13 @@ bit[W] compress(bit[W] x, bit[W] m){
 }
 
 
-generator bit[W] fixedMask(bit[W] x){ /* automatically rewritten */
+generator bit[W] fixedMask(bit[W] x){ 
    bit[W] mask = {0, 1, 0, 0, 1, 0, 0, 1};
    return  compress(x, mask);
 }
 
 
-generator bit[W] xor_reduce(bit[W] in){ /* automatically rewritten */
+bit[W] xor_reduce(bit[W] in){ 
   bit[W] out = 0;
   out[0] = in[0];
   for(int i=1; i<W; ++i){
@@ -29,6 +29,14 @@ generator bit[W] xor_reduce(bit[W] in){ /* automatically rewritten */
   }
   return out;
 }
+
+bit[W] xor_reduceFast(bit[W] in) implements xor_reduce{ 
+    bit[W] out = in;
+    repeat(??){
+        out = (out<<?? & ??) ^ (out<<?? & ??);
+    }
+    return out;
+  }
 
 generator bit[W] maskedShift(bit[W] in, bit[W] mask, int s){ /* automatically rewritten */
 	bit[W] t = in & mask;
@@ -44,7 +52,7 @@ bit[W] fast(bit[W] x, bit[W] m) implements compress{
 	x = x & m;
 	mk = (!m) << ??;	
 	repeat(??){
-	  mp = xor_reduce(mk); 
+	  mp = xor_reduceFast(mk); 
 	  mv = mp & m;
 	  m = maskedShift(m, mv, ??);
 	  x = maskedShift(x, mv, ??);

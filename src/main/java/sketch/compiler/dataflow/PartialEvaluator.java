@@ -482,7 +482,8 @@ public class PartialEvaluator extends FEReplacer {
                     abstractValue fav = null;
                     if(av.isVect()){
                         List<abstractValue> lv = av.getVectValue();
-                        if(lv.size() == ta.getLength().getIValue()){
+                        Integer tal = ta.getLength().getIValue();
+                        if (tal != null && lv.size() == tal) {
                             fav=(av);
                         }else{
                             fav=(vtype.cast(av, ta));

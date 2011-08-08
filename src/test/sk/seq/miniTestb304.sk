@@ -1,0 +1,8 @@
+
+harness void main(int in){
+    generator int foo(){ return in + ??; }
+    
+    
+    assert foo() == (in + 3);
+    
+}

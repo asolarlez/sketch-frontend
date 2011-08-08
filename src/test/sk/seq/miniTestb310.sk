@@ -1,0 +1,20 @@
+
+generator void moo(ref int N, ref int[N] aa){
+    foo(N, aa);
+    foo(N, aa);    
+}
+
+void id(ref int N){
+    
+}
+generator void foo(ref int N, ref int[N] bar){
+    id(N);
+    assert bar[??] == 2;
+}
+
+harness void main(){
+    int N = 3;
+    int[N] aa = {1, 2, 3};
+    moo(N, aa);
+    assert aa[??] == 1;
+}

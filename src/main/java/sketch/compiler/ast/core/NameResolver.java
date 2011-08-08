@@ -78,7 +78,7 @@ public class NameResolver {
             if (chkMap.containsKey(cpkgNm)) {
                 return cpkgNm;
             }
-            System.err.println("Name " + name + " is ambiguous.");
+            // System.err.println("Name " + name + " is ambiguous.");
             return null;
         }
         return pkgName + ":" + name;
@@ -97,6 +97,14 @@ public class NameResolver {
         if (f == null)
             throw new UnrecognizedVariableException(name, errSource);
         return f;
+    }
+
+    public String getFunName(Function f) {
+        if (pkgForFun.containsKey(f.getName())) {
+            return pkgForFun.get(f.getName()) + ":" + f.getName();
+        } else {
+            throw new RuntimeException("NYI");
+        }
     }
 
     public String getStructName(String name) {

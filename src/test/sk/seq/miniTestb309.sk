@@ -1,0 +1,13 @@
+
+
+void foo(ref int N, ref int[N] bar){
+    assert bar[??] == 2;
+}
+
+harness void main(){
+    int N = 3;
+    int[N] aa = {1, 2, 3};
+    foo(N, aa);
+    foo(N, aa);
+    assert aa[??] == 1;
+}

@@ -1,0 +1,33 @@
+//@Description Partition the range [0, N-1] int P similar partitions.
+include "generators.skh";
+
+pragma options "-V 5 --bnd-inline-amnt 3 --bnd-inbits 3 ";
+
+
+void partition(int p, int P, int N, ref int ibeg, ref int iend){
+    if(p< expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS}) ){
+        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+    }else{
+        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+    }
+}
+
+
+
+harness void testPartition(int p, int N, int P){
+    if(N<1 || P < 1){ return; }
+    if(p<P){
+        int ibeg, iend;
+        partition(p, P, N, ibeg, iend);
+        assert iend - ibeg < (N/P) + 2;
+        if(p+1 < P){
+            int ibeg2, iend2;
+            partition(p+1, P, N, ibeg2, iend2);
+            assert iend == ibeg2;
+        }
+        if(p==0){ assert ibeg == 0; }
+        if(p==P-1){ assert iend == N; }
+    }
+}

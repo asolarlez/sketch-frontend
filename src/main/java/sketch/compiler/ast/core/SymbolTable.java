@@ -243,6 +243,13 @@ public class SymbolTable
         throw new UnrecognizedVariableException(var.getName(), var);
     }
 
+    public Type lookupVarNocheck(ExprVar var) {
+        VarInfo info = lookupVarInfo(var.getName());
+        if (info != null)
+            return info.type;
+        return null;
+    }
+
     /**
      * Finds the object that declared a particular symbol. If that symbol is not in the
      * current symbol table, search in the parent.

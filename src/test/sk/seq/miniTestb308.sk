@@ -1,0 +1,24 @@
+include "generators.skh";
+
+int N = 10;
+
+harness void main(int x, int y, int[N] firstHalf, int[N] secondHalf){
+    int No2 = N/2;      
+    generator int chose(int choice){
+        choice = ??;
+        if(choice==1){ return firstHalf[x]; }
+        if(choice==2){ return secondHalf[y]; }
+        if(choice==3){ return N; }
+        if(choice==3){ return No2; }
+        if(choice==4){ return x; }
+        if(choice==5){ return y; }
+        assert choice <=5;
+    }    
+    
+    if(exprBoolG(chose, 0, {})){
+        assert firstHalf[x] < secondHalf[y];
+    }else{
+        assert x >= N || y >= N || (firstHalf[x] >= secondHalf[y]);
+    }
+    
+}

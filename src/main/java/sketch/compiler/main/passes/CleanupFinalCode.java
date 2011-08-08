@@ -11,6 +11,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.cleanup.RemoveDumbArrays;
+import sketch.compiler.passes.cleanup.RemoveUselessCasts;
 import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 
@@ -38,13 +39,14 @@ public class CleanupFinalCode extends MetaStage {
         // dataflow pass
         final PreprocessSketch preproc =
                 new PreprocessSketch(varGen, options.bndOpts.unrollAmnt, rctrl, true);
+
         prog = (Program) prog.accept(preproc);
         prog = (Program) prog.accept(new FlattenStmtBlocks());
         prog = (Program) prog.accept(new MakeCastsExplicit());
         prog = (Program) prog.accept(new EliminateTransAssns());
+        prog = (Program) prog.accept(new RemoveUselessCasts());
         prog = (Program) prog.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
         prog = (Program) prog.accept(new RemoveDumbArrays());
-
         prog = (Program) prog.accept(new EliminateTransAssns());
         prog = (Program) prog.accept(new EliminateDeadCode(options.feOpts.keepAsserts));
         prog = (Program) prog.accept(new SimplifyVarNames());

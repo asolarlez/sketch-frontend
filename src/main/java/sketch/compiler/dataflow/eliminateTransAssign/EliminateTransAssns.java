@@ -35,7 +35,7 @@ public class EliminateTransAssns extends DataflowWithFixpoint {
 		if(isReplacer){
 			exprRV = new ExprVar(exp, transName(nm));
 		}
-		return 	oval;
+        return val;
 	}
 
 	/*

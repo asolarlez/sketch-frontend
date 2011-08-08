@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -26,7 +27,9 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.structure.CallGraph;
+import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
@@ -38,13 +41,103 @@ public class RemoveFunctionParameters extends FEReplacer {
      * @author asolar
      */
     class NewFunInfo {
-        String containingFun;
+        public final String funName;
+        public final String containingFunction;
+        public final Set<Parameter> paramsToAdd;
+
+        NewFunInfo(String funName, String containingFunction) {
+            this.funName = funName;
+            this.containingFunction = containingFunction;
+            paramsToAdd = new TreeSet<Parameter>();
+        }
     }
 
-    class InnerFunReplacer extends FEReplacer {
+    Map<String, NewFunInfo> extractedInnerFuns =
+            new HashMap<String, RemoveFunctionParameters.NewFunInfo>();
+    Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
+    Map<String, String> reverseEquiv = new HashMap<String, String>();
+
+    class ThreadClosure extends FEReplacer {
+        Map<String, Set<Parameter>> funsToVisit = new HashMap<String, Set<Parameter>>();
+
+        public Object visitProgram(Program prog){
+            CallGraph cg = new CallGraph(prog);
+            nres = new NameResolver(prog);
+            for(Map.Entry<String, NewFunInfo> eif : extractedInnerFuns.entrySet() ){
+                String key = eif.getKey();
+                NewFunInfo nfi = eif.getValue();
+                Set<String> visited = new HashSet<String>();
+                Stack<String> toVisit = new Stack<String>(); 
+                if(equivalences.containsKey(key)){
+                    for(String fn : equivalences.get(key)){
+                        toVisit.push(fn);
+                        funsToVisit.put(fn, new TreeSet<Parameter>(nfi.paramsToAdd));
+                    }
+                }else{
+                    toVisit.push(key);
+                    funsToVisit.put(key, new TreeSet<Parameter>(nfi.paramsToAdd));
+                }
+                while(!toVisit.isEmpty()){
+                    String cur = toVisit.pop();
+                    if (visited.contains(cur)) {
+                        continue;
+                    }
+                    visited.add(cur);
+                    Set<Function> callers = cg.callersTo(nres.getFun(cur));
+                    for (Function caller : callers) {
+
+                        String callerName = nres.getFunName(caller);
+                        String callerOriName = callerName;
+                        if (reverseEquiv.containsKey(callerName)) {
+                            callerOriName = reverseEquiv.get(callerName);
+                        }
+                        if (!callerOriName.equals(nfi.containingFunction)) {
+                            toVisit.push(callerName);
+                            if (funsToVisit.containsKey(callerName)) {
+                                funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
+                            } else {
+                                funsToVisit.put(callerName, new TreeSet<Parameter>(
+                                        nfi.paramsToAdd));
+                            }
+                        }
+                    }
+                }
+                
+            }
+            return super.visitProgram(prog);
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            String name = nres.getFunName(efc.getName());
+            if (funsToVisit.containsKey(name)) {
+                List<Expression> pl = new ArrayList<Expression>(efc.getParams());
+                for (Parameter p : funsToVisit.get(name)) {
+                    pl.add(new ExprVar(efc, p.getName()));
+                }
+                efc = new ExprFunCall(efc, efc.getName(), pl);
+            }
+            return super.visitExprFunCall(efc);
+        }
+
+        public Object visitFunction(Function fun) {
+            String name = nres.getFunName(fun.getName());
+            if (funsToVisit.containsKey(name)) {
+                List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
+                pl.addAll(funsToVisit.get(name));
+                fun = fun.creator().params(pl).create();
+            }
+            return super.visitFunction(fun);
+        }
+
+    }
+
+    class InnerFunReplacer extends SymbolTableVisitor {
         int nfcnt = 0;
         FunReplMap frmap = new FunReplMap(null);
 
+        InnerFunReplacer() {
+            super(null);
+        }
         class FunReplMap {
             FunReplMap parent = null;
             Map<String, String> frmap = new HashMap<String, String>();
@@ -67,15 +160,19 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         }
 
+        Function curFun;
         public Object visitFunction(Function fun) {
             FunReplMap tmp = frmap;
             frmap = new FunReplMap(tmp);
+            Function tmpf = curFun;
+            curFun = fun;
             for (Parameter p : fun.getParams()) {
 
                 frmap.declRepl(p.getName(), null);
 
             }
             Object o = super.visitFunction(fun);
+            curFun = tmpf;
             frmap = tmp;
             return o;
         }
@@ -114,13 +211,45 @@ public class RemoveFunctionParameters extends FEReplacer {
             return o;
         }
 
+        NewFunInfo funInfo(Function f) {
+            final NewFunInfo nfi =
+                    new NewFunInfo(nres.getFunName(f.getName()),
+                            nres.getFunName(curFun.getName()));
+            SymbolTableVisitor stv = new SymbolTableVisitor(null) {
+                public Object visitExprVar(ExprVar exp) {
+                    Type t = symtab.lookupVarNocheck(exp);
+                    if (t == null) {
+                        if (nres.getFun(exp.getName()) != null) {
+                            return exp;
+                        }
+                        Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
+                        if (pt instanceof TypeFunction) {
+                            throw new TypeErrorException(exp.getCx().toString() +
+                                    ": An inner function can not use a function parameter passed to its parent function");
+                        }
+                        nfi.paramsToAdd.add(new Parameter(pt, exp.getName(),
+                                Parameter.REF));
+                        pt.accept(this);
+                    }
+                    return exp;
+                }
+
+            };
+            stv.setNres(nres);
+            f.accept(stv);
+            return nfi;
+        }
+
         public Object visitStmtFunDecl(StmtFunDecl sfd) {
             String newName = sfd.getDecl().getName() + (++nfcnt);
             frmap.declRepl(sfd.getDecl().getName(), newName);
-            Function f = (Function) sfd.getDecl().accept(this);
+            Function f = sfd.getDecl();
             Function newFun = f.creator().name(newName).create();
-            newFuncs.add(newFun);
             nres.registerFun(newFun);
+            newFun = (Function) newFun.accept(this);
+            newFuncs.add(newFun);
+            NewFunInfo nfi = funInfo(newFun);
+            extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
     }
@@ -141,7 +270,6 @@ public class RemoveFunctionParameters extends FEReplacer {
     
     public Object visitProgram(Program p) {
         p = (Program) p.accept(new InnerFunReplacer());
-        p.accept(new SimpleCodePrinter());
         nres = new NameResolver(p);
         for (StreamSpec pkg : p.getStreams()) {
             nres.setPackage(pkg);
@@ -180,7 +308,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             newPkges.add(new StreamSpec(pkg, pkg.getName(), pkg.getStructs(),
                     pkg.getVars(), nflistMap.get(pkg.getName())));
         }
-        return p.creator().streams(newPkges).create();
+        return p.creator().streams(newPkges).create().accept(new ThreadClosure());
 
     }
 
@@ -200,7 +328,11 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     String newFunName(ExprFunCall efc, Function orig) {
-        String name = nres.getFunName(orig.getName());
+        String name = orig.getName();
+        if (efc.getParams().size() != orig.getParams().size()) {
+            throw new TypeErrorException(efc.getCx() +
+                    "Incorrect number of parameters to function " + orig);
+        }
         Iterator<Expression> fp = efc.getParams().iterator();
         for (Parameter p : orig.getParams()) {
             Expression actual = fp.next();
@@ -209,6 +341,14 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         }
         return name;
+    }
+
+    void addEquivalence(String old, String newName) {
+        if (!equivalences.containsKey(old)) {
+            equivalences.put(old, new ArrayList<String>());
+        }
+        equivalences.get(old).add(newName);
+        reverseEquiv.put(newName, old);
     }
 
     ExprFunCall replaceCall(ExprFunCall efc, Function orig, String nfn) {
@@ -308,8 +448,10 @@ public class RemoveFunctionParameters extends FEReplacer {
             } else {
                 Function newFun = createCall(efc, orig, getNameSufix(nfn));
                 nres.registerFun(newFun);
-                newFunctions.put(nfn, newFun);
-                funsToVisit.push(nfn);
+                String newName = nres.getFunName(newFun.getName());
+                addEquivalence(name, newName);
+                newFunctions.put(newName, newFun);
+                funsToVisit.push(newName);
                 return replaceCall(efc, orig, nfn);
             }
         } else {

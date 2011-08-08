@@ -14,7 +14,24 @@ int MOD=4;
  */
 generator int expr(int N, int[N] pars, int T, int[T] ops){
     bit isb; int choice;
-    return exprb(N, pars, T, ops, true, true, isb, choice);
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    return exprb(tmp, T, ops, true, true, isb, choice);
+}
+
+
+/**
+ * 
+ * Generate an expression based on T operators and operands produced
+ * by the generator choices.
+ * given.
+ * 
+ */
+generator int exprG(fun choices, int T, int[T] ops){
+    bit isb; int choice;
+    return exprb(choices, T, ops, true, true, isb, choice);
 }
 
 
@@ -24,12 +41,21 @@ generator int expr(int N, int[N] pars, int T, int[T] ops){
  * given. 
  * 
  */
-
 generator bit exprBool(int N, int[N] pars, int T, int[T] ops){
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    return exprBoolG(tmp, T, ops);
+}
+
+
+generator bit exprBoolG(fun choices, int T, int[T] ops){
+    
     if(??){            
-        bit xa = exprBool(N, pars, T, ops);
+        bit xa = exprBoolG(choices, T, ops);
         if(xa){
-            xa = exprBool(N, pars, T, ops);
+            xa = exprBoolG(choices, T, ops);
         }
         if(??){
             return xa;
@@ -39,9 +65,9 @@ generator bit exprBool(int N, int[N] pars, int T, int[T] ops){
     }
     if(??){
         bit a; int b;
-        int xa = exprb(N, pars, T, ops, true, true, a, b);
-        int xb = exprb(N, pars, T, ops, true, true, a, b);
-        return {| xa (< | == | !=) xb |};
+        int xa = exprb(choices, T, ops, true, true, a, b);
+        int xb = exprb(choices, T, ops, true, true, a, b);
+        return  {| xa (< | == | !=) xb |};
     }
 }
 
@@ -82,21 +108,20 @@ generator int op(int ch, int a, int b, int N, int[N] ops, bit canplus, bit canti
 }
 
 
-generator int exprb(int N, int[N] pars, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice){
+generator int exprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice){
     if(??){
         assert T>0;
         int ch = ??;
         isbase = false;
         bit lib, rib;
         int lch; int rch;
-        int xa = exprb(N, pars, T, ops, ops[ch]!=PLUS, ops[ch]!=TIMES, lib, lch);
-        int xb = exprb(N, pars, T, ops, true, true, rib, rch);
+        int xa = exprb(chose, T, ops, ops[ch]!=PLUS, ops[ch]!=TIMES, lib, lch);
+        int xb = exprb(chose, T, ops, true, true, rib, rch);
         if(lib && rib && (ops[ch] ==PLUS || ops[ch]==TIMES)){ assert lch <= rch; } 
         return op(ch, xa, xb, T, ops, canplus, cantimes);
     }else{
         isbase = true;
-        choice = ??;
-        return ?? ? pars[choice] : ??(2);
+        return chose(choice);        
     }
 }
 

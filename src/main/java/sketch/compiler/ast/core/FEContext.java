@@ -81,8 +81,10 @@ public class FEContext
 	        		if(ls<0 || lb>ls) ls=lb;
         		}
         		if(ls>=0) lfile = lfile.substring(ls+1);
-            	if(lfile.length() > 15){
-            		lfile = lfile.substring(0, 7) + ".." + lfile.substring(lfile.length()-7);
+                if (lfile.length() > 17) {
+                    lfile =
+                            lfile.substring(0, 7) + ".." +
+                                    lfile.substring(lfile.length() - 9);
             	}
         	}
         }

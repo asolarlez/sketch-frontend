@@ -107,7 +107,7 @@ public class AdvancedRControl extends RecursionControl {
 			FunInfo fin = new FunInfo(currentCalls==0);
 			funmap.put(currentFun, fin);
 			if(altName != null){
-				funmap.put(altName, fin);	
+                funmap.put(nres.getFunName(altName), fin);
 			}
 			return obj;
 		}
@@ -201,7 +201,7 @@ public class AdvancedRControl extends RecursionControl {
 	int tt = 0; //DEBUGGING INFO
 	@Override
 	public int inlineLevel(ExprFunCall fun) {
-        FunInfo fi = funmap.get(fun.getName());
+        FunInfo fi = funmap.get(nres.getFunName(fun.getName()));
 		return fi.rdepth;		
 	}
 

@@ -26,7 +26,7 @@ import sketch.compiler.ast.core.typs.Type;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class Parameter extends FENode
+public class Parameter extends FENode implements Comparable<Parameter>
 {
     // NOTE -- don't change these, or modify ScAstModel.gm in Skalch project
 	public final static int IN = 0;
@@ -104,6 +104,10 @@ public class Parameter extends FENode
 
     public Object accept(FEVisitor v){
     	return v.visitParameter(this);
+    }
+
+    public int compareTo(Parameter p) {
+        return name.compareTo(p.name);
     }
 
 }

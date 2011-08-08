@@ -53,6 +53,10 @@ public class CallGraph extends FEReplacer {
         buildEdges();
     }
 
+    public Set<Function> callersTo(Function target) {
+        return edges.callersTo(target);
+    }
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("=== edges ===\n");

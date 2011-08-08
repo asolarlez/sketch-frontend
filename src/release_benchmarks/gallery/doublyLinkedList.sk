@@ -78,25 +78,10 @@ void addNext(list l, node cur, node n){ /* automatically rewritten */
 }
 
 
-void remove(list l, node n){ /* automatically rewritten */
-	
+void remove(list l, node n){ 	
 	repeat(4){
 		if(cond(l,n)){assign(l, n);} 	
 	}
-	/*
-	if(l.head == n){
-		//l.head = n.next;	
-	}
-	if(l.tail == n){
-		//l.tail = n.prev;	
-	}
-	if(n.prev != null){
-		//n.prev.next = n.next;	
-	}
-	if(n.next != null){
-		//n.next.prev = n.prev;
-	}
-	*/
 }
 
 

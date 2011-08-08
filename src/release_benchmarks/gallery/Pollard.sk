@@ -15,17 +15,17 @@ bit dup(int[W] in) {
 	return 0;
 }
 
-generator int f(int[W] in, int n) { /* automatically rewritten */
+generator int f(int[W] in, int n) { 
 	return in[n];
 }
 
-generator int fstar(int[W] in, int n, int k) { /* automatically rewritten */
+generator int fstar(int[W] in, int n, int k) { 
 	for(int i = 1;i<=k; i++) 
 		n = f(in, n);
 	return n;
 }
 	
-generator int expr(int[W] in, int n, int flag) { /* automatically rewritten */
+generator int expr(int[W] in, int n, int flag) { 
 	if(flag == 1) return fstar(in, n, ??);
 	else return fstar(in, n, ??);
 }

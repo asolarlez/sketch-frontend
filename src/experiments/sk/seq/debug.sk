@@ -1,86 +1,140 @@
-pragma options "--bnd-heap-size 20";
-
-int NumTuples = 19;
-#define NumPredicates 2
-
-struct LocationTuple
+generator int expr (int N, int[N] pars, int T, int[T] ops)/*generators.skh:15*/
 {
-  int location;
-  int user;
-  int timeStart;
-  int timeEnd;
+  bit isb;
+  int choice;
+  return exprb_tmp1(T, ops, true, true, isb, choice, N, pars);
 }
-
-generator bit genLoc(LocationTuple tuple){
-    int t = tuple.location;
-    return {| t (== | !=) ?? |}; 
-}
-
-generator bit genUser(LocationTuple tuple){
-    int t = tuple.user ;
-    return {| t (== | !=) ?? |}; 
-}
-
-generator bit genTime(LocationTuple tuple){
-    int ts = tuple.timeStart;
-    int te = tuple.timeEnd;
-    bit rv;
-    if(??){
-        rv = te > ts + ??;
-    }else{
-        rv = te == ts + ??; 
+/*generators.skh:111*/
+generator int exprb_tmp1 (int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int N, ref int[N] pars)/*generators.skh:111*/
+{
+  if(??/*H__11*/)/*generators.skh:112*/
+  {
+    {
+      assert (T > 0);
+      int ch = ??/*H__12*/;
+      isbase = false;
+      bit lib; bit rib;
+      int lch;
+      int rch;
+      int xa = exprb_tmp1(T, ops, (ops[ch]) != 0, (ops[ch]) != 2, lib, lch, N, pars);
+      int xb = exprb_tmp1(T, ops, true, true, rib, rch, N, pars);
+      if((lib && rib) && (((ops[ch]) == 0) || ((ops[ch]) == 2)))/*generators.skh:120*/
+      {
+        {
+          assert (lch <= rch);
+        }
+      }
+      return op(ch, xa, xb, T, ops, canplus, cantimes);
     }
-    return {| (!)? rv |};
-}
-
-
-generator bit select (LocationTuple tuple) 
-{
-  bit out = 0;
-  int cnt = 0;
-  repeat(??){
-      bit t1 = genLoc(tuple);
-      bit t2 = genTime(tuple);
-      bit t3 = genUser(tuple);
-      out = out || {| t1 | t2 | t3 | (t1 && t2) | (t1 && t3)  | (t3 && t2) | (t1 && t2 && t3)|};
-      cnt = cnt + 1;
-      assert cnt <= 2;
   }
-  return out;
-}
-
-
-void initTuples (ref LocationTuple [NumTuples] tuples, int[NumTuples] location,
-        int[NumTuples] user,
-        int[NumTuples] timeStart,
-        int[NumTuples] timeEnd)
-{ 
-  for (int i = 0; i < NumTuples; ++i)
+  else
   {
-    tuples[i] = new LocationTuple();
-    tuples[i].user = user[i];
-    tuples[i].location = location[i];
-    tuples[i].timeStart = timeStart[i];
-    tuples[i].timeEnd = timeEnd[i];
+    {
+      isbase = true;
+      return tmp1(choice, N, pars);
+    }
   }
 }
-
-
-harness void sketch (int[NumTuples] location, int[NumTuples] user, int[NumTuples] timeStart, int[NumTuples] timeEnd)
+/*generators.skh:87*/
+generator int op (int ch, int a, int b, int N, int[N] ops, bit canplus, bit cantimes)/*generators.skh:87*/
 {
-   
-  LocationTuple [NumTuples] tuples;
-  initTuples(tuples, location, user, timeStart, timeEnd); 
-
-  
-  for (int i = 0; i < NumTuples; ++i)
+  int t = ch;
+  int cop = ops[t];
+  assert ((cop <= 4) && (cop >= 0));
+  if(cop == 0)/*generators.skh:91*/
   {
-    LocationTuple tuple = tuples[i];
-    bit q1 = (tuple.user != 3 && tuple.location == 1 && tuple.timeEnd-tuple.timeStart > 5) || (tuple.user == 2);
-    bit q2 = (select(tuple) == 1); 
-    assert q1 == q2;
-  }    
+    {
+      assert (canplus);
+      return a + b;
+    }
+  }
+  if(cop == 1)/*generators.skh:95*/
+  {
+    {
+      return a - b;
+    }
+  }
+  if(cop == 2)/*generators.skh:98*/
+  {
+    {
+      assert (cantimes);
+      return a * b;
+    }
+  }
+  if(cop == 3)/*generators.skh:102*/
+  {
+    {
+      return a / b;
+    }
+  }
+  if(cop == 4)/*generators.skh:105*/
+  {
+    {
+      return a % b;
+    }
+  }
 }
-
-
-
+/*generators.skh:17*/
+generator int tmp1 (ref int choice, ref int N, ref int[N] pars)/*generators.skh:17*/
+{
+  choice = ??/*H__0*/;
+  return (??/*H__1*/ ? pars[choice] : ??/*H__2*/);
+}
+/* END PACKAGE generators*/
+/* BEGIN PACKAGE ANONYMOUS*/
+/*partition.sk:7*/
+void partition (int p, int P, int N, ref int ibeg, ref int iend)/*partition.sk:7*/
+{
+  if(p < (expr(5, {p,P,N,N / P,N % P}, 2, {2,0})))/*partition.sk:8*/
+  {
+    {
+      iend = expr(5, {p,P,N,N / P,N % P}, 2, {2,0});
+      ibeg = expr(5, {p,P,N,N / P,N % P}, 2, {2,0});
+    }
+  }
+  else
+  {
+    {
+      iend = expr(5, {p,P,N,N / P,N % P}, 2, {2,0});
+      ibeg = expr(5, {p,P,N,N / P,N % P}, 2, {2,0});
+    }
+  }
+}
+/*partition.sk:19*/
+harness void testPartition (int p, int N, int P)/*partition.sk:19*/
+{
+  if((N < 1) || (P < 1))/*partition.sk:20*/
+  {
+    {
+      return;
+    }
+  }
+  if(p < P)/*partition.sk:21*/
+  {
+    {
+      int ibeg; int iend;
+      partition(p, P, N, ibeg, iend);
+      assert ((iend - ibeg) < ((N / P) + 2));
+      if((p + 1) < P)/*partition.sk:25*/
+      {
+        {
+          int ibeg2; int iend2;
+          partition(p + 1, P, N, ibeg2, iend2);
+          assert (iend == ibeg2);
+        }
+      }
+      if(p == 0)/*partition.sk:30*/
+      {
+        {
+          assert (ibeg == 0);
+        }
+      }
+      if(p == (P - 1))/*partition.sk:31*/
+      {
+        {
+          assert (iend == N);
+        }
+      }
+    }
+  }
+}

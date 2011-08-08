@@ -25,4 +25,4 @@ clean:
 	./clean.sh
 
 %.output: %.sk
-	(bash sketch -V 5 --slv-synth ${SATSOLVER} --slv-verif ${SATSOLVER}   $*.sk &> $@) ; echo
+	(bash sketch -V 5 --fe-inc '..\..\..\sketchlib' --slv-synth ${SATSOLVER} --slv-verif ${SATSOLVER}   $*.sk &> $@) ; echo
