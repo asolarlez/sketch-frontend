@@ -1,0 +1,10 @@
+
+harness void main(int in){
+    int bo = ??;
+    int cnt = 0;
+    while(bo < ??){
+        bo = bo + ??;
+        assert cnt++ < in;
+    }
+    
+}

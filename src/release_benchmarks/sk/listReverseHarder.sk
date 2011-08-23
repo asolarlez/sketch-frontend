@@ -1,6 +1,5 @@
-//@Description Sketch to reverse a list.
-pragma options "--unrollamnt 4";
-int N = 4;
+//pragma options "--unrollamnt 4";
+int MAXN = 8;
 
 struct node{
     node next;
@@ -8,14 +7,12 @@ struct node{
 }
 
 struct list{
-    node head;  
-    node tail;
+    node head;
 }
 
 list newList(){
     list l = new list();
     l.head = null;
-    l.tail = null;
     return l;
 }
 
@@ -28,50 +25,38 @@ node newNode(){
 
 
 
-generator node hole(list l1, list l2){  
-    return {| null | ( (l1 | l2)(.head | .tail) )(.next)?  |}   ;
-}
 
-generator node holeB(list l1, list l2, node n){
-    return  (?? ? hole(l1, l2) : n); 
-}
-
-
-generator bit cond(list l1, list l2, node tmp){ 
-    node n1 = holeB(l1, l2, tmp);
-    node n2 = holeB(l1, l2, tmp);
-    return {| ?? | n1 (== | !=) n2   |};
-}
-
-list reverseSK(list l){
-    list nl = newList();        
-    node tmp = null;    
-    bit c  = cond(l, nl, tmp);
-    while(c){
-        if(cond(l, nl, tmp)){ {| ( tmp | (l | nl)(.head | .tail) ) (.next)? |}   = holeB(l, nl, tmp);}// 83 * 10 * 6 = 4980
-        repeat(??){
-                if(cond(l, nl, tmp)){ {| ( tmp | (l | nl)(.head | .tail) ) (.next)? |}    = holeB(l, nl, tmp);}// 83 * 10 * 6 = 4980
+void reverseSK(ref list l){        
+    node tmp1 = null; node tmp2 = null;
+    int t=??; assert t<3;
+    repeat(t){
+        {| (tmp1 | tmp2 | l.head)(.next)? |} = {| (tmp1 | tmp2 | l.head)(.next)? |};  
+    }
+    while({| (tmp1 | tmp2 | l.head)(.next)? (== | !=) null |}){
+        int q = ??; assert q < 5;
+        repeat(q){
+            {| (tmp1 | tmp2 | l.head)(.next)? |} = {| (tmp1 | tmp2 | l.head)(.next)? |};  
         }
-        c  = cond(l, nl, tmp);
     }   
-    return nl;
 }
 
 
-void popList(int n, list l, ref node[N] nodes){
+void popList(int n, list l, ref node[n] nodes){
+    node tail= null;
     for(int i=0; i<n;++i){
         node t = newNode();
         if(i>0){
-            l.tail.next = t;
+            tail.next = t;
+        }else{
+            l.head = t;
         }
-        l.tail = t;
+        tail = t;
         nodes[i] = t; 
-    } 
-    l.head = nodes[0];
+    }
 }
 
  
-void check(int n, list l, node[N] nodes){
+void check(int n, list l, node[n] nodes){
     node cur = l.head;
     int i=0;
     while(cur != null){
@@ -82,24 +67,20 @@ void check(int n, list l, node[N] nodes){
     assert i == n;
     if(n > 0){
         assert l.head == nodes[n-1];
-        assert l.tail == nodes[0];
-        assert l.tail.next == null;
     }else{
         assert l.head == null;
-        assert l.tail == null;
     }
 }
 
 harness void main(int n){
-    if(n >= N){ n = N-1; }
-    node[N] nodes = null;
+    if(n >= MAXN){ n = MAXN-1; }
+    node[n] nodes = null;
     list l = newList();
     
     popList(n, l, nodes);   
     
-    l = reverseSK(l);
-    
-    if(n>0){ assert l.tail.next == null; }
+    reverseSK(l);
+        
     
     check(n, l, nodes);
     

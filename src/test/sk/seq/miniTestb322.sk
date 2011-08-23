@@ -1,0 +1,22 @@
+harness void main(int t0, int t1, int N, int i){
+    if( (t0<N && t0>=0) && (t1 < N && t1 >=0) ){
+        foo(t0, t1, N, i);
+    }
+}
+
+void foo(int t0, int t1, int N, int i){
+    assert (t0 < N) : "AA";
+    assert (t0 >= 0) :"BB";
+    assert (t1 < N):"cc";
+    assert (t1 >= 0):"dd";
+    if(i>2){
+        moo(t0, t1, N);
+    }
+}
+void moo(int t0, int t1, int N){
+    assert (t0 < N):"ee";
+    assert (t0 >= 0):"ff";
+    assert (t1 < N):"gg";
+    assert (t1 >= 0):"hh";
+    
+}

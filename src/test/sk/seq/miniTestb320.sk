@@ -1,0 +1,34 @@
+
+pragma options "--bnd-inbits 3 ";
+
+void forLoop(fun body, int low, int high){
+    if(low < high){
+        body(low);
+        forLoop(body, low+1, high);
+    }
+}
+
+float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
+    float[N][T] out = 0.0;
+    for(int i=0; i<T; ++i)
+        for(int j=0; j<N; ++j){
+            out[i][j] = in[j] + f[i][j];
+        }
+    return out;
+}
+
+
+float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) implements cacheObv1d{
+    
+    float[N][T] out = 0.0;
+    generator void t1(int i){
+        generator void t2(int j){
+            out[i][j] = in[j] + f[i][j];
+            
+        }
+        forLoop(t2, 0, N);
+    }
+    forLoop(t1, 0, T);
+    
+    return out; 
+}

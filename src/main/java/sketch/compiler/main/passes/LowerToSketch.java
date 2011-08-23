@@ -21,6 +21,9 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
+
+
+
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 
@@ -34,6 +37,7 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         prog = stencilTransform.visitProgram(prog);
+
         // dump (prog, "After Stencilification.");
 
         prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
@@ -45,11 +49,10 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new SeparateInitializers());
         // dump (prog, "SeparateInitializers:");
         // prog = (Program)prog.accept(new NoRefTypes());
+
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
         // dump (prog, "ScalarizeVectorAssns");
-
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
-
         // By default, we don't protect array accesses in SKETCH
         if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
             prog =

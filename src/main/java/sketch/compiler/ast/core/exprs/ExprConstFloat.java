@@ -92,6 +92,14 @@ public class ExprConstFloat extends ExprConstant
         return v.visitExprConstFloat(this);
     }
 
+    public boolean equals(Object o) {
+        if (!(o instanceof ExprConstFloat)) {
+            return false;
+        }
+        ExprConstFloat tt = (ExprConstFloat) o;
+        return tt.val == val;
+    }
+
     public String toString(){
     	return Double.toString(getVal());
     }

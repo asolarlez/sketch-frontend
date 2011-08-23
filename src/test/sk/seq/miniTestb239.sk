@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 2 --bnd-unroll-amnt 18";
+pragma options "--bnd-inbits 2  --bnd-arr-size 4 --bnd-unroll-amnt 16";
 
 
 float[N][N] sten13(int N, float[N][N]  in, int a){

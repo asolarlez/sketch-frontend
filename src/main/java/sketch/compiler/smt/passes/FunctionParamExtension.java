@@ -1,5 +1,6 @@
 package sketch.compiler.smt.passes;
 
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstBoolean;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
@@ -20,8 +21,8 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 public class FunctionParamExtension extends
 		sketch.compiler.passes.lowering.FunctionParamExtension {
 
-	public FunctionParamExtension(boolean b) {
-		super(b);
+    public FunctionParamExtension(boolean b, TempVarGen vg) {
+        super(b, vg);
 	}
 	
 	@Override

@@ -1,0 +1,21 @@
+pragma options "--be:showDAG";
+
+harness void main2(int t0, int t1, int N, int i){
+    bit q2= t1 < (0);
+    bit q5= t1 < N;
+    bit q6= q5 & (!q2);
+    bit q8= t0 < (0);
+    
+    bit q10= t0 < N;
+    bit q11= q10 & (!q8);
+    bit q12= q11 & q6;
+    assert q10 | (!q12);
+    bit q27= q11 & (!q2);
+    bit q40= q27 & q5;
+    bit q49= (!q40) | i%4==2;
+    bit q51= (!q49) & q12;
+    bit q53= q10 | (!q51);
+    assert q53;
+    assert q5 | (!q51);
+}
+

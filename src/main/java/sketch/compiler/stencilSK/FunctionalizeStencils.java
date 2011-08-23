@@ -25,6 +25,8 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
+import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
@@ -32,6 +34,8 @@ import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
+import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -273,7 +277,7 @@ public class FunctionalizeStencils extends FEReplacer {
 
 		//convert all functions to procedures, translating calls and returns appropriately
 		prog = (Program) prog.accept(new MakeBodiesBlocks());
-		prog = (Program) prog.accept(new FunctionParamExtension(true));
+        prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 		strs=(StreamSpec)prog.getStreams().get(0);
 		functions=strs.getFuncs();
 
@@ -438,15 +442,22 @@ public class FunctionalizeStencils extends FEReplacer {
 		    v1.setNres(nres);
         FEReplacer v2 = new EliminateCompoundAssignments();
 		    v2.setNres(nres);
+        FEReplacer v23 = new EliminateTransAssns();
+        v23.setNres(nres);
+        FEReplacer v24 = new EliminateDeadCode(true);
+        v24.setNres(nres);
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();
 	        	f = ((Function)f.accept(v0));
+            f = (Function) f.accept(new EliminateReturns());
+            f = ((Function) f.accept(v23));
+            f = ((Function) f.accept(v24));
+            f = ((Function) f.accept(new RemoveShallowTempVars()));
 	        	f = ((Function)f.accept(v01));
 	        	f = ((Function)f.accept(v1));
 	        	//f.accept(new SimpleCodePrinter());
 	        	//System.out.println(f.toString());
-	        	f = ((Function)f.accept(v2));	
-	        	f = (Function)f.accept(new EliminateReturns());
+            f = ((Function) f.accept(v2));
 	        	nfuns.add(f);	        	
 	        }
 	        
@@ -465,7 +476,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-            // f.accept(new SimpleCodePrinter());
+            f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }
@@ -788,7 +799,7 @@ class ProcessStencil extends FEReplacer {
     	    		smap.put(var, createArrFunction(var, stmt.getType(i), Collections.EMPTY_LIST) );    	    		
     	    		if( stmt.getInit(i) != null ){
     	    			List<Expression> indices = new ArrayList<Expression>(0);
-    	    			processArrAssign(var, indices, stmt.getInit(i));
+                    processArrAssign(stmt, var, indices, stmt.getInit(i));
     	    		}
 	        	}
 	        }
@@ -851,13 +862,17 @@ class ProcessStencil extends FEReplacer {
 	    }
 
 
-	    public StmtMax newStmtMax(int i, List<Expression> indices, ArrFunction fun){
+    public StmtMax newStmtMax(FENode ctxt, int i, List<Expression> indices,
+            ArrFunction fun)
+    {
 	    	assert indices.size() == fun.idxParams.size() : " " + fun.getFullName();
 	    	String newVar = ArrFunction.IDX_VAR + i;
 	    	ExprVar idxi = new ExprVar(cnode, newVar);
 	    	//"idx_i := max{expr1==t, idx < in_idx, conds }; "
 	    	int ii=0;
-	    	StmtMax smax = new StmtMax(currentTN.getLevel()*2+1, newVar, ArrFunction.GUARD_VAR + i);
+        StmtMax smax =
+                new StmtMax(ctxt, currentTN.getLevel() * 2 + 1, newVar,
+                        ArrFunction.GUARD_VAR + i);
 	    	// First we add the primary constraints.
 	    	// indices[k][fun.iterParam[j] -> idx_i[2*j+1]]==fun.idxParams[k]
 	    	// idx_i[2*j] == pos_j
@@ -1061,6 +1076,21 @@ class ProcessStencil extends FEReplacer {
 	    		}
 	    	}
 
+        void setIterPosIterParamsAlt(ArrFunction callee, List<Expression> params) {
+            // TODO should also add position parameters.
+            Iterator<StmtVarDecl> globIter = ptree.iterator();
+            Iterator<StmtVarDecl> locIter = currentTN.pathIter();
+
+            StmtVarDecl loc = locIter.hasNext() ? locIter.next() : null;
+            int ii = 0;
+            while (globIter.hasNext()) {
+                StmtVarDecl par = globIter.next();
+                {
+                    params.add(new ExprVar(par, par.getName(0)));
+                }
+            }
+        }
+
 	    	public Object visitExprVar(ExprVar evar){
 	    		String bname = evar.getName();
 	    		if(smap.containsKey(bname)){
@@ -1084,7 +1114,12 @@ class ProcessStencil extends FEReplacer {
 	    			params.add(newPar);
 	    		}
 	    		// Now we have to set the other parameters, which is a little trickier.
-	    		setIterPosIterParams(arFun, params);
+            if (this.idxi == null) {
+                setIterPosIterParamsAlt(arFun, params);
+            } else {
+                setIterPosIterParams(arFun, params);
+            }
+
 	    		//Then, we must set the other parameters.
 	    		for(Iterator<Entry<String, Type>> pIt = superParams.entrySet().iterator(); pIt.hasNext(); ){
 	   	 			Entry<String, Type> par = pIt.next();
@@ -1185,13 +1220,15 @@ class ProcessStencil extends FEReplacer {
 	    }
 
 
-	    public void processArrAssign(String var, List<Expression> indices, Expression rhs){
+    public void processArrAssign(FENode ctxt, String var, List<Expression> indices,
+            Expression rhs)
+    {
 	    	assert smap.containsKey(var) : "Variable " + var + " does not exist";	    	
 	   	 	ArrFunction fun = smap.get(var);
 	   	 	assert ! fun.isClosed() : "Variable " + var + " is out of scope";
 	   	 	
 	   	 	int i = fun.size();
-	   	 	fun.addIdxAss( newStmtMax(i, indices, fun) );
+        fun.addIdxAss(newStmtMax(ctxt, i, indices, fun));
 	   	 	fun.addMaxAss( pickLargest(i, currentTN.getLevel()*2+1) );
 	   	 	fun.addRetStmt( iMaxIf(i, rhs, fun, indices)  );
 	   	 	currentTN.incrStage();
@@ -1228,7 +1265,7 @@ class ProcessStencil extends FEReplacer {
 	    	ArrFunction af = createArrFunctionForAssert(name, TypePrimitive.bittype, dims);
 	    	assmap.put(name, af);
 	    	smap.put(name, af);
-	    	processArrAssign(name, indices, rhs);
+        processArrAssign(stmt, name, indices, rhs);
 	    	af.close();
 	    	return stmt;
 	    }
@@ -1244,12 +1281,12 @@ class ProcessStencil extends FEReplacer {
 		        ExprArrayRange nLHS = (ExprArrayRange) lhs;
 		        String var = nLHS.getAbsoluteBase().getName();
 		        List<Expression> indices = getArrayIndices(nLHS);
-		        processArrAssign(var, indices, rhs);
+            processArrAssign(stmt, var, indices, rhs);
 	        }else{
 	        	assert lhs instanceof ExprVar;
 	        	String var = ((ExprVar) lhs ).getName();
 	        	List<Expression> indices = new ArrayList<Expression>(0);
-	        	processArrAssign(var, indices, rhs);
+            processArrAssign(stmt, var, indices, rhs);
 	        }
 	        return stmt;
 	    }
@@ -1294,8 +1331,10 @@ class ProcessStencil extends FEReplacer {
 
 		int tt = 0;
 		List<Expression> dims = new ArrayList<Expression>();
+
 		while(ta instanceof TypeArray){
-			dims.add( ((TypeArray) ta).getLength()  );
+            dims.add((Expression) ((TypeArray) ta).getLength().accept(
+                    new ArrReplacer(null)));
 			ta = ((TypeArray) ta).getBase();
 			++tt;
 			assert tt < 100;

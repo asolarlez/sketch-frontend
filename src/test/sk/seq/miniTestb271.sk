@@ -1,4 +1,4 @@
-pragma options "--bnd-inline-amnt 3 --bnd-unroll-amnt 16 --bnd-arr-size 16";
+pragma options "--bnd-inline-amnt 15 --bnd-unroll-amnt 16 --bnd-arr-size 16";
 pragma options "--bnd-inbits 4";
 
 

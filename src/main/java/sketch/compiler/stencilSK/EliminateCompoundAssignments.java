@@ -22,7 +22,6 @@ public class EliminateCompoundAssignments extends FEReplacer {
 	        }
 	        if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
 	            return stmt;
-	        return new StmtAssign(stmt, newLHS, newRHS,
-	                              stmt.getOp());
+        return new StmtAssign(stmt, newLHS, newRHS, 0);
 	    }
 }

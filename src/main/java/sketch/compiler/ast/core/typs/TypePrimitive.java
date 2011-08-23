@@ -129,11 +129,11 @@ public class TypePrimitive extends Type
         return type == TYPE_COMPLEX;
     }
 
-    public String toString() {
-        return this.getCudaMemType().syntaxNameSpace() + toString2();
+    public String toString2() {
+        return this.getCudaMemType().syntaxNameSpace() + toString();
     }
 
-    public String toString2()
+    public String toString()
     {
         switch (type)
         {

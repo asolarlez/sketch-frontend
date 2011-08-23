@@ -1,0 +1,19 @@
+pragma options "--bnd-inbits 3";
+
+
+harness void main(int in, int x ,int y){
+   if(x == 2){
+       if(y==0){
+           int[3] t1 ; 
+           int[3] t2 ;
+           assert x > y;
+           assert x>y+1;
+           while(y==0){
+               t1[y] = x + y;
+               t2[y] = x - y;
+               assert t1[y] + t2[y] == ??*x;
+               y = y+ 1;
+           }                                 
+       }       
+   }
+}

@@ -2,14 +2,14 @@ package sketch.compiler.stencilSK;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -21,20 +21,38 @@ import sketch.compiler.ast.core.typs.Type;
 
 public class VarReplacer extends FEReplacer{
     Map<String, Expression> repl;
+    Set<String> rhsVars;
 	
 
+    void popRhsVars() {
+        rhsVars = new HashSet<String>();
+        FEReplacer fr = new FEReplacer() {
+            public Object visitExprVar(ExprVar expr) {
+                rhsVars.add(expr.getName());
+                return expr;
+            }
+        };
+        for (Expression e : repl.values()) {
+            e.accept(fr);
+        }
+    }
+
 	public VarReplacer(String oldName, String newName){
-	    repl = new HashMap<String, Expression>();
-	    repl.put(oldName, new ExprVar((FENode) null, newName));		
+        repl = new HashMap<String, Expression>();
+        repl.put(oldName, new ExprVar((FENode) null, newName));
+        rhsVars = new HashSet<String>();
+        rhsVars.add(newName);
 	}
 
 	public VarReplacer(String oldName, Expression newName){
 	    repl = new HashMap<String, Expression>();
 	    repl.put(oldName, newName);
+        popRhsVars();
 	}
 	
 	public VarReplacer(Map<String, Expression> repl){
 	    this.repl = repl;
+        popRhsVars();
 	}
 
 	public Object visitExprVar(ExprVar exp) {
@@ -64,6 +82,7 @@ public class VarReplacer extends FEReplacer{
         return result;
     }
 
+    int cnt = 0;
 
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
@@ -71,11 +90,8 @@ public class VarReplacer extends FEReplacer{
         List<String> newNames = new ArrayList<String>();
         List<Type> newTypes = new ArrayList<Type>();
         boolean changed = false;
-        assert repl.size() == 1 : "NYI";
-        Entry<String, Expression> ent = repl.entrySet().iterator().next();
-        String oldName = ent.getKey();
-        Expression newName = ent.getValue(); 
         
+
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
             Expression init = stmt.getInit(i);
@@ -90,38 +106,17 @@ public class VarReplacer extends FEReplacer{
             newTypes.add(ntype);
             String name = stmt.getName(i);
 
-            if( newName instanceof ExprVar ){
-            	String sNewName = ((ExprVar)newName).getName();
-            	if( name.equals(oldName) ){
-            		name = sNewName;
-            		changed = true;
-            	}
-
-            	if( name.equals(sNewName) ){
-            		//In this case, we need to rename this variable with a fresh name.
-            		//This implies going back to the enclosing scope, and renaming all
-            		//uses of this variable. Not that easy.
-            		assert false : "This has not yet been implemented. Please implemented.";
-            	}
-            }else{
-            	if(!(newName instanceof ExprConstInt)){
-//            		In this case, we have to search through all the variables that appear
-                	//in newName, and if any of them match name, we must rename this variable
-                	//with a fresh name.
-                	assert false : "Not yet implemented";
-                	if( name.equals(oldName) ){
-                		assert false : "This has not been implemented";
-                	}	
-            	}
+            if (rhsVars.contains(name)) {
+                String nname = name + "__" + (cnt++);
+                repl.put(name, new ExprVar(stmt, nname));
+                name = nname;
+                changed = true;
             }
-
-
 
             newNames.add(name);
         }
         if( !changed ) return stmt;
-        return new StmtVarDecl(stmt, newTypes,
-                               stmt.getNames(), newInits);
+        return new StmtVarDecl(stmt, newTypes, newNames, newInits);
     }
 
 }

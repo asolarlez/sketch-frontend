@@ -1,0 +1,20 @@
+
+
+int foo(int in){
+    return in;
+}
+
+int moo(int in){
+    assert in == 0;
+    return in;
+}
+
+harness void main(int in){
+    int[4] op = 0;
+    if(in < 4 && op[in]==0){
+        op[in] = 1;
+    }
+    if(in!=?? || moo(in)>in){
+        assert foo(in)==in;
+    }
+}

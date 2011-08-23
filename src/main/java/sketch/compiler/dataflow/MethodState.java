@@ -420,7 +420,17 @@ public class MethodState {
 
 
 
-    public abstractValue pathCondition(){
+    public abstractValue pathCondition() {
+        abstractValue val;
+        if (changeTracker != null) {
+            val = vtype.not(assertHelper(changeTracker, false));
+        } else {
+            val = vtype.not(getRvflag().state(vtype));
+        }
+        return val;
+    }
+
+    public abstractValue pathConditionBis() {
         abstractValue val = vtype.not(getRvflag().state(vtype));
         for (ChangeTracker tmpTracker = changeTracker;
                 tmpTracker != null; tmpTracker = tmpTracker.kid )

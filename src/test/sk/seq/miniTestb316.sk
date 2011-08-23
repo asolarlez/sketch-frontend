@@ -1,0 +1,23 @@
+pragma options "--bnd-inbits 3 --bnd-inline-amnt 10";
+
+stencil float[N][N] test0(int N, float[N][N] a){
+  float[N][N] out=0.0;
+  for(int i=0; i<N; ++i){
+    for(int j=0; j<i; ++j){
+        out[i][j] = a[i][j];
+    }
+  }
+  return out;
+}
+generator void inner(int i, int N, float[N][N] in, ref float[N][N] out){
+    for(int j=0; j<i; ++j){
+        out[i][j] = in[i][j];
+    }
+}
+stencil float[N][N] testSK0(int N, float[N][N] a) implements test0 {
+  float[N][N] out=0.0;
+  for(int i=0; i<N; ++i){
+    inner(i, N, a, out);
+  }
+  return out;
+}

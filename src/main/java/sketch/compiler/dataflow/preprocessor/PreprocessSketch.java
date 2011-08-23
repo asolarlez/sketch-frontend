@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -25,6 +26,7 @@ import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.spin.IdentifyModifiedVars;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.SketchNotResolvedException;
 
 /**
@@ -145,42 +147,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 fun = (Function) fun.accept(elimr);
                 
                 if (rcontrol.testCall(exp)) {
-                    /* Increment inline counter. */
-                    rcontrol.pushFunCall(exp, fun);
-
-                    try {
-                    List<Statement>  oldNewStatements = newStatements;
-                    newStatements = new ArrayList<Statement> ();
-                    Statement result = null;
-                    int level = state.getLevel();
-                    int ctlevel = state.getCTlevel();
-                    Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
-                    try{
-                        Level lvl2;
-                        {
-                            Iterator<Expression> actualParams = exp.getParams().iterator();
-                            Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            lvl2 = inParameterSetter(exp, formalParams, actualParams, false);
-                        }
-                        try{
-                            Statement body = (Statement) fun.getBody().accept(this);
-                            addStatement(body);
-                        }finally{
-                            Iterator<Expression> actualParams = exp.getParams().iterator();
-                            Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            outParameterSetter(formalParams, actualParams, false, lvl2);
-                        }
-                        result = new StmtBlock(exp, newStatements);
-                    }finally{
-                        state.popLevel(lvl);
-                        assert level == state.getLevel() : "Somewhere we lost a level!!";
-                        assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
-                        newStatements = oldNewStatements;
-                    }
-                    addStatement(result);
-                    } finally {
-                        rcontrol.popFunCall(exp);
-                    }
+                    inliner2(exp, fun);
                 }else{
                     StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero, false);
                     addStatement(sas);
@@ -193,7 +160,111 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         return vtype.BOTTOM();
     }
 
+    private Expression transExpr(Expression e) {
+        if (e instanceof ExprVar) {
+            return e;
+        }
+        assert false;
+        return e;
+    }
 
+    public void inliner2(ExprFunCall exp, Function fun) {
+        /* Increment inline counter. */
+        rcontrol.pushFunCall(exp, fun);
+
+        try {
+            List<Statement> oldNewStatements = newStatements;
+            newStatements = new ArrayList<Statement>();
+            Statement result = null;
+            int level = state.getLevel();
+            int ctlevel = state.getCTlevel();
+            Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
+            try {
+                Level lvl2;
+                List<Expression> nactuals = new ArrayList<Expression>();
+                List<Parameter> nparams = new ArrayList<Parameter>();
+                Statement nbody;
+                {
+                    Iterator<Expression> actualParams = exp.getParams().iterator();
+                    Map<String, Expression> rmap = new HashMap<String, Expression>();
+                    for (Parameter p : fun.getParams()) {
+                        Expression act = actualParams.next();
+                        if (p.isParameterOutput()) {
+                            rmap.put(p.getName(), transExpr(act));
+                        } else {
+                            nactuals.add(act);
+                            nparams.add(p);
+                        }
+                    }
+                    VarReplacer vr = new VarReplacer(rmap);
+                    nbody = (Statement) fun.getBody().accept(vr);
+                }
+
+                {
+
+                    lvl2 =
+                            inParameterSetter(exp, nparams.iterator(),
+                                    nactuals.iterator(), false);
+                }
+                try {
+                    Statement body = (Statement) nbody.accept(this);
+                    addStatement(body);
+                } finally {
+                    Iterator<Expression> actualParams = nactuals.iterator();
+                    Iterator<Parameter> formalParams = nparams.iterator();
+                    outParameterSetter(formalParams, actualParams, false, lvl2);
+                }
+                result = new StmtBlock(exp, newStatements);
+            } finally {
+                state.popLevel(lvl);
+                assert level == state.getLevel() : "Somewhere we lost a level!!";
+                assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
+                newStatements = oldNewStatements;
+            }
+            addStatement(result);
+        } finally {
+            rcontrol.popFunCall(exp);
+        }
+    }
+
+    public void inliner(ExprFunCall exp, Function fun) {
+        /* Increment inline counter. */
+        rcontrol.pushFunCall(exp, fun);
+
+        try {
+            List<Statement> oldNewStatements = newStatements;
+            newStatements = new ArrayList<Statement>();
+            Statement result = null;
+            int level = state.getLevel();
+            int ctlevel = state.getCTlevel();
+            Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
+            try {
+                Level lvl2;
+                {
+                    Iterator<Expression> actualParams = exp.getParams().iterator();
+                    Iterator<Parameter> formalParams = fun.getParams().iterator();
+                    lvl2 = inParameterSetter(exp, formalParams, actualParams, false);
+                }
+                try {
+                    Statement body = (Statement) fun.getBody().accept(this);
+                    addStatement(body);
+                } finally {
+                    Iterator<Expression> actualParams = exp.getParams().iterator();
+                    Iterator<Parameter> formalParams = fun.getParams().iterator();
+                    outParameterSetter(formalParams, actualParams, false, lvl2);
+                }
+                result = new StmtBlock(exp, newStatements);
+            } finally {
+                state.popLevel(lvl);
+                assert level == state.getLevel() : "Somewhere we lost a level!!";
+                assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
+                newStatements = oldNewStatements;
+            }
+            addStatement(result);
+        } finally {
+            rcontrol.popFunCall(exp);
+        }
+    }
     
     
     public Object visitFunction(Function func){

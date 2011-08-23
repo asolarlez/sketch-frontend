@@ -1,0 +1,24 @@
+
+void apply(fun f){
+    f();
+}
+
+harness void main(int in){
+    int x = in;
+    generator void foo(){
+        generator void moo(){
+            x = x+1;
+        }
+        moo();        
+    }
+    foo();
+    assert x==(in-1)+??;
+    generator void moma(){
+        generator void ma(){
+            x = x+2;
+        }
+        apply(ma);
+    }
+    moma();
+    assert x==(in-1)+??;
+}

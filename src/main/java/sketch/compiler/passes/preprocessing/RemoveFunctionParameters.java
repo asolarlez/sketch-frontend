@@ -220,6 +220,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                     Type t = symtab.lookupVarNocheck(exp);
                     if (t == null) {
                         if (nres.getFun(exp.getName()) != null) {
+                            if (extractedInnerFuns.containsKey(nres.getFunName(exp.getName())))
+                            {
+                                nres.getFun(exp.getName()).accept(this);
+                            }
                             return exp;
                         }
                         Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
@@ -232,6 +236,13 @@ public class RemoveFunctionParameters extends FEReplacer {
                         pt.accept(this);
                     }
                     return exp;
+                }
+
+                public Object visitExprFunCall(ExprFunCall efc) {
+                    if (extractedInnerFuns.containsKey(nres.getFunName(efc.getName()))) {
+                        nres.getFun(efc.getName()).accept(this);
+                    }
+                    return super.visitExprFunCall(efc);
                 }
 
             };

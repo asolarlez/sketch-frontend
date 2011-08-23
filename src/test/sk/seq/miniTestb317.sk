@@ -1,0 +1,10 @@
+pragma options "--bnd-inbits 3";
+
+harness void main(int N, bit[N] ar){
+    bit[N] out = 0;
+    int idx = 0;
+    for(int i=0; i<N; ++i){
+         out[i] = ar[idx++];
+    }
+    assert out == ar;
+}

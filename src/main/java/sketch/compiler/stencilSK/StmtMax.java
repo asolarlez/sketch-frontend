@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -78,7 +79,9 @@ public class StmtMax extends Statement{
 		assert false;
 		return null;
 	}
-	StmtMax(int dim, String lhsvar, String indvar){super((FEContext) null);
+
+    StmtMax(FENode ctxt, int dim, String lhsvar, String indvar) {
+        super(ctxt);
 		this.indvar = indvar;
 		this.dim = dim;
 		this.lhsvar = lhsvar;

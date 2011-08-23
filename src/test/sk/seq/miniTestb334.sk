@@ -1,0 +1,23 @@
+int moo(int in, ref int tmp){
+    tmp = in;
+    return moo(in, tmp);
+}
+
+
+int foo(int in){
+    int x = in;
+    if(in > 5){        
+        in = moo(in, x);
+    }
+    return in;
+}
+
+harness void main(int in){
+    if(in > 5){
+    if(foo(in)>0){
+        if(foo(in)<10){
+            foo(in);
+        }
+    }
+    }    
+}

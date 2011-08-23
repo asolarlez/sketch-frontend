@@ -9,23 +9,20 @@ import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
@@ -125,20 +122,116 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	private Function currentFunction;
 	private ParameterCopyResolver paramCopyRes;
 	public boolean initOutputs=false;
+    TempVarGen varGen;
 	
-	
-	public FunctionParamExtension(boolean io) {
-		this(null);
-		initOutputs = io;
+	public FunctionParamExtension(boolean io, TempVarGen vargen) {
+        this(null, vargen);
+        initOutputs = io;
 	}
 
-	public FunctionParamExtension() {
-		this(null);
+    protected boolean hasFunCall(Expression exp) {
+        class checker extends FEReplacer {
+            public boolean found = false;
+
+            public Object visitExprFunCall(ExprFunCall ear) {
+                found = true;
+                return ear;
+            }
+        }
+        ;
+        checker ck = new checker();
+        exp.accept(ck);
+        return ck.found;
+    }
+
+    protected Expression doLogicalExpr(ExprBinary eb) {
+        Expression left = eb.getLeft(), right = eb.getRight();
+
+        if (!(hasFunCall(left) || hasFunCall(right)))
+            return eb;
+
+        boolean isAnd = eb.getOpString().equals("&&") || eb.getOpString().equals("&");
+
+        String resName = varGen.nextVar("_pac_sc");
+
+        addStatement(new StmtVarDecl(eb, TypePrimitive.bittype, resName, null));
+
+        ExprVar res = new ExprVar(eb, resName);
+        Expression cond = isAnd ? res : new ExprUnary("!", res);
+        List<Statement> blist = new ArrayList<Statement>();
+        blist.add(new StmtAssign(res, right));
+        StmtBlock nb =
+                new StmtBlock(new StmtAssign(res, left), new StmtIfThen(eb, cond,
+                        new StmtBlock(blist), null));
+
+        doStatement(nb);
+
+        return res;
+    }
+
+    public Object visitExprTernary(ExprTernary exp) {
+        Expression a = exp.getA().doExpr(this);
+        Expression b = exp.getB();
+        Expression c = exp.getC();
+
+        if (!(hasFunCall(b) || hasFunCall(c))) {
+            return super.visitExprTernary(exp);
+        }
+
+        String resName = varGen.nextVar("_pac_sc");
+        Type t = getTypeReal(exp);
+        if (t == TypePrimitive.nulltype) {
+            t = TypePrimitive.inttype;
+        }
+        addStatement(new StmtVarDecl(exp, t, resName, null));
+        ExprVar res = new ExprVar(exp, resName);
+
+        StmtBlock thenBlock = null;
+        {
+            List<Statement> oldStatements = newStatements;
+            newStatements = new ArrayList<Statement>();
+
+            b = doExpression(b);
+            newStatements.add(new StmtAssign(res, b));
+
+            thenBlock = new StmtBlock(exp, newStatements);
+            newStatements = oldStatements;
+        }
+
+        StmtBlock elseBlock = null;
+        if (c != null) {
+            List<Statement> oldStatements = newStatements;
+            newStatements = new ArrayList<Statement>();
+
+            c = doExpression(c);
+            newStatements.add(new StmtAssign(res, c));
+
+            elseBlock = new StmtBlock(exp, newStatements);
+            newStatements = oldStatements;
+        }
+
+        addStatement(new StmtIfThen(exp, a, thenBlock, elseBlock));
+
+        return res;
+    }
+
+    /** We have to conditionally protect function calls. */
+    public Object visitExprBinary(ExprBinary eb) {
+        String op = eb.getOpString();
+        if (op.equals("&&") || op.equals("||"))
+            return doLogicalExpr(eb);
+        else
+            return super.visitExprBinary(eb);
+    }
+
+    public FunctionParamExtension(TempVarGen varGen) {
+        this(null, varGen);
 	}
 
-	public FunctionParamExtension(SymbolTable symtab) {
+    public FunctionParamExtension(SymbolTable symtab, TempVarGen varGen) {
 		super(symtab);
 		paramCopyRes=new ParameterCopyResolver();
+        this.varGen = varGen;
 	}
 
 	private String getOutParamName() {
@@ -257,7 +350,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					String outParamName  = outParam.getName();
 					assert outParam.isParameterOutput();
 
-					Expression defaultValue = getDefaultValue(func.getReturnType());
+                    Expression defaultValue = func.getReturnType().defaultValue();
 					assert defaultValue != null : "[FunctionParamExtension] default value null!";
 					if (defaultValue == null) { assertFalse(); }
 					

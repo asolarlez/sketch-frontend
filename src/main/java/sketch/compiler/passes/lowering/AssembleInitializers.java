@@ -136,14 +136,21 @@ public class AssembleInitializers extends FEReplacer
         }
         List<Statement> olist = new java.util.ArrayList<Statement>();
         Map<Integer, Integer> rmap = vtrack.process();
-        Map<Integer, Statement> pmap = new HashMap<Integer, Statement>();
+        Map<Integer, List<Statement>> pmap = new HashMap<Integer, List<Statement>>();
         int i = 0;
         for (Statement s : slist) {
             if (pmap.containsKey(i)) {
-                olist.add(pmap.get(i));
+                olist.addAll(pmap.get(i));
             }
             if (rmap.containsKey(i)) {
-                pmap.put(rmap.get(i), s);
+                List<Statement> ls;
+                if (pmap.containsKey(rmap.get(i))) {
+                    ls = pmap.get( rmap.get(i) );
+                }else{
+                    ls = new ArrayList<Statement>();                    
+                    pmap.put(rmap.get(i), ls);
+                }
+                ls.add(s);
             } else {
                 olist.add(s);
             }

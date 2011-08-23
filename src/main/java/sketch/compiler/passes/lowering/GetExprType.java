@@ -33,6 +33,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
 import static sketch.util.Misc.nonnull;
 
@@ -283,8 +284,9 @@ public class GetExprType extends FENullVisitor
         }
         else
         {
-            assert false : "You are trying to do a field access on a " + base + " in expr " + exp + " . " + exp;
-            return null;
+            throw new TypeErrorException(exp.getCx() +
+                    ": You are trying to do a field access on a " + base + " in expr " +
+                    exp + " . " + exp);
         }
     }
 

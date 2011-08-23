@@ -161,7 +161,7 @@ public class ExprStar extends Expression
     public String toString()
     {
     	if(getType() != null)
-    		return "??:" + getType() + ":" + size;
+            return "??/*" + this.getSname() + "*/" + getType() + ":" + size;
         return "??/*"+this.getSname()+"*/";
     }
 
