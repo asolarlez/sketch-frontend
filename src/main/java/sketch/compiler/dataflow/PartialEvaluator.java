@@ -30,6 +30,7 @@ import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
 
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 class CloneHoles extends FEReplacer{
     
@@ -213,6 +214,13 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
         if (isReplacer) {
             exprRV = (Expression) super.visitCudaThreadIdx(cudaThreadIdx);
+        }
+        return vtype.BOTTOM(TypePrimitive.inttype);
+    }
+    @Override
+    public Object visitSpmdPid(SpmdPid pid) {
+        if (isReplacer) {
+            exprRV = (Expression) super.visitSpmdPid(pid);
         }
         return vtype.BOTTOM(TypePrimitive.inttype);
     }

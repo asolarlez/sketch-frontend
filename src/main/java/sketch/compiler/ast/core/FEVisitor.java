@@ -33,6 +33,7 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 /**
  * Visitor interface for StreamIt front-end nodes.  This class
@@ -126,4 +127,5 @@ public interface FEVisitor
     public Object visitExprType(ExprType exprtyp);
     public Object visitStmtSpmdfork(StmtSpmdfork stmtSpmdfork);
     public Object visitSpmdBarrier(SpmdBarrier spmdBarrier);
+    public Object visitSpmdPid(SpmdPid spmdBarrier);
 }

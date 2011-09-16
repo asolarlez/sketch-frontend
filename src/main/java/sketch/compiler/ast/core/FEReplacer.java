@@ -47,6 +47,7 @@ import sketch.util.datastructures.TypedHashMap;
 
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -863,6 +864,10 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitSpmdBarrier(SpmdBarrier stmt) {
+        return stmt;
+    }  
+    
+    public Object visitSpmdPid(SpmdPid stmt) {
         return stmt;
     }  
 

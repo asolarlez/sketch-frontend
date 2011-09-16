@@ -32,6 +32,8 @@ import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -523,6 +525,12 @@ public class NodesToC extends NodesToJava {
     result += stmt.getBody().accept(this);
     return result;
   }
+
+  @Override
+  public Object visitSpmdBarrier(SpmdBarrier stmt) { return "spmdbarrier();"; }
+  
+  @Override
+  public Object visitSpmdPid(SpmdPid stmt) { return "spmdpid"; }
 
   public Object visitStmtLoop(StmtLoop stmt)
   {

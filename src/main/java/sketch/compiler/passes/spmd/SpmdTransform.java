@@ -35,6 +35,7 @@ import sketch.compiler.passes.structure.ASTQuery;
 import sketch.compiler.passes.structure.CallGraph;
 
 import sketch.compiler.ast.spmd.stmts.*;
+import sketch.compiler.ast.spmd.exprs.*;
 
 import sketch.util.datastructures.TypedHashSet;
 import sketch.util.fcns.CopyableIterator;
@@ -378,6 +379,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
         /** visit a list of nodes / statements / etc. */
         public StmtBlock visitStmtList(List<Statement> lst) {
             return (StmtBlock) (new StmtBlock(lst)).accept(this);
+        }
+
+        @Override
+        public Object visitSpmdPid(SpmdPid stmt) {
+            ExprVar var = new ExprVar(stmt, SpmdPidVar);
+            return var;
         }
         
         @Override

@@ -30,6 +30,7 @@ import sketch.compiler.passes.streamit_old.SCSimple;
 
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 /**
  * typed version of null visitor.
@@ -232,6 +233,10 @@ public class FETypedVisitor<T> implements FEVisitor {
     }
 
     public T visitSpmdBarrier(SpmdBarrier stmt) {
+        throw new FEVisitorException(this, stmt);
+    }
+
+    public T visitSpmdPid(SpmdPid stmt) {
         throw new FEVisitorException(this, stmt);
     }
 

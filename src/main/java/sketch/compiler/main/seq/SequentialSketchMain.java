@@ -83,6 +83,7 @@ import static sketch.util.DebugOut.printError;
 import static sketch.util.Misc.nonnull;
 
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
+import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.spmd.SpmdTransform;
 
 /**
@@ -148,10 +149,11 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
+                            new SpmdbarrierCall(), new PidReplacer(),
                             new RemoveFunctionParameters(),
                             new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
                             new InstrumentFcnCall(), new SyncthreadsCall(),
-                            new SpmdbarrierCall() };
+                            };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
