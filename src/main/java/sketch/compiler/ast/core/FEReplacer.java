@@ -46,6 +46,7 @@ import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -851,14 +852,18 @@ public class FEReplacer implements FEVisitor
     public Object visitStmtSpmdfork(StmtSpmdfork loop){
         System.out.println(loop.toString());
     	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
-    	Expression niter = (Expression) loop.getIter().accept(this);
+    	Expression nproc = (Expression) loop.getNProc().accept(this);
     	Statement body = (Statement) loop.getBody().accept(this);
-    	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
+    	if(decl == loop.getLoopVarDecl() && nproc == loop.getNProc() && body == loop.getBody()  ){
     		return loop;
     	}
-        if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + niter + " " + body); }
-    	return new StmtSpmdfork(loop, decl, niter, body);
+        if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + nproc + " " + body); }
+    	return new StmtSpmdfork(loop, decl, nproc, body);
     }
+
+    public Object visitSpmdBarrier(SpmdBarrier stmt) {
+        return stmt;
+    }  
 
 
 	public Object visitStmtSwitch(StmtSwitch sw) {

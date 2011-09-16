@@ -8,12 +8,12 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class StmtSpmdfork extends Statement {
-	private StmtVarDecl loopVar;
-	   private Expression nProc;
-	    private StmtBlock body;
+    private StmtVarDecl loopVar;
+    private Expression nProc;
+    private Statement body;
 
 	    /** Creates a new loop. */
-	    public StmtSpmdfork(FENode context, String vname, Expression nProc, StmtBlock body)
+	    public StmtSpmdfork(FENode context, String vname, Expression nProc, Statement body)
 	    {
 	    	this (context,
 	    		  new StmtVarDecl(context, TypePrimitive.inttype, vname, null),
@@ -23,14 +23,14 @@ public class StmtSpmdfork extends Statement {
 	    /** Creates a new loop.
 	     * @deprecated
 	     */
-	    public StmtSpmdfork(FEContext context, String vname, Expression nProc, StmtBlock body)
+	    public StmtSpmdfork(FEContext context, String vname, Expression nProc, Statement body)
 	    {
 	    	this (context,
 	    		  new StmtVarDecl(context, TypePrimitive.inttype, vname, null),
 	    		  nProc, body);
 	    }
 
-	    public StmtSpmdfork(FENode context, StmtVarDecl loopVar, Expression nProc, StmtBlock body)
+	    public StmtSpmdfork(FENode context, StmtVarDecl loopVar, Expression nProc, Statement body)
 	    {
 	        super(context);
 	        this.nProc = nProc;
@@ -46,7 +46,7 @@ public class StmtSpmdfork extends Statement {
 	     * @param body
 	     * @deprecated
 	     */
-	    public StmtSpmdfork(FEContext context, StmtVarDecl loopVar, Expression nProc, StmtBlock body)
+	    public StmtSpmdfork(FEContext context, StmtVarDecl loopVar, Expression nProc, Statement body)
 	    {
 	        super(context);
 	        this.nProc = nProc;
@@ -54,9 +54,9 @@ public class StmtSpmdfork extends Statement {
 	        this.loopVar = loopVar;
 	    }
 
-            public StmtSpmdfork createWithNewBody(StmtBlock newBody)
+            public StmtSpmdfork createWithNewBody(Statement newBody)
             {
-                return new StmtSpmdfork(this.getContext(), this.getLoopVarDecl(), this.getIter(), newBody);
+                return new StmtSpmdfork(this.getContext(), this.getLoopVarDecl(), this.getNProc(), newBody);
             }
 
 	    /** Return the number of nProcations. */
@@ -66,7 +66,7 @@ public class StmtSpmdfork extends Statement {
 	    }
 
 	    /** Return the loop body of this. */
-	    public StmtBlock getBody()
+	    public Statement getBody()
 	    {
 	        return body;
 	    }

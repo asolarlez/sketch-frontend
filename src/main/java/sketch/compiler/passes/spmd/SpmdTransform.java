@@ -1,12 +1,60 @@
+package sketch.compiler.passes.spmd;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import java.util.Queue;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstBoolean;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.structure.ASTObjQuery;
+import sketch.compiler.passes.structure.ASTQuery;
+import sketch.compiler.passes.structure.CallGraph;
+
+import sketch.compiler.ast.spmd.stmts.*;
+
+import sketch.util.datastructures.TypedHashSet;
+import sketch.util.fcns.CopyableIterator;
+
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printWarning;
+
 public class SpmdTransform  extends SymbolTableVisitor {
-    public static final SpmdMaxNProc = 16;
+    public static final int SpmdMaxNProc = 16;
     public static final String SpmdNProcVar = "spmdnproc";
     public static final String SpmdPidVar = "spmdpid";
 
     protected final TempVarGen varGen;
     protected SpmdCallGraph cg;
 
-    public SpmdTransform(SketchOptions opts, TempVarGen varGen) {
+    Vector<Function> allProcFcns;
+    Vector<Function> someProcFcns;
+    Vector<Function> oldProcFcns;
+
+    public SpmdTransform(TempVarGen varGen) {
         super(null);
         this.varGen = varGen;
     }
@@ -18,7 +66,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
         } else {
             oldProcFcns.add((Function) super.visitFunction(fcn));
         }
-        if (cg.needSomeProcFunction(fcn)) {
+        if (cg.needSomeProcFcn(fcn)) {
             someProcFcns.add((Function) new SomeProcTransform(symtab).visitFunction(fcn));
         }
         return fcn;
@@ -45,10 +93,11 @@ public class SpmdTransform  extends SymbolTableVisitor {
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
-        if (cg.isForkProcFcn(exp)) {
+        Function target = cg.getTarget(exp);
+        if (cg.isForkProcFcn(target)) {
             return new ExprFunCall(exp, "forkproc_" + exp.getName(), exp.getParams());
         } else {
-            assert !cg.needAllProcFcn(exp);
+            assert !cg.needAllProcFcn(target);
             return exp;
         }
     }
@@ -56,13 +105,13 @@ public class SpmdTransform  extends SymbolTableVisitor {
     public class AllProcTransform extends SymbolTableVisitor {
         boolean needAllProc;
 
-        public AllThreadsTransform(SymbolTable symtab) {
+        public AllProcTransform(SymbolTable symtab) {
             super(symtab);
         }
 
         @Override
         public Object visitStmtVarDecl(StmtVarDecl decl) {
-            if (needAllProc) {
+            if (needAllProc && decl.getType(0).getCudaMemType() != CudaMemoryType.GLOBAL) {
                 assert decl.getTypes().size() == 1;
                 final Type type = localArrayType(decl.getType(0));
                 decl = new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
@@ -103,12 +152,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
             needAllProc = true;
             StmtVarDecl nProcDecl = new StmtVarDecl(fork, TypePrimitive.inttype, SpmdNProcVar, null);
             super.visitStmtVarDecl(nProcDecl);
-            final ExprVar vref = new ExprVar(stmt, SpmdNProcVar);
+            final ExprVar vref = new ExprVar(fork, SpmdNProcVar);
             Statement nProcAssgn = (Statement)new StmtAssign(vref, fork.getNProc()).accept(this);
             Statement body = fork.getBody();
             //boolean oldNeedAllProc = needAllProc; we already know it's false
-            StmtBlock block = (body instanceof StmtBlock) ? body : new StmtBlock(body);
-            StmtBlock newBlock = new StmtBlock(fork.getCx(), nProcDecl, nProcAssgn, this.visitStmtBlock(block));
+            StmtBlock block = (body instanceof StmtBlock) ? (StmtBlock)body : new StmtBlock(body);
+            StmtBlock newBlock = new StmtBlock(fork.getCx(), nProcDecl, nProcAssgn, (Statement)this.visitStmtBlock(block));
             needAllProc = false;
             return newBlock;
         }
@@ -119,12 +168,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
          */
         @SuppressWarnings("unchecked")
         public Statement createProcLoop(final Vector<Statement> stmts) {
-            final SomeThreadsTransform tf = new SomeProcTransform(symtab);
-            StmtBlock body = tf.visitStmtList((Vector<Statement>) stmts_.clone());
-            final Context ctx = stmts.get(0).getCx();
+            final SomeProcTransform tf = new SomeProcTransform(symtab);
+            StmtBlock body = tf.visitStmtList((Vector<Statement>) stmts.clone());
+            final FEContext ctx = stmts.get(0).getCx();
             final ExprVar nProc = new ExprVar(ctx, SpmdNProcVar);
  
-            return new StmtFor(ctx, SpmdPidVar, nProc, body);
+            return new StmtFor(SpmdPidVar, nProc, body);
         }
 
         public void flushAndAdd(final Vector<Statement> statements,
@@ -139,7 +188,29 @@ public class SpmdTransform  extends SymbolTableVisitor {
             }
         }
 
-        final Type localBit = TypePrimitive.bittype;
+        protected Expression getAllOrNoneExpr(final Vector<Statement> additionalStmts, boolean value, final ExprVar arrvar, FENode ctx) {
+            String currName = varGen.nextVar("curr");
+            StmtVarDecl decl = new StmtVarDecl(ctx, TypePrimitive.bittype, currName, null);
+            ExprVar curr = new ExprVar(ctx, currName);
+            Statement currAssgn = new StmtAssign(curr, new ExprConstBoolean(true));
+
+            ExprVar nproc = new ExprVar(ctx, SpmdNProcVar);
+            String iterName = varGen.nextVar("iter");
+            ExprVar iter = new ExprVar(ctx, iterName);
+
+            final ExprArrayRange deref = new ExprArrayRange(arrvar, iter);
+            ExprBinary next = new ExprBinary(deref, "==", new ExprConstBoolean(value));
+            Statement assgn = new StmtAssign(curr, new ExprBinary(curr, "&&", next));
+            StmtFor loop = new StmtFor(iterName, nproc, assgn);
+
+            additionalStmts.add(decl);
+            additionalStmts.add(currAssgn);
+            additionalStmts.add(loop);
+
+            return curr;
+        }
+
+        final Type localBit = TypePrimitive.bittype.withMemType(CudaMemoryType.LOCAL);
         
         @SuppressWarnings("deprecation")
         @Override
@@ -155,7 +226,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 while (it.hasNext()) {
                     Vector<Statement> nextSomeProcStmts = new Vector<Statement>();
 
-                    Satement nextAllProcStmt = null;
+                    Statement nextAllProcStmt = null;
                     List<Statement> afterSomeProcStmts = Collections.emptyList();
                     // do a first pass -- queue up any statements that don't have all proc statements
                     // and don't call functions that have sync's
@@ -204,20 +275,23 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         final ExprVar vref = new ExprVar(stmt, newVarName);
                         StmtAssign cond_assn = new StmtAssign(vref, c);
                         Statement[] assignLoop = visitStatementsAsBlock(cond_assn);
-                        flushAndAdd(statements, threadLoopStmts, cond_decl);
-                        flushAndAdd(statements, threadLoopStmts, assignLoop);
-                        
-                        ExprBinary allCond = getAllOrNoneExpr(true, vref);
-                        ExprBinary noneCond = getAllOrNoneExpr(false, vref);
+                        flushAndAdd(stmts, procLoopStmts, cond_decl);
+                        flushAndAdd(stmts, procLoopStmts, assignLoop);
+                       
+                        Vector<Statement> addStmts = new Vector<Statement>();
+                        Expression allCond = getAllOrNoneExpr(addStmts, true, vref, stmt);
+                        Expression noneCond = getAllOrNoneExpr(addStmts, false, vref, stmt);
+                        stmts.addAll(addStmts);
+
                         final Statement allProcThen = (Statement) ((StmtIfThen) stmt).getCons().accept(this);
                         
                         final Statement assertNone = new StmtAssert(stmt, noneCond, false);
                         final Statement alt = ((StmtIfThen) stmt).getAlt();
                         final Statement allProcElse = (alt == null) ? assertNone :
-                          new StmtBlock(assertNone, (Statement) alt.accept(this);
+                          new StmtBlock(assertNone, (Statement) alt.accept(this));
                         
                         StmtIfThen topLevel = new StmtIfThen(stmt, allCond, allProcThen, allProcElse);
-                        flushAndAdd(statements, procLoopStmts, topLevel);
+                        flushAndAdd(stmts, procLoopStmts, topLevel);
                     } else if (stmt instanceof StmtWhile) {
                         StmtWhile ws = (StmtWhile) stmt;
                         Expression c = ws.getCond();
@@ -231,19 +305,28 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         flushAndAdd(stmts, procLoopStmts, cond_decl);
                         flushAndAdd(stmts, procLoopStmts, assignLoop);
 
-                        // change the while statement so it recomputes the condition variables
-                        ExprBinary allCond = getAllOrNoneExpr(true, vref);
-                        ExprBinary noneCond = getAllOrNoneExpr(false, vref);
+                        Vector<Statement> addStmts = new Vector<Statement>();
+                        Expression allCond = getAllOrNoneExpr(addStmts, true, vref, stmt);
+                        stmts.addAll(addStmts);
+
                         Vector<Statement> newBody =
                             new Vector<Statement>(((StmtBlock) ws.getBody()).getStmts());
+                         // change the while statement so it recomputes the condition variables
                         newBody.add(cond_assn);
-
                         // iterate while all threads agree on c, and then check that no
                         // threads agree on c.
                         final StmtBlock nextBody = (StmtBlock) visitStmtBlock(new StmtBlock(ws.getBody(), newBody));
-                        StmtWhile next_ws = new StmtWhile(ws, allCond, nextBody);
+                        Vector<Statement> topBody = new Vector<Statement>(nextBody.getStmts());
+                        addStmts.remove(0);     //FIXME: depend on the detail of getAllOrNoneExpr: the first statement is declaration
+                        topBody.addAll(addStmts);
+                        StmtWhile next_ws = new StmtWhile(ws, allCond, new StmtBlock(ws.getBody(), topBody));
+                        flushAndAdd(stmts, procLoopStmts, next_ws);
+
+                        addStmts.clear();
+                        Expression noneCond = getAllOrNoneExpr(addStmts, false, vref, stmt);
+                        stmts.addAll(addStmts);
                         StmtAssert none_at_end = new StmtAssert(FEContext.artificalFrom("allproc while loop", stmt), noneCond, false);
-                        flushAndAdd(statements, procLoopStmts, next_ws, none_at_end);
+                        flushAndAdd(stmts, procLoopStmts, none_at_end);
                     } else {
                         printWarning("Assuming that subtree transformers "
                                 + "will take care of allthreads version of ",
@@ -261,19 +344,20 @@ public class SpmdTransform  extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
+            Function target = cg.getTarget(exp);
             if (needAllProc) {
-                assert !cg.isForkProcFcn(exp);
-                if (cg.needAllProcFcn(exp)) {
+                assert !cg.isForkProcFcn(target);
+                if (cg.needAllProcFcn(target)) {
                     return new ExprFunCall(exp, "allproc_" + exp.getName(), exp.getParams());
                 } else {
-                    AssertFalse("something wrong with spmd call graph in visitExprFunCall");
+                    assertFalse("something wrong with spmd call graph in visitExprFunCall");
                     return null;
                 }
             } else {
-                if (cg.isForkProcFcn(exp)) {
+                if (cg.isForkProcFcn(target)) {
                     return new ExprFunCall(exp, "forkproc_" + exp.getName(), exp.getParams());
                 } else {
-                    assert !cg.needAllProcFcn(exp);
+                    assert !cg.needAllProcFcn(target);
                     return exp;
                 }
             }
@@ -286,7 +370,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
         }
 
         /** visit a list of nodes / statements / etc. */
-        public List<Statement> visitStmtList(List<Statement> lst) {
+        public StmtBlock visitStmtList(List<Statement> lst) {
             return (StmtBlock) (new StmtBlock(lst)).accept(this);
         }
         
@@ -313,7 +397,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             exp = (ExprFunCall) super.visitExprFunCall(exp);
-            assert cg.needSomeProcFcn(exp) && !cg.isForkProcFcn(exp);
+            Function target = cg.getTarget(exp);
+            assert cg.needSomeProcFcn(target) && !cg.isForkProcFcn(target);
             Vector<Expression> nextArgs = new Vector<Expression>();
             nextArgs.add(new ExprVar(exp, SpmdNProcVar));
             nextArgs.add(new ExprVar(exp, SpmdPidVar));
@@ -325,7 +410,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
     protected class ContainsAllProcElt extends ASTQuery {
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
-            if (!result) result = cg.callsFcnWithBarrier(exp);
+            if (!result) result = cg.callsFcnWithBarrier(cg.getTarget(exp));
             return exp;
         }
 
@@ -382,11 +467,11 @@ public class SpmdTransform  extends SymbolTableVisitor {
 }
 
 class SpmdCallGraph extends CallGraph {
-    protected final TypedHashSet<Function> fcnsCallingBarrier = new TypedHashSet<Function>();
+    protected final HashSet<Function> fcnsCallingBarrier = new HashSet<Function>();
     protected final TypedHashSet<Function> fcnsCalledByFork = new TypedHashSet<Function>();
     protected final TypedHashSet<Function> fcnsWithFork = new TypedHashSet<Function>();
-    protected final TypedHashSet<Function> fcnsNeedAllProc;
-    protected final TypedHashSet<Function> fcnsNeedSomeProc;
+    protected HashSet<Function> fcnsNeedAllProc;
+    protected HashSet<Function> fcnsNeedSomeProc;
 
     boolean insideFork = false;
 
@@ -394,15 +479,19 @@ class SpmdCallGraph extends CallGraph {
         super(prog);
     }
 
-    public isForkProcFcn(Function fcn) {
+    public boolean isForkProcFcn(Function fcn) {
         return fcnsWithFork.contains(fcn);
     }
 
-    public needAllProcFcn(Function fcn) {
+    public boolean callsFcnWithBarrier(Function fcn) {
+        return fcnsCallingBarrier.contains(fcn);
+    }
+
+    public boolean needAllProcFcn(Function fcn) {
         return fcnsNeedAllProc.contains(fcn);
     }
 
-    public needSomeProcFcn(Function fcn) {
+    public boolean needSomeProcFcn(Function fcn) {
         return fcnsNeedSomeProc.contains(fcn);
     }
 
@@ -418,15 +507,16 @@ class SpmdCallGraph extends CallGraph {
         if (insideFork) {
             fcnsCalledByFork.add(getTarget(exp));
         }
+        return exp;
     }
 
     @Override
-    public Object visitStmtSpmdFork(StmtSpmdFork stmt) {
+    public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
         assert enclosing != null;
         assert !insideFork;
         insideFork = true;
         fcnsWithFork.add(enclosing);
-        Object result = super.visitStmtSpmdFork();
+        Object result = super.visitStmtSpmdfork(stmt);
         insideFork = false;
         return result;
     }
@@ -435,8 +525,8 @@ class SpmdCallGraph extends CallGraph {
     protected void buildEdges() {
         super.buildEdges();
 
-        Queue<Function> qFork = new Queue<Function>();
-        qFork.addAll(fcnsCalledByFork);
+        Queue<Function> qFork = new ArrayDeque<Function>();
+        qFork.addAll(fcnsCalledByFork.asCollection());
         while (!qFork.isEmpty()) {
             Function f = qFork.remove();
             for (Function callee : closureEdges.targetsFrom(f)) {
@@ -447,7 +537,7 @@ class SpmdCallGraph extends CallGraph {
             }
         }
 
-        Queue<Function> qBarrier = new Queue<Function>();
+        Queue<Function> qBarrier = new ArrayDeque<Function>();
         qBarrier.addAll(fcnsCallingBarrier);
         while (!qBarrier.isEmpty()) {
             Function f = qBarrier.remove();
@@ -458,8 +548,8 @@ class SpmdCallGraph extends CallGraph {
             }
         }
 
-        fcnsNeedAllProc = fcnsWithFork.union(fcnsCallingBarrier);
-        fcnsNeedSomeProc = fcnsCalledByFork.subtract(fcnsCallingBarrier);
+        fcnsNeedAllProc = fcnsWithFork.union(fcnsCallingBarrier).asHashSet();
+        fcnsNeedSomeProc = fcnsCalledByFork.subtract(fcnsCallingBarrier).asHashSet();
     }
 }
 

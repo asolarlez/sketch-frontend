@@ -29,6 +29,7 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
 
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 
 /**
  * typed version of null visitor.
@@ -228,6 +229,10 @@ public class FETypedVisitor<T> implements FEVisitor {
 
     public T visitStmtSpmdfork(StmtSpmdfork loop) {
         throw new FEVisitorException(this, loop);
+    }
+
+    public T visitSpmdBarrier(SpmdBarrier stmt) {
+        throw new FEVisitorException(this, stmt);
     }
 
     public T visitStmtIfThen(StmtIfThen stmt) {
