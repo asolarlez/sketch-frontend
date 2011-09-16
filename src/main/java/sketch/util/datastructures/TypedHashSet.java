@@ -65,4 +65,10 @@ public class TypedHashSet<K> implements Iterable<K>, Cloneable {
         rv.addAll(c);
         return rv;
     }
+
+    public TypedHashSet<K> subtract(Collection<? extends K> c) {
+        TypedHashSet<K> rv = clone();
+        rv.removeAll(c);
+        return rv;
+    }
 }

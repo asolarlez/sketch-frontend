@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
+import java.util.Random;
 
 /**
  * An assert statement. Has an assertion conditional expression.
@@ -195,12 +196,13 @@ public class StmtAssert extends Statement
         this.msg = msg;
     }
 
+    private Random _my_rand = new Random();
     /**
      * @return the msg
      */
     public String getMsg() {
         if (msg == null || msg.isEmpty())
-            return "Assert at " + getCx();
+            return "Assert at " + getCx() + " (" + _my_rand.nextLong() + ")";
         return msg;
     }
 }

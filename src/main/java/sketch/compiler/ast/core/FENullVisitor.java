@@ -32,6 +32,8 @@ import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 /**
  * Implementation of FEVisitor that always returns <code>null</code>.
  * This is intended to be a base class for other visitors that only
@@ -118,6 +120,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitParameter(Parameter par){ return null; }
     public Object visitExprNew(ExprNew expNew){ return null; }
     public Object visitStmtFork(StmtFork loop){ return null; }
+    public Object visitStmtSpmdfork(StmtSpmdfork loop){ return null; }
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return null; }
 	public Object visitStmtSwitch(StmtSwitch sw) { return null; }

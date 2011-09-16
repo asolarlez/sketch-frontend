@@ -54,6 +54,8 @@ import sketch.compiler.ast.cuda.typs.*;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.main.cmdline.SketchOptions;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 import static sketch.util.DebugOut.assertFalse;
 }
 
@@ -231,7 +233,8 @@ field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 statement returns [Statement s] { s = null; }
 	:	s=loop_statement
 	|   s=minrepeat_statement
-	|   s=fork_statement	
+	|   s=fork_statement
+        |   s=spmdfork_statement
     |   s=parfor_statement
 	|	s=insert_block
 	|	s=reorder_block
@@ -269,6 +272,11 @@ minrepeat_statement returns [Statement s] { s = null; Statement b; Token x=null;
 fork_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
 	: t:TK_fork LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block
 	{ s = new StmtFork(getContext(t), (StmtVarDecl) ivar, exp, b); }
+	;
+
+spmdfork_statement returns [Statement s] { s = null; Statement ivar; Expression exp; Statement b;}
+	: t:TK_spmdfork LPAREN ivar=variable_decl SEMI exp=right_expr RPAREN b=pseudo_block
+	{ s = new StmtSpmdfork(getContext(t), (StmtVarDecl) ivar, exp, b); }
 	;
 
 parfor_statement returns [Statement s] { s = null; Expression ivar; Expression exp; Statement b; }

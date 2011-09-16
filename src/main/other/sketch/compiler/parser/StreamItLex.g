@@ -83,6 +83,9 @@ tokens {
     "global";
     "serial";
 
+    // spmd
+    "spmdfork";
+
     // solving methods
     "stencil";
 

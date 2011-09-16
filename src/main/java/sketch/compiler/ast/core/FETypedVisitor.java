@@ -28,6 +28,8 @@ import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 /**
  * typed version of null visitor.
  * 
@@ -221,6 +223,10 @@ public class FETypedVisitor<T> implements FEVisitor {
     }
 
     public T visitStmtFork(StmtFork loop) {
+        throw new FEVisitorException(this, loop);
+    }
+
+    public T visitStmtSpmdfork(StmtSpmdfork loop) {
         throw new FEVisitorException(this, loop);
     }
 

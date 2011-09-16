@@ -45,6 +45,8 @@ import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 import static sketch.util.DebugOut.assertFalse;
 
 /**
@@ -845,6 +847,19 @@ public class FEReplacer implements FEVisitor
     	}
     	return new StmtFork(loop, decl, niter, body);
     }
+
+    public Object visitStmtSpmdfork(StmtSpmdfork loop){
+        System.out.println(loop.toString());
+    	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
+    	Expression niter = (Expression) loop.getIter().accept(this);
+    	Statement body = (Statement) loop.getBody().accept(this);
+    	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
+    		return loop;
+    	}
+        if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + niter + " " + body); }
+    	return new StmtSpmdfork(loop, decl, niter, body);
+    }
+
 
 	public Object visitStmtSwitch(StmtSwitch sw) {
 		// TODO add visitSwmtSwitch
