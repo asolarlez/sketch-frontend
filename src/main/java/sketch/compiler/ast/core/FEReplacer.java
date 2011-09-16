@@ -850,15 +850,16 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitStmtSpmdfork(StmtSpmdfork loop){
-        System.out.println(loop.toString());
-    	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
+        //System.out.println(loop.toString());
+	//StmtVarDecl oldDecl = loop.getLoopVarDecl();
+    	//StmtVarDecl decl = oldDecl==null ? null : (StmtVarDecl)oldDecl.accept(this);
     	Expression nproc = (Expression) loop.getNProc().accept(this);
     	Statement body = (Statement) loop.getBody().accept(this);
-    	if(decl == loop.getLoopVarDecl() && nproc == loop.getNProc() && body == loop.getBody()  ){
+    	if(nproc == loop.getNProc() && body == loop.getBody()  ){
     		return loop;
     	}
-        if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + nproc + " " + body); }
-    	return new StmtSpmdfork(loop, decl, nproc, body);
+        //if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + nproc + " " + body); }
+    	return new StmtSpmdfork(loop, loop.getLoopVarName(), nproc, body);
     }
 
     public Object visitSpmdBarrier(SpmdBarrier stmt) {

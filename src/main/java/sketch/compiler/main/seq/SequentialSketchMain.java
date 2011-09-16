@@ -82,6 +82,7 @@ import static sketch.util.DebugOut.printError;
 
 import static sketch.util.Misc.nonnull;
 
+import sketch.compiler.passes.spmd.SpmdTransform;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -220,6 +221,31 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    public class SpmdLowLevelCStage extends LowLevelCStage {
+        public SpmdLowLevelCStage() {
+            super();
+//            this.passes.add(new FlattenStmtBlocks2());
+//            this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new SpmdTransform(varGen));
+        }
+
+        @Override
+        protected Program postRun(Program prog) {
+            final SemanticCheckPass semanticCheck =
+                    new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
+            ExtractComplexLoopConditions ec =
+                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            // final FunctionParamExtension paramExt = new FunctionParamExtension();
+
+            prog = (Program) semanticCheck.visitProgram(prog);
+            prog = (Program) ec.visitProgram(prog);
+            // prog = (Program) paramExt.visitProgram(prog);
+
+            return prog;
+        }
+    }
+
+
     public class FinalLowLevelCLowering extends CompilerStage {
         public FinalLowLevelCLowering() {
             super(SequentialSketchMain.this);
@@ -261,7 +287,8 @@ public class SequentialSketchMain extends CommonSketchMain
             }
             return new LowLevelCStage();
         } else {
-            return new CudaLowLevelCStage();
+//            return new CudaLowLevelCStage();
+	    return new SpmdLowLevelCStage();
         }
     }
 

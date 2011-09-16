@@ -31,6 +31,7 @@ import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -512,6 +513,14 @@ public class NodesToC extends NodesToJava {
     } else { 
       result += body;
     }
+    return result;
+  }
+
+  @Override
+  public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
+    String result = indent + "spmdfork (" + stmt.getLoopVarName();
+    result += stmt.getNProc().accept(this);
+    result += stmt.getBody().accept(this);
     return result;
   }
 

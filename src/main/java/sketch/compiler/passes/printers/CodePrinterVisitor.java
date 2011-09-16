@@ -24,6 +24,8 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.NullStream;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 
 /**
  * A parent class for code printers that strictly adhere to the visitor pattern.
@@ -429,6 +431,21 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		se.getExpression ().accept (this);
 		println (";");
 		return se;
+	}
+
+	public Object visitStmtSpmdfork(StmtSpmdfork sf) {
+		SymbolTable oldSymtab = symtab;
+		symtab = new SymbolTable (symtab);
+
+		printTab ();
+		print("spmdfork (" + sf.getLoopVarName() + "; ");
+		sf.getNProc().accept (this); 
+		println(")");
+		sf.getBody ().accept (this);
+
+		symtab = oldSymtab;
+
+		return sf;
 	}
 
 	public Object visitStmtFor (StmtFor sf) {

@@ -29,6 +29,8 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 class CloneHoles extends FEReplacer{
     
     public Object visitExprStar(ExprStar es){
@@ -215,7 +217,25 @@ public class PartialEvaluator extends FEReplacer {
         return vtype.BOTTOM(TypePrimitive.inttype);
     }
 
-
+    @Override
+    public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
+        Statement body = null;
+        Expression nproc = null;
+        Level lvl = state.pushLevel("StmtSpmdFork");
+        try {
+            startSpmdfork(null);
+            try {
+                abstractValue vnproc = (abstractValue) stmt.getNProc().accept(this);
+                nproc = exprRV;
+                body = (Statement)stmt.getBody().accept(this);
+            } finally {
+                state.popParallelSection();
+            }
+        } finally {
+            state.popLevel(lvl);
+        }
+        return isReplacer?  new StmtSpmdfork(stmt, stmt.getLoopVarName(), nproc, body) : stmt;
+    }
 
     public Object visitExprField(ExprField exp) {
         exp.getLeft().accept(this);
@@ -882,6 +902,10 @@ public class PartialEvaluator extends FEReplacer {
      *
      */
     protected void startFork(StmtFork loop){
+        state.pushParallelSection();
+    }
+
+    protected void startSpmdfork(StmtSpmdfork stmt) {
         state.pushParallelSection();
     }
 

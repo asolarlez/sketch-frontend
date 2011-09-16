@@ -8,34 +8,25 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class StmtSpmdfork extends Statement {
-    private StmtVarDecl loopVar;
+    private String loopVarName;
     private Expression nProc;
     private Statement body;
 
-	    /** Creates a new loop. */
-	    public StmtSpmdfork(FENode context, String vname, Expression nProc, Statement body)
-	    {
-	    	this (context,
-	    		  new StmtVarDecl(context, TypePrimitive.inttype, vname, null),
-	    		  nProc, body);
-	    }
-
-	    /** Creates a new loop.
-	     * @deprecated
-	     */
-	    public StmtSpmdfork(FEContext context, String vname, Expression nProc, Statement body)
-	    {
-	    	this (context,
-	    		  new StmtVarDecl(context, TypePrimitive.inttype, vname, null),
-	    		  nProc, body);
-	    }
-
-	    public StmtSpmdfork(FENode context, StmtVarDecl loopVar, Expression nProc, Statement body)
+	    public StmtSpmdfork(FEContext context, StmtVarDecl decl, Expression nProc, Statement body)
 	    {
 	        super(context);
 	        this.nProc = nProc;
 	        this.body = body;
-	        this.loopVar = loopVar;
+	        this.loopVarName = decl.getName(0);
+	    }
+
+
+	    public StmtSpmdfork(FENode context, String vname, Expression nProc, Statement body)
+	    {
+	        super(context);
+	        this.nProc = nProc;
+	        this.body = body;
+	        this.loopVarName = vname;
 	    }
 
 	    /**
@@ -46,17 +37,17 @@ public class StmtSpmdfork extends Statement {
 	     * @param body
 	     * @deprecated
 	     */
-	    public StmtSpmdfork(FEContext context, StmtVarDecl loopVar, Expression nProc, Statement body)
+	    public StmtSpmdfork(FEContext context, String vname, Expression nProc, Statement body)
 	    {
 	        super(context);
 	        this.nProc = nProc;
 	        this.body = body;
-	        this.loopVar = loopVar;
+	        this.loopVarName = vname;
 	    }
 
             public StmtSpmdfork createWithNewBody(Statement newBody)
             {
-                return new StmtSpmdfork(this.getContext(), this.getLoopVarDecl(), this.getNProc(), newBody);
+                return new StmtSpmdfork(this.getContext(), this.getLoopVarName(), this.getNProc(), newBody);
             }
 
 	    /** Return the number of nProcations. */
@@ -72,23 +63,19 @@ public class StmtSpmdfork extends Statement {
 	    }
 
 	    public String getLoopVarName(){
-	    	return loopVar.getName(0);
-	    }
-
-	    public StmtVarDecl getLoopVarDecl(){
-	    	return loopVar;
+	    	return loopVarName;
 	    }
 
 	    /** Accept a front-end visitor. */
 	    public Object accept(FEVisitor v)
 	    {
-                System.out.println(v.getClass().toString() + " visit " + this.toString());
+                //System.out.println(v.getClass().toString() + " visit " + this.toString());
 	        return v.visitStmtSpmdfork(this);
 	    }
 
 	    public String toString()
 	    {
-	    	return "spmdfork("+ loopVar + " ; " + nProc+")...";
+	    	return "spmdfork("+ loopVarName + " ; " + nProc+")...";
 	    }
 
 }

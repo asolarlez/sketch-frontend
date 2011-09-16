@@ -25,6 +25,7 @@ import java.util.Set;
 
 import sketch.compiler.Directive;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 import static sketch.util.DebugOut.printWarning;
 
@@ -113,7 +114,14 @@ public class Program extends FENode
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v)
     {
-        return v.visitProgram(this);
+//        System.out.println("before " + v.getClass().toString());
+//        (new CodePrinterVisitor()).visitProgram(this);
+        Object ret = v.visitProgram(this);
+//        if (ret instanceof Program) {
+//            System.out.println("after " + v.getClass().toString());
+//            (new CodePrinterVisitor()).visitProgram((Program)ret);
+//        }
+        return ret;
     }
 
     public void debugDump() {

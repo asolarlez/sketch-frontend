@@ -41,7 +41,9 @@ import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printWarning;
+import sketch.compiler.passes.printers.CodePrinterVisitor;
 
+@CompilerPassDeps(runsBefore = { }, runsAfter = { })
 public class SpmdTransform  extends SymbolTableVisitor {
     public static final int SpmdMaxNProc = 16;
     public static final String SpmdNProcVar = "spmdnproc";
@@ -89,7 +91,11 @@ public class SpmdTransform  extends SymbolTableVisitor {
         allFcns.addAll(oldProcFcns);
         allFcns.addAll(allProcFcns);
         allFcns.addAll(someProcFcns);
-        return spec.newFromFcns(allFcns);
+	System.out.println("allFcns: " + allFcns.toString());
+        spec = spec.newFromFcns(allFcns);
+        System.out.println("after spmd:");
+        spec.accept(new CodePrinterVisitor());
+        return spec;
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
@@ -476,7 +482,8 @@ class SpmdCallGraph extends CallGraph {
     boolean insideFork = false;
 
     public SpmdCallGraph(Program prog) {
-        super(prog);
+        System.out.println("cg init" + prog.accept(new CodePrinterVisitor()));
+        super.init(prog);
     }
 
     public boolean isForkProcFcn(Function fcn) {
@@ -504,6 +511,7 @@ class SpmdCallGraph extends CallGraph {
 
     @Override
     public Object visitExprFunCall(ExprFunCall exp) {
+        exp = (ExprFunCall) super.visitExprFunCall(exp);
         if (insideFork) {
             fcnsCalledByFork.add(getTarget(exp));
         }
@@ -512,9 +520,11 @@ class SpmdCallGraph extends CallGraph {
 
     @Override
     public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
+        System.out.println("in visitStmtSpmdFork");
         assert enclosing != null;
         assert !insideFork;
         insideFork = true;
+        System.out.println("withFork += " + enclosing);
         fcnsWithFork.add(enclosing);
         Object result = super.visitStmtSpmdfork(stmt);
         insideFork = false;
