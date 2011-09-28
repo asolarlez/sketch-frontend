@@ -1,0 +1,91 @@
+include "generators.skh";
+
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --bnd-inline-amnt 1 --beopt:-bndwrand 10";
+
+void swap(int N, ref int[N] ar, int i, int j){
+    int tmp = ar[i];
+    ar[i] = ar[j];
+    ar[j] = tmp;
+}
+
+int count = 0;
+int observe(int N, ref int[N] ar, int i){
+    count++;
+    return ar[i];
+}
+
+
+
+int RED=0;
+int WHITE=1;
+int BLUE=2;
+
+harness void main(int N, int[N] ar){
+    int rcount = 0; int bcount = 0; int wcount = 0;
+    for(int i=0; i<N; ++i){        
+        if(ar[i] == RED){ rcount++; }
+        if(ar[i] == WHITE){ wcount++; }
+        if(ar[i] == BLUE){ bcount++; }
+        if(ar[i] > BLUE){ return;  } 
+    }
+    
+    dutchFlag(N, ar);
+        
+    int idx = 0;
+    for(int i=0; i<rcount; ++i){
+        assert ar[idx] == RED; 
+        idx++;
+    }
+    for(int i=0; i<wcount; ++i){
+        assert ar[idx] == WHITE; 
+        idx++;
+    }
+    for(int i=0; i<bcount; ++i){
+        assert ar[idx] == BLUE; 
+        idx++;
+    }    
+    assert count <= N;
+}
+
+
+generator int simple(int N, int[N] ops){
+    int t = {|ops[??] | 0|}; 
+    return t + ??(2) -1; 
+}
+
+
+generator bit simpleBool(int N, int[N] ops){
+    return {| simple(N, ops) (> | == | !=) simple(N, ops) |}; 
+}
+
+void dutchFlag(int N, ref int[N] ar){
+    int n1 = {| 0 | N |}; int n2= {| 0 | N |}; int n3 = {| 0 | N |}; int n4 = {| 0 | N |};
+    int lcount = 0;
+    int n2prev = n2;
+    int n3prev = n3;
+    while(simpleBool(4, {n1, n2, n3, N})){
+        int cnt =0;
+        repeat(??){
+            if(simpleBool(5, {n1, n2, n3, n4, N})){
+                if(??){ 
+                    swap(N, ar, simple(5, {n1, n2, n3, n4, N}), simple(5, {n1, n2, n3, n4, N}));
+                }
+                if(??){ 
+                    n1=observe(N, ar, simple(5, {n1, n2, n3, n4, N}));
+                }
+                if(??){
+                    {| n1 | n2 | n3 | n4 |} = simple(5, {n1, n2, n3, n4, N}); 
+                }
+                if(??){
+                    {| n1 | n2 | n3 | n4 |} = simple(5, {n1, n2, n3, n4, N}); 
+                }
+            }
+            assert ++cnt < 4;
+        }
+        assert n2 <= n2prev; 
+        assert n3 >= n3prev;
+        n2prev = n2;
+        n3prev = n3;
+        assert lcount++< N;
+    }
+}

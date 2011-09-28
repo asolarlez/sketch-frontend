@@ -1,7 +1,7 @@
 //@Description Sketch to reverse a list.
 
-pragma options "--bnd-unroll-amnt 4";
-int N = 4;
+pragma options "--bnd-unroll-amnt 6";
+int N = 6;
 
 struct node{
 	node next;
@@ -71,7 +71,7 @@ list reverseSK(list l){ /* automatically rewritten */
 	nl.tail = null;
 	bit c  = cond(l, nl);
 	node tmp = null;	
-	for(int i=0; c; ++i){
+	while(c){
 		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}// 83 * 10 * 6 = 4980
 		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}
  		if(cond(l, nl)){ {| tmp | l.head |l.head.next | nl.head | nl.head.next | nl.tail   |}    = holeB(l, nl, tmp);}

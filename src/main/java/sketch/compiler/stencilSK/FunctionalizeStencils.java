@@ -448,14 +448,17 @@ public class FunctionalizeStencils extends FEReplacer {
         v24.setNres(nres);
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();
+
 	        	f = ((Function)f.accept(v0));
+
             f = (Function) f.accept(new EliminateReturns());
             f = ((Function) f.accept(v23));
             f = ((Function) f.accept(v24));
             f = ((Function) f.accept(new RemoveShallowTempVars()));
 	        	f = ((Function)f.accept(v01));
+
 	        	f = ((Function)f.accept(v1));
-	        	//f.accept(new SimpleCodePrinter());
+
 	        	//System.out.println(f.toString());
             f = ((Function) f.accept(v2));
 	        	nfuns.add(f);	        	

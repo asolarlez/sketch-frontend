@@ -492,14 +492,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 	
 	protected Expression getDefaultValue(Type t) {
-		Expression defaultValue = null;
-		if(t.isStruct()){
-			defaultValue = ExprNullPtr.nullPtr;
-		} else {
-			defaultValue = ExprConstInt.zero;
-		}
-		
-		return defaultValue;
+        return t.defaultValue();
 	}
 
 }

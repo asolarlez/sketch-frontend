@@ -54,6 +54,7 @@ public class LowerToSketch extends MetaStage {
         // dump (prog, "ScalarizeVectorAssns");
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         // By default, we don't protect array accesses in SKETCH
+
         if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
             prog =
                     (Program) prog.accept(new ProtectArrayAccesses(

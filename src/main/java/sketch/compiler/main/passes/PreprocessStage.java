@@ -11,7 +11,6 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.CompilerStage;
 import sketch.compiler.passes.lowering.*;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 
 /**
  * @author Armando Solar-Lezama
@@ -63,7 +62,6 @@ public class PreprocessStage extends MetaStage {
 
         prog = ir1.run(prog);
 
-        prog.accept(new SimpleCodePrinter());
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 

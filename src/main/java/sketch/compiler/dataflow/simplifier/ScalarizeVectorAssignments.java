@@ -427,11 +427,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     	Integer irtlen = rtlen.getIValue();
 
     	if( irtlen != null && irtlen == 1 ){
-    		Integer irhs = rhs.getIValue();
-    		if( irhs != null && irhs == 0 ){
+            if (rhs.equals(lt.defaultValue())) {
 
     			List<Statement> mainLst = new ArrayList<Statement>();
-				mainLst.add (zeroOut(lhs, ExprConstInt.zero, ltlen, getType(rhs).defaultValue()));
+                mainLst.add(zeroOut(lhs, ExprConstInt.zero, ltlen, lt.defaultValue()));
 				Statement mainBody = new StmtBlock(lhs, mainLst);
 				// Now generate the loop, we have all the parts.
 				addStatement(mainBody);

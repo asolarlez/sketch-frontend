@@ -1,11 +1,25 @@
 
-pragma options "--bnd-inbits 3 ";
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 16 --bnd-arr-size 4 --bnd-unroll-amnt 16 -p lowering";
 
 void forLoop(fun body, int low, int high){
     if(low < high){
         body(low);
         forLoop(body, low+1, high);
     }
+}
+
+
+harness void test(int N){
+    int out = 0;
+    generator void t1(int i){
+        generator void t2(int i){
+            out = out + 1;
+        }
+        forLoop(t2, 0, N);
+    }
+    forLoop(t1, 0, N);
+    assert out == N*N;
+    
 }
 
 float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){

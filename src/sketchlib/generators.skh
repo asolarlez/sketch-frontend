@@ -83,6 +83,17 @@ generator int linexp(int N, int[N] vals){
     return t[i-1];
 }
 
+generator int plinexp(int N, int[N] vals){
+    int[N+1] t;
+    t[0]= (??)*vals[0];
+    int i=1;
+    repeat(N-1){
+        t[i] = t[i-1] + (??)*vals[i];
+        i = i+1;
+    }
+    return t[i-1];
+}
+
 
 generator int op(int ch, int a, int b, int N, int[N] ops, bit canplus, bit cantimes){
     int t = ch;
