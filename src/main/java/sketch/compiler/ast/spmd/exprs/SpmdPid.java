@@ -13,4 +13,9 @@ public class SpmdPid extends Expression {
     public Object accept(FEVisitor v) {
         return v.visitSpmdPid(this);
     }
+
+    @Override
+    public String toString() {
+        return "spmdpid";
+    }
 }

@@ -33,6 +33,7 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.streamit_old.SCSimple;
 
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 
 /**
@@ -122,6 +123,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprNew(ExprNew expNew){ return null; }
     public Object visitStmtFork(StmtFork loop){ return null; }
     public Object visitStmtSpmdfork(StmtSpmdfork loop){ return null; }
+    public Object visitSpmdPid(SpmdPid x){ return null; }
     public Object visitSpmdBarrier(SpmdBarrier stmt){ return null; }
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return null; }

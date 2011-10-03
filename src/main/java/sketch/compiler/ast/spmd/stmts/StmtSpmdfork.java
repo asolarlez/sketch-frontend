@@ -7,47 +7,32 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+
+import java.util.List;
+import java.util.ArrayList;
+
 public class StmtSpmdfork extends Statement {
-    private String loopVarName;
     private Expression nProc;
     private Statement body;
+    private static final SpmdPid SpmdPidConst = new SpmdPid(null);
 
-	    public StmtSpmdfork(FEContext context, StmtVarDecl decl, Expression nProc, Statement body)
-	    {
-	        super(context);
-	        this.nProc = nProc;
-	        this.body = body;
-	        this.loopVarName = decl.getName(0);
-	    }
-
-
-	    public StmtSpmdfork(FENode context, String vname, Expression nProc, Statement body)
-	    {
-	        super(context);
-	        this.nProc = nProc;
-	        this.body = body;
-	        this.loopVarName = vname;
-	    }
-
-	    /**
-	     *
-	     * @param context
-	     * @param loopVar
-	     * @param nProc
-	     * @param body
-	     * @deprecated
-	     */
 	    public StmtSpmdfork(FEContext context, String vname, Expression nProc, Statement body)
 	    {
 	        super(context);
 	        this.nProc = nProc;
-	        this.body = body;
-	        this.loopVarName = vname;
+                if (vname == null) {
+	            this.body = body;
+                } else {
+                    StmtVarDecl decl = new StmtVarDecl(context, TypePrimitive.inttype, vname, SpmdPidConst);
+                    this.body = new StmtBlock(decl, body);
+                }
 	    }
 
             public StmtSpmdfork createWithNewBody(Statement newBody)
             {
-                return new StmtSpmdfork(this.getContext(), this.getLoopVarName(), this.getNProc(), newBody);
+                return new StmtSpmdfork(this.getContext(), null, this.getNProc(), newBody);
             }
 
 	    /** Return the number of nProcations. */
@@ -62,10 +47,6 @@ public class StmtSpmdfork extends Statement {
 	        return body;
 	    }
 
-	    public String getLoopVarName(){
-	    	return loopVarName;
-	    }
-
 	    /** Accept a front-end visitor. */
 	    public Object accept(FEVisitor v)
 	    {
@@ -75,7 +56,7 @@ public class StmtSpmdfork extends Statement {
 
 	    public String toString()
 	    {
-	    	return "spmdfork("+ loopVarName + " ; " + nProc+")...";
+	    	return "spmdfork(" + nProc+")...";
 	    }
 
 }

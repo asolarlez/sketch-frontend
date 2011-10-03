@@ -234,6 +234,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 			print ((i != 0) ? ", " : "");
 			params.get (i).accept (this);
 		}
+		print (")");
 
 		return efc;
 	}
@@ -322,13 +323,13 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 
 		printTab ();
 		f.getReturnType ().accept (this);
-		print (" ("+ f.getName ());
+		print (" " + f.getName () + "(");
 		for (int i = 0; i < params.size (); ++i) {
 			print ((i != 0) ? ", " : "");
 			params.get (i).accept (this);
 		}
 		print (")");
-		f.getBody ().accept (this);
+		if (f.isUninterp()) println(";"); else f.getBody ().accept (this);
 
 		symtab = oldSymtab;
 
@@ -438,7 +439,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		symtab = new SymbolTable (symtab);
 
 		printTab ();
-		print("spmdfork (" + sf.getLoopVarName() + "; ");
+		print("spmdfork (");
 		sf.getNProc().accept (this); 
 		println(")");
 		sf.getBody ().accept (this);

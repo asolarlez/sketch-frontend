@@ -78,6 +78,10 @@ public class TypeArray extends Type implements TypeArrayInterface
         this(mem_typ, type, new ExprConstInt(i), null);
     }
 
+//    public TypeArray createWithNewLength(Expression len) {
+//        return new TypeArray(this.getCudaMemType(), this.getBase(), len);
+//    }
+
     public boolean isArray () { return true; }
 
     /** Gets the base type of this. */
@@ -191,5 +195,9 @@ public class TypeArray extends Type implements TypeArrayInterface
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
         return new TypeArray(memtyp, base, length, dims);
+    }
+
+    public TypeArray createWithLength(Expression length) {
+        return new TypeArray(this.base, length);
     }
 }

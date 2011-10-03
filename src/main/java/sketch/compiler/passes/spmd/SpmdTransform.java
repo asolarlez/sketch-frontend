@@ -9,6 +9,8 @@ import java.util.Queue;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 
+import sketch.compiler.main.cmdline.SketchOptions;
+
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -20,6 +22,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstBoolean;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -42,13 +45,13 @@ import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printWarning;
-import sketch.compiler.passes.printers.CodePrinterVisitor;
+//import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 @CompilerPassDeps(runsBefore = { }, runsAfter = { })
 public class SpmdTransform  extends SymbolTableVisitor {
-    public static final int SpmdMaxNProc = 16;
-    public static final String SpmdNProcVar = "spmdnproc";
-    public static final String SpmdPidVar = "spmdpid";
+    protected int SpmdMaxNProc;
+    protected static final String SpmdNProcVar = "spmdnproc";
+    protected static final String SpmdPidVar = "spmdpid";
 
     protected final TempVarGen varGen;
     protected SpmdCallGraph cg;
@@ -57,20 +60,28 @@ public class SpmdTransform  extends SymbolTableVisitor {
     Vector<Function> someProcFcns;
     Vector<Function> oldProcFcns;
 
-    public SpmdTransform(TempVarGen varGen) {
+    public SpmdTransform(SketchOptions opts, TempVarGen varGen) {
         super(null);
+        this.SpmdMaxNProc = opts.spmdOpts.MaxNProc;
         this.varGen = varGen;
     }
 
+    public int getSpmdMaxNProc() { return SpmdMaxNProc; }
+
     @Override
     public Object visitFunction(Function fcn) {
+//        System.out.println("here fcn=" + fcn + " all=" + cg.needAllProcFcn(fcn));
         if (cg.needAllProcFcn(fcn)) {
-            allProcFcns.add((Function) new AllProcTransform(symtab).visitFunction(fcn));
+            AllProcTransform tf = new AllProcTransform(symtab);
+            tf.setNres(nres);
+            allProcFcns.add((Function) tf.visitFunction(fcn));
         } else {
             oldProcFcns.add((Function) super.visitFunction(fcn));
         }
         if (cg.needSomeProcFcn(fcn)) {
-            someProcFcns.add((Function) new SomeProcTransform(symtab).visitFunction(fcn));
+            SomeProcTransform tf = new SomeProcTransform(symtab);
+            tf.setNres(nres);
+            someProcFcns.add((Function) tf.visitFunction(fcn));
         }
         return fcn;
     }
@@ -92,15 +103,14 @@ public class SpmdTransform  extends SymbolTableVisitor {
         allFcns.addAll(oldProcFcns);
         allFcns.addAll(allProcFcns);
         allFcns.addAll(someProcFcns);
-	System.out.println("allFcns: " + allFcns.toString());
+//	System.out.println("allFcns: " + allFcns.toString());
         spec = spec.newFromFcns(allFcns);
-        System.out.println("after spmd:");
-        spec.accept(new CodePrinterVisitor());
         return spec;
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
         Function target = cg.getTarget(exp);
+//        System.out.println("here target=" + target);
         if (cg.isForkProcFcn(target)) {
             return new ExprFunCall(exp, "forkproc_" + exp.getName(), exp.getParams());
         } else {
@@ -119,6 +129,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitStmtVarDecl(StmtVarDecl decl) {
             if (needAllProc && decl.getType(0).getCudaMemType() != CudaMemoryType.GLOBAL) {
+//System.out.println("decl: " + decl);
                 assert decl.getTypes().size() == 1;
                 final Type type = localArrayType(decl.getType(0));
                 decl = new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
@@ -128,12 +139,49 @@ public class SpmdTransform  extends SymbolTableVisitor {
 
         @Override
         public Object visitParameter(Parameter par) {
-            if (needAllProc) {
+//System.out.println("par: " + par + " " + par.getType().getCudaMemType());
+            if (needAllProc && par.getType().getCudaMemType() != CudaMemoryType.GLOBAL) {
                 final Type type = localArrayType(par.getType());
                 par = new Parameter(type, par.getName(), par.getPtype());
             }
             return super.visitParameter(par);
         }
+
+// handling variable length array in parameters
+/*
+        int trickInsideTypeArray = 0;
+
+        @Override
+        public Object visitExprVar(ExprVar exp) {
+            if (needAllProc && trickInsideTypeArray>0 && getType(exp).getCudaMemType() != CudaMemoryType.GLOBAL) {
+                exp = (ExprVar) super.visitExprVar(exp);
+                if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL_TARR) {
+                    System.out.println("here exp " + exp);
+                    return new ExprArrayRange(exp, new ExprConstInt(0));
+                } else {
+                    return exp;
+                }
+            } else {
+                return super.visitExprVar(exp);
+            }
+        }
+
+        @Override
+        public Object visitTypeArray(TypeArray arr) {
+            if (needAllProc) {
+                ++trickInsideTypeArray;
+                Object base = arr.getBase().accept(this);
+                Object len = arr.getLength().accept(this);
+                System.out.println("hhere: " + base + " " + len);
+                if (base != arr.getBase() || len != arr.getLength()) {
+                    System.out.println("tthere");
+                    arr = new TypeArray(arr.getCudaMemType(), (Type)base, (Expression)len, null);
+                }
+                --trickInsideTypeArray;
+            }
+            return arr;
+        }*/
+// end of handling variable length array in parameters
 
         private TypeArray localArrayType(Type base) {
             return new TypeArray(CudaMemoryType.LOCAL_TARR, base, SpmdMaxNProc);
@@ -144,9 +192,18 @@ public class SpmdTransform  extends SymbolTableVisitor {
             boolean forkProc = cg.isForkProcFcn(fcn);
             boolean oldNeedAllProc = needAllProc;
             needAllProc = !forkProc;
-            Function func = (Function) super.visitFunction(fcn);
+            String prefix = (forkProc ? "forkproc_":"allproc_");
+            Function.FunctionCreator creator = fcn.creator().name(prefix + fcn.getName());
+            if (needAllProc) {
+                Vector<Parameter> params = new Vector<Parameter>();
+                params.add(new Parameter(TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL), SpmdNProcVar, Parameter.IN));
+                params.addAll(fcn.getParams());
+                creator = creator.params(params);
+            }
+            Function f2 = creator.create();
+            Function func = (Function) super.visitFunction(f2);
             needAllProc = oldNeedAllProc;
-            return func.creator().name((forkProc ? "forkproc_":"allproc_") + func.getName()).create();
+            return func;
         }
 
         @Override
@@ -161,10 +218,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
             super.visitStmtVarDecl(nProcDecl);
             final ExprVar vref = new ExprVar(fork, SpmdNProcVar);
             Statement nProcAssgn = (Statement)new StmtAssign(vref, fork.getNProc()).accept(this);
+            ExprBinary cond = new ExprBinary(vref, "<=", new ExprConstInt(SpmdMaxNProc));
+            StmtAssert assertion = new StmtAssert(fork, cond, false);
             Statement body = fork.getBody();
             //boolean oldNeedAllProc = needAllProc; we already know it's false
             StmtBlock block = (body instanceof StmtBlock) ? (StmtBlock)body : new StmtBlock(body);
-            StmtBlock newBlock = new StmtBlock(fork.getCx(), nProcDecl, nProcAssgn, (Statement)this.visitStmtBlock(block));
+            StmtBlock newBlock = new StmtBlock(fork.getCx(), nProcDecl, nProcAssgn, assertion, (Statement)this.visitStmtBlock(block));
             needAllProc = false;
             return newBlock;
         }
@@ -175,9 +234,10 @@ public class SpmdTransform  extends SymbolTableVisitor {
          */
         @SuppressWarnings("unchecked")
         public Statement createProcLoop(final Vector<Statement> stmts) {
-            final SomeProcTransform tf = new SomeProcTransform(symtab);
-            StmtBlock body = tf.visitStmtList((Vector<Statement>) stmts.clone());
             final FEContext ctx = stmts.get(0).getCx();
+            final SomeProcTransform tf = new SomeProcTransform(symtab);
+            tf.setNres(nres);
+            StmtBlock body = tf.visitStmtList((Vector<Statement>)stmts.clone());
             final ExprVar nProc = new ExprVar(ctx, SpmdNProcVar);
  
             return new StmtFor(SpmdPidVar, nProc, body);
@@ -335,9 +395,9 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         StmtAssert none_at_end = new StmtAssert(FEContext.artificalFrom("allproc while loop", stmt), noneCond, false);
                         flushAndAdd(stmts, procLoopStmts, none_at_end);
                     } else {
-                        printWarning("Assuming that subtree transformers "
-                                + "will take care of allthreads version of ",
-                                stmt.getClass());
+//                        printWarning("Assuming that subtree transformers "
+//                                + "will take care of allthreads version of ",
+//                                stmt.getClass());
                         flushAndAdd(stmts, procLoopStmts, (Statement)stmt.accept(this));
                     }
                 }
@@ -351,11 +411,15 @@ public class SpmdTransform  extends SymbolTableVisitor {
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
+            exp = (ExprFunCall)super.visitExprFunCall(exp);
             Function target = cg.getTarget(exp);
             if (needAllProc) {
                 assert !cg.isForkProcFcn(target);
                 if (cg.needAllProcFcn(target)) {
-                    return new ExprFunCall(exp, "allproc_" + exp.getName(), exp.getParams());
+                    Vector<Expression> nextArgs = new Vector<Expression>();
+                    nextArgs.add(new ExprVar(exp, SpmdNProcVar));
+                    nextArgs.addAll(exp.getParams());
+                    return new ExprFunCall(exp, "allproc_" + exp.getName(), nextArgs);
                 } else {
                     assertFalse("something wrong with spmd call graph in visitExprFunCall");
                     return null;
@@ -390,6 +454,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitExprVar(ExprVar exp) {
             exp = (ExprVar) super.visitExprVar(exp);
+//System.out.println("exp: " + exp);
             if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL_TARR) {
                 return new ExprArrayRange(exp, new ExprVar(exp, SpmdPidVar));
             } else {
@@ -397,13 +462,28 @@ public class SpmdTransform  extends SymbolTableVisitor {
             }
         }
 
+/*  handling variable length array in parameters
+        @Override
+        public Object visitTypeArray(TypeArray arr) {
+            Object base = arr.getBase().accept(this);
+            Object len = arr.getLength().accept(this);
+            System.out.println("here: " + base + " " + len);
+            if (base == arr.getBase() && len == arr.getLength()) {
+                return arr;
+            } else {
+                System.out.println("there");
+                return new TypeArray(arr.getCudaMemType(), (Type)base, (Expression)len, null);
+            }
+        }
+*/
+
         @Override
         public Object visitFunction(Function func) {
             Vector<Parameter> params = new Vector<Parameter>();
             params.add(new Parameter(TypePrimitive.inttype, SpmdNProcVar, Parameter.IN));
             params.add(new Parameter(TypePrimitive.inttype, SpmdPidVar, Parameter.IN));
             params.addAll(func.getParams());
-            Function f2 = func.creator().name("somethreads_" + func.getName()).params(params).create();
+            Function f2 = func.creator().name("someproc_" + func.getName()).params(params).create();
             return super.visitFunction(f2);
         }
 
@@ -411,12 +491,17 @@ public class SpmdTransform  extends SymbolTableVisitor {
         public Object visitExprFunCall(ExprFunCall exp) {
             exp = (ExprFunCall) super.visitExprFunCall(exp);
             Function target = cg.getTarget(exp);
-            assert cg.needSomeProcFcn(target) && !cg.isForkProcFcn(target);
-            Vector<Expression> nextArgs = new Vector<Expression>();
-            nextArgs.add(new ExprVar(exp, SpmdNProcVar));
-            nextArgs.add(new ExprVar(exp, SpmdPidVar));
-            nextArgs.addAll(exp.getParams());
-            return new ExprFunCall(exp, "somethreads_" + exp.getName(), nextArgs);
+            if (cg.needSomeProcFcn(target)) {
+                assert !cg.isForkProcFcn(target);
+                Vector<Expression> nextArgs = new Vector<Expression>();
+                nextArgs.add(new ExprVar(exp, SpmdNProcVar));
+                nextArgs.add(new ExprVar(exp, SpmdPidVar));
+                nextArgs.addAll(exp.getParams());
+                return new ExprFunCall(exp, "someproc_" + exp.getName(), nextArgs);
+            } else {
+                assert target.isUninterp();
+                return exp;
+            }
         }
     }
 
@@ -489,7 +574,6 @@ class SpmdCallGraph extends CallGraph {
     boolean insideFork = false;
 
     public SpmdCallGraph(Program prog) {
-        System.out.println("cg init" + prog.accept(new CodePrinterVisitor()));
         super.init(prog);
     }
 
@@ -527,11 +611,11 @@ class SpmdCallGraph extends CallGraph {
 
     @Override
     public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
-        System.out.println("in visitStmtSpmdFork");
+//        System.out.println("in visitStmtSpmdFork");
         assert enclosing != null;
         assert !insideFork;
         insideFork = true;
-        System.out.println("withFork += " + enclosing);
+//        System.out.println("withFork += " + enclosing);
         fcnsWithFork.add(enclosing);
         Object result = super.visitStmtSpmdfork(stmt);
         insideFork = false;
@@ -547,7 +631,7 @@ class SpmdCallGraph extends CallGraph {
         while (!qFork.isEmpty()) {
             Function f = qFork.remove();
             for (Function callee : closureEdges.targetsFrom(f)) {
-                if (!fcnsCalledByFork.contains(callee)) {
+                if (!callee.isUninterp() && !fcnsCalledByFork.contains(callee)) {
                     fcnsCalledByFork.add(callee);
                     qFork.add(callee);
                 }
@@ -560,6 +644,7 @@ class SpmdCallGraph extends CallGraph {
             Function f = qBarrier.remove();
             for (Function caller : closureEdges.callersTo(f)) {
                 if (fcnsCalledByFork.contains(caller) && !fcnsCallingBarrier.contains(caller)) {
+                    fcnsCallingBarrier.add(caller);
                     qBarrier.add(caller);
                 }
             }
@@ -567,6 +652,13 @@ class SpmdCallGraph extends CallGraph {
 
         fcnsNeedAllProc = fcnsWithFork.union(fcnsCallingBarrier).asHashSet();
         fcnsNeedSomeProc = fcnsCalledByFork.subtract(fcnsCallingBarrier).asHashSet();
+/*
+        System.out.println("withFork: " + fcnsWithFork);
+        System.out.println("byFork: " + fcnsCalledByFork);
+        System.out.println("callingBarrier: " + fcnsCallingBarrier);
+        System.out.println("needAll: " + fcnsNeedAllProc);
+        System.out.println("needSome: " + fcnsNeedSomeProc);
+*/
     }
 }
 

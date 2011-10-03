@@ -251,7 +251,7 @@ public class NodesToC extends NodesToJava {
 
 	public Object visitExprConstInt(ExprConstInt exp)
     {
-        if (ctype.equals(TypePrimitive.bittype)) {
+        if (ctype == null || ctype.equals(TypePrimitive.bittype)) {
             return "bitvec<1>(" + exp.getVal() + "U)";
 		}else{
 			return exp.getVal() + "";
@@ -520,7 +520,7 @@ public class NodesToC extends NodesToJava {
 
   @Override
   public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
-    String result = indent + "spmdfork (" + stmt.getLoopVarName();
+    String result = indent + "spmdfork (";
     result += stmt.getNProc().accept(this);
     result += stmt.getBody().accept(this);
     return result;

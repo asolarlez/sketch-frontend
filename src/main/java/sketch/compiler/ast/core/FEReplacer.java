@@ -112,6 +112,7 @@ public class FEReplacer implements FEVisitor
      */
     protected void addStatement(Statement stmt)
     {
+        assert(newStatements != null);
         newStatements.add(stmt);
     }
 
@@ -860,7 +861,7 @@ public class FEReplacer implements FEVisitor
     		return loop;
     	}
         //if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + nproc + " " + body); }
-    	return new StmtSpmdfork(loop, loop.getLoopVarName(), nproc, body);
+    	return new StmtSpmdfork(loop.getCx(), null, nproc, body);
     }
 
     public Object visitSpmdBarrier(SpmdBarrier stmt) {

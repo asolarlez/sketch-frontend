@@ -85,6 +85,8 @@ import static sketch.util.Misc.nonnull;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.spmd.SpmdTransform;
+import sketch.compiler.passes.spmd.GlobalToLocalCasts;
+import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -230,7 +232,12 @@ public class SequentialSketchMain extends CommonSketchMain
             super();
 //            this.passes.add(new FlattenStmtBlocks2());
 //            this.passes.add(new SplitAssignFromVarDef());
-            this.passes.add(new SpmdTransform(varGen));
+	    this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new FlattenStmtBlocks2());
+	    SpmdTransform tf = new SpmdTransform(options, varGen);
+            this.passes.add(tf);
+            this.passes.add(new GlobalToLocalCasts(varGen, tf));
+            this.passes.add(new ReplaceParamExprArrayRange(varGen));
         }
 
         @Override

@@ -1,0 +1,61 @@
+#define SPMD_MAX_BUF_LEN 4
+
+struct spmdinfo {
+  int [SPMD_MAX_BUF_LEN] buffer;
+}
+
+spmdinfo spmdinit(int nthread, int maxlen)
+{
+    spmdinfo info = new spmdinfo();
+    return info;
+}
+
+void spmdtransfer(spmdinfo info, global int size, int [size] src_buff, bit scond, int recipient, ref int [size] dest_buff, bit rcond)
+{
+  // spmdbarrier is necessary : if transfer is called twice
+  spmdbarrier();
+  if (scond) {
+    int start = recipient*size;
+    info.buffer[start::size] = src_buff;
+  }
+  spmdbarrier();
+  if (rcond) {
+    int start = spmdpid*size;
+    dest_buff = info.buffer[start::size];
+  }
+}
+
+void transfer(spmdinfo info, global int size, int [size] src_buff, bit scond, int recipient, ref int [size] dest_buff, bit rcond, int times)
+{
+  while (times > 0) {
+    --times;
+    spmdtransfer(info, size, src_buff, scond, recipient, dest_buff, rcond);
+  }
+}
+
+int peer(int p)
+{
+  if (p == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+harness void main()
+{
+  int [4] arr;
+  for (int i=0; i<4; ++i) arr[i] = i;
+  spmdinfo info = spmdinit(2, 2);
+  spmdfork(p; 2) {
+    // movein
+    int start = p*2;
+    int [2] mybuf = arr[start::2];
+    
+    transfer(info, 2, mybuf, true, peer(p), mybuf, true, 4);
+    
+    // moveout
+    arr[start::2] = mybuf;
+  }
+  assert(arr[0] == ?? && arr[1] == ?? && arr[2] == ?? && arr[3] == ??);
+}

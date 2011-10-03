@@ -1,0 +1,12 @@
+void transfer(int [2] src, ref int [2] dst)
+{
+  dst = src;
+}
+
+harness void main()
+{
+  int[4] a = {0, 1, 2, 3};
+  transfer(a[0::2], a[2::2]);
+  assert(a[2] == 0);
+}
+

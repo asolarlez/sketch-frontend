@@ -242,7 +242,7 @@ public class PartialEvaluator extends FEReplacer {
         } finally {
             state.popLevel(lvl);
         }
-        return isReplacer?  new StmtSpmdfork(stmt, stmt.getLoopVarName(), nproc, body) : stmt;
+        return isReplacer?  new StmtSpmdfork(stmt.getCx(), null, nproc, body) : stmt;
     }
 
     public Object visitExprField(ExprField exp) {
@@ -483,6 +483,7 @@ public class PartialEvaluator extends FEReplacer {
         Map<String, Expression> pmap = new HashMap<String, Expression>();
         VarReplacer vrep = new VarReplacer(pmap);
         List<Parameter> nplist = new ArrayList<Parameter>();
+
         while(actualParams.hasNext()){
             Expression actual = actualParams.next();
             Parameter param = formalParams.next();            
@@ -493,7 +494,7 @@ public class PartialEvaluator extends FEReplacer {
             if( param.isParameterOutput()){
 
                 assert actual instanceof ExprVar : "unsupported function argument, AST type: " +
-                        actual.getClass();
+                        actual.getClass() + " in " + actual.getCx() + " : " + exp + " " + actual;
                 String pnm = ((ExprVar)actual).getName();
                 outNmList.add(pnm);
                 nparams.add(new ExprVar(exp,  transName(pnm)  ));

@@ -62,13 +62,25 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		this.policy = p;
 	}
 
+//        @Override
+//        public Object visitTypeArray(TypeArray arr) {
+//            // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
+//            if (newStatements == null) {
+//                return arr;
+//            }
+//            return super.visitTypeArray(arr);
+//        }
+
 	/** We have to conditionally protect array accesses for shortcut operators. */
 	public Object visitExprBinary (ExprBinary eb) {
+                // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
+                //assert(newStatements != null);
 		String op = eb.getOpString ();
 		if (op.equals ("&&") || op.equals ("||") || op.equals ("&") || op.equals ("|") )
 			return doLogicalExpr (eb);
-		else
+		else {
 			return super.visitExprBinary (eb);
+                     }
 	}
 	
 	
@@ -163,6 +175,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 
 	@Override
 	public Object visitExprArrayRange(ExprArrayRange ear){		
+                // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
+                assert(newStatements != null);
 
 		Expression idx = makeLocalIndex (ear);
 		Expression base = (Expression) ear.getBase ().accept (this);
@@ -336,6 +350,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	}
 
 	protected Expression makeLocalIndex (ExprArrayRange ear) {
+                // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
+                assert (newStatements != null);
 		String nname = varGen.nextVar("_pac");				
 		RangeLen rl =ear.getSelection(); 
 		Expression nofset = (Expression) rl.start()/*.accept(this)*/;

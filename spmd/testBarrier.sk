@@ -1,0 +1,11 @@
+harness void main() {
+  int n = 0;
+  spmdfork(int p; 5) {
+    n = n+1;
+    spmdbarrier();
+    assert(n == 5);
+    spmdbarrier();
+    n = n+2;
+  }
+  assert(n==15);
+}

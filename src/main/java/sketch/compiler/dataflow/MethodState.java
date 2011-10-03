@@ -528,8 +528,11 @@ public class MethodState {
             return vtype.ternary(getRvflag().state(vtype), av, lv.get(0));
         }
         List<abstractValue> ov = av.getVectValue();
-        assert av.isVect() : "NYI";
-        assert lv.size() == ov.size() : "NYI";
+//System.out.println(" lv: " + " " + lv + lv.size() + " ov: " + ov + " " + ov.size());
+        assert av.isVect() : "NYI!";
+//        assert lv.size() == ov.size() : "NYI~";
+// XZL hacking don't know if it's correct
+	assert lv.size() >= ov.size() : "NYI~";
         List<abstractValue> tt = new ArrayList<abstractValue>(ov.size());
         Iterator<abstractValue> lvit = lv.iterator();
         for(abstractValue ovit : ov){

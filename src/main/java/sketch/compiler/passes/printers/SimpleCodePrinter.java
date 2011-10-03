@@ -16,6 +16,8 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import static sketch.util.fcns.ZipWithIndex.zipwithindex;
@@ -101,6 +103,20 @@ public class SimpleCodePrinter extends CodePrinter
 		printIndentedStatement(stmt.getBody());
 		return stmt;
 	}
+
+	public Object visitStmtSpmdfork(StmtSpmdfork stmt)
+	{
+		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
+		printLine("spmdfork("+stmt.getNProc() + ")");
+		printIndentedStatement(stmt.getBody());
+		return stmt;
+	}
+
+        public Object visitSpmdBarrier(SpmdBarrier stmt)
+        {
+                printLine("spmdbarrier();");
+                return stmt;
+        }
 
 	@Override
 	public Object visitStmtIfThen(StmtIfThen stmt)
