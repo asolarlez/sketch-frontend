@@ -33,6 +33,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
 import static sketch.util.Misc.nonnull;
@@ -430,6 +431,10 @@ public class GetExprType extends FENullVisitor
 	
 	@Override
 	public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
+	    return TypePrimitive.inttype;
+	}
+	@Override
+	public Object visitSpmdPid(SpmdPid pid) {
 	    return TypePrimitive.inttype;
 	}
 }

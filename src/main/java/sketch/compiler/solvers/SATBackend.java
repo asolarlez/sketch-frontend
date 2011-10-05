@@ -78,6 +78,7 @@ public class SATBackend {
                         , options.bndOpts.unrollAmnt, options.bndOpts.arrSize , rcontrol, tracing);
         log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
+        
         prog.accept(partialEval);
     }
 

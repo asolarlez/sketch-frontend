@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 import sketch.compiler.cmdline.BoundOptions;
 import sketch.compiler.cmdline.CudaOptions;
+import sketch.compiler.cmdline.SpmdOptions;
 import sketch.compiler.cmdline.DebugOptions;
 import sketch.compiler.cmdline.FrontendOptions;
 import sketch.compiler.cmdline.SemanticsOptions;
@@ -33,6 +34,7 @@ public class SketchOptions {
     public SemanticsOptions semOpts = new SemanticsOptions();
     public SolverOptions solverOpts = new SolverOptions();
     public CudaOptions cudaOpts = new CudaOptions();
+    public SpmdOptions spmdOpts = new SpmdOptions();
     public String[] args;
     public List<String> argsAsList;
     public String[] inArgs;
@@ -70,6 +72,7 @@ public class SketchOptions {
         this.feOpts.parse(parser);
         this.semOpts.parse(parser);
         this.cudaOpts.parse(parser);
+        this.spmdOpts.parse(parser);
         args = solverOpts.parse(parser).get_args();
         this.backendArgs = parser.backendArgs;
         if (args.length < 1 || args[0].equals("")) {

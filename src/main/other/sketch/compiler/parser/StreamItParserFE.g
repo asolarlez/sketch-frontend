@@ -54,6 +54,8 @@ import sketch.compiler.ast.cuda.typs.*;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.main.cmdline.SketchOptions;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 import static sketch.util.DebugOut.assertFalse;
 }
 
@@ -231,7 +233,8 @@ field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 statement returns [Statement s] { s = null; }
 	:	s=loop_statement
 	|   s=minrepeat_statement
-	|   s=fork_statement	
+	|   s=fork_statement
+        |   s=spmdfork_statement
     |   s=parfor_statement
 	|	s=insert_block
 	|	s=reorder_block
@@ -271,6 +274,11 @@ fork_statement returns [Statement s] { s = null; Statement ivar; Expression exp;
 	{ s = new StmtFork(getContext(t), (StmtVarDecl) ivar, exp, b); }
 	;
 
+spmdfork_statement returns [Statement s] { s = null; String ivar=null; Expression exp; Statement b;}
+	: t:TK_spmdfork LPAREN (v:ID {ivar=v.getText();} SEMI)? exp=right_expr RPAREN b=pseudo_block
+	{ s = new StmtSpmdfork(getContext(t), ivar, exp, b); }
+	;
+
 parfor_statement returns [Statement s] { s = null; Expression ivar; Expression exp; Statement b; }
     : t:TK_parfor LPAREN ivar=var_expr LARROW exp=range_exp RPAREN b=pseudo_block
     { s = new StmtParfor(getContext(t), ivar, exp, b); }
@@ -284,8 +292,9 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 
 
-data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; }
-	:	(t=primitive_type | (prefix:ID COLON)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + ":" + id.getText() )  : id.getText()); })
+data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; boolean isglobal = false; }
+	:	(TK_global {isglobal = true; })?
+                (t=primitive_type | (prefix:ID COLON)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + ":" + id.getText() )  : id.getText()); })
 		(	l:LSQUARE
 			(
                 (x=expr_named_param { params.add(x); }
@@ -300,18 +309,21 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
                 }
             }
 		)*
-
+		{
+                    if (isglobal) { t = t.withMemType(CudaMemoryType.GLOBAL); } 
+                }
 	|	TK_void { t =  TypePrimitive.voidtype; }
 	;
 
 primitive_type returns [Type t] { t = null; }
-	:	TK_boolean { t = TypePrimitive.booltype; }
+	:
+		(TK_boolean { t = TypePrimitive.booltype; }
 	|	TK_bit { t = TypePrimitive.bittype;  }
 	|	TK_int { t = TypePrimitive.inttype;  }
 	|	TK_float { t = TypePrimitive.floattype;  }
 	|	TK_double { t = TypePrimitive.doubletype; }
 	|	TK_complex { t = TypePrimitive.cplxtype; }
-	|   TK_fun { t = TypeFunction.singleton; }
+	|   TK_fun { t = TypeFunction.singleton; })
 	;
 
 variable_decl returns [Statement s] { s = null; Type t; Expression x = null;

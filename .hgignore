@@ -4,6 +4,7 @@ target/*
 *.pyc
 *.swp
 *installer*.exe
+.DS_Store
 dist/*
 outPyFile
 

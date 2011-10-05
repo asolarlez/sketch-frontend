@@ -29,6 +29,8 @@ import sketch.compiler.ast.core.stmts.StmtMinLoop;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+
 /**
  * Front-end visitor pass to replace the bodies of compound statements
  * with blocks.  This obeys the same conventions as FEReplacer.
@@ -126,5 +128,15 @@ public class MakeBodiesBlocks extends FEReplacer
                     newBody);
         }
         return stmtParfor;
+    }
+    
+    @Override
+    public Object visitStmtSpmdfork(StmtSpmdfork stmtSpmdfork) {
+        Statement newBody = stmtSpmdfork.getBody().acceptAndCast(this);
+        newBody = buildBlock(newBody);
+        if (newBody != stmtSpmdfork.getBody()) {
+            return stmtSpmdfork.createWithNewBody(newBody);
+        }
+        return stmtSpmdfork;
     }
 }

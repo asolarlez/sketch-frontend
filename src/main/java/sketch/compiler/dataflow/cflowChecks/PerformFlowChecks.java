@@ -16,6 +16,7 @@ import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.PartialEvaluator;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
@@ -54,10 +55,15 @@ public class PerformFlowChecks extends PartialEvaluator {
      * For now, I am making this very liberal. Nothing is made volatile.
      *
      */
+    @Override
     protected void startFork(StmtFork loop){
         state.pushParallelSection(Collections.EMPTY_SET);
     }
-     
+    
+    @Override 
+    protected void startSpmdfork(StmtSpmdfork stmt){
+        state.pushParallelSection(Collections.EMPTY_SET);
+    }
      
      @Override
      public Object visitStmtReturn(StmtReturn stmt)

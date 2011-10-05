@@ -31,6 +31,9 @@ import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -248,7 +251,7 @@ public class NodesToC extends NodesToJava {
 
 	public Object visitExprConstInt(ExprConstInt exp)
     {
-        if (ctype.equals(TypePrimitive.bittype)) {
+        if (ctype == null || ctype.equals(TypePrimitive.bittype)) {
             return "bitvec<1>(" + exp.getVal() + "U)";
 		}else{
 			return exp.getVal() + "";
@@ -514,6 +517,20 @@ public class NodesToC extends NodesToJava {
     }
     return result;
   }
+
+  @Override
+  public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
+    String result = indent + "spmdfork (";
+    result += stmt.getNProc().accept(this);
+    result += stmt.getBody().accept(this);
+    return result;
+  }
+
+  @Override
+  public Object visitSpmdBarrier(SpmdBarrier stmt) { return "spmdbarrier();"; }
+  
+  @Override
+  public Object visitSpmdPid(SpmdPid stmt) { return "spmdpid"; }
 
   public Object visitStmtLoop(StmtLoop stmt)
   {

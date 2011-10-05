@@ -45,6 +45,10 @@ import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+
 import static sketch.util.DebugOut.assertFalse;
 
 /**
@@ -108,6 +112,7 @@ public class FEReplacer implements FEVisitor
      */
     protected void addStatement(Statement stmt)
     {
+        assert(newStatements != null);
         newStatements.add(stmt);
     }
 
@@ -845,6 +850,28 @@ public class FEReplacer implements FEVisitor
     	}
     	return new StmtFork(loop, decl, niter, body);
     }
+
+    public Object visitStmtSpmdfork(StmtSpmdfork loop){
+        //System.out.println(loop.toString());
+	//StmtVarDecl oldDecl = loop.getLoopVarDecl();
+    	//StmtVarDecl decl = oldDecl==null ? null : (StmtVarDecl)oldDecl.accept(this);
+    	Expression nproc = (Expression) loop.getNProc().accept(this);
+    	Statement body = (Statement) loop.getBody().accept(this);
+    	if(nproc == loop.getNProc() && body == loop.getBody()  ){
+    		return loop;
+    	}
+        //if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + nproc + " " + body); }
+    	return new StmtSpmdfork(loop.getCx(), null, nproc, body);
+    }
+
+    public Object visitSpmdBarrier(SpmdBarrier stmt) {
+        return stmt;
+    }  
+    
+    public Object visitSpmdPid(SpmdPid stmt) {
+        return stmt;
+    }  
+
 
 	public Object visitStmtSwitch(StmtSwitch sw) {
 		// TODO add visitSwmtSwitch

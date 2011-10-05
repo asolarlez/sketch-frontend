@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
@@ -87,6 +88,12 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             loop.getBody().accept(imv);
             state.pushParallelSection(imv.lhsVars);
         }
+
+     protected void startFork(StmtSpmdfork stmt){
+         IdentifyModifiedVars imv = new IdentifyModifiedVars();
+            stmt.getBody().accept(imv);
+            state.pushParallelSection(imv.lhsVars);
+     }
 
     @Override
      public Object visitStmtAssert (StmtAssert stmt) {

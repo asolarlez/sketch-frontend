@@ -131,6 +131,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     }
     
     public Object visitTypeArray(TypeArray t) {
+        String extra = " here base " + t.getBase() + " len " + t.getLength();
         Type nbase = (Type)t.getBase().accept(this);
         visitingALen = true;
         abstractValue avlen = null;
@@ -144,7 +145,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if(avlen.isBottom()){
             nlen = maxArrSize;
             String msg = "Arrays are not big enough" + elen + ">" + nlen;
-            todoStmts.add(new StmtAssert(new ExprBinary(elen, "<=", nlen), msg , false));
+            todoStmts.add(new StmtAssert(new ExprBinary(elen, "<=", nlen), msg +extra, false));
         }else{
             nlen = ExprConstInt.createConstant(avlen.getIntVal());
         }

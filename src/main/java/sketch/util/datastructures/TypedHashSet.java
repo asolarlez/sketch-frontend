@@ -45,10 +45,12 @@ public class TypedHashSet<K> implements Iterable<K>, Cloneable {
     public TypedHashSet<K> clone() { return new TypedHashSet<K>((HashSet<K>) base.clone()); }
     public boolean contains(K v) { return base.contains(v); }
     public boolean remove(K v) { return base.remove(v); }
+    public boolean removeAll(Collection<? extends K> c) { return base.removeAll(c); }
     public boolean isEmpty() { return base.isEmpty(); }
     public int size() { return base.size(); }
     public Iterator<K> iterator() { return base.iterator(); }
     public Collection<K> asCollection() { return base; }
+    public HashSet<K> asHashSet() { return base; }
 
     public TypedHashSet<K> intersect(Collection<? extends K> c) {
         TypedHashSet<K> rv = clone();
@@ -63,6 +65,12 @@ public class TypedHashSet<K> implements Iterable<K>, Cloneable {
     public TypedHashSet<K> union(Collection<? extends K> c) {
         TypedHashSet<K> rv = clone();
         rv.addAll(c);
+        return rv;
+    }
+
+    public TypedHashSet<K> subtract(Collection<? extends K> c) {
+        TypedHashSet<K> rv = clone();
+        rv.removeAll(c);
         return rv;
     }
 }

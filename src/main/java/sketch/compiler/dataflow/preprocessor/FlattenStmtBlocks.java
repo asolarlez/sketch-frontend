@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 
 public class FlattenStmtBlocks extends FEReplacer {
 	
@@ -123,4 +124,11 @@ public class FlattenStmtBlocks extends FEReplacer {
 	        return null;
 	    }
 
+    public Object visitStmtSpmdfork(StmtSpmdfork stmt){
+		 boolean oldIsWithinBlock = isWithinBlock;
+		 isWithinBlock = false;
+		 Object o = super.visitStmtSpmdfork(stmt);
+		 isWithinBlock = oldIsWithinBlock;
+		 return o;
+     }
 }
