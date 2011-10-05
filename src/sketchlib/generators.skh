@@ -126,9 +126,13 @@ generator int exprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref
         isbase = false;
         bit lib, rib;
         int lch; int rch;
-        int xa = exprb(chose, T, ops, ops[ch]!=PLUS, ops[ch]!=TIMES, lib, lch);
+        int och = ops[ch];
+        int xa = exprb(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch);
         int xb = exprb(chose, T, ops, true, true, rib, rch);
-        if(lib && rib && (ops[ch] ==PLUS || ops[ch]==TIMES)){ assert lch <= rch; } 
+      if(lib && rib && 
+                (och ==PLUS || 
+                        och==TIMES)){ 
+            assert lch <= rch; } 
         return op(ch, xa, xb, T, ops, canplus, cantimes);
     }else{
         isbase = true;
