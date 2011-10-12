@@ -10,11 +10,11 @@ import org.apache.commons.io.FileUtils;
 
 import sketch.compiler.cmdline.BoundOptions;
 import sketch.compiler.cmdline.CudaOptions;
-import sketch.compiler.cmdline.SpmdOptions;
 import sketch.compiler.cmdline.DebugOptions;
 import sketch.compiler.cmdline.FrontendOptions;
 import sketch.compiler.cmdline.SemanticsOptions;
 import sketch.compiler.cmdline.SolverOptions;
+import sketch.compiler.cmdline.SpmdOptions;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.util.cli.SketchCliParser;
 
@@ -102,8 +102,15 @@ public class SketchOptions {
 
     public String getTmpFilename(String basename) {
         final File sktmpdir = sktmpdir();
-        assert sktmpdir.mkdirs() || sktmpdir.isDirectory();
-        return PlatformLocalization.getLocalization().getTempPathString(sketchName,
+        if (!(sktmpdir.mkdirs() || sktmpdir.isDirectory())) {
+            throw new RuntimeException("Can not create directory " +
+                    sktmpdir.getAbsolutePath());
+        }
+        String tmpfile = this.feOpts.output;
+        if (tmpfile == null) {
+            tmpfile = sketchName;
+        }
+        return PlatformLocalization.getLocalization().getTempPathString(tmpfile,
                 basename);
     }
 
@@ -111,16 +118,21 @@ public class SketchOptions {
         return getTmpFilename("input.tmp");
     }
 
+    private String getSolStringBase() {
+        return "solution-";
+    }
+
     public String getSolutionsString() {
         // return getTmpFilename("solution-%(num)s");
         // FIXME -- restore multiple solution generality
-        return getTmpFilename("solution-0");
+
+        return getTmpFilename(getSolStringBase() + "0");
     }
 
     public File[] getSolutionsFiles() {
         FilenameFilter f = new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.startsWith("solution-");
+                return name.startsWith(getSolStringBase());
             }
         };
         File[] files = sktmpdir().listFiles(f);
@@ -133,6 +145,10 @@ public class SketchOptions {
     }
 
     public File sktmpdir() {
-        return PlatformLocalization.getLocalization().getTempPath(sketchName);
+        String tmpfile = this.feOpts.output;
+        if (tmpfile == null) {
+            tmpfile = sketchName;
+        }
+        return PlatformLocalization.getLocalization().getTempPath(tmpfile);
     }
 }

@@ -144,6 +144,7 @@ public class SATBackend {
             assertFalse("No solutions found in folder", options.sktmpdir());
         }
         extractOracleFromOutput(solutions[0].getPath());
+        options.cleanTemp();
         return worked;
     }
 
