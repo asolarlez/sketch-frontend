@@ -290,6 +290,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 final Vector<Statement> procLoopStmts = new Vector<Statement>();
                 CopyableIterator<Statement> it =
                     new CopyableIterator<Statement>(block.getStmts());
+                CopyableIterator<Statement> prevIt = null;
                 while (it.hasNext()) {
                     Vector<Statement> nextSomeProcStmts = new Vector<Statement>();
 
@@ -297,16 +298,27 @@ public class SpmdTransform  extends SymbolTableVisitor {
                     List<Statement> afterSomeProcStmts = Collections.emptyList();
                     // do a first pass -- queue up any statements that don't have all proc statements
                     // and don't call functions that have sync's
+                    boolean firstStmt = true;
                     while (it.hasNext()) {
                         List<Statement> t = it.peekAllNext();
+                        prevIt = it.clone();
                         Statement s = it.next();
                         if ((new ContainsAllProcElt()).run(s)) {
                             nextAllProcStmt = s;
                             afterSomeProcStmts = t;
                             break;
-                        } else {
-                            nextSomeProcStmts.add(s);
                         }
+                        if (firstStmt) {
+                            firstStmt = false;
+                        } else {
+                            if ((new MustBeTheFirst()).run(s)) {
+                                //System.out.println("s:" + s);
+                                it = prevIt;
+                                afterSomeProcStmts = it.peekAllNext();
+                                break;
+                            }
+                        }
+                        nextSomeProcStmts.add(s);
                     }
 
                     TypedHashSet<String> varrefs = (new GetVariableRefSet()).run(new StmtBlock(afterSomeProcStmts));
@@ -330,7 +342,10 @@ public class SpmdTransform  extends SymbolTableVisitor {
 
                     Statement stmt = nextAllProcStmt;
                     if (stmt == null) {
-                        assert !it.hasNext();
+                        //assert !it.hasNext();
+                        if (!procLoopStmts.isEmpty()) {
+                            flushAndAdd(stmts, procLoopStmts);
+                        }
                     } else if (stmt instanceof SpmdBarrier) {
                         flushAndAdd(stmts, procLoopStmts);
                     } else if (stmt instanceof StmtIfThen) {
@@ -400,6 +415,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
 //                                stmt.getClass());
                         flushAndAdd(stmts, procLoopStmts, (Statement)stmt.accept(this));
                     }
+                    //System.out.println("stmts:" + stmts);
                 }
                 flushAndAdd(stmts, procLoopStmts);
                 symtab = oldSymTab;
@@ -502,6 +518,19 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 assert target.isUninterp();
                 return exp;
             }
+        }
+    }
+
+    protected class MustBeTheFirst extends ASTQuery {
+        @Override
+        public Object visitStmtVarDecl(StmtVarDecl stmt) {
+            if (stmt.getTypes().size() == 1) {
+                Type t = stmt.getTypes().get(0);
+                if (t instanceof TypeArray) {
+                    result = true;
+                }
+            }
+            return stmt;
         }
     }
 

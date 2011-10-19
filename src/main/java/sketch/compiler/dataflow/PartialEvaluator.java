@@ -626,6 +626,8 @@ public class PartialEvaluator extends FEReplacer {
             Expression nbase = (Expression) base.accept(this);
             StringBuilder _debug = new StringBuilder();
             RangeLen rl = ear.getSelection();
+            _debug.append(" ear: " + ear);
+            _debug.append(" base:" + base + " nbase:" + nbase + " ");
             if (rl.start() instanceof ExprVar) {
                ExprVar _st = (ExprVar)rl.start();
                String vname =  _st.getName();
@@ -641,6 +643,7 @@ public class PartialEvaluator extends FEReplacer {
             if( t instanceof TypeArray ){
                 TypeArray ta = (TypeArray) t;
                 abstractValue tlen = typeLen(ta);
+                _debug.append(" ta:" + ta + " tlen:" + tlen + " ");
                 t = ta.getBase();
                 if(olidx != null){
                     lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) );
@@ -650,7 +653,7 @@ public class PartialEvaluator extends FEReplacer {
                     if( tlen.hasIntVal() ){
                         int size = tlen.getIntVal();
                         if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
-                            throw new ArrayIndexOutOfBoundsException(ear.getCx() + "ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size + _debug.toString());
+                            throw new ArrayIndexOutOfBoundsException(ear.getCx() + " ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size + ")" + _debug.toString());
                     }
                 }
             }

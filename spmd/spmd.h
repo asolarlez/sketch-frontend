@@ -2,7 +2,7 @@
 #define _SPMD_H
 
 #ifndef SPMD_MAX_BUF_LEN
-#define SPMD_MAX_BUF_LEN 4
+#define SPMD_MAX_BUF_LEN 8
 #endif  //SPMD_MAX_BUF_LEN
 
 struct spmdinfo {
