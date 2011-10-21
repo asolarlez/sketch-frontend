@@ -1,5 +1,6 @@
 #define SPMD_MAX_BUF_LEN 64
 #include "spmd.h"
+include "generators.skh";
 
 #define N_INT 4
 // number of internal points in each direction
@@ -22,15 +23,27 @@ void rb_iteration(ref float[N_INT+2][N_INT+2] gu)
     pass(N_INT+2, gu, false);
 }
 
-generator void movin(global int N, ref float[N][N] u, global float[N_INT+2][N_INT+2] gu, int rank)
+
+generator void m_in(global int N, ref float[N][N] u, global float[N_INT+2][N_INT+2] gu, int rank, fun chose, int T, int[T] ops)
 {
     // move in
+    for (int i=0; i<N; ++i) {
+        for (int j=0; j<N; ++j) {
+            //u[i][j] = gu[exprGX(chose, 2, {i, j}, T, ops)][exprG(chose, T, ops)];
+        }
+    }
+}
+
+generator void movin(global int N, ref float[N][N] u, global float[N_INT+2][N_INT+2] gu, int rank)
+{
     global int n = N-2;
     int px = rank % P;
     int py = rank / P;
     for (int i=0; i<N; ++i) {
         for (int j=0; j<N; ++j) {
-            u[i][j] = gu[n*py + i][n*px + j];
+            int y = expr(4, {n*px, n*py, i, j}, 2, {PLUS, MINUS});
+            int x = expr(4, {n*px, n*py, i, j}, 2, {PLUS, MINUS});
+            u[i][j] = gu[y][x];
         }
     }
 }

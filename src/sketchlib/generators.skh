@@ -34,6 +34,17 @@ generator int exprG(fun choices, int T, int[T] ops){
     return exprb(choices, T, ops, true, true, isb, choice);
 }
 
+//generator int exprGX(fun choices, int N, int[N] pars, int T, int[T] ops){
+//    generator int chose(int choice) {
+//        choice = ??;
+//        if (choice < N) { return pars[choice]; }
+//        assert choice <= N;
+//        int choice2;
+//        return choices(choice2);
+//    }
+//    return exprG(chose, T, ops);
+//}
+
 
 /**
  * 
