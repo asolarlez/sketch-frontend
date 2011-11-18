@@ -1,0 +1,128 @@
+#define SPMD_MAX_BUF_LEN 64
+#include "spmd.h"
+
+#define N_INT 4
+// number of internal points in each direction
+#define P 2
+// Processors in each direction
+
+#define n (N_INT/P)
+#define N ((n) +2)
+
+float sten(float left, float right, float top, float bottom);
+
+void rb_iteration(ref float[N_INT+2][N_INT+2] gu)
+{
+    for (int p=0; p<P; ++p) {
+        for (int q=0; q<P; ++q) {
+            for (int i=1; i<N-1; ++i) {
+                for (int j=(i+1)%2; j<N-1; j+=2) {
+                    int y = p*n+i;
+                    int x = q*n+j;
+                    gu[y][x] = sten(u[y][x-1], u[y][x+1], u[y-1][x], u[y+1][x]);
+                }
+                for (int j=i%2; j<N-1; j+=2) {
+                    int y = p*n+i;
+                    int x = q*n+j;
+                    gu[y][x] = sten(u[y][x-1], u[y][x+1], u[y-1][x], u[y+1][x]);
+                }
+            }
+        }
+    }
+}
+
+void pass(ref float [n][n] u, bit red)
+{
+    for(int i=1; i<n-1; i++)
+	for(int j=1+(i+red)%2; j<n-1; j=j+2)
+	    u[i][j] = sten(u[i][j-1], u[i][j+1], u[i-1][j], u[i+1][j]);
+}
+
+
+void movin(ref float[N][N] u, global float[N_INT+2][N_INT+2] gu)
+{
+    int px = spmdpid % P;
+    int py = spmdpid / P;
+    for (int i=1; i<N-1; ++i) {
+        for (int j=1; j<N-1; ++j) {
+            int y = n*py+i; //expr(4, {n*px, n*py, i, j}, 2, {PLUS, MINUS});
+            int x = n*px+j; //expr(4, {n*px, n*py, i, j}, 2, {PLUS, MINUS});
+            u[i][j] = gu[y][x];
+        }
+    }
+}
+
+void movout(float[N][N] u, ref global float[N_INT+2][N_INT+2] gu)
+{
+    int px = spmdpid % P;
+    int py = spmdpid / P;
+    for (int i=1; i<N-1; ++i) {
+        for (int j=1; j<N-1; ++j) {
+            gu[n*py + i][n*px + j] = u[i][j];
+        }
+    }
+}
+
+void communicate(global spmdinfo info, ref float[N][N] u, int rank)
+{
+    // communicate
+    
+    global int n = N-2;
+    float [n] buff_send;
+    float [n] buff_recv;
+    int px = rank % P;
+    int py = rank / P;
+    int left = (px == 0) ? -1 : rank - 1;
+    int right = (px == P-1) ? -1 : rank + 1;
+    int top = (py == 0) ? -1 : rank - P;
+    int bottom = (py == P-1) ? -1 : rank + P;
+
+    spmdtransfer(info, n, u[1][1::n], (top>=0), top, u[N-1][1::n], (bottom>=0));
+    
+    if (left>=0) {
+        for (int i=0; i<n; ++i) {
+            buff_send[i] = u[i+1][1];
+        }
+    }
+    spmdtransfer(info, n, buff_send, (left>=0), left, buff_recv, (right>=0));
+    if (right>=0) {
+        for (int i=0; i<n; ++i) {
+            u[i+1][N-1] = buff_recv[i];
+        }
+    }
+
+    spmdtransfer(info, n, u[n][1::n], (bottom>=0), bottom, u[0][1::n], (top>=0));
+
+    if (right>=0) {
+        for (int i=0; i<n; ++i) {
+            buff_send[i] = u[i+1][n];
+        }
+    }
+    spmdtransfer(info, n, buff_send, (right>=0), right, buff_recv, (left>=0));
+    if (left>=0) {
+        for (int i=0; i<n; ++i) {
+            u[i+1][0] = buff_recv[i];
+        }
+    }
+}
+
+void rb_iteration_spmd(ref float [N_INT+2][N_INT+2] gu) implements rb_iteration
+{
+    spmdinfo info = spmdinit(P*P, n);
+
+    spmdfork(rank; P*P) {
+        float [N][N] u;
+
+        movin(u, gu);
+
+        communicate(info, u, rank);
+
+        pass(N, u, true);
+
+        communicate(info, u, rank);
+
+        pass(N, u, false);
+
+        movout(u, gu, rank);
+    }
+}
