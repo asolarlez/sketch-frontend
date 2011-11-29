@@ -1,0 +1,20 @@
+Testing /home/gatoatigrado/sandbox/sketch-frontend/bench/suite1/compress2.sk
+"Elapsed time: 1381.62771 msecs"
+"Elapsed time: 893.121884 msecs"
+"Elapsed time: 790.593385 msecs"
+"Elapsed time: 865.566167 msecs"
+Testing /home/gatoatigrado/sandbox/sketch-frontend/bench/suite1/jburnim_morton_easier.sk
+"Elapsed time: 2367.942827 msecs"
+"Elapsed time: 6798.059626 msecs"
+"Elapsed time: 1968.44419 msecs"
+"Elapsed time: 3936.059942 msecs"
+Testing /home/gatoatigrado/sandbox/sketch-frontend/bench/suite1/miniTestb181.sk
+"Elapsed time: 22003.553966 msecs"
+"Elapsed time: 21648.568042 msecs"
+"Elapsed time: 21667.465146 msecs"
+"Elapsed time: 20853.524894 msecs"
+Testing /home/gatoatigrado/sandbox/sketch-frontend/bench/suite1/SetTest.sk
+"Elapsed time: 47347.807124 msecs"
+"Elapsed time: 46372.90958 msecs"
+"Elapsed time: 46236.043182 msecs"
+"Elapsed time: 46535.149928 msecs"

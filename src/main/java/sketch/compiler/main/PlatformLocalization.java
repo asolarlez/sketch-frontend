@@ -12,6 +12,7 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.DebugOut;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
@@ -85,22 +86,32 @@ public class PlatformLocalization {
 
     public File load_from_jar(String cegisName) {
         try {
-            URL rc_url = getCompilerRc(cegisName);
-            if (rc_url != null) {
-                InputStream fileIn = getCompilerRc(cegisName).openStream();
-                if (fileIn.available() > 0) {
-                    return loadTempFile(fileIn, cegisName);
-                }
-            }
+            extract_resource(".libs/libcegis.so.0");
+            extract_resource(".libs/cegis");
+            return extract_resource("cegis");
         } catch (IOException e) {}
         return null;
     }
 
+    public File extract_resource(String name) throws IOException {
+        URL rc_url = getCompilerRc(name);
+        if (rc_url != null) {
+            InputStream fileIn = rc_url.openStream();
+            if (fileIn != null && fileIn.available() > 0) {
+                File loadedTempFile = loadTempFile(fileIn, name);
+                if (loadedTempFile != null) {
+                    return loadedTempFile;
+                }
+            }
+        }
+        DebugOut.printWarning("failed to extract resource", name);
+        throw new IOException("couldn't extract resource");
+    }
+
     public String getCegisPath() {
         SketchOptions options = SketchOptions.getSingleton();
-        String scriptingBinary = getCegisPathInner("cegis.py");
         if (options.solverOpts.useScripting) {
-            return scriptingBinary;
+            return getCegisPathInner("cegis.py");
         } else {
             return getCegisPathInner("cegis");
         }
@@ -295,7 +306,11 @@ public class PlatformLocalization {
 
     protected File loadTempFile(InputStream fileIn, String cegisName) {
         // try to extract it to the operating system temporary directory
-        File path = new File(tmpdir, cegisName);
+        File path = path(tmpdir, cegisName);
+        File parentFile = path.getParentFile();
+        if (md(parentFile) == null) {
+            DebugOut.printError("failed to create directory", parentFile);
+        }
         String canonicalName = null;
         try {
             canonicalName = path.getCanonicalPath();
@@ -326,7 +341,8 @@ public class PlatformLocalization {
 
     // misc functions
     public URL getCompilerRc(String name) {
-        return getClass().getClassLoader().getResource("sketch/compiler/" + name);
+        return getClass().getClassLoader().getResource(
+                "sketch/compiler/resources/" + name);
     }
 
     public boolean platformMatchesJava() {

@@ -37,8 +37,18 @@
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${sketch-backend-proj}/src/SketchSolver/${cegisBinName}</source>
-            <outputDirectory>sketch/compiler</outputDirectory>
+            <source>scripts/build/cegis-script-hacked/cegis</source>
+            <outputDirectory>sketch/compiler/resources</outputDirectory>
+            <filtered>false</filtered>
+        </file>
+        <file>
+            <source>${sketch-backend-proj}/src/SketchSolver/.libs/cegis</source>
+            <outputDirectory>sketch/compiler/resources/.libs</outputDirectory>
+            <filtered>false</filtered>
+        </file>
+        <file>
+            <source>${sketch-backend-proj}/src/SketchSolver/.libs/libcegis.so.0</source>
+            <outputDirectory>sketch/compiler/resources/.libs</outputDirectory>
             <filtered>false</filtered>
         </file>
     </files>
