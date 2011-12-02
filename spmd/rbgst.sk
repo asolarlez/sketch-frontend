@@ -1,65 +1,61 @@
-#define SPMD_MAX_BUF_LEN 64
-#include "spmd.h"
-
-#define N_INT 4
+#define N_INT 3
 // number of internal points in each direction
-#define P 2
+#define P 3
 // Processors in each direction
 
 #define n (N_INT/P)
-#define N ((n) +2)
+#define N (n+2)
+
+#define SPMD_MAX_BUF_LEN (P*P*n)
+#include "spmd.h"
+
+include "generators.skh";
 
 float sten(float left, float right, float top, float bottom);
 
-void rb_iteration(ref float[N_INT+2][N_INT+2] gu)
+float rb_spec(int i, int j, int t)
 {
-    for (int p=0; p<P; ++p) {
-        for (int q=0; q<P; ++q) {
-            for (int i=1; i<N-1; ++i) {
-                for (int j=(i+1)%2; j<N-1; j+=2) {
-                    int y = p*n+i;
-                    int x = q*n+j;
-                    gu[y][x] = sten(gu[y][x-1], gu[y][x+1], gu[y-1][x], gu[y+1][x]);
-                }
-                for (int j=i%2; j<N-1; j+=2) {
-                    int y = p*n+i;
-                    int x = q*n+j;
-                    gu[y][x] = sten(gu[y][x-1], gu[y][x+1], gu[y-1][x], gu[y+1][x]);
-                }
-            }
-        }
+    if (i == 0 || j == 0 || i == N_INT+1 || j == N_INT+1 || t == 0) {
+        return 0;
+    } else if ((i+j+t)%2 == 0) {
+        return rb_spec(i, j, t-1);
+    } else {
+        return sten( rb_spec(i, j-1, t-1), rb_spec(i, j+1, t-1), rb_spec(i-1, j, t-1), rb_spec(i+1, j, t-1) );
     }
 }
 
-void pass(ref float [N][N] u, bit red)
+void pass(ref float [N_INT+2][N_INT+2] u, bit red)
 {
-    for(int i=1; i<N-1; i++)
-	for(int j=1+(i+red)%2; j<N-1; j=j+2)
+    for(int i=1; i<=N_INT; ++i)
+	for(int j=1+(i+red)%2; j<=N_INT; j+=2)
 	    u[i][j] = sten(u[i][j-1], u[i][j+1], u[i-1][j], u[i+1][j]);
 }
 
-
-void movin(ref float[N][N] u, global float[N_INT+2][N_INT+2] gu)
+void passN(ref float [N][N] u, bit red)
 {
-    int px = spmdpid % P;
-    int py = spmdpid / P;
-    for (int i=1; i<N-1; ++i) {
-        for (int j=1; j<N-1; ++j) {
-            int y = n*py+i; //expr(4, {n*px, n*py, i, j}, 2, {PLUS, MINUS});
-            int x = n*px+j; //expr(4, {n*px, n*py, i, j}, 2, {PLUS, MINUS});
-            u[i][j] = gu[y][x];
-        }
-    }
+    for(int i=1; i<N-1; ++i)
+	for(int j=1+(i+red)%2; j<N-1; j+=2)
+	    u[i][j] = sten(u[i][j-1], u[i][j+1], u[i-1][j], u[i+1][j]);
 }
 
-void movout(float[N][N] u, ref global float[N_INT+2][N_INT+2] gu)
+void rb_seq(int T)
 {
-    int px = spmdpid % P;
-    int py = spmdpid / P;
-    for (int i=1; i<N-1; ++i) {
-        for (int j=1; j<N-1; ++j) {
-            gu[n*py + i][n*px + j] = u[i][j];
+    float[N_INT+2][N_INT+2] u;
+    
+    for (int t=1; t<=T; ++t) {
+        pass(u, (t%2 == 1));
+    }
+    for (int i=1; i<=N_INT; ++i) {
+        for (int j=0; j<=N_INT; ++j) {
+            assert u[i][j] == rb_spec(i, j, T);
         }
+    } 
+}
+
+harness void check()
+{
+    for (int T=0; T<2; ++T) {
+        rb_spmd(T);
     }
 }
 
@@ -67,12 +63,12 @@ void communicate(global spmdinfo info, ref float[N][N] u, int rank)
 {
     float [n] buff_send;
     float [n] buff_recv;
-    int px = rank % P;
-    int py = rank / P;
-    int left = (px == 0) ? -1 : rank - 1;
-    int right = (px == P-1) ? -1 : rank + 1;
-    int top = (py == 0) ? -1 : rank - P;
-    int bottom = (py == P-1) ? -1 : rank + P;
+    int p = rank / P;
+    int q = rank % P;
+    int left = (q == 0) ? -1 : rank - 1;
+    int right = (q == P-1) ? -1 : rank + 1;
+    int top = (p == 0) ? -1 : rank - P;
+    int bottom = (p == P-1) ? -1 : rank + P;
 
     spmdtransfer(info, n, u[1][1::n], (top>=0), top, u[N-1][1::n], (bottom>=0));
     
@@ -103,23 +99,35 @@ void communicate(global spmdinfo info, ref float[N][N] u, int rank)
     }
 }
 
-void rb_iteration_spmd(ref float [N_INT+2][N_INT+2] gu) implements rb_iteration
+void rb_spmd(int halfT)
 {
-    spmdinfo info = spmdinit(P*P, n);
-
+    int T = halfT*2;
+    spmdinfo info = spmdinit(P*P, n);    
     spmdfork(rank; P*P) {
         float [N][N] u;
 
-        movin(u, gu);
+        int p = rank / P;
+        int q = rank % P;
 
-        communicate(info, u, rank);
+        //bit iamred = n%2==0 || (p+q)%2==0;
+        bit iamred = n%2==0 || expr(3, {p, q, 2}, 2, {MOD, PLUS}) == 0; //(p+q)%2 == 0;
 
-        pass(u, true);
+        int t=1;
+        while (t<=halfT) {
+            communicate(info, u, rank);
+            passN(u, iamred);
+            communicate(info, u, rank);
+            passN(u, !iamred);
+            ++t;
+        }
 
-        communicate(info, u, rank);
-
-        pass(u, false);
-
-        movout(u, gu);
+        for (int i=1; i<=n; ++i) {
+            for (int j=1; j<=n; ++j) {
+                int gi = p*n + i;
+                int gj = q*n + j;
+                assert u[i][j] == rb_spec(gi, gj, T);
+            }
+        }
     }
 }
+

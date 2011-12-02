@@ -191,7 +191,7 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitStmtAssert(StmtAssert stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
-		printLine(stmt.toString() + ";");
+		printLine(stmt.toString() + ";" + " //" + stmt.getMsg());
 		return super.visitStmtAssert(stmt);
 	}
 

@@ -118,8 +118,9 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
         	case ExprBinary.BINOP_ADD: newOp = ExprBinary.BINOP_BXOR; break;
         	case ExprBinary.BINOP_SUB: newOp = ExprBinary.BINOP_BXOR; break;
         	case ExprBinary.BINOP_MUL: newOp = ExprBinary.BINOP_BAND; break;
+                case ExprBinary.BINOP_EQ: newOp = ExprBinary.BINOP_EQ; break;
         	default:
-        		assert false : "You can't apply this floating point operation if you are doing floating-point to boolean replacement." + exp;
+        		assert false : "You can't apply this floating point operation if you are doing floating-point to boolean replacement." + exp + " " + exp.getOp();
         }        
         if (left == exp.getLeft() && right == exp.getRight() && newOp == exp.getOp())
             return exp;
