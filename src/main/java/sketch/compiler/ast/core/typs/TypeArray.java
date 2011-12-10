@@ -37,13 +37,18 @@ public class TypeArray extends Type implements TypeArrayInterface
 {
     private final Type base;
     private final Expression length;
+    private final int maxlength;
     private final List<Expression> dims;
 
     /**
      * Creates an array type of the specified base type with the specified length.
      */
     public TypeArray(Type base, Expression length) {
-        this(CudaMemoryType.UNDEFINED, base, length, null);
+        this(base, length, 0);
+    }
+
+    public TypeArray(Type base, Expression length, int maxlength) {
+        this(CudaMemoryType.UNDEFINED, base, length, null, maxlength);
     }
 
     /**
@@ -58,15 +63,28 @@ public class TypeArray extends Type implements TypeArrayInterface
      *            the "virtual dimensions" of the array
      */
     public TypeArray(Type base, Expression length, Collection<Expression> dims) {
-        this(CudaMemoryType.UNDEFINED, base, length, dims);
+        this(CudaMemoryType.UNDEFINED, base, length, dims, 0);
+    }
+
+    public TypeArray(Type base, Expression length, Collection<Expression> dims,
+            int maxlength)
+    {
+        this(CudaMemoryType.UNDEFINED, base, length, dims, maxlength);
     }
 
     public TypeArray(CudaMemoryType cuda_mem_typ, Type base, Expression length,
             Collection<Expression> dims)
     {
+        this(cuda_mem_typ, base, length, dims, 0);
+    }
+
+    public TypeArray(CudaMemoryType cuda_mem_typ, Type base, Expression length,
+            Collection<Expression> dims, int maxlength)
+    {
         super(cuda_mem_typ);
         this.base = base;
         this.length = length;
+        this.maxlength = maxlength;
         if (dims != null) {
             this.dims = unmodifiableList(new ArrayList<Expression>(dims));
         } else {
@@ -194,10 +212,14 @@ public class TypeArray extends Type implements TypeArrayInterface
 
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
-        return new TypeArray(memtyp, base, length, dims);
+        return new TypeArray(memtyp, base, length, dims, maxlength);
     }
 
     public TypeArray createWithLength(Expression length) {
-        return new TypeArray(this.base, length);
+        return new TypeArray(this.base, length, this.getMaxlength());
+    }
+
+    public int getMaxlength() {
+        return maxlength;
     }
 }

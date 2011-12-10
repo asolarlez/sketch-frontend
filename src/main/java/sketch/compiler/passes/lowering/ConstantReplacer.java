@@ -151,7 +151,7 @@ public class ConstantReplacer extends FEReplacer {
         	Expression len=arr.getLength();
         	Expression newlen=(Expression) len.accept(this);
         	if(newlen!=len) {
-        		newType = new TypeArray(arr.getBase(),newlen);
+                newType = new TypeArray(arr.getBase(), newlen, arr.getMaxlength());
         	}
         }
         if (expr == exp.getExpr() && newType == exp.getType())
@@ -172,7 +172,10 @@ public class ConstantReplacer extends FEReplacer {
 				Expression len=arr.getLength();
 				Expression newlen=(Expression) len.accept(this);
 				if(newlen!=len) {
-					params.set(i,new Parameter(new TypeArray(arr.getBase(),newlen),par.getName(), par.getPtype()));
+                    params.set(
+                            i,
+                            new Parameter(new TypeArray(arr.getBase(), newlen,
+                                    arr.getMaxlength()), par.getName(), par.getPtype()));
 					changed=true;
 				}
 			}
@@ -192,7 +195,7 @@ public class ConstantReplacer extends FEReplacer {
 				Expression newlen=(Expression) len.accept(this);
 				if(newlen!=len) {
 					// TODO Is it legal to update an AST?  Don't we need to generate a new types List rather than set its elements?
-					types.set(i,new TypeArray(arr.getBase(),newlen));
+                    types.set(i, new TypeArray(arr.getBase(), newlen, arr.getMaxlength()));
 				}
 			}
 		}

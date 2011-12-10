@@ -115,6 +115,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     List<Integer> opsizes;
     
     private boolean visitingALen=false;
+    private int visitingAMaxlen = 0;
     
     public Object visitExprVar(ExprVar ev){
         if(!visitingALen){
@@ -122,9 +123,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }else{
             abstractValue avlen = (abstractValue)super.visitExprVar(ev);
             if(avlen.isBottom()){  
-                this.exprRV = maxArrSize;
-                return maxArrSize.accept(this);
+                this.exprRV = visitingAMaxlen == 0 ? maxArrSize : new ExprConstInt(ev, visitingAMaxlen);
+                return this.exprRV.accept(this);
             }else{
+                if (visitingAMaxlen > 0 && avlen.getIntVal() > visitingAMaxlen) {
+                    return new ExprConstInt(visitingAMaxlen);
+                }
                 return avlen;
             }
         }
@@ -134,26 +138,36 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         String extra = " here base " + t.getBase() + " len " + t.getLength();
         Type nbase = (Type)t.getBase().accept(this);
         visitingALen = true;
+        visitingAMaxlen = t.getMaxlength();
         abstractValue avlen = null;
         try{
             avlen = (abstractValue) t.getLength().accept(this);
         }finally{
             visitingALen = false;
+            visitingAMaxlen = 0;
         }
         Expression elen = t.getLength();
         Expression nlen;
         if(avlen.isBottom()){
-            nlen = maxArrSize;
+            nlen = t.getMaxlength() == 0 ? maxArrSize : new ExprConstInt(t.getMaxlength());
             String msg = "Arrays are not big enough" + elen + ">" + nlen;
             todoStmts.add(new StmtAssert(new ExprBinary(elen, "<=", nlen), msg +extra, false));
         }else{
-            nlen = ExprConstInt.createConstant(avlen.getIntVal());
+            nlen =
+                    t.getMaxlength() <= 0 || avlen.getIntVal() < t.getMaxlength() ? ExprConstInt.createConstant(avlen.getIntVal())
+                            : ExprConstInt.createConstant(t.getMaxlength());
         }
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return new TypeArray(nbase, nlen) ;
+        return new TypeArray(nbase, nlen, t.getMaxlength());
     }
     
-    protected Expression interpretActualParam(Expression e){
+    protected Expression interpretActualParam(Expression e) {
+        // if (formal.getType().isArray()) {
+        // int maxlength = ((TypeArray) formal.getType()).getMaxlength();
+        // if (maxlength > 0) {
+        // return new ExprConstInt(maxlength);
+        // }
+        // }
         return maxArrSize;
     }
     

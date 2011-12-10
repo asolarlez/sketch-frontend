@@ -23,14 +23,13 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
-
-import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 class CloneHoles extends FEReplacer{
     
@@ -466,7 +465,7 @@ public class PartialEvaluator extends FEReplacer {
         return vtype.STAR(star);
     }
     
-    protected Expression interpretActualParam(Expression e){
+    protected Expression interpretActualParam(Expression e) {
         return e;
     }
 
@@ -1334,7 +1333,7 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue avlen = (abstractValue) t.getLength().accept(this);
         Expression nlen = exprRV;
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return isReplacer? new TypeArray(nbase, nlen) : t;
+        return isReplacer ? new TypeArray(nbase, nlen, t.getMaxlength()) : t;
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)

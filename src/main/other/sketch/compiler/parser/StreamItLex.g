@@ -173,6 +173,7 @@ EQUAL: "==";
 NOT_EQUAL: "!=";
 LESS_THAN: '<';
 LESS_EQUAL: "<=";
+LESS_COLON: "<:";
 MORE_THAN: '>';
 MORE_EQUAL: ">=";
 QUESTION: '?';
@@ -254,6 +255,7 @@ HQUAN
 NUMBER
 	:	 (DIGIT)+ (DOT (DIGIT)+ )? (('e' | 'E') ('+'|'-')? (DIGIT)+ )? ('i')?
 	;
+
 
 ID
 options {

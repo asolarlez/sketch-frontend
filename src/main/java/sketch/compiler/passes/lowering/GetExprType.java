@@ -93,7 +93,7 @@ public class GetExprType extends FENullVisitor
 		Type baseType = ((TypeArray)base).getBase();
 		
 		if(range.hasLen()){
-		    return new TypeArray(baseType, expr);
+            return new TypeArray(baseType, expr, ((TypeArray) base).getMaxlength());
 		}else{
 		    return baseType;
 		}		

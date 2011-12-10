@@ -170,7 +170,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 			if(baseType instanceof TypeArray) {
 				Type newBase=convertType(baseType);
 				if(newBase==baseType) return type;
-				return new TypeArray(newBase,array.getLength());
+                return new TypeArray(newBase, array.getLength(), array.getMaxlength());
 			}
 			if(isBitType(baseType)) {
 				Expression len=array.getLength();

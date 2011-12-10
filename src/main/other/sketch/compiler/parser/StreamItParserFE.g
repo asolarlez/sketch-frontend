@@ -292,20 +292,34 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 
 
-data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; boolean isglobal = false; }
+data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
 	:	(TK_global {isglobal = true; })?
                 (t=primitive_type | (prefix:ID COLON)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + ":" + id.getText() )  : id.getText()); })
 		(	l:LSQUARE
-			(
-                (x=expr_named_param { params.add(x); }
-                    | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
-                ( COMMA x=expr_named_param { params.add(x); } )*
+			(	
+                ( { maxlen = 0; }
+                (x=expr_named_param
+                	(
+					LESS_COLON n:NUMBER { maxlen = Integer.parseInt(n.getText()); }
+					)?
+				{ params.add(x); maxlens.add(maxlen); }
+				)
+                | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
+
+                ( { maxlen = 0; }
+                COMMA x=expr_named_param  
+                    (
+                    LESS_COLON num:NUMBER { maxlen = Integer.parseInt(num.getText()); }
+					)?
+				{ params.add(x); maxlens.add(maxlen); }
+				)*
 			)
             RSQUARE
             {
                 while (!params.isEmpty()) {
-                    t = new TypeArray(t, params.lastElement());
+                    t = new TypeArray(t, params.lastElement(), maxlens.lastElement());
                     params.remove(params.size() - 1);
+                    maxlens.remove(maxlens.size() - 1);
                 }
             }
 		)*

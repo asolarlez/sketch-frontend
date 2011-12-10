@@ -1,65 +1,58 @@
-#define N_INT 3
-// number of internal points in each direction
-#define P 3
-// Processors in each direction
-
-#define n (N_INT/P)
-#define N (n+2)
-
-#define SPMD_MAX_BUF_LEN (P*P*n)
+#define SPMD_MAX_BUF_LEN (3*3*4)
 #include "spmd.h"
 
 include "generators.skh";
 
 float sten(float left, float right, float top, float bottom);
 
-float rb_spec(int i, int j, int t)
+float rb_spec(int N_INT, int i, int j, int t)
 {
     if (i == 0 || j == 0 || i == N_INT+1 || j == N_INT+1 || t == 0) {
         return 0;
     } else if ((i+j+t)%2 == 0) {
-        return rb_spec(i, j, t-1);
+        return rb_spec(N_INT, i, j, t-1);
     } else {
-        return sten( rb_spec(i, j-1, t-1), rb_spec(i, j+1, t-1), rb_spec(i-1, j, t-1), rb_spec(i+1, j, t-1) );
+        return sten( rb_spec(N_INT, i, j-1, t-1), rb_spec(N_INT, i, j+1, t-1), rb_spec(N_INT, i-1, j, t-1), rb_spec(N_INT, i+1, j, t-1) );
     }
 }
 
-void pass(ref float [N_INT+2][N_INT+2] u, bit red)
+void pass1(int n, ref float [n+2][n+2] u, bit red)
 {
-    for(int i=1; i<=N_INT; ++i)
+    for(int i=1; i<=n; ++i)
 	for(int j=1+(i+red)%2; j<=N_INT; j+=2)
 	    u[i][j] = sten(u[i][j-1], u[i][j+1], u[i-1][j], u[i+1][j]);
 }
 
-void passN(ref float [N][N] u, bit red)
+
+void pass2(int n, ref float [n+2][n+2] u, bit red)
 {
-    for(int i=1; i<N-1; ++i)
-	for(int j=1+(i+red)%2; j<N-1; j+=2)
+    for(int i=1; i<=n; ++i)
+	for(int j=1+(i+red)%2; j<=n; j+=2)
 	    u[i][j] = sten(u[i][j-1], u[i][j+1], u[i-1][j], u[i+1][j]);
 }
 
-void rb_seq(int T)
+void rb_seq(int N_INT, int T)
 {
     float[N_INT+2][N_INT+2] u;
     
     for (int t=1; t<=T; ++t) {
-        pass(u, (t%2 == 1));
+        pass1(N_INT, u, (t%2 == 1));
     }
     for (int i=1; i<=N_INT; ++i) {
-        for (int j=0; j<=N_INT; ++j) {
+        for (int j=1; j<=N_INT; ++j) {
             assert u[i][j] == rb_spec(i, j, T);
         }
     } 
 }
 
-harness void check()
+harness void check(int N_INT, int P, int T)
 {
-    for (int T=0; T<2; ++T) {
-        rb_spmd(T);
+    if(N_INT <= 4 && P <= 3 && N_INT%P == 0 && T < 2){
+        rb_spmd(N_INT, P, T);
     }
 }
 
-void communicate(global spmdinfo info, ref float[N][N] u, int rank)
+void communicate(global spmdinfo info, global int P, global int n, ref float[n+2][n+2] u, int rank)
 {
     float [n] buff_send;
     float [n] buff_recv;
@@ -70,7 +63,7 @@ void communicate(global spmdinfo info, ref float[N][N] u, int rank)
     int top = (p == 0) ? -1 : rank - P;
     int bottom = (p == P-1) ? -1 : rank + P;
 
-    spmdtransfer(info, n, u[1][1::n], (top>=0), top, u[N-1][1::n], (bottom>=0));
+    spmdtransfer(info, n, u[1][1::n], (top>=0), top, u[n+1][1::n], (bottom>=0));
     
     if (left>=0) {
         for (int i=0; i<n; ++i) {
@@ -80,7 +73,7 @@ void communicate(global spmdinfo info, ref float[N][N] u, int rank)
     spmdtransfer(info, n, buff_send, (left>=0), left, buff_recv, (right>=0));
     if (right>=0) {
         for (int i=0; i<n; ++i) {
-            u[i+1][N-1] = buff_recv[i];
+            u[i+1][n+1] = buff_recv[i];
         }
     }
 
@@ -99,9 +92,12 @@ void communicate(global spmdinfo info, ref float[N][N] u, int rank)
     }
 }
 
-void rb_spmd(int halfT)
+void rb_spmd(int N_INT, int P, int halfT)
 {
     int T = halfT*2;
+    int n = N_INT/P;
+    int N = n+2;
+
     spmdinfo info = spmdinit(P*P, n);    
     spmdfork(rank; P*P) {
         float [N][N] u;
@@ -111,13 +107,13 @@ void rb_spmd(int halfT)
 
         //bit iamred = n%2==0 || (p+q)%2==0;
         bit iamred = n%2==0 || expr(3, {p, q, 2}, 2, {MOD, PLUS}) == 0; //(p+q)%2 == 0;
-
+        
         int t=1;
         while (t<=halfT) {
-            communicate(info, u, rank);
-            passN(u, iamred);
-            communicate(info, u, rank);
-            passN(u, !iamred);
+            communicate(info, P, n, u, rank);
+            pass2(n, u, iamred);
+            communicate(info, P, n, u, rank);
+            pass2(n, u, !iamred);
             ++t;
         }
 
@@ -125,7 +121,7 @@ void rb_spmd(int halfT)
             for (int j=1; j<=n; ++j) {
                 int gi = p*n + i;
                 int gj = q*n + j;
-                assert u[i][j] == rb_spec(gi, gj, T);
+                assert u[i][j] == rb_spec(N_INT, gi, gj, T);
             }
         }
     }

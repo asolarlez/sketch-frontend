@@ -152,7 +152,8 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 								ExprBinary.BINOP_MUL,
 								base.getLength (),
 								ta.getLength ()),
-								dims);
+					dims,
+                    ta.getMaxlength() * base.getMaxlength());
 		} else {
 			return ta;
 		}

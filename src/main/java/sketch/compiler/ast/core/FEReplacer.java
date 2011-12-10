@@ -41,13 +41,12 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
-
-import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
-import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -810,7 +809,7 @@ public class FEReplacer implements FEVisitor
     	Type nbase = (Type)t.getBase().accept(this);
     	Expression nlen = (Expression)t.getLength().accept(this);
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-    	return new TypeArray(nbase, nlen);
+        return new TypeArray(nbase, nlen, t.getMaxlength());
     }
 
     public Object visitTypeStruct (TypeStruct ts) {
