@@ -65,6 +65,12 @@ import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.TprintFcnCall;
 import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
+import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
+import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.spmd.GlobalToLocalCasts;
+import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
+import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
@@ -81,12 +87,6 @@ import sketch.util.exceptions.UnsupportedSketchException;
 import static sketch.util.DebugOut.printError;
 
 import static sketch.util.Misc.nonnull;
-
-import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
-import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
-import sketch.compiler.passes.spmd.SpmdTransform;
-import sketch.compiler.passes.spmd.GlobalToLocalCasts;
-import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -458,11 +458,12 @@ public class SequentialSketchMain extends CommonSketchMain
     }
 
     public Program preprocAndSemanticCheck(Program prog, boolean replaceConstants) {
-
         if (replaceConstants) {
             prog = (Program) prog.accept(new ConstantReplacer(null));
         }
-	    prog = (getBeforeSemanticCheckStage()).run(prog);
+
+        prog = (getBeforeSemanticCheckStage()).run(prog);
+        prog.accept(new SimpleCodePrinter());
 
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);

@@ -44,7 +44,7 @@ public class TypeArray extends Type implements TypeArrayInterface
      * Creates an array type of the specified base type with the specified length.
      */
     public TypeArray(Type base, Expression length) {
-        this(base, length, 0);
+        this(base, length, length.isConstant() ? length.getIValue() : 0);
     }
 
     public TypeArray(Type base, Expression length, int maxlength) {
@@ -63,7 +63,8 @@ public class TypeArray extends Type implements TypeArrayInterface
      *            the "virtual dimensions" of the array
      */
     public TypeArray(Type base, Expression length, Collection<Expression> dims) {
-        this(CudaMemoryType.UNDEFINED, base, length, dims, 0);
+        this(CudaMemoryType.UNDEFINED, base, length, dims,
+                length.isConstant() ? length.getIValue() : 0);
     }
 
     public TypeArray(Type base, Expression length, Collection<Expression> dims,
@@ -75,7 +76,7 @@ public class TypeArray extends Type implements TypeArrayInterface
     public TypeArray(CudaMemoryType cuda_mem_typ, Type base, Expression length,
             Collection<Expression> dims)
     {
-        this(cuda_mem_typ, base, length, dims, 0);
+        this(cuda_mem_typ, base, length, dims, length.isConstant() ? length.getIValue() : 0);
     }
 
     public TypeArray(CudaMemoryType cuda_mem_typ, Type base, Expression length,
@@ -93,7 +94,7 @@ public class TypeArray extends Type implements TypeArrayInterface
     }
 
     public TypeArray(CudaMemoryType mem_typ, Type type, int i) {
-        this(mem_typ, type, new ExprConstInt(i), null);
+        this(mem_typ, type, new ExprConstInt(i), null, i);
     }
 
 //    public TypeArray createWithNewLength(Expression len) {

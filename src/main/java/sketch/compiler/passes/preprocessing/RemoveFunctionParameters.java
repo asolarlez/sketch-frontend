@@ -1,14 +1,7 @@
 package sketch.compiler.passes.preprocessing;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -34,6 +27,22 @@ import sketch.util.exceptions.UnrecognizedVariableException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
+    static final class ParamInfo {
+        final Type pt;
+
+        // the variables that this param depends on
+        final TreeSet<String> dependence;
+ 
+        public ParamInfo(Type pt, TreeSet<String> dependence) {
+            this.pt = pt;
+            this.dependence = dependence;
+        }
+
+        @Override
+        public ParamInfo clone() {
+            return new ParamInfo(this.pt, (TreeSet<String>) this.dependence.clone());
+        }
+    }
 
     /**
      * Information about functions created as a result of hoisting out an inner function.
@@ -43,12 +52,21 @@ public class RemoveFunctionParameters extends FEReplacer {
     class NewFunInfo {
         public final String funName;
         public final String containingFunction;
-        public final Set<Parameter> paramsToAdd;
+
+        public final HashMap<String, ParamInfo> paramsToAdd;
+
+        public HashMap<String, ParamInfo> cloneParamsToAdd() {
+            HashMap<String, ParamInfo> c = new HashMap<String, ParamInfo>();
+            for (Map.Entry<String, ParamInfo> e : paramsToAdd.entrySet()) {
+                c.put(e.getKey(), e.getValue().clone());
+            }
+            return c;
+        }
 
         NewFunInfo(String funName, String containingFunction) {
             this.funName = funName;
             this.containingFunction = containingFunction;
-            paramsToAdd = new TreeSet<Parameter>();
+            paramsToAdd = new HashMap<String, ParamInfo>();
         }
     }
 
@@ -58,7 +76,9 @@ public class RemoveFunctionParameters extends FEReplacer {
     Map<String, String> reverseEquiv = new HashMap<String, String>();
 
     class ThreadClosure extends FEReplacer {
-        Map<String, Set<Parameter>> funsToVisit = new HashMap<String, Set<Parameter>>();
+        Map<String, HashMap<String, ParamInfo>> funsToVisit =
+                new HashMap<String, HashMap<String, ParamInfo>>();
+        Map<String, List<Parameter>> addedParams = new HashMap<String, List<Parameter>>();
 
         public Object visitProgram(Program prog){
             CallGraph cg = new CallGraph(prog);
@@ -71,11 +91,11 @@ public class RemoveFunctionParameters extends FEReplacer {
                 if(equivalences.containsKey(key)){
                     for(String fn : equivalences.get(key)){
                         toVisit.push(fn);
-                        funsToVisit.put(fn, new TreeSet<Parameter>(nfi.paramsToAdd));
+                        funsToVisit.put(fn, nfi.cloneParamsToAdd());
                     }
                 }else{
                     toVisit.push(key);
-                    funsToVisit.put(key, new TreeSet<Parameter>(nfi.paramsToAdd));
+                    funsToVisit.put(key, nfi.cloneParamsToAdd());
                 }
                 while(!toVisit.isEmpty()){
                     String cur = toVisit.pop();
@@ -94,10 +114,23 @@ public class RemoveFunctionParameters extends FEReplacer {
                         if (!callerOriName.equals(nfi.containingFunction)) {
                             toVisit.push(callerName);
                             if (funsToVisit.containsKey(callerName)) {
-                                funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
+                                // funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
+                                // should merge correctly
+                                HashMap<String, ParamInfo> c =
+                                        funsToVisit.get(callerName);
+                                for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd.entrySet()) {
+                                    String var = e.getKey();
+                                    ParamInfo info = e.getValue();
+                                    ParamInfo merger = c.get(var);
+                                    if (merger == null) {
+                                        c.put(var, info.clone());
+                                    } else {
+                                        assert info.pt.equals(merger.pt);
+                                        merger.dependence.addAll(info.dependence);
+                                    }
+                                }
                             } else {
-                                funsToVisit.put(callerName, new TreeSet<Parameter>(
-                                        nfi.paramsToAdd));
+                                funsToVisit.put(callerName, nfi.cloneParamsToAdd());
                             }
                         }
                     }
@@ -107,11 +140,59 @@ public class RemoveFunctionParameters extends FEReplacer {
             return super.visitProgram(prog);
         }
 
+        private List<Parameter> getAddedParams(String funName) {
+            List<Parameter> result = addedParams.get(funName);
+            if (result == null) {
+                HashMap<String, ParamInfo> params = funsToVisit.get(funName);
+                HashMap<String, Integer> indeg = new HashMap<String, Integer>();
+                HashMap<String, List<String>> outedge =
+                        new HashMap<String, List<String>>();
+                Queue<String> readyToPut = new ArrayBlockingQueue<String>(params.size());
+
+                for (Map.Entry<String, ParamInfo> entry : params.entrySet()) {
+                    String dependent = entry.getKey();
+                    Set<String> dependence = entry.getValue().dependence;
+                    indeg.put(dependent, dependence.size());
+                    if (dependence.size() == 0) {
+                        readyToPut.add(dependent);
+                    }
+                    for (String var : dependence) {
+                        List<String> e = outedge.get(var);
+                        if (e == null) {
+                            e = new ArrayList<String>();
+                            outedge.put(var, e);
+                        }
+                        e.add(dependent);
+                    }
+                }
+
+                result = new ArrayList<Parameter>();
+                while (!readyToPut.isEmpty()) {
+                    String name = readyToPut.remove();
+                    List<String> e = outedge.get(name);
+                    if (e != null) {
+                        for (String dependent : e) {
+                            int deg = indeg.get(dependent);
+                            if (deg == 1) {
+                                readyToPut.add(dependent);
+                            } else {
+                                indeg.put(dependent, deg - 1);
+                            }
+                        }
+                    }
+                    result.add(new Parameter(params.get(name).pt, name, Parameter.REF));
+                }
+                
+                addedParams.put(funName, result);
+            }
+            return result;
+        }
+
         public Object visitExprFunCall(ExprFunCall efc) {
             String name = nres.getFunName(efc.getName());
             if (funsToVisit.containsKey(name)) {
                 List<Expression> pl = new ArrayList<Expression>(efc.getParams());
-                for (Parameter p : funsToVisit.get(name)) {
+                for (Parameter p : getAddedParams(name)) {
                     pl.add(new ExprVar(efc, p.getName()));
                 }
                 efc = new ExprFunCall(efc, efc.getName(), pl);
@@ -123,7 +204,8 @@ public class RemoveFunctionParameters extends FEReplacer {
             String name = nres.getFunName(fun.getName());
             if (funsToVisit.containsKey(name)) {
                 List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
-                pl.addAll(funsToVisit.get(name));
+                pl.addAll(getAddedParams(name));
+
                 fun = fun.creator().params(pl).create();
             }
             return super.visitFunction(fun);
@@ -216,7 +298,12 @@ public class RemoveFunctionParameters extends FEReplacer {
                     new NewFunInfo(nres.getFunName(f.getName()),
                             nres.getFunName(curFun.getName()));
             SymbolTableVisitor stv = new SymbolTableVisitor(null) {
+                TreeSet<String> dependent = null;
                 public Object visitExprVar(ExprVar exp) {
+                    // we should also visit the type of the variable.
+                    if (dependent != null) {
+                        dependent.add(exp.getName());
+                    }
                     Type t = symtab.lookupVarNocheck(exp);
                     if (t == null) {
                         if (nres.getFun(exp.getName()) != null) {
@@ -231,9 +318,18 @@ public class RemoveFunctionParameters extends FEReplacer {
                             throw new TypeErrorException(exp.getCx().toString() +
                                     ": An inner function can not use a function parameter passed to its parent function");
                         }
-                        nfi.paramsToAdd.add(new Parameter(pt, exp.getName(),
-                                Parameter.REF));
+                        String name = exp.getName();
+                        ParamInfo info = nfi.paramsToAdd.get(name);
+                        TreeSet<String> oldDependent = dependent;
+                        if (info == null) {
+                            dependent = new TreeSet<String>();
+                            nfi.paramsToAdd.put(name, new ParamInfo(pt, dependent));
+                        } else {
+                            dependent = info.dependence;
+                        }
+
                         pt.accept(this);
+                        dependent = oldDependent;
                     }
                     return exp;
                 }

@@ -1,4 +1,4 @@
-#define SPMD_MAX_BUF_LEN (3*3*4)
+#define SPMD_MAX_BUF_LEN (16)
 #include "spmd.h"
 
 include "generators.skh";
@@ -19,12 +19,12 @@ float rb_spec(int N_INT, int i, int j, int t)
 void pass1(int n, ref float [n+2][n+2] u, bit red)
 {
     for(int i=1; i<=n; ++i)
-	for(int j=1+(i+red)%2; j<=N_INT; j+=2)
+	for(int j=1+(i+red)%2; j<=n; j+=2)
 	    u[i][j] = sten(u[i][j-1], u[i][j+1], u[i-1][j], u[i+1][j]);
 }
 
 
-void pass2(int n, ref float [n+2][n+2] u, bit red)
+void pass2(int n, ref float [n+2 <: 4][n+2 <: 4] u, bit red)
 {
     for(int i=1; i<=n; ++i)
 	for(int j=1+(i+red)%2; j<=n; j+=2)
@@ -47,15 +47,15 @@ void rb_seq(int N_INT, int T)
 
 harness void check(int N_INT, int P, int T)
 {
-    if(N_INT <= 4 && P <= 3 && N_INT%P == 0 && T < 2){
+    if(N_INT <= 2 && P <= 2 && N_INT%P == 0 && T < 2){
         rb_spmd(N_INT, P, T);
     }
 }
 
-void communicate(global spmdinfo info, global int P, global int n, ref float[n+2][n+2] u, int rank)
+void communicate(global spmdinfo info, global int P, global int n, ref float[n+2 <: 4][n+2 <: 4] u, int rank)
 {
-    float [n] buff_send;
-    float [n] buff_recv;
+    float [n <: 4] buff_send;
+    float [n <: 4] buff_recv;
     int p = rank / P;
     int q = rank % P;
     int left = (q == 0) ? -1 : rank - 1;
@@ -100,13 +100,13 @@ void rb_spmd(int N_INT, int P, int halfT)
 
     spmdinfo info = spmdinit(P*P, n);    
     spmdfork(rank; P*P) {
-        float [N][N] u;
+        float [N <: 4][N <: 4] u;
 
         int p = rank / P;
         int q = rank % P;
 
-        //bit iamred = n%2==0 || (p+q)%2==0;
-        bit iamred = n%2==0 || expr(3, {p, q, 2}, 2, {MOD, PLUS}) == 0; //(p+q)%2 == 0;
+        bit iamred = n%2==0 || (p+q)%2==0;
+        //bit iamred = n%2==0 || expr(3, {p, q, 2}, 2, {MOD, PLUS}) == 0; //(p+q)%2 == 0;
         
         int t=1;
         while (t<=halfT) {
