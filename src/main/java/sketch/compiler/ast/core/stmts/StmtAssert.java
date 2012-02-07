@@ -15,11 +15,12 @@
  */
 
 package sketch.compiler.ast.core.stmts;
+import java.util.Random;
+
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
-import java.util.Random;
 
 /**
  * An assert statement. Has an assertion conditional expression.
@@ -82,12 +83,17 @@ public class StmtAssert extends Statement
     public static final int UBER = 2;
     
     private int superA = NORMAL;
+
+    private boolean isMax;
  
     
     public int isSuper(){
         return superA;
     }
     
+    public boolean isAssertMax() {
+        return isMax;
+    }
     
     
     
@@ -127,15 +133,33 @@ public class StmtAssert extends Statement
         this.superA = isSuper;
     }
     
+    public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper) {
+        this(context.getCx(), cond, msg, (isSuper ? 1 : 0), false);
+    }
+
+    public static StmtAssert createAssertMax(FEContext context, Expression cond,
+            String msg)
+    {
+        return new StmtAssert(context, cond, msg, 0, true);
+    }
+
     /**
      *
      */
-    public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper)
+    public StmtAssert(FEContext context, Expression cond, String msg, int isSuper,
+            boolean isMax)
     {
         super(context);
         this.cond = cond;
         this.msg = msg;
-        this.superA = isSuper? 1 : 0;
+        this.superA = isSuper;
+        this.isMax = isMax;
+    }
+    
+    public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
+            boolean isMax)
+    {
+        this(context.getCx(), cond, msg, isSuper, isMax);
     }
 
     /**
@@ -171,7 +195,7 @@ public class StmtAssert extends Statement
 
     /** Output to string. */
     public String toString () {
-        String result = "assert (" + this.cond + ")";
+        String result = (isMax ? "assert_max" : "assert") + " (" + this.cond + ")";
 
         /*
          * XXX/cgjones: this is being cut out because asserts need to be

@@ -543,12 +543,12 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 	}
 	
 	@Override
-	public void Assert(abstractValue val, String msg) {
+    public void Assert(abstractValue val, StmtAssert stmt) {
 		NodeToSmtValue ntsv = (NodeToSmtValue) val;
 
 		if (val.hasIntVal()) {
 			if (val.getIntVal() == 0)
-				throw new AssertionFailedException("Assertion failure: " + msg);
+                throw new AssertionFailedException("Assertion failure: " + stmt.getMsg());
 		} else {
 			addAssert(ntsv);
 		}
@@ -750,7 +750,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsv2 = (NodeToSmtValue) v2;
 
 //		if (v2.hasIntVal() && v2.getIntVal() == 0)
-		state.Assert(not(eq(v2, CONST(0))), "divide by zero", StmtAssert.NORMAL);
+        state.Assert(not(eq(v2, CONST(0))), new StmtAssert(null, null, "divide by zero",
+                StmtAssert.NORMAL));
 		
 		
 		if (v1.hasIntVal() && v2.hasIntVal()) {
@@ -973,7 +974,8 @@ public abstract class NodeToSmtVtype extends TypedVtype implements ISuffixSetter
 		NodeToSmtValue ntsv1 = (NodeToSmtValue) v1;
 		NodeToSmtValue ntsv2 = (NodeToSmtValue) v2;
 		
-		state.Assert(not(eq(v2, CONST(0))), "mod by zero", StmtAssert.NORMAL);
+        state.Assert(not(eq(v2, CONST(0))), new StmtAssert(null, null, "mod by zero",
+                StmtAssert.NORMAL));
 		
 		if (v1.hasIntVal() && v2.hasIntVal()) {
 			return CONST(v1.getIntVal() % v2.getIntVal());

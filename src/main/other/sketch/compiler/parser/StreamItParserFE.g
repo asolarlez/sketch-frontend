@@ -250,6 +250,7 @@ statement returns [Statement s] { s = null; }
 	|	s=do_while_statement SEMI
 	|	s=for_statement
 	|	s=assert_statement SEMI
+	|	s=assert_max_statement SEMI
 	|s=fdecl_statement 
 	|s=return_statement SEMI
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
@@ -496,7 +497,13 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 		}
 		s = new StmtAssert(cx, x, msg, t2!=null); }	
 	;
-
+	
+assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
+:	t:TK_assert_max cond=right_expr (COLON msg:STRING_LITERAL) { 
+	FEContext cx = getContext(t);
+	s = StmtAssert.createAssertMax(cx, cond, (msg==null ? null : cx + "   " + msg)); }	
+;
+	
 if_else_statement returns [Statement s]
 { s = null; Expression x; Statement t, f = null; }
 	:	u:TK_if LPAREN x=right_expr RPAREN t=pseudo_block
@@ -866,7 +873,15 @@ constantExpr returns [Expression x] { x = null; }
             	}else{
             	  x = new ExprStar(getContext(t2)); 
             	}
-            }    
+            }   
+    |	t3:NDANGELIC (LPAREN n3:NUMBER RPAREN)?
+    	{
+    		if (n3 != null) {
+    			x = new ExprStar(getContext(t3), Integer.parseInt(n3.getText()), true);
+    		} else {
+    			x = new ExprStar(getContext(t3), true);
+    		}
+    	} 
 	;
 
 struct_decl returns [TypeStruct ts]

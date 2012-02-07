@@ -1185,12 +1185,12 @@ public class PartialEvaluator extends FEReplacer {
         String msg = null;
         msg = stmt.getMsg();
         try{
-            state.Assert(vcond, msg, stmt.isSuper());
+            state.Assert(vcond, stmt);
         }catch(RuntimeException e){
             System.err.println(stmt.getCx() + ":" +  e.getMessage() );
             throw e;
         }
-        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper())  : stmt;
+        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(), stmt.isAssertMax())  : stmt;
     }
 
     @Override

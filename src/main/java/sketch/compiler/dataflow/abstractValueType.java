@@ -4,6 +4,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 
 
@@ -73,7 +74,8 @@ public abstract class abstractValueType{
 	 * @return
 	 */
 	abstract public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
-	abstract public void Assert(abstractValue val, String msg);
+
+    abstract public void Assert(abstractValue val, StmtAssert stmt);
 	/**
 	 * 
 	 * @param fun

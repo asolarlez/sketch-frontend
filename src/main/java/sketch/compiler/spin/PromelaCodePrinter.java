@@ -210,7 +210,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	{
 		enterNumberedStmt (stmt);
 		printTab ();
-		print ("assert (");
+        print(stmt.isAssertMax() ? "assert_max (" : "assert (");
 		stmt.getCond ().accept (this);
 		println (");  /* "+ stmt.getMsg () +" */");
 		leaveNumberedStmt (stmt);

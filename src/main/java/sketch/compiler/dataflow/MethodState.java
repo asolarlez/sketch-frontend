@@ -467,9 +467,9 @@ public class MethodState {
         }       
     }
     
-    public void Assert(abstractValue val, String msg, int isSuper){
+    public void Assert(abstractValue val, StmtAssert stmt) {
         /* Compose complex expression by walking all nesting conditionals. */
-        
+        int isSuper = stmt.isSuper();
         if(changeTracker != null && isSuper != StmtAssert.UBER){        
             val = vtype.or(val, assertHelper(changeTracker, isSuper==StmtAssert.SUPER) );
         }else{
@@ -490,7 +490,7 @@ public class MethodState {
             val = vtype.or(val, nestCond );
         }
         */
-        vtype.Assert(val, msg);
+        vtype.Assert(val, stmt);
     }
 
 

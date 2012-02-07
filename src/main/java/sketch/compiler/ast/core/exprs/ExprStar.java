@@ -46,7 +46,10 @@ public class ExprStar extends Expression
     public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
 	private static String HOLE_BASE="H__";
+    private static String ANGJ_BASE = "AH__";
 	
+    private boolean angelicMax = false;
+
 	public String getSname(){ return starName; }
 	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
 	public void extendName(String ext){ starName += ext; } 
@@ -60,26 +63,30 @@ public class ExprStar extends Expression
         INT_SIZE = old.INT_SIZE;
         vectorSize = old.vectorSize;
         this.starName = old.starName;
+        this.angelicMax = old.angelicMax;
+        // TODO: add tests with repeat and generators
     }
 
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FENode context)
     {
-        super(context);
-        size = 1;
-        isFixed = false;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this(context.getCx());
+    }
+
+    public ExprStar(FEContext context) {
+        this(context, false);
     }
 
     /** Create a new ExprConstInt with a specified value.
      * @deprecated
      */
-    public ExprStar(FEContext context)
+    public ExprStar(FEContext context, boolean isAngelicMax)
     {
         super(context);
         size = 1;
         isFixed = false;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this.angelicMax = isAngelicMax;
+        this.starName = (isAngelicMax ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
     }
 
     /**
@@ -87,21 +94,26 @@ public class ExprStar extends Expression
      */
     public ExprStar(FENode context, int size)
     {
-        super(context);
-        this.size = size;
-        isFixed = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this(context.getCx(), size);
     }
 
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size)
+    public ExprStar(FEContext context, int size) {
+        this(context, size, false);
+    }
+
+    /**
+     * @deprecated
+     */
+    public ExprStar(FEContext context, int size, boolean isAngelicMax)
     {
         super(context);
         isFixed = true;
         this.size = size;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this.angelicMax = isAngelicMax;
+        this.starName = (isAngelicMax ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
     }
 
     @Deprecated
@@ -160,9 +172,10 @@ public class ExprStar extends Expression
 
     public String toString()
     {
+        String head = angelicMax ? "**" : "??";
     	if(getType() != null)
-            return "??/*" + this.getSname() + "*/" + getType() + ":" + size;
-        return "??/*"+this.getSname()+"*/";
+            return head + "/*" + this.getSname() + "*/" + getType() + ":" + size;
+        return head + "/*" + this.getSname() + "*/";
     }
 
 	/**
@@ -214,5 +227,9 @@ public class ExprStar extends Expression
 	public Type getType() {
 		return type;
 	}
+
+    public boolean isAngelicMax() {
+        return angelicMax;
+    }
 
 }
