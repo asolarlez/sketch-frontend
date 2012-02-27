@@ -1,49 +1,17 @@
-pragma options "-p lowering --bnd-inbits 3 --bnd-unroll-amnt 64 --bnd-inline-amnt 16  --bnd-arr-size 8";
+pragma options "--bnd-inbits 5 --bnd-inline-amnt 32";
 
-
-
-stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
-
-    float[N][T] out = 0.0;
-    
-    for(int i=0; i<N; ++i){
-        out[0][i] = in[i];
-    }
-    
-    for(int t=1; t<T; ++t){
-        out[t][0] = 0.0;
-        out[t][N-1] = 0.0;
-        for(int i=1; i<N-1; ++i){
-            out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
-        }   
-    }
-    return out; 
+int multSpec(int n, int m) {
+     if (m == 0) {
+              return 0;
+      } else {
+               return n + multSpec(n, m - 1);
+      }
 }
 
-
-stencil float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) implements cacheObv1d{ 
-    float[N][T] fifo = 0.0;
-    if(N>=3&& T >= 3 && N > T){
-        for(int i=0; i<N; ++i){
-            fifo[0][i] = in[i];
-        }
-        for(int i=1; i<T; ++i){            
-            for(int t=1; t<i; ++t){
-                fifo[t][i-t] = fifo[t-1][i-t-1] + fifo[t-1][i-t+1] + f[t][i-t];
-            }
-        }        
-        for(int i=T; i<N; ++i){
-            for(int t=1; t<T; ++t){
-                fifo[t][i-t] = fifo[t-1][i-t-1] + fifo[t-1][i-t+1] + f[t][i-t];
-            }
-        }
-        for(int i=N; i<N+T; ++i){
-            for(int t=i-N+2; t<T; ++t){
-                fifo[t][i-t] = fifo[t-1][i-t-1] + fifo[t-1][i-t+1] + f[t][i-t];
-            }
-        }
-    }else{
-        fifo = cacheObv1d(N, T, in, f);
-    }   
-    return fifo; 
+int mult(int n, int m) implements multSpec{
+      if (m == 0) {
+              return ??;
+      } else {
+              return n + mult(n, m - ??);
+      }
 }

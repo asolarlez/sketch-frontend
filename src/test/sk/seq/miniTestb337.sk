@@ -1,0 +1,22 @@
+
+harness void main(int x){
+    
+    bit t = foo();
+    if(t){
+        assert moo();
+    }            
+}
+
+bit foo(){    
+    return false;
+}
+
+bit moo(){
+    
+    if(??){
+        return ??;
+    }else{
+        return foo();
+    }
+    
+}

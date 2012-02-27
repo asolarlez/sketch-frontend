@@ -1,7 +1,5 @@
 package sketch.compiler.dataflow.nodesToSB;
 
-import static sketch.util.DebugOut.printWarning;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +20,7 @@ import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.util.DebugOut;
+import sketch.util.exceptions.ExceptionAtNode;
 
 public class NtsbVtype extends IntVtype {
     public PrintStream out;
@@ -55,7 +54,11 @@ public class NtsbVtype extends IntVtype {
             List<abstractValue> avlist = null;
             if(t instanceof TypeArray){
                 Integer iv = ((TypeArray)t).getLength().getIValue();
-                assert iv != null;
+                if (iv == null) {
+                    throw new ExceptionAtNode(
+                            "If ?? is used as an array, the array must have constant length. ??:" +
+                                    t, node);
+                }
                 ssz = iv;
                 avlist = new ArrayList<abstractValue>(ssz);
             }
@@ -225,14 +228,27 @@ public class NtsbVtype extends IntVtype {
     public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond){
         ++funid;
         Iterator<abstractValue> actualParams = avlist.iterator();
+        Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
         String plist = "";
         while( actualParams.hasNext() ){
             abstractValue param = actualParams.next();
+            Parameter formal = formalParams.next();
+            while (!formal.isParameterInput() && formalParams.hasNext()) {
+                formal = formalParams.next();
+            }
+            assert formal.isParameterInput();
             if(param.isVect()){
-                List<abstractValue> lst = param.getVectValue();
-                for(int tt = 0; tt<lst.size(); ++tt){
-                    plist += lst.get(tt) + " ";
+                TypeArray ta = (TypeArray) formal.getType();
+                Integer lntt = ta.getLength().getIValue();
+                if (lntt == null) {
+                    plist += "( {" + param + "} )";
+                } else {
+                    List<abstractValue> lst = param.getVectValue();
+                    assert lntt == lst.size();
+                    for (int tt = 0; tt < lst.size(); ++tt) {
+                        plist += lst.get(tt) + " ";
+                    }
                 }
             }else{
                 plist += param;
@@ -240,22 +256,50 @@ public class NtsbVtype extends IntVtype {
             plist += " ";           
         }
         
-        Iterator<Parameter> formalParams = fun.getParams().iterator();
+        formalParams = fun.getParams().iterator();
+        actualParams = avlist.iterator();
         boolean hasout = false;
         while(formalParams.hasNext()){
-            Parameter param = formalParams.next();      
+            Parameter param = formalParams.next();  
             if( param.isParameterOutput()){
                 {
                     hasout = true;
                     if(param.getType().isArray()){
                         TypeArray ta = (TypeArray)param.getType();
-                        int lnt = ta.getLength().getIValue();
-                        List<abstractValue> ls = new ArrayList<abstractValue>(lnt);
-                        for(int i=0; i< lnt; ++i){
-                            ls.add(BOTTOM(name + "[" + printType(ta.getBase()) + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName()+"_idx_" + i + "," + funid +"]"));
-                            plist = "0";
+                        Integer lntt = ta.getLength().getIValue();
+                        if (lntt != null) {
+                            int lnt = lntt;
+                            List<abstractValue> ls = new ArrayList<abstractValue>(lnt);
+                            for (int i = 0; i < lnt; ++i) {
+                                ls.add(BOTTOM(name + "[" + printType(ta.getBase()) +
+                                        "]( " + plist + "  )(" + pathCond + ")[ _p_" +
+                                        param.getName() + "_idx_" + i + "," + funid + "]"));
+                                plist = "0";
+                            }
+                            outSlist.add(ARR(ls));
+                        } else {
+                            if (true) {
+                                String vnm = "___tEmP" + (gbgid++);
+                                String par =
+                                        vnm + "=" + name + "[" +
+                                                printType(param.getType()) + "_arr" +
+                                "]( " + plist + "  )(" + pathCond + ")[ _p_" +
+                                                param.getName() + "," + funid + "];";
+                                out.println(par);
+                                /*
+                                 * List<abstractValue> lst = actual.getVectValue();
+                                 * List<abstractValue> nls = new
+                                 * ArrayList<abstractValue>(lst.size()); for (int tt = 0;
+                                 * tt < lst.size(); ++tt) { nls.add(BOTTOM(vnm+"[" +
+                                 * tt+"]")); }
+                                 */
+                                outSlist.add(BOTTOM(vnm));
+                            }else{
+                                outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
+                                        "]( " + plist + "  )(" + pathCond + ")[ _p_" +
+                                        param.getName() + "," + funid + "]"));
+                            }
                         }
-                        outSlist.add(ARR(ls));
                     }else{
                         outSlist.add(BOTTOM(name + "[" + printType(param.getType()) + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName() + "," + funid +"]"));
                     }

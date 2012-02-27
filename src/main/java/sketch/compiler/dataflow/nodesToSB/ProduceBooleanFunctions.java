@@ -9,10 +9,8 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -50,7 +48,8 @@ import sketch.util.exceptions.ExceptionAtNode;
  */
 public class ProduceBooleanFunctions extends PartialEvaluator {
     boolean tracing = false;
-    ExprConstInt maxArrSize;
+
+    int maxArrSize;
     class SpecSketch{
         public final String spec;
         public final String sketch;
@@ -74,7 +73,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if(tracing){
             rcontrol.activateTracing();
         }
-        this.maxArrSize = ExprConstInt.createConstant(maxArrSize);
+        this.maxArrSize = maxArrSize;
     }
     
     private String convertType(Type type) {
@@ -116,47 +115,39 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     
     private boolean visitingALen=false;
     
-    public Object visitExprVar(ExprVar ev){
-        if(!visitingALen){
-            return super.visitExprVar(ev);
-        }else{
-            abstractValue avlen = (abstractValue)super.visitExprVar(ev);
-            if(avlen.isBottom()){  
-                this.exprRV = maxArrSize;
-                return maxArrSize.accept(this);
-            }else{
-                return avlen;
-            }
-        }
-    }
-    
+    /*
+     * public Object visitExprVar(ExprVar ev){ if(!visitingALen){ return
+     * super.visitExprVar(ev); }else{ abstractValue avlen =
+     * (abstractValue)super.visitExprVar(ev); if(avlen.isBottom()){ this.exprRV =
+     * maxArrSize; return maxArrSize.accept(this); }else{ return avlen; } } }
+     */
     public Object visitTypeArray(TypeArray t) {
         String extra = " here base " + t.getBase() + " len " + t.getLength();
         Type nbase = (Type)t.getBase().accept(this);
         visitingALen = true;
         abstractValue avlen = null;
+        Expression nlen;
         try{
             avlen = (abstractValue) t.getLength().accept(this);
+            nlen = this.exprRV;
         }finally{
             visitingALen = false;
         }
         Expression elen = t.getLength();
-        Expression nlen;
-        if(avlen.isBottom()){
-            nlen = maxArrSize;
-            String msg = "Arrays are not big enough" + elen + ">" + nlen;
-            todoStmts.add(new StmtAssert(new ExprBinary(elen, "<=", nlen), msg +extra, false));
-        }else{
-            nlen = ExprConstInt.createConstant(avlen.getIntVal());
-        }
-        if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return new TypeArray(nbase, nlen) ;
+        /*
+         * if(avlen.isBottom()){ //nlen = maxArrSize; String msg =
+         * "Arrays are not big enough" + elen + ">" + nlen; todoStmts.add(new
+         * StmtAssert(new ExprBinary(elen, "<=", nlen), msg +extra, false)); }else{ nlen =
+         * ExprConstInt.createConstant(avlen.getIntVal()); }
+         */
+        return t;
+        // if(nbase == t.getBase() && t.getLength() == nlen ) return t;
+        // return new TypeArray(nbase, nlen) ;
     }
-    
-    protected Expression interpretActualParam(Expression e){
-        return maxArrSize;
-    }
-    
+
+    /*
+     * protected Expression interpretActualParam(Expression e){ return maxArrSize; }
+     */
     
     public void doParams(List<Parameter> params) {
         PrintStream out = ((NtsbVtype)this.vtype).out;
@@ -182,20 +173,34 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             
             if( ptype instanceof TypeArray ){
                 TypeArray ta = (TypeArray) ptype;
-                IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);                                             
-                assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
-                int sz = tmp.getIntVal();
-                if(param.isParameterOutput()){                    
-                    opsizes.add(sz);
-                }
-                for(int tt=0; tt<sz; ++tt){                 
-                    String nnm = inval.getVectValue().get(tt).toString();                   
+                if (inval.isVect()) {
+                    IntAbsValue tmp = (IntAbsValue) ta.getLength().accept(this);
+                    assert inval.isVect() : "If it is not a vector, something is really wrong.\n";
+                    int sz = tmp.getIntVal();
+                    if (param.isParameterOutput()) {
+                        opsizes.add(sz);
+                    }
+                    for (int tt = 0; tt < sz; ++tt) {
+                        String nnm = inval.getVectValue().get(tt).toString();
+                        if (param.isParameterOutput()) {
+                            String opname = "_p_" + param.getName() + "_idx_" + tt + " ";
+                            opnames.add(opname);
+                            out.print(opname);
+                        } else {
+                            out.print(nnm + " ");
+                        }
+                    }
+                } else {
                     if(param.isParameterOutput()){
-                        String opname = "_p_" + param.getName() + "_idx_" + tt + " ";
+                        opsizes.add(1);
+                        String opname = "_p_" + param.getName() + " ";
                         opnames.add(opname);
                         out.print(opname);
+                        // Armando: This statement below is experimental.
+                        // state.setVarValue(param.getName(),
+                        // (abstractValue) ta.defaultValue().accept(this));
                     }else{
-                        out.print(nnm + " ");
+                        out.print(inval.toString() + " ");
                     }
                 }
             }else{
@@ -213,20 +218,22 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 out.print(", ");
                 out.print(printType(ptype) + " ");
                 if( ptype instanceof TypeArray ){
-                    TypeArray ta = (TypeArray) ptype;
-                    IntAbsValue tmp = (IntAbsValue)  ta.getLength().accept(this);               
-                    assert inval.isVect() : "If it is not a vector, something is really wrong.\n" ;
-                    int sz = tmp.getIntVal();                    
-                    for(int tt=0; tt<sz; ++tt){                 
-                        String nnm = inval.getVectValue().get(tt).toString();                   
-                        {
-                            out.print(nnm + " ");
+                    if (inval.isVect()) {
+                        TypeArray ta = (TypeArray) ptype;
+                        IntAbsValue tmp = (IntAbsValue) ta.getLength().accept(this);
+                        assert inval.isVect() : "If it is not a vector, something is really wrong.\n";
+                        int sz = tmp.getIntVal();
+                        for (int tt = 0; tt < sz; ++tt) {
+                            String nnm = inval.getVectValue().get(tt).toString();
+                            {
+                                out.print(nnm + " ");
+                            }
                         }
+                    } else {
+                        out.print(inval.toString() + " ");
                     }
-                }else{
-                    
+                } else {
                     out.print(inval.toString() + " ");
-                    
                 }
             }
             
@@ -241,8 +248,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         {
             TypeArray array = (TypeArray)type;
             String base = printType(array.getBase());
-            abstractValue iv = (abstractValue) array.getLength().accept(this);          
-            return base + "[" + iv + "]";
+            abstractValue iv = (abstractValue) array.getLength().accept(this);
+            if (iv.isBottom()) {
+                return base + "[*" + maxArrSize + "]";
+            } else {
+                return base + "[" + iv + "]";
+            }
         }
         
         if(type.equals(TypePrimitive.bittype)){

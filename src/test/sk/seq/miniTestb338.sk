@@ -1,0 +1,63 @@
+int C=0;
+int nchanges = 0;
+bit choiceArrayIndex0 = 0;
+int N=6;
+
+bit Puzzle(int[N] s) {
+    
+    int len = Length(s);
+
+    int i = 0;
+    while (i < len)
+    {
+        if (s[fuzzIndex0(i)]!= s[len-i-1])
+            return false;
+       i++;
+    }
+    return true;
+  }
+
+
+bit isPalindrome(int [N] a){
+
+  if(a == 0) return 0;
+  for(int i=0; i<N/2; i++){
+    if(a[i] != a[N-i-1])
+      return false;
+  }
+  return true;
+}
+
+
+bit isPalindromeSketch(int[N] a) implements isPalindrome{
+
+  if(a == 0) return 0;
+  
+bit r = Puzzle(a);
+
+  if(choiceArrayIndex0) nchanges = nchanges + 1;
+  assert nchanges <= C;
+  return r;
+}
+
+int Length(int[N] a){
+  return N;
+}
+
+int Count(int[N] a){
+  return N;
+}
+
+int fuzzIndex0(int i){
+  if(??) return i;
+  
+  else{
+    choiceArrayIndex0 = 1;
+    if(??) return NminusI(i);
+  }
+  
+}
+
+int NminusI(int i){
+  return N-i;
+}

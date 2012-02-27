@@ -177,8 +177,8 @@ program	 returns [Program p]
 	:	(  ((TK_device | TK_global | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
-           |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); }
-           |    fd=field_decl SEMI { vars.add(fd); }
+           |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
+		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    file=include_stmt { handleInclude (file, namespaces); }
            |    TK_package id:ID SEMI
@@ -293,7 +293,7 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 
 data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; boolean isglobal = false; }
-	:	(TK_global {isglobal = true; })?
+	:	/* (TK_global {isglobal = true; })? */
                 (t=primitive_type | (prefix:ID COLON)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + ":" + id.getText() )  : id.getText()); })
 		(	l:LSQUARE
 			(
@@ -822,7 +822,7 @@ array_range returns [Vector<ExprArrayRange.RangeLen> x] { x=null; Expression sta
 		)?
     ;
 
-constantExpr returns [Expression x] { x = null; }
+constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
 	:	h:HQUAN
 			{  String tmp = h.getText().substring(2);
 			   Integer iti = new Integer(
@@ -846,9 +846,15 @@ constantExpr returns [Expression x] { x = null; }
 			{ x = ExprNullPtr.nullPtr; }
     |   t1:NDVAL
             { x = new ExprStar(getContext(t1)); }
-    |   t2:NDVAL2 (LPAREN n1:NUMBER RPAREN)?
+    |   t2:NDVAL2 (LPAREN n1=value_expr (COMMA n2=value_expr)? RPAREN)?
             {  if(n1 != null){
-            	  x = new ExprStar(getContext(t2),Integer.parseInt(n1.getText())); 
+            	Integer in1 = n1.getIValue();
+            	  if(n2 == null){            	  	
+            	  	x = new ExprStar(getContext(t2),in1);
+            	  }else{
+            	  	Integer in2 = n2.getIValue();
+            	  	x = new ExprStar(getContext(t2),in1, in2);
+            	  } 
             	}else{
             	  x = new ExprStar(getContext(t2)); 
             	}

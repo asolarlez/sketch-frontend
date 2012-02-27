@@ -1,0 +1,13 @@
+pragma options "--bnd-inbits 3";
+harness void test(int N, int i){
+    if(6<N){
+        int[N] x=0;
+        x[??(3)] = 25;
+        x[??(3)] = 11;
+        assert ?? == x[6];
+        assert 11 == x[??];
+        if(i<N){
+            assert x[i]!=25;
+        }
+    }
+}

@@ -1,0 +1,7 @@
+
+harness void test(int N, int[N] x){
+    if(3<N){
+        int t = N-1;
+        assert x[t/2 + t/2] == x[??*(t/2)];
+    }
+}

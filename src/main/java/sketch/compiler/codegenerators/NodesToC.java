@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
@@ -27,13 +28,13 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
-import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
-import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -42,12 +43,18 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 public class NodesToC extends NodesToJava {
 
 	protected String filename;
-	private boolean isBool = true;
+    protected boolean isBool = true;
 
 	protected boolean addIncludes = true;
 	// FIXME hack for bad code generation
     private boolean convertBoolConstants;
     protected final boolean pythonPrintStatements;
+
+    public NodesToC(TempVarGen varGen, String filename) {
+        super(false, varGen);
+        this.filename = filename;
+        this.pythonPrintStatements = false;
+    }
 
     public NodesToC(TempVarGen varGen, String filename, boolean pythonPrintStatements) {
 		super(false, varGen);
@@ -298,6 +305,7 @@ public class NodesToC extends NodesToJava {
 	@Override
 	public Object visitProgram(Program prog)
 	{
+        nres = new NameResolver(prog);
 		String ret=(String)super.visitProgram(prog);
 		StringBuffer preamble=new StringBuffer();
 		if(addIncludes){
@@ -441,6 +449,7 @@ public class NodesToC extends NodesToJava {
         return convertType(type) +  " ";
     }
 
+    @Override
     public Object visitStmtVarDecl(StmtVarDecl stmt) {
         Vector<String> decls = new Vector<String>();
         for (VarDeclEntry decl : stmt) {
@@ -573,7 +582,7 @@ public class NodesToC extends NodesToJava {
         return processAssign(stmt.getLHS(), stmt.getRHS(), getType(stmt.getLHS()), op);
     }
 
-    private String processAssign(Expression lhs, Expression rhs, Type lhsType, String op)
+    protected String processAssign(Expression lhs, Expression rhs, Type lhsType, String op)
     {
         boolean oldIsBool = isBool;
         setCtype(lhsType);
@@ -622,7 +631,7 @@ public class NodesToC extends NodesToJava {
         }
     }
 
-  boolean isLHS = false;
+    protected boolean isLHS = false;
 
 
   public Object visitExprArrayRange(ExprArrayRange exp){

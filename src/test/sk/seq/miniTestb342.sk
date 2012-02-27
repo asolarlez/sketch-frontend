@@ -1,0 +1,17 @@
+
+harness void test(int[4] x){
+    foo(4, x);
+    assert x[2]==??;
+    int tt=??;
+    int[4] y = x;
+    x=tt;
+    assert x[0]==0;
+    
+}
+
+void foo(int N, ref int[N] x){
+    if(3<N){
+        x[2] = 25;
+        assert 25 == x[??];
+    }
+}

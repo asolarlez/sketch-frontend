@@ -1,0 +1,9 @@
+
+harness void main(int n, int[n] in){
+    generator int foo(){ return in[0] + ??; }
+    
+    if(n>2){
+        assert foo() == (in[0] + 3);
+    }
+    
+}

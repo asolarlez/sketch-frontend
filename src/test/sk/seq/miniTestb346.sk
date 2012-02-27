@@ -1,0 +1,17 @@
+pragma options "--bnd-inbits 3 --bnd-arr-size 10";
+
+
+int[N] test1(int N, int[N] in){
+  if(N>5){
+      in[5] = 11;
+  }
+  return in;
+}
+
+int[N] testSK1(int N, int[N] in) implements test1 {
+    if(N>5){
+        in[??(4)-4] = ??(4);
+    }
+    return in;
+}
+

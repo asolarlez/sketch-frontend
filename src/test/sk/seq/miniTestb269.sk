@@ -3,7 +3,8 @@ pragma options "--bnd-inbits 3";
 harness void main(int i, int N){
     int x = 0;
     if(i<N){
-        int[N] T = ??;
+        int[10] q=??;
+        int[N] T = (int[N]) q;
         x = T[i];
         assert x == i;
     }        

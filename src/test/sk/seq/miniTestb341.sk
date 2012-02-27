@@ -1,0 +1,7 @@
+
+harness void test(int N, int[N] x){
+    if(6<N){
+        x[??(3)*3] = 25;
+        assert 25 == x[6];
+    }
+}

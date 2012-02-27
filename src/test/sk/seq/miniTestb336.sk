@@ -1,0 +1,10 @@
+struct sinfo {
+    int [4] buffer;
+}
+
+harness void main()
+{
+    sinfo info = new sinfo();
+    info.buffer[0] = 0;
+    assert info.buffer[0] == ??; 
+}

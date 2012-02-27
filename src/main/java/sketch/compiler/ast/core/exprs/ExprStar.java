@@ -36,6 +36,10 @@ import sketch.compiler.main.cmdline.SketchOptions;
 public class ExprStar extends Expression
 {
 	private int size;
+    private int rangelow;
+    private int rangehigh;
+    private boolean hasrange = false;
+
 	public Expression vectorSize;
 	Vector<FENode> depObjects;
 	/** fixed domain of values */
@@ -59,6 +63,9 @@ public class ExprStar extends Expression
         type = old.type;
         INT_SIZE = old.INT_SIZE;
         vectorSize = old.vectorSize;
+        rangelow = old.rangelow;
+        rangehigh = old.rangehigh;
+        hasrange = old.hasrange;
         this.starName = old.starName;
     }
 
@@ -94,6 +101,19 @@ public class ExprStar extends Expression
     }
 
     /**
+    *
+    */
+    public ExprStar(FENode context, int rstart, int rend) {
+        super(context);
+        size = 1;
+        isFixed = true;
+        rangelow = rstart;
+        rangehigh = rend;
+        hasrange = true;
+        this.starName = HOLE_BASE + (NEXT_UID++);
+    }
+
+    /**
      * @deprecated
      */
     public ExprStar(FEContext context, int size)
@@ -101,6 +121,19 @@ public class ExprStar extends Expression
         super(context);
         isFixed = true;
         this.size = size;
+        this.starName = HOLE_BASE + (NEXT_UID++);
+    }
+
+    /**
+     * @deprecated
+     */
+    public ExprStar(FEContext context, int rstart, int rend) {
+        super(context);
+        isFixed = true;
+        this.size = 1;
+        rangelow = rstart;
+        rangehigh = rend;
+        hasrange = true;
         this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
@@ -215,4 +248,15 @@ public class ExprStar extends Expression
 		return type;
 	}
 
+    public boolean hasRange() {
+        return this.hasrange;
+    }
+
+    public int lowerBound() {
+        return this.rangelow;
+    }
+
+    public int upperBound() {
+        return this.rangehigh;
+    }
 }

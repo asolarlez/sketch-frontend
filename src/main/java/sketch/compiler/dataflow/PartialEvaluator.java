@@ -268,7 +268,8 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitExprVar(ExprVar exp) {
         String vname =  exp.getName();
         abstractValue val = state.varValue(vname);
-        if(isReplacer)if( val.hasIntVal() ){
+        if (isReplacer)
+            if (val.hasIntVal()) {
             exprRV = new ExprConstInt(val.getIntVal());
         }else{
             exprRV = new ExprVar(exp, transName(exp.getName()));
@@ -489,7 +490,7 @@ public class PartialEvaluator extends FEReplacer {
                             fav=(vtype.cast(av, ta));
                         }
                     }else{
-                        fav=(vtype.cast(av, ta));
+                        fav=av;
                     }
                     avlist.add(fav);
                 }else{
@@ -499,8 +500,8 @@ public class PartialEvaluator extends FEReplacer {
             }
         }
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
-        Function nfun = fun.creator().params(nplist).create();
-        vtype.funcall(nfun, avlist, outSlist, state.pathCondition());
+        // Function nfun = fun.creator().params(nplist).create();
+        vtype.funcall(fun, avlist, outSlist, state.pathCondition());
         
         assert outSlist.size() == outNmList.size(): "The funcall in vtype should populate the outSlist with 1 element per output parameter";
         Iterator<String> nmIt = outNmList.iterator();
@@ -1063,10 +1064,10 @@ public class PartialEvaluator extends FEReplacer {
                         false)).accept(this));
                 nvtrue = null;
                 state.pushChangeTracker (vcond, false);
-            }catch(Throwable e){
+            } catch (RuntimeException e) {
                 state.popChangeTracker();
                 rcontrol.doneWithBlock(cons);
-                throw new RuntimeException(e);
+                throw e;
                 //throw e;
             }
             rcontrol.doneWithBlock(cons);
@@ -1325,6 +1326,10 @@ public class PartialEvaluator extends FEReplacer {
                         abstractValue dv = (abstractValue)tar.getBase().defaultValue().accept(this);
                         for(int i1 = 0; i1<n; ++i1){  vals.add(dv);  }
                         state.setVarValue(nm, this.vtype.ARR(vals));
+                    } else {
+                        abstractValue dv =
+                                (abstractValue) tar.getBase().defaultValue().accept(this);
+                        state.setVarValue(nm, dv);
                     }
                 }
             }

@@ -808,43 +808,25 @@ public class SemanticChecker
 			public Object visitExprArrayInit(ExprArrayInit expr)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprArrayInit");
-
-				// check for uniform length and dimensions among all children.
-				List elems = expr.getElements();
-
-				// only worry about it if we have elements
-				if (elems.size()>0) {
-					Expression first = (Expression)elems.get(0);
-					// if one is an array, they should all be
-					// arrays of the same length and dimensions
-					if (first instanceof ExprArrayInit) {
-						ExprArrayInit firstArr = (ExprArrayInit)first;
-						for (int i=1; i<elems.size(); i++) {
-							ExprArrayInit other = (ExprArrayInit)elems.get(i);
-							if (firstArr.getDims() != other.getDims()) {
-								report(expr,
-										"non-uniform number of array " +
-								"dimensions in array initializer");
-							}
-							if (firstArr.getElements().size() != other.getElements().size()) {
-								report(expr,
-										"two rows of a multi-dimensional " +
-										"array are initialized to different " +
-								"lengths (arrays must be rectangular)");
-							}
-						}
-					} else {
-						// if first element is not array, no other
-						// element should be an array
-						for (int i=1; i<elems.size(); i++) {
-							if (elems.get(i) instanceof ExprArrayInit) {
-								report(expr,
-										"non-uniform number of array " +
-								"dimensions in array initializer");
-							}
-						}
-					}
-				}
+                /*
+                 * // check for uniform length and dimensions among all children. List
+                 * elems = expr.getElements(); // only worry about it if we have elements
+                 * if (elems.size()>0) { Expression first = (Expression)elems.get(0); //
+                 * if one is an array, they should all be // arrays of the same length and
+                 * dimensions if (first instanceof ExprArrayInit) { ExprArrayInit firstArr
+                 * = (ExprArrayInit)first; for (int i=1; i<elems.size(); i++) {
+                 * ExprArrayInit other = (ExprArrayInit)elems.get(i); if
+                 * (firstArr.getDims() != other.getDims()) { report(expr,
+                 * "non-uniform number of array " + "dimensions in array initializer"); }
+                 * if (firstArr.getElements().size() != other.getElements().size()) {
+                 * report(expr, "two rows of a multi-dimensional " +
+                 * "array are initialized to different " +
+                 * "lengths (arrays must be rectangular)"); } } } else { // if first
+                 * element is not array, no other // element should be an array for (int
+                 * i=1; i<elems.size(); i++) { if (elems.get(i) instanceof ExprArrayInit)
+                 * { report(expr, "non-uniform number of array " +
+                 * "dimensions in array initializer"); } } } }
+                 */
 
 				return super.visitExprArrayInit(expr);
 			}

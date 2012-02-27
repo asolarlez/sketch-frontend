@@ -1,0 +1,16 @@
+harness void main(int i){
+    int[5] t = ??;
+    assert t[0] == 5; assert t[3] == 3;
+    int[3][4] v = ??;
+    assert v[0][0]==??;
+    assert v[3][2]==7;
+    assert v[t[??]][2]==3;
+    int[3] tt = ??;
+    int[3][4] w = {tt,??,??,tt };
+    assert w[i+1-i+2]==w[1];
+    
+    int[2] tt = ??;
+    int[3][4] x = {{1,2,3},tt,??,??};
+    assert x[i+1-i+2]==w[1];
+    
+}

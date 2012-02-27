@@ -462,9 +462,13 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    protected Program parseProgram() {
+        return (new ParseProgramStage(varGen, options)).visitProgram(null);
+    }
+
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
-        Program prog = (new ParseProgramStage(varGen, options)).visitProgram(null);
+        Program prog = parseProgram();
 
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
         prog = this.preprocAndSemanticCheck(prog, true);

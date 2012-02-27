@@ -59,8 +59,8 @@ public class NtsbState extends varState {
                 lhsIdxs = idxsArr(arrsz);
                 init( arrsz );
             }else{
-                init( -1 );
-                lhsIdxs = null;
+                lhsIdxs = idxsArr(1);
+                init(newLHSvalue());
             }
         }else{
             assert false :"This is an error.";
@@ -100,6 +100,12 @@ public class NtsbState extends varState {
     }
     
     public void printUpdate(abstractValue idx, abstractValue val, abstractValueType vt){
+        if (!this.isArr()) {
+            vtype.out.println(name + "_" + val().getlhsIdx() + "= " + val() + "[[" + idx +
+                    "->" + val + "]];");
+            return;
+        }
+
         if( idx.hasIntVal() ){
             int iidx = idx.getIntVal();
             NtsbValue lhsval = val(iidx);

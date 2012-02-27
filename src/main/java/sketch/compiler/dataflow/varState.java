@@ -147,17 +147,21 @@ abstract public class varState {
 					update(vtype.CONST(i), cv, vtype);
 				}
 			}else{				
-				int lv = this.numKeys();
-				update(vtype.CONST(0), val, vtype);
+				int lv = this.numKeys();				
 				abstractValue cv;
 				if(val.isBottom()){
-					cv =vtype.BOTTOM();	
+				    System.out.println("DANGEROUS!!!");					
+					for(int i=0; i<lv ; ++i){                  
+                        update(vtype.CONST(i),
+                                vtype.BOTTOM(val.toString() + "[" + i + "]"), vtype);
+	                }
 				}else{
+				    update(vtype.CONST(0), val, vtype);
 					cv =vtype.CONST(0);
-				}
-				for(int i=1; i<lv ; ++i){					
-					update(vtype.CONST(i), cv, vtype);
-				}
+					for(int i=1; i<lv ; ++i){                  
+	                    update(vtype.CONST(i), cv, vtype);
+	                }
+				}				
 			}
 		}else{
 			absVal.update(val);

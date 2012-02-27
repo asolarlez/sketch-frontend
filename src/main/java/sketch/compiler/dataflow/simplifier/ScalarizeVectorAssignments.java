@@ -347,8 +347,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		String indexName = varGen.nextVar();
         ExprVar index = new ExprVar(lhs, indexName);
         Type intType =  TypePrimitive.inttype;
-        Statement init =
-            new StmtVarDecl(beg, intType, indexName, beg);
+        Statement init = new StmtVarDecl(lhs, intType, indexName, beg);
         symtab.registerVar(indexName, intType, null, SymbolTable.KIND_LOCAL);
         Expression cond =
             new ExprBinary(null, ExprBinary.BINOP_LT, index, end);
