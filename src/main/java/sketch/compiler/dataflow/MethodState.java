@@ -660,6 +660,11 @@ public class MethodState {
        String newname = varTranslator.varDeclare(var);
        assert !vars.containsKey(newname): "You are redeclaring variable "  + var + ":" + t + "   " + newname;
        varState    tv = vtype.cleanState(newname, t, this);
+        /*
+         * if (t instanceof TypeArray) { TypeArray ta = (TypeArray) t; Integer i =
+         * ta.getLength().getIValue(); if (i == null) { System.out.println(var);
+         * tv.update(vtype.CONST(ta.getBase().defaultValue().getIValue()), vtype); } }
+         */
        vars.put(newname, tv);
        cvmap.add(newname);
    }

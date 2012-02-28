@@ -197,8 +197,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                         opnames.add(opname);
                         out.print(opname);
                         // Armando: This statement below is experimental.
-                        // state.setVarValue(param.getName(),
-                        // (abstractValue) ta.defaultValue().accept(this));
+                        if (!param.isParameterInput()) {
+                            state.setVarValue(
+                                    lhs,
+                                    (abstractValue) ta.getBase().defaultValue().accept(
+                                            this));
+                        }
                     }else{
                         out.print(inval.toString() + " ");
                     }

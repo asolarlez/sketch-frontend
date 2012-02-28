@@ -149,8 +149,7 @@ abstract public class varState {
 			}else{				
 				int lv = this.numKeys();				
 				abstractValue cv;
-				if(val.isBottom()){
-				    System.out.println("DANGEROUS!!!");					
+                if (val.isBottom()) {
 					for(int i=0; i<lv ; ++i){                  
                         update(vtype.CONST(i),
                                 vtype.BOTTOM(val.toString() + "[" + i + "]"), vtype);

@@ -209,7 +209,7 @@ public class NtsbVtype extends IntVtype {
     
     protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
         NtsbValue nidx = (NtsbValue) idx;
-        if(nidx.isAXPB){
+        if (nidx.isAXPB && arr.isVect()) {
             int i=nidx.B;
             List<abstractValue> vlist =arr.getVectValue(); 
             String rval = "($ ";
