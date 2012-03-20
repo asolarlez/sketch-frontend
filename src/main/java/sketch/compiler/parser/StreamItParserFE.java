@@ -2140,7 +2140,7 @@ inputState.guessing--;
 		StmtAssert s;
 		
 		Token  t = null;
-		Token  msg = null;
+		Token  ass = null;
 		s = null; Expression cond; ExprVar var;
 		
 		try {      // for error handling
@@ -2149,13 +2149,19 @@ inputState.guessing--;
 			cond=right_expr();
 			{
 			match(COLON);
-			msg = LT(1);
+			ass = LT(1);
 			match(STRING_LITERAL);
 			}
 			if ( inputState.guessing==0 ) {
 				
 					FEContext cx = getContext(t);
-					s = StmtAssert.createAssertMax(cx, cond, (msg==null ? null : cx + "   " + msg));
+					String msg = null;
+					if (ass != null) {
+						String ps = ass.getText();
+						ps = ps.substring(1, ps.length()-1);
+						msg = cx + "   "+ ps;
+					}
+					s = StmtAssert.createAssertMax(cx, cond, msg);
 			}
 		}
 		catch (RecognitionException ex) {

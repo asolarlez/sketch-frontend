@@ -499,9 +499,15 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	;
 	
 assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
-:	t:TK_assert_max cond=right_expr (COLON msg:STRING_LITERAL) { 
+:	t:TK_assert_max cond=right_expr (COLON ass:STRING_LITERAL) { 
 	FEContext cx = getContext(t);
-	s = StmtAssert.createAssertMax(cx, cond, (msg==null ? null : cx + "   " + msg)); }	
+	String msg = null;
+	if (ass != null) {
+		String ps = ass.getText();
+		ps = ps.substring(1, ps.length()-1);
+		msg = cx + "   "+ ps;
+	}
+	s = StmtAssert.createAssertMax(cx, cond, msg); }	
 ;
 	
 if_else_statement returns [Statement s]
