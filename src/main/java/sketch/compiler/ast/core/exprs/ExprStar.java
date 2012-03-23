@@ -232,4 +232,9 @@ public class ExprStar extends Expression
         return angelicMax;
     }
 
+    public Object toJava() {
+        assert isAngelicMax() : "only AGMAX stars can be generated to java!";
+        return "**" + "/*" + this.getSname() + "*/";
+    }
+
 }

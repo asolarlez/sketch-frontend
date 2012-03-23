@@ -1,0 +1,14 @@
+int f(int x)
+{
+    int y = **;
+    assert_max y<x : "y must be smaller than x!";
+    return y;
+}
+
+harness void main()
+{
+    int x = ??;
+    int yy = f(x);
+    assert yy > 6;
+    assert yy < 8 : "yy must be smaller than 8!";
+}

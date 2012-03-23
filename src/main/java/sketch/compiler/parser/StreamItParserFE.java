@@ -2148,9 +2148,23 @@ inputState.guessing--;
 			match(TK_assert_max);
 			cond=right_expr();
 			{
-			match(COLON);
-			ass = LT(1);
-			match(STRING_LITERAL);
+			switch ( LA(1)) {
+			case COLON:
+			{
+				match(COLON);
+				ass = LT(1);
+				match(STRING_LITERAL);
+				break;
+			}
+			case SEMI:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
 			}
 			if ( inputState.guessing==0 ) {
 				

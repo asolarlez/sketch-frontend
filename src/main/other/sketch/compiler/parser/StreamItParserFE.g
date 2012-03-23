@@ -499,7 +499,7 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	;
 	
 assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
-:	t:TK_assert_max cond=right_expr (COLON ass:STRING_LITERAL) { 
+:	t:TK_assert_max cond=right_expr (COLON ass:STRING_LITERAL)? { 
 	FEContext cx = getContext(t);
 	String msg = null;
 	if (ass != null) {

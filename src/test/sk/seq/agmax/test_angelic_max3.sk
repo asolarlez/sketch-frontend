@@ -1,0 +1,16 @@
+int f(int c, int in)
+{
+    int y = **;
+    assert_max y<c+in+5 : "y must be smaller than c+in!";
+    return y;
+}
+
+harness void main(int in)
+{
+	if (in>0) {
+		int c = ??;
+		int yy = f(c, in);
+		assert yy < in+5 : "yy must be smaller than in!";
+	}
+}
+
