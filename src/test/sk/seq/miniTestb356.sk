@@ -1,0 +1,16 @@
+pragma options "--bnd-inbits 3";
+
+bit[N] sumsk(int N, int L, bit [L] x, int M, bit[M] y) implements sum{
+    int T = L<M?M:L;
+    bit[T] xp = x;
+    bit[T] yp = y;
+    bit[N] out;
+    out = (bit[N])(xp + yp); 
+    return out;
+}
+
+bit[N] sum(int N, int L, bit [L] x, int M, bit[M] y){
+    bit[N] out;    
+    out = (bit[N])(x + y);
+    return out;
+}

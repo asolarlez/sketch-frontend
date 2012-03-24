@@ -1,0 +1,18 @@
+struct A{
+    int x;
+}
+
+A[2] x = {null, new A()};
+A t;
+A v = new A();
+
+harness void main(int i){
+    x[??] =  new A();
+    x[0].x = i;
+    t = x[0];
+    A y = x[??];
+    v.x = y.x + 1;
+    assert y.x == i;
+    assert t.x == i;
+    assert v.x == i+1;
+}

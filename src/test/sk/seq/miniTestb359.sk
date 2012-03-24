@@ -1,0 +1,32 @@
+
+void foo(ref int x, ref int y, ref int z){
+    assert x < y-??;
+    assert y < z-??;
+    assert x > 6;
+    x = x + 1;
+    y = y + 1;
+    z = z + 1;
+}
+
+
+
+harness void main(int i){
+    int x = i;
+    int y = i+1;
+    int z = i+2;
+    if(i>??){
+        foo(x, y, z);
+    }
+    int p=??;
+    if(y-p>??){
+        int t1 = i;
+        int t2 = i+1;
+        int t3 = i+2;
+        foo(t1, t2, t3);
+        if(t3 > 0){
+            foo(t1, y, t3);
+        }else{
+            foo(x, t2, z);
+        }        
+    }    
+}

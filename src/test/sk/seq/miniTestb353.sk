@@ -1,0 +1,29 @@
+int x = 5;
+
+int sel(int[x] t, ref int x){
+    x = ??;
+    return t[2];
+}
+void moo(){
+    int x;
+    x = ??;    
+    assert x >10;
+}
+void too(ref int x){    
+    x = ??;    
+    assert x >10;
+}
+void foo(){
+    int x = ??;
+    assert x >10;
+}
+
+harness void myfile(int[x] tt){
+    foo@ANONYMOUS();
+    moo();
+    int t = 3;
+    too(t);
+    assert t ==15;
+    assert sel(tt, t) == tt[??];
+    assert t ==9;
+}

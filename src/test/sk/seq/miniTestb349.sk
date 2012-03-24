@@ -1,0 +1,53 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 20";
+
+int NMAX=20;
+
+struct Vec{
+    int n;
+    int[NMAX] data;
+    Vec[NMAX] mvecs;
+}
+
+void initialize(int n, ref Vec[n] nVecs){
+    for(int i=0; i<n; ++i){
+        nVecs[i] = new Vec();
+    }
+}
+
+harness void test2(int n){
+    if(n<1) return;
+    Vec[n] nVecs;
+    initialize(n, nVecs);    
+    for(int i=0; i<n; ++i){
+        nVecs[i].mvecs = nVecs;        
+    }
+    for(int i=0; i<NMAX; ++i){
+        if(i<n){
+            assert nVecs[i].mvecs[i] != null ;
+            assert nVecs[i].mvecs[i] == nVecs[i];
+        }else{
+            assert nVecs[0].mvecs[i] == null;
+        }
+    }
+}
+
+
+harness void main(int n, int[n] d){
+    Vec v = new Vec();
+    v.n = n;
+    v.data = d;
+    doSten(n, v.data[0::n]);
+    for(int i=0; i<NMAX; ++i){
+        if(i<n){
+            assert v.data[i] == ??;
+        }else{
+            assert v.data[i] == ??;
+        }
+    }
+}
+
+void doSten(int n, ref int[n] x){    
+    for(int i=0; i<n; ++i){
+        x[??*i-??] = 25;
+    }
+}

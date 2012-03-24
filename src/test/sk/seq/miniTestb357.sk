@@ -1,0 +1,7 @@
+harness void main(int i){
+    bit[(5-i)+i] x = {1,1,1,1,1};
+    bit [(2-i)+i] y = {0,0};
+        
+    assert (x|y) == {1,1,1,1,1};
+    
+}

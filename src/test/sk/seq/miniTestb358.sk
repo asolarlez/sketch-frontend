@@ -1,0 +1,33 @@
+pragma options "--bnd-inbits 3";
+
+generator bit gen(bit x, bit y, bit t, int lim){
+    
+    if(lim<=0){ return 0; }
+    if(??){
+        return {| x | y | t |};
+    }
+    if(??){
+        return {| gen(x, y, t, lim-1) (& | \| | ^) gen(x, y, t, lim-1) |};
+    }    
+}
+
+
+bit[N] sumsk(int N, int L, bit [L] x, int M, bit[M] y) implements sum{
+    int T = L<M?M:L;
+    bit[T] out=0;  
+    bit t = 0;    
+    for(int i=0; i<T; ++i){
+        bit tx = i<L?x[i]:0;
+        bit ty = i<M?y[i]:0;
+        out[i] = gen(tx, ty, t, 3);
+        t = gen(tx, ty, t, 4);        
+    }
+    return (bit[N])out;
+}
+
+
+bit[N] sum(int N, int L, bit [L] x, int M, bit[M] y){
+    bit[N] out;    
+    out = ((bit [N]) (x + y));
+    return out;
+}

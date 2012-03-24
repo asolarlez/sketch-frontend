@@ -1,0 +1,25 @@
+pragma options "--bnd-unroll-amnt 32";
+
+int[k] foo(int k, bit[k] x){
+    int[k] out = 0;
+    for(int i=0; i<k; ++i){
+        out[i] = 1-x[i];
+    }
+    return out;
+}
+
+harness void main(int n, bit[n] x, int i){
+    if(n<10){
+        bit[10] xx = x;
+        int [20] yy = foo(15, xx);
+        if(i<n && i>0){
+            assert yy[i] == 1-x[i];
+        }
+        if(i>=n && i<15){
+            assert yy[i] == ??;
+        }
+        if(i>=15 && i < 20){
+            assert yy[i] == ??;
+        }
+    }
+}

@@ -1,0 +1,17 @@
+package t_cat_me;
+
+int s = 8;
+
+int foo(){
+    return 7;    
+}
+
+harness void main(int i){
+    int x = 7;
+    int y = 8;
+    
+    assert (i==0?x:foo()) <= y;
+    assert (i==0?foo@t_cat_me():foo@t_cat_me()) <= y;
+    assert (i==0?s:x) <= y;
+    
+}

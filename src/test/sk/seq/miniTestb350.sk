@@ -1,0 +1,18 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 20";
+
+int foo(int x){
+    return x+??;
+}
+
+harness void main(int n, int[n] in){
+ int[n+1] out = addone(n, in);
+}
+
+int[n+1] addone(int n, int[n] in){
+  int[foo(n)] out;
+  for(int i=0; i<n; ++i){
+    out[i] = in[i]+1;
+  }
+  out[n] = 1;
+  return out;
+}

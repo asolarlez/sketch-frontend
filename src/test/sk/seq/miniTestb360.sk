@@ -1,0 +1,20 @@
+pragma options "--bnd-unroll-amnt 32";
+
+harness void main(int[5] i){
+    int [??] x = i;
+    x[0] = ??;
+    i = (int[5])x;
+    x[??] = i[??] + 1;
+    assert i[0] == 20;
+    assert x[??] == i[4];
+    int t = ??;
+    assert x[t] != i[t];    
+}
+
+harness void m2(int N, int[N] x){
+    int[{|N | 2 |}] y = x;
+    if(N>2){
+        assert y[1] == x[1];
+    }
+    
+}
