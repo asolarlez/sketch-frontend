@@ -116,27 +116,29 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		public final List<Statement> postStmts;
 		public final List<Statement> preStmts;
 		private final Expression len;
+        private final Expression defval;
 		private boolean isRHS;
 
 
-		Indexify(Expression index, Expression len, boolean isRHS){
+        Indexify(Expression index, Expression len, Expression defval, boolean isRHS) {
 			this.index = index;
 			this.postStmts = new ArrayList<Statement>();
 			this.preStmts = new ArrayList<Statement>();
 			this.len = len;
 			this.isRHS = isRHS;
+            this.defval = defval;
 		}
 
 		public Object visitExprArrayInit (ExprArrayInit exp) {
 			// TODO: assuming ExprArrayInit is initialized with scalar constants only.
 			int len = exp.getElements ().size ();
-            TypeArray ta = (TypeArray) getType(exp);
+            // TypeArray ta = (TypeArray) getType(exp);
 
-            Type baseType = ta.getBase();
+            // Type baseType = ta.getBase();
 			return new ExprTernary ("?:",
 					new ExprBinary (index, "<", ExprConstant.createConstant (exp, ""+ len)),
 					new ExprArrayRange (exp, index),
-					baseType.defaultValue ());
+ defval);
 		}
 
 		public Object visitExprConstInt(ExprConstInt exp){
@@ -166,7 +168,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 							)
 							,
 							new ExprArrayRange(exp, exp, index, true),
-							ExprConstInt.zero);
+ defval);
 				}
 			}else{
 			    Integer iv = len.getIValue();
@@ -175,7 +177,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 				}else{
 					return new ExprTernary(exp,
 							ExprTernary.TEROP_COND,
-							new ExprBinary(exp, ExprBinary.BINOP_EQ, index, ExprConstInt.zero ), exp, ExprConstInt.zero);
+ new ExprBinary(
+                            exp, ExprBinary.BINOP_EQ, index, ExprConstInt.zero), exp,
+                            defval);
 
 				}
 			}
@@ -248,13 +252,15 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 					}else{
 						newIdx = new ExprBinary(context, ExprBinary.BINOP_SUB, index, oldRHS, exp.getAlias());
 					}
-					Indexify indexify = new Indexify(newIdx, this.len, isRHS);
+                    Indexify indexify =
+                            new Indexify(newIdx, this.len, lType.defaultValue(), isRHS);
 					Expression newVal = (Expression) exp.getLeft().accept(indexify);
 					this.preStmts.addAll(indexify.preStmts);
 					this.postStmts.addAll(indexify.postStmts);
 					result = newVal;
 				}else{
-					//In this branch, we actually emmit a test that explicitly returns zero if the array goes out of bounds.
+                    // In this branch, we actually emmit a test that explicitly returns
+                    // the default value if the array goes out of bounds.
 					FENode context = exp;
 					String newVarName = addNewDeclaration(TypePrimitive.inttype, exp.getRight());
 					ExprVar oldRHS = new ExprVar(context, newVarName);
@@ -271,7 +277,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 						op = ExprBinary.BINOP_GE;
 						newConst = new ExprConstInt(context, 0);
 					}
-					Indexify indexify = new Indexify(newIdx, this.len, isRHS );
+                    Indexify indexify =
+                            new Indexify(newIdx, this.len, new ExprConstInt(context, 0),
+                                    isRHS);
 					Expression newVal = (Expression) exp.getLeft().accept(indexify);
 					this.preStmts.addAll(indexify.preStmts);
 					this.postStmts.addAll(indexify.postStmts);
@@ -357,7 +365,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Indexify indexifier2 = new Indexify(index,  end, false);
+        Indexify indexifier2 = new Indexify(index, end, zero, false);
         Expression tel = (Expression) lhs.accept(indexifier2);
         List<Statement> bodyLst = new ArrayList<Statement>();
         bodyLst.addAll(indexifier2.preStmts);
@@ -456,9 +464,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Indexify indexifier = new Indexify(index, minLen, true);
+        Indexify indexifier = new Indexify(index, minLen, rt.defaultValue(), true);
         Expression fel = (Expression) rhs.accept(indexifier);
-        Indexify indexifier2 = new Indexify(index, minLen, false);
+        Indexify indexifier2 = new Indexify(index, minLen, rt.defaultValue(), false);
         Expression tel = (Expression) lhs.accept(indexifier2);
         List<Statement> bodyLst = new ArrayList<Statement>();
         bodyLst.addAll(indexifier.preStmts);

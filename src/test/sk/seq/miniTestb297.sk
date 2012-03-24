@@ -10,21 +10,21 @@ void setX(F pthis, int v){
     pthis.q = v;
 }
 
-void seter(F a, BOO:F b, int v, fun s){
+void seter(F a, F@BOO b, int v, fun s){
     s(a, b, v);    
 }
 
-generator void sT(F a, BOO:F b, int v){
+generator void sT(F a, F@BOO b, int v){
     setX(a, v);
 }
 
-generator void sB(F a, BOO:F b, int v){
-    BOO:setX(b, v);
+generator void sB(F a, F@BOO b, int v){
+    setX@BOO(b, v);
 }
 
 harness void main( int v){
     F tt = new F();    
-    BOO:F uu = new BOO:F();    
+    F@BOO uu = new F@BOO();    
     seter(tt, uu, v, sT);
     seter(tt, uu, v, sB);
     assert v == getX(uu);

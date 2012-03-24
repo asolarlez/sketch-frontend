@@ -53,7 +53,7 @@ public class NodesToJava extends SymbolTableVisitor
 	/**
 	 * Whether or not to annotate every line with "//<sourcefile>:<sourceline>"
 	 */
-	private boolean printSourceLines;
+    protected boolean printSourceLines;
 
     // A string consisting of an even number of spaces.
     protected String indent;

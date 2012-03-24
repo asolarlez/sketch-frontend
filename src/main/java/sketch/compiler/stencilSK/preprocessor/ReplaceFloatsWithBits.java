@@ -129,9 +129,15 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	public Object visitStreamSpec(StreamSpec spec)
     {
-		spec = (StreamSpec)super.visitStreamSpec(spec);		
-		spec.getFuncs().addAll(floatConstants.values());
-		return spec;
+        spec = (StreamSpec) super.visitStreamSpec(spec);
+        if (floatConstants.size() == 0) {
+            return spec;
+        } else {
+            List<Function> lf = new ArrayList<Function>(spec.getFuncs());
+            lf.addAll(floatConstants.values());
+            return new StreamSpec(spec, spec.getName(), spec.getStructs(),
+                    spec.getVars(), lf);
+        }
     }
 	
 	

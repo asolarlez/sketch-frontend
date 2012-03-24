@@ -186,6 +186,7 @@ RSHIFT: ">>";
 NDVAL: "{*}";
 NDVAL2: "??";
 SELECT: "{|}";
+AT: "@";
 
 REGEN   { int open = 0; }
     :   "{|"

@@ -20,7 +20,9 @@ import java.util.Collection;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import static java.util.Collections.unmodifiableList;
@@ -113,6 +115,31 @@ public class TypeArray extends Type implements TypeArrayInterface
     public String toString()
     {
         return this.getCudaMemType().syntaxNameSpace() + this.getBase() + "[" + length + "]";
+    }
+
+    public Type leastCommonPromotion(Type other) {
+        if (!(other instanceof TypeArray))
+            return super.leastCommonPromotion(other);
+        TypeArray that = (TypeArray) other;
+        Type nbase = this.getBase().leastCommonPromotion(that.getBase());
+        Expression thisLen = this.getLength();
+        Expression thatLen = that.getLength();
+        if (thisLen.equals(thatLen)) {
+            return new TypeArray(nbase, thisLen);
+        }
+        if (thisLen.getIValue() != null && thatLen.getIValue() != null) {
+            int ithis = thisLen.getIValue();
+            int ithat = thatLen.getIValue();
+            if (ithis <= ithat) {
+                return new TypeArray(nbase, thatLen);
+            } else {
+                return new TypeArray(nbase, thisLen);
+            }
+        }
+        Expression l =
+                new ExprTernary(thisLen, ExprTernary.TEROP_COND, new ExprBinary(thisLen,
+                        "<", thatLen), thatLen, thisLen);
+        return new TypeArray(nbase, l);
     }
 
     public boolean promotesTo(Type other)

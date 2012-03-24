@@ -280,9 +280,11 @@ public class NodesToCTest extends NodesToJava {
     		addIndent();
     	}
     	String line="if("+name1;
-    	if(isArr) line+=".sub<1>(i)";
+        if (isArr)
+            line += ".sub<1>(i)";
     	line+="!="+name2;
-    	if(isArr) line+=".sub<1>(i)";
+        if (isArr)
+            line += ".sub<1>(i)";
     	line+=") {";
     	writeLine(line);
     	addIndent();

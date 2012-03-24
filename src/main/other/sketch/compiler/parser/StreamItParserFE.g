@@ -294,7 +294,7 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; boolean isglobal = false; }
 	:	/* (TK_global {isglobal = true; })? */
-                (t=primitive_type | (prefix:ID COLON)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + ":" + id.getText() )  : id.getText()); })
+                (t=primitive_type | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText()); })
 		(	l:LSQUARE
 			(
                 (x=expr_named_param { params.add(x); }
@@ -524,7 +524,7 @@ for_incr_statement returns [Statement s] { s = null; }
 expr_statement returns [Statement s] { s = null; Expression x; }
 	:	(incOrDec) => x=incOrDec { s = new StmtExpr(x); }
 	|	(left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS | DIV_EQUALS)) => s=assign_expr
-	|	(ID (COLON ID)? LPAREN) => x=func_call { s = new StmtExpr(x); }
+	|	(ID (AT ID)? LPAREN) => x=func_call { s = new StmtExpr(x); }
 	;
 
 assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
@@ -540,8 +540,8 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 	;
 
 func_call returns [Expression x] { x = null; List l; }
-	: prefix:ID (COLON name:ID)? l=func_call_params
-		{ x = new ExprFunCall(getContext(prefix), prefix.getText()+ (name != null ? (":" + name.getText()) : ""), l); }
+	: prefix:ID (AT name:ID)? l=func_call_params
+		{ x = new ExprFunCall(getContext(prefix), prefix.getText()+ (name != null ? ("@" + name.getText()) : ""), l); }
 	
 	;
 

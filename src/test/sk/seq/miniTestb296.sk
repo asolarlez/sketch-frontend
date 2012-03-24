@@ -12,8 +12,8 @@ void setX(F pthis, int v){
 harness void main( int v){
     F tt = new F();
     setX(tt, v);
-    BOO:F uu = new BOO:F();
-    BOO:setX(uu, v);
+    F@BOO uu = new F@BOO();
+    setX@BOO(uu, v);
     assert v == getX(uu);
     Big t = new Big();
     init(t);

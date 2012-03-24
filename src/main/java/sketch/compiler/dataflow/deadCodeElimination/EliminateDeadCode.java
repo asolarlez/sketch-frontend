@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
@@ -192,11 +193,59 @@ public class EliminateDeadCode extends BackwardDataflow {
 			}
 		}
 		if(types.size() > 0){
-			return super.visitStmtVarDecl(new StmtVarDecl(stmt, types, names, inits));
+            return svdBis(new StmtVarDecl(stmt, types, names, inits));
 		}else{
 			return null;
 		}
 	}
+
+    abstractValue typeAV = null;
+
+    public Object visitTypeArray(TypeArray t) {
+        Type nbase = (Type) t.getBase().accept(this);
+        abstractValue avlen = (abstractValue) t.getLength().accept(this);
+        if (typeAV == null) {
+            typeAV = avlen;
+        } else {
+            typeAV = this.vtype.plus(typeAV, avlen);
+        }
+        Expression nlen = exprRV;
+        if (nbase == t.getBase() && t.getLength() == nlen)
+            return t;
+        return isReplacer ? new TypeArray(nbase, nlen) : t;
+    }
+
+	protected Statement svdBis(StmtVarDecl stmt) {
+        List<Type> types = isReplacer ? new ArrayList<Type>() : null;
+        List<String> names = isReplacer ? new ArrayList<String>() : null;
+        List<Expression> inits = isReplacer ? new ArrayList<Expression>() : null;
+        for (int i = 0; i < stmt.getNumVars(); i++) {
+            String nm = stmt.getName(i);
+            typeAV = null;
+            Type vt = (Type) stmt.getType(i).accept(this);
+            // Variable declaration not needed.
+            Expression ninit = null;
+            abstractValue init = typeAV;
+            if (stmt.getInit(i) != null) {
+                abstractValue tt = (abstractValue) stmt.getInit(i).accept(this);
+                if (init == null) {
+                    init = tt;
+                } else {
+                    init = vtype.plus(init, tt);
+                }
+                ninit = exprRV;
+            }
+            if (init != null) {
+                state.setVarValue(nm, init);
+            }
+            if (isReplacer) {
+                types.add(vt);
+                names.add(transName(nm));
+                inits.add(ninit);
+            }
+        }
+        return isReplacer ? new StmtVarDecl(stmt, types, names, inits) : stmt;
+    }
 
 	@Override
 	public Object visitExprFunCall(ExprFunCall exp){

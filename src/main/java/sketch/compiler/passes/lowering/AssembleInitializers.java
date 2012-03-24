@@ -188,15 +188,17 @@ public class AssembleInitializers extends FEReplacer
 									 Integer len = ((TypeArray)type).getLength().getIValue();
 									if( len != null  ){
 										int N =len;
-										List<Expression> ilist = new ArrayList<Expression>(N);										
+                                        List<Expression> ilist =
+                                                new ArrayList<Expression>(N);
+                                        Expression def =
+                                                ((TypeArray) type).getBase().defaultValue();
 										for(int k=0; k<N; ++k){
-											ilist.add( ExprConstInt.zero );
+                                            ilist.add(def);
 										}
 										init = new ExprArrayInit(decl, ilist);
 									}
 								}else{
-
-									init = ExprConstInt.zero;
+                                    init = type.defaultValue();
 								}
 	                		}
 	                		newInits.add(init);

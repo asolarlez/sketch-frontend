@@ -163,6 +163,8 @@ public class GlobalsToParams extends FEReplacer {
     @Override
     public Object visitFunction(Function inputFcn) {
         enclosingFcn = inputFcn;
+        fldNames.pushBlock();
+        try {
         final Function fcn = (Function) super.visitFunction(inputFcn);
 
         // the hashmap only contains keys for the old function.
@@ -195,6 +197,33 @@ public class GlobalsToParams extends FEReplacer {
         } else {
             return fcn;
         }
+        } finally {
+            fldNames.popBlock();
+        }
+    }
+
+    public Object visitParameter(Parameter par) {
+        fldNames.addShadow(par.getName());
+        Object o = super.visitParameter(par);
+        return o;
+    }
+
+    public Object visitStmtBlock(StmtBlock sb) {
+        fldNames.pushBlock();
+        try {
+            Object o = super.visitStmtBlock(sb);
+            return o;
+        } finally {
+            fldNames.popBlock();
+        }
+    }
+
+    public Object visitStmtVarDecl(StmtVarDecl svd) {
+        for (int i = 0; i < svd.getNumVars(); ++i) {
+            fldNames.addShadow(svd.getName(i));
+        }
+        Object o = super.visitStmtVarDecl(svd);
+        return o;
     }
 
     @SuppressWarnings("deprecation")
@@ -293,7 +322,50 @@ public class GlobalsToParams extends FEReplacer {
                 new TypedHashMap<String, Type>();
         private final TypedHashMap<String, Expression> fieldInits =
                 new TypedHashMap<String, Expression>();
+        ShadowStack shadows = new ShadowStack(null);
 
+        public void pushBlock() {
+            shadows = shadows.push();
+        }
+
+        public void popBlock() {
+            shadows = shadows.pop();
+        }
+
+        public void addShadow(String vname) {
+            shadows.add(vname);
+        }
+        class ShadowStack {
+            final HashSet<String> shadow = new HashSet<String>();
+            final ShadowStack prev;
+
+            ShadowStack(ShadowStack prev) {
+                this.prev = prev;
+            }
+
+            ShadowStack push() {
+                ShadowStack s = new ShadowStack(this);
+                return s;
+            }
+
+            ShadowStack pop() {
+                return this.prev;
+            }
+
+            void add(String s) {
+                shadow.add(s);
+            }
+
+            boolean contains(String s) {
+                if (shadow.contains(s)) {
+                    return true;
+                }
+                if (prev != null) {
+                    return prev.contains(s);
+                }
+                return false;
+            }
+        }
         @SuppressWarnings("unchecked")
         @Override
         public Object visitFieldDecl(FieldDecl field) {
@@ -304,6 +376,8 @@ public class GlobalsToParams extends FEReplacer {
         }
 
         public boolean hasName(String name) {
+            if (shadows.contains(name))
+                return false;
             return fieldNames.contains(name);
         }
 

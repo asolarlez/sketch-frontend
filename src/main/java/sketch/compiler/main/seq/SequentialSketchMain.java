@@ -282,17 +282,21 @@ public class SequentialSketchMain extends CommonSketchMain
     
     public SynthesisResult partialEvalAndSolve(Program prog) {
         SketchLoweringResult sketchProg = lowerToSketch(prog);
+        if (prog.hasFunctions()) {
 
-        SATBackend solver = new SATBackend(options, internalRControl(), varGen);
+            SATBackend solver = new SATBackend(options, internalRControl(), varGen);
 
-        if (options.debugOpts.trace) {
-            solver.activateTracing();
+            if (options.debugOpts.trace) {
+                solver.activateTracing();
+            }
+            backendParameters();
+            solver.partialEvalAndSolve(sketchProg.result);
+
+            return new SynthesisResult(sketchProg, solver.getOracle(),
+                    solver.getLastSolutionStats());
+        } else {
+            return new SynthesisResult(sketchProg, null, null);
         }
-        backendParameters();
-        solver.partialEvalAndSolve(sketchProg.result);
-
-        return new SynthesisResult(sketchProg, solver.getOracle(),
-                solver.getLastSolutionStats());
     }
 
     public static class SketchLoweringResult {
@@ -371,6 +375,9 @@ public class SequentialSketchMain extends CommonSketchMain
 	}
 
     protected void runPrintFunctions(SketchLoweringResult llc, ValueOracle oracle) {
+        if (oracle == null) {
+            return;
+        }
         EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
         Program serializedCode = (Program) llc.afterSPMDSeq.accept(eliminate_star);
         (new RunPrintFunctions(varGen, options)).visitProgram(serializedCode);
@@ -424,6 +431,7 @@ public class SequentialSketchMain extends CommonSketchMain
         if (replaceConstants) {
             prog = (Program) prog.accept(new ConstantReplacer(null));
         }
+
 	    prog = (getBeforeSemanticCheckStage()).run(prog);
 
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
@@ -485,10 +493,17 @@ public class SequentialSketchMain extends CommonSketchMain
                 (Program) (new DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
         // beforeUnvectorizing =
         // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
-        Program substituted =
+        Program substituted;
+        if (synthResult.solution != null) {
+            substituted =
                 (new SubstituteSolution(varGen, options, synthResult.solution)).visitProgram(finalCleaned);
+        } else {
+            substituted = finalCleaned;
+        }
+
         Program substitutedCleaned =
                 (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);
+
         substitutedCleaned = (getCleanupStage()).run(substitutedCleaned);
 
         generateCode(substitutedCleaned);

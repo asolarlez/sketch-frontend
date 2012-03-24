@@ -340,7 +340,7 @@ public class GetExprType extends FENullVisitor
         // (Might not want to blindly assert ?:.)
         Type tb = (Type)exp.getB().accept(this);
         Type tc = (Type)exp.getC().accept(this);
-        Type lub = tb.leastCommonPromotion(tc);
+        Type lub = tb != null ? tb.leastCommonPromotion(tc) : null;
 
         exp.assertTrue (lub != null,
         		"incompatible types for '"+ exp.getB () +"', '"+ exp.getC () +"'");

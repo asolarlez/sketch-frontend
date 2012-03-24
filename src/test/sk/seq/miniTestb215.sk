@@ -1,10 +1,10 @@
 bit foo(bit[3] x, bit[3] y){
 	bit z = x ==y;
-	bit w = x+y == x-y;
+	bit w = x+y == x;
 	
 	return (x == y? z - 1 + ??: w - 1 + ??); 
 }
 
 bit fooSK(bit[3] x, bit[3] y) implements foo{
-	return (x == y? x==y:x+y == x-y);
+	return (x == y? x==y:x+y == x);
 }

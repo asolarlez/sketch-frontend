@@ -5,12 +5,13 @@ import java.io.Writer;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.codegenerators.NodesToC;
-import sketch.compiler.codegenerators.NodesToCTest;
 import sketch.compiler.codegenerators.NodesToCUDA;
-import sketch.compiler.codegenerators.NodesToH;
+import sketch.compiler.codegenerators.NodesToSuperCTest;
+import sketch.compiler.codegenerators.NodesToSuperCpp;
+import sketch.compiler.codegenerators.NodesToSuperH;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.SequentialSketchMain;
+import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 
@@ -40,12 +41,17 @@ public class OutputCCode extends MetaStage {
 
         String resultFile = SequentialSketchMain.getOutputFileName(options);
         final boolean tprintPyStyle = options.feOpts.tprintPython != null;
-        String hcode = (String) prog.accept(new NodesToH(resultFile, tprintPyStyle));
+        
+        Program pprog =
+                (Program) prog.accept(new EliminateMultiDimArrays(new TempVarGen()));
+        String hcode = (String) pprog.accept(new NodesToSuperH(resultFile, tprintPyStyle));
         String ccode =
-                (String) prog.accept(new NodesToC(varGen, resultFile, tprintPyStyle));
+                (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile,
+                        tprintPyStyle));
 
         if (!options.feOpts.outputCode && !options.feOpts.noOutputPrint) {
             prog.accept(new SimpleCodePrinter());
+            // System.out.println("+++++++++++ C Code ++++++++++");
             // System.out.println(hcode);
             // System.out.println(ccode);
         } else if (!options.feOpts.noOutputPrint) {
@@ -71,7 +77,7 @@ public class OutputCCode extends MetaStage {
                 }
                 if (options.feOpts.outputTest) {
                     String testcode =
-                            (String) prog.accept(new NodesToCTest(resultFile,
+                            (String) pprog.accept(new NodesToSuperCTest(resultFile,
                                     tprintPyStyle));
                     final String outputFname =
                             options.feOpts.outputDir + resultFile + "_test.cpp";

@@ -35,7 +35,7 @@ public class NameResolver {
     }
 
     public String compound(String a, String b) {
-        return a + ":" + b;
+        return b + "@" + a;
     }
 
     private <T> void registerStuff(Map<String, String> pkgForThing,
@@ -66,22 +66,22 @@ public class NameResolver {
     public <T> String getFullName(String name, Map<String, String> pkgForThing,
             Map<String, T> chkMap)
     {
-        if (name.indexOf(":") > 0) {
+        if (name.indexOf("@") > 0) {
             return name;
         }
-        if (name.indexOf(":") == 0) {
-            name = name.substring(1);
+        if (name.indexOf("@") == name.length() - 1) {
+            name = name.substring(0, name.length() - 1);
         }
         String pkgName = pkgForThing.get(name);
         if (pkgName == null) {
-            String cpkgNm = this.pkg.getName() + ":" + name;
+            String cpkgNm = name + "@" + this.pkg.getName();
             if (chkMap.containsKey(cpkgNm)) {
                 return cpkgNm;
             }
             // System.err.println("Name " + name + " is ambiguous.");
             return null;
         }
-        return pkgName + ":" + name;
+        return name + "@" + pkgName;
     }
 
     public Function getFun(String name) {
@@ -101,7 +101,7 @@ public class NameResolver {
 
     public String getFunName(Function f) {
         if (pkgForFun.containsKey(f.getName())) {
-            return pkgForFun.get(f.getName()) + ":" + f.getName();
+            return f.getName() + "@" + pkgForFun.get(f.getName());
         } else {
             throw new RuntimeException("NYI");
         }

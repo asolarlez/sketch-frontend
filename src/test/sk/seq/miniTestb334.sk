@@ -1,6 +1,12 @@
 int moo(int in, ref int tmp){
     tmp = in;
-    return moo(in, tmp);
+    int q = ??;
+    assert q == 15;
+    if(in+(??-in) != 15){
+        return moo(in, tmp);
+    }else{
+        return in;
+    }
 }
 
 

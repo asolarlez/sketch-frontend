@@ -56,6 +56,7 @@ public class PreprocessStage extends MetaStage {
                         useInsertEncoding));
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
         // dump (prog, "fpe:");
 

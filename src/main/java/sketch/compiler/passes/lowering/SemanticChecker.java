@@ -859,10 +859,12 @@ public class SemanticChecker
 							}
 						}
 					}
-
-					if(type instanceof TypeStruct || type instanceof TypeStructRef){
-						report(field, "You can not have global pointers. Globals can only be constant integers.");
-					}
+                    /*
+                     * if(type instanceof TypeStruct || type instanceof TypeStructRef){
+                     * report(field,
+                     * "You can not have global references. Globals can only be scalars and arrays of scalars."
+                     * ); }
+                     */
 
 				}
 
@@ -1076,7 +1078,11 @@ public class SemanticChecker
 				// Check: the variable is declared somewhere.
 				try
 				{
-					symtab.lookupVar(var);
+                    int k = symtab.lookupKind(var.getName(), var);
+                    if (inTArr && k == SymbolTable.KIND_FIELD) {
+                        report(var, "You can not use variable '" + var.getName() +
+                                "' in an array size because it is a non-constant global.");
+                    }
 				}
 				catch(UnrecognizedVariableException e)
 				{
@@ -1127,6 +1133,78 @@ public class SemanticChecker
 				}
 				return super.visitStmtAssign(stmt);
 			}
+
+            boolean inTypeStruct = false;
+
+            public Object visitTypeStruct(TypeStruct ts) {
+                boolean tmpts = inTypeStruct;
+                inTypeStruct = true;
+                Object o = super.visitTypeStruct(ts);
+                inTypeStruct = tmpts;
+                return o;
+            }
+
+            boolean inParamDecl = false;
+
+            public Object visitFunction(Function f) {
+                SymbolTable oldSymTab = symtab;
+                symtab = new SymbolTable(symtab);
+                boolean tmpipd = inParamDecl;
+                inParamDecl = true;
+                for (Parameter p : f.getParams()) {
+                    p.accept(this);
+                }
+                f.getReturnType().accept(this);
+                inParamDecl = tmpipd;
+                symtab = oldSymTab;
+
+                Object o = super.visitFunction(f);
+                return o;
+            }
+
+            protected boolean hasFunctions(Expression e) {
+                class funFinder extends FEReplacer {
+                    boolean found = false;
+
+                    public Object visitExprFunCall(ExprFunCall efc) {
+                        found = true;
+                        return efc;
+                    }
+                }
+                funFinder f = new funFinder();
+                e.accept(f);
+                return f.found;
+            }
+
+            boolean inTArr = false;
+            public Object visitTypeArray(TypeArray ta) {
+                boolean oldita = inTArr;
+                inTArr = true;
+                try {
+                    if (inTypeStruct) {
+                        TypeArray o = (TypeArray) super.visitTypeArray(ta);
+                        Integer x = o.getLength().getIValue();
+                        if (x == null) {
+                            report(ta.getLength(),
+                                    "Only fixed length arrays are allowed as fields of structs.");
+                        }
+                        return o;
+                    }
+                    if (inParamDecl) {
+                        TypeArray o = (TypeArray) super.visitTypeArray(ta);
+                        Expression len = o.getLength();
+                        if (hasFunctions(len)) {
+                            report(ta.getLength(),
+                                    "Array types in argument lists and return types can not have function calls in their lenght.");
+                        }
+                        return o;
+                    }
+
+                    return super.visitTypeArray(ta);
+                } finally {
+                    inTArr = oldita;
+                }
+            }
 
 			public Object visitExprUnary(ExprUnary expr)
 			{
@@ -1282,10 +1360,15 @@ public class SemanticChecker
 		switch (op)
 		{
 		// Arithmetic operations:
-		case ExprBinary.BINOP_ADD:
 		case ExprBinary.BINOP_DIV:
 		case ExprBinary.BINOP_MUL:
 		case ExprBinary.BINOP_SUB:
+                if (isLeftArr || isRightArr) {
+                    report(expr,
+                            "Except for bit-vector addition, arithmetic on array types is not supported." +
+                                    ct);
+                }
+            case ExprBinary.BINOP_ADD:
 			if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.inttype)))
 				report(expr,
 						"cannot perform arithmetic on " + ct);

@@ -19,14 +19,14 @@ public class AddPkgNameToNames extends FEReplacer {
     private String transFun(String name) {
         if (name != null) {
             String t = nres.getFunName(name);
-            return t.replace(':', '_');
+            return t.replace('@', '_');
         }
         return null;
     }
 
     private String transStruct(String name) {
         String t = nres.getStructName(name);
-        return t.replace(':', '_');
+        return t.replace('@', '_');
     }
 
     @Override

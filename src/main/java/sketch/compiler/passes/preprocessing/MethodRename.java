@@ -12,12 +12,26 @@ public class MethodRename extends FEReplacer {
         this.oldToNew = oldToNew;
     }
     
+    public String maybeSub(String s) {
+        if (s == null) {
+            return s;
+        }
+        if (oldToNew.containsKey(s)) {
+            return oldToNew.get(s);
+        } else {
+            return s;
+        }
+    }
+
     @Override
     public Object visitFunction(Function func)
     {
         Function rv = (Function) super.visitFunction(func);
-        if(oldToNew.containsKey(rv.getName())){
-            return rv.creator().name(oldToNew.get(rv.getName())).create();
+        String spec = rv.getSpecification();
+        if (oldToNew.containsKey(rv.getName()) ||
+                (spec != null && oldToNew.containsKey(spec)))
+        {
+            return rv.creator().name(maybeSub(rv.getName())).spec(maybeSub(spec)).create();
         }else{
             return rv;
         }        

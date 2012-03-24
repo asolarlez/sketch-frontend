@@ -2,6 +2,7 @@ package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -11,18 +12,22 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.GetAssignLHS;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * Takes numeric constants defined at the beginning of the program and
@@ -33,9 +38,54 @@ import sketch.compiler.passes.structure.GetAssignLHS;
  * @author liviu
  */
 public class ConstantReplacer extends FEReplacer {
+    static class ShadowStack {
+        final HashSet<String> shadow = new HashSet<String>();
+        final ShadowStack prev;
+
+        ShadowStack(ShadowStack prev) {
+            this.prev = prev;
+        }
+
+        ShadowStack push() {
+            ShadowStack s = new ShadowStack(this);
+            return s;
+        }
+
+        ShadowStack pop() {
+            return this.prev;
+        }
+
+        void add(String s) {
+            shadow.add(s);
+        }
+
+        boolean contains(String s) {
+            if (shadow.contains(s)) {
+                return true;
+            }
+            if (prev != null) {
+                return prev.contains(s);
+            }
+            return false;
+        }
+    }
+
+    ShadowStack shadows = new ShadowStack(null);
+
+    public void pushBlock() {
+        shadows = shadows.push();
+    }
+
+    public void popBlock() {
+        shadows = shadows.pop();
+    }
+
+    public void addShadow(String vname) {
+        shadows.add(vname);
+    }
 
     protected HashMap<String, Integer> constants;
-    protected HashSet<String> assignedVars;
+    protected HashSet<String> constVars;
 
 	public ConstantReplacer(Map<String, Integer> subs) {
 		constants=new HashMap<String,Integer>();
@@ -49,7 +99,7 @@ public class ConstantReplacer extends FEReplacer {
 		init=(Expression) init.accept(this);
 		if(init instanceof ExprConstInt) {
 			if(constants.get(name)!=null) return false;
-            if (assignedVars.contains(name)) {
+            if (!constVars.contains(name)) {
                 return false;
             }
 			constants.put(name,((ExprConstInt)init).getVal());
@@ -92,7 +142,7 @@ public class ConstantReplacer extends FEReplacer {
 		// TODO we should not be rewritign l-values right?  Add the code below?
 		// if (exp.isLValue()) return exp;
 		Integer val=constants.get(exp.getName());
-        if (val == null) {
+        if (val == null || shadows.contains(exp.getName())) {
             return exp;
         } else {
             return replaceConstantExpr(exp, val);
@@ -163,59 +213,149 @@ public class ConstantReplacer extends FEReplacer {
 	public Object visitFunction(Function func) {
 		//before visiting the body, we check to see if we need to
 		//make constant substitutions in array lengths
-		List<Parameter> params=new ArrayList<Parameter>(func.getParams());
-		boolean changed=false;
-		for(int i=0;i<params.size();i++) {
-			Parameter par=params.get(i);
-			if(par.getType() instanceof TypeArray) {
-				TypeArray arr=(TypeArray) par.getType();
-				Expression len=arr.getLength();
-				Expression newlen=(Expression) len.accept(this);
-				if(newlen!=len) {
-					params.set(i,new Parameter(new TypeArray(arr.getBase(),newlen),par.getName(), par.getPtype()));
-					changed=true;
-				}
-			}
-		}
-		if(changed)
-		    func = func.creator().params(params).create();
-		return super.visitFunction(func);
+        pushBlock();
+        try {
+            List<Parameter> params = new ArrayList<Parameter>(func.getParams());
+            boolean changed = false;
+            for (int i = 0; i < params.size(); i++) {
+                Parameter par = params.get(i);
+                if (par.getType() instanceof TypeArray) {
+                    TypeArray arr = (TypeArray) par.getType();
+                    Expression len = arr.getLength();
+                    Expression newlen = (Expression) len.accept(this);
+                    if (newlen != len) {
+                        params.set(i, new Parameter(new TypeArray(arr.getBase(), newlen),
+                                par.getName(), par.getPtype()));
+                        changed = true;
+                    }
+                }
+            }
+            if (changed)
+                func = func.creator().params(params).create();
+            return super.visitFunction(func);
+        } finally {
+            popBlock();
+        }
 	}
 
+    public Object visitParameter(Parameter par) {
+        addShadow(par.getName());
+        Object o = super.visitParameter(par);
+        return o;
+    }
+
 	public Object visitStmtVarDecl(StmtVarDecl stmt) {
-		List<Type> types=stmt.getTypes();
-		for(int i=0;i<types.size();i++) {
-			Type t=types.get(i);
-			if(t instanceof TypeArray) {
-				TypeArray arr=(TypeArray) t;
-				Expression len=arr.getLength();
-				Expression newlen=(Expression) len.accept(this);
-				if(newlen!=len) {
-					// TODO Is it legal to update an AST?  Don't we need to generate a new types List rather than set its elements?
-					types.set(i,new TypeArray(arr.getBase(),newlen));
-				}
-			}
-		}
-		return super.visitStmtVarDecl(stmt);
+        for (int i = 0; i < stmt.getNumVars(); ++i) {
+            addShadow(stmt.getName(i));
+        }
+        return super.visitStmtVarDecl(stmt);
 	}
+
+    public Object visitStmtBlock(StmtBlock sb) {
+        pushBlock();
+        try {
+            Object o = super.visitStmtBlock(sb);
+            return o;
+        } finally {
+            popBlock();
+        }
+    }
 
     @Override
     public Object visitProgram(Program prog) {
-        this.assignedVars = (new GetValDefs()).run(prog);
+        this.constVars = (new GetValDefs()).run(prog);
         return super.visitProgram(prog);
     }
 
     public static class GetValDefs extends ASTObjQuery<HashSet<String>> {
+        ShadowStack shadows = new ShadowStack(null);
+
+        public void pushBlock() {
+            shadows = shadows.push();
+        }
+
+        public void popBlock() {
+            shadows = shadows.pop();
+        }
+
+        public void addShadow(String vname) {
+            shadows.add(vname);
+        }
+
+
         public GetValDefs() {
             super(new HashSet<String>());
         }
 
+        public Object visitFieldDecl(FieldDecl fd) {
+            for (int i = 0; i < fd.getNumFields(); ++i) {
+                result.add(fd.getName(i));
+            }
+            return super.visitFieldDecl(fd);
+        }
+
+
         @Override
         public Object visitStmtAssign(StmtAssign stmt) {
             try {
-                result.add(stmt.getLhsBase().getName());
+                String nm = stmt.getLhsBase().getName();
+                if (!shadows.contains(nm)) {
+                    result.remove(nm);
+                }
             } catch (FEVisitorException e) {}
             return super.visitStmtAssign(stmt);
+        }
+
+        public Object visitStmtBlock(StmtBlock sb) {
+            pushBlock();
+            try {
+                Object o = super.visitStmtBlock(sb);
+                return o;
+            } finally {
+                popBlock();
+            }
+        }
+
+        public Object visitFunction(Function f) {
+            pushBlock();
+            try {
+                return super.visitFunction(f);
+            } finally {
+                popBlock();
+            }
+        }
+
+        public Object visitStmtVarDecl(StmtVarDecl svd) {
+            for (int i = 0; i < svd.getNumVars(); ++i) {
+                addShadow(svd.getName(i));
+            }
+            return super.visitStmtVarDecl(svd);
+        }
+
+        public Object visitParameter(Parameter par) {
+            addShadow(par.getName());
+            Object o = super.visitParameter(par);
+            return o;
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            Function f = this.getFuncNamed(efc.getName());
+            Iterator<Parameter> pit = f != null ? f.getParams().iterator() : null;
+            if (f != null && f.getParams().size() != efc.getParams().size()) {
+                throw new ExceptionAtNode("Wrong number of parameters", efc);
+            }
+            for (Expression e : efc.getParams()) {
+                Parameter p = f != null ? pit.next() : null;
+                if (f == null || p.isParameterOutput()) {
+                    if (e instanceof ExprVar || e instanceof ExprArrayRange) {
+                        String nm = e.accept(new GetAssignLHS()).getName();
+                        if (!shadows.contains(nm)) {
+                            result.remove(nm);
+                        }
+                    }
+                }
+            }
+            return super.visitExprFunCall(efc);
         }
 
         @Override
@@ -225,7 +365,10 @@ public class ConstantReplacer extends FEReplacer {
                 case ExprUnary.UNOP_POSTINC:
                 case ExprUnary.UNOP_PREDEC:
                 case ExprUnary.UNOP_PREINC:
-                    result.add(exp.getExpr().accept(new GetAssignLHS()).getName());
+                    String nm = exp.getExpr().accept(new GetAssignLHS()).getName();
+                    if (!shadows.contains(nm)) {
+                        result.remove(nm);
+                    }
             }
             return super.visitExprUnary(exp);
         }

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import sketch.compiler.Directive;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
-import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 import static sketch.util.DebugOut.printWarning;
 
@@ -86,6 +85,15 @@ public class Program extends FENode
         List<StreamSpec> streams = new java.util.ArrayList<StreamSpec>();
         Set<Directive> directives = new HashSet<Directive>();
         return new Program(null, streams, directives);
+    }
+
+    public boolean hasFunctions() {
+        for (StreamSpec s : streams) {
+            if (s.getFuncs().size() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Creates a new StreamIt program, given lists of streams and

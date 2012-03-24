@@ -139,13 +139,14 @@ public interface StreamItParserFETokenTypes {
 	int NDVAL = 99;
 	int NDVAL2 = 100;
 	int SELECT = 101;
-	int REGEN = 102;
-	int CHAR_LITERAL = 103;
-	int STRING_LITERAL = 104;
-	int ESC = 105;
-	int DIGIT = 106;
-	int HQUAN = 107;
-	int NUMBER = 108;
-	int ID = 109;
-	int TK_pi = 110;
+	int AT = 102;
+	int REGEN = 103;
+	int CHAR_LITERAL = 104;
+	int STRING_LITERAL = 105;
+	int ESC = 106;
+	int DIGIT = 107;
+	int HQUAN = 108;
+	int NUMBER = 109;
+	int ID = 110;
+	int TK_pi = 111;
 }

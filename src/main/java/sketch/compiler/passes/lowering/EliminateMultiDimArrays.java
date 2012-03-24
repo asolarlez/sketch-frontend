@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
@@ -186,6 +187,12 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
 		Expression idx = ExprConstant.createConstant (ear, "0");
 		for (RangeLen rl : indices) {
+            Expression cond =
+                    new ExprBinary(new ExprBinary(rl.start(), ">=", ExprConstInt.zero),
+                            "&&", new ExprBinary(rl.start(), "<",
+                                    dims.get(dims.size() - 1)));
+            addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
+                    false));
 			dims.remove (dims.size ()-1);
 			idx = new ExprBinary (idx, ExprBinary.BINOP_ADD,
 					idx,
@@ -257,3 +264,4 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 		return true;
 	}
 }
+

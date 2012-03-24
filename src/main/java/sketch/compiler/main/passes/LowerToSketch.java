@@ -22,8 +22,7 @@ public class LowerToSketch extends MetaStage {
     @Override
     public Program visitProgramInner(Program prog) {
 
-
-
+        prog = (Program) prog.accept(new AddArraySizeAssertions());
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 
@@ -51,7 +50,7 @@ public class LowerToSketch extends MetaStage {
         // prog = (Program)prog.accept(new NoRefTypes());
 
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
-        // dump (prog, "ScalarizeVectorAssns");
+
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         // By default, we don't protect array accesses in SKETCH
 
