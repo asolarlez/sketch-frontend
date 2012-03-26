@@ -12,10 +12,11 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import sketch.compiler.main.cmdline.SketchOptions;
-import sketch.util.DebugOut;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
+import static sketch.util.DebugOut.printError;
+import static sketch.util.DebugOut.printWarning;
 
 /**
  * get any variables related to this specific compile, e.g. version number, and resolve
@@ -60,10 +61,21 @@ public class PlatformLocalization {
                     osname = localization.getProperty("osname");
                     osarch = localization.getProperty("osarch");
                     isSet = true;
+                    if (SketchOptions.getSingleton() == null ||
+                            SketchOptions.getSingleton().debugOpts.verbosity > 3)
+                    {
+                        printDebug("SKETCH version", version, "; detected OS", osname,
+                                osarch);
+                    }
+                } else {
+                    printWarning("couldn't read SKETCH info from localization file");
                 }
+            } else {
+                printWarning("SKETCH localization file doesn't exist! "
+                        + "You may have to specify the CEGIS path (try '-h')");
             }
         } catch (IOException e) {
-            System.err.println("error retriving localization properties");
+            printError("error retriving localization properties");
         }
         usersketchdir = md(path(System.getProperty("user.home"), ".sketch"));
         tmpdir = md(path(usersketchdir, "tmp"));
@@ -86,34 +98,27 @@ public class PlatformLocalization {
 
     public File load_from_jar(String cegisName) {
         try {
-            extract_resource(".libs/libcegis.so.0");
-            extract_resource(".libs/cegis");
-            return extract_resource("cegis");
+            URL rc_url = getCompilerRc(cegisName);
+            if (rc_url != null) {
+                InputStream fileIn = getCompilerRc(cegisName).openStream();
+                if (fileIn.available() > 0) {
+                    return loadTempFile(fileIn, cegisName);
+                }
+            }
         } catch (IOException e) {}
         return null;
     }
 
-    public File extract_resource(String name) throws IOException {
-        URL rc_url = getCompilerRc(name);
-        if (rc_url != null) {
-            InputStream fileIn = rc_url.openStream();
-            if (fileIn != null && fileIn.available() > 0) {
-                File loadedTempFile = loadTempFile(fileIn, name);
-                if (loadedTempFile != null) {
-                    return loadedTempFile;
-                }
-            }
-        }
-        DebugOut.printWarning("failed to extract resource", name);
-        throw new IOException("couldn't extract resource");
-    }
-
     public String getCegisPath() {
         SketchOptions options = SketchOptions.getSingleton();
-        if (options.solverOpts.useScripting) {
-            return getCegisPathInner("cegis.py");
+        if (options.feOpts.cegisPath != null) {
+            return options.feOpts.cegisPath;
         } else {
-            return getCegisPathInner("cegis");
+            if (options.solverOpts.useScripting) {
+                return getCegisPathInner("hscegis");
+            } else {
+                return getCegisPathInner("cegis");
+            }
         }
     }
 
@@ -198,6 +203,9 @@ public class PlatformLocalization {
             SketchOptions options = SketchOptions.getSingleton();
             for (File[] lst : paths) {
                 for (File file : lst) {
+                    if (options.debugOpts.verbosity > 5) {
+                        System.out.println("searching for file " + file);
+                    }
                     if (file != null && file.isFile()) {
                         try {
                             if (options.debugOpts.verbosity > 2) {
@@ -226,6 +234,7 @@ public class PlatformLocalization {
             vec.add(path(pathDir, "src", "SketchSolver", this.name));
             vec.add(path(pathDir, "..", "sketch-backend", "src", "SketchSolver",
                     this.name));
+            vec.add(path(pathDir, "..", "sketch-backend", "bindings", this.name));
         }
 
         @Override
@@ -236,7 +245,7 @@ public class PlatformLocalization {
         @Override
         public File[] searchDefaultPaths() {
             return fromDefaultPaths("cegis/src/SketchSolver",
-                    "../sketch-backend/src/SketchSolver");
+                    "../sketch-backend/src/SketchSolver", "../sketch-backend/bindings");
         }
     }
 
@@ -263,12 +272,10 @@ public class PlatformLocalization {
     }
 
     public String getCegisPathInner(String name) {
-        SketchOptions options = SketchOptions.getSingleton();
-        if (options.feOpts.cegisPath != null) {
-            return (new ResolveFromPATH(name, path(options.feOpts.cegisPath))).resolve();
-        } else {
-            return (new ResolveFromPATH(name)).resolve();
+        if (isWin()) {
+            name = name + ".exe";
         }
+        return (new ResolveFromPATH(name)).resolve();
     }
 
     /** make directories if they don't already exist, return $dirname$ or null */
@@ -306,11 +313,7 @@ public class PlatformLocalization {
 
     protected File loadTempFile(InputStream fileIn, String cegisName) {
         // try to extract it to the operating system temporary directory
-        File path = path(tmpdir, cegisName);
-        File parentFile = path.getParentFile();
-        if (md(parentFile) == null) {
-            DebugOut.printError("failed to create directory", parentFile);
-        }
+        File path = new File(tmpdir, cegisName);
         String canonicalName = null;
         try {
             canonicalName = path.getCanonicalPath();
@@ -341,8 +344,13 @@ public class PlatformLocalization {
 
     // misc functions
     public URL getCompilerRc(String name) {
-        return getClass().getClassLoader().getResource(
-                "sketch/compiler/resources/" + name);
+        ClassLoader cl = getClass().getClassLoader();
+        URL defPath = cl.getResource("sketch/compiler/" + name);
+        if (defPath == null || !path(defPath.getPath()).exists()) {
+            return cl.getResource("sketch/compiler/resources/" + name);
+        } else {
+            return defPath;
+        }
     }
 
     public boolean platformMatchesJava() {

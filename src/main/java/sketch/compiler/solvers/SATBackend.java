@@ -32,8 +32,10 @@ import sketch.util.SynchronousTimedProcess;
 import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
 import sketch.util.exceptions.SketchSolverException;
+import sketch.util.wrapper.ScRichString;
 
 import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
@@ -67,7 +69,12 @@ public class SATBackend {
         commandLineOptions.add(options.getSolutionsString());
         commandLineOptions.addAll(Arrays.asList(additional));
         commandLineOptions.add(options.getTmpSketchFilename());
-        return commandLineOptions.toArray(new String[0]);
+        String[] result = commandLineOptions.toArray(new String[0]);
+        if (options.debugOpts.verbosity > 4) {
+            String cmdLine = (new ScRichString(" ")).join(result);
+            printDebug("executing", cmdLine);
+        }
+        return result;
     }
 
     protected void partialEval(Program prog, OutputStream outStream) {
