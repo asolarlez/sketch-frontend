@@ -600,10 +600,26 @@ left_expr returns [Expression x] { x = null; }
 	/*|   r:REGEN
         { x = new ExprRegen (getContext (r), r.getText ()); } 
         */
-
-right_expr returns [Expression x] { x = null; }
+        
+right_expr_not_agmax returns [Expression x] { x = null; }
 	:	x=ternaryExpr	
 	;
+right_expr returns [Expression x] { x = null; }
+	:	x=right_expr_not_agmax
+	|   x=agmax_expr
+	;
+
+agmax_expr returns [Expression x] { x = null; Expression exprMax = null; }
+ 	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)? (AT exprMax=right_expr_not_agmax)?
+    	{
+    		if (n != null) {
+    			x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), true, exprMax);
+    		} else {
+    			x = new ExprStar(getContext(t), true, exprMax);
+    		}
+    	} 
+	;
+
 
 var_initializer returns [Expression x] { x = null; }
 : (arr_initializer) => x=arr_initializer
@@ -879,17 +895,9 @@ constantExpr returns [Expression x] { x = null; }
             	}else{
             	  x = new ExprStar(getContext(t2)); 
             	}
-            }   
-    |	t3:NDANGELIC (LPAREN n3:NUMBER RPAREN)?
-    	{
-    		if (n3 != null) {
-    			x = new ExprStar(getContext(t3), Integer.parseInt(n3.getText()), true);
-    		} else {
-    			x = new ExprStar(getContext(t3), true);
-    		}
-    	} 
-	;
-
+            }
+    ;
+ 
 struct_decl returns [TypeStruct ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	List types = new ArrayList(); }

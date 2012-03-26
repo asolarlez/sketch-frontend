@@ -1,0 +1,21 @@
+generator int g(int x)
+{
+    int y = **;
+    assert_max y<x;
+    return y;
+}
+
+int f(int x)
+{
+    int y = g(x);
+    assert y > 6;
+    return y;
+}
+
+harness void main()
+{
+    int x = ??;
+    int yy = f(x);
+    assert yy < 8 : "yy must be smaller than 8!";
+}
+

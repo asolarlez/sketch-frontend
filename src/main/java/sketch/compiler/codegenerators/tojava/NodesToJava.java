@@ -842,7 +842,7 @@ public class NodesToJava extends SymbolTableVisitor
 	public Object visitExprStar(ExprStar star) {
 		//throw new UnsupportedOperationException();
         assert star.isAngelicMax() : "all normal stars should have been eliminated!";
-        return star.toJava();
+        return star.toCode();
 	}
 
 	public Object visitStmtFork(StmtFork loop){

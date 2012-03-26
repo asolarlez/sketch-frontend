@@ -49,6 +49,7 @@ public class ExprStar extends Expression
     private static String ANGJ_BASE = "AH__";
 	
     private boolean angelicMax = false;
+    private Expression exprMax = null;
 
 	public String getSname(){ return starName; }
 	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
@@ -64,6 +65,7 @@ public class ExprStar extends Expression
         vectorSize = old.vectorSize;
         this.starName = old.starName;
         this.angelicMax = old.angelicMax;
+        this.exprMax = old.exprMax;
         // TODO: add tests with repeat and generators
     }
 
@@ -80,12 +82,17 @@ public class ExprStar extends Expression
     /** Create a new ExprConstInt with a specified value.
      * @deprecated
      */
-    public ExprStar(FEContext context, boolean isAngelicMax)
+    public ExprStar(FEContext context, boolean isAngelicMax) {
+        this(context, isAngelicMax, (Expression) null);
+    }
+
+    public ExprStar(FEContext context, boolean isAngelicMax, Expression max)
     {
         super(context);
         size = 1;
         isFixed = false;
         this.angelicMax = isAngelicMax;
+        this.exprMax = max;
         this.starName = (isAngelicMax ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
     }
 
@@ -107,12 +114,17 @@ public class ExprStar extends Expression
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size, boolean isAngelicMax)
+    public ExprStar(FEContext context, int size, boolean isAngelicMax) {
+        this(context, size, false, null);
+    }
+    
+    public ExprStar(FEContext context, int size, boolean isAngelicMax, Expression max)
     {
         super(context);
         isFixed = true;
         this.size = size;
         this.angelicMax = isAngelicMax;
+        this.exprMax = max;
         this.starName = (isAngelicMax ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
     }
 
@@ -129,6 +141,14 @@ public class ExprStar extends Expression
     public ExprStar(FENode context, int size, Type typ) {
         this(context, size);
         this.setType(typ);
+    }
+
+    public ExprStar createWithExprMax(Expression max) {
+        if (isFixed) {
+            return new ExprStar(this.getCx(), size, true, max);
+        } else {
+            return new ExprStar(this.getCx(), true, max);
+        }
     }
 
 	public FENode getDepObject(int i){
@@ -170,12 +190,25 @@ public class ExprStar extends Expression
         return true; */
     }
 
+    private String detailName() {
+        if (isAngelicMax()) {
+            return "**/*" + getSname() + (exprMax == null ? "" : "@" + exprMax) + "*/";
+        } else {
+            return "??" + "/*" + getSname() + "*/";
+        }
+    }
+
+    public Object toCode() {
+        assert isAngelicMax() : "only AGMAX stars can be generated to java!";
+        return detailName();
+    }
+
     public String toString()
     {
-        String head = angelicMax ? "**" : "??";
-    	if(getType() != null)
-            return head + "/*" + this.getSname() + "*/" + getType() + ":" + size;
-        return head + "/*" + this.getSname() + "*/";
+        if (getType() != null) {
+            return detailName() + getType() + ":" + size;
+        }
+        return detailName();
     }
 
 	/**
@@ -232,9 +265,7 @@ public class ExprStar extends Expression
         return angelicMax;
     }
 
-    public Object toJava() {
-        assert isAngelicMax() : "only AGMAX stars can be generated to java!";
-        return "**" + "/*" + this.getSname() + "*/";
+    public Expression getExprMax() {
+        return exprMax;
     }
-
 }

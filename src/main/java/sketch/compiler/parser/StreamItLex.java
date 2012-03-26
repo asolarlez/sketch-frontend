@@ -186,6 +186,12 @@ tryAgain:
 					theRetToken=_returnToken;
 					break;
 				}
+				case '@':
+				{
+					mAT(true);
+					theRetToken=_returnToken;
+					break;
+				}
 				case '\'':
 				{
 					mCHAR_LITERAL(true);
@@ -566,34 +572,34 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt86=0;
-		_loop86:
+		int _cnt87=0;
+		_loop87:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt86>=1 ) { break _loop86; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt87>=1 ) { break _loop87; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt86++;
+			_cnt87++;
 		} while (true);
 		}
 		{
 		if ((LA(1)=='.')) {
 			mDOT(false);
 			{
-			int _cnt89=0;
-			_loop89:
+			int _cnt90=0;
+			_loop90:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt89>=1 ) { break _loop89; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt90>=1 ) { break _loop90; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt89++;
+				_cnt90++;
 			} while (true);
 			}
 		}
@@ -646,17 +652,17 @@ tryAgain:
 			}
 			}
 			{
-			int _cnt94=0;
-			_loop94:
+			int _cnt95=0;
+			_loop95:
 			do {
 				if (((LA(1) >= '0' && LA(1) <= '9'))) {
 					mDIGIT(false);
 				}
 				else {
-					if ( _cnt94>=1 ) { break _loop94; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+					if ( _cnt95>=1 ) { break _loop95; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
 				
-				_cnt94++;
+				_cnt95++;
 			} while (true);
 			}
 		}
@@ -686,7 +692,7 @@ tryAgain:
 		
 		match('"');
 		{
-		_loop73:
+		_loop74:
 		do {
 			if ((LA(1)=='\\')) {
 				mESC(false);
@@ -695,7 +701,7 @@ tryAgain:
 				matchNot('"');
 			}
 			else {
-				break _loop73;
+				break _loop74;
 			}
 			
 		} while (true);
@@ -1338,6 +1344,19 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
+	public final void mAT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = AT;
+		int _saveIndex;
+		
+		match("@");
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
 	public final void mSELECT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = SELECT;
@@ -1362,12 +1381,12 @@ tryAgain:
 		match(_tokenSet_0);
 		}
 		{
-		_loop68:
+		_loop69:
 		do {
-			boolean synPredMatched66 = false;
+			boolean synPredMatched67 = false;
 			if (((LA(1)=='{') && (LA(2)=='|') && ((LA(3) >= '\u0003' && LA(3) <= '\u00ff')) && ((LA(4) >= '\u0003' && LA(4) <= '\u00ff')))) {
-				int _m66 = mark();
-				synPredMatched66 = true;
+				int _m67 = mark();
+				synPredMatched67 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1375,12 +1394,12 @@ tryAgain:
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched66 = false;
+					synPredMatched67 = false;
 				}
-				rewind(_m66);
+				rewind(_m67);
 inputState.guessing--;
 			}
-			if ( synPredMatched66 ) {
+			if ( synPredMatched67 ) {
 				match("{|");
 				if ( inputState.guessing==0 ) {
 					open++;
@@ -1410,7 +1429,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop68;
+				break _loop69;
 			}
 			
 		} while (true);
@@ -1573,8 +1592,8 @@ inputState.guessing--;
 		
 		match("0x");
 		{
-		int _cnt83=0;
-		_loop83:
+		int _cnt84=0;
+		_loop84:
 		do {
 			switch ( LA(1)) {
 			case '0':  case '1':  case '2':  case '3':
@@ -1648,10 +1667,10 @@ inputState.guessing--;
 			}
 			default:
 			{
-				if ( _cnt83>=1 ) { break _loop83; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt84>=1 ) { break _loop84; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt83++;
+			_cnt84++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -1702,7 +1721,7 @@ inputState.guessing--;
 		}
 		}
 		{
-		_loop99:
+		_loop100:
 		do {
 			switch ( LA(1)) {
 			case 'a':  case 'b':  case 'c':  case 'd':
@@ -1741,7 +1760,7 @@ inputState.guessing--;
 			}
 			default:
 			{
-				break _loop99;
+				break _loop100;
 			}
 			}
 		} while (true);

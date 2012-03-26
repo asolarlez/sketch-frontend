@@ -34,7 +34,7 @@ import sketch.util.datastructures.TprintTuple;
 class CloneHoles extends FEReplacer{
     
     public Object visitExprStar(ExprStar es){
-        ExprStar newStar = new ExprStar(es);
+        ExprStar newStar = new ExprStar((ExprStar) super.visitExprStar(es));
         es.renewName();
         return newStar;
     }

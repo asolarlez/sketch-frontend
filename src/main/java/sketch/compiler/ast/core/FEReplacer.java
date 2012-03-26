@@ -780,6 +780,12 @@ public class FEReplacer implements FEVisitor
 	            s.setType(t);	           
 	        }
 	    }*/
+        if (star.getExprMax() != null) {
+            Expression newMax = doExpression(star.getExprMax());
+            if (newMax != star.getExprMax()) {
+                return star.createWithExprMax(newMax);
+            }
+        }
 		return star;
 	}
 

@@ -107,13 +107,14 @@ public interface StreamItLexTokenTypes {
 	int NDVAL = 101;
 	int NDVAL2 = 102;
 	int NDANGELIC = 103;
-	int SELECT = 104;
-	int REGEN = 105;
-	int CHAR_LITERAL = 106;
-	int STRING_LITERAL = 107;
-	int ESC = 108;
-	int DIGIT = 109;
-	int HQUAN = 110;
-	int NUMBER = 111;
-	int ID = 112;
+	int AT = 104;
+	int SELECT = 105;
+	int REGEN = 106;
+	int CHAR_LITERAL = 107;
+	int STRING_LITERAL = 108;
+	int ESC = 109;
+	int DIGIT = 110;
+	int HQUAN = 111;
+	int NUMBER = 112;
+	int ID = 113;
 }

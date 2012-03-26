@@ -357,7 +357,7 @@ public class EliminateRegens extends SymbolTableVisitor {
 
         public Object visitExprStar (ExprStar exp) {
             List<Expression> exps = new ArrayList<Expression> ();
-            exps.add (exp);
+            exps.add((ExprStar) super.visitExprStar(exp));
             return exps;
         }
 
