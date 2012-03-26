@@ -532,10 +532,18 @@ public class SequentialSketchMain extends CommonSketchMain
         } catch (java.lang.Error e) {
             ErrorHandling.handleErr(e);
             // necessary for unit tests, etc.
-            throw e;
+            if (isTest) {
+                throw e;
+            } else {
+                System.exit(1);
+            }
         } catch (RuntimeException e) {
             ErrorHandling.handleErr(e);
-            throw e;
+            if (isTest) {
+                throw e;
+            } else {
+                System.exit(1);
+            }
         }
         System.out.println("Total time = " + (System.currentTimeMillis() - beg));
     }
