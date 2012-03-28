@@ -345,6 +345,7 @@ public class NodesToSuperCTest extends NodesToJava {
         addIndent();
         for (int i = 0; i < inPars.size(); i++) {
             Type inType = inPars.get(i).getType();
+            _converter.visitParameter(inPars.get(i));
             declareVar(inPars.get(i).getName(), inType);
             initVar(inPars.get(i).getName(), inType, true);
         }

@@ -585,29 +585,33 @@ public class NodesToSuperCpp extends NodesToJava {
         return result;
     }
 
+    public Object visitParameter(Parameter param) {
+        Type type = param.getType();
+        if (symtab != null) {
+            symtab.registerVar(escapeCName(param.getName()), actualType(param.getType()),
+                    param, SymbolTable.KIND_FUNC_PARAM);
+        }
+        String result = typeForParam(type, param.isParameterOutput());
+        result += " ";
+        result += escapeCName(param.getName());
+        if (param.getType() instanceof TypeArray) {
+            TypeArray ta = (TypeArray) param.getType();
+            result += "/* len = " + ta.getLength().accept(this) + " */";
+        }
+        return result;
+    }
+
     public String doParams(List params, String prefix) {
         String result = "(";
         boolean first = true;
         for (Iterator iter = params.iterator(); iter.hasNext();) {
             Parameter param = (Parameter) iter.next();
-            Type type = param.getType();
-
-            if (symtab != null) {
-                symtab.registerVar(escapeCName(param.getName()),
-                        actualType(param.getType()), param, SymbolTable.KIND_FUNC_PARAM);
-            }
 
             if (!first)
                 result += ", ";
             if (prefix != null)
                 result += prefix + " ";
-            result += typeForParam(type, param.isParameterOutput());
-            result += " ";
-            result += escapeCName(param.getName());
-            if (param.getType() instanceof TypeArray) {
-                TypeArray ta = (TypeArray) param.getType();
-                result += "/* len = " + ta.getLength().accept(this) + " */";
-            }
+            result += (String) param.accept(this);
             first = false;
         }
         result += ")";
