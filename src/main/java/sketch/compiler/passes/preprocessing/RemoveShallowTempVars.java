@@ -11,7 +11,10 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -27,6 +30,16 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
  */
 public class RemoveShallowTempVars extends FEReplacer {
     
+
+    final int Kcount;
+
+    public RemoveShallowTempVars() {
+        this.Kcount = 1;
+    }
+
+    public RemoveShallowTempVars(int Kcount) {
+        this.Kcount = Kcount;
+    }
 
     class IsSimpleExpr extends FEReplacer{
         boolean isSimple = true;
@@ -87,10 +100,15 @@ public class RemoveShallowTempVars extends FEReplacer {
      * @author asolar
      */
     class MarkShallowTemps extends FEReplacer{
+        final int Kcount;
         Map<String, Boolean> isShallow = new HashMap<String, Boolean>();
         Map<String, String> dependsOn = new HashMap<String, String>();
         Map<String, Integer> useCount = new HashMap<String, Integer>();
         Map<String, Expression> vals = new HashMap<String, Expression>();
+
+        public MarkShallowTemps(int Kcount) {
+            this.Kcount = Kcount;
+        }
         boolean shallow(String name){
             if(isShallow.containsKey(name)){
                 return isShallow.get(name);
@@ -112,7 +130,7 @@ public class RemoveShallowTempVars extends FEReplacer {
                             }
                         });
                         if (isBig(svd.getInit(i))) {
-                            useCount.put(name, 1);
+                            useCount.put(name, Kcount);
                         }
                     }else{
                         isShallow.put(name, false);
@@ -190,7 +208,7 @@ public class RemoveShallowTempVars extends FEReplacer {
     MarkShallowTemps mst;
     
     public Object visitFunction(Function f){
-        mst = new MarkShallowTemps();
+        mst = new MarkShallowTemps(Kcount);
         f.accept(mst);
         return super.visitFunction(f);
     }
@@ -204,6 +222,30 @@ public class RemoveShallowTempVars extends FEReplacer {
         }
     }
     
+    public Object visitStmtIfThen(StmtIfThen stmt) {
+        Expression newCond = doExpression(stmt.getCond());
+        Statement newCons =
+                stmt.getCons() == null ? null : (Statement) stmt.getCons().accept(this);
+        Statement newAlt =
+                stmt.getAlt() == null ? null : (Statement) stmt.getAlt().accept(this);
+        Integer cval = newCond.getIValue();
+        if (cval != null) {
+            if (cval == 1) {
+                return newCons;
+            } else {
+                return newAlt;
+            }
+        }
+        if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
+                newAlt == stmt.getAlt())
+            return stmt;
+        if (newCons == null && newAlt == null) {
+            return new StmtExpr(stmt, newCond);
+        }
+
+        return new StmtIfThen(stmt, newCond, newCons, newAlt);
+    }
+
     public Object visitStmtVarDecl(StmtVarDecl stmt){
         List<Expression> newInits = new ArrayList<Expression>();
         List<Type> newTypes = new ArrayList<Type>();

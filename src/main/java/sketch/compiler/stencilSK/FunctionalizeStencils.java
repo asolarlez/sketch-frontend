@@ -35,7 +35,6 @@ import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -454,7 +453,7 @@ public class FunctionalizeStencils extends FEReplacer {
             f = (Function) f.accept(new EliminateReturns());
             f = ((Function) f.accept(v23));
             f = ((Function) f.accept(v24));
-            f = ((Function) f.accept(new RemoveShallowTempVars()));
+            f = ((Function) f.accept(new RemoveShallowTempVars(20)));
 	        	f = ((Function)f.accept(v01));
 
 	        	f = ((Function)f.accept(v1));
@@ -479,7 +478,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-            f.accept(new SimpleCodePrinter());
+            // f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }

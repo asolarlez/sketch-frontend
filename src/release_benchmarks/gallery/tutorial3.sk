@@ -1,15 +1,10 @@
 //@Description Toy benchmarks to show complex recursive generators.
 
-int spec( int x, int y, int z ){
-   return (x + x) * (y - z);
-}
-
 generator int rec(int x, int y, int z){ /* automatically rewritten */
    int t = ??;
    if(t == 0){
      return x;
-   }
-
+   }   
    if(t == 1){
      return y;
    }
@@ -17,20 +12,22 @@ generator int rec(int x, int y, int z){ /* automatically rewritten */
    if(t == 2){
      return z;
    }
+   int a = rec(x,y,z);
+   int b = rec(x,y,z);
 
    if(t == 3){
-     return rec(x,y,z) * rec(x,y,z);
+     return a * b;
    }
 
    if(t == 4){
-     return rec(x,y,z) + rec(x,y,z);
+     return a + b;
    } 
    
    if(t == 5){
-     return rec(x,y,z) - rec(x,y,z);
+     return a - b;
    }   
 }
 
-int sketch( int x, int y, int z ) implements spec{
-   return rec(x,y, z);
+harness void sketch( int x, int y, int z ){
+   assert rec(x,y, z) == (x + x) * (y - z);
 }

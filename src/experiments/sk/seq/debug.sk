@@ -1,17 +1,49 @@
-pragma options "--bnd-inbits 5 --bnd-inline-amnt 32";
+pragma options "-p lowering --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8 --bnd-inline-amnt 9 --beopt:-bndwrand 50  --bnd-arr-size 8 --beopt:simplifycex NOSIM";
+include "generators.skh";
 
-int multSpec(int n, int m) {
-     if (m == 0) {
-              return 0;
-      } else {
-               return n + multSpec(n, m - 1);
-      }
+
+stencil int[N][T] cacheObv1d(int N, int T, int[N] in, int[N][T] f){
+
+    int[N][T] out = 0;
+    
+    for(int i=0; i<N; ++i){
+        out[0][i] = in[i];
+    }
+    
+    for(int t=1; t<T; ++t){
+        out[t][0] = 0;
+        out[t][N-1] = 0;
+        for(int i=1; i<N-1; ++i){
+            out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
+        }   
+    }
+    return out; 
 }
 
-int mult(int n, int m) implements multSpec{
-      if (m == 0) {
-              return ??;
-      } else {
-              return n + mult(n, m - ??);
-      }
+generator void stenGen(fun sten, int N, int T){
+    repeat(3){
+        for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){            
+            for(int t= (??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); t<(??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); ++t){
+                assert t> 0 && t < T; assert i-t > 0 && i-t < N;
+                sten(t, i-t);                
+            }
+        }  
+    }
+}
+
+
+stencil int[N][T] cacheObv1dSK(int N, int T, int[N] in, int[N][T] f) implements cacheObv1d{ 
+    int[N][T] fifo = 0;
+    if(N>=3&& T >= 3 && N > T){
+        for(int i=0; i<N; ++i){
+            fifo[0][i] = in[i];
+        }
+        generator void sten(int t, int i){
+            fifo[t][i] = fifo[t-1][i-1] + fifo[t-1][i+1] + f[t][i];
+        }
+        stenGen(sten, N, T);
+    }else{
+        fifo = cacheObv1d(N, T, in, f);
+    }
+    return fifo; 
 }

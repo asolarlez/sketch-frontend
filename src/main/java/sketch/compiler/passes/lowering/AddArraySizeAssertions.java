@@ -36,6 +36,9 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
             Integer illen = la.getLength().getIValue();
             Integer irlen = rlen.getIValue();
             if (illen == null || irlen == null) {
+                if (la.getLength().equals(rlen)) {
+                    return;
+                }
                 Expression e;
                 if (isUnivariant) {
                     e = new ExprBinary(la.getLength(), "==", rlen);
