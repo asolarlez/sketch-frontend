@@ -39,11 +39,14 @@ public class NtsbVtype extends IntVtype {
     
     protected Map<FENode, NtsbValue> memoizedValues = new HashMap<FENode, NtsbValue>();
     
-    public abstractValue STAR(FENode node){     
-        if(oracle.allowMemoization()){ 
-            if(memoizedValues.containsKey(node)){ 
-                abstractValue val = memoizedValues.get(node);   
-                return val; 
+    public abstractValue STAR(FENode node) {
+        // TODO: do we guarantee each node is visited just once?
+        // if we do, why memoization?
+        // TODO xzl TODO
+        if (oracle.allowMemoization()) {
+            if (memoizedValues.containsKey(node)) {
+                abstractValue val = memoizedValues.get(node);
+                return val;
             }
         }
         if(node instanceof ExprStar){
@@ -130,7 +133,7 @@ public class NtsbVtype extends IntVtype {
                  return;
              }
          }
-        out.print((stmt.isAssertMax() ? "assert_max (" : "assert (") + val + ") : \"" +
+        out.print(stmt.getAssertSymbol() + " (" + val + ") : \"" +
                 msg + "\" ;\n");
     }
     

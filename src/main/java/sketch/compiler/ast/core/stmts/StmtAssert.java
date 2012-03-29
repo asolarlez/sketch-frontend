@@ -84,19 +84,30 @@ public class StmtAssert extends Statement
     
     private int superA = NORMAL;
 
-    private boolean isMax;
+    // isMax = 1: normal assertMax
+    // isMax = 2: assertMax, but doesn't create a new group of agmax
+    private int isMax;
  
     
     public int isSuper(){
         return superA;
     }
     
-    public boolean isAssertMax() {
+    public int getAssertMax() {
         return isMax;
     }
     
-    
-    
+    public String getAssertSymbol() {
+        switch (isMax) {
+            case 1:
+                return "assert_max";
+            case 2:
+                return "assert_max\\";
+            default:
+                return "assert";
+        }
+    }
+
     /** Creates a new assert statement with the specified conditional. */
     public StmtAssert(FENode context, Expression cond, boolean isSuper)
     {
@@ -134,20 +145,20 @@ public class StmtAssert extends Statement
     }
     
     public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper) {
-        this(context.getCx(), cond, msg, (isSuper ? 1 : 0), false);
+        this(context.getCx(), cond, msg, (isSuper ? 1 : 0), 0);
     }
 
     public static StmtAssert createAssertMax(FEContext context, Expression cond,
-            String msg)
+            String msg, boolean defer)
     {
-        return new StmtAssert(context, cond, msg, 0, true);
+        return new StmtAssert(context, cond, msg, 0, (defer ? 2 : 1));
     }
 
     /**
      *
      */
     public StmtAssert(FEContext context, Expression cond, String msg, int isSuper,
-            boolean isMax)
+            int isMax)
     {
         super(context);
         this.cond = cond;
@@ -157,7 +168,7 @@ public class StmtAssert extends Statement
     }
     
     public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
-            boolean isMax)
+            int isMax)
     {
         this(context.getCx(), cond, msg, isSuper, isMax);
     }
@@ -195,7 +206,7 @@ public class StmtAssert extends Statement
 
     /** Output to string. */
     public String toString () {
-        String result = (isMax ? "assert_max" : "assert") + " (" + this.cond + ")";
+        String result = getAssertSymbol() + " (" + this.cond + ")";
 
         /*
          * XXX/cgjones: this is being cut out because asserts need to be

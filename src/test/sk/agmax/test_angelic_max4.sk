@@ -1,16 +1,43 @@
 int f(int c, int in)
 {
-    int y = **@(in+8);
-    assert_max y<c+in+5 : "y must be smaller than c+in!";
-    return y;
+	int x = **;
+	assert_max\ x<c;
+    int y = **;
+    assert_max (x==0 && y==0) ||
+    x<c && y<=in+x && y>=in && y%3!=0 && (y+x)%3!=0;
+    return x+y;
 }
 
 harness void main(int in)
 {
-	if (in>0) {
+	// TODO agmax cannot exceed 31. how to be more flexible?
+	if (in < 28) {
 		int c = ??;
-		int yy = f(c, in);
-		assert yy < in+5 : "yy must be smaller than in!";
+		int s = f(c, in);
+		assert s>in+1 && s<=in+4;
 	}
 }
+
+/*
+c = 3
+x: 0 1 2
+y: in, in+1, in+2
+y%3 != 0 && (x+y)%3 != 0
+in = 0: x=2 y=in+2
+in = 1: x=2 y=in+1
+in = 2: x=2 y=in
+
+c = 2
+x: 0 1
+y: in, in+1
+y%3 != 0 && (x+y) %3 != 0
+
+in = 0: x=1 y=in+1
+in = 1: x=1 y=in
+in = 2: x=0 y=in
+
+c = 1
+x: 0
+y: in
+*/
 

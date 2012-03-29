@@ -746,7 +746,7 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitStmtAssert(StmtAssert stmt)
     {
-        return (stmt.isAssertMax() ? "assert_max (" : "assert (") +
+        return stmt.getAssertSymbol() + " (" +
                 (String) stmt.getCond().accept(this) + ")";
     }
 

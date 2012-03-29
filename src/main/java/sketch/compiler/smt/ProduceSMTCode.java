@@ -344,7 +344,7 @@ public class ProduceSMTCode extends TypedPartialEvaluator {
         
         state.Assert(vcond, stmt);
         
-        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(), stmt.isAssertMax())  : stmt;
+        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(), stmt.getAssertMax())  : stmt;
 	}
 	
 	@Override

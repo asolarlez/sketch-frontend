@@ -33,8 +33,9 @@ import sketch.util.datastructures.TprintTuple;
 
 class CloneHoles extends FEReplacer{
     
+    // TODO xzl: what's this?
     public Object visitExprStar(ExprStar es){
-        ExprStar newStar = new ExprStar((ExprStar) super.visitExprStar(es));
+        ExprStar newStar = new ExprStar(es);
         es.renewName();
         return newStar;
     }
@@ -1190,7 +1191,8 @@ public class PartialEvaluator extends FEReplacer {
             System.err.println(stmt.getCx() + ":" +  e.getMessage() );
             throw e;
         }
-        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(), stmt.isAssertMax())  : stmt;
+        return isReplacer ? new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
+                stmt.getAssertMax()) : stmt;
     }
 
     @Override

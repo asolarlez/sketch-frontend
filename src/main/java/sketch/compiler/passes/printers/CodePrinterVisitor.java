@@ -362,7 +362,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		String msg = sa.getMsg ();
 
 		printTab ();
-        print(sa.isAssertMax() ? "assert_max " : "assert ");
+        print(sa.getAssertSymbol() + " ");
 		sa.getCond ().accept (this);
 		if (null != msg)
 			print (": "+ msg);

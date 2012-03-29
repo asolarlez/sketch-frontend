@@ -773,18 +773,12 @@ public class FEReplacer implements FEVisitor
     public Object visitOther(FENode node) { return node; }
 
 	public Object visitExprStar(ExprStar star) {
-	 /*   if(star.getType() != null){
+        if (star.getType() != null) {
 	        Type t = (Type) star.getType().accept(this);
 	        if(t != star.getType()){
 	            ExprStar s = new ExprStar(star);
 	            s.setType(t);	           
 	        }
-	    }*/
-        if (star.getExprMax() != null) {
-            Expression newMax = doExpression(star.getExprMax());
-            if (newMax != star.getExprMax()) {
-                return star.createWithExprMax(newMax);
-            }
         }
 		return star;
 	}

@@ -483,7 +483,7 @@ pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayLi
 return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	:	t:TK_return (x=right_expr)? { s = new StmtReturn(getContext(t), x); }
 	;
-
+	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
 		String msg = null;
@@ -499,7 +499,7 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	;
 	
 assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
-:	t:TK_assert_max cond=right_expr (COLON ass:STRING_LITERAL)? { 
+:	t:TK_assert_max (defer: BACKSLASH)? cond=right_expr (COLON ass:STRING_LITERAL)? { 
 	FEContext cx = getContext(t);
 	String msg = null;
 	if (ass != null) {
@@ -507,7 +507,7 @@ assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar
 		ps = ps.substring(1, ps.length()-1);
 		msg = cx + "   "+ ps;
 	}
-	s = StmtAssert.createAssertMax(cx, cond, msg); }	
+	s = StmtAssert.createAssertMax(cx, cond, msg, (defer!=null)); }	
 ;
 	
 if_else_statement returns [Statement s]
@@ -609,6 +609,19 @@ right_expr returns [Expression x] { x = null; }
 	|   x=agmax_expr
 	;
 
+agmax_expr returns [Expression x] { x = null; }
+ 	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)?
+    	{
+    		if (n != null) {
+    			x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), true);
+    		} else {
+    			x = new ExprStar(getContext(t), true);
+    		}
+    	} 
+	;
+	
+/*
+TODO we don't add exprMax now
 agmax_expr returns [Expression x] { x = null; Expression exprMax = null; }
  	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)? (AT exprMax=right_expr_not_agmax)?
     	{
@@ -619,7 +632,7 @@ agmax_expr returns [Expression x] { x = null; Expression exprMax = null; }
     		}
     	} 
 	;
-
+*/
 
 var_initializer returns [Expression x] { x = null; }
 : (arr_initializer) => x=arr_initializer

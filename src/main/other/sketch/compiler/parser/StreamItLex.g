@@ -190,6 +190,7 @@ NDVAL2: "??";
 NDANGELIC: "**";
 AT: "@";
 SELECT: "{|}";
+BACKSLASH: "\\";
 
 REGEN   { int open = 0; }
     :   "{|"

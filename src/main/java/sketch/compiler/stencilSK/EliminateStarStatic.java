@@ -33,7 +33,7 @@ public class EliminateStarStatic extends FEReplacer {
 
 	public Object visitExprStar(ExprStar star) {
         if (star.isAngelicMax()) {
-            return super.visitExprStar(star);
+            return star;
         }
 		Type t = star.getType();
 		int ssz = 1;

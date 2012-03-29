@@ -19,3 +19,4 @@ harness void main()
     assert yy < 8 : "yy must be smaller than 8!";
 }
 
+/* correct x = 8 */
