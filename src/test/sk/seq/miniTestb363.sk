@@ -1,0 +1,22 @@
+package LALA;
+include "miniTestb363.skh";
+
+struct Foo{
+    
+    int x;
+}
+int spec(int x){
+    Foo f = new Foo();
+    f.x = x;
+    return f.x;
+}
+
+int sketch(int x)implements spec{
+    Foo f = new Foo();
+    f.x = spec@FOFO(x)-??;
+    if(??){
+        return sketch(f.x);
+    }else{
+        return f.x;
+    }
+}

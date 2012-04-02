@@ -2,7 +2,7 @@ pragma options "--bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8 --bnd-inline-am
 include "generators.skh";
 
 
-stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
+stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){    
     float[N][T] out = 0.0;
     if(N<1 || T < 1){ return out; }
     
@@ -20,15 +20,12 @@ stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
     return out; 
 }
 
-generator void stenGen(fun sten, int N, int T, ref float[N][T] arr){
-    generator float f(int x, int y){
-        return arr[x][y];
-    }
+generator void stenGen(fun sten, int N, int T){
     repeat(3){
         for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){            
             for(int t= (??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); t<(??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); ++t){
                 assert t> 0 && t < T; assert i-t > 0 && i-t < N;
-                arr[t][i-t] = sten(f, t, i-t);                
+                sten(t, i-t);                
             }
         }  
     }
@@ -42,10 +39,10 @@ stencil float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) imple
         for(int i=0; i<N; ++i){
             fifo[0][i] = in[i];
         }
-        generator float sten(fun arrfun, int t, int i){
-            return arrfun(t-1, i-1) + arrfun(t-1, i+1) + f[t][i];
+        generator void sten(int t, int i){
+            fifo[t][i] = fifo[t-1][i-1] + fifo[t-1][i+1] + f[t][i];
         }
-        stenGen(sten, N, T, fifo);
+        stenGen(sten, N, T);
     }else{
         fifo = cacheObv1d(N, T, in, f);
     }

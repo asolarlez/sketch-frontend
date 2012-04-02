@@ -1,0 +1,11 @@
+package FOFO;
+
+struct Foo{
+    
+    int x;
+}
+int spec(int x){
+    Foo f = new Foo();
+    f.x = x;
+    return f.x+1;
+}

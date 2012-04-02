@@ -30,11 +30,14 @@ import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.lowering.EliminateReturns;
+import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -447,12 +450,13 @@ public class FunctionalizeStencils extends FEReplacer {
         v24.setNres(nres);
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();
-
 	        	f = ((Function)f.accept(v0));
 
             f = (Function) f.accept(new EliminateReturns());
             f = ((Function) f.accept(v23));
             f = ((Function) f.accept(v24));
+            f = ((Function) f.accept(new FlattenStmtBlocks()));
+            f = ((Function) f.accept(new AssembleInitializers()));
             f = ((Function) f.accept(new RemoveShallowTempVars(20)));
 	        	f = ((Function)f.accept(v01));
 
@@ -478,7 +482,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-            // f.accept(new SimpleCodePrinter());
+            f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }

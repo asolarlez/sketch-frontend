@@ -180,7 +180,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	@Override
 	public Object visitExprFunCall(ExprFunCall fc){
 
-		String newName = fc.getName();
+        String newName = nres.getFunName(fc.getName());
 
         Function fun = nres.getFun(newName);
 		if( fun.isUninterp() ){
@@ -193,8 +193,9 @@ public class EliminateStructs extends SymbolTableVisitor {
             structs.get(name).addActualParams(newplist);
 		}
 
-		if(mainFunctions.contains(newName)){
-			newName = newName + "_2";
+        if (mainFunctions.contains(newName)) {
+            String tmp = fun.getName() + "_2";
+            newName = newName.replace(fun.getName(), tmp);
 		}
 
 		return new ExprFunCall(fc,newName, newplist);
