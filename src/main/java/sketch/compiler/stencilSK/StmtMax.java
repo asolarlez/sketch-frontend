@@ -324,6 +324,7 @@ public class StmtMax extends Statement{
      * @return whether or not the symbolic solver succeeded in replacing the max.
      */
     public boolean resolve(){
+        // TODO: change this to use AGMAX. TODO xzl
         ResolveMax rmax = new ResolveMax(this);
         rmax.run();
         rmax.removeDependencies();

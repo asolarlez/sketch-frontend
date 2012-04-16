@@ -1,0 +1,24 @@
+#ifndef _SPMD_H
+#define _SPMD_H
+
+#ifndef SPMD_MAX_BUF_LEN
+#define SPMD_MAX_BUF_LEN 8
+#endif  //SPMD_MAX_BUF_LEN
+
+void spmdtransfer(global float [SPMD_MAX_BUF_LEN] buffer, global int size, float [size] src_buff, bit scond, int recipient, ref float [size] dest_buff, bit rcond)
+{
+  spmdbarrier();
+  if (scond) {
+    for (int i=0; i<size; ++i) {
+      buffer[(recipient*size)+i] = src_buff[i];
+    }
+  }
+  spmdbarrier();
+  if (rcond) {
+    for (int i=0; i<size; ++i) {
+      dest_buff[i] = buffer[(spmdpid)*size+i];
+    }
+  }
+}
+
+#endif  //_SPMD_H

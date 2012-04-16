@@ -6,6 +6,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.dataflow.MethodState;
@@ -58,9 +59,10 @@ public class Cfctype extends abstractValueType {
     }
 
 
-    public void Assert(abstractValue val, String msg){
+    public void Assert(abstractValue val, StmtAssert stmt) {
         if(val.equals(noinit)){
-            throw new RuntimeException("Asserting an uninitialized variable " + msg);
+            throw new RuntimeException("Asserting an uninitialized variable " +
+                    stmt.getMsg());
         }       
     }
 

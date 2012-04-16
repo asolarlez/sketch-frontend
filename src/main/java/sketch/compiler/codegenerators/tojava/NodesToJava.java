@@ -746,7 +746,8 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitStmtAssert(StmtAssert stmt)
     {
-        return "assert (" + (String)stmt.getCond().accept(this) + ")";
+        return stmt.getAssertSymbol() + " (" +
+                (String) stmt.getCond().accept(this) + ")";
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -840,7 +841,8 @@ public class NodesToJava extends SymbolTableVisitor
 
 	public Object visitExprStar(ExprStar star) {
 		//throw new UnsupportedOperationException();
-		return null;
+        assert star.isAngelicMax() : "all normal stars should have been eliminated!";
+        return star.toCode();
 	}
 
 	public Object visitStmtFork(StmtFork loop){

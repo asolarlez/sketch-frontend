@@ -22,10 +22,9 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.NullStream;
-import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 
 /**
  * A parent class for code printers that strictly adhere to the visitor pattern.
@@ -253,7 +252,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 
 	public Object visitExprStar (ExprStar es) {
 		// TODO: doesn't properly visit children of ExprStar
-		print (""+ es);
+        print(es.toString());
 		return es;
 	}
 
@@ -363,7 +362,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		String msg = sa.getMsg ();
 
 		printTab ();
-		print ("assert ");
+        print(sa.getAssertSymbol() + " ");
 		sa.getCond ().accept (this);
 		if (null != msg)
 			print (": "+ msg);

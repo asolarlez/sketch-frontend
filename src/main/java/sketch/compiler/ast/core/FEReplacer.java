@@ -778,13 +778,13 @@ public class FEReplacer implements FEVisitor
     public Object visitOther(FENode node) { return node; }
 
 	public Object visitExprStar(ExprStar star) {
-	 /*   if(star.getType() != null){
+        if (star.getType() != null) {
 	        Type t = (Type) star.getType().accept(this);
 	        if(t != star.getType()){
 	            ExprStar s = new ExprStar(star);
 	            s.setType(t);	           
 	        }
-	    }*/
+        }
 		return star;
 	}
 
@@ -814,7 +814,7 @@ public class FEReplacer implements FEVisitor
     	Type nbase = (Type)t.getBase().accept(this);
     	Expression nlen = (Expression)t.getLength().accept(this);
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-    	return new TypeArray(nbase, nlen);
+        return new TypeArray(nbase, nlen, t.getMaxlength());
     }
 
     public Object visitTypeStruct (TypeStruct ts) {
@@ -994,4 +994,5 @@ public class FEReplacer implements FEVisitor
         assertFalse("Not implemented: visitExprType()");
         return null;
     }
+
 }

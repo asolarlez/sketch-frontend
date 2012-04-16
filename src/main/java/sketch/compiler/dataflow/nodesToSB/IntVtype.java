@@ -7,6 +7,8 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -20,8 +22,11 @@ public class IntVtype extends abstractValueType {
 
 
 
-	public abstractValue STAR(FENode star){
-		return BOTTOM("??", true);
+    public abstractValue STAR(FENode star) {
+        if (star instanceof ExprStar && ((ExprStar) star).isAngelicMax()) {
+            return BOTTOM("**", true);
+		}
+        return BOTTOM("?", true);
 	}
 
 	public abstractValue BOTTOM(Type t){
@@ -62,10 +67,11 @@ public class IntVtype extends abstractValueType {
 	}
 
 
-	public void Assert(abstractValue val, String msg){
+    public void Assert(abstractValue val, StmtAssert stmt) {
 		 if( val.hasIntVal() ){
 			 if(val.getIntVal() == 0){
-			     DebugOut.printWarning("This assertion will fail unconditionally when you call this function: " + msg);				 
+                DebugOut.printWarning("This assertion will fail unconditionally when you call this function: " +
+                        stmt.getMsg());
 			 }
 		 }
 	}

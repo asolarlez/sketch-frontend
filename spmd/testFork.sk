@@ -1,6 +1,6 @@
 harness void main() {
   int n = 0;
-  spmdfork(int p; 5) {
+  spmdfork(p; 5) {
     n = n+1;
   }
   assert(n==5);

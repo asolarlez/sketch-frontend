@@ -41,17 +41,38 @@ public class CleanupFinalCode extends MetaStage {
                 new PreprocessSketch(varGen, options.bndOpts.unrollAmnt, rctrl, true);
 
         prog = (Program) prog.accept(preproc);
+        // System.out.println("preproc");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new FlattenStmtBlocks());
+        // System.out.println("Flatten");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new MakeCastsExplicit());
+        // System.out.println("MakeCasts");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new EliminateTransAssns());
+        // System.out.println("ElmTransAssn");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveUselessCasts());
+        // System.out.println("RmUselessC");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new EliminateDeadCode(!options.feOpts.killAsserts));
+        // System.out.println("ElmDead");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveDumbArrays());
+        // System.out.println("RemoveDumbArr");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new EliminateTransAssns());
+        // System.out.println("ElimTransAssn2");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new EliminateDeadCode(!options.feOpts.killAsserts));
+        // System.out.println("ElmDeadC2");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new SimplifyVarNames());
+        // System.out.println("Simplify");
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new AssembleInitializers());
 
+        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveShallowTempVars());
         // prog = (Program) prog.accept(new AssembleInitializers());
 
