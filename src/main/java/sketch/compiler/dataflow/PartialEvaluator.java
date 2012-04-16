@@ -23,7 +23,6 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
@@ -632,8 +631,8 @@ public class PartialEvaluator extends FEReplacer {
             Expression base = ear.getBase();
             Expression nbase = (Expression) base.accept(this);
             RangeLen rl = ear.getSelection();
-            _debug.append(" ear: " + ear);
-            _debug.append(" base:" + base + " nbase:" + nbase + " ");
+            // _debug.append(" ear: " + ear);
+            // _debug.append(" base:" + base + " nbase:" + nbase + " ");
             abstractValue olidx=null;
             olidx = lhsIdx;
             lhsIdx = (abstractValue)rl.start().accept(PartialEvaluator.this);
@@ -643,7 +642,7 @@ public class PartialEvaluator extends FEReplacer {
             if( t instanceof TypeArray ){
                 TypeArray ta = (TypeArray) t;
                 abstractValue tlen = typeLen(ta);
-                _debug.append(" ta:" + ta + " tlen:" + tlen + " ");
+                // _debug.append(" ta:" + ta + " tlen:" + tlen + " ");
                 t = ta.getBase();
                 if(olidx != null){
                     lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) );
@@ -653,7 +652,9 @@ public class PartialEvaluator extends FEReplacer {
                     if( tlen.hasIntVal() ){
                         int size = tlen.getIntVal();
                         if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
-                            throw new ArrayIndexOutOfBoundsException(ear.getCx() + " ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size + ")" + _debug.toString());
+                            throw new ArrayIndexOutOfBoundsException(ear.getCx() +
+                                    " ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size +
+                                    ")" /* + _debug.toString() */);
                     }
                 }
             }

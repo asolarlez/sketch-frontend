@@ -84,7 +84,7 @@ public class ExprStar extends Expression
     }
 
     public ExprStar(FEContext context) {
-        this(context.getCx(), false);
+        this(context, false);
     }
 
     /** Create a new ExprConstInt with a specified value.
