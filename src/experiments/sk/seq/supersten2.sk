@@ -21,16 +21,33 @@ stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
 }
 
 generator void stenGen(fun sten, int N, int T, ref float[N][T] arr){
-    generator float f(int x, int y){
-        return arr[x][y];
-    }
-    repeat(3){
-        for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){            
-            for(int t= (??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); t<(??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); ++t){
+    int ofst = ??;
+    float[ofst][P] mbuf;
+    spmd_fork(int p=0; p<P; ++p){
+        int beg;
+        int end;
+        partition(p, P, N, beg, end);        
+        int L = end-beg+2*ofst;
+        float[L][T] larr;
+        for(int i=beg-ofst; i<end+ofst; ++i){
+            larr[1][i-(beg-ofst)] = arr[1][i];
+        }
+        generator float f(int x, int y){
+            return larr[x][y];
+        }
+        for(int t=1; t<T; ++t){            
+            for(int i= 0+ofst; i<L-ofst; ++i){
                 assert t> 0 && t < T; assert i-t > 0 && i-t < N;
-                arr[t][i-t] = sten(f, t, i-t);                
+                larr[t][i] = sten(f, t, i);                
+            } 
+            Transfer(lars[ofst::ofst], p, p-1, lars[L+ofst::ofst]);
+            Transfer(lars[L::ofst], p, p-1, lars[0::ofst]);            
+        }
+        for(int t=0; t<T; ++t){
+            for(int i=beg-ofst; i<end+ofst; ++i){
+                larr[t][i-(beg-ofst)] = arr[t][i];
             }
-        }  
+        }
     }
 }
 
