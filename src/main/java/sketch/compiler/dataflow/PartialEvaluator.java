@@ -406,22 +406,54 @@ public class PartialEvaluator extends FEReplacer {
         if(isReplacer){
             if(rv.hasIntVal() ){
                 exprRV = new ExprConstInt(rv.getIntVal());
+                return rv;
             }else{
                 if (exp.getOp() == ExprBinary.BINOP_ADD) {
                     if ((right.hasIntVal() && right.getIntVal() == 0) ||
                             nright.equals(ExprConstInt.zero))
                     {
                         exprRV = nleft;
+                        return rv;
                     } else {
                         if ((left.hasIntVal() && left.getIntVal() == 0) ||
                                 nleft.equals(ExprConstInt.zero))
                         {
                             exprRV = nright;
+                            return rv;
                         } else {
                             exprRV = new ExprBinary(exp, exp.getOp(), nleft, nright);
+                            return rv;
                         }
                     }
                 } else {
+                    if (exp.getOp() == ExprBinary.BINOP_MUL) {
+                        if ((right.hasIntVal() && right.getIntVal() == 0) ||
+                                nright.equals(ExprConstInt.zero))
+                        {
+                            exprRV = ExprConstInt.zero;
+                            return rv;
+                        } else {
+                            if ((left.hasIntVal() && left.getIntVal() == 0) ||
+                                    nleft.equals(ExprConstInt.zero))
+                            {
+                                exprRV = ExprConstInt.zero;
+                                return rv;
+                            }
+                        }
+                        if ((right.hasIntVal() && right.getIntVal() == 1) ||
+                                nright.equals(ExprConstInt.one))
+                        {
+                            exprRV = nleft;
+                            return rv;
+                        } else {
+                            if ((left.hasIntVal() && left.getIntVal() == 1) ||
+                                    nleft.equals(ExprConstInt.one))
+                            {
+                                exprRV = nright;
+                                return rv;
+                            }
+                        }
+                    }
                     exprRV = new ExprBinary(exp, exp.getOp(), nleft, nright);
                 }
             }

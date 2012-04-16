@@ -3,7 +3,10 @@ package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
@@ -30,6 +33,26 @@ public class ExtractRightShifts extends SymbolTableVisitor {
         super(symtab);
 		this.varGen = varGen;
 	}
+
+    public Object visitExprArrayRange(ExprArrayRange exp) {
+        if (exp.getBase() instanceof ExprBinary || exp.getBase() instanceof ExprUnary) {
+            Type t = this.getType(exp);
+            FENode context = exp;
+            String tmpName = varGen.nextVar();
+            Expression bexp = this.doExpression(exp.getBase());
+            StmtVarDecl decl = new StmtVarDecl(context, t, tmpName, bexp);
+            this.addStatement(decl);
+            RangeLen range = exp.getSelection();
+            Expression newStart = doExpression(range.start());
+            Expression newLen = null;
+            if (range.hasLen()) {
+                newLen = doExpression(range.getLenExpression());
+            }
+            return new ExprArrayRange(exp, new ExprVar(exp, tmpName), new RangeLen(
+                    newStart, newLen));
+        }
+        return super.visitExprArrayRange(exp);
+    }
 
 
 	public Object visitExprBinary(ExprBinary exp)

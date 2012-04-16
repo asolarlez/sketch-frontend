@@ -1,0 +1,15 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 12";
+
+harness int main(int N){
+    if(N<2){ return 0; }
+    int cnt=0;
+    int v = 0;
+    int T = {|0 | N |};
+    for(int i=0; i<T; ++i){
+        cnt =1;
+        v = v + 1;
+    }
+    assert cnt ==v; 
+    return v;
+}
+

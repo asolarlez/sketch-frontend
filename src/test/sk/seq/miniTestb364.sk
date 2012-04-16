@@ -1,0 +1,14 @@
+
+int W = 5;
+
+bit[W] avg(bit[W] x, bit[W] y){
+    bit[2*W] xx = x;
+    bit[2*W] yy = y;
+    return ((xx+yy)[0::W]);
+}
+
+bit[W] avgT(bit[W] x, bit[W] y)implements avg{
+    bit[2*W] xx = x;
+    bit[2*W] yy = y;
+    return ((xx+yy)[0::W]);
+}

@@ -66,7 +66,7 @@ public class StmtLoop extends Statement
 
     public String toString()
     {
-    	return "loop("+iter+")";
+        return "repeat(" + iter + "){\n" + this.body + "\n}";
     }
 }
 

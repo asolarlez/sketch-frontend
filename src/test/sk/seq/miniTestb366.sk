@@ -1,0 +1,7 @@
+void foo(int x, ref int y){    
+    y = x+y;
+}
+
+void moo(int x, ref int y) implements foo{
+    y = ??*x + ??*y + ??*y;
+}

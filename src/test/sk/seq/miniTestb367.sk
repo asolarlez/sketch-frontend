@@ -1,0 +1,31 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 12";
+
+harness void main(int N, int M){
+    int cnt=0;
+    for(int i=??-10; i<N; ++i){
+        bit vis = true;
+        for(int j=1; j<i; ++j){
+            vis = false; 
+        }   
+        if(vis){ ++cnt; }
+    }
+    assert cnt <2;    
+}
+
+int pspec(int N){
+    if(N==0){
+        return 7;
+    }else{
+        return N;
+    }
+}
+
+int pain(int N) implements pspec{
+    int x = N;
+    int y=7;
+    for(int i=0; i<N; ++i){
+        y = x;
+    }
+    return y;
+    
+}

@@ -1,0 +1,32 @@
+
+int W = 5;
+
+bit[W] avg(bit[W] x, bit[W] y){
+    bit[2*W] xx = x;
+    bit[2*W] yy = y;
+    for(int i=W; i<2*W; ++i){
+        xx[i] = xx[W-1];
+        yy[i] = yy[W-1];
+    }
+    bit[2*W] r = (xx+yy)>>1; 
+    return (r[0::W]);
+}
+
+bit[W] avgGood(bit[W] x, bit[W] y)implements avg{
+    if(x[W-1] == y[W-1]){
+        return x + div2(W, y + minus(W, x));
+    }else{
+        return div2(W, x+y);
+    }
+}
+
+bit[T] div2(int T, bit[T] x){
+    bit[T] xx = x>>1;
+    xx[T-1] = xx[T-2];
+    return xx;
+}
+
+bit[T] minus(int T, bit[T] x){
+    return (~x) + 1;
+    
+}

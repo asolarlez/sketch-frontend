@@ -43,7 +43,7 @@ stencil float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) imple
             fifo[0][i] = in[i];
         }
         generator float sten(fun arrfun, int t, int i){
-            return arrfun(t-1, i-1) + arrfun(t-1, i+1) + f[t][i];
+            return arrfun(t-1, i-1) + arrfun(t-1, i+1)+ f[t][i];
         }
         stenGen(sten, N, T, fifo);
     }else{

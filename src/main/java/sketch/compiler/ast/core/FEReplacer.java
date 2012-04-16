@@ -41,13 +41,12 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
-
-import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
-import sketch.compiler.ast.spmd.exprs.SpmdPid;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -715,6 +714,11 @@ public class FEReplacer implements FEVisitor
 
     protected List<Function> newFuncs;
 
+    /**
+     * StreamSpec represents a namespace. spec.getVars() will get you all the global
+     * variable declarations. spec.getStructs() gets you the structure declarations.
+     * spec.getFuncs() gets you all the function declarations.
+     */
     public Object visitStreamSpec(StreamSpec spec)
     {
 

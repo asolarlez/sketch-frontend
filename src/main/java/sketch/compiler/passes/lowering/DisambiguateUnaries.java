@@ -34,13 +34,11 @@ import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
 
 /**
- * Give a rigid ordering to operations such as ++, --, and pop().
- * Do this by a post-order depth-first traversal of expression trees;
- * if we see a unary increment or decrement or a pop() or peek()
- * operation, move it into a separate statement and replace it with
- * a temporary variable.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * Give a rigid ordering to operations such as ++, --. Do this by a post-order depth-first
+ * traversal of expression trees; if we see a unary increment or decrement operation, move
+ * it into a separate statement and replace it with a temporary variable.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class DisambiguateUnaries extends SymbolTableVisitor

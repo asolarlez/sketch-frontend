@@ -1,40 +1,45 @@
-pragma options "--bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8 --bnd-inline-amnt 9 --beopt:-bndwrand 50  --bnd-arr-size 8 --beopt:simplifycex NOSIM";
+pragma options "--bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 4 --bnd-inline-amnt 9 --beopt:-bndwrand 50  --bnd-arr-size 8 --beopt:simplifycex NOSIM";
 include "generators.skh";
 
 
 stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){    
     float[N][T] out = 0.0;
-    if(N<1 || T < 1){ return out; }
+    if(N>=1 && T >= 1){
     
-    for(int i=0; i<N; ++i){
-        out[0][i] = in[i];
-    }
-    
-    for(int t=1; t<T; ++t){
-        out[t][0] = 0.0;
-        out[t][N-1] = 0.0;
-        for(int i=1; i<N-1; ++i){
-            out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
-        }   
+        for(int i=0; i<N; ++i){
+            out[0][i] = in[i];
+        }
+        
+        for(int t=1; t<T; ++t){
+            out[t][0] = 0.0;
+            out[t][N-1] = 0.0;
+            for(int i=1; i<N-1; ++i){
+                out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
+            }   
+        }
     }
     return out; 
 }
 
 generator void stenGen(fun sten, int N, int T){
     repeat(3){
-        for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){            
+        int cnt=0;
+        for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){
+            bit vis = true;
             for(int t= (??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); t<(??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); ++t){
                 assert t> 0 && t < T; assert i-t > 0 && i-t < N;
-                sten(t, i-t);                
+                sten(t, i-t);
+                vis = false; 
             }
+            if(vis){ ++cnt; }
         }  
+        //assert cnt <2;
     }
 }
 
 
 stencil float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) implements cacheObv1d{ 
-    float[N][T] fifo = 0.0;
-    if(N<1 || T < 1){ return fifo; }
+    float[N][T] fifo = 0.0;    
     if(N>=3&& T >= 3 && N > T){
         for(int i=0; i<N; ++i){
             fifo[0][i] = in[i];

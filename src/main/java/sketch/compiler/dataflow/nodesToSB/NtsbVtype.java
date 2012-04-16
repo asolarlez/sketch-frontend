@@ -282,7 +282,8 @@ public class NtsbVtype extends IntVtype {
                                 String vnm = "___tEmP" + (gbgid++);
                                 String par =
                                         vnm + "=" + name + "[" +
-                                                printType(param.getType()) + "_arr" +
+ printType(ta.getBase()) +
+                                                "_arr" +
                                 "]( " + plist + "  )(" + pathCond + ")[ _p_" +
                                                 param.getName() + "," + funid + "];";
                                 out.println(par);

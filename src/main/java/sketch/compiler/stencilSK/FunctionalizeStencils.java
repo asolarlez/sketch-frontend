@@ -482,7 +482,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-            f.accept(new SimpleCodePrinter());
+            // f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
                 f.accept(this);
             }

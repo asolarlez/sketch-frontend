@@ -1,53 +1,15 @@
-pragma options "--bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8 --bnd-inline-amnt 9 --beopt:-bndwrand 50  --bnd-arr-size 8 --beopt:simplifycex NOSIM";
-include "generators.skh";
 
+int W = 5;
 
-stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
-    float[N][T] out = 0.0;
-    if(N<1 || T < 1){ return out; }
+bit[W] avg(bit[W] x, bit[W] y){
+    bit[2*W] xx = x;
+    bit[2*W] yy = y;
+    bit[2*W] r = 
+    return ((xx+yy)[0::W])>>1;
+}
+
+bit[W] avgGood(bit[W] x, bit[W] y)implements avg{
     
-    for(int i=0; i<N; ++i){
-        out[0][i] = in[i];
-    }
-    
-    for(int t=1; t<T; ++t){
-        out[t][0] = 0.0;
-        out[t][N-1] = 0.0;
-        for(int i=1; i<N-1; ++i){
-            out[t][i] = out[t-1][i-1] + out[t-1][i+1] + f[t][i];
-        }   
-    }
-    return out; 
+    return (x+y)>>1;
 }
 
-generator void stenGen(fun sten, int N, int T, ref float[N][T] arr){
-    generator float f(int x, int y){
-        return arr[x][y];
-    }
-    repeat(3){
-        for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){            
-            for(int t= (??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); t<(??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); ++t){
-                assert t> 0 && t < T; assert i-t > 0 && i-t < N;
-                arr[t][i-t] = sten(f, t, i-t);                
-            }
-        }  
-    }
-}
-
-
-stencil float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) implements cacheObv1d{ 
-    float[N][T] fifo = 0.0;
-    if(N<1 || T < 1){ return fifo; }
-    if(N>=3&& T >= 3 && N > T){
-        for(int i=0; i<N; ++i){
-            fifo[0][i] = in[i];
-        }
-        generator float sten(fun arrfun, int t, int i){
-            return arrfun(t-1, i-1) + arrfun(t-1, i+1) + f[t][i];
-        }
-        stenGen(sten, N, T, fifo);
-    }else{
-        fifo = cacheObv1d(N, T, in, f);
-    }
-    return fifo; 
-}

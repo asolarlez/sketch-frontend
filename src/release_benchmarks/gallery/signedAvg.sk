@@ -1,0 +1,52 @@
+//@Description Add two signed integers without causing an overflow.
+/**
+ * For any bit-vector manipulation, you want to use the bit-array type (bit[W]) as
+ * opposed to the int type. 
+ * Bit arrays are treated as unsigned integers, and there is no overflow check, 
+ * so if we want to ensure that our average of two integers will not overflow we will have to play a few tricks. 
+ * 
+ */
+int W = 5;
+
+bit[W] avg(bit[W] x, bit[W] y){
+    //As a spec, we want to show what the result would be
+    //if the operations don't overflow. To simmulate that,
+    //we cast the inputs into bit arrays of size 2*W. 
+    bit[2*W] xx = x;
+    bit[2*W] yy = y;
+    //Because these are unsigned integers, we have to do
+    //the sign extension manually.
+    for(int i=W; i<2*W; ++i){
+        xx[i] = xx[W-1];
+        yy[i] = yy[W-1];
+    }
+    bit[2*W] r = (xx+yy)>>1; 
+    //Then after computing our average, we can return the first W bits of the result. 
+    return (r[0::W]);
+}
+
+bit[W] avgGood(bit[W] x, bit[W] y)implements avg{
+        return bitGen(x,y, 4);
+}
+
+//The generator below describes the set of all expressions 
+//involving bitwise negation, +,&,|, ^, and division by two.
+generator bit[W] bitGen(bit[W] x, bit[W] y, int bnd){
+    assert bnd > 0;
+    if(??){ return {| x | y |};   }
+    if(??){ return div2(W, bitGen(x,y, bnd-1));   }
+    if(??){ return ??;   }
+    if(??){ return ~bitGen(x,y, bnd-1);   }
+    if(??){ return {| bitGen(x,y, bnd-1) (+ | ^ | & | \|) bitGen(x,y, bnd-1) |};}
+}
+
+bit[T] div2(int T, bit[T] x){
+    //This function simulates the signed version of >>1.
+    bit[T] xx = x>>1;
+    
+    //since our bit-vectors are unsigned, we need to do the
+    //sign extension by hand.
+
+    xx[T-1] = xx[T-2];
+    return xx;
+}
