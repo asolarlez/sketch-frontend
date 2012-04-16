@@ -174,7 +174,7 @@ program	 returns [Program p]
     String pkgName = null;
     FEContext pkgCtxt = null;
 }
-	:	(  ((TK_device | TK_global | TK_serial | TK_harness |
+	:	(  ((TK_device /*| TK_global*/ | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
@@ -294,7 +294,7 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 
 data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
-	:	/* (TK_global {isglobal = true; })? */
+	:	 (TK_global {isglobal = true; })? 
                 (t=primitive_type | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText()); })
 		(	l:LSQUARE
 			(	
@@ -377,7 +377,7 @@ function_decl returns [Function f] {
 }
 	:
 	( TK_device { isDevice = true; } |
-          TK_global { isGlobal = true; } |
+          //TK_global { isGlobal = true; } |
           TK_serial { isSerial = true; } |
           TK_harness { isHarness = true; } |
           TK_generator { isGenerator = true; }  |

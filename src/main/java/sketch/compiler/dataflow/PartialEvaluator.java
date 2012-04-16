@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
@@ -218,6 +219,34 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
+    @Override
+    public Object visitSpmdPid(SpmdPid pid) {
+        if (isReplacer) {
+            exprRV = (Expression) super.visitSpmdPid(pid);
+        }
+        return vtype.BOTTOM(TypePrimitive.inttype);
+    }
+
+    @Override
+    public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
+        Statement body = null;
+        Expression nproc = null;
+        Level lvl = state.pushLevel("StmtSpmdFork");
+        try {
+            startSpmdfork(null);
+            try {
+                abstractValue vnproc = (abstractValue) stmt.getNProc().accept(this);
+                nproc = exprRV;
+                body = (Statement) stmt.getBody().accept(this);
+
+            } finally {
+                state.popParallelSection();
+            }
+        } finally {
+            state.popLevel(lvl);
+        }
+        return isReplacer ? new StmtSpmdfork(stmt.getCx(), null, nproc, body) : stmt;
+    }
 
     public Object visitExprField(ExprField exp) {
         exp.getLeft().accept(this);

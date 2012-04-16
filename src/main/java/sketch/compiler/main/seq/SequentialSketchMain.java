@@ -151,6 +151,8 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
+ new SpmdbarrierCall(),
+                            new PidReplacer(),
                             new RemoveFunctionParameters(),
                             new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
                             new InstrumentFcnCall(), new SyncthreadsCall() };
@@ -225,6 +227,35 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    public class SpmdLowLevelCStage extends LowLevelCStage {
+
+        public SpmdLowLevelCStage() {
+            super();
+            // this.passes.add(new FlattenStmtBlocks2());
+            // this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new FlattenStmtBlocks2());
+            SpmdTransform tf = new SpmdTransform(options, varGen);
+            this.passes.add(tf);
+            this.passes.add(new GlobalToLocalCasts(varGen, tf));
+            this.passes.add(new ReplaceParamExprArrayRange(varGen));
+        }
+
+        @Override
+        protected Program postRun(Program prog) {
+            final SemanticCheckPass semanticCheck =
+                    new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
+            ExtractComplexLoopConditions ec =
+                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            // final FunctionParamExtension paramExt = new FunctionParamExtension();
+
+            prog = (Program) semanticCheck.visitProgram(prog);
+            prog = (Program) ec.visitProgram(prog);
+            // prog = (Program) paramExt.visitProgram(prog);
+            return prog;
+        }
+    }
+
     public class FinalLowLevelCLowering extends CompilerStage {
         public FinalLowLevelCLowering() {
             super(SequentialSketchMain.this);
@@ -266,7 +297,8 @@ public class SequentialSketchMain extends CommonSketchMain
             }
             return new LowLevelCStage();
         } else {
-            return new CudaLowLevelCStage();
+            // return new CudaLowLevelCStage();
+            return new SpmdLowLevelCStage();
         }
     }
 
