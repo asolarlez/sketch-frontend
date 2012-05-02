@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 2 --bnd-cbits 3 --bnd-unroll-amnt 8 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--bnd-inbits 5 --bnd-cbits 3 --bnd-unroll-amnt 16 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 //#define SPMD_MAX_BUF_LEN 16
 //include "spmd2.skh"
@@ -19,12 +19,10 @@ void move_out(global int N, global int T, ref global float[N][T] ga, global int 
 	}
 }
 
-
-
 /*
-stencil float[N][T] specCompute(int np, int N, int T, float[N][T] in) {
+stencil float[N][T] specCenter(int np, int N, int T, float[N][T] in) {
     float[N][T] out;
-    if(N>=4 && T >= 3 && N > T*2){
+    if(N>=4 && T >= 3 && N>T*2){
         out[0] = in[0];
         for(int t=1; t<T; ++t){
             for(int i=t; i<N-t; ++i){
@@ -34,16 +32,50 @@ stencil float[N][T] specCompute(int np, int N, int T, float[N][T] in) {
     }
     return out; 
 }
+*/
 
-stencil float[N][T] fastCompute(int N, int T, float[N][T] in) implements spec {
+/*
+
+float[N][T] specInit(int np, int N, int T) {
+	float[N][T] out = 0.0;
+    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
+		for (int i=0; i<N; ++i) {
+			out[0][i] = 1.0;
+		}
+    }
+	return out;
+}
+
+float[N][T] fastInit(int np, int N, int T) implements specInit {
 	float[N][T] out;
+    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
+	    	global int n = N/np;
+		spmdfork(np) {
+			float[n][T] A = 0.0;
+			for (int i=0; i<n; ++i) {
+				out[0][i] = 1.0;
+			}
+			move_out(N, T, out, n, A);
+		}
+    }
+	return out;
+}
+
+*/
+
+/*
+float[N][T] fastCompute(int N, int T, float[N][T] in) implements spec {
+	float[N][T] out = in;
+	global int n = N/np;
 	spmd_fork() {
-		move_in();
+		float[n][T] A;
+		move_in(N, T, out, n, A));
 		
-		move_out();
+		move_out(N, T, out, n, A);
 	}
 }
 */
+
 
 stencil float[N][T] specNext(int np, int N, int T, float[N][T] in) {
     float[N][T] out = in;
@@ -56,12 +88,12 @@ stencil float[N][T] specNext(int np, int N, int T, float[N][T] in) {
 stencil float[N][T] fastNext(int np, int N, int T, float[N][T] in) implements specNext {
 	float[N][T] out = in;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
+		global int n = N/np;
     		spmdfork(np) {
-        		global int n = N/np;
-        		float[n][T] la;
-    			move_in(N, T, out, n, la);
-    			la[0] = la[T+1-??];
-    			move_out(N, T, out, n, la);
+        		float[n][T] A;
+    			move_in(N, T, out, n, A);
+    			A[0] = A[T+1-??];
+    			move_out(N, T, out, n, A);
     		}
     }
     return out;
