@@ -295,11 +295,12 @@ public class SequentialSketchMain extends CommonSketchMain
                         "CudaSketchMain/getIRStage2_LLC()", prog));
                 throw exception;
             }
-            return new LowLevelCStage();
-        } else {
-            // return new CudaLowLevelCStage();
-            return new SpmdLowLevelCStage();
         }
+//            return new LowLevelCStage();
+//        } else {
+            // return new CudaLowLevelCStage();
+        return new SpmdLowLevelCStage();
+//        }
     }
 
     public FinalLowLevelCLowering getIRStage3() {

@@ -37,7 +37,6 @@ import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -662,18 +661,35 @@ class ProcessStencil extends FEReplacer {
 		public Object visitStmtFor(StmtFor stmt)
 		{
 			FENode context = stmt;
+            ExprVar indVar = null;
+            String indVarName = null;
+            Expression exprStart = null;
             if (!(stmt.getInit() instanceof StmtVarDecl)) {
-                throw new ExceptionAtNode("FunctionalizeStencils:645", stmt.getInit());
+                if (stmt.getInit() instanceof StmtAssign) {
+                    StmtAssign assign = (StmtAssign)stmt.getInit();
+                    if (assign.getLHS() instanceof ExprVar) {
+                        indVar = (ExprVar) assign.getLHS();
+                        indVarName = indVar.getName();
+                        exprStart = assign.getRHS();
+                    }
+                }
+            } else {
+                StmtVarDecl init = (StmtVarDecl) stmt.getInit();
+                assert init.getNumVars() == 1;
+                indVarName = init.getName(0);
+                indVar = new ExprVar(context, indVarName);
+                exprStart = init.getInit(0);
             }
-			StmtVarDecl init = (StmtVarDecl) stmt.getInit();
-			assert init.getNumVars() == 1;
-			String indVar = init.getName(0);
-			Expression exprStart = init.getInit(0);
-			Expression exprStartPred = new ExprBinary(context, ExprBinary.BINOP_GE, new ExprVar(context, indVar), exprStart);
+            
+            if (indVar == null) {
+                throw new ExceptionAtNode("FunctionalizeStencils:visitStmtFor", stmt.getInit());
+            }
+            Expression exprStartPred =
+                    new ExprBinary(context, ExprBinary.BINOP_GE, indVar, exprStart);
 			Expression exprEndPred = stmt.getCond();
 			Statement body = stmt.getBody();
 
-			loopHist lh = new loopHist(indVar, exprStartPred, exprEndPred);
+            loopHist lh = new loopHist(indVarName, exprStartPred, exprEndPred);
 			ptree.beginLevel(lh, stmt);
 			body.accept(this);
 			ptree.endLevel();
@@ -1301,18 +1317,41 @@ class ProcessStencil extends FEReplacer {
 	 Stack<StmtFor> forstack;   
 	    
 	 public Object visitStmtFor(StmtFor stmt)
-	    {
+	 {
 		 	cnode = stmt;
-		 	assert stmt.getInit() instanceof StmtVarDecl;
-		 	StmtVarDecl init = (StmtVarDecl) stmt.getInit();
-		 	assert init.getNumVars() == 1;
-	        String indVar = init.getName(0);
-	        Expression exprStart = init.getInit(0);
-	        Expression exprStartPred = new ExprBinary(new ExprVar(stmt, indVar), ">=",  exprStart);
-	        Expression exprEndPred = stmt.getCond();
-	        processForLoop(stmt, indVar, exprStartPred, exprEndPred, stmt.getBody(), true);
+        // assert stmt.getInit() instanceof StmtVarDecl;
+        ExprVar indVar = null;
+        String indVarName = null;
+        Expression exprStart = null;
+        if (!(stmt.getInit() instanceof StmtVarDecl)) {
+            if (stmt.getInit() instanceof StmtAssign) {
+                StmtAssign assign = (StmtAssign) stmt.getInit();
+                if (assign.getLHS() instanceof ExprVar) {
+                    indVar = (ExprVar) assign.getLHS();
+                    indVarName = indVar.getName();
+                    exprStart = assign.getRHS();
+                }
+                }
+        } else {
+            StmtVarDecl init = (StmtVarDecl) stmt.getInit();
+            assert init.getNumVars() == 1;
+            indVarName = init.getName(0);
+            indVar = new ExprVar(stmt, indVarName);
+            exprStart = init.getInit(0);
+            }
+
+        if (indVar == null) {
+            throw new ExceptionAtNode("FunctionalizeStencils:visitStmtFor",
+                    stmt.getInit());
+        }
+        Expression exprStartPred =
+                new ExprBinary(stmt, ExprBinary.BINOP_GE, indVar, exprStart);
+        Expression exprEndPred = stmt.getCond();
+        Statement body = stmt.getBody();
+
+        processForLoop(stmt, indVarName, exprStartPred, exprEndPred, stmt.getBody(), true);
 	        return stmt;
-	    }
+    }
 
 
 	public ProcessStencil(String suffix, Map<String, Type> sp, Map<String, Function> inVars) {
