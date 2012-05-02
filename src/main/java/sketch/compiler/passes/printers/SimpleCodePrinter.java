@@ -253,11 +253,11 @@ public class SimpleCodePrinter extends CodePrinter
 		return super.visitStmtReturn(stmt);
 	}
 
-    @Override
-    public Object visitStmtAngelicSolve(StmtAngelicSolve stmt) {
-        printLine("angelic_solve");
-        return super.visitStmtAngelicSolve(stmt);
-    }
+    // @Override
+    // public Object visitStmtAngelicSolve(StmtAngelicSolve stmt) {
+    // printLine("angelic_solve");
+    // return super.visitStmtAngelicSolve(stmt);
+    // }
 
 	@Override
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
