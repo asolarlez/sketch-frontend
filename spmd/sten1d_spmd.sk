@@ -76,7 +76,7 @@ float[N][T] fastCompute(int N, int T, float[N][T] in) implements spec {
 }
 */
 
-/*
+
 stencil float[N][T] specNext(int np, int N, int T, float[N][T] in) {
     float[N][T] out = in;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
@@ -98,4 +98,3 @@ stencil float[N][T] fastNext(int np, int N, int T, float[N][T] in) implements sp
     }
     return out;
 }
-*/
