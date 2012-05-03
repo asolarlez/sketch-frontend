@@ -5,19 +5,26 @@
 #define SPMD_MAX_BUF_LEN 8
 #endif  //SPMD_MAX_BUF_LEN
 
-void spmdtransfer(global float [SPMD_MAX_BUF_LEN] buffer, global int size, float [size] src_buff, bit scond, int recipient, ref float [size] dest_buff, bit rcond)
+struct spmdinfo {
+  float [SPMD_MAX_BUF_LEN] buf;
+}
+
+spmdinfo spmdinit(int nproc, int maxlen)
+{
+    assert(nproc*maxlen <= SPMD_MAX_BUF_LEN);
+    spmdinfo info = new spmdinfo();
+    return info;
+}
+
+void spmdtransfer(global spmdinfo info, global int size, float [size] src_buff, bit scond, int recipient, ref float [size] dest_buff, bit rcond)
 {
   spmdbarrier();
   if (scond) {
-    for (int i=0; i<size; ++i) {
-      buffer[(recipient*size)+i] = src_buff[i];
-    }
+    info.buf[(recipient*size)::size] = src_buff;
   }
   spmdbarrier();
   if (rcond) {
-    for (int i=0; i<size; ++i) {
-      dest_buff[i] = buffer[(spmdpid)*size+i];
-    }
+    dest_buff = info.buf[(spmdpid)*size::size];
   }
 }
 
