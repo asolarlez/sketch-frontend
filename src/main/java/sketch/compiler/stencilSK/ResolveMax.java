@@ -97,7 +97,11 @@ public class ResolveMax {
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
 				exp.accept(new tagNodes());
-				exp.accept(cc);
+                try {
+                    exp.accept(cc);
+                } catch (Exception e) {
+                    // do nothing
+                }
 			}
 		}
 		if( isDone() ) return ;
@@ -117,8 +121,12 @@ public class ResolveMax {
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
 				exp.accept(new tagNodes());
-				exp.accept(cc);
-			}
+                try {
+                    exp.accept(cc);
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }
 		}
 
 		for(int i=0; i<sz; ++i){
@@ -239,7 +247,7 @@ public class ResolveMax {
 
 
 		public Object handleSpecialCase(ExprBinary exp){
-			throw new RuntimeException("NYI");
+			throw new RuntimeException("NYI ResolveMax.handleSpecialCase");
 
 		}
 
