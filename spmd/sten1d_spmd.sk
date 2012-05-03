@@ -1,7 +1,7 @@
-pragma options "--bnd-inbits 2 --bnd-cbits 3 --bnd-unroll-amnt 16 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
 
-//#define SPMD_MAX_BUF_LEN 16
-//include "spmd2.skh"
+#define SPMD_MAX_BUF_LEN 16
+include "spmd2.skh"
 
 void move_in(global int N, global int T, global float[N][T] ga, global int n, ref float[n][T] la) {
 	for (int t=0; t<T; ++t) {
@@ -34,7 +34,8 @@ stencil float[N][T] specCenter(int np, int N, int T, float[N][T] in) {
 }
 */
 
-float[N][T] specInit(int np, int N, int T) {
+
+stencil float[N][T] specInit(int np, int N, int T) {
 	float[N][T] out = 0.0;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
 		for (int i=0; i<N; ++i) {
@@ -44,7 +45,7 @@ float[N][T] specInit(int np, int N, int T) {
 	return out;
 }
 
-float[N][T] fastInit(int np, int N, int T) implements specInit {
+stencil float[N][T] fastInit(int np, int N, int T) implements specInit {
 	float[N][T] out = 0.0;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
 	    	global int n = N/np;
@@ -59,17 +60,32 @@ float[N][T] fastInit(int np, int N, int T) implements specInit {
 	return out;
 }
 
-
 /*
+void specCenter(int N, int T, ref float[N][T] out){    
+    if ( (N>=T*2) && (T>1 && T<4) ){
+        for(int t=1; t<T; ++t){
+            for(int i=t; i<N-t; ++i){
+                out[t][i] = out[t-1][i-1] + out[t-1][i+1];
+            }   
+        }
+    }
+    return out; 
+}
+
 float[N][T] fastCompute(int N, int T, float[N][T] in) implements spec {
 	float[N][T] out = in;
-	global int n = N/np;
-	spmd_fork() {
-		float[n][T] A;
-		move_in(N, T, out, n, A));
-		
-		move_out(N, T, out, n, A);
-	}
+    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
+    		global int n = N/np;
+		spmd_fork() {
+			float[n][T] A;
+			move_in(N, T, out, n, A));
+			fastCenter(n, T, A);
+			//communicate
+			float[T*2][T] B;
+			fastTriangle(n, T, A, );
+			move_out(N, T, out, n, A);
+		}
+    }
 }
 */
 
