@@ -34,8 +34,6 @@ stencil float[N][T] specCenter(int np, int N, int T, float[N][T] in) {
 }
 */
 
-/*
-
 float[N][T] specInit(int np, int N, int T) {
 	float[N][T] out = 0.0;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
@@ -47,7 +45,7 @@ float[N][T] specInit(int np, int N, int T) {
 }
 
 float[N][T] fastInit(int np, int N, int T) implements specInit {
-	float[N][T] out;
+	float[N][T] out = 0.0;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
 	    	global int n = N/np;
 		spmdfork(np) {
@@ -61,7 +59,6 @@ float[N][T] fastInit(int np, int N, int T) implements specInit {
 	return out;
 }
 
-*/
 
 /*
 float[N][T] fastCompute(int N, int T, float[N][T] in) implements spec {
@@ -77,6 +74,7 @@ float[N][T] fastCompute(int N, int T, float[N][T] in) implements spec {
 */
 
 
+/*
 stencil float[N][T] specNext(int np, int N, int T, float[N][T] in) {
     float[N][T] out = in;
     if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
@@ -98,3 +96,4 @@ stencil float[N][T] fastNext(int np, int N, int T, float[N][T] in) implements sp
     }
     return out;
 }
+*/
