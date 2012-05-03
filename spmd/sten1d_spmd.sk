@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 16 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--bnd-inbits 2 --bnd-cbits 3 --bnd-unroll-amnt 16 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 //#define SPMD_MAX_BUF_LEN 16
 //include "spmd2.skh"
@@ -51,7 +51,7 @@ float[N][T] fastInit(int np, int N, int T) implements specInit {
 		spmdfork(np) {
 			float[n][T] A = 0.0;
 			for (int i=0; i<n; ++i) {
-				out[0][i] = 1.0;
+				A[0][i] = 1.0;
 			}
 			move_out(N, T, out, n, A);
 		}
