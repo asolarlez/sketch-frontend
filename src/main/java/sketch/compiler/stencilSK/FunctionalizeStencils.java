@@ -451,7 +451,9 @@ public class FunctionalizeStencils extends FEReplacer {
 	        	Function f = iter.next();
 	        	f = ((Function)f.accept(v0));
 
-            f = (Function) f.accept(new EliminateReturns());
+            EliminateReturns elr = new EliminateReturns();
+            elr.setNres(nres);
+            f = (Function) f.accept(elr);
             f = ((Function) f.accept(v23));
             f = ((Function) f.accept(v24));
             f = ((Function) f.accept(new FlattenStmtBlocks()));

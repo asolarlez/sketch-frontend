@@ -20,11 +20,15 @@ void spmdtransfer(global spmdinfo info, global int size, float [size] src_buff, 
 {
   spmdbarrier();
   if (scond) {
-    info.buf[(recipient*size)::size] = src_buff;
+    for (int i=0; i<size; ++i) {
+      info.buf[(recipient*size)+i] = src_buff[i];
+    }
   }
   spmdbarrier();
   if (rcond) {
-    dest_buff = info.buf[(spmdpid)*size::size];
+    for (int i=0; i<size; ++i) {
+      dest_buff[i] = info.buf[(spmdpid)*size+i];
+    }
   }
 }
 

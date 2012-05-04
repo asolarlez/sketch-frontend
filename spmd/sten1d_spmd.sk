@@ -47,7 +47,7 @@ stencil float[N][T] fastInit(int np, int N, int T) implements specInit {
 }
 */
 
-float[N][T] specCompute(int np, int N, int T, float[N][T] in) {
+stencil float[N][T] specCompute(int np, int N, int T, float[N][T] in) {
 	float[N][T] out = in;
     if( (np==1) && (N%np==0) && (T>1 && T<4) && (N>T*2) ){
 	    	for (int t=1; t<T; ++t) {
@@ -116,7 +116,7 @@ void specCenter(int n, int T, ref float[n+T+T%2][T] out){
     }
 }
 
-float[N][T] fastCompute(int np, int N, int T, float[N][T] in) implements specCompute {
+stencil float[N][T] fastCompute(int np, int N, int T, float[N][T] in) implements specCompute {
 	float[N][T] out = in;
     if( (np == 1) && (N%np==0) && (T>1 && T<4) && (N>T*2) ){
     		global int n = N/np;
