@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 4 --bnd-cbits 3 --bnd-unroll-amnt 4 --bnd-inline-amnt 2 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--bnd-inbits 4 --bnd-cbits 3 --bnd-unroll-amnt 9 --bnd-inline-amnt 2 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 float[n+T+T%2][T] specCenter(int n, int T, float[n+T+T%2][T] in) {    
 	float[n+T+T%2][T] out = in;
