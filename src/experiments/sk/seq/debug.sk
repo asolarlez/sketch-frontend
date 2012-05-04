@@ -1,15 +1,8 @@
+harness void main(bit[3] i){
 
-int W = 5;
+        bit[3] t = {| i (& | \|) ??|};
+        assert t[0]==1;
 
-bit[W] avg(bit[W] x, bit[W] y){
-    bit[2*W] xx = x;
-    bit[2*W] yy = y;
-    bit[2*W] r = 
-    return ((xx+yy)[0::W])>>1;
+
+
 }
-
-bit[W] avgGood(bit[W] x, bit[W] y)implements avg{
-    
-    return (x+y)>>1;
-}
-

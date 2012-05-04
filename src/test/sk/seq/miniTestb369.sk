@@ -1,0 +1,15 @@
+stencil int[N] zzzz(int N, int[N] ar){
+    for(int i=0; i<N; ++i){
+        ar[i] = ar[i]  +1;
+    }
+    return ar;
+}
+
+stencil int[N] foo(int N, int[N] ar) implements zzzz{
+    for(int i=??-9; i<N; ++i){
+        assert i>=0;
+        assert ar[i] * ar[i] >= 0;
+        ar[i] = ar[i]  +1;
+    }
+    return ar;
+}
