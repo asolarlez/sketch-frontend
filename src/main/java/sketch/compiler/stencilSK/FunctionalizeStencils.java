@@ -37,6 +37,7 @@ import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -260,7 +261,7 @@ public class FunctionalizeStencils extends FEReplacer {
         // add the functions generated from ArrFunction objects to the program
         for (Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext();) {
             ArrFunction af = it.next();
-            // System.out.println(af.toString());
+            System.out.println(af.toString());
             af.processMax();
             functions.add(af.toAST());
         }
@@ -483,8 +484,9 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-            // f.accept(new SimpleCodePrinter());
+            f.accept(new SimpleCodePrinter());
                 //System.out.println("After: "+ f.toString());
+
                 f.accept(this);
             }
 	        	        

@@ -350,7 +350,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					String outParamName  = outParam.getName();
 					assert outParam.isParameterOutput();
 
-                    Expression defaultValue = func.getReturnType().defaultValue();
+                    Expression defaultValue = p.getType().defaultValue();
 					assert defaultValue != null : "[FunctionParamExtension] default value null!";
 					if (defaultValue == null) { assertFalse(); }
 					

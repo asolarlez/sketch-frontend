@@ -222,7 +222,7 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprBinary(ExprBinary exp)
-    {
+ {
         Expression left = doExpression(exp.getLeft());
         Expression right = doExpression(exp.getRight());
         if (left == exp.getLeft() && right == exp.getRight())
