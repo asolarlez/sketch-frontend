@@ -261,6 +261,10 @@ public class ResolveMax {
 
 		}
 
+        public Object visitExprFunCall(ExprFunCall exp) {
+            throw new RuntimeException("NYI cannot handle funcall");
+        }
+
 
 		public Object visitExprBinaryLE(ExprBinary exp){
 		    Expression left = exp.getLeft();
