@@ -14,14 +14,16 @@ float[n+T+T%2][T] specCenter(int n, int T, float[n+T+T%2][T] in) {
 
 float[n+T+T%2][T] fastCenter(int n, int T, float[n+T+T%2][T] in) implements specCenter {
 	float[n+T+T%2][T] out = in;
-	repeat(2){
-	    for(int s=(??(2)-1)*N + (??(2)-1)*T; s<(??(2)-1)*N + (??(2)-1)*T; ++s){
-	        for(int t= (??(2)-1)*(s/2) +((??(2)-1)*N + (??(2)-1)*T+(??-2)); t<(??(2)-1)*(s/2) +((??(2)-1)*N + (??(2)-1)*T+(??-2)); ++t){
-	            int i = (T+1)/2+s-t;
-	            assert t> 0 && t < T; assert i > 0 && i < N;
-                out[t][i] = out[t-1][i-1] + out[t-1][i+1];
-	        }           
-	    }
+	if ( (n>T*2) && (T>1 && T<4) ){
+		repeat(2){
+		    for(int s=(??(2)-1)*N + (??(2)-1)*T; s<(??(2)-1)*N + (??(2)-1)*T; ++s){
+		        for(int t= (??(2)-1)*(s/2) +((??(2)-1)*N + (??(2)-1)*T+(??-2)); t<(??(2)-1)*(s/2) +((??(2)-1)*N + (??(2)-1)*T+(??-2)); ++t){
+		            int i = (T+1)/2+s-t;
+		            assert t> 0 && t < T; assert i > 0 && i < N;
+	                out[t][i] = out[t-1][i-1] + out[t-1][i+1];
+		        }           
+		    }
+		}
 	}
 	return out;
 }
