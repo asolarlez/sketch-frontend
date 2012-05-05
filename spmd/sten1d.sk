@@ -1,7 +1,7 @@
 pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 9 --bnd-inline-amnt 2 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
 
 void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
-    if ( (n>T*2) && (T>1 && T<4) ){
+    if ( (n>(T-1)*2) && (T>1 && T<4) ){
         for(int t=1; t<T; ++t){
             for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
                 A[t][i] = A[t-1][i-1] + A[t-1][i+1];
@@ -11,18 +11,46 @@ void specCenter(int n, int T, ref float[n+T+T%2][T] A){
 }
 
 void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
-	if ( (n>T*2) && (T>1 && T<4) ){
-		repeat(2){
-		    for(int s=(??(2)-1)*n + (??(2)-1)*T; s<(??(2)-1)*n + (??(2)-1)*T; ++s){
-		        for(int t= (??(2)-1)*(s/2) +((??(2)-1)*n + (??(2)-1)*T+(??-2)); t<(??(2)-1)*(s/2) +((??(2)-1)*n + (??(2)-1)*T+(??-2)); ++t){
-		            assert t> 0 && t < T; assert s-t > 0 && s-t < n;
-		            int i = (T+1)/2+s-t;
-	                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
-		        }           
-		    }
+	if ( (n>(T-1)*2) && (T>1 && T<4) ){
+		for (int j=1; j<T-1; ++j) {
+			for (int t=1; t<=j; ++t) {
+				int i = (T+1)/2 + j*2-t + ??(1);
+				A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+				A[t][i+1] = A[t-1][i] + A[t-1][i+2];
+			}
 		}
+	    for(int j=2*(T-2)+1; j<n-1; ++j){
+	        for(int t=1; t<T; ++t){
+	            int i = (T+1)/2 + j-t + ??(1);
+                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+	        }           
+	    }
 	}
 }
+
+//void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
+//    if ( (n>T*2) && (T>1 && T<4) ){
+//        for(int t=1; t<T; ++t){
+//            for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
+//                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+//            }   
+//        }
+//    }
+//}
+//
+//void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
+//	if ( (n>T*2) && (T>1 && T<4) ){
+//		repeat(2){
+//		    for(int s=(??(2)-1)*n + (??(2)-1)*T; s<(??(2)-1)*n + (??(2)-1)*T; ++s){
+//		        for(int t= (??(2)-1)*(s/2) +((??(2)-1)*n + (??(2)-1)*T+(??-2)); t<(??(2)-1)*(s/2) +((??(2)-1)*n + (??(2)-1)*T+(??-2)); ++t){
+//		            assert t> 0 && t < T; assert s-t > 0 && s-t < n;
+//		            int i = (T+1)/2+s-t;
+//	                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+//		        }           
+//		    }
+//		}
+//	}
+//}
 
 stencil float[n+T+T%2][T] specCenterSten(int n, int T, float[n+T+T%2][T] in) {    
 	float[n+T+T%2][T] out = in;
