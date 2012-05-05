@@ -14,43 +14,20 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 	if ( (n>(T-1)*2) && (T>1 && T<4) ){
 		for (int j=1; j<T-1; ++j) {
 			for (int t=1; t<=j; ++t) {
-				int i = (T+1)/2 + j*2-t + ??(1);
+				int i = (T+1)/2 + j*2-t + pos_neg_zero();  // 0
 				A[t][i] = A[t-1][i-1] + A[t-1][i+1];
 				A[t][i+1] = A[t-1][i] + A[t-1][i+2];
 			}
 		}
 	    for(int j=2*(T-2)+1; j<n-1; ++j){
 	        for(int t=1; t<T; ++t){
-	            int i = (T+1)/2 + j-t + ??(1);
+	            int i = (T+1)/2 + j-t + pos_neg_zero();  // 1
                 A[t][i] = A[t-1][i-1] + A[t-1][i+1];
 	        }           
 	    }
 	}
 }
 
-//void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
-//    if ( (n>T*2) && (T>1 && T<4) ){
-//        for(int t=1; t<T; ++t){
-//            for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
-//                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
-//            }   
-//        }
-//    }
-//}
-//
-//void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
-//	if ( (n>T*2) && (T>1 && T<4) ){
-//		repeat(2){
-//		    for(int s=(??(2)-1)*n + (??(2)-1)*T; s<(??(2)-1)*n + (??(2)-1)*T; ++s){
-//		        for(int t= (??(2)-1)*(s/2) +((??(2)-1)*n + (??(2)-1)*T+(??-2)); t<(??(2)-1)*(s/2) +((??(2)-1)*n + (??(2)-1)*T+(??-2)); ++t){
-//		            assert t> 0 && t < T; assert s-t > 0 && s-t < n;
-//		            int i = (T+1)/2+s-t;
-//	                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
-//		        }           
-//		    }
-//		}
-//	}
-//}
 
 stencil float[n+T+T%2][T] specCenterSten(int n, int T, float[n+T+T%2][T] in) {    
 	float[n+T+T%2][T] out = in;
@@ -63,52 +40,3 @@ stencil float[n+T+T%2][T] fastCenterSten(int n, int T, float[n+T+T%2][T] in) imp
 	fastCenter(n, T, out);
 	return out;
 }
-/*
-stencil float[N][T] specCenter(int N, int T, float[N][T] in){    
-    float[N][T] out = in;
-    if(N>=4 && T >= 3 && N > T*2){
-        for(int t=1; t<T; ++t){
-            for(int i=t; i<N-t; ++i){
-                out[t][i] = out[t-1][i-1] + out[t-1][i+1];
-            }   
-        }
-    }
-    return out; 
-}
-
-generator void stenGen(fun sten, int N, int T){
-    repeat(2){
-        for(int s=(??(2)-1)*N + (??(2)-1)*T; s<(??(2)-1)*N + (??(2)-1)*T; ++s){
-            for(int t= (??(2)-1)*(s/2) +((??(2)-1)*N + (??(2)-1)*T+(??-2)); t<(??(2)-1)*(s/2) +((??(2)-1)*N + (??(2)-1)*T+(??-2)); ++t){
-                int i = s-t;
-                assert t> 0 && t < T; assert i > 0 && i < N;
-                sten(t, i); 
-            }           
-        }  
-    }
-}
-
-
-stencil float[N][T] fastCenter(int N, int T, float[N][T] in) implements specCenter {
-    float[N][T] out = in;
-    if(N>=4 && T >= 3 && N > T*2){
-        generator void sten(int t, int i){
-            out[t][i] = out[t-1][i-1] + out[t-1][i+1];
-        }
-        stenGen(sten, N, T);
-//        for (int s=2; s<T*2; ++s) {
-//                for (int t=1; t<s/2; ++t) {
-//            		int i = s-t;
-//        			out[t][i] = out[t-1][i-1] + out[t-1][i+1];
-//        		}
-//        }
-//        for (int s=T*2; s<N; ++s) {
-//        		for (int t=1; t<T; ++t) {
-//        			int i = s-t;
-//        			out[t][i] = out[t-1][i-1] + out[t-1][i+1];
-//        		}
-//        }
-    }
-    return out; 
-}
-*/

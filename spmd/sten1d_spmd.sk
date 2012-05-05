@@ -149,14 +149,14 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 	if ( (n>(T-1)*2) && (T>1 && T<4) ){
 		for (int j=1; j<T-1; ++j) {
 			for (int t=1; t<=j; ++t) {
-				int i = (T+1)/2 + j*2-t + pos_neg_zero();
+				int i = (T+1)/2 + j*2-t + pos_neg_zero();  // 0
 				A[t][i] = A[t-1][i-1] + A[t-1][i+1];
 				A[t][i+1] = A[t-1][i] + A[t-1][i+2];
 			}
 		}
 	    for(int j=2*(T-2)+1; j<n-1; ++j){
 	        for(int t=1; t<T; ++t){
-	            int i = (T+1)/2 + j-t + pos_neg_zero();
+	            int i = (T+1)/2 + j-t + pos_neg_zero();  // 1
                 A[t][i] = A[t-1][i-1] + A[t-1][i+1];
 	        }           
 	    }
@@ -183,7 +183,7 @@ stencil float[N][T] fastCompute(int np, int N, int T, float[N][T] in) implements
 		spmdfork(np) {
 			float[n+T+T%2][T] A;
 			move_in(N, T, out, n, A);
-			fastCenter(n, T, A);
+			specCenter(n, T, A);
 			fastLeft(info, np, n, T, A);
 			fastRight(info, np, n, T, A);
 			move_out(N, T, out, n, A);
