@@ -135,19 +135,8 @@ void fastRight(global spmdinfo info, global int np, global int n, global int T, 
 	}*/
 }
 
-/*void specCenter(int n, int T, ref float[n+T+T%2][T] out){    
+void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
     if ( (n>T*2) && (T>1 && T<4) ){
-        for(int t=1; t<T; ++t){
-            for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
-                out[t][i] = out[t-1][i-1] + out[t-1][i+1];
-            }   
-        }
-    }
-}*/
-
-
-void specCenter(int n, int T, ref float[n+T+T%2][T] A) {    
-	if ( (n>T*2) && (T>1 && T<4) ){
         for(int t=1; t<T; ++t){
             for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
                 A[t][i] = A[t-1][i-1] + A[t-1][i+1];
@@ -190,7 +179,7 @@ stencil float[N][T] fastCompute(int np, int N, int T, float[N][T] in) implements
 		spmdfork(np) {
 			float[n+T+T%2][T] A;
 			move_in(N, T, out, n, A);
-			specCenter(n, T, A);
+			fastCenter(n, T, A);
 			fastLeft(info, np, n, T, A);
 			fastRight(info, np, n, T, A);
 			move_out(N, T, out, n, A);
