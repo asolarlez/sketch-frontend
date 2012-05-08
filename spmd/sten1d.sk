@@ -43,7 +43,7 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 			for (int s=legen3(n, T, T%2)+signed(); s<legen3(n, T, T%2)+signed(); ++s) {
 				for (int t=legen4(n, T, T%2, s)+signed(); t<legen4(n, T, T%2, s)+signed(); ++t) {
 					repeat(??) {
-						sten(t, legen3(s, -t)+signed());
+						sten(t, legen2(s, -t)+signed());
 					}
 				}
 			}
