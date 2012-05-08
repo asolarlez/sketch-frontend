@@ -34,6 +34,11 @@ generator int legen4(int x, int y, int z, int w) {
 	return legen3(x, y, z) + ??*w;
 }
 
+generator int legen5(int x, int y, int z, int w, int u) {
+	return legen4(x, y, z, w) + ??*u;
+}
+
+
 void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 	generator void sten(int t, int i) {
 		A[t][i] = A[t-1][i-1]+A[t-1][i+1];
@@ -43,7 +48,7 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 			for (int s=legen3(n, T, T%2)+signed(); s<legen3(n, T, T%2)+signed(); ++s) {
 				for (int t=legen4(n, T, T%2, s)+signed(); t<legen4(n, T, T%2, s)+signed(); ++t) {
 					repeat(??) {
-						sten(t, legen2(s, -t)+signed());
+						sten(t, legen5(n, T, T%2, s, -t)+signed());
 					}
 				}
 			}
