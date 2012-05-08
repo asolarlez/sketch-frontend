@@ -44,14 +44,14 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 		A[t][i] = A[t-1][i-1]+A[t-1][i+1];
 	}
 	if (	(n>(T-1)*2) && (T>1 && T<4) ){
-		repeat(2){
-			for (int s=legen3(n, T, T%2)+signed(); s<legen3(n, T, T%2)+signed(); ++s) {
-				for (int t=1; t<legen5(n, T, T%2, s, s%2)+signed(); ++t) {
-					sten(t, legen5(n, T, T%2, s-t, (s-t)%2)+signed());
-				}
-			}
-		}
-	/*	for (int j=1; j<T-1; ++j) {
+//		repeat(2){
+//			for (int s=legen3(n, T, T%2)+signed(); s<legen3(n, T, T%2)+signed(); ++s) {
+//				for (int t=1; t<legen5(n, T, T%2, s, s%2)+signed(); ++t) {
+//					sten(t, legen5(n, T, T%2, s-t, (s-t)%2)+signed());
+//				}
+//			}
+//		}
+		for (int j=1; j<T-1; ++j) {
 			for (int t=1; t<=j; ++t) {
 				int i = (T+1)/2 + j*2-t + pos_neg_zero();  // 0
 				A[t][i] = A[t-1][i-1] + A[t-1][i+1];
@@ -63,7 +63,7 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 	            int i = (T+1)/2 + j-t + pos_neg_zero();  // 1
                 A[t][i] = A[t-1][i-1] + A[t-1][i+1];
 	        }           
-	    }*/
+	    }
 	}
 }
 
