@@ -46,10 +46,8 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 	if (	(n>(T-1)*2) && (T>1 && T<4) ){
 		repeat(2){
 			for (int s=legen3(n, T, T%2)+signed(); s<legen3(n, T, T%2)+signed(); ++s) {
-				for (int t=legen4(n, T, T%2, s)+signed(); t<legen4(n, T, T%2, s)+signed(); ++t) {
-					repeat(??) {
-						sten(t, legen5(n, T, T%2, s, -t)+signed());
-					}
+				for (int t=1; t<legen5(n, T, T%2, s, s%2)+signed(); ++t) {
+					sten(t, legen5(n, T, T%2, s-t, (s-t)%2)+signed());
 				}
 			}
 		}
