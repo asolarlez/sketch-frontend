@@ -22,12 +22,16 @@ generator int signed() {
 	return ??*pos_neg();
 }
 
+generator int legen2(int x, int y) {
+	return ??*x+??*y;
+}
+
 generator int legen3(int x, int y, int z) {
-	return ??*x + ??*y + ??*z;
+	return legen2(x, y) + ??*z;
 }
 
 generator int legen4(int x, int y, int z, int w) {
-	return ??*x + ??*y + ??*z + ??*w;
+	return legen3(x, y, z) + ??*w;
 }
 
 void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
