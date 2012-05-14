@@ -52,8 +52,8 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 //				}
 //			}
 //		}
-		int start1 = legen3(n, T, (T+1)/2) + signed();
-		int end1 = legen3(n, T, (T+1)/2) + signed();
+		int start1 = legen2(n, T) + signed();
+		int end1 = legen2(n, T) + signed();
 		for (int j=start1 /*1*/; j<end1 /*(T-2)*2+1*/; ++j) {
 			for (int t=1; t<(j+1)/2+1; ++t) {
 				int i = (T+1)/2 + j-t+1;  // 0
