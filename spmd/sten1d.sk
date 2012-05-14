@@ -28,15 +28,15 @@ generator int legen2(int x, int y) {
 }
 
 generator int legen3(int x, int y, int z) {
-	return legen2(x, y) + ??*z;
+	return ??*x + ??*y + ??*z;
 }
 
 generator int legen4(int x, int y, int z, int w) {
-	return legen3(x, y, z) + ??*w;
+	return ??*x + ??*y + ??*z + ??*w;
 }
 
 generator int legen5(int x, int y, int z, int w, int u) {
-	return legen4(x, y, z, w) + ??*u;
+	return ??*x + ??*y + ??*z + ??*w + ??*u;
 }
 
 
