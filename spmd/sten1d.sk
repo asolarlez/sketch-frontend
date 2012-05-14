@@ -52,25 +52,27 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 //				}
 //			}
 //		}
-		int start1 = legen2(n, T) + signed();
-		int end1 = legen2(n, T) + signed();
-		for (int j=start1 /*1*/; j<end1 /*(T-2)*2+1*/; ++j) {
-			int e1 = legen4(n, T, j/2, j%2) + signed; // (j+1)/2+1 = j/2 + j%2 + 1
-			for (int t=1; t<e1; ++t) {
-				assert t>0 && t<T;
-				int i = (T+1)/2 + j-t+1;  // 0
-				A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+		repeat(2) {
+			int start1 = legen2(n, T) + signed();
+			int end1 = legen2(n, T) + signed();
+			for (int j=start1 /*1*/; j<end1 /*(T-2)*2+1*/; ++j) {
+				int e1 = legen4(n, T, j/2, j%2) + signed(); // (j+1)/2+1 = j/2 + j%2 + 1
+				for (int t=1; t<e1; ++t) {
+					assert t>0 && t<T;
+					int i = (T+1)/2 + j-t+1;
+					A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+				}
 			}
 		}
-		int start2 = legen2(n, T) + signed();
-		int end2 = legen2(n, T) + signed();
-	    for(int j= start2  /*2*(T-2)+1 = 2*T-3*/; j<end2 /*n-1*/; ++j){
-	    		for(int t=1; t<T; ++t){
-				assert t>0 && t<T;
-	            int i = (T+1)/2 + j-t + 1;  // 1
-                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
-	        }           
-	    }
+//		int start2 = legen2(n, T) + signed();
+//		int end2 = legen2(n, T) + signed();
+//	    for(int j= start2  /*2*(T-2)+1 = 2*T-3*/; j<end2 /*n-1*/; ++j){
+//	    		for(int t=1; t<T; ++t){
+//				assert t>0 && t<T;
+//	            int i = (T+1)/2 + j-t + 1;  // 1
+//                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+//	        }           
+//	    }
 	}
 }
 
