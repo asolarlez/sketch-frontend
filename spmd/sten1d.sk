@@ -1,4 +1,4 @@
-pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 4 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 4 --bnd-inline-amnt 2 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
 
 void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
     if ( (n>(T-1)*2) && (T>1 /*&& T<4*/) ){
