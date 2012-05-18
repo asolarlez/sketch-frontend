@@ -1,7 +1,7 @@
-pragma options "-p preproc --bnd-inbits 4 --bnd-cbits 3 --bnd-unroll-amnt 9 --bnd-inline-amnt 10 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 4 --bnd-inline-amnt 5 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
 
 void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
-    if ( (n>(T-1)*2) && (T>1 /*&& T<4*/) ){
+    if ( (n<=12) && (n>(T-1)*2) && (T>2 /*&& T<4*/) ){
         for(int t=1; t<T; ++t){
             for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
                 A[t][i] = A[t-1][i-1] + A[t-1][i+1];
@@ -43,12 +43,12 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 	generator void sten(int t, int i) {
 		A[t][i] = A[t-1][i-1]+A[t-1][i+1];
 	}
-	if (	(n>(T-1)*2) && (T>1 /*&& T<4*/) ){
+	if (	(n<=12) && (n>(T-1)*2) && (T>2 /*&& T<4*/) ){
 		repeat(2) {
 			int start1 = legen2(n, T) + signed();
 			int end1 = legen2(n, T) + signed();
 			for (int j=start1 /*1*/; j<end1 /*(T-2)*2+1*/; ++j) {
-				int e1 = legen3(n, T, (j+??)/2) + signed(); // (j+1)/2+1 = j/2 + j%2 + 1
+				int e1 = legen2(T, (j+??)/2) + signed(); // (j+1)/2+1 = j/2 + j%2 + 1
 				for (int t=1; t<e1; ++t) {
 					assert t>0 && t<T;
 					int i = (T+1)/2 + j-t+1;
@@ -62,7 +62,7 @@ void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
 //	    		for(int t=1; t<T; ++t){
 //				assert t>0 && t<T;
 //	            int i = (T+1)/2 + j-t + 1;  // 1
-//                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+//                sten(t, i);
 //	        }           
 //	    }
 	}
