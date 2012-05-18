@@ -1,6 +1,6 @@
-pragma options "-p preproc --bnd-inbits 6 --bnd-cbits 4 --bnd-unroll-amnt 10 --bnd-inline-amnt 15 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 20"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 5 --bnd-cbits 4 --bnd-unroll-amnt 10 --bnd-inline-amnt 15 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 20"; //  --be:showDAG
 
-int K = 4;
+int K = 3;
 
 void specCenter(int n, int T, ref float[n][T] A){    
     if ( (T>=3) && (n>=(T-1)*2*K+1) ){
@@ -50,8 +50,8 @@ void fastCenter(int n, int T, ref float[n][T] A) {
 //			int split = 2*K*T - 3*K;
 			for (int j=K; j<split; ++j) {
 				int q = ??;  // K
-				int m = q+1+??;  // 2*K
-				assert q<m;
+				int m = ??;  // 2*K
+				//assert q<m;
 				int top = (j+q)/m+signed();
 //				int top = (j+K)/(2*K)+1;
 				for (int t=1; t<top; ++t) {
