@@ -73,10 +73,29 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 
     public Object visitStmtFor(StmtFor stmt)
     {
-    	if( stmt.getCond() != null){
-    		stmt.getCond().accept( new UpgradeStarToInt(this, TypePrimitive.bittype)  );
-    	}
-       return super.visitStmtFor(stmt);
+
+        Statement newInit = null;
+        if (stmt.getInit() != null) {
+            newInit = (Statement) stmt.getInit().accept(this);
+        }
+        if (stmt.getCond() != null) {
+            stmt.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype));
+        }
+        Expression newCond = stmt.getCond();
+        Statement newIncr = null;
+        if (stmt.getIncr() != null) {
+            newIncr = (Statement) stmt.getIncr().accept(this);
+        }
+        Statement tmp = stmt.getBody();
+        Statement newBody = StmtEmpty.EMPTY;
+        if (tmp != null) {
+            newBody = (Statement) tmp.accept(this);
+        }
+
+        if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
+                newIncr == stmt.getIncr() && newBody == stmt.getBody())
+            return stmt;
+        return new StmtFor(stmt, newInit, newCond, newIncr, newBody);
     }
 
     public Object visitStmtLoop(StmtLoop stmt){

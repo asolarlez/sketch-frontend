@@ -29,7 +29,7 @@ public class ResolveMax {
 	List<Expression>[] meArr;
 	Integer[] tainted;
 
-	public static Integer tag = new Integer(0);
+    public final static Integer tag = new Integer(0);
 	public ResolveMax(StmtMax smax){
 		this.smax = smax;
 		sz = smax.dim;
