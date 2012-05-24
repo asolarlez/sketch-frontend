@@ -1,4 +1,4 @@
-pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 9 --bnd-inline-amnt 2 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 5 --bnd-cbits 4 --bnd-unroll-amnt 10 --bnd-inline-amnt 15 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 20"; //  --be:showDAG
 
 #define SPMD_MAX_BUF_LEN 16
 #include "spmd2.skh"
