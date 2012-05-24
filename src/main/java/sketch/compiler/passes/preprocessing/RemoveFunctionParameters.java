@@ -394,7 +394,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                     funsToVisit.add(nres.getFunName(fun.getName()));
                 }
                 if (fun.getSpecification() != null) {
-                    funsToVisit.add(nres.getFunName(fun.getSpecification()));
+                    String spec = nres.getFunName(fun.getSpecification());
+                    assert spec != null : "spec of " + fun.getName() +
+                            " is null. did you put the wrong name?";
+                    funsToVisit.add(spec);
                     funsToVisit.add(nres.getFunName(fun.getName()));
                 }
             }
