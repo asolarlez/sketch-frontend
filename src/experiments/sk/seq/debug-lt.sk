@@ -1,20 +1,29 @@
-generator int foo1 (ref int in1, ref int in2, ref int in3)/*miniTestb305.sk:11*/
-{
-  return {| ((in1 | in2) | in3) |};
-}
-/*miniTestb305.sk:3*/
-int gen_foo1 (ref int in1, ref int in2, ref int in3)/*miniTestb305.sk:3*/
-{
-  if(??/*H__0*/)/*miniTestb305.sk:4*/
-  {
-    {
-      return (gen_foo1(in1, in2, in3)) + (gen_foo1(in1, in2, in3));
+pragma options "--bnd-unroll-amnt 32 --be:showDAG";
+
+int[N] select(fun pred, int N, int[N] A, ref int sz){
+  sz = 0;
+  int[N] out;
+  for(int i=0; i<N; ++i){
+    if(pred(A[i])){
+      out[sz] = A[i]; ++sz;
     }
   }
-  return {| ((in1 | in2) | in3) |};
+
+  return out;
+
 }
-/*miniTestb305.sk:10*/
-harness void main (int in1, int in2, int in3)/*miniTestb305.sk:10*/
-{
-  assert ((gen_foo1(in1, in2, in3)) == (in1 + in3));
+
+bit pred(int x){
+  return x > ??;
 }
+
+harness  void foo(int N, int[N] in, int i){
+  int S;
+  int[N] tmp = select(pred, N, in, S);
+  int[S] sel = tmp[0::S];
+
+  if(i<S){
+    assert sel[i] > 3;
+  }
+
+} 

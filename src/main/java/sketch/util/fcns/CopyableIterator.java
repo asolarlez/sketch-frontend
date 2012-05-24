@@ -21,7 +21,7 @@ public class CopyableIterator<T> implements Iterator<T>, Cloneable {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
+    public CopyableIterator<T> clone() {
         return new CopyableIterator<T>(vec);
     }
 

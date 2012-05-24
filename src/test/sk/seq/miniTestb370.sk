@@ -1,0 +1,21 @@
+
+pragma options "-p lowering --bnd-inbits 2 --bnd-unroll-amnt 32 --beopt:simiters 20";
+
+ harness void foo(int A, int B, int C, int[A][B][C] ar, int[2] part, int x, int y ){
+     int X = part[0];
+     int Y = part[1];
+     if(X>0 && Y>0 && X+x < B && Y+y < C){
+         int[A][X][Y] test;
+         for(int i=0; i<Y && i<8; ++i){
+             test[i] = ar[y+i][x::X];
+         }
+         for(int i=0; i<A && i<9; ++i){
+             for(int j=0; j<X&& j<9; ++j){
+                 for(int k=0; k<Y && k<9; ++k){
+                     assert test[k][j][i] == ar[y+k][x+j][i];
+                 }
+             }
+         }
+     
+     }    
+ }

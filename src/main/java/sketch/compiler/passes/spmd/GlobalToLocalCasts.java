@@ -60,10 +60,10 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
         cr.setNres(nres);
         StreamSpec result = (StreamSpec) cr.visitStreamSpec(spec);
         
-//        System.out.println("after global to local casts:");
-//        final CodePrinterVisitor pr2 = new CodePrinterVisitor();
-//        pr2.setNres(nres);
-//        result.accept(pr2);
+        System.out.println("after global to local casts:");
+        final CodePrinterVisitor pr2 = new CodePrinterVisitor();
+        pr2.setNres(nres);
+        result.accept(pr2);
         
         return result;
     }

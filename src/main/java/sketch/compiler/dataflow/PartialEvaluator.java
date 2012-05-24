@@ -23,6 +23,8 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -31,6 +33,7 @@ import sketch.util.datastructures.TprintTuple;
 
 class CloneHoles extends FEReplacer{
     
+    // TODO xzl: what's this?
     public Object visitExprStar(ExprStar es){
         ExprStar newStar = new ExprStar(es);
         es.renewName();
@@ -216,6 +219,34 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
+    @Override
+    public Object visitSpmdPid(SpmdPid pid) {
+        if (isReplacer) {
+            exprRV = (Expression) super.visitSpmdPid(pid);
+        }
+        return vtype.BOTTOM(TypePrimitive.inttype);
+    }
+
+    @Override
+    public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
+        Statement body = null;
+        Expression nproc = null;
+        Level lvl = state.pushLevel("StmtSpmdFork");
+        try {
+            startSpmdfork(null);
+            try {
+                abstractValue vnproc = (abstractValue) stmt.getNProc().accept(this);
+                nproc = exprRV;
+                body = (Statement) stmt.getBody().accept(this);
+
+            } finally {
+                state.popParallelSection();
+            }
+        } finally {
+            state.popLevel(lvl);
+        }
+        return isReplacer ? new StmtSpmdfork(stmt.getCx(), null, nproc, body) : stmt;
+    }
 
     public Object visitExprField(ExprField exp) {
         exp.getLeft().accept(this);
@@ -471,7 +502,7 @@ public class PartialEvaluator extends FEReplacer {
         return vtype.STAR(star);
     }
     
-    protected Expression interpretActualParam(Expression e){
+    protected Expression interpretActualParam(Expression e) {
         return e;
     }
 
@@ -629,6 +660,8 @@ public class PartialEvaluator extends FEReplacer {
             Expression base = ear.getBase();
             Expression nbase = (Expression) base.accept(this);
             RangeLen rl = ear.getSelection();
+            // _debug.append(" ear: " + ear);
+            // _debug.append(" base:" + base + " nbase:" + nbase + " ");
             abstractValue olidx=null;
             olidx = lhsIdx;
             lhsIdx = (abstractValue)rl.start().accept(PartialEvaluator.this);
@@ -638,6 +671,7 @@ public class PartialEvaluator extends FEReplacer {
             if( t instanceof TypeArray ){
                 TypeArray ta = (TypeArray) t;
                 abstractValue tlen = typeLen(ta);
+                // _debug.append(" ta:" + ta + " tlen:" + tlen + " ");
                 t = ta.getBase();
                 if(olidx != null){
                     lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) );
@@ -647,7 +681,9 @@ public class PartialEvaluator extends FEReplacer {
                     if( tlen.hasIntVal() ){
                         int size = tlen.getIntVal();
                         if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
-                            throw new ArrayIndexOutOfBoundsException(ear.getCx() + "ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size);
+                            throw new ArrayIndexOutOfBoundsException(ear.getCx() +
+                                    " ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size +
+                                    ")" /* + _debug.toString() */);
                     }
                 }
             }
@@ -908,6 +944,10 @@ public class PartialEvaluator extends FEReplacer {
      *
      */
     protected void startFork(StmtFork loop){
+        state.pushParallelSection();
+    }
+
+    protected void startSpmdfork(StmtSpmdfork stmt) {
         state.pushParallelSection();
     }
 
@@ -1176,12 +1216,13 @@ public class PartialEvaluator extends FEReplacer {
         String msg = null;
         msg = stmt.getMsg();
         try{
-            state.Assert(vcond, msg, stmt.isSuper());
+            state.Assert(vcond, stmt);
         }catch(RuntimeException e){
             System.err.println(stmt.getCx() + ":" +  e.getMessage() );
             throw e;
         }
-        return isReplacer ?  new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper())  : stmt;
+        return isReplacer ? new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
+                stmt.getAssertMax()) : stmt;
     }
 
     @Override
@@ -1324,7 +1365,7 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue avlen = (abstractValue) t.getLength().accept(this);
         Expression nlen = exprRV;
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return isReplacer? new TypeArray(nbase, nlen) : t;
+        return isReplacer ? new TypeArray(nbase, nlen, t.getMaxlength()) : t;
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt)

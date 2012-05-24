@@ -1,0 +1,20 @@
+pragma options "--bnd-unroll-amnt 15";
+
+stencil int[N] foo(int N)implements foosp{
+    int[N] B=0;
+    int[N] A=0;
+    for(int i=0; i<N/2; ++i){
+        B[i] = i;
+        A[i+B[i]] = i;
+    }        
+    
+    return A;
+}
+
+stencil int[N] foosp(int N){    
+    int[N] A=0;
+    for(int i=0; i<N/2; ++i){        
+        A[i+i] = i;
+    }
+    return A;
+}

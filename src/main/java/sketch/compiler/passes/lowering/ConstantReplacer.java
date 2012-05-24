@@ -201,7 +201,7 @@ public class ConstantReplacer extends FEReplacer {
         	Expression len=arr.getLength();
         	Expression newlen=(Expression) len.accept(this);
         	if(newlen!=len) {
-        		newType = new TypeArray(arr.getBase(),newlen);
+                newType = new TypeArray(arr.getBase(), newlen, arr.getMaxlength());
         	}
         }
         if (expr == exp.getExpr() && newType == exp.getType())

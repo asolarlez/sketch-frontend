@@ -114,13 +114,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     List<Integer> opsizes;
     
     private boolean visitingALen=false;
+
     
-    /*
-     * public Object visitExprVar(ExprVar ev){ if(!visitingALen){ return
-     * super.visitExprVar(ev); }else{ abstractValue avlen =
-     * (abstractValue)super.visitExprVar(ev); if(avlen.isBottom()){ this.exprRV =
-     * maxArrSize; return maxArrSize.accept(this); }else{ return avlen; } } }
-     */
+
+    
     public Object visitTypeArray(TypeArray t) {
         String extra = " here base " + t.getBase() + " len " + t.getLength();
         Type nbase = (Type)t.getBase().accept(this);
@@ -144,6 +141,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         // if(nbase == t.getBase() && t.getLength() == nlen ) return t;
         // return new TypeArray(nbase, nlen) ;
     }
+        // if (formal.getType().isArray()) {
+        // int maxlength = ((TypeArray) formal.getType()).getMaxlength();
+        // if (maxlength > 0) {
+        // return new ExprConstInt(maxlength);
+        // }
+        // }
 
     /*
      * protected Expression interpretActualParam(Expression e){ return maxArrSize; }
@@ -300,6 +303,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     {
         if(tracing)
             System.out.println("Analyzing " + func.getName());
+        System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
         
         ((NtsbVtype)this.vtype).out.print("def " + func.getName());
         if( func.getSpecification() != null ){
@@ -330,6 +334,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         
         opsizes = tmpopsz;
         opnames = tmpopnm;
+        
+        System.out.println("Analyzed " + func.getName() + " " + new java.util.Date());
         
         return func;
     }

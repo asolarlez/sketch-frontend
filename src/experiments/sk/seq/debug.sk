@@ -1,15 +1,41 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 16";
 
-int W = 5;
 
-bit[W] avg(bit[W] x, bit[W] y){
-    bit[2*W] xx = x;
-    bit[2*W] yy = y;
-    bit[2*W] r = 
-    return ((xx+yy)[0::W])>>1;
+int get(int i, int N, int[N] A){
+    assert i<N;
+    return A[i];
 }
 
-bit[W] avgGood(bit[W] x, bit[W] y)implements avg{
-    
-    return (x+y)>>1;
+int[N+1] append(int v, int N, int[N] A){
+    int[N+1] out;
+    out[0::N] = A;
+    out[N] = v;
+    return out;
 }
 
+
+
+
+int[T] top(int T, int N, int[N] A){
+    if(T<=N){
+        return A[0::T];
+    }else{
+        return 0;
+    }
+}
+
+
+harness void foo(int i, int M, int[M] L, int N, int[N] ret){
+    if(i==0 && N==0){
+        assert ret == top(i, M, L) && i==N;
+        assert i <= M;
+    }
+
+    if(ret==top(i, M, L) && N==i && i<M){
+        assert append(L[i], N, ret)==top(i+1, M, L) && i+1==N+1;
+        assert i+1 <= M;
+    }
+    if(ret==top(i, M, L) && N==i && i==M){
+        assert ret == L && N==M;
+    }
+}

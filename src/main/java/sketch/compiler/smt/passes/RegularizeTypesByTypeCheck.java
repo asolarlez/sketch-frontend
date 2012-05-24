@@ -150,7 +150,7 @@ public class RegularizeTypesByTypeCheck extends SymbolTableVisitor {
 		cond = castIfTypeIncorrect(TypePrimitive.booltype, cond);
 		
 		if (cond != stmt.getCond())
-			stmt = new StmtAssert(stmt, cond, stmt.getMsg(), stmt.isSuper());
+			stmt = new StmtAssert(stmt, cond, stmt.getMsg(), stmt.isSuper(), stmt.getAssertMax());
 		return stmt;
 	}
 	

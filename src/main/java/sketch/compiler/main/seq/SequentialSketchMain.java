@@ -65,6 +65,12 @@ import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.TprintFcnCall;
 import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
+import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
+import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.spmd.GlobalToLocalCasts;
+import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
+import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
@@ -81,7 +87,6 @@ import sketch.util.exceptions.UnsupportedSketchException;
 import static sketch.util.DebugOut.printError;
 
 import static sketch.util.Misc.nonnull;
-
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -146,6 +151,8 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), new TprintFcnCall(),
+ new SpmdbarrierCall(),
+                            new PidReplacer(),
                             new RemoveFunctionParameters(),
                             new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
                             new InstrumentFcnCall(), new SyncthreadsCall() };
@@ -220,6 +227,35 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
+    public class SpmdLowLevelCStage extends LowLevelCStage {
+
+        public SpmdLowLevelCStage() {
+            super();
+            // this.passes.add(new FlattenStmtBlocks2());
+            // this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new SplitAssignFromVarDef());
+            this.passes.add(new FlattenStmtBlocks2());
+            SpmdTransform tf = new SpmdTransform(options, varGen);
+            this.passes.add(tf);
+            this.passes.add(new GlobalToLocalCasts(varGen, tf));
+            this.passes.add(new ReplaceParamExprArrayRange(varGen));
+        }
+
+        @Override
+        protected Program postRun(Program prog) {
+            final SemanticCheckPass semanticCheck =
+                    new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
+            ExtractComplexLoopConditions ec =
+                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            // final FunctionParamExtension paramExt = new FunctionParamExtension();
+
+            prog = (Program) semanticCheck.visitProgram(prog);
+            prog = (Program) ec.visitProgram(prog);
+            // prog = (Program) paramExt.visitProgram(prog);
+            return prog;
+        }
+    }
+
     public class FinalLowLevelCLowering extends CompilerStage {
         public FinalLowLevelCLowering() {
             super(SequentialSketchMain.this);
@@ -259,10 +295,12 @@ public class SequentialSketchMain extends CommonSketchMain
                         "CudaSketchMain/getIRStage2_LLC()", prog));
                 throw exception;
             }
-            return new LowLevelCStage();
-        } else {
-            return new CudaLowLevelCStage();
         }
+//            return new LowLevelCStage();
+//        } else {
+            // return new CudaLowLevelCStage();
+        return new SpmdLowLevelCStage();
+//        }
     }
 
     public FinalLowLevelCLowering getIRStage3() {
@@ -427,12 +465,12 @@ public class SequentialSketchMain extends CommonSketchMain
     }
 
     public Program preprocAndSemanticCheck(Program prog, boolean replaceConstants) {
-
         if (replaceConstants) {
             prog = (Program) prog.accept(new ConstantReplacer(null));
         }
 
-	    prog = (getBeforeSemanticCheckStage()).run(prog);
+        prog = (getBeforeSemanticCheckStage()).run(prog);
+        prog.accept(new SimpleCodePrinter());
 
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);

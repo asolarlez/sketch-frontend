@@ -87,6 +87,7 @@ public class SATBackend {
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
         
         prog.accept(partialEval);
+        log("After prog.accept(partialEval)");
     }
 
     public boolean partialEvalAndSolve(Program prog) {

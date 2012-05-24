@@ -70,6 +70,7 @@ tokens {
     // general sketching
     "implements";
     "assert";
+    "assert_max";
     "h_assert";
     "generator";
     "harness";
@@ -186,7 +187,9 @@ RSHIFT: ">>";
 NDVAL: "{*}";
 NDVAL2: "??";
 SELECT: "{|}";
+NDANGELIC: "**";
 AT: "@";
+BACKSLASH: "\\";
 
 REGEN   { int open = 0; }
     :   "{|"

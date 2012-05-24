@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -28,7 +29,7 @@ public class ResolveMax {
 	List<Expression>[] meArr;
 	Integer[] tainted;
 
-	public static Integer tag = new Integer(0);
+    public final static Integer tag = new Integer(0);
 	public ResolveMax(StmtMax smax){
 		this.smax = smax;
 		sz = smax.dim;
@@ -97,7 +98,11 @@ public class ResolveMax {
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
 				exp.accept(new tagNodes());
-				exp.accept(cc);
+                try {
+                    exp.accept(cc);
+                } catch (Exception e) {
+                    // do nothing
+                }
 			}
 		}
 		if( isDone() ) return ;
@@ -117,8 +122,12 @@ public class ResolveMax {
 			for(Iterator<Expression> expIt = exprList.iterator(); expIt.hasNext();){
 				Expression exp = expIt.next();
 				exp.accept(new tagNodes());
-				exp.accept(cc);
-			}
+                try {
+                    exp.accept(cc);
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }
 		}
 
 		for(int i=0; i<sz; ++i){
@@ -239,7 +248,7 @@ public class ResolveMax {
 
 
 		public Object handleSpecialCase(ExprBinary exp){
-			throw new RuntimeException("NYI");
+			throw new RuntimeException("NYI ResolveMax.handleSpecialCase");
 
 		}
 
@@ -251,6 +260,10 @@ public class ResolveMax {
 			assert idx == -1;
 
 		}
+
+        public Object visitExprFunCall(ExprFunCall exp) {
+            throw new RuntimeException("NYI cannot handle funcall");
+        }
 
 
 		public Object visitExprBinaryLE(ExprBinary exp){
@@ -539,6 +552,23 @@ public class ResolveMax {
 	            return new ExprUnary(exp, exp.getOp(), expr);
 	    }
 
+        public Object visitExprFunCall(ExprFunCall exp) {
+            boolean hasChanged = false;
+            List<Expression> newParams = new ArrayList<Expression>();
+            for (Expression param : exp.getParams()) {
+                Expression newParam = doExpression(param);
+                newParams.add(newParam);
+                if (newParam.getTag() == tag) {
+                    exp.setTag(tag);
+                }
+                if (param != newParam)
+                    hasChanged = true;
+            }
+            if (!hasChanged)
+                return exp;
+            return new ExprFunCall(exp, exp.getName(), newParams);
+
+        }
 
 		public Object visitExprArrayRange(ExprArrayRange ea){
 			ExprVar ev = ea.getAbsoluteBase();

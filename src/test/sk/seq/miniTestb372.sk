@@ -1,0 +1,13 @@
+
+
+harness void foo(int N){
+    if(N>0){
+        int[N] x;
+        if(x[0]>??){
+            x[1] = 0;
+        }
+        assert x[??] == ??;
+        x[??] = ??;
+        assert x[??] == 3;
+    }    
+}

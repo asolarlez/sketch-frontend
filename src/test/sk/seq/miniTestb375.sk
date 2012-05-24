@@ -1,0 +1,29 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 16 --be:showDAG";
+
+int[N] select(fun pred, int N, int[N] A, ref int sz){
+  sz = 0;
+  int[N] out;
+  for(int i=0; i<N; ++i){
+    if(pred(A[i])){
+      out[sz] = A[i]; ++sz;
+    }
+  }
+
+  return out;
+
+}
+
+bit pred(int x){
+  return x > ??;
+}
+
+harness  void foo(int N, int[N] in, int i){
+  int S;
+  int[N] tmp = select(pred, N, in, S);
+  int[S] sel = tmp[0::S];
+
+  if(i<S){
+    assert sel[i] > 3;
+  }
+
+} 

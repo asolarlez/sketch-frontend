@@ -174,7 +174,7 @@ program	 returns [Program p]
     String pkgName = null;
     FEContext pkgCtxt = null;
 }
-	:	(  ((TK_device | TK_global | TK_serial | TK_harness |
+	:	(  ((TK_device /*| TK_global*/ | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
@@ -250,6 +250,7 @@ statement returns [Statement s] { s = null; }
 	|	s=do_while_statement SEMI
 	|	s=for_statement
 	|	s=assert_statement SEMI
+	|	s=assert_max_statement SEMI
 	|s=fdecl_statement 
 	|s=return_statement SEMI
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
@@ -292,20 +293,34 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 
 
-data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Expression x; boolean isglobal = false; }
-	:	/* (TK_global {isglobal = true; })? */
+data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
+	:	 (TK_global {isglobal = true; })? 
                 (t=primitive_type | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText()); })
 		(	l:LSQUARE
-			(
-                (x=expr_named_param { params.add(x); }
-                    | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
-                ( COMMA x=expr_named_param { params.add(x); } )*
+			(	
+                ( { maxlen = 0; }
+                (x=expr_named_param
+                	(
+					LESS_COLON n:NUMBER { maxlen = Integer.parseInt(n.getText()); }
+					)?
+				{ params.add(x); maxlens.add(maxlen); }
+				)
+                | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
+
+                ( { maxlen = 0; }
+                COMMA x=expr_named_param  
+                    (
+                    LESS_COLON num:NUMBER { maxlen = Integer.parseInt(num.getText()); }
+					)?
+				{ params.add(x); maxlens.add(maxlen); }
+				)*
 			)
             RSQUARE
             {
                 while (!params.isEmpty()) {
-                    t = new TypeArray(t, params.lastElement());
+                    t = new TypeArray(t, params.lastElement(), maxlens.lastElement());
                     params.remove(params.size() - 1);
+                    maxlens.remove(maxlens.size() - 1);
                 }
             }
 		)*
@@ -362,7 +377,7 @@ function_decl returns [Function f] {
 }
 	:
 	( TK_device { isDevice = true; } |
-          TK_global { isGlobal = true; } |
+          //TK_global { isGlobal = true; } |
           TK_serial { isSerial = true; } |
           TK_harness { isHarness = true; } |
           TK_generator { isGenerator = true; }  |
@@ -468,7 +483,7 @@ pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayLi
 return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	:	t:TK_return (x=right_expr)? { s = new StmtReturn(getContext(t), x); }
 	;
-
+	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
 		String msg = null;
@@ -482,7 +497,19 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 		}
 		s = new StmtAssert(cx, x, msg, t2!=null); }	
 	;
-
+	
+assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
+:	t:TK_assert_max (defer: BACKSLASH)? cond=right_expr (COLON ass:STRING_LITERAL)? { 
+	FEContext cx = getContext(t);
+	String msg = null;
+	if (ass != null) {
+		String ps = ass.getText();
+		ps = ps.substring(1, ps.length()-1);
+		msg = cx + "   "+ ps;
+	}
+	s = StmtAssert.createAssertMax(cx, cond, msg, (defer!=null)); }	
+;
+	
 if_else_statement returns [Statement s]
 { s = null; Expression x; Statement t, f = null; }
 	:	u:TK_if LPAREN x=right_expr RPAREN t=pseudo_block
@@ -573,10 +600,39 @@ left_expr returns [Expression x] { x = null; }
 	/*|   r:REGEN
         { x = new ExprRegen (getContext (r), r.getText ()); } 
         */
-
-right_expr returns [Expression x] { x = null; }
+        
+right_expr_not_agmax returns [Expression x] { x = null; }
 	:	x=ternaryExpr	
 	;
+right_expr returns [Expression x] { x = null; }
+	:	x=right_expr_not_agmax
+	|   x=agmax_expr
+	;
+
+agmax_expr returns [Expression x] { x = null; }
+ 	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)?
+    	{
+    		if (n != null) {
+    			x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), true);
+    		} else {
+    			x = new ExprStar(getContext(t), true);
+    		}
+    	} 
+	;
+	
+/*
+TODO we don't add exprMax now
+agmax_expr returns [Expression x] { x = null; Expression exprMax = null; }
+ 	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)? (AT exprMax=right_expr_not_agmax)?
+    	{
+    		if (n != null) {
+    			x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), true, exprMax);
+    		} else {
+    			x = new ExprStar(getContext(t), true, exprMax);
+    		}
+    	} 
+	;
+*/
 
 var_initializer returns [Expression x] { x = null; }
 : (arr_initializer) => x=arr_initializer
@@ -858,9 +914,9 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	}else{
             	  x = new ExprStar(getContext(t2)); 
             	}
-            }    
-	;
-
+            }
+    ;
+ 
 struct_decl returns [TypeStruct ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	List types = new ArrayList(); }

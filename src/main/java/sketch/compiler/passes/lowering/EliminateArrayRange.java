@@ -63,7 +63,9 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 			if(rl.hasLen()){
 				TypeArray arrType = (TypeArray) getType(arng.getBase());
 				Type baseType = arrType.getBase();
-				Type type = new TypeArray(baseType, rl.getLenExpression());
+                Type type =
+                        new TypeArray(baseType, rl.getLenExpression(),
+                                arrType.getMaxlength());
 
 				Expression newBase=doExpression(arng.getBase());
 				Expression newIndex = doExpression(rl.start());
@@ -101,7 +103,9 @@ public class EliminateArrayRange extends SymbolTableVisitor {
     	}else{
 			TypeArray arrType = (TypeArray) getType(exp.getBase());
 			Type baseType = arrType.getBase();
-			Type type = new TypeArray(baseType, doExpression(rl.getLenExpression()));
+            Type type =
+                    new TypeArray(baseType, doExpression(rl.getLenExpression()),
+                            arrType.getMaxlength());
 
 			Expression newBase=doExpression(exp.getBase());
 			Expression newIndex = doExpression(rl.start());

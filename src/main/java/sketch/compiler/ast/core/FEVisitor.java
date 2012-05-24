@@ -30,10 +30,10 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCSimple;
-import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * Visitor interface for StreamIt front-end nodes.  This class

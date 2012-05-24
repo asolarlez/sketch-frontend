@@ -1,8 +1,6 @@
 pragma options "--bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 4 --bnd-inline-amnt 9 --beopt:-bndwrand 50  --bnd-arr-size 8 --beopt:simplifycex NOSIM";
-include "generators.skh";
 
-
-stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){    
+stencil float[N][T] spec1d(int N, int T, float[N] in, float[N][T] f){    
     float[N][T] out = 0.0;
     if(N>=1 && T >= 1){
     
@@ -23,33 +21,28 @@ stencil float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
 
 generator void stenGen(fun sten, int N, int T){
     repeat(3){
-        int cnt=0;
         for(int i=(??(2)-1)*N + (??(2)-1)*T; i<(??(2)-1)*N + (??(2)-1)*T; ++i){
-            bit vis = true;
             for(int t= (??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); t<(??(2)-1)*i +(??(2)-1)*N + (??(2)-1)*T+(??-2); ++t){
                 assert t> 0 && t < T; assert i-t > 0 && i-t < N;
-                sten(t, i-t);
-                vis = false; 
-            }
-            if(vis){ ++cnt; }
+                sten(t, i-t); 
+            }           
         }  
-        //assert cnt <2;
     }
 }
 
 
-stencil float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) implements cacheObv1d{ 
-    float[N][T] fifo = 0.0;    
+stencil float[N][T] fast1D(int N, int T, float[N] in, float[N][T] f) implements spec1d{ 
+    float[N][T] A = 0.0;    
     if(N>=3&& T >= 3 && N > T){
         for(int i=0; i<N; ++i){
-            fifo[0][i] = in[i];
+            A[0][i] = in[i];
         }
         generator void sten(int t, int i){
-            fifo[t][i] = fifo[t-1][i-1] + fifo[t-1][i+1] + f[t][i];
+            A[t][i] = A[t-1][i-1] + A[t-1][i+1] + f[t][i];
         }
         stenGen(sten, N, T);
     }else{
-        fifo = cacheObv1d(N, T, in, f);
+        A = spec1d(N, T, in, f);
     }
-    return fifo; 
+    return A; 
 }
