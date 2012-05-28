@@ -67,7 +67,6 @@ import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
@@ -470,7 +469,6 @@ public class SequentialSketchMain extends CommonSketchMain
         }
 
         prog = (getBeforeSemanticCheckStage()).run(prog);
-        prog.accept(new SimpleCodePrinter());
 
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);

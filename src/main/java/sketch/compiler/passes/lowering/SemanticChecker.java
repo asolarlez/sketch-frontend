@@ -397,6 +397,26 @@ public class SemanticChecker
 
 				currentFunctionReturn = func.getReturnType();
 
+                if (func.isSketchHarness()) {
+                    for (Parameter f1 : func.getParams()) {
+                        if (f1.getType() instanceof TypeStructRef) {
+                            report(func,
+                                    "A harness function can not have a structure or array of structures as input: " +
+                                            f1);
+                            return super.visitFunction(func);
+                        }
+                        if (f1.getType() instanceof TypeArray) {
+                            if (((TypeArray) f1.getType()).getAbsoluteBase() instanceof TypeStructRef)
+                            {
+                                report(func,
+                                        "A harness function can not have a structure or array of structures as input: " +
+                                                f1);
+                                return super.visitFunction(func);
+                            }
+                        }
+                    }
+                }
+
 				if(func.getSpecification() != null){
 
 					Function parent = null;
@@ -446,6 +466,22 @@ public class SemanticChecker
 							report(func, "Parameters of spec and sketch don't match: " + f1 + " vs. " + f2);
 							return super.visitFunction(func);
 						}
+
+                        if (f1.getType() instanceof TypeStructRef) {
+                            report(func,
+                                    "A harness function can not have a structure or array of structures as input: " +
+                                            f1);
+                            return super.visitFunction(func);
+                        }
+                        if (f1.getType() instanceof TypeArray) {
+                            if (((TypeArray) f1.getType()).getAbsoluteBase() instanceof TypeStructRef)
+                            {
+                                report(func,
+                                        "A harness function can not have a structure or array of structures as input: " +
+                                                f1);
+                                return super.visitFunction(func);
+                            }
+                        }
 					}
 
 					// check return value

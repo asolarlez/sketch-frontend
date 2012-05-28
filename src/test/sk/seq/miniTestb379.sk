@@ -1,0 +1,30 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 1";
+
+struct Tuple
+{
+  int first;
+  int second;
+}
+
+Tuple [len2] leftProduct (int v, int len2, int [len2] l2)
+{
+  Tuple [len2] out;
+
+  for (int j = 0; j < len2; ++j)
+  {
+    Tuple t = new Tuple();
+    t.first = v;
+    t.second = l2[j];
+
+    out[j] = t;
+  }
+
+  return out;
+}
+
+harness void sketch (int len2, int [len2] l2, int t1)
+{
+  int m = len2;
+  // replacing m with len2 in the following line avoids the problem
+  Tuple[m] t1_cross_top1_l2 = leftProduct(t1, len2, l2);
+}
