@@ -1,0 +1,26 @@
+pragma options "--bnd-inbits 3 --bnd-inline-amnt 8 --bnd-arr-size 4 --bnd-unroll-amnt 8 -p lowering";
+
+struct List{
+    int i;
+    List l;    
+}
+
+List recBuild(int n){
+    List l = null;
+    if(n > 0){
+        l = recBuild(n-1);
+    }
+    List t = new List();
+    t.l = l;
+    t.i = n;
+    return t;
+}
+
+harness void foo(int n){
+    List l = recBuild(n);
+    for(int i=n; i>=0; --i){
+        assert l.i == i;
+        l = l.l;
+    }
+    
+}

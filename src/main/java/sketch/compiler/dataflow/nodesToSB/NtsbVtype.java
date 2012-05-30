@@ -262,7 +262,7 @@ public class NtsbVtype extends IntVtype {
             }
             plist += " ";           
         }
-        
+        String oplist = plist;
         formalParams = fun.getParams().iterator();
         actualParams = avlist.iterator();
         boolean hasout = false;
@@ -291,8 +291,10 @@ public class NtsbVtype extends IntVtype {
                                         vnm + "=" + name + "[" +
  printType(ta.getBase()) +
                                                 "_arr" +
-                                "]( " + plist + "  )(" + pathCond + ")[ _p_" +
+ "]( " + oplist + "  )(" +
+                                                pathCond + ")[ _p_" +
                                                 param.getName() + "," + funid + "];";
+                                oplist = "0";
                                 out.println(par);
                                 /*
                                  * List<abstractValue> lst = actual.getVectValue();

@@ -3,8 +3,15 @@
  */
 package sketch.compiler.passes.lowering;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -63,10 +70,11 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 public class EliminateStructs extends SymbolTableVisitor {
     private Map<String, StructTracker> structs;
     private TempVarGen varGen;
-    private final int heapsize;
+    private final int HSIZE = 1024;
+    private final String heapSzVar = "_hsz";
 	public EliminateStructs (TempVarGen varGen_, int heapsize) {
 		super(null);
-		this.heapsize = heapsize;
+        // this.heapsize = heapsize;
         structs = new HashMap<String, StructTracker>();
 		varGen = varGen_;
 	}
@@ -110,9 +118,13 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
+            ExprStar es = new ExprStar(func, 2);
+            es.setType(TypePrimitive.inttype);
+            newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,
+                    new ExprBinary(new ExprConstInt(HSIZE), "+", es)));
             for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, heapsize);
+                        new StructTracker(nres.getStruct(name), func, varGen, heapSzVar);
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
 				structs.put (name, tracker);
@@ -149,7 +161,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
             for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, heapsize);
+                        new StructTracker(nres.getStruct(name), func, varGen, heapSzVar);
 				tracker.registerAsParameters(symtab);
 				tracker.addParams(newParams);
 				structs.put (name, tracker);
@@ -291,10 +303,12 @@ public class EliminateStructs extends SymbolTableVisitor {
 		private TypeStruct struct;
 		private TypeStructRef sref;
 		private FENode cx;
-	    private ExprVar nextInstancePointer;
-	    private Map<String, ExprVar> fieldArrays;
+        private final ExprVar heapSzVar;
+        private final ExprVar nextInstancePointer;
+        private final Map<String, ExprVar> fieldArrays;
+        private final String heapsize;
 
-	    private final int heapsize;
+        // private final int heapsize;
 
 	    /**
 	     * Create a tracker of the variables used to eliminate allocs and
@@ -306,12 +320,17 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public StructTracker (TypeStruct struct_,
 	    					  FENode cx_,
-	    					  TempVarGen varGen, int heapsize) {
+ TempVarGen varGen,
+                String heapsize)
+        {
 
 	    	this.heapsize = heapsize;
 	    	struct = struct_;
 	    	sref = new TypeStructRef(struct.getName());
 	    	cx = cx_;
+
+            heapSzVar = new ExprVar(cx, heapsize);
+
 	    	nextInstancePointer =
 	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
 
@@ -327,8 +346,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    public void addParams(List<Parameter> newParams){
 
-	    	newParams.add(new Parameter(sref, nextInstancePointer.getName (), Parameter.REF));
 
+	    	newParams.add(new Parameter(sref, nextInstancePointer.getName (), Parameter.REF));
+            newParams.add(new Parameter(TypePrimitive.inttype, heapsize));
 	    	for (String field : fieldArrays.keySet ()) {
 	    		newParams.add(new Parameter(typeofFieldArr (field) , fieldArrays.get (field).getName (), Parameter.REF ));
 	    	}
@@ -336,6 +356,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    public void addActualParams(List<Expression> params){
 	    	params.add(nextInstancePointer);
+            params.add(heapSzVar);
 	    	for (String field : fieldArrays.keySet ()) {
 	    		params.add(fieldArrays.get(field));
 	    	}
@@ -346,6 +367,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	symtab.registerVar(nip,
                     TypePrimitive.inttype,
                     nextInstancePointer,
+                    SymbolTable.KIND_FUNC_PARAM);
+
+            symtab.registerVar(heapsize, TypePrimitive.inttype, heapSzVar,
                     SymbolTable.KIND_FUNC_PARAM);
 
 	    	/*symtab.registerVar(nip + "_out",
@@ -375,7 +399,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public void registerVariables (SymbolTable symtab) {
 	    	symtab.registerVar (nextInstancePointer.getName (), TypePrimitive.inttype);
-
+            symtab.registerVar(heapsize, TypePrimitive.inttype);
 	    	for (String field : fieldArrays.keySet ()) {
 	    		symtab.registerVar (fieldArrays.get (field).getName (),
 	    				typeofFieldArr (field));
@@ -404,7 +428,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	// Add the next instance poiner
 	    	names.add (nextInstancePointer.getName ());
 	    	types.add ( this.sref );
-	    	inits.add (ExprConstant.createConstant (cx, "0"));
+            inits.add(ExprConstant.createConstant(cx, "0"));
 
 	    	for (String field : fieldArrays.keySet ()) {
 	    		names.add (fieldArrays.get (field).getName ());
@@ -461,7 +485,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return
 	     */
 	    public Expression getNumInstsExpr (FENode cx) {
-	    	return ExprConstant.createConstant (cx, ""+ heapsize);
+            return new ExprVar(cx, heapsize);
 	    }
 
 	    /**
@@ -480,8 +504,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    /** Return a  field initializer. */
         private Expression initField (FENode cx, Expression e) {
-            return new ExprArrayInit (cx,
-                    Collections.nCopies (heapsize, e));
+            return null;
         }
 	    	    
 	}

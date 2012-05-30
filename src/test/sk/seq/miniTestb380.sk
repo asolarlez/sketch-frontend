@@ -1,0 +1,33 @@
+
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 4 --bnd-arr-size 4 --bnd-unroll-amnt 8 -p lowering";
+
+void forLoop(fun body, int low, int high){
+    if(low < high){
+        body(low);
+        forLoop(body, low+1, high);
+    }
+}
+
+float[N] cacheObv1d(int N, float[N] in){
+    float[N] out = 0.0;
+    
+        for(int j=0; j<N; ++j){
+            out[j] = in[j]+0.5;
+        }
+    return out;
+}
+
+
+float[N] cacheObv1dSK(int N, float[N] in) implements cacheObv1d{
+    
+    float[N] out = 0.0;
+    
+        generator void t2(int j){
+            out[j] = in[j] + 0.5;
+            
+        }
+        forLoop(t2, 0, N);
+        
+    
+    return out; 
+}
