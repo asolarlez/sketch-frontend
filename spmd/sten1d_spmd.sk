@@ -1,4 +1,4 @@
-pragma options "-p preproc --bnd-inbits 5 --bnd-cbits 4 --bnd-unroll-amnt 10 --bnd-inline-amnt 15 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 20"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 10 --bnd-inline-amnt 15 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 20"; //  --be:showDAG
 
 #define SPMD_MAX_BUF_LEN 16
 #include "spmd2.skh"
@@ -63,7 +63,7 @@ generator void fastBoundary(global spmdinfo info, global int np, global int n, g
 	for (int j=0; j<K*(T-1); ++j) {
 		int bottom = (j+??)/??+??;
 		for (int t=bottom; t<T; ++t) {
-			int i = (T+1)/2 + n*??(1) + (j-(t-1)*K)*pos_neg() + ??*pos_neg();
+			int i = (T+1)/2*K + n*??(1) + (j-(t-1)*K)*pos_neg() + ??*pos_neg();
 			// L: (T+1)/2 -s+t-1
 			// R: n+(T+1)/2+s-t
 			A[t][i] = A[t-1][i-K]+A[t-1][i+K];
@@ -72,11 +72,57 @@ generator void fastBoundary(global spmdinfo info, global int np, global int n, g
 }
 
 void fastLeft(global spmdinfo info, global int np, global int n, global int T, ref float[n+(T+1)/2*K*2][T] A) {
-	fastBoundary(info, np, n, T, A);
+	float[(T-1)*K] send_buf;
+	for (int i=0; i<(T-1)*K; ++i) {
+		send_buf[i] = A[i/(K*2)][(T+1)/2*K+n -1 - (i/(K*2)*K + i%(K*2))];
+	}
+	
+	float[(T-1)*K] recv_buf;
+	int r = (spmdpid== (np-1) ) ? 0 : spmdpid+1;
+	// L: spmdpid==0 ? np-1 : pid+1
+	// R: spmdpid==np-1 ? 0 : pid-1
+	
+	spmdtransfer(info, (T-1)*K, send_buf, 1, r, recv_buf, 1);
+	for (int i=0; i<(T-1)*K; ++i) {
+		A[i/(K*2)][(T+1)/2*K - 1 - (i/(K*2)*K + i%(K*2))] = recv_buf[i];
+	}
+	
+	for (int j=0; j<K*(T-1); ++j) {
+		int bottom = j/(2*K) +1;
+		for (int t=bottom; t<T; ++t) {
+			int i = (T+1)/2*K - 1 - j + t*K;
+			// L: (T+1)/2 -s+t-1
+			// R: n+(T+1)/2+s-t
+			A[t][i] = A[t-1][i-K]+A[t-1][i+K];
+		}
+	}
 }
 
 void fastRight(global spmdinfo info, global int np, global int n, global int T, ref float[n+(T+1)/2*K*2][T] A) {
-	fastBoundary(info, np, n, T, A);
+	float[(T-1)*K] send_buf;
+	for (int i=0; i<(T-1)*K; ++i) {
+		send_buf[i] = A[i/(K*2)][(T+1)/2*K + (i/(K*2)*K + i%(K*2))];
+	}
+	
+	float[(T-1)*K] recv_buf;
+	int r = (spmdpid== 0 ) ? np-1 : spmdpid-1;
+	// L: spmdpid==0 ? np-1 : pid+1
+	// R: spmdpid==np-1 ? 0 : pid-1
+	
+	spmdtransfer(info, (T-1)*K, send_buf, 1, r, recv_buf, 1);
+	for (int i=0; i<(T-1)*K; ++i) {
+		A[i/(K*2)][(T+1)/2*K +n + (i/(K*2)*K + i%(K*2))] = recv_buf[i];
+	}
+	
+	for (int j=0; j<K*(T-1); ++j) {
+		int bottom = j/(2*K) +1;
+		for (int t=bottom; t<T; ++t) {
+			int i = (T+1)/2*K +n + j - t*K;
+			// L: (T+1)/2 -s+t-1
+			// R: n+(T+1)/2+s-t
+			A[t][i] = A[t-1][i-K]+A[t-1][i+K];
+		}
+	}
 }
 
 void trapezoid(int n, int T, int L, ref float[n+L*2][T] A){    
@@ -89,18 +135,6 @@ void trapezoid(int n, int T, int L, ref float[n+L*2][T] A){
         }
     }
 }
-
-//stencil float[n+T+T%2][T] specCenterSten(int n, int T, float[n+T+T%2][T] in) {    
-//	float[n+T+T%2][T] out = in;
-//	specCenter(n, T, out);
-//	return out;
-//}
-//
-//stencil float[n+T+T%2][T] fastCenterSten(int n, int T, float[n+T+T%2][T] in) implements specCenterSten {    
-//	float[n+T+T%2][T] out = in;
-//	fastCenter(n, T, out);
-//	return out;
-//}
 
 stencil float[N][T] computeFast(int np, int N, int T, float[N][T] in) implements compute {
 	float[N][T] out = in;
