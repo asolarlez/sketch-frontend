@@ -636,7 +636,12 @@ public class PartialEvaluator extends FEReplacer {
         public abstractValue typeLen(Type t){
             if( t instanceof TypeArray){
                 TypeArray ta = (TypeArray) t;
-                abstractValue len = (abstractValue)ta.getLength().accept(PartialEvaluator.this);
+                abstractValue len;
+                if (ta.getLength() != null) {
+                    len = (abstractValue) ta.getLength().accept(PartialEvaluator.this);
+                } else {
+                    len = vtype.BOTTOM("FARRAY");
+                }
                 //abstractValue olen = typeLen(ta.getBase());
                 return len; //vtype.times(len, olen);
             }else{
@@ -1392,7 +1397,8 @@ public class PartialEvaluator extends FEReplacer {
                     }
                 }else{                    
                     TypeArray tar = (TypeArray) vt;
-                    Integer iv = tar.getLength().getIValue();                    
+                    Expression el = tar.getLength();
+                    Integer iv = el != null ? el.getIValue() : null;
                     if(iv != null ){                        
                         int n = iv;
                         List<abstractValue> vals = new ArrayList<abstractValue>();

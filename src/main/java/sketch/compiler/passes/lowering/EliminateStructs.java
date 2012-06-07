@@ -22,9 +22,16 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprNew;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
@@ -71,7 +78,8 @@ public class EliminateStructs extends SymbolTableVisitor {
     private Map<String, StructTracker> structs;
     private TempVarGen varGen;
     private final int HSIZE = 1024;
-    private final String heapSzVar = "_hsz";
+
+    // private final String heapSzVar = "_hsz";
 	public EliminateStructs (TempVarGen varGen_, int heapsize) {
 		super(null);
         // this.heapsize = heapsize;
@@ -118,13 +126,13 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
-            ExprStar es = new ExprStar(func, 2);
-            es.setType(TypePrimitive.inttype);
-            newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,
-                    new ExprBinary(new ExprConstInt(HSIZE), "+", es)));
+            // ExprStar es = new ExprStar(func, 2);
+            // es.setType(TypePrimitive.inttype);
+            // newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,
+            // new ExprBinary(new ExprConstInt(HSIZE), "+", es)));
             for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, heapSzVar);
+                        new StructTracker(nres.getStruct(name), func, varGen);
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
 				structs.put (name, tracker);
@@ -161,7 +169,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
             for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, heapSzVar);
+                        new StructTracker(nres.getStruct(name), func, varGen);
 				tracker.registerAsParameters(symtab);
 				tracker.addParams(newParams);
 				structs.put (name, tracker);
@@ -247,7 +255,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
         StructTracker struct = structs.get(nres.getStructName(name));
 
-    	this.addStatement (struct.makeAllocationGuard (expNew));
+        // this.addStatement (struct.makeAllocationGuard (expNew));
     	return struct.makeAllocation (expNew);
     }
 
@@ -303,10 +311,11 @@ public class EliminateStructs extends SymbolTableVisitor {
 		private TypeStruct struct;
 		private TypeStructRef sref;
 		private FENode cx;
-        private final ExprVar heapSzVar;
+        // private final ExprVar heapSzVar;
         private final ExprVar nextInstancePointer;
         private final Map<String, ExprVar> fieldArrays;
-        private final String heapsize;
+
+        // private final String heapsize;
 
         // private final int heapsize;
 
@@ -320,16 +329,15 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public StructTracker (TypeStruct struct_,
 	    					  FENode cx_,
- TempVarGen varGen,
-                String heapsize)
+ TempVarGen varGen)
         {
 
-	    	this.heapsize = heapsize;
+            // this.heapsize = heapsize;
 	    	struct = struct_;
 	    	sref = new TypeStructRef(struct.getName());
 	    	cx = cx_;
 
-            heapSzVar = new ExprVar(cx, heapsize);
+            // heapSzVar = new ExprVar(cx, heapsize);
 
 	    	nextInstancePointer =
 	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
@@ -348,7 +356,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 
 	    	newParams.add(new Parameter(sref, nextInstancePointer.getName (), Parameter.REF));
-            newParams.add(new Parameter(TypePrimitive.inttype, heapsize));
+            // newParams.add(new Parameter(TypePrimitive.inttype, heapsize));
 	    	for (String field : fieldArrays.keySet ()) {
 	    		newParams.add(new Parameter(typeofFieldArr (field) , fieldArrays.get (field).getName (), Parameter.REF ));
 	    	}
@@ -356,7 +364,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    public void addActualParams(List<Expression> params){
 	    	params.add(nextInstancePointer);
-            params.add(heapSzVar);
+            // params.add(heapSzVar);
 	    	for (String field : fieldArrays.keySet ()) {
 	    		params.add(fieldArrays.get(field));
 	    	}
@@ -369,8 +377,8 @@ public class EliminateStructs extends SymbolTableVisitor {
                     nextInstancePointer,
                     SymbolTable.KIND_FUNC_PARAM);
 
-            symtab.registerVar(heapsize, TypePrimitive.inttype, heapSzVar,
-                    SymbolTable.KIND_FUNC_PARAM);
+            // symtab.registerVar(heapsize, TypePrimitive.inttype, heapSzVar,
+            // SymbolTable.KIND_FUNC_PARAM);
 
 	    	/*symtab.registerVar(nip + "_out",
                     TypePrimitive.inttype,
@@ -399,7 +407,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public void registerVariables (SymbolTable symtab) {
 	    	symtab.registerVar (nextInstancePointer.getName (), TypePrimitive.inttype);
-            symtab.registerVar(heapsize, TypePrimitive.inttype);
+            // symtab.registerVar(heapsize, TypePrimitive.inttype);
 	    	for (String field : fieldArrays.keySet ()) {
 	    		symtab.registerVar (fieldArrays.get (field).getName (),
 	    				typeofFieldArr (field));
@@ -463,19 +471,19 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param cx  The context of the 'new' statement to guard
 	     * @return    An allocation guard
 	     */
-	    public StmtAssert makeAllocationGuard (FENode cx) {
-            return new StmtAssert(cx, this.getAllocationSafetyCheck(cx), cx.getCx() +
-                    ": Heap is too small. Make it bigger with the --bnd-heap-size flag",
-                    false);
-	    }
+        // public StmtAssert makeAllocationGuard (FENode cx) {
+        // return new StmtAssert(cx, this.getAllocationSafetyCheck(cx), cx.getCx() +
+        // ": Heap is too small. Make it bigger with the --bnd-heap-size flag",
+        // false);
+        // }
 
 	    /**
 	     * @return an expression to check for allocation safety.  Essentially,
 	     * <code>(Foo_nextPointer + 1) &lt; len (Foo_instances)</code>.
 	     */
-	    public Expression getAllocationSafetyCheck (FENode cx) {
-	    	return new ExprBinary (cx, nextInstancePointer, "<", getNumInstsExpr(cx));
-	    }
+        // public Expression getAllocationSafetyCheck (FENode cx) {
+        // return new ExprBinary (cx, nextInstancePointer, "<", getNumInstsExpr(cx));
+        // }
 
 	    /**
 	     * Return an Expression containing the number of instances of this
@@ -484,9 +492,9 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param cx  Context where the Expression will be used.
 	     * @return
 	     */
-	    public Expression getNumInstsExpr (FENode cx) {
-            return new ExprVar(cx, heapsize);
-	    }
+        // public Expression getNumInstsExpr (FENode cx) {
+        // return new ExprVar(cx, heapsize);
+        // }
 
 	    /**
 	     * Get the type of the field array for 'field'.
@@ -499,7 +507,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	return new TypeArray (
 	    		//fieldType.isStruct () ? TypePrimitive.inttype : 
 	    			fieldType,
-	    		getNumInstsExpr (cx));
+                    // getNumInstsExpr (cx)
+                    null);
 	    }
 
 	    /** Return a  field initializer. */

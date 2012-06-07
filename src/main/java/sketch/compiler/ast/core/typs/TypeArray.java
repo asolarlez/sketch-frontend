@@ -46,7 +46,7 @@ public class TypeArray extends Type implements TypeArrayInterface
      * Creates an array type of the specified base type with the specified length.
      */
     public TypeArray(Type base, Expression length) {
-        this(base, length, length.isConstant() ? length.getIValue() : 0);
+        this(base, length, length != null && length.isConstant() ? length.getIValue() : 0);
     }
 
     public TypeArray(Type base, Expression length, int maxlength) {
@@ -133,7 +133,11 @@ public class TypeArray extends Type implements TypeArrayInterface
 
     public String toString()
     {
-        return this.getCudaMemType().syntaxNameSpace() + this.getBase() + "[" + length + "]";
+        String s = "";
+        if (length != null) {
+            s = length.toString();
+        }
+        return this.getCudaMemType().syntaxNameSpace() + this.getBase() + "[" + s + "]";
     }
 
     public Type leastCommonPromotion(Type other) {

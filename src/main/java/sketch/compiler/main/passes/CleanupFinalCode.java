@@ -48,7 +48,6 @@ public class CleanupFinalCode extends MetaStage {
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new MakeCastsExplicit());
         // System.out.println("MakeCasts");
-        // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new EliminateTransAssns());
         // System.out.println("ElmTransAssn");
         // prog.accept(new SimpleCodePrinter());

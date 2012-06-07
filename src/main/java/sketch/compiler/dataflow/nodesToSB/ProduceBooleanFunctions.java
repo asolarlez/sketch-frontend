@@ -125,8 +125,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         abstractValue avlen = null;
         Expression nlen;
         try{
+            if (t.getLength() != null) {
             avlen = (abstractValue) t.getLength().accept(this);
             nlen = this.exprRV;
+            } else {
+                avlen = vtype.BOTTOM("FARRAY");
+                nlen = null;
+            }
         }finally{
             visitingALen = false;
         }
@@ -255,7 +260,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         {
             TypeArray array = (TypeArray)type;
             String base = printType(array.getBase());
-            abstractValue iv = (abstractValue) array.getLength().accept(this);
+            abstractValue iv;
+            if (array.getLength() != null) {
+                iv = (abstractValue) array.getLength().accept(this);
+            } else {
+                iv = vtype.BOTTOM("FARRAY");
+            }
             if (iv.isBottom()) {
                 return base + "[*" + maxArrSize + "]";
             } else {

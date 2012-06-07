@@ -147,11 +147,16 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 			List<Expression> dims = base.getDimensions ();
 
 			dims.add (ta.getLength ());
+            Expression lenArr;
+            if (ta.getLength() != null) {
+                lenArr =
+                        new ExprBinary(base.getLength(), ExprBinary.BINOP_MUL,
+                                base.getLength(), ta.getLength());
+            } else {
+                lenArr = null;
+            }
 			return new TypeArray (base.getBase (),
-				new ExprBinary (base.getLength (),
-								ExprBinary.BINOP_MUL,
-								base.getLength (),
-								ta.getLength ()),
+ lenArr,
 					dims,
                     ta.getMaxlength() * base.getMaxlength());
 		} else {
@@ -188,12 +193,17 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
 		Expression idx = ExprConstant.createConstant (ear, "0");
 		for (RangeLen rl : indices) {
-            Expression cond =
-                    new ExprBinary(new ExprBinary(rl.start(), ">=", ExprConstInt.zero),
-                            "&&", new ExprBinary(rl.start(), "<",
-                                    dims.get(dims.size() - 1)));
-            addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
-                    false));
+
+            Expression cdim = dims.get(dims.size() - 1);
+            if (cdim != null) {
+                Expression cond =
+                        new ExprBinary(
+                                new ExprBinary(rl.start(), ">=", ExprConstInt.zero),
+                                "&&", new ExprBinary(rl.start(), "<", cdim));
+                addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
+                        false));
+            }
+
 			dims.remove (dims.size ()-1);
 			idx = new ExprBinary (idx, ExprBinary.BINOP_ADD,
 					idx,

@@ -812,7 +812,10 @@ public class FEReplacer implements FEVisitor
     }
     public Object visitTypeArray(TypeArray t) {
     	Type nbase = (Type)t.getBase().accept(this);
-    	Expression nlen = (Expression)t.getLength().accept(this);
+        Expression nlen = null;
+        if (t.getLength() != null) {
+            nlen = (Expression) t.getLength().accept(this);
+        }
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
         return new TypeArray(nbase, nlen, t.getMaxlength());
     }

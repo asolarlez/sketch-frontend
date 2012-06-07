@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -273,7 +274,8 @@ public class NtsbVtype extends IntVtype {
                     hasout = true;
                     if(param.getType().isArray()){
                         TypeArray ta = (TypeArray)param.getType();
-                        Integer lntt = ta.getLength().getIValue();
+                        Expression el = ta.getLength();
+                        Integer lntt = el != null ? el.getIValue() : null;
                         if (lntt != null) {
                             int lnt = lntt;
                             List<abstractValue> ls = new ArrayList<abstractValue>(lnt);

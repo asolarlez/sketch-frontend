@@ -194,9 +194,12 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			near = new ExprArrayRange(ear, base, new RangeLen(idx, ofst));
 		}
 
+        if (cond == null) {
+            return near;
+        }
 		if (FailurePolicy.WRSILENT_RDZERO == policy) {
 			return new ExprTernary("?:", cond, near, ExprConstInt.zero);
-		} else if (FailurePolicy.ASSERTION == policy){
+        } else if (FailurePolicy.ASSERTION == policy) {
 			addStatement (new StmtAssert (cond, false));
 			return near;
 		} else {  assert false : "fatal error"; return null;  }
@@ -228,9 +231,15 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 			int op = stmt.getOp();
 
 			if (FailurePolicy.WRSILENT_RDZERO == policy) {
-				return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs, op), null);
+                if (cond != null) {
+                    return new StmtIfThen(stmt, cond, new StmtAssign(near, rhs, op), null);
+                } else {
+                    return new StmtAssign(near, rhs, op);
+                }
 			} else if (FailurePolicy.ASSERTION == policy) {
-				addStatement (new StmtAssert (ear, cond, false));
+                if (cond != null) {
+                    addStatement(new StmtAssert(ear, cond, false));
+                }
 				return new StmtAssign (stmt, near, rhs, op);
 			} else {  assert false : "fatal error"; return null;  }
 		}else{
@@ -364,6 +373,9 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	protected Expression makeGuard (Expression base, Expression idx) {
 		Type idxt = getType(idx);
 		Expression sz = ((TypeArray) getType(base)).getLength();
+        if (sz == null) {
+            return new ExprBinary(idx, "!=", ExprConstInt.minusone);
+        }
 		if(idxt instanceof TypeStruct || idxt instanceof TypeStructRef){
 			return new ExprBinary(new ExprBinary(idx, "!=", ExprConstInt.minusone), "&&",
 										 new ExprBinary(idx, "<", sz));
@@ -375,8 +387,12 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	
 	protected Expression makeGuard (Expression base, Expression len, Expression idx) {
 		Expression sz = ((TypeArray) getType(base)).getLength();
-		return new ExprBinary(new ExprBinary(idx, ">=", ExprConstInt.zero), "&&",
-										 new ExprBinary(new ExprBinary(idx, "+", len), "<=", sz));
+        Expression ex = new ExprBinary(idx, ">=", ExprConstInt.zero);
+        if (sz == null) {
+            return ex;
+        }
+        return new ExprBinary(ex, "&&", new ExprBinary(new ExprBinary(idx, "+", len),
+                "<=", sz));
 	}
 
 

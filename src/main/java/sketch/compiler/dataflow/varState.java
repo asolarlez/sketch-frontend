@@ -62,7 +62,13 @@ abstract public class varState {
 	protected abstractValue typeSize(Type t, abstractValueType vtype){
 		if( t instanceof TypeArray ){
 			TypeArray tarr = (TypeArray) t;
-			abstractValue av = (abstractValue) tarr.getLength().accept( vtype.eval );
+
+            abstractValue av;
+            if (tarr.getLength() != null) {
+                av = (abstractValue) tarr.getLength().accept(vtype.eval);
+            } else {
+                av = vtype.BOTTOM("FARRAY");
+            }
 			if(tarr.getBase() instanceof TypeArray){
 				return vtype.times(av, typeSize(tarr.getBase(), vtype));
 			}else{
