@@ -1,0 +1,21 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 16";
+
+include "generators.skh";
+
+void foo(int x, ref int[x] y, int w, ref int[w] z, int[x] yy){    
+    y = yy;
+    if(w < x){
+        z = yy[0::w];
+    }else{
+        z = yy;
+    }
+}
+
+void moo(int x, ref int[x] y, int w, ref int[w] z, int[x] yy) implements foo{
+    y = yy;
+    if(exprBool(2, {w,x}, 0, {})){
+        z = yy[0::w];
+    }else{
+        z = yy;
+    }
+}
