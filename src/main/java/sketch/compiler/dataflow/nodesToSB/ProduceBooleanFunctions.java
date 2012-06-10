@@ -312,8 +312,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     public Object visitFunction(Function func)
     {
         if(tracing)
-            System.out.println("Analyzing " + func.getName());
-        System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
+            System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
         
         ((NtsbVtype)this.vtype).out.print("def " + func.getName());
         if( func.getSpecification() != null ){
@@ -345,7 +344,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         opsizes = tmpopsz;
         opnames = tmpopnm;
         
-        System.out.println("Analyzed " + func.getName() + " " + new java.util.Date());
+        if (tracing)
+            System.out.println("Analyzed " + func.getName() + " " + new java.util.Date());
         
         return func;
     }

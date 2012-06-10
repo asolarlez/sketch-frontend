@@ -18,8 +18,10 @@ stencil int[N] testSK5(int N, int[N] in) implements test5{
       int t1;
       if(N>??){
           t1 = in[??];
-          out[??] = 0;
-          out[N-??] = 0;
+          int tt = ??; assert tt < N;
+          out[tt] = 0;
+          int qq = ??; assert N-qq >= 0;
+          out[N-qq] = 0;
           for(int i=??; i<N-??; ++i){
             int t2;
             t2 = in[i+1]; 
