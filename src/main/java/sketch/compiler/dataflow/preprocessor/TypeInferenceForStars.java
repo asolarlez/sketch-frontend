@@ -202,6 +202,21 @@ class UpgradeStarToInt extends FEReplacer{
         else
             return new ExprTernary(exp, exp.getOp(), a, b, c);
     }
+
+    public Object visitTypeArray(TypeArray t) {
+        Type nbase = (Type) t.getBase().accept(this);
+        Expression nlen = null;
+        if (t.getLength() != null) {
+            Type oldType = type;
+            type = TypePrimitive.inttype;
+            nlen = (Expression) t.getLength().accept(this);
+            type = oldType;
+        }
+        if (nbase == t.getBase() && t.getLength() == nlen)
+            return t;
+        return new TypeArray(nbase, nlen, t.getMaxlength());
+    }
+
     public Object visitExprBinary(ExprBinary exp)
     {
 		switch(exp.getOp()){

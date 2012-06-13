@@ -1,0 +1,16 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 32";
+
+harness void main(int n, int[n] in){
+    int outsz = 0;
+    int[n] out;
+    for(int i=0; i<n; ++i){ 
+        if(in[i]%3 == 0){
+            out[outsz++] = in[i];           
+        }
+    }
+    int tt = outsz;
+    int[tt] xx = out[0::tt];
+    for(int i=0; i<tt; ++i){
+        assert xx[i]%?? == ??;
+    }    
+}

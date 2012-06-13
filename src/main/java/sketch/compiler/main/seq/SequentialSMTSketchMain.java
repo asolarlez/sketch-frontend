@@ -55,7 +55,7 @@ import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.parser.StreamItParser;
 import sketch.compiler.passes.lowering.*;
-import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.BitTypeRemover;
 import sketch.compiler.passes.preprocessing.BitVectorPreprocessor;
@@ -335,7 +335,7 @@ public class SequentialSMTSketchMain extends CommonSketchMain {
 
 		// By default, we don't protect array accesses in SKETCH
 		if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions) {
-			prog = (Program) prog.accept(new ProtectArrayAccesses(
+			prog = (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
 					FailurePolicy.ASSERTION, varGen));
 //			dump (prog, "After arrayOOBPolicy");
 		}

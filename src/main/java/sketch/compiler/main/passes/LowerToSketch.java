@@ -6,7 +6,7 @@ import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
-import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 
 public class LowerToSketch extends MetaStage {
@@ -43,21 +43,22 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
 
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
+        // prog.debugDump("After ERS");
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new ExtractVectorsInCasts(varGen));
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new SeparateInitializers());
         // dump (prog, "SeparateInitializers:");
         // prog = (Program)prog.accept(new NoRefTypes());
-
+        // prog.debugDump("Before SVA");
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
-
+        // prog.debugDump("After SVA");
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         // By default, we don't protect array accesses in SKETCH
 
         if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
             prog =
-                    (Program) prog.accept(new ProtectArrayAccesses(
+                    (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
                             FailurePolicy.ASSERTION, varGen));
 
         prog =

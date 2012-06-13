@@ -962,8 +962,23 @@ public class NodesToSuperCpp extends NodesToJava {
         String exprInner = (String) exp.getExpr().accept(this);
         Type etype = getType(exp.getExpr());
         if (exp.getType() instanceof TypeArray) {
-            return convertType(exp.getType()) + "(" + exprInner + ")";
+            // return convertType(exp.getType()) + "(" + exprInner + ")";
+            TypeArray latype = (TypeArray) exp.getType();
+            String lenString = (String) latype.getLength().accept(this);
+            String nvar = newTempArray(latype, lenString);
+            String t =
+                    "CopyArr<" + convertType(latype.getBase()) + ">(" + nvar + "," +
+                            exprInner + ", " + lenString;
+            if (etype instanceof TypeArray) {
+                TypeArray ratype = (TypeArray) etype;
+                t += ", " + ratype.getLength().accept(this) + ");\n";
+            } else {
+                t += ");\n";
+            }
+            addPreStmt(indent + t);
+            return nvar;
         }
+
         if (etype instanceof TypeArray) {
             TypeArray ta = (TypeArray) etype;
             if (ta.getBase().equals(TypePrimitive.bittype) &&

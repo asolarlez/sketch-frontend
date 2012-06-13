@@ -20,7 +20,7 @@ stencil int[N] testSK5(int N, int[N] in) implements test5{
           t1 = in[??];
           int tt = ??; assert tt < N;
           out[tt] = 0;
-          int qq = ??; assert N-qq >= 0;
+          int qq = ??; assert N-qq >= 0 && qq>=1;
           out[N-qq] = 0;
           for(int i=??; i<N-??; ++i){
             int t2;

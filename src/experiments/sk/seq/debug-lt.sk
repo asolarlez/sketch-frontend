@@ -166,7 +166,7 @@ generator bit genScalarListPredicate (int lenRet, Tuple [lenRet] ret,
   return intListEquals(lenLeft, leftOp, lenRight, rightOp);
 }
 
-generator int [len1+len2] genScalarListOperand (int lenRet, Tuple [lenRet] ret,
+generator int [16] genScalarListOperand (int lenRet, Tuple [lenRet] ret,
                                int len1, int [len1] l1,
                                int len2, int [len2] l2,
                                int i, int j, int t,
@@ -255,7 +255,7 @@ generator bit genTupleListPredicate (int lenRet, Tuple [lenRet] ret,
   Tuple [lenRight] rightOp = tmp[0::lenRight];
   */
  
-  Tuple [100] tmp = 
+  Tuple [16] tmp = 
     genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, 2, lenRight);
   Tuple [lenRight] rightOp = tmp[0::lenRight];
  
@@ -265,32 +265,50 @@ generator bit genTupleListPredicate (int lenRet, Tuple [lenRet] ret,
 }
 
 //generator Tuple [len1*len2] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
-generator Tuple [100] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
+generator Tuple [16] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
                                  int len1, int [len1] l1, 
                                  int len2, int [len2] l2, 
                                  int i, int j, int t, 
                                  int depth, ref int sz)
 {
+  /*
   Tuple [i*len2] r = product(i, top(i, len1, l1), len2, l2);
   sz = i * len2;
   return r;
+  */
 
-  /*
+  /* 
   int sz1;
-  int [len1+len2] tmp1 = 
+  int [16] tmp1 = 
     genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
   int [sz1] op1 = tmp1[0::sz1];
   
   int sz2;
-  int [len1+len2] tmp2 = 
+  int [16] tmp2 = 
     genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz2);
   int [sz2] op2 = tmp2[0::sz2];
   
-  //Tuple [sz1*sz2] r = product(sz1, op1, sz2, op2);
-  //sz = sz1 * sz2;
+  Tuple [sz1*sz2] r = product(sz1, op1, sz2, op2);
+  sz = sz1 * sz2;
+  return r;
+  */
+  
+
+  /*
+  int sz1 = i;
+  int [sz1] op1 = top(i, len1, l1);
+
+  int sz2 = len2;
+  int [sz2] op2 = l2;
+
+  Tuple [sz1*sz2] r = product(sz1, op1, sz2, op2);
+  //Tuple [i*len2] r = product(sz1, op1, sz2, op2);
+  sz = sz1 * sz2;
+  //sz = i * len2;
+  return r; 
   */
 
-  /*   
+     
   if (depth == 0)
   {
     sz = lenRet;
@@ -302,12 +320,12 @@ generator Tuple [100] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
     if (type == 0)
     {
       int sz1;
-      int [len1+len2] tmp1 = 
+      int [16] tmp1 = 
         genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
       int [sz1] op1 = tmp1[0::sz1];
       
       int sz2;
-      int [len1+len2] tmp2 = 
+      int [16] tmp2 = 
         genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz2);
       int [sz2] op2 = tmp2[0::sz2];
       
@@ -320,35 +338,39 @@ generator Tuple [100] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
       sz = lenRet;
       return ret;
     }
+    
     else if (type == 3)
     {
       int sz1;
-      int [len1+len2] tmp1 = 
+      int [16] tmp1 = 
         genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
       int [sz1] op1 = tmp1[0::sz1];
       
       sz = sz1;
-      return leftProduct(t, sz1, op1);
+      Tuple [sz1] r = leftProduct(t, sz1, op1);
+      return r;
     }
     else if (type == 4)
     {
       int sz1;
-      Tuple [len1*len2] tmp1 = 
+      Tuple [16] tmp1 = 
         genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
       Tuple [sz1] op1 = tmp1[0::sz1];
       
       int sz2;
-      Tuple [len1*len2] tmp2 = 
+      Tuple [16] tmp2 = 
         genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz2);
       Tuple [sz2] op2 = tmp2[0::sz2];
 
       sz = sz1 + sz2;
-      return appendTupleList(sz1, op1, sz2, op2);
+      Tuple [sz1+sz2] r = appendTupleList(sz1, op1, sz2, op2);
+      return r;
     }
+    
     else
       assert false;
   }
-  */ 
+  
 }
 
 
@@ -429,9 +451,7 @@ generator bit genScalarPredicate (int lenRet, Tuple [lenRet] ret,
   else if (operator == 5)
     return leftOp != rightOp;
   else
-    assert 0;
-  
-  //return i <= len1;
+    assert false;
 }
 
 generator bit genInvariant (int lenRet, Tuple [lenRet] ret, 
@@ -440,36 +460,51 @@ generator bit genInvariant (int lenRet, Tuple [lenRet] ret,
                             int i, int j, int t1)
 {
   bit out = 1;
-  
-  //bit t3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t);
-  //out = out & t3;
-  //out = (i <= len1);
+  /* 
+  bit b1 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+  bit b2 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
 
-  bit r = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-  /*
-  out = (i <= len1) && tupleListEquals(lenRet, ret, 
-                                       i*len2, 
-                                       product(i, top(i, len1, l1), len2, l2));
+  out = out && b1 && b2;
+
+  bit b3 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+  bit b4 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+  
+  out = out && b3 && b4;
   */
 
-  out = (i <= len1) && r;
-
-  /*
-  int t = ??(2);
-  repeat (t)
+      
+  int numPreds = ??(2);
+  repeat (numPreds)
   {
-    bit t1 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t);
-    //bit t2 = genScalarListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t);
-    //bit t3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t);
+    bit b1 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+    //bit b2 = genScalarListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+    bit b3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
 
-    //out = out & {| t1 | t3 |};
-    out = out & t1;
+    out = out & {| b1 | b3 |};
+    //out = out & b1;
   }
   
-  assert t <= 4;
+  assert numPreds <= 4;
+  
+
+  /* 
+  int numPreds = ??(2);
+  assert numPreds <= 2;
+  repeat (numPreds)
+  {
+    bit b1 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+    out = out && b1;
+  }
+
+  int numPreds2 = ??(2);
+  assert numPreds2 <= 2;
+  repeat (numPreds2)
+  {
+    bit b3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+    out = out && b3;
+  }
   */
 
- 
   return out;
 }
 
@@ -480,7 +515,7 @@ bit innerInvariant (int lenRet, Tuple [lenRet] ret,
                     int len2, int [len2] l2,
                     int i, int j, int t1)
 {
-  
+   
   Tuple [i*len2] previous = product(i, top(i, len1, l1), len2, l2);
   Tuple [j] current = leftProduct(t1, j, top(j, len2, l2));
   Tuple [i*len2+j] retEquals = appendTupleList(i*len2, previous, j, current);
@@ -488,8 +523,10 @@ bit innerInvariant (int lenRet, Tuple [lenRet] ret,
   return tupleListEquals(lenRet, ret, i*len2+j, retEquals) &&
          i+1 <= len1 && t1 == get(i, len1, l1) && j <= len2;
   
-
-  //return genInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1);
+  /*
+  return genInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) &&
+         i+1 <= len1 && t1 == get(i, len1, l1) && j <= len2;
+  */
 }
 
 bit outerInvariant (int lenRet, Tuple[lenRet] ret,
@@ -548,7 +585,17 @@ harness void sketch (int lenRet, int [lenRet] r1, int [lenRet] r2,
   {
     assert innerInvariant(lenRet, ret, len1, l1, len2, l2, i, 0, get(i, len1, l1));
   }
+   
+  if (true)
+  {
+    assert outerInvariant(0, ret, len1, l1, len2, l2, 0, 0, t1);
+  }
   
+
+  if (outerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) && !(i < len1))
+  {
+    assert tupleListEquals(lenRet, ret, len1*len2, product(len1, l1, len2, l2));
+  }
 
   /* 
   Tuple [i*len2] previous = product(i, top(i, len1, l1), len2, l2);
@@ -599,74 +646,8 @@ harness void sketch (int lenRet, int [lenRet] r1, int [lenRet] r2,
     assert i+1 <= len1;
   }
   */
-  
-
     
 }
 
 
 
-void qun (int lenRet, int [lenRet] r1, int [lenRet] r2,
-                     //int len1, int [len1] l1,
-                     int len2, int [len2] l2, 
-                     int t1, int j, int i)
-{
-  int[j] topL2 = top(j, len2, l2); 
-  if (tupleListEquals(lenRet, ret, j, leftProduct(t1, j, top(j, len2, l2)))
-      && j < len2)
-  {
-    
-    Tuple newTuple = new Tuple();
-    newTuple.first = t1;
-    newTuple.second = l2[j];
-
-    Tuple[lenRet+1] newRet = appendTuple(newTuple, lenRet, ret);
-    
-    /* 
-    int[j+1] topL2 = top(j+1, len2, l2);
-    int k = j+1;
-
-    Tuple[k] t1_cross_top1_l2 = leftProduct(t1, k, topL2);
-    //int lenApp2 = len1_len2 + j + 1;
-    
-    //Tuple[len1_len2 + k] app2 = append(len1_len2, l1_l2_cross, 
-    //                                   k, t1_cross_top1_l2);
-
-    //assert tupleListEquals(lenRet+1, newRet, k, t1_cross_top1_l2);
-    */
-    for (int m = 0; m < lenRet; ++m)
-    {
-      assert newRet[m].first == ret[m].first;
-      assert newRet[m].second == ret[m].second;
-    }
-    //assert newRet[lenRet].first == t1;
-    //assert newRet[lenRet].second == l2[j];
-
-    
-    /*
-    //assert newRet[lenRet].second == l2[j];
-    assert t1_cross_top1_l2[j].second == newRet[lenRet].second;
-    assert t1_cross_top1_l2[j].first == newRet[lenRet].first;
-    assert lenRet + 1 == j+1;
-    assert t1_cross_top1_l2[j-1].second == newRet[lenRet-1].second;
-    assert t1_cross_top1_l2[j-1].first == newRet[lenRet-1].first;
-    */
-    /*
-    for (int m = 0; m < lenRet + 1; ++m)
-    {
-      assert t1_cross_top1_l2[m].first == newRet[m].first;
-      assert t1_cross_top1_l2[m].second == newRet[m].second;
-    }
-    */
-
-    
-    
-    //assert ret[j-1].first == t1;
-    
-  }
-  
-
-                    
-
-
-}

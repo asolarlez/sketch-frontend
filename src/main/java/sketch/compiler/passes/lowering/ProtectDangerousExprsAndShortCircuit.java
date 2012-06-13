@@ -27,36 +27,24 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.util.ControlFlowException;
 
-
 /**
- * The purpose of this class is to replace right-hand-side array
- * accesses of the form A[x] into expressions of the form:
- * (x>=0 && x < N) ? A[x] : 0;
- *
- * Similarly, Left hand side A[x] gets replaced with
- *
- * if(x>=0 && x < N){ A[x] = rhs; }
- *
- * Assumes that conditional expressions have been eliminated.
- *
- * TODO: this class needs to hack around the fact that the partial evaluator
- * does not properly handle short-circuit evaluation.  This needs to be fixed,
- * as it affects performance at least in the verifier.
- *
+ * Protect dangerous expressions such as array accesses, division and dereferences. Also
+ * enforces short circuit behavior for && and ||. Single | and & should not short circuit.
+ * 
  * @author asolar
  */
-public class ProtectArrayAccesses extends SymbolTableVisitor {
+public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 	/** What happens when an access is out of bounds? */
 	public static enum FailurePolicy { ASSERTION, WRSILENT_RDZERO };
 
 	private TempVarGen varGen;
 	private FailurePolicy policy;
 
-	public ProtectArrayAccesses(TempVarGen vargen){
+	public ProtectDangerousExprsAndShortCircuit(TempVarGen vargen){
 		this (FailurePolicy.WRSILENT_RDZERO, vargen);
 	}
 
-	public ProtectArrayAccesses (FailurePolicy p, TempVarGen vargen) {
+	public ProtectDangerousExprsAndShortCircuit (FailurePolicy p, TempVarGen vargen) {
 		super(null);
 		this.varGen = vargen;
 		this.policy = p;
@@ -76,11 +64,16 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
                 // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
                 //assert(newStatements != null);
 		String op = eb.getOpString ();
-		if (op.equals ("&&") || op.equals ("||") || op.equals ("&") || op.equals ("|") )
+        if (op.equals("&&") || op.equals("||"))
 			return doLogicalExpr (eb);
 		else {
-			return super.visitExprBinary (eb);
-                     }
+            if (op.equals("/") || op.equals("%")) {
+                addStatement(new StmtAssert(new ExprBinary(eb.getRight(), "!=",
+                        ExprConstInt.zero), eb.getCx() + ": Division by zero", false));
+            }
+            return super.visitExprBinary(eb);
+
+        }
 	}
 	
 	
@@ -200,7 +193,8 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 		if (FailurePolicy.WRSILENT_RDZERO == policy) {
 			return new ExprTernary("?:", cond, near, ExprConstInt.zero);
         } else if (FailurePolicy.ASSERTION == policy) {
-			addStatement (new StmtAssert (cond, false));
+            addStatement(new StmtAssert(cond, cond.getCx() + ": Array out of bounds",
+                    false));
 			return near;
 		} else {  assert false : "fatal error"; return null;  }
 	}
@@ -373,8 +367,11 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
 	protected Expression makeGuard (Expression base, Expression idx) {
 		Type idxt = getType(idx);
 		Expression sz = ((TypeArray) getType(base)).getLength();
-        if (sz == null) {
+        if (sz == null && (idxt instanceof TypeStruct || idxt instanceof TypeStructRef)) {
             return new ExprBinary(idx, "!=", ExprConstInt.minusone);
+        }
+        if (sz == null) {
+            return new ExprBinary(idx, ">=", ExprConstInt.zero);
         }
 		if(idxt instanceof TypeStruct || idxt instanceof TypeStructRef){
 			return new ExprBinary(new ExprBinary(idx, "!=", ExprConstInt.minusone), "&&",
@@ -401,6 +398,15 @@ public class ProtectArrayAccesses extends SymbolTableVisitor {
     		public Object visitExprArrayRange (ExprArrayRange ear) {
     			throw new ControlFlowException ("yes");
     		}
+
+            public Object visitExprBinary(ExprBinary eb) {
+                if (eb.getOp() == ExprBinary.BINOP_DIV ||
+                        eb.getOp() == ExprBinary.BINOP_MOD)
+                {
+                    throw new ControlFlowException("yes");
+                }
+                return super.visitExprBinary(eb);
+            }
     	};
     	try {  e.accept (new checker ());   return false;  }
     	catch (ControlFlowException cfe) {  return true;  }

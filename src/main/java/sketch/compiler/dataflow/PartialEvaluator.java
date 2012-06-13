@@ -1132,6 +1132,7 @@ public class PartialEvaluator extends FEReplacer {
                 //and push in a clean one, so the rest of the function thinks that nothing at all was written in this branch.
                 state.popChangeTracker();
                 addStatement((Statement) (new StmtAssert(stmt, new ExprUnary("!", ncond),
+                        e.getMessage(),
                         false)).accept(this));
                 nvtrue = null;
                 state.pushChangeTracker(vcond, false);

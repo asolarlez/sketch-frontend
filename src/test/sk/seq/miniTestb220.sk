@@ -13,8 +13,8 @@ harness void test1(){
 harness void test2(){
     bit[W] t = foo();
     assert (!t[2] || t[3]) ^ (t[1]); 
-    bit[W] qq = ??;
-    assert qq == 0;
+    bit[W] qq = ??;    
+    assert qq == (bit[W])0;
 }
 
 harness void test3(){

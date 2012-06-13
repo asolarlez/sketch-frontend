@@ -53,6 +53,47 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 		this.varGen = varGen;
 	}
 	
+    private Expression szComp(Type tl, Type tr) {
+        assert (tl instanceof TypeArray || tr instanceof TypeArray);
+        Expression ll = ExprConstInt.one;
+        Expression lr = ExprConstInt.one;
+        Type lrec = tl;
+        Type rrec = tr;
+        if (tl instanceof TypeArray) {
+            TypeArray tt = ((TypeArray) tl);
+            ll = tt.getLength();
+            lrec = tt.getBase();
+        }
+        if (tr instanceof TypeArray) {
+            TypeArray tt = ((TypeArray) tr);
+            lr = tt.getLength();
+            rrec = tt.getBase();
+        }
+        Expression e = new ExprBinary(ll, "==", lr);
+        if (lrec instanceof TypeArray || rrec instanceof TypeArray) {
+            return new ExprBinary(e, "&&", szComp(lrec, rrec));
+        } else {
+            return e;
+        }
+
+    }
+
+    public Object visitExprBinary(ExprBinary eb) {
+        if (eb.getOp() == ExprBinary.BINOP_EQ) {
+            Type tl = getType(eb.getLeft());
+            Type tr = getType(eb.getRight());
+            if (tl instanceof TypeArray || tr instanceof TypeArray) {
+                Expression nl = (Expression) eb.getLeft().accept(this);
+                Expression nr = (Expression) eb.getRight().accept(this);
+                return new ExprBinary(new ExprBinary(nl, "==", nr), "&&", szComp(tl, tr));
+            } else {
+                return super.visitExprBinary(eb);
+            }
+        } else {
+            return super.visitExprBinary(eb);
+        }
+    }
+
 	public Object visitExprArrayInit(ExprArrayInit eai){
 	    Type ta = getType(eai);
 	    if(!(ta instanceof TypeArray )){ return eai; }

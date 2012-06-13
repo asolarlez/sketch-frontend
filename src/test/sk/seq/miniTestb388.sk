@@ -1,0 +1,18 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 64";
+
+int N = 7;
+int M = 8;
+
+harness void voo(int p, int n, int m, int t, int[p][n][m] a, int[t] b){
+    if(a==b){
+        assert t==m && n==?? && p == ??;
+        if(m>0){
+            mama(??, b[0], 1, a[0][0]);
+        }
+    }
+}
+
+int mama(int n, int[n] x, int m, int[m] y){
+    assert n == m;
+    return 5;
+}
