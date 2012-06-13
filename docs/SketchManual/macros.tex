@@ -1,0 +1,174 @@
+\definecolor{light-gray}{gray}{0.6}
+
+\newcommand{\SK}{\Sketch}
+\newcommand{\Sk}{\Sketch}
+\newcommand{\Sketch}{\textsc{Sketch}\xspace}
+
+\newcommand{\TODO}[1]{[\textsl{#1}]}
+\newcommand{\comment}[1]{[\textsl{#1}]}
+\newcommand{\hide}[1]{} 
+\newcommand{\C}[1]{\lstinline!#1!}
+\newcommand {\spc}{\hspace{3pt}}
+\newcommand {\lglg}{\textsc{L}og\textsc{L}og}
+\newcommand {\llglg}{$\lambda$-\textsc{L}og\textsc{L}og}
+\newcommand {\loglog}{\lglg}
+%%% Inference rule things.
+\newcommand{\deriv}[3]{\langle #1 \rangle #2 \langle #3 \rangle}
+\newcommand{\initsenv}[1]{\Pi, \Lambda{#1}, \Sigma{#1}, \Gamma{#1}}
+\newcommand{\expeval}{\stackrel{e}{\rightarrow}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Macros for the semantics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\valEnv}{\Sigma}
+\newcommand{\typeEnv}{\Gamma}
+\newcommand{\cdeclEnv}{\Pi}
+\newcommand{\cEnv}{\Lambda}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+  
+\newcommand{\etal}{\textit{et al.}\@\xspace}
+\newcommand{\eg}{\textit{e.g.}\@\xspace}
+\newcommand{\ie}{\textit{i.e.}\@\xspace}
+
+
+% References
+%
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}{Lemma}
+\newtheorem{prop}{Property}
+
+\newcommand{\thmlabel}[1]{\label{thm:#1}}
+\newcommand{\thmref}[1]{Theorem~\ref{thm:#1}}
+\newcommand{\lemlabel}[1]{\label{lem:#1}}
+\newcommand{\lemref}[1]{Lemma~\ref{lem:#1}}
+
+\newcommand{\corlabel}[1]{\label{cor:#1}}
+\newcommand{\corref}[1]{Corollary~\ref{cor:#1}}
+
+\newcommand{\proplabel}[1]{\label{prop:#1}}
+\newcommand{\propref}[1]{Proposition~\ref{prop:#1}}
+\newcommand{\deflabel}[1]{\label{def:#1}}
+\newcommand{\defref}[1]{Definition~\ref{def:#1}}
+\newcommand{\exlabel}[1]{\label{ex:#1}}
+\newcommand{\exref}[1]{Example~\ref{ex:#1}}
+\newcommand{\problabel}[1]{\label{prob:#1}}
+\newcommand{\probref}[1]{Problem~\ref{prob:#1}}
+\newcommand{\obslabel}[1]{\label{obs:#1}}
+\newcommand{\obsref}[1]{Observation~\ref{obs:#1}}
+\newcommand{\alglabel}[1]{\label{alg:#1}}
+\newcommand{\algref}[1]{Algorithm~\ref{alg:#1}}
+%
+\newcommand{\applabel}[1]{\label{app:#1}}
+\newcommand{\appref}[1]{Appendix~\ref{app:#1}}
+\newcommand{\seclabel}[1]{\label{sec:#1}}
+\newcommand{\shortsecref}[1]{\S\ref{sec:#1}}
+\newcommand{\longsecref}[1]{Section~\ref{sec:#1}}
+%
+\newcommand{\tablabel}[1]{\label{tab:#1}}
+\newcommand{\tabref}[1]{Table~\ref{tab:#1}}
+\newcommand{\figlabel}[1]{\label{fig:#1}}
+\newcommand{\longfigref}[1]{Figure~\ref{fig:#1}}
+\newcommand{\shortfigref}[1]{Fig.~\ref{fig:#1}}
+\newcommand{\eqqlabel}[1]{\label{eq:#1}}
+\newcommand{\shorteqqref}[1]{\eqref{eq:#1}}
+\newcommand{\mediumeqqref}[1]{Eq.~\eqref{eq:#1}}
+\newcommand{\longeqqref}[1]{Equation~\eqref{eq:#1}}
+
+% Determine type of references for particular document.
+%
+\newcommand{\secref}{\longsecref}
+\newcommand{\figref}{\longfigref}
+\newcommand{\eqqref}{\longeqqref}
+
+% Numbering layout
+%
+\numberwithin{equation}{section}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corolary}{Corollary}
+\newtheorem{hypothesis}{Hypothesis}
+\newtheorem{algo}{Algorithm}
+\newtheorem{Equation}{Equation}
+\newtheorem{Example}{Example}
+\newtheorem{theorem}{Theorem}[section]
+%\newenvironment{flagdoc}[1]{\begin{it}\paragraph{Flag \C{--#1}}}{\end{it}}
+
+\newcommand{\flagdoc}[2]{ \newglossaryentry{#1}{name={\texttt{--#1}}, description={#2}} \begin{it}\paragraph{Flag \gls{#1}}#2\end{it} }
+
+
+
+                     %%% Commands for formatting code %%%
+
+% \code -- used for names of functions and other code
+% Example:  This line calls the \code{numerator} method.
+\newcommand{\code}[1]{\lstinline{#1}}  % This _must_ be {\tt#1}, not \texttt{#1}
+
+              %%% Commands for formatting the language grammar %%%
+
+% \token -- used for a literal code token
+% \nterm -- used for a grammar non-terminal
+% Example:  Every \nterm{AssertStmt} begins with the \token{assert} keyword.
+\newcommand{\token}[1]{\textbf{#1}}
+\newcommand{\formatnt}[1]{{\sl#1}}  % This _must_ be {\sl#1}, not \textsl{#1}
+\newcommand{\nterm}[1]{\index{#1@\formatnt{#1}}\formatnt{#1}}
+
+% syntax -- environment for specifiying syntax
+\newenvironment{syntax}
+ {\par\begin{tabular}{rcl}}
+ {\end{tabular}\vspace{2ex}}
+
+% \lexrule -- used to define a lexical regexp rule within a syntax environment
+% Example:  \lexrule{IntegerLiteral}{[0-9]+}
+\newcommand{\lexrule}[2]
+ {\index{#1@\formatnt{#1}|defpage}\formatnt{#1} &
+  $=$ & $\langle${\tt#2}$\rangle$ \\}
+
+% \grammar -- used to define a grammar non-terminal within a syntax environment
+% \grammaralt -- used for alternate definitions within a syntax environment
+% Example:  \grammar{Expr}{\nterm{Expr} \token{+} \nterm{Expr}}
+%           \grammaralt{\token{(} \nterm{Expr} \token{)}}
+\newcommand{\grammar}[2]
+ {\index{#1@\formatnt{#1}|defpage}\formatnt{#1} & $=$ & {#2} \\}
+\newcommand{\grammaralt}[1]{& $|$ & {#1} \\}
+\newcommand{\grammarelt}[2]
+ {\index{#1@\formatnt{#1}|defpage}\formatnt{#1} & $\in$ & {#2} \\}
+
+\newcommand{\galt}{\mbox{\hspace{0.7em}\ensuremath{|}\hspace{1em}}}
+
+%%% Commands for inserting special characters %%%
+
+% \bs -- used to create a monospace backslash
+\newcommand{\bs}{{\tt\char"5C}}
+
+% \us -- used to create a monospace underscore (works better than {\tt\_})
+\newcommand{\us}{{\tt\char"5F}}
+
+
+\usepackage[T1]{fontenc}
+%\usepackage[scaled=0.85]{luximono}
+
+\newcommand{\FILTER}{filter}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.8]{luximono}
+\lstdefinelanguage{sketch}{%
+ morekeywords={%
+  bit,boolean,implements,for,break,int,%
+  while,if,else,foreach,until,return,false,true,%
+  loop,double,static,void,float,insert,into,%
+  reorder, repeat, null,class,fork,atomic,lock,unlock,struct,%
+  %% following keywords are for the formal language that we use to model SKETCH
+  def, defgen, generator, let,do,then,skip,op,assert,skip,switch,case,new
+ },
+ morecomment=[l]{//},
+ otherkeywords={??,\{|,|\}},
+ mathescape=true,
+}
+\lstset{basicstyle=\tt,language=sketch}
