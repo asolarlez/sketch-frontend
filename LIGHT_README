@@ -27,6 +27,3 @@ If you want to run the completed test suites, run the following commands:
 cd test/sk/seq
 make long
 This will run the complete sketch test suites.
-
-Installation instructions
-1. 
