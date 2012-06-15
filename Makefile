@@ -142,3 +142,4 @@ light-distr:
 	cp -r ../sketch-backend ../sketch-1.5.0/.
 	cp LIGHT_README ../sketch-1.5.0/README
 	rm -rf ../sketch-1.5.0/sketch-backend/.hg
+	cd ../sketch-1.5.0/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend
