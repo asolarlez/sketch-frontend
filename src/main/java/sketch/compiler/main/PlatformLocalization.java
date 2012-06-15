@@ -141,6 +141,8 @@ public class PlatformLocalization {
                 System.err.println("Your system doesn't match the " +
                         "localization strings of the SKETCH jar: " + osname + ", " +
                         osarch);
+                System.err.println("os.arch=" + System.getProperty("os.arch") + "os=" +
+                        System.getProperty("os.name"));
             }
             return rv;
         }
