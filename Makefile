@@ -131,11 +131,13 @@ light-distr:
 	cp -r src/runtime  ../sketch-distr
 	cp -r src/test  ../sketch-distr
 	cp src/testrunner.mk ../sketch-distr
+	cp -r docs ../sketch-distr
 	make assemble-noarch
 	cp target/sketch-1.5.0-noarch-launchers/*.jar ../sketch-distr/.
 	cp -r scripts ../sketch-distr
 	cp docs/SketchManual/manual.pdf ../sketch-distr/manual.pdf
 	cp scripts/windows/final/sketch ../sketch-distr/.
+	chmod +x ../sketch-distr/sketch
 	mkdir ../sketch-1.5.0 
 	mv ../sketch-distr ../sketch-1.5.0/sketch-frontend
 	cp -r ../sketch-backend ../sketch-1.5.0/.
