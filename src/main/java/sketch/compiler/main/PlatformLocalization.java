@@ -30,8 +30,8 @@ import static sketch.util.DebugOut.printWarning;
 public class PlatformLocalization {
     protected static PlatformLocalization singleton;
     public String version = "1.5.0";
-    public String osname = "Linux";
-    public String osarch = "amd64";
+    public String osname = System.getProperty("os.name");
+    public String osarch = System.getProperty("os.arch");
     public Properties localization;
     public File usersketchdir;
     /** only extract to a secure (not shared) location */
@@ -58,8 +58,8 @@ public class PlatformLocalization {
                 localization.load(resource.openStream());
                 if (!localization.getProperty("version").contains("$")) {
                     version = localization.getProperty("version");
-                    osname = localization.getProperty("osname");
-                    osarch = localization.getProperty("osarch");
+                    osname = System.getProperty("os.name");// localization.getProperty("osname");
+                    osarch = System.getProperty("os.arch");// localization.getProperty("osarch");
                     isSet = true;
                     if (SketchOptions.getSingleton() == null ||
                             SketchOptions.getSingleton().debugOpts.verbosity > 3)
