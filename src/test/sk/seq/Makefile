@@ -4,4 +4,4 @@ RTIME=../../../
 
 
 
-include ../../../../scripts/testrunner.mk
+include ../../../testrunner.mk

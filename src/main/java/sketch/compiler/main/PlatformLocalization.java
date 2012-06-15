@@ -29,7 +29,7 @@ import static sketch.util.DebugOut.printWarning;
  */
 public class PlatformLocalization {
     protected static PlatformLocalization singleton;
-    public String version = "1.4.0";
+    public String version = "1.5.0";
     public String osname = "Linux";
     public String osarch = "amd64";
     public Properties localization;

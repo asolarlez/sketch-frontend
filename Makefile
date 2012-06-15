@@ -119,3 +119,24 @@ run-local-par:
 
 run-local-sten:
 	export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx2300m -ea -server"; mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.sten.StencilSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+
+light-distr:
+	rm -r ../sketch-1.5.0
+	mkdir ../sketch-distr
+	mkdir ../sketch-distr/src
+	cp -r src/main ../sketch-distr/src
+	cp -r src/release_benchmarks  ../sketch-distr
+	cp -r src/sketchlib  ../sketch-distr
+	cp -r src/runtime  ../sketch-distr
+	cp -r src/test  ../sketch-distr
+	cp src/testrunner.mk ../sketch-distr
+	make assemble-noarch
+	cp target/sketch-1.5.0-noarch-launchers/*.jar ../sketch-distr/.
+	cp -r scripts ../sketch-distr
+	cp docs/SketchManual/manual.pdf ../sketch-distr/manual.pdf
+	cp scripts/windows/final/sketch ../sketch-distr/.
+	mkdir ../sketch-1.5.0 
+	mv ../sketch-distr ../sketch-1.5.0/sketch-frontend
+	cp -r ../sketch-backend ../sketch-1.5.0/.
+	cp LIGHT_README ../sketch-1.5.0/README
+	rm -r ../sketch-1.5.0/sketch-backend/.hg

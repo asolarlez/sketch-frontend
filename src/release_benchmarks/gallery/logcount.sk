@@ -18,10 +18,12 @@ bit[W] countBits(bit[W] in)
 bit[W] countSketch(bit[W] in) implements countBits
 {
 	bit[W] tmp=in;
+	int cnt=0;
 	repeat(??)
 	{
 	    bit[W] m = ??;
-		tmp=(tmp & m) + (tmp>>?? & ~m);
+		tmp=(tmp & m) + (tmp>>?? & m);
+		assert cnt++ < 5;
 	}
 	return tmp;
 }

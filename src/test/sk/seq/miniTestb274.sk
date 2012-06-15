@@ -4,13 +4,15 @@ pragma options "--bnd-inbits 2";
 // 5 i 2
 stencil bit[N][M] test(int N,int M, bit[N][M] in){
     bit[N][M] out;
-    bit tmp= in[0][0];
-    for(int i=0; i<N; ++i){
-        for(int j=1; j<M; ++j){
-            out[j][i] = tmp;
-            tmp = in[j][i];
-        }
-    } 
+    if(M>1){
+        bit tmp= in[0][0];
+        for(int i=0; i<N; ++i){
+            for(int j=1; j<M; ++j){
+                out[j][i] = tmp;
+                tmp = in[j][i];
+            }
+        } 
+    }
     return out;
 }
 
@@ -29,12 +31,14 @@ stencil bit[N][M] sk(int N,int M, bit[N][M] in) implements test{
 */
 stencil bit[N][M] sk(int N,int M, bit[N][M] in) implements test{
     bit[N][M] out;   
+    if(M>1){
     for(int i=??; i<N; ++i){
         if(i==0){ out[1][i] = in[{| (i|N|M)-1+?? | ?? |}][{| (i|N|M)-1+?? | ?? |}]; }
         else{ out[??][i] = in[{| (i|N|M)-1+?? | ?? |}][{| (i|N|M)-1+?? | ?? |} ]; }
         for(int j=??; j<M; ++j){
             out[j][i] = in[j-1+??][i-1+??];
         }
+    }
     }
     return out;
 }
