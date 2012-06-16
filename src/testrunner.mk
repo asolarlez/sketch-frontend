@@ -34,7 +34,7 @@ clean:
 	./$*.exe &> $*.eout ; echo "";
 	
 %.cpp: %.sk
-	(bash sketch -V 5 --fe-inc '${IPATH}\sketchlib'  --slv-timeout 10 --fe-output-code --fe-output-test --slv-synth ${SATSOLVER} --slv-verif ${SATSOLVER}   $*.sk &> $*.output) ; echo
+	(bash sketch -V 5 --fe-inc '${IPATH}\sketchlib'  --slv-timeout 10 --fe-output-code --fe-output-test --slv-synth ${SATSOLVER} --slv-verif ${SATSOLVER}   $*.sk > $*.output 2>&1) ; echo
 
 %.output: %.sk
-	(bash sketch -V 5 --fe-inc '${IPATH}\sketchlib' --slv-timeout 10 --slv-synth ${SATSOLVER} --slv-verif ${SATSOLVER}   $*.sk &> $@) ; echo
+	(bash sketch -V 5 --fe-inc '${IPATH}\sketchlib' --slv-timeout 10 --slv-synth ${SATSOLVER} --slv-verif ${SATSOLVER}   $*.sk > $@ 2>&1) ; echo
