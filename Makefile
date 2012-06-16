@@ -134,7 +134,7 @@ light-distr:
 	make assemble-noarch
 	cp target/sketch-1.5.0-noarch-launchers/*.jar ../sketch-distr/.
 	cp -r scripts ../sketch-distr
-	cp docs/SketchManual/manual.pdf ../sketch-distr/manual.pdf
+	cp docs/SketchManual/manual.pdf ../sketch-distr/LanguageReference.pdf
 	cp scripts/windows/final/sketch ../sketch-distr/.
 	chmod +x ../sketch-distr/sketch
 	mkdir ../sketch-1.5.0 

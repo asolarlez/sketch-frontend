@@ -118,7 +118,6 @@ generator int rec(int x, int y, int z){
    if(t == 4){return a + b;} 
    if(t == 5){return a - b;}   
 }
-
 harness void sketch( int x, int y, int z ){
    assert rec(x,y, z) == (x + x) * (y - z);
 }
@@ -198,7 +197,7 @@ harness void sketch( int N, int[N] A, int x, int y ){
 \end{lstlisting}
 
 
-
+\newpage
 High order generators can also be used to describe patterns in the expected structure of the desired code. For example, if we believe the resulting code will have a repeating structure, we can express this with the following high-order generator: 
 
 \begin{lstlisting}
