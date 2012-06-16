@@ -1,4 +1,29 @@
 
-Setup Instructions:
+Simple Setup Instructions:
+These instructions allow you to run the sketch compiler without installing it.
+1. Dependencies
+Before building you need to have the following tools installed:
+bash autoconf flex bison libtool
 
+2. Building the backend
+cd sketch-backend
+./configure
+make
+cd ..
 
+3. Testing the sketch
+cd sketch-frontend
+./sketch test/sk/seq/miniTest1.sk
+
+This should print out the completed sketch.
+
+4. (Optional) setting environment variables
+export PATH="$PATH:`pwd`"
+export SKETCH_HOME="`pwd`/runtime"
+The first one will let you run sketch from anywhere, and the second one will allow the code generators to find the runtime libraries.
+
+5. (Optional) thorough test
+If you want to run the completed test suites, run the following commands:
+cd test/sk/seq
+make long
+This will run the complete sketch test suites.
