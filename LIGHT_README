@@ -1,25 +1,37 @@
+Sketch 1.5.0 README
 
 Simple Setup Instructions:
-These instructions allow you to run the sketch compiler without installing it.
 1. Dependencies
 Before building you need to have the following tools installed:
-bash autoconf flex bison libtool
+bash g++ flex bison
+
+To run sketch you need to install either Java Runtime (JRE) or JDK, at least version 1.5.
 
 2. Building the backend
+under the sketch-1.5.0 directory, execute:
+
 cd sketch-backend
+chmod +x ./configure
 ./configure
 make
 cd ..
 
+Hint: if configure or make keeps complaining, you can try install autoconf and libtool. But usually this is not necessary.
+
 3. Testing the sketch
+
 cd sketch-frontend
+chmod +x ./sketch
 ./sketch test/sk/seq/miniTest1.sk
 
 This should print out the completed sketch.
 
 4. (Optional) setting environment variables
+under sketch-frontend directory:
+
 export PATH="$PATH:`pwd`"
 export SKETCH_HOME="`pwd`/runtime"
+
 The first one will let you run sketch from anywhere, and the second one will allow the code generators to find the runtime libraries.
 
 5. (Optional) thorough test
