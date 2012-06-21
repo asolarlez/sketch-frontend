@@ -1,653 +1,781 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 3";
+#define MAX_LEN 16
 
-pragma options "--bnd-unroll-amnt 16 --bnd-inbits 2";
-
-// return A[i] where A is of length N 
-int get (int i, int N, int [N] A)
+struct WilosUser
 {
-  assert i<N;
-  return A[i];
+  int roleId;
 }
 
-// append v to A, where A is of length N 
-int [N+1] appendInt (int v, int N, int [N] A)
+struct Role
 {
-  int[N+1] out;
-  out[0::N] = A;
-  out[N] = v;
-  return out;
+  int roleId;
 }
 
-// top T entries of A of length N 
-int [T] top (int T, int N, int [N] A)
+struct CrossProduct
 {
-  if (T <= N)
-    return A[0::T];
-  else
-    return 0;
+  int roleId1;
+  int roleId2;
 }
 
-// lists l1 with length l1Len and l2 with length l2Len are equal 
-bit intListEquals (int l1Len, int [l1Len] l1, int l2Len, int [l2Len] l2)
+bit CrossProduct_listEquals (CrossProduct [MAX_LEN] l1, int l1_sz, CrossProduct [MAX_LEN] l2, int l2_sz)
 {
-  return l1 == l2 && l1Len == l2Len;
-}
-
-struct Tuple
-{
-  int first;
-  int second;
-}
-
-bit tupleListEquals (int l1Len, Tuple[l1Len] l1, int l2Len, Tuple[l2Len] l2)
-{
-  if (l1Len != l2Len)
-    return 0;
-
-  for (int i = 0; i < l1Len; ++i)
+  if (l1_sz != l2_sz) return 0;
+  for (int i = 0; i < l1_sz; ++i)
   {
-    if (l1[i].first != l2[i].first || l1[i].second != l2[i].second)
+    if (l1[i].roleId1 != l2[i].roleId1 || l1[i].roleId2 != l2[i].roleId2)
       return 0;
   }
-
-  return 1 && l1Len == l2Len;
+  return 1;
 }
 
-
-// append tuple to a tuple list
-Tuple [len+1] appendTuple (Tuple t, int len, Tuple [len] l)
+CrossProduct [MAX_LEN] 
+CrossProduct_listJoin (WilosUser [MAX_LEN] l1, int l1_sz, Role [MAX_LEN] l2, int l2_sz, 
+                       fun pred, ref int out_sz)
 {
-  Tuple [len+1] out;
-  /*
-  out[0::len] = l;
-  out[len] = t;
-  */
-
-  for (int i = 0; i < len; ++i)
+  CrossProduct [MAX_LEN] out;
+  out_sz = 0;
+  for (int i = 0; i < l1_sz; ++i)
   {
-    out[i] = new Tuple();
-    out[i].first = l[i].first;
-    out[i].second = l[i].second;
-  }
-
-  
-  out[len] = new Tuple();
-  out[len].second = t.second;
-  out[len].first = t.first;
-  
-  return out;
-}
-
-// append l2 to the end of l1
-Tuple [len1 + len2] appendTupleList (int len1, Tuple [len1] l1, 
-                                     int len2, Tuple [len2] l2)
-{
-  
-  Tuple [len1 + len2] out;
-  out[0::len1] = l1;
-  out[len1::len2] = l2;
-  return out;
-  
-  /*
-  Tuple [len1+len2] out;
-  for (int i = 0; i < len1; ++i)
-  {
-    out[i] = new Tuple();
-    out[i].first = l1[i].first;
-    out[i].second = l1[i].second;
-  }
-  
-  for (int i = 0; i < len2; ++i)
-  {
-    out[len1+i] = new Tuple();
-    out[len1+i].first = l2[i].first;
-    out[len1+i].second = l2[i].second;
-  }
-
-  return out;
-  */
-}
-
-
-Tuple [len1 * len2] product (int len1, int [len1] l1, int len2, int [len2] l2)
-{
-  Tuple [len1 * len2] out;
-
-  for (int i = 0; i < len1; ++i)
-  {
-    for (int j = 0; j < len2; ++j)
+    for (int j = 0; j < l2_sz; ++j)
     {
-      int e1 = l1[i];
-      int e2 = l2[j];
-
-      Tuple t = new Tuple();
-      t.first = e1;
-      t.second = e2;
-
-      out[i * len2 + j] = t;
+      WilosUser t1 = l1[i];
+      Role t2 = l2[j];
+      if (pred(t1, t2))
+      {
+        CrossProduct o = new CrossProduct();
+        o.roleId1 = t1.roleId;
+        o.roleId2 = t2.roleId;
+        out[out_sz] = o;
+        ++out_sz;
+      }
     }
   }
-
   return out;
 }
 
-
-Tuple [len2] leftProduct (int v, int len2, int [len2] l2)
+CrossProduct [MAX_LEN] 
+CrossProduct_tupleJoin (WilosUser t, Role [MAX_LEN] l, int l_sz, fun pred, ref int out_sz)
 {
-  //if (len2 <= 0)
-  //  return null;
-
-  Tuple [len2] out;
-
-  for (int j = 0; j < len2; ++j)
+  CrossProduct [MAX_LEN] out;
+  out_sz = 0;
+  for (int i = 0; i < l_sz; ++i)
   {
-    Tuple t = new Tuple();
-    t.first = v;
-    t.second = l2[j];
-
-    out[j] = t;
+    Role t2 = l[i];
+    if (pred(t, t2))
+    {
+      CrossProduct o = new CrossProduct();
+      o.roleId1 = t.roleId;
+      o.roleId2 = t2.roleId;
+      out[out_sz] = o;
+      ++out_sz;
+    }
   }
-
   return out;
 }
 
-generator bit genScalarListPredicate (int lenRet, Tuple [lenRet] ret,
-                                      int len1, int [len1] l1, 
-                                      int len2, int [len2] l2,
-                                       int i, int j, int t)
-{    
-  int lenLeft = {| len1 | len2 |};
-  int [lenLeft] leftOp = {| l1 | l2 |};
-
-  int lenRight;
-  int [len1+len2] tmp = 
-    genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, 2, lenRight);
-
-  int [lenRight] rightOp = tmp[0::lenRight];
-  return intListEquals(lenLeft, leftOp, lenRight, rightOp);
-}
-
-generator int [16] genScalarListOperand (int lenRet, Tuple [lenRet] ret,
-                               int len1, int [len1] l1,
-                               int len2, int [len2] l2,
-                               int i, int j, int t,
-                               int depth, ref int sz)
+CrossProduct [MAX_LEN] CrossProduct_listConcat (CrossProduct [MAX_LEN] l1, int l1_sz, 
+                                                CrossProduct [MAX_LEN] l2, int l2_sz)
 {
-  //sz = i;
-  //return top(i, len1, l1);
-
-  int type = ??;
-  if (type == 0)
-  {
-    sz = len1;
-    return l1;
-  }
-  else if (type == 1)
-  {
-    sz = len2;
-    return l2;
-  }
-  else if (type == 2)
-  {
-    sz = i;
-    return top(i, len1, l1);
-  }
-  else
-    assert false;
+  CrossProduct [MAX_LEN] out;
  
-  /* 
-  if (depth == 0)
+  out[0::l1_sz] = l1[0::l1_sz];
+  out[l1_sz::l2_sz] = l2[0::l2_sz];
+  return out;
+}
+
+CrossProduct [MAX_LEN] CrossProduct_append (CrossProduct [MAX_LEN] l, int l_sz, CrossProduct t)
+{
+  CrossProduct [MAX_LEN] out;
+  
+  out[0::l_sz] = l[0::l_sz];
+  out[l_sz] = t;
+  
+  return out;
+}
+
+// tmp
+WilosUser [MAX_LEN] WilosUser_append (WilosUser [MAX_LEN] l, int l_sz, WilosUser t)
+{
+  WilosUser [MAX_LEN] out;
+  
+  out[0::l_sz] = l[0::l_sz];
+  out[l_sz] = t;
+  
+  return out;
+}
+
+
+CrossProduct CrossProduct_newTuple (WilosUser t1, Role t2)
+{
+  CrossProduct out = new CrossProduct();
+  out.roleId1 = t1.roleId;
+  out.roleId2 = t2.roleId;
+  return out;
+}
+
+
+WilosUser [MAX_LEN] WilosUser_listTop2 (WilosUser [MAX_LEN] l, int l_sz, int i)
+{
+  if (i <= l_sz)
+    return l[0::i];
+  else
+    return null;
+}
+
+Role [MAX_LEN] Role_listTop2 (Role [MAX_LEN] l, int l_sz, int i)
+{
+  if (i <= l_sz)
+    return l[0::i];
+  else
+    return null;
+}
+
+
+WilosUser [MAX_LEN] 
+WilosUser_listTop_1 (WilosUser [MAX_LEN] l, int l_sz, 
+                   int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                   WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                   ref int out_sz)
+{
+  out_sz = WilosUser_topPred(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+  //out_sz = i;
+  if (out_sz <= l_sz)
+    return l[0::out_sz];
+  else
+    return null;
+}
+
+WilosUser [MAX_LEN] 
+WilosUser_listTop_2 (WilosUser [MAX_LEN] l, int l_sz, 
+                   int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                   WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                   ref int out_sz)
+{
+  out_sz = WilosUser_topPred(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+  if (out_sz <= l_sz)
+    return l[0::out_sz];
+  else
+    return null;
+}
+
+generator int WilosUser_topPred (int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                                 WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
+{
+  //return i;
+  return {| i | j | l1_sz | l2_sz |};
+}
+
+WilosUser [MAX_LEN]
+WilosUser_listSelect_1 (WilosUser [MAX_LEN] l, int l_sz,
+                        int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                        WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                        ref int out_sz)
+{
+  out_sz = 0;
+  WilosUser [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
   {
-    int type = ??(1);
-    if (type == 0)
+    if (WilosUser_listSelectPred(l[i]))
     {
-      sz = len1;
-      return l1;
+      out[out_sz] = l[i];
+      ++out_sz;
     }
+  }
+
+  return out;
+}
+
+WilosUser [MAX_LEN]
+WilosUser_listSelect_2 (WilosUser [MAX_LEN] l, int l_sz,
+                        int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                        WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                        ref int out_sz)
+{
+  out_sz = 0;
+  WilosUser [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
+  {
+    if (WilosUser_listSelectPred(l[i]))
+    {
+      out[out_sz] = l[i];
+      ++out_sz;
+    }
+  }
+
+  return out;
+}
+
+WilosUser [MAX_LEN]
+WilosUser_listSelect_3 (WilosUser [MAX_LEN] l, int l_sz,
+                        int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                        WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                        ref int out_sz)
+{
+  out_sz = 0;
+  WilosUser [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
+  {
+    if (WilosUser_listSelectPred(l[i]))
+    {
+      out[out_sz] = l[i];
+      ++out_sz;
+    }
+  }
+
+  return out;
+}
+
+generator bit WilosUser_listSelectPred (WilosUser t)
+{
+  
+  if (t == null)
+    return 0;
+  else
+  {
+    int operator = ??(3);
+    if (operator == 0)
+      return 1;
+    else if (operator == 1)
+      return t.roleId == ??;
+    else if (operator == 2)
+      return t.roleId <= ??;
+    else if (operator == 3)
+      return t.roleId < ??;
+    else if (operator == 4)
+      return t.roleId >= ??;
+    else if (operator == 5)
+      return t.roleId > ??;
     else
-    {
-      sz = len2;
-      return l2;
-    }
+      assert 0;
   }
-  else
-  {
-    int type = ??(2);
-    if (type == 0)
-    {
-      int sz1;
-      int [len1+len2] tmp = 
-        genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
-      int [sz1] op1 = tmp[0::sz1];
-      
-      sz = i;      
-      return top(i, sz1, op1);
-    }
-    else if (type == 1)
-    {
-      sz = len1;
-      return l1;
-    }
-    else if (type == 2)
-    {
-      sz = len2;
-      return l2;
-    }
-    else
-      assert false;
-      
-  }
-  */
 }
 
-generator bit genTupleListPredicate (int lenRet, Tuple [lenRet] ret, 
-                                     int len1, int [len1] l1, 
-                                     int len2, int [len2] l2,
-                                     int i, int j, int t)
+
+
+Role [MAX_LEN]
+Role_listTop_1 (Role [MAX_LEN] l, int l_sz, 
+              int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+              WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+              ref int out_sz)
 {
-  int lenLeft = lenRet;
-  Tuple [lenLeft] leftOp = ret;
-  
-  int lenRight;
-  
-  /*
-  Tuple [len1*len2] tmp = 
-    genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, 2, lenRight);
-  Tuple [lenRight] rightOp = tmp[0::lenRight];
-  */
- 
-  Tuple [16] tmp = 
-    genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, 2, lenRight);
-  Tuple [lenRight] rightOp = tmp[0::lenRight];
- 
-  return tupleListEquals(lenLeft, leftOp, lenRight, rightOp);
-  //return tupleListEquals(lenLeft, leftOp, i*len2, 
-  //                       product(i, top(i, len1, l1), len2, l2));
+  out_sz = Role_topPred(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+  if (out_sz <= l_sz)
+    return l[0::out_sz];
+  else
+    return null;
 }
 
-//generator Tuple [len1*len2] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
-generator Tuple [16] genTupleListOperand (int lenRet, Tuple [lenRet] ret,
-                                 int len1, int [len1] l1, 
-                                 int len2, int [len2] l2, 
-                                 int i, int j, int t, 
-                                 int depth, ref int sz)
+Role [MAX_LEN]
+Role_listTop_2 (Role [MAX_LEN] l, int l_sz, 
+              int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+              WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+              ref int out_sz)
 {
-  /*
-  Tuple [i*len2] r = product(i, top(i, len1, l1), len2, l2);
-  sz = i * len2;
-  return r;
-  */
+  out_sz = Role_topPred(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+  if (out_sz <= l_sz)
+    return l[0::out_sz];
+  else
+    return null;
+}
 
-  /* 
-  int sz1;
-  int [16] tmp1 = 
-    genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
-  int [sz1] op1 = tmp1[0::sz1];
-  
-  int sz2;
-  int [16] tmp2 = 
-    genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz2);
-  int [sz2] op2 = tmp2[0::sz2];
-  
-  Tuple [sz1*sz2] r = product(sz1, op1, sz2, op2);
-  sz = sz1 * sz2;
-  return r;
-  */
-  
+Role [MAX_LEN]
+Role_listTop_3 (Role [MAX_LEN] l, int l_sz, 
+              int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+              WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+              ref int out_sz)
+{
+  out_sz = Role_topPred(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+  if (out_sz <= l_sz)
+    return l[0::out_sz];
+  else
+    return null;
+}
 
-  /*
-  int sz1 = i;
-  int [sz1] op1 = top(i, len1, l1);
+generator int Role_topPred (int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                            WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
+{
+  return {| i | j | l1_sz | l2_sz |};
+}
 
-  int sz2 = len2;
-  int [sz2] op2 = l2;
-
-  Tuple [sz1*sz2] r = product(sz1, op1, sz2, op2);
-  //Tuple [i*len2] r = product(sz1, op1, sz2, op2);
-  sz = sz1 * sz2;
-  //sz = i * len2;
-  return r; 
-  */
-
-     
-  if (depth == 0)
+Role [MAX_LEN]
+Role_listSelect_1 (Role [MAX_LEN] l, int l_sz,
+                   int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                   WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                   ref int out_sz)
+{
+  out_sz = 0;
+  Role [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
   {
-    sz = lenRet;
-    return ret;
+    if (Role_listSelectPred(l[i]))
+    {
+      out[out_sz] = l[i];
+      ++out_sz;
+    }
   }
+
+  return out;
+}
+
+Role [MAX_LEN]
+Role_listSelect_2 (Role [MAX_LEN] l, int l_sz,
+                   int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                   WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                   ref int out_sz)
+{
+  out_sz = 0;
+  Role [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
+  {
+    if (Role_listSelectPred(l[i]))
+    {
+      out[out_sz] = l[i];
+      ++out_sz;
+    }
+  }
+
+  return out;
+}
+
+Role [MAX_LEN]
+Role_listSelect_3 (Role [MAX_LEN] l, int l_sz,
+                   int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                   WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret, 
+                   ref int out_sz)
+{
+  out_sz = 0;
+  Role [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
+  {
+    if (Role_listSelectPred(l[i]))
+    {
+      out[out_sz] = l[i];
+      ++out_sz;
+    }
+  }
+
+  return out;
+}
+
+generator bit Role_listSelectPred (Role t)
+{
+  if (t == null)
+    return 0;
   else
   {
-    int type = ??;
-    if (type == 0)
-    {
-      int sz1;
-      int [16] tmp1 = 
-        genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
-      int [sz1] op1 = tmp1[0::sz1];
+    int operator = ??;
+    if (operator == 0)
+      return 1;
       
-      int sz2;
-      int [16] tmp2 = 
-        genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz2);
-      int [sz2] op2 = tmp2[0::sz2];
-      
-      Tuple [sz1*sz2] r = product(sz1, op1, sz2, op2);
-      sz = sz1 * sz2;
-      return r;
-    }
-    else if (type == 2)
-    {
-      sz = lenRet;
-      return ret;
-    }
+    else if (operator == 1)
+      return t.roleId == ??;
+      /*    
+    else if (operator == 2)
+      return t.roleId <= ??;
     
-    else if (type == 3)
-    {
-      int sz1;
-      int [16] tmp1 = 
-        genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
-      int [sz1] op1 = tmp1[0::sz1];
-      
-      sz = sz1;
-      Tuple [sz1] r = leftProduct(t, sz1, op1);
-      return r;
-    }
-    else if (type == 4)
-    {
-      int sz1;
-      Tuple [16] tmp1 = 
-        genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz1);
-      Tuple [sz1] op1 = tmp1[0::sz1];
-      
-      int sz2;
-      Tuple [16] tmp2 = 
-        genTupleListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, depth - 1, sz2);
-      Tuple [sz2] op2 = tmp2[0::sz2];
-
-      sz = sz1 + sz2;
-      Tuple [sz1+sz2] r = appendTupleList(sz1, op1, sz2, op2);
-      return r;
-    }
+    else if (operator == 3)
+      return t.roleId < ??;
+    else if (operator == 4)
+      return t.roleId >= ??;
+    else if (operator == 5)
+      return t.roleId > ??;
+      */
+    else
+      return 0;
     
-    else
-      assert false;
+    //return 1;
   }
-  
 }
 
-
-generator int genScalarOperand (int lenRet, Tuple [lenRet] ret, 
-                                int len1, int [len1] l1,
-                                int len2, int [len2] l2,
-                                int i, int j, int t,
-                                int depth)
+bit CrossProduct_joinPred (WilosUser t1, Role t2)
 {
+  //return 1;
+  return t1.roleId == t2.roleId;
   /*
-  if (depth == 0)
-  {
-    return {| len1 | len2 | i | j | t |};
-  }
-  else
-  {
-    int type = ??;
-    if (type == 0)
-      return {| len1 | len2 | i | j | t |};
-    else if (type == 1)
-      return get(i, len1, l1);
-    else if (type == 2)
-      return get(i, len2, l2);
-    else if (type == 3)
-      return get(j, len1, l1);
-    else if (type == 4)
-      return get(j, len2, l2);
-    else if (type == 5)
-      return i+??;
-    else if (type == 6)
-      return j+??;
-    else
-      assert false;
-  }
-  */
-  int type = ??;
-  if (type == 0)
-    return {| len1 | len2 | i | j | t |};
-  else if (type == 1)
-    return get(i, len1, l1);
-  else if (type == 2)
-    return get(i, len2, l2);
-  else if (type == 3)
-    return get(j, len1, l1);
-  else if (type == 4)
-    return get(j, len2, l2);
-  else if (type == 5)
-    return i+??;
-  else if (type == 6)
-    return j+??;
-  else
-    assert false;
-
-
-}
-
-generator bit genScalarPredicate (int lenRet, Tuple [lenRet] ret,
-                                  int len1, int [len1] l1,
-                                  int len2, int [len2] l2,
-                                  int i, int j, int t)
-{
-  int leftOp = {| len1 | len2 | i | j | t |};
-  int rightOp = {| len1 | len2 | i | j | t |};
-  //int rightOp = genScalarOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, 2);
-
   int operator = ??(3);
-  assert operator >= 0 && operator <= 5;
   if (operator == 0)
-    return leftOp > rightOp;
+    return 1;
   else if (operator == 1)
-    return !(leftOp > rightOp);
+    return t1.roleId == t2.roleId;
   else if (operator == 2)
-    return leftOp < rightOp;
+    return t1.roleId <= t2.roleId;
   else if (operator == 3)
-    return !(leftOp < rightOp);
+    return t1.roleId < t2.roleId;
   else if (operator == 4)
-    return leftOp == rightOp;
+    return t1.roleId >= t2.roleId;
   else if (operator == 5)
-    return leftOp != rightOp;
+    return t1.roleId > t2.roleId;
+  else if (operator == 6)
+    return t1.roleId != t2.roleId;
   else
-    assert false;
+    assert 0;
+    */
 }
 
-generator bit genInvariant (int lenRet, Tuple [lenRet] ret, 
-                            int len1, int [len1] l1,
-                            int len2, int [len2] l2,
-                            int i, int j, int t1)
+CrossProduct [MAX_LEN] 
+CrossProduct_listProject_1 (CrossProduct [MAX_LEN] l, int l_sz,  
+                            int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2,
+                            WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
 {
-  bit out = 1;
-  /* 
-  bit b1 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-  bit b2 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-
-  out = out && b1 && b2;
-
-  bit b3 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-  bit b4 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-  
-  out = out && b3 && b4;
-  */
-
-      
-  int numPreds = ??(2);
-  repeat (numPreds)
+  CrossProduct [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
   {
-    bit b1 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-    //bit b2 = genScalarListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-    bit b3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-
-    out = out & {| b1 | b3 |};
-    //out = out & b1;
+    out[i] = CrossProduct_listProjectPred(l[i]);
   }
-  
-  assert numPreds <= 4;
-  
-
-  /* 
-  int numPreds = ??(2);
-  assert numPreds <= 2;
-  repeat (numPreds)
-  {
-    bit b1 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-    out = out && b1;
-  }
-
-  int numPreds2 = ??(2);
-  assert numPreds2 <= 2;
-  repeat (numPreds2)
-  {
-    bit b3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-    out = out && b3;
-  }
-  */
-
   return out;
 }
 
-
-
-bit innerInvariant (int lenRet, Tuple [lenRet] ret, 
-                    int len1, int [len1] l1,
-                    int len2, int [len2] l2,
-                    int i, int j, int t1)
+CrossProduct [MAX_LEN] 
+CrossProduct_listProject_2 (CrossProduct [MAX_LEN] l, int l_sz,  
+                            int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2,
+                            WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
 {
-   
-  Tuple [i*len2] previous = product(i, top(i, len1, l1), len2, l2);
-  Tuple [j] current = leftProduct(t1, j, top(j, len2, l2));
-  Tuple [i*len2+j] retEquals = appendTupleList(i*len2, previous, j, current);
+  CrossProduct [MAX_LEN] out;
+  for (int i = 0; i < l_sz; ++i)
+  {
+    out[i] = CrossProduct_listProjectPred(l[i]);
+  }
+  return out;
+}
 
-  return tupleListEquals(lenRet, ret, i*len2+j, retEquals) &&
-         i+1 <= len1 && t1 == get(i, len1, l1) && j <= len2;
+CrossProduct CrossProduct_listProjectPred (CrossProduct t)
+{
+  CrossProduct out = new CrossProduct();
+  out.roleId1 = {| t.roleId1 | t.roleId2 |};
+  out.roleId2 = {| t.roleId1 | t.roleId2 |};
+  return out; 
+}
+
+
+bit postCondition (int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2,
+                   WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
+{
+  
+  // select on l1
+  int select_2_sz;
+  WilosUser [MAX_LEN] select_2 = 
+    WilosUser_listSelect_3(l1, l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                           select_2_sz);      
+    //l1;
+  //select_2_sz = l1_sz;
+  
+  int select_3_sz;
+  Role [MAX_LEN] select_3 = 
+    Role_listSelect_3(l2, l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                      select_3_sz);
+    //l2;
+  //select_3_sz = l2_sz;
+
+  int join_l1_l2_sz;
+  CrossProduct [MAX_LEN] join_l1_l2 = 
+    CrossProduct_listJoin(select_2, select_2_sz, select_3, select_3_sz, 
+                          CrossProduct_joinPred, join_l1_l2_sz);
+  
+  return CrossProduct_listEquals(ret, ret_sz, join_l1_l2, join_l1_l2_sz);
   
   /*
-  return genInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) &&
-         i+1 <= len1 && t1 == get(i, len1, l1) && j <= len2;
+  int join_l1_l2_sz, select_2_sz, select_3_sz;
+  return CrossProduct_listEquals(ret, ret_sz,
+    CrossProduct_listJoin(
+      WilosUser_listSelect_3(l1, l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, select_2_sz), 
+        select_2_sz,
+      Role_listSelect_3(l2, l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, select_3_sz),
+        select_3_sz, CrossProduct_joinPred, join_l1_l2_sz), join_l1_l2_sz);
+  */
+
+  /* 
+  int join_sz;
+  return CrossProduct_listEquals(ret, ret_sz, 
+          CrossProduct_listJoin(l1, l1_sz, l2, l2_sz, CrossProduct_joinPred, join_sz), join_sz);
   */
 }
 
-bit outerInvariant (int lenRet, Tuple[lenRet] ret,
-                    int len1, int [len1] l1,
-                    int len2, int [len2] l2,
-                    int i, int j, int t1)
-{
-  /* 
-  Tuple [i*len2] p = product(i, top(i, len1, l1), len2, l2);
-  return tupleListEquals(lenRet, ret, i*len2, p) &&
-         i <= len1;
-  */
 
-  //return i <= len1 && genInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-  return genInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-}
-           
-harness void sketch (int lenRet, int [lenRet] r1, int [lenRet] r2,
-                     int len1, int [len1] l1,
-                     int len2, int [len2] l2, 
-                     int j, int i, int t1)
-{
-  assert len2 >= 0;
-  assert len1 >= 0;
-  assert lenRet >= 0;
 
-  Tuple [lenRet] ret;
-  for (int m = 0; m < lenRet; ++m)
+bit outerInvariant (int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2,
+                    WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
+{
+    
+  if (i <= l1_sz)
   {
-    ret[m] = new Tuple();
-    ret[m].first = r1[m];
-    ret[m].second = r2[m];
+    int top_l1_sz;
+    WilosUser [MAX_LEN] top_l1 =
+      WilosUser_listTop_2(l1, l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                          top_l1_sz);
+      //WilosUser_listTop2(l1, l1_sz, i);
+    //top_l1_sz = i;
+
+    // select on top_l1
+    int select_2_sz;
+    WilosUser [MAX_LEN] select_2 = 
+      WilosUser_listSelect_2(top_l1, top_l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                             select_2_sz);      
+      //top_l1;
+    //select_2_sz = top_l1_sz;
+    
+
+    int top_l2_sz;
+    Role [MAX_LEN] top_l2 = 
+      Role_listTop_3(l2, l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                     top_l2_sz);
+      //l2;
+    //top_l2_sz = l2_sz;
+    
+    int select_3_sz;
+    Role [MAX_LEN] select_3 = 
+      Role_listSelect_3(top_l2, top_l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                        select_3_sz);
+      //top_l2;
+    //select_3_sz = l2_sz;
+
+    int join_l1_l2_sz;
+    CrossProduct [MAX_LEN] join_l1_l2 = 
+      CrossProduct_listJoin(select_2, select_2_sz, select_3, select_3_sz, 
+                            CrossProduct_joinPred, join_l1_l2_sz);
+    
+    return CrossProduct_listEquals(ret, ret_sz, join_l1_l2, join_l1_l2_sz);
   }
+  else 
+    return 0;
+  
 
   /*
-  if (innerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) && 
-      j < len2)
-  {
-    
-    Tuple newTuple = new Tuple();
-    newTuple.first = t1;
-    newTuple.second = l2[j];
-    
-    Tuple [lenRet+1] newRet = appendTuple(newTuple, lenRet, ret);
-    assert innerInvariant(lenRet+1, newRet, len1, l1, len2, l2, i, j+1, t1);
-  }
-  */
-   
-  if (innerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) &&
-      !(j < len2))
-  {
-    assert outerInvariant(lenRet, ret, len1, l1, len2, l2, i+1, j, t1);
-  }
-  
-  if (outerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) && i < len1)
-  {
-    assert innerInvariant(lenRet, ret, len1, l1, len2, l2, i, 0, get(i, len1, l1));
-  }
-   
-  if (true)
-  {
-    assert outerInvariant(0, ret, len1, l1, len2, l2, 0, 0, t1);
-  }
-  
+  int top_l1_sz;
+  int select_2_sz;
+  int top_l2_sz;
+  int select_3_sz;
+  int join_l1_l2_sz; 
 
-  if (outerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) && !(i < len1))
-  {
-    assert tupleListEquals(lenRet, ret, len1*len2, product(len1, l1, len2, l2));
-  }
+  return i <= l1_sz && CrossProduct_listEquals(ret, ret_sz,
+      CrossProduct_listJoin(
+        WilosUser_listSelect_2(
+           WilosUser_listTop_2(l1, l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                          top_l1_sz),          
+          top_l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                               select_2_sz),
+         select_2_sz, 
+                
+       Role_listSelect_3(
+          Role_listTop_3(l2, l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                     top_l2_sz),
+          top_l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                        select_3_sz),
+         
+         select_3_sz,                                                                                   
+                            CrossProduct_joinPred, join_l1_l2_sz), join_l1_l2_sz);
+  */
 
   /* 
-  Tuple [i*len2] previous = product(i, top(i, len1, l1), len2, l2);
+  int join_sz;
+  return i <= l1_sz && 
+      CrossProduct_listEquals(ret, ret_sz,
+        CrossProduct_listJoin(WilosUser_listTop2(l1, l1_sz, i), i, l2, l2_sz, CrossProduct_joinPred, 
+                              join_sz), 
+          join_sz);
+  */
+}
 
-  int [j] topj_l2 = top(j, len2, l2);  
-  Tuple [j] current = leftProduct(t1, j, topj_l2);
-  int lenRetEquals = i * len2 + j;
-  Tuple [lenRetEquals] retEquals = appendTupleList(i*len2, previous, j, current);
+bit innerInvariant (int i, int j, int l1_sz, int l2_sz, int ret_sz, WilosUser t1, Role t2, 
+                    WilosUser [MAX_LEN] l1, Role [MAX_LEN] l2, CrossProduct [MAX_LEN] ret)
+{
+ 
+  bit pred_i = i < l1_sz;
+  bit pred_j = j <= l2_sz;
+  //bit pred_t1 = t1.roleId == l1[i].roleId;
   
-  if (tupleListEquals(lenRet, ret, lenRetEquals, retEquals) && j < len2 && i+1 <= len1
-      && t1 == get(i, len1, l1))  
+  //if (pred_i && pred_j && pred_t1)
+  if (pred_i && pred_j && t1.roleId == l1[i].roleId)
   {
-    Tuple newTuple = new Tuple();
-    newTuple.first = t1;
-    newTuple.second = l2[j];
-    
-    Tuple [lenRet+1] newRet = appendTuple(newTuple, lenRet, ret);
-    
-    int [j+1] topjPlus1_l2 = top(j+1, len2, l2);
-    //assert tupleListEquals(lenRet+1, newRet, j+1, leftProduct(t1, j+1, topjPlus1_l2));
-    //assert topjPlus1_l2[j] == l2[j];
-
-    Tuple [j+1] newCurrent = leftProduct(t1, j+1, topjPlus1_l2);    
-    Tuple [lenRetEquals+1] newRetEquals = 
-      appendTupleList(i*len2, previous, j+1, newCurrent);
-    
-    assert tupleListEquals(lenRet+1, newRet, lenRetEquals+1, newRetEquals);
-    assert j+1 <= len2;
-    assert i+1 <= len1;
-
-  }
   
-  if (tupleListEquals(lenRet, ret, lenRetEquals, retEquals) && 
-      i+1 <= len1 && t1 == l1[i] &&
-      j >= len2 && !(j > len2))
+    int top_l1_sz;
+    WilosUser [MAX_LEN] top_l1 = 
+      //WilosUser_listTop_1(l1, l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+      //                    top_l1_sz);
+      WilosUser_listTop2(l1, l1_sz, i);
+    top_l1_sz = i;
+    
+    int select_l1_sz;
+    WilosUser [MAX_LEN] select_l1 = 
+      //WilosUser_listSelect_1(top_l1, top_l1_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+      //                       select_l1_sz);
+      top_l1;
+    select_l1_sz = top_l1_sz; 
+    
+    int top_l2_sz;
+    Role [MAX_LEN] top_l2 =
+      //Role_listTop_1(l2, l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+      //               top_l2_sz);
+      l2;
+    top_l2_sz = l2_sz;
+
+    int select_l2_sz;
+    Role [MAX_LEN] select_l2 = 
+      Role_listSelect_1(top_l2, top_l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret, 
+                        select_l2_sz);
+      //top_l2;
+    //select_l2_sz = top_l2_sz;
+    
+    int join_select_l1_select_l2_sz;
+    CrossProduct [MAX_LEN] join_select_l1_select_l2 = 
+      CrossProduct_listJoin(select_l1, select_l1_sz, select_l2, select_l2_sz, 
+                            CrossProduct_joinPred, join_select_l1_select_l2_sz);
+
+    // project on join_l1_l2
+    int project_1_sz = join_select_l1_select_l2_sz;
+    CrossProduct [MAX_LEN] project_1 = 
+      CrossProduct_listProject_1(join_select_l1_select_l2, join_select_l1_select_l2_sz,
+                                 i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+
+
+    // no top on t1
+    // select on t1
+    WilosUser select_t1 = t1;
+
+    // top on l2
+    int top_l2_2_sz;
+    Role [MAX_LEN] top_l2_2 = 
+      Role_listTop_2(l2, l2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret,
+                     top_l2_2_sz); 
+      //Role_listTop2(l2, l2_sz, j);
+    //top_l2_2_sz = j;
+
+    // select on top_l2_2
+    int select_l2_2_sz;
+    Role [MAX_LEN] select_l2_2 = 
+      Role_listSelect_2(top_l2_2, top_l2_2_sz, i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret,
+                        select_l2_2_sz); 
+      //top_l2_2;
+    //select_l2_2_sz = top_l2_2_sz;
+
+    int join_t1_l2_sz;
+    CrossProduct [MAX_LEN] join_t1_l2 = 
+      CrossProduct_tupleJoin(select_t1, select_l2_2, select_l2_2_sz, 
+                             CrossProduct_joinPred, join_t1_l2_sz);
+        
+    int concat_join_l1_l2_join_t1_l2_sz = join_select_l1_select_l2_sz + join_t1_l2_sz;
+    CrossProduct [MAX_LEN] concat_join_l1_l2_join_t1_l2 = 
+      CrossProduct_listConcat(join_select_l1_select_l2, join_select_l1_select_l2_sz, 
+                              join_t1_l2, join_t1_l2_sz); 
+      
+    // project on concat_join_l1_l2_join_t1_l2
+    int project_2_sz = concat_join_l1_l2_join_t1_l2_sz;
+    CrossProduct [MAX_LEN] project_2 = 
+      CrossProduct_listProject_2(concat_join_l1_l2_join_t1_l2, concat_join_l1_l2_join_t1_l2_sz,
+                                 i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+
+
+    return CrossProduct_listEquals(ret, ret_sz, concat_join_l1_l2_join_t1_l2, 
+                                   concat_join_l1_l2_join_t1_l2_sz);
+
+    //return {| CrossProduct_listEquals(ret, ret_sz, project_2, project_2_sz) | 
+    //    CrossProduct_listEquals(ret, ret_sz, join_select_l1_select_l2, join_select_l1_select_l2_sz) |};
+  }
+  else
+    return 0;
+    
+  /* 
+  int join_sz1;
+  int join_sz2;
+  
+  return j <= l2_sz && i < l1_sz && t1.roleId == l1[i].roleId && 
+      CrossProduct_listEquals(ret, ret_sz,
+          CrossProduct_listConcat(
+            CrossProduct_listJoin(WilosUser_listTop2(l1, l1_sz, i), i, l2, l2_sz, 
+                                  CrossProduct_joinPred, join_sz1), 
+              join_sz1,
+            CrossProduct_tupleJoin(t1, Role_listTop2(l2, l2_sz, j), j, CrossProduct_joinPred, join_sz2), join_sz2), 
+          join_sz1 + join_sz2);
+   */
+}
+
+
+
+harness void test (int i, int j, int l1_sz, int l2_sz, int ret_sz,
+                   int t1_roleId, int t2_roleId,
+                   int [MAX_LEN] l1_roleId, int [MAX_LEN] l2_roleId,
+                   int [MAX_LEN] ret_roleId1, int [MAX_LEN] ret_roleId2)
+{
+  WilosUser t1 = new WilosUser();
+  t1.roleId = t1_roleId;
+
+  Role t2 = new Role();
+  t2.roleId = t2_roleId;
+
+  WilosUser [MAX_LEN] l1;
+  for (int i = 0; i < MAX_LEN; ++i)
+  {
+    l1[i] = new WilosUser();
+    l1[i].roleId = l1_roleId[i];
+  }
+
+  Role [MAX_LEN] l2;
+  for (int i = 0; i < MAX_LEN; ++i)
+  {
+    l2[i] = new Role();
+    l2[i].roleId = l2_roleId[i];
+  }
+
+  CrossProduct [MAX_LEN] ret;
+  for (int i = 0; i < MAX_LEN; ++i)
+  {
+    ret[i] = new CrossProduct();
+    ret[i].roleId1 = ret_roleId1[i];
+    ret[i].roleId2 = ret_roleId2[i];
+  }
+
+  if (true && (l1_sz >= 0 && l1_sz < MAX_LEN) && (l2_sz >= 0 && l2_sz < MAX_LEN) && 
+      (ret_sz >= 0 && ret_sz < MAX_LEN))
   {
      
-    int [i+1] topiPlus1_l1 = top(i+1, len1, l1);    
-    Tuple [(i+1)*len2] newRetEquals = product(i+1, topiPlus1_l1, len2, l2);
-    assert tupleListEquals(lenRet, ret, (i+1)*len2, newRetEquals);
-  }
-  
-  Tuple [i*len2] p = product(i, top(i, len1, l1), len2, l2);
-  if (tupleListEquals(lenRet, ret, i*len2, p) && i < len1)
-  {
-    assert tupleListEquals(lenRet, ret, i*len2, p);
-    assert len2 >= 0;
-    assert i+1 <= len1;
-  }
-  */
+    // outer invariant 
+    if (true)
+    {
+      assert outerInvariant(0, j, l1_sz, l2_sz, 0, t1, t2, l1, l2, ret);
+    }
     
+    if (i < l1_sz && outerInvariant(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret))
+    {
+      assert innerInvariant(i, 0, l1_sz, l2_sz, ret_sz, l1[i], t2, l1, l2, ret);
+    }
+    
+    if (!(i < l1_sz) && outerInvariant(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret))
+    {
+      assert postCondition(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+    }
+    
+
+
+    
+    // inner invariant
+        
+    if (i < l1_sz && outerInvariant(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret))
+    {
+      assert innerInvariant(i, 0, l1_sz, l2_sz, ret_sz, l1[i], t2, l1, l2, ret);
+    }
+  
+    
+    if (i < l1_sz && outerInvariant(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret) &&
+        j < l2_sz && innerInvariant(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret))
+    {
+      //assert innerInvariant(i, j + 1, l1_sz, l2_sz, ret_sz + 1, t1, l2[j], l1, l2,
+       //                     CrossProduct_append(ret, ret_sz, CrossProduct_newTuple(t1, l2[j])));
+        
+      assert l2[j].roleId == t1.roleId && 
+             innerInvariant(i, j + 1, l1_sz, l2_sz, ret_sz + 1, t1, l2[j], l1, l2,
+                            CrossProduct_append(ret, ret_sz, CrossProduct_newTuple(t1, l2[j]))) || 
+             !(l2[j].roleId == t1.roleId) && 
+             innerInvariant(i, j + 1, l1_sz, l2_sz, ret_sz, t1, l2[j], l1, l2, ret);              
+        
+    }
+    
+     
+     
+    if (i < l1_sz && outerInvariant(i, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret) && 
+        !(j < l2_sz) && innerInvariant(i, j, l1_sz, l2_sz, ret_sz, l1[i], t2, l1, l2, ret))
+    {
+      assert outerInvariant(i + 1, j, l1_sz, l2_sz, ret_sz, t1, t2, l1, l2, ret);
+    }
+    
+  }
 }
-
-
 
