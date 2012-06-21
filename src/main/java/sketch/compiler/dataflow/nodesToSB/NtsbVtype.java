@@ -41,6 +41,7 @@ public class NtsbVtype extends IntVtype {
     
     protected Map<FENode, NtsbValue> memoizedValues = new HashMap<FENode, NtsbValue>();
     
+
     public abstractValue STAR(FENode node) {
         // TODO: do we guarantee each node is visited just once?
         // if we do, why memoization?
@@ -291,11 +292,15 @@ public class NtsbVtype extends IntVtype {
                                 String vnm = "___tEmP" + (gbgid++);
                                 String par =
                                         vnm + "=" + name + "[" +
- printType(ta.getBase()) +
+                                                printType(ta.getBase()) +
                                                 "_arr" +
- "]( " + oplist + "  )(" +
-                                                pathCond + ")[ _p_" +
-                                                param.getName() + "," + funid + "];";
+                                                "]( " +
+                                                oplist +
+                                                "  )(" +
+                                                pathCond +
+                                                ")[ _p_" +
+                                                ProduceBooleanFunctions.filterPound(param.getName()) +
+                                                "," + funid + "];";
                                 oplist = "0";
                                 out.println(par);
                                 /*
@@ -309,11 +314,15 @@ public class NtsbVtype extends IntVtype {
                             }else{
                                 outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
                                         "]( " + plist + "  )(" + pathCond + ")[ _p_" +
-                                        param.getName() + "," + funid + "]"));
+                                        ProduceBooleanFunctions.filterPound(param.getName()) +
+                                        "," + funid + "]"));
                             }
                         }
                     }else{
-                        outSlist.add(BOTTOM(name + "[" + printType(param.getType()) + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName() + "," + funid +"]"));
+                        outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
+                                "]( " + plist + "  )(" + pathCond + ")[ _p_" +
+                                ProduceBooleanFunctions.filterPound(param.getName()) +
+                                "," + funid + "]"));
                     }
                 }
             }

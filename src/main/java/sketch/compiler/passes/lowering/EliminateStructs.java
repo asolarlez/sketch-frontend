@@ -340,7 +340,8 @@ public class EliminateStructs extends SymbolTableVisitor {
             // heapSzVar = new ExprVar(cx, heapsize);
 
 	    	nextInstancePointer =
-	    		new ExprVar (cx, varGen.nextVar ("_"+ struct.getName () +"_"+ "nextInstance_"));
+                    new ExprVar(cx, varGen.nextVar("#" + struct.getName() + "_" +
+                            "nextInstance_"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
             for (Entry<String, Type> entry : struct) {

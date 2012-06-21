@@ -191,7 +191,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     for (int tt = 0; tt < sz; ++tt) {
                         String nnm = inval.getVectValue().get(tt).toString();
                         if (param.isParameterOutput()) {
-                            String opname = "_p_" + param.getName() + "_idx_" + tt + " ";
+                            String opname =
+                                    "_p_" + filterPound(param.getName()) + "_idx_" + tt +
+                                            " ";
                             opnames.add(opname);
                             out.print(opname);
                         } else {
@@ -201,7 +203,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 } else {
                     if(param.isParameterOutput()){
                         opsizes.add(1);
-                        String opname = "_p_" + param.getName() + " ";
+                        String opname = "_p_" + filterPound(param.getName()) + " ";
                         opnames.add(opname);
                         out.print(opname);
                         // Armando: This statement below is experimental.
@@ -218,7 +220,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }else{
                 if(param.isParameterOutput()){
                     opsizes.add(1);
-                    String opname = "_p_" + param.getName() + " ";
+                    String opname = "_p_" + filterPound(param.getName()) + " ";
                     opnames.add(opname);
                     out.print(opname);
                 }else{
@@ -254,6 +256,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         out.print(")");     
     }
     
+    static String filterPound(String s) {
+        if (s.length() > 0 && s.charAt(0) == '#') {
+            return s.substring(1);
+        } else {
+            return s;
+        }
+    }
 
     private String printType(Type type){
         if (type instanceof TypeArray)
