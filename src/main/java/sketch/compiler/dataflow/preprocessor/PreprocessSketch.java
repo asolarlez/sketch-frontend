@@ -287,8 +287,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             }
             obj =
                     func.creator().body(
-                            new StmtBlock(new StmtAssert(ExprConstInt.zero,
-                                    "This function should never be called", false))).create();
+                            new StmtBlock(new StmtAssert(func.getCx(), ExprConstInt.zero,
+                                    "This function should never be called. Will cause " +
+                                            e.getMessage(), false))).create();
         }
         
         newFuns.put(nres.getFunName(obj.getName()), obj);

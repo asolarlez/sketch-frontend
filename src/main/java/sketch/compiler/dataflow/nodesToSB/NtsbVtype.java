@@ -134,7 +134,9 @@ public class NtsbVtype extends IntVtype {
         String msg = stmt.getMsg();
          if( val.hasIntVal() ){
              if(val.getIntVal() == 0){
-                 DebugOut.printWarning("This assertion will fail unconditionally when you call this function: " + msg);
+                DebugOut.printWarning(stmt.getCx() +
+                        "This assertion will fail unconditionally when you call this function: " +
+                        msg);
              }
              if(val.getIntVal() == 1){
                  return;
