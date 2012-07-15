@@ -1428,8 +1428,16 @@ public class PartialEvaluator extends FEReplacer {
 
 
     public Object visitExprNew(ExprNew expNew){
-        exprRV = expNew;
+        exprRV = (Expression) super.visitExprNew(expNew);
         return vtype.BOTTOM();
+    }
+
+    protected Expression doExpression(Expression expr) {
+        if (expr != null) {
+            expr.accept(this);
+            return (Expression) exprRV;
+        } else
+            return null;
     }
 
     public Object visitStmtWhile(StmtWhile stmt)

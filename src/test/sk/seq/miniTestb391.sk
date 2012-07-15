@@ -1,0 +1,49 @@
+pragma options "--bnd-unroll-amnt 32 --be:showDAG";
+
+struct foo{
+    int x;    
+}
+
+
+bit spec(int N){
+   return 1; 
+}
+bit ske(int N) implements spec{
+    foo x;
+    if(??){
+        x = new foo();
+    }
+    if(??){
+        x = new foo();
+    }
+    if(x != null){
+        x.x = 1;
+        return x.x==1;
+    }
+    return 1;
+    
+}
+
+
+harness void main(int N){
+    foo[N] f;
+    foo x;
+    if(??){
+        x = new foo();
+    }
+    for(int i=0; i<N; ++i){
+        f[i]=new foo();
+        f[i].x=i;
+    }
+    foo[N] t;
+    for(int i=0; i<N; ++i){
+        t[i]=new foo();
+        t[i].x=i;
+    }
+    for(int i=0; i<N; ++i){
+        assert t[i].x == f[i].x;
+    
+    }
+    
+    
+}

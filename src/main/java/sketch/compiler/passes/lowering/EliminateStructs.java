@@ -22,16 +22,9 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
@@ -41,24 +34,16 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
- * Does four things:
- *   (1) Replaces 'new [struct]()' expressions with pointers into
- *   	 [struct] arrays
- *   (2) Converts variables of type [struct] into ints
- *   (3) Replaces field accesses with indexes into field arrays
- *   (4) Replaces null with the constant -1.
- *
- * For example:
+ * Does four things: (1) Replaces 'new [struct]()' expressions with pointers into [struct]
+ * arrays (2) Converts variables of type [struct] into ints (3) Replaces field accesses
+ * with indexes into field arrays (4) Replaces null with the constant -1. For example:
  * <code>
  *   struct Foo { int bar; }
  *   ...
  *   Foo f1 = new Foo ();
  *   Foo f2 = f1;
  *   return f2.bar;
- * </code>
- *
- * Is converted into:
- * <code>
+ * </code> Is converted into: <code>
  *   int[NUM_FOO] Foo_bar = 0;
  *   int   Foo_nextInstance = 0;
  *   ...
@@ -66,13 +51,18 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
  *   int f1 = Foo_nextInstance++;
  *   int f2 = f1;
  *   return Foo_bar[f2];
- *
+ * 
  * Preconditions to doing this rewrite:
  *   (1) all recursion has been eliminated
  *   (2) type checking has already been done
- *
- * @author Chris Jones
- *
+ * 
+ * This class assumes that all nested constructor calls have been factored, so 
+ * new A( x= new B()) 
+ * has been turned into
+ * tmp = new B();
+ * new A(x=tmp);
+ * 
+ * @author Chris Jones, Armando
  */
 public class EliminateStructs extends SymbolTableVisitor {
     private Map<String, StructTracker> structs;
@@ -255,6 +245,22 @@ public class EliminateStructs extends SymbolTableVisitor {
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
         StructTracker struct = structs.get(nres.getStructName(name));
 
+        List<Expression> rhs = new ArrayList<Expression>();
+        for (ExprNamedParam en : expNew.getParams()) {
+            Expression tt = (Expression) en.getExpr().accept(this);
+            Expression lhs = new ExprVar(expNew, varGen.nextVar());
+            addStatement(new StmtVarDecl(expNew, getType(tt), lhs.toString(), tt));
+            rhs.add(lhs);
+        }
+
+        int i = 0;
+        for (ExprNamedParam en : expNew.getParams()) {
+            Expression lhs =
+                    new ExprArrayRange(expNew, struct.getFieldArray(en.getName()),
+                            struct.nextInstancePointer);
+            addStatement(new StmtAssign(lhs, rhs.get(i)));
+            ++i;
+        }
         // this.addStatement (struct.makeAllocationGuard (expNew));
     	return struct.makeAllocation (expNew);
     }

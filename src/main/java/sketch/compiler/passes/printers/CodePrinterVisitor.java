@@ -241,7 +241,17 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 	public Object visitExprNew (ExprNew en) {
 		print ("new ");
 		en.getTypeToConstruct ().accept (this);
-		print ("()");
+        print("(");
+        boolean isFirst = true;
+        for (ExprNamedParam enp : en.getParams()) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                print(", ");
+            }
+            print(enp.getName() + "=" + enp.getExpr().accept(this));
+        }
+        print(")");
 		return en;
 	}
 

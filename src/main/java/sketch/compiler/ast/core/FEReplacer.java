@@ -192,8 +192,25 @@ public class FEReplacer implements FEVisitor
 
     public Object visitExprNew(ExprNew expNew){
     	Type nt = (Type)expNew.getTypeToConstruct().accept(this);
-    	if(nt != expNew.getTypeToConstruct()){
-    		return new ExprNew(expNew, nt );
+        boolean changed = false;
+        List<ExprNamedParam> enl =
+                new ArrayList<ExprNamedParam>(expNew.getParams().size());
+        for (ExprNamedParam en : expNew.getParams()) {
+            Expression old = en.getExpr();
+            Expression rhs = doExpression(old);
+            if (rhs != old) {
+                enl.add(new ExprNamedParam(en, en.getName(), rhs));
+                changed = true;
+            } else {
+                enl.add(en);
+            }
+        }
+
+        if (nt != expNew.getTypeToConstruct() || changed) {
+            if (!changed) {
+                enl = expNew.getParams();
+            }
+            return new ExprNew(expNew, nt, enl);
     	}else{
     		return expNew;
     	}

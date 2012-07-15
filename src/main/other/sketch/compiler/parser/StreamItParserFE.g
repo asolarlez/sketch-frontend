@@ -579,6 +579,14 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 		)?
 		RPAREN
 	;
+	
+constr_params returns [List l] { l = new ArrayList(); Expression x; }
+	:	LPAREN
+		(	x=expr_named_param_only { l.add(x); }
+			(COMMA x=expr_named_param { l.add(x); })*
+		)?
+		RPAREN
+	;
 
 expr_named_param returns [ Expression x ] { x = null; Token t = null; }
     :   (id:ID ASSIGN)? { t = id; }
@@ -840,7 +848,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 
 
 constructor_expr returns [Expression x] { x = null; Type t; List l;}
-	: n:TK_new t=data_type l=func_call_params {  x = new ExprNew( getContext(n), t);     }
+	: n:TK_new t=data_type l=constr_params {  x = new ExprNew( getContext(n), t, l);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }
