@@ -25,10 +25,11 @@ import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /**
- * Code generation pass that gets rid of the "bit" data type, using appropriate
- * C types instead. Performs big integer arithmetic on variables that are too
- * large to fit into a single primitive type.
- *
+ * Code generation pass that gets rid of the "bit" data type, using appropriate C types
+ * instead. Performs big integer arithmetic on variables that are too large to fit into a
+ * single primitive type. The only bit types left are those corresponding to boolean
+ * variables.
+ * 
  * @author liviu
  */
 public class BitTypeRemover extends SymbolTableVisitor
@@ -194,7 +195,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 			}
 		}
 		else if(isBitType(type)) {
-			return TypePrimitive.booltype;
+            return TypePrimitive.bittype;
 		}
 		else if(type.equals(TypePrimitive.inttype))
 			return TypePrimitive.siginttype;

@@ -1006,7 +1006,6 @@ public class NodesToSuperCpp extends NodesToJava {
                     return "int";
                 case TypePrimitive.TYPE_INT64:
                     return "unsigned long long";
-                case TypePrimitive.TYPE_BOOLEAN:
                 case TypePrimitive.TYPE_BIT:
                     return "bool";
                 case TypePrimitive.TYPE_SIGINT:
@@ -1030,11 +1029,5 @@ public class NodesToSuperCpp extends NodesToJava {
         return "NULL";
     }
 
-    public Object visitExprConstBoolean(ExprConstBoolean exp) {
-        if (exp.getVal())
-            return "1";
-        else
-            return "0";
-    }
 
 }

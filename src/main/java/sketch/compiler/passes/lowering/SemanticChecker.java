@@ -40,7 +40,6 @@ import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypeArrayInterface;
 import sketch.compiler.ast.core.typs.TypeComparisonResult;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -800,7 +799,7 @@ public class SemanticChecker
 				Type bt = getType((Expression)expr.getBase().accept(this));
 				if (bt != null)
 				{
-					if (!(bt instanceof TypeArrayInterface))
+                    if (!(bt instanceof TypeArray))
 						report(expr, "array access with a non-array base");
 				}else{
 					report(expr, "array access with a non-array base");
@@ -1109,39 +1108,7 @@ public class SemanticChecker
 	public void checkVariableUsage(Program prog)
 	{
 		prog.accept(new SymbolTableVisitor(null) {
-			public Object visitExprVar(ExprVar var)
-			{
-				// Check: the variable is declared somewhere.
-				try
-				{
-                    int k = symtab.lookupKind(var.getName(), var);
-                    if (inTArr && k == SymbolTable.KIND_FIELD) {
-                        report(var, "You can not use variable '" + var.getName() +
-                                "' in an array size because it is a non-constant global.");
-                    }
-				}
-				catch(UnrecognizedVariableException e)
-				{
-					report(var, "unrecognized variable '" + var.getName() + "'");
-				}
-				return super.visitExprVar(var);
-			}
 
-            private boolean isStreamParam(String name, FENode errSource)
-			{
-				try
-				{
-                    int kind = symtab.lookupKind(name, errSource);
-					if (kind == SymbolTable.KIND_STREAM_PARAM)
-						return true;
-				}
-				catch(UnrecognizedVariableException e)
-				{
-					// ignore; calling code should have recursive
-					// calls which will catch this
-				}
-				return false;
-			}
 
 			public Object visitStmtVarDecl(StmtVarDecl stmt)
 			{
@@ -1156,19 +1123,7 @@ public class SemanticChecker
 				return super.visitStmtVarDecl(stmt);
 			}
 
-			public Object visitStmtAssign(StmtAssign stmt)
-			{
-				// Check: LHS isn't a stream parameter.
-				Expression lhs = stmt.getLHS();
-				if (lhs instanceof ExprVar)
-				{
-					ExprVar lhsv = (ExprVar)lhs;
-					String name = lhsv.getName();
-                    if (isStreamParam(name, lhs))
-						report(stmt, "assignment to stream parameter");
-				}
-				return super.visitStmtAssign(stmt);
-			}
+
 
             boolean inTypeStruct = false;
 
@@ -1219,11 +1174,6 @@ public class SemanticChecker
                 try {
                     if (inTypeStruct) {
                         TypeArray o = (TypeArray) super.visitTypeArray(ta);
-                        Integer x = o.getLength().getIValue();
-                        if (x == null) {
-                            report(ta.getLength(),
-                                    "Only fixed length arrays are allowed as fields of structs.");
-                        }
                         return o;
                     }
                     if (inParamDecl) {
@@ -1242,23 +1192,6 @@ public class SemanticChecker
                 }
             }
 
-			public Object visitExprUnary(ExprUnary expr)
-			{
-				int op = expr.getOp();
-				Expression child = expr.getExpr();
-				if ((child instanceof ExprVar) &&
-						(op == ExprUnary.UNOP_PREINC ||
-								op == ExprUnary.UNOP_POSTINC ||
-								op == ExprUnary.UNOP_PREDEC ||
-								op == ExprUnary.UNOP_POSTDEC))
-				{
-					ExprVar var = (ExprVar)child;
-					String name = var.getName();
-                    if (isStreamParam(name, var))
-						report(expr, "modification of stream parameter");
-				}
-				return super.visitExprUnary(expr);
-			}
 		});
 	}
 
@@ -1382,8 +1315,6 @@ public class SemanticChecker
 				ct = new TypeArray(lt, ExprConstInt.one);
 			}
 		}
-		Type cplxtype =
-			TypePrimitive.cplxtype;
 		Type floattype =
 			TypePrimitive.floattype;
 		if (ct == null)
@@ -1405,7 +1336,7 @@ public class SemanticChecker
                                     ct);
                 }
             case ExprBinary.BINOP_ADD:
-			if (!(ct.promotesTo(cplxtype) || ct.promotesTo(TypePrimitive.inttype)))
+                if (!(ct.promotesTo(TypePrimitive.inttype)))
 				report(expr,
 						"cannot perform arithmetic on " + ct);
 			break;

@@ -55,6 +55,10 @@ public class GetExprType extends FENullVisitor
      * they will usually get type 'int'. */
     private Type nullType;
 
+    public NameResolver getNres() {
+        return nres;
+    }
+
     public GetExprType(SymbolTable symTab,
  NameResolver nres) {
         this(symTab, nres, TypePrimitive.nulltype);
@@ -136,14 +140,14 @@ public class GetExprType extends FENullVisitor
         case ExprBinary.BINOP_LE:
         case ExprBinary.BINOP_GT:
         case ExprBinary.BINOP_GE:
-            return TypePrimitive.booltype;
+                return TypePrimitive.bittype;
         }
         return binopType (exp.getOp (), exp.getLeft (), exp.getRight ());
     }
 
     public Object visitExprChoiceBinary (ExprChoiceBinary ecb) {
     	if (ecb.hasComparison ())
-    		return TypePrimitive.booltype;
+            return TypePrimitive.bittype;
     	Type t = null;
     	for (int op : ecb.opsAsExprBinaryOps ()) {
     		Type nextType = binopType (op, ecb.getLeft (), ecb.getRight ());
@@ -222,15 +226,6 @@ public class GetExprType extends FENullVisitor
     	return t;
     }
 
-    public Object visitExprComplex(ExprComplex exp)
-    {
-        return TypePrimitive.cplxtype;
-    }
-
-    public Object visitExprConstBoolean(ExprConstBoolean exp)
-    {
-        return TypePrimitive.booltype;
-    }
 
     public Object visitExprStar(ExprStar exp){
     	if(exp.getType() != null  ){

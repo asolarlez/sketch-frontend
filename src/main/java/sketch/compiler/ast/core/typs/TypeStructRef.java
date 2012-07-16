@@ -66,7 +66,7 @@ public class TypeStructRef extends Type
     }
 
     public String toString()
-    {
+ {
         return name;
     }
     

@@ -565,10 +565,6 @@ public class SNodesToFortran extends FENullVisitor {
 		return "("+ exp.getExpr ().accept (this) +")";
 	}
 
-	public Object visitExprConstBoolean(ExprConstBoolean exp) {
-	    assert false;
-	    return null;
-    }
 
 	public Object visitExprConstChar(ExprConstChar exp) {
 	    assert false;
@@ -606,9 +602,6 @@ public class SNodesToFortran extends FENullVisitor {
 	    return null;
     }
 
-	public Object visitExprComplex(ExprComplex exp) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitExprStar(ExprStar star) {
 	    throw new IllegalStateException();
@@ -686,7 +679,6 @@ public class SNodesToFortran extends FENullVisitor {
 	{
 		assert (type instanceof TypePrimitive);
 		switch(((TypePrimitive)type).getType()) {
-            case TypePrimitive.TYPE_BOOLEAN:
 			case TypePrimitive.TYPE_INT: return "integer";
 			case TypePrimitive.TYPE_BIT:   return "real";
 			case TypePrimitive.TYPE_FLOAT: return "real";

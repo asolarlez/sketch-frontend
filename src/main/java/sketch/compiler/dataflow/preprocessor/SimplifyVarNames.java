@@ -53,7 +53,9 @@ public class SimplifyVarNames extends FEReplacer {
 	
 	public Object visitExprVar(ExprVar exp) {
 		String name = exp.getName();		
-		 return new ExprVar(exp, transName(name)); 
+        if (fields != null && fields.contains(name))
+            return exp;
+        return new ExprVar(exp, transName(name));
 	}
 	
     public Object visitStmtVarDecl(StmtVarDecl stmt)

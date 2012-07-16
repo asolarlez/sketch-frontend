@@ -16,8 +16,6 @@
 
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
-import sketch.compiler.ast.core.exprs.ExprComplex;
-import sketch.compiler.ast.core.exprs.ExprConstBoolean;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
@@ -45,12 +43,8 @@ public class TypePrimitive extends Type
     public static final int TYPE_FLOAT = 6;
     /** Type constant for double types; unused in StreamIt. */
     public static final int TYPE_DOUBLE = 7;
-    /** Type constant for complex primitive types. */
-    public static final int TYPE_COMPLEX = 8;
     /** Type constant for void types. */
     public static final int TYPE_VOID = 9;
-    /** Type constant for boolean types. */
-    public static final int TYPE_BOOLEAN = 10;
     /** Type constant for signed integers. */
     public static final int TYPE_SIGINT = 14;
 
@@ -63,9 +57,7 @@ public class TypePrimitive extends Type
     /** Type constant for string types */
     public static final int TYPE_STRING = 17;
 
-    /** Type object for boolean types. */
-    public static final TypePrimitive booltype =
-        new TypePrimitive(TYPE_BOOLEAN);
+
     /** Type object for bit types. */
     public static final TypePrimitive bittype = new TypePrimitive(TYPE_BIT);
     /** Type object for int types. */
@@ -80,9 +72,6 @@ public class TypePrimitive extends Type
         new TypePrimitive(TYPE_FLOAT);
     public static final TypePrimitive doubletype =
         new TypePrimitive(TYPE_DOUBLE);
-    /** Type object for complex primitive types. */
-    public static final TypePrimitive cplxtype =
-        new TypePrimitive(TYPE_COMPLEX);
     /** Type object for void types. */
     public static final TypePrimitive voidtype =
         new TypePrimitive(TYPE_VOID);
@@ -124,39 +113,31 @@ public class TypePrimitive extends Type
         return type;
     }
 
-    public boolean isComplex()
-    {
-        return type == TYPE_COMPLEX;
-    }
 
     public String toString2() {
         return this.getCudaMemType().syntaxNameSpace() + toString();
     }
 
     public String toString()
-    {
+ {
         switch (type)
         {
         case TYPE_BIT:
-            return "bit";
+                return "bit";
         case TYPE_INT8:
-        	return "int8";
+                return "int8";
         case TYPE_INT16:
-        	return "int16";
+                return "int16";
         case TYPE_INT64:
-        	return "int64";
+                return "int64";
         case TYPE_INT:
-            return "int";
+                return "int";
         case TYPE_FLOAT:
-            return "float";
+                return "float";
         case TYPE_DOUBLE:
-            return "double";
-        case TYPE_COMPLEX:
-            return "complex";
+                return "double";
         case TYPE_VOID:
-            return "void";
-        case TYPE_BOOLEAN:
-            return "boolean";
+                return "void";
         case TYPE_NULLPTR:
         	return "null ptr";
 
@@ -164,7 +145,7 @@ public class TypePrimitive extends Type
         	return "any";
 
         case TYPE_SIGINT:
-        	return "int";
+                return "int";
         default:
             return "<primitive type " + type + ">";
         }
@@ -184,8 +165,8 @@ public class TypePrimitive extends Type
         if (super.promotesTo(that))
             return true;
         if (!(that instanceof TypePrimitive)){
-        	if(that instanceof TypeArrayInterface){
-        		return this.promotesTo(((TypeArrayInterface)that).getBase());
+            if (that instanceof TypeArray) {
+                return this.promotesTo(((TypeArray) that).getBase());
         	}else{
         		if(this.type == TYPE_NULLPTR && that.isStruct ())
         			return true;
@@ -202,27 +183,21 @@ public class TypePrimitive extends Type
 
         // want: "t1 < t2", more or less
         switch(t1)
-        {
-        case TYPE_BOOLEAN:
-            return t2 == TYPE_BOOLEAN || t2 == TYPE_BIT ||
-            t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
-                t2 == TYPE_COMPLEX ;
+ {
         case TYPE_BIT:
             return t2 == TYPE_SIGINT || t2 == TYPE_BIT || t2 == TYPE_INT ||
-                t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
+                        t2 == TYPE_FLOAT;
         case TYPE_INT:
-            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
+                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT;
         case TYPE_SIGINT:
-            return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
+                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT;
         case TYPE_FLOAT:
-            return t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX;
-        case TYPE_COMPLEX:
-            return t2 == TYPE_COMPLEX;
+                return t2 == TYPE_FLOAT;
 
         case TYPE_INT16:
         case TYPE_INT8:
         case TYPE_INT64:
-        	return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT || t2 == TYPE_COMPLEX ;
+                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT;
         case TYPE_ANYTYPE:
         	return true;
         case TYPE_NULLPTR:
@@ -244,17 +219,13 @@ public class TypePrimitive extends Type
     }
 
     public Expression defaultValue () {
-    	switch (type) {
-    	case TYPE_BOOLEAN:
-    		return ExprConstBoolean.FALSE;
+        switch (type) {
     	case TYPE_BIT:
     	case TYPE_INT8:  case TYPE_INT16:  case TYPE_INT32:  case TYPE_INT64:
     	/*case TYPE_INT:*/   case TYPE_SIGINT:
     		return ExprConstInt.zero;
     	case TYPE_FLOAT: case TYPE_DOUBLE:
         	return ExprConstFloat.ZERO;
-    	case TYPE_COMPLEX:
-    		return ExprComplex.ZERO;
     	case TYPE_NULLPTR:
         	return ExprNullPtr.nullPtr;
     	case TYPE_VOID:

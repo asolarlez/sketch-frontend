@@ -67,14 +67,14 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 public class EliminateStructs extends SymbolTableVisitor {
     private Map<String, StructTracker> structs;
     private TempVarGen varGen;
-    private final int HSIZE = 1024;
+    Expression maxArrSize;
 
     // private final String heapSzVar = "_hsz";
-	public EliminateStructs (TempVarGen varGen_, int heapsize) {
+    public EliminateStructs(TempVarGen varGen_, Expression maxArrSize) {
 		super(null);
-        // this.heapsize = heapsize;
         structs = new HashMap<String, StructTracker>();
 		varGen = varGen_;
+        this.maxArrSize = maxArrSize;
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class EliminateStructs extends SymbolTableVisitor {
             // new ExprBinary(new ExprConstInt(HSIZE), "+", es)));
             for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen);
+                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
 				structs.put (name, tracker);
@@ -159,7 +159,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
             for (String name : nres.structNamesList()) {
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen);
+                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
 				tracker.registerAsParameters(symtab);
 				tracker.addParams(newParams);
 				structs.put (name, tracker);
@@ -307,6 +307,25 @@ public class EliminateStructs extends SymbolTableVisitor {
     }
 
 
+    private class MakeArrFieldsConst extends FEReplacer {
+
+        Expression maxArrSz;
+
+        public MakeArrFieldsConst(Expression maxArrSz) {
+            this.maxArrSz = maxArrSz;
+        }
+
+        @Override
+        public Object visitTypeArray(TypeArray ta) {
+            Integer ilen = ta.getLength().getIValue();
+            if (ilen != null) {
+                return super.visitTypeArray(ta);
+            } else {
+                return new TypeArray((Type) ta.getBase().accept(this), maxArrSz);
+            }
+        }
+    }
+
     /**
 	 * Tracks variables used by structs when we eliminate 'new' expressions
 	 * and field accesses.  Also provides convenience expression generators.
@@ -320,6 +339,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         // private final ExprVar heapSzVar;
         private final ExprVar nextInstancePointer;
         private final Map<String, ExprVar> fieldArrays;
+        MakeArrFieldsConst mafc;
 
         // private final String heapsize;
 
@@ -334,8 +354,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param varGen	Generator for new variable names
 	     */
 	    public StructTracker (TypeStruct struct_,
-	    					  FENode cx_,
- TempVarGen varGen)
+ FENode cx_, TempVarGen varGen,
+                Expression maxArrSz)
         {
 
             // this.heapsize = heapsize;
@@ -350,6 +370,7 @@ public class EliminateStructs extends SymbolTableVisitor {
                             "nextInstance_"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
+            mafc = new MakeArrFieldsConst(maxArrSz);
             for (Entry<String, Type> entry : struct) {
                 fieldArrays.put(
                         entry.getKey(),
@@ -510,7 +531,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return
 	     */
 	    private Type typeofFieldArr (String field) {
-	    	Type fieldType = struct.getType (field);
+            Type fieldType = (Type) struct.getType(field).accept(mafc);
 	    	return new TypeArray (
 	    		//fieldType.isStruct () ? TypePrimitive.inttype : 
 	    			fieldType,

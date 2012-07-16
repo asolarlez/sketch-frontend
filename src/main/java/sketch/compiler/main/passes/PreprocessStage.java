@@ -11,6 +11,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.CompilerStage;
 import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.types.CheckProperFinality;
 
 /**
  * @author Armando Solar-Lezama
@@ -46,6 +47,8 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
+        prog.accept(new CheckProperFinality());
+        prog.debugDump("After Finality Checking");
         prog = preproc1.run(prog);
 
         // prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue
@@ -66,7 +69,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
-        // dump (prog, "tifs:");
+        prog.debugDump("TIFS");
 
         if (partialEval) {
             prog.accept(new PerformFlowChecks());

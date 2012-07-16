@@ -11,7 +11,6 @@ import streamit.frontend.nodes.ExprAlt;
 import streamit.frontend.nodes.ExprChoiceBinary;
 import streamit.frontend.nodes.ExprChoiceSelect;
 import streamit.frontend.nodes.ExprChoiceUnary;
-import streamit.frontend.nodes.ExprConstBoolean;
 import streamit.frontend.nodes.ExprConstant;
 import streamit.frontend.nodes.ExprFunCall;
 import streamit.frontend.nodes.ExprNullPtr;
@@ -241,9 +240,9 @@ Expression Literal =
     n:Num
         { yyValue = ExprConstant.createConstant (getCx (), n); }
     /  "true":Keyword
-        { yyValue = new ExprConstBoolean (getCx (), true); }
+        { yyValue = ExprConstInt.one; }
     /  "false":Keyword
-        { yyValue = new ExprConstBoolean (getCx (), false); }
+        { yyValue = ExprConstInt.zero; } 
     /  "null":Keyword
         { yyValue = ExprNullPtr.nullPtr; }
     /  "??":s

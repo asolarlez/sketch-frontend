@@ -2,6 +2,7 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
@@ -32,7 +33,8 @@ public class LowerToSketch extends MetaStage {
         // dump (prog, "MBB:");
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen,
-                        options.bndOpts.heapSize));
+ new ExprConstInt(
+                        options.bndOpts.arrSize)));
         prog.debugDump("Elim Struct");
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 

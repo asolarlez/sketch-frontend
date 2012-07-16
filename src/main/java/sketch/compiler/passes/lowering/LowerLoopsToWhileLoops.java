@@ -8,7 +8,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstBoolean;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -42,12 +42,12 @@ public class LowerLoopsToWhileLoops extends FEReplacer {
 		Expression oldCond = (Expression) stmt.getCond ().accept (this);
 		String first = varGen.nextVar ("do_while_first_iter");
 
-		addStatement (new StmtVarDecl (stmt, TypePrimitive.booltype, first, null));
+        addStatement(new StmtVarDecl(stmt, TypePrimitive.bittype, first, null));
 		addStatement (new StmtAssign (new ExprVar (stmt, first),
-				      new ExprConstBoolean (stmt, true)));
+ ExprConstInt.one));
 		List<Statement> newStmts = new ArrayList<Statement> (oldBody.getStmts ());
 		newStmts.add (new StmtAssign (new ExprVar (stmt, first),
-									  new ExprConstBoolean (stmt, false)));
+ ExprConstInt.zero));
 		StmtBlock newBody = new StmtBlock (stmt.getBody (), newStmts);
 		Expression newCond = new ExprBinary (
 				new ExprVar (oldCond, first), "||", oldCond);

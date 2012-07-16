@@ -16,14 +16,8 @@
 
 package sketch.compiler.ast.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -273,19 +267,6 @@ public class FEReplacer implements FEVisitor
     		return new ExprChoiceUnary (exp, exp.getOps (), expr);
     }
 
-    public Object visitExprComplex(ExprComplex exp)
-    {
-        Expression real = exp.getReal();
-        if (real != null) real = doExpression(real);
-        Expression imag = exp.getImag();
-        if (imag != null) imag = doExpression(imag);
-        if (real == exp.getReal() && imag == exp.getImag())
-            return exp;
-        else
-            return new ExprComplex(exp, real, imag);
-    }
-
-    public Object visitExprConstBoolean(ExprConstBoolean exp) { return exp; }
     public Object visitExprConstChar(ExprConstChar exp) { return exp; }
     public Object visitExprConstFloat(ExprConstFloat exp) { return exp; }
     public Object visitExprConstInt(ExprConstInt exp) { return exp; }
@@ -837,9 +818,14 @@ public class FEReplacer implements FEVisitor
         return new TypeArray(nbase, nlen, t.getMaxlength());
     }
 
+    public Set<String> fields = null;
     public Object visitTypeStruct (TypeStruct ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        fields = new HashSet<String>();
+        for (Entry<String, Type> entry : ts) {
+            fields.add(entry.getKey());
+        }
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept (this);
             changed |= (type != entry.getValue());

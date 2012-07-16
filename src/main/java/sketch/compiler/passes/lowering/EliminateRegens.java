@@ -317,12 +317,6 @@ public class EliminateRegens extends SymbolTableVisitor {
             return exps;
         }
 
-        public Object visitExprConstBoolean (ExprConstBoolean exp) {
-            List<Expression> exps = new ArrayList<Expression> ();
-            exps.add (exp);
-            return exps;
-        }
-
         public Object visitExprConstInt (ExprConstInt exp) {
             List<Expression> exps = new ArrayList<Expression> ();
             exps.add (exp);

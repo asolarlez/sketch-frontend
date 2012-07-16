@@ -58,8 +58,6 @@ public interface FEVisitor
     public Object visitExprChoiceBinary(ExprChoiceBinary exp);
     public Object visitExprChoiceSelect(ExprChoiceSelect exp);
     public Object visitExprChoiceUnary(ExprChoiceUnary exp);
-    public Object visitExprComplex(ExprComplex exp);
-    public Object visitExprConstBoolean(ExprConstBoolean exp);
     public Object visitExprConstChar(ExprConstChar exp);
     public Object visitExprConstFloat(ExprConstFloat exp);
     public Object visitExprConstInt(ExprConstInt exp);

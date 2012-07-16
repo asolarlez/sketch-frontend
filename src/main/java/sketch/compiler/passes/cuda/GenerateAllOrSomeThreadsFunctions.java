@@ -17,7 +17,6 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstBoolean;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTprint;
@@ -105,7 +104,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         ExprBinary curr = null;
         for (int a = 0; a < cudaBlockDim.all(); a++) {
             final ExprArrayRange deref = new ExprArrayRange(arrvar, new ExprConstInt(a));
-            ExprBinary next = new ExprBinary(deref, "==", new ExprConstBoolean(value));
+            ExprBinary next =
+                    new ExprBinary(deref, "==", new ExprConstInt(value ? 1 : 0));
             if (curr == null) {
                 curr = next;
             } else {
@@ -498,7 +498,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
             return new StmtAssert(
                     FEContext.artificalFrom("syncthreads", cudaSyncthreads),
-                    new ExprConstBoolean(false), false);
+                    ExprConstInt.zero, false);
         }
 
         @Override

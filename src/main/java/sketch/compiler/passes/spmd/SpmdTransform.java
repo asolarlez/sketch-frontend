@@ -1,15 +1,12 @@
 package sketch.compiler.passes.spmd;
 
-import java.util.Arrays;
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import java.util.Queue;
-import java.util.ArrayDeque;
-import java.util.HashSet;
-
-import sketch.compiler.main.cmdline.SketchOptions;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
@@ -21,31 +18,36 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstBoolean;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
+import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.ASTQuery;
 import sketch.compiler.passes.structure.CallGraph;
-
-import sketch.compiler.ast.spmd.stmts.*;
-import sketch.compiler.ast.spmd.exprs.*;
-
 import sketch.util.datastructures.TypedHashSet;
 import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.printWarning;
-//import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 @CompilerPassDeps(runsBefore = { }, runsAfter = { })
 public class SpmdTransform  extends SymbolTableVisitor {
@@ -259,14 +261,15 @@ public class SpmdTransform  extends SymbolTableVisitor {
             String currName = varGen.nextVar("curr");
             StmtVarDecl decl = new StmtVarDecl(ctx, TypePrimitive.bittype, currName, null);
             ExprVar curr = new ExprVar(ctx, currName);
-            Statement currAssgn = new StmtAssign(curr, new ExprConstBoolean(true));
+            Statement currAssgn = new StmtAssign(curr, ExprConstInt.one);
 
             ExprVar nproc = new ExprVar(ctx, SpmdNProcVar);
             String iterName = varGen.nextVar("iter");
             ExprVar iter = new ExprVar(ctx, iterName);
 
             final ExprArrayRange deref = new ExprArrayRange(arrvar, iter);
-            ExprBinary next = new ExprBinary(deref, "==", new ExprConstBoolean(value));
+            ExprBinary next =
+                    new ExprBinary(deref, "==", new ExprConstInt(value ? 1 : 0));
             Statement assgn = new StmtAssign(curr, new ExprBinary(curr, "&&", next));
             StmtFor loop = new StmtFor(iterName, nproc, assgn);
 

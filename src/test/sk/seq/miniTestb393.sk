@@ -1,0 +1,29 @@
+pragma options "--bnd-unroll-amnt 32";
+
+struct Foo{
+  int n;
+  int[n] a;
+}
+
+struct Moo{
+    Foo f;
+    int[f.n] b;    
+}
+
+harness void main(int n){
+    int[n] x=0;
+    for(int i=0; i<n; ++i){
+        x[i] = i;
+    }
+    Foo a = new Foo(n=n, a=x);
+    
+    Foo b = new Foo(n=n);
+    
+    Moo m = new Moo(f=a, b=0);
+    assert m.f == a;
+    for(int i=0; i<n; ++i){
+        assert a.a[i] == (i-1)+??;
+        assert b.a[i] == ??;
+        assert m.b[i] == ??;
+    }
+}

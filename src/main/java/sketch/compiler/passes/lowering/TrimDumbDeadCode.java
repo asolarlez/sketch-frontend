@@ -16,7 +16,6 @@
 
 package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.exprs.ExprConstBoolean;
 import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -39,8 +38,7 @@ public class TrimDumbDeadCode extends FEReplacer
     public Object visitStmtExpr(StmtExpr stmt)
     {
         Expression expr = stmt.getExpression();
-        if (expr instanceof ExprConstBoolean ||
-            expr instanceof ExprConstChar ||
+        if (expr instanceof ExprConstChar ||
             expr instanceof ExprConstFloat ||
             expr instanceof ExprConstInt ||
             expr instanceof ExprConstStr ||

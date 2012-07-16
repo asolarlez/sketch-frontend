@@ -547,7 +547,6 @@ public class SNodesToC extends NodesToJava {
 				case TypePrimitive.TYPE_INT16: return "short int";
 				case TypePrimitive.TYPE_INT32: return "int";
 				case TypePrimitive.TYPE_INT64: return "long long";
-	            case TypePrimitive.TYPE_BOOLEAN:
 				case TypePrimitive.TYPE_BIT:   return "char";
 	            case TypePrimitive.TYPE_SIGINT: return "int";
 			}

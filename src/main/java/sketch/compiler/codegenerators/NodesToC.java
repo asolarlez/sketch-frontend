@@ -714,7 +714,6 @@ public class NodesToC extends NodesToJava {
 				case TypePrimitive.TYPE_INT16: return "unsigned short int";
 				case TypePrimitive.TYPE_INT32: return "int";
 				case TypePrimitive.TYPE_INT64: return "unsigned long long";
-	            case TypePrimitive.TYPE_BOOLEAN:
 				case TypePrimitive.TYPE_BIT:   return "bitvec<1>";
 	            case TypePrimitive.TYPE_SIGINT: return "int";
 			}
@@ -735,13 +734,8 @@ public class NodesToC extends NodesToJava {
 		return super.convertType(type);
 	}
 
-	public Object visitExprNullPtr(ExprNullPtr nptr){ return "NULL"; }
-	public Object visitExprConstBoolean(ExprConstBoolean exp)
-    {
-        if (exp.getVal())
-            return "bitvec<1>(1U)";
-        else
-            return "bitvec<1>(0U)";
+    public Object visitExprNullPtr(ExprNullPtr nptr) {
+        return "NULL";
     }
 
     @Override

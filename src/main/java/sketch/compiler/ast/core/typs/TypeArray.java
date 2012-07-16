@@ -35,7 +35,7 @@ import static java.util.Collections.unmodifiableList;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class TypeArray extends Type implements TypeArrayInterface
+public class TypeArray extends Type
 {
     private final Type base;
     private final Expression length;

@@ -332,12 +332,11 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
 
 primitive_type returns [Type t] { t = null; }
 	:
-		(TK_boolean { t = TypePrimitive.booltype; }
+		(TK_boolean { t = TypePrimitive.bittype; }
 	|	TK_bit { t = TypePrimitive.bittype;  }
 	|	TK_int { t = TypePrimitive.inttype;  }
 	|	TK_float { t = TypePrimitive.floattype;  }
 	|	TK_double { t = TypePrimitive.doubletype; }
-	|	TK_complex { t = TypePrimitive.cplxtype; }
 	|   TK_fun { t = TypeFunction.singleton; })
 	;
 
@@ -531,7 +530,7 @@ do_while_statement returns [Statement s]
 for_statement returns [Statement s]
 { s = null; Expression x=null; Statement a, b, c; }
 	:	t:TK_for LPAREN a=for_init_statement SEMI
-		(x=right_expr | { x = new ExprConstBoolean(getContext(t), true); })
+		(x=right_expr | { x = ExprConstInt.one; })
 		SEMI b=for_incr_statement RPAREN c=pseudo_block
 		{ s = new StmtFor(getContext(t), a, x, b, c); }
 	;
@@ -900,12 +899,10 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
 			{ x = new ExprConstChar(getContext(c), c.getText()); }
 	|	s:STRING_LITERAL
 			{ x = new ExprConstStr(getContext(s), s.getText()); }
-	|	pi:TK_pi
-			{ x = new ExprConstFloat(getContext(pi), Math.PI); }
 	|	t:TK_true
-			{ x = new ExprConstBoolean(getContext(t), true); }
+			{ x = ExprConstInt.one; }
 	|	f:TK_false
-			{ x = new ExprConstBoolean(getContext(f), false); }
+			{ x = ExprConstInt.zero; }
 	|   TK_null
 			{ x = ExprNullPtr.nullPtr; }
     |   t1:NDVAL

@@ -109,13 +109,11 @@ public class NodesToJava extends SymbolTableVisitor
         {
             switch (((TypePrimitive)type).getType())
             {
-            case TypePrimitive.TYPE_BOOLEAN: return "boolean";
             case TypePrimitive.TYPE_BIT: return "int";
             case TypePrimitive.TYPE_SIGINT:
             case TypePrimitive.TYPE_INT: return "int";
             case TypePrimitive.TYPE_FLOAT: return "float";
             case TypePrimitive.TYPE_DOUBLE: return "double";
-            case TypePrimitive.TYPE_COMPLEX: return "Complex";
             case TypePrimitive.TYPE_VOID: return "void";
             default: assert false : type; return null;
             }
@@ -158,8 +156,6 @@ public class NodesToJava extends SymbolTableVisitor
         {
             switch (((TypePrimitive)t).getType())
             {
-            case TypePrimitive.TYPE_BOOLEAN:
-                return "Boolean.TYPE";
             case TypePrimitive.TYPE_BIT:
                 return "Integer.TYPE";
             case TypePrimitive.TYPE_INT:
@@ -170,8 +166,6 @@ public class NodesToJava extends SymbolTableVisitor
                 return "Double.TYPE";
             case TypePrimitive.TYPE_VOID:
                 return "Void.TYPE";
-            case TypePrimitive.TYPE_COMPLEX:
-                return "Complex.class";
             default:
                 assert false : t;
                 return null;
@@ -199,9 +193,6 @@ public class NodesToJava extends SymbolTableVisitor
         {
             switch (((TypePrimitive)type).getType())
             {
-            case TypePrimitive.TYPE_BOOLEAN:
-                suffix = "Boolean";
-                break;
             case TypePrimitive.TYPE_BIT:
                 suffix = "Int";
                 break;
@@ -213,10 +204,6 @@ public class NodesToJava extends SymbolTableVisitor
                 break;
             case TypePrimitive.TYPE_DOUBLE:
                 suffix = "Double";
-                break;
-            case TypePrimitive.TYPE_COMPLEX:
-                if (name.startsWith("input"))
-                    prefix  = "(Complex)";
                 break;
             default:
                 assert false : type;
@@ -321,25 +308,6 @@ public class NodesToJava extends SymbolTableVisitor
         return result.toString();
     }
 
-    public Object visitExprComplex(ExprComplex exp)
-    {
-        // We should never see one of these at this point.
-        assert false : exp;
-        // If we do, print something vaguely intelligent:
-        String r = "";
-        String i = "";
-        if (exp.getReal() != null) r = (String)exp.getReal().accept(this);
-        if (exp.getImag() != null) i = (String)exp.getImag().accept(this);
-        return "/* (" + r + ")+i(" + i + ") */";
-    }
-
-    public Object visitExprConstBoolean(ExprConstBoolean exp)
-    {
-        if (exp.getVal())
-            return "true";
-        else
-            return "false";
-    }
 
     public Object visitExprConstChar(ExprConstChar exp)
     {

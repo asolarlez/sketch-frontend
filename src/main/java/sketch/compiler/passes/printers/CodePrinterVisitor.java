@@ -189,15 +189,6 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return eb;
 	}
 
-	public Object visitExprComplex (ExprComplex ec) {
-		print ("/* Complex: "+ ec + "*/");
-		return ec;
-	}
-
-	public Object visitExprConstBoolean (ExprConstBoolean ecb) {
-		print (ecb.getVal () ? "true" : "false");
-		return ecb;
-	}
 
 	public Object visitExprConstChar (ExprConstChar ecc) {
 		print ("'"+ ecc.getVal () +"'");

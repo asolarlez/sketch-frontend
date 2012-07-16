@@ -27,6 +27,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
@@ -380,7 +381,9 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public void testProg(Program p){
 	    
-	    p = (Program)p.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
+        p =
+                (Program) p.accept(new EliminateStructs(varGen, new ExprConstInt(
+                        options.bndOpts.arrSize)));
 	    p = (Program)p.accept(new EliminateMultiDimArrays(varGen));
 	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
             new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,

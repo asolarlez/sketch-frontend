@@ -2236,7 +2236,7 @@ public final class Regen extends ParserBase {
     yyResult = pKeyword(yyStart);
     if (yyResult.hasValue("true")) {
 
-      yyValue = new ExprConstBoolean (getCx (), true);
+            yyValue = ExprConstInt.one;
 
       return yyResult.createValue(yyValue, yyError);
     }
@@ -2246,7 +2246,7 @@ public final class Regen extends ParserBase {
     yyResult = pKeyword(yyStart);
     if (yyResult.hasValue("false")) {
 
-      yyValue = new ExprConstBoolean (getCx (), false);
+            yyValue = ExprConstInt.zero;
 
       return yyResult.createValue(yyValue, yyError);
     }

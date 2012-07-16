@@ -97,12 +97,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         {
             switch (((TypePrimitive)type).getType())
             {
-            case TypePrimitive.TYPE_BOOLEAN: return "boolean";
             case TypePrimitive.TYPE_BIT: return "bit";
             case TypePrimitive.TYPE_INT: return "int";
             case TypePrimitive.TYPE_FLOAT: return "float";
             case TypePrimitive.TYPE_DOUBLE: return "double";
-            case TypePrimitive.TYPE_COMPLEX: return "Complex";
             case TypePrimitive.TYPE_VOID: return "void";
             }
         }
@@ -474,6 +472,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssert(sa);
     }
     
+    public Object visitTypeStruct(TypeStruct ts) {
+        return ts;
+    }
+
     public Object visitStmtAssign(StmtAssign s){
         if(tracing){
             //if(s.getCx() != tmp && s.getCx() != null){

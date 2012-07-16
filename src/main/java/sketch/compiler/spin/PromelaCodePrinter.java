@@ -412,7 +412,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 	}
 
 	public Object visitTypePrimitive (TypePrimitive tp) {
-		if (TypePrimitive.TYPE_BOOLEAN == tp.getType ()) {
+        if (TypePrimitive.TYPE_BIT == tp.getType()) {
 			print ("bool");
 			return tp;
 		} else if (TypePrimitive.TYPE_INT == tp.getType ()) {
