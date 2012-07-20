@@ -244,6 +244,7 @@ statement returns [Statement s] { s = null; }
 	|	s=reorder_block
 	|	s=atomic_block
 	|	s=block
+	|(return_type ID LPAREN) =>s=fdecl_statement
 	|	(data_type ID) => s=variable_decl SEMI!
     // |   (ID DEF_ASSIGN) => s=implicit_type_variable_decl SEMI!
 	|	(expr_statement) => s=expr_statement SEMI!
@@ -255,7 +256,9 @@ statement returns [Statement s] { s = null; }
 	|	s=for_statement
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
-	|s=fdecl_statement 
+	|(annotation_list (TK_device | TK_serial | TK_harness |
+                     TK_generator | TK_library | TK_printfcn | TK_stencil)*
+                    return_type ID LPAREN) =>s=fdecl_statement  
 	|s=return_statement SEMI
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
 	;

@@ -1,0 +1,14 @@
+
+
+void call(fun f){
+    f();
+}
+
+harness void main(int x){
+    int a = x;
+    generator void foo(){
+        a = a + ??;
+    }
+    call(foo);
+    assert a == x+1;    
+}
