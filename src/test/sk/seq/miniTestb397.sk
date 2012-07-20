@@ -1,0 +1,8 @@
+
+@Native("{printf(\"Input equals %d\\n\", x);}") @Dummy("testing tags")
+void printInt(int x);
+
+harness void main(int x){
+    printInt(x);
+}
+

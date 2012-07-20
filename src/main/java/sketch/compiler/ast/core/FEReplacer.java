@@ -832,7 +832,7 @@ public class FEReplacer implements FEVisitor
             map.put(entry.getKey(), type);
         }
         if (changed) {
-            return new TypeStruct(ts.getCudaMemType(), ts.getContext(), ts.getName(), map);
+            return ts.creator().fields(map).create();
         } else {
             return ts;
         }

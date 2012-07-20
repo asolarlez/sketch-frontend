@@ -2,10 +2,14 @@ package sketch.compiler.ast.core;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.util.datastructures.HashmapList;
 import sketch.util.wrapper.ScRichString;
 import static sketch.util.Misc.nonnull;
 
@@ -18,6 +22,16 @@ import static sketch.util.Misc.nonnull;
  *          changes, please consider contributing back!
  */
 public class Function extends FENode {
+
+
+    public boolean hasAnnotation(String tag) {
+        return annotations.containsKey(tag);
+    }
+
+    public Vector<Annotation> getAnnotation(String tag) {
+        return annotations.getOrEmpty(tag);
+    }
+
     public static enum FcnType {
         // Uninterpreted Function
         Uninterp("uninterp"),
@@ -115,6 +129,11 @@ public class Function extends FENode {
     private final Statement body;
     private final String fImplements;
     private final FcnInfo fcnInfo;
+    private final HashmapList<String, Annotation> annotations;
+
+    public Set<Entry<String, Vector<Annotation>>> annotationSet() {
+        return annotations.entrySet();
+    }
 
     public static class FunctionCreator {
         private Object base;
@@ -124,6 +143,8 @@ public class Function extends FENode {
         private Statement body;
         private String implementsName;
         private FcnInfo fcnInfo;
+        private HashmapList<String, Annotation> annotations =
+                new HashmapList<String, Annotation>();
 
         protected FunctionCreator(Function base) {
             this.base = base;
@@ -132,6 +153,7 @@ public class Function extends FENode {
             this.params = base.params;
             this.body = base.body;
             this.implementsName = base.fImplements;
+            this.annotations = base.annotations;
             this.fcnInfo = base.getInfo();
         }
 
@@ -168,6 +190,18 @@ public class Function extends FENode {
 
         public FunctionCreator spec(final String specName) {
             this.implementsName = specName;
+            return this;
+        }
+
+        public FunctionCreator annotations(
+                final HashmapList<String, Annotation> annotations)
+        {
+            this.annotations = annotations;
+            return this;
+        }
+
+        public FunctionCreator annotation(String key, String annot) {
+            this.annotations.append(key, new Annotation(body.getCx(), key, annot));
             return this;
         }
 
@@ -222,10 +256,10 @@ public class Function extends FENode {
         public Function create() {
             if (base == null || base instanceof FEContext) {
                 return new Function((FEContext) base, fcnInfo, name, returnType, params,
-                        implementsName, body);
+                        implementsName, body, annotations);
             } else {
                 return new Function((FENode) base, fcnInfo, name, returnType, params,
-                        implementsName, body);
+                        implementsName, body, annotations);
             }
         }
     }
@@ -243,7 +277,8 @@ public class Function extends FENode {
     }
 
     protected Function(FENode context, FcnInfo fcnInfo, String name, Type returnType,
-            List<Parameter> params, String fImplements, Statement body)
+            List<Parameter> params, String fImplements, Statement body,
+            HashmapList<String, Annotation> annotations)
     {
         super(context);
         this.fcnInfo = fcnInfo;
@@ -252,11 +287,14 @@ public class Function extends FENode {
         this.params = params;
         this.body = body;
         this.fImplements = fImplements;
+        this.annotations = annotations;
+        assert annotations != null;
     }
 
     @SuppressWarnings("deprecation")
     protected Function(FEContext context, FcnInfo fcnInfo, String name, Type returnType,
-            List<Parameter> params, String fImplements, Statement body)
+            List<Parameter> params, String fImplements, Statement body,
+            HashmapList<String, Annotation> annotations)
     {
         super(context);
         this.fcnInfo = fcnInfo;
@@ -265,6 +303,8 @@ public class Function extends FENode {
         this.params = params;
         this.body = body;
         this.fImplements = fImplements;
+        this.annotations = annotations;
+        assert annotations != null;
     }
 
     public boolean isUninterp() {

@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.passes.lowering;
-import java.util.List;
-
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -44,7 +42,6 @@ import sketch.compiler.ast.core.typs.Type;
 public class DisambiguateUnaries extends SymbolTableVisitor
 {
     private TempVarGen varGen;
-    private List successors;
 
     public DisambiguateUnaries(TempVarGen varGen)
     {
@@ -53,14 +50,10 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     }
 
     protected void doStatement(Statement stmt)
-    {
-        List<Statement> oldSuccessors = successors;
-        successors = new java.util.ArrayList();
+ {
         Statement result = (Statement)stmt.accept(this);
         if (result != null)
             addStatement(result);
-        addStatements(successors);
-        successors = oldSuccessors;
     }
 
     public Object visitExprUnary(ExprUnary expr)
@@ -81,11 +74,17 @@ public class DisambiguateUnaries extends SymbolTableVisitor
                 bop = ExprBinary.BINOP_SUB;
             Expression rhs =
                 new ExprBinary(ctx, bop, lhs, new ExprConstInt(ctx, 1));
-            Statement assign = new StmtAssign(ctx, lhs, rhs, 0);
-            if (op == ExprUnary.UNOP_PREINC || op == ExprUnary.UNOP_PREDEC)
+            if (op == ExprUnary.UNOP_PREINC || op == ExprUnary.UNOP_PREDEC) {
+                Statement assign = new StmtAssign(ctx, lhs, rhs, 0);
                 addStatement(assign);
-            else
-                successors.add(assign);
+            } else {
+                String tvar = varGen.nextVar("uo");
+                Statement tdecl = new StmtVarDecl(expr, getType(lhs), tvar, lhs);
+                addStatement(tdecl);
+                Statement assign = new StmtAssign(ctx, lhs, rhs, 0);
+                addStatement(assign);
+                lhs = new ExprVar(expr, tvar);
+            }
             return lhs;
         }
         return expr;
@@ -140,7 +139,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     	}
 
         Statement newBody = (Statement)stmt.getBody().accept(this);
-        successors = new java.util.ArrayList();
+
         Statement newInit = (Statement)stmt.getInit().accept(this);
         if (newInit == stmt.getInit() && newBody == stmt.getBody() && inc == stmt.getIncr())
             return stmt;
@@ -152,10 +151,10 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     {
         // Need to reset successors list in between visiting children.
         Statement newCons = (Statement)stmt.getCons().accept(this);
-        successors = new java.util.ArrayList();
+
         Statement newAlt = stmt.getAlt();
         if (newAlt != null) newAlt = (Statement)newAlt.accept(this);
-        successors = new java.util.ArrayList();
+
         Expression newCond = (Expression)stmt.getCond().accept(this);
         if (newCons == stmt.getCons() &&
             newAlt == stmt.getAlt() &&
@@ -171,7 +170,7 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         // at the end of the loop body, and continue statements
         // would go in the wrong place.
         Statement newBody = (Statement)stmt.getBody().accept(this);
-        successors = new java.util.ArrayList();
+
         if (newBody == stmt.getBody())
             return stmt;
         return new StmtWhile(stmt, stmt.getCond(), newBody);

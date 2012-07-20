@@ -35,7 +35,7 @@ public class LowerToSketch extends MetaStage {
                 (Program) prog.accept(new EliminateStructs(varGen,
  new ExprConstInt(
                         options.bndOpts.arrSize)));
-        prog.debugDump("Elim Struct");
+
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         prog = stencilTransform.visitProgram(prog);

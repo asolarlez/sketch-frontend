@@ -48,7 +48,7 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
         prog.accept(new CheckProperFinality());
-        prog.debugDump("After Finality Checking");
+
         prog = preproc1.run(prog);
 
         // prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue
@@ -69,7 +69,6 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
-        prog.debugDump("TIFS");
 
         if (partialEval) {
             prog.accept(new PerformFlowChecks());

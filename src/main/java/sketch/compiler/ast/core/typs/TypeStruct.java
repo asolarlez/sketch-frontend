@@ -19,13 +19,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
+import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.util.datastructures.HashmapList;
 import sketch.util.datastructures.ImmutableTypedHashMap;
 import sketch.util.datastructures.ObjPairBase;
 import sketch.util.datastructures.TypedHashMap;
@@ -50,6 +53,94 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
     private final FEContext context;
     private final String name;
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
+    private HashmapList<String, Annotation> annotations =
+            new HashmapList<String, Annotation>();
+
+    public Set<Entry<String, Vector<Annotation>>> annotationSet() {
+        return annotations.entrySet();
+    }
+
+    public boolean hasAnnotation(String tag) {
+        return annotations.containsKey(tag);
+    }
+
+    public Vector<Annotation> getAnnotation(String tag) {
+        return annotations.getOrEmpty(tag);
+    }
+
+    public static class TStructCreator {
+        private String name;
+        private ImmutableTypedHashMap<String, Type> fieldTypMap;
+        private Object base;
+        private HashmapList<String, Annotation> annotations;
+        private CudaMemoryType typ = CudaMemoryType.UNDEFINED;
+
+        public TStructCreator(FEContext ts) {
+            base = ts;
+        }
+
+        public TStructCreator(TypeStruct ts) {
+            base = ts;
+            name = ts.name;
+            fieldTypMap = ts.fieldTypMap;
+            annotations = ts.annotations;
+            typ = ts.getCudaMemType();
+        }
+
+        public TStructCreator cmt(CudaMemoryType typ) {
+            this.typ = typ;
+            return this;
+        }
+        public TStructCreator name(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public TStructCreator fields(List<String> fields, List<Type> ftypes) {
+            TypedHashMap<String, Type> types = new TypedHashMap<String, Type>();
+            for (int i = 0; i < fields.size(); i++)
+                types.put(fields.get(i), ftypes.get(i));
+            this.fieldTypMap = types.immutable();
+            return this;
+        }
+
+        public TStructCreator fields(ImmutableTypedHashMap<String, Type> fieldTypMap) {
+            this.fieldTypMap = fieldTypMap;
+            return this;
+        }
+
+        public TStructCreator fields(TypedHashMap<String, Type> fieldTypMap) {
+            this.fieldTypMap = fieldTypMap.immutable();
+            return this;
+        }
+
+        public TStructCreator annotations(HashmapList<String, Annotation> annotations) {
+            this.annotations = annotations;
+            return this;
+        }
+
+        public TypeStruct create() {
+            if (base == null || base instanceof FEContext) {
+                return new TypeStruct(typ, (FEContext) base, name, fieldTypMap,
+                        annotations);
+            } else {
+                return new TypeStruct(typ, ((TypeStruct) base).getContext(), name,
+                        fieldTypMap,
+                        annotations);
+            }
+        }
+    }
+
+    public static TStructCreator creator(FEContext ctx, String name, List<String> fields,
+            List<Type> ftypes, HashmapList<String, Annotation> annotations)
+    {
+        return (new TStructCreator(ctx)).name(name).fields(fields, ftypes).annotations(
+                annotations);
+    }
+
+    public TStructCreator creator() {
+        return (new TStructCreator(this));
+    }
 
     /**
      * Creates a new structured type. The fields and ftypes lists must be the same length;
@@ -66,7 +157,8 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
      *            list of <code>Type</code> containing the types of the fields
      */
     public TypeStruct(CudaMemoryType typ, FEContext context, String name,
-            List<String> fields, List<Type> ftypes)
+            List<String> fields, List<Type> ftypes,
+            HashmapList<String, Annotation> annotations)
     {
         super(typ);
         this.context = context;
@@ -75,22 +167,20 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         for (int i = 0; i < fields.size(); i++)
             types.put(fields.get(i), ftypes.get(i));
         this.fieldTypMap = types.immutable();
+        this.annotations = annotations;
     }
 
     public TypeStruct(CudaMemoryType typ, FEContext context, String name,
-            TypedHashMap<String, Type> map)
+            TypedHashMap<String, Type> map, HashmapList<String, Annotation> annotations)
     {
         super(typ);
         this.context = context;
         this.name = name;
         this.fieldTypMap = map.immutable();
+        this.annotations = annotations;
     }
 
-    public TypeStruct(FEContext context, String name, List<String> fields,
-            List<Type> ftypes)
-    {
-        this(CudaMemoryType.UNDEFINED, context, name, fields, ftypes);
-    }
+
 
     public boolean isStruct () { return true; }
 
@@ -207,7 +297,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
          * fieldTypMap.entrySet()) { fields2.put(v.getKey(),
          * v.getValue().withMemType(memtyp)); }
          */
-        return new TypeStruct(memtyp, context, name, fieldTypMap);
+        return new TypeStruct(memtyp, context, name, fieldTypMap, annotations);
     }
 
     public ImmutableTypedHashMap<String, Type> getFieldTypMap() {

@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.Vector;
 
+import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
@@ -501,7 +503,55 @@ public class NodesToSuperCpp extends NodesToJava {
     }
 
     public Object visitExprNew(ExprNew en) {
-        return "new " + this.getCppName((TypeStructRef) en.getTypeToConstruct()) + "()";
+
+        TypeStruct struct =
+                nres.getStruct(((TypeStructRef) en.getTypeToConstruct()).getName());
+        String res =
+                "new " + this.getCppName((TypeStructRef) en.getTypeToConstruct()) + "(";
+        Map<String, Expression> pe = new HashMap<String, Expression>();
+
+        for (ExprNamedParam enp : en.getParams()) {
+            pe.put(enp.getName(), enp.getExpr());
+        }
+        boolean first = true;
+        for (Entry<String, Type> entry : struct) {
+            if (first) {
+                first = false;
+            } else {
+                res += ", ";
+            }
+            if (entry.getValue() instanceof TypeArray) {
+                if (pe.containsKey(entry.getKey())) {
+                    Type tp = getType(pe.get(entry.getKey()));
+                    if (tp instanceof TypeArray) {
+                        TypeArray t = (TypeArray) tp;
+                        res +=
+                                pe.get(entry.getKey()).accept(this) + ", " +
+                                        t.getLength().accept(this);
+                    } else {
+                        TypeArray tarr = (TypeArray) entry.getValue();
+                        String nvar = newTmp();
+                        String typename = typeForDecl(tarr.getBase());
+                        String result =
+                                indent + typename + " " + nvar + "= " +
+                                        pe.get(entry.getKey()).accept(this) + ";\n";
+
+                        addPreStmt(result);
+                        res += "&" + nvar + ", 1";
+                    }
+                } else {
+                    res += "NULL, 0";
+                }
+            } else {
+                if (pe.containsKey(entry.getKey())) {
+                    res += pe.get(entry.getKey()).accept(this);
+                } else {
+                    res += entry.getValue().defaultValue().accept(this);
+                }
+            }
+        }
+        res += ")";
+        return res;
     }
 
     public Object visitStreamSpec(StreamSpec spec) {
@@ -542,6 +592,15 @@ public class NodesToSuperCpp extends NodesToJava {
         }
     }
 
+    public String nativeCode(Function func) {
+        assert func.hasAnnotation("Native");
+        String rv = "";
+        for (Annotation a : func.getAnnotation("Native")) {
+            rv += a.contents();
+        }
+        return rv;
+    }
+
     public Object visitFunction(Function func) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -552,30 +611,35 @@ public class NodesToSuperCpp extends NodesToJava {
         result += escapeCName(func.getName());
         String prefix = null;
         result += doParams(func.getParams(), prefix) + " ";
-
-        if (func.isUninterp()) {
-            List<Parameter> l = func.getParams();
-            result += "{ \n";
-            result +=
-                    "\t/* This was defined as an uninterpreted function. "
-                            + "\n\t   Add your own body here. */ \n";
-            for (Iterator<Parameter> it = l.iterator(); it.hasNext();) {
-                Parameter p = it.next();
-                if (p.isParameterOutput()) {
-                    Statement r =
-                            new StmtAssign(new ExprVar(func, escapeCName(p.getName())),
-                                    ExprConstInt.zero);
-                    result += "\t" + (String) r.accept(this) + ";\n";
-                }
-            }
-            result += "\n}";
+        if (func.hasAnnotation("Native")) {
+            result += nativeCode(func);
         } else {
-            // NOTE(JY): Inserted code to handle the empty body case.
-            String body = (String) func.getBody().accept(this);
-            if (body.length() == 0) {
-                result += "{}";
+            if (func.isUninterp()) {
+                {
+                    List<Parameter> l = func.getParams();
+                    result += "{ \n";
+                    result +=
+                            "\t/* This was defined as an uninterpreted function. "
+                                    + "\n\t   Add your own body here. */ \n";
+                    for (Iterator<Parameter> it = l.iterator(); it.hasNext();) {
+                        Parameter p = it.next();
+                        if (p.isParameterOutput()) {
+                            Statement r =
+                                    new StmtAssign(new ExprVar(func,
+                                            escapeCName(p.getName())), ExprConstInt.zero);
+                            result += "\t" + (String) r.accept(this) + ";\n";
+                        }
+                    }
+                    result += "\n}";
+                }
             } else {
-                result += body;
+                // NOTE(JY): Inserted code to handle the empty body case.
+                String body = (String) func.getBody().accept(this);
+                if (body.length() == 0) {
+                    result += "{}";
+                } else {
+                    result += body;
+                }
             }
         }
         result += "\n";

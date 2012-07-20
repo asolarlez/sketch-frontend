@@ -3,8 +3,11 @@ package sketch.compiler.passes.printers;
 import java.io.OutputStream;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.Vector;
 
+import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.LibraryFcnType;
@@ -47,6 +50,12 @@ public class SimpleCodePrinter extends CodePrinter
 		printTab(); 
 		out.println("/*" + func.getCx() + "*/");
 		printTab();
+        for (Entry<String, Vector<Annotation>> anitv : func.annotationSet()) {
+            for (Annotation anit : anitv.getValue()) {
+                out.print(anit.toString() + " ");
+            }
+        }
+        out.print("\n");
 		out.println((func.getInfo().printType == PrintFcnType.Printfcn ? "printfcn " : "") + func.toString());
 		super.visitFunction(func);
 		out.flush();
@@ -305,6 +314,11 @@ public class SimpleCodePrinter extends CodePrinter
 	    for (StructFieldEnt ent : ts.getFieldEntries()) {
 	        printLine("    " + ent.getType().toString() + " " + ent.getName() + ";");
 	    }
+        for (Entry<String, Vector<Annotation>> at : ts.annotationSet()) {
+            for (Annotation ann : at.getValue()) {
+                printLine("    " + ann);
+            }
+        }
 	    printLine("}");
 	    return ts;
 	}

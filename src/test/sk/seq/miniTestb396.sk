@@ -1,0 +1,17 @@
+struct Foo{
+    int x;
+}
+
+int a=5;
+int b = a+10;
+Foo f = new Foo(x=a);
+int c;
+
+harness void main(int x){
+    c = f.x+1;
+    b = b+x;
+    c = c + x;
+    f.x = f.x + 1;
+    assert b-x == ??;
+    assert c == x + ??;    
+}

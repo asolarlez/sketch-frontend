@@ -42,6 +42,8 @@ stencil float[N][N] testSK0(int N, float[N][N] a) implements test0 {
   float[N][N] out=0;
   for(int i=hole(0, N); i<hole(0, N); ++i){
   	for(int j=hole(i, N); j<hole(i, N); ++j){
+  	    assert i<N;
+  	    assert j<N;
   		out[i][j] = a[i][j];
   	}
   }

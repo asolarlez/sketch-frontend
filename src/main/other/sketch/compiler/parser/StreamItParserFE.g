@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEContext;
@@ -40,6 +42,8 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.Annotation;
+import sketch.util.datastructures.HashmapList;
 
 import sketch.compiler.ast.core.StreamSpec;
 
@@ -174,7 +178,7 @@ program	 returns [Program p]
     String pkgName = null;
     FEContext pkgCtxt = null;
 }
-	:	(  ((TK_device /*| TK_global*/ | TK_serial | TK_harness |
+	:	(  (annotation_list (TK_device /*| TK_global*/ | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
@@ -360,10 +364,25 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 //     { s = new StmtImplicitVarDecl(getContext(id), id.getText(), init); }
 // ;
 
+annotation returns [Annotation an]{
+	an = null;
+}: atc:AT id:ID LPAREN (slit:STRING_LITERAL)? RPAREN
+{
+	an = Annotation.newAnnotation(getContext(atc), id.getText(), slit.getText());
+}
+;
+
+annotation_list returns [HashmapList<String, Annotation>  amap] {
+	 amap = new HashmapList<String, Annotation>(); Annotation an; }
+	:	
+		( an=annotation { amap.append(an.tag, an); })*
+	;
+
 function_decl returns [Function f] {
     Type rt;
     List l;
     StmtBlock s;
+    HashmapList<String, Annotation> amap;
     f = null;
     boolean isHarness = false;
     boolean isLibrary = false;
@@ -375,6 +394,7 @@ function_decl returns [Function f] {
     boolean isStencil = false;
 }
 	:
+	amap=annotation_list
 	( TK_device { isDevice = true; } |
           //TK_global { isGlobal = true; } |
           TK_serial { isSerial = true; } |
@@ -392,7 +412,7 @@ function_decl returns [Function f] {
 	{
             assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
             Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
-                rt).params(l).body(s);
+                rt).params(l).body(s).annotations(amap);
 
             // function type
             if (isGenerator) {
@@ -433,7 +453,7 @@ function_decl returns [Function f] {
 
             f = fc.create();
 	}
-	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).create(); })
+	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
 	;
 
 return_type returns [Type t] { t=null; }
@@ -924,12 +944,16 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
  
 struct_decl returns [TypeStruct ts]
 { ts = null; Parameter p; List names = new ArrayList();
+	Annotation an=null;
+	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	t:TK_struct id:ID
 		LCURLY
 		(p=param_decl SEMI
 			{ names.add(p.getName()); types.add(p.getType()); }
+			|
+			an=annotation{ annotations.append(an.tag, an); }
 		)*
 		RCURLY
-		{ ts = new TypeStruct(getContext(t), id.getText(), names, types); }
+		{ ts = TypeStruct.creator(getContext(t), id.getText(), names, types, annotations).create(); }
 	;

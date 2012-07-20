@@ -1108,7 +1108,7 @@ public class SemanticChecker
 	public void checkVariableUsage(Program prog)
 	{
 		prog.accept(new SymbolTableVisitor(null) {
-
+            boolean inFieldDecl = false;
 
 			public Object visitStmtVarDecl(StmtVarDecl stmt)
 			{
@@ -1122,6 +1122,22 @@ public class SemanticChecker
 				}
 				return super.visitStmtVarDecl(stmt);
 			}
+
+            public Object visitExprVar(ExprVar ev) {
+                if (inFieldDecl) {
+                    report(ev,
+                            "You can not use non-final global variables as initializers to other global variables.");
+                }
+                return ev;
+            }
+
+            public Object visitFieldDecl(FieldDecl fd) {
+                assert !inFieldDecl;
+                inFieldDecl = true;
+                Object o = super.visitFieldDecl(fd);
+                inFieldDecl = false;
+                return o;
+            }
 
 
 
@@ -1336,7 +1352,7 @@ public class SemanticChecker
                                     ct);
                 }
             case ExprBinary.BINOP_ADD:
-                if (!(ct.promotesTo(TypePrimitive.inttype)))
+                if (!(ct.promotesTo(TypePrimitive.doubletype)))
 				report(expr,
 						"cannot perform arithmetic on " + ct);
 			break;

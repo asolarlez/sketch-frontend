@@ -11,6 +11,8 @@ import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprNamedParam;
+import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -248,6 +250,39 @@ public class EliminateDeadCode extends BackwardDataflow {
     }
 
 	@Override
+    public Object visitExprNew(ExprNew expNew) {
+        Type nt = (Type) expNew.getTypeToConstruct().accept(this);
+        boolean changed = false;
+        List<ExprNamedParam> enl =
+                new ArrayList<ExprNamedParam>(expNew.getParams().size());
+
+        abstractValue av = vtype.CONST(0);
+        for (ExprNamedParam epar : expNew.getParams()) {
+            Expression old = epar.getExpr();
+            av = vtype.plus(av, (abstractValue) epar.getExpr().accept(this));
+            if (old != exprRV) {
+                enl.add(new ExprNamedParam(epar, epar.getName(), exprRV));
+                changed = true;
+            } else {
+                enl.add(epar);
+            }
+        }
+
+        if (isReplacer) {
+            if (nt != expNew.getTypeToConstruct() || changed) {
+                if (!changed) {
+                    enl = expNew.getParams();
+                }
+                exprRV = new ExprNew(expNew, nt, enl);
+            } else {
+                exprRV = expNew;
+            }
+        }
+
+        return av;
+    }
+
+    @Override
 	public Object visitExprFunCall(ExprFunCall exp){
 		Iterator actualParams = exp.getParams().iterator();
 		while(actualParams.hasNext()){

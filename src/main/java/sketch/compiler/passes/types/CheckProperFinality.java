@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.TypeErrorException;
 
@@ -19,6 +20,7 @@ public class CheckProperFinality extends SymbolTableVisitor {
 
     Map<String, Finality> fieldFinality = new HashMap<String, SymbolTable.Finality>();
 
+    int verbosity;
     public Finality getFieldFinality(String struct, String field) {
         String fname = nres.getStructName(struct) + "." + field;
         if (fieldFinality.containsKey(fname)) {
@@ -36,8 +38,10 @@ public class CheckProperFinality extends SymbolTableVisitor {
     FEReplacer markAsFinal = new FEReplacer() {
         public Object visitExprVar(ExprVar ev) {
             Finality f = symtab.lookupFinality(ev.getName(), ev);
-            if (f == Finality.UNKNOWN) {
-                System.out.println(ev.getCx() + ": Making final " + ev);
+            if (f == Finality.UNKNOWN || f == Finality.FIRSTWRITE) {
+                if (verbosity > 4) {
+                    System.out.println(ev.getCx() + ": Making final " + ev);
+                }
                 symtab.setFinality(ev.getName(), Finality.FINAL, ev);
             }
             if (f == Finality.NOTFINAL) {
@@ -58,13 +62,19 @@ public class CheckProperFinality extends SymbolTableVisitor {
             String struct = tb.toString();
             Finality f = getFieldFinality(struct, ef.getName());
             if (f == Finality.UNKNOWN) {
-                System.out.println(ef.getCx() + ": Making final " + ef);
+                if (verbosity > 4) {
+                    System.out.println(ef.getCx() + ": Making final " + ef);
+                }
                 setFieldFinality(struct, ef.getName(), Finality.FINAL);
             }
             if (f == Finality.NOTFINAL) {
                 throw new TypeErrorException(ef.getCx() + ": Using final field " + ef +
                         " in the LHS of an assignment.");
             }
+            if (f == Finality.FIRSTWRITE) {
+                assert false : "This is a bug";
+            }
+
             return ef;
         }
     };
@@ -92,6 +102,9 @@ public class CheckProperFinality extends SymbolTableVisitor {
                 throw new TypeErrorException(ef.getCx() + ": Using final field " + ef +
                         " in the LHS of an assignment.");
             }
+            if (f == Finality.FIRSTWRITE) {
+                assert false : "This is a bug";
+            }
             return ef;
         }
 
@@ -99,6 +112,9 @@ public class CheckProperFinality extends SymbolTableVisitor {
 
             Finality f = symtab.lookupFinality(ev.getName(), ev);
             if (f == Finality.UNKNOWN) {
+                symtab.setFinality(ev.getName(), Finality.FIRSTWRITE, ev);
+            }
+            if (f == Finality.FIRSTWRITE) {
                 symtab.setFinality(ev.getName(), Finality.NOTFINAL, ev);
             }
             if (f == Finality.FINAL) {
@@ -111,6 +127,7 @@ public class CheckProperFinality extends SymbolTableVisitor {
 
     public CheckProperFinality() {
         super(null);
+        verbosity = SketchOptions.getSingleton().debugOpts.verbosity;
     }
 
     @Override

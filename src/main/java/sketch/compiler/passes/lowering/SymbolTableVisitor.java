@@ -278,7 +278,7 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
 
         if (changed) {
-            return new TypeStruct(ts.getCudaMemType(), ts.getContext(), ts.getName(), map);
+            return ts.creator().fields(map).create();
         } else {
             return ts;
         }

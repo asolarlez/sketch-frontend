@@ -47,7 +47,7 @@ public class SymbolTable
 {
 
     public enum Finality {
-        FINAL, NOTFINAL, UNKNOWN;
+        FINAL, FIRSTWRITE, NOTFINAL, UNKNOWN;
         public Finality join(Finality other) {
             if (this == other) {
                 return this;

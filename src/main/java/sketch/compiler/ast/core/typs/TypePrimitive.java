@@ -186,18 +186,21 @@ public class TypePrimitive extends Type
  {
         case TYPE_BIT:
             return t2 == TYPE_SIGINT || t2 == TYPE_BIT || t2 == TYPE_INT ||
-                        t2 == TYPE_FLOAT;
+                        t2 == TYPE_FLOAT || t2 == TYPE_DOUBLE;
         case TYPE_INT:
-                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT;
+                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
+                        t2 == TYPE_DOUBLE;
         case TYPE_SIGINT:
-                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT;
+                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
+                        t2 == TYPE_DOUBLE;
         case TYPE_FLOAT:
-                return t2 == TYPE_FLOAT;
+                return t2 == TYPE_FLOAT || t2 == TYPE_DOUBLE;
 
         case TYPE_INT16:
         case TYPE_INT8:
         case TYPE_INT64:
-                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT;
+                return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
+                        t2 == TYPE_DOUBLE;
         case TYPE_ANYTYPE:
         	return true;
         case TYPE_NULLPTR:
