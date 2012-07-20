@@ -1,0 +1,1399 @@
+#define a 0
+#define b 1
+#define mid1e 2
+#define mid1f 3
+#define mide 4
+#define midf 5
+#define x 6
+#define null 7
+#define undef 8
+
+struct state{
+int head;
+int temp1;
+int temp2;
+int temp3;
+int[7] next;
+bit isEmpty;
+}
+
+void setInitialState(state initState, int i){
+initState.head = null;
+initState.temp1 = null;
+initState.temp2 = null;
+initState.temp3 = null;
+initState.next[a] = undef;
+initState.next[b] = undef;
+initState.next[mid1e] = undef;
+initState.next[mid1f] = undef;
+initState.next[mide] = undef;
+initState.next[midf] = undef;
+initState.next[x] = undef;
+if(i==0){
+initState.head = a;
+initState.next[a] = midf;
+initState.next[mide] = b;
+initState.next[b] = null;
+}
+if(i==1){
+initState.head = a;
+initState.next[a] = b;
+initState.next[b] = null;
+}
+if(i==2){
+initState.head = a;
+initState.next[a] = null;
+}
+if(i==3){
+initState.head = null;
+}
+}
+
+void assertFinalState(state finalState, int i){
+if(finalState.isEmpty == 0){
+if(i==0){
+assert finalState.head == b && finalState.next[a] == null && finalState.next[mid1e] == a && finalState.next[b] == mid1f;
+}
+if(i==1){
+assert finalState.head == b && finalState.next[a] == null && finalState.next[b] == a;
+}
+if(i==2){
+assert finalState.head == a && finalState.next[a] == null;
+}
+if(i==3){
+assert finalState.head == null;
+}
+}
+}
+
+ void assertNoGhostLocation(state fromState){
+}
+
+void spec(int[5] choice){
+}
+
+
+
+
+//skip
+void fc1(state fromState, int choice){
+return;
+}
+
+//head = temp1
+void fc2(state fromState, int choice){
+assert fromState.temp1 != undef;
+fromState.head = fromState.temp1;
+}
+
+//head = temp2
+void fc3(state fromState, int choice){
+assert fromState.temp2 != undef;
+fromState.head = fromState.temp2;
+}
+
+//head = temp3
+void fc4(state fromState, int choice){
+assert fromState.temp3 != undef;
+fromState.head = fromState.temp3;
+}
+
+//temp1 = head
+void fc5(state fromState, int choice){
+assert fromState.head != undef;
+fromState.temp1 = fromState.head;
+}
+
+//temp1 = temp2
+void fc6(state fromState, int choice){
+assert fromState.temp2 != undef;
+fromState.temp1 = fromState.temp2;
+}
+
+//temp1 = temp3
+void fc7(state fromState, int choice){
+assert fromState.temp3 != undef;
+fromState.temp1 = fromState.temp3;
+}
+
+//temp2 = head
+void fc8(state fromState, int choice){
+assert fromState.head != undef;
+fromState.temp2 = fromState.head;
+}
+
+//temp2 = temp1
+void fc9(state fromState, int choice){
+assert fromState.temp1 != undef;
+fromState.temp2 = fromState.temp1;
+}
+
+//temp2 = temp3
+void fc10(state fromState, int choice){
+assert fromState.temp3 != undef;
+fromState.temp2 = fromState.temp3;
+}
+
+//temp3 = head
+void fc11(state fromState, int choice){
+assert fromState.head != undef;
+fromState.temp3 = fromState.head;
+}
+
+//temp3 = temp1
+void fc12(state fromState, int choice){
+assert fromState.temp1 != undef;
+fromState.temp3 = fromState.temp1;
+}
+
+//temp3 = temp2
+void fc13(state fromState, int choice){
+assert fromState.temp2 != undef;
+fromState.temp3 = fromState.temp2;
+}
+
+//head = head.next
+void fc14(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.head = fromState.next[fromState.head];
+}
+
+//head = temp1.next
+void fc15(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.head = fromState.next[fromState.temp1];
+}
+
+//head = temp2.next
+void fc16(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.head = fromState.next[fromState.temp2];
+}
+
+//head = temp3.next
+void fc17(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.head = fromState.next[fromState.temp3];
+}
+
+//temp1 = head.next
+void fc18(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.temp1 = fromState.next[fromState.head];
+}
+
+//temp1 = temp1.next
+void fc19(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.temp1 = fromState.next[fromState.temp1];
+}
+
+//temp1 = temp2.next
+void fc20(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.temp1 = fromState.next[fromState.temp2];
+}
+
+//temp1 = temp3.next
+void fc21(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.temp1 = fromState.next[fromState.temp3];
+}
+
+//temp2 = head.next
+void fc22(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.temp2 = fromState.next[fromState.head];
+}
+
+//temp2 = temp1.next
+void fc23(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.temp2 = fromState.next[fromState.temp1];
+}
+
+//temp2 = temp2.next
+void fc24(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.temp2 = fromState.next[fromState.temp2];
+}
+
+//temp2 = temp3.next
+void fc25(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.temp2 = fromState.next[fromState.temp3];
+}
+
+//temp3 = head.next
+void fc26(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.temp3 = fromState.next[fromState.head];
+}
+
+//temp3 = temp1.next
+void fc27(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.temp3 = fromState.next[fromState.temp1];
+}
+
+//temp3 = temp2.next
+void fc28(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.temp3 = fromState.next[fromState.temp2];
+}
+
+//temp3 = temp3.next
+void fc29(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.temp3 = fromState.next[fromState.temp3];
+}
+
+//head.next = head
+void fc30(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.head != undef;
+fromState.next[fromState.head] = fromState.head;
+}
+
+//head.next = temp1
+void fc31(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.temp1 != undef;
+fromState.next[fromState.head] = fromState.temp1;
+}
+
+//head.next = temp2
+void fc32(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.temp2 != undef;
+fromState.next[fromState.head] = fromState.temp2;
+}
+
+//head.next = temp3
+void fc33(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.temp3 != undef;
+fromState.next[fromState.head] = fromState.temp3;
+}
+
+//temp1.next = head
+void fc34(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.head != undef;
+fromState.next[fromState.temp1] = fromState.head;
+}
+
+//temp1.next = temp1
+void fc35(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.temp1 != undef;
+fromState.next[fromState.temp1] = fromState.temp1;
+}
+
+//temp1.next = temp2
+void fc36(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.temp2 != undef;
+fromState.next[fromState.temp1] = fromState.temp2;
+}
+
+//temp1.next = temp3
+void fc37(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.temp3 != undef;
+fromState.next[fromState.temp1] = fromState.temp3;
+}
+
+//temp2.next = head
+void fc38(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.head != undef;
+fromState.next[fromState.temp2] = fromState.head;
+}
+
+//temp2.next = temp1
+void fc39(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.temp1 != undef;
+fromState.next[fromState.temp2] = fromState.temp1;
+}
+
+//temp2.next = temp2
+void fc40(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.temp2 != undef;
+fromState.next[fromState.temp2] = fromState.temp2;
+}
+
+//temp2.next = temp3
+void fc41(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.temp3 != undef;
+fromState.next[fromState.temp2] = fromState.temp3;
+}
+
+//temp3.next = head
+void fc42(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.head != undef;
+fromState.next[fromState.temp3] = fromState.head;
+}
+
+//temp3.next = temp1
+void fc43(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.temp1 != undef;
+fromState.next[fromState.temp3] = fromState.temp1;
+}
+
+//temp3.next = temp2
+void fc44(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.temp2 != undef;
+fromState.next[fromState.temp3] = fromState.temp2;
+}
+
+//temp3.next = temp3
+void fc45(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.temp3 != undef;
+fromState.next[fromState.temp3] = fromState.temp3;
+}
+
+//head.next = temp1.next
+void fc46(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.next[fromState.head] = fromState.next[fromState.temp1];
+}
+
+//head.next = temp2.next
+void fc47(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.next[fromState.head] = fromState.next[fromState.temp2];
+}
+
+//head.next = temp3.next
+void fc48(state fromState, int choice){
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.next[fromState.head] = fromState.next[fromState.temp3];
+}
+
+//temp1.next = head.next
+void fc49(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.next[fromState.temp1] = fromState.next[fromState.head];
+}
+
+//temp1.next = temp2.next
+void fc50(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.next[fromState.temp1] = fromState.next[fromState.temp2];
+}
+
+//temp1.next = temp3.next
+void fc51(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.next[fromState.temp1] = fromState.next[fromState.temp3];
+}
+
+//temp2.next = head.next
+void fc52(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.next[fromState.temp2] = fromState.next[fromState.head];
+}
+
+//temp2.next = temp1.next
+void fc53(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.next[fromState.temp2] = fromState.next[fromState.temp1];
+}
+
+//temp2.next = temp3.next
+void fc54(state fromState, int choice){
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.next[fromState.temp3] != undef ;
+fromState.next[fromState.temp2] = fromState.next[fromState.temp3];
+}
+
+//temp3.next = head.next
+void fc55(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.head != null;
+assert fromState.head != undef;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+assert fromState.next[fromState.head] != undef ;
+fromState.next[fromState.temp3] = fromState.next[fromState.head];
+}
+
+//temp3.next = temp1.next
+void fc56(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+assert fromState.next[fromState.temp1] != undef ;
+fromState.next[fromState.temp3] = fromState.next[fromState.temp1];
+}
+
+//temp3.next = temp2.next
+void fc57(state fromState, int choice){
+assert fromState.temp3 != null;
+assert fromState.temp3 != undef;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+assert fromState.temp2 != null;
+assert fromState.temp2 != undef;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+assert fromState.next[fromState.temp2] != undef ;
+fromState.next[fromState.temp3] = fromState.next[fromState.temp2];
+}
+
+//true
+void fc58(state fromState, int choice){
+}
+
+//false
+void fc59(state fromState, int choice){
+fromState.isEmpty = 1;
+}
+
+//head != null
+void fc60(state fromState, int choice){
+if(fromState.head == null)
+fromState.isEmpty = 1;
+}
+
+//temp1 != null
+void fc61(state fromState, int choice){
+if(fromState.temp1 == null)
+fromState.isEmpty = 1;
+}
+
+//temp2 != null
+void fc62(state fromState, int choice){
+if(fromState.temp2 == null)
+fromState.isEmpty = 1;
+}
+
+//temp3 != null
+void fc63(state fromState, int choice){
+if(fromState.temp3 == null)
+fromState.isEmpty = 1;
+}
+
+// unfold head 
+void fc64(state fromState, int choice){
+if(fromState.head == midf){
+if(choice == 0){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = midf;
+}
+ else if(choice == 1){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = fromState.next[mide];
+fromState.next[mide] = undef;
+}
+ else assert false;
+}
+}
+
+// unfold temp1 
+void fc65(state fromState, int choice){
+if(fromState.temp1 == midf){
+if(choice == 0){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = midf;
+}
+ else if(choice == 1){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = fromState.next[mide];
+fromState.next[mide] = undef;
+}
+ else assert false;
+}
+}
+
+// unfold temp2 
+void fc66(state fromState, int choice){
+if(fromState.temp2 == midf){
+if(choice == 0){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = midf;
+}
+ else if(choice == 1){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = fromState.next[mide];
+fromState.next[mide] = undef;
+}
+ else assert false;
+}
+}
+
+// unfold temp3 
+void fc67(state fromState, int choice){
+if(fromState.temp3 == midf){
+if(choice == 0){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = midf;
+}
+ else if(choice == 1){
+if(fromState.head == midf) fromState.head = x;
+if(fromState.temp1 == midf) fromState.temp1 = x;
+if(fromState.temp2 == midf) fromState.temp2 = x;
+if(fromState.temp3 == midf) fromState.temp3 = x;
+if (fromState.next[a] == midf) fromState.next[a] = x;
+if (fromState.next[b] == midf) fromState.next[b] = x;
+if (fromState.next[mid1e] == midf) fromState.next[mid1e] = x;
+if (fromState.next[mid1f] == midf) fromState.next[mid1f] = x;
+if (fromState.next[mide] == midf) fromState.next[mide] = x;
+if (fromState.next[midf] == midf) fromState.next[midf] = x;
+if (fromState.next[x] == midf) fromState.next[x] = x;
+fromState.next[x] = fromState.next[mide];
+fromState.next[mide] = undef;
+}
+ else assert false;
+}
+}
+
+// fold head 
+void fc68(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+if(fromState.head == x){
+if (prevState.next[x] == mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[x] = undef;
+}
+ else if (prevState.next[x] != mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[mid1e] = fromState.next[x];
+fromState.next[x] = undef;
+}
+ else assert false;
+}
+}
+
+// fold temp1 
+void fc69(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+if(fromState.temp1 == x){
+if (prevState.next[x] == mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[x] = undef;
+}
+ else if (prevState.next[x] != mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[mid1e] = fromState.next[x];
+fromState.next[x] = undef;
+}
+ else assert false;
+}
+}
+
+// fold temp2 
+void fc70(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+if(fromState.temp2 == x){
+if (prevState.next[x] == mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[x] = undef;
+}
+ else if (prevState.next[x] != mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[mid1e] = fromState.next[x];
+fromState.next[x] = undef;
+}
+ else assert false;
+}
+}
+
+// fold temp3 
+void fc71(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+if(fromState.temp3 == x){
+if (prevState.next[x] == mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[x] = undef;
+}
+ else if (prevState.next[x] != mid1f) {
+if(fromState.head == x) fromState.head = mid1f;
+if(fromState.temp1 == x) fromState.temp1 = mid1f;
+if(fromState.temp2 == x) fromState.temp2 = mid1f;
+if(fromState.temp3 == x) fromState.temp3 = mid1f;
+if (fromState.next[a] == x) fromState.next[a] = mid1f;
+if (fromState.next[b] == x) fromState.next[b] = mid1f;
+if (fromState.next[mid1e] == x) fromState.next[mid1e] = mid1f;
+if (fromState.next[mid1f] == x) fromState.next[mid1f] = mid1f;
+if (fromState.next[mide] == x) fromState.next[mide] = mid1f;
+if (fromState.next[midf] == x) fromState.next[midf] = mid1f;
+if (fromState.next[x] == x) fromState.next[x] = mid1f;
+fromState.next[mid1e] = fromState.next[x];
+fromState.next[x] = undef;
+}
+ else assert false;
+}
+}
+
+void copystate(state fromState, state toState){
+toState.head = fromState.head;
+toState.temp1 = fromState.temp1;
+toState.temp2 = fromState.temp2;
+toState.temp3 = fromState.temp3;
+toState.next[a] = fromState.next[a];
+toState.next[b] = fromState.next[b];
+toState.next[mid1e] = fromState.next[mid1e];
+toState.next[mid1f] = fromState.next[mid1f];
+toState.next[mide] = fromState.next[mide];
+toState.next[midf] = fromState.next[midf];
+toState.next[x] = fromState.next[x];
+toState.isEmpty = fromState.isEmpty;
+}
+void f1(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+if(c1==0) rhs = fromState.head;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) rhs = fromState.temp2;
+if(c1==3) rhs = fromState.temp3;
+if(c1==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+rhs = fromState.next[fromState.head];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+rhs = fromState.next[fromState.temp1];}
+if(c1==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+rhs = fromState.next[fromState.temp2];}
+if(c1==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+rhs = fromState.next[fromState.temp3];}
+if(c2==0) fromState.head = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) fromState.temp2 = rhs;
+if(c2==3) fromState.temp3 = rhs;
+if(c2==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+fromState.next[fromState.head] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+fromState.next[fromState.temp1] = rhs;}
+if(c2==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+fromState.next[fromState.temp2] = rhs;}
+if(c2==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+fromState.next[fromState.temp3] = rhs;}
+}
+void f6(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+if(c1==0) rhs = fromState.head;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) rhs = fromState.temp2;
+if(c1==3) rhs = fromState.temp3;
+if(c1==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+rhs = fromState.next[fromState.head];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+rhs = fromState.next[fromState.temp1];}
+if(c1==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+rhs = fromState.next[fromState.temp2];}
+if(c1==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+rhs = fromState.next[fromState.temp3];}
+if(c2==0) fromState.head = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) fromState.temp2 = rhs;
+if(c2==3) fromState.temp3 = rhs;
+if(c2==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+fromState.next[fromState.head] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+fromState.next[fromState.temp1] = rhs;}
+if(c2==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+fromState.next[fromState.temp2] = rhs;}
+if(c2==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+fromState.next[fromState.temp3] = rhs;}
+}
+void f7(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+if(c1==0) rhs = fromState.head;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) rhs = fromState.temp2;
+if(c1==3) rhs = fromState.temp3;
+if(c1==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+rhs = fromState.next[fromState.head];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+rhs = fromState.next[fromState.temp1];}
+if(c1==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+rhs = fromState.next[fromState.temp2];}
+if(c1==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+rhs = fromState.next[fromState.temp3];}
+if(c2==0) fromState.head = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) fromState.temp2 = rhs;
+if(c2==3) fromState.temp3 = rhs;
+if(c2==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+fromState.next[fromState.head] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+fromState.next[fromState.temp1] = rhs;}
+if(c2==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+fromState.next[fromState.temp2] = rhs;}
+if(c2==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+fromState.next[fromState.temp3] = rhs;}
+}
+void f8(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+if(c1==0) rhs = fromState.head;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) rhs = fromState.temp2;
+if(c1==3) rhs = fromState.temp3;
+if(c1==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+rhs = fromState.next[fromState.head];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+rhs = fromState.next[fromState.temp1];}
+if(c1==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+rhs = fromState.next[fromState.temp2];}
+if(c1==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+rhs = fromState.next[fromState.temp3];}
+if(c2==0) fromState.head = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) fromState.temp2 = rhs;
+if(c2==3) fromState.temp3 = rhs;
+if(c2==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+fromState.next[fromState.head] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+fromState.next[fromState.temp1] = rhs;}
+if(c2==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+fromState.next[fromState.temp2] = rhs;}
+if(c2==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+fromState.next[fromState.temp3] = rhs;}
+}
+void f9(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+if(c1==0) rhs = fromState.head;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) rhs = fromState.temp2;
+if(c1==3) rhs = fromState.temp3;
+if(c1==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+rhs = fromState.next[fromState.head];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+rhs = fromState.next[fromState.temp1];}
+if(c1==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+rhs = fromState.next[fromState.temp2];}
+if(c1==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+rhs = fromState.next[fromState.temp3];}
+if(c2==0) fromState.head = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) fromState.temp2 = rhs;
+if(c2==3) fromState.temp3 = rhs;
+if(c2==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+fromState.next[fromState.head] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+fromState.next[fromState.temp1] = rhs;}
+if(c2==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+fromState.next[fromState.temp2] = rhs;}
+if(c2==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+fromState.next[fromState.temp3] = rhs;}
+}
+void f10(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |};
+if(c1==0) rhs = fromState.head;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) rhs = fromState.temp2;
+if(c1==3) rhs = fromState.temp3;
+if(c1==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+rhs = fromState.next[fromState.head];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+rhs = fromState.next[fromState.temp1];}
+if(c1==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+rhs = fromState.next[fromState.temp2];}
+if(c1==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+rhs = fromState.next[fromState.temp3];}
+if(c2==0) fromState.head = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) fromState.temp2 = rhs;
+if(c2==3) fromState.temp3 = rhs;
+if(c2==4) {assert fromState.head < null;
+assert fromState.head != mid1f;
+assert fromState.head != midf;
+fromState.next[fromState.head] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != mid1f;
+assert fromState.temp1 != midf;
+fromState.next[fromState.temp1] = rhs;}
+if(c2==6) {assert fromState.temp2 < null;
+assert fromState.temp2 != mid1f;
+assert fromState.temp2 != midf;
+fromState.next[fromState.temp2] = rhs;}
+if(c2==7) {assert fromState.temp3 < null;
+assert fromState.temp3 != mid1f;
+assert fromState.temp3 != midf;
+fromState.next[fromState.temp3] = rhs;}
+}
+void f2(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc58(fromState, choice); return;}
+if({|true|false|}) {fc59(fromState, choice); return;}
+if({|true|false|}) {fc60(fromState, choice); return;}
+if({|true|false|}) {fc61(fromState, choice); return;}
+if({|true|false|}) {fc62(fromState, choice); return;}
+fc63(fromState,choice); return;
+}
+void f5(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+f2(fromState, choice);
+if(fromState.isEmpty == 1) fromState.isEmpty = 0;
+else fromState.isEmpty = 1; return;
+}
+void f3(state fromState, int choice){
+assert choice < 2;
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc64(fromState, choice); return;}
+if({|true|false|}) {fc65(fromState, choice); return;}
+if({|true|false|}) {fc66(fromState, choice); return;}
+fc67(fromState,choice); return;
+}
+void f4(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc68(fromState, choice); return;}
+if({|true|false|}) {fc69(fromState, choice); return;}
+if({|true|false|}) {fc70(fromState, choice); return;}
+fc71(fromState,choice); return;
+}
+
+
+void loop_exit_constraint(int[5] choice) implements spec{
+state initState;
+initState = new state();
+if(choice[0] >= 4) choice[0] = 0;
+setInitialState(initState, choice[0]);
+f1(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[4] >= 2) choice[4] = 0;
+f3(initState, choice[4]);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[3] >= 2) choice[3] = 0;
+f3(initState, choice[3]);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+f3(initState, ??);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+f3(initState, ??);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+if(initState.isEmpty) initState.isEmpty = 0;
+f5(initState, 0);
+assert initState.isEmpty == 0;
+assertFinalState(initState, choice[0]);
+}
+
+void trace_constraint(int[5] choice) implements spec{
+state initState;
+initState = new state();
+if(choice[0] >= 4) choice[0] = 0;
+setInitialState(initState, choice[0]);
+f1(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[4] >= 2) choice[4] = 0;
+f3(initState, choice[4]);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[3] >= 2) choice[3] = 0;
+f3(initState, choice[3]);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[2] >= 2) choice[2] = 0;
+f3(initState, choice[2]);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[1] >= 2) choice[1] = 0;
+f3(initState, choice[1]);
+f6(initState, 0);
+f7(initState, 0);
+f8(initState, 0);
+f9(initState, 0);
+f10(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+if(initState.isEmpty) initState.isEmpty = 0;
+f5(initState, 0);
+assertFinalState(initState, choice[0]);
+}
