@@ -1,0 +1,24 @@
+pragma options "--bnd-inbits 2 --bnd-arr-size 16 --bnd-unroll-amnt 16";
+
+struct Mat{
+    int r;
+    int c;
+    int[c][r] M;
+}
+
+
+int min(int a, int b){
+    return (a<b)?a : b;
+}
+
+
+harness int[10][10] foo(int r, int c){
+    Mat m = new Mat(r=r, c=c);        
+    int[m.c][m.r] M=m.M;       
+    int[10][10] out;
+    assert min(m.c, 10) <= m.c;
+    for(int i=0; i<min(m.r, 10); ++i){      
+        out[i] = M[i][0::min(m.c, 10)];
+    }
+    return out;
+}

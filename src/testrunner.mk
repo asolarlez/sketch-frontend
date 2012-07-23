@@ -22,7 +22,7 @@ long: ${ALLSK:.sk=.eout}
 	ls mini*.sk | sed 's\.sk\.eout\g'> ref
 	grep 'passed' *.eout | tr ':' ' ' | awk '{ print $$1; }' > cur
 	echo "LISTED BELOW ARE THE FAILED TESTS (IF ANY)"
-	diff -w cur ref > result; cat result; wc `cat result | awk '/>/{print $$2}' | sed 's/\.output/\.sk/g'`
+	diff -w cur ref > result; cat result; wc `(cat result | awk '/>/{print $$2}' | sed 's/\.output/\.sk/g');echo "cur"`
 	echo "END OF LIST"
 	rm cur
 	

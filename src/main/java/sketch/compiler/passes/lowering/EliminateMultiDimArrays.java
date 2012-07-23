@@ -237,10 +237,20 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
             Expression cdim = dims.get(dims.size() - 1);
             if (cdim != null) {
-                Expression cond =
-                        new ExprBinary(
-                                new ExprBinary(rl.start(), ">=", ExprConstInt.zero),
-                                "&&", new ExprBinary(rl.start(), "<", cdim));
+                Expression cond = null;
+                if (rl.getLenExpression() == null) {
+                    cond =
+                            new ExprBinary(new ExprBinary(rl.start(), ">=",
+                                    ExprConstInt.zero), "&&", new ExprBinary(rl.start(),
+                                    "<", cdim));
+                } else {
+                    cond =
+                            new ExprBinary(new ExprBinary(rl.start(), ">=",
+                                    ExprConstInt.zero), "&&",
+                                    new ExprBinary(new ExprBinary(rl.start(), "+",
+                                            rl.getLenExpression()), "<=", cdim));
+                }
+
                 addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
                         false));
             }

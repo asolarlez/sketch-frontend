@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.Type;
@@ -30,6 +31,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
     public String outputStructure(TypeStruct struct){
         String result = "";
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
         for (Annotation a : struct.getAnnotation("NeedsInclude")) {
             preIncludes += a.contents() + "\n";
         }
@@ -70,6 +74,8 @@ public class NodesToSuperH extends NodesToSuperCpp {
                 result += ", ";
             }
             result += indent + typeForDecl(entry.getValue()) + " _" + entry.getKey();
+            symtab.registerVar("_" + entry.getKey(), actualType(entry.getValue()),
+                    struct, SymbolTable.KIND_LOCAL);
             if (entry.getValue() instanceof TypeArray) {
                 result += ", int " + entry.getKey() + "_len";
             }
@@ -119,6 +125,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         unIndent();
         result += indent + "};\n";
+        symtab = oldSymTab;
         return result;
     }
 

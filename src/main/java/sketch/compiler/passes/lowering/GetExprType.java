@@ -18,6 +18,7 @@ package sketch.compiler.passes.lowering;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENullVisitor;
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
@@ -268,15 +269,16 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprField(ExprField exp)
     {
+        final ExprField fexp = exp;
         Type base = (Type)exp.getLeft().accept(this);
+        TypeStruct ts = null;
         if (base instanceof TypeStruct)
-            return ((TypeStruct)base).getType(exp.getName());
+            ts = ((TypeStruct) base);
         else if (base instanceof TypeStructRef)
         {
             String name = ((TypeStructRef)base).getName();
-            TypeStruct str = nres.getStruct(name);
-            assert str != null : base;
-            return str.getType(exp.getName());
+            ts = nres.getStruct(name);
+            assert ts != null : base;
         }
         else
         {
@@ -284,6 +286,12 @@ public class GetExprType extends FENullVisitor
                     ": You are trying to do a field access on a " + base + " in expr " +
                     exp + " . " + exp);
         }
+        FEReplacer repVars = new FEReplacer() {
+            public Object visitExprVar(ExprVar ev) {
+                return new ExprField(fexp.getLeft(), ev.getName());
+            }
+        };
+        return (Type) ts.getType(exp.getName()).accept(repVars);
     }
 
     public Object visitExprFunCall(ExprFunCall exp)
