@@ -19,6 +19,8 @@ import sketch.compiler.ast.core.stmts.StmtFunDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
@@ -35,6 +37,9 @@ public class RemoveFunctionParameters extends FEReplacer {
         final TreeSet<String> dependence;
 
         public ParamInfo(Type pt, TreeSet<String> dependence) {
+            if (pt instanceof TypeStruct) {
+                pt = new TypeStructRef(((TypeStruct) pt).getFullName());
+            }
             this.pt = pt;
             this.dependence = dependence;
         }
@@ -336,6 +341,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                     return exp;
                 }
 
+                public Object visitTypeStruct(TypeStruct ts) {
+                    return ts;
+                }
+
                 public Object visitExprFunCall(ExprFunCall efc) {
                     if (extractedInnerFuns.containsKey(nres.getFunName(efc.getName()))) {
                         nres.getFun(efc.getName()).accept(this);
@@ -350,7 +359,11 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitStmtFunDecl(StmtFunDecl sfd) {
-            String newName = sfd.getDecl().getName() + (++nfcnt);
+            String oldName = sfd.getDecl().getName();
+            String newName = oldName + (++nfcnt);
+            while (nres.getFun(newName) != null) {
+                newName = oldName + (++nfcnt);
+            }
             frmap.declRepl(sfd.getDecl().getName(), newName);
             Function f = sfd.getDecl();
             Function newFun = f.creator().name(newName).create();
@@ -442,6 +455,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         return null;
     }
 
+    Map<String, String> nfnMemoize = new HashMap<String, String>();
     String newFunName(ExprFunCall efc, Function orig) {
         String name = orig.getName();
         if (efc.getParams().size() != orig.getParams().size()) {
@@ -455,8 +469,20 @@ public class RemoveFunctionParameters extends FEReplacer {
                 name += "_" + actual.toString();
             }
         }
-        return name;
+
+        String oldName = name;
+        String newName = name;
+        if (nfnMemoize.containsKey(oldName)) {
+            return nfnMemoize.get(oldName);
+        }
+        while (nres.getFun(newName) != null) {
+            newName = oldName + (++nfcnt);
+        }
+        nfnMemoize.put(oldName, newName);
+        return newName;
     }
+
+    int nfcnt = 0;
 
     void addEquivalence(String old, String newName) {
         if (!equivalences.containsKey(old)) {

@@ -31,18 +31,21 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new MakeBodiesBlocks());
         // dump (prog, "MBB:");
-        prog =
-                (Program) prog.accept(new EliminateStructs(varGen,
- new ExprConstInt(
-                        options.bndOpts.arrSize)));
 
-        prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         prog = stencilTransform.visitProgram(prog);
 
+        prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
+
+        prog =
+                (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
+                        options.bndOpts.arrSize)));
+
+
+        prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+
         // dump (prog, "After Stencilification.");
 
-        prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
 
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
         // prog.debugDump("After ERS");
@@ -58,9 +61,8 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         // By default, we don't protect array accesses in SKETCH
 
-        if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
-            prog =
-                    (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
+        prog =
+                (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
                             FailurePolicy.ASSERTION, varGen));
 
         prog =

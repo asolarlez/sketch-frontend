@@ -73,8 +73,8 @@ public class NodesToSuperH extends NodesToSuperCpp {
             } else {
                 result += ", ";
             }
-            result += indent + typeForDecl(entry.getValue()) + " _" + entry.getKey();
-            symtab.registerVar("_" + entry.getKey(), actualType(entry.getValue()),
+            result += indent + typeForDecl(entry.getValue()) + " " + entry.getKey() + "_";
+            symtab.registerVar(entry.getKey() + "_", actualType(entry.getValue()),
                     struct, SymbolTable.KIND_LOCAL);
             if (entry.getValue() instanceof TypeArray) {
                 result += ", int " + entry.getKey() + "_len";
@@ -87,7 +87,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         FEReplacer fer = new FEReplacer() {
             public Object visitExprVar(ExprVar ev) {
                 if (fmap.containsKey(ev.getName())) {
-                    return new ExprVar(ev, "_" + ev.getName());
+                    return new ExprVar(ev, ev.getName() + "_");
                 } else {
                     return ev;
                 }
@@ -106,10 +106,11 @@ public class NodesToSuperH extends NodesToSuperCpp {
                                 lenString + "]" + ";\n";
                 result +=
                         indent +
-                        "CopyArr(" + entry.getKey() + ", _" + entry.getKey() + ", " +
+ "CopyArr(" + entry.getKey() + ", " + entry.getKey() +
+                                "_, " +
  lenString + ", " + entry.getKey() + "_len ); \n";
             } else {
-                result += indent + entry.getKey() + " = " + " _" + entry.getKey() + ";\n";
+                result += indent + entry.getKey() + " = " + " " + entry.getKey() + "_;\n";
             }
         }
 

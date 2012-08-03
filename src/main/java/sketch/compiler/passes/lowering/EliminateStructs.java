@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -222,7 +223,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	public Object visitExprField (ExprField ef) {
 
         Type t = this.actualType(getType(ef.getLeft()));
-		if (false == t.isStruct ()) {
+        if (!t.isStruct()) {
 			ef.report ("Trying to read field of non-struct variable.");
 			throw new RuntimeException ("reading field of non-struct");
 		}
@@ -231,8 +232,8 @@ public class EliminateStructs extends SymbolTableVisitor {
                 structs.get(nres.getStructName(((TypeStruct) t).getName()));
 		String field = ef.getName ();
 
-		return new ExprArrayRange (ef, struct.getFieldArray (field),
-				(Expression) ef.getLeft ().accept (this));
+        return struct.getFieldAccess(ef, field, (Expression) ef.getLeft().accept(this));
+
 	}
 
 	/**
@@ -256,7 +257,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         int i = 0;
         for (ExprNamedParam en : expNew.getParams()) {
             Expression lhs =
-                    new ExprArrayRange(expNew, struct.getFieldArray(en.getName()),
+                    struct.getLHSFieldAccess(expNew, en.getName(),
                             struct.nextInstancePointer);
             addStatement(new StmtAssign(lhs, rhs.get(i)));
             ++i;
@@ -333,12 +334,39 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 * @author Chris Jones
 	 */
 	private class StructTracker {
+
 		private TypeStruct struct;
 		private TypeStructRef sref;
 		private FENode cx;
         // private final ExprVar heapSzVar;
         private final ExprVar nextInstancePointer;
         private final Map<String, ExprVar> fieldArrays;
+
+        private class FieldInfo {
+            final boolean isArray;
+            final Expression maxLen;
+            final Expression realLen;
+
+            FieldInfo(boolean isArray, Expression maxLen, Expression realLen) {
+                this.isArray = isArray;
+                this.maxLen = maxLen;
+                this.realLen = realLen;
+            }
+        }
+
+        Expression getFieldMaxLen(String field) {
+            return fieldInfo.get(field).maxLen;
+        }
+
+        Expression getFieldRealLen(String field) {
+            return fieldInfo.get(field).realLen;
+        }
+
+        boolean isFieldArr(String field) {
+            return fieldInfo.get(field).isArray;
+        }
+
+        private final Map<String, FieldInfo> fieldInfo;
         MakeArrFieldsConst mafc;
 
         // private final String heapsize;
@@ -355,7 +383,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public StructTracker (TypeStruct struct_,
  FENode cx_, TempVarGen varGen,
-                Expression maxArrSz)
+                final Expression maxArrSz)
         {
 
             // this.heapsize = heapsize;
@@ -370,12 +398,37 @@ public class EliminateStructs extends SymbolTableVisitor {
                             "nextInstance_"));
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
+            fieldInfo = new HashMap<String, FieldInfo>();
             mafc = new MakeArrFieldsConst(maxArrSz);
+            FEReplacer compMaxes = new FEReplacer() {
+                public Object visitExprField(ExprField ev) {
+                    return maxArrSz;
+                }
+                public Object visitExprVar(ExprVar ev) {
+                    return maxArrSz;
+                }
+            };
             for (Entry<String, Type> entry : struct) {
                 fieldArrays.put(
                         entry.getKey(),
                         new ExprVar(cx, varGen.nextVar("_" + struct.getName() + "_" +
                                 entry.getKey() + "_")));
+                if (entry.getValue() instanceof TypeArray) {
+                    TypeArray ta = (TypeArray) entry.getValue();
+                    Integer ii = ta.getLength().getIValue();
+                    if (ii != null) {
+                        fieldInfo.put(entry.getKey(), new FieldInfo(true, ta.getLength(),
+                                ta.getLength()));
+                    } else {
+                        fieldInfo.put(
+                                entry.getKey(),
+                                new FieldInfo(true, (Expression) ta.getLength().accept(
+                                        compMaxes), ta.getLength()));
+                    }
+                } else {
+                    fieldInfo.put(entry.getKey(), new FieldInfo(false, null, null));
+                }
+
             }
 	    }
 
@@ -451,6 +504,51 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    public Expression getFieldArray (String field) {
 	    	return fieldArrays.get (field);
 	    }
+
+        public Expression getFieldAccess(FENode cx, String field, final Expression basePtr)
+        {
+            if (isFieldArr(field)) {
+                FEReplacer switchFields = new FEReplacer() {
+                    Type lastType;
+                    public Object visitExprField(ExprField ev) {
+                        Expression base = (Expression) ev.getLeft().accept(this);
+                        TypeStruct ts = (TypeStruct) lastType;
+                        NameResolver lnr = EliminateStructs.this.nres;
+                        StructTracker struct =
+                                structs.get(lnr.getStructName((ts).getName()));
+                        lastType = actualType(ts.getType(ev.getName()));
+                        return new ExprArrayRange(ev, struct.getFieldArray(ev.getName()),
+                                base);
+                    }
+
+                    public Object visitExprVar(ExprVar ev) {
+                        String nm = ev.getName();
+                        lastType = actualType(struct.getType(nm));
+                        return new ExprArrayRange(ev, getFieldArray(nm), basePtr);
+                    }
+                };
+                RangeLen rl =
+                        new RangeLen(new ExprBinary(basePtr, "*", getFieldMaxLen(field)),
+                                (Expression) getFieldRealLen(field).accept(switchFields));
+                return new ExprArrayRange(cx, getFieldArray(field), rl);
+            } else {
+                return new ExprArrayRange(cx, getFieldArray(field), basePtr);
+            }
+	    }
+
+        public Expression getLHSFieldAccess(FENode cx, String field,
+                final Expression basePtr)
+        {
+            if (isFieldArr(field)) {
+                RangeLen rl =
+                        new RangeLen(new ExprBinary(basePtr, "*", getFieldMaxLen(field)),
+                                getFieldMaxLen(field));
+                return new ExprArrayRange(cx, getFieldArray(field), rl);
+            } else {
+                return new ExprArrayRange(cx, getFieldArray(field), basePtr);
+            }
+        }
+
 
 	    /**
 	     * @return 	Declarations for new variables created by eliminating
@@ -531,7 +629,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return
 	     */
 	    private Type typeofFieldArr (String field) {
-            Type fieldType = (Type) struct.getType(field).accept(mafc);
+            Type fieldType = (Type) struct.getType(field); // .accept(mafc);
+            if (fieldType instanceof TypeArray) {
+                fieldType = ((TypeArray) fieldType).getAbsoluteBase();
+            }
 	    	return new TypeArray (
 	    		//fieldType.isStruct () ? TypePrimitive.inttype : 
 	    			fieldType,

@@ -43,7 +43,7 @@ void main_fun(int n) implements VOID{
 	
 		
 	if(n > 1){
-		node t = {| x(.next)?(.next)?(.next)?(.next)? |};
-		assert t.val == 1;
+		node t0 = {| x(.next)?(.next)?(.next)?(.next)? |};
+		assert t0.val == 1;
 	}
 }

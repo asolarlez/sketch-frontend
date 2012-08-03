@@ -12,6 +12,8 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.fcns.ZipIdxEnt;
 
@@ -28,6 +30,213 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
  */
 public class TypeInferenceForStars extends SymbolTableVisitor {
 
+
+    class UpgradeStarToInt extends FEReplacer {
+        private final SymbolTableVisitor stv;
+        Type type;
+
+        UpgradeStarToInt(SymbolTableVisitor stv, Type type) {
+            this.stv = stv;
+            this.type = type;
+        }
+
+        public Object visitExprStar(ExprStar star) {
+            if (!star.typeWasSetByScala) {
+                // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
+                star.setType(type);
+            } else {
+                printNote("skipping setting star type", star, type);
+            }
+            return star;
+        }
+
+        public Object visitExprTernary(ExprTernary exp) {
+            Type oldType = type;
+            type = TypePrimitive.bittype;
+            Expression a = doExpression(exp.getA());
+            type = oldType;
+            Expression b = doExpression(exp.getB());
+            Expression c = doExpression(exp.getC());
+            if (a == exp.getA() && b == exp.getB() && c == exp.getC())
+                return exp;
+            else
+                return new ExprTernary(exp, exp.getOp(), a, b, c);
+        }
+
+        public Object visitTypeArray(TypeArray t) {
+            Type nbase = (Type) t.getBase().accept(this);
+            Expression nlen = null;
+            if (t.getLength() != null) {
+                Type oldType = type;
+                type = TypePrimitive.inttype;
+                nlen = (Expression) t.getLength().accept(this);
+                type = oldType;
+            }
+            if (nbase == t.getBase() && t.getLength() == nlen)
+                return t;
+            return new TypeArray(nbase, nlen, t.getMaxlength());
+        }
+
+        public Object visitExprBinary(ExprBinary exp) {
+            switch (exp.getOp()) {
+                case ExprBinary.BINOP_GE:
+                case ExprBinary.BINOP_GT:
+                case ExprBinary.BINOP_LE:
+                case ExprBinary.BINOP_LT: {
+                    Type oldType = type;
+                    type = TypePrimitive.inttype;
+                    Expression left = doExpression(exp.getLeft());
+                    Expression right = doExpression(exp.getRight());
+                    type = oldType;
+                    if (left == exp.getLeft() && right == exp.getRight())
+                        return exp;
+                    else
+                        return new ExprBinary(exp, exp.getOp(), left, right,
+                                exp.getAlias());
+                }
+                case ExprBinary.BINOP_LSHIFT:
+                case ExprBinary.BINOP_RSHIFT: {
+                    Expression left = doExpression(exp.getLeft());
+                    Type oldType = type;
+                    type = TypePrimitive.inttype;
+                    Expression right = doExpression(exp.getRight());
+                    type = oldType;
+                    if (left == exp.getLeft() && right == exp.getRight())
+                        return exp;
+                    else
+                        return new ExprBinary(exp, exp.getOp(), left, right,
+                                exp.getAlias());
+                }
+                case ExprBinary.BINOP_NEQ:
+                case ExprBinary.BINOP_EQ: {
+                    Type tleft = stv.getType(exp.getLeft());
+                    Type tright = stv.getType(exp.getRight());
+                    Type tboth = tleft.leastCommonPromotion(tright);
+                    Type oldType = type;
+                    type = tboth;
+                    Expression left = doExpression(exp.getLeft());
+                    Expression right = doExpression(exp.getRight());
+                    type = oldType;
+                    if (left == exp.getLeft() && right == exp.getRight())
+                        return exp;
+                    else
+                        return new ExprBinary(exp, exp.getOp(), left, right,
+                                exp.getAlias());
+                }
+
+                default:
+                    return super.visitExprBinary(exp);
+            }
+        }
+
+        public Object visitStmtLoop(StmtLoop stmt) {
+            Type oldType = type;
+            type = TypePrimitive.inttype;
+            Expression newIter = doExpression(stmt.getIter());
+            type = oldType;
+            Statement newBody = (Statement) stmt.getBody().accept(this);
+            if (newIter == stmt.getIter() && newBody == stmt.getBody())
+                return stmt;
+            return new StmtLoop(stmt, newIter, newBody);
+        }
+
+        public Object visitExprNew(ExprNew expNew) {
+            Type nt = (Type) expNew.getTypeToConstruct().accept(this);
+            TypeStruct ts = null;
+            if (nt instanceof TypeStruct) {
+                ts = (TypeStruct) nt;
+            } else {
+                assert nt instanceof TypeStructRef;
+                ts =
+                        TypeInferenceForStars.this.nres.getStruct(((TypeStructRef) nt).getName());
+            }
+
+            boolean changed = false;
+            List<ExprNamedParam> enl =
+                    new ArrayList<ExprNamedParam>(expNew.getParams().size());
+            for (ExprNamedParam en : expNew.getParams()) {
+                Expression old = en.getExpr();
+                Type oldType = type;
+                type = ts.getFieldTypMap().get(en.getName());
+                Expression rhs = doExpression(old);
+                if (rhs != old) {
+                    enl.add(new ExprNamedParam(en, en.getName(), rhs));
+                    changed = true;
+                } else {
+                    enl.add(en);
+                }
+                type = oldType;
+            }
+
+            if (nt != expNew.getTypeToConstruct() || changed) {
+                if (!changed) {
+                    enl = expNew.getParams();
+                }
+                return new ExprNew(expNew, nt, enl);
+            } else {
+                return expNew;
+            }
+        }
+
+        public Object visitExprArrayInit(ExprArrayInit eai) {
+            Type oldType = type;
+            assert type instanceof TypeArray;
+            type = ((TypeArray) type).getBase();
+            List<Expression> le = new ArrayList<Expression>();
+            boolean change = false;
+            for (Expression e : eai.getElements()) {
+                Expression newElem = doExpression(e);
+                le.add(newElem);
+                if (newElem != e) {
+                    change = true;
+                }
+            }
+            type = oldType;
+            if (change) {
+                return new ExprArrayInit(eai, le);
+            }
+            return eai;
+        }
+
+        public Object visitExprArrayRange(ExprArrayRange exp) {
+            boolean change = false;
+            Type oType = type;
+            RangeLen range = exp.getSelection();
+            Expression l = range.getLenExpression();
+            if (l == null) {
+                l = ExprConstInt.one;
+                type = new TypeArray(type, new ExprBinary(range.start(), "+", l));
+            }
+            Expression newBase = doExpression(exp.getBase());
+            type = oType;
+            if (newBase != exp.getBase())
+                change = true;
+
+            Expression newStart = null;
+            {
+                Type oldType = type;
+                type = TypePrimitive.inttype;
+                newStart = doExpression(range.start());
+                type = oldType;
+            }
+            if (newStart != range.start())
+                change = true;
+
+            Expression newLen = null;
+            if (range.hasLen()) {
+                Type oldType = type;
+                type = TypePrimitive.inttype;
+                newLen = doExpression(range.getLenExpression());
+                type = oldType;
+            }
+            if (range.getLenExpression() != newLen)
+                change = true;
+
+            if (!change)
+                return exp;
+            return new ExprArrayRange(exp, newBase, new RangeLen(newStart, newLen));
+        }
+    }
 
 	public TypeInferenceForStars(){
 		super(null);
@@ -171,166 +380,3 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	}
 }
 
-class UpgradeStarToInt extends FEReplacer{
-	private final SymbolTableVisitor stv;
-	Type type;
-	UpgradeStarToInt(SymbolTableVisitor stv, Type type){
-		this.stv = stv;
-		this.type = type;
-	}
-
-	public Object visitExprStar(ExprStar star) {
-	    if (!star.typeWasSetByScala) {
-	        // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
-	        star.setType(type);
-	    } else {
-	        printNote("skipping setting star type", star, type);
-	    }
-		return star;
-	}
-
-    public Object visitExprTernary(ExprTernary exp)
-    {
-    	Type oldType = type;
-    	type = TypePrimitive.bittype;
-        Expression a = doExpression(exp.getA());
-        type = oldType;
-        Expression b = doExpression(exp.getB());
-        Expression c = doExpression(exp.getC());
-        if (a == exp.getA() && b == exp.getB() && c == exp.getC())
-            return exp;
-        else
-            return new ExprTernary(exp, exp.getOp(), a, b, c);
-    }
-
-    public Object visitTypeArray(TypeArray t) {
-        Type nbase = (Type) t.getBase().accept(this);
-        Expression nlen = null;
-        if (t.getLength() != null) {
-            Type oldType = type;
-            type = TypePrimitive.inttype;
-            nlen = (Expression) t.getLength().accept(this);
-            type = oldType;
-        }
-        if (nbase == t.getBase() && t.getLength() == nlen)
-            return t;
-        return new TypeArray(nbase, nlen, t.getMaxlength());
-    }
-
-    public Object visitExprBinary(ExprBinary exp)
-    {
-		switch(exp.getOp()){
-        case ExprBinary.BINOP_GE:
-        case ExprBinary.BINOP_GT:
-        case ExprBinary.BINOP_LE:
-        case ExprBinary.BINOP_LT:{
-        	Type oldType = type;
-        	type = TypePrimitive.inttype;
-        	Expression left = doExpression(exp.getLeft());
-            Expression right = doExpression(exp.getRight());
-            type = oldType;
-            if (left == exp.getLeft() && right == exp.getRight())
-                return exp;
-            else
-                return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
-        }
-        case ExprBinary.BINOP_LSHIFT:
-        case ExprBinary.BINOP_RSHIFT:{
-        	Expression left = doExpression(exp.getLeft());
-        	Type oldType = type;
-        	type = TypePrimitive.inttype;
-            Expression right = doExpression(exp.getRight());
-            type = oldType;
-            if (left == exp.getLeft() && right == exp.getRight())
-                return exp;
-            else
-                return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
-        }
-        case ExprBinary.BINOP_NEQ:
-        case ExprBinary.BINOP_EQ:{
-        	Type tleft = stv.getType(exp.getLeft());
-        	Type tright = stv.getType(exp.getRight());
-        	Type tboth = tleft.leastCommonPromotion(tright);
-        	Type oldType = type;
-        	type = tboth;
-        	Expression left = doExpression(exp.getLeft());
-            Expression right = doExpression(exp.getRight());
-            type = oldType;
-            if (left == exp.getLeft() && right == exp.getRight())
-                return exp;
-            else
-                return new ExprBinary(exp, exp.getOp(), left, right,  exp.getAlias());
-        }
-
-
-        default:
-        	return super.visitExprBinary(exp);
-		}
-    }
-    public Object visitStmtLoop(StmtLoop stmt)
-    {
-    	Type oldType = type;
-    	type = TypePrimitive.inttype;
-        Expression newIter = doExpression(stmt.getIter());
-        type = oldType;
-        Statement newBody = (Statement)stmt.getBody().accept(this);
-        if (newIter == stmt.getIter() && newBody == stmt.getBody())
-            return stmt;
-        return new StmtLoop(stmt, newIter, newBody);
-    }
-
-
-    public Object visitExprArrayInit(ExprArrayInit eai){
-        Type oldType = type;
-        assert type instanceof TypeArray;
-        type = ((TypeArray)type).getBase();
-        List<Expression> le = new ArrayList<Expression>();
-        boolean change = false;
-        for(Expression e : eai.getElements()){
-            Expression 
-            newElem=doExpression(e);
-            le.add(newElem);
-            if(newElem != e){ change = true; }
-        }
-        type = oldType;
-        if(change){ return new ExprArrayInit(eai, le);}
-        return eai;
-    }
-    
-    
-    public Object visitExprArrayRange(ExprArrayRange exp){
-    	boolean change=false;
-    	Type oType = type;
-    	RangeLen range=exp.getSelection();
-    	Expression l = range.getLenExpression();
-    	if(l == null){ 
-    	    l = ExprConstInt.one;
-    	    type = new TypeArray(type, new ExprBinary(range.start(), "+", l));
-    	}     
-		Expression newBase=doExpression(exp.getBase());
-		type = oType;
-		if(newBase!=exp.getBase()) change=true;
-		
-		
-        Expression newStart = null;
-        {
-            Type oldType = type;
-            type = TypePrimitive.inttype;
-            newStart=doExpression(range.start());
-            type = oldType;
-        }
-        if(newStart!=range.start()) change=true;
-        
-        Expression newLen = null;
-        if(range.hasLen()){
-            Type oldType = type;
-            type = TypePrimitive.inttype;
-            newLen=doExpression(range.getLenExpression());
-            type = oldType;
-        }
-        if(range.getLenExpression() != newLen) change = true;
-		
-		if(!change) return exp;
-		return new ExprArrayRange(exp, newBase,new RangeLen(newStart, newLen));
-    }
-}

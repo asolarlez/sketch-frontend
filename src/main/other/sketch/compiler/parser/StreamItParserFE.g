@@ -191,8 +191,14 @@ program	 returns [Program p]
         )*
 		EOF
 		{
+			if(pkgName == null){
+				pkgName="ANONYMOUS";
+			}
+			for(TypeStruct struct : structs){
+				struct.setPkg(pkgName);	
+			}
 			 StreamSpec ss=new StreamSpec(pkgCtxt, 
- 				pkgName == null ? "ANONYMOUS" : pkgName,
+ 				pkgName,
  				structs, vars, funcs);
  				namespaces.add(ss);
                 if (!hasError) {

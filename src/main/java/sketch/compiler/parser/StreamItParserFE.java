@@ -340,8 +340,14 @@ inputState.guessing--;
 				match(Token.EOF_TYPE);
 				if ( inputState.guessing==0 ) {
 					
+								if(pkgName == null){
+									pkgName="ANONYMOUS";
+								}
+								for(TypeStruct struct : structs){
+									struct.setPkg(pkgName);	
+								}
 								 StreamSpec ss=new StreamSpec(pkgCtxt, 
-									pkgName == null ? "ANONYMOUS" : pkgName,
+									pkgName,
 									structs, vars, funcs);
 									namespaces.add(ss);
 					if (!hasError) {

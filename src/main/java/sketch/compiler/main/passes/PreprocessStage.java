@@ -63,7 +63,6 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
         // dump (prog, "fpe:");
 
-
         prog = ir1.run(prog);
 
 
@@ -83,8 +82,6 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
-
-
 
         if (partialEval) {
             prog =

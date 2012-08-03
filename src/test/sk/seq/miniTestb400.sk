@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 2 --bnd-arr-size 16 --bnd-unroll-amnt 16";
+pragma options "--bnd-inbits 2 --bnd-arr-size 4 --bnd-unroll-amnt 16";
 
 int NDCNT=0;
 
@@ -24,7 +24,7 @@ struct FileHandle{
 
 @Native("{ FileHandle* f = new FileHandle(\"miniTestb398.in\"); _out = f; }")
 FileHandle getFile(){
-    return new FileHandle(maxReads=getND()*2);
+    return new FileHandle(maxReads=getND()*4+getND());
 }
 
 @Native("{ _out = fh->goon; }")
@@ -66,24 +66,11 @@ Mat matFromFile(FileHandle fh){
 
 
 
-Mat matFromFileB(FileHandle fh){
-    if(!moreValues(fh)){ return null; }
-    int r = readInt(fh);
-    if(!moreValues(fh)){ return null; }
-    int c = readInt(fh);
-    int[{|r|c|}][{|r|c|}] M;
-    for(int i=0; i<r; ++i){
-        for(int j=0; j<c; ++j){
-            if(!moreValues(fh)){ return null; }
-            M[i][j]= readInt(fh);
-        }
-    }
-    return new Mat(r=r, c=c, M=M);
-}
 
 int min(int a, int b){
     return (a<b)?a : b;
 }
+
 
 harness int[10][10] foo(){
     FileHandle fh = getFile();

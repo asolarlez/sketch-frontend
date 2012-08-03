@@ -472,6 +472,7 @@ public class SequentialSketchMain extends CommonSketchMain
         }
 
         prog = (getBeforeSemanticCheckStage()).run(prog);
+
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
 

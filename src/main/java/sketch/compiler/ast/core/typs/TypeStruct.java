@@ -52,6 +52,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
 {
     private final FEContext context;
     private final String name;
+    private String pkg;
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
     private HashmapList<String, Annotation> annotations =
             new HashmapList<String, Annotation>();
@@ -70,6 +71,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
 
     public static class TStructCreator {
         private String name;
+        private String pkg;
         private ImmutableTypedHashMap<String, Type> fieldTypMap;
         private Object base;
         private HashmapList<String, Annotation> annotations;
@@ -82,6 +84,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         public TStructCreator(TypeStruct ts) {
             base = ts;
             name = ts.name;
+            pkg = ts.pkg;
             fieldTypMap = ts.fieldTypMap;
             annotations = ts.annotations;
             typ = ts.getCudaMemType();
@@ -93,6 +96,11 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         }
         public TStructCreator name(final String name) {
             this.name = name;
+            return this;
+        }
+
+        public TStructCreator pkg(final String pkg) {
+            this.pkg = pkg;
             return this;
         }
 
@@ -121,14 +129,24 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
 
         public TypeStruct create() {
             if (base == null || base instanceof FEContext) {
-                return new TypeStruct(typ, (FEContext) base, name, fieldTypMap,
+                return new TypeStruct(typ, (FEContext) base, name, pkg, fieldTypMap,
                         annotations);
             } else {
-                return new TypeStruct(typ, ((TypeStruct) base).getContext(), name,
+                return new TypeStruct(typ, ((TypeStruct) base).getContext(), name, pkg,
                         fieldTypMap,
                         annotations);
             }
         }
+    }
+
+    /**
+     * This method should only be called by the parser when the TypeStruct is first
+     * created. After that, the field should be considered immutable.
+     * 
+     * @param pkg
+     */
+    public void setPkg(String pkg) {
+        this.pkg = pkg;
     }
 
     public static TStructCreator creator(FEContext ctx, String name, List<String> fields,
@@ -156,13 +174,14 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
      * @param ftypes
      *            list of <code>Type</code> containing the types of the fields
      */
-    public TypeStruct(CudaMemoryType typ, FEContext context, String name,
+    public TypeStruct(CudaMemoryType typ, FEContext context, String name, String pkg,
             List<String> fields, List<Type> ftypes,
             HashmapList<String, Annotation> annotations)
     {
         super(typ);
         this.context = context;
         this.name = name;
+        this.pkg = pkg;
         TypedHashMap<String, Type> types = new TypedHashMap<String, Type>();
         for (int i = 0; i < fields.size(); i++)
             types.put(fields.get(i), ftypes.get(i));
@@ -170,12 +189,13 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         this.annotations = annotations;
     }
 
-    public TypeStruct(CudaMemoryType typ, FEContext context, String name,
+    public TypeStruct(CudaMemoryType typ, FEContext context, String name, String pkg,
             TypedHashMap<String, Type> map, HashmapList<String, Annotation> annotations)
     {
         super(typ);
         this.context = context;
         this.name = name;
+        this.pkg = pkg;
         this.fieldTypMap = map.immutable();
         this.annotations = annotations;
     }
@@ -202,6 +222,10 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
     public String getName()
     {
         return name;
+    }
+
+    public String getFullName() {
+        return name + '@' + pkg;
     }
 
     /**
@@ -297,7 +321,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
          * fieldTypMap.entrySet()) { fields2.put(v.getKey(),
          * v.getValue().withMemType(memtyp)); }
          */
-        return new TypeStruct(memtyp, context, name, fieldTypMap, annotations);
+        return new TypeStruct(memtyp, context, name, pkg, fieldTypMap, annotations);
     }
 
     public ImmutableTypedHashMap<String, Type> getFieldTypMap() {

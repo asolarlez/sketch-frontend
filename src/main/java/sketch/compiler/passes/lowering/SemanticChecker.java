@@ -1112,10 +1112,13 @@ public class SemanticChecker
 
 			public Object visitStmtVarDecl(StmtVarDecl stmt)
 			{
-				// Check: none of the locals shadow stream parameters.
+                // Check: none of the locals shadow other variables.
 				for (int i = 0; i < stmt.getNumVars(); i++)
 				{
 					String name = stmt.getName(i);
+                    if (symtab.hasVar(name)) {
+                        report(stmt, "Shadowing of variables is not allowed");
+                    }
 					/*if (isStreamParam(name))
 						report(stmt,
 						"local variable shadows stream parameter");*/

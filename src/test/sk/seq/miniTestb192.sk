@@ -16,7 +16,7 @@ int sketch(int x, int y) implements spec{
 	int aa = (g==2) ? tt : 0;
 	int b = (g==2) ? aa + 1 : 0;	
 	int a = (g==3) ? b : d;
-	int x = (h==4) ? a : tt;
+	int x0 = (h==4) ? a : tt;
 	
-	return x;
+	return x0;
 }

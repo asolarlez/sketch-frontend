@@ -18,14 +18,7 @@ import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtExpr;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtLoop;
-import sketch.compiler.ast.core.stmts.StmtReturn;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -118,7 +111,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	}
 
 	private int inCpCounter;
-	private int outCounter;
+    // private int outCounter;
 	private Function currentFunction;
 	private ParameterCopyResolver paramCopyRes;
 	public boolean initOutputs=false;
@@ -148,7 +141,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
         Expression left = eb.getLeft(), right = eb.getRight();
 
         if (!(hasFunCall(left) || hasFunCall(right)))
-            return eb;
+            return (Expression) super.visitExprBinary(eb);
 
         boolean isAnd = eb.getOpString().equals("&&") || eb.getOpString().equals("&");
 
@@ -240,10 +233,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 	String rvname = null;
 	private String getNewOutID(String nm) {
+        varGen.nextVar(rvname);
 	    if(rvname != null && nm.contains("_out")){
-	        return rvname + "_r_"+(outCounter++);
+            return varGen.nextVar(rvname);// rvname + "_r" + (outCounter++);
 	    }else{
-	        return nm+"_r_"+(outCounter++);
+            return varGen.nextVar(nm);// nm + "_r" + (outCounter++);
 	    }
 	}
 
@@ -310,7 +304,55 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 	Set<String> currentRefParams = new HashSet<String>();
 
+    String retVar = null;
+
+    public Object visitExprVar(ExprVar ev) {
+        if (ev.getName().equals(retVar)) {
+            return new ExprVar(ev, getOutParamName());
+        }
+        return ev;
+    }
+
+    public Object visitStmtVarDecl(StmtVarDecl stmt) {
+        List<Expression> newInits = new ArrayList<Expression>();
+        List<Type> newTypes = new ArrayList<Type>();
+        List<String> newNames = new ArrayList<String>();
+        boolean changed = false;
+        for (int i = 0; i < stmt.getNumVars(); i++) {
+            if (stmt.getName(i).equals(retVar)) {
+                changed = true;
+                if (stmt.getInit(i) != null) {
+                    addStatement(new StmtAssign(new ExprVar(stmt, getOutParamName()),
+                            doExpression(stmt.getInit(i))));
+                }
+                continue;
+            }
+            symtab.registerVar(stmt.getName(i), actualType(stmt.getType(i)), stmt,
+                    SymbolTable.KIND_LOCAL);
+            Expression oinit = stmt.getInit(i);
+            Expression init = null;
+            if (oinit != null)
+                init = doExpression(oinit);
+            Type ot = stmt.getType(i);
+            Type t = (Type) ot.accept(this);
+            if (ot != t || oinit != init) {
+                changed = true;
+            }
+            newInits.add(init);
+            newTypes.add(t);
+            newNames.add(stmt.getName(i));
+        }
+        if (!changed) {
+            return stmt;
+        }
+        if (newNames.size() == 0) {
+            return null;
+        }
+        return new StmtVarDecl(stmt, newTypes, newNames, newInits);
+    }
+
 	public Object visitFunction(Function func) {
+        retVar = null;
 		if(func.isUninterp() ) return func;
 
 		{
@@ -323,10 +365,105 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				}
 			}
 		}
+        final String bad = "BAD";
+        FEReplacer retVarPop = new FEReplacer() {
+            public Object visitStmtReturn(StmtReturn sr) {
+                if (retVar == bad) {
+                    return sr;
+                }
+                if (sr.getValue() instanceof ExprVar) {
+                    String cname = ((ExprVar) sr.getValue()).getName();
+                    if (retVar == null) {
+                        retVar = cname;
+                    } else {
+                        if (!cname.equals(retVar)) {
+                            retVar = bad;
+                        }
+                    }
+                } else {
+                    retVar = bad;
+                }
+                return sr;
+            }
+        };
+        func.getBody().accept(retVarPop);
+        if (retVar == bad) {
+            retVar = null;
+        }
+        if (retVar != null) {
+            FEReplacer checkProperDecl = new FEReplacer() {
+                boolean hasDecl = false;
 
+                public Object visitParameter(Parameter par) {
+                    if (par.getName().equals(retVar)) {
+                        retVar = null;
+                    }
+                    return par;
+                }
 
+                public Object visitStmtReturn(StmtReturn sr) {
+                    if (!hasDecl) {
+                        retVar = null;
+                    }
+                    return sr;
+                }
+
+                boolean isForDecl = false;
+
+                public Object visitStmtFor(StmtFor stmt) {
+                    Statement newInit = null;
+                    boolean tmpisfd = isForDecl;
+                    isForDecl = true;
+                    if (stmt.getInit() != null) {
+                        newInit = (Statement) stmt.getInit().accept(this);
+                    }
+                    isForDecl = tmpisfd;
+                    Expression newCond = doExpression(stmt.getCond());
+                    Statement newIncr = null;
+                    if (stmt.getIncr() != null) {
+                        newIncr = (Statement) stmt.getIncr().accept(this);
+                    }
+                    Statement tmp = stmt.getBody();
+                    Statement newBody = StmtEmpty.EMPTY;
+                    if (tmp != null) {
+                        newBody = (Statement) tmp.accept(this);
+                    }
+
+                    if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
+                            newIncr == stmt.getIncr() && newBody == stmt.getBody())
+                        return stmt;
+                    return new StmtFor(stmt, newInit, newCond, newIncr, newBody);
+                }
+
+                public Object visitStmtVarDecl(StmtVarDecl svd) {
+                    if (retVar == null) {
+                        return svd;
+                    }
+                    for (String nm : svd.getNames()) {
+                        if (nm.equals(retVar)) {
+                            if (hasDecl || isForDecl) {
+                                retVar = null;
+                            }
+                            hasDecl = true;
+                        }
+                    }
+                    return svd;
+                }
+
+                public Object visitStmtBlock(StmtBlock sb) {
+                    if (retVar == null) {
+                        return sb;
+                    }
+                    boolean lhd = hasDecl;
+                    Object o = super.visitStmtBlock(sb);
+                    hasDecl = lhd;
+                    return o;
+                }
+            };
+            func.accept(checkProperDecl);
+        }
 		currentFunction=func;
-			outCounter=0;
+        // outCounter=0;
 			inCpCounter=0;
 			func=(Function) super.visitFunction(func);
 		currentFunction=null;
@@ -471,6 +608,10 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		    return stmt;
 		}
 		
+        if (retVar != null) {
+            return new StmtReturn(stmt, null);
+        }
+
 		this.newStatements = new ArrayList<Statement> ();		
 		stmt=(StmtReturn) super.visitStmtReturn(stmt);
 		

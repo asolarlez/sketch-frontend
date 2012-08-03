@@ -9,8 +9,8 @@ harness void main(int i){
     int[3][4] w = {tt,??,??,tt };
     assert w[i+1-i+2]==w[1];
     
-    int[2] tt = ??;
-    int[3][4] x = {{1,2,3},tt,??,??};
+    int[2] ty = ??;
+    int[3][4] x = {{1,2,3},ty,??,??};
     assert x[i+1-i+2]==w[1];
     
 }

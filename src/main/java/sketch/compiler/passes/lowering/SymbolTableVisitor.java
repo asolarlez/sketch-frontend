@@ -30,6 +30,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtImplicitVarDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
@@ -235,6 +236,14 @@ public class SymbolTableVisitor extends FEReplacer
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
         Object result = super.visitStmtBlock(block);
+        symtab = oldSymTab;
+        return result;
+    }
+
+    public Object visitStmtFor(StmtFor stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        Object result = super.visitStmtFor(stmt);
         symtab = oldSymTab;
         return result;
     }
