@@ -1,0 +1,45 @@
+int N=5;
+int p1;
+int snapshot;
+
+
+void T1(){  
+   p1 = p1 + 1;
+   if(p1 >= N){ p1 = 0;}   
+}
+
+
+void T2(){
+   p1 = p1 -1;
+   if(p1 < 0){ p1 = N; }   
+}
+
+generator void run(int steps){
+  if(??){ T1(); }else{ T2(); }
+  if(??){
+    assert steps > 0;
+    run(steps - 1);
+  }else{
+    assert steps != 5;
+    assert p1 == snapshot;
+  }
+}
+
+
+void runGen(int steps){
+    run(steps);
+}
+
+harness void main(){
+ p1 = 0;
+ T1();
+ T1();
+ snapshot = p1;
+ runGen(5);
+ runGen(5);
+ runGen(5);
+ print(snapshot - p1);
+}
+
+@Native("{assert(i==0);}")
+void print(int i);

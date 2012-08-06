@@ -1,0 +1,19 @@
+bit papa = 1;
+
+harness void main(int i){
+    run(1);
+    print(papa);    
+}
+
+
+@Native("{assert(i==0);}")
+void print(int i);
+
+generator void run(int steps){
+    if(??==23){
+        papa = 0;
+    }else{
+        assert steps > 0;
+        run(steps - 1);      
+    }
+  }
