@@ -129,6 +129,7 @@ public class Function extends FENode {
     private final Statement body;
     private final String fImplements;
     private final FcnInfo fcnInfo;
+    private String pkg;
     private final HashmapList<String, Annotation> annotations;
 
     public Set<Entry<String, Vector<Annotation>>> annotationSet() {
@@ -138,6 +139,7 @@ public class Function extends FENode {
     public static class FunctionCreator {
         private Object base;
         private String name;
+        private String pkg;
         private Type returnType;
         private List<Parameter> params;
         private Statement body;
@@ -149,6 +151,7 @@ public class Function extends FENode {
         protected FunctionCreator(Function base) {
             this.base = base;
             this.name = base.name;
+            this.pkg = base.pkg;
             this.returnType = base.returnType;
             this.params = base.params;
             this.body = base.body;
@@ -170,6 +173,11 @@ public class Function extends FENode {
 
         public FunctionCreator name(final String name) {
             this.name = name;
+            return this;
+        }
+
+        public FunctionCreator pkg(final String pkg) {
+            this.pkg = pkg;
             return this;
         }
 
@@ -255,10 +263,12 @@ public class Function extends FENode {
 
         public Function create() {
             if (base == null || base instanceof FEContext) {
-                return new Function((FEContext) base, fcnInfo, name, returnType, params,
+                return new Function((FEContext) base, fcnInfo, name, pkg, returnType,
+                        params,
                         implementsName, body, annotations);
             } else {
-                return new Function((FENode) base, fcnInfo, name, returnType, params,
+                return new Function((FENode) base, fcnInfo, name, pkg, returnType,
+                        params,
                         implementsName, body, annotations);
             }
         }
@@ -276,13 +286,15 @@ public class Function extends FENode {
         return (new FunctionCreator(ctx)).name(name).type(type);
     }
 
-    protected Function(FENode context, FcnInfo fcnInfo, String name, Type returnType,
+    protected Function(FENode context, FcnInfo fcnInfo, String name, String pkg,
+            Type returnType,
             List<Parameter> params, String fImplements, Statement body,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
         this.fcnInfo = fcnInfo;
         this.name = nonnull(name, "It's not allowed to create a function without a name");
+        this.pkg = pkg;
         this.returnType = returnType;
         this.params = params;
         this.body = body;
@@ -292,7 +304,8 @@ public class Function extends FENode {
     }
 
     @SuppressWarnings("deprecation")
-    protected Function(FEContext context, FcnInfo fcnInfo, String name, Type returnType,
+    protected Function(FEContext context, FcnInfo fcnInfo, String name, String pkg,
+            Type returnType,
             List<Parameter> params, String fImplements, Statement body,
             HashmapList<String, Annotation> annotations)
     {
@@ -301,6 +314,7 @@ public class Function extends FENode {
         this.name = nonnull(name, "It's not allowed to create a function without a name");
         this.returnType = returnType;
         this.params = params;
+        this.pkg = pkg;
         this.body = body;
         this.fImplements = fImplements;
         this.annotations = annotations;
@@ -349,6 +363,14 @@ public class Function extends FENode {
      */
     public Statement getBody() {
         return body;
+    }
+
+    public void setPkg(String pkgName) {
+        pkg = pkgName;
+    }
+
+    public String getPkg() {
+        return pkg;
     }
 
     /**

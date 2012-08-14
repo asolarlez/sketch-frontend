@@ -244,8 +244,7 @@ public class EliminateStructs extends SymbolTableVisitor {
     			"Sorry, only structs are supported in 'new' statements.");
 
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
-        StructTracker struct = structs.get(nres.getStructName(name));
-
+        StructTracker struct = structs.get(nres.getStructName(name));        
         List<Expression> rhs = new ArrayList<Expression>();
         for (ExprNamedParam en : expNew.getParams()) {
             Expression tt = (Expression) en.getExpr().accept(this);
@@ -454,7 +453,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    public void registerAsParameters(SymbolTable symtab){
 	    	String nip = nextInstancePointer.getName ();
 	    	symtab.registerVar(nip,
-                    TypePrimitive.inttype,
+ this.struct,
                     nextInstancePointer,
                     SymbolTable.KIND_FUNC_PARAM);
 

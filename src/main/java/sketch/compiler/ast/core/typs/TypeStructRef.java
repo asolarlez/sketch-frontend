@@ -38,6 +38,14 @@ public class TypeStructRef extends Type
         this.name = name;
     }
 
+    public TypeStructRef addDefaultPkg(String pkg) {
+        if (name.indexOf('@') >= 0) {
+            return this;
+        } else {
+            return new TypeStructRef(name + "@" + pkg);
+        }
+    }
+
     /** Creates a new reference to a structured type. */
     public TypeStructRef(String name) {
         this(CudaMemoryType.UNDEFINED, name);

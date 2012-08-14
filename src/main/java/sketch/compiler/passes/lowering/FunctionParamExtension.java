@@ -560,7 +560,12 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				pmap.put(p.getName(), oldArg);
 			}else{
 				String tempVar = getNewOutID(p.getName());
-				Statement decl = new StmtVarDecl(exp, (Type)p.getType().accept(vrep), tempVar, oldArg);
+                Type tt = (Type) p.getType().accept(vrep);
+                if (tt instanceof TypeStructRef) {
+                    TypeStructRef tsf = (TypeStructRef) tt;
+                    tt = tsf.addDefaultPkg(fun.getPkg());
+                }
+                Statement decl = new StmtVarDecl(exp, tt, tempVar, oldArg);
 				ExprVar ev =new ExprVar(exp,tempVar);
 				args.add(ev);
 				pmap.put(p.getName(), ev);

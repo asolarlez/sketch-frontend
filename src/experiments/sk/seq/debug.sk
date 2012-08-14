@@ -1,234 +1,101 @@
-
-pragma options "--bnd-unroll-amnt 16 --bnd-inbits 2";
-
-// return A[i] where A is of length N 
-int get (int i, int N, int [N] A)
-{
-  assert i<N;
-  return A[i];
+struct FIFO{
+    int depth;
+    int cnt;
 }
 
-// append v to A, where A is of length N 
-int [N+1] appendInt (int v, int N, int [N] A)
-{
-  int[N+1] out;
-  out[0::N] = A;
-  out[N] = v;
-  return out;
+struct State{
+  FIFO x;
+  FIFO y;
+  FIFO z;
 }
 
-// top T entries of A of length N 
-int [T] top (int T, int N, int [N] A)
-{
-  if (T <= N)
-    return A[0::T];
-  else
-    return 0;
+bit compareFIFO(FIFO f1, FIFO f2){
+    return f1.depth==f2.depth && f1.cnt == f2.cnt;
 }
 
-// lists l1 with length l1Len and l2 with length l2Len are equal 
-bit intListEquals (int l1Len, int [l1Len] l1, int l2Len, int [l2Len] l2)
-{
-  return l1 == l2 && l1Len == l2Len;
+FIFO copyFIFO(FIFO f){
+  return new FIFO(depth=f.depth, cnt=f.cnt);
 }
 
-struct Tuple
-{
-  int first;
-  int second;
+FIFO enqFIFO(FIFO f){
+    assert(f.cnt < f.depth);
+    return new FIFO(depth=f.depth, cnt=f.cnt+1);
 }
 
-bit tupleListEquals (int l1Len, Tuple[l1Len] l1, int l2Len, Tuple[l2Len] l2)
-{
-  if (l1Len != l2Len)
-    return 0;
-
-  for (int i = 0; i < l1Len; ++i)
-  {
-    if (l1[i].first != l2[i].first || l1[i].second != l2[i].second)
-      return 0;
-  }
-
-  return 1 && l1Len == l2Len;
+FIFO deqFIFO(FIFO f){
+    assert(f.cnt > 0);
+    return new FIFO(depth=f.depth, cnt=f.cnt-1);
 }
 
-
-// append tuple to a tuple list
-Tuple [len+1] appendTuple (Tuple t, int len, Tuple [len] l)
-{
-  Tuple [len+1] out;
-  /*
-  out[0::len] = l;
-  out[len] = t;
-  */
-
-  for (int i = 0; i < len; ++i)
-  {
-    out[i] = new Tuple();
-    out[i].first = l[i].first;
-    out[i].second = l[i].second;
-  }
-
-  
-  out[len] = new Tuple();
-  out[len].second = t.second;
-  out[len].first = t.first;
-  
-  return out;
+bit compareState(State s1, State s2){
+    return compareFIFO(s1.x, s2.x) && compareFIFO(s1.y,s2.y) && compareFIFO(s1.z,s2.z);
 }
 
-// append l2 to the end of l1
-Tuple [len1 + len2] appendTupleList (int len1, Tuple [len1] l1, 
-                                     int len2, Tuple [len2] l2)
-{
-  
-  Tuple [len1 + len2] out;
-  out[0::len1] = l1;
-  out[len1::len2] = l2;
-  return out;
-  
+State copyState(State s){
+    return new State(x=copyFIFO(s.x), y=copyFIFO(s.y), z=copyFIFO(s.z));
+} 
+
+State newState(int d){
+    return new State(x=new FIFO(depth=d,cnt=0),y=new FIFO(depth=d,cnt=0),z=new FIFO(depth=d,cnt=0));
 }
-
-
-Tuple [len1 * len2] product (int len1, int [len1] l1, int len2, int [len2] l2)
-{
-  Tuple [len1 * len2] out;
-
-  for (int i = 0; i < len1; ++i)
-  {
-    for (int j = 0; j < len2; ++j)
-    {
-      int e1 = l1[i];
-      int e2 = l2[j];
-
-      Tuple t = new Tuple();
-      t.first = e1;
-      t.second = e2;
-
-      out[i * len2 + j] = t;
-    }
-  }
-
-  return out;
-}
-
-
-Tuple [len2] leftProduct (int v, int len2, int [len2] l2)
-{
-  //if (len2 <= 0)
-  //  return null;
-
-  Tuple [len2] out;
-
-  for (int j = 0; j < len2; ++j)
-  {
-    Tuple t = new Tuple();
-    t.first = v;
-    t.second = l2[j];
-
-    out[j] = t;
-  }
-
-  return out;
-}
-
-bit innerInvariant (int lenRet, Tuple [lenRet] ret, 
-                    int len1, int [len1] l1,
-                    int len2, int [len2] l2,
-                    int i, int j, int t1)
-{
-  Tuple [i*len2] previous = product(i, top(i, len1, l1), len2, l2);
-  Tuple [j] current = leftProduct(t1, j, top(j, len2, l2));
-  Tuple [i*len2+j] retEquals = appendTupleList(i*len2, previous, j, current);
-
-  return tupleListEquals(lenRet, ret, i*len2+j, retEquals) &&
-         i+1 <= len1 && t1 == get(i, len1, l1) && j <= len2;
-}
-
-bit outerInvariant (int lenRet, Tuple[lenRet] ret,
-                    int len1, int [len1] l1,
-                    int len2, int [len2] l2,
-                    int i)
-{
-  Tuple [i*len2] p = product(i, top(i, len1, l1), len2, l2);
-  return tupleListEquals(lenRet, ret, i*len2, p) &&
-         i <= len1;
-}
-           
-harness void sketch (int lenRet, int [lenRet] r1, int [lenRet] r2,
-                     int len1, int [len1] l1,
-                     int len2, int [len2] l2, 
-                     int j, int i, int t1)
-{
-  assert len2 >= 0;
-  assert len1 >= 0;
-  assert lenRet >= 0;
-
-  Tuple [lenRet] ret;
-  for (int m = 0; m < lenRet; ++m)
-  {
-    ret[m] = new Tuple();
-    ret[m].first = r1[m];
-    ret[m].second = r2[m];
-  }
-
-  
-  if (innerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) && 
-      j < len2)
-  {
     
-    Tuple newTuple = new Tuple();
-    newTuple.first = t1;
-    newTuple.second = l2[j];
-    
-    Tuple [lenRet+1] newRet = appendTuple(newTuple, lenRet, ret);
-    assert innerInvariant(lenRet+1, newRet, len1, l1, len2, l2, i, j+1, t1);
-  }
-  
-  if (innerInvariant(lenRet, ret, len1, l1, len2, l2, i, j, t1) &&
-      !(j < len2))
-  {
-    assert outerInvariant(lenRet, ret, len1, l1, len2, l2, i+1);
-  }
- 
-  if (outerInvariant(lenRet, ret, len1, l1, len2, l2, i) && i < len1)
-  {
-    assert innerInvariant(lenRet, ret, len1, l1, len2, l2, i, 0, get(i, len1, l1));
-  }
-
-  
-
-    
+State a(State state){
+    FIFO new_x = enqFIFO(state.x);
+    return new State(x=new_x,y=copyFIFO(state.y),z=copyFIFO(state.z));
 }
 
+State b(State state){
+    FIFO new_x = deqFIFO(state.x);
+    FIFO new_y = enqFIFO(state.y);
+    return new State(x=new_x,y=new_y,z=copyFIFO(state.z)); 
+}
 
+State c(State state){
+    FIFO new_y = deqFIFO(state.y);
+    FIFO new_z = enqFIFO(state.z);
+    return new State(x=copyFIFO(state.x),y=new_y,z=new_z);
+}
 
-void qun (int lenRet, int [lenRet] r1, int [lenRet] r2,
-                     //int len1, int [len1] l1,
-                     int len2, int [len2] l2, 
-                     int t1, int j, int i)
-{
-  int[j] topL2 = top(j, len2, l2); 
-  if (tupleListEquals(lenRet, ret, j, leftProduct(t1, j, top(j, len2, l2)))
-      && j < len2)
-  {
-    
-    Tuple newTuple = new Tuple();
-    newTuple.first = t1;
-    newTuple.second = l2[j];
+State d(State state){
+    FIFO new_z = deqFIFO(state.z);
+    return new State(x=copyFIFO(state.x),y=copyFIFO(state.y),z=new_z);
+}
 
-    Tuple[lenRet+1] newRet = appendTuple(newTuple, lenRet, ret);
-
-    for (int m = 0; m < lenRet; ++m)
-    {
-      assert newRet[m].first == ret[m].first;
-      assert newRet[m].second == ret[m].second;
+generator State run(int steps, State state){
+    State new_state;
+    if(??){ 
+        new_state = a(state); 
+    }else{
+        if(??){ 
+            new_state = b(state); 
+        }else{
+            if(??){
+                new_state = c(state);
+            }else{
+                new_state = d(state);
+            }
+        }
     }
     
-  }
-  
+    if(??){
+        assert steps > 0;
+        return run(steps - 1, new_state);
+    }else{
+        return new_state;
+    }
 }
-  
-  
 
+State runGen(int steps, State state){
+    return run(steps, state);
+}
 
+State runInit(int steps, State state){
+    return run(steps, state);
+}
+
+harness void main(){
+    State state = newState(2);
+    State snapshot = runInit(??, state);
+    State final_state = runGen(20, snapshot);
+    assert compareState(final_state,snapshot);
+}

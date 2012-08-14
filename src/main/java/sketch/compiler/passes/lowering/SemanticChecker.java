@@ -756,6 +756,24 @@ public class SemanticChecker
 				return (expr);
 			}
 
+            public Object visitExprNew(ExprNew expNew) {
+                TypeStructRef nt =
+                        (TypeStructRef) expNew.getTypeToConstruct().accept(this);
+                TypeStruct ts = nres.getStruct(nt.getName());
+                if (ts == null) {
+                    report(expNew, "Trying to instantiate a struct that doesn't exist");
+                }
+                for (ExprNamedParam en : expNew.getParams()) {
+                    Expression rhs = doExpression(en.getExpr());
+                    if (!ts.hasField(en.getName())) {
+                        report(expNew,
+                                "The struct does not have a field named " + en.getName());
+                    }
+                }
+                // TODO Do more
+                return expNew;
+            }
+
 			public Object visitExprField(ExprField expr)
 			{
 				//System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprField");

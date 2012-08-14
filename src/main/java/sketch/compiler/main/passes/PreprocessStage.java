@@ -61,10 +61,10 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-        // dump (prog, "fpe:");
+
+        // prog.debugDump("After FPE");
 
         prog = ir1.run(prog);
-
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 

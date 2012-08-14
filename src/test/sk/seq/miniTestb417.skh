@@ -1,0 +1,17 @@
+package TT;
+
+struct Integer{
+    int o;
+}
+
+Integer u;
+
+Integer foo(){
+    u = new Integer(o=5);
+    Integer@MM tt = getX();
+    return new Integer(o=tt.v);
+}
+
+Integer moo(){
+    return u;
+}

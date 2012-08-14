@@ -41,13 +41,14 @@ public class CleanupFinalCode extends MetaStage {
                 new PreprocessSketch(varGen, options.bndOpts.unrollAmnt, rctrl, true);
 
         prog = (Program) prog.accept(preproc);
+        // prog.debugDump("After Preproc");
         // System.out.println("preproc");
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new FlattenStmtBlocks());
-        // System.out.println("Flatten");
-        // prog.accept(new SimpleCodePrinter());
+        // prog.debugDump("After FSB");
+
         prog = (Program) prog.accept(new MakeCastsExplicit());
-        // System.out.println("MakeCasts");
+
         prog = (Program) prog.accept(new EliminateTransAssns());
         // System.out.println("ElmTransAssn");
         // prog.accept(new SimpleCodePrinter());

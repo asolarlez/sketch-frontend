@@ -1,28 +1,152 @@
-int max_len = 6;
-int len = 6;
+#include "fifo_imp.sk"
 
-struct Array {
-    int [max_len] A;
-    int len;
+pragma options "-V 5";
+
+struct State{
+    int source0;
+    int source1;
+    int sink;
+    FIFO x0;
+    FIFO y0;
+    FIFO z0;
+    FIFO x1;
+    FIFO y1;
+    FIFO z1;
 }
 
 
-int[len+1] append(Array ar, int b) {
-  int[len+1] res = 0;
-  for(int i=0; i<len;i++)
-    res[i] = ar.A[i];
-  res[len+1] = b;
-  return res;
+bit compareState(State s1, State s2){
+    return (compareFIFO(s1.x0, s2.x0) && compareFIFO(s1.y0,s2.y0) && compareFIFO(s1.z0,s2.z0) && 
+                    compareFIFO(s1.x1, s2.x1) && compareFIFO(s1.y1,s2.y1) && compareFIFO(s1.z1,s2.z1) );
 }
 
-Array init(Array ar) {
-  ar.A = {1,2,3,4,5,6};
-  return ar;
+State copyState(State s){
+    return new State(x0=copyFIFO(s.x0), y0=copyFIFO(s.y0), z0=copyFIFO(s.z0),
+                                     x1=copyFIFO(s.x1), y1=copyFIFO(s.y1), z1=copyFIFO(s.z1),
+                                     source0=s.source0, source1=s.source1, sink=s.sink);
+} 
+
+State newState(int d){
+  return new State(x0=newFIFO(d),y0=newFIFO(d),z0=newFIFO(d),
+                                     x1=newFIFO(d),y1=newFIFO(d),z1=newFIFO(d),
+                                     source0=0,source1=0,sink=0);
+}
+    
+void a0(State state){
+  enqFIFO(state.x0, state.source0);
+  state.source0 = state.source0+1;
 }
 
-harness void appendCheck() {
-  Array arr = init(new Array());
-  int b = 7;
-  int[7] t = append(arr, b);
-  assert t == {1,2,3,4,5,6,7};
+void a1(State state){
+  enqFIFO(state.x1, state.source1);
+  state.source1 = state.source1+1;
+}
+
+void b0(State state){
+    int val = deqFIFO(state.x0);
+    enqFIFO(state.y0, val);
+}
+
+void b1(State state){
+    int val = deqFIFO(state.x1);
+    enqFIFO(state.y1, val);
+}
+
+void c0(State state){
+    int val = deqFIFO(state.y0);
+    enqFIFO(state.z0, val);
+}
+
+void c1(State state){
+    int val = deqFIFO(state.y1);
+    enqFIFO(state.z1, val);
+}
+
+void d(State state){
+    int x0 = deqFIFO(state.z0);
+    int x1 = deqFIFO(state.z1);
+    state.sink = state.sink+x0+x1;
+}
+
+generator void run(int steps, State state, State snapshot){
+  if(??){ 
+    a0(state); 
+  }else{
+    if(??){ 
+      b0(state); 
+    }else{
+      if(??){
+        c0(state);
+      }else{
+                if(??){ 
+                    a1(state); 
+                }else{
+                    if(??){ 
+                        b1(state); 
+                    }else{
+                        if(??){
+                            c1(state);
+                        }else{
+                            d(state);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+  if(??){
+    assert steps > 0;
+    run(steps - 1, state, snapshot);
+  }else{
+    assert compareState(state,snapshot);
+  }
+}
+
+generator void init(int steps, State state){
+  if(??){ 
+    a0(state); 
+  }else{
+    if(??){ 
+      b0(state); 
+    }else{
+      if(??){
+        c0(state);
+      }else{
+                if(??){ 
+                    a1(state); 
+                }else{
+                    if(??){ 
+                        b1(state); 
+                    }else{
+                        if(??){
+                            c1(state);
+                        }else{
+                            d(state);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+  if(??){
+    assert steps > 0;
+    init(steps - 1, state);
+  }
+}
+
+void runGen(int steps, State state, State snapshot){
+    run(steps, state, snapshot);
+}
+
+void runInit(int steps, State state){
+    init(steps, state);
+}
+
+harness void main(){
+    State state = newState(2);
+    runInit(??, state);
+    State snapshot = copyState(state);
+    runGen(20, state, snapshot);
 }
