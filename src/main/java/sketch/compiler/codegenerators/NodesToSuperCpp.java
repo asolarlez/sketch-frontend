@@ -410,6 +410,9 @@ public class NodesToSuperCpp extends NodesToJava {
         return "_tt" + (tcnt++);
     }
     public Object visitExprArrayInit(ExprArrayInit exp) {
+        if (exp.getElements().size() == 0) {
+            return "NULL";
+        }
         TypeArray t = (TypeArray) getType(exp);
         String nvar = newTmp();
         String tmp =

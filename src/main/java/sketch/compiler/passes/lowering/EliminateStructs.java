@@ -545,6 +545,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         {
             if (isFieldArr(field)) {
                 Expression realLen = (Expression) getFieldRealLen(field).accept(vsr);
+                realLen = (Expression) realLen.accept(EliminateStructs.this);
                 Expression maxLen = getFieldMaxLen(field);
                 EliminateStructs.this.addStatement(new StmtAssert(
                         cx,
