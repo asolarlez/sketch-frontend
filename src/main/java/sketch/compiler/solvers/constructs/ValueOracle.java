@@ -7,7 +7,11 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class ValueOracle extends AbstractValueOracle {
 	/**
@@ -38,17 +42,26 @@ public class ValueOracle extends AbstractValueOracle {
          }
 	}
 
-	protected ExprConstInt getVal(FENode node, String var){
+    protected ExprConstant getVal(FENode node, String var, Type t) {
 		Integer val = valMap.get(var);
+
 		if(val != null){
-			return(new ExprConstInt(node, val.intValue()));
+            if (t.equals(TypePrimitive.inttype)) {
+		        int i = val.intValue();
+		        return (new ExprConstInt(node, i));
+		    }
+ else if (t.equals(TypePrimitive.chartype)) {
+                char c = (char) val.intValue();
+                return (new ExprConstChar(node, c));
+            }
+		    
 		}		
 		return new ExprConstInt(node, -1);
 	}
 	
-	public ExprConstInt popValueForNode(FENode node) {
+    public ExprConstant popValueForNode(FENode node, Type t) {
 		String name = holeNamer.getName(node);
-		return getVal(node, name);
+        return getVal(node, name, t);
 	}
 
 	public void capStarSizes(int size) {

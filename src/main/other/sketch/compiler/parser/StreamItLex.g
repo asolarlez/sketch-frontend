@@ -48,7 +48,7 @@ tokens {
 	"reorder";
 
 	// Basic types:
-	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";
+	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";
 
 	// Complicated types:
 	"struct"; // "template";

@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
@@ -55,7 +56,7 @@ public class TypePrimitive extends Type
     public static final int TYPE_ANYTYPE = 16;
 
     /** Type constant for string types */
-    public static final int TYPE_STRING = 17;
+    public static final int TYPE_CHAR = 17;
 
 
     /** Type object for bit types. */
@@ -81,7 +82,7 @@ public class TypePrimitive extends Type
     public static final TypePrimitive anytype =
         new TypePrimitive(TYPE_ANYTYPE);
 
-    public static final TypePrimitive strtype = new TypePrimitive(TYPE_STRING);
+    public static final TypePrimitive chartype = new TypePrimitive(TYPE_CHAR);
 
     private int type;
 
@@ -146,6 +147,9 @@ public class TypePrimitive extends Type
 
         case TYPE_SIGINT:
                 return "int";
+            case TYPE_CHAR:
+                return "char";
+
         default:
             return "<primitive type " + type + ">";
         }
@@ -186,10 +190,10 @@ public class TypePrimitive extends Type
  {
         case TYPE_BIT:
             return t2 == TYPE_SIGINT || t2 == TYPE_BIT || t2 == TYPE_INT ||
-                        t2 == TYPE_FLOAT || t2 == TYPE_DOUBLE;
+                        t2 == TYPE_FLOAT || t2 == TYPE_DOUBLE || t2 == TYPE_CHAR;
         case TYPE_INT:
                 return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
-                        t2 == TYPE_DOUBLE;
+                        t2 == TYPE_DOUBLE || t2 == TYPE_CHAR;
         case TYPE_SIGINT:
                 return t2 == TYPE_SIGINT || t2 == TYPE_INT || t2 == TYPE_FLOAT ||
                         t2 == TYPE_DOUBLE;
@@ -207,6 +211,9 @@ public class TypePrimitive extends Type
         	return t2 == TYPE_NULLPTR;
         case TYPE_VOID:
         	return false;
+
+            case TYPE_CHAR:
+                return t2 == TYPE_INT;
         default:
             assert false : t1;
             return false;
@@ -234,6 +241,8 @@ public class TypePrimitive extends Type
     	case TYPE_VOID:
     	case TYPE_ANYTYPE:
     		assert false : "Type "+ type +" doesn't have a default value.";
+            case TYPE_CHAR:
+                return ExprConstChar.zero;
     	default:
     		assert false : "Unknown type "+ type +".";
     		return null;	// unreachable

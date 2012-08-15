@@ -10,11 +10,13 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.util.DebugOut;
@@ -43,14 +45,20 @@ public class EliminateStarStatic extends FEReplacer {
 			ssz = iv;
 			List<Expression> lst = new ArrayList<Expression>(ssz);
 			for(int i=0; i<ssz; ++i){
-				lst.add(oracle.popValueForNode(star.getDepObject(i)));
+                lst.add(oracle.popValueForNode(star.getDepObject(i),
+                        ((TypeArray) t).getBase()));
 			}
 			hole_values.put(star, lst);
 
 			ExprArrayInit ainit = new ExprArrayInit(star, lst);
-			return ainit;
-		}else{
-		    Expression value = oracle.popValueForNode(star.getDepObject(0));
+            return ainit;
+
+        }
+		else{
+            if (t.equals(TypePrimitive.chartype)) {
+                System.out.println("Is CT");
+            }
+            Expression value = oracle.popValueForNode(star.getDepObject(0), t);
 		    hole_values.put(star, value);
 			return value;
 		}
@@ -61,6 +69,15 @@ public class EliminateStarStatic extends FEReplacer {
             return ((ExprConstInt) expr).getVal();
         } else {
             return -1;
+        }
+    }
+
+    public char getCharValue(Expression expr) {
+        if (expr instanceof ExprConstChar) {
+            return ((ExprConstChar) expr).getVal();
+        } else {
+            char tmp = 0;
+            return tmp;
         }
     }
 

@@ -306,8 +306,8 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitExprConstChar(ExprConstChar exp)
     {
-        report(false, "NYS");
-        return "'" + exp.getVal() + "'";
+        exprRV = exp;
+        return vtype.CONST(exp.getVal());
     }
 
     public Object visitExprUnary(ExprUnary exp) {

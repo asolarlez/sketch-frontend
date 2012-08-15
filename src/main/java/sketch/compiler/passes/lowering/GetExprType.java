@@ -241,9 +241,8 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprConstChar(ExprConstChar exp)
-    {
-        // return new TypePrimitive(TypePrimitive.TYPE_CHAR);
-        return null;
+ {
+        return TypePrimitive.chartype;
     }
 
     public Object visitExprConstFloat(ExprConstFloat exp)

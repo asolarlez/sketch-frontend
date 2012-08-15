@@ -1,0 +1,14 @@
+pragma options "--bnd-inbits 8";
+
+bit foo(char a){
+	if (a == 'x'){
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+bit Sk(char a) implements foo {
+	return a == ??(8);
+}

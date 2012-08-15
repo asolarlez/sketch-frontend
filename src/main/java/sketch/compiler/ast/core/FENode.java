@@ -54,28 +54,22 @@ public abstract class FENode
     }
 
     /**
-     * Create a new node with the specified context.
+     * Create a new node with the specified context. Note on why it's deprecated: When the
+     * parser creates nodes from scratch, it uses the FENode(FEContext) constructor to
+     * create a brand new node with the context information about where in the input file
+     * it came from. However, after this stage, any new FENode that is created is created
+     * from another existing FENode. Keeping track of where nodes came from is important,
+     * given how many transformations the AST goes through before we do the actual
+     * analysis on it. For this reason, you shouldn't use the FENode(FEContext)
+     * constructor when creating a node in a transformation; instead you should use the
+     * FENode(FENode) constructor and pass as argument the node that this node was derived
+     * from. So in other words, the FENode(FEContext) constructor is not really
+     * deprecated; you need to use it when constructing nodes in the parser, but it
+     * shouldn't be used anywhere else, so the deprecated status is a good way to
+     * discourage its use. The same thing goes for all the constructors of the actual AST
+     * nodes; all of them have a version that takes an FEContext and a version that takes
+     * an FENode.
      * 
-     * Note on why it's deprecated:
-     * 
-     *When the parser creates nodes from scratch, it uses the FENode(FEContext) 
-     *constructor to create a brand new node with the context information about where in the 
-     *input file it came from. 
-     *
-     *However, after this stage, any new FENode that is created is created from another 
-     *existing FENode. Keeping track of where nodes came from is important, given how 
-     *many transformations the AST goes through before we do the actual analysis on it. 
-     *For this reason, you shouldn't use the FENode(FEContext) constructor when 
-     *creating a node in a transformation; instead you should use the FENode(FENode) constructor 
-     *and pass as argument the node that this node was derived from. 
-     *
-     *So in other words, the FENode(FEContext) constructor is not really deprecated; 
-     *you need to use it when constructing nodes in the parser, but it shouldn't 
-     *be used anywhere else, so the deprecated status is a good way to discourage 
-     *its use. The same thing goes for all the constructors of the actuall AST nodes; 
-     *all of them have a version that takes an FEContext and a version that takes an FENode.
-     *
-     *
      * @param cx
      * @deprecated
      */
