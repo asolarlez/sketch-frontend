@@ -182,7 +182,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		
 		Token  id = null;
 		p = null; List vars = new ArrayList();  
-			List funcs=new ArrayList(); Function f;
+			List<Function> funcs=new ArrayList(); Function f;
 			List<StreamSpec> namespaces = new ArrayList<StreamSpec>();
 		FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
 		String file = null;
@@ -345,6 +345,9 @@ inputState.guessing--;
 								}
 								for(TypeStruct struct : structs){
 									struct.setPkg(pkgName);	
+								}
+								for(Function fun : funcs){
+									fun.setPkg(pkgName);	
 								}
 								 StreamSpec ss=new StreamSpec(pkgCtxt, 
 									pkgName,
