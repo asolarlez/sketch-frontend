@@ -137,6 +137,15 @@ public class NodesToSuperH extends NodesToSuperCpp {
         String ret = "#ifndef " + defname + "\n";
         ret += "#define " + defname + "\n\n";
         ret += "#include <cstring>\n\n";
+
+        for (StreamSpec pkg : prog.getStreams()) {
+            ret += "namespace " + pkg.getName() + "{\n";
+            for (TypeStruct ts : pkg.getStructs()) {
+                ret += "  class " + ts.getName() + ";\n";
+            }
+            ret += "}\n";
+        }
+
         ret += super.visitProgram(prog);
         ret += "\n#endif\n";
         return ret;

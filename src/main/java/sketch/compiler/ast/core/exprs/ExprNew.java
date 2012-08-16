@@ -6,6 +6,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class ExprNew extends Expression {
 
@@ -16,6 +17,7 @@ public class ExprNew extends Expression {
     public ExprNew(FENode context, Type typeToConstruct, List<ExprNamedParam> params) {
 		super(context);
 		this.typeToConstruct = typeToConstruct;
+        assert typeToConstruct instanceof TypeStructRef;
 		// TODO Auto-generated constructor stub
         this.params = params;
 	}

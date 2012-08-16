@@ -6,15 +6,8 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import sketch.compiler.ast.core.FEContext;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FcnType;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -24,6 +17,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
@@ -99,6 +93,7 @@ public class GlobalsToParams extends FEReplacer {
         // System.exit(0);
         this.fldNames = new GlobalFieldNames();
         this.glblExprs = new GlobalExprs();
+        nres = new NameResolver(prog);
         prog.accept(this.fldNames);
         prog.accept(this.glblExprs);
 
@@ -271,7 +266,7 @@ public class GlobalsToParams extends FEReplacer {
 
         StmtBlock body = new StmtBlock(assign);
         return Function.creator(ctx, varGen.nextVar("glblInit_" + glblName),
-                FcnType.Static).params(params).body(body).create();
+                FcnType.Static).params(params).body(body).pkg(nres.curPkg().getName()).create();
     }
 
     public class AddedParam {
@@ -369,8 +364,16 @@ public class GlobalsToParams extends FEReplacer {
         @SuppressWarnings("unchecked")
         @Override
         public Object visitFieldDecl(FieldDecl field) {
+            String pkg = nres.curPkg().getName();
             this.getFieldNames().addAll(field.getNames());
-            fieldTypes.addZipped(field.getNames(), field.getTypes());
+            int i = 0;
+            for (Type ft : field.getTypes()) {
+                if (ft instanceof TypeStructRef) {
+                    ft = ((TypeStructRef) ft).addDefaultPkg(pkg);
+                }
+                fieldTypes.put(field.getName(i), ft);
+                ++i;
+            }
             fieldInits.addZipped(field.getNames(), field.getInits());
             return field;
         }

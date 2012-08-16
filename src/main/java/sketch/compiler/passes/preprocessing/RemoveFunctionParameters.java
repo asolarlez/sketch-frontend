@@ -359,6 +359,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitStmtFunDecl(StmtFunDecl sfd) {
+            String pkg = nres.curPkg().getName();
             String oldName = sfd.getDecl().getName();
             String newName = oldName + (++nfcnt);
             while (nres.getFun(newName) != null) {
@@ -366,7 +367,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
             frmap.declRepl(sfd.getDecl().getName(), newName);
             Function f = sfd.getDecl();
-            Function newFun = f.creator().name(newName).create();
+            Function newFun = f.creator().name(newName).pkg(pkg).create();
             nres.registerFun(newFun);
             newFun = (Function) newFun.accept(this);
             newFuncs.add(newFun);
@@ -506,6 +507,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     Function createCall(final ExprFunCall efc, Function orig, final String nfn) {
         final Map<String, String> rmap = new HashMap<String, String>();
+        final String cpkg = nres.curPkg().getName();
+
         FEReplacer renamer = new FEReplacer() {
 
             public Object visitFunction(Function func)
@@ -534,12 +537,13 @@ public class RemoveFunctionParameters extends FEReplacer {
                     assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
                     if (samePars && rtype == func.getReturnType())
                         return func;
-                    return func.creator().returnType(rtype).params(newParam).create();
+                    return func.creator().returnType(rtype).pkg(cpkg).params(newParam).create();
                 }
                 Statement newBody = (Statement)func.getBody().accept(this);        
                 if(newBody == null) newBody = new StmtEmpty(func);
                 if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
-                return func.creator().returnType(rtype).params(newParam).body(newBody).name(nfn).create();
+                return func.creator().returnType(rtype).params(newParam).body(newBody).name(
+                        nfn).pkg(cpkg).create();
             }
 
             public Object visitExprFunCall(ExprFunCall efc) {

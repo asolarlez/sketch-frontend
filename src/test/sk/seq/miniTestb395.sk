@@ -38,7 +38,7 @@ harness void main(int n){
     Moo m = new Moo(f=f, b=f.a);
     for(int i=0; i<n; ++i){
         assert m.b[i]== m.f.a[i];
-        if(i<10){
+        if(i<10){            
             assert m.b[i] == b.a[i];
         }
     }

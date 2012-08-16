@@ -37,12 +37,16 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
 
+        // prog.debugDump("Before ES");
+
+        prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
                         options.bndOpts.arrSize)));
 
+        // prog.debugDump("After ES");
 
-        prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         // dump (prog, "After Stencilification.");
 

@@ -1,0 +1,18 @@
+struct MultiType{
+MTArray lst;
+int val;
+int flag;
+}
+
+struct MTArray{
+int len;
+MultiType[len] A;
+}
+
+int INTEGER=0;
+int LIST=1;
+
+harness void main(){
+    MultiType x = new MultiType(val=5, flag=INTEGER);
+    MultiType y = new MultiType(lst=new MTArray(A={x, new MultiType(val=10,flag=INTEGER)},len=2), flag = LIST);
+}

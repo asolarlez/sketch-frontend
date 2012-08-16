@@ -1,0 +1,21 @@
+include "miniTestb417.skh";
+
+package MM;
+
+struct Integer{
+    int v;
+}
+
+Integer x;
+
+Integer getX(){
+    return x;
+}
+
+harness void main(int in){
+    x = new Integer(v=in);
+    Integer@TT ti = foo();
+    assert ti.o == in;
+    Integer@TT q = moo();
+    assert q.o == ??;
+}

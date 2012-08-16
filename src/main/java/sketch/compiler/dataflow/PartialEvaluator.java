@@ -1131,12 +1131,14 @@ public class PartialEvaluator extends FEReplacer {
                         e.getMessage(),
                         false)).accept(this));
                 nvtrue = null;
+                ncond = ExprConstInt.zero;
                 state.pushChangeTracker(vcond, false);
             }catch(ArithmeticException e){
                 state.popChangeTracker();
                 addStatement((Statement) (new StmtAssert(stmt, new ExprUnary("!", ncond),
                         false)).accept(this));
                 nvtrue = null;
+                ncond = ExprConstInt.zero;
                 state.pushChangeTracker (vcond, false);
             } catch (RuntimeException e) {
                 state.popChangeTracker();
@@ -1151,6 +1153,7 @@ public class PartialEvaluator extends FEReplacer {
             sa.setMsg( rcontrol.debugMsg() );
             addStatement((Statement) (sa).accept(this));
             nvtrue = null;
+            ncond = ExprConstInt.zero;
             state.pushChangeTracker(vcond, false);
         }
         ChangeTracker ipms = state.popChangeTracker();
@@ -1166,6 +1169,7 @@ public class PartialEvaluator extends FEReplacer {
                 }catch(ArrayIndexOutOfBoundsException e){
                     state.popChangeTracker();
                     addStatement((Statement) (new StmtAssert(stmt, ncond, false)).accept(this));
+                    ncond = ExprConstInt.one;
                     nvfalse = null;
                     state.pushChangeTracker(vcond, true);
                 }catch(Throwable e){
@@ -1180,6 +1184,7 @@ public class PartialEvaluator extends FEReplacer {
                 StmtAssert sa = new StmtAssert(stmt, ncond, false);
                 sa.setMsg( rcontrol.debugMsg() );
                 addStatement((Statement) (sa).accept(this));
+                ncond = ExprConstInt.one;
                 nvfalse = null;
                 state.pushChangeTracker(vcond, true);
             }

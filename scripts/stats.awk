@@ -8,17 +8,56 @@ BEGIN{
 /f#.*clauses/{
 	lastSclauses = $5;
 }
-/Total time =/{
-       
-       ar[i] = ptime;
-       beoverhead[i] = betime-ptime;
-       ttimear[i] = ($4/1000.0)-betime;
-       synth[i] = stime;
+/Benchmark = /{
+	bmark = $3;
+	sub(".*/", "", bmark);
+	sub("\\..*", "", bmark);
+}
+/Time limit exceeded!/{
+	TIMEOUT=1;
+}
+/Solver exit value: 1/{
+       if(TIMEOUT==0){
+       	ar[i] = ptime;
+       	beoverhead[i] = betime-ptime;
+       	ttimear[i] = ($4/1000.0)-betime;
+       	synth[i] = stime;
+       }else{
+       	ar[i] = 1000;
+       	beoverhead[i] = 1000;
+       	ttimear[i] = 1000;
+       	synth[i] = 1000;
+       }
+
        synthClause[i] = lastSclauses;
+       Benchmark[i] = bmark;
        ptime = 0.0;
        betime = 0.0;
        stime = 0.0;
 	lastSclauses=0;
+		TIMEOUT=0;
+       i=i+1;
+}
+/Total time =/{
+       if(TIMEOUT==0){
+       	ar[i] = ptime;
+       	beoverhead[i] = betime-ptime;
+       	ttimear[i] = ($4/1000.0)-betime;
+       	synth[i] = stime;
+       }else{
+       	ar[i] = 1000;
+       	beoverhead[i] = 1000;
+       	ttimear[i] = 1000;
+       	synth[i] = 1000;
+       }
+
+       synthClause[i] = lastSclauses;
+       Benchmark[i] = bmark;
+       ptime = 0.0;
+       betime = 0.0;
+       stime = 0.0;
+	lastSclauses=0;
+		TIMEOUT=0;
        i=i+1;
 }
 /elapsed time \(s\)/{
@@ -67,7 +106,43 @@ function printstats(a){
 	}	 
 }
 
-END{
+function bmstat(bm, list){
+	tt = 1;
+	for(i in tlist){
+		delete tlist[i];
+	}
+	for(i in Benchmark){
+		if(bm == Benchmark[i]){
+			tlist[tt] = list[i];
+			tt = tt + 1;
+		}
+	}
+	n=asort(tlist);
+	low = tlist[1];
+	high = tlist[n];
+	med = tlist[(n + (n%2))/2]; 
+	return low"  "med"  "high;
+}
+
+function detailed(){
+	for(i in Benchmark){
+		bmlist[Benchmark[i]] = 1;
+	}
+	
+	for(bm in bmlist){
+		oo = bmstat(bm, ttimear);
+		print bm" Frontend "oo;
+		oo = bmstat(bm, ar);
+		print bm" Solver "oo;
+		oo = bmstat(bm, synth);
+		print bm" Synthesis "oo;
+		oo = bmstat(bm, beoverhead);
+		print bm" BEOverhead "oo;
+	}
+
+}
+
+function hlreport(){
   print "Frontend Time: "
   printstats(ttimear);
   print "Total Solver Time:" 
@@ -78,4 +153,9 @@ END{
   printstats(synthClause);
   print "Backend Overhead: "
   printstats(beoverhead);
+}
+
+
+END{
+  detailed();
 } 

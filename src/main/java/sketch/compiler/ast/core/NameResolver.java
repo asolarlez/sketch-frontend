@@ -89,7 +89,9 @@ public class NameResolver {
         if (full == null) {
             return null;
         }
-        return funMap.get(full);
+        Function f = funMap.get(full);
+
+        return f;
     }
 
     public Function getFun(String name, FENode errSource) {

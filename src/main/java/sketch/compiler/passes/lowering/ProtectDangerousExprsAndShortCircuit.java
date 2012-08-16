@@ -232,7 +232,9 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
                 }
 			} else if (FailurePolicy.ASSERTION == policy) {
                 if (cond != null) {
-                    addStatement(new StmtAssert(ear, cond, false));
+                    addStatement(new StmtAssert(ear, cond,
+ ear.getCx() +
+                            ": Either null pointer or Array out of bounds", false));
                 }
 				return new StmtAssign (stmt, near, rhs, op);
 			} else {  assert false : "fatal error"; return null;  }

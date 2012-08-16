@@ -10,12 +10,16 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprNamedParam;
+import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
 
 public class AddArraySizeAssertions extends SymbolTableVisitor {
@@ -75,6 +79,22 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
             rmap.put(p.getName(), actual);
         }
         return super.visitExprFunCall(efc);
+    }
+
+    public Object visitExprNew(ExprNew expNew) {
+        TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct();
+        TypeStruct ts = nres.getStruct(nt.getName());
+        Map<String, Expression> rmap = new HashMap<String, Expression>();
+        VarSetReplacer vsr = new VarSetReplacer(rmap);
+        for (ExprNamedParam en : expNew.getParams()) {
+            rmap.put(en.getName(), doExpression(en.getExpr()));
+        }
+        for (ExprNamedParam en : expNew.getParams()) {
+            Type t = ts.getType(en.getName());
+            addCheck((Type) t.accept(vsr), getType(en.getExpr()), false, expNew);
+        }
+
+        return expNew;
     }
 
     public Object visitStmtAssign(StmtAssign sa) {

@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
@@ -33,6 +34,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.parallelEncoder.VarSetReplacer;
 
 /**
  * Does four things: (1) Replaces 'new [struct]()' expressions with pointers into [struct]
@@ -244,21 +246,23 @@ public class EliminateStructs extends SymbolTableVisitor {
     			"Sorry, only structs are supported in 'new' statements.");
 
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
-        StructTracker struct = structs.get(nres.getStructName(name));
-
+        StructTracker struct = structs.get(nres.getStructName(name));        
         List<Expression> rhs = new ArrayList<Expression>();
+        Map<String, Expression> fieldExprs = new HashMap<String, Expression>();
         for (ExprNamedParam en : expNew.getParams()) {
             Expression tt = (Expression) en.getExpr().accept(this);
+            fieldExprs.put(en.getName(), tt);
             Expression lhs = new ExprVar(expNew, varGen.nextVar());
             addStatement(new StmtVarDecl(expNew, getType(tt), lhs.toString(), tt));
             rhs.add(lhs);
         }
 
+        VarSetReplacer vsr = new VarSetReplacer(fieldExprs);
         int i = 0;
         for (ExprNamedParam en : expNew.getParams()) {
             Expression lhs =
                     struct.getLHSFieldAccess(expNew, en.getName(),
-                            struct.nextInstancePointer);
+                            struct.nextInstancePointer, vsr);
             addStatement(new StmtAssign(lhs, rhs.get(i)));
             ++i;
         }
@@ -454,7 +458,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    public void registerAsParameters(SymbolTable symtab){
 	    	String nip = nextInstancePointer.getName ();
 	    	symtab.registerVar(nip,
-                    TypePrimitive.inttype,
+ this.struct,
                     nextInstancePointer,
                     SymbolTable.KIND_FUNC_PARAM);
 
@@ -537,12 +541,20 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    }
 
         public Expression getLHSFieldAccess(FENode cx, String field,
-                final Expression basePtr)
+                final Expression basePtr, VarSetReplacer vsr)
         {
             if (isFieldArr(field)) {
+                Expression realLen = (Expression) getFieldRealLen(field).accept(vsr);
+                realLen = (Expression) realLen.accept(EliminateStructs.this);
+                Expression maxLen = getFieldMaxLen(field);
+                EliminateStructs.this.addStatement(new StmtAssert(
+                        cx,
+                        new ExprBinary(realLen, "<=", maxLen),
+                        cx.getCx() +
+                                ": You are exceeding the maximum size of an array in a struct. You can grow it with the --bnd-arr-size flag.",
+                        false));
                 RangeLen rl =
-                        new RangeLen(new ExprBinary(basePtr, "*", getFieldMaxLen(field)),
-                                getFieldMaxLen(field));
+ new RangeLen(new ExprBinary(basePtr, "*", maxLen), realLen);
                 return new ExprArrayRange(cx, getFieldArray(field), rl);
             } else {
                 return new ExprArrayRange(cx, getFieldArray(field), basePtr);
@@ -581,7 +593,12 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @return    an allocation expression
 	     */
 	    public Expression makeAllocation (FENode cx) {
-	    	return new ExprUnary (cx, ExprUnary.UNOP_POSTINC, nextInstancePointer);
+            String tvar = varGen.nextVar();
+            EliminateStructs.this.addStatement((Statement) new StmtVarDecl(cx, struct,
+                    tvar, nextInstancePointer).accept(EliminateStructs.this));
+            EliminateStructs.this.addStatement(new StmtAssign(nextInstancePointer,
+                    new ExprBinary(nextInstancePointer, "+", ExprConstInt.one)));
+            return new ExprVar(cx, tvar);
 	    }
 
 	    /**

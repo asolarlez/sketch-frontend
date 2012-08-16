@@ -52,7 +52,7 @@ Mat matFromFile(FileHandle fh){
     int r = readInt(fh);
     if(!moreValues(fh)){ return null; }
     int c = readInt(fh);
-    int[r][c] M;
+    int[{|r | c |}][{|c | r|}] M;
     printInt(c);
     printInt(r);
     for(int i=0; i<r; ++i){
