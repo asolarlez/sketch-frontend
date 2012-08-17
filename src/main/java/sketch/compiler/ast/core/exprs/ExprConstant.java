@@ -63,8 +63,7 @@ abstract public class ExprConstant extends Expression
     public static Expression createConstant(FENode context, String val)
     {
         // Maybe it's integral.
-        try
-        {
+        try {
             return new ExprConstInt(context, val);
         }
         catch(NumberFormatException e)

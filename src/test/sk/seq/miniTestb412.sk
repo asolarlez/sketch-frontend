@@ -1,0 +1,17 @@
+pragma options "--bnd-inbits 8 --bnd-cbits 8";
+
+bit foo(char[4] a){
+	char[4] tmp = {'a','b','c','d'};
+	if (a == tmp){
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+bit Sk(char[4] a) implements foo {
+    int x = ??;
+	char[4] tmp = ??;
+	return a == tmp;
+}

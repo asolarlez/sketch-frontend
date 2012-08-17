@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * An oracle that assigns a random value to each control value.
@@ -29,7 +30,7 @@ public class RandomValueOracle extends ValueOracle {
 		rand = (seed != -1) ? new Random (seed) : new Random ();
 	}
 
-	public ExprConstInt popValueForNode(FENode node){
+    public ExprConstInt popValueForNode(FENode node, Type t) {
 		String name = getHoleNamer ().getName (node);
 		if (!valCache.containsKey (name))
 			valCache.put (name, getVal (node, name));

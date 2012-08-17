@@ -1,0 +1,19 @@
+pragma options "--bnd-inbits 8 --bnd-cbits 8";
+
+char[3] foo(int n, char[n] a){
+	if (n > 3){
+		return a[0::3];
+	}
+	else{
+		return {'a','b','c'};
+	}
+}
+
+char[3] Sk(int n, char[n] a) implements foo {
+	if (n > 3){
+		return a[0::??];
+	}
+	else{
+		return {'a','b',??};
+	}
+}

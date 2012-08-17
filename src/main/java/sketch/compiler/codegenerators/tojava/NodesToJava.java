@@ -115,6 +115,8 @@ public class NodesToJava extends SymbolTableVisitor
             case TypePrimitive.TYPE_FLOAT: return "float";
             case TypePrimitive.TYPE_DOUBLE: return "double";
             case TypePrimitive.TYPE_VOID: return "void";
+                case TypePrimitive.TYPE_CHAR:
+                    return "char";
             default: assert false : type; return null;
             }
         }

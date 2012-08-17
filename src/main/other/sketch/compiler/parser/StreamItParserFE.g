@@ -353,7 +353,8 @@ primitive_type returns [Type t] { t = null; }
 	|	TK_int { t = TypePrimitive.inttype;  }
 	|	TK_float { t = TypePrimitive.floattype;  }
 	|	TK_double { t = TypePrimitive.doubletype; }
-	|   TK_fun { t = TypeFunction.singleton; })
+	|   TK_fun { t = TypeFunction.singleton; }
+	|	TK_char { t = TypePrimitive.chartype; })
 	;
 
 variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
