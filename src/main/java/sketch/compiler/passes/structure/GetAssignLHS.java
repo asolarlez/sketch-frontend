@@ -2,9 +2,11 @@ package sketch.compiler.passes.structure;
 
 import sketch.compiler.ast.core.FETypedVisitor;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.util.exceptions.TypeErrorException;
 
 /**
  * get the main variable associated with the assigned left hand side
@@ -28,6 +30,10 @@ public class GetAssignLHS extends FETypedVisitor<ExprVar> {
     @Override
     public ExprVar visitExprArrayRange(ExprArrayRange exp) {
         return (ExprVar) exp.getBase().accept(this);
+    }
+
+    public ExprVar visitExprBinary(ExprBinary exp) {
+        throw new TypeErrorException(exp.getCx() + ": Illegal l-value. ");
     }
 
 

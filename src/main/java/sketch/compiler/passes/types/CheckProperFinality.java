@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.SymbolTable.Finality;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.Type;
@@ -134,6 +135,16 @@ public class CheckProperFinality extends SymbolTableVisitor {
     public Object visitTypeArray(TypeArray ta) {
         ta.accept(markAsFinal);
         return ta;
+    }
+
+    public Object visitExprUnary(ExprUnary exp) {
+        int op = exp.getOp();
+        if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_POSTINC ||
+                op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_PREINC)
+        {
+            exp.accept(markAsNoFinal);
+        }
+        return exp;
     }
 
     @Override

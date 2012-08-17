@@ -47,6 +47,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
+
         prog.accept(new CheckProperFinality());
 
         prog = preproc1.run(prog);

@@ -2,16 +2,105 @@
 The core sketch language is a simple imperative language that borrows most of its syntax from Java and C. 
 
 \subsection{Primitive Types}
-The sketch language contains only two primitive types, \C{int} and \C{bit}. The \C{bit} type is actually a subtype of \C{int}, so bit variables can be used wherever an integer is required. There are only two bit constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the bit-value \C{0} corresponds to \C{false}, and \C{1} corresponds to \C{true}. 
-\subsection{Arrays}
-The \Sk\ language supports fixed size arrays of any supported type. The syntax for the type constructor is as follows; if we want to declare a variable \C{a} to be an array of size \C{N} with elements of type \C{T}, we can declare it as:
+The sketch language contains four primitive types, \C{int}, \C{char}, \C{double} and \C{bit}. There is a subtyping relation between them:
+\C{bit $\sqsubseteq$ char $\sqsubseteq$ int}, so bit variables can be used wherever an character or integer is required. There is no subtyping relation with double, so for example, you cannot use $1$ in place of $1.0$. 
+
+There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. 
+
+In the case of characters, you can use the standard C syntax to represent character constants. 
+
+\subsection{Structs}
+More interesting types can be constructed from simpler types in two ways: by creating arrays of them (see \secref{array}) and by defining new types of heap allocated records. 
+
+To define a new record type, the programmer uses the following syntax (borrowed from C):
+\begin{lstlisting}
+struct $name${
+  $type_1$ $field_1$;
+  ...
+  $type_k$ $field_k$;
+}
+\end{lstlisting}
+
+To allocate a new record in the heap, the programmer uses the keyword \C{new}; the syntax is the same as that for constructing an object in Java using the default constructor, but the programmer can also use named parameters to directly initialize certain fields upon allocation as shown by the following example.
+
+\begin{Example}
+struct Point{
+  int x;
+  int y;
+}
+void main(){
+  Point p1 = new Point();
+  assert p1.x == 0 && p1.y == 0; //Fields initialized to default values.
+
+  Point p1 = new Point(x=5, y=7);
+  assert p1.x == 5 && p1.y == 7; //Fields initialized by constructor.
+}
+\end{Example}
+
+Records are manipulated through references, which behave the same way as references in Java. The following example illustrates the main properties of records and references in \Sk{}.
+
+\begin{Example}
+The example below will behave the same way as an equivalent example would behave in Java. In particular, all the asserts will be satisfied.
+\begin{lstlisting}
+struct Car{
+  int license;
+}
+
+void main(){
+  Car c = new Car(); // Object C1
+  Car d = c;         // after assignment d points to C1
+  c.license = 123;   // the field of C1 is updated.
+  assert d.license == 123;
+  strange(c, d);
+  assert d.license == 123; //Object C1 unaffected by call
+  assert d == c;
+}
+
+void strange(Car x, Car y){
+  x = new Car();  //x now points to a new object C2
+  y = new Car();  //y now points to a new object C3
+  x.license = 456;
+  y.license = 456;
+  assert x.license == y.license;
+  assert x != y; //x and y point to different objects
+}
+\end{lstlisting}
+
+\end{Example}
+
+Just like in Java, references are typesafe and the heap is assumed to be garbage collected (which is another way of saying the synthesizer doesn't model deallocation). A consequence of this is that a reference to a record of type T must either be \C{null} or point to a valid object of type T. Also, just like in Java, all pointer dereferences have an implicit null pointer check.
+
+\subsection{Final Types}\seclabel{final}
+Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below; there are analogous rules for fields of a record. 
+
+\begin{itemize}
+\item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function.
+\item Arrays cannot be final. 
+\item Global variables can only be final if they are of scalar type (not references to records).
+\end{itemize}
+
+Since assignments to final variables are disallowed by the rules, final variables must be initialized upon declaration. For fields, final fields must be initialized upon allocation through the use of named parameters to the constructor.
+
+Expressions can also be final if they are composed from final sub-expressions. In particular:
+
+\begin{itemize}
+\item A binary expression \C{a $op$ b} is final if \C{a} and \C{b} are final.
+\item A ternary expression \C{a ? b : c} is final if \C{a},\C{b} and \C{c} are final.
+\item A field dereference \C{e.f} is final if \C{e} is a final expression and \C{f} is a final field.
+\end{itemize}
+
+Note that expressions involving function calls or side effects cannot be final. As we will see in the next section, final types will be relevant when specifying the sizes of arrays.
+
+\subsection{Arrays}\seclabel{array}
+The syntax for the array type constructor is as follows: if we want to declare a variable \C{a} to be an array of size \C{N} with elements of type \C{T}, we can declare it as:
 \begin{lstlisting}
       T[N] a;
 \end{lstlisting}
+The language will automatically check that \C{N$\geq$0}.
 
 The syntax for array access is similar to that in other languages; namely, the expression \C{a[x]} produces an element of type \C{T} when the type of \C{a} is \C{T[N]}, provided that \C{x<N}. All array accesses are automatically checked for array bounds violations.
 
-The constructor above works for any type \C{T}  including other array types. This makes the semantics very simple, although it can be a little confusing for people who are used to working in languages with support for multi-dimensional arrays. To illustrate this point, consider the following example:
+The constructor above works for any type \C{T}, including other array types. This makes the semantics very simple, although it can be a little confusing for people who are used to working in languages with support for multi-dimensional arrays. To illustrate this point, consider the following example:
 \begin{Example}
 Consider the declaration below.
 \begin{lstlisting}
@@ -20,13 +109,92 @@ int[N][M] a;
 The type of \C{a} is \C{int[N][M]}. This means that for an \C{x < M}, \C{a[x] } is of type \C{int[N]}, and for any \C{y < N}, \C{a[x][y]} is of type \C{int}.   
 \end{Example}
 
+\paragraph{Dynamic Length Arrays}
+
+When you declare an array of type \C{T[N]}, it is possible for \C{N} to be an arbitrary expression, as long as the expression is final as defined in \secref{final}. For example, consider the following code:
+\begin{lstlisting}
+harness void main(int n, int[n] in){
+ int[n] out = addone(n, in);
+}
+int[n] addone(int n, int[n] in){
+  int[n] out;
+  for(int i=0; i<n; ++i){
+    out[i] = in[i]+1;
+  }
+  return out;
+}
+\end{lstlisting}
+
+The code above illustrates one of the most common uses of dynamic length arrays: allowing functions to take arrays of arbitrary size. There are a few points worth mentioning. First, note that the size in the return array of \C{addone} refers to one of the parameters of the function. In general, the output type can refer to any of the input parameters, as well as to any final global variables---\ie{} global variables that are assigned a constant value upon declaration and are never changed again. Similarly, the type of an input parameter can refer to any variable that comes before it. It is important to remember, however, that any expression used as the size of the array must be final, so in particular, they cannot involve any function calls.
+
+When the size of the array needs to be computed by the function itself, there are two ways to proceed. One option is to give an over approximation of the size of the array as indicated by the example below. The other option is to package the array into a \C{struct} as shown in the next paragraph.
+
+\begin{Example}
+Consider a function that filters an array to return only those elements that are even. One cannot know the length of the return array a priori, because it depends on the data in the original array. One way to write such a function is as follows:
+\begin{lstlisting}
+int[N] filter(int N, int[N] in, ref int outsz){
+	outsz = 0;
+	int[N] out;
+	for(int i=0; i<N; ++i){ 
+		if(in[i]%2 == 0){
+			out[outsz++] = in[i];			
+		}
+	}
+	return out;
+}
+\end{lstlisting}
+Notice that the function returns an array of size N, even though in reality, only the first \C{outsz} elements matter. We may use the function as follows:
+\begin{lstlisting}
+int[N] tmp = filter(N, in, tsz);
+int sz = tsz;
+int[sz] filteredArray = tmp[0::sz];
+\end{lstlisting}
+The function uses the bulk array access \C{tmp[0::sz]}, which will be defined properly later in the section. A cleaner way of writing this example is shown in the next paragraph.
+\end{Example}
+
+\paragraph{Array fields}
+Records can also have arrays as fields. The expression for the array size can involve any final expression in scope, which in practice means final expressions involving global variables and other final fields. Keep in mind that if a field is final, then it must be initialized by the constructor of the record. 
+
+\begin{Example}
+Using array fileds, we can write a cleaner version of the filter function from before:
+\begin{lstlisting}
+struct Array{
+	int sz;
+	int[sz] A;
+}
+
+
+Array filter(Array arr){
+      int outsz = 0;
+	int[arr.sz] out;
+	for(int i=0; i<N; ++i){
+		if(in[i]%2 == 0){
+			out[outsz++] = arr.A[i];
+		}
+	}
+	return new Array(sz=outsz, A=out[0::outsz]);
+}
+\end{lstlisting}
+One interesting point to note is the size of \C{out}; because it uses \C{arr.sz}, that forces both the variable \C{arr} and the field \C{sz} to be final. The field \C{sz} was already final because it was used in the size of field \C{A}, but now that \C{arr} is also required to be final, assigning anything to it inside the function would be illegal and would be flagged by the type checker. Finally, the function uses the bulk array access \C{out[0::outsz]}, which will be defined in the next section.
+\end{Example}
+
+
+
+
+\flagdoc{bnd-arr-size}{
+If an input array is dynamically sized, the flag \C{--bnd-arr-size} can be used to control the maximum size arrays to be considered by the system. For any non-constant variable in the array size, the system will assume that that variable can have a maximum value of \C{--bnd-arr-size}. For example, if a sketch takes as input an array \C{int[N] x}, if \C{N} is another parameter, the system will consider arrays up to size \C{bnd-arr-size}. On the other hand, for an array parameter of type \C{int[N*N] x}, the system will consider arrays up to size \C{bnd-arr-size}$^2$.
+}
+
+
+
 \paragraph{Bulk array access}
-The indexing operation we just saw will read a single element from an array. The \SK\ language also contains support for extracting sub-arrays out of an array. If \C{a} is an array of type \C{T[N]}, we can extract a sub-array of size \C{M} using the following expression. 
+The indexing operation we just saw will read a single element from an array. The \SK\ language also includes support for extracting sub-arrays out of an array. If \C{a} is an array of type \C{T[N]}, we can extract a sub-array of size \C{M} using the following expression: 
 \begin{lstlisting}
 a[x::M]
 \end{lstlisting}
 
-If \C{M} is a constant greater than zero and \C{x + M $~\leq~$ N}, then the expression \C{ a[x::M]} produces an array of type \C{T[M]} containing the elements \C{a[x], ..., a[x+M-1]}. The expression \C{M} should be final, i.e. it cannot include any expressions with side effects (array accesses, function calls or unary increments) and any variables within it should be assigned only once and never changed (just like finals in Java; see more info in \secref{dlenarrs}).
+If \C{M} is greater than or equal to zero and \C{x + M $~\leq~$ N}, then the expression \C{ a[x::M]} produces an array of type \C{T[M]} containing the elements \C{a[x], ..., a[x+M-1]}. 
+
 Bulk array access of the form \C{a[x::M]} will generate an exception if any index between \C{x} and \C{x+M-1} is out of bounds. Specifically, the system checks that \C{x>=0} and \C{x+M <= N}, where \C{N} is the size of \C{a}. Notice that if \C{M} is zero, then it is legal for \C{x} to equal \C{N}.
 
 \paragraph{Array assignment}
@@ -79,10 +247,10 @@ will be of type int[3][4], and will be equivalent to the following array:
 In general, two arrays \C{a:T[n]} and \C{b:T[m]} will be compared according to the following recursive definition:
 
 \begin{lstlisting}
-	a:T[n] == b:T[m]  $\Rightarrow$ n==m $\wedge \forall$ i < n a[i]==b[i]
-	a:T[n] == b:$\tau$      $\Rightarrow$ n==1 $\wedge$ a[0] == b
+	a == b when a and b have type T[n] $\Rightarrow$ n==m $\wedge \forall$ i < n a[i]==b[i]
+	a == b when a is of type T[n] and b is of type T $\Rightarrow$ n==1 $\wedge$ a[0] == b
 \end{lstlisting}
-In the second line, it is assumed that $\tau$ is a non-array type. There is a symmetric case when \C{a} is of a non-array type.
+In the second line, it is assumed that T is a non-array type. There is a symmetric case when \C{a} is of a non-array type.
 
 
 \begin{Example}
@@ -118,102 +286,7 @@ While a sketch programmer can create arrays of any arbitrary type, arrays of bit
 Notice that most operators support operands of different sizes; the smaller array is padded to match the size of the bigger array according to the rules of padding from \secref{padding}. 
 
 
-\subsection{Dynamic Length Arrays}\seclabel{dlenarrs}
-When you declare an array of type \C{T[N]}, it is possible for \C{N} to be an arbitrary expression. For example, consider the following code:
-\begin{lstlisting}
-harness void main(int n, int[n] in){
- int[n] out = addone(n, in);
-}
-int[n] addone(int n, int[n] in){
-  int[n] out;
-  for(int i=0; i<n; ++i){
-    out[i] = in[i]+1;
-  }
-  return out;
-}
-\end{lstlisting}
-The code above illustrates one of the most common uses of dynamic length arrays: allowing functions to take arrays of arbitrary size. There are a few points worth mentioning. First, note that the size in the return array of \C{addone} refers to one of the parameters of the function. In general, the output type can refer to any of the input parameters, as well as to any \emph{constant} global variables---\ie{} global variables that are assigned a constant value upon declaration and are never changed again. Similarly, the type of an input parameter can refer to any variable that comes before it. However, output types and types of input parameters can not involve any function calls. 
 
-If a variable is used in the size of an array, its value should be final; \ie{} the value of that variable should not change during its scope. This rules out the use of reference parameters in array length expressions. It also means that some care must be taken if the length of the array is to be computed by the function. 
-
-\begin{Example}
-Consider a function that filters an array to return only those elements that are even. One cannot know the length of the return array a priori, because it depends on the data in the original array. One way to write such a function is as follows:
-\begin{lstlisting}
-int[N] filter(int N, int[N] in, ref int outsz){
-	outsz = 0;
-	int[N] out;
-	for(int i=0; i<N; ++i){ 
-		if(in[i]%2 == 0){
-			out[outsz++] = in[i];			
-		}
-	}
-	return out;
-}
-\end{lstlisting}
-Notice that the function returns an array of size N, even though in reality, only the first \C{outsz} elements matter. We may use the function as follows:
-\begin{lstlisting}
-int[N] tmp = filter(N, in, tsz);
-int sz = tsz;
-int[sz] filteredArray = tmp[0::sz];
-\end{lstlisting}
-This is admittedly awkward, and we hope to have better idioms for this in future versions of the language, but for know, that is the simplest way of producing an array of unknown length.
-\end{Example}
-
-
-\flagdoc{bnd-arr-size}{
-If an input array is dynamically sized, the flag \C{--bnd-arr-size} can be used to control the maximum size arrays to be considered by the system. For any non-constant variable in the array size, the system will assume that that variable can have a maximum value of \C{--bnd-arr-size}. For example, if a sketch takes as input an array \C{int[N] x}, if \C{N} is another parameter, the system will consider arrays up to size \C{bnd-arr-size}. On the other hand, for an array parameter of type \C{int[N*N] x}, the system will consider arrays up to size \C{bnd-arr-size}$^2$.
-}
-
-
-
-\subsection{Structs}
-In addition to arrays, the \Sk{} language supports heap allocated records. 
-
-To define a new record type, the programmer uses the following syntax (borrowed from C):
-\begin{lstlisting}
-struct $name${
-  $type_1$ $field_1$;
-  ...
-  $type_k$ $field_k$;
-}
-\end{lstlisting}
-One restriction on the types of fields is that you cannot have dynamic sized arrays; all array sizes must be compile time constants.
-
-
-To allocate a new record in the heap, the programmer uses the keyword \C{new}; the syntax is the same as that for constructing an object in Java using the default constructor. 
-
-Records are manipulated through references, which behave the same way as references in Java. The following example illustrates the main properties of records and references in \Sk{}.
-
-\begin{Example}
-The example below will behave the same way as an equivalent example would behave in Java. In particular, all the asserts will be satisfied.
-\begin{lstlisting}
-struct Car{
-  int license;
-}
-
-void main(){
-  Car c = new Car();
-  Car d = c;
-  c.license = 123;
-  assert d.license == 123;
-  strange(c, d);
-  assert d.license == 123;
-  assert d == c;
-}
-
-void strange(Car x, Car y){
-  x = new Car();
-  y = new Car();
-  x.license = 456;
-  y.license = 456;
-  assert x.license == y.license;
-  assert x != y;
-}
-\end{lstlisting}
-
-\end{Example}
-
-Just like in Java, references are typesafe and the heap is assumed to be garbage collected (which is another way of saying the synthesizer doesn't model deallocation). A consequence of this is that a reference to a record of type T must either be \C{null} or point to a valid object of type T. Also, just like in Java, all pointer dereferences have an implicit null pointer check.
 
 
 \subsection{Automatic Padding and Typecasting}
@@ -307,11 +380,6 @@ If \C{N} is an input variable, the first loop will be unrolled as many times as 
 
 
 
-
-\subsection{Global variables}
-The sketch language supports global variables with one important restriction: global arrays must be of constant dimension. You can use global variables for the dimension of an array as long as the global variable is constant. Global variables that are passed as reference parameters, or that are passed as parameters to function parameters will be considered to be non-constant. 
-
-
 \subsection{Functions}
 The sketch language also supports functions. The syntax for declaring a function is the same as in C. 
 
@@ -371,6 +439,9 @@ harness void main(int N, int[N] A){
 \end{lstlisting}
 	
 In the sketch above, \C{ForLoop} takes the closure involving the function \C{copy} and its local environment; the effect of the call to \C{ForLoop} is the same as if the body of copy had been placed in a traditional \C{for} loop. 
+
+One important point to notice about function parameters is that the signature does not specify what parameters it expects. This gives the language some flexibility, and in some cases allows one to make up for the fact that we don't have generics. However, it also has an important implication. Namely, when a function parameter is called, it is not possible to know which parameters will be reference parameters and which parameters will not, so any variable that is passed to a function that came as a parameter will be considered non-final.
+
 
 \subsection{Packages}
 
@@ -441,3 +512,7 @@ harness main(){
 //End file test.sk
 \end{lstlisting}
 \end{Example}
+
+\subsection{Global variables}
+The sketch language supports global variables with a few important restrictions. First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable. The second restriction is a consequence of the fact that only scalar global variables can be final; this means that global arrays must have constant dimensions since, in that scope, constants are the only thing that can be final.
+

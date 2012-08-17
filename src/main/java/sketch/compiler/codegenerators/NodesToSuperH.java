@@ -65,6 +65,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
 //        unIndent();
 //        result += indent + "}\n";
 
+        result += indent + escapeCName(struct.getName()) + "(){}\n";
         result += indent + escapeCName(struct.getName()) + "(";
         boolean first = true;
         for (Entry<String, Type> entry : struct) {
@@ -137,6 +138,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         String ret = "#ifndef " + defname + "\n";
         ret += "#define " + defname + "\n\n";
         ret += "#include <cstring>\n\n";
+        ret += "#include \"vops.h\"\n\n";
 
         for (StreamSpec pkg : prog.getStreams()) {
             ret += "namespace " + pkg.getName() + "{\n";
