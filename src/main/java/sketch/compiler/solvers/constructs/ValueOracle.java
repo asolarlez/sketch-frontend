@@ -46,15 +46,13 @@ public class ValueOracle extends AbstractValueOracle {
 		Integer val = valMap.get(var);
 
 		if(val != null){
-            if (t.equals(TypePrimitive.inttype)) {
+            if (t.equals(TypePrimitive.chartype)) {
+                char c = (char) val.intValue();
+                return (new ExprConstChar(node, c));
+            } else {
 		        int i = val.intValue();
 		        return (new ExprConstInt(node, i));
 		    }
- else if (t.equals(TypePrimitive.chartype)) {
-                char c = (char) val.intValue();
-                return (new ExprConstChar(node, c));
-            }
-		    
 		}		
 		return new ExprConstInt(node, -1);
 	}

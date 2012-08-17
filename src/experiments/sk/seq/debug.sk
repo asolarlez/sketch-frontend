@@ -1,101 +1,87 @@
-struct FIFO{
-    int depth;
-    int cnt;
+package Array;
+
+
+int INTEGER=0;
+
+int LIST=1;
+
+
+struct MultiType{
+
+   MTArray lst;
+
+   int val;
+
+   int flag;
+
 }
 
-struct State{
-  FIFO x;
-  FIFO y;
-  FIFO z;
+
+struct MTArray{
+
+   int len;
+
+   MultiType[len] A;  
+
 }
 
-bit compareFIFO(FIFO f1, FIFO f2){
-    return f1.depth==f2.depth && f1.cnt == f2.cnt;
+
+
+MultiType plus(MultiType x, MultiType y){
+
+
+
+if(x.flag == INTEGER){ 
+
+    assert y.flag == INTEGER; 
+
+    MultiType w = new MultiType(val=x.val+y.val, flag=INTEGER);
+
+    return w;
+
 }
 
-FIFO copyFIFO(FIFO f){
-  return new FIFO(depth=f.depth, cnt=f.cnt);
+
+if(y.flag == INTEGER){ 
+
+    assert x.flag == INTEGER;
+
+    MultiType w = new MultiType(val=x.val+y.val, flag=INTEGER);
+
+    return w;
+
 }
 
-FIFO enqFIFO(FIFO f){
-    assert(f.cnt < f.depth);
-    return new FIFO(depth=f.depth, cnt=f.cnt+1);
 }
 
-FIFO deqFIFO(FIFO f){
-    assert(f.cnt > 0);
-    return new FIFO(depth=f.depth, cnt=f.cnt-1);
-}
 
-bit compareState(State s1, State s2){
-    return compareFIFO(s1.x, s2.x) && compareFIFO(s1.y,s2.y) && compareFIFO(s1.z,s2.z);
-}
 
-State copyState(State s){
-    return new State(x=copyFIFO(s.x), y=copyFIFO(s.y), z=copyFIFO(s.z));
-} 
 
-State newState(int d){
-    return new State(x=new FIFO(depth=d,cnt=0),y=new FIFO(depth=d,cnt=0),z=new FIFO(depth=d,cnt=0));
-}
+
+harness void plusCheck() {
+
     
-State a(State state){
-    FIFO new_x = enqFIFO(state.x);
-    return new State(x=new_x,y=copyFIFO(state.y),z=copyFIFO(state.z));
-}
 
-State b(State state){
-    FIFO new_x = deqFIFO(state.x);
-    FIFO new_y = enqFIFO(state.y);
-    return new State(x=new_x,y=new_y,z=copyFIFO(state.z)); 
-}
+  MultiType x = new MultiType(lst=new MTArray(A={new MultiType(val=10, flag=INTEGER)}, len=2), flag=LIST);
 
-State c(State state){
-    FIFO new_y = deqFIFO(state.y);
-    FIFO new_z = enqFIFO(state.z);
-    return new State(x=copyFIFO(state.x),y=new_y,z=new_z);
-}
+  MultiType y = new MultiType(val=5, flag=INTEGER);
 
-State d(State state){
-    FIFO new_z = deqFIFO(state.z);
-    return new State(x=copyFIFO(state.x),y=copyFIFO(state.y),z=new_z);
-}
+    MultiType w = new MultiType(val=7, flag=INTEGER);
 
-generator State run(int steps, State state){
-    State new_state;
-    if(??){ 
-        new_state = a(state); 
-    }else{
-        if(??){ 
-            new_state = b(state); 
-        }else{
-            if(??){
-                new_state = c(state);
-            }else{
-                new_state = d(state);
-            }
-        }
-    }
     
-    if(??){
-        assert steps > 0;
-        return run(steps - 1, new_state);
-    }else{
-        return new_state;
-    }
-}
 
-State runGen(int steps, State state){
-    return run(steps, state);
-}
+  MultiType z = new MultiType(lst=new MTArray(A={}, len=0), flag=LIST);
 
-State runInit(int steps, State state){
-    return run(steps, state);
-}
+    MultiType u = new MultiType(val=0, flag=INTEGER);
 
-harness void main(){
-    State state = newState(2);
-    State snapshot = runInit(??, state);
-    State final_state = runGen(20, snapshot);
-    assert compareState(final_state,snapshot);
+
+    MultiType t = new MultiType(lst=new MTArray(A={new MultiType(val=10, flag=INTEGER), y}, len=2), flag=LIST);
+
+    MultiType v = new MultiType(val=12, flag=INTEGER);
+
+u = plus(y, w);
+
+    assert u == v;
+
+
 }
