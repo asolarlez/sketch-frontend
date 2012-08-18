@@ -1,0 +1,308 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct ConcreteIteration
+{
+ int project_id;
+}
+
+ConcreteIteration ConcreteIteration_new (int project_id)
+{
+  ConcreteIteration n = new ConcreteIteration();
+  n.project_id = project_id;
+  return n;
+}
+
+
+struct Project
+{
+ int id;
+}
+
+Project Project_new (int id)
+{
+  Project n = new Project();
+  n.id = id;
+  return n;
+}
+
+
+harness void getAllConcreteIterationsForAProject(int tmp_sz, int cits_sz, int i_1,
+                                                 bit loop_0_2, int flat_4, int flat_5_9,
+                                                 int flat_6_10, bit flat_7_11, int _project_id,
+                                                 int cit_3_8_project_id, int [MAX_LEN]  tmp_project_id,
+                                                 int [MAX_LEN]  cits_project_id)
+
+ {
+ Project _project = new Project();
+ _project.id = _project_id;
+ ConcreteIteration cit_3_8 = new ConcreteIteration();
+ cit_3_8.project_id = cit_3_8_project_id;
+ ConcreteIteration [MAX_LEN]  tmp;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  tmp[i] = new ConcreteIteration();
+  tmp[i].project_id = tmp_project_id[i]; }
+ 
+ ConcreteIteration [MAX_LEN]  cits;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  cits[i] = new ConcreteIteration();
+  cits[i].project_id = cits_project_id[i]; }
+ 
+ if (true && (tmp_sz >= 0 && tmp_sz < MAX_LEN) && (cits_sz >= 0 && cits_sz < MAX_LEN))
+  {
+  if (i_1 < cits_sz && invariant0(tmp_sz, cits_sz, i_1, loop_0_2, _project, tmp,
+                                  cits))
+   {
+   assert cits[i_1].project_id == _project.id && invariant0(tmp_sz, cits_sz, i_1 +
+                                                              1, loop_0_2, _project,
+                                                            append_4(tmp, tmp_sz,
+                                                                     cits[i_1], tmp_sz),
+                                                            cits) || !(cits[i_1].
+                                                                         project_id ==
+                                                                         _project.
+                                                                           id) &&
+     invariant0(tmp_sz, cits_sz, i_1 + 1, loop_0_2, _project, tmp, cits); }
+  
+  if (!(i_1 < cits_sz) && invariant0(tmp_sz, cits_sz, i_1, loop_0_2, _project, tmp,
+                                     cits))
+   {
+   assert postcondition(tmp_sz, cits_sz, i_1, loop_0_2, flat_4, flat_5_9, flat_6_10,
+                        flat_7_11, _project, cit_3_8, tmp, cits); }
+  
+  if (true)
+   {
+   assert invariant0(0, cits_sz, 0, false, _project, tmp, cits); }
+   }
+  }
+
+
+bit invariant0(int tmp_sz, int cits_sz, int i_1, bit loop_0_2, Project _project,
+               ConcreteIteration [MAX_LEN]  tmp, ConcreteIteration [MAX_LEN]  cits) {
+ if (pred1(i_1, cits_sz, i_1, loop_0_2))
+  {
+  ConcreteIteration [MAX_LEN]  list2;
+  int list2_sz;
+  top_list2(cits, cits_sz, tmp_sz, cits_sz, i_1, loop_0_2, _project, tmp, cits, list2,
+            list2_sz);
+  ConcreteIteration [MAX_LEN]  list3;
+  int list3_sz;
+  select_list3(list2, list2_sz, tmp_sz, cits_sz, i_1, loop_0_2, _project, tmp, cits,
+               list3, list3_sz);
+  ConcreteIteration [MAX_LEN]  list4;
+  int list4_sz;
+  project_list4(list3, list3_sz, list4, list4_sz);
+  return {| 
+  equals_list5(tmp, tmp_sz, list4, list4_sz) |}; }
+  else return 0; }
+
+
+ConcreteIteration [MAX_LEN] append_0 (ConcreteIteration [MAX_LEN] list, int list_sz, ConcreteIteration e, ref int outputList_sz)
+{
+  ConcreteIteration [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteIteration [MAX_LEN] append_1 (ConcreteIteration [MAX_LEN] list, int list_sz, ConcreteIteration e, ref int outputList_sz)
+{
+  ConcreteIteration [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteIteration [MAX_LEN] append_2 (ConcreteIteration [MAX_LEN] list, int list_sz, ConcreteIteration e, ref int outputList_sz)
+{
+  ConcreteIteration [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteIteration [MAX_LEN] append_3 (ConcreteIteration [MAX_LEN] list, int list_sz, ConcreteIteration e, ref int outputList_sz)
+{
+  ConcreteIteration [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteIteration [MAX_LEN] append_4 (ConcreteIteration [MAX_LEN] list, int list_sz, ConcreteIteration e, ref int outputList_sz)
+{
+  ConcreteIteration [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+bit postcondition(int tmp_sz, int cits_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9,
+                  int flat_6_10, bit flat_7_11, Project _project, ConcreteIteration cit_3_8,
+                  ConcreteIteration [MAX_LEN]  tmp, ConcreteIteration [MAX_LEN]  cits) {
+ ConcreteIteration [MAX_LEN]  list6;
+ int list6_sz;
+ top_list6(cits, cits_sz, tmp_sz, cits_sz, i_1, loop_0_2, flat_4, flat_5_9, flat_6_10,
+           flat_7_11, _project, cit_3_8, tmp, cits, list6, list6_sz);
+ ConcreteIteration [MAX_LEN]  list7;
+ int list7_sz;
+ select_list7(list6, list6_sz, tmp_sz, cits_sz, i_1, loop_0_2, flat_4, flat_5_9,
+              flat_6_10, flat_7_11, _project, cit_3_8, tmp, cits, list7, list7_sz);
+ ConcreteIteration [MAX_LEN]  list8;
+ int list8_sz;
+ project_list8(list7, list7_sz, list8, list8_sz);
+ return {| 
+ equals_list9(tmp, tmp_sz, list8, list8_sz) |}; }
+
+
+generator bit pred1 (int i_1, int cits_sz, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| cits_sz |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_1 > rightOperand;
+  else if (operator == 2) return i_1 <= rightOperand;
+  else if (operator == 3) return i_1 < rightOperand;
+  else if (operator == 4) return i_1 == rightOperand;
+  else return i_1 >= rightOperand;
+}
+
+
+void top_list2 (ConcreteIteration [MAX_LEN] cits, int cits_sz, int tmp_sz, int cits_sz, int i_1, bit loop_0_2, Project _project, ConcreteIteration [MAX_LEN] tmp, ConcreteIteration [MAX_LEN] cits, ref ConcreteIteration [MAX_LEN] list2, ref int list2_sz)
+{
+  list2_sz = {| tmp_sz | cits_sz | i_1 |};
+  list2 = cits[0::list2_sz];
+}
+
+
+void select_list3 (ConcreteIteration [MAX_LEN] list2, int list2_sz, int tmp_sz, int cits_sz, int i_1, bit loop_0_2, Project _project, ConcreteIteration [MAX_LEN] tmp, ConcreteIteration [MAX_LEN] cits, ref ConcreteIteration [MAX_LEN] list3, ref int list3_sz)
+{
+  list3_sz = 0;
+  for (int i = 0; i < list2_sz; ++i)
+  {
+    if (select_list3_pred(list2[i], tmp_sz, cits_sz, i_1, loop_0_2, _project, tmp, cits))
+    {
+      list3[list3_sz] = list2[i];
+      ++list3_sz;
+    }
+  }
+}
+generator bit select_list3_pred (ConcreteIteration tuple, int tmp_sz, int cits_sz, int i_1, bit loop_0_2, Project _project, ConcreteIteration [MAX_LEN] tmp, ConcreteIteration [MAX_LEN] cits)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.project_id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.project_id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.project_id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.project_id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.project_id == i_1;
+      else if (operator0 == 6) pred0 = tuple.project_id == _project.id;
+      else pred0 = tuple.project_id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list4 (ConcreteIteration [MAX_LEN] list3, int list3_sz, ref ConcreteIteration [MAX_LEN] list4, ref int list4_sz)
+{
+  list4_sz = list3_sz;
+  list4 = list3;
+}
+
+
+bit equals_list5 (ConcreteIteration [MAX_LEN] tmp, int tmp_sz, ref ConcreteIteration [MAX_LEN] list4, ref int list4_sz)
+{
+  if (tmp_sz != list4_sz) return 0;
+  for (int i = 0; i < tmp_sz; ++i)
+  {
+    if (tmp[i].project_id != list4[i].project_id)
+      return 0;
+  }
+  return 1;
+}
+
+
+void top_list6 (ConcreteIteration [MAX_LEN] cits, int cits_sz, int tmp_sz, int cits_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9, int flat_6_10, bit flat_7_11, Project _project, ConcreteIteration cit_3_8, ConcreteIteration [MAX_LEN] tmp, ConcreteIteration [MAX_LEN] cits, ref ConcreteIteration [MAX_LEN] list6, ref int list6_sz)
+{
+  list6_sz = {| tmp_sz | cits_sz | i_1 | flat_4 | flat_5_9 | flat_6_10 |};
+  list6 = cits[0::list6_sz];
+}
+
+
+void select_list7 (ConcreteIteration [MAX_LEN] list6, int list6_sz, int tmp_sz, int cits_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9, int flat_6_10, bit flat_7_11, Project _project, ConcreteIteration cit_3_8, ConcreteIteration [MAX_LEN] tmp, ConcreteIteration [MAX_LEN] cits, ref ConcreteIteration [MAX_LEN] list7, ref int list7_sz)
+{
+  list7_sz = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (select_list7_pred(list6[i], tmp_sz, cits_sz, i_1, loop_0_2, flat_4, flat_5_9, flat_6_10, flat_7_11, _project, cit_3_8, tmp, cits))
+    {
+      list7[list7_sz] = list6[i];
+      ++list7_sz;
+    }
+  }
+}
+generator bit select_list7_pred (ConcreteIteration tuple, int tmp_sz, int cits_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9, int flat_6_10, bit flat_7_11, Project _project, ConcreteIteration cit_3_8, ConcreteIteration [MAX_LEN] tmp, ConcreteIteration [MAX_LEN] cits)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.project_id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.project_id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.project_id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.project_id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.project_id == i_1;
+      else if (operator0 == 6) pred0 = tuple.project_id == flat_4;
+      else if (operator0 == 7) pred0 = tuple.project_id == flat_5_9;
+      else if (operator0 == 8) pred0 = tuple.project_id == flat_6_10;
+      else if (operator0 == 9) pred0 = tuple.project_id == _project.id;
+      else if (operator0 == 10) pred0 = tuple.project_id == cit_3_8.project_id;
+      else pred0 = tuple.project_id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list8 (ConcreteIteration [MAX_LEN] list7, int list7_sz, ref ConcreteIteration [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = list7_sz;
+  list8 = list7;
+}
+
+
+bit equals_list9 (ConcreteIteration [MAX_LEN] tmp, int tmp_sz, ref ConcreteIteration [MAX_LEN] list8, ref int list8_sz)
+{
+  if (tmp_sz != list8_sz) return 0;
+  for (int i = 0; i < tmp_sz; ++i)
+  {
+    if (tmp[i].project_id != list8[i].project_id)
+      return 0;
+  }
+  return 1;
+}
+

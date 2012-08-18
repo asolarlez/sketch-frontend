@@ -1,0 +1,133 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct Process2
+{
+ int presentationName;
+ int id;
+}
+
+Process2 Process2_new (int presentationName, int id)
+{
+  Process2 n = new Process2();
+  n.presentationName = presentationName;
+  n.id = id;
+  return n;
+}
+
+
+harness void getProcessManagerView(int managerList_sz, int ret, int flat_0, bit flat_1,
+                                   int [MAX_LEN]  managerList_presentationName, int [MAX_LEN]  managerList_id)
+
+ {
+ Process2 [MAX_LEN]  managerList;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  managerList[i] = new Process2();
+  managerList[i].presentationName = managerList_presentationName[i];
+  managerList[i].id = managerList_id[i]; }
+ 
+ if (true && (managerList_sz >= 0 && managerList_sz < MAX_LEN))
+  {
+  if (true)
+   {
+   assert managerList_sz == 0 && postcondition(managerList_sz, 1, managerList_sz,
+                                               managerList_sz == 0, managerList) ||
+     !(managerList_sz == 0) && postcondition(managerList_sz, 0, managerList_sz, managerList_sz ==
+                                               0, managerList); }
+   }
+  }
+
+
+bit postcondition(int managerList_sz, int ret, int flat_0, bit flat_1, Process2 [MAX_LEN]  managerList) {
+ Process2 [MAX_LEN]  list1;
+ int list1_sz;
+ top_list1(managerList, managerList_sz, managerList_sz, ret, flat_0, flat_1, managerList,
+           list1, list1_sz);
+ Process2 [MAX_LEN]  list2;
+ int list2_sz;
+ select_list2(list1, list1_sz, managerList_sz, ret, flat_0, flat_1, managerList,
+              list2, list2_sz);
+ return {| 
+ ret == agg_agg3(list2, list2_sz) |}; }
+
+
+void top_list1 (Process2 [MAX_LEN] managerList, int managerList_sz, int managerList_sz, int ret, int flat_0, bit flat_1, Process2 [MAX_LEN] managerList, ref Process2 [MAX_LEN] list1, ref int list1_sz)
+{
+  list1_sz = {| managerList_sz | ret | flat_0 |};
+  list1 = managerList[0::list1_sz];
+}
+
+
+void select_list2 (Process2 [MAX_LEN] list1, int list1_sz, int managerList_sz, int ret, int flat_0, bit flat_1, Process2 [MAX_LEN] managerList, ref Process2 [MAX_LEN] list2, ref int list2_sz)
+{
+  list2_sz = 0;
+  for (int i = 0; i < list1_sz; ++i)
+  {
+    if (select_list2_pred(list1[i], managerList_sz, ret, flat_0, flat_1, managerList))
+    {
+      list2[list2_sz] = list1[i];
+      ++list2_sz;
+    }
+  }
+}
+generator bit select_list2_pred (Process2 tuple, int managerList_sz, int ret, int flat_0, bit flat_1, Process2 [MAX_LEN] managerList)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.presentationName > ??(2);
+      else if (operator0 == 2) pred0 = tuple.presentationName <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.presentationName < ??(2);
+      else if (operator0 == 4) pred0 = tuple.presentationName == ??(2);
+      else if (operator0 == 5) pred0 = tuple.presentationName == ret;
+      else if (operator0 == 6) pred0 = tuple.presentationName == flat_0;
+      else pred0 = tuple.presentationName >= ??(2);
+      bit pred1;
+      int operator1 = ??;
+      if (operator1 == 0) pred1 = 1;
+      else if (operator1 == 1) pred1 = tuple.id > ??(2);
+      else if (operator1 == 2) pred1 = tuple.id <= ??(2);
+      else if (operator1 == 3) pred1 = tuple.id < ??(2);
+      else if (operator1 == 4) pred1 = tuple.id == ??(2);
+      else if (operator1 == 5) pred1 = tuple.id == ret;
+      else if (operator1 == 6) pred1 = tuple.id == flat_0;
+      else pred1 = tuple.id >= ??(2);
+      out = out && {| pred0 | pred1 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg3 (Process2 [MAX_LEN] list2, int list2_sz)
+{
+  int count = list2_sz;
+  int max_presentationName = 0; int sum_presentationName = 0; int min_presentationName = 3; int avg_presentationName = 0;
+  for (int i = 0; i < list2_sz; ++i)
+  {
+    if (list2[i].presentationName > max_presentationName)
+      max_presentationName = list2[i].presentationName;
+    if (list2[i].presentationName < min_presentationName)
+      min_presentationName = list2[i].presentationName;
+    sum_presentationName += list2[i].presentationName;
+  }
+  avg_presentationName = count==0?0: (sum_presentationName / count);
+  int max_id = 0; int sum_id = 0; int min_id = 3; int avg_id = 0;
+  for (int i = 0; i < list2_sz; ++i)
+  {
+    if (list2[i].id > max_id)
+      max_id = list2[i].id;
+    if (list2[i].id < min_id)
+      min_id = list2[i].id;
+    sum_id += list2[i].id;
+  }
+  avg_id = count==0?0: (sum_id / count);
+  return {| count | max_presentationName | sum_presentationName | min_presentationName | avg_presentationName | max_id | sum_id | min_id | avg_id |};
+}
+

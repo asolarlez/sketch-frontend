@@ -1,0 +1,308 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct Project
+{
+ int id;
+}
+
+Project Project_new (int id)
+{
+  Project n = new Project();
+  n.id = id;
+  return n;
+}
+
+
+struct ConcreteActivity
+{
+ int id;
+}
+
+ConcreteActivity ConcreteActivity_new (int id)
+{
+  ConcreteActivity n = new ConcreteActivity();
+  n.id = id;
+  return n;
+}
+
+
+harness void getConcreteActivitiesFromActivityAndForAProject(int tmp_sz, int cacts_sz,
+                                                             int i_1, bit loop_0_2,
+                                                             int flat_4, int flat_5_9,
+                                                             int flat_6_10, bit flat_7_11,
+                                                             int _project_id, int cact_3_8_id,
+                                                             int [MAX_LEN]  tmp_id,
+                                                             int [MAX_LEN]  cacts_id)
+
+ {
+ Project _project = new Project();
+ _project.id = _project_id;
+ ConcreteActivity cact_3_8 = new ConcreteActivity();
+ cact_3_8.id = cact_3_8_id;
+ ConcreteActivity [MAX_LEN]  tmp;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  tmp[i] = new ConcreteActivity();
+  tmp[i].id = tmp_id[i]; }
+ 
+ ConcreteActivity [MAX_LEN]  cacts;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  cacts[i] = new ConcreteActivity();
+  cacts[i].id = cacts_id[i]; }
+ 
+ if (true && (tmp_sz >= 0 && tmp_sz < MAX_LEN) && (cacts_sz >= 0 && cacts_sz < MAX_LEN))
+  {
+  if (i_1 < cacts_sz && invariant0(tmp_sz, cacts_sz, i_1, loop_0_2, _project, tmp,
+                                   cacts))
+   {
+   assert cacts[i_1].id == _project.id && invariant0(tmp_sz, cacts_sz, i_1 + 1, loop_0_2,
+                                                     _project, append_4(tmp, tmp_sz,
+                                                                        cacts[i_1],
+                                                                        tmp_sz),
+                                                     cacts) || !(cacts[i_1].id ==
+                                                                   _project.id) &&
+     invariant0(tmp_sz, cacts_sz, i_1 + 1, loop_0_2, _project, tmp, cacts); }
+  
+  if (!(i_1 < cacts_sz) && invariant0(tmp_sz, cacts_sz, i_1, loop_0_2, _project,
+                                      tmp, cacts))
+   {
+   assert postcondition(tmp_sz, cacts_sz, i_1, loop_0_2, flat_4, flat_5_9, flat_6_10,
+                        flat_7_11, _project, cact_3_8, tmp, cacts); }
+  
+  if (true)
+   {
+   assert invariant0(0, cacts_sz, 0, false, _project, tmp, cacts); }
+   }
+  }
+
+
+bit invariant0(int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, Project _project,
+               ConcreteActivity [MAX_LEN]  tmp, ConcreteActivity [MAX_LEN]  cacts) {
+ if (pred1(i_1, cacts_sz, i_1, loop_0_2))
+  {
+  ConcreteActivity [MAX_LEN]  list2;
+  int list2_sz;
+  top_list2(cacts, cacts_sz, tmp_sz, cacts_sz, i_1, loop_0_2, _project, tmp, cacts,
+            list2, list2_sz);
+  ConcreteActivity [MAX_LEN]  list3;
+  int list3_sz;
+  select_list3(list2, list2_sz, tmp_sz, cacts_sz, i_1, loop_0_2, _project, tmp, cacts,
+               list3, list3_sz);
+  ConcreteActivity [MAX_LEN]  list4;
+  int list4_sz;
+  project_list4(list3, list3_sz, list4, list4_sz);
+  return {| 
+  equals_list5(tmp, tmp_sz, list4, list4_sz) |}; }
+  else return 0; }
+
+
+ConcreteActivity [MAX_LEN] append_0 (ConcreteActivity [MAX_LEN] list, int list_sz, ConcreteActivity e, ref int outputList_sz)
+{
+  ConcreteActivity [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteActivity [MAX_LEN] append_1 (ConcreteActivity [MAX_LEN] list, int list_sz, ConcreteActivity e, ref int outputList_sz)
+{
+  ConcreteActivity [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteActivity [MAX_LEN] append_2 (ConcreteActivity [MAX_LEN] list, int list_sz, ConcreteActivity e, ref int outputList_sz)
+{
+  ConcreteActivity [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteActivity [MAX_LEN] append_3 (ConcreteActivity [MAX_LEN] list, int list_sz, ConcreteActivity e, ref int outputList_sz)
+{
+  ConcreteActivity [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteActivity [MAX_LEN] append_4 (ConcreteActivity [MAX_LEN] list, int list_sz, ConcreteActivity e, ref int outputList_sz)
+{
+  ConcreteActivity [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+bit postcondition(int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9,
+                  int flat_6_10, bit flat_7_11, Project _project, ConcreteActivity cact_3_8,
+                  ConcreteActivity [MAX_LEN]  tmp, ConcreteActivity [MAX_LEN]  cacts) {
+ ConcreteActivity [MAX_LEN]  list6;
+ int list6_sz;
+ top_list6(cacts, cacts_sz, tmp_sz, cacts_sz, i_1, loop_0_2, flat_4, flat_5_9, flat_6_10,
+           flat_7_11, _project, cact_3_8, tmp, cacts, list6, list6_sz);
+ ConcreteActivity [MAX_LEN]  list7;
+ int list7_sz;
+ select_list7(list6, list6_sz, tmp_sz, cacts_sz, i_1, loop_0_2, flat_4, flat_5_9,
+              flat_6_10, flat_7_11, _project, cact_3_8, tmp, cacts, list7, list7_sz);
+ ConcreteActivity [MAX_LEN]  list8;
+ int list8_sz;
+ project_list8(list7, list7_sz, list8, list8_sz);
+ return {| 
+ equals_list9(tmp, tmp_sz, list8, list8_sz) |}; }
+
+
+generator bit pred1 (int i_1, int cacts_sz, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| cacts_sz |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_1 > rightOperand;
+  else if (operator == 2) return i_1 <= rightOperand;
+  else if (operator == 3) return i_1 < rightOperand;
+  else if (operator == 4) return i_1 == rightOperand;
+  else return i_1 >= rightOperand;
+}
+
+
+void top_list2 (ConcreteActivity [MAX_LEN] cacts, int cacts_sz, int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, Project _project, ConcreteActivity [MAX_LEN] tmp, ConcreteActivity [MAX_LEN] cacts, ref ConcreteActivity [MAX_LEN] list2, ref int list2_sz)
+{
+  list2_sz = {| tmp_sz | cacts_sz | i_1 |};
+  list2 = cacts[0::list2_sz];
+}
+
+
+void select_list3 (ConcreteActivity [MAX_LEN] list2, int list2_sz, int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, Project _project, ConcreteActivity [MAX_LEN] tmp, ConcreteActivity [MAX_LEN] cacts, ref ConcreteActivity [MAX_LEN] list3, ref int list3_sz)
+{
+  list3_sz = 0;
+  for (int i = 0; i < list2_sz; ++i)
+  {
+    if (select_list3_pred(list2[i], tmp_sz, cacts_sz, i_1, loop_0_2, _project, tmp, cacts))
+    {
+      list3[list3_sz] = list2[i];
+      ++list3_sz;
+    }
+  }
+}
+generator bit select_list3_pred (ConcreteActivity tuple, int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, Project _project, ConcreteActivity [MAX_LEN] tmp, ConcreteActivity [MAX_LEN] cacts)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == i_1;
+      else if (operator0 == 6) pred0 = tuple.id == _project.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list4 (ConcreteActivity [MAX_LEN] list3, int list3_sz, ref ConcreteActivity [MAX_LEN] list4, ref int list4_sz)
+{
+  list4_sz = list3_sz;
+  list4 = list3;
+}
+
+
+bit equals_list5 (ConcreteActivity [MAX_LEN] tmp, int tmp_sz, ref ConcreteActivity [MAX_LEN] list4, ref int list4_sz)
+{
+  if (tmp_sz != list4_sz) return 0;
+  for (int i = 0; i < tmp_sz; ++i)
+  {
+    if (tmp[i].id != list4[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+void top_list6 (ConcreteActivity [MAX_LEN] cacts, int cacts_sz, int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9, int flat_6_10, bit flat_7_11, Project _project, ConcreteActivity cact_3_8, ConcreteActivity [MAX_LEN] tmp, ConcreteActivity [MAX_LEN] cacts, ref ConcreteActivity [MAX_LEN] list6, ref int list6_sz)
+{
+  list6_sz = {| tmp_sz | cacts_sz | i_1 | flat_4 | flat_5_9 | flat_6_10 |};
+  list6 = cacts[0::list6_sz];
+}
+
+
+void select_list7 (ConcreteActivity [MAX_LEN] list6, int list6_sz, int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9, int flat_6_10, bit flat_7_11, Project _project, ConcreteActivity cact_3_8, ConcreteActivity [MAX_LEN] tmp, ConcreteActivity [MAX_LEN] cacts, ref ConcreteActivity [MAX_LEN] list7, ref int list7_sz)
+{
+  list7_sz = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (select_list7_pred(list6[i], tmp_sz, cacts_sz, i_1, loop_0_2, flat_4, flat_5_9, flat_6_10, flat_7_11, _project, cact_3_8, tmp, cacts))
+    {
+      list7[list7_sz] = list6[i];
+      ++list7_sz;
+    }
+  }
+}
+generator bit select_list7_pred (ConcreteActivity tuple, int tmp_sz, int cacts_sz, int i_1, bit loop_0_2, int flat_4, int flat_5_9, int flat_6_10, bit flat_7_11, Project _project, ConcreteActivity cact_3_8, ConcreteActivity [MAX_LEN] tmp, ConcreteActivity [MAX_LEN] cacts)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == i_1;
+      else if (operator0 == 6) pred0 = tuple.id == flat_4;
+      else if (operator0 == 7) pred0 = tuple.id == flat_5_9;
+      else if (operator0 == 8) pred0 = tuple.id == flat_6_10;
+      else if (operator0 == 9) pred0 = tuple.id == _project.id;
+      else if (operator0 == 10) pred0 = tuple.id == cact_3_8.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list8 (ConcreteActivity [MAX_LEN] list7, int list7_sz, ref ConcreteActivity [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = list7_sz;
+  list8 = list7;
+}
+
+
+bit equals_list9 (ConcreteActivity [MAX_LEN] tmp, int tmp_sz, ref ConcreteActivity [MAX_LEN] list8, ref int list8_sz)
+{
+  if (tmp_sz != list8_sz) return 0;
+  for (int i = 0; i < tmp_sz; ++i)
+  {
+    if (tmp[i].id != list8[i].id)
+      return 0;
+  }
+  return 1;
+}
+

@@ -1,0 +1,270 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct Issue
+{
+ int id;
+}
+
+Issue Issue_new (int id)
+{
+  Issue n = new Issue();
+  n.id = id;
+  return n;
+}
+
+
+harness void getIssueComponentIds(int issueId, int componentIds_sz, int components_sz,
+                                  int i_2, bit loop_0_3, int flat_1_4, int issue_5_6_id,
+                                  int [MAX_LEN]  componentIds_id, int [MAX_LEN]  components_id)
+
+ {
+ Issue issue_5_6 = new Issue();
+ issue_5_6.id = issue_5_6_id;
+ Issue [MAX_LEN]  componentIds;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  componentIds[i] = new Issue();
+  componentIds[i].id = componentIds_id[i]; }
+ 
+ Issue [MAX_LEN]  components;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  components[i] = new Issue();
+  components[i].id = components_id[i]; }
+ 
+ if (true && (componentIds_sz >= 0 && componentIds_sz < MAX_LEN) && (components_sz >=
+                                                                       0 && components_sz <
+                                                                       MAX_LEN))
+  {
+  if (i_2 < components_sz && invariant0(issueId, componentIds_sz, components_sz,
+                                        i_2, loop_0_3, componentIds, components))
+   {
+   assert invariant0(issueId, componentIds_sz, components_sz, i_2 + 1, loop_0_3,
+                     append_1(componentIds, componentIds_sz, components[i_2], componentIds_sz),
+                     components); }
+  
+  if (!(i_2 < components_sz) && invariant0(issueId, componentIds_sz, components_sz,
+                                           i_2, loop_0_3, componentIds, components))
+   {
+   assert postcondition(issueId, componentIds_sz, components_sz, i_2, loop_0_3, flat_1_4,
+                        issue_5_6, componentIds, components); }
+  
+  if (true)
+   {
+   assert invariant0(issueId, 0, components_sz, 0, false, componentIds, components);
+  }
+   }
+  }
+
+
+bit invariant0(int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3,
+               Issue [MAX_LEN]  componentIds, Issue [MAX_LEN]  components) {
+ if (pred1(issueId, issueId, components_sz, i_2, loop_0_3) && pred2(i_2, issueId,
+                                                                    components_sz,
+                                                                    i_2, loop_0_3))
+  {
+  Issue [MAX_LEN]  list3;
+  int list3_sz;
+  top_list3(components, components_sz, issueId, componentIds_sz, components_sz, i_2,
+            loop_0_3, componentIds, components, list3, list3_sz);
+  Issue [MAX_LEN]  list4;
+  int list4_sz;
+  select_list4(list3, list3_sz, issueId, componentIds_sz, components_sz, i_2, loop_0_3,
+               componentIds, components, list4, list4_sz);
+  Issue [MAX_LEN]  list5;
+  int list5_sz;
+  project_list5(list4, list4_sz, list5, list5_sz);
+  return {| 
+  equals_list6(componentIds, componentIds_sz, list5, list5_sz) |}; }
+  else return 0; }
+
+
+Issue [MAX_LEN] append_0 (Issue [MAX_LEN] list, int list_sz, Issue e, ref int outputList_sz)
+{
+  Issue [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+Issue [MAX_LEN] append_1 (Issue [MAX_LEN] list, int list_sz, Issue e, ref int outputList_sz)
+{
+  Issue [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+bit postcondition(int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3,
+                  int flat_1_4, Issue issue_5_6, Issue [MAX_LEN]  componentIds, Issue [MAX_LEN]  components) {
+ Issue [MAX_LEN]  list7;
+ int list7_sz;
+ top_list7(components, components_sz, issueId, componentIds_sz, components_sz, i_2,
+           loop_0_3, flat_1_4, issue_5_6, componentIds, components, list7, list7_sz);
+ Issue [MAX_LEN]  list8;
+ int list8_sz;
+ select_list8(list7, list7_sz, issueId, componentIds_sz, components_sz, i_2, loop_0_3,
+              flat_1_4, issue_5_6, componentIds, components, list8, list8_sz);
+ Issue [MAX_LEN]  list9;
+ int list9_sz;
+ project_list9(list8, list8_sz, list9, list9_sz);
+ return {| 
+ equals_list10(componentIds, componentIds_sz, list9, list9_sz) |}; }
+
+
+generator bit pred1 (int issueId, int issueId, int components_sz, int i_2, bit loop_0_3)
+{
+  int rightOperand = {| components_sz | i_2 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return issueId > rightOperand;
+  else if (operator == 2) return issueId <= rightOperand;
+  else if (operator == 3) return issueId < rightOperand;
+  else if (operator == 4) return issueId == rightOperand;
+  else return issueId >= rightOperand;
+}
+
+
+generator bit pred2 (int i_2, int issueId, int components_sz, int i_2, bit loop_0_3)
+{
+  int rightOperand = {| issueId | components_sz |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_2 > rightOperand;
+  else if (operator == 2) return i_2 <= rightOperand;
+  else if (operator == 3) return i_2 < rightOperand;
+  else if (operator == 4) return i_2 == rightOperand;
+  else return i_2 >= rightOperand;
+}
+
+
+void top_list3 (Issue [MAX_LEN] components, int components_sz, int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3, Issue [MAX_LEN] componentIds, Issue [MAX_LEN] components, ref Issue [MAX_LEN] list3, ref int list3_sz)
+{
+  list3_sz = {| issueId | componentIds_sz | components_sz | i_2 |};
+  list3 = components[0::list3_sz];
+}
+
+
+void select_list4 (Issue [MAX_LEN] list3, int list3_sz, int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3, Issue [MAX_LEN] componentIds, Issue [MAX_LEN] components, ref Issue [MAX_LEN] list4, ref int list4_sz)
+{
+  list4_sz = 0;
+  for (int i = 0; i < list3_sz; ++i)
+  {
+    if (select_list4_pred(list3[i], issueId, componentIds_sz, components_sz, i_2, loop_0_3, componentIds, components))
+    {
+      list4[list4_sz] = list3[i];
+      ++list4_sz;
+    }
+  }
+}
+generator bit select_list4_pred (Issue tuple, int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3, Issue [MAX_LEN] componentIds, Issue [MAX_LEN] components)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == issueId;
+      else if (operator0 == 6) pred0 = tuple.id == i_2;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list5 (Issue [MAX_LEN] list4, int list4_sz, ref Issue [MAX_LEN] list5, ref int list5_sz)
+{
+  list5_sz = list4_sz;
+  list5 = list4;
+}
+
+
+bit equals_list6 (Issue [MAX_LEN] componentIds, int componentIds_sz, ref Issue [MAX_LEN] list5, ref int list5_sz)
+{
+  if (componentIds_sz != list5_sz) return 0;
+  for (int i = 0; i < componentIds_sz; ++i)
+  {
+    if (componentIds[i].id != list5[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+void top_list7 (Issue [MAX_LEN] components, int components_sz, int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3, int flat_1_4, Issue issue_5_6, Issue [MAX_LEN] componentIds, Issue [MAX_LEN] components, ref Issue [MAX_LEN] list7, ref int list7_sz)
+{
+  list7_sz = {| issueId | componentIds_sz | components_sz | i_2 | flat_1_4 |};
+  list7 = components[0::list7_sz];
+}
+
+
+void select_list8 (Issue [MAX_LEN] list7, int list7_sz, int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3, int flat_1_4, Issue issue_5_6, Issue [MAX_LEN] componentIds, Issue [MAX_LEN] components, ref Issue [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = 0;
+  for (int i = 0; i < list7_sz; ++i)
+  {
+    if (select_list8_pred(list7[i], issueId, componentIds_sz, components_sz, i_2, loop_0_3, flat_1_4, issue_5_6, componentIds, components))
+    {
+      list8[list8_sz] = list7[i];
+      ++list8_sz;
+    }
+  }
+}
+generator bit select_list8_pred (Issue tuple, int issueId, int componentIds_sz, int components_sz, int i_2, bit loop_0_3, int flat_1_4, Issue issue_5_6, Issue [MAX_LEN] componentIds, Issue [MAX_LEN] components)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == issueId;
+      else if (operator0 == 6) pred0 = tuple.id == i_2;
+      else if (operator0 == 7) pred0 = tuple.id == flat_1_4;
+      else if (operator0 == 8) pred0 = tuple.id == issue_5_6.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list9 (Issue [MAX_LEN] list8, int list8_sz, ref Issue [MAX_LEN] list9, ref int list9_sz)
+{
+  list9_sz = list8_sz;
+  list9 = list8;
+}
+
+
+bit equals_list10 (Issue [MAX_LEN] componentIds, int componentIds_sz, ref Issue [MAX_LEN] list9, ref int list9_sz)
+{
+  if (componentIds_sz != list9_sz) return 0;
+  for (int i = 0; i < componentIds_sz; ++i)
+  {
+    if (componentIds[i].id != list9[i].id)
+      return 0;
+  }
+  return 1;
+}
+

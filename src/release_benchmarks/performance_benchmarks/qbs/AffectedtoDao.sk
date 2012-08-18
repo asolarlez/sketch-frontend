@@ -1,0 +1,81 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct AffectedtoDao
+{
+}
+
+AffectedtoDao AffectedtoDao_new ()
+{
+  AffectedtoDao n = new AffectedtoDao();
+  return n;
+}
+
+
+harness void getAffectedToByIdParticipant(int affected_sz, int ret)
+
+ {
+ AffectedtoDao [MAX_LEN]  affected;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  affected[i] = new AffectedtoDao(); }
+ 
+ if (true && (affected_sz >= 0 && affected_sz < MAX_LEN))
+  {
+  if (true)
+   {
+   assert postcondition(affected_sz, affected_sz, affected); }
+   }
+  }
+
+
+bit postcondition(int affected_sz, int ret, AffectedtoDao [MAX_LEN]  affected) {
+ AffectedtoDao [MAX_LEN]  list1;
+ int list1_sz;
+ top_list1(affected, affected_sz, affected_sz, ret, affected, list1, list1_sz);
+ AffectedtoDao [MAX_LEN]  list2;
+ int list2_sz;
+ select_list2(list1, list1_sz, affected_sz, ret, affected, list2, list2_sz);
+ return {| 
+ ret == agg_agg3(list2, list2_sz) |}; }
+
+
+void top_list1 (AffectedtoDao [MAX_LEN] affected, int affected_sz, int affected_sz, int ret, AffectedtoDao [MAX_LEN] affected, ref AffectedtoDao [MAX_LEN] list1, ref int list1_sz)
+{
+  list1_sz = {| affected_sz | ret |};
+  list1 = affected[0::list1_sz];
+}
+
+
+void select_list2 (AffectedtoDao [MAX_LEN] list1, int list1_sz, int affected_sz, int ret, AffectedtoDao [MAX_LEN] affected, ref AffectedtoDao [MAX_LEN] list2, ref int list2_sz)
+{
+  list2_sz = 0;
+  for (int i = 0; i < list1_sz; ++i)
+  {
+    if (select_list2_pred(list1[i], affected_sz, ret, affected))
+    {
+      list2[list2_sz] = list1[i];
+      ++list2_sz;
+    }
+  }
+}
+generator bit select_list2_pred (AffectedtoDao tuple, int affected_sz, int ret, AffectedtoDao [MAX_LEN] affected)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      out = out && {| true |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg3 (AffectedtoDao [MAX_LEN] list2, int list2_sz)
+{
+  int count = list2_sz;
+  return {| count |};
+}
+

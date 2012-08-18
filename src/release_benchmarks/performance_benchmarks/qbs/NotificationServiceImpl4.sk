@@ -1,0 +1,445 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct Notification
+{
+ int user;
+ int userId;
+ int role;
+}
+
+Notification Notification_new (int user, int userId, int role)
+{
+  Notification n = new Notification();
+  n.user = user;
+  n.userId = userId;
+  n.role = role;
+  return n;
+}
+
+
+harness void hasIssueNotification(int userId, int role, int notifications_sz, int ret,
+                                  int i_1, bit loop_0_2, int flat_3, bit flat_4_11,
+                                  bit flat_5_12, int flat_7_14, int flat_9_16, bit flat_10_17,
+                                  int flat_6_13_user, int flat_6_13_userId, int flat_6_13_role,
+                                  int flat_8_15_user, int flat_8_15_userId, int flat_8_15_role,
+                                  int [MAX_LEN]  notifications_user, int [MAX_LEN]  notifications_userId,
+                                  int [MAX_LEN]  notifications_role)
+
+ {
+ Notification flat_6_13 = new Notification();
+ flat_6_13.user = flat_6_13_user;
+ flat_6_13.userId = flat_6_13_userId;
+ flat_6_13.role = flat_6_13_role;
+ Notification flat_8_15 = new Notification();
+ flat_8_15.user = flat_8_15_user;
+ flat_8_15.userId = flat_8_15_userId;
+ flat_8_15.role = flat_8_15_role;
+ Notification [MAX_LEN]  notifications;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  notifications[i] = new Notification();
+  notifications[i].user = notifications_user[i];
+  notifications[i].userId = notifications_userId[i];
+  notifications[i].role = notifications_role[i]; }
+ 
+ if (true && (notifications_sz >= 0 && notifications_sz < MAX_LEN))
+  {
+  if (i_1 < notifications_sz && invariant0(userId, role, notifications_sz, ret, i_1,
+                                           loop_0_2, notifications))
+   {
+   assert role == 0 && (true && (notifications[i_1].userId == userId && invariant0(
+                                                                          userId,
+                                                                          role, notifications_sz,
+                                                                          ret + 1,
+                                                                          i_1 + 1,
+                                                                          loop_0_2,
+                                                                          notifications) ||
+                                   !(notifications[i_1].userId == userId) && invariant0(
+                                                                               userId,
+                                                                               role,
+                                                                               notifications_sz,
+                                                                               ret,
+                                                                               i_1 +
+                                                                                 1,
+                                                                               loop_0_2,
+                                                                               notifications)) ||
+                          !true && invariant0(userId, role, notifications_sz, ret,
+                                              i_1 + 1, loop_0_2, notifications)) ||
+     !(role == 0) && (notifications[i_1].role == role && (notifications[i_1].userId ==
+                                                            userId && invariant0(
+                                                                        userId, role,
+                                                                        notifications_sz,
+                                                                        ret + 1,
+                                                                        i_1 + 1,
+                                                                        loop_0_2,
+                                                                        notifications) ||
+                                                            !(notifications[i_1].
+                                                                userId == userId) &&
+                                                            invariant0(userId, role,
+                                                                       notifications_sz,
+                                                                       ret, i_1 +
+                                                                         1, loop_0_2,
+                                                                       notifications)) ||
+                        !(notifications[i_1].role == role) && invariant0(userId,
+                                                                         role, notifications_sz,
+                                                                         ret, i_1 +
+                                                                           1, loop_0_2,
+                                                                         notifications));
+  }
+  
+  if (!(i_1 < notifications_sz) && invariant0(userId, role, notifications_sz, ret,
+                                              i_1, loop_0_2, notifications))
+   {
+   assert postcondition(userId, role, notifications_sz, ret, i_1, loop_0_2, flat_3,
+                        flat_4_11, flat_5_12, flat_7_14, flat_9_16, flat_10_17, flat_6_13,
+                        flat_8_15, notifications); }
+  
+  if (true)
+   {
+   assert invariant0(userId, role, notifications_sz, 0, 0, false, notifications);
+  }
+   }
+  }
+
+
+bit invariant0(int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2,
+               Notification [MAX_LEN]  notifications) {
+ if (pred1(userId, userId, role, notifications_sz, ret, i_1, loop_0_2) && pred2(
+                                                                            role,
+                                                                            userId,
+                                                                            role,
+                                                                            notifications_sz,
+                                                                            ret,
+                                                                            i_1,
+                                                                            loop_0_2) &&
+       pred3(ret, userId, role, notifications_sz, ret, i_1, loop_0_2) && pred4(i_1,
+                                                                               userId,
+                                                                               role,
+                                                                               notifications_sz,
+                                                                               ret,
+                                                                               i_1,
+                                                                               loop_0_2))
+  {
+  Notification [MAX_LEN]  list5;
+  int list5_sz;
+  top_list5(notifications, notifications_sz, userId, role, notifications_sz, ret,
+            i_1, loop_0_2, notifications, list5, list5_sz);
+  Notification [MAX_LEN]  list6;
+  int list6_sz;
+  select_list6(list5, list5_sz, userId, role, notifications_sz, ret, i_1, loop_0_2,
+               notifications, list6, list6_sz);
+  return {| 
+  ret == agg_agg7(list6, list6_sz) |}; }
+  else return 0; }
+
+
+bit postcondition(int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2,
+                  int flat_3, bit flat_4_11, bit flat_5_12, int flat_7_14, int flat_9_16,
+                  bit flat_10_17, Notification flat_6_13, Notification flat_8_15,
+                  Notification [MAX_LEN]  notifications) {
+ Notification [MAX_LEN]  list8;
+ int list8_sz;
+ top_list8(notifications, notifications_sz, userId, role, notifications_sz, ret,
+           i_1, loop_0_2, flat_3, flat_4_11, flat_5_12, flat_7_14, flat_9_16, flat_10_17,
+           flat_6_13, flat_8_15, notifications, list8, list8_sz);
+ Notification [MAX_LEN]  list9;
+ int list9_sz;
+ select_list9(list8, list8_sz, userId, role, notifications_sz, ret, i_1, loop_0_2,
+              flat_3, flat_4_11, flat_5_12, flat_7_14, flat_9_16, flat_10_17, flat_6_13,
+              flat_8_15, notifications, list9, list9_sz);
+ return {| 
+ ret == agg_agg10(list9, list9_sz) |}; }
+
+
+generator bit pred1 (int userId, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| role | notifications_sz | ret | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return userId > rightOperand;
+  else if (operator == 2) return userId <= rightOperand;
+  else if (operator == 3) return userId < rightOperand;
+  else if (operator == 4) return userId == rightOperand;
+  else return userId >= rightOperand;
+}
+
+
+generator bit pred2 (int role, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| userId | notifications_sz | ret | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return role > rightOperand;
+  else if (operator == 2) return role <= rightOperand;
+  else if (operator == 3) return role < rightOperand;
+  else if (operator == 4) return role == rightOperand;
+  else return role >= rightOperand;
+}
+
+
+generator bit pred3 (int ret, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| userId | role | notifications_sz | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return ret > rightOperand;
+  else if (operator == 2) return ret <= rightOperand;
+  else if (operator == 3) return ret < rightOperand;
+  else if (operator == 4) return ret == rightOperand;
+  else return ret >= rightOperand;
+}
+
+
+generator bit pred4 (int i_1, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| userId | role | notifications_sz | ret |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_1 > rightOperand;
+  else if (operator == 2) return i_1 <= rightOperand;
+  else if (operator == 3) return i_1 < rightOperand;
+  else if (operator == 4) return i_1 == rightOperand;
+  else return i_1 >= rightOperand;
+}
+
+
+void top_list5 (Notification [MAX_LEN] notifications, int notifications_sz, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2, Notification [MAX_LEN] notifications, ref Notification [MAX_LEN] list5, ref int list5_sz)
+{
+  list5_sz = {| userId | role | notifications_sz | ret | i_1 |};
+  list5 = notifications[0::list5_sz];
+}
+
+
+void select_list6 (Notification [MAX_LEN] list5, int list5_sz, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2, Notification [MAX_LEN] notifications, ref Notification [MAX_LEN] list6, ref int list6_sz)
+{
+  list6_sz = 0;
+  for (int i = 0; i < list5_sz; ++i)
+  {
+    if (select_list6_pred(list5[i], userId, role, notifications_sz, ret, i_1, loop_0_2, notifications))
+    {
+      list6[list6_sz] = list5[i];
+      ++list6_sz;
+    }
+  }
+}
+generator bit select_list6_pred (Notification tuple, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2, Notification [MAX_LEN] notifications)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.user > ??(2);
+      else if (operator0 == 2) pred0 = tuple.user <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.user < ??(2);
+      else if (operator0 == 4) pred0 = tuple.user == ??(2);
+      else if (operator0 == 5) pred0 = tuple.user == userId;
+      else if (operator0 == 6) pred0 = tuple.user == role;
+      else if (operator0 == 7) pred0 = tuple.user == ret;
+      else if (operator0 == 8) pred0 = tuple.user == i_1;
+      else pred0 = tuple.user >= ??(2);
+      bit pred1;
+      int operator1 = ??;
+      if (operator1 == 0) pred1 = 1;
+      else if (operator1 == 1) pred1 = tuple.userId > ??(2);
+      else if (operator1 == 2) pred1 = tuple.userId <= ??(2);
+      else if (operator1 == 3) pred1 = tuple.userId < ??(2);
+      else if (operator1 == 4) pred1 = tuple.userId == ??(2);
+      else if (operator1 == 5) pred1 = tuple.userId == userId;
+      else if (operator1 == 6) pred1 = tuple.userId == role;
+      else if (operator1 == 7) pred1 = tuple.userId == ret;
+      else if (operator1 == 8) pred1 = tuple.userId == i_1;
+      else pred1 = tuple.userId >= ??(2);
+      bit pred2;
+      int operator2 = ??;
+      if (operator2 == 0) pred2 = 1;
+      else if (operator2 == 1) pred2 = tuple.role > ??(2);
+      else if (operator2 == 2) pred2 = tuple.role <= ??(2);
+      else if (operator2 == 3) pred2 = tuple.role < ??(2);
+      else if (operator2 == 4) pred2 = tuple.role == ??(2);
+      else if (operator2 == 5) pred2 = tuple.role == userId;
+      else if (operator2 == 6) pred2 = tuple.role == role;
+      else if (operator2 == 7) pred2 = tuple.role == ret;
+      else if (operator2 == 8) pred2 = tuple.role == i_1;
+      else pred2 = tuple.role >= ??(2);
+      out = out && {| pred0 | pred1 | pred2 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg7 (Notification [MAX_LEN] list6, int list6_sz)
+{
+  int count = list6_sz;
+  int max_user = 0; int sum_user = 0; int min_user = 3; int avg_user = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (list6[i].user > max_user)
+      max_user = list6[i].user;
+    if (list6[i].user < min_user)
+      min_user = list6[i].user;
+    sum_user += list6[i].user;
+  }
+  avg_user = count==0?0: (sum_user / count); 
+  int max_userId = 0; int sum_userId = 0; int min_userId = 3; int avg_userId = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (list6[i].userId > max_userId)
+      max_userId = list6[i].userId;
+    if (list6[i].userId < min_userId)
+      min_userId = list6[i].userId;
+    sum_userId += list6[i].userId;
+  }
+  avg_userId = count==0?0: (sum_userId / count); 
+  int max_role = 0; int sum_role = 0; int min_role = 3; int avg_role = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (list6[i].role > max_role)
+      max_role = list6[i].role;
+    if (list6[i].role < min_role)
+      min_role = list6[i].role;
+    sum_role += list6[i].role;
+  }
+  avg_role = count==0?0: (sum_role / count); 
+  return {| count | max_user | sum_user | min_user | avg_user | max_userId | sum_userId | min_userId | avg_userId | max_role | sum_role | min_role | avg_role |};
+}
+
+
+void top_list8 (Notification [MAX_LEN] notifications, int notifications_sz, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2, int flat_3, bit flat_4_11, bit flat_5_12, int flat_7_14, int flat_9_16, bit flat_10_17, Notification flat_6_13, Notification flat_8_15, Notification [MAX_LEN] notifications, ref Notification [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = {| userId | role | notifications_sz | ret | i_1 | flat_3 | flat_7_14 | flat_9_16 |};
+  list8 = notifications[0::list8_sz];
+}
+
+
+void select_list9 (Notification [MAX_LEN] list8, int list8_sz, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2, int flat_3, bit flat_4_11, bit flat_5_12, int flat_7_14, int flat_9_16, bit flat_10_17, Notification flat_6_13, Notification flat_8_15, Notification [MAX_LEN] notifications, ref Notification [MAX_LEN] list9, ref int list9_sz)
+{
+  list9_sz = 0;
+  for (int i = 0; i < list8_sz; ++i)
+  {
+    if (select_list9_pred(list8[i], userId, role, notifications_sz, ret, i_1, loop_0_2, flat_3, flat_4_11, flat_5_12, flat_7_14, flat_9_16, flat_10_17, flat_6_13, flat_8_15, notifications))
+    {
+      list9[list9_sz] = list8[i];
+      ++list9_sz;
+    }
+  }
+}
+generator bit select_list9_pred (Notification tuple, int userId, int role, int notifications_sz, int ret, int i_1, bit loop_0_2, int flat_3, bit flat_4_11, bit flat_5_12, int flat_7_14, int flat_9_16, bit flat_10_17, Notification flat_6_13, Notification flat_8_15, Notification [MAX_LEN] notifications)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.user > ??(2);
+      else if (operator0 == 2) pred0 = tuple.user <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.user < ??(2);
+      else if (operator0 == 4) pred0 = tuple.user == ??(2);
+      else if (operator0 == 5) pred0 = tuple.user == userId;
+      else if (operator0 == 6) pred0 = tuple.user == role;
+      else if (operator0 == 7) pred0 = tuple.user == ret;
+      else if (operator0 == 8) pred0 = tuple.user == i_1;
+      else if (operator0 == 9) pred0 = tuple.user == flat_3;
+      else if (operator0 == 10) pred0 = tuple.user == flat_7_14;
+      else if (operator0 == 11) pred0 = tuple.user == flat_9_16;
+      else if (operator0 == 12) pred0 = tuple.user == flat_6_13.user;
+      else if (operator0 == 13) pred0 = tuple.user == flat_6_13.userId;
+      else if (operator0 == 14) pred0 = tuple.user == flat_6_13.role;
+      else if (operator0 == 15) pred0 = tuple.user == flat_8_15.user;
+      else if (operator0 == 16) pred0 = tuple.user == flat_8_15.userId;
+      else if (operator0 == 17) pred0 = tuple.user == flat_8_15.role;
+      else pred0 = tuple.user >= ??(2);
+      bit pred1;
+      int operator1 = ??;
+      if (operator1 == 0) pred1 = 1;
+      else if (operator1 == 1) pred1 = tuple.userId > ??(2);
+      else if (operator1 == 2) pred1 = tuple.userId <= ??(2);
+      else if (operator1 == 3) pred1 = tuple.userId < ??(2);
+      else if (operator1 == 4) pred1 = tuple.userId == ??(2);
+      else if (operator1 == 5) pred1 = tuple.userId == userId;
+      else if (operator1 == 6) pred1 = tuple.userId == role;
+      else if (operator1 == 7) pred1 = tuple.userId == ret;
+      else if (operator1 == 8) pred1 = tuple.userId == i_1;
+      else if (operator1 == 9) pred1 = tuple.userId == flat_3;
+      else if (operator1 == 10) pred1 = tuple.userId == flat_7_14;
+      else if (operator1 == 11) pred1 = tuple.userId == flat_9_16;
+      else if (operator1 == 12) pred1 = tuple.userId == flat_6_13.user;
+      else if (operator1 == 13) pred1 = tuple.userId == flat_6_13.userId;
+      else if (operator1 == 14) pred1 = tuple.userId == flat_6_13.role;
+      else if (operator1 == 15) pred1 = tuple.userId == flat_8_15.user;
+      else if (operator1 == 16) pred1 = tuple.userId == flat_8_15.userId;
+      else if (operator1 == 17) pred1 = tuple.userId == flat_8_15.role;
+      else pred1 = tuple.userId >= ??(2);
+      bit pred2;
+      int operator2 = ??;
+      if (operator2 == 0) pred2 = 1;
+      else if (operator2 == 1) pred2 = tuple.role > ??(2);
+      else if (operator2 == 2) pred2 = tuple.role <= ??(2);
+      else if (operator2 == 3) pred2 = tuple.role < ??(2);
+      else if (operator2 == 4) pred2 = tuple.role == ??(2);
+      else if (operator2 == 5) pred2 = tuple.role == userId;
+      else if (operator2 == 6) pred2 = tuple.role == role;
+      else if (operator2 == 7) pred2 = tuple.role == ret;
+      else if (operator2 == 8) pred2 = tuple.role == i_1;
+      else if (operator2 == 9) pred2 = tuple.role == flat_3;
+      else if (operator2 == 10) pred2 = tuple.role == flat_7_14;
+      else if (operator2 == 11) pred2 = tuple.role == flat_9_16;
+      else if (operator2 == 12) pred2 = tuple.role == flat_6_13.user;
+      else if (operator2 == 13) pred2 = tuple.role == flat_6_13.userId;
+      else if (operator2 == 14) pred2 = tuple.role == flat_6_13.role;
+      else if (operator2 == 15) pred2 = tuple.role == flat_8_15.user;
+      else if (operator2 == 16) pred2 = tuple.role == flat_8_15.userId;
+      else if (operator2 == 17) pred2 = tuple.role == flat_8_15.role;
+      else pred2 = tuple.role >= ??(2);
+      out = out && {| pred0 | pred1 | pred2 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg10 (Notification [MAX_LEN] list9, int list9_sz)
+{
+  int count = list9_sz;
+  int max_user = 0; int sum_user = 0; int min_user = 3; int avg_user = 0;
+  for (int i = 0; i < list9_sz; ++i)
+  {
+    if (list9[i].user > max_user)
+      max_user = list9[i].user;
+    if (list9[i].user < min_user)
+      min_user = list9[i].user;
+    sum_user += list9[i].user;
+  }
+  avg_user = count==0?0: (sum_user / count); 
+  int max_userId = 0; int sum_userId = 0; int min_userId = 3; int avg_userId = 0;
+  for (int i = 0; i < list9_sz; ++i)
+  {
+    if (list9[i].userId > max_userId)
+      max_userId = list9[i].userId;
+    if (list9[i].userId < min_userId)
+      min_userId = list9[i].userId;
+    sum_userId += list9[i].userId;
+  }
+  avg_userId = count==0?0: (sum_userId / count); 
+  int max_role = 0; int sum_role = 0; int min_role = 3; int avg_role = 0;
+  for (int i = 0; i < list9_sz; ++i)
+  {
+    if (list9[i].role > max_role)
+      max_role = list9[i].role;
+    if (list9[i].role < min_role)
+      min_role = list9[i].role;
+    sum_role += list9[i].role;
+  }  
+  avg_role = count==0?0: (sum_role / count); 
+  return {| count | max_user | sum_user | min_user | avg_user | max_userId | sum_userId | min_userId | avg_userId | max_role | sum_role | min_role | avg_role |};
+}
+
