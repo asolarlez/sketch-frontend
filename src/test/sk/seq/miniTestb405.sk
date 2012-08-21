@@ -34,7 +34,7 @@ while (i<end){
   i+=step;
 }
 }
-Array ar = new Array();
+Array ar = new Array(len=end-begin);
 ar.A = res;
 return ar;
 }
@@ -69,7 +69,7 @@ for (int i=0; i<ar.len;i++) {
   res[i] = f(ar.A[i]);
 }
 
-Array ar0 = new Array();
+Array ar0 = new Array(len=ar.len);
 ar0.A = res;
 return ar0;
 }

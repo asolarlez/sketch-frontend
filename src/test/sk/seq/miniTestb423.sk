@@ -1,0 +1,11 @@
+
+harness void main(int x){
+    int q = ??;
+    if(x+q == (q+x)){
+        return;
+    }
+    if(q < 50){
+        assert q >30;
+    }
+    
+}

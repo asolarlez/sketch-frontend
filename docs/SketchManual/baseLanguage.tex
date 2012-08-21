@@ -3,11 +3,9 @@ The core sketch language is a simple imperative language that borrows most of it
 
 \subsection{Primitive Types}
 The sketch language contains four primitive types, \C{int}, \C{char}, \C{double} and \C{bit}. There is a subtyping relation between them:
-\C{bit $\sqsubseteq$ char $\sqsubseteq$ int}, so bit variables can be used wherever an character or integer is required. There is no subtyping relation with double, so for example, you cannot use $1$ in place of $1.0$. 
+\C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever an character or integer is required. There is no subtyping relation with double, so for example, you cannot use $1$ in place of $1.0$. 
 
-There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. 
-
-In the case of characters, you can use the standard C syntax to represent character constants. 
+There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. In the case of characters, you can use the standard C syntax to represent character constants. 
 
 \subsection{Structs}
 More interesting types can be constructed from simpler types in two ways: by creating arrays of them (see \secref{array}) and by defining new types of heap allocated records. 
@@ -21,9 +19,11 @@ struct $name${
 }
 \end{lstlisting}
 
-To allocate a new record in the heap, the programmer uses the keyword \C{new}; the syntax is the same as that for constructing an object in Java using the default constructor, but the programmer can also use named parameters to directly initialize certain fields upon allocation as shown by the following example.
+To allocate a new record in the heap, the programmer uses the keyword \C{new}; the syntax is the same as that for constructing an object in Java using the default constructor, but the programmer can also use named parameters to directly initialize certain fields upon allocation as shown in the following example.
 
 \begin{Example}
+Use of named parameters to initialize the fields of a struct. 	
+\begin{lstlisting}
 struct Point{
   int x;
   int y;
@@ -35,6 +35,7 @@ void main(){
   Point p1 = new Point(x=5, y=7);
   assert p1.x == 5 && p1.y == 7; //Fields initialized by constructor.
 }
+\end{lstlisting}
 \end{Example}
 
 Records are manipulated through references, which behave the same way as references in Java. The following example illustrates the main properties of records and references in \Sk{}.
@@ -149,7 +150,7 @@ int[N] tmp = filter(N, in, tsz);
 int sz = tsz;
 int[sz] filteredArray = tmp[0::sz];
 \end{lstlisting}
-The function uses the bulk array access \C{tmp[0::sz]}, which will be defined properly later in the section. A cleaner way of writing this example is shown in the next paragraph.
+The function uses the bulk array access \C{tmp[0::sz]}, which will be defined properly later in the section. A cleaner way of writing this example is to use records as shown in the next paragraph.
 \end{Example}
 
 \paragraph{Array fields}
@@ -175,7 +176,7 @@ Array filter(Array arr){
 	return new Array(sz=outsz, A=out[0::outsz]);
 }
 \end{lstlisting}
-One interesting point to note is the size of \C{out}; because it uses \C{arr.sz}, that forces both the variable \C{arr} and the field \C{sz} to be final. The field \C{sz} was already final because it was used in the size of field \C{A}, but now that \C{arr} is also required to be final, assigning anything to it inside the function would be illegal and would be flagged by the type checker. Finally, the function uses the bulk array access \C{out[0::outsz]}, which will be defined in the next section.
+One interesting point to note is the size of \C{out}; because it uses \C{arr.sz}, that forces both the variable \C{arr} and the field \C{sz} to be final. The field \C{sz} was already final because it was used in the size of field \C{A}, but now that \C{arr} is also required to be final; assigning anything to it inside the function would be illegal and would be flagged by the type checker. Finally, the function uses the bulk array access \C{out[0::outsz]}, which will be defined in the next section.
 \end{Example}
 
 
@@ -400,8 +401,27 @@ By default, parameter passing is done by value; however, it is possible to pass 
 
 Only local variables should ever be passed by reference, and reference parameters should never be aliased. The reason for this restriction is that the synthesizer models reference parameters using copy-in-copy-out semantics. If the parameters are local variables and are not aliased, then copy-in-copy-out is indistinguishable from pass-by-reference.
 
+\begin{Example}
+Local variables can be modified by passing them as reference to a function.
+\begin{lstlisting}
+void foo(int in, ref int out){
+	in = in + 1; // changes to in are not visible to the caller
+      out = in + 1; //changes to out are 
+}
+harness void main(int x){
+      int y = x;
+	int z = y+10;
+      foo(y, z); // call to foo can change z but not y
+      assert y == x && z == x+2;
+}
+\end{lstlisting}
+\end{Example}
+
+
 \subsection{Function parameters}
 Functions can also take functions as parameters. We use the keyword \C{fun} to denote a function type. The example below illustrates the use of function parameters.
+\begin{Example}
+Functions as parameters.
 \begin{lstlisting}
 int apply(fun f, int x){
 	return f(x);
@@ -414,8 +434,11 @@ harness void main(int x){
 	assert apply(timesTwo, x) == 2*x;
 }
 \end{lstlisting}
+\end{Example}
 
-The language imposes several restrictions on the use of the \C{fun} type. First, the type can only be used for parameters. You cannot declare a variable or a data-structure field of type \C{fun}. There are also no operators defined for functions; in particular, the ternary operator \C{?:} cannot be used with functions. You can also not create arrays of functions, and you cannot use functions as return values or reference parameters to a function. In short, functions are not quite first class citizens in sketch, but function parameters do enable some very useful idioms.
+The language imposes several restrictions on the use of the \C{fun} type. First, the type can only be used for parameters. You cannot declare a variable or a data-structure field of type \C{fun}. There are also no operators defined for functions; in particular, the ternary operator \C{?:} cannot be used with functions. You can also not create arrays of functions, and you cannot use functions as return values or reference parameters to a function. In short, functions are not quite first class citizens in \Sk{}, but function parameters do enable some very useful idioms.
+
+One important point to notice about function parameters is that the signature does not specify what parameters it expects. This gives the language some flexibility, and in some cases allows one to make up for the fact that we don't have generics. However, it also has an important implication. Namely, when a function parameter is called, it is not possible to know which parameters will be reference parameters and which parameters will not, so any variable that is passed to a function that came as a parameter will be considered non-final.
 
 \subsection{Local functions and closures}\seclabel{closures}
 Sketch supports the definition of functions inside other functions. The syntax for doing this is the same as when the function is defined outside a function. The body of the locally defined function can access any variable that is in scope in the context of the function definition. The example below illustrates how local functions can be used together with high-order functions. 
@@ -439,8 +462,16 @@ harness void main(int N, int[N] A){
 \end{lstlisting}
 	
 In the sketch above, \C{ForLoop} takes the closure involving the function \C{copy} and its local environment; the effect of the call to \C{ForLoop} is the same as if the body of copy had been placed in a traditional \C{for} loop. 
+One important aspect of closures in Sketch is that because functions cannot be returned by other functions or written into the heap, a local function can never escape the context in which it was declared. This allows local functions to modify local variables defined in their host function without any messy semantic issues.
 
-One important point to notice about function parameters is that the signature does not specify what parameters it expects. This gives the language some flexibility, and in some cases allows one to make up for the fact that we don't have generics. However, it also has an important implication. Namely, when a function parameter is called, it is not possible to know which parameters will be reference parameters and which parameters will not, so any variable that is passed to a function that came as a parameter will be considered non-final.
+\subsection{Uninterpreted Functions}
+\Sk{} also supports uninterpreted functions, which can be defined with the following syntax.
+\begin{lstlisting}
+$ret\_type$ $name$($args$);
+\end{lstlisting}
+An uninterpreted function is a function whose body is unknown, so from the point of view of the synthesis and verification engine; there is nothing known about this function other than the fact that it is a pure function, so when fed with the same inputs it will produce the same outputs.
+
+The main restriction on uninterpreted functions is that their return value can only be a scalar, so uninterpreted functions that return arrays or references are disallowed. 
 
 
 \subsection{Packages}
@@ -498,7 +529,7 @@ struct Mouse{
 \begin{lstlisting}
 //Begin file test.sk
 include "computer.sk";
-include "farm.sk"
+include "farm.sk";
 struct Mouse{
    int t;  
 }
@@ -516,3 +547,93 @@ harness main(){
 \subsection{Global variables}
 The sketch language supports global variables with a few important restrictions. First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable. The second restriction is a consequence of the fact that only scalar global variables can be final; this means that global arrays must have constant dimensions since, in that scope, constants are the only thing that can be final.
 
+
+\subsection{Annotation System}
+The \Sk{} language includes an annotation system that is meant to simplify the process of adding language extensions. The general syntax for annotations is as follows:
+\begin{lstlisting}
+@Name(parameter-string)
+\end{lstlisting}
+\C{Name} is the name of the annotation and \C{parameter-string} is a string describing the parameters of the annotation. Annotations are currently only supported for function and record definitions. 
+
+The synthesizer currently supports two annotations. The first is \C{@Native}, which allows the user to override the standard code generator and tell the synthesizer exactly what code to synthesize for a particular function. The second one is \C{@NeedsInclude} which is used to tell the code generator that a particular function requires some specific header file to be included.
+
+For example, the following code shows how the two \C{@Native} annotations can be used to write a set of routines that read form a file.
+
+\begin{Example}
+In \Sk{}, one can use the following classes to model the process of reading from a file.
+
+\begin{lstlisting}
+int NDCNT=0;
+
+int getND_private(int i);
+int getND(){
+    //Every time this function is called
+    //it produces a new non-deterministic value.
+    return getND_private(NDCNT++);
+}
+
+struct FileHandle{
+    int maxReads; //Number of values left in the file.
+}
+
+FileHandle getFile(){
+    //Number of values in the file is some non-deterministic value.
+    return new FileHandle(maxReads=getND());
+}
+
+bit moreValues(FileHandle fh){
+    //maxReads should never drop below zero.
+    assert fh.maxReads >= 0; 
+    return fh.maxReads!=0;
+}
+
+int readInt(FileHandle fh){
+    //Reads past the end of the file are not allowed.
+    assert fh.maxReads > 0;
+    --fh.maxReads; 
+    return getND();
+}
+\end{lstlisting}
+
+The \C{FileHandle} is initialized with the maximum number of values to read. Every time the client calls \C{readInt}, the synthesizer reads checks if the maximum number of reads has been reached and reads another non-deterministic value. This definition of the operations on a file is very good if we are interested in synthesizing or verifying a client that needs to read a file and do something with its contents. However, if we want to generate code to read real files, the class above is not so useful. 
+
+Using the \C{@Native} annotations, however, we can instruct the synthesizer on how to generate code for the structure and functions above. For example, the code for the \C{struct} would be as follows:
+
+\begin{lstlisting}
+struct FileHandle{
+    int maxReads;
+    @NeedsInclude("#include <fstream>")
+    @NeedsInclude("#include <string>")
+    @Native("ifstream in;")
+    @Native("int last;")
+    @Native("bool goon;")
+    @Native("FileHandle(const string& s):in(s.c_str()){ in>>last; goon = !in.eof() && !in.fail(); }")
+    @Native("int readInt(){ int x = last; in>>last; goon = !in.eof() && !in.fail(); return x;}")
+}
+\end{lstlisting}
+The functions annotations are used to introduce additional fields and methods which are invisible to the analysis engine, but which are needed by the generated code. 
+
+With their annotations, the \C{moreValues} and \C{readInt} functions are as follows:
+\begin{lstlisting}
+@Native("{ _out = fh->goon; }")
+bit moreValues(FileHandle fh){
+    assert fh.maxReads >= 0; 
+    return fh.maxReads!=0;
+}
+
+
+@Native("{ _out = fh->readInt(); }")
+int readInt(FileHandle fh){
+    assert fh.maxReads > 0;
+    --fh.maxReads; 
+    return getND();
+}
+\end{lstlisting}
+
+When analyzing code, the annotations are invisible to the synthesizer, and it will focus on the high-level model in the body. When generating code, on the other hand, the code generator will produce the code instructed by the \C{@Native} annotation.
+
+\end{Example}
+
+The \C{@Native} annotation allows the programmer to use simple models in place of very complex or low-level functions. It is the responsibility of the programmer to ensure that the model matches the relevant behavior of the code that is being generated. 
+
+More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure. 

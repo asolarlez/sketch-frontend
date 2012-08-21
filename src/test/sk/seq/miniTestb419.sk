@@ -1,0 +1,18 @@
+pragma options "--bnd-unroll-amnt 32 --be:showDAG";
+
+void print(int n, int[n] ar){
+    int[n] x = ar;
+    assert x[0] == ar[??];
+}
+
+harness void main(int n, int[n] ar){
+    if(n>5){
+        int x = n/2;
+        int t = x;
+        int q=??;
+        assert q>0;
+        int[t-q] tmp = ar[0::(x--)][0::(x--)];
+        print(t-q, tmp);
+        
+    }
+}

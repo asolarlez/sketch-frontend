@@ -476,6 +476,14 @@ public class FEReplacer implements FEVisitor
             	if(!(newStatements.size() == i+1 && newStatements.get(i) == s)){
             		changed = true;
             	}
+                if (i < newStatements.size() &&
+                        newStatements.get(i) instanceof StmtReturn)
+                {
+                    if (iter.hasNext()) {
+                        changed = true;
+                        break;
+                    }
+                }
             	/*
             	Statement tmpres = (Statement)s.accept(this);
                 if (tmpres != null)

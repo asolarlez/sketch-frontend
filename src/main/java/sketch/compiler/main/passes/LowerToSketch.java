@@ -3,7 +3,6 @@ package sketch.compiler.main.passes;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
@@ -24,6 +23,7 @@ public class LowerToSketch extends MetaStage {
     public Program visitProgramInner(Program prog) {
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
+        // prog.debugDump("After aaa");
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 
@@ -52,6 +52,7 @@ public class LowerToSketch extends MetaStage {
 
 
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
+
         // prog.debugDump("After ERS");
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new ExtractVectorsInCasts(varGen));
@@ -60,18 +61,19 @@ public class LowerToSketch extends MetaStage {
         // dump (prog, "SeparateInitializers:");
         // prog = (Program)prog.accept(new NoRefTypes());
         // prog.debugDump("Before SVA");
+        prog =
+                (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
+                        FailurePolicy.ASSERTION, varGen));
+
+
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
+
         // prog.debugDump("After SVA");
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         // By default, we don't protect array accesses in SKETCH
 
-        prog =
-                (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
-                            FailurePolicy.ASSERTION, varGen));
 
-        prog =
-                (Program) prog.accept(new EliminateNestedArrAcc(
-                        options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+        prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
         return prog;
     }
 }

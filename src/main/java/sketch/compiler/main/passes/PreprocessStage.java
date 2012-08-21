@@ -2,7 +2,6 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
 import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
@@ -75,9 +74,7 @@ public class PreprocessStage extends MetaStage {
         }
 
 
-        prog =
-                (Program) prog.accept(new EliminateNestedArrAcc(
-                        options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+        prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 
 
 

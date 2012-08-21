@@ -1,0 +1,17 @@
+package Foo;
+
+
+int[n] test(int n, int[n] x){
+    int[n] out;
+    for(int i=0; i<n; ++i){
+        out[i] = x[i]+1;
+    }
+    return out;
+}
+
+harness void main(){
+    int[??] y = test(??, {1,2,3,4});
+    for(int i=0; i<4; ++i){
+        assert y[i] == i+??;
+    }
+}

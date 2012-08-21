@@ -447,7 +447,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     		}
     	}
 
-    	Expression minLen = minLength(ltlen, rtlen);
+        Expression minLen = rtlen; // Thanks to the assertions, we can be sure the RHS len
+                                   // is always smaller than the LHS len
+                                   // minLength(ltlen, rtlen);
         // We need to generate a for loop, since from our point of
         // view, the array bounds may not be constant.
         String indexName = varGen.nextVar();
@@ -487,7 +489,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         mainLst.add(new StmtFor(init, init, cond, incr, body));
 
 
-        if( minLen !=  ltlen){
+        if (!(minLen.equals(ltlen))) {
         	mainLst.add (zeroOut(lhs, minLen, ltlen, getType (rhs).defaultValue ()));
         }
         

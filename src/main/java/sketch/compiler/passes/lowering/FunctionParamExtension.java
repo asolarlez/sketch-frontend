@@ -549,7 +549,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
 			int ptype = p.getPtype();
-			Expression oldArg= (p.getType() instanceof TypeStruct || p.getType() instanceof TypeStructRef) ? new ExprNullPtr() : getDefaultValue(p.getType()) ;
+			Expression oldArg=null; // (p.getType() instanceof TypeStruct || p.getType() instanceof TypeStructRef) ? new ExprNullPtr() : getDefaultValue(p.getType()) ;
 			if(ptype == Parameter.REF || ptype == Parameter.IN){
 				oldArg=(Expression) existingArgs.get(psz);
 				++psz;

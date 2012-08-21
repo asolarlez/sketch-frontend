@@ -396,6 +396,17 @@ public class SemanticChecker
 
 				currentFunctionReturn = func.getReturnType();
 
+                if (func.isUninterp()) {
+                    Type rt = func.getReturnType();
+                    if (rt instanceof TypeArray || rt instanceof TypeStructRef ||
+                            rt instanceof TypeStruct)
+                    {
+                        report(func,
+                                "Uninterpreted functions can only return scalar types. The type " +
+                                        rt + " is not a scalar.");
+                    }
+                }
+
                 if (func.isSketchHarness()) {
                     for (Parameter f1 : func.getParams()) {
                         if (f1.getType() instanceof TypeStructRef) {

@@ -1,0 +1,15 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 3 --be:showDAG";
+
+harness void main(int r, int c){
+    int[c][r] A;
+    for(int i=0; i<{|r|c|}; ++i){
+        for(int j=0; j<{|r|c|}; ++j){
+            if((i*j-5+r+c) % 2 == 0){
+                A[i][j] = 10;
+            }else{
+                A[i][j] = 5;
+            }
+        }
+    }
+    
+}

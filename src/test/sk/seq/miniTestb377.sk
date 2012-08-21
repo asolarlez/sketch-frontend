@@ -192,7 +192,7 @@ harness void sketch (int i, int lenL, int [lenL] L,
 {
   if (true)
   {
-    assert invariant(0, ret, lenL, L, 0);  
+    assert invariant(0, ret[0::0], lenL, L, 0);  
   }
 
   if (invariant(lenRet, ret, lenL, L, i) && i < lenL)
@@ -210,50 +210,3 @@ harness void sketch (int i, int lenL, int [lenL] L,
 
 
 
-/*
-harness void sketch (int i, int lenL, int [lenL] L, int lenRet, int [lenRet] ret)
-{
-  bit invariant = genInvariant(i, lenL, L, lenRet, ret);
-  
-  bit preCondition = i == 0 && lenRet == 0;
-  if (preCondition)
-  {
-    assert invariant;
-  }
-
-  bit loopCondition = i < lenL;
-  if (invariant && loopCondition)
-  {
-    assert append(L[i], lenRet, ret) == top(i+1, lenL, L) && i + 1 == lenRet + 1 &&
-                  i + 1 <= lenL;
-
-  }
-
-  bit postCondition = ret == L && lenRet == lenL;
-  if (invariant && !loopCondition)
-  {
-    assert postCondition;
-  }
-}
-*/
-
-
-
-/*
-
-harness void foo(int i, int M, int[M] L, int N, int[N] ret){
-    if(i==0 && N==0){
-        assert ret == top(i, M, L) && i==N;
-        assert i <= M;
-    }
-
-    if(ret==top(i, M, L) && N==i && i<M){
-        assert append(L[i], N, ret)==top(i+1, M, L) && i+1==N+1;
-        assert i+1 <= M;
-    }
-    if(ret==top(i, M, L) && N==i && i==M){
-        assert ret == L && N==M;
-    }
-} 
-
-*/

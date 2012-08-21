@@ -735,7 +735,7 @@ harness void sketch (int lenRet, int [lenRet] r1, int [lenRet] r2,
    
   if (true)
   {
-    assert outerInvariant(0, ret, len1, l1, len2, l2, 0, 0, t1);
+    assert outerInvariant(0, ret[0::0], len1, l1, len2, l2, 0, 0, t1);
   }
   
     

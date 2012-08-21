@@ -8,7 +8,6 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
@@ -29,15 +28,12 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
     }
 
     public void addCheck(Type l, Type r, boolean isUnivariant, FENode cx) {
-        if (l instanceof TypeArray) {
+        if (l instanceof TypeArray && r instanceof TypeArray) {
             TypeArray la = (TypeArray) l;
-            Expression rlen;
-            if (r instanceof TypeArray) {
-                rlen = ((TypeArray) r).getLength();
-            } else {
-                rlen = ExprConstInt.one;
-            }
-            Integer illen = la.getLength().getIValue();
+            TypeArray ra = ((TypeArray) r);
+            Expression rlen = ra.getLength();
+            Expression llen = la.getLength();
+            Integer illen = llen.getIValue();
             Integer irlen = rlen.getIValue();
             if (illen == null || irlen == null) {
                 if (la.getLength().equals(rlen)) {
@@ -45,15 +41,14 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
                 }
                 Expression e;
                 if (isUnivariant) {
-                    e = new ExprBinary(la.getLength(), "==", rlen);
+                    e = new ExprBinary(llen, "==", rlen);
                 } else {
-                    e = new ExprBinary(la.getLength(), ">=", rlen);
+                    e = new ExprBinary(llen, ">=", rlen);
                 }
-                e =
-                        new ExprBinary(e, "||", new ExprBinary(la.getLength(), "==",
-                                ExprConstInt.zero));
-                addStatement(new StmtAssert(e, "Array Length Mismatch" + cx.getCx(),
+
+                addStatement(new StmtAssert(e, "Array Length Mismatch " + cx.getCx(),
                         false));
+                addCheck(la.getBase(), ra.getBase(), isUnivariant, cx);
             }
         }
     }

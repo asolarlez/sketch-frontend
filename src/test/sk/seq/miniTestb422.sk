@@ -1,0 +1,12 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 24";
+
+harness void main(int x, int y, int z, int i){
+    
+    int[x+y+z] A = 0;
+    int pp=9-??;
+    if(x > 5 && y > 5 && z > 5 && i<2){
+        A[i::x+y][x::(y+pp)][3] = 1;
+        assert A[i+x+3] == 1;
+    }
+    
+}

@@ -37,15 +37,16 @@ public class CleanupFinalCode extends MetaStage {
     @Override
     public Program visitProgramInner(Program prog) {
         // dataflow pass
+
         final PreprocessSketch preproc =
                 new PreprocessSketch(varGen, options.bndOpts.unrollAmnt, rctrl, true);
 
         prog = (Program) prog.accept(preproc);
+
         // prog.debugDump("After Preproc");
         // System.out.println("preproc");
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new FlattenStmtBlocks());
-        // prog.debugDump("After FSB");
 
         prog = (Program) prog.accept(new MakeCastsExplicit());
 
