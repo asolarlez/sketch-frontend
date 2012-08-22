@@ -1,11 +1,12 @@
 pragma options "-p preproc --bnd-inbits 5 --bnd-cbits 4 --bnd-unroll-amnt 10 --bnd-inline-amnt 15 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 20"; //  --be:showDAG
 
-int K = 2;
+int K = 3;
 
-void specCenter(int n, int T, ref float[n][T] A){    
+void specCenter(int n, int T, int L, ref float[n+L*2][T] A){    
     if ( (T>=3) && (n>=(T-1)*2*K+1) ){
         for(int t=1; t<T; ++t){
-            for(int i=t*K; i<n-t*K; ++i){
+            for(int j=t*K; j<n-t*K; ++j){
+            		int i = L+j;
                 A[t][i] = A[t-1][i-K] + A[t-1][i+K];
             }   
         }
@@ -25,7 +26,7 @@ generator int signed() {
 }
 
 
-void fastCenter(int n, int T, ref float[n][T] A) {
+void fastCenter(int n, int T, int L, ref float[n+L*2][T] A) {
 	generator void sten(int t, int i) {
 		A[t][i] = A[t-1][i-K]+A[t-1][i+K];
 	}
@@ -34,35 +35,36 @@ void fastCenter(int n, int T, ref float[n][T] A) {
 //			int split = 2*K*T - 3*K;
 			for (int j=??; j<split; ++j) {
 				int q = ??;  // K
-				int m = q+1+??;  // 2*K
+				int m = ??;  // 2*K
 				//assert q<m;
 				int top = (j+q)/m+signed();
+				assert top>1;
 //				int top = (j+K)/(2*K)+1;
 				for (int t=1; t<top; ++t) {
 					assert t>0 && t<T;
 					int i = j-(t-1)*??;
-					sten(t, i);
+					sten(t, L+i);
 				}
 			}
 	    for(int 	j= split /*2*(T-2)+1 = 2*T-3*/; j<n-?? /*n-1*/; ++j){
 	    		for(int t=1; t<T; ++t) {
 				assert t>0 && t<T;
 	            int i = j-(t-1)*??;
-                sten(t, i);
+                sten(t, L+i);
 	        }           
 	    }
 	}
 }
 
 
-stencil float[n+T+T%2][T] specCenterSten(int n, int T, float[n+T+T%2][T] in) {    
-	float[n+T+T%2][T] out = in;
-	specCenter(n, T, out);
+stencil float[n+L*2][T] specCenterSten(int n, int T, int L, float[n+L*2][T] in) {    
+	float[n+L*2][T] out = in;
+	specCenter(n, T, L, out);
 	return out;
 }
 
-stencil float[n+T+T%2][T] fastCenterSten(int n, int T, float[n+T+T%2][T] in) implements specCenterSten {    
-	float[n+T+T%2][T] out = in;
-	fastCenter(n, T, out);
+stencil float[n+L*2][T] fastCenterSten(int n, int T, int L, float[n+L*2][T] in) implements specCenterSten {    
+	float[n+L*2][T] out = in;
+	fastCenter(n, T, L, out);
 	return out;
 }

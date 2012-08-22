@@ -1,219 +1,128 @@
-pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 9 --bnd-inline-amnt 2 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 10"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 5 --bnd-cbits 4 --bnd-unroll-amnt 3 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
 
 #define SPMD_MAX_BUF_LEN 16
 #include "spmd2.skh"
 
-// length of ghost region: (T+1)/2; (T+1)/2 * 2 = T+T%2
-void move_in(global int N, global int T, global float[N][T] ga, global int n, ref float[n+T+T%2][T] la) {
+int K = 1;
+
+// length of ghost region: (T+1)/2*K
+void movein(int rank, global int N, global int T, global float[N][T] ga, global int n, ref float[n+(T+1)/2*K*2][T] la) {
 	for (int t=0; t<T; ++t) {
-		for (int i=0; i<n; ++i) {
-			la[t][i+(T+1)/2] = ga[t][spmdpid*n + i];
+		for (int x=0; x<n; ++x) {
+			la[t][x+(T+1)/2*K] = ga[t][rank*n + x];  // this is OK, can be solved symbolically
 		}
 	}
 }
 
-void move_out(global int N, global int T, ref global float[N][T] ga, global int n, float[n+T+T%2][T] la) {
+void moveout(int rank, global int N, global int T, ref global float[N][T] ga, global int n, float[n+(T+1)/2*K*2][T] la) {
 	for (int t=0; t<T; ++t) {
-		for (int i=0; i<n; ++i) {
-			ga[t][spmdpid*n + i] = la[t][i+(T+1)/2];
+		int s0 = rank*n;
+		int t0 = rank*n+n;
+		for (int x=s0; x<t0; ++x) {
+			ga[t][x] = la[t][x-rank*n+(T+1)/2*K];  // this cannot be solved symbolically. underconstrained.
 		}
 	}
 }
 
-/*
-stencil float[N][T] specInit(int np, int N, int T) {
-	float[N][T] out = 0.0;
-    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
-		for (int i=0; i<N; ++i) {
-			out[0][i] = 1.0;
-		}
-    }
-	return out;
-}
-
-stencil float[N][T] fastInit(int np, int N, int T) implements specInit {
-	float[N][T] out = 0.0;
-    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
-	    	global int n = N/np;
-		spmdfork(np) {
-			float[n][T] A = 0.0;
-			for (int i=0; i<n; ++i) {
-				A[0][i] = 1.0;
-			}
-			move_out(N, T, out, n, A);
-		}
-    }
-	return out;
-}
-*/
-
-stencil float[N][T] specCompute(int np, int N, int T, float[N][T] in) {
+stencil float[N][T] compute(int np, int N, int T, float[N][T] in) {
 	float[N][T] out = in;
-    if( (np==1) && (N%np==0) && (T>1 && T<4) && (N>(T-1)*2) ){
+    if( (np<=3) && (N%np==0) && (T>=3) && ((N/np)>=(T-1)*2*K+1)){
 	    	for (int t=1; t<T; ++t) {
-			out[t][0] = out[t-1][N-1] + out[t-1][1];
-			out[t][N-1] = out[t-1][N-2] + out[t-1][0];
-			for (int i=1; i<N-1; ++i) {
-				out[t][i] = out[t-1][i-1] + out[t-1][i+1];
+			for (int x=0; x<N; ++x) {
+				out[t][x] = out[t-1][(x+N-K)%N] + out[t-1][(x+K)%N];
 			}
 		}
     }
 	return out;
 }
 
-generator int pos_neg() {
-	if (??(1)) {
-		return 1;
-	} else {
-		return -1;
-	}
-}
-
-generator int pos_neg_zero() {
-	if (??(1)) {
-		return pos_neg();
-	} else {
-		return 0;
-	}
-}
-
-generator void fastBoundary(global spmdinfo info, global int np, global int n, global int T, ref float[n+T+T%2][T] A) {
-	float[T-1] send_buf;
-	for (int i=0; i<T-1; ++i) {
-		send_buf[i] = A[i/2][(T+1)/2+n*??(1)+pos_neg_zero()+(i/2+i%2)*pos_neg()];
-		// L: (T+1)/2+n-1-(i/2+i%2)*(-1)
-		// R: (T+1)/2+i/2+i%2
+void fastLeft(global spmdinfo info, global int np, global int n, global int T, ref float[n+(T+1)/2*K*2][T] A) {
+	float[(T-1)*K] send_buf;
+	for (int i=0; i<(T-1)*K; ++i) {
+		send_buf[i] = A[i/(K*2)][(T+1)/2*K+n -?? - (i/(K*2)*K + i%(K*2))];   // OK
 	}
 	
-	float[T-1] recv_buf;
-	int r = (spmdpid== (np-1)*??(1) ) ? (np-1)*??(1) : spmdpid+pos_neg();
-	// L: spmdpid==0 ? np-1 : pid+1
-	// R: spmdpid==np-1 ? 0 : pid-1
+	float[(T-1)*K] recv_buf;
+	int r = (spmdpid== (np-1) ) ? 0 : spmdpid+1;
 	
-	spmdtransfer(info, T-1, send_buf, 1, r, recv_buf, 1);
-	for (int i=0; i<T-1; ++i) {
-		A[i/2][(T+1)/2 + n*??(1) + (i/2+i%2)*pos_neg() + pos_neg_zero()] = recv_buf[i];
-		// L: (T+1)/2-1-i/2-i%2
-		// R: (T+1)/2+n+i/2+i%2
+	// size = (T-1)*K, will be computed NP times, but that's OK, because NP is small (<=4)
+	spmdtransfer(info, (T-1)*K, send_buf, 1, r, recv_buf, 1);
+	for (int t=0; t<T/2; ++t) {
+		for (int j=0; j<2*K; ++j) {
+			if (2*K*t+j < (T-1)*K) {
+				int x = (T+1)/2*K -?? - (t*K+j);
+				A[t][x] = send_buf[t*(2*K)+j];
+			}
+		}
 	}
+//	for (int i=0; i<(T-1)*K; ++i) {
+//		A[i/(K*2)][(T+1)/2*K - 1 - (i/(K*2)*K + i%(K*2))] = recv_buf[i];  // not OK. will 
+//	}
 	
-	for (int s=0; s<T-1; ++s) {
-		for (int t=s/2+1; t<T; ++t) {
-			int i = (T+1)/2 + n*??(1) + s*pos_neg() + t*pos_neg() + pos_neg_zero();
-			// L: (T+1)/2 -s+t-1
-			// R: n+(T+1)/2+s-t
-			A[t][i] = A[t-1][i-1]+A[t-1][i+1];
+	for (int j=0; j<K*(T-1); ++j) {
+		int bottom = j/(2*K) +1;
+		for (int t=bottom; t<T; ++t) {
+			int x = (T+1)/2*K - 1 - j + t*K;
+			A[t][x] = A[t-1][x-K]+A[t-1][x+K];
 		}
 	}
 }
 
-void fastLeft(global spmdinfo info, global int np, global int n, global int T, ref float[n+T+T%2][T] A) {
-	fastBoundary(info, np, n, T, A);
-}
-
-void fastRight(global spmdinfo info, global int np, global int n, global int T, ref float[n+T+T%2][T] A) {
-	fastBoundary(info, np, n, T, A);
-/*	float[T-1] send_buf;
-	for (int i=0; i<T-1; ++i) {
-		send_buf[i] = A[i/2][(T+1)/2+i/2+i%2];
+void fastRight(global spmdinfo info, global int np, global int n, global int T, ref float[n+(T+1)/2*K*2][T] A) {
+	float[(T-1)*K] send_buf;
+	for (int i=0; i<(T-1)*K; ++i) {
+		send_buf[i] = A[i/(K*2)][(T+1)/2*K + (i/(K*2)*K + i%(K*2))];
 	}
 	
-	float[T-1] recv_buf;
-	int r = (spmdpid==0) ? np-1 : spmdpid-1;
+	float[(T-1)*K] recv_buf;
+	int r = (spmdpid== 0 ) ? np-1 : spmdpid-1;
 	
-	spmdtransfer(info, T-1, send_buf, 1, r, recv_buf, 1);
-	
-	for (int i=0; i<T-1; ++i) {
-		A[i/2][(T+1)/2+n+i/2+i%2] = recv_buf[i];
-	}
-	
-	for (int s=0; s<T-1; ++s) {
-		for (int t=s/2+1; t<T; ++t) {
-			int i = n+(T+1)/2+s-t;
-			A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+	spmdtransfer(info, (T-1)*K, send_buf, 1, r, recv_buf, 1);
+//	for (int i=0; i<(T-1)*K; ++i) {
+//		A[i/(K*2)][(T+1)/2*K +n + (i/(K*2)*K + i%(K*2))] = recv_buf[i];
+//	}
+	for (int t=0; t<T/2; ++t) {
+		for (int j=0; j<2*K; ++j) {
+			if (2*K*t+j < (T-1)*K) {
+				int x = (T+1)/2*K + n + (t*K+j);
+				A[t][x] = send_buf[t*(2*K)+j];
+			}
 		}
-	}*/
+	}
+	
+	for (int j=0; j<K*(T-1); ++j) {
+		int bottom = j/(2*K) +1;
+		for (int t=bottom; t<T; ++t) {
+			int x = (T+1)/2*K +n + j - t*K;
+			A[t][x] = A[t-1][x-K]+A[t-1][x+K];
+		}
+	}
 }
 
-void specCenter(int n, int T, ref float[n+T+T%2][T] A){    
-    if ( (n>(T-1)*2) && (T>1 && T<4) ){
+void trapezoid(int n, int T, int L, ref float[n+L*2][T] A){    
+    if ( (T>=3) && (n>=(T-1)*2*K+1) ){
         for(int t=1; t<T; ++t){
-            for(int i=(T+1)/2+t; i<(T+1)/2+n-t; ++i){
-                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
+            for(int j=t*K; j<n-t*K; ++j){
+            		int x = L+j;
+                A[t][x] = A[t-1][x-K] + A[t-1][x+K];
             }   
         }
     }
 }
 
-void fastCenter(int n, int T, ref float[n+T+T%2][T] A) {
-	if ( (n>(T-1)*2) && (T>1 && T<4) ){
-		for (int j=1; j<T-1; ++j) {
-			for (int t=1; t<=j; ++t) {
-				int i = (T+1)/2 + j*2-t + pos_neg_zero();  // 0
-				A[t][i] = A[t-1][i-1] + A[t-1][i+1];
-				A[t][i+1] = A[t-1][i] + A[t-1][i+2];
-			}
-		}
-	    for(int j=2*(T-2)+1; j<n-1; ++j){
-	        for(int t=1; t<T; ++t){
-	            int i = (T+1)/2 + j-t + pos_neg_zero();  // 1
-                A[t][i] = A[t-1][i-1] + A[t-1][i+1];
-	        }           
-	    }
-	}
-}
-
-//stencil float[n+T+T%2][T] specCenterSten(int n, int T, float[n+T+T%2][T] in) {    
-//	float[n+T+T%2][T] out = in;
-//	specCenter(n, T, out);
-//	return out;
-//}
-//
-//stencil float[n+T+T%2][T] fastCenterSten(int n, int T, float[n+T+T%2][T] in) implements specCenterSten {    
-//	float[n+T+T%2][T] out = in;
-//	fastCenter(n, T, out);
-//	return out;
-//}
-
-stencil float[N][T] fastCompute(int np, int N, int T, float[N][T] in) implements specCompute {
+stencil float[N][T] computeFast(int np, int N, int T, float[N][T] in) implements compute {
 	float[N][T] out = in;
-    if( (np == 1) && (N%np==0) && (T>1 && T<4) && (N>(T-1)*2) ){
+    if( (np<=3) && (N%np==0) && (T>=3) && ((N/np)>=(T-1)*2*K+1)){
     		global int n = N/np;
     		global spmdinfo info = spmdinit(np, T);
 		spmdfork(np) {
-			float[n+T+T%2][T] A;
-			move_in(N, T, out, n, A);
-			specCenter(n, T, A);
+			float[n+(T+1)/2*K*2][T] A;
+			movein(spmdpid, N, T, out, n, A);
+			trapezoid(n, T, (T+1)/2*K, A);
 			fastLeft(info, np, n, T, A);
 			fastRight(info, np, n, T, A);
-			move_out(N, T, out, n, A);
+			moveout(spmdpid, N, T, out, n, A);
 		}
     }
     return out;
 }
-
-
-
-/*
-stencil float[N][T] specNext(int np, int N, int T, float[N][T] in) {
-    float[N][T] out = in;
-    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
-        out[0] = out[T-1];
-    }
-    return out; 
-}
-
-stencil float[N][T] fastNext(int np, int N, int T, float[N][T] in) implements specNext {
-	float[N][T] out = in;
-    if( (np>0 && np<=4) && (N%np==0) && (T>1 && T<4) ){
-		global int n = N/np;
-    		spmdfork(np) {
-        		float[n][T] A;
-    			move_in(N, T, out, n, A);
-    			A[0] = A[T+1-??];
-    			move_out(N, T, out, n, A);
-    		}
-    }
-    return out;
-}
-*/
