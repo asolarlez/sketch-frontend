@@ -1,0 +1,2557 @@
+#define tnodesr 0
+#define tnodesxl 1
+#define xloc 2
+#define zloc 3
+#define null 4
+#define undef 5
+
+struct state{
+int z;
+int x;
+int q;
+int t;
+int[4] left;
+int[4] right;
+bit isEmpty;
+}
+
+void setInitialState(state initState, int i){
+initState.z = null;
+initState.x = null;
+initState.q = null;
+initState.t = null;
+initState.left[tnodesr] = undef;
+initState.left[tnodesxl] = undef;
+initState.left[xloc] = undef;
+initState.left[zloc] = undef;
+initState.right[tnodesr] = undef;
+initState.right[tnodesxl] = undef;
+initState.right[xloc] = undef;
+initState.right[zloc] = undef;
+if(i==0){
+initState.z = zloc;
+initState.x = xloc;
+initState.left[zloc] = xloc;
+initState.right[zloc] = tnodesr;
+initState.right[xloc] = null;
+initState.left[xloc] = tnodesxl;
+}
+if(i==1){
+initState.z = zloc;
+initState.x = xloc;
+initState.right[zloc] = xloc;
+initState.left[zloc] = tnodesr;
+initState.right[xloc] = null;
+initState.left[xloc] = tnodesxl;
+}
+}
+
+void assertFinalState(state finalState, int i){
+if(finalState.isEmpty == 0){
+if(i==0){
+assert finalState.z == zloc && finalState.x == xloc && finalState.left[zloc] == tnodesxl && finalState.right[zloc] == tnodesr;
+}
+if(i==1){
+assert finalState.z == zloc && finalState.x == xloc && finalState.right[zloc] == tnodesxl && finalState.left[zloc] == tnodesr;
+}
+}
+}
+
+ void assertNoGhostLocation(state fromState){
+}
+
+void spec(int[5] choice){
+}
+
+
+
+
+//skip
+void fc1(state fromState, int choice){
+return;
+}
+
+//z = x
+void fc2(state fromState, int choice){
+assert fromState.x != undef;
+fromState.z = fromState.x;
+}
+
+//z = q
+void fc3(state fromState, int choice){
+assert fromState.q != undef;
+fromState.z = fromState.q;
+}
+
+//z = t
+void fc4(state fromState, int choice){
+assert fromState.t != undef;
+fromState.z = fromState.t;
+}
+
+//x = z
+void fc5(state fromState, int choice){
+assert fromState.z != undef;
+fromState.x = fromState.z;
+}
+
+//x = q
+void fc6(state fromState, int choice){
+assert fromState.q != undef;
+fromState.x = fromState.q;
+}
+
+//x = t
+void fc7(state fromState, int choice){
+assert fromState.t != undef;
+fromState.x = fromState.t;
+}
+
+//q = z
+void fc8(state fromState, int choice){
+assert fromState.z != undef;
+fromState.q = fromState.z;
+}
+
+//q = x
+void fc9(state fromState, int choice){
+assert fromState.x != undef;
+fromState.q = fromState.x;
+}
+
+//q = t
+void fc10(state fromState, int choice){
+assert fromState.t != undef;
+fromState.q = fromState.t;
+}
+
+//t = z
+void fc11(state fromState, int choice){
+assert fromState.z != undef;
+fromState.t = fromState.z;
+}
+
+//t = x
+void fc12(state fromState, int choice){
+assert fromState.x != undef;
+fromState.t = fromState.x;
+}
+
+//t = q
+void fc13(state fromState, int choice){
+assert fromState.q != undef;
+fromState.t = fromState.q;
+}
+
+//z = z.left
+void fc14(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.z = fromState.left[fromState.z];
+}
+
+//z = z.right
+void fc15(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.z = fromState.right[fromState.z];
+}
+
+//z = x.left
+void fc16(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.z = fromState.left[fromState.x];
+}
+
+//z = x.right
+void fc17(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.z = fromState.right[fromState.x];
+}
+
+//z = q.left
+void fc18(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.z = fromState.left[fromState.q];
+}
+
+//z = q.right
+void fc19(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.z = fromState.right[fromState.q];
+}
+
+//z = t.left
+void fc20(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.z = fromState.left[fromState.t];
+}
+
+//z = t.right
+void fc21(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.z = fromState.right[fromState.t];
+}
+
+//x = z.left
+void fc22(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.x = fromState.left[fromState.z];
+}
+
+//x = z.right
+void fc23(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.x = fromState.right[fromState.z];
+}
+
+//x = x.left
+void fc24(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.x = fromState.left[fromState.x];
+}
+
+//x = x.right
+void fc25(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.x = fromState.right[fromState.x];
+}
+
+//x = q.left
+void fc26(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.x = fromState.left[fromState.q];
+}
+
+//x = q.right
+void fc27(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.x = fromState.right[fromState.q];
+}
+
+//x = t.left
+void fc28(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.x = fromState.left[fromState.t];
+}
+
+//x = t.right
+void fc29(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.x = fromState.right[fromState.t];
+}
+
+//q = z.left
+void fc30(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.q = fromState.left[fromState.z];
+}
+
+//q = z.right
+void fc31(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.q = fromState.right[fromState.z];
+}
+
+//q = x.left
+void fc32(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.q = fromState.left[fromState.x];
+}
+
+//q = x.right
+void fc33(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.q = fromState.right[fromState.x];
+}
+
+//q = q.left
+void fc34(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.q = fromState.left[fromState.q];
+}
+
+//q = q.right
+void fc35(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.q = fromState.right[fromState.q];
+}
+
+//q = t.left
+void fc36(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.q = fromState.left[fromState.t];
+}
+
+//q = t.right
+void fc37(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.q = fromState.right[fromState.t];
+}
+
+//t = z.left
+void fc38(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.t = fromState.left[fromState.z];
+}
+
+//t = z.right
+void fc39(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.t = fromState.right[fromState.z];
+}
+
+//t = x.left
+void fc40(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.t = fromState.left[fromState.x];
+}
+
+//t = x.right
+void fc41(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.t = fromState.right[fromState.x];
+}
+
+//t = q.left
+void fc42(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.t = fromState.left[fromState.q];
+}
+
+//t = q.right
+void fc43(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.t = fromState.right[fromState.q];
+}
+
+//t = t.left
+void fc44(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.t = fromState.left[fromState.t];
+}
+
+//t = t.right
+void fc45(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.t = fromState.right[fromState.t];
+}
+
+//z.left = z
+void fc46(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.z != undef;
+fromState.left[fromState.z] = fromState.z;
+}
+
+//z.right = z
+void fc47(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.z != undef;
+fromState.right[fromState.z] = fromState.z;
+}
+
+//z.left = x
+void fc48(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.x != undef;
+fromState.left[fromState.z] = fromState.x;
+}
+
+//z.right = x
+void fc49(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.x != undef;
+fromState.right[fromState.z] = fromState.x;
+}
+
+//z.left = q
+void fc50(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.q != undef;
+fromState.left[fromState.z] = fromState.q;
+}
+
+//z.right = q
+void fc51(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.q != undef;
+fromState.right[fromState.z] = fromState.q;
+}
+
+//z.left = t
+void fc52(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.t != undef;
+fromState.left[fromState.z] = fromState.t;
+}
+
+//z.right = t
+void fc53(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.t != undef;
+fromState.right[fromState.z] = fromState.t;
+}
+
+//x.left = z
+void fc54(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.z != undef;
+fromState.left[fromState.x] = fromState.z;
+}
+
+//x.right = z
+void fc55(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.z != undef;
+fromState.right[fromState.x] = fromState.z;
+}
+
+//x.left = x
+void fc56(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.x != undef;
+fromState.left[fromState.x] = fromState.x;
+}
+
+//x.right = x
+void fc57(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.x != undef;
+fromState.right[fromState.x] = fromState.x;
+}
+
+//x.left = q
+void fc58(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.q != undef;
+fromState.left[fromState.x] = fromState.q;
+}
+
+//x.right = q
+void fc59(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.q != undef;
+fromState.right[fromState.x] = fromState.q;
+}
+
+//x.left = t
+void fc60(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.t != undef;
+fromState.left[fromState.x] = fromState.t;
+}
+
+//x.right = t
+void fc61(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.t != undef;
+fromState.right[fromState.x] = fromState.t;
+}
+
+//q.left = z
+void fc62(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.z != undef;
+fromState.left[fromState.q] = fromState.z;
+}
+
+//q.right = z
+void fc63(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.z != undef;
+fromState.right[fromState.q] = fromState.z;
+}
+
+//q.left = x
+void fc64(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.x != undef;
+fromState.left[fromState.q] = fromState.x;
+}
+
+//q.right = x
+void fc65(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.x != undef;
+fromState.right[fromState.q] = fromState.x;
+}
+
+//q.left = q
+void fc66(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.q != undef;
+fromState.left[fromState.q] = fromState.q;
+}
+
+//q.right = q
+void fc67(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.q != undef;
+fromState.right[fromState.q] = fromState.q;
+}
+
+//q.left = t
+void fc68(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.t != undef;
+fromState.left[fromState.q] = fromState.t;
+}
+
+//q.right = t
+void fc69(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.t != undef;
+fromState.right[fromState.q] = fromState.t;
+}
+
+//t.left = z
+void fc70(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.z != undef;
+fromState.left[fromState.t] = fromState.z;
+}
+
+//t.right = z
+void fc71(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.z != undef;
+fromState.right[fromState.t] = fromState.z;
+}
+
+//t.left = x
+void fc72(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.x != undef;
+fromState.left[fromState.t] = fromState.x;
+}
+
+//t.right = x
+void fc73(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.x != undef;
+fromState.right[fromState.t] = fromState.x;
+}
+
+//t.left = q
+void fc74(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.q != undef;
+fromState.left[fromState.t] = fromState.q;
+}
+
+//t.right = q
+void fc75(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.q != undef;
+fromState.right[fromState.t] = fromState.q;
+}
+
+//t.left = t
+void fc76(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.t != undef;
+fromState.left[fromState.t] = fromState.t;
+}
+
+//t.right = t
+void fc77(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.t != undef;
+fromState.right[fromState.t] = fromState.t;
+}
+
+//z.left = z.right
+void fc78(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.left[fromState.z] = fromState.right[fromState.z];
+}
+
+//z.right = z.left
+void fc79(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.right[fromState.z] = fromState.left[fromState.z];
+}
+
+//z.left = x.left
+void fc80(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.left[fromState.z] = fromState.left[fromState.x];
+}
+
+//z.left = x.right
+void fc81(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.left[fromState.z] = fromState.right[fromState.x];
+}
+
+//z.right = x.left
+void fc82(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.right[fromState.z] = fromState.left[fromState.x];
+}
+
+//z.right = x.right
+void fc83(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.right[fromState.z] = fromState.right[fromState.x];
+}
+
+//z.left = q.left
+void fc84(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.left[fromState.z] = fromState.left[fromState.q];
+}
+
+//z.left = q.right
+void fc85(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.left[fromState.z] = fromState.right[fromState.q];
+}
+
+//z.right = q.left
+void fc86(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.right[fromState.z] = fromState.left[fromState.q];
+}
+
+//z.right = q.right
+void fc87(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.right[fromState.z] = fromState.right[fromState.q];
+}
+
+//z.left = t.left
+void fc88(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.left[fromState.z] = fromState.left[fromState.t];
+}
+
+//z.left = t.right
+void fc89(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.left[fromState.z] = fromState.right[fromState.t];
+}
+
+//z.right = t.left
+void fc90(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.right[fromState.z] = fromState.left[fromState.t];
+}
+
+//z.right = t.right
+void fc91(state fromState, int choice){
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.right[fromState.z] = fromState.right[fromState.t];
+}
+
+//x.left = z.left
+void fc92(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.left[fromState.x] = fromState.left[fromState.z];
+}
+
+//x.left = z.right
+void fc93(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.left[fromState.x] = fromState.right[fromState.z];
+}
+
+//x.right = z.left
+void fc94(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.right[fromState.x] = fromState.left[fromState.z];
+}
+
+//x.right = z.right
+void fc95(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.right[fromState.x] = fromState.right[fromState.z];
+}
+
+//x.left = x.right
+void fc96(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.left[fromState.x] = fromState.right[fromState.x];
+}
+
+//x.right = x.left
+void fc97(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.right[fromState.x] = fromState.left[fromState.x];
+}
+
+//x.left = q.left
+void fc98(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.left[fromState.x] = fromState.left[fromState.q];
+}
+
+//x.left = q.right
+void fc99(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.left[fromState.x] = fromState.right[fromState.q];
+}
+
+//x.right = q.left
+void fc100(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.right[fromState.x] = fromState.left[fromState.q];
+}
+
+//x.right = q.right
+void fc101(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.right[fromState.x] = fromState.right[fromState.q];
+}
+
+//x.left = t.left
+void fc102(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.left[fromState.x] = fromState.left[fromState.t];
+}
+
+//x.left = t.right
+void fc103(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.left[fromState.x] = fromState.right[fromState.t];
+}
+
+//x.right = t.left
+void fc104(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.right[fromState.x] = fromState.left[fromState.t];
+}
+
+//x.right = t.right
+void fc105(state fromState, int choice){
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.right[fromState.x] = fromState.right[fromState.t];
+}
+
+//q.left = z.left
+void fc106(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.left[fromState.q] = fromState.left[fromState.z];
+}
+
+//q.left = z.right
+void fc107(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.left[fromState.q] = fromState.right[fromState.z];
+}
+
+//q.right = z.left
+void fc108(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.right[fromState.q] = fromState.left[fromState.z];
+}
+
+//q.right = z.right
+void fc109(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.right[fromState.q] = fromState.right[fromState.z];
+}
+
+//q.left = x.left
+void fc110(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.left[fromState.q] = fromState.left[fromState.x];
+}
+
+//q.left = x.right
+void fc111(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.left[fromState.q] = fromState.right[fromState.x];
+}
+
+//q.right = x.left
+void fc112(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.right[fromState.q] = fromState.left[fromState.x];
+}
+
+//q.right = x.right
+void fc113(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.right[fromState.q] = fromState.right[fromState.x];
+}
+
+//q.left = q.right
+void fc114(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.left[fromState.q] = fromState.right[fromState.q];
+}
+
+//q.right = q.left
+void fc115(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.right[fromState.q] = fromState.left[fromState.q];
+}
+
+//q.left = t.left
+void fc116(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.left[fromState.q] = fromState.left[fromState.t];
+}
+
+//q.left = t.right
+void fc117(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.left[fromState.q] = fromState.right[fromState.t];
+}
+
+//q.right = t.left
+void fc118(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.right[fromState.q] = fromState.left[fromState.t];
+}
+
+//q.right = t.right
+void fc119(state fromState, int choice){
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.right[fromState.q] = fromState.right[fromState.t];
+}
+
+//t.left = z.left
+void fc120(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.left[fromState.t] = fromState.left[fromState.z];
+}
+
+//t.left = z.right
+void fc121(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.left[fromState.t] = fromState.right[fromState.z];
+}
+
+//t.right = z.left
+void fc122(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.left[fromState.z] != undef ;
+fromState.right[fromState.t] = fromState.left[fromState.z];
+}
+
+//t.right = z.right
+void fc123(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.z != null;
+assert fromState.z != undef;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+assert fromState.right[fromState.z] != undef ;
+fromState.right[fromState.t] = fromState.right[fromState.z];
+}
+
+//t.left = x.left
+void fc124(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.left[fromState.t] = fromState.left[fromState.x];
+}
+
+//t.left = x.right
+void fc125(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.left[fromState.t] = fromState.right[fromState.x];
+}
+
+//t.right = x.left
+void fc126(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.left[fromState.x] != undef ;
+fromState.right[fromState.t] = fromState.left[fromState.x];
+}
+
+//t.right = x.right
+void fc127(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.x != null;
+assert fromState.x != undef;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+assert fromState.right[fromState.x] != undef ;
+fromState.right[fromState.t] = fromState.right[fromState.x];
+}
+
+//t.left = q.left
+void fc128(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.left[fromState.t] = fromState.left[fromState.q];
+}
+
+//t.left = q.right
+void fc129(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.left[fromState.t] = fromState.right[fromState.q];
+}
+
+//t.right = q.left
+void fc130(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.left[fromState.q] != undef ;
+fromState.right[fromState.t] = fromState.left[fromState.q];
+}
+
+//t.right = q.right
+void fc131(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.q != null;
+assert fromState.q != undef;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+assert fromState.right[fromState.q] != undef ;
+fromState.right[fromState.t] = fromState.right[fromState.q];
+}
+
+//t.left = t.right
+void fc132(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.right[fromState.t] != undef ;
+fromState.left[fromState.t] = fromState.right[fromState.t];
+}
+
+//t.right = t.left
+void fc133(state fromState, int choice){
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.t != null;
+assert fromState.t != undef;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+assert fromState.left[fromState.t] != undef ;
+fromState.right[fromState.t] = fromState.left[fromState.t];
+}
+
+//true
+void fc134(state fromState, int choice){
+}
+
+//false
+void fc135(state fromState, int choice){
+fromState.isEmpty = 1;
+}
+
+//z != null
+void fc136(state fromState, int choice){
+if(fromState.z == null)
+fromState.isEmpty = 1;
+}
+
+//x != null
+void fc137(state fromState, int choice){
+if(fromState.x == null)
+fromState.isEmpty = 1;
+}
+
+//q != null
+void fc138(state fromState, int choice){
+if(fromState.q == null)
+fromState.isEmpty = 1;
+}
+
+//t != null
+void fc139(state fromState, int choice){
+if(fromState.t == null)
+fromState.isEmpty = 1;
+}
+
+//z.left != x
+void fc140(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.z] == fromState.x)
+fromState.isEmpty = 1;
+}
+
+//z.right != x
+void fc141(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.z] == fromState.x)
+fromState.isEmpty = 1;
+}
+
+//z.left != q
+void fc142(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.z] == fromState.q)
+fromState.isEmpty = 1;
+}
+
+//z.right != q
+void fc143(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.z] == fromState.q)
+fromState.isEmpty = 1;
+}
+
+//z.left != t
+void fc144(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.z] == fromState.t)
+fromState.isEmpty = 1;
+}
+
+//z.right != t
+void fc145(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.z] == fromState.t)
+fromState.isEmpty = 1;
+}
+
+//x.left != z
+void fc146(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.x] == fromState.z)
+fromState.isEmpty = 1;
+}
+
+//x.right != z
+void fc147(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.x] == fromState.z)
+fromState.isEmpty = 1;
+}
+
+//x.left != q
+void fc148(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.x] == fromState.q)
+fromState.isEmpty = 1;
+}
+
+//x.right != q
+void fc149(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.x] == fromState.q)
+fromState.isEmpty = 1;
+}
+
+//x.left != t
+void fc150(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.x] == fromState.t)
+fromState.isEmpty = 1;
+}
+
+//x.right != t
+void fc151(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.x] == fromState.t)
+fromState.isEmpty = 1;
+}
+
+//q.left != z
+void fc152(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.q] == fromState.z)
+fromState.isEmpty = 1;
+}
+
+//q.right != z
+void fc153(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.q] == fromState.z)
+fromState.isEmpty = 1;
+}
+
+//q.left != x
+void fc154(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.q] == fromState.x)
+fromState.isEmpty = 1;
+}
+
+//q.right != x
+void fc155(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.q] == fromState.x)
+fromState.isEmpty = 1;
+}
+
+//q.left != t
+void fc156(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.q] == fromState.t)
+fromState.isEmpty = 1;
+}
+
+//q.right != t
+void fc157(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.q] == fromState.t)
+fromState.isEmpty = 1;
+}
+
+//t.left != z
+void fc158(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.t] == fromState.z)
+fromState.isEmpty = 1;
+}
+
+//t.right != z
+void fc159(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.t] == fromState.z)
+fromState.isEmpty = 1;
+}
+
+//t.left != x
+void fc160(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.t] == fromState.x)
+fromState.isEmpty = 1;
+}
+
+//t.right != x
+void fc161(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.t] == fromState.x)
+fromState.isEmpty = 1;
+}
+
+//t.left != q
+void fc162(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.t] == fromState.q)
+fromState.isEmpty = 1;
+}
+
+//t.right != q
+void fc163(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.t] == fromState.q)
+fromState.isEmpty = 1;
+}
+
+//z.left == x
+void fc164(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.z] != fromState.x)
+fromState.isEmpty = 1;
+}
+
+//z.right == x
+void fc165(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.z] != fromState.x)
+fromState.isEmpty = 1;
+}
+
+//z.left == q
+void fc166(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.z] != fromState.q)
+fromState.isEmpty = 1;
+}
+
+//z.right == q
+void fc167(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.z] != fromState.q)
+fromState.isEmpty = 1;
+}
+
+//z.left == t
+void fc168(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.z] != fromState.t)
+fromState.isEmpty = 1;
+}
+
+//z.right == t
+void fc169(state fromState, int choice){
+if(fromState.z == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.z] != fromState.t)
+fromState.isEmpty = 1;
+}
+
+//x.left == z
+void fc170(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.x] != fromState.z)
+fromState.isEmpty = 1;
+}
+
+//x.right == z
+void fc171(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.x] != fromState.z)
+fromState.isEmpty = 1;
+}
+
+//x.left == q
+void fc172(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.x] != fromState.q)
+fromState.isEmpty = 1;
+}
+
+//x.right == q
+void fc173(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.x] != fromState.q)
+fromState.isEmpty = 1;
+}
+
+//x.left == t
+void fc174(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.x] != fromState.t)
+fromState.isEmpty = 1;
+}
+
+//x.right == t
+void fc175(state fromState, int choice){
+if(fromState.x == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.x] != fromState.t)
+fromState.isEmpty = 1;
+}
+
+//q.left == z
+void fc176(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.q] != fromState.z)
+fromState.isEmpty = 1;
+}
+
+//q.right == z
+void fc177(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.q] != fromState.z)
+fromState.isEmpty = 1;
+}
+
+//q.left == x
+void fc178(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.q] != fromState.x)
+fromState.isEmpty = 1;
+}
+
+//q.right == x
+void fc179(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.q] != fromState.x)
+fromState.isEmpty = 1;
+}
+
+//q.left == t
+void fc180(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.q] != fromState.t)
+fromState.isEmpty = 1;
+}
+
+//q.right == t
+void fc181(state fromState, int choice){
+if(fromState.q == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.q] != fromState.t)
+fromState.isEmpty = 1;
+}
+
+//t.left == z
+void fc182(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.t] != fromState.z)
+fromState.isEmpty = 1;
+}
+
+//t.right == z
+void fc183(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.t] != fromState.z)
+fromState.isEmpty = 1;
+}
+
+//t.left == x
+void fc184(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.t] != fromState.x)
+fromState.isEmpty = 1;
+}
+
+//t.right == x
+void fc185(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.t] != fromState.x)
+fromState.isEmpty = 1;
+}
+
+//t.left == q
+void fc186(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.left[fromState.t] != fromState.q)
+fromState.isEmpty = 1;
+}
+
+//t.right == q
+void fc187(state fromState, int choice){
+if(fromState.t == null){fromState.isEmpty = 1;
+ return;
+}
+if(fromState.right[fromState.t] != fromState.q)
+fromState.isEmpty = 1;
+}
+
+// unfold z 
+void fc188(state fromState, int choice){
+}
+
+// unfold x 
+void fc189(state fromState, int choice){
+}
+
+// unfold q 
+void fc190(state fromState, int choice){
+}
+
+// unfold t 
+void fc191(state fromState, int choice){
+}
+
+// fold z 
+void fc192(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+}
+
+// fold x 
+void fc193(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+}
+
+// fold q 
+void fc194(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+}
+
+// fold t 
+void fc195(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+}
+
+void copystate(state fromState, state toState){
+toState.z = fromState.z;
+toState.x = fromState.x;
+toState.q = fromState.q;
+toState.t = fromState.t;
+toState.left[tnodesr] = fromState.left[tnodesr];
+toState.left[tnodesxl] = fromState.left[tnodesxl];
+toState.left[xloc] = fromState.left[xloc];
+toState.left[zloc] = fromState.left[zloc];
+toState.right[tnodesr] = fromState.right[tnodesr];
+toState.right[tnodesxl] = fromState.right[tnodesxl];
+toState.right[xloc] = fromState.right[xloc];
+toState.right[zloc] = fromState.right[zloc];
+toState.isEmpty = fromState.isEmpty;
+}
+void f2(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+f2a(fromState, choice);
+if(fromState.isEmpty == 0) f2b(fromState, choice);
+else fromState.isEmpty = 0;
+}
+void f4(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+f4a(fromState, choice);
+if(fromState.isEmpty == 0) f4b(fromState, choice);
+else fromState.isEmpty = 0;
+}
+void f1(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+if(c1==0) rhs = fromState.z;
+if(c1==1) rhs = fromState.x;
+if(c1==2) rhs = fromState.q;
+if(c1==3) rhs = fromState.t;
+if(c1==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.left[fromState.z];}
+if(c1==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.right[fromState.z];}
+if(c1==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.left[fromState.x];}
+if(c1==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.right[fromState.x];}
+if(c1==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.left[fromState.q];}
+if(c1==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.right[fromState.q];}
+if(c1==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.left[fromState.t];}
+if(c1==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.right[fromState.t];}
+if(c2==0) fromState.z = rhs;
+if(c2==1) fromState.x = rhs;
+if(c2==2) fromState.q = rhs;
+if(c2==3) fromState.t = rhs;
+if(c2==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.left[fromState.z] = rhs;}
+if(c2==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.right[fromState.z] = rhs;}
+if(c2==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.left[fromState.x] = rhs;}
+if(c2==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.right[fromState.x] = rhs;}
+if(c2==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.left[fromState.q] = rhs;}
+if(c2==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.right[fromState.q] = rhs;}
+if(c2==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.left[fromState.t] = rhs;}
+if(c2==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.right[fromState.t] = rhs;}
+}
+void f3(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+if(c1==0) rhs = fromState.z;
+if(c1==1) rhs = fromState.x;
+if(c1==2) rhs = fromState.q;
+if(c1==3) rhs = fromState.t;
+if(c1==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.left[fromState.z];}
+if(c1==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.right[fromState.z];}
+if(c1==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.left[fromState.x];}
+if(c1==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.right[fromState.x];}
+if(c1==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.left[fromState.q];}
+if(c1==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.right[fromState.q];}
+if(c1==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.left[fromState.t];}
+if(c1==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.right[fromState.t];}
+if(c2==0) fromState.z = rhs;
+if(c2==1) fromState.x = rhs;
+if(c2==2) fromState.q = rhs;
+if(c2==3) fromState.t = rhs;
+if(c2==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.left[fromState.z] = rhs;}
+if(c2==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.right[fromState.z] = rhs;}
+if(c2==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.left[fromState.x] = rhs;}
+if(c2==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.right[fromState.x] = rhs;}
+if(c2==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.left[fromState.q] = rhs;}
+if(c2==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.right[fromState.q] = rhs;}
+if(c2==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.left[fromState.t] = rhs;}
+if(c2==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.right[fromState.t] = rhs;}
+}
+void f2b(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+if(c1==0) rhs = fromState.z;
+if(c1==1) rhs = fromState.x;
+if(c1==2) rhs = fromState.q;
+if(c1==3) rhs = fromState.t;
+if(c1==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.left[fromState.z];}
+if(c1==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.right[fromState.z];}
+if(c1==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.left[fromState.x];}
+if(c1==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.right[fromState.x];}
+if(c1==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.left[fromState.q];}
+if(c1==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.right[fromState.q];}
+if(c1==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.left[fromState.t];}
+if(c1==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.right[fromState.t];}
+if(c2==0) fromState.z = rhs;
+if(c2==1) fromState.x = rhs;
+if(c2==2) fromState.q = rhs;
+if(c2==3) fromState.t = rhs;
+if(c2==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.left[fromState.z] = rhs;}
+if(c2==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.right[fromState.z] = rhs;}
+if(c2==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.left[fromState.x] = rhs;}
+if(c2==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.right[fromState.x] = rhs;}
+if(c2==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.left[fromState.q] = rhs;}
+if(c2==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.right[fromState.q] = rhs;}
+if(c2==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.left[fromState.t] = rhs;}
+if(c2==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.right[fromState.t] = rhs;}
+}
+void f4b(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |};
+if(c1==0) rhs = fromState.z;
+if(c1==1) rhs = fromState.x;
+if(c1==2) rhs = fromState.q;
+if(c1==3) rhs = fromState.t;
+if(c1==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.left[fromState.z];}
+if(c1==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+rhs = fromState.right[fromState.z];}
+if(c1==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.left[fromState.x];}
+if(c1==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+rhs = fromState.right[fromState.x];}
+if(c1==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.left[fromState.q];}
+if(c1==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+rhs = fromState.right[fromState.q];}
+if(c1==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.left[fromState.t];}
+if(c1==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+rhs = fromState.right[fromState.t];}
+if(c2==0) fromState.z = rhs;
+if(c2==1) fromState.x = rhs;
+if(c2==2) fromState.q = rhs;
+if(c2==3) fromState.t = rhs;
+if(c2==4) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.left[fromState.z] = rhs;}
+if(c2==5) {assert fromState.z < null;
+assert fromState.z != tnodesr;
+assert fromState.z != tnodesxl;
+fromState.right[fromState.z] = rhs;}
+if(c2==6) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.left[fromState.x] = rhs;}
+if(c2==7) {assert fromState.x < null;
+assert fromState.x != tnodesr;
+assert fromState.x != tnodesxl;
+fromState.right[fromState.x] = rhs;}
+if(c2==8) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.left[fromState.q] = rhs;}
+if(c2==9) {assert fromState.q < null;
+assert fromState.q != tnodesr;
+assert fromState.q != tnodesxl;
+fromState.right[fromState.q] = rhs;}
+if(c2==10) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.left[fromState.t] = rhs;}
+if(c2==11) {assert fromState.t < null;
+assert fromState.t != tnodesr;
+assert fromState.t != tnodesxl;
+fromState.right[fromState.t] = rhs;}
+}
+void f2a(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc134(fromState, choice); return;}
+if({|true|false|}) {fc135(fromState, choice); return;}
+if({|true|false|}) {fc136(fromState, choice); return;}
+if({|true|false|}) {fc137(fromState, choice); return;}
+if({|true|false|}) {fc138(fromState, choice); return;}
+if({|true|false|}) {fc139(fromState, choice); return;}
+if({|true|false|}) {fc140(fromState, choice); return;}
+if({|true|false|}) {fc141(fromState, choice); return;}
+if({|true|false|}) {fc142(fromState, choice); return;}
+if({|true|false|}) {fc143(fromState, choice); return;}
+if({|true|false|}) {fc144(fromState, choice); return;}
+if({|true|false|}) {fc145(fromState, choice); return;}
+if({|true|false|}) {fc146(fromState, choice); return;}
+if({|true|false|}) {fc147(fromState, choice); return;}
+if({|true|false|}) {fc148(fromState, choice); return;}
+if({|true|false|}) {fc149(fromState, choice); return;}
+if({|true|false|}) {fc150(fromState, choice); return;}
+if({|true|false|}) {fc151(fromState, choice); return;}
+if({|true|false|}) {fc152(fromState, choice); return;}
+if({|true|false|}) {fc153(fromState, choice); return;}
+if({|true|false|}) {fc154(fromState, choice); return;}
+if({|true|false|}) {fc155(fromState, choice); return;}
+if({|true|false|}) {fc156(fromState, choice); return;}
+if({|true|false|}) {fc157(fromState, choice); return;}
+if({|true|false|}) {fc158(fromState, choice); return;}
+if({|true|false|}) {fc159(fromState, choice); return;}
+if({|true|false|}) {fc160(fromState, choice); return;}
+if({|true|false|}) {fc161(fromState, choice); return;}
+if({|true|false|}) {fc162(fromState, choice); return;}
+if({|true|false|}) {fc163(fromState, choice); return;}
+if({|true|false|}) {fc164(fromState, choice); return;}
+if({|true|false|}) {fc165(fromState, choice); return;}
+if({|true|false|}) {fc166(fromState, choice); return;}
+if({|true|false|}) {fc167(fromState, choice); return;}
+if({|true|false|}) {fc168(fromState, choice); return;}
+if({|true|false|}) {fc169(fromState, choice); return;}
+if({|true|false|}) {fc170(fromState, choice); return;}
+if({|true|false|}) {fc171(fromState, choice); return;}
+if({|true|false|}) {fc172(fromState, choice); return;}
+if({|true|false|}) {fc173(fromState, choice); return;}
+if({|true|false|}) {fc174(fromState, choice); return;}
+if({|true|false|}) {fc175(fromState, choice); return;}
+if({|true|false|}) {fc176(fromState, choice); return;}
+if({|true|false|}) {fc177(fromState, choice); return;}
+if({|true|false|}) {fc178(fromState, choice); return;}
+if({|true|false|}) {fc179(fromState, choice); return;}
+if({|true|false|}) {fc180(fromState, choice); return;}
+if({|true|false|}) {fc181(fromState, choice); return;}
+if({|true|false|}) {fc182(fromState, choice); return;}
+if({|true|false|}) {fc183(fromState, choice); return;}
+if({|true|false|}) {fc184(fromState, choice); return;}
+if({|true|false|}) {fc185(fromState, choice); return;}
+if({|true|false|}) {fc186(fromState, choice); return;}
+fc187(fromState,choice); return;
+}
+void f4a(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc134(fromState, choice); return;}
+if({|true|false|}) {fc135(fromState, choice); return;}
+if({|true|false|}) {fc136(fromState, choice); return;}
+if({|true|false|}) {fc137(fromState, choice); return;}
+if({|true|false|}) {fc138(fromState, choice); return;}
+if({|true|false|}) {fc139(fromState, choice); return;}
+if({|true|false|}) {fc140(fromState, choice); return;}
+if({|true|false|}) {fc141(fromState, choice); return;}
+if({|true|false|}) {fc142(fromState, choice); return;}
+if({|true|false|}) {fc143(fromState, choice); return;}
+if({|true|false|}) {fc144(fromState, choice); return;}
+if({|true|false|}) {fc145(fromState, choice); return;}
+if({|true|false|}) {fc146(fromState, choice); return;}
+if({|true|false|}) {fc147(fromState, choice); return;}
+if({|true|false|}) {fc148(fromState, choice); return;}
+if({|true|false|}) {fc149(fromState, choice); return;}
+if({|true|false|}) {fc150(fromState, choice); return;}
+if({|true|false|}) {fc151(fromState, choice); return;}
+if({|true|false|}) {fc152(fromState, choice); return;}
+if({|true|false|}) {fc153(fromState, choice); return;}
+if({|true|false|}) {fc154(fromState, choice); return;}
+if({|true|false|}) {fc155(fromState, choice); return;}
+if({|true|false|}) {fc156(fromState, choice); return;}
+if({|true|false|}) {fc157(fromState, choice); return;}
+if({|true|false|}) {fc158(fromState, choice); return;}
+if({|true|false|}) {fc159(fromState, choice); return;}
+if({|true|false|}) {fc160(fromState, choice); return;}
+if({|true|false|}) {fc161(fromState, choice); return;}
+if({|true|false|}) {fc162(fromState, choice); return;}
+if({|true|false|}) {fc163(fromState, choice); return;}
+if({|true|false|}) {fc164(fromState, choice); return;}
+if({|true|false|}) {fc165(fromState, choice); return;}
+if({|true|false|}) {fc166(fromState, choice); return;}
+if({|true|false|}) {fc167(fromState, choice); return;}
+if({|true|false|}) {fc168(fromState, choice); return;}
+if({|true|false|}) {fc169(fromState, choice); return;}
+if({|true|false|}) {fc170(fromState, choice); return;}
+if({|true|false|}) {fc171(fromState, choice); return;}
+if({|true|false|}) {fc172(fromState, choice); return;}
+if({|true|false|}) {fc173(fromState, choice); return;}
+if({|true|false|}) {fc174(fromState, choice); return;}
+if({|true|false|}) {fc175(fromState, choice); return;}
+if({|true|false|}) {fc176(fromState, choice); return;}
+if({|true|false|}) {fc177(fromState, choice); return;}
+if({|true|false|}) {fc178(fromState, choice); return;}
+if({|true|false|}) {fc179(fromState, choice); return;}
+if({|true|false|}) {fc180(fromState, choice); return;}
+if({|true|false|}) {fc181(fromState, choice); return;}
+if({|true|false|}) {fc182(fromState, choice); return;}
+if({|true|false|}) {fc183(fromState, choice); return;}
+if({|true|false|}) {fc184(fromState, choice); return;}
+if({|true|false|}) {fc185(fromState, choice); return;}
+if({|true|false|}) {fc186(fromState, choice); return;}
+fc187(fromState,choice); return;
+}
+
+
+void loop_exit_constraint(int[5] choice) implements spec{
+state initState;
+initState = new state();
+if(choice[0] >= 2) choice[0] = 0;
+setInitialState(initState, choice[0]);
+f1(initState, 0);
+f2(initState, 0);
+f3(initState, 0);
+f4(initState, 0);
+assert initState.isEmpty == 0;
+assertFinalState(initState, choice[0]);
+}
+
+void trace_constraint(int[5] choice) implements spec{
+state initState;
+initState = new state();
+if(choice[0] >= 2) choice[0] = 0;
+setInitialState(initState, choice[0]);
+f1(initState, 0);
+f2(initState, 0);
+f3(initState, 0);
+f4(initState, 0);
+assertFinalState(initState, choice[0]);
+}

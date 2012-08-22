@@ -50,7 +50,6 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("case", this), new Integer(29));
 	literals.put(new ANTLRHashString("loop", this), new Integer(8));
 	literals.put(new ANTLRHashString("for", this), new Integer(27));
-	literals.put(new ANTLRHashString("complex", this), new Integer(20));
 	literals.put(new ANTLRHashString("false", this), new Integer(36));
 	literals.put(new ANTLRHashString("true", this), new Integer(35));
 	literals.put(new ANTLRHashString("global", this), new Integer(49));
@@ -64,7 +63,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("implements", this), new Integer(40));
 	literals.put(new ANTLRHashString("continue", this), new Integer(33));
 	literals.put(new ANTLRHashString("do", this), new Integer(32));
-	literals.put(new ANTLRHashString("fun", this), new Integer(21));
+	literals.put(new ANTLRHashString("fun", this), new Integer(20));
 	literals.put(new ANTLRHashString("minrepeat", this), new Integer(10));
 	literals.put(new ANTLRHashString("null", this), new Integer(12));
 	literals.put(new ANTLRHashString("library", this), new Integer(46));
@@ -74,6 +73,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("reorder", this), new Integer(13));
 	literals.put(new ANTLRHashString("insert", this), new Integer(6));
 	literals.put(new ANTLRHashString("ref", this), new Integer(23));
+	literals.put(new ANTLRHashString("char", this), new Integer(21));
 	literals.put(new ANTLRHashString("while", this), new Integer(26));
 	literals.put(new ANTLRHashString("printfcn", this), new Integer(47));
 	literals.put(new ANTLRHashString("repeat", this), new Integer(9));

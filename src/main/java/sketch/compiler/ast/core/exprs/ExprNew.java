@@ -1,19 +1,30 @@
 package sketch.compiler.ast.core.exprs;
+
+import java.util.List;
+
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class ExprNew extends Expression {
 
 	Type typeToConstruct;
 
+    List<ExprNamedParam> params;
 
-	public ExprNew(FENode context, Type typeToConstruct) {
+    public ExprNew(FENode context, Type typeToConstruct, List<ExprNamedParam> params) {
 		super(context);
 		this.typeToConstruct = typeToConstruct;
+        assert typeToConstruct instanceof TypeStructRef;
 		// TODO Auto-generated constructor stub
+        this.params = params;
 	}
+
+    public List<ExprNamedParam> getParams() {
+        return this.params;
+    }
 
 	/**
 	 *
@@ -21,9 +32,10 @@ public class ExprNew extends Expression {
 	 * @param typeToConstruct
 	 * @deprecated
 	 */
-	public ExprNew(FEContext context, Type typeToConstruct) {
+    public ExprNew(FEContext context, Type typeToConstruct, List<ExprNamedParam> params) {
 		super(context);
 		this.typeToConstruct = typeToConstruct;
+        this.params = params;
 	}
 
 	public Type getTypeToConstruct () {
@@ -36,7 +48,18 @@ public class ExprNew extends Expression {
 	}
 
 	public String toString(){
-		return "new " + typeToConstruct + "()";
+        String rv = "new " + typeToConstruct + "(";
+        boolean isFirst = true;
+        for (ExprNamedParam enp : getParams()) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                rv += (", ");
+            }
+            rv += (enp.getName() + "=" + enp.getExpr().toString());
+        }
+        rv += ")";
+        return rv;
 	}
 
 }

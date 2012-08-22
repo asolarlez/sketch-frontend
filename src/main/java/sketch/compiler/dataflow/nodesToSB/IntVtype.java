@@ -259,15 +259,18 @@ public class IntVtype extends abstractValueType {
 			return BOTTOM( "(" + arr + "[" + idx + "])" );
 		}
 		if(len != null){
-			assert len.hasIntVal() : "NYI";
-			int ilen = len.getIntVal();
-			if(ilen != 1){
-				List<abstractValue> lst = new ArrayList<abstractValue>(ilen);
-				for(int i=0; i<ilen; ++i){
-					lst.add(  arracc(arr, plus(idx, CONST(i)), null, isUnchecked)  );
-				}
-				return ARR( lst );
-			}
+            if (len.hasIntVal()) {
+                int ilen = len.getIntVal();
+                if (ilen != 1) {
+                    List<abstractValue> lst = new ArrayList<abstractValue>(ilen);
+                    for (int i = 0; i < ilen; ++i) {
+                        lst.add(arracc(arr, plus(idx, CONST(i)), null, isUnchecked));
+                    }
+                    return ARR(lst);
+                }
+            } else {
+                return BOTTOM("(" + arr + "[" + idx + "])");
+            }
 		}
 
 		if( idx.hasIntVal() ){

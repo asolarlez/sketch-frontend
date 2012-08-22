@@ -38,8 +38,9 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitTypeStruct(TypeStruct ts) {
         ts = (TypeStruct) super.visitTypeStruct(ts);
-        return new TypeStruct(ts.getCudaMemType(), ts.getContext(),
-                transStruct(ts.getName()), ts.getFieldTypMap());
+        return ts.creator().name(transStruct(ts.getName())).create();
+        // return new TypeStruct(ts.getCudaMemType(), ts.getContext(),
+        // transStruct(ts.getName()), ts.getFieldTypMap());
     }
 
     public Object visitTypeStructRef(TypeStructRef tsr) {

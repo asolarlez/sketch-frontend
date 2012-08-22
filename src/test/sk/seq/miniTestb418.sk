@@ -1,0 +1,73 @@
+pragma options "--bnd-inbits 4 --bnd-arr-size 16 --bnd-unroll-amnt 16 --be:showDAG";
+
+struct MultiType{
+  MTArray lst;
+  int val;
+  int flag;
+}
+
+struct MTArray{
+  int len;
+  MultiType[len] A;  
+}
+
+int INTEGER=0;
+int LIST=1;
+
+
+harness void main(int n, int[n] A){
+    MultiType[n] Ap;
+    for(int i=0; i<n; ++i){
+        Ap[i] = new MultiType(flag=INTEGER, val=A[i]);
+    }
+    MultiType x = new MultiType(flag=LIST, lst=new MTArray(len=n, A=Ap));
+    everyOther(x);
+}
+
+MultiType everyOther(MultiType x) {
+    MultiType t = new MultiType(lst=new MTArray(A={}, len=0), flag=LIST);
+    void body(MultiType i){
+        assert i.flag == INTEGER;
+        assert x.flag == LIST;
+        if (i.val % 2 == 0) {
+            append(t, x.lst.A[i.val]);
+        } 
+    }
+    foreach(body, range({| len(x) | x |})); 
+    return t;
+}
+
+
+MultiType len(MultiType x){
+    assert x.flag == LIST;
+    return new MultiType(val = x.lst.len, flag=INTEGER);
+}
+
+MultiType range(MultiType x){
+    assert x.flag == INTEGER; 
+    int ub = x.val;
+    MultiType[ub] A;
+    for(int i=0; i<ub; ++i){
+        A[i] = new MultiType(val=i, flag=INTEGER);
+    }
+    MultiType m = new MultiType(lst=new MTArray(A=A, len=ub), flag=LIST);
+    return m;
+}
+
+void foreach(fun body, MultiType lst){
+    assert lst.flag == LIST;
+    MTArray ma = lst.lst;
+    for(int i=0; i<ma.len; ++i){
+      body(ma.A[i]);
+    }
+}
+
+void append(MultiType x, MultiType y){
+    assert x.flag == LIST; 
+    int olen = x.lst.len;
+    MultiType[olen+1] tArr = x.lst.A;
+    tArr[olen] = y;
+    x.lst = new MTArray(len = olen + 1, A=tArr);
+}
+
+

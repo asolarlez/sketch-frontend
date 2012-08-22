@@ -27,6 +27,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
@@ -67,7 +68,6 @@ import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
@@ -381,7 +381,9 @@ public class SequentialSketchMain extends CommonSketchMain
 
 	public void testProg(Program p){
 	    
-	    p = (Program)p.accept(new EliminateStructs(varGen, options.bndOpts.heapSize));
+        p =
+                (Program) p.accept(new EliminateStructs(varGen, new ExprConstInt(
+                        options.bndOpts.arrSize)));
 	    p = (Program)p.accept(new EliminateMultiDimArrays(varGen));
 	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
             new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
@@ -470,7 +472,6 @@ public class SequentialSketchMain extends CommonSketchMain
         }
 
         prog = (getBeforeSemanticCheckStage()).run(prog);
-        prog.accept(new SimpleCodePrinter());
 
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);

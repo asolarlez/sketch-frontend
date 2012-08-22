@@ -101,8 +101,12 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             Expression assertCond = stmt.getCond();
             abstractValue vcond  = (abstractValue) assertCond.accept (this);
         if (vcond.hasIntVal() && vcond.getIntVal() == 0) {
-            throw new ArrayIndexOutOfBoundsException("ASSERTION CAN NOT BE SATISFIED: " +
+            abstractValue vcrv = state.getRvflag().state(vtype);
+            if (vcrv.hasIntVal() && vcrv.getIntVal() == 0) {
+                throw new ArrayIndexOutOfBoundsException(
+                        "ASSERTION CAN NOT BE SATISFIED: " +
                     stmt.getCx() + " " + stmt.getMsg());
+            }
         }
             Expression ncond = exprRV;
             String msg = null;
@@ -287,8 +291,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             }
             obj =
                     func.creator().body(
-                            new StmtBlock(new StmtAssert(ExprConstInt.zero,
-                                    "This function should never be called", false))).create();
+                            new StmtBlock(new StmtAssert(func.getCx(), ExprConstInt.zero,
+                                    "This function should never be called. Will cause " +
+                                            e.getMessage(), false))).create();
         }
         
         newFuns.put(nres.getFunName(obj.getName()), obj);

@@ -16,14 +16,8 @@
 
 package sketch.compiler.ast.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Vector;
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -192,8 +186,25 @@ public class FEReplacer implements FEVisitor
 
     public Object visitExprNew(ExprNew expNew){
     	Type nt = (Type)expNew.getTypeToConstruct().accept(this);
-    	if(nt != expNew.getTypeToConstruct()){
-    		return new ExprNew(expNew, nt );
+        boolean changed = false;
+        List<ExprNamedParam> enl =
+                new ArrayList<ExprNamedParam>(expNew.getParams().size());
+        for (ExprNamedParam en : expNew.getParams()) {
+            Expression old = en.getExpr();
+            Expression rhs = doExpression(old);
+            if (rhs != old) {
+                enl.add(new ExprNamedParam(en, en.getName(), rhs));
+                changed = true;
+            } else {
+                enl.add(en);
+            }
+        }
+
+        if (nt != expNew.getTypeToConstruct() || changed) {
+            if (!changed) {
+                enl = expNew.getParams();
+            }
+            return new ExprNew(expNew, nt, enl);
     	}else{
     		return expNew;
     	}
@@ -256,19 +267,6 @@ public class FEReplacer implements FEVisitor
     		return new ExprChoiceUnary (exp, exp.getOps (), expr);
     }
 
-    public Object visitExprComplex(ExprComplex exp)
-    {
-        Expression real = exp.getReal();
-        if (real != null) real = doExpression(real);
-        Expression imag = exp.getImag();
-        if (imag != null) imag = doExpression(imag);
-        if (real == exp.getReal() && imag == exp.getImag())
-            return exp;
-        else
-            return new ExprComplex(exp, real, imag);
-    }
-
-    public Object visitExprConstBoolean(ExprConstBoolean exp) { return exp; }
     public Object visitExprConstChar(ExprConstChar exp) { return exp; }
     public Object visitExprConstFloat(ExprConstFloat exp) { return exp; }
     public Object visitExprConstInt(ExprConstInt exp) { return exp; }
@@ -478,6 +476,14 @@ public class FEReplacer implements FEVisitor
             	if(!(newStatements.size() == i+1 && newStatements.get(i) == s)){
             		changed = true;
             	}
+                if (i < newStatements.size() &&
+                        newStatements.get(i) instanceof StmtReturn)
+                {
+                    if (iter.hasNext()) {
+                        changed = true;
+                        break;
+                    }
+                }
             	/*
             	Statement tmpres = (Statement)s.accept(this);
                 if (tmpres != null)
@@ -812,21 +818,29 @@ public class FEReplacer implements FEVisitor
     }
     public Object visitTypeArray(TypeArray t) {
     	Type nbase = (Type)t.getBase().accept(this);
-    	Expression nlen = (Expression)t.getLength().accept(this);
+        Expression nlen = null;
+        if (t.getLength() != null) {
+            nlen = (Expression) t.getLength().accept(this);
+        }
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
         return new TypeArray(nbase, nlen, t.getMaxlength());
     }
 
+    public Set<String> fields = null;
     public Object visitTypeStruct (TypeStruct ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        fields = new HashSet<String>();
+        for (Entry<String, Type> entry : ts) {
+            fields.add(entry.getKey());
+        }
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept (this);
             changed |= (type != entry.getValue());
             map.put(entry.getKey(), type);
         }
         if (changed) {
-            return new TypeStruct(ts.getCudaMemType(), ts.getContext(), ts.getName(), map);
+            return ts.creator().fields(map).create();
         } else {
             return ts;
         }

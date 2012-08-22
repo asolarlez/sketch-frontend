@@ -53,6 +53,47 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 		this.varGen = varGen;
 	}
 	
+    private Expression szComp(Type tl, Type tr) {
+        assert (tl instanceof TypeArray || tr instanceof TypeArray);
+        Expression ll = ExprConstInt.one;
+        Expression lr = ExprConstInt.one;
+        Type lrec = tl;
+        Type rrec = tr;
+        if (tl instanceof TypeArray) {
+            TypeArray tt = ((TypeArray) tl);
+            ll = tt.getLength();
+            lrec = tt.getBase();
+        }
+        if (tr instanceof TypeArray) {
+            TypeArray tt = ((TypeArray) tr);
+            lr = tt.getLength();
+            rrec = tt.getBase();
+        }
+        Expression e = new ExprBinary(ll, "==", lr);
+        if (lrec instanceof TypeArray || rrec instanceof TypeArray) {
+            return new ExprBinary(e, "&&", szComp(lrec, rrec));
+        } else {
+            return e;
+        }
+
+    }
+
+    public Object visitExprBinary(ExprBinary eb) {
+        if (eb.getOp() == ExprBinary.BINOP_EQ) {
+            Type tl = getType(eb.getLeft());
+            Type tr = getType(eb.getRight());
+            if (tl instanceof TypeArray || tr instanceof TypeArray) {
+                Expression nl = (Expression) eb.getLeft().accept(this);
+                Expression nr = (Expression) eb.getRight().accept(this);
+                return new ExprBinary(new ExprBinary(nl, "==", nr), "&&", szComp(tl, tr));
+            } else {
+                return super.visitExprBinary(eb);
+            }
+        } else {
+            return super.visitExprBinary(eb);
+        }
+    }
+
 	public Object visitExprArrayInit(ExprArrayInit eai){
 	    Type ta = getType(eai);
 	    if(!(ta instanceof TypeArray )){ return eai; }
@@ -147,11 +188,16 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 			List<Expression> dims = base.getDimensions ();
 
 			dims.add (ta.getLength ());
+            Expression lenArr;
+            if (ta.getLength() != null) {
+                lenArr =
+                        new ExprBinary(base.getLength(), ExprBinary.BINOP_MUL,
+                                base.getLength(), ta.getLength());
+            } else {
+                lenArr = null;
+            }
 			return new TypeArray (base.getBase (),
-				new ExprBinary (base.getLength (),
-								ExprBinary.BINOP_MUL,
-								base.getLength (),
-								ta.getLength ()),
+ lenArr,
 					dims,
                     ta.getMaxlength() * base.getMaxlength());
 		} else {
@@ -188,12 +234,27 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
 		Expression idx = ExprConstant.createConstant (ear, "0");
 		for (RangeLen rl : indices) {
-            Expression cond =
-                    new ExprBinary(new ExprBinary(rl.start(), ">=", ExprConstInt.zero),
-                            "&&", new ExprBinary(rl.start(), "<",
-                                    dims.get(dims.size() - 1)));
-            addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
-                    false));
+
+            Expression cdim = dims.get(dims.size() - 1);
+            if (cdim != null) {
+                Expression cond = null;
+                if (rl.getLenExpression() == null) {
+                    cond =
+                            new ExprBinary(new ExprBinary(rl.start(), ">=",
+                                    ExprConstInt.zero), "&&", new ExprBinary(rl.start(),
+                                    "<", cdim));
+                } else {
+                    cond =
+                            new ExprBinary(new ExprBinary(rl.start(), ">=",
+                                    ExprConstInt.zero), "&&",
+                                    new ExprBinary(new ExprBinary(rl.start(), "+",
+                                            rl.getLenExpression()), "<=", cdim));
+                }
+
+                addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
+                        false));
+            }
+
 			dims.remove (dims.size ()-1);
 			idx = new ExprBinary (idx, ExprBinary.BINOP_ADD,
 					idx,

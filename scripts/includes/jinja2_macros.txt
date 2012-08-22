@@ -2,7 +2,7 @@
 #!/bin/bash
 # WARNING -- generated file, see version with ".jinja2" extension.
 
-scriptname="$(readlink -f "$0")"
+scriptname="$(which "$0")"
 dirname="$(dirname "$scriptname")"
 
 # SEARCH FOR JAR FILES

@@ -1,0 +1,15 @@
+
+pragma options "--bnd-unroll-amnt 100 --bnd-inbits 2";
+
+generator int [100] gen (int len1, int [len1] l1, ref int sz)
+{
+  sz = len1;
+  return l1;
+}
+
+harness void sketch (int len1, int [len1] l1)
+{
+  int sz;
+  int [100] tmp = gen(len1, l1, sz);
+  int [sz] list = tmp[0::sz];
+} 

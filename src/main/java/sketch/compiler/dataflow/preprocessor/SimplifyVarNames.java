@@ -8,25 +8,48 @@ import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 public class SimplifyVarNames extends FEReplacer {
 
 	Map<String, Integer> nmMap = new HashMap<String, Integer>();
 	Map<String, String> newNm = new HashMap<String, String>();
 	
+    public Object visitProgram(Program prog) {
+        nres = new NameResolver(prog);
+        for (StreamSpec ssOrig : prog.getStreams()) {
+            for (TypeStruct ts : ssOrig.getStructs()) {
+                String name;
+            }
+        }
+        return super.visitProgram(prog);
+    }
+
 	String transName(String name){
 	    
 	    if(newNm.containsKey(name)){
 	        return newNm.get(name);
-	    }else{
-	        int idx = name.indexOf('_');       
-	        String s1 = name.substring(0, idx);
+        } else {
+            int prevlast = -1;
+            int last = -1;
+            int cur = name.indexOf('_');
+            while (cur != -1) {
+                prevlast = last;
+                last = cur;
+                cur = name.indexOf('_', last + 1);
+            }
+
+            assert prevlast > 0;
+            String s1 = name.substring(0, prevlast);
 	        if(s1.length() == 0){
 	            if(name.contains("_out")){
 	                s1 = "_out";
@@ -53,7 +76,9 @@ public class SimplifyVarNames extends FEReplacer {
 	
 	public Object visitExprVar(ExprVar exp) {
 		String name = exp.getName();		
-		 return new ExprVar(exp, transName(name)); 
+        if (fields != null && fields.contains(name))
+            return exp;
+        return new ExprVar(exp, transName(name));
 	}
 	
     public Object visitStmtVarDecl(StmtVarDecl stmt)

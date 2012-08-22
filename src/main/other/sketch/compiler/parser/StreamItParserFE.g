@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEContext;
@@ -40,6 +42,8 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.Annotation;
+import sketch.util.datastructures.HashmapList;
 
 import sketch.compiler.ast.core.StreamSpec;
 
@@ -167,14 +171,14 @@ options {
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  
-	List funcs=new ArrayList(); Function f;
+	List<Function> funcs=new ArrayList(); Function f;
 	List<StreamSpec> namespaces = new ArrayList<StreamSpec>();
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
     String file = null;
     String pkgName = null;
     FEContext pkgCtxt = null;
 }
-	:	(  ((TK_device /*| TK_global*/ | TK_serial | TK_harness |
+	:	(  (annotation_list (TK_device /*| TK_global*/ | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
@@ -187,8 +191,17 @@ program	 returns [Program p]
         )*
 		EOF
 		{
+			if(pkgName == null){
+				pkgName="ANONYMOUS";
+			}
+			for(TypeStruct struct : structs){
+				struct.setPkg(pkgName);	
+			}
+			for(Function fun : funcs){
+				fun.setPkg(pkgName);	
+			}
 			 StreamSpec ss=new StreamSpec(pkgCtxt, 
- 				pkgName == null ? "ANONYMOUS" : pkgName,
+ 				pkgName,
  				structs, vars, funcs);
  				namespaces.add(ss);
                 if (!hasError) {
@@ -240,6 +253,7 @@ statement returns [Statement s] { s = null; }
 	|	s=reorder_block
 	|	s=atomic_block
 	|	s=block
+	|(return_type ID LPAREN) =>s=fdecl_statement
 	|	(data_type ID) => s=variable_decl SEMI!
     // |   (ID DEF_ASSIGN) => s=implicit_type_variable_decl SEMI!
 	|	(expr_statement) => s=expr_statement SEMI!
@@ -251,7 +265,9 @@ statement returns [Statement s] { s = null; }
 	|	s=for_statement
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
-	|s=fdecl_statement 
+	|(annotation_list (TK_device | TK_serial | TK_harness |
+                     TK_generator | TK_library | TK_printfcn | TK_stencil)*
+                    return_type ID LPAREN) =>s=fdecl_statement  
 	|s=return_statement SEMI
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
 	;
@@ -332,13 +348,13 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
 
 primitive_type returns [Type t] { t = null; }
 	:
-		(TK_boolean { t = TypePrimitive.booltype; }
+		(TK_boolean { t = TypePrimitive.bittype; }
 	|	TK_bit { t = TypePrimitive.bittype;  }
 	|	TK_int { t = TypePrimitive.inttype;  }
 	|	TK_float { t = TypePrimitive.floattype;  }
 	|	TK_double { t = TypePrimitive.doubletype; }
-	|	TK_complex { t = TypePrimitive.cplxtype; }
-	|   TK_fun { t = TypeFunction.singleton; })
+	|   TK_fun { t = TypeFunction.singleton; }
+	|	TK_char { t = TypePrimitive.chartype; })
 	;
 
 variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
@@ -361,10 +377,25 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 //     { s = new StmtImplicitVarDecl(getContext(id), id.getText(), init); }
 // ;
 
+annotation returns [Annotation an]{
+	an = null;
+}: atc:AT id:ID LPAREN (slit:STRING_LITERAL)? RPAREN
+{
+	an = Annotation.newAnnotation(getContext(atc), id.getText(), slit.getText());
+}
+;
+
+annotation_list returns [HashmapList<String, Annotation>  amap] {
+	 amap = new HashmapList<String, Annotation>(); Annotation an; }
+	:	
+		( an=annotation { amap.append(an.tag, an); })*
+	;
+
 function_decl returns [Function f] {
     Type rt;
     List l;
     StmtBlock s;
+    HashmapList<String, Annotation> amap;
     f = null;
     boolean isHarness = false;
     boolean isLibrary = false;
@@ -376,6 +407,7 @@ function_decl returns [Function f] {
     boolean isStencil = false;
 }
 	:
+	amap=annotation_list
 	( TK_device { isDevice = true; } |
           //TK_global { isGlobal = true; } |
           TK_serial { isSerial = true; } |
@@ -393,7 +425,7 @@ function_decl returns [Function f] {
 	{
             assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
             Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
-                rt).params(l).body(s);
+                rt).params(l).body(s).annotations(amap);
 
             // function type
             if (isGenerator) {
@@ -434,7 +466,7 @@ function_decl returns [Function f] {
 
             f = fc.create();
 	}
-	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).create(); })
+	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
 	;
 
 return_type returns [Type t] { t=null; }
@@ -531,7 +563,7 @@ do_while_statement returns [Statement s]
 for_statement returns [Statement s]
 { s = null; Expression x=null; Statement a, b, c; }
 	:	t:TK_for LPAREN a=for_init_statement SEMI
-		(x=right_expr | { x = new ExprConstBoolean(getContext(t), true); })
+		(x=right_expr | { x = ExprConstInt.one; })
 		SEMI b=for_incr_statement RPAREN c=pseudo_block
 		{ s = new StmtFor(getContext(t), a, x, b, c); }
 	;
@@ -575,6 +607,14 @@ func_call returns [Expression x] { x = null; List l; }
 func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
 		(	x=expr_named_param { l.add(x); }
+			(COMMA x=expr_named_param { l.add(x); })*
+		)?
+		RPAREN
+	;
+	
+constr_params returns [List l] { l = new ArrayList(); Expression x; }
+	:	LPAREN
+		(	x=expr_named_param_only { l.add(x); }
 			(COMMA x=expr_named_param { l.add(x); })*
 		)?
 		RPAREN
@@ -840,7 +880,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 
 
 constructor_expr returns [Expression x] { x = null; Type t; List l;}
-	: n:TK_new t=data_type l=func_call_params {  x = new ExprNew( getContext(n), t);     }
+	: n:TK_new t=data_type l=constr_params {  x = new ExprNew( getContext(n), t, l);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }
@@ -892,12 +932,10 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
 			{ x = new ExprConstChar(getContext(c), c.getText()); }
 	|	s:STRING_LITERAL
 			{ x = new ExprConstStr(getContext(s), s.getText()); }
-	|	pi:TK_pi
-			{ x = new ExprConstFloat(getContext(pi), Math.PI); }
 	|	t:TK_true
-			{ x = new ExprConstBoolean(getContext(t), true); }
+			{ x = ExprConstInt.one; }
 	|	f:TK_false
-			{ x = new ExprConstBoolean(getContext(f), false); }
+			{ x = ExprConstInt.zero; }
 	|   TK_null
 			{ x = ExprNullPtr.nullPtr; }
     |   t1:NDVAL
@@ -919,12 +957,16 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
  
 struct_decl returns [TypeStruct ts]
 { ts = null; Parameter p; List names = new ArrayList();
+	Annotation an=null;
+	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	t:TK_struct id:ID
 		LCURLY
 		(p=param_decl SEMI
 			{ names.add(p.getName()); types.add(p.getType()); }
+			|
+			an=annotation{ annotations.append(an.tag, an); }
 		)*
 		RCURLY
-		{ ts = new TypeStruct(getContext(t), id.getText(), names, types); }
+		{ ts = TypeStruct.creator(getContext(t), id.getText(), names, types, annotations).create(); }
 	;

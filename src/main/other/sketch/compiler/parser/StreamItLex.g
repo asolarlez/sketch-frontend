@@ -48,7 +48,7 @@ tokens {
 	"reorder";
 
 	// Basic types:
-	"boolean"; "float"; "bit"; "int"; "void"; "double"; "complex"; "fun";
+	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";
 
 	// Complicated types:
 	"struct"; // "template";
@@ -59,7 +59,6 @@ tokens {
 	"continue"; "return";
 
     // Intrinsic values:
-	//"pi";
 	"true"; "false";
 
     // data-parallel control flow

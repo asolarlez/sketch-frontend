@@ -43,7 +43,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
         List<Parameter> pl = new ArrayList<Parameter>(1);
         pl.add(new Parameter(TypePrimitive.bittype, "_out", Parameter.OUT));
         return Function.creator((FEContext) null, flName, FcnType.Uninterp).returnType(
-                TypePrimitive.bittype).params(pl).create();
+                TypePrimitive.bittype).params(pl).pkg(nres.curPkg().getName()).create();
     }
 	
 	String fName(Float fl){

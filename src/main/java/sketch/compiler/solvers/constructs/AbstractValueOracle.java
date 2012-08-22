@@ -5,6 +5,7 @@ import java.io.LineNumberReader;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.Type;
 
 public abstract class AbstractValueOracle {
 
@@ -34,7 +35,7 @@ public abstract class AbstractValueOracle {
 		holeNamer.reset();
 	}
 
-	public abstract Expression popValueForNode(FENode node);
+    public abstract Expression popValueForNode(FENode node, Type t);
 
 	public abstract void loadFromStream(LineNumberReader in) throws IOException;
 }

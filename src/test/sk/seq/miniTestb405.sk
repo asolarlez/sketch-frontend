@@ -1,0 +1,101 @@
+pragma options "-V 5 --debug-cex";
+
+//int len = 6;
+
+struct Array {
+    int len;
+    int [len] A;
+    bit [5] B;
+}
+
+int sum(Array ar) {
+  int res = 0;
+  for(int i=0; i<ar.len;i++)
+    res = res + ar.A[i];
+  return res;
+}
+
+
+Array range (int begin, int end, int step) {
+int [end-begin] res = 0;
+ if (begin == 0) {
+if (step == 0) {
+int i=0;
+while (i<end) {
+  res[i] = i;
+  i++;
+}
+}
+
+else {
+int i=begin;
+while (i<end){
+  res[i] = i;
+  i+=step;
+}
+}
+Array ar = new Array(len=end-begin);
+ar.A = res;
+return ar;
+}
+
+// if begin is specified
+else {
+
+if (step == 0) {
+int i=begin;
+while (i<end){
+  res[i] = i;
+  i++;
+}
+}
+else {
+int i=begin;
+while (i<end) {
+  res[i] = i;
+  i += step;
+}
+}
+
+}
+Array ar = new Array();
+ar.A = res;
+return ar;
+}
+
+Array comprehension(Array ar, fun f) {
+ int[ar.len] res = 0;
+for (int i=0; i<ar.len;i++) {
+  res[i] = f(ar.A[i]);
+}
+
+Array ar0 = new Array(len=ar.len);
+ar0.A = res;
+return ar0;
+}
+
+
+int evalPolynomial(Array coeffs, int x) {
+
+    int length = coeffs.len;
+    generator int eval(int a) {
+        return coeffs.A[length -1- a]*(x*(a));
+    }
+    Array arr = range(0,length,1);
+    Array ar = comprehension(arr, eval);
+    int sum_list = sum(ar);
+    return sum_list;
+}
+
+
+harness void evalCheck(int i) {
+  Array arr = new Array(len=6, A={1,2,3,4,5,6}, B=??);
+  int b = 2;
+  assert arr.A == {1,2,3,4,5,6};
+  if(i<5){
+      assert arr.B[i] == (i%2 == 0);
+  } 
+  int t = evalPolynomial(arr, b);
+   assert t == ??(7);
+}
+

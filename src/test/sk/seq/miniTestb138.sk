@@ -12,9 +12,9 @@ int sk(int i) implements test{
 			assert i == t;	
 		}
 	}
-	int x = i-5;
+	int x0 = i-5;
 	for(int j=0; j<5; ++j){
-		x = x + 1;
+		x0 = x0 + 1;
 	}
-	return x;
+	return x0;
 }

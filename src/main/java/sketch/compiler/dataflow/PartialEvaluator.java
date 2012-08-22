@@ -2,6 +2,7 @@ package sketch.compiler.dataflow;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -30,6 +31,7 @@ import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
+import sketch.util.datastructures.TypedHashMap;
 
 class CloneHoles extends FEReplacer{
     
@@ -179,16 +181,6 @@ public class PartialEvaluator extends FEReplacer {
         }
     }
 
-    public Object visitExprComplex(ExprComplex exp) {
-        // This should cause an assertion failure, actually.
-        assert false : "NYI"; return null;
-    }
-
-
-    public Object visitExprConstBoolean(ExprConstBoolean exp) {
-        exprRV = exp;
-        return vtype.CONST(  boolToInt(exp.getVal()) );
-    }
 
     public Object visitExprConstFloat(ExprConstFloat exp) {
         exprRV = exp;
@@ -301,17 +293,21 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue val = state.varValue(vname);
         if (isReplacer)
             if (val.hasIntVal()) {
-            exprRV = new ExprConstInt(val.getIntVal());
-        }else{
-            exprRV = new ExprVar(exp, transName(exp.getName()));
-        }
+                exprRV = new ExprConstInt(val.getIntVal());
+            } else {
+                if (fields != null && fields.contains(exp.getName())) {
+                    exprRV = exp;
+                } else {
+                    exprRV = new ExprVar(exp, transName(exp.getName()));
+                }
+            }
         return  val;
     }
 
     public Object visitExprConstChar(ExprConstChar exp)
     {
-        report(false, "NYS");
-        return "'" + exp.getVal() + "'";
+        exprRV = exp;
+        return vtype.CONST(exp.getVal());
     }
 
     public Object visitExprUnary(ExprUnary exp) {
@@ -636,7 +632,12 @@ public class PartialEvaluator extends FEReplacer {
         public abstractValue typeLen(Type t){
             if( t instanceof TypeArray){
                 TypeArray ta = (TypeArray) t;
-                abstractValue len = (abstractValue)ta.getLength().accept(PartialEvaluator.this);
+                abstractValue len;
+                if (ta.getLength() != null) {
+                    len = (abstractValue) ta.getLength().accept(PartialEvaluator.this);
+                } else {
+                    len = vtype.BOTTOM("FARRAY");
+                }
                 //abstractValue olen = typeLen(ta.getBase());
                 return len; //vtype.times(len, olen);
             }else{
@@ -1127,14 +1128,17 @@ public class PartialEvaluator extends FEReplacer {
                 //and push in a clean one, so the rest of the function thinks that nothing at all was written in this branch.
                 state.popChangeTracker();
                 addStatement((Statement) (new StmtAssert(stmt, new ExprUnary("!", ncond),
+                        e.getMessage(),
                         false)).accept(this));
                 nvtrue = null;
+                ncond = ExprConstInt.zero;
                 state.pushChangeTracker(vcond, false);
             }catch(ArithmeticException e){
                 state.popChangeTracker();
                 addStatement((Statement) (new StmtAssert(stmt, new ExprUnary("!", ncond),
                         false)).accept(this));
                 nvtrue = null;
+                ncond = ExprConstInt.zero;
                 state.pushChangeTracker (vcond, false);
             } catch (RuntimeException e) {
                 state.popChangeTracker();
@@ -1149,6 +1153,7 @@ public class PartialEvaluator extends FEReplacer {
             sa.setMsg( rcontrol.debugMsg() );
             addStatement((Statement) (sa).accept(this));
             nvtrue = null;
+            ncond = ExprConstInt.zero;
             state.pushChangeTracker(vcond, false);
         }
         ChangeTracker ipms = state.popChangeTracker();
@@ -1164,6 +1169,7 @@ public class PartialEvaluator extends FEReplacer {
                 }catch(ArrayIndexOutOfBoundsException e){
                     state.popChangeTracker();
                     addStatement((Statement) (new StmtAssert(stmt, ncond, false)).accept(this));
+                    ncond = ExprConstInt.one;
                     nvfalse = null;
                     state.pushChangeTracker(vcond, true);
                 }catch(Throwable e){
@@ -1178,6 +1184,7 @@ public class PartialEvaluator extends FEReplacer {
                 StmtAssert sa = new StmtAssert(stmt, ncond, false);
                 sa.setMsg( rcontrol.debugMsg() );
                 addStatement((Statement) (sa).accept(this));
+                ncond = ExprConstInt.one;
                 nvfalse = null;
                 state.pushChangeTracker(vcond, true);
             }
@@ -1368,6 +1375,43 @@ public class PartialEvaluator extends FEReplacer {
         return isReplacer ? new TypeArray(nbase, nlen, t.getMaxlength()) : t;
     }
 
+    public Object visitTypeStruct(TypeStruct ts) {
+        boolean changed = false;
+        TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        Level lvl = null;
+        try {
+            lvl = state.pushLevel(new BlockLevel("PartialEvaluator level"));
+            fields = new HashSet<String>();
+            for (Entry<String, Type> entry : ts) {
+                fields.add(entry.getKey());
+                if (!(entry.getValue() instanceof TypeArray)) {
+                    state.varDeclare(entry.getKey(), entry.getValue());
+                    state.setVarValue(entry.getKey(), vtype.BOTTOM());
+                }
+            }
+            for (Entry<String, Type> entry : ts) {
+                if ((entry.getValue() instanceof TypeArray)) {
+                    state.varDeclare(entry.getKey(), entry.getValue());
+                    state.setVarValue(entry.getKey(), vtype.BOTTOM());
+                }
+            }
+
+            for (Entry<String, Type> entry : ts) {
+                Type type = (Type) entry.getValue().accept(this);
+                changed |= (type != entry.getValue());
+                map.put(entry.getKey(), type);
+            }
+            if (changed) {
+                return ts.creator().fields(map).create();
+            } else {
+                return ts;
+            }
+        } finally {
+            fields = null;
+            state.popLevel(lvl);
+        }
+    }
+
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         List<Type> types = isReplacer? new ArrayList<Type>() : null;
@@ -1392,7 +1436,8 @@ public class PartialEvaluator extends FEReplacer {
                     }
                 }else{                    
                     TypeArray tar = (TypeArray) vt;
-                    Integer iv = tar.getLength().getIValue();                    
+                    Expression el = tar.getLength();
+                    Integer iv = el != null ? el.getIValue() : null;
                     if(iv != null ){                        
                         int n = iv;
                         List<abstractValue> vals = new ArrayList<abstractValue>();
@@ -1421,8 +1466,16 @@ public class PartialEvaluator extends FEReplacer {
 
 
     public Object visitExprNew(ExprNew expNew){
-        exprRV = expNew;
+        exprRV = (Expression) super.visitExprNew(expNew);
         return vtype.BOTTOM();
+    }
+
+    protected Expression doExpression(Expression expr) {
+        if (expr != null) {
+            expr.accept(this);
+            return (Expression) exprRV;
+        } else
+            return null;
     }
 
     public Object visitStmtWhile(StmtWhile stmt)

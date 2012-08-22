@@ -7,7 +7,7 @@ stencil bit[N][N] tiledTranspose(int N, int P, bit[N][N] input)implements transp
     if(N<1 || P < 1 || N % P != 0){ return 0; }
     bit[N][N] output=0;
     bit x = ??;
-    int p=0;
+    //int p=0;
     for(int p=0; p<P; ++p){
         for(int i= (x? (N/P) * p : (N/P) + p); i<(N/P)*(p+1); ++i){
             for(int j=0; j<N; ++j){

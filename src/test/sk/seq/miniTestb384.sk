@@ -1,0 +1,24 @@
+
+
+struct F{
+    int t;
+    F x;
+}
+
+
+
+void foo(int i, F f){
+    f.x = new F();
+    
+    if(i>0){
+        foo(i-1, f.x);
+    }    
+}
+
+harness void main(int i){
+    foo(i/??, new F());   
+    F t = new F();
+    t.t = i;
+    t.x = t;
+    assert t.x.t == i;
+}

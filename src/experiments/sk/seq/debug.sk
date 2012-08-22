@@ -1,41 +1,87 @@
-pragma options "--bnd-inbits 3 --bnd-unroll-amnt 16";
+package Array;
 
 
-int get(int i, int N, int[N] A){
-    assert i<N;
-    return A[i];
-}
+int INTEGER=0;
 
-int[N+1] append(int v, int N, int[N] A){
-    int[N+1] out;
-    out[0::N] = A;
-    out[N] = v;
-    return out;
-}
+int LIST=1;
 
 
+struct MultiType{
 
+   MTArray lst;
 
-int[T] top(int T, int N, int[N] A){
-    if(T<=N){
-        return A[0::T];
-    }else{
-        return 0;
-    }
+   int val;
+
+   int flag;
+
 }
 
 
-harness void foo(int i, int M, int[M] L, int N, int[N] ret){
-    if(i==0 && N==0){
-        assert ret == top(i, M, L) && i==N;
-        assert i <= M;
-    }
+struct MTArray{
 
-    if(ret==top(i, M, L) && N==i && i<M){
-        assert append(L[i], N, ret)==top(i+1, M, L) && i+1==N+1;
-        assert i+1 <= M;
-    }
-    if(ret==top(i, M, L) && N==i && i==M){
-        assert ret == L && N==M;
-    }
+   int len;
+
+   MultiType[len] A;  
+
+}
+
+
+
+MultiType plus(MultiType x, MultiType y){
+
+
+
+if(x.flag == INTEGER){ 
+
+    assert y.flag == INTEGER; 
+
+    MultiType w = new MultiType(val=x.val+y.val, flag=INTEGER);
+
+    return w;
+
+}
+
+
+if(y.flag == INTEGER){ 
+
+    assert x.flag == INTEGER;
+
+    MultiType w = new MultiType(val=x.val+y.val, flag=INTEGER);
+
+    return w;
+
+}
+
+}
+
+
+
+
+
+harness void plusCheck() {
+
+    
+
+  MultiType x = new MultiType(lst=new MTArray(A={new MultiType(val=10, flag=INTEGER)}, len=2), flag=LIST);
+
+  MultiType y = new MultiType(val=5, flag=INTEGER);
+
+    MultiType w = new MultiType(val=7, flag=INTEGER);
+
+    
+
+  MultiType z = new MultiType(lst=new MTArray(A={}, len=0), flag=LIST);
+
+    MultiType u = new MultiType(val=0, flag=INTEGER);
+
+
+    MultiType t = new MultiType(lst=new MTArray(A={new MultiType(val=10, flag=INTEGER), y}, len=2), flag=LIST);
+
+    MultiType v = new MultiType(val=12, flag=INTEGER);
+
+u = plus(y, w);
+
+    assert u == v;
+
+
 }

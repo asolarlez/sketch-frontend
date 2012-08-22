@@ -734,7 +734,7 @@ public class MethodState {
     Stack<String> rvnamestack = new Stack<String>();
     Stack<varState> rvstack = new Stack<varState>();
     Stack<Set<String>> outparStack = new Stack<Set<String>>();
-    Set<String> cvmap;
+    Set<String> cvmap; // Set of output parameter names.
     public Level beginFunction(String fname){
         Level lvl = pushLevel("[beginFunction] " + fname);
         if(rvflag != null){ rvstack.push(rvflag); }

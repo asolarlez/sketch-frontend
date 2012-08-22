@@ -171,7 +171,7 @@ public class TempVarGen
      */
     public String nextVar (String startingWith) {
         if(startingWith != null){
-            return startingWith + "__s" + nextVarNum ();
+            return startingWith + "_s" + nextVarNum();
         }else{
             return nextVar();
         }        

@@ -4,7 +4,7 @@ int trailing_zero_bits(bit[W] in)
 {
 	int i = 0;
 
-	for( i = 0; (i < W) & !in[i] ; ++i)
+	for( i = 0; (i < W) && !in[i] ; ++i)
 		i = i;
 
 	return i;

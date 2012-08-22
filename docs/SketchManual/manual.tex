@@ -1,0 +1,46 @@
+
+\documentclass{article}
+
+\usepackage{algorithm2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{proof}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{amsthm}
+\usepackage{fullpage}
+\usepackage{glossaries}
+
+\input{macros.tex}
+
+\makeglossaries
+
+% The following \documentclass options may be useful:
+%
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{amsmath}
+
+\begin{document}
+
+%\titlebanner{banner above paper title}        % These are ignored unless
+%\preprintfooter{DRAFT}   % 'preprint' option specified.
+
+\title{The Sketch Programmers Manual}
+%\subtitle{}
+\date{For Sketch Version 1.5.0}
+\maketitle
+
+\input{compilerUsage}
+\input{baseLanguage}
+\input{holes}
+\input{distribution}
+\let\glossarysection=\section
+\renewcommand{\glossarypreamble}{\label{glossary}This is a glossary of flags}
+\printglossary[title=Glossary of Flags]
+
+\end{document}

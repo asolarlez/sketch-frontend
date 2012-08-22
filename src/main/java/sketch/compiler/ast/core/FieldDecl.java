@@ -38,7 +38,9 @@ import sketch.compiler.ast.core.typs.Type;
  */
 public class FieldDecl extends FENode
 {
-    private List types, names, inits;
+    private List<Type> types;
+    private List<String> names;
+    private List<Expression> inits;
 
     /**
      * Create a new field declaration with corresponding lists of
@@ -148,7 +150,7 @@ public class FieldDecl extends FENode
      * @return  Unmodifiable list of <code>Type</code> of the
      *          fields in this
      */
-    public List getTypes()
+    public List<Type> getTypes()
     {
         return Collections.unmodifiableList(types);
     }
@@ -171,7 +173,7 @@ public class FieldDecl extends FENode
      * @return  Unmodifiable list of <code>String</code> of the
      *          names of the fields in this
      */
-    public List getNames()
+    public List<String> getNames()
     {
         return Collections.unmodifiableList(names);
     }

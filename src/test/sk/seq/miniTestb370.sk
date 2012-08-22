@@ -1,5 +1,5 @@
 
-pragma options "-p lowering --bnd-inbits 3 --bnd-unroll-amnt 64";
+pragma options "-p lowering --bnd-inbits 2 --bnd-unroll-amnt 32 --beopt:simiters 20";
 
  harness void foo(int A, int B, int C, int[A][B][C] ar, int[2] part, int x, int y ){
      int X = part[0];

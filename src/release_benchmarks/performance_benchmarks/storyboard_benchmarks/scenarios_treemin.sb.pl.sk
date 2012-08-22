@@ -1,0 +1,813 @@
+#define s 0
+#define tnodes1b 1
+#define tnodesr 2
+#define y 3
+#define null 4
+#define undef 5
+
+struct state{
+int root;
+int temp1;
+int[4] left;
+int[4] right;
+bit isEmpty;
+}
+
+void setInitialState(state initState, int i){
+initState.root = null;
+initState.temp1 = null;
+initState.left[s] = undef;
+initState.left[tnodes1b] = undef;
+initState.left[tnodesr] = undef;
+initState.left[y] = undef;
+initState.right[s] = undef;
+initState.right[tnodes1b] = undef;
+initState.right[tnodesr] = undef;
+initState.right[y] = undef;
+if(i==0){
+initState.root = tnodesr;
+}
+}
+
+void assertFinalState(state finalState, int i){
+if(finalState.isEmpty == 0){
+if(i==0){
+assert finalState.temp1 == s;
+}
+}
+}
+
+ void assertNoGhostLocation(state fromState){
+}
+
+void spec(int[5] choice){
+}
+
+
+
+
+//skip
+void fc1(state fromState, int choice){
+return;
+}
+
+//root = temp1
+void fc2(state fromState, int choice){
+assert fromState.temp1 != undef;
+fromState.root = fromState.temp1;
+}
+
+//temp1 = root
+void fc3(state fromState, int choice){
+assert fromState.root != undef;
+fromState.temp1 = fromState.root;
+}
+
+//root = root.left
+void fc4(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.left[fromState.root] != undef ;
+fromState.root = fromState.left[fromState.root];
+}
+
+//root = root.right
+void fc5(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.right[fromState.root] != undef ;
+fromState.root = fromState.right[fromState.root];
+}
+
+//root = temp1.left
+void fc6(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.left[fromState.temp1] != undef ;
+fromState.root = fromState.left[fromState.temp1];
+}
+
+//root = temp1.right
+void fc7(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.right[fromState.temp1] != undef ;
+fromState.root = fromState.right[fromState.temp1];
+}
+
+//temp1 = root.left
+void fc8(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.left[fromState.root] != undef ;
+fromState.temp1 = fromState.left[fromState.root];
+}
+
+//temp1 = root.right
+void fc9(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.right[fromState.root] != undef ;
+fromState.temp1 = fromState.right[fromState.root];
+}
+
+//temp1 = temp1.left
+void fc10(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.left[fromState.temp1] != undef ;
+fromState.temp1 = fromState.left[fromState.temp1];
+}
+
+//temp1 = temp1.right
+void fc11(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.right[fromState.temp1] != undef ;
+fromState.temp1 = fromState.right[fromState.temp1];
+}
+
+//root.left = root
+void fc12(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.root != undef;
+fromState.left[fromState.root] = fromState.root;
+}
+
+//root.right = root
+void fc13(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.root != undef;
+fromState.right[fromState.root] = fromState.root;
+}
+
+//root.left = temp1
+void fc14(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.temp1 != undef;
+fromState.left[fromState.root] = fromState.temp1;
+}
+
+//root.right = temp1
+void fc15(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.temp1 != undef;
+fromState.right[fromState.root] = fromState.temp1;
+}
+
+//temp1.left = root
+void fc16(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.root != undef;
+fromState.left[fromState.temp1] = fromState.root;
+}
+
+//temp1.right = root
+void fc17(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.root != undef;
+fromState.right[fromState.temp1] = fromState.root;
+}
+
+//temp1.left = temp1
+void fc18(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.temp1 != undef;
+fromState.left[fromState.temp1] = fromState.temp1;
+}
+
+//temp1.right = temp1
+void fc19(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.temp1 != undef;
+fromState.right[fromState.temp1] = fromState.temp1;
+}
+
+//root.left = root.right
+void fc20(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.right[fromState.root] != undef ;
+fromState.left[fromState.root] = fromState.right[fromState.root];
+}
+
+//root.right = root.left
+void fc21(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.left[fromState.root] != undef ;
+fromState.right[fromState.root] = fromState.left[fromState.root];
+}
+
+//root.left = temp1.left
+void fc22(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.left[fromState.temp1] != undef ;
+fromState.left[fromState.root] = fromState.left[fromState.temp1];
+}
+
+//root.left = temp1.right
+void fc23(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.right[fromState.temp1] != undef ;
+fromState.left[fromState.root] = fromState.right[fromState.temp1];
+}
+
+//root.right = temp1.left
+void fc24(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.left[fromState.temp1] != undef ;
+fromState.right[fromState.root] = fromState.left[fromState.temp1];
+}
+
+//root.right = temp1.right
+void fc25(state fromState, int choice){
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.right[fromState.temp1] != undef ;
+fromState.right[fromState.root] = fromState.right[fromState.temp1];
+}
+
+//temp1.left = root.left
+void fc26(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.left[fromState.root] != undef ;
+fromState.left[fromState.temp1] = fromState.left[fromState.root];
+}
+
+//temp1.left = root.right
+void fc27(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.right[fromState.root] != undef ;
+fromState.left[fromState.temp1] = fromState.right[fromState.root];
+}
+
+//temp1.right = root.left
+void fc28(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.left[fromState.root] != undef ;
+fromState.right[fromState.temp1] = fromState.left[fromState.root];
+}
+
+//temp1.right = root.right
+void fc29(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.root != null;
+assert fromState.root != undef;
+assert fromState.root != tnodesr;
+assert fromState.right[fromState.root] != undef ;
+fromState.right[fromState.temp1] = fromState.right[fromState.root];
+}
+
+//temp1.left = temp1.right
+void fc30(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.right[fromState.temp1] != undef ;
+fromState.left[fromState.temp1] = fromState.right[fromState.temp1];
+}
+
+//temp1.right = temp1.left
+void fc31(state fromState, int choice){
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.temp1 != null;
+assert fromState.temp1 != undef;
+assert fromState.temp1 != tnodesr;
+assert fromState.left[fromState.temp1] != undef ;
+fromState.right[fromState.temp1] = fromState.left[fromState.temp1];
+}
+
+//true
+void fc32(state fromState, int choice){
+}
+
+//false
+void fc33(state fromState, int choice){
+fromState.isEmpty = 1;
+}
+
+//root != null
+void fc34(state fromState, int choice){
+if(fromState.root == null)
+fromState.isEmpty = 1;
+}
+
+//temp1 != null
+void fc35(state fromState, int choice){
+if(fromState.temp1 == null)
+fromState.isEmpty = 1;
+}
+
+// unfold root 
+void fc36(state fromState, int choice){
+if(fromState.root == tnodesr){
+if(choice == 0){
+if(fromState.root == tnodesr) fromState.root = s;
+if(fromState.temp1 == tnodesr) fromState.temp1 = s;
+if (fromState.left[s] == tnodesr) fromState.left[s] = s;
+if (fromState.left[tnodes1b] == tnodesr) fromState.left[tnodes1b] = s;
+if (fromState.left[tnodesr] == tnodesr) fromState.left[tnodesr] = s;
+if (fromState.left[y] == tnodesr) fromState.left[y] = s;
+if (fromState.right[s] == tnodesr) fromState.right[s] = s;
+if (fromState.right[tnodes1b] == tnodesr) fromState.right[tnodes1b] = s;
+if (fromState.right[tnodesr] == tnodesr) fromState.right[tnodesr] = s;
+if (fromState.right[y] == tnodesr) fromState.right[y] = s;
+fromState.left[s] = fromState.left[tnodesr];
+fromState.right[s] = fromState.right[tnodesr];
+fromState.left[s] = null;
+fromState.right[s] = undef;
+}
+ else if(choice == 1){
+if(fromState.root == tnodesr) fromState.root = y;
+if(fromState.temp1 == tnodesr) fromState.temp1 = y;
+if (fromState.left[s] == tnodesr) fromState.left[s] = y;
+if (fromState.left[tnodes1b] == tnodesr) fromState.left[tnodes1b] = y;
+if (fromState.left[tnodesr] == tnodesr) fromState.left[tnodesr] = y;
+if (fromState.left[y] == tnodesr) fromState.left[y] = y;
+if (fromState.right[s] == tnodesr) fromState.right[s] = y;
+if (fromState.right[tnodes1b] == tnodesr) fromState.right[tnodes1b] = y;
+if (fromState.right[tnodesr] == tnodesr) fromState.right[tnodesr] = y;
+if (fromState.right[y] == tnodesr) fromState.right[y] = y;
+fromState.left[y] = fromState.left[tnodesr];
+fromState.right[y] = fromState.right[tnodesr];
+fromState.left[y] = tnodesr;
+fromState.right[y] = undef;
+}
+ else assert false;
+}
+}
+
+// unfold temp1 
+void fc37(state fromState, int choice){
+if(fromState.temp1 == tnodesr){
+if(choice == 0){
+if(fromState.root == tnodesr) fromState.root = s;
+if(fromState.temp1 == tnodesr) fromState.temp1 = s;
+if (fromState.left[s] == tnodesr) fromState.left[s] = s;
+if (fromState.left[tnodes1b] == tnodesr) fromState.left[tnodes1b] = s;
+if (fromState.left[tnodesr] == tnodesr) fromState.left[tnodesr] = s;
+if (fromState.left[y] == tnodesr) fromState.left[y] = s;
+if (fromState.right[s] == tnodesr) fromState.right[s] = s;
+if (fromState.right[tnodes1b] == tnodesr) fromState.right[tnodes1b] = s;
+if (fromState.right[tnodesr] == tnodesr) fromState.right[tnodesr] = s;
+if (fromState.right[y] == tnodesr) fromState.right[y] = s;
+fromState.left[s] = fromState.left[tnodesr];
+fromState.right[s] = fromState.right[tnodesr];
+fromState.left[s] = null;
+fromState.right[s] = undef;
+}
+ else if(choice == 1){
+if(fromState.root == tnodesr) fromState.root = y;
+if(fromState.temp1 == tnodesr) fromState.temp1 = y;
+if (fromState.left[s] == tnodesr) fromState.left[s] = y;
+if (fromState.left[tnodes1b] == tnodesr) fromState.left[tnodes1b] = y;
+if (fromState.left[tnodesr] == tnodesr) fromState.left[tnodesr] = y;
+if (fromState.left[y] == tnodesr) fromState.left[y] = y;
+if (fromState.right[s] == tnodesr) fromState.right[s] = y;
+if (fromState.right[tnodes1b] == tnodesr) fromState.right[tnodes1b] = y;
+if (fromState.right[tnodesr] == tnodesr) fromState.right[tnodesr] = y;
+if (fromState.right[y] == tnodesr) fromState.right[y] = y;
+fromState.left[y] = fromState.left[tnodesr];
+fromState.right[y] = fromState.right[tnodesr];
+fromState.left[y] = tnodesr;
+fromState.right[y] = undef;
+}
+ else assert false;
+}
+}
+
+// fold root 
+void fc38(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+if(fromState.root == y){
+if (prevState.right[y] == undef && prevState.left[tnodes1b] == undef && prevState.right[tnodes1b] == undef) {
+if(fromState.root == y) fromState.root = tnodes1b;
+if(fromState.temp1 == y) fromState.temp1 = tnodes1b;
+if (fromState.left[s] == y) fromState.left[s] = tnodes1b;
+if (fromState.left[tnodes1b] == y) fromState.left[tnodes1b] = tnodes1b;
+if (fromState.left[tnodesr] == y) fromState.left[tnodesr] = tnodes1b;
+if (fromState.left[y] == y) fromState.left[y] = tnodes1b;
+if (fromState.right[s] == y) fromState.right[s] = tnodes1b;
+if (fromState.right[tnodes1b] == y) fromState.right[tnodes1b] = tnodes1b;
+if (fromState.right[tnodesr] == y) fromState.right[tnodesr] = tnodes1b;
+if (fromState.right[y] == y) fromState.right[y] = tnodes1b;
+fromState.left[tnodes1b] = fromState.left[y];
+fromState.right[tnodes1b] = fromState.right[y];
+fromState.left[y] = undef;
+fromState.right[y] = undef;
+}
+ else if (prevState.right[y] == undef && prevState.left[tnodes1b] != undef) {
+if(fromState.root == y) fromState.root = tnodes1b;
+if(fromState.temp1 == y) fromState.temp1 = tnodes1b;
+if (fromState.left[s] == y) fromState.left[s] = tnodes1b;
+if (fromState.left[tnodes1b] == y) fromState.left[tnodes1b] = tnodes1b;
+if (fromState.left[tnodesr] == y) fromState.left[tnodesr] = tnodes1b;
+if (fromState.left[y] == y) fromState.left[y] = tnodes1b;
+if (fromState.right[s] == y) fromState.right[s] = tnodes1b;
+if (fromState.right[tnodes1b] == y) fromState.right[tnodes1b] = tnodes1b;
+if (fromState.right[tnodesr] == y) fromState.right[tnodesr] = tnodes1b;
+if (fromState.right[y] == y) fromState.right[y] = tnodes1b;
+fromState.left[tnodes1b] = fromState.left[y];
+fromState.right[tnodes1b] = fromState.right[y];
+fromState.left[y] = undef;
+fromState.right[y] = undef;
+}
+ else if (prevState.right[y] == undef && prevState.right[tnodes1b] != undef) {
+if(fromState.root == y) fromState.root = tnodes1b;
+if(fromState.temp1 == y) fromState.temp1 = tnodes1b;
+if (fromState.left[s] == y) fromState.left[s] = tnodes1b;
+if (fromState.left[tnodes1b] == y) fromState.left[tnodes1b] = tnodes1b;
+if (fromState.left[tnodesr] == y) fromState.left[tnodesr] = tnodes1b;
+if (fromState.left[y] == y) fromState.left[y] = tnodes1b;
+if (fromState.right[s] == y) fromState.right[s] = tnodes1b;
+if (fromState.right[tnodes1b] == y) fromState.right[tnodes1b] = tnodes1b;
+if (fromState.right[tnodesr] == y) fromState.right[tnodesr] = tnodes1b;
+if (fromState.right[y] == y) fromState.right[y] = tnodes1b;
+fromState.left[tnodes1b] = fromState.left[y];
+fromState.right[tnodes1b] = fromState.right[y];
+fromState.left[y] = undef;
+fromState.right[y] = undef;
+}
+ else assert false;
+}
+}
+
+// fold temp1 
+void fc39(state fromState, int choice){
+state prevState;
+prevState = new state();
+copystate(fromState, prevState);
+if(fromState.temp1 == y){
+if (prevState.right[y] == undef && prevState.left[tnodes1b] == undef && prevState.right[tnodes1b] == undef) {
+if(fromState.root == y) fromState.root = tnodes1b;
+if(fromState.temp1 == y) fromState.temp1 = tnodes1b;
+if (fromState.left[s] == y) fromState.left[s] = tnodes1b;
+if (fromState.left[tnodes1b] == y) fromState.left[tnodes1b] = tnodes1b;
+if (fromState.left[tnodesr] == y) fromState.left[tnodesr] = tnodes1b;
+if (fromState.left[y] == y) fromState.left[y] = tnodes1b;
+if (fromState.right[s] == y) fromState.right[s] = tnodes1b;
+if (fromState.right[tnodes1b] == y) fromState.right[tnodes1b] = tnodes1b;
+if (fromState.right[tnodesr] == y) fromState.right[tnodesr] = tnodes1b;
+if (fromState.right[y] == y) fromState.right[y] = tnodes1b;
+fromState.left[tnodes1b] = fromState.left[y];
+fromState.right[tnodes1b] = fromState.right[y];
+fromState.left[y] = undef;
+fromState.right[y] = undef;
+}
+ else if (prevState.right[y] == undef && prevState.left[tnodes1b] != undef) {
+if(fromState.root == y) fromState.root = tnodes1b;
+if(fromState.temp1 == y) fromState.temp1 = tnodes1b;
+if (fromState.left[s] == y) fromState.left[s] = tnodes1b;
+if (fromState.left[tnodes1b] == y) fromState.left[tnodes1b] = tnodes1b;
+if (fromState.left[tnodesr] == y) fromState.left[tnodesr] = tnodes1b;
+if (fromState.left[y] == y) fromState.left[y] = tnodes1b;
+if (fromState.right[s] == y) fromState.right[s] = tnodes1b;
+if (fromState.right[tnodes1b] == y) fromState.right[tnodes1b] = tnodes1b;
+if (fromState.right[tnodesr] == y) fromState.right[tnodesr] = tnodes1b;
+if (fromState.right[y] == y) fromState.right[y] = tnodes1b;
+fromState.left[tnodes1b] = fromState.left[y];
+fromState.right[tnodes1b] = fromState.right[y];
+fromState.left[y] = undef;
+fromState.right[y] = undef;
+}
+ else if (prevState.right[y] == undef && prevState.right[tnodes1b] != undef) {
+if(fromState.root == y) fromState.root = tnodes1b;
+if(fromState.temp1 == y) fromState.temp1 = tnodes1b;
+if (fromState.left[s] == y) fromState.left[s] = tnodes1b;
+if (fromState.left[tnodes1b] == y) fromState.left[tnodes1b] = tnodes1b;
+if (fromState.left[tnodesr] == y) fromState.left[tnodesr] = tnodes1b;
+if (fromState.left[y] == y) fromState.left[y] = tnodes1b;
+if (fromState.right[s] == y) fromState.right[s] = tnodes1b;
+if (fromState.right[tnodes1b] == y) fromState.right[tnodes1b] = tnodes1b;
+if (fromState.right[tnodesr] == y) fromState.right[tnodesr] = tnodes1b;
+if (fromState.right[y] == y) fromState.right[y] = tnodes1b;
+fromState.left[tnodes1b] = fromState.left[y];
+fromState.right[tnodes1b] = fromState.right[y];
+fromState.left[y] = undef;
+fromState.right[y] = undef;
+}
+ else assert false;
+}
+}
+
+void copystate(state fromState, state toState){
+toState.root = fromState.root;
+toState.temp1 = fromState.temp1;
+toState.left[s] = fromState.left[s];
+toState.left[tnodes1b] = fromState.left[tnodes1b];
+toState.left[tnodesr] = fromState.left[tnodesr];
+toState.left[y] = fromState.left[y];
+toState.right[s] = fromState.right[s];
+toState.right[tnodes1b] = fromState.right[tnodes1b];
+toState.right[tnodesr] = fromState.right[tnodesr];
+toState.right[y] = fromState.right[y];
+toState.isEmpty = fromState.isEmpty;
+}
+void f6(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+f6a(fromState, choice);
+if(fromState.isEmpty == 0) f6b(fromState, choice);
+else fromState.isEmpty = 0;
+}
+void f7(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+f7a(fromState, choice);
+if(fromState.isEmpty == 0) f7b(fromState, choice);
+else fromState.isEmpty = 0;
+}
+void f1(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 |};
+if(c1==0) rhs = fromState.root;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+rhs = fromState.left[fromState.root];}
+if(c1==3) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+rhs = fromState.right[fromState.root];}
+if(c1==4) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+rhs = fromState.left[fromState.temp1];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+rhs = fromState.right[fromState.temp1];}
+if(c2==0) fromState.root = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+fromState.left[fromState.root] = rhs;}
+if(c2==3) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+fromState.right[fromState.root] = rhs;}
+if(c2==4) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+fromState.left[fromState.temp1] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+fromState.right[fromState.temp1] = rhs;}
+}
+void f6b(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 |};
+if(c1==0) rhs = fromState.root;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+rhs = fromState.left[fromState.root];}
+if(c1==3) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+rhs = fromState.right[fromState.root];}
+if(c1==4) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+rhs = fromState.left[fromState.temp1];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+rhs = fromState.right[fromState.temp1];}
+if(c2==0) fromState.root = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+fromState.left[fromState.root] = rhs;}
+if(c2==3) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+fromState.right[fromState.root] = rhs;}
+if(c2==4) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+fromState.left[fromState.temp1] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+fromState.right[fromState.temp1] = rhs;}
+}
+void f7b(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+int rhs;
+int c1 = {| 0 | 1 | 2 | 3 | 4 | 5 |};
+int c2 = {| 0 | 1 | 2 | 3 | 4 | 5 |};
+if(c1==0) rhs = fromState.root;
+if(c1==1) rhs = fromState.temp1;
+if(c1==2) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+rhs = fromState.left[fromState.root];}
+if(c1==3) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+rhs = fromState.right[fromState.root];}
+if(c1==4) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+rhs = fromState.left[fromState.temp1];}
+if(c1==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+rhs = fromState.right[fromState.temp1];}
+if(c2==0) fromState.root = rhs;
+if(c2==1) fromState.temp1 = rhs;
+if(c2==2) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+fromState.left[fromState.root] = rhs;}
+if(c2==3) {assert fromState.root < null;
+assert fromState.root != tnodesr;
+fromState.right[fromState.root] = rhs;}
+if(c2==4) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+fromState.left[fromState.temp1] = rhs;}
+if(c2==5) {assert fromState.temp1 < null;
+assert fromState.temp1 != tnodesr;
+fromState.right[fromState.temp1] = rhs;}
+}
+void f2(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc32(fromState, choice); return;}
+if({|true|false|}) {fc33(fromState, choice); return;}
+if({|true|false|}) {fc34(fromState, choice); return;}
+fc35(fromState,choice); return;
+}
+void f6a(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc32(fromState, choice); return;}
+if({|true|false|}) {fc33(fromState, choice); return;}
+if({|true|false|}) {fc34(fromState, choice); return;}
+fc35(fromState,choice); return;
+}
+void f7a(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc32(fromState, choice); return;}
+if({|true|false|}) {fc33(fromState, choice); return;}
+if({|true|false|}) {fc34(fromState, choice); return;}
+fc35(fromState,choice); return;
+}
+void f5(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+f2(fromState, choice);
+if(fromState.isEmpty == 1) fromState.isEmpty = 0;
+else fromState.isEmpty = 1; return;
+}
+void f3(state fromState, int choice){
+assert choice < 2;
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc36(fromState, choice); return;}
+fc37(fromState,choice); return;
+}
+void f4(state fromState, int choice){
+if(fromState.isEmpty == 1) return;
+if({|true|false|}) {fc38(fromState, choice); return;}
+fc39(fromState,choice); return;
+}
+
+
+void loop_exit_constraint(int[5] choice) implements spec{
+state initState;
+initState = new state();
+if(choice[0] >= 1) choice[0] = 0;
+setInitialState(initState, choice[0]);
+f1(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[4] >= 2) choice[4] = 0;
+f3(initState, choice[4]);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[3] >= 2) choice[3] = 0;
+f3(initState, choice[3]);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+f3(initState, ??);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+f3(initState, ??);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+if(initState.isEmpty) initState.isEmpty = 0;
+f5(initState, 0);
+assert initState.isEmpty == 0;
+assertFinalState(initState, choice[0]);
+}
+
+void trace_constraint(int[5] choice) implements spec{
+state initState;
+initState = new state();
+if(choice[0] >= 1) choice[0] = 0;
+setInitialState(initState, choice[0]);
+f1(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[4] >= 2) choice[4] = 0;
+f3(initState, choice[4]);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[3] >= 2) choice[3] = 0;
+f3(initState, choice[3]);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[2] >= 2) choice[2] = 0;
+f3(initState, choice[2]);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+f2(initState, 0);
+if (choice[1] >= 2) choice[1] = 0;
+f3(initState, choice[1]);
+f6(initState, 0);
+f7(initState, 0);
+f4(initState, 0);
+assertNoGhostLocation(initState);
+if(initState.isEmpty) initState.isEmpty = 0;
+f5(initState, 0);
+assertFinalState(initState, choice[0]);
+}

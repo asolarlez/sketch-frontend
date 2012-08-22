@@ -1,5 +1,5 @@
 
-bit test(int t) implements spec{
+bit test(int t0) implements spec{
 	int m = ??;
 	int x = 8 - m;
 	assert m == 3;

@@ -62,17 +62,8 @@ abstract public class ExprConstant extends Expression
      */
     public static Expression createConstant(FENode context, String val)
     {
-        // Either val ends in "i", or it doesn't.
-        if (val.endsWith("i"))
-        {
-            val = val.substring(0, val.length()-1);
-            return new ExprComplex(context, null,
-                                   createConstant(context, val));
-        }
-
         // Maybe it's integral.
-        try
-        {
+        try {
             return new ExprConstInt(context, val);
         }
         catch(NumberFormatException e)

@@ -28,7 +28,8 @@ public abstract class abstractValueType{
 	 * @return
 	 */
 	abstract public varState cleanState(String var, Type t, MethodState mstate);
-	abstract public abstractValue CONST(int v);
+
+    abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);
 	abstract public abstractValue NULL();
 	

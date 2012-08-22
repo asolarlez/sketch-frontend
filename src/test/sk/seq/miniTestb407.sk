@@ -1,0 +1,67 @@
+pragma options "--bnd-unroll-amnt 32";
+
+int foo(int x){
+    int y=x+1;
+    return y;
+}
+
+int moo(int x){
+    return x+??;
+}
+
+int mar(int x){
+    return x;
+}
+
+int tar(int x0){
+    for(int t=x0; t<x0+10; ++t){
+        t = t + 1;
+        return t;
+    }
+}
+
+int bar(int x){
+    int y =0;
+    if(x>5){
+        int y0 = 10;
+        if(x==6){
+            y0 = y0+1;
+        }
+        if(x==7){
+            y0 = y0+2;
+            return y0;
+        }        
+    }    
+    if(x==1){
+        y = y+2;
+    }
+    return y;
+}
+
+int[x] boo(int x){
+    int[x] A;
+    for(int i=0; i<x; ++i){
+        A[i] = i;
+    }
+    return A;
+}
+
+
+
+harness void main(int x, int[x] y){
+    foo(x);
+    if(boo(x)==y){
+        assert moo(x) == mar(x);
+    }
+    int t = bar(x);
+    if(x==7){
+        assert t == 12;
+    }
+    if(x==6){
+        assert t == 0;
+    }
+    if(x==1){
+        assert t == 2;
+    }
+    assert tar(x) == x+1;
+}

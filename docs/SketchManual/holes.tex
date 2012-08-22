@@ -1,0 +1,211 @@
+\section{Constant Generators and Specs}
+
+Sketching extends a simple procedural language with the ability to leave \emph{holes} in place of code fragments that are to be derived by the synthesizer. Each hole is marked by a generator which defines the set of code fragments that can be used to fill a hole. \Sk{} offers a rich set of constructs to define generators, but all of these constructs can be described as syntactic sugar over a simple core language that contains only one kind of generator: an unknown integer constant denoted by the token \C{??}.
+
+From the point of view of the programmer, the integer generator is a placeholder that the synthesizer must replace with a suitable integer constant. The synthesizer ensures that the resulting code will avoid any assertion failures under any input in the input space under consideration. For example, the following code snippet can be regarded as the ``Hello World'' of sketching.
+\begin{lstlisting}
+harness void main(int x){
+   int y = x * ??;
+   assert y == x + x;
+}
+\end{lstlisting}
+This program illustrates the basic structure of a sketch. It contains three elements you are likely to find in every sketch: (i) a \C{harness} procedure, (ii) holes marked by generators, and (iii) assertions.
+
+The harness procedure is the entry point of the sketch, and together with the assertion it serves as an operational specification for the desired program. The goal of the synthesizer is to derive an integer constant $C$ such that when \C{??} is replaced by $C$, the resulting program will satisfy the assertion for all inputs under consideration by the verifier. For the sketch above, the synthesized code will look like this. 
+\begin{lstlisting}
+void main(int x){
+   int y = x * 2;
+   assert y == x + x;
+}
+\end{lstlisting}
+
+\subsection{Types for Constant Generators}
+The constant hole \C{??} can actually stand for any of the following different types of constants: 
+\begin{itemize}
+	\item Integers (\C{int})
+	\item Booleans (\C{bit})
+	\item Constant sized arrays and nested constant sized arrays
+\end{itemize}
+
+The system will use a simple form of type inference to determine the exact type of a given hole.
+
+\subsection{Ranges for holes}
+When searching for the value of a constant hole, the synthesizer will only search values greater than or equal to zero and less than $2^N$, where $N$ is a parameter given by the flag \C{--bnd-ctrlbits}. If you wan to be explicit about the number of bits for a given hole, you can state it as \C{??(N)}, where \C{N} is an integer constant.
+
+\flagdoc{bnd-ctrlbits}{
+The flag \C{bnd-ctrlbits} tells the synthesizer what range of values to consider for all integer holes. If one wants a given integer hole to span a different range of values, one can use the extended notation \C{??(N)}, where \C{N} is the number of bits to use for that hole.
+}
+
+\subsection{Generator functions}
+
+A generator describes a space of possible code fragments that can be used to fill a hole. The constant generator we have seen so far corresponds to the simplest such space of code fragments: the space of integers in a particular range. More complex generators can be created by composing simple generators into \emph{generator functions}. 
+
+As a simple example, consider the problem of specifying the set of linear functions of two parameters \C{x} and \C{y}. That space of functions can be described with the following simple generator function:
+\begin{lstlisting}
+generator int legen(int i, int j){
+   return ??*i + ??*j+??;
+}
+\end{lstlisting}
+
+The generator function can be used anywhere in the code in the same way a function would, but the semantics of generators are different from functions. In particular, every call to the generator will be replaced by a concrete piece of code in the space of code fragments defined by the generator. Different calls to the generator function can produce different code fragments. For example, consider the following use of the generator.
+
+
+\begin{lstlisting}
+harness void main(int x, int y){
+
+  assert legen(x, y) == 2*x + 3;
+  assert legen(x,y) == 3*x + 2*y;
+
+}
+\end{lstlisting}
+
+
+Calling the solver on the above code produces the following output
+\begin{lstlisting}
+void _main (int x, int y){
+  assert ((((2 * x) + (0 * y)) + 3) == ((2 * x) + 3));
+  assert (((3 * x) + (2 * y)) == ((3 * x) + (2 * y)));
+}
+\end{lstlisting}
+
+Note that each invocation of the generator function was replaced by a concrete code fragment in the space of code fragments defined by the generator. 
+
+The behavior of generator functions is very different from standard functions. If a standard function has generators inside it, those generators are resolved to produce code that will behave correctly in all the calling contexts of the function as illustrated by the example below. 
+\begin{lstlisting}
+int linexp(int x, int y){
+   return ??*x + ??*y + ??;
+}
+harness void main(int x, int y){
+   assert linexp(x,y) >= 2*x + y;
+   assert linexp(x,y) <= 2*x + y+2;
+}
+\end{lstlisting}
+For the routines above, there are many different solutions for the holes in \C{linexp} that will satisfy the first assertion, and there are many that will satisfy the second assertion, but the synthesizer will chose one of the candidates that satisfy them both and produce the code shown below. Note that the compiler always replaces return values for reference parameters, but other than that, the code below is what you would expect.
+\begin{lstlisting}
+void linexp (int x, int y, ref int _out){
+  _out = 0;
+  _out = (2 * x) + (1 * y);
+  return;
+}
+void _main (int x, int y){
+  int _out = 0;
+  linexp(x, y, _out);
+  assert (_out >= ((2 * x) + y));
+  int _out_0 = 0;
+  linexp(x, y, _out_0);
+  assert (_out_0 <= (((2 * x) + y) + 2));
+}
+\end{lstlisting}
+
+
+
+\subsection{Recursive Generator Functions}
+
+Generators derive much of their expressive power from their ability to recursively define a space of expressions. 
+
+
+\begin{lstlisting}
+generator int rec(int x, int y, int z){
+   int t = ??;
+   if(t == 0){return x;}   
+   if(t == 1){return y;}
+   if(t == 2){return z;}
+
+   int a = rec(x,y,z);
+   int b = rec(x,y,z);
+
+   if(t == 3){return a * b;}
+   if(t == 4){return a + b;} 
+   if(t == 5){return a - b;}   
+}
+harness void sketch( int x, int y, int z ){
+   assert rec(x,y, z) == (x + x) * (y - z);
+}
+\end{lstlisting}
+
+
+\subsection{Regular Expression Generators}
+
+Sketch provides some shorthand to make it easy to express simple sets of expressions. This shorthand is based on regular expressions. Regular expression generators describe to the synthesizer a set of choices from which to choose in searching for a correct solution to the sketch. The basic syntax is
+
+{| regexp |}
+
+Where the regexp can use the operator | to describe choices, and the operator ? to define optional subexpressions.
+
+For example, the sketch from the previous subsections can be made more succinct by using the regular expression shorthand. 
+
+\begin{lstlisting}
+generator int rec(int x, int y, int z){ 
+    if(??){ 
+        return {| x | y | z |};
+    }else{
+        return {| rec(x,y,z) (+ | - | *) rec(x,y,z)  |};
+    }
+}
+
+harness void sketch( int x, int y, int z ){
+   assert rec(x,y, z) == (x + x) * (y - z);
+}
+\end{lstlisting}
+
+
+Regular expression holes can also be used with pointer expressions. For example, suppose you want to create a method to push a value into a stack, represented as a linked list. You could sketch the method with the following code:
+
+\begin{lstlisting}
+push(Stack s, int val){
+  Node n = new Node();
+  n.val = val;
+  {|  (s.head | n)(.next)? |} =   {|  (s.head | n)(.next)? |};
+  {|  (s.head | n)(.next)? |} =   {|  (s.head | n)(.next)? |};
+}
+\end{lstlisting}
+
+\subsection{High order generators}
+
+Generators can take other generators as parameters, and they can be passed as parameters to either generators or functions. This can be very useful in defining very flexible classes of generators. For example, the generator rec above assumes that you want expressions involving three integer variables, but in some cases you may only want two variables, or you may want five variables. The following code describes a more flexible generator: 
+
+\begin{lstlisting}
+generator int rec(fun choices){ 
+    if(??){ 
+        return choices();
+    }else{
+        return {| rec(choices) (+ | - | *) rec(choices)  |};
+    }
+}
+\end{lstlisting}
+
+We can use this generator in the context of the previous example as follows:
+\begin{lstlisting}
+harness void sketch( int x, int y, int z ){
+   generator int F(){
+	return {| x | y | z |};
+   }
+   assert rec(F) == (x + x) * (y - z);
+}
+\end{lstlisting}
+
+In a different context, we may want an expression involving some very specific sub-expressions, but the same generator can be reused in the new context.
+\begin{lstlisting}
+harness void sketch( int N, int[N] A, int x, int y ){   
+   generator int F(){
+	return {| A[x] | x | y |};
+   }
+   if(x<N){
+	   assert rec(F) == (A[x]+y)*x;
+   }
+}
+\end{lstlisting}
+
+
+\newpage
+High order generators can also be used to describe patterns in the expected structure of the desired code. For example, if we believe the resulting code will have a repeating structure, we can express this with the following high-order generator: 
+
+\begin{lstlisting}
+generator void rep(int n, fun f){
+    if(n>0){
+        f();
+        rep(n-1, f);
+    }    
+}
+\end{lstlisting}
+

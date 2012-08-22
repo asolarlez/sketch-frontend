@@ -2,7 +2,6 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
 import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
 import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
@@ -11,6 +10,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.CompilerStage;
 import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.types.CheckProperFinality;
 
 /**
  * @author Armando Solar-Lezama
@@ -46,6 +46,9 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
+
+        prog.accept(new CheckProperFinality());
+
         prog = preproc1.run(prog);
 
         // prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue
@@ -58,31 +61,25 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-        // dump (prog, "fpe:");
 
+        // prog.debugDump("After FPE");
 
         prog = ir1.run(prog);
 
-
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
-        // dump (prog, "tifs:");
 
         if (partialEval) {
             prog.accept(new PerformFlowChecks());
         }
 
 
-        prog =
-                (Program) prog.accept(new EliminateNestedArrAcc(
-                        options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+        prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 
 
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
-
-
 
         if (partialEval) {
             prog =

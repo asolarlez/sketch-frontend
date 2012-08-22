@@ -1,0 +1,639 @@
+\section{Core language}
+The core sketch language is a simple imperative language that borrows most of its syntax from Java and C. 
+
+\subsection{Primitive Types}
+The sketch language contains four primitive types, \C{int}, \C{char}, \C{double} and \C{bit}. There is a subtyping relation between them:
+\C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever an character or integer is required. There is no subtyping relation with double, so for example, you cannot use $1$ in place of $1.0$. 
+
+There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. In the case of characters, you can use the standard C syntax to represent character constants. 
+
+\subsection{Structs}
+More interesting types can be constructed from simpler types in two ways: by creating arrays of them (see \secref{array}) and by defining new types of heap allocated records. 
+
+To define a new record type, the programmer uses the following syntax (borrowed from C):
+\begin{lstlisting}
+struct $name${
+  $type_1$ $field_1$;
+  ...
+  $type_k$ $field_k$;
+}
+\end{lstlisting}
+
+To allocate a new record in the heap, the programmer uses the keyword \C{new}; the syntax is the same as that for constructing an object in Java using the default constructor, but the programmer can also use named parameters to directly initialize certain fields upon allocation as shown in the following example.
+
+\begin{Example}
+Use of named parameters to initialize the fields of a struct. 	
+\begin{lstlisting}
+struct Point{
+  int x;
+  int y;
+}
+void main(){
+  Point p1 = new Point();
+  assert p1.x == 0 && p1.y == 0; //Fields initialized to default values.
+
+  Point p1 = new Point(x=5, y=7);
+  assert p1.x == 5 && p1.y == 7; //Fields initialized by constructor.
+}
+\end{lstlisting}
+\end{Example}
+
+Records are manipulated through references, which behave the same way as references in Java. The following example illustrates the main properties of records and references in \Sk{}.
+
+\begin{Example}
+The example below will behave the same way as an equivalent example would behave in Java. In particular, all the asserts will be satisfied.
+\begin{lstlisting}
+struct Car{
+  int license;
+}
+
+void main(){
+  Car c = new Car(); // Object C1
+  Car d = c;         // after assignment d points to C1
+  c.license = 123;   // the field of C1 is updated.
+  assert d.license == 123;
+  strange(c, d);
+  assert d.license == 123; //Object C1 unaffected by call
+  assert d == c;
+}
+
+void strange(Car x, Car y){
+  x = new Car();  //x now points to a new object C2
+  y = new Car();  //y now points to a new object C3
+  x.license = 456;
+  y.license = 456;
+  assert x.license == y.license;
+  assert x != y; //x and y point to different objects
+}
+\end{lstlisting}
+
+\end{Example}
+
+Just like in Java, references are typesafe and the heap is assumed to be garbage collected (which is another way of saying the synthesizer doesn't model deallocation). A consequence of this is that a reference to a record of type T must either be \C{null} or point to a valid object of type T. Also, just like in Java, all pointer dereferences have an implicit null pointer check.
+
+\subsection{Final Types}\seclabel{final}
+Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below; there are analogous rules for fields of a record. 
+
+\begin{itemize}
+\item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function.
+\item Arrays cannot be final. 
+\item Global variables can only be final if they are of scalar type (not references to records).
+\end{itemize}
+
+Since assignments to final variables are disallowed by the rules, final variables must be initialized upon declaration. For fields, final fields must be initialized upon allocation through the use of named parameters to the constructor.
+
+Expressions can also be final if they are composed from final sub-expressions. In particular:
+
+\begin{itemize}
+\item A binary expression \C{a $op$ b} is final if \C{a} and \C{b} are final.
+\item A ternary expression \C{a ? b : c} is final if \C{a},\C{b} and \C{c} are final.
+\item A field dereference \C{e.f} is final if \C{e} is a final expression and \C{f} is a final field.
+\end{itemize}
+
+Note that expressions involving function calls or side effects cannot be final. As we will see in the next section, final types will be relevant when specifying the sizes of arrays.
+
+\subsection{Arrays}\seclabel{array}
+The syntax for the array type constructor is as follows: if we want to declare a variable \C{a} to be an array of size \C{N} with elements of type \C{T}, we can declare it as:
+\begin{lstlisting}
+      T[N] a;
+\end{lstlisting}
+The language will automatically check that \C{N$\geq$0}.
+
+The syntax for array access is similar to that in other languages; namely, the expression \C{a[x]} produces an element of type \C{T} when the type of \C{a} is \C{T[N]}, provided that \C{x<N}. All array accesses are automatically checked for array bounds violations.
+
+The constructor above works for any type \C{T}, including other array types. This makes the semantics very simple, although it can be a little confusing for people who are used to working in languages with support for multi-dimensional arrays. To illustrate this point, consider the following example:
+\begin{Example}
+Consider the declaration below.
+\begin{lstlisting}
+int[N][M] a;
+\end{lstlisting}
+The type of \C{a} is \C{int[N][M]}. This means that for an \C{x < M}, \C{a[x] } is of type \C{int[N]}, and for any \C{y < N}, \C{a[x][y]} is of type \C{int}.   
+\end{Example}
+
+\paragraph{Dynamic Length Arrays}
+
+When you declare an array of type \C{T[N]}, it is possible for \C{N} to be an arbitrary expression, as long as the expression is final as defined in \secref{final}. For example, consider the following code:
+\begin{lstlisting}
+harness void main(int n, int[n] in){
+ int[n] out = addone(n, in);
+}
+int[n] addone(int n, int[n] in){
+  int[n] out;
+  for(int i=0; i<n; ++i){
+    out[i] = in[i]+1;
+  }
+  return out;
+}
+\end{lstlisting}
+
+The code above illustrates one of the most common uses of dynamic length arrays: allowing functions to take arrays of arbitrary size. There are a few points worth mentioning. First, note that the size in the return array of \C{addone} refers to one of the parameters of the function. In general, the output type can refer to any of the input parameters, as well as to any final global variables---\ie{} global variables that are assigned a constant value upon declaration and are never changed again. Similarly, the type of an input parameter can refer to any variable that comes before it. It is important to remember, however, that any expression used as the size of the array must be final, so in particular, they cannot involve any function calls.
+
+When the size of the array needs to be computed by the function itself, there are two ways to proceed. One option is to give an over approximation of the size of the array as indicated by the example below. The other option is to package the array into a \C{struct} as shown in the next paragraph.
+
+\begin{Example}
+Consider a function that filters an array to return only those elements that are even. One cannot know the length of the return array a priori, because it depends on the data in the original array. One way to write such a function is as follows:
+\begin{lstlisting}
+int[N] filter(int N, int[N] in, ref int outsz){
+	outsz = 0;
+	int[N] out;
+	for(int i=0; i<N; ++i){ 
+		if(in[i]%2 == 0){
+			out[outsz++] = in[i];			
+		}
+	}
+	return out;
+}
+\end{lstlisting}
+Notice that the function returns an array of size N, even though in reality, only the first \C{outsz} elements matter. We may use the function as follows:
+\begin{lstlisting}
+int[N] tmp = filter(N, in, tsz);
+int sz = tsz;
+int[sz] filteredArray = tmp[0::sz];
+\end{lstlisting}
+The function uses the bulk array access \C{tmp[0::sz]}, which will be defined properly later in the section. A cleaner way of writing this example is to use records as shown in the next paragraph.
+\end{Example}
+
+\paragraph{Array fields}
+Records can also have arrays as fields. The expression for the array size can involve any final expression in scope, which in practice means final expressions involving global variables and other final fields. Keep in mind that if a field is final, then it must be initialized by the constructor of the record. 
+
+\begin{Example}
+Using array fileds, we can write a cleaner version of the filter function from before:
+\begin{lstlisting}
+struct Array{
+	int sz;
+	int[sz] A;
+}
+
+
+Array filter(Array arr){
+      int outsz = 0;
+	int[arr.sz] out;
+	for(int i=0; i<N; ++i){
+		if(in[i]%2 == 0){
+			out[outsz++] = arr.A[i];
+		}
+	}
+	return new Array(sz=outsz, A=out[0::outsz]);
+}
+\end{lstlisting}
+One interesting point to note is the size of \C{out}; because it uses \C{arr.sz}, that forces both the variable \C{arr} and the field \C{sz} to be final. The field \C{sz} was already final because it was used in the size of field \C{A}, but now that \C{arr} is also required to be final; assigning anything to it inside the function would be illegal and would be flagged by the type checker. Finally, the function uses the bulk array access \C{out[0::outsz]}, which will be defined in the next section.
+\end{Example}
+
+
+
+
+\flagdoc{bnd-arr-size}{
+If an input array is dynamically sized, the flag \C{--bnd-arr-size} can be used to control the maximum size arrays to be considered by the system. For any non-constant variable in the array size, the system will assume that that variable can have a maximum value of \C{--bnd-arr-size}. For example, if a sketch takes as input an array \C{int[N] x}, if \C{N} is another parameter, the system will consider arrays up to size \C{bnd-arr-size}. On the other hand, for an array parameter of type \C{int[N*N] x}, the system will consider arrays up to size \C{bnd-arr-size}$^2$.
+}
+
+
+
+\paragraph{Bulk array access}
+The indexing operation we just saw will read a single element from an array. The \SK\ language also includes support for extracting sub-arrays out of an array. If \C{a} is an array of type \C{T[N]}, we can extract a sub-array of size \C{M} using the following expression: 
+\begin{lstlisting}
+a[x::M]
+\end{lstlisting}
+
+If \C{M} is greater than or equal to zero and \C{x + M $~\leq~$ N}, then the expression \C{ a[x::M]} produces an array of type \C{T[M]} containing the elements \C{a[x], ..., a[x+M-1]}. 
+
+Bulk array access of the form \C{a[x::M]} will generate an exception if any index between \C{x} and \C{x+M-1} is out of bounds. Specifically, the system checks that \C{x>=0} and \C{x+M <= N}, where \C{N} is the size of \C{a}. Notice that if \C{M} is zero, then it is legal for \C{x} to equal \C{N}.
+
+\paragraph{Array assignment}
+The language also supports bulk copy from one array to another through array assignment operator. If \C{a} and \C{b} are arrays of type \C{T[N]}, then the elements of  \C{a} can be copied into \C{b} by using the assignment operator: 
+\begin{lstlisting}
+   b = a;
+\end{lstlisting}
+If \C{a:T[N]} and \C{b:T[M]} are of different size, then the assignment will be legal as long as \C{M $\geq$ N}. If \C{M $\neq$ N}, the rhs will be padded with zeros or nulls according to the rules in \secref{padding}.
+
+Bulk array access operations can also serve as lvalues. For example, the assignment 
+\begin{lstlisting}
+b[2::4] = a[5::4] 
+\end{lstlisting}
+is legal---assuming of course that a and b are big enough for the bulk accesses to be legal. The effect of this operation is to write values a[5], a[6], a[7], a[8] into locations b[2], b[3], b[4], b[5]. For such an assignment, the compiler will read all the values in the right hand side before writing anything to the left hand side. This is relevant when reading and writing to the same array. For example, the assignment 
+\begin{lstlisting}
+a[0::3] = a[1::3] 
+\end{lstlisting}
+will read values  \C{a[1], a[2], a[3]} before writing to locations  \C{a[0], a[1], a[2]}.
+
+\paragraph{Array constants}
+\seclabel{ainit}
+Sketch supports C-style array constants. An array constant of k-elements is expressed with the following syntax.
+\begin{lstlisting}
+{ a1, a2, ... , ak}
+\end{lstlisting}
+Array constants in \Sk{} are more flexible than in C. They are not restricted to array initialization; they can be used anywhere an array rvalue can be used. In particular, the following are all valid statements in sketch:
+\begin{lstlisting}
+int[3] x = {1,2,3};
+x[{1,2}[a]] = 3;
+x[0] = {4,5,6}[b];
+x[{0,1}[a]::2] = {0,1,2,3,4,5,6}[b::2];
+\end{lstlisting}
+
+\paragraph{Nested array constants}
+The entries \C{a1} through \C{ak} in the array initializer can themselves be arrays, which makes it possible for the system to support nested array initializers. The type for an array initializer will be defined by the following rule:
+\[
+	\frac{\tau = \bigsqcup \tau_i~~~ \Gamma\vdash a_i:\tau_i }{\Gamma \vdash \{a_0, a_1, \ldots a_{k-1}\}:\tau[k]}
+\]
+Given two array types $\tau_1[N]$ and $\tau_2[M]$, the type $\tau_1[N] \sqcup \tau_2[M]$ is equal to $(\tau_1 \sqcup \tau_2)[max(N,M)]$. The system pads the nested array initializers according to the rules in \secref{padding}. For example, an array of the form
+\begin{lstlisting}
+{{1,2},{1},{1,2,3},{1}}
+\end{lstlisting}
+will be of type int[3][4], and will be equivalent to the following array:
+\begin{lstlisting}
+{{1,2,0},{1,0,0},{1,2,3},{1,0,0}}
+\end{lstlisting}
+
+
+\paragraph{Array Equality.} The equality comparison recursively compares each element of the array and works for arrays of arbitrary types. In addition to comparing each element of the array, the equality comparison also compares the sizes of the array, so arrays of different sizes will be judged as being different even if after padding they would have been the same.
+In general, two arrays \C{a:T[n]} and \C{b:T[m]} will be compared according to the following recursive definition:
+
+\begin{lstlisting}
+	a == b when a and b have type T[n] $\Rightarrow$ n==m $\wedge \forall$ i < n a[i]==b[i]
+	a == b when a is of type T[n] and b is of type T $\Rightarrow$ n==1 $\wedge$ a[0] == b
+\end{lstlisting}
+In the second line, it is assumed that T is a non-array type. There is a symmetric case when \C{a} is of a non-array type.
+
+
+\begin{Example}
+Given two arrays, \C{int[n][m] y} and \C{int[m][n] z}, the following assertion will always succeed:
+\begin{lstlisting}
+if(x==y){
+	assert n==m;
+}
+\end{lstlisting}
+That is because the only way \C{x} and \C{y} can be equal is if their dimensions are equal. Similarly, given two arrays \C{int[p][n][m] a} and \C{int[t] b}, the assertion below will always succeed:
+\begin{lstlisting}
+if(a==b){
+	assert t==m && n==1 && p == 1;
+}
+\end{lstlisting}
+\end{Example}
+
+
+\paragraph{Bit Vectors}
+While a sketch programmer can create arrays of any arbitrary type, arrays of bits allow an extended set of operations to allow programmers to easily write bit-vector algorithms. The set of allowed operators is listed below, and the semantics of each operator is the same as the equivalent operator for unsigned integers in C.
+\begin{center}
+\begin{tabular}{r}
+\lstinline!bit[N] & bit[M] $\rightarrow$ bit[max(N,M)]!\\
+\lstinline!bit[N] | bit[M]  $\rightarrow$ bit[max(N,M)]!\\
+\lstinline!bit[N] ^ bit[M]  $\rightarrow$ bit[max(N,M)]!\\
+\lstinline!bit[N] + bit[M]  $\rightarrow$ bit[max(N,M)]!\\
+\lstinline!bit[N] >> int    $\rightarrow$ bit[N]!\\
+\lstinline!bit[N] << int    $\rightarrow$ bit[N]!\\
+!\lstinline!bit[N] $\rightarrow$ bit[N]!\\
+\end{tabular}
+\end{center}
+
+Notice that most operators support operands of different sizes; the smaller array is padded to match the size of the bigger array according to the rules of padding from \secref{padding}. 
+
+
+
+
+
+\subsection{Automatic Padding and Typecasting}
+\seclabel{padding}
+Many operations on arrays support arrays of different sizes through padding. This padding can be thought of as an implicit typecast from small arrays to bigger arrays. The objects used to pad the array depend on the type of the array. Given an array of type \C{T[N]}, the objects used to pad the array will be defined by the function \lstinline!$pad$(T)! defined by the following rules:
+\begin{lstlisting}
+$pad$(int) = 0 
+$pad$(bit) = 0
+$pad$(struct) = null
+$pad$(T[N]) = $\{pad$(T)$,\ldots, pad$(T)$\}$ //N copies of $pad$(T)
+\end{lstlisting}
+
+\begin{Example}
+In the statement \lstinline!int[4] x = {1,2};!, the right hand side has size 2, but will be implicitly cast to an array of size 4 by padding it with the value \lstinline!$pad$(int)=0!, so after the assignment, \C{x} will equal \lstinline!{1,2,0,0}!.
+\end{Example}
+
+
+A second form of implicit typecasting happens when a scalar is used in place of an array. In this case, the scalar is automatically typecast into an array of size 1. 
+
+\begin{Example}
+Consider the following block of code 
+\begin{lstlisting}
+struct Car{ ... }
+...
+Car[4] x;
+Car t = new Car();
+x = t;
+\end{lstlisting}
+This code actually involves two typecasts. First, \C{t} will be typecast from the scalar type \C{Car} to the array type \C{Car[1]}. Then, the array type \C{Car[1]} will be typecast to a bigger array of type \C{Car[4]} by padding with \lstinline!$pad$(Car) = null!. The result is that array will be equal to \lstinline!{t, null, null, null}!.
+\end{Example}
+
+\begin{Example}
+Padding also works for assignments involving nested arrays.
+\begin{lstlisting}
+int[2][2] x = {{2,2}, {2,2}};
+int [4][4] y = x;
+\end{lstlisting}
+
+The code above involves the following implicit typecasts: first, the array x of type \C{int[2][2]} is typecast into an array of type \C{int[2][4]} by padding with \lstinline!$pad$(int[2])={ $pad$(int), $pad$(int)} = {0, 0}! to produce the array \lstinline!{{2,2}, {2,2}, {0,0}, {0,0}}!. Then, each entry in this array is typecast from \C{int[2]} to \C{int[4]}, so after the assignment, the value of \C{y} will be equal to \lstinline!{{2,2,0,0}, {2,2,0,0}, {0,0,0,0}, {0,0,0,0}}!
+\end{Example}
+
+
+It is important to note that implicit casts only occur for r-values; l-values will never be implicitly typecast. In particular, this means that reference parameters to a function will never be implicitly cast and must always be of the exact size required by the signature of the callee. 
+
+
+\subsection{Explicit Typecasting}
+The \Sk{} language also offers some limited explicit typecasting. In particular, the language offers only two explicit typecasts:
+\begin{itemize}
+
+\item An array \C{a} of type \C{T[N]} can be explicitly typecast into an array of type \C{T[M]} by using the syntax \C{(T[M])a} (standard typecast notation from C). When an array is typecast to a smaller size, the remaining elements are simply truncated. 
+
+\item A bit array \C{bit[N]} can be explicitly typecast into an integer. When this happens, the first bit in the array is interpreted as the least significant bit and the last one as the most significant bit. The reverse cast from an integer to a bit array is not supported.
+
+\end{itemize}
+
+\begin{Example}
+One instance where explicit casting is useful is when comparing an array against the zero array.
+\begin{lstlisting}
+int[N] x=...;
+assert x == (bit[N])0;
+\end{lstlisting}
+Notice that in the code above, if we had written simply \C{x==0} in the assertion, the assertion would have been violated when \C{N>1}, because the scalar zero is treated as an array of size 1. By casting the constant zero into an array of size \C{N}, we ensure that x is compared against an array of size \C{N} consisting of all zeros.
+\end{Example}
+
+\begin{Example}
+Explicit casting is also useful when copying one dynamically sized array into another one.
+\begin{lstlisting}
+int[N] x=...;
+int[M] y = (bit[M])x;
+\end{lstlisting}
+If we knew that \C{N} is smaller than \C{M}, we could have written simply \C{y=x}, and the automatic padding would have made the assignment correct. Similarly, if we knew that \C{M} is smaller than or equal to \C{N}, assigning \C{y=x[0::M]} would have been legal. However, \C{y=x} fails when \C{M} is smaller than \C{N}, and x[0::M] fails when \C{M>N}. The cast on the other hand succeeds in both cases and has the expected behavior.
+\end{Example}
+
+\subsection{Control Flow}
+The language supports the following constructs for control flow: \C{if-then}, \C{while}, \C{do-while}, \C{for}. These have the same syntax and semantics as in \C{C/C++} or \C{Java}. The language does not have a \C{switch} statement, although it is likely to be added in a future version of the language. The language also does not support \C{continue} and \C{break}, although they can easily be emulated with \C{return} by using closures (see \secref{closures}).
+
+The synthesizer reasons about loops by unrolling them. The degree of unrolling is controlled by a flag \C{--bnd-unroll-amnt}. If the loop iteration bounds are static, however, the loop will be unrolled as many times as necessary to satisfy the static bounds. 
+
+\flagdoc{bnd-unroll-amnt}{This flag controls the degree of unrolling for both loops and \C{repeat} constructs}
+
+
+\begin{Example}
+Consider the three loops below.
+\begin{lstlisting}
+for(int i=0; i<N; ++i){...}
+for(int i=0; i<100; ++i){...}
+for(int i=0; i<N && i<7; ++i){...}
+\end{lstlisting}
+If \C{N} is an input variable, the first loop will be unrolled as many times as specified by \C{--bnd-unroll-amnt}. The second loop will be unrolled \C{100} times regardless of the value of the flag. For the third loop, the unroll factor will be controlled by the flag, but will never exceed seven.
+\end{Example}
+
+
+
+\subsection{Functions}
+The sketch language also supports functions. The syntax for declaring a function is the same as in C. 
+
+\begin{lstlisting}
+$ret\_type$ $name$($args$){
+  $body$
+}
+\end{lstlisting}
+
+\paragraph{Recursion}
+The synthesizer reasons about function calls by inlining them into their calling context. In principle, this could be problematic for recursive functions, but in practice this usually is not a problem. The synthesizer uses a flag \C{bnd-inline-amnt} to bound the maximum number of times a function can be inlined. If any input requires inlining more than the allowed number of times, synthesis will fail.
+
+\flagdoc{bnd-inline-amnt}{Bounds the amount of inlining for any function call. The value of this parameter corresponds to the maximum number of times any function can appear in the stack.}
+
+
+\paragraph{Reference Vs. Value Parameter Passing}
+By default, parameter passing is done by value; however, it is possible to pass parameters by reference by prefixing them with the keyword \C{ref}. 
+
+Only local variables should ever be passed by reference, and reference parameters should never be aliased. The reason for this restriction is that the synthesizer models reference parameters using copy-in-copy-out semantics. If the parameters are local variables and are not aliased, then copy-in-copy-out is indistinguishable from pass-by-reference.
+
+\begin{Example}
+Local variables can be modified by passing them as reference to a function.
+\begin{lstlisting}
+void foo(int in, ref int out){
+	in = in + 1; // changes to in are not visible to the caller
+      out = in + 1; //changes to out are 
+}
+harness void main(int x){
+      int y = x;
+	int z = y+10;
+      foo(y, z); // call to foo can change z but not y
+      assert y == x && z == x+2;
+}
+\end{lstlisting}
+\end{Example}
+
+
+\subsection{Function parameters}
+Functions can also take functions as parameters. We use the keyword \C{fun} to denote a function type. The example below illustrates the use of function parameters.
+\begin{Example}
+Functions as parameters.
+\begin{lstlisting}
+int apply(fun f, int x){
+	return f(x);
+}
+int timesTwo(int x){
+	return x+x;
+}
+
+harness void main(int x){
+	assert apply(timesTwo, x) == 2*x;
+}
+\end{lstlisting}
+\end{Example}
+
+The language imposes several restrictions on the use of the \C{fun} type. First, the type can only be used for parameters. You cannot declare a variable or a data-structure field of type \C{fun}. There are also no operators defined for functions; in particular, the ternary operator \C{?:} cannot be used with functions. You can also not create arrays of functions, and you cannot use functions as return values or reference parameters to a function. In short, functions are not quite first class citizens in \Sk{}, but function parameters do enable some very useful idioms.
+
+One important point to notice about function parameters is that the signature does not specify what parameters it expects. This gives the language some flexibility, and in some cases allows one to make up for the fact that we don't have generics. However, it also has an important implication. Namely, when a function parameter is called, it is not possible to know which parameters will be reference parameters and which parameters will not, so any variable that is passed to a function that came as a parameter will be considered non-final.
+
+\subsection{Local functions and closures}\seclabel{closures}
+Sketch supports the definition of functions inside other functions. The syntax for doing this is the same as when the function is defined outside a function. The body of the locally defined function can access any variable that is in scope in the context of the function definition. The example below illustrates how local functions can be used together with high-order functions. 
+
+\begin{lstlisting}
+void ForLoop(fun f, int i, int N){
+	if(i<N){
+		f(i);
+		ForLoop(f, i+1, N);
+	}
+}
+
+harness void main(int N, int[N] A){
+	int[N] B;
+	void copy(int i){
+		B[i] = A[i];
+	}
+	ForLoop(copy, 0, N);
+	assert A == B;
+}
+\end{lstlisting}
+	
+In the sketch above, \C{ForLoop} takes the closure involving the function \C{copy} and its local environment; the effect of the call to \C{ForLoop} is the same as if the body of copy had been placed in a traditional \C{for} loop. 
+One important aspect of closures in Sketch is that because functions cannot be returned by other functions or written into the heap, a local function can never escape the context in which it was declared. This allows local functions to modify local variables defined in their host function without any messy semantic issues.
+
+\subsection{Uninterpreted Functions}
+\Sk{} also supports uninterpreted functions, which can be defined with the following syntax.
+\begin{lstlisting}
+$ret\_type$ $name$($args$);
+\end{lstlisting}
+An uninterpreted function is a function whose body is unknown, so from the point of view of the synthesis and verification engine; there is nothing known about this function other than the fact that it is a pure function, so when fed with the same inputs it will produce the same outputs.
+
+The main restriction on uninterpreted functions is that their return value can only be a scalar, so uninterpreted functions that return arrays or references are disallowed. 
+
+
+\subsection{Packages}
+
+The \Sk{} language supports packages. A package is identified by the \C{package} statement at the beginning of a file.
+\begin{lstlisting}
+package PACKAGENAME;
+\end{lstlisting}
+
+All the functions and structures defined in a file must belong to the same package, so the compiler will produce an error if there is more than one package definition in a file. If a file does not have a \C{package} command, then by default its contents will belong to the package \C{ANONIMOUS}. Also, note that unlike Java, package names cannot have periods or other special symbols. 
+
+A file can import other packages by using the \C{include} command. The syntax of the command is shown below. The string in quotes corresponds to the name of the file where the package resides. 
+
+\begin{lstlisting}
+include "file.sk";
+\end{lstlisting}
+
+The include command should not be confused with the \C{#include} preprocessor directive, which simply inlines the contents of a file and is not really part of the language. 
+
+\flagdoc{fe-inc}{
+The command line flag {--fe-inc} can be used to tell the compiler what directories to search when looking for included packages. The flag works much like the \C{-I} flag in gcc, and can be used multiple times to list several different directories.
+}
+
+Each package defines its own namespace, allowing the system to avoid name conflicts. Code in one package can explicitly refer to functions or structures defined in another package by using the \C{@} notation. For example, a call of the form \C{foo@pk()} will call a function \C{foo} defined in package \C{pk}. Similarly, a declaration of the form \C{Car@vehicles c = new Car@vehicles()} defines a new object of type \C{Car}, where the type was defined in the package \C{vehicles}. In the absence of an explicit package name, the system will search for definitions of functions and structures as follows:
+\begin{itemize}
+\item If the name is defined locally in the same package, the local definition will be used.
+\item If the name is not defined locally in the same package, but is only defined in one other package (so there is no ambiguity), then the definition in that other package will be used.
+\item If the name is not defined locally in the same package and the same name is defined in multiple packages, then you need to explicitly name the package or you will get a compiler error.
+\end{itemize}
+\begin{Example} The example below illustrates the use of packages.\newline
+\begin{tabular}{cp{2cm}c}
+\begin{lstlisting}
+// Begin file farm.sk
+package farm;
+struct Goat{
+   int weight;  }
+struct Ram{
+   int age;     }
+struct Mouse{
+   int age;     }
+// End file farm.sk
+\end{lstlisting} & ~ &
+\begin{lstlisting}
+// Begin file computer.sk
+package computer;
+struct Cpu{
+   int freq;    }
+struct Ram{
+   int size;    }
+struct Mouse{
+   bit isWireless; }
+// End file computer.sk
+\end{lstlisting}
+\end{tabular}
+\begin{lstlisting}
+//Begin file test.sk
+include "computer.sk";
+include "farm.sk";
+struct Mouse{
+   int t;  
+}
+harness main(){
+   Cpu c = new Cpu(); // No ambiguity here.
+   Ram@farm r = new Ram@farm() //Without @farm, this would be an error.
+   Ram@computer rc = new Ram@computer();
+   Mouse m = new Mouse(); // Give preference to the locally defined mouse.
+   m.t = 10;
+}
+//End file test.sk
+\end{lstlisting}
+\end{Example}
+
+\subsection{Global variables}
+The sketch language supports global variables with a few important restrictions. First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable. The second restriction is a consequence of the fact that only scalar global variables can be final; this means that global arrays must have constant dimensions since, in that scope, constants are the only thing that can be final.
+
+
+\subsection{Annotation System}
+The \Sk{} language includes an annotation system that is meant to simplify the process of adding language extensions. The general syntax for annotations is as follows:
+\begin{lstlisting}
+@Name(parameter-string)
+\end{lstlisting}
+\C{Name} is the name of the annotation and \C{parameter-string} is a string describing the parameters of the annotation. Annotations are currently only supported for function and record definitions. 
+
+The synthesizer currently supports two annotations. The first is \C{@Native}, which allows the user to override the standard code generator and tell the synthesizer exactly what code to synthesize for a particular function. The second one is \C{@NeedsInclude} which is used to tell the code generator that a particular function requires some specific header file to be included.
+
+For example, the following code shows how the two \C{@Native} annotations can be used to write a set of routines that read form a file.
+
+\begin{Example}
+In \Sk{}, one can use the following classes to model the process of reading from a file.
+
+\begin{lstlisting}
+int NDCNT=0;
+
+int getND_private(int i);
+int getND(){
+    //Every time this function is called
+    //it produces a new non-deterministic value.
+    return getND_private(NDCNT++);
+}
+
+struct FileHandle{
+    int maxReads; //Number of values left in the file.
+}
+
+FileHandle getFile(){
+    //Number of values in the file is some non-deterministic value.
+    return new FileHandle(maxReads=getND());
+}
+
+bit moreValues(FileHandle fh){
+    //maxReads should never drop below zero.
+    assert fh.maxReads >= 0; 
+    return fh.maxReads!=0;
+}
+
+int readInt(FileHandle fh){
+    //Reads past the end of the file are not allowed.
+    assert fh.maxReads > 0;
+    --fh.maxReads; 
+    return getND();
+}
+\end{lstlisting}
+
+The \C{FileHandle} is initialized with the maximum number of values to read. Every time the client calls \C{readInt}, the synthesizer reads checks if the maximum number of reads has been reached and reads another non-deterministic value. This definition of the operations on a file is very good if we are interested in synthesizing or verifying a client that needs to read a file and do something with its contents. However, if we want to generate code to read real files, the class above is not so useful. 
+
+Using the \C{@Native} annotations, however, we can instruct the synthesizer on how to generate code for the structure and functions above. For example, the code for the \C{struct} would be as follows:
+
+\begin{lstlisting}
+struct FileHandle{
+    int maxReads;
+    @NeedsInclude("#include <fstream>")
+    @NeedsInclude("#include <string>")
+    @Native("ifstream in;")
+    @Native("int last;")
+    @Native("bool goon;")
+    @Native("FileHandle(const string& s):in(s.c_str()){ in>>last; goon = !in.eof() && !in.fail(); }")
+    @Native("int readInt(){ int x = last; in>>last; goon = !in.eof() && !in.fail(); return x;}")
+}
+\end{lstlisting}
+The functions annotations are used to introduce additional fields and methods which are invisible to the analysis engine, but which are needed by the generated code. 
+
+With their annotations, the \C{moreValues} and \C{readInt} functions are as follows:
+\begin{lstlisting}
+@Native("{ _out = fh->goon; }")
+bit moreValues(FileHandle fh){
+    assert fh.maxReads >= 0; 
+    return fh.maxReads!=0;
+}
+
+
+@Native("{ _out = fh->readInt(); }")
+int readInt(FileHandle fh){
+    assert fh.maxReads > 0;
+    --fh.maxReads; 
+    return getND();
+}
+\end{lstlisting}
+
+When analyzing code, the annotations are invisible to the synthesizer, and it will focus on the high-level model in the body. When generating code, on the other hand, the code generator will produce the code instructed by the \C{@Native} annotation.
+
+\end{Example}
+
+The \C{@Native} annotation allows the programmer to use simple models in place of very complex or low-level functions. It is the responsibility of the programmer to ensure that the model matches the relevant behavior of the code that is being generated. 
+
+More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure. 

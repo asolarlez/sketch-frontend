@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.FEContext;
@@ -20,6 +22,8 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.Annotation;
+import sketch.util.datastructures.HashmapList;
 
 import sketch.compiler.ast.core.StreamSpec;
 
@@ -57,8 +61,8 @@ public interface StreamItParserFETokenTypes {
 	int TK_int = 17;
 	int TK_void = 18;
 	int TK_double = 19;
-	int TK_complex = 20;
-	int TK_fun = 21;
+	int TK_fun = 20;
+	int TK_char = 21;
 	int TK_struct = 22;
 	int TK_ref = 23;
 	int TK_if = 24;
@@ -152,5 +156,4 @@ public interface StreamItParserFETokenTypes {
 	int NUMBER = 112;
 	int ID = 113;
 	int LESS_COLON = 114;
-	int TK_pi = 115;
 }

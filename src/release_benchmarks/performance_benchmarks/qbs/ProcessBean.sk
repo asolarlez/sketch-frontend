@@ -1,0 +1,368 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct Process2
+{
+ int presentationName;
+ int id;
+}
+
+Process2 Process2_new (int presentationName, int id)
+{
+  Process2 n = new Process2();
+  n.presentationName = presentationName;
+  n.id = id;
+  return n;
+}
+
+
+harness void presentationNameAlreadyExists(int _presentationName, int _processId,
+                                           int processes_sz, int ret, int i_1, bit loop_0_2,
+                                           int flat_4, int flat_5_10, bit flat_6_11,
+                                           bit flat_7_12, int flat_8_13, int process_3_9_presentationName,
+                                           int process_3_9_id, int [MAX_LEN]  processes_presentationName,
+                                           int [MAX_LEN]  processes_id)
+
+ {
+ Process2 process_3_9 = new Process2();
+ process_3_9.presentationName = process_3_9_presentationName;
+ process_3_9.id = process_3_9_id;
+ Process2 [MAX_LEN]  processes;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  processes[i] = new Process2();
+  processes[i].presentationName = processes_presentationName[i];
+  processes[i].id = processes_id[i]; }
+ 
+ if (true && (processes_sz >= 0 && processes_sz < MAX_LEN))
+  {
+  if (i_1 < processes_sz && invariant0(_presentationName, _processId, processes_sz,
+                                       ret, i_1, loop_0_2, processes))
+   {
+   assert processes[i_1].presentationName == _presentationName && (_processId !=
+                                                                     processes[i_1].
+                                                                       id && invariant0(
+                                                                               _presentationName,
+                                                                               _processId,
+                                                                               processes_sz,
+                                                                               ret +
+                                                                                 1,
+                                                                               i_1 +
+                                                                                 1,
+                                                                               loop_0_2,
+                                                                               processes) ||
+                                                                     !(_processId !=
+                                                                         processes[i_1].
+                                                                           id) &&
+                                                                     invariant0(
+                                                                       _presentationName,
+                                                                       _processId,
+                                                                       processes_sz,
+                                                                       ret, i_1 +
+                                                                         1, loop_0_2,
+                                                                       processes)) ||
+     !(processes[i_1].presentationName == _presentationName) && (false && invariant0(
+                                                                            _presentationName,
+                                                                            _processId,
+                                                                            processes_sz,
+                                                                            ret +
+                                                                              1,
+                                                                            i_1 +
+                                                                              1,
+                                                                            loop_0_2,
+                                                                            processes) ||
+                                                                   !false && invariant0(
+                                                                               _presentationName,
+                                                                               _processId,
+                                                                               processes_sz,
+                                                                               ret,
+                                                                               i_1 +
+                                                                                 1,
+                                                                               loop_0_2,
+                                                                               processes));
+  }
+  
+  if (!(i_1 < processes_sz) && invariant0(_presentationName, _processId, processes_sz,
+                                          ret, i_1, loop_0_2, processes))
+   {
+   assert postcondition(_presentationName, _processId, processes_sz, ret, i_1, loop_0_2,
+                        flat_4, flat_5_10, flat_6_11, flat_7_12, flat_8_13, process_3_9,
+                        processes); }
+  
+  if (true)
+   {
+   assert invariant0(_presentationName, _processId, processes_sz, 0, 0, false, processes);
+  }
+   }
+  }
+
+
+bit invariant0(int _presentationName, int _processId, int processes_sz, int ret,
+               int i_1, bit loop_0_2, Process2 [MAX_LEN]  processes) {
+ if (pred1(_presentationName, _presentationName, _processId, processes_sz, ret, i_1,
+           loop_0_2) && pred2(_processId, _presentationName, _processId, processes_sz,
+                              ret, i_1, loop_0_2) && pred3(ret, _presentationName,
+                                                           _processId, processes_sz,
+                                                           ret, i_1, loop_0_2) &&
+       pred4(i_1, _presentationName, _processId, processes_sz, ret, i_1, loop_0_2))
+  {
+  Process2 [MAX_LEN]  list5;
+  int list5_sz;
+  top_list5(processes, processes_sz, _presentationName, _processId, processes_sz,
+            ret, i_1, loop_0_2, processes, list5, list5_sz);
+  Process2 [MAX_LEN]  list6;
+  int list6_sz;
+  select_list6(list5, list5_sz, _presentationName, _processId, processes_sz, ret,
+               i_1, loop_0_2, processes, list6, list6_sz);
+  return {| 
+  ret == agg_agg7(list6, list6_sz) |}; }
+  else return 0; }
+
+
+bit postcondition(int _presentationName, int _processId, int processes_sz, int ret,
+                  int i_1, bit loop_0_2, int flat_4, int flat_5_10, bit flat_6_11,
+                  bit flat_7_12, int flat_8_13, Process2 process_3_9, Process2 [MAX_LEN]  processes) {
+ Process2 [MAX_LEN]  list8;
+ int list8_sz;
+ top_list8(processes, processes_sz, _presentationName, _processId, processes_sz,
+           ret, i_1, loop_0_2, flat_4, flat_5_10, flat_6_11, flat_7_12, flat_8_13,
+           process_3_9, processes, list8, list8_sz);
+ Process2 [MAX_LEN]  list9;
+ int list9_sz;
+ select_list9(list8, list8_sz, _presentationName, _processId, processes_sz, ret,
+              i_1, loop_0_2, flat_4, flat_5_10, flat_6_11, flat_7_12, flat_8_13,
+              process_3_9, processes, list9, list9_sz);
+ return {| 
+ ret == agg_agg10(list9, list9_sz) |}; }
+
+
+generator bit pred1 (int _presentationName, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| _processId | processes_sz | ret | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return _presentationName > rightOperand;
+  else if (operator == 2) return _presentationName <= rightOperand;
+  else if (operator == 3) return _presentationName < rightOperand;
+  else if (operator == 4) return _presentationName == rightOperand;
+  else return _presentationName >= rightOperand;
+}
+
+
+generator bit pred2 (int _processId, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| _presentationName | processes_sz | ret | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return _processId > rightOperand;
+  else if (operator == 2) return _processId <= rightOperand;
+  else if (operator == 3) return _processId < rightOperand;
+  else if (operator == 4) return _processId == rightOperand;
+  else return _processId >= rightOperand;
+}
+
+
+generator bit pred3 (int ret, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| _presentationName | _processId | processes_sz | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return ret > rightOperand;
+  else if (operator == 2) return ret <= rightOperand;
+  else if (operator == 3) return ret < rightOperand;
+  else if (operator == 4) return ret == rightOperand;
+  else return ret >= rightOperand;
+}
+
+
+generator bit pred4 (int i_1, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| _presentationName | _processId | processes_sz | ret |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_1 > rightOperand;
+  else if (operator == 2) return i_1 <= rightOperand;
+  else if (operator == 3) return i_1 < rightOperand;
+  else if (operator == 4) return i_1 == rightOperand;
+  else return i_1 >= rightOperand;
+}
+
+
+void top_list5 (Process2 [MAX_LEN] processes, int processes_sz, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2, Process2 [MAX_LEN] processes, ref Process2 [MAX_LEN] list5, ref int list5_sz)
+{
+  list5_sz = {| _presentationName | _processId | processes_sz | ret | i_1 |};
+  list5 = processes[0::list5_sz];
+}
+
+
+void select_list6 (Process2 [MAX_LEN] list5, int list5_sz, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2, Process2 [MAX_LEN] processes, ref Process2 [MAX_LEN] list6, ref int list6_sz)
+{
+  list6_sz = 0;
+  for (int i = 0; i < list5_sz; ++i)
+  {
+    if (select_list6_pred(list5[i], _presentationName, _processId, processes_sz, ret, i_1, loop_0_2, processes))
+    {
+      list6[list6_sz] = list5[i];
+      ++list6_sz;
+    }
+  }
+}
+generator bit select_list6_pred (Process2 tuple, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2, Process2 [MAX_LEN] processes)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.presentationName > ??(2);
+      else if (operator0 == 2) pred0 = tuple.presentationName <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.presentationName < ??(2);
+      else if (operator0 == 4) pred0 = tuple.presentationName == ??(2);
+      else if (operator0 == 5) pred0 = tuple.presentationName == _presentationName;
+      else if (operator0 == 6) pred0 = tuple.presentationName == _processId;
+      else if (operator0 == 7) pred0 = tuple.presentationName == ret;
+      else if (operator0 == 8) pred0 = tuple.presentationName == i_1;
+      else pred0 = tuple.presentationName >= ??(2);
+      bit pred1;
+      int operator1 = ??;
+      if (operator1 == 0) pred1 = 1;
+      else if (operator1 == 1) pred1 = tuple.id > ??(2);
+      else if (operator1 == 2) pred1 = tuple.id <= ??(2);
+      else if (operator1 == 3) pred1 = tuple.id < ??(2);
+      else if (operator1 == 4) pred1 = tuple.id == ??(2);
+      else if (operator1 == 5) pred1 = tuple.id == _presentationName;
+      else if (operator1 == 6) pred1 = tuple.id == _processId;
+      else if (operator1 == 7) pred1 = tuple.id == ret;
+      else if (operator1 == 8) pred1 = tuple.id == i_1;
+      else pred1 = tuple.id >= ??(2);
+      out = out && {| pred0 | pred1 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg7 (Process2 [MAX_LEN] list6, int list6_sz)
+{
+  int count = list6_sz;
+  int max_presentationName = 0; int sum_presentationName = 0; int min_presentationName = 3; int avg_presentationName = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (list6[i].presentationName > max_presentationName)
+      max_presentationName = list6[i].presentationName;
+    if (list6[i].presentationName < min_presentationName)
+      min_presentationName = list6[i].presentationName;
+    sum_presentationName += list6[i].presentationName;
+  }
+  avg_presentationName =count==0?0: ( sum_presentationName / count);
+  int max_id = 0; int sum_id = 0; int min_id = 3; int avg_id = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (list6[i].id > max_id)
+      max_id = list6[i].id;
+    if (list6[i].id < min_id)
+      min_id = list6[i].id;
+    sum_id += list6[i].id;
+  }
+  avg_id = count==0?0: (sum_id / count);
+  return {| count | max_presentationName | sum_presentationName | min_presentationName | avg_presentationName | max_id | sum_id | min_id | avg_id |};
+}
+
+
+void top_list8 (Process2 [MAX_LEN] processes, int processes_sz, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2, int flat_4, int flat_5_10, bit flat_6_11, bit flat_7_12, int flat_8_13, Process2 process_3_9, Process2 [MAX_LEN] processes, ref Process2 [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = {| _presentationName | _processId | processes_sz | ret | i_1 | flat_4 | flat_5_10 | flat_8_13 |};
+  list8 = processes[0::list8_sz];
+}
+
+
+void select_list9 (Process2 [MAX_LEN] list8, int list8_sz, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2, int flat_4, int flat_5_10, bit flat_6_11, bit flat_7_12, int flat_8_13, Process2 process_3_9, Process2 [MAX_LEN] processes, ref Process2 [MAX_LEN] list9, ref int list9_sz)
+{
+  list9_sz = 0;
+  for (int i = 0; i < list8_sz; ++i)
+  {
+    if (select_list9_pred(list8[i], _presentationName, _processId, processes_sz, ret, i_1, loop_0_2, flat_4, flat_5_10, flat_6_11, flat_7_12, flat_8_13, process_3_9, processes))
+    {
+      list9[list9_sz] = list8[i];
+      ++list9_sz;
+    }
+  }
+}
+generator bit select_list9_pred (Process2 tuple, int _presentationName, int _processId, int processes_sz, int ret, int i_1, bit loop_0_2, int flat_4, int flat_5_10, bit flat_6_11, bit flat_7_12, int flat_8_13, Process2 process_3_9, Process2 [MAX_LEN] processes)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.presentationName > ??(2);
+      else if (operator0 == 2) pred0 = tuple.presentationName <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.presentationName < ??(2);
+      else if (operator0 == 4) pred0 = tuple.presentationName == ??(2);
+      else if (operator0 == 5) pred0 = tuple.presentationName == _presentationName;
+      else if (operator0 == 6) pred0 = tuple.presentationName == _processId;
+      else if (operator0 == 7) pred0 = tuple.presentationName == ret;
+      else if (operator0 == 8) pred0 = tuple.presentationName == i_1;
+      else if (operator0 == 9) pred0 = tuple.presentationName == flat_4;
+      else if (operator0 == 10) pred0 = tuple.presentationName == flat_5_10;
+      else if (operator0 == 11) pred0 = tuple.presentationName == flat_8_13;
+      else if (operator0 == 12) pred0 = tuple.presentationName == process_3_9.presentationName;
+      else if (operator0 == 13) pred0 = tuple.presentationName == process_3_9.id;
+      else pred0 = tuple.presentationName >= ??(2);
+      bit pred1;
+      int operator1 = ??;
+      if (operator1 == 0) pred1 = 1;
+      else if (operator1 == 1) pred1 = tuple.id > ??(2);
+      else if (operator1 == 2) pred1 = tuple.id <= ??(2);
+      else if (operator1 == 3) pred1 = tuple.id < ??(2);
+      else if (operator1 == 4) pred1 = tuple.id == ??(2);
+      else if (operator1 == 5) pred1 = tuple.id == _presentationName;
+      else if (operator1 == 6) pred1 = tuple.id == _processId;
+      else if (operator1 == 7) pred1 = tuple.id == ret;
+      else if (operator1 == 8) pred1 = tuple.id == i_1;
+      else if (operator1 == 9) pred1 = tuple.id == flat_4;
+      else if (operator1 == 10) pred1 = tuple.id == flat_5_10;
+      else if (operator1 == 11) pred1 = tuple.id == flat_8_13;
+      else if (operator1 == 12) pred1 = tuple.id == process_3_9.presentationName;
+      else if (operator1 == 13) pred1 = tuple.id == process_3_9.id;
+      else pred1 = tuple.id >= ??(2);
+      out = out && {| pred0 | pred1 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg10 (Process2 [MAX_LEN] list9, int list9_sz)
+{
+  int count = list9_sz;
+  int max_presentationName = 0; int sum_presentationName = 0; int min_presentationName = 3; int avg_presentationName = 0;
+  for (int i = 0; i < list9_sz; ++i)
+  {
+    if (list9[i].presentationName > max_presentationName)
+      max_presentationName = list9[i].presentationName;
+    if (list9[i].presentationName < min_presentationName)
+      min_presentationName = list9[i].presentationName;
+    sum_presentationName += list9[i].presentationName;
+  }
+  avg_presentationName = count==0?0: (sum_presentationName / count);
+  int max_id = 0; int sum_id = 0; int min_id = 3; int avg_id = 0;
+  for (int i = 0; i < list9_sz; ++i)
+  {
+    if (list9[i].id > max_id)
+      max_id = list9[i].id;
+    if (list9[i].id < min_id)
+      min_id = list9[i].id;
+    sum_id += list9[i].id;
+  }
+  avg_id = count==0?0: (sum_id / count);
+  return {| count | max_presentationName | sum_presentationName | min_presentationName | avg_presentationName | max_id | sum_id | min_id | avg_id |};
+}
+

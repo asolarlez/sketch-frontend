@@ -23,8 +23,8 @@ public interface StreamItLexTokenTypes {
 	int TK_int = 17;
 	int TK_void = 18;
 	int TK_double = 19;
-	int TK_complex = 20;
-	int TK_fun = 21;
+	int TK_fun = 20;
+	int TK_char = 21;
 	int TK_struct = 22;
 	int TK_ref = 23;
 	int TK_if = 24;

@@ -1,0 +1,27 @@
+
+pragma options "--bnd-unroll-amnt 32";
+
+struct Foo{
+  int n;
+  int[n] a;
+}
+
+struct Moo{
+    Foo f;
+    int[f.n] b;    
+}
+int min(int a, int b){
+    return a<b?a:b;
+}
+harness void main(int n){
+    int[10] x = ??;
+    Foo f = new Foo(n=n, a=x[0::min(10,n)] );
+    if(??){
+        f = null;
+    }
+    Foo t = new Foo(n=n, a=5);
+    Moo m = new Moo(f=f, b=f.a);
+    for(int i=0; i<n; ++i){
+        assert m.b[i]== m.f.a[i];
+    }
+}

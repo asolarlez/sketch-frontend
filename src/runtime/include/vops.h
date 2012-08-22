@@ -39,8 +39,8 @@ template<typename T, typename W>
 inline bool arrCompare(T* lhs, int lsize, W* rhs, int rsize){
 	int m = max(lsize, rsize);
 	for(int i=0; i<m; ++i){
-		int r = i<rsize? rhs[i] : 0;
-		int l = i<lsize? lhs[i] : 0;
+		W r = i<rsize? rhs[i] : (W)0;
+		T l = i<lsize? lhs[i] : (T)0;
 		if(r!=l){
 			return false;
 		}

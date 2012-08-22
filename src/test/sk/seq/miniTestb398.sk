@@ -1,0 +1,51 @@
+pragma options "--bnd-unroll-amnt 32";
+
+int NDCNT=0;
+
+int getND_low(int i);
+int getND(){
+    return getND_low(NDCNT++);
+}
+
+@Native("{printf(\"Input equals %d\\n\", x);}") @Dummy("testing tags")
+void printInt(int x);
+
+struct FileHandle{
+    int maxReads;
+    @NeedsInclude("#include <fstream>")
+    @NeedsInclude("#include <string>")
+    @NeedsInclude("using namespace std;")
+    @Native("ifstream in;")
+    @Native("int last;")
+    @Native("bool goon;")
+    @Native("FileHandle(const string& s):in(s.c_str()){ in>>last; goon = !in.eof() && !in.fail(); }")
+    @Native("int readInt(){ int x = last; in>>last; goon = !in.eof() && !in.fail(); return x;}")
+}
+
+@Native("{ FileHandle* f = new FileHandle(\"miniTestb398.in\"); _out = f; }")
+FileHandle getFile(){
+    return new FileHandle(maxReads=getND());
+}
+
+@Native("{ _out = fh->goon; }")
+bit moreValues(FileHandle fh){
+    assert fh.maxReads >= 0; 
+    return fh.maxReads!=0;
+}
+
+@Native("{ _out = fh->readInt(); }")
+int readInt(FileHandle fh){
+    assert fh.maxReads > 0;
+    --fh.maxReads; 
+    return getND();
+}
+
+harness void foo(){
+    FileHandle fh = getFile();
+    while({| true | false | moreValues(fh)|}){
+        int x = readInt(fh);
+        printInt(x);
+    }
+    assert !moreValues(fh);        
+}
+

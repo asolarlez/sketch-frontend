@@ -89,7 +89,9 @@ public class NameResolver {
         if (full == null) {
             return null;
         }
-        return funMap.get(full);
+        Function f = funMap.get(full);
+
+        return f;
     }
 
     public Function getFun(String name, FENode errSource) {
@@ -107,6 +109,13 @@ public class NameResolver {
         }
     }
 
+    /**
+     * Returns a unique name for a structure. Disambiguates between structs in different
+     * namespaces.
+     * 
+     * @param name
+     * @return
+     */
     public String getStructName(String name) {
         return getFullName(name, pkgForStruct, structMap);
     }

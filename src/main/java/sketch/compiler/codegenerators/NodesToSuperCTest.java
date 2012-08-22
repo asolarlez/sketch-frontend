@@ -208,6 +208,17 @@ public class NodesToSuperCTest extends NodesToJava {
         }
     }
 
+    private void copyVar(String namel, String namer, Type t) {
+        String len = typeLen(t);
+        boolean isArr = typeIsArr(t);
+
+        if (isArr) {
+            writeLine("CopyArr(" + namel + ", " + namer + ", " + len + ", " + len + ");");
+        } else {
+            writeLine(namel + "=" + namer + ";");
+        }
+    }
+
     private void initVar(String name, Type t, boolean random) {
         String len = typeLen(t);
         boolean isArr = typeIsArr(t);
@@ -296,8 +307,8 @@ public class NodesToSuperCTest extends NodesToJava {
         writeLine("printf(\"Automated testing failed in " + fname + "\\n\");");
         for (int i = 0; i < inPars.size(); i++)
             outputVar(inPars.get(i).getName(), inPars.get(i).getType());
-        outputVar(OUTSK, outPar.getType());
-        outputVar(OUTSP, outPar.getType());
+        outputVar(name1, outPar.getType());
+        outputVar(name2, outPar.getType());
         writeLine("exit(1);");
         unIndent();
         writeLine("}");
@@ -331,61 +342,82 @@ public class NodesToSuperCTest extends NodesToJava {
         addIndent();
         List<Parameter> paramsList = func.getParams();
         List<Parameter> inPars = new ArrayList<Parameter>();
-        Parameter outPar = null;
+        List<Parameter> outPars = new ArrayList<Parameter>();
         for (Parameter p : paramsList) {
             if (p.isParameterInput()) {
-                assert !p.isParameterOutput() : "Can't have ref parameters for top level functions.";
                 inPars.add(p);
-            } else {
-                outPar = p;
+            }
+            if (p.isParameterOutput()) {
+                outPars.add(p);
             }
         }
 
         writeLine("for(int _test_=0;_test_<" + NTESTS + ";_test_++) {");
         addIndent();
-        for (int i = 0; i < inPars.size(); i++) {
-            Type inType = inPars.get(i).getType();
-            _converter.visitParameter(inPars.get(i));
-            declareVar(inPars.get(i).getName(), inType);
-            initVar(inPars.get(i).getName(), inType, true);
-        }
-        Type outType = outPar != null ? outPar.getType() : null;
-        if (outPar != null) {
-            declareVar(OUTSK, outType);
-            declareVar(OUTSP, outType);
-            initVar(OUTSK, outType, false);
-            initVar(OUTSP, outType, false);
-        }
-        String strInputs = "";
-        for (int i = 0; i < inPars.size(); i++) {
-            if (i != 0) {
-                strInputs += ",";
+        for (Parameter inPar : inPars) {
+            if (!inPar.isParameterOutput()) {
+                Type inType = inPar.getType();
+                _converter.visitParameter(inPar);
+                declareVar(inPar.getName(), inType);
+                initVar(inPar.getName(), inType, true);
             }
-            strInputs += inPars.get(i).getName();
-        }
-        if (outPar != null) {
-            if (strInputs.length() > 0) {
-                strInputs += ",";
-            }
-            writeLine(makecpp(nres.getFunName(func)) + "(" + strInputs + OUTSK + ");");
-            writeLine(makecpp(nres.getFunName(func.getSpecification())) + "(" +
-                    strInputs + OUTSP +
-                    ");");
-            // this.padVar(OUTSK, outType);
-            // this.padVar(OUTSP, outType);
-            doCompare(OUTSK, OUTSP, outType, fname, inPars, outPar);
-        } else {
-            writeLine(makecpp(nres.getFunName(func)) + "(" + strInputs + ");");
-            writeLine(makecpp(nres.getFunName(func.getSpecification())) + "(" +
-                    strInputs + ");");
         }
 
-        for (int i = 0; i < inPars.size(); i++) {
-            Type inType = inPars.get(i).getType();
-            if (inType instanceof TypeArray) {
-                writeLine("delete[] " + inPars.get(i).getName() + ";\n");
+        for (Parameter outPar : outPars) {
+            Type outType = outPar != null ? outPar.getType() : null;
+            declareVar(outPar.getName() + "_" + OUTSK, outType);
+            declareVar(outPar.getName() + "_" + OUTSP, outType);
+
+            if (outPar.isParameterInput()) {
+                declareVar(outPar.getName(), outType);
+                initVar(outPar.getName(), outType, true);
+                copyVar(outPar.getName() + "_" + OUTSK, outPar.getName(), outType);
+                copyVar(outPar.getName() + "_" + OUTSP, outPar.getName(), outType);
+            } else {
+                initVar(outPar.getName() + "_" + OUTSK, outType, false);
+                initVar(outPar.getName() + "_" + OUTSP, outType, false);
             }
         }
+        String specInputs = "";
+        String skInputs = "";
+        for (Parameter param : paramsList) {
+            if (specInputs.length() > 0) {
+                specInputs += ",";
+                skInputs += ",";
+            }
+            if (!param.isParameterOutput()) {
+                specInputs += param.getName();
+                skInputs += param.getName();
+            } else {
+                specInputs += param.getName() + "_" + OUTSP;
+                skInputs += param.getName() + "_" + OUTSK;
+            }
+        }
+
+        writeLine(makecpp(nres.getFunName(func)) + "(" + specInputs + ");");
+        writeLine(makecpp(nres.getFunName(func.getSpecification())) + "(" + skInputs +
+                ");");
+
+        for (Parameter outPar : outPars) {
+            doCompare(outPar.getName() + "_" + OUTSK, outPar.getName() + "_" + OUTSP,
+                    outPar.getType(), fname, inPars, outPar);
+        }
+
+
+        for (Parameter inPar : inPars) {
+            Type inType = inPar.getType();
+            if (inType instanceof TypeArray) {
+                writeLine("delete[] " + inPar.getName() + ";\n");
+            }
+        }
+        for (Parameter outPar : outPars) {
+            Type outType = outPar.getType();
+            if (outType instanceof TypeArray) {
+                writeLine("delete[] " + outPar.getName() + "_" + OUTSK + ";\n");
+                writeLine("delete[] " + outPar.getName() + "_" + OUTSP + ";\n");
+            }
+        }
+
         unIndent();
         writeLine("}");
 

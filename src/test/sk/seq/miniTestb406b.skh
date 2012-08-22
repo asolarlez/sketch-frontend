@@ -1,0 +1,11 @@
+package PRIME;
+
+
+struct A{
+    int a;
+    int b;
+}
+
+int foo2(int x, int y){
+    return x + y;
+}

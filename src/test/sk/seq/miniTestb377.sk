@@ -1,0 +1,212 @@
+pragma options "--bnd-unroll-amnt 32";
+
+// return A[i] where A is of length N 
+int get (int i, int N, int [N] A)
+{
+  assert i<N;
+  return A[i];
+}
+
+// append v to A, where A is of length N 
+int [N+1] append (int v, int N, int [N] A)
+{
+  int[N+1] out;
+  out[0::N] = A;
+  out[N] = v;
+  return out;
+}
+
+// top T entries of A of length N 
+int [T] top (int T, int N, int [N] A)
+{
+  if (T <= N)
+    return A[0::T];
+  else
+    return 0;
+}
+
+// lists l1 with length l1Len and l2 with length l2Len are equal 
+bit equals (int l1Len, int [l1Len] l1, int l2Len, int [l2Len] l2)
+{
+  return l1 == l2 && l1Len == l2Len;
+}
+
+
+generator bit genListPredicate (int lenRet, int [lenRet] ret,
+                                int lenL, int [lenL] L, int i, fun pred)
+{    
+  // grammar:
+  // pred := L == ret                 |
+  //         L == top(i, lenRet, ret) |
+  //         ret == top(i, lenL, L)   |
+  //         ret == select(pred, L)
+
+  int type = ??(2);
+  bit pred;
+  if (type == 0)
+    pred = equals(lenL, L, lenRet, ret);
+  else if (type == 1)
+    pred = equals(lenL, L, i, top(i, lenRet, ret));
+  else if (type == 2)
+    pred = equals(lenRet, ret, i, top(i, lenL, L));
+  else
+  {
+    int sz;
+    int [lenL] tmp = select(pred, lenL, L, sz);
+    int [sz] sel = tmp[0::sz];
+    pred = equals(lenRet, ret, sz, sel);
+    return pred;
+  }
+
+  int operator = ??(1);
+  if (operator == 0)
+    return pred;
+  else
+    return !(pred);
+}
+
+generator int genScalarOperand (int lenRet, int [lenRet] ret, 
+                                int lenL, int [lenL] L,
+                                int i)
+{
+  int operand = {| i | lenL | lenRet |}; 
+  int operator = ??(3);
+  if (operator == 0)
+    return operand;
+  else if (operator == 1)
+    return operand + ??;
+  else if (operator == 2)
+    return operator - ??;
+  else
+    assert 0;
+}
+
+generator bit genScalarPredicate (int lenRet, int [lenRet] ret, 
+                                  int lenL, int [lenL] L, int i)
+{
+  int leftOperand = genScalarOperand(lenRet, ret, lenL, L, i);
+  int rightOperand = genScalarOperand(lenRet, ret, lenL, L, i);
+
+  int operator = ??(3);
+  assert operator >= 0 && operator <= 5;
+  if (operator == 0)
+    return leftOperand > rightOperand;
+  else if (operator == 1)
+    return !(leftOperand > rightOperand);
+  else if (operator == 2)
+    return leftOperand < rightOperand;
+  else if (operator == 3)
+    return !(leftOperand < rightOperand);
+  else if (operator == 4)
+    return leftOperand == rightOperand;
+  else if (operator == 5)
+    return leftOperand != rightOperand;
+  else
+    assert 0;
+}
+
+
+int[N] select (fun pred, int N, int[N] A, ref int sz)
+{
+  sz = 0;
+  int[N] out;
+  
+  for(int i=0; i<N; ++i)
+  {
+    if(pred(A[i]))
+    {
+      out[sz] = A[i]; 
+      ++sz;
+    }
+  }
+
+  return out;
+}
+
+
+generator bit genPredicate (int leftOperand)
+{
+  int rightOperand = ??;
+  int operator = ??(3);
+  
+  assert operator >= 0 && operator <= 5;
+  if (operator == 0)
+    return leftOperand > rightOperand;
+  else if (operator == 1)
+    return !(leftOperand > rightOperand);
+  else if (operator == 2)
+    return leftOperand < rightOperand;
+  else if (operator == 3)
+    return !(leftOperand < rightOperand);
+  else if (operator == 4)
+    return leftOperand == rightOperand;
+  else if (operator == 5)
+    return leftOperand != rightOperand;
+  else
+    assert 0;
+}
+
+
+
+generator bit genInvariant (int lenRet, int [lenRet] ret, 
+                            int lenL, int [lenL] L, int i, fun pred)
+{
+  bit out = 1;
+
+  int t = ??(2);
+  repeat (t)
+  {
+    bit t1 = genListPredicate(lenRet, ret, lenL, L, i, pred);
+    bit t2 = genScalarPredicate(lenRet, ret, lenL, L, i);
+
+    out = out & {| t1 | t2 |};
+  }
+  
+  assert t <= 2;
+
+  return out;
+}
+
+bit pred (int x)
+{
+  return genPredicate(x);
+}
+
+
+bit invariant (int lenRet, int [lenRet] ret, int lenL, int [lenL] L, int i)
+{
+  //return (ret == top(i, lenL, L) && lenRet == i && i <= lenL);
+  return genInvariant(lenRet, ret, lenL, L, i, pred);
+}
+
+
+bit postCondition (int lenRet, int [lenRet] ret, int lenL, int [lenL] L, int i)
+{
+  return {| equals(lenRet, ret, lenL, L) | 
+            equals(lenRet, ret, i, top(i, lenL, L)) |};
+}            
+
+
+harness void sketch (int i, int lenL, int [lenL] L, 
+                     int lenRet, int [lenRet] ret)
+{
+  if (true)
+  {
+    assert invariant(0, ret[0::0], lenL, L, 0);  
+  }
+
+  if (invariant(lenRet, ret, lenL, L, i) && i < lenL)
+  {
+    assert invariant(lenRet + 1, append(L[i], lenRet, ret), lenL, L, i + 1);
+  }
+  
+  if (invariant(lenRet, ret, lenL, L, i) && !(i < lenL))
+  {
+    assert ret == L && lenRet == lenL;
+    //assert equals(lenRet, ret, lenL, L);
+    assert postCondition(lenRet, ret, lenL, L, i);
+  }
+}
+
+
+

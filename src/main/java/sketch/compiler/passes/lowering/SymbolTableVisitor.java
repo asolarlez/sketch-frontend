@@ -16,6 +16,7 @@
 
 package sketch.compiler.passes.lowering;
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -29,14 +30,17 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtImplicitVarDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.util.datastructures.TypedHashMap;
 
 /**
  * Front-end visitor pass that maintains a symbol table.  Other
@@ -188,7 +192,7 @@ public class SymbolTableVisitor extends FEReplacer
             symtab.registerVar(field.getName(i),
                                actualType(field.getType(i)),
                                field,
-                               SymbolTable.KIND_FIELD);
+                    SymbolTable.KIND_GLOBAL);
         return super.visitFieldDecl(field);
     }
 
@@ -236,6 +240,14 @@ public class SymbolTableVisitor extends FEReplacer
         return result;
     }
 
+    public Object visitStmtFor(StmtFor stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        Object result = super.visitStmtFor(stmt);
+        symtab = oldSymTab;
+        return result;
+    }
+
     @Override
     public Object visitStmtFork(StmtFork ploop){
     	SymbolTable oldSymTab = symtab;
@@ -253,6 +265,32 @@ public class SymbolTableVisitor extends FEReplacer
                                stmt,
                                SymbolTable.KIND_LOCAL);
         return super.visitStmtVarDecl(stmt);
+    }
+
+    public Object visitTypeStruct(TypeStruct ts) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
+        boolean changed = false;
+        TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        for (Entry<String, Type> entry : ts) {
+            symtab.registerVar(entry.getKey(), actualType(entry.getValue()), ts,
+                    SymbolTable.KIND_FIELD);
+        }
+
+        for (Entry<String, Type> entry : ts) {
+            Type type = (Type) entry.getValue().accept(this);
+            changed |= (type != entry.getValue());
+            map.put(entry.getKey(), type);
+        }
+
+        symtab = oldSymTab;
+
+        if (changed) {
+            return ts.creator().fields(map).create();
+        } else {
+            return ts;
+        }
     }
 
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {

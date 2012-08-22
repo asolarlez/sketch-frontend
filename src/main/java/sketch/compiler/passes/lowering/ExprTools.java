@@ -127,8 +127,6 @@ public class ExprTools {
 				return exp.getExpr ().accept (this);
 			}
 
-			public Object visitExprComplex (ExprComplex exp) { return 0; }
-			public Object visitExprConstBoolean (ExprConstBoolean exp) { return 0; }
 			public Object visitExprConstChar (ExprConstChar exp) { return 0; }
 			public Object visitExprConstFloat (ExprConstFloat exp) { return 0; }
 			public Object visitExprConstInt (ExprConstInt exp) { return 0; }

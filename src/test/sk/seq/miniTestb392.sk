@@ -1,0 +1,23 @@
+struct Foo{
+    int x;
+    int y;
+}
+
+struct Bar{
+    Foo f;
+    Bar b;
+}
+
+harness void main(int a, int bb, int c, int d, int e, int g){
+    Foo f = new Foo(x=a, y=bb);
+    assert f.x == a && f.y == bb;
+    
+    Bar b = new Bar(f=new Foo(x=c, y=d), b=new Bar(f=new Foo(x=e, y=g)));
+    assert b.f.x == c && b.f.y == d && b.b.f.x==e && b.b.f.y==g;
+    
+    Bar bc = new Bar(f=new Foo(x=((a!=10)&&(e/(a-10))>0)? a :e ));
+    assert bc.b == null;
+    assert bc.f.x != 10 || e == 10;
+    
+    
+}

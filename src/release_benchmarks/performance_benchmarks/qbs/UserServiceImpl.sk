@@ -1,0 +1,289 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct Permission
+{
+ int user;
+}
+
+Permission Permission_new (int user)
+{
+  Permission n = new Permission();
+  n.user = user;
+  return n;
+}
+
+
+harness void getUsersWithPermissionLocal(int projectId, int permissionType, int users_sz,
+                                         int permissions_sz, int i_2, bit loop_0_3,
+                                         int flat_1_4, int permission_5_6_user, int [MAX_LEN]  users_user,
+                                         int [MAX_LEN]  permissions_user)
+
+ {
+ Permission permission_5_6 = new Permission();
+ permission_5_6.user = permission_5_6_user;
+ Permission [MAX_LEN]  users;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  users[i] = new Permission();
+  users[i].user = users_user[i]; }
+ 
+ Permission [MAX_LEN]  permissions;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  permissions[i] = new Permission();
+  permissions[i].user = permissions_user[i]; }
+ 
+ if (true && (users_sz >= 0 && users_sz < MAX_LEN) && (permissions_sz >= 0 && permissions_sz <
+                                                         MAX_LEN))
+  {
+  if (i_2 < permissions_sz && invariant0(projectId, permissionType, users_sz, permissions_sz,
+                                         i_2, loop_0_3, users, permissions))
+   {
+   assert invariant0(projectId, permissionType, users_sz, permissions_sz, i_2 + 1,
+                     loop_0_3, append_1(users, users_sz, permissions[i_2], users_sz),
+                     permissions); }
+  
+  if (!(i_2 < permissions_sz) && invariant0(projectId, permissionType, users_sz,
+                                            permissions_sz, i_2, loop_0_3, users,
+                                            permissions))
+   {
+   assert postcondition(projectId, permissionType, users_sz, permissions_sz, i_2,
+                        loop_0_3, flat_1_4, permission_5_6, users, permissions);
+  }
+  
+  if (true)
+   {
+   assert invariant0(projectId, permissionType, 0, permissions_sz, 0, false, users,
+                     permissions); }
+   }
+  }
+
+
+bit invariant0(int projectId, int permissionType, int users_sz, int permissions_sz,
+               int i_2, bit loop_0_3, Permission [MAX_LEN]  users, Permission [MAX_LEN]  permissions) {
+ if (pred1(projectId, projectId, permissionType, permissions_sz, i_2, loop_0_3) &&
+       pred2(permissionType, projectId, permissionType, permissions_sz, i_2, loop_0_3) &&
+       pred3(i_2, projectId, permissionType, permissions_sz, i_2, loop_0_3))
+  {
+  Permission [MAX_LEN]  list4;
+  int list4_sz;
+  top_list4(permissions, permissions_sz, projectId, permissionType, users_sz, permissions_sz,
+            i_2, loop_0_3, users, permissions, list4, list4_sz);
+  Permission [MAX_LEN]  list5;
+  int list5_sz;
+  select_list5(list4, list4_sz, projectId, permissionType, users_sz, permissions_sz,
+               i_2, loop_0_3, users, permissions, list5, list5_sz);
+  Permission [MAX_LEN]  list6;
+  int list6_sz;
+  project_list6(list5, list5_sz, list6, list6_sz);
+  return {| 
+  equals_list7(users, users_sz, list6, list6_sz) |}; }
+  else return 0; }
+
+
+Permission [MAX_LEN] append_0 (Permission [MAX_LEN] list, int list_sz, Permission e, ref int outputList_sz)
+{
+  Permission [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+Permission [MAX_LEN] append_1 (Permission [MAX_LEN] list, int list_sz, Permission e, ref int outputList_sz)
+{
+  Permission [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+bit postcondition(int projectId, int permissionType, int users_sz, int permissions_sz,
+                  int i_2, bit loop_0_3, int flat_1_4, Permission permission_5_6,
+                  Permission [MAX_LEN]  users, Permission [MAX_LEN]  permissions) {
+ Permission [MAX_LEN]  list8;
+ int list8_sz;
+ top_list8(permissions, permissions_sz, projectId, permissionType, users_sz, permissions_sz,
+           i_2, loop_0_3, flat_1_4, permission_5_6, users, permissions, list8, list8_sz);
+ Permission [MAX_LEN]  list9;
+ int list9_sz;
+ select_list9(list8, list8_sz, projectId, permissionType, users_sz, permissions_sz,
+              i_2, loop_0_3, flat_1_4, permission_5_6, users, permissions, list9,
+              list9_sz);
+ Permission [MAX_LEN]  list10;
+ int list10_sz;
+ project_list10(list9, list9_sz, list10, list10_sz);
+ return {| 
+ equals_list11(users, users_sz, list10, list10_sz) |}; }
+
+
+generator bit pred1 (int projectId, int projectId, int permissionType, int permissions_sz, int i_2, bit loop_0_3)
+{
+  int rightOperand = {| permissionType | permissions_sz | i_2 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return projectId > rightOperand;
+  else if (operator == 2) return projectId <= rightOperand;
+  else if (operator == 3) return projectId < rightOperand;
+  else if (operator == 4) return projectId == rightOperand;
+  else return projectId >= rightOperand;
+}
+
+
+generator bit pred2 (int permissionType, int projectId, int permissionType, int permissions_sz, int i_2, bit loop_0_3)
+{
+  int rightOperand = {| projectId | permissions_sz | i_2 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return permissionType > rightOperand;
+  else if (operator == 2) return permissionType <= rightOperand;
+  else if (operator == 3) return permissionType < rightOperand;
+  else if (operator == 4) return permissionType == rightOperand;
+  else return permissionType >= rightOperand;
+}
+
+
+generator bit pred3 (int i_2, int projectId, int permissionType, int permissions_sz, int i_2, bit loop_0_3)
+{
+  int rightOperand = {| projectId | permissionType | permissions_sz |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_2 > rightOperand;
+  else if (operator == 2) return i_2 <= rightOperand;
+  else if (operator == 3) return i_2 < rightOperand;
+  else if (operator == 4) return i_2 == rightOperand;
+  else return i_2 >= rightOperand;
+}
+
+
+void top_list4 (Permission [MAX_LEN] permissions, int permissions_sz, int projectId, int permissionType, int users_sz, int permissions_sz, int i_2, bit loop_0_3, Permission [MAX_LEN] users, Permission [MAX_LEN] permissions, ref Permission [MAX_LEN] list4, ref int list4_sz)
+{
+  list4_sz = {| projectId | permissionType | users_sz | permissions_sz | i_2 |};
+  list4 = permissions[0::list4_sz];
+}
+
+
+void select_list5 (Permission [MAX_LEN] list4, int list4_sz, int projectId, int permissionType, int users_sz, int permissions_sz, int i_2, bit loop_0_3, Permission [MAX_LEN] users, Permission [MAX_LEN] permissions, ref Permission [MAX_LEN] list5, ref int list5_sz)
+{
+  list5_sz = 0;
+  for (int i = 0; i < list4_sz; ++i)
+  {
+    if (select_list5_pred(list4[i], projectId, permissionType, users_sz, permissions_sz, i_2, loop_0_3, users, permissions))
+    {
+      list5[list5_sz] = list4[i];
+      ++list5_sz;
+    }
+  }
+}
+generator bit select_list5_pred (Permission tuple, int projectId, int permissionType, int users_sz, int permissions_sz, int i_2, bit loop_0_3, Permission [MAX_LEN] users, Permission [MAX_LEN] permissions)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.user > ??(2);
+      else if (operator0 == 2) pred0 = tuple.user <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.user < ??(2);
+      else if (operator0 == 4) pred0 = tuple.user == ??(2);
+      else if (operator0 == 5) pred0 = tuple.user == projectId;
+      else if (operator0 == 6) pred0 = tuple.user == permissionType;
+      else if (operator0 == 7) pred0 = tuple.user == i_2;
+      else pred0 = tuple.user >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list6 (Permission [MAX_LEN] list5, int list5_sz, ref Permission [MAX_LEN] list6, ref int list6_sz)
+{
+  list6_sz = list5_sz;
+  list6 = list5;
+}
+
+
+bit equals_list7 (Permission [MAX_LEN] users, int users_sz, ref Permission [MAX_LEN] list6, ref int list6_sz)
+{
+  if (users_sz != list6_sz) return 0;
+  for (int i = 0; i < users_sz; ++i)
+  {
+    if (users[i].user != list6[i].user)
+      return 0;
+  }
+  return 1;
+}
+
+
+void top_list8 (Permission [MAX_LEN] permissions, int permissions_sz, int projectId, int permissionType, int users_sz, int permissions_sz, int i_2, bit loop_0_3, int flat_1_4, Permission permission_5_6, Permission [MAX_LEN] users, Permission [MAX_LEN] permissions, ref Permission [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = {| projectId | permissionType | users_sz | permissions_sz | i_2 | flat_1_4 |};
+  list8 = permissions[0::list8_sz];
+}
+
+
+void select_list9 (Permission [MAX_LEN] list8, int list8_sz, int projectId, int permissionType, int users_sz, int permissions_sz, int i_2, bit loop_0_3, int flat_1_4, Permission permission_5_6, Permission [MAX_LEN] users, Permission [MAX_LEN] permissions, ref Permission [MAX_LEN] list9, ref int list9_sz)
+{
+  list9_sz = 0;
+  for (int i = 0; i < list8_sz; ++i)
+  {
+    if (select_list9_pred(list8[i], projectId, permissionType, users_sz, permissions_sz, i_2, loop_0_3, flat_1_4, permission_5_6, users, permissions))
+    {
+      list9[list9_sz] = list8[i];
+      ++list9_sz;
+    }
+  }
+}
+generator bit select_list9_pred (Permission tuple, int projectId, int permissionType, int users_sz, int permissions_sz, int i_2, bit loop_0_3, int flat_1_4, Permission permission_5_6, Permission [MAX_LEN] users, Permission [MAX_LEN] permissions)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.user > ??(2);
+      else if (operator0 == 2) pred0 = tuple.user <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.user < ??(2);
+      else if (operator0 == 4) pred0 = tuple.user == ??(2);
+      else if (operator0 == 5) pred0 = tuple.user == projectId;
+      else if (operator0 == 6) pred0 = tuple.user == permissionType;
+      else if (operator0 == 7) pred0 = tuple.user == i_2;
+      else if (operator0 == 8) pred0 = tuple.user == flat_1_4;
+      else if (operator0 == 9) pred0 = tuple.user == permission_5_6.user;
+      else pred0 = tuple.user >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list10 (Permission [MAX_LEN] list9, int list9_sz, ref Permission [MAX_LEN] list10, ref int list10_sz)
+{
+  list10_sz = list9_sz;
+  list10 = list9;
+}
+
+
+bit equals_list11 (Permission [MAX_LEN] users, int users_sz, ref Permission [MAX_LEN] list10, ref int list10_sz)
+{
+  if (users_sz != list10_sz) return 0;
+  for (int i = 0; i < users_sz; ++i)
+  {
+    if (users[i].user != list10[i].user)
+      return 0;
+  }
+  return 1;
+}
+

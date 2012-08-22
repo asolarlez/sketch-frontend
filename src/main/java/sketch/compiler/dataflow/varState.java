@@ -62,7 +62,13 @@ abstract public class varState {
 	protected abstractValue typeSize(Type t, abstractValueType vtype){
 		if( t instanceof TypeArray ){
 			TypeArray tarr = (TypeArray) t;
-			abstractValue av = (abstractValue) tarr.getLength().accept( vtype.eval );
+
+            abstractValue av;
+            if (tarr.getLength() != null) {
+                av = (abstractValue) tarr.getLength().accept(vtype.eval);
+            } else {
+                av = vtype.BOTTOM("FARRAY");
+            }
 			if(tarr.getBase() instanceof TypeArray){
 				return vtype.times(av, typeSize(tarr.getBase(), vtype));
 			}else{
@@ -301,13 +307,24 @@ abstract public class varState {
 		}else{
 			assert !val.isArr() : " Can't assign an array into a non-array";			
 			//update( vt.condjoin(cond, state() , val.state()) );
-			rv.absVal = vt.condjoin(cond, val.state(vt) , state(vt)) ;
+            if (checkSpecial()) {
+                abstractValue avt = val.state(vt);
+                abstractValue avf = state(vt);
+                rv.absVal = vt.condjoin(vt.gt(avt, avf), avt, avf);
+            } else {
+                rv.absVal = vt.condjoin(cond, val.state(vt), state(vt));
+            }
+
 		}
 		val.arrElems = null;
 		val.absVal = null;
 		return rv;
 	}
 	
+    protected boolean checkSpecial() {
+        return false;
+    }
+
 	/**
 	 * returns true if vs equals this. 
 	 * @param vs

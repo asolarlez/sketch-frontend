@@ -18,6 +18,7 @@ package sketch.compiler.passes.lowering;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENullVisitor;
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
@@ -54,6 +55,10 @@ public class GetExprType extends FENullVisitor
      * Before structs have been eliminated, nulls have type 'null'; afterwards,
      * they will usually get type 'int'. */
     private Type nullType;
+
+    public NameResolver getNres() {
+        return nres;
+    }
 
     public GetExprType(SymbolTable symTab,
  NameResolver nres) {
@@ -136,14 +141,14 @@ public class GetExprType extends FENullVisitor
         case ExprBinary.BINOP_LE:
         case ExprBinary.BINOP_GT:
         case ExprBinary.BINOP_GE:
-            return TypePrimitive.booltype;
+                return TypePrimitive.bittype;
         }
         return binopType (exp.getOp (), exp.getLeft (), exp.getRight ());
     }
 
     public Object visitExprChoiceBinary (ExprChoiceBinary ecb) {
     	if (ecb.hasComparison ())
-    		return TypePrimitive.booltype;
+            return TypePrimitive.bittype;
     	Type t = null;
     	for (int op : ecb.opsAsExprBinaryOps ()) {
     		Type nextType = binopType (op, ecb.getLeft (), ecb.getRight ());
@@ -222,15 +227,6 @@ public class GetExprType extends FENullVisitor
     	return t;
     }
 
-    public Object visitExprComplex(ExprComplex exp)
-    {
-        return TypePrimitive.cplxtype;
-    }
-
-    public Object visitExprConstBoolean(ExprConstBoolean exp)
-    {
-        return TypePrimitive.booltype;
-    }
 
     public Object visitExprStar(ExprStar exp){
     	if(exp.getType() != null  ){
@@ -245,9 +241,8 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprConstChar(ExprConstChar exp)
-    {
-        // return new TypePrimitive(TypePrimitive.TYPE_CHAR);
-        return null;
+ {
+        return TypePrimitive.chartype;
     }
 
     public Object visitExprConstFloat(ExprConstFloat exp)
@@ -273,15 +268,16 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprField(ExprField exp)
     {
+        final ExprField fexp = exp;
         Type base = (Type)exp.getLeft().accept(this);
+        TypeStruct ts = null;
         if (base instanceof TypeStruct)
-            return ((TypeStruct)base).getType(exp.getName());
+            ts = ((TypeStruct) base);
         else if (base instanceof TypeStructRef)
         {
             String name = ((TypeStructRef)base).getName();
-            TypeStruct str = nres.getStruct(name);
-            assert str != null : base;
-            return str.getType(exp.getName());
+            ts = nres.getStruct(name);
+            assert ts != null : base;
         }
         else
         {
@@ -289,6 +285,12 @@ public class GetExprType extends FENullVisitor
                     ": You are trying to do a field access on a " + base + " in expr " +
                     exp + " . " + exp);
         }
+        FEReplacer repVars = new FEReplacer() {
+            public Object visitExprVar(ExprVar ev) {
+                return new ExprField(fexp.getLeft(), ev.getName());
+            }
+        };
+        return (Type) ts.getType(exp.getName()).accept(repVars);
     }
 
     public Object visitExprFunCall(ExprFunCall exp)

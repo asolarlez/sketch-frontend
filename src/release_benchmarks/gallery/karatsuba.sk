@@ -34,8 +34,6 @@ int[2*N] karatsuba(int N, int[N] x, int[N] y)  implements mult  {
     b = karatsuba(No2, x2, y2);
     c = karatsuba(No2, poly1(No2, x1,x2,y1,y2), poly1(No2, x1,x2,y1,y2));
     
-    out = a;
-    out = plus(2*N, out, shiftVect(2*N, b, N));
     repeat(??){
         int[N] t = {| a | b | c |};
         out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , {|N | No2 | 0|} )  );    

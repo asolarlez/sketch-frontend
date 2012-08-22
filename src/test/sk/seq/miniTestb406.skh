@@ -1,0 +1,15 @@
+package BIS;
+
+
+struct A{
+    int c;
+    int d;
+}
+
+int call(fun f){
+    return f();
+}
+
+int call_foo31(int x){
+    return x+x;
+}

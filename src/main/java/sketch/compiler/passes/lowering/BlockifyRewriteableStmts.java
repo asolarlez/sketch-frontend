@@ -124,7 +124,8 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 		super.visitStmtVarDecl (stmt);
 		if (!enforceSeparatedInits)  return stmt;
 		for (Expression e : (List<Expression>) stmt.getInits ())
-			stmt.assertTrue (null == e, "Should have been eliminated");
+            stmt.assertTrue(null == e,
+                    "Should have run separate initializers before this");
 		return stmt;
 	}
 

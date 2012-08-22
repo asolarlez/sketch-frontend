@@ -2,11 +2,11 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.cmdline.SemanticsOptions.ArrayOobPolicy;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
-import sketch.compiler.passes.lowering.ProtectArrayAccesses.FailurePolicy;
+import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 
 public class LowerToSketch extends MetaStage {
@@ -23,6 +23,7 @@ public class LowerToSketch extends MetaStage {
     public Program visitProgramInner(Program prog) {
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
+        // prog.debugDump("After aaa");
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 
@@ -30,38 +31,49 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new MakeBodiesBlocks());
         // dump (prog, "MBB:");
-        prog =
-                (Program) prog.accept(new EliminateStructs(varGen,
-                        options.bndOpts.heapSize));
-        prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+
 
         prog = stencilTransform.visitProgram(prog);
 
-        // dump (prog, "After Stencilification.");
-
         prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
 
+        // prog.debugDump("Before ES");
+
+        prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+
+        prog =
+                (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
+                        options.bndOpts.arrSize)));
+
+        // prog.debugDump("After ES");
+
+
+        // dump (prog, "After Stencilification.");
+
+
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
+
+        // prog.debugDump("After ERS");
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new ExtractVectorsInCasts(varGen));
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new SeparateInitializers());
         // dump (prog, "SeparateInitializers:");
         // prog = (Program)prog.accept(new NoRefTypes());
+        // prog.debugDump("Before SVA");
+        prog =
+                (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
+                        FailurePolicy.ASSERTION, varGen));
+
 
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
 
+        // prog.debugDump("After SVA");
         prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         // By default, we don't protect array accesses in SKETCH
 
-        if (options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions)
-            prog =
-                    (Program) prog.accept(new ProtectArrayAccesses(
-                            FailurePolicy.ASSERTION, varGen));
 
-        prog =
-                (Program) prog.accept(new EliminateNestedArrAcc(
-                        options.semOpts.arrayOobPolicy == ArrayOobPolicy.assertions));
+        prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
         return prog;
     }
 }

@@ -1,0 +1,172 @@
+pragma options "--bnd-unroll-amnt 32";
+
+int[27] letterValues = {0,1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10};
+
+int[10] output;
+int outpos = 0;
+
+int counter = 0;
+
+char getND(int x);
+
+char generate_number(){
+	return getND(counter++);
+}
+
+struct FileHandle{
+	int maxReads;
+}
+
+FileHandle getFile(){
+	return new FileHandle(maxReads = generate_number());
+}
+
+bit moreValues(FileHandle fh){
+	assert fh.maxReads >= 0;
+	return fh.maxReads != 0;
+}
+
+int get_int(FileHandle fh){
+	assert fh.maxReads >= 0;
+	--fh.maxReads;
+	return generate_number();
+}
+
+int[7] get_word(FileHandle fh){
+	int[7] word;
+	assert fh.maxReads >= 0;
+	--fh.maxReads;
+	for (int i = 0; i < 7; ++i){
+		word[i] = generate_number();
+	}
+	return word;
+}
+
+int[10] print(int score){
+	output[outpos] = score;
+	++outpos;
+	return output;
+}
+
+bit is_in_dict(char[7] word, int dictLength, char[7][dictLength] wordDict){
+	for (int i = 0; i<dictLength; ++i){
+		if (word == wordDict[i]){
+			return 1;
+		}
+	}
+	return 0;
+}
+
+bit is_in_dict2(char[7] word, int dictLength, char[7][dictLength] wordDict){
+	int i = 0;
+	while (i < dictLength){
+		if (word == wordDict[i]){
+			return 1;
+		}
+		++i;
+	}
+	return 0;
+}
+
+bit is_valid_word(char[7] word){
+	for (int i = 0; i<7; ++i){
+		if (word[i] > 26){
+			return 0;
+		}
+		else if (word[i] < 0){
+			return 0;
+		}
+	}
+	return 1;
+}
+
+bit is_valid_word2(char[7] word){
+	int i = 0;
+	while (i<7){
+		if (word[i] > 26){
+			return 0;
+		}
+		else if (word[i] < 0){
+			return 0;
+		}
+		++i;
+	}
+	return 1;
+}
+
+bit is_valid_letter(char letter){
+	if (letter > 26){
+		return 0;
+	}
+	else if (letter < 0){
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
+
+int get_word_score(char[7] word){
+	int wordscore = 0;
+	if (is_valid_word(word) == 1){
+		for (int i = 0; i < 7; ++i){
+			wordscore = wordscore + letterValues[word[i]];
+		}
+	}
+	return wordscore;
+}
+
+
+int get_word_score2(char[7] word){
+	int wordscore = 0;
+	int i = 0;
+	if (is_valid_word(word) == 1){
+		while (i < 7){
+			wordscore = wordscore + letterValues[word[i]];
+			++i;
+		}
+	}
+	return wordscore;
+}		
+
+int masterTest(char[7] word) {
+	char[7] dictWord;
+	int wordScore = 0;
+	FileHandle fh = getFile();
+	while (moreValues(fh) == 1){
+		dictWord = get_word(fh);
+		if (dictWord == word){
+			wordScore = wordScore + get_word_score(word);
+			return wordScore;
+		}
+	}
+}
+		
+
+/*int studentTest(char[7] word) implements masterTest{
+	char[7] dictWord;
+	int wordScore = 0;
+	FileHandle fh = getFile();
+	while (moreValues(fh) == 1){
+		dictWord = get_word(fh);
+		if (dictWord == word){
+			wordScore = wordScore + get_word_score2(word);
+			return wordScore;
+		}
+	}
+}*/
+
+int studentTest2(char[7] word) implements masterTest{
+	char[7] dictWord;
+	int wordScore = 0;
+	FileHandle fh = getFile();
+	while (fh.maxReads > 0){
+		dictWord = get_word(fh);
+		if (dictWord == word){
+			wordScore = wordScore + get_word_score2(word);
+			return wordScore;
+		}
+	}
+}
+
+

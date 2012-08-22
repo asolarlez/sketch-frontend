@@ -16,8 +16,8 @@ TK_bit="bit"=16
 TK_int="int"=17
 TK_void="void"=18
 TK_double="double"=19
-TK_complex="complex"=20
-TK_fun="fun"=21
+TK_fun="fun"=20
+TK_char="char"=21
 TK_struct="struct"=22
 TK_ref="ref"=23
 TK_if="if"=24

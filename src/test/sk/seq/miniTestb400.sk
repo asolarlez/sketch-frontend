@@ -1,0 +1,88 @@
+pragma options "--bnd-inbits 2 --bnd-arr-size 4 --bnd-unroll-amnt 16";
+
+int NDCNT=0;
+
+int getND_low(int i);
+int getND(){
+    return getND_low(NDCNT++);
+}
+
+@Native("{printf(\"Input equals %d\\n\", x);}") @Dummy("testing tags")
+void printInt(int x);
+
+struct FileHandle{
+    int maxReads;
+    @NeedsInclude("#include <fstream>")
+    @NeedsInclude("#include <string>")
+    @NeedsInclude("using namespace std;")
+    @Native("ifstream in;")
+    @Native("int last;")
+    @Native("bool goon;")
+    @Native("FileHandle(const string& s):in(s.c_str()){ in>>last; goon = !in.eof() && !in.fail(); }")
+    @Native("int readInt(){ int x = last; in>>last; goon = !in.eof() && !in.fail(); return x;}")
+}
+
+@Native("{ FileHandle* f = new FileHandle(\"miniTestb398.in\"); _out = f; }")
+FileHandle getFile(){
+    return new FileHandle(maxReads=getND()*4+getND());
+}
+
+@Native("{ _out = fh->goon; }")
+bit moreValues(FileHandle fh){
+    assert fh.maxReads >= 0; 
+    return fh.maxReads!=0;
+}
+
+@Native("{ _out = fh->readInt(); }")
+int readInt(FileHandle fh){
+    assert fh.maxReads > 0;
+    --fh.maxReads; 
+    return getND();
+}
+
+struct Mat{
+    int r;
+    int c;
+    int[c][r] M;
+}
+
+
+Mat matFromFile(FileHandle fh){
+    if(!moreValues(fh)){ return null; }
+    int r = readInt(fh);
+    if(!moreValues(fh)){ return null; }
+    int c = readInt(fh);
+    int[{|r | c |}][{|c | r|}] M;
+    printInt(c);
+    printInt(r);
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            if(!moreValues(fh)){ return null; }
+            M[{|j | i|}][{|j | i|}]= readInt(fh);
+        }
+    }
+    return new Mat(r=r, c=c, M=M);
+}
+
+
+
+
+int min(int a, int b){
+    return (a<b)?a : b;
+}
+
+
+harness int[10][10] foo(){
+    FileHandle fh = getFile();
+    Mat m = matFromFile(fh);
+    if(m==null){
+        return 0;
+    }
+    int[m.c][m.r] M=m.M;  
+    int[10][10] out;
+    assert min(m.c, 10) <= m.c;
+    for(int i=0; i<min(m.r, 10); ++i){      
+        out[i] = M[i][0::min(m.c, 10)];
+    }
+    return out;
+}

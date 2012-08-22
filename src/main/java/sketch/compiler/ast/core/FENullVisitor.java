@@ -54,8 +54,6 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprChoiceBinary(ExprChoiceBinary exp) { return null; }
     public Object visitExprChoiceSelect(ExprChoiceSelect exp) { return null; }
     public Object visitExprChoiceUnary(ExprChoiceUnary exp) { return null; }
-    public Object visitExprComplex(ExprComplex exp) { return null; }
-    public Object visitExprConstBoolean(ExprConstBoolean exp) { return null; }
     public Object visitExprConstChar(ExprConstChar exp) { return null; }
     public Object visitExprConstFloat(ExprConstFloat exp) { return null; }
     public Object visitExprConstInt(ExprConstInt exp) { return null; }
@@ -69,6 +67,27 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprTypeCast(ExprTypeCast exp) { return null; }
     public Object visitExprUnary(ExprUnary exp) { return null; }
     public Object visitExprVar(ExprVar exp) { return null; }
+
+    public Object visitExprStar(ExprStar star) {
+        return null;
+    }
+
+    public Object visitExprArrayRange(ExprArrayRange exp) {
+        return null;
+    }
+
+    public Object visitExprNew(ExprNew expNew) {
+        return null;
+    }
+
+    public Object visitExprNullPtr(ExprNullPtr nptr) {
+        return null;
+    }
+
+    public Object visitExprRange(ExprRange exprRange) {
+        return null;
+    }
+
     public Object visitFieldDecl(FieldDecl field) { return null; }
     public Object visitFunction(Function func) { return null; }    
     public Object visitProgram(Program prog) { return null; }    
@@ -111,21 +130,18 @@ public class FENullVisitor implements FEVisitor
     }
 
     public Object visitOther(FENode node) { return null; }
-	public Object visitExprStar(ExprStar star) { return null; }
-	public Object visitExprArrayRange(ExprArrayRange exp) { return null; }
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }
     public Object visitTypeArray(TypeArray t) { return null; }
     public Object visitTypeStruct(TypeStruct t) { return null; }
     public Object visitTypeStructRef(TypeStructRef t) { return null; }
     public Object visitParameter(Parameter par){ return null; }
-    public Object visitExprNew(ExprNew expNew){ return null; }
     public Object visitStmtFork(StmtFork loop){ return null; }
     public Object visitStmtSpmdfork(StmtSpmdfork loop){ return null; }
     public Object visitSpmdPid(SpmdPid x){ return null; }
     public Object visitSpmdBarrier(SpmdBarrier stmt){ return null; }
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
-    public Object visitExprNullPtr(ExprNullPtr nptr){ return null; }
+
 	public Object visitStmtSwitch(StmtSwitch sw) { return null; }
 	public Object visitStmtMinimize(StmtMinimize stmtMinimize) { return null; }
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
@@ -135,7 +151,6 @@ public class FENullVisitor implements FEVisitor
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) { return null; }
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) { return null; }
     public Object visitCudaInstrumentCall(CudaInstrumentCall cudaInstrumentCall) { return null; }
-    public Object visitExprRange(ExprRange exprRange) { return null; }
     public Object visitStmtParfor(StmtParfor stmtParfor) { return null; }
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) { return null; }
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) { return null; }

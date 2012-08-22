@@ -1,0 +1,16 @@
+int foo(fun f, int v){
+    return f(v);
+}
+
+harness void main(int in, int y){
+    @Native("{ printf(\"Oh\n\"); _out=x>0?x:-x;}")
+    int abs(int x){
+        return x>0?x:-x;
+    }
+    int other(int x){
+        return x + y;
+    }
+    assert foo(abs, in-5) >= 0;
+    assert foo(other, in)==in+y;
+        
+}

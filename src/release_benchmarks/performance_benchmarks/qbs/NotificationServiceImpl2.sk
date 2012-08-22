@@ -1,0 +1,262 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 4 --beopt:simiters 10";
+#define MAX_LEN 8
+
+struct IssueHistory
+{
+ int id;
+}
+
+IssueHistory IssueHistory_new (int id)
+{
+  IssueHistory n = new IssueHistory();
+  n.id = id;
+  return n;
+}
+
+
+harness void foo(int histories_sz, int historyId, int i_1, bit loop_0_2, int flat_3,
+                 int flat_4_6, bit flat_5_7, int history_id, int currentHistory_id,
+                 int [MAX_LEN]  histories_id)
+
+ {
+ IssueHistory history = new IssueHistory();
+ history.id = history_id;
+ IssueHistory currentHistory = new IssueHistory();
+ currentHistory.id = currentHistory_id;
+ IssueHistory [MAX_LEN]  histories;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  histories[i] = new IssueHistory();
+  histories[i].id = histories_id[i]; }
+ 
+ if (true && (histories_sz >= 0 && histories_sz < MAX_LEN))
+  {
+  if (i_1 < histories_sz && invariant0(histories_sz, historyId, i_1, loop_0_2, history,
+                                       currentHistory, histories))
+   {
+   assert histories[i_1].id > historyId && invariant0(histories_sz, histories[i_1].
+                                                                      id, i_1 + 1,
+                                                      loop_0_2, histories[i_1], histories[i_1],
+                                                      histories) || !(histories[i_1].
+                                                                        id > historyId) &&
+     invariant0(histories_sz, historyId, i_1 + 1, loop_0_2, history, histories[i_1],
+                histories); }
+  
+  if (!(i_1 < histories_sz) && invariant0(histories_sz, historyId, i_1, loop_0_2,
+                                          history, currentHistory, histories))
+   {
+   assert postcondition(histories_sz, historyId, i_1, loop_0_2, flat_3, flat_4_6,
+                        flat_5_7, history, currentHistory, histories); }
+  
+  if (true)
+   {
+   assert invariant0(histories_sz, 0, 0, false, null, currentHistory, histories);
+  }
+   }
+  }
+
+
+bit invariant0(int histories_sz, int historyId, int i_1, bit loop_0_2, IssueHistory history,
+               IssueHistory currentHistory, IssueHistory [MAX_LEN]  histories) {
+ if (pred1(historyId, histories_sz, historyId, i_1, loop_0_2) && pred2(i_1, histories_sz,
+                                                                       historyId,
+                                                                       i_1, loop_0_2) &&
+       pred3(history, histories_sz, i_1, loop_0_2, history, currentHistory, histories) &&
+       pred4(currentHistory, histories_sz, i_1, loop_0_2, history, currentHistory,
+             histories))
+  {
+  IssueHistory [MAX_LEN]  list5;
+  int list5_sz;
+  top_list5(histories, histories_sz, histories_sz, historyId, i_1, loop_0_2, history,
+            currentHistory, histories, list5, list5_sz);
+  IssueHistory [MAX_LEN]  list6;
+  int list6_sz;
+  select_list6(list5, list5_sz, histories_sz, historyId, i_1, loop_0_2, history,
+               currentHistory, histories, list6, list6_sz);
+  return {| 
+  historyId == agg_agg7(list6, list6_sz) |}; }
+  else return 0; }
+
+
+bit postcondition(int histories_sz, int historyId, int i_1, bit loop_0_2, int flat_3,
+                  int flat_4_6, bit flat_5_7, IssueHistory history, IssueHistory currentHistory,
+                  IssueHistory [MAX_LEN]  histories) {
+ IssueHistory [MAX_LEN]  list8;
+ int list8_sz;
+ top_list8(histories, histories_sz, histories_sz, historyId, i_1, loop_0_2, flat_3,
+           flat_4_6, flat_5_7, history, currentHistory, histories, list8, list8_sz);
+ IssueHistory [MAX_LEN]  list9;
+ int list9_sz;
+ select_list9(list8, list8_sz, histories_sz, historyId, i_1, loop_0_2, flat_3, flat_4_6,
+              flat_5_7, history, currentHistory, histories, list9, list9_sz);
+ return {| 
+ historyId == agg_agg10(list9, list9_sz) |}; }
+
+
+generator bit pred1 (int historyId, int histories_sz, int historyId, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| histories_sz | i_1 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return historyId > rightOperand;
+  else if (operator == 2) return historyId <= rightOperand;
+  else if (operator == 3) return historyId < rightOperand;
+  else if (operator == 4) return historyId == rightOperand;
+  else return historyId >= rightOperand;
+}
+
+
+generator bit pred2 (int i_1, int histories_sz, int historyId, int i_1, bit loop_0_2)
+{
+  int rightOperand = {| histories_sz | historyId |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_1 > rightOperand;
+  else if (operator == 2) return i_1 <= rightOperand;
+  else if (operator == 3) return i_1 < rightOperand;
+  else if (operator == 4) return i_1 == rightOperand;
+  else return i_1 >= rightOperand;
+}
+
+
+generator bit pred3 (IssueHistory history, int histories_sz, int i_1, bit loop_0_2, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories)
+{
+  IssueHistory rightOperand = {| currentHistory | histories[i_1] |};
+  return {| true | history.id == rightOperand.id |};
+}
+
+
+generator bit pred4 (IssueHistory currentHistory, int histories_sz, int i_1, bit loop_0_2, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories)
+{
+  IssueHistory rightOperand = {| history | histories[i_1] |};
+  return {| true | currentHistory.id == rightOperand.id |};
+}
+
+
+void top_list5 (IssueHistory [MAX_LEN] histories, int histories_sz, int histories_sz, int historyId, int i_1, bit loop_0_2, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories, ref IssueHistory [MAX_LEN] list5, ref int list5_sz)
+{
+  list5_sz = {| histories_sz | historyId | i_1 |};
+  list5 = histories[0::list5_sz];
+}
+
+
+void select_list6 (IssueHistory [MAX_LEN] list5, int list5_sz, int histories_sz, int historyId, int i_1, bit loop_0_2, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories, ref IssueHistory [MAX_LEN] list6, ref int list6_sz)
+{
+  list6_sz = 0;
+  for (int i = 0; i < list5_sz; ++i)
+  {
+    if (select_list6_pred(list5[i], histories_sz, historyId, i_1, loop_0_2, history, currentHistory, histories))
+    {
+      list6[list6_sz] = list5[i];
+      ++list6_sz;
+    }
+  }
+}
+generator bit select_list6_pred (IssueHistory tuple, int histories_sz, int historyId, int i_1, bit loop_0_2, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == historyId;
+      else if (operator0 == 6) pred0 = tuple.id == i_1;
+      else if (operator0 == 7) pred0 = tuple.id == history.id;
+      else if (operator0 == 8) pred0 = tuple.id == currentHistory.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg7 (IssueHistory [MAX_LEN] list6, int list6_sz)
+{
+  int count = list6_sz;
+  int max_id = 0; int sum_id = 0; int min_id = 3; int avg_id = 0;
+  for (int i = 0; i < list6_sz; ++i)
+  {
+    if (list6[i].id > max_id)
+      max_id = list6[i].id;
+    if (list6[i].id < min_id)
+      min_id = list6[i].id;
+    sum_id += list6[i].id;
+  }
+  avg_id = count==0?0: (sum_id / count);  
+  return {| count | max_id | sum_id | min_id | avg_id |};
+}
+
+
+void top_list8 (IssueHistory [MAX_LEN] histories, int histories_sz, int histories_sz, int historyId, int i_1, bit loop_0_2, int flat_3, int flat_4_6, bit flat_5_7, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories, ref IssueHistory [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = {| histories_sz | historyId | i_1 | flat_3 | flat_4_6 |};
+  list8 = histories[0::list8_sz];
+}
+
+
+void select_list9 (IssueHistory [MAX_LEN] list8, int list8_sz, int histories_sz, int historyId, int i_1, bit loop_0_2, int flat_3, int flat_4_6, bit flat_5_7, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories, ref IssueHistory [MAX_LEN] list9, ref int list9_sz)
+{
+  list9_sz = 0;
+  for (int i = 0; i < list8_sz; ++i)
+  {
+    if (select_list9_pred(list8[i], histories_sz, historyId, i_1, loop_0_2, flat_3, flat_4_6, flat_5_7, history, currentHistory, histories))
+    {
+      list9[list9_sz] = list8[i];
+      ++list9_sz;
+    }
+  }
+}
+generator bit select_list9_pred (IssueHistory tuple, int histories_sz, int historyId, int i_1, bit loop_0_2, int flat_3, int flat_4_6, bit flat_5_7, IssueHistory history, IssueHistory currentHistory, IssueHistory [MAX_LEN] histories)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == historyId;
+      else if (operator0 == 6) pred0 = tuple.id == i_1;
+      else if (operator0 == 7) pred0 = tuple.id == flat_3;
+      else if (operator0 == 8) pred0 = tuple.id == flat_4_6;
+      else if (operator0 == 9) pred0 = tuple.id == history.id;
+      else if (operator0 == 10) pred0 = tuple.id == currentHistory.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+int agg_agg10 (IssueHistory [MAX_LEN] list9, int list9_sz)
+{
+  int count = list9_sz;
+  int max_id = 0; int sum_id = 0; int min_id = 3; int avg_id = 0;
+  for (int i = 0; i < list9_sz; ++i)
+  {
+    if (list9[i].id > max_id)
+      max_id = list9[i].id;
+    if (list9[i].id < min_id)
+      min_id = list9[i].id;
+    sum_id += list9[i].id;
+  }
+  
+  avg_id = count==0?0: (sum_id / count); 
+  return {| count | max_id | sum_id | min_id | avg_id |};
+}
+

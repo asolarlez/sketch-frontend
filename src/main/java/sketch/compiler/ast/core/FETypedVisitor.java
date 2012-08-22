@@ -68,13 +68,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, exp);
     }
 
-    public T visitExprComplex(ExprComplex exp) {
-        throw new FEVisitorException(this, exp);
-    }
 
-    public T visitExprConstBoolean(ExprConstBoolean exp) {
-        throw new FEVisitorException(this, exp);
-    }
 
     public T visitExprConstChar(ExprConstChar exp) {
         throw new FEVisitorException(this, exp);

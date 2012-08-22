@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 2 --bnd-unroll-amnt 18 --bnd-arr-size 16";
+pragma options "--bnd-inbits 5 --bnd-unroll-amnt 18 --bnd-arr-size 16";
 
 
 stencil float[N][N] test0(int N, float[N][N] a){
@@ -36,6 +36,7 @@ stencil float[N][N] testSK0(int N, float[N][N] a) implements test0 {
   float[N][N] out=0;
   for(int i=hole(0, N); i<hole(0, N); ++i){
   	for(int j=hole(i, N); j<hole(i, N); ++j){
+        assert i<N && j<N;
   		out[i][j] = a[i][j];
   	}
   }

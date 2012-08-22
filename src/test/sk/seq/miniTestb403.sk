@@ -1,0 +1,30 @@
+pragma options "--bnd-unroll-amnt 64";
+
+struct Foo{
+    int x;
+    int y;
+    int[x] n;
+    int[x+y] m;
+}
+
+struct Moo{
+    int x;
+    Foo f;
+    Foo[f.x+x] t;
+}
+
+generator int gen(int in1, int in2, int in3){
+    if(??){
+        return {| in1 | in2 | in3 |};
+    }else{
+        return gen(in1, in2, in3) + {| in1 | in2 | in3 |};
+    }
+}
+
+harness void main(int in1, int in2, int in3){
+    Foo a = new Foo(x=in1, y=in2);
+    Moo m = new Moo(x=in3, f=a);
+    Foo[gen(in1, in2, in3)] xx = m.t;
+    Foo[in1+in3] yy = m.t;
+    assert xx==yy;
+}

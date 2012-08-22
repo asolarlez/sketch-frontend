@@ -45,12 +45,23 @@ import sketch.util.exceptions.UnrecognizedVariableException;
  */
 public class SymbolTable
 {
+
+    public enum Finality {
+        FINAL, FIRSTWRITE, NOTFINAL, UNKNOWN;
+        public Finality join(Finality other) {
+            if (this == other) {
+                return this;
+            }
+            return NOTFINAL;
+        }
+    }
+
     /** Kind of a local variable. */
     public static final int KIND_LOCAL = 1;
     /** Kind of a filter field. */
     public static final int KIND_FIELD = 2;
     /** Kind of a stream parameter. */
-    public static final int KIND_STREAM_PARAM = 3;
+    public static final int KIND_GLOBAL = 3;
     /** Kind of a function parameter. */
     public static final int KIND_FUNC_PARAM = 4;
 
@@ -69,6 +80,8 @@ public class SymbolTable
             this.origin = origin;
             this.kind = kind;
         }
+
+        public Finality isFinal = Finality.UNKNOWN;
         public Type type;
         public Object origin;
         public int kind;
@@ -288,6 +301,34 @@ public class SymbolTable
         if (info != null)
             return info.kind;
         throw new UnrecognizedVariableException(name, errSource);
+    }
+
+    /**
+     * Gets the finality status (is it final or not) of a particular symbol. If that
+     * symbol is not in the current symbol table, search in the parent.
+     * 
+     * @param name
+     *            name of the variable to search for
+     * @param errSource
+     * @return Finality constant describing the variable
+     * @throws UnrecognizedVariableException
+     *             if the variable is defined in neither this nor any of its ancestor
+     *             symbol tables
+     */
+    public Finality lookupFinality(String name, FENode errSource) {
+        VarInfo info = lookupVarInfo(name);
+        if (info != null)
+            return info.isFinal;
+        throw new UnrecognizedVariableException(name, errSource);
+    }
+
+    public void setFinality(String name, Finality f, FENode errSource) {
+        VarInfo info = lookupVarInfo(name);
+        if (info != null) {
+            info.isFinal = f;
+        } else {
+            throw new UnrecognizedVariableException(name, errSource);
+        }
     }
 
     /**

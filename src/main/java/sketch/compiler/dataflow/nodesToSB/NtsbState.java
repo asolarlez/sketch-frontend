@@ -17,7 +17,12 @@ public class NtsbState extends varState {
     protected NtsbVtype vtype;
     protected lhsIndexes[] lhsIdxs;
     
-    
+
+    @Override
+    protected boolean checkSpecial() {
+        return name.length() > 0 && name.charAt(0) == '#';
+    }
+
     public void incrLhsIdx(int i){
         ((NtsbState)this.rootParent()).lhsIdxs[i].idx++;
     }

@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -40,6 +41,7 @@ public class NtsbVtype extends IntVtype {
     
     protected Map<FENode, NtsbValue> memoizedValues = new HashMap<FENode, NtsbValue>();
     
+
     public abstractValue STAR(FENode node) {
         // TODO: do we guarantee each node is visited just once?
         // if we do, why memoization?
@@ -132,7 +134,9 @@ public class NtsbVtype extends IntVtype {
         String msg = stmt.getMsg();
          if( val.hasIntVal() ){
              if(val.getIntVal() == 0){
-                 DebugOut.printWarning("This assertion will fail unconditionally when you call this function: " + msg);
+                DebugOut.printWarning(stmt.getCx() +
+                        "This assertion will fail unconditionally when you call this function: " +
+                        msg);
              }
              if(val.getIntVal() == 1){
                  return;
@@ -262,7 +266,7 @@ public class NtsbVtype extends IntVtype {
             }
             plist += " ";           
         }
-        
+        String oplist = plist;
         formalParams = fun.getParams().iterator();
         actualParams = avlist.iterator();
         boolean hasout = false;
@@ -273,7 +277,8 @@ public class NtsbVtype extends IntVtype {
                     hasout = true;
                     if(param.getType().isArray()){
                         TypeArray ta = (TypeArray)param.getType();
-                        Integer lntt = ta.getLength().getIValue();
+                        Expression el = ta.getLength();
+                        Integer lntt = el != null ? el.getIValue() : null;
                         if (lntt != null) {
                             int lnt = lntt;
                             List<abstractValue> ls = new ArrayList<abstractValue>(lnt);
@@ -289,10 +294,16 @@ public class NtsbVtype extends IntVtype {
                                 String vnm = "___tEmP" + (gbgid++);
                                 String par =
                                         vnm + "=" + name + "[" +
- printType(ta.getBase()) +
+                                                printType(ta.getBase()) +
                                                 "_arr" +
-                                "]( " + plist + "  )(" + pathCond + ")[ _p_" +
-                                                param.getName() + "," + funid + "];";
+                                                "]( " +
+                                                oplist +
+                                                "  )(" +
+                                                pathCond +
+                                                ")[ _p_" +
+                                                ProduceBooleanFunctions.filterPound(param.getName()) +
+                                                "," + funid + "];";
+                                oplist = "0";
                                 out.println(par);
                                 /*
                                  * List<abstractValue> lst = actual.getVectValue();
@@ -305,11 +316,15 @@ public class NtsbVtype extends IntVtype {
                             }else{
                                 outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
                                         "]( " + plist + "  )(" + pathCond + ")[ _p_" +
-                                        param.getName() + "," + funid + "]"));
+                                        ProduceBooleanFunctions.filterPound(param.getName()) +
+                                        "," + funid + "]"));
                             }
                         }
                     }else{
-                        outSlist.add(BOTTOM(name + "[" + printType(param.getType()) + "]( "+ plist +"  )(" + pathCond + ")[ _p_" + param.getName() + "," + funid +"]"));
+                        outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
+                                "]( " + plist + "  )(" + pathCond + ")[ _p_" +
+                                ProduceBooleanFunctions.filterPound(param.getName()) +
+                                "," + funid + "]"));
                     }
                 }
             }

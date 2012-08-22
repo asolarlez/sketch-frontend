@@ -29,8 +29,10 @@ import sketch.compiler.ast.core.FEVisitor;
 public class ExprConstChar extends ExprConstant
 {
     private char val;
+    public static final ExprConstChar zero = new ExprConstChar((FENode) null, '\0');
 
     /** Create a new ExprConstChar for a particular character. */
+
     public ExprConstChar(FENode context, char val)
     {
         super(context);
@@ -45,13 +47,14 @@ public class ExprConstChar extends ExprConstant
     {
         super(context);
         this.val = val;
+
     }
 
     /** Create a new ExprConstChar containing the first character of a
      * String. */
     public ExprConstChar(FENode context, String str)
     {
-        this(context, str.charAt(0));
+        this(context, str.charAt(1));
     }
 
     /** Create a new ExprConstChar containing the first character of a
@@ -60,11 +63,18 @@ public class ExprConstChar extends ExprConstant
      * */
     public ExprConstChar(FEContext context, String str)
     {
-        this(context, str.charAt(0));
+        this(context, str.charAt(1));
     }
 
     /** Returns the value of this. */
-    public char getVal() { return val; }
+    public char getVal() {
+        return val;
+    }
+
+    public String toString() {
+        String tmp = "\'" + val + "\'";
+        return tmp;
+    }
 
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)

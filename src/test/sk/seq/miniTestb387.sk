@@ -1,0 +1,42 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 64";
+
+int N = 7;
+int M = 8;
+
+
+harness void too(int m, int n, int[n][m] x, int[n][m] y, int[m][n] z){
+    if(x == y){
+        if(n>0 && m>0){
+            assert x[0][0] == y[0][0];
+        }
+    }
+    if(x == z){
+        assert m == n;
+    }
+}
+
+harness void moo(int n, int[n] x){
+    int t=0;
+    if(n>0){
+        t = x[0];
+    }    
+    if(x == t){
+        assert n==1;
+    }
+    if(t == x){
+        assert n==1;
+    }    
+}
+
+harness void foo(int m, int[m] x, int n, int[n] y, 
+        int[N] z){
+    int[M] zz = z;
+    
+    if(zz == z){
+        assert M == N;
+    }
+    
+    if(x == y){
+        assert m == n;
+    }
+}

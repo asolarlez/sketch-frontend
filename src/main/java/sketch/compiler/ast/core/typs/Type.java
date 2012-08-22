@@ -30,9 +30,13 @@ public abstract class Type
 {
     private final CudaMemoryType memtyp;
 
+
     public Type(CudaMemoryType memtyp) {
         this.memtyp = memtyp;
     }
+
+    
+
 
     /** @return true iff this type is a struct type. */
     public boolean isStruct () { return false; }

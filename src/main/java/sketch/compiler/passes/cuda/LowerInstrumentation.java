@@ -1,5 +1,6 @@
 package sketch.compiler.passes.cuda;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import sketch.compiler.Directive;
@@ -12,6 +13,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -190,7 +192,7 @@ public class LowerInstrumentation extends FEReplacer {
                 new TypeStructRef(CudaMemoryType.GLOBAL, directive.struct);
         this.instrumentationStructInst = instrumentCall.getImplVariable();
         addStatement(new StmtAssign(instrumentCall, instrumentationStructInst,
-                new ExprNew(instrumentCall, structref)));
+                new ExprNew(instrumentCall, structref, new ArrayList<ExprNamedParam>())));
         return null;// super.visitCudaInstrumentCall(instrumentCall);
     }
 }

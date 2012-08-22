@@ -97,12 +97,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         {
             switch (((TypePrimitive)type).getType())
             {
-            case TypePrimitive.TYPE_BOOLEAN: return "boolean";
             case TypePrimitive.TYPE_BIT: return "bit";
             case TypePrimitive.TYPE_INT: return "int";
             case TypePrimitive.TYPE_FLOAT: return "float";
             case TypePrimitive.TYPE_DOUBLE: return "double";
-            case TypePrimitive.TYPE_COMPLEX: return "Complex";
             case TypePrimitive.TYPE_VOID: return "void";
             }
         }
@@ -125,8 +123,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         abstractValue avlen = null;
         Expression nlen;
         try{
+            if (t.getLength() != null) {
             avlen = (abstractValue) t.getLength().accept(this);
             nlen = this.exprRV;
+            } else {
+                avlen = vtype.BOTTOM("FARRAY");
+                nlen = null;
+            }
         }finally{
             visitingALen = false;
         }
@@ -186,7 +189,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     for (int tt = 0; tt < sz; ++tt) {
                         String nnm = inval.getVectValue().get(tt).toString();
                         if (param.isParameterOutput()) {
-                            String opname = "_p_" + param.getName() + "_idx_" + tt + " ";
+                            String opname =
+                                    "_p_" + filterPound(param.getName()) + "_idx_" + tt +
+                                            " ";
                             opnames.add(opname);
                             out.print(opname);
                         } else {
@@ -196,7 +201,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 } else {
                     if(param.isParameterOutput()){
                         opsizes.add(1);
-                        String opname = "_p_" + param.getName() + " ";
+                        String opname = "_p_" + filterPound(param.getName()) + " ";
                         opnames.add(opname);
                         out.print(opname);
                         // Armando: This statement below is experimental.
@@ -213,7 +218,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }else{
                 if(param.isParameterOutput()){
                     opsizes.add(1);
-                    String opname = "_p_" + param.getName() + " ";
+                    String opname = "_p_" + filterPound(param.getName()) + " ";
                     opnames.add(opname);
                     out.print(opname);
                 }else{
@@ -249,13 +254,25 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         out.print(")");     
     }
     
+    static String filterPound(String s) {
+        if (s.length() > 0 && s.charAt(0) == '#') {
+            return s.substring(1);
+        } else {
+            return s;
+        }
+    }
 
     private String printType(Type type){
         if (type instanceof TypeArray)
         {
             TypeArray array = (TypeArray)type;
             String base = printType(array.getBase());
-            abstractValue iv = (abstractValue) array.getLength().accept(this);
+            abstractValue iv;
+            if (array.getLength() != null) {
+                iv = (abstractValue) array.getLength().accept(this);
+            } else {
+                iv = vtype.BOTTOM("FARRAY");
+            }
             if (iv.isBottom()) {
                 return base + "[*" + maxArrSize + "]";
             } else {
@@ -302,8 +319,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     public Object visitFunction(Function func)
     {
         if(tracing)
-            System.out.println("Analyzing " + func.getName());
-        System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
+            System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
         
         ((NtsbVtype)this.vtype).out.print("def " + func.getName());
         if( func.getSpecification() != null ){
@@ -335,7 +351,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         opsizes = tmpopsz;
         opnames = tmpopnm;
         
-        System.out.println("Analyzed " + func.getName() + " " + new java.util.Date());
+        if (tracing)
+            System.out.println("Analyzed " + func.getName() + " " + new java.util.Date());
         
         return func;
     }
@@ -455,6 +472,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssert(sa);
     }
     
+    public Object visitTypeStruct(TypeStruct ts) {
+        return ts;
+    }
+
     public Object visitStmtAssign(StmtAssign s){
         if(tracing){
             //if(s.getCx() != tmp && s.getCx() != null){

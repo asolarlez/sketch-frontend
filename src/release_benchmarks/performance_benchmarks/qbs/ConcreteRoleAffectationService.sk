@@ -1,0 +1,2005 @@
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";
+#define MAX_LEN 4
+
+struct ConcreteRoleDescriptor_ConcreteActivity
+{
+ int type1_id;
+ int type2_id;
+}
+struct ConcreteActivity
+{
+ int id;
+}
+
+ConcreteActivity ConcreteActivity_new (int id)
+{
+  ConcreteActivity n = new ConcreteActivity();
+  n.id = id;
+  return n;
+}
+
+
+struct ConcreteRoleDescriptor
+{
+ int id;
+}
+
+ConcreteRoleDescriptor ConcreteRoleDescriptor_new (int id)
+{
+  ConcreteRoleDescriptor n = new ConcreteRoleDescriptor();
+  n.id = id;
+  return n;
+}
+
+
+harness void getAllConcreteRolesDescriptorsForActivity(int _activityId, int concreteRDList_sz,
+                                                       int globalCRD_sz, int j_5,
+                                                       bit loop_1_6, int flat_9,
+                                                       int globalCA_8_17_sz, int i_2_18,
+                                                       bit loop_0_3_19, int flat_10_20,
+                                                       int flat_11_14, bit flat_12_15,
+                                                       int concreteRD_7_16_id, int e_4_13_id,
+                                                       int [MAX_LEN]  concreteRDList_id,
+                                                       int [MAX_LEN]  globalCRD_id,
+                                                       int [MAX_LEN]  globalCA_8_17_id)
+
+ {
+ ConcreteRoleDescriptor concreteRD_7_16 = new ConcreteRoleDescriptor();
+ concreteRD_7_16.id = concreteRD_7_16_id;
+ ConcreteActivity e_4_13 = new ConcreteActivity();
+ e_4_13.id = e_4_13_id;
+ ConcreteRoleDescriptor [MAX_LEN]  concreteRDList;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  concreteRDList[i] = new ConcreteRoleDescriptor();
+  concreteRDList[i].id = concreteRDList_id[i]; }
+ 
+ ConcreteRoleDescriptor [MAX_LEN]  globalCRD;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  globalCRD[i] = new ConcreteRoleDescriptor();
+  globalCRD[i].id = globalCRD_id[i]; }
+ 
+ ConcreteActivity [MAX_LEN]  globalCA_8_17;
+ for (int i = 0; i < MAX_LEN; ++i) {
+  globalCA_8_17[i] = new ConcreteActivity();
+  globalCA_8_17[i].id = globalCA_8_17_id[i]; }
+ 
+ if (true && (concreteRDList_sz >= 0 && concreteRDList_sz < MAX_LEN) && (globalCRD_sz >=
+                                                                           0 && globalCRD_sz <
+                                                                           MAX_LEN) &&
+       (globalCA_8_17_sz >= 0 && globalCA_8_17_sz < MAX_LEN))
+  {
+  if (j_5 < globalCRD_sz && invariant1(_activityId, concreteRDList_sz, globalCRD_sz,
+                                       j_5, loop_1_6, concreteRDList, globalCRD))
+   {
+   assert invariant0(_activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6,
+                     flat_9, 0, 0, false, globalCRD[j_5], concreteRDList, globalCRD,
+                     globalCA_8_17); }
+  
+  if (!(j_5 < globalCRD_sz) && invariant1(_activityId, concreteRDList_sz, globalCRD_sz,
+                                          j_5, loop_1_6, concreteRDList, globalCRD))
+   {
+   assert postcondition(_activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6,
+                        flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+                        flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList,
+                        globalCRD, globalCA_8_17); }
+  
+  if (i_2_18 < globalCA_8_17_sz && invariant0(_activityId, concreteRDList_sz, globalCRD_sz,
+                                              j_5, loop_1_6, flat_9, globalCA_8_17_sz,
+                                              i_2_18, loop_0_3_19, concreteRD_7_16,
+                                              concreteRDList, globalCRD, globalCA_8_17))
+   {
+   assert globalCA_8_17[i_2_18].id == _activityId && invariant0(_activityId, concreteRDList_sz,
+                                                                globalCRD_sz, j_5,
+                                                                loop_1_6, flat_9,
+                                                                globalCA_8_17_sz,
+                                                                i_2_18 + 1, loop_0_3_19,
+                                                                concreteRD_7_16,
+                                                                append_3(concreteRDList,
+                                                                         concreteRDList_sz,
+                                                                         concreteRD_7_16,
+                                                                         concreteRDList_sz),
+                                                                globalCRD, globalCA_8_17) ||
+     !(globalCA_8_17[i_2_18].id == _activityId) && invariant0(_activityId, concreteRDList_sz,
+                                                              globalCRD_sz, j_5,
+                                                              loop_1_6, flat_9, globalCA_8_17_sz,
+                                                              i_2_18 + 1, loop_0_3_19,
+                                                              concreteRD_7_16, concreteRDList,
+                                                              globalCRD, globalCA_8_17);
+  }
+  
+  if (!(i_2_18 < globalCA_8_17_sz) && invariant0(_activityId, concreteRDList_sz,
+                                                 globalCRD_sz, j_5, loop_1_6, flat_9,
+                                                 globalCA_8_17_sz, i_2_18, loop_0_3_19,
+                                                 concreteRD_7_16, concreteRDList,
+                                                 globalCRD, globalCA_8_17))
+   {
+   assert invariant1(_activityId, concreteRDList_sz, globalCRD_sz, j_5 + 1, loop_1_6,
+                     concreteRDList, globalCRD); }
+  
+  if (true)
+   {
+   assert invariant1(_activityId, 0, globalCRD_sz, 0, false, concreteRDList, globalCRD);
+  }
+   }
+  }
+
+
+bit invariant0(int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5,
+               bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19,
+               ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN]  concreteRDList,
+               ConcreteRoleDescriptor [MAX_LEN]  globalCRD, ConcreteActivity [MAX_LEN]  globalCA_8_17) {
+ if (pred1(_activityId, _activityId, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz,
+           i_2_18, loop_0_3_19) && pred2(j_5, _activityId, globalCRD_sz, j_5, loop_1_6,
+                                         flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19) &&
+       pred3(loop_1_6, _activityId, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz,
+             i_2_18, loop_0_3_19) && pred4(flat_9, _activityId, globalCRD_sz, j_5,
+                                           loop_1_6, flat_9, globalCA_8_17_sz, i_2_18,
+                                           loop_0_3_19) && pred5(i_2_18, _activityId,
+                                                                 globalCRD_sz, j_5,
+                                                                 loop_1_6, flat_9,
+                                                                 globalCA_8_17_sz,
+                                                                 i_2_18, loop_0_3_19) &&
+       pred6(loop_0_3_19, _activityId, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz,
+             i_2_18, loop_0_3_19) && pred7(concreteRD_7_16, _activityId, globalCRD_sz,
+                                           j_5, loop_1_6, flat_9, globalCA_8_17_sz,
+                                           i_2_18, loop_0_3_19, concreteRD_7_16,
+                                           globalCRD, globalCA_8_17))
+  {
+  ConcreteRoleDescriptor [MAX_LEN]  list8;
+  int list8_sz;
+  top_list8(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+            concreteRDList, globalCRD, globalCA_8_17, list8, list8_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list9;
+  int list9_sz;
+  select_list9(list8, list8_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+               concreteRDList, globalCRD, globalCA_8_17, list9, list9_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list10;
+  int list10_sz;
+  project_list10(list9, list9_sz, list10, list10_sz);
+  ConcreteActivity [MAX_LEN]  list11;
+  int list11_sz;
+  top_list11(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+             concreteRDList, globalCRD, globalCA_8_17, list11, list11_sz);
+  ConcreteActivity [MAX_LEN]  list12;
+  int list12_sz;
+  select_list12(list11, list11_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+                concreteRDList, globalCRD, globalCA_8_17, list12, list12_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list13;
+  int list13_sz;
+  project_list13(list12, list12_sz, list13, list13_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list14;
+  int list14_sz;
+  top_list14(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+             concreteRDList, globalCRD, globalCA_8_17, list14, list14_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list15;
+  int list15_sz;
+  select_list15(list14, list14_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+                concreteRDList, globalCRD, globalCA_8_17, list15, list15_sz);
+  ConcreteActivity [MAX_LEN]  list16;
+  int list16_sz;
+  top_list16(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+             concreteRDList, globalCRD, globalCA_8_17, list16, list16_sz);
+  ConcreteActivity [MAX_LEN]  list17;
+  int list17_sz;
+  select_list17(list16, list16_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+                concreteRDList, globalCRD, globalCA_8_17, list17, list17_sz);
+  ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list18;
+  int list18_sz;
+  join_list18(list15, list15_sz, list17, list17_sz, list18, list18_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list19;
+  int list19_sz;
+  project_list19(list18, list18_sz, list19, list19_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list20;
+  int list20_sz;
+  top_list20(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+             concreteRDList, globalCRD, globalCA_8_17, list20, list20_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list21;
+  int list21_sz;
+  select_list21(list20, list20_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+                concreteRDList, globalCRD, globalCA_8_17, list21, list21_sz);
+  ConcreteActivity [MAX_LEN]  list22;
+  int list22_sz;
+  top_list22(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+             concreteRDList, globalCRD, globalCA_8_17, list22, list22_sz);
+  ConcreteActivity [MAX_LEN]  list23;
+  int list23_sz;
+  select_list23(list22, list22_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+                concreteRDList, globalCRD, globalCA_8_17, list23, list23_sz);
+  ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list24;
+  int list24_sz;
+  join_list24(list21, list21_sz, list23, list23_sz, list24, list24_sz);
+  ConcreteActivity [MAX_LEN]  list25;
+  int list25_sz;
+  top_list25(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+             concreteRDList, globalCRD, globalCA_8_17, list25, list25_sz);
+  ConcreteActivity [MAX_LEN]  list26;
+  int list26_sz;
+  select_list26(list25, list25_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16,
+                concreteRDList, globalCRD, globalCA_8_17, list26, list26_sz);
+  ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list27;
+  int list27_sz;
+  tupleJoin_list27(list26, list26_sz, concreteRD_7_16, list27, list27_sz);
+  ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list28;
+  int list28_sz;
+  concat_list28(list24, list24_sz, list27, list27_sz, list28, list28_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list29;
+  int list29_sz;
+  project_list29(list28, list28_sz, list29, list29_sz);
+  return {| 
+  equals_list30(concreteRDList, concreteRDList_sz, list10, list10_sz) |
+ 
+  equals_list31(concreteRDList, concreteRDList_sz, list13, list13_sz) |
+ 
+  equals_list32(concreteRDList, concreteRDList_sz, list19, list19_sz) |
+ 
+  equals_list33(concreteRDList, concreteRDList_sz, list29, list29_sz) |}; }
+  else return 0; }
+
+
+ConcreteRoleDescriptor [MAX_LEN] append_0 (ConcreteRoleDescriptor [MAX_LEN] list, int list_sz, ConcreteRoleDescriptor e, ref int outputList_sz)
+{
+  ConcreteRoleDescriptor [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteRoleDescriptor [MAX_LEN] append_1 (ConcreteRoleDescriptor [MAX_LEN] list, int list_sz, ConcreteRoleDescriptor e, ref int outputList_sz)
+{
+  ConcreteRoleDescriptor [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteRoleDescriptor [MAX_LEN] append_2 (ConcreteRoleDescriptor [MAX_LEN] list, int list_sz, ConcreteRoleDescriptor e, ref int outputList_sz)
+{
+  ConcreteRoleDescriptor [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+ConcreteRoleDescriptor [MAX_LEN] append_3 (ConcreteRoleDescriptor [MAX_LEN] list, int list_sz, ConcreteRoleDescriptor e, ref int outputList_sz)
+{
+  ConcreteRoleDescriptor [MAX_LEN] out;
+  out[0::list_sz] = list[0::list_sz];
+  out[list_sz] = e;
+  outputList_sz = list_sz + 1;
+  return out;
+}
+
+
+bit invariant1(int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5,
+               bit loop_1_6, ConcreteRoleDescriptor [MAX_LEN]  concreteRDList, ConcreteRoleDescriptor [MAX_LEN]  globalCRD) {
+ if (pred34(_activityId, _activityId, globalCRD_sz, j_5, loop_1_6) && pred35(j_5,
+                                                                             _activityId,
+                                                                             globalCRD_sz,
+                                                                             j_5,
+                                                                             loop_1_6))
+  {
+  ConcreteRoleDescriptor [MAX_LEN]  list36;
+  int list36_sz;
+  top_list36(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+             j_5, loop_1_6, concreteRDList, globalCRD, list36, list36_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list37;
+  int list37_sz;
+  select_list37(list36, list36_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+                j_5, loop_1_6, concreteRDList, globalCRD, list37, list37_sz);
+  ConcreteRoleDescriptor [MAX_LEN]  list38;
+  int list38_sz;
+  project_list38(list37, list37_sz, list38, list38_sz);
+  return {| 
+  equals_list39(concreteRDList, concreteRDList_sz, list38, list38_sz) |}; }
+  else return 0; }
+
+
+bit postcondition(int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5,
+                  bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19,
+                  int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16,
+                  ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN]  concreteRDList,
+                  ConcreteRoleDescriptor [MAX_LEN]  globalCRD, ConcreteActivity [MAX_LEN]  globalCA_8_17) {
+ ConcreteRoleDescriptor [MAX_LEN]  list40;
+ int list40_sz;
+ top_list40(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list40, list40_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list41;
+ int list41_sz;
+ select_list41(list40, list40_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list41, list41_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list42;
+ int list42_sz;
+ project_list42(list41, list41_sz, list42, list42_sz);
+ ConcreteActivity [MAX_LEN]  list43;
+ int list43_sz;
+ top_list43(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list43, list43_sz);
+ ConcreteActivity [MAX_LEN]  list44;
+ int list44_sz;
+ select_list44(list43, list43_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list44, list44_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list45;
+ int list45_sz;
+ project_list45(list44, list44_sz, list45, list45_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list46;
+ int list46_sz;
+ top_list46(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list46, list46_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list47;
+ int list47_sz;
+ select_list47(list46, list46_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list47, list47_sz);
+ ConcreteActivity [MAX_LEN]  list48;
+ int list48_sz;
+ top_list48(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list48, list48_sz);
+ ConcreteActivity [MAX_LEN]  list49;
+ int list49_sz;
+ select_list49(list48, list48_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list49, list49_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list50;
+ int list50_sz;
+ join_list50(list47, list47_sz, list49, list49_sz, list50, list50_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list51;
+ int list51_sz;
+ project_list51(list50, list50_sz, list51, list51_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list52;
+ int list52_sz;
+ top_list52(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list52, list52_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list53;
+ int list53_sz;
+ select_list53(list52, list52_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list53, list53_sz);
+ ConcreteActivity [MAX_LEN]  list54;
+ int list54_sz;
+ top_list54(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list54, list54_sz);
+ ConcreteActivity [MAX_LEN]  list55;
+ int list55_sz;
+ select_list55(list54, list54_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list55, list55_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list56;
+ int list56_sz;
+ join_list56(list53, list53_sz, list55, list55_sz, list56, list56_sz);
+ ConcreteActivity [MAX_LEN]  list57;
+ int list57_sz;
+ top_list57(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list57, list57_sz);
+ ConcreteActivity [MAX_LEN]  list58;
+ int list58_sz;
+ select_list58(list57, list57_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list58, list58_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list59;
+ int list59_sz;
+ tupleJoin_list59(list58, list58_sz, concreteRD_7_16, list59, list59_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list60;
+ int list60_sz;
+ concat_list60(list56, list56_sz, list59, list59_sz, list60, list60_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list61;
+ int list61_sz;
+ project_list61(list60, list60_sz, list61, list61_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list62;
+ int list62_sz;
+ top_list62(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list62, list62_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list63;
+ int list63_sz;
+ select_list63(list62, list62_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list63, list63_sz);
+ ConcreteActivity [MAX_LEN]  list64;
+ int list64_sz;
+ top_list64(globalCA_8_17, globalCA_8_17_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list64, list64_sz);
+ ConcreteActivity [MAX_LEN]  list65;
+ int list65_sz;
+ select_list65(list64, list64_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list65, list65_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list66;
+ int list66_sz;
+ join_list66(list63, list63_sz, list65, list65_sz, list66, list66_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list67;
+ int list67_sz;
+ top_list67(globalCRD, globalCRD_sz, _activityId, concreteRDList_sz, globalCRD_sz,
+            j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+            flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+            globalCA_8_17, list67, list67_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list68;
+ int list68_sz;
+ select_list68(list67, list67_sz, _activityId, concreteRDList_sz, globalCRD_sz, j_5,
+               loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20,
+               flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD,
+               globalCA_8_17, list68, list68_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list69;
+ int list69_sz;
+ tupleJoin_list69(list68, list68_sz, e_4_13, list69, list69_sz);
+ ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN]  list70;
+ int list70_sz;
+ concat_list70(list66, list66_sz, list69, list69_sz, list70, list70_sz);
+ ConcreteRoleDescriptor [MAX_LEN]  list71;
+ int list71_sz;
+ project_list71(list70, list70_sz, list71, list71_sz);
+ return {| 
+ equals_list72(concreteRDList, concreteRDList_sz, list42, list42_sz) |
+ 
+ equals_list73(concreteRDList, concreteRDList_sz, list45, list45_sz) |
+ 
+ equals_list74(concreteRDList, concreteRDList_sz, list51, list51_sz) |
+ 
+ equals_list75(concreteRDList, concreteRDList_sz, list61, list61_sz) |
+ 
+ equals_list76(concreteRDList, concreteRDList_sz, list71, list71_sz) |}; }
+
+
+generator bit pred1 (int _activityId, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19)
+{
+  int rightOperand = {| globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return _activityId > rightOperand;
+  else if (operator == 2) return _activityId <= rightOperand;
+  else if (operator == 3) return _activityId < rightOperand;
+  else if (operator == 4) return _activityId == rightOperand;
+  else return _activityId >= rightOperand;
+}
+
+
+generator bit pred2 (int j_5, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19)
+{
+  int rightOperand = {| _activityId | globalCRD_sz | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return j_5 > rightOperand;
+  else if (operator == 2) return j_5 <= rightOperand;
+  else if (operator == 3) return j_5 < rightOperand;
+  else if (operator == 4) return j_5 == rightOperand;
+  else return j_5 >= rightOperand;
+}
+
+
+generator bit pred3 (bit loop_1_6, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19)
+{
+  bit rightOperand = {| loop_0_3_19 |};
+  return {| true | loop_1_6 == rightOperand |};
+}
+
+
+generator bit pred4 (int flat_9, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19)
+{
+  int rightOperand = {| _activityId | globalCRD_sz | j_5 | globalCA_8_17_sz | i_2_18 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return flat_9 > rightOperand;
+  else if (operator == 2) return flat_9 <= rightOperand;
+  else if (operator == 3) return flat_9 < rightOperand;
+  else if (operator == 4) return flat_9 == rightOperand;
+  else return flat_9 >= rightOperand;
+}
+
+
+generator bit pred5 (int i_2_18, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19)
+{
+  int rightOperand = {| _activityId | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return i_2_18 > rightOperand;
+  else if (operator == 2) return i_2_18 <= rightOperand;
+  else if (operator == 3) return i_2_18 < rightOperand;
+  else if (operator == 4) return i_2_18 == rightOperand;
+  else return i_2_18 >= rightOperand;
+}
+
+
+generator bit pred6 (bit loop_0_3_19, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19)
+{
+  bit rightOperand = {| loop_1_6 |};
+  return {| true | loop_0_3_19 == rightOperand |};
+}
+
+
+generator bit pred7 (ConcreteRoleDescriptor concreteRD_7_16, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  ConcreteRoleDescriptor rightOperand = {| globalCRD[_activityId] | globalCRD[j_5] | globalCRD[flat_9] | globalCRD[i_2_18] |};
+  return {| true | concreteRD_7_16.id == rightOperand.id |};
+}
+
+
+void top_list8 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list8, ref int list8_sz)
+{
+  list8_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list8 = globalCRD[0::list8_sz];
+}
+
+
+void select_list9 (ConcreteRoleDescriptor [MAX_LEN] list8, int list8_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list9, ref int list9_sz)
+{
+  list9_sz = 0;
+  for (int i = 0; i < list8_sz; ++i)
+  {
+    if (select_list9_pred(list8[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list9[list9_sz] = list8[i];
+      ++list9_sz;
+    }
+  }
+}
+generator bit select_list9_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list10 (ConcreteRoleDescriptor [MAX_LEN] list9, int list9_sz, ref ConcreteRoleDescriptor [MAX_LEN] list10, ref int list10_sz)
+{
+  list10_sz = list9_sz;
+  list10 = list9;
+}
+
+
+void top_list11 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list11, ref int list11_sz)
+{
+  list11_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list11 = globalCA_8_17[0::list11_sz];
+}
+
+
+void select_list12 (ConcreteActivity [MAX_LEN] list11, int list11_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list12, ref int list12_sz)
+{
+  list12_sz = 0;
+  for (int i = 0; i < list11_sz; ++i)
+  {
+    if (select_list12_pred(list11[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list12[list12_sz] = list11[i];
+      ++list12_sz;
+    }
+  }
+}
+generator bit select_list12_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list13 (ConcreteActivity [MAX_LEN] list12, int list12_sz, ref ConcreteRoleDescriptor [MAX_LEN] list13, ref int list13_sz)
+{
+  list13_sz = list12_sz;
+  for (int i = 0; i < list13_sz; ++i)
+  {
+    list13[i] = new ConcreteRoleDescriptor();
+    list13[i].id = {|list12[i].id |};
+  }
+}
+
+
+void top_list14 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list14, ref int list14_sz)
+{
+  list14_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list14 = globalCRD[0::list14_sz];
+}
+
+
+void select_list15 (ConcreteRoleDescriptor [MAX_LEN] list14, int list14_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list15, ref int list15_sz)
+{
+  list15_sz = 0;
+  for (int i = 0; i < list14_sz; ++i)
+  {
+    if (select_list15_pred(list14[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list15[list15_sz] = list14[i];
+      ++list15_sz;
+    }
+  }
+}
+generator bit select_list15_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void top_list16 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list16, ref int list16_sz)
+{
+  list16_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list16 = globalCA_8_17[0::list16_sz];
+}
+
+
+void select_list17 (ConcreteActivity [MAX_LEN] list16, int list16_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list17, ref int list17_sz)
+{
+  list17_sz = 0;
+  for (int i = 0; i < list16_sz; ++i)
+  {
+    if (select_list17_pred(list16[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list17[list17_sz] = list16[i];
+      ++list17_sz;
+    }
+  }
+}
+generator bit select_list17_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void join_list18 (ConcreteRoleDescriptor [MAX_LEN] list15, int list15_sz, ConcreteActivity [MAX_LEN] list17, int list17_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list18, ref int list18_sz)
+{
+  list18_sz = 0;
+  for (int i = 0; i < list15_sz; ++i)
+  {
+    for (int j = 0; j < list17_sz; ++j)
+    {
+      if (join_list18_pred(list15[i], list17[j]))
+      {
+        list18[list18_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+        list18[list18_sz].type1_id = list15[i].id;
+        list18[list18_sz].type2_id = list17[j].id;
+        ++list18_sz;
+      }
+    }
+  }
+}
+
+generator bit join_list18_pred (ConcreteRoleDescriptor t1, ConcreteActivity t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void project_list19 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list18, int list18_sz, ref ConcreteRoleDescriptor [MAX_LEN] list19, ref int list19_sz)
+{
+  list19_sz = list18_sz;
+  for (int i = 0; i < list19_sz; ++i)
+  {
+    list19[i] = new ConcreteRoleDescriptor();
+    list19[i].id = {|list18[i].type1_id | list18[i].type2_id |};
+  }
+}
+
+
+void top_list20 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list20, ref int list20_sz)
+{
+  list20_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list20 = globalCRD[0::list20_sz];
+}
+
+
+void select_list21 (ConcreteRoleDescriptor [MAX_LEN] list20, int list20_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list21, ref int list21_sz)
+{
+  list21_sz = 0;
+  for (int i = 0; i < list20_sz; ++i)
+  {
+    if (select_list21_pred(list20[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list21[list21_sz] = list20[i];
+      ++list21_sz;
+    }
+  }
+}
+generator bit select_list21_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void top_list22 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list22, ref int list22_sz)
+{
+  list22_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list22 = globalCA_8_17[0::list22_sz];
+}
+
+
+void select_list23 (ConcreteActivity [MAX_LEN] list22, int list22_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list23, ref int list23_sz)
+{
+  list23_sz = 0;
+  for (int i = 0; i < list22_sz; ++i)
+  {
+    if (select_list23_pred(list22[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list23[list23_sz] = list22[i];
+      ++list23_sz;
+    }
+  }
+}
+generator bit select_list23_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void join_list24 (ConcreteRoleDescriptor [MAX_LEN] list21, int list21_sz, ConcreteActivity [MAX_LEN] list23, int list23_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list24, ref int list24_sz)
+{
+  list24_sz = 0;
+  for (int i = 0; i < list21_sz; ++i)
+  {
+    for (int j = 0; j < list23_sz; ++j)
+    {
+      if (join_list24_pred(list21[i], list23[j]))
+      {
+        list24[list24_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+        list24[list24_sz].type1_id = list21[i].id;
+        list24[list24_sz].type2_id = list23[j].id;
+        ++list24_sz;
+      }
+    }
+  }
+}
+
+generator bit join_list24_pred (ConcreteRoleDescriptor t1, ConcreteActivity t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void top_list25 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list25, ref int list25_sz)
+{
+  list25_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 |};
+  list25 = globalCA_8_17[0::list25_sz];
+}
+
+
+void select_list26 (ConcreteActivity [MAX_LEN] list25, int list25_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list26, ref int list26_sz)
+{
+  list26_sz = 0;
+  for (int i = 0; i < list25_sz; ++i)
+  {
+    if (select_list26_pred(list25[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, concreteRD_7_16, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list26[list26_sz] = list25[i];
+      ++list26_sz;
+    }
+  }
+}
+generator bit select_list26_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, ConcreteRoleDescriptor concreteRD_7_16, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == concreteRD_7_16.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void tupleJoin_list27 (ConcreteActivity [MAX_LEN] list26, int list26_sz, ConcreteRoleDescriptor concreteRD_7_16, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list27, ref int list27_sz)
+{
+  list27_sz = 0;
+  for (int i = 0; i < list26_sz; ++i)
+  {
+    if (tupleJoin_list27_pred(list26[i], concreteRD_7_16))
+    {
+      list27[list27_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+      list27[list27_sz].type2_id = list26[i].id;
+      list27[list27_sz].type1_id = concreteRD_7_16.id;
+      ++list27_sz;
+    }
+  }
+}
+
+generator bit tupleJoin_list27_pred (ConcreteActivity t1, ConcreteRoleDescriptor t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void concat_list28 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list24, int list24_sz, ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list27, int list27_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list28, ref int list28_sz)
+{
+  list28[0::list24_sz] = list24[0::list24_sz];
+  list28[list24_sz::list27_sz] = list27[0::list27_sz];
+  list28_sz = list24_sz + list27_sz;
+}
+
+
+void project_list29 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list28, int list28_sz, ref ConcreteRoleDescriptor [MAX_LEN] list29, ref int list29_sz)
+{
+  list29_sz = list28_sz;
+  for (int i = 0; i < list29_sz; ++i)
+  {
+    list29[i] = new ConcreteRoleDescriptor();
+    list29[i].id = {|list28[i].type1_id | list28[i].type2_id |};
+  }
+}
+
+
+bit equals_list30 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list10, ref int list10_sz)
+{
+  if (concreteRDList_sz != list10_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list10[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list31 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list13, ref int list13_sz)
+{
+  if (concreteRDList_sz != list13_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list13[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list32 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list19, ref int list19_sz)
+{
+  if (concreteRDList_sz != list19_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list19[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list33 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list29, ref int list29_sz)
+{
+  if (concreteRDList_sz != list29_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list29[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+generator bit pred34 (int _activityId, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6)
+{
+  int rightOperand = {| globalCRD_sz | j_5 |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return _activityId > rightOperand;
+  else if (operator == 2) return _activityId <= rightOperand;
+  else if (operator == 3) return _activityId < rightOperand;
+  else if (operator == 4) return _activityId == rightOperand;
+  else return _activityId >= rightOperand;
+}
+
+
+generator bit pred35 (int j_5, int _activityId, int globalCRD_sz, int j_5, bit loop_1_6)
+{
+  int rightOperand = {| _activityId | globalCRD_sz |};
+  int operator = ??;
+  if (operator == 0) return 1;
+  else if (operator == 1) return j_5 > rightOperand;
+  else if (operator == 2) return j_5 <= rightOperand;
+  else if (operator == 3) return j_5 < rightOperand;
+  else if (operator == 4) return j_5 == rightOperand;
+  else return j_5 >= rightOperand;
+}
+
+
+void top_list36 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ref ConcreteRoleDescriptor [MAX_LEN] list36, ref int list36_sz)
+{
+  list36_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 |};
+  list36 = globalCRD[0::list36_sz];
+}
+
+
+void select_list37 (ConcreteRoleDescriptor [MAX_LEN] list36, int list36_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ref ConcreteRoleDescriptor [MAX_LEN] list37, ref int list37_sz)
+{
+  list37_sz = 0;
+  for (int i = 0; i < list36_sz; ++i)
+  {
+    if (select_list37_pred(list36[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, concreteRDList, globalCRD))
+    {
+      list37[list37_sz] = list36[i];
+      ++list37_sz;
+    }
+  }
+}
+generator bit select_list37_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list38 (ConcreteRoleDescriptor [MAX_LEN] list37, int list37_sz, ref ConcreteRoleDescriptor [MAX_LEN] list38, ref int list38_sz)
+{
+  list38_sz = list37_sz;
+  list38 = list37;
+}
+
+
+bit equals_list39 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list38, ref int list38_sz)
+{
+  if (concreteRDList_sz != list38_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list38[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+void top_list40 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list40, ref int list40_sz)
+{
+  list40_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list40 = globalCRD[0::list40_sz];
+}
+
+
+void select_list41 (ConcreteRoleDescriptor [MAX_LEN] list40, int list40_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list41, ref int list41_sz)
+{
+  list41_sz = 0;
+  for (int i = 0; i < list40_sz; ++i)
+  {
+    if (select_list41_pred(list40[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list41[list41_sz] = list40[i];
+      ++list41_sz;
+    }
+  }
+}
+generator bit select_list41_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list42 (ConcreteRoleDescriptor [MAX_LEN] list41, int list41_sz, ref ConcreteRoleDescriptor [MAX_LEN] list42, ref int list42_sz)
+{
+  list42_sz = list41_sz;
+  list42 = list41;
+}
+
+
+void top_list43 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list43, ref int list43_sz)
+{
+  list43_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list43 = globalCA_8_17[0::list43_sz];
+}
+
+
+void select_list44 (ConcreteActivity [MAX_LEN] list43, int list43_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list44, ref int list44_sz)
+{
+  list44_sz = 0;
+  for (int i = 0; i < list43_sz; ++i)
+  {
+    if (select_list44_pred(list43[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list44[list44_sz] = list43[i];
+      ++list44_sz;
+    }
+  }
+}
+generator bit select_list44_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void project_list45 (ConcreteActivity [MAX_LEN] list44, int list44_sz, ref ConcreteRoleDescriptor [MAX_LEN] list45, ref int list45_sz)
+{
+  list45_sz = list44_sz;
+  for (int i = 0; i < list45_sz; ++i)
+  {
+    list45[i] = new ConcreteRoleDescriptor();
+    list45[i].id = {|list44[i].id |};
+  }
+}
+
+
+void top_list46 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list46, ref int list46_sz)
+{
+  list46_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list46 = globalCRD[0::list46_sz];
+}
+
+
+void select_list47 (ConcreteRoleDescriptor [MAX_LEN] list46, int list46_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list47, ref int list47_sz)
+{
+  list47_sz = 0;
+  for (int i = 0; i < list46_sz; ++i)
+  {
+    if (select_list47_pred(list46[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list47[list47_sz] = list46[i];
+      ++list47_sz;
+    }
+  }
+}
+generator bit select_list47_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void top_list48 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list48, ref int list48_sz)
+{
+  list48_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list48 = globalCA_8_17[0::list48_sz];
+}
+
+
+void select_list49 (ConcreteActivity [MAX_LEN] list48, int list48_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list49, ref int list49_sz)
+{
+  list49_sz = 0;
+  for (int i = 0; i < list48_sz; ++i)
+  {
+    if (select_list49_pred(list48[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list49[list49_sz] = list48[i];
+      ++list49_sz;
+    }
+  }
+}
+generator bit select_list49_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void join_list50 (ConcreteRoleDescriptor [MAX_LEN] list47, int list47_sz, ConcreteActivity [MAX_LEN] list49, int list49_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list50, ref int list50_sz)
+{
+  list50_sz = 0;
+  for (int i = 0; i < list47_sz; ++i)
+  {
+    for (int j = 0; j < list49_sz; ++j)
+    {
+      if (join_list50_pred(list47[i], list49[j]))
+      {
+        list50[list50_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+        list50[list50_sz].type1_id = list47[i].id;
+        list50[list50_sz].type2_id = list49[j].id;
+        ++list50_sz;
+      }
+    }
+  }
+}
+
+generator bit join_list50_pred (ConcreteRoleDescriptor t1, ConcreteActivity t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void project_list51 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list50, int list50_sz, ref ConcreteRoleDescriptor [MAX_LEN] list51, ref int list51_sz)
+{
+  list51_sz = list50_sz;
+  for (int i = 0; i < list51_sz; ++i)
+  {
+    list51[i] = new ConcreteRoleDescriptor();
+    list51[i].id = {|list50[i].type1_id | list50[i].type2_id |};
+  }
+}
+
+
+void top_list52 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list52, ref int list52_sz)
+{
+  list52_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list52 = globalCRD[0::list52_sz];
+}
+
+
+void select_list53 (ConcreteRoleDescriptor [MAX_LEN] list52, int list52_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list53, ref int list53_sz)
+{
+  list53_sz = 0;
+  for (int i = 0; i < list52_sz; ++i)
+  {
+    if (select_list53_pred(list52[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list53[list53_sz] = list52[i];
+      ++list53_sz;
+    }
+  }
+}
+generator bit select_list53_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void top_list54 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list54, ref int list54_sz)
+{
+  list54_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list54 = globalCA_8_17[0::list54_sz];
+}
+
+
+void select_list55 (ConcreteActivity [MAX_LEN] list54, int list54_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list55, ref int list55_sz)
+{
+  list55_sz = 0;
+  for (int i = 0; i < list54_sz; ++i)
+  {
+    if (select_list55_pred(list54[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list55[list55_sz] = list54[i];
+      ++list55_sz;
+    }
+  }
+}
+generator bit select_list55_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void join_list56 (ConcreteRoleDescriptor [MAX_LEN] list53, int list53_sz, ConcreteActivity [MAX_LEN] list55, int list55_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list56, ref int list56_sz)
+{
+  list56_sz = 0;
+  for (int i = 0; i < list53_sz; ++i)
+  {
+    for (int j = 0; j < list55_sz; ++j)
+    {
+      if (join_list56_pred(list53[i], list55[j]))
+      {
+        list56[list56_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+        list56[list56_sz].type1_id = list53[i].id;
+        list56[list56_sz].type2_id = list55[j].id;
+        ++list56_sz;
+      }
+    }
+  }
+}
+
+generator bit join_list56_pred (ConcreteRoleDescriptor t1, ConcreteActivity t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void top_list57 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list57, ref int list57_sz)
+{
+  list57_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list57 = globalCA_8_17[0::list57_sz];
+}
+
+
+void select_list58 (ConcreteActivity [MAX_LEN] list57, int list57_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list58, ref int list58_sz)
+{
+  list58_sz = 0;
+  for (int i = 0; i < list57_sz; ++i)
+  {
+    if (select_list58_pred(list57[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list58[list58_sz] = list57[i];
+      ++list58_sz;
+    }
+  }
+}
+generator bit select_list58_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void tupleJoin_list59 (ConcreteActivity [MAX_LEN] list58, int list58_sz, ConcreteRoleDescriptor concreteRD_7_16, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list59, ref int list59_sz)
+{
+  list59_sz = 0;
+  for (int i = 0; i < list58_sz; ++i)
+  {
+    if (tupleJoin_list59_pred(list58[i], concreteRD_7_16))
+    {
+      list59[list59_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+      list59[list59_sz].type2_id = list58[i].id;
+      list59[list59_sz].type1_id = concreteRD_7_16.id;
+      ++list59_sz;
+    }
+  }
+}
+
+generator bit tupleJoin_list59_pred (ConcreteActivity t1, ConcreteRoleDescriptor t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void concat_list60 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list56, int list56_sz, ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list59, int list59_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list60, ref int list60_sz)
+{
+  list60[0::list56_sz] = list56[0::list56_sz];
+  list60[list56_sz::list59_sz] = list59[0::list59_sz];
+  list60_sz = list56_sz + list59_sz;
+}
+
+
+void project_list61 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list60, int list60_sz, ref ConcreteRoleDescriptor [MAX_LEN] list61, ref int list61_sz)
+{
+  list61_sz = list60_sz;
+  for (int i = 0; i < list61_sz; ++i)
+  {
+    list61[i] = new ConcreteRoleDescriptor();
+    list61[i].id = {|list60[i].type1_id | list60[i].type2_id |};
+  }
+}
+
+
+void top_list62 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list62, ref int list62_sz)
+{
+  list62_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list62 = globalCRD[0::list62_sz];
+}
+
+
+void select_list63 (ConcreteRoleDescriptor [MAX_LEN] list62, int list62_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list63, ref int list63_sz)
+{
+  list63_sz = 0;
+  for (int i = 0; i < list62_sz; ++i)
+  {
+    if (select_list63_pred(list62[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list63[list63_sz] = list62[i];
+      ++list63_sz;
+    }
+  }
+}
+generator bit select_list63_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void top_list64 (ConcreteActivity [MAX_LEN] globalCA_8_17, int globalCA_8_17_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list64, ref int list64_sz)
+{
+  list64_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list64 = globalCA_8_17[0::list64_sz];
+}
+
+
+void select_list65 (ConcreteActivity [MAX_LEN] list64, int list64_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteActivity [MAX_LEN] list65, ref int list65_sz)
+{
+  list65_sz = 0;
+  for (int i = 0; i < list64_sz; ++i)
+  {
+    if (select_list65_pred(list64[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list65[list65_sz] = list64[i];
+      ++list65_sz;
+    }
+  }
+}
+generator bit select_list65_pred (ConcreteActivity tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void join_list66 (ConcreteRoleDescriptor [MAX_LEN] list63, int list63_sz, ConcreteActivity [MAX_LEN] list65, int list65_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list66, ref int list66_sz)
+{
+  list66_sz = 0;
+  for (int i = 0; i < list63_sz; ++i)
+  {
+    for (int j = 0; j < list65_sz; ++j)
+    {
+      if (join_list66_pred(list63[i], list65[j]))
+      {
+        list66[list66_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+        list66[list66_sz].type1_id = list63[i].id;
+        list66[list66_sz].type2_id = list65[j].id;
+        ++list66_sz;
+      }
+    }
+  }
+}
+
+generator bit join_list66_pred (ConcreteRoleDescriptor t1, ConcreteActivity t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void top_list67 (ConcreteRoleDescriptor [MAX_LEN] globalCRD, int globalCRD_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list67, ref int list67_sz)
+{
+  list67_sz = {| _activityId | concreteRDList_sz | globalCRD_sz | j_5 | flat_9 | globalCA_8_17_sz | i_2_18 | flat_10_20 | flat_11_14 |};
+  list67 = globalCRD[0::list67_sz];
+}
+
+
+void select_list68 (ConcreteRoleDescriptor [MAX_LEN] list67, int list67_sz, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17, ref ConcreteRoleDescriptor [MAX_LEN] list68, ref int list68_sz)
+{
+  list68_sz = 0;
+  for (int i = 0; i < list67_sz; ++i)
+  {
+    if (select_list68_pred(list67[i], _activityId, concreteRDList_sz, globalCRD_sz, j_5, loop_1_6, flat_9, globalCA_8_17_sz, i_2_18, loop_0_3_19, flat_10_20, flat_11_14, flat_12_15, concreteRD_7_16, e_4_13, concreteRDList, globalCRD, globalCA_8_17))
+    {
+      list68[list68_sz] = list67[i];
+      ++list68_sz;
+    }
+  }
+}
+generator bit select_list68_pred (ConcreteRoleDescriptor tuple, int _activityId, int concreteRDList_sz, int globalCRD_sz, int j_5, bit loop_1_6, int flat_9, int globalCA_8_17_sz, int i_2_18, bit loop_0_3_19, int flat_10_20, int flat_11_14, bit flat_12_15, ConcreteRoleDescriptor concreteRD_7_16, ConcreteActivity e_4_13, ConcreteRoleDescriptor [MAX_LEN] concreteRDList, ConcreteRoleDescriptor [MAX_LEN] globalCRD, ConcreteActivity [MAX_LEN] globalCA_8_17)
+{
+  if (tuple == null) return 0;
+  else
+  {
+    bit out = 1;
+    repeat (2)
+    {
+      bit pred0;
+      int operator0 = ??;
+      if (operator0 == 0) pred0 = 1;
+      else if (operator0 == 1) pred0 = tuple.id > ??(2);
+      else if (operator0 == 2) pred0 = tuple.id <= ??(2);
+      else if (operator0 == 3) pred0 = tuple.id < ??(2);
+      else if (operator0 == 4) pred0 = tuple.id == ??(2);
+      else if (operator0 == 5) pred0 = tuple.id == _activityId;
+      else if (operator0 == 6) pred0 = tuple.id == j_5;
+      else if (operator0 == 7) pred0 = tuple.id == flat_9;
+      else if (operator0 == 8) pred0 = tuple.id == i_2_18;
+      else if (operator0 == 9) pred0 = tuple.id == flat_10_20;
+      else if (operator0 == 10) pred0 = tuple.id == flat_11_14;
+      else if (operator0 == 11) pred0 = tuple.id == concreteRD_7_16.id;
+      else if (operator0 == 12) pred0 = tuple.id == e_4_13.id;
+      else pred0 = tuple.id >= ??(2);
+      out = out && {| pred0 |};
+    }
+    return out;
+  }
+}
+
+
+void tupleJoin_list69 (ConcreteRoleDescriptor [MAX_LEN] list68, int list68_sz, ConcreteActivity e_4_13, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list69, ref int list69_sz)
+{
+  list69_sz = 0;
+  for (int i = 0; i < list68_sz; ++i)
+  {
+    if (tupleJoin_list69_pred(list68[i], e_4_13))
+    {
+      list69[list69_sz] = new ConcreteRoleDescriptor_ConcreteActivity();
+      list69[list69_sz].type1_id = list68[i].id;
+      list69[list69_sz].type2_id = e_4_13.id;
+      ++list69_sz;
+    }
+  }
+}
+
+generator bit tupleJoin_list69_pred (ConcreteRoleDescriptor t1, ConcreteActivity t2)
+{
+  bit out = 1;
+  repeat (2)
+  {
+    int leftOperand = {| t1.id |};
+    int rightOperand = {| t2.id |};
+    bit pred;
+    int operator = ??;
+    if (operator == 0) pred = 1;
+    else if (operator == 1) pred = leftOperand > rightOperand;
+    else if (operator == 2) pred = leftOperand <= rightOperand;
+    else if (operator == 3) pred = leftOperand < rightOperand;
+    else if (operator == 4) pred = leftOperand == rightOperand;
+    else pred = leftOperand >= rightOperand;
+    out = out && pred;
+  }
+  return out;
+}
+
+
+void concat_list70 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list66, int list66_sz, ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list69, int list69_sz, ref ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list70, ref int list70_sz)
+{
+  list70[0::list66_sz] = list66[0::list66_sz];
+  list70[list66_sz::list69_sz] = list69[0::list69_sz];
+  list70_sz = list66_sz + list69_sz;
+}
+
+
+void project_list71 (ConcreteRoleDescriptor_ConcreteActivity [MAX_LEN] list70, int list70_sz, ref ConcreteRoleDescriptor [MAX_LEN] list71, ref int list71_sz)
+{
+  list71_sz = list70_sz;
+  for (int i = 0; i < list71_sz; ++i)
+  {
+    list71[i] = new ConcreteRoleDescriptor();
+    list71[i].id = {|list70[i].type1_id | list70[i].type2_id |};
+  }
+}
+
+
+bit equals_list72 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list42, ref int list42_sz)
+{
+  if (concreteRDList_sz != list42_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list42[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list73 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list45, ref int list45_sz)
+{
+  if (concreteRDList_sz != list45_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list45[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list74 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list51, ref int list51_sz)
+{
+  if (concreteRDList_sz != list51_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list51[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list75 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list61, ref int list61_sz)
+{
+  if (concreteRDList_sz != list61_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list61[i].id)
+      return 0;
+  }
+  return 1;
+}
+
+
+bit equals_list76 (ConcreteRoleDescriptor [MAX_LEN] concreteRDList, int concreteRDList_sz, ref ConcreteRoleDescriptor [MAX_LEN] list71, ref int list71_sz)
+{
+  if (concreteRDList_sz != list71_sz) return 0;
+  for (int i = 0; i < concreteRDList_sz; ++i)
+  {
+    if (concreteRDList[i].id != list71[i].id)
+      return 0;
+  }
+  return 1;
+}
+

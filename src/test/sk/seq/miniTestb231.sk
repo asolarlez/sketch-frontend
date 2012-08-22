@@ -6,12 +6,12 @@ harness void foo(int x){
     int [5][5] ar2 = arr; 
     assert arr[0][0] ==1; 
     assert arr[0][2] ==0;
-    assert arr[2] ==0 ;
+    assert arr[2] ==(bit[??])0 ;
     int [3][3] qrr = {{x,0}, {1,2}, {3,4}};
     assert qrr[0][0] == {| 1 | x |};
     assert qrr[0][1] == {| ?? | x |};
     assert qrr[1][??] == 0;
     qrr = 0;
     int [3][4][4] awesome = {arr, qrr};
-    assert awesome[0] == arr;
+    assert awesome[0][0::3] == arr;
 }

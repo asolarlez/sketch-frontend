@@ -1,0 +1,40 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 16";
+
+struct mst{
+    int n;
+    int m;
+    int u;
+    int[n][m][u] A;
+}
+
+
+
+int[n] foo(int i, int n){
+    int[n] out;
+    for(int j=0; j<n; ++j){
+        out[j] = i+j;
+    }
+    return out;
+}
+
+harness void main(int x, int y, int i){
+    int q = ??+1;
+    int[5] a = foo(x+??, q);
+    int[5] b = foo(y+4, q);
+    int[q] p = a;
+    if(x == y && i < 5){
+        assert a[2] == b[2];
+    }
+    int[x+y+i] ttt;
+    if(x>0 && y > 2){
+        ttt[0::x+y+i][1::x+i][0::x] = 1;
+    }
+    mst mm = new mst(n=x, m=y, u=i);
+    int[x][y] O=1;
+    if(mm.u>0){
+        mm.A[0] = O;
+        if(mm.n>0 && mm.m>0){
+            assert mm.A[0][0][0] == 1;
+        }
+    }
+}

@@ -1,7 +1,5 @@
 package sketch.compiler.passes.spmd;
 
-import sketch.compiler.passes.spmd.SpmdTransform;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,20 +13,15 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
 
 import static sketch.util.DebugOut.assertFalse;
-import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = { SpmdTransform.class })
 public class GlobalToLocalCasts extends SymbolTableVisitor {
@@ -60,10 +53,10 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
         cr.setNres(nres);
         StreamSpec result = (StreamSpec) cr.visitStreamSpec(spec);
         
-        System.out.println("after global to local casts:");
-        final CodePrinterVisitor pr2 = new CodePrinterVisitor();
-        pr2.setNres(nres);
-        result.accept(pr2);
+        // System.out.println("after global to local casts:");
+        // final CodePrinterVisitor pr2 = new CodePrinterVisitor();
+        // pr2.setNres(nres);
+        // result.accept(pr2);
         
         return result;
     }
