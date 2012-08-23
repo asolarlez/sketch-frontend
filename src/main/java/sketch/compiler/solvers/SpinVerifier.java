@@ -158,9 +158,9 @@ public class SpinVerifier implements Verifier {
 			
 			p = (Program) p.accept (new FlattenStmtBlocks ());
 			//ToSBit.dump (p, "preproc");
-			p = (Program) p.accept (new EliminateTransAssns ());
+            p = (Program) p.accept(new EliminateTransAssns(varGen));
 			
-			p = (Program) p.accept (new EliminateDeadParallelCode ());
+            p = (Program) p.accept(new EliminateDeadParallelCode(varGen));
 		
 		//ToSBit.dump (p, "dead parallel");
 

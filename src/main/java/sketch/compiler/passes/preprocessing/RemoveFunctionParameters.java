@@ -9,7 +9,9 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprRegen;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -18,7 +20,9 @@ import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
@@ -80,6 +84,11 @@ public class RemoveFunctionParameters extends FEReplacer {
             new HashMap<String, RemoveFunctionParameters.NewFunInfo>();
     Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
     Map<String, String> reverseEquiv = new HashMap<String, String>();
+    final TempVarGen varGen;
+
+    public RemoveFunctionParameters(TempVarGen varGen) {
+        this.varGen = varGen;
+    }
 
     class ThreadClosure extends FEReplacer {
         Map<String, HashMap<String, ParamInfo>> funsToVisit =
@@ -267,10 +276,49 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitStmtVarDecl(StmtVarDecl svd) {
+            final InnerFunReplacer localIFR = this; 
+            final TempVarGen varGen = RemoveFunctionParameters.this.varGen;
+            FEReplacer remREGinDecl = new FEReplacer() {
+                public Object visitTypeArray(TypeArray t){
+                    Type nbase = (Type)t.getBase().accept(this);
+                    Expression nlen = null;
+                    if (t.getLength() != null) {
+                        if(t.getLength() instanceof ExprRegen){
+                            String nname = varGen.nextVar();
+                            localIFR.addStatement((Statement) (new StmtVarDecl(
+                                    t.getLength(), TypePrimitive.inttype, nname,
+                                    t.getLength())).accept(localIFR));
+                            nlen = new ExprVar(t.getLength(), nname);
+                        }else{
+                            nlen = t.getLength();
+                        }
+                    }
+                    if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
+                    return new TypeArray(nbase, nlen, t.getMaxlength());
+                }
+            };
+
             for (int i = 0; i < svd.getNumVars(); ++i) {
                 frmap.declRepl(svd.getName(i), null);
             }
-            return super.visitStmtVarDecl(svd);
+            List<Type> newTypes = new ArrayList<Type>();
+            boolean changed = false;
+
+            for (int i = 0; i < svd.getNumVars(); i++) {
+
+                Type ot = svd.getType(i);
+                Type t = (Type) ot.accept(remREGinDecl);
+                if (ot != t) {
+                    changed = true;
+                }
+                newTypes.add(t);
+            }
+            if (!changed) {
+                return super.visitStmtVarDecl(svd);
+            }
+            return super.visitStmtVarDecl(new StmtVarDecl(svd, newTypes, svd.getNames(),
+                    svd.getInits()));
+
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {

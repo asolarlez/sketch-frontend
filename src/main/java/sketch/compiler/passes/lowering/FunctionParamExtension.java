@@ -17,11 +17,18 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
@@ -554,30 +561,52 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				oldArg=(Expression) existingArgs.get(psz);
 				++psz;
 			}
-			
-			if(oldArg != null && oldArg instanceof ExprVar || (oldArg instanceof ExprConstInt && !p.isParameterOutput())){
-				args.add(oldArg);
-				pmap.put(p.getName(), oldArg);
-			}else{
-				String tempVar = getNewOutID(p.getName());
+            if (oldArg != null &&
+                    !(oldArg instanceof ExprConstInt && p.isParameterOutput()))
+            {
+			 args.add(oldArg);
+             pmap.put(p.getName(), oldArg);
+            } else {
+                String tempVar = getNewOutID(p.getName());
                 Type tt = (Type) p.getType().accept(vrep);
                 if (tt instanceof TypeStructRef) {
                     TypeStructRef tsf = (TypeStructRef) tt;
                     tt = tsf.addDefaultPkg(fun.getPkg());
                 }
                 Statement decl = new StmtVarDecl(exp, tt, tempVar, oldArg);
-				ExprVar ev =new ExprVar(exp,tempVar);
-				args.add(ev);
-				pmap.put(p.getName(), ev);
-				addStatement(decl);
-				if(ptype == Parameter.OUT){
-					tempVars.add(ev);
-				}
-				if(ptype == Parameter.REF){
-				    assert ev != null;
-					refAssigns.add(new StmtAssign(oldArg, ev  ));
-				}
-			}
+                ExprVar ev = new ExprVar(exp, tempVar);
+                args.add(ev);
+                pmap.put(p.getName(), ev);
+                addStatement(decl);
+                if (ptype == Parameter.OUT) {
+                    tempVars.add(ev);
+                }
+                assert ptype != Parameter.REF;
+            }
+			
+//			if(oldArg != null && oldArg instanceof ExprVar || (oldArg instanceof ExprConstInt && !p.isParameterOutput())){
+//				args.add(oldArg);
+//				pmap.put(p.getName(), oldArg);
+//			}else{
+//				String tempVar = getNewOutID(p.getName());
+//                Type tt = (Type) p.getType().accept(vrep);
+//                if (tt instanceof TypeStructRef) {
+//                    TypeStructRef tsf = (TypeStructRef) tt;
+//                    tt = tsf.addDefaultPkg(fun.getPkg());
+//                }
+//                Statement decl = new StmtVarDecl(exp, tt, tempVar, oldArg);
+//				ExprVar ev =new ExprVar(exp,tempVar);
+//				args.add(ev);
+//				pmap.put(p.getName(), ev);
+//				addStatement(decl);
+//				if(ptype == Parameter.OUT){
+//					tempVars.add(ev);
+//				}
+//				if(ptype == Parameter.REF){
+//				    assert ev != null;
+//					refAssigns.add(new StmtAssign(oldArg, ev  ));
+//				}
+//			}
 		}
 
 		ExprFunCall newcall=new ExprFunCall(exp,exp.getName(),args);

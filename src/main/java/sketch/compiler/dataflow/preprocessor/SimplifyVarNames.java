@@ -61,9 +61,11 @@ public class SimplifyVarNames extends FEReplacer {
 	            }
 	        }
 	        if(nmMap.containsKey(s1)){
+                do {
 	            int id = nmMap.get(s1).intValue();
 	            nmMap.put(s1, id+1);
 	            s1 += "_" + id;
+                } while (nmMap.containsKey(s1));
 	            newNm.put(name, s1);
 	            return s1;
 	        }else{

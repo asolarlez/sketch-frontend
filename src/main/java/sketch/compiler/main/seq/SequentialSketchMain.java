@@ -35,7 +35,6 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.CleanupFinalCode;
-import sketch.compiler.main.passes.LowerToHLC;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
 import sketch.compiler.main.passes.ParseProgramStage;
@@ -153,7 +152,7 @@ public class SequentialSketchMain extends CommonSketchMain
                     { new MinimizeFcnCall(), new TprintFcnCall(),
  new SpmdbarrierCall(),
                             new PidReplacer(),
-                            new RemoveFunctionParameters(),
+ new RemoveFunctionParameters(varGen),
                             new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
                             new InstrumentFcnCall(), new SyncthreadsCall() };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
@@ -369,7 +368,6 @@ public class SequentialSketchMain extends CommonSketchMain
      * Lower the source code to SKETCH, returning a new program and two intermediate ones.
      */
     protected SketchLoweringResult lowerToSketch(Program prog) {
-        prog = (new LowerToHLC(varGen, options)).visitProgram(prog);
         Program highLevelC = prog;
         prog = getIRStage2_LLC(prog).run(prog);
         Program afterSPMDSeq = prog;
@@ -384,7 +382,7 @@ public class SequentialSketchMain extends CommonSketchMain
         p =
                 (Program) p.accept(new EliminateStructs(varGen, new ExprConstInt(
                         options.bndOpts.arrSize)));
-	    p = (Program)p.accept(new EliminateMultiDimArrays(varGen));
+        p = (Program) p.accept(new EliminateMultiDimArrays(true, varGen));
 	    sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
             new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
                     null, System.out

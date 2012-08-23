@@ -48,9 +48,12 @@ import static sketch.util.DebugOut.assertFalse;
  */
 public class EliminateMultiDimArrays extends SymbolTableVisitor {
     TempVarGen varGen;
-	public EliminateMultiDimArrays (TempVarGen varGen) {	    
+    final boolean addAsserts;
+
+    public EliminateMultiDimArrays(boolean addAsserts, TempVarGen varGen) {
 		super (null);
 		this.varGen = varGen;
+        this.addAsserts = addAsserts;
 	}
 	
     private Expression szComp(Type tl, Type tr) {
@@ -207,6 +210,8 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 
 	public Object visitExprArrayRange (ExprArrayRange ear) {
 		// Do the recursive rewrite
+        Type xt = getType(ear.getAbsoluteBaseExpr());
+
 		Expression base = 			doExpression (ear.getAbsoluteBaseExpr ());
 		List<RangeLen> oldIndices = ear.getArraySelections ();
 		List<RangeLen> indices =	new ArrayList<RangeLen> ();
@@ -218,8 +223,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 				rl = new RangeLen (newStart, newLen);
 			indices.add(rl);
 		}
-		
-		Type xt = getType (ear.getAbsoluteBaseExpr ());
+
 		List<Expression> dims = xt instanceof TypeArray? 
 			((TypeArray) xt).getDimensions () : null;
 		if (dims ==null || (1 == dims.size () && indices.size() == 1 )) {
@@ -251,8 +255,11 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                                             rl.getLenExpression()), "<=", cdim));
                 }
 
-                addStatement(new StmtAssert(cond, idx.getCx() + ": Array out of bounds",
+                if (addAsserts) {
+                    addStatement(new StmtAssert(cond, idx.getCx() +
+                            ": Array out of bounds",
                         false));
+                }
             }
 
 			dims.remove (dims.size ()-1);

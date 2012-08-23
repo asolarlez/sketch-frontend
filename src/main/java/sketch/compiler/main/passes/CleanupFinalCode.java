@@ -50,24 +50,29 @@ public class CleanupFinalCode extends MetaStage {
 
         prog = (Program) prog.accept(new MakeCastsExplicit());
 
-        prog = (Program) prog.accept(new EliminateTransAssns());
+        prog = (Program) prog.accept(new EliminateTransAssns(varGen));
         // System.out.println("ElmTransAssn");
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveUselessCasts());
         // System.out.println("RmUselessC");
         // prog.accept(new SimpleCodePrinter());
-        prog = (Program) prog.accept(new EliminateDeadCode(!options.feOpts.killAsserts));
+        prog =
+                (Program) prog.accept(new EliminateDeadCode(varGen,
+                        !options.feOpts.killAsserts));
         // System.out.println("ElmDead");
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveDumbArrays());
         // System.out.println("RemoveDumbArr");
         // prog.accept(new SimpleCodePrinter());
-        prog = (Program) prog.accept(new EliminateTransAssns());
+        prog = (Program) prog.accept(new EliminateTransAssns(varGen));
         // System.out.println("ElimTransAssn2");
         // prog.accept(new SimpleCodePrinter());
-        prog = (Program) prog.accept(new EliminateDeadCode(!options.feOpts.killAsserts));
+        prog =
+                (Program) prog.accept(new EliminateDeadCode(varGen,
+                        !options.feOpts.killAsserts));
         // System.out.println("ElmDeadC2");
         // prog.accept(new SimpleCodePrinter());
+
         prog = (Program) prog.accept(new SimplifyVarNames());
         // System.out.println("Simplify");
         // prog.accept(new SimpleCodePrinter());

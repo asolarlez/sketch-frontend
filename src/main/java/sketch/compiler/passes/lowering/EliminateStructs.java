@@ -200,7 +200,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 			return super.visitExprFunCall(fc);
 		}
 
-		List<Expression> newplist = new ArrayList<Expression>(fc.getParams());
+        List<Expression> newplist = new ArrayList<Expression>(fc.getParams().size());
+        for (Expression e : fc.getParams()) {
+            newplist.add((Expression) e.accept(this));
+        }
 
         for (String name : nres.structNamesList()) {
             structs.get(name).addActualParams(newplist);

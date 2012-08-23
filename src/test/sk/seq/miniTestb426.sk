@@ -1,0 +1,22 @@
+pragma options "--bnd-unroll-amnt 11 --bnd-inbits 3";
+
+harness void main(int x, int y){
+    int[y][x] A = 0;
+    for(int i=0; i<x; ++i){
+        for(int j=0; j<y; ++j){
+            A[i][j]= i;
+        }
+    }
+    int[y+3][x+3] B= A;
+    for(int i=0; i<x; ++i){
+        int j;
+        for(j=0; j<y; ++j){
+            assert B[i][j]== A[i][j];
+        }
+        while(j<y+3){
+            assert B[i][j] == 0;
+            ++j;
+        }
+    }
+    
+}

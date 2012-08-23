@@ -354,12 +354,14 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 		}
 	}
 
-	protected Expression makeLocalIndex (ExprArrayRange ear) {
-                // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
+    protected Expression makeLocalIndex(ExprArrayRange ear) {
                 assert (newStatements != null);
-		String nname = varGen.nextVar("_pac");				
-		RangeLen rl =ear.getSelection(); 
-		Expression nofset = (Expression) rl.start()/*.accept(this)*/;
+        RangeLen rl = ear.getSelection();
+        Expression nofset = (Expression) rl.start()/* .accept(this) */;
+        if (nofset instanceof ExprVar) {
+            return nofset;
+        }
+        String nname = varGen.nextVar("_pac");
 		Type t = getType(nofset);
 		addStatement((Statement)(new StmtVarDecl(ear, t, nname,  nofset).accept(this)));
 		return new ExprVar(ear, nname);

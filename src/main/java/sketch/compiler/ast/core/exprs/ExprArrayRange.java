@@ -207,4 +207,10 @@ public class ExprArrayRange extends Expression
 	@Override public boolean isLValue () {
 		return true;
 	}
+
+    public boolean equals(Object other) {
+        if (!(other instanceof ExprArrayRange))
+            return false;
+        return this.toString().equals(other.toString());
+    }
 }

@@ -35,9 +35,19 @@ public class LowerToSketch extends MetaStage {
 
         prog = stencilTransform.visitProgram(prog);
 
-        prog = (Program) prog.accept(new EliminateMultiDimArrays(varGen));
 
-        // prog.debugDump("Before ES");
+        prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
+
+        prog = (Program) prog.accept(new EliminateArrayRange(varGen));
+
+
+        prog = (Program) prog.accept(new EliminateMDCopies(varGen));
+
+
+
+        prog = (Program) prog.accept(new EliminateMultiDimArrays(true, varGen));
+
+
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
@@ -53,7 +63,6 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
 
-        // prog.debugDump("After ERS");
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new ExtractVectorsInCasts(varGen));
         // dump (prog, "Extract Vectors in Casts:");

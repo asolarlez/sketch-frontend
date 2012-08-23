@@ -507,7 +507,7 @@ public class PartialEvaluator extends FEReplacer {
         String name = exp.getName();
         Iterator<Expression> actualParams = exp.getParams().iterator();
         List<abstractValue> avlist = new ArrayList<abstractValue>(exp.getParams().size());
-        List<String> outNmList = new ArrayList<String>(exp.getParams().size());
+
         List<Expression> nparams = new ArrayList<Expression>(exp.getParams().size());
         Function fun = nres.getFun(name);
         assert fun != null : " The function " + name + " does not exist!! funcall: " + exp;
@@ -515,6 +515,9 @@ public class PartialEvaluator extends FEReplacer {
         Map<String, Expression> pmap = new HashMap<String, Expression>();
         VarReplacer vrep = new VarReplacer(pmap);
         List<Parameter> nplist = new ArrayList<Parameter>();
+        List<lhsVisitor> tempLHSVs = new ArrayList<lhsVisitor>();
+        // List<Expression> expsToAssign = new ArrayList<Expression>();
+
         while(actualParams.hasNext()){
             Expression actual = actualParams.next();
             Parameter param = formalParams.next();            
@@ -522,14 +525,28 @@ public class PartialEvaluator extends FEReplacer {
             pmap.put(param.getName(), interpretActualParam(actual));
             nplist.add(new Parameter(paramType, param.getName(), param.getPtype()));
             boolean addedAlready = false;
-            if( param.isParameterOutput()){
+            if (param.isParameterOutput()) {
+                // if (actual instanceof ExprVar) {
+                // String pnm = ((ExprVar) actual).getName();
+                // outNmList.add(pnm);
+                // nparams.add(new ExprVar(exp, transName(pnm)));
+                // addedAlready = true;
+                // } else {
+                // String pnm = varGen.nextVar();
+                // tempVars.add(pnm);
+                // expsToAssign.add(actual);
+                // outNmList.add(pnm);
+                // (new StmtVarDecl(exp, paramType, pnm, actual)).accept(this);
+                //
+                //
+                // }
 
-                assert actual instanceof ExprVar : "unsupported function argument, AST type: " +
-                        actual.getClass();
-                String pnm = ((ExprVar)actual).getName();
-                outNmList.add(pnm);
-                nparams.add(new ExprVar(exp,  transName(pnm)  ));
+                lhsVisitor lhsv = new lhsVisitor();
+                Expression nlhs = (Expression) actual.accept(lhsv);
+                tempLHSVs.add(lhsv);
+                nparams.add(nlhs);
                 addedAlready = true;
+
             }
             if(param.isParameterInput()){
                 abstractValue av = (abstractValue)actual.accept(this);
@@ -562,12 +579,33 @@ public class PartialEvaluator extends FEReplacer {
         // Function nfun = fun.creator().params(nplist).create();
         vtype.funcall(fun, avlist, outSlist, state.pathCondition());
         
-        assert outSlist.size() == outNmList.size(): "The funcall in vtype should populate the outSlist with 1 element per output parameter";
-        Iterator<String> nmIt = outNmList.iterator();
-        for( Iterator<abstractValue> it = outSlist.iterator(); it.hasNext();   ){
-            state.setVarValue(nmIt.next(), it.next());
+        assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
+
+        Iterator<lhsVisitor> lhsIt = tempLHSVs.iterator();
+        for (abstractValue outval : outSlist) {
+            // state.setVarValue(nmIt.next(), it.next());
+
+            String lhsName = null;
+            abstractValue lhsIdx = null;
+            int rlen = -1;
+
+            lhsVisitor lhsv = lhsIt.next();
+            lhsName = lhsv.lhsName;
+            lhsIdx = lhsv.lhsIdx;
+            rlen = lhsv.rlen;
+            boolean isFieldAcc = lhsv.isFieldAcc;
+
+            if (!isFieldAcc) {
+                assignmentToLocal(outval, lhsName, lhsIdx, rlen);
+            } else {
+                boolean tmpir = isReplacer;
+                isReplacer = false;
+                assignmentToField(lhsName, null, lhsIdx, outval, null, null);
+                isReplacer = tmpir;
+            }
         }
         
+
         //assert !isReplacer : "A replacer should really do something different with function calls.";
         exprRV = isReplacer ?  new ExprFunCall(exp, name, nparams)  : exp ;
         return  vtype.BOTTOM();
