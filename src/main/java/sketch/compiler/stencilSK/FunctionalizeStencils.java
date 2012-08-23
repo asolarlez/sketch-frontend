@@ -1130,7 +1130,7 @@ class ProcessStencil extends FEReplacer {
 	    		ArrFunction arFun = smap.get(bname);
 	    		//Now we build a function call to replace the array access.
 	    		List<Expression> params = new ArrayList<Expression>();
-	    		assert arFun.idxParams.size() == mem.size();
+            assert arFun.idxParams.size() == mem.size() : "ArrReplacer.doReplacement: idxParams and mem are of different sizes!";
 	    		for(int i=0; i<mem.size(); ++i){
 	    			Expression obj=mem.get(i);
 	    			//assert obj instanceof RangeLen;
