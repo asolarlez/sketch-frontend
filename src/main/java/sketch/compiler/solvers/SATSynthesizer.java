@@ -1344,7 +1344,7 @@ new StreamSpec(current, "MAIN",
 
 		mergeWithCurrent((CEtrace)counterExample);
 
-		current = (Program)current.accept(new EliminateMultiDimArrays(varGen));
+        current = (Program) current.accept(new EliminateMultiDimArrays(true, varGen));
 /*		if (reallyVerbose ())
 			current.accept(new SimpleCodePrinter().outputTags()); */ 
 		boolean tmp = solver.partialEvalAndSolve(current);
