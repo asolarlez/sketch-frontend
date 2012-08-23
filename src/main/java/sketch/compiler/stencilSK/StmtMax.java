@@ -6,6 +6,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -397,12 +398,27 @@ public class StmtMax extends Statement{
             slist.add(ass);
         }
         cond = null;
-        for(Iterator<Expression> eit = terC.iterator(); eit.hasNext(); ){
-            if( cond == null)
-                cond = eit.next();
-            else
-                cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, eit.next());
+        Expression indCond = null;
+        for (Expression exp : terC) {
+            if (hasImportantVars(exp)) {
+                if (cond == null)
+                    cond = exp;
+                else
+                    cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, exp);
+            } else {
+                if (indCond == null)
+                    indCond = exp;
+                else
+                    indCond = new ExprBinary(null, ExprBinary.BINOP_AND, indCond, exp);
+            }
         }
+        if (indCond != null) {
+            if( cond == null)
+                cond = indCond;
+            else
+                cond = new ExprBinary(null, ExprBinary.BINOP_AND, cond, indCond);
+        }
+
         if( cond != null){
             StmtAssign ass = new StmtAssign(indicator,cond);
             StmtIfThen sit = new StmtIfThen(indicator, indicator, ass, null);
@@ -428,11 +444,32 @@ public class StmtMax extends Statement{
                 b2.add(wh);
                 check = new StmtBlock(b2);
             }
+            if (indCond != null) {
+                check = new StmtIfThen(check, indCond, check, null);
+            }
             statements.add(check);
         }
                 
         maxAssign = new StmtBlock((FEContext) null, statements);
         return true;
+    }
+
+    boolean hasImportantVars(Expression exp) {
+        final String lvar = lhsvar;
+        class Search extends FEReplacer {
+            boolean found = false;
+
+            public Object visitExprVar(ExprVar ev) {
+                if (ev.getName().equals(lvar)) {
+                    found = true;
+                }
+                return ev;
+            }
+        }
+        ;
+        Search s = new Search();
+        exp.accept(s);
+        return s.found;
     }
 	
 	
