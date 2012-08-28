@@ -5,6 +5,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
@@ -15,8 +16,8 @@ public class EliminateTransAssns extends DataflowWithFixpoint {
 	    return new LinkedList<Function>(spec.getFuncs());
     }
 
-	public EliminateTransAssns(){
-		super(TAvalueType.vtype, null, true, 0, (new BaseRControl(10)));
+    public EliminateTransAssns(TempVarGen varGen) {
+        super(TAvalueType.vtype, varGen, true, 0, (new BaseRControl(10)));
 	}
 
 	public Object visitExprVar(ExprVar exp) {

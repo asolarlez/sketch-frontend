@@ -175,7 +175,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         if (e instanceof ExprVar) {
             return e;
         }
-        assert false;
+        // TODO: This makes the semantics of functions vs generators slightly different.
         return e;
     }
 

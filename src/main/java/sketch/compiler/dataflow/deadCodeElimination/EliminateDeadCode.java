@@ -8,6 +8,7 @@ import java.util.List;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -34,8 +35,9 @@ import sketch.util.datastructures.TprintTuple;
 
 public class EliminateDeadCode extends BackwardDataflow {
 	final private boolean keepAsserts;
-	public EliminateDeadCode(boolean keepAsserts){
-		super(LiveVariableVType.vtype, null, true, -1,(new BaseRControl(10)));
+
+    public EliminateDeadCode(TempVarGen varGen, boolean keepAsserts) {
+        super(LiveVariableVType.vtype, varGen, true, -1, (new BaseRControl(10)));
 		this.keepAsserts = keepAsserts;
 	}
 

@@ -312,7 +312,8 @@ public class FunctionalizeStencils extends FEReplacer {
 			callArgs.add(new ExprVar(outp,outp.getName()));
             assert (callArgs.size() == lnres.getFun(outfname).getParams().size());
 
-			Statement fcall=new StmtExpr(new ExprFunCall(f,outfname,callArgs));
+            Statement fcall =
+                    new StmtBlock(new StmtExpr(new ExprFunCall(f, outfname, callArgs)));
 			
 			assert outf.idxParams.size() == outf.dimensions.size() : "Type missmatch";
 			Iterator<StmtVarDecl> svit = outf.idxParams.iterator();
@@ -442,9 +443,9 @@ public class FunctionalizeStencils extends FEReplacer {
 		    v1.setNres(nres);
         FEReplacer v2 = new EliminateCompoundAssignments();
 		    v2.setNres(nres);
-        FEReplacer v23 = new EliminateTransAssns();
+        FEReplacer v23 = new EliminateTransAssns(varGen);
         v23.setNres(nres);
-        FEReplacer v24 = new EliminateDeadCode(true);
+        FEReplacer v24 = new EliminateDeadCode(varGen, true);
         v24.setNres(nres);
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();

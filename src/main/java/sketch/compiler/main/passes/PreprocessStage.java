@@ -46,6 +46,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
+        prog = (Program) prog.accept(new EliminateBitSelector(varGen));
 
         prog.accept(new CheckProperFinality());
 
@@ -60,11 +61,13 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
+
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 
-        // prog.debugDump("After FPE");
 
         prog = ir1.run(prog);
+
+
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
@@ -74,6 +77,7 @@ public class PreprocessStage extends MetaStage {
         }
 
 
+
         prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 
 
@@ -81,11 +85,14 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
 
+
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
         }
+
+
         return prog;
     }
 }

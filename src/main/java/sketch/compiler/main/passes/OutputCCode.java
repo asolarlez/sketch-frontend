@@ -43,7 +43,8 @@ public class OutputCCode extends MetaStage {
         final boolean tprintPyStyle = options.feOpts.tprintPython != null;
         
         Program pprog =
-                (Program) prog.accept(new EliminateMultiDimArrays(new TempVarGen()));
+                (Program) prog.accept(new EliminateMultiDimArrays(
+                        !options.feOpts.killAsserts, new TempVarGen()));
         String hcode = (String) pprog.accept(new NodesToSuperH(resultFile, tprintPyStyle));
         String ccode =
                 (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile,

@@ -8,6 +8,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 
 /**
@@ -15,8 +16,8 @@ import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
  *
  */
 public class EliminateDeadParallelCode extends EliminateDeadCode {
-	public EliminateDeadParallelCode () {
-		super (true);
+    public EliminateDeadParallelCode(TempVarGen varGen) {
+        super(varGen, true);
 	}
 
 	protected List<Function> functionsToAnalyze(StreamSpec spec){

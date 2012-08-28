@@ -36,6 +36,7 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 		this.varGen = varGen;
 	}
 
+
     public Object visitExprArrayRange(ExprArrayRange exp) {
         if (exp.getBase() instanceof ExprBinary || exp.getBase() instanceof ExprUnary) {
             Type t = this.getType(exp.getBase());

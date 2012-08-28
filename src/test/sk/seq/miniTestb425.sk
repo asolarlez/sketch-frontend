@@ -1,0 +1,66 @@
+pragma options "--bnd-unroll-amnt 8 --bnd-inbits 3";
+
+
+
+struct Image{
+    int r;
+    int c;
+    int[3][c][r] im;    
+}
+
+
+int imid=0;
+int getIm(int i);
+
+
+Image readImg(int ir, int ic){
+    int r = ir;
+    int c = ic;
+    Image im = new Image(r=r, c=c);
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            im.im[i][j][0] = getIm(imid++);
+            im.im[i][j][1] = getIm(imid++);
+            im.im[i][j][2] = getIm(imid++);
+        }
+    }
+    return im;
+}
+
+
+void applyFilter(int r, int c, int K, fun body){
+    for(int i=K; i<r-K; ++i){
+        for(int j=K; j<c-K; ++j){
+            body(i,j);            
+        }
+    }
+}
+
+harness void main(int ir, int ic){
+    Image im = readImg(ir, ic);
+    if(im.r>4 && im.c>4){
+        im.im[4][4][2] = 22;
+    }
+    edgeDetector(im.r, im.c, im.im);
+    
+}
+
+void edgeDetector(int r, int c, ref int[3][c][r] im){
+    int[{| r | r | r+1 | c|}][{|c | c-1 | c+1 |r |}] dbuf;
+    int maxVal = 1;
+    generator void writeBack(int i, int j){  
+        if(i==4 && j==4){
+            assert im[4][4][2] == 22;
+        }
+        im[i][j][0] = 0;
+        im[i][j][1] = (dbuf[i][j]*250)/maxVal;
+        im[i][j][2] = 0;
+        if(i>3 && j > 3){
+            im[i][j][0] = 33;
+        }
+    }
+    applyFilter(r, c, 0, writeBack);
+    if(r>4 && c>4){
+        assert im[4][4][0] == 33;
+    }
+}
