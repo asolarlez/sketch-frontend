@@ -437,6 +437,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		    final List<Function> nfuns = new ArrayList<Function>();
 		    PreprocessSketch v0 = new PreprocessSketch(varGen, 10, new BaseRControl(10), true, true);
         v0.setNres(nres);
+        // FEReplacer v_efs = new EliminateFinalStructs(varGen);
         FEReplacer v01 = new SeparateInitializers();
 		    v01.setNres(nres);
         FEReplacer v1 = new ScalarizeVectorAssignments(varGen, true);
@@ -462,6 +463,10 @@ public class FunctionalizeStencils extends FEReplacer {
 	        	f = ((Function)f.accept(v01));
 
 	        	f = ((Function)f.accept(v1));
+	        	
+	        	EliminateFinalStructs efs = new EliminateFinalStructs(varGen, null);
+	        	efs.setNres(nres);
+            f = (Function) f.accept(efs);
 
 	        	//System.out.println(f.toString());
             f = ((Function) f.accept(v2));

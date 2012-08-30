@@ -1,0 +1,40 @@
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 4 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+struct LocalState {
+	int len;
+	int glen;
+	int[len+glen*2] m;
+}
+
+LocalState movein(int rank, global int P, global int N, global int[N] mat) {
+	int len = N/P;
+	int glen = len/2;
+	int[len+glen*2] m;
+	int base1 = len*rank;
+	for (int i=0; i<len; ++i) {
+		m[glen*??+base1*??+i] = mat[glen*??+base1*??+i];  /* glen, base1 */
+	}
+	LocalState l = new LocalState(len=len, glen=glen, m=m);
+	return l;
+}
+
+void moveout(int rank, int P, int N, ref global int[N] mat, LocalState l) {
+	int base1 = l.len*rank;
+	for (int i=0; i<l.len; ++i) {
+		mat[base1+i] = l.m[l.glen+i];
+	}
+}
+
+stencil int[N][N] spec(int P, int N, int[N] mat) {
+	return mat;
+}
+
+stencil int[N][N] imp(int P, int N, int[N] mat) implements spec {
+	if (P>=1 && N%P == 0) {
+		for (int rank=0; rank<P; ++rank) {
+			LocalState l = movein(rank, P, N, mat);
+			moveout(rank, P, N, mat, l);
+		}
+	}
+	return mat;
+}

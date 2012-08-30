@@ -215,12 +215,13 @@ public class ParamTree{
 			}else{
 				int pos = tn.pos;
 				tn = tn.father;
-				while(tn.nchildren()<= pos+1){
+                while (tn != null && tn.nchildren() <= pos + 1) {
 					if( tn == root ){tn = null;  return ;}
 					pos = tn.pos;
 					tn = tn.father;
 				}
-				tn = tn.child(pos+1);
+                if (tn != null)
+                    tn = tn.child(pos + 1);
 			}
 		}
 
