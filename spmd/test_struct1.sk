@@ -31,10 +31,13 @@ stencil int[N][N] spec(int P, int N, int[N] mat) {
 
 stencil int[N][N] imp(int P, int N, int[N] mat) implements spec {
 	if (P>=1 && N%P == 0) {
+		//int[N] m = mat;
 		for (int rank=0; rank<P; ++rank) {
 			LocalState l = movein(rank, P, N, mat);
 			moveout(rank, P, N, mat, l);
 		}
+		return mat;
+	} else {
+		return mat;
 	}
-	return mat;
 }

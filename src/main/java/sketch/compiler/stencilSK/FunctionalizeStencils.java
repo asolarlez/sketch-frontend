@@ -37,6 +37,7 @@ import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.stencilSK.ParamTree.treeNode.PathIterator;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -437,7 +438,6 @@ public class FunctionalizeStencils extends FEReplacer {
 		    final List<Function> nfuns = new ArrayList<Function>();
 		    PreprocessSketch v0 = new PreprocessSketch(varGen, 10, new BaseRControl(10), true, true);
         v0.setNres(nres);
-        // FEReplacer v_efs = new EliminateFinalStructs(varGen);
         FEReplacer v01 = new SeparateInitializers();
 		    v01.setNres(nres);
         FEReplacer v1 = new ScalarizeVectorAssignments(varGen, true);
@@ -455,6 +455,17 @@ public class FunctionalizeStencils extends FEReplacer {
             EliminateReturns elr = new EliminateReturns();
             elr.setNres(nres);
             f = (Function) f.accept(elr);
+
+            EliminateFinalStructs efs = new EliminateFinalStructs(varGen, null);
+            efs.setNres(nres);
+
+            f = (Function) f.accept(v01);
+            // System.out.println("before efs:");
+            // f.accept(new SimpleCodePrinter());
+            f = (Function) f.accept(efs);
+            // System.out.println("after efs:");
+            // f.accept(new SimpleCodePrinter());
+
             f = ((Function) f.accept(v23));
             f = ((Function) f.accept(v24));
             f = ((Function) f.accept(new FlattenStmtBlocks()));
@@ -464,10 +475,6 @@ public class FunctionalizeStencils extends FEReplacer {
 
 	        	f = ((Function)f.accept(v1));
 	        	
-	        	EliminateFinalStructs efs = new EliminateFinalStructs(varGen, null);
-	        	efs.setNres(nres);
-            f = (Function) f.accept(efs);
-
 	        	//System.out.println(f.toString());
             f = ((Function) f.accept(v2));
 	        	nfuns.add(f);	        	
@@ -488,8 +495,9 @@ public class FunctionalizeStencils extends FEReplacer {
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
-            // f.accept(new SimpleCodePrinter());
-                //System.out.println("After: "+ f.toString());
+            System.out.println("before this:");
+             f.accept(new SimpleCodePrinter());
+            // System.out.println("After: "+ f.toString());
 
                 f.accept(this);
             }
