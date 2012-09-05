@@ -290,7 +290,12 @@ public class GetExprType extends FENullVisitor
                 return new ExprField(fexp.getLeft(), ev.getName());
             }
         };
-        return (Type) ts.getType(exp.getName()).accept(repVars);
+        Type ttt = ts.getType(exp.getName());
+        if (ttt != null) {
+            return (Type) ttt.accept(repVars);
+        } else {
+            return null;
+        }
     }
 
     public Object visitExprFunCall(ExprFunCall exp)

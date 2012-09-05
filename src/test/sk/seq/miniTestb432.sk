@@ -1,0 +1,73 @@
+
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 9 --bnd-arr-size 9";
+
+int INTEGER = 0;
+int LIST = 1;
+
+struct MultiType{
+  int val;
+  int flag;
+  MTList lst;
+}
+
+struct MTList{
+  int len;
+  MultiType[len] listValues;
+}
+
+int mult(int m, int n){
+   return m*n;
+}
+
+int multSketch(int m, int n) implements mult{
+  MultiType mMT = new MultiType(val = m, flag = INTEGER);
+  MultiType nMT = new MultiType(val = n, flag = INTEGER);
+  MultiType result = multIA(mMT, nMT);
+  return result.val;
+}
+
+MultiType multIA(MultiType m, MultiType n){
+  MultiType result = new MultiType(val=fuzzAssign(1),flag=INTEGER);
+  
+  void body(MultiType y){
+    assert y.flag == INTEGER;
+    result = multiplyMultiType(result, m);
+  }
+  foreach(body, range(n));
+  
+  return result;
+}
+
+MultiType range(MultiType x){
+  assert x.flag == INTEGER;
+  int ub = x.val;
+  MultiType[ub] A;
+  for(int i=0; i<ub; ++i){
+    A[i] = new MultiType(val=i, flag=INTEGER);
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=ub), flag=LIST);
+  return m;
+}
+
+void foreach(fun body, MultiType lst){
+  assert lst.flag == LIST;
+  MTList ma = lst.lst;
+  for(int i=0; i<ma.len; ++i){
+    
+    body(ma.listValues[i]);
+  }
+}
+
+int fuzzAssign(int x){
+  if(??) return x;
+  if(??) return x+1;
+  if(??) return x-1;
+  if(??) return 0;
+}
+
+MultiType multiplyMultiType(MultiType m, MultiType n){
+  assert m.flag == INTEGER;
+  assert n.flag == INTEGER;
+  return new MultiType(val = (m.val + n.val), flag = INTEGER);
+}
+

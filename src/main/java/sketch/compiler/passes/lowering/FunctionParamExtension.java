@@ -571,7 +571,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 Type tt = (Type) p.getType().accept(vrep);
                 if (tt instanceof TypeStructRef) {
                     TypeStructRef tsf = (TypeStructRef) tt;
-                    tt = tsf.addDefaultPkg(fun.getPkg());
+                    tt = tsf.addDefaultPkg(fun.getPkg(), nres);
                 }
                 Statement decl = new StmtVarDecl(exp, tt, tempVar, oldArg);
                 ExprVar ev = new ExprVar(exp, tempVar);

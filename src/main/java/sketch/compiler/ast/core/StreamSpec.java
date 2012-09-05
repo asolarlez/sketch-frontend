@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -174,6 +175,17 @@ public class StreamSpec extends FENode
     public StreamSpec newFromFcns(List<Function> fcns) {
         return new StreamSpec(this, this.getName(),
                 structs, this.getVars(), Collections.unmodifiableList(fcns));
+    }
+
+    public StreamSpec merge(StreamSpec s2) {
+        assert this.getName().equals(s2.getName());
+        List<TypeStruct> ns = new ArrayList<TypeStruct>(structs);
+        ns.addAll(s2.structs);
+        List<FieldDecl> fd = new ArrayList<FieldDecl>(vars);
+        fd.addAll(s2.vars);
+        List<Function> fs = new ArrayList<Function>(funcs);
+        fs.addAll(s2.funcs);
+        return new StreamSpec(this, name, ns, fd, fs);
     }
 
     public StreamSpec newFromFcns(List<Function> fcns, List<TypeStruct> structs) {

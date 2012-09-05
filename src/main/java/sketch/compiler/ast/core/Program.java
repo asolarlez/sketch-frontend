@@ -19,8 +19,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import sketch.compiler.Directive;
@@ -77,6 +81,20 @@ public class Program extends FENode
         }
 
         public Program create() {
+            Map<String, StreamSpec> namedStreams = new HashMap<String, StreamSpec>();
+            for (StreamSpec pkg : streams) {
+                String name = pkg.getName();
+                if (namedStreams.containsKey(name)) {
+                    StreamSpec prevpkg = namedStreams.get(name);
+                    namedStreams.put(name, prevpkg.merge(pkg));
+                } else {
+                    namedStreams.put(name, pkg);
+                }
+            }
+            streams = new ArrayList<StreamSpec>();
+            for (Entry<String, StreamSpec> ns : namedStreams.entrySet()) {
+                streams.add(ns.getValue());
+            }
             return new Program(this.base, this.streams, this.directives);
         }
     }

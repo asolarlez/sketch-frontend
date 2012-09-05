@@ -64,7 +64,7 @@ public class NameResolver {
     }
 
     public <T> String getFullName(String name, Map<String, String> pkgForThing,
-            Map<String, T> chkMap)
+            Map<String, T> chkMap, String defPkg)
     {
         if (name.indexOf("@") > 0) {
             return name;
@@ -74,7 +74,7 @@ public class NameResolver {
         }
         String pkgName = pkgForThing.get(name);
         if (pkgName == null) {
-            String cpkgNm = name + "@" + this.pkg.getName();
+            String cpkgNm = name + "@" + defPkg;
             if (chkMap.containsKey(cpkgNm)) {
                 return cpkgNm;
             }
@@ -85,7 +85,7 @@ public class NameResolver {
     }
 
     public Function getFun(String name) {
-        String full = getFullName(name, pkgForFun, funMap);
+        String full = getFullName(name, pkgForFun, funMap, this.pkg.getName());
         if (full == null) {
             return null;
         }
@@ -116,16 +116,24 @@ public class NameResolver {
      * @param name
      * @return
      */
+    public String getStructName(String name, String defPkg) {
+        return getFullName(name, pkgForStruct, structMap, defPkg);
+    }
+
     public String getStructName(String name) {
-        return getFullName(name, pkgForStruct, structMap);
+        return getStructName(name, this.pkg.getName());
+    }
+
+    public String getFunName(String name, String defPkg) {
+        return getFullName(name, pkgForFun, funMap, defPkg);
     }
 
     public String getFunName(String name) {
-        return getFullName(name, pkgForFun, funMap);
+        return getFunName(name, this.pkg.getName());
     }
 
     public TypeStruct getStruct(String name) {
-        String full = getFullName(name, pkgForStruct, structMap);
+        String full = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
         if (full == null) {
             return null;
         }

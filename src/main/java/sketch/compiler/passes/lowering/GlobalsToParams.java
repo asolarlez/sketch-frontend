@@ -369,7 +369,7 @@ public class GlobalsToParams extends FEReplacer {
             int i = 0;
             for (Type ft : field.getTypes()) {
                 if (ft instanceof TypeStructRef) {
-                    ft = ((TypeStructRef) ft).addDefaultPkg(pkg);
+                    ft = ((TypeStructRef) ft).addDefaultPkg(pkg, nres);
                 }
                 fieldTypes.put(field.getName(i), ft);
                 ++i;

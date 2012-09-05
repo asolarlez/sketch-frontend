@@ -750,7 +750,7 @@ public class NodesToSuperCpp extends NodesToJava {
             rmap.put(p.getName(), actual);
             String partxt = (String) actual.accept(this);
             if (parType instanceof TypeArray) {
-                if (!parType.equals(actType)) {
+                if (!parType.equals(actType) && !p.isParameterOutput()) {
                     TypeArray latype = (TypeArray) parType;
                     String lenString = (String) latype.getLength().accept(this);
                     String nvar = newTempArray(latype, lenString);

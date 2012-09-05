@@ -118,6 +118,18 @@ public class NodesToSuperH extends NodesToSuperCpp {
         unIndent();
         result += indent + "}\n";
 
+        result += indent + "~" + escapeCName(struct.getName()) + "(){\n";
+        addIndent();
+
+        for (Entry<String, Type> entry : struct) {
+            if (entry.getValue() instanceof TypeArray) {
+                result += indent + "delete[] " + entry.getKey() + ";\n";
+            }
+        }
+
+        unIndent();
+        result += indent + "}\n";
+
         for (Annotation a : struct.getAnnotation("Native")) {
             String s = a.rawParams.substring(1, a.rawParams.length() - 1);
             s = s.replace("\\\"", "\"");

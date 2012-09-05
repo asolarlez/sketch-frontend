@@ -1,8 +1,11 @@
 package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -26,6 +29,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.util.ControlFlowException;
+import sketch.util.datastructures.TypedHashMap;
 
 /**
  * Protect dangerous expressions such as array accesses, division and dereferences. Also
@@ -76,6 +80,34 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
         }
 	}
 	
+    public Object visitTypeStruct(TypeStruct ts) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
+        boolean changed = false;
+        TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
+        for (Entry<String, Type> entry : ts) {
+            symtab.registerVar(entry.getKey(), actualType(entry.getValue()), ts,
+                    SymbolTable.KIND_FIELD);
+        }
+
+        symtab = oldSymTab;
+
+        return ts;
+    }
+
+    public Object visitParameter(Parameter par) {
+        symtab.registerVar(par.getName(), actualType(par.getType()), par,
+                SymbolTable.KIND_FUNC_PARAM);
+
+        Type t = (Type) par.getType(); // Don't check the type. We don't want assertions
+                                       // in the middle of nowhere.
+        if (t == par.getType()) {
+            return par;
+        } else {
+            return new Parameter(t, par.getName(), par.getPtype());
+        }
+    }
 	
 	public Object visitExprTernary(ExprTernary exp){
 		Expression a = exp.getA().doExpr(this);

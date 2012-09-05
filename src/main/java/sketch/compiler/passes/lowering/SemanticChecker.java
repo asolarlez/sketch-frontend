@@ -532,7 +532,7 @@ public class SemanticChecker
 					Expression param = (Expression)iter.next();
 					Parameter formal = (Parameter) form.next();
 					Type lt = getType(param);
-                    if (!lt.promotesTo(this.actualType(formal.getType()))) {
+                    if (lt == null || !lt.promotesTo(this.actualType(formal.getType()))) {
 					    printFailure("Semantic Failure here:", exp, "at", exp.getCx(), "\ncalling function", fun);
 						report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + lt + "  " + fun);
 					}
@@ -810,7 +810,8 @@ public class SemanticChecker
 
 					if (!found)
 						report(expr,
-								"structure does not have a field named "+
+ "structure " + ts.getFullName() +
+                                " does not have a field named " +
 								"'" + rn + "'");
 				}
 				else

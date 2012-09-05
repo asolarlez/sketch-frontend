@@ -1,0 +1,11 @@
+package TOO;
+
+include "miniTestb429b.skh";
+
+struct Bar{
+    int x;
+}
+
+Jar newJar(int i){
+    return new Jar(x=i, b=newBar(i));
+}

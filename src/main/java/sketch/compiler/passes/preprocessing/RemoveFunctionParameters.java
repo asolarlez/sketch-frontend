@@ -30,7 +30,6 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
-import sketch.util.exceptions.UnrecognizedVariableException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
@@ -648,7 +647,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         String name = nres.getFunName(efc.getName());
         if (name == null) {
-            throw new UnrecognizedVariableException(efc.getName(), efc);
+            throw new ExceptionAtNode("Function " + efc.getName() +
+                    " has either not been defined, or is ambiguous.", efc);
         }
         if (funToReplace.containsKey(name)) {
             Function orig = funToReplace.get(name);
