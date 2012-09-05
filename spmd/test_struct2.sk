@@ -1,4 +1,4 @@
-pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 4 --bnd-unroll-amnt 32 --bnd-inline-amnt 1 --beopt:-bndwrand 50  --bnd-arr-size 10 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 4 --bnd-unroll-amnt 32 --bnd-inline-amnt 1 --beopt:-bndwrand 50  --bnd-arr-size 10 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
 
 struct LocalState {
 	int len;
@@ -32,17 +32,19 @@ void moveout(int rank, int P, int N, ref global int[N][N] mat, LocalState l) {
 	}
 }
 
- int[N][N] spec(int P, int N, int[N][N] mat) {
+stencil int[N][N] spec(int P, int N, int[N][N] mat) {
 	return mat;
 }
 
- int[N][N] imp(int P, int N, int[N][N] mat) implements spec {
+stencil int[N][N] imp(int P, int N, int[N][N] mat) implements spec {
 	if (P>=1 && N%P == 0) {
+		int[N][N] m = mat;
 		for (int rank=0; rank<P*P; ++rank) {
-			LocalState l = movein(rank, P, N, mat);
-			moveout(rank, P, N, mat, l);
+			LocalState l = movein(rank, P, N, m);
+			moveout(rank, P, N, m, l);
 		}
+		return m;
+	} else {
+		return mat;
 	}
-	
-	return mat;
 }

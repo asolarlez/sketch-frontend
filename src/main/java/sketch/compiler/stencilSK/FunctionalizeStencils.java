@@ -30,11 +30,14 @@ import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
+import sketch.compiler.passes.lowering.AddArraySizeAssertions;
 import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
 import sketch.compiler.passes.lowering.MakeBodiesBlocks;
+import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit;
+import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.passes.lowering.SeparateInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
@@ -249,12 +252,14 @@ public class FunctionalizeStencils extends FEReplacer {
         for (StreamSpec strs : prog.getStreams()) {
             strs.getVars().clear();
             List<Function> functions = strs.getFuncs();
-            for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
-                Function fun = it.next();
-                if (fun.isStencil()) {
-                    it.remove();
-                }
-            }
+            // TODO xzl: is this correct? can we just clear all old functions?
+            functions.clear();
+            // for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
+            // Function fun = it.next();
+            // if (fun.isStencil()) {
+            // it.remove();
+            // }
+            // }
         }
         StreamSpec strs = (StreamSpec) prog.getStreams().get(0);
         List<Function> functions = strs.getFuncs();
@@ -460,20 +465,27 @@ public class FunctionalizeStencils extends FEReplacer {
             efs.setNres(nres);
 
             f = (Function) f.accept(v01);
-            // System.out.println("before efs:");
-            // f.accept(new SimpleCodePrinter());
+            System.out.println("before efs:");
+            f.accept(new SimpleCodePrinter());
             f = (Function) f.accept(efs);
-            // System.out.println("after efs:");
-            // f.accept(new SimpleCodePrinter());
+            System.out.println("after efs:");
+            f.accept(new SimpleCodePrinter());
+
+            f = ((Function) f.accept(new AddArraySizeAssertions()));
+
+            f =
+                    ((Function) f.accept(new ProtectDangerousExprsAndShortCircuit(
+                            FailurePolicy.ASSERTION, varGen)));
+
+            f = ((Function) f.accept(v1));
 
             f = ((Function) f.accept(v23));
+
             f = ((Function) f.accept(v24));
             f = ((Function) f.accept(new FlattenStmtBlocks()));
             f = ((Function) f.accept(new AssembleInitializers()));
             f = ((Function) f.accept(new RemoveShallowTempVars(20)));
 	        	f = ((Function)f.accept(v01));
-
-	        	f = ((Function)f.accept(v1));
 	        	
 	        	//System.out.println(f.toString());
             f = ((Function) f.accept(v2));
@@ -504,6 +516,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        	        
 
 	        ss = oldSS;
+        spec.getStructs().clear();
 	        return spec;
 	    }
 

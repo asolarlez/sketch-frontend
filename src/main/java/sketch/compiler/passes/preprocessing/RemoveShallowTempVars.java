@@ -126,6 +126,7 @@ public class RemoveShallowTempVars extends FEReplacer {
                         isShallow.put(name, true);
                         svd.getInit(i).accept(new FEReplacer() {
                             public Object visitExprVar(ExprVar ev) {
+                                // TODO xzl: what does dependsOn mean?
                                 dependsOn.put(ev.getName(), name);
                                 return ev;
                             }
@@ -136,9 +137,14 @@ public class RemoveShallowTempVars extends FEReplacer {
                     }else{
                         isShallow.put(name, false);
                     }
-                } else {
-                    if (t instanceof TypeArray &&
-                            ((TypeArray) t).getBase() instanceof TypePrimitive)
+                } else if (t instanceof TypeArray) {
+                    t.accept(new FEReplacer() {
+                        public Object visitExprVar(ExprVar ev) {
+                            isShallow.put(ev.getName(), false);
+                            return ev;
+                        }
+                    });
+                    if (((TypeArray) t).getBase() instanceof TypePrimitive)
                     {
                         if (svd.getInit(i) != null && checkSimple(svd.getInit(i))) {
                             isShallow.put(name, true);

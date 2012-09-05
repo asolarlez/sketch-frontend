@@ -190,7 +190,8 @@ public class ArrFunction{
 		}
 		List<Statement> stmts=new ArrayList<Statement>();
 		
-		addIndexCheck(stmts);
+        // TODO xzl: can we safely remove this?
+        // addIndexCheck(stmts);
 		
 		
 		{
