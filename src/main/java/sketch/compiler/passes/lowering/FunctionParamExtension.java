@@ -96,15 +96,21 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 			return func.creator().params(parameters).create();
 		}
+
+        private void modify(Expression lhs) {
+            while (lhs instanceof ExprArrayRange)
+                lhs = ((ExprArrayRange) lhs).getBase();
+            assert lhs instanceof ExprVar || lhs instanceof ExprField;
+            if (lhs instanceof ExprVar) {
+                String lhsName = ((ExprVar) lhs).getName();
+                unmodifiedParams.remove(lhsName);
+            }
+        }
+
 		public Object visitStmtAssign(StmtAssign stmt)
 		{
 			Expression lhs=(Expression) stmt.getLHS().accept(this);
-			while (lhs instanceof ExprArrayRange) lhs=((ExprArrayRange)lhs).getBase();
-			assert lhs instanceof ExprVar  || lhs instanceof ExprField;
-			if( lhs instanceof ExprVar ){
-				String lhsName=((ExprVar)lhs).getName();
-				unmodifiedParams.remove(lhsName);
-			}
+            modify(lhs);
 			return super.visitStmtAssign(stmt);
 		}
 		public Object visitStmtVarDecl(StmtVarDecl stmt)
@@ -115,6 +121,31 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 			return super.visitStmtVarDecl(stmt);
 		}
+
+        public Object visitExprFunCall(ExprFunCall exp) {
+            // resolve the function being called
+            Function fun;
+            try {
+                fun = nres.getFun(exp.getName(), exp);
+            } catch (UnrecognizedVariableException e) {
+                // FIXME -- restore error noise
+                throw e;
+                // throw new UnrecognizedVariableException(exp + ": Function name " +
+                // e.getMessage() + " not found" );
+            }
+            // now we create a temp (or several?) to store the result
+            List<Expression> existingArgs = exp.getParams();
+            List<Parameter> params = fun.getParams();
+
+            for (int i = 0; i < params.size(); i++) {
+                Parameter p = params.get(i);
+                int ptype = p.getPtype();
+                if (ptype == Parameter.REF) {
+                    modify(existingArgs.get(i));
+                }
+            }
+            return super.visitExprFunCall(exp);
+        }
 	}
 
 	private int inCpCounter;
@@ -539,9 +570,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
             // throw new UnrecognizedVariableException(exp + ": Function name " +
             // e.getMessage() + " not found" );
 		}
-		// now we create a temp (or several?) to store the result
+        // now we create a temp (or several?) to store the result
 
-		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
+        List<Expression> args = new ArrayList<Expression>(fun.getParams().size());
 		List<Expression> existingArgs=exp.getParams();
 
 		List<Parameter> params=fun.getParams();
@@ -621,16 +652,6 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		assert tempVars.size()==1; //TODO handle the case when it's >1
 		return tempVars.get(0);
 	}
-
-
-
-
-
-
-
-	
-
-
 
 	@Override
 	public Object visitStmtReturn(StmtReturn stmt) {

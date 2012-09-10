@@ -253,6 +253,7 @@ public class FunctionalizeStencils extends FEReplacer {
             strs.getVars().clear();
             List<Function> functions = strs.getFuncs();
             // TODO xzl: is this correct? can we just clear all old functions?
+            // change this later
             functions.clear();
             // for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
             // Function fun = it.next();
