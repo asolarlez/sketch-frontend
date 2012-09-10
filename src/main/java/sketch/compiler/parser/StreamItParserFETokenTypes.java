@@ -25,7 +25,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
 import sketch.util.datastructures.HashmapList;
 
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 
 
 import sketch.compiler.ast.core.exprs.*;

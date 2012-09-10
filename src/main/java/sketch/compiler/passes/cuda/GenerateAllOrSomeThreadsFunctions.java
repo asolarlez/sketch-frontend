@@ -12,7 +12,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -122,12 +122,12 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         oldThreadFcns = new Vector<Function>();
         allThreadsFcns = new Vector<Function>();
         someThreadsFcns = new Vector<Function>();
 
-        spec = (StreamSpec) super.visitStreamSpec(spec);
+        spec = (Package) super.visitStreamSpec(spec);
         Vector<Function> allFcns = new Vector<Function>();
         allFcns.addAll(oldThreadFcns);
         allFcns.addAll(allThreadsFcns);

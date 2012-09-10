@@ -29,14 +29,18 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -169,9 +173,9 @@ public class SemanticChecker
 		names.put("FileReader", ctx);
 		names.put("FileWriter", ctx);
 
-		for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
+		for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
 		{
-			StreamSpec spec = (StreamSpec)iter.next();
+			Package spec = (Package)iter.next();
 			checkAStreamName(names, spec.getName(), spec.getCx ());
 		}
 
@@ -212,9 +216,9 @@ public class SemanticChecker
 	{
 		//System.out.println("checkDupFieldNames");
 
-		for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
+		for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
 		{
-			StreamSpec spec = (StreamSpec)iter.next();
+			Package spec = (Package)iter.next();
 			Map localNames = new HashMap();
 			Iterator i2;
 
@@ -296,7 +300,7 @@ public class SemanticChecker
 		// an anonymous stream declaration.  Ick.
 		prog.accept(new FEReplacer() {
 			// Track the current streamspec and function:
-			private StreamSpec spec = null;
+			private Package spec = null;
 			private Function func = null;
 
 
@@ -310,13 +314,13 @@ public class SemanticChecker
 				return super.visitStmtFor(stmt);
 			}
 
-			public Object visitStreamSpec(StreamSpec ss)
+			public Object visitStreamSpec(Package ss)
 			{
 				//System.out.println("checkStatementPlacement::visitStreamSpec");
 
 				//9assert false;
 
-				StreamSpec oldSpec = spec;
+				Package oldSpec = spec;
 				spec = ss;
 				Object result = super.visitStreamSpec(ss);
 				spec = oldSpec;

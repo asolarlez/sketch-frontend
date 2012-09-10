@@ -5,7 +5,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import static sketch.util.Misc.nonnull;
 
 public class SelectFunctionsToAnalyze {
@@ -13,7 +13,7 @@ public class SelectFunctionsToAnalyze {
 		super();
 	}
 
-    public List<Function> selectFunctions(StreamSpec spec, NameResolver nres) {
+    public List<Function> selectFunctions(Package spec, NameResolver nres) {
 		List<Function> result = new LinkedList<Function>();
         for (Function oldFunc : spec.getFuncs()) {
            String specname = oldFunc.getSpecification();

@@ -8,12 +8,12 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprRegen;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
@@ -442,7 +442,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         p = (Program) p.accept(new InnerFunReplacer());
         nres = new NameResolver(p);
 
-        for (StreamSpec pkg : p.getStreams()) {
+        for (Package pkg : p.getPagkages()) {
             nres.setPackage(pkg);
             Set<String> nameChk = new HashSet<String>();
             for (Function fun : pkg.getFuncs()) {
@@ -467,8 +467,8 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
-        Map<String, StreamSpec> pkges = new HashMap<String, StreamSpec>();
-        for (StreamSpec pkg : p.getStreams()) {
+        Map<String, Package> pkges = new HashMap<String, Package>();
+        for (Package pkg : p.getPagkages()) {
             nflistMap.put(pkg.getName(), new ArrayList<Function>());
             pkges.put(pkg.getName(), pkg);
         }
@@ -484,9 +484,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                 nflistMap.get(pkgName).add(nf);
             }
         }
-        List<StreamSpec> newPkges = new ArrayList<StreamSpec>();
-        for (StreamSpec pkg : p.getStreams()) {
-            newPkges.add(new StreamSpec(pkg, pkg.getName(), pkg.getStructs(),
+        List<Package> newPkges = new ArrayList<Package>();
+        for (Package pkg : p.getPagkages()) {
+            newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
                     pkg.getVars(), nflistMap.get(pkg.getName())));
         }
         return p.creator().streams(newPkges).create().accept(new ThreadClosure());
@@ -503,7 +503,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         return fname.substring(0, i >= 0 ? i : fname.length());
     }
 
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
         return null;
     }

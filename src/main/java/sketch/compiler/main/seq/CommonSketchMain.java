@@ -58,6 +58,13 @@ public class CommonSketchMain {
             backendOptions.add("--bnd-inline-amnt");
             backendOptions.add("" + options.bndOpts.inlineAmnt);
         }
+        if (options.debugOpts.showDag) {
+            backendOptions.add("-showDAG");
+        }
+        if (options.debugOpts.outputDag != null) {
+            backendOptions.add("-writeDAG");
+            backendOptions.add(options.debugOpts.outputDag);
+        }
         
         if (options.solverOpts.olevel >= 0) {
             backendOptions.add("--olevel");

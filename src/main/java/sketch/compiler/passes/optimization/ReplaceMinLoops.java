@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -79,15 +79,15 @@ public class ReplaceMinLoops extends FEReplacer {
     }
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
-        spec = (StreamSpec) (new LoopReplacer(nres)).visitStreamSpec(spec);
+    public Object visitStreamSpec(Package spec) {
+        spec = (Package) (new LoopReplacer(nres)).visitStreamSpec(spec);
         nres.setPackage(spec);
         if (glblvars.isEmpty()) {
             // don't do anything if there weren't any global functions
             return spec;
         }
 
-        spec = (StreamSpec) super.visitStreamSpec(spec);
+        spec = (Package) super.visitStreamSpec(spec);
 
         // add global vars
         final Vector<FieldDecl> vars = new Vector<FieldDecl>(spec.getVars());
@@ -100,7 +100,7 @@ public class ReplaceMinLoops extends FEReplacer {
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         fcns.add(getMinimizeFcn());
 
-        return new StreamSpec(spec, spec.getName(), spec.getStructs(), vars, fcns);
+        return new Package(spec, spec.getName(), spec.getStructs(), vars, fcns);
     }
 
     @Override

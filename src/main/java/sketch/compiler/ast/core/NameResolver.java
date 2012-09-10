@@ -15,9 +15,9 @@ public class NameResolver {
     final Map<String, TypeStruct> structMap = new HashMap<String, TypeStruct>();
     final Map<String, Function> funMap = new HashMap<String, Function>();
     final Map<String, FieldDecl> varMap = new HashMap<String, FieldDecl>();
-    StreamSpec pkg;
+    Package pkg;
 
-    public StreamSpec curPkg() {
+    public Package curPkg() {
         return pkg;
     }
     public Collection<String> structNamesList() {
@@ -30,7 +30,7 @@ public class NameResolver {
     public NameResolver(Program p) {
         populate(p);
     }
-    public void setPackage(StreamSpec pkg) {
+    public void setPackage(Package pkg) {
         this.pkg = pkg;
     }
 
@@ -140,7 +140,7 @@ public class NameResolver {
         return structMap.get(full);
     }
 
-    public void populate(StreamSpec pkg) {
+    public void populate(Package pkg) {
         this.pkg = pkg;
         for (TypeStruct ts : pkg.getStructs()) {
             registerStruct(ts);
@@ -154,7 +154,7 @@ public class NameResolver {
     }
 
     public void populate(Program p) {
-        for (StreamSpec pkg : p.getStreams()) {
+        for (Package pkg : p.getPagkages()) {
             populate(pkg);
         }
     }

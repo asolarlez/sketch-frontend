@@ -5,7 +5,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -28,7 +28,7 @@ public class SimpleCleanup extends PreprocessSketch {
 
 
 	@Override
-    protected List<Function> functionsToAnalyze(StreamSpec spec){
+    protected List<Function> functionsToAnalyze(Package spec){
 	    return new ArrayList<Function>(spec.getFuncs());
     }
 

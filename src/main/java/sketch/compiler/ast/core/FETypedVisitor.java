@@ -12,6 +12,12 @@
 package sketch.compiler.ast.core;
 
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -29,7 +35,6 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * typed version of null visitor.
@@ -160,14 +165,7 @@ public class FETypedVisitor<T> implements FEVisitor {
     }
 
 
-    public T visitSCSimple(SCSimple creator) {
-        throw new FEVisitorException(this, creator);
-    }
 
-
-    public T visitStmtAdd(StmtAdd stmt) {
-        throw new FEVisitorException(this, stmt);
-    }
 
     public T visitStmtAssert(StmtAssert stmt) {
         throw new FEVisitorException(this, stmt);
@@ -185,9 +183,6 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, stmt);
     }
 
-    public T visitStmtBody(StmtBody stmt) {
-        throw new FEVisitorException(this, stmt);
-    }
 
     public T visitStmtBreak(StmtBreak stmt) {
         throw new FEVisitorException(this, stmt);
@@ -273,7 +268,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, stmt);
     }
 
-    public T visitStreamSpec(StreamSpec spec) {
+    public T visitStreamSpec(Package spec) {
         throw new FEVisitorException(this, spec);
     }
 

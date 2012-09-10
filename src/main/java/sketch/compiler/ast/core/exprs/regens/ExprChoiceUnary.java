@@ -1,4 +1,4 @@
-package sketch.compiler.ast.core.exprs;
+package sketch.compiler.ast.core.exprs.regens;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.Expression;
 
 public class ExprChoiceUnary extends Expression {
 	public static final int NEG 	= 1<<1;

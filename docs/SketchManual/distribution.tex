@@ -1,4 +1,33 @@
 
 \section{Regression tests and Benchmark Suite}
 
-The sketch distribution includes a set of regression tests that exercise the different corner cases of the languge and is important if you are making modifications to the compiler. The distribution also includes a benchmark suite that you can use to evaluate new synthesis algorithms and compare their effect against the standard sketch distribution.
+The sketch distribution includes a set of regression tests that exercise the different corner cases of the language and is important if you are making modifications to the compiler. The tests can be found in the directory \C{src/test/sk/seq} if you are using the mercurial distribution, or \C{src/test/sk/seq} if you are using the easy-to-install version. After having installed the synthesizer, you can run \C{make long} or \C{make} if you want the short version of the test. The main difference between the long and the short tests is that the long tests do code generation and test the generated code on random inputs, whereas the short test only checks that the synthesizer doesn't crash.
+
+The distribution also includes a benchmark suite that you can use to evaluate new synthesis algorithms and compare their effect against the standard sketch distribution. This can be run from the \C{release_benchmarks} directory (or \C{src/release_benchmarks}) by running \C{bash perftest.sh OUTDIR}, where OUTDIR is a directory where logs should be written. Running the full benchmark suite takes about a day because every test is run 15 times to gather meaningful statistics, but you can modify the script to make it run faster. Once the benchmark suite is running, you can view relevant statistics by running \C{cat OUTDIR/* | awk –f ../scripts/stats.awk}.
+
+\section{Extracting the intermediate representation}
+If you have your own SMT solver with support for quantifiers and you want to compare your performance with Sketch, you can ask the solver for the intermediate representation of the synthesis problem after it is done optimizing and desugaring the high-level language features. 
+
+\flagdoc{debug-output-dag}{This flag outputs the intermediate representation in an easy to parse (although not necessarily easy to read) format suitable for mechanical conversion into other solver formats. The flag takes as a parameter the file name to which to write the output.}
+
+The file will show all the nodes in the intermediate representation in topological order. There listing in \figref{irformat} shows all the different types of nodes and the format in which they are written. 
+\begin{figure}
+\begin{lstlisting}
+id = ARR_R	TYPE	index	inputarr
+id = ARR_W	TYPE	index	old-array	new-value
+id = ARR_CREATE TYPE	size	v0 v1 ....
+id = BINOP	TYPE	left	right	
+        // where BINOP can be AND, OR, XOR, PLUS, TIMES, DIV, MOD, LT, EQ
+id = UNOP	TYPE	parent	// where UNOP can be NOT or NEG
+id = SRC	TYPE	NAME	bits
+id = CTRL	TYPE	NAME	bits
+id = DST	TYPE	NAME	val
+id = UFUN	TYPE	NAME	OUT_NAME CALLID ( (size p1 p2 ...) | (***) )
+id = ARRACC	TYPE	index 	size	v0 v1 ...
+id = CONST	TYPE	val
+id = ARRASS	TYPE	val == c noval yesval
+id = ACTRL	TYPE	nbits b0 b1 b2 ...
+id = ASSERT	val	"msg"
+\end{lstlisting}
+\caption{Format for intermediate representation.}\figlabel{irformat}
+\end{figure}

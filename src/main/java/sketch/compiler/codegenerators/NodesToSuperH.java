@@ -7,7 +7,7 @@ import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -152,7 +152,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         ret += "#include <cstring>\n\n";
         ret += "#include \"vops.h\"\n\n";
 
-        for (StreamSpec pkg : prog.getStreams()) {
+        for (Package pkg : prog.getPagkages()) {
             ret += "namespace " + pkg.getName() + "{\n";
             for (TypeStruct ts : pkg.getStructs()) {
                 ret += "  class " + ts.getName() + ";\n";
@@ -165,7 +165,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         return ret;
     }
 
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         String result = "";
         nres.setPackage(spec);
         preIncludes = "";

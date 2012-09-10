@@ -6,18 +6,18 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
 
 public class ReplaceSketchesWithSpecs extends FEReplacer {
 
-    protected StreamSpec ss;
+    protected Package ss;
     
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
 
-        StreamSpec oldSS = ss;
+        Package oldSS = ss;
         ss = spec;
         Object o = super.visitStreamSpec(spec);
         ss = oldSS;

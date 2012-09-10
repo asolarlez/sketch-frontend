@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -168,7 +169,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	 * This list contains all the functions that we have reduced.
 	 */
 	private List<Function> userFuns;
-	private StreamSpec ss;
+	private Package ss;
 
 	private TempVarGen varGen;
 	
@@ -245,7 +246,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	    if(funmap.isEmpty()){ return prog; }
         NameResolver nres = new NameResolver(prog);
         // StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
-        for (StreamSpec strs : prog.getStreams()) {
+        for (Package strs : prog.getPagkages()) {
             strs.getVars().clear();
             List<Function> functions = strs.getFuncs();
             for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
@@ -255,7 +256,7 @@ public class FunctionalizeStencils extends FEReplacer {
                 }
             }
         }
-        StreamSpec strs = (StreamSpec) prog.getStreams().get(0);
+        Package strs = (Package) prog.getPagkages().get(0);
         List<Function> functions = strs.getFuncs();
         // add the functions generated from ArrFunction objects to the program
         for (Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext();) {
@@ -279,7 +280,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		//convert all functions to procedures, translating calls and returns appropriately
 		prog = (Program) prog.accept(new MakeBodiesBlocks());
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-		strs=(StreamSpec)prog.getStreams().get(0);
+		strs=(Package)prog.getPagkages().get(0);
 		functions=strs.getFuncs();
 
         NameResolver lnres = new NameResolver(prog);
@@ -399,7 +400,7 @@ public class FunctionalizeStencils extends FEReplacer {
 
 	
 	
-	public List<Function> selectFunctions(StreamSpec spec){
+	public List<Function> selectFunctions(Package spec){
         List<Function> result = new LinkedList<Function>();
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
@@ -421,7 +422,7 @@ public class FunctionalizeStencils extends FEReplacer {
 
 
 
-	 public Object visitStreamSpec(StreamSpec spec)
+	 public Object visitStreamSpec(Package spec)
 	    {
 
 	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -430,7 +431,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	            oldVar.accept(this);
 	        }
 
-	        StreamSpec oldSS = ss;
+	        Package oldSS = ss;
 	        ss = spec;
 	        
 		    List<Function> funcs = selectFunctions(spec);

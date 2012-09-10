@@ -14,7 +14,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -276,8 +276,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
         symtab = new SymbolTable(symtab);
         nres = new NameResolver();
 
-        List<StreamSpec> oldStreams = new ArrayList<StreamSpec>();
-        for (StreamSpec spec : prog.getStreams()) {
+        List<Package> oldStreams = new ArrayList<Package>();
+        for (Package spec : prog.getPagkages()) {
             List<Function> funs = new ArrayList<Function>();
             for (Function fun : (List<Function>) spec.getFuncs()) {
                 Type retType = fun.getReturnType();
@@ -288,17 +288,17 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 funs.add(fun.creator().params(params).create());
             }
 
-            StreamSpec tpkg =
-                    new StreamSpec(spec, spec.getName(), spec.getStructs(),
+            Package tpkg =
+                    new Package(spec, spec.getName(), spec.getStructs(),
                             spec.getVars(), funs);
             nres.populate(tpkg);
             oldStreams.add(tpkg);
 
         }
 
-        List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
-        for (StreamSpec ssOrig : oldStreams) {
-            newStreams.add((StreamSpec) ssOrig.accept(this));
+        List<Package> newStreams = new ArrayList<Package>();
+        for (Package ssOrig : oldStreams) {
+            newStreams.add((Package) ssOrig.accept(this));
         }
 
         Program o = prog.creator().streams(newStreams).create();

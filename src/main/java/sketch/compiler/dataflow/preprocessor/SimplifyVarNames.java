@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -26,7 +26,7 @@ public class SimplifyVarNames extends FEReplacer {
 	
     public Object visitProgram(Program prog) {
         nres = new NameResolver(prog);
-        for (StreamSpec ssOrig : prog.getStreams()) {
+        for (Package ssOrig : prog.getPagkages()) {
             for (TypeStruct ts : ssOrig.getStructs()) {
                 String name;
             }

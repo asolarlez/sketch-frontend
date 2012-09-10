@@ -16,6 +16,12 @@
 
 package sketch.compiler.ast.core;
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -33,7 +39,6 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * Implementation of FEVisitor that always returns <code>null</code>.
@@ -91,11 +96,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitFieldDecl(FieldDecl field) { return null; }
     public Object visitFunction(Function func) { return null; }    
     public Object visitProgram(Program prog) { return null; }    
-    public Object visitSCSimple(SCSimple creator) { return null; }
 
-    public Object visitStmtAdd(StmtAdd stmt) {
-        return null;
-    }
 
     public Object visitStmtAssign(StmtAssign stmt) {
         return null;
@@ -105,7 +106,6 @@ public class FENullVisitor implements FEVisitor
         return null;
     }
     public Object visitStmtBlock(StmtBlock stmt) { return null; }
-    public Object visitStmtBody(StmtBody stmt) { return null; }
     public Object visitStmtBreak(StmtBreak stmt) { return null; }
     public Object visitStmtContinue(StmtContinue stmt) { return null; }
     public Object visitStmtDoWhile(StmtDoWhile stmt) { return null; }
@@ -125,7 +125,7 @@ public class FENullVisitor implements FEVisitor
         return null;
     }
 
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         return null;
     }
 

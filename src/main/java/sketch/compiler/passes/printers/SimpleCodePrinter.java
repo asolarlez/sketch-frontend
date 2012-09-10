@@ -12,7 +12,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.LibraryFcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -63,7 +63,7 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 	
 	
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
@@ -189,12 +189,6 @@ public class SimpleCodePrinter extends CodePrinter
 		return stmt;
 	}
 
-	@Override
-	public Object visitStmtAdd(StmtAdd stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtAdd(stmt);
-	}
 
 	@Override
 	public Object visitStmtAssert(StmtAssert stmt)
@@ -212,12 +206,6 @@ public class SimpleCodePrinter extends CodePrinter
 		return super.visitStmtAssign(stmt);
 	}
 
-	@Override
-	public Object visitStmtBody(StmtBody stmt)
-	{
-		printLine(stmt.toString());
-		return super.visitStmtBody(stmt);
-	}
 
 	@Override
 	public Object visitStmtBreak(StmtBreak stmt)

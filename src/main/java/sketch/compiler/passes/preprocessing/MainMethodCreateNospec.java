@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -37,9 +37,10 @@ public class MainMethodCreateNospec extends FEReplacer {
     public MainMethodCreateNospec() {}
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         // see super for how to create a new one
-        spec = (StreamSpec) super.visitStreamSpec(spec);
+        mainFcns.clear();
+        spec = (Package) super.visitStreamSpec(spec);
         if (!mainFcns.isEmpty()) {
             ArrayList<Function> newFcns = new ArrayList<Function>();
             for (Function f : spec.getFuncs()) {
@@ -54,7 +55,7 @@ public class MainMethodCreateNospec extends FEReplacer {
                 newFcns.add(wrapperFcn);
                 newFcns.add(getNospecFunction(wrapperFcn));
             }
-            return new StreamSpec(spec, spec.getName(), spec.getStructs(),
+            return new Package(spec, spec.getName(), spec.getStructs(),
                     spec.getVars(),
                     Collections.unmodifiableList(newFcns));
         } else {
@@ -65,7 +66,8 @@ public class MainMethodCreateNospec extends FEReplacer {
     protected Function getNospecFunction(Function mainWrapperFcn) {
         final FEContext ctx = FEContext.artificalFrom("nospec", mainWrapperFcn);
         return Function.creator(ctx, mainWrapperFcn.getSpecification(), FcnType.Static).body(
-                new StmtBlock(ctx)).params(mainWrapperFcn.getParams()).create();
+                new StmtBlock(ctx)).params(mainWrapperFcn.getParams()).pkg(
+                mainWrapperFcn.getPkg()).create();
     }
 
     @SuppressWarnings( { "deprecation" })
@@ -82,7 +84,7 @@ public class MainMethodCreateNospec extends FEReplacer {
                 FcnType.Static).params(mainFcn.getParams()).spec(
                 mainFcn.getName() + "__WrapperNospec").body(
                 new StmtBlock(artificalFrom, stmts)).printType(
-                mainFcn.getInfo().printType).create();
+                mainFcn.getInfo().printType).pkg(mainFcn.getPkg()).create();
     }
 
     @Override

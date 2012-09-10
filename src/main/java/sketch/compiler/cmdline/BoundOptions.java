@@ -28,8 +28,7 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     public int cbits = 5;
     @CliParameter(help = "The number of bits to use for integer inputs.")
     public int inbits = 5;
-    @CliParameter(help = "Size of the heap for each object. This is the maximum "
-            + "number of objects of a given type that the program may allocate.")
+    @CliParameter(help = "(Deprecated) System will ignore this flag.")
     public int heapSize = 11;
     @CliParameter(help = "Tells the solver to incrementally grow the size of integer "
             + "holes from 1 to n bits.")

@@ -24,7 +24,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -300,7 +300,7 @@ public class SymbolTableVisitor extends FEReplacer
         return super.visitStmtImplicitVarDecl(decl);
     }
 
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
 
         SymbolTable oldSymTab = symtab;

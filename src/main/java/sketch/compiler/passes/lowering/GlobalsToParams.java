@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -144,14 +145,14 @@ public class GlobalsToParams extends FEReplacer {
     }
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
-        spec = (StreamSpec) super.visitStreamSpec(spec);
+    public Object visitStreamSpec(Package spec) {
+        spec = (Package) super.visitStreamSpec(spec);
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         for (Function fcn : this.fcnsToAdd) {
             fcns.add(fcn);
         }
         this.fcnsToAdd.clear();
-        return new StreamSpec(spec, spec.getName(), spec.getStructs(),
+        return new Package(spec, spec.getName(), spec.getStructs(),
                 Collections.EMPTY_LIST, fcns);
     }
 

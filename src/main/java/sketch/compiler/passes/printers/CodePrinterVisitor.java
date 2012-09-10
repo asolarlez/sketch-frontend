@@ -12,7 +12,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
@@ -351,7 +351,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		symtab = new SymbolTable (symtab);
 
 
-		for (StreamSpec s : (List<StreamSpec>) p.getStreams ())
+		for (Package s : (List<Package>) p.getPagkages ())
 			s.accept (this);
 
 		symtab = oldSymtab;
@@ -565,7 +565,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return sw;
 	}
 
-	public Object visitStreamSpec (StreamSpec ss) {
+	public Object visitStreamSpec (Package ss) {
         SymbolTable oldSymtab = symtab;
         symtab = new SymbolTable (symtab);
 

@@ -9,7 +9,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -29,10 +29,10 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 public class BitVectorPreprocessor extends SymbolTableVisitor
 {
 	public static class HasStars extends FEReplacer{
-		private StreamSpec ss;
+		private Package ss;
 		boolean hasUnknown=false;
 		private Set<Function> visitedFunctions = new HashSet<Function>();;
-		public HasStars(StreamSpec ss) {
+		public HasStars(Package ss) {
 			this.ss=ss;
 		}
 		public Object visitExprFunCall(ExprFunCall exp)
@@ -335,7 +335,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 
 
 	@Override
-	public Object visitStreamSpec(StreamSpec spec)
+	public Object visitStreamSpec(Package spec)
 	{
 		starCheck=new HasStars(spec);
 		return super.visitStreamSpec(spec);

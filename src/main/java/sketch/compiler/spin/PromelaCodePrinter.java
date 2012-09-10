@@ -12,7 +12,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTernary;
@@ -72,7 +72,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		println ("");
 	}
 
-	public Object visitStreamSpec (StreamSpec ss) {
+	public Object visitStreamSpec (Package ss) {
         SymbolTable oldSymtab = symtab;
         symtab = new SymbolTable (symtab);
 

@@ -16,6 +16,12 @@
 
 package sketch.compiler.ast.core;
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -33,7 +39,6 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * Visitor interface for StreamIt front-end nodes.  This class
@@ -76,12 +81,9 @@ public interface FEVisitor
     public Object visitFunction(Function func);
     
     public Object visitProgram(Program prog);    
-    public Object visitSCSimple(SCSimple creator);
-    public Object visitStmtAdd(StmtAdd stmt);
     public Object visitStmtAssign(StmtAssign stmt);
     public Object visitStmtAtomicBlock(StmtAtomicBlock stmt);
     public Object visitStmtBlock(StmtBlock stmt);
-    public Object visitStmtBody(StmtBody stmt);
     public Object visitStmtBreak(StmtBreak stmt);
     public Object visitStmtContinue(StmtContinue stmt);
     public Object visitStmtDoWhile(StmtDoWhile stmt);
@@ -97,7 +99,7 @@ public interface FEVisitor
     public Object visitStmtVarDecl(StmtVarDecl stmt);
     public Object visitStmtWhile(StmtWhile stmt);
     public Object visitStmtFunDecl(StmtFunDecl stmt);
-    public Object visitStreamSpec(StreamSpec spec);    
+    public Object visitStreamSpec(Package spec);    
     public Object visitOther(FENode node);
     public Object visitType(Type t);
     public Object visitTypePrimitive(TypePrimitive t);

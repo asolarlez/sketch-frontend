@@ -8,7 +8,7 @@ import java.util.Set;
 import sketch.compiler.Directive;
 import sketch.compiler.Directive.OptionsDirective;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.main.cmdline.SketchOptions;
@@ -42,10 +42,10 @@ public class ParseProgramStage extends MetaStage {
             if (pprog == null)
                 return null;
 
-            List<StreamSpec> newStreams = new java.util.ArrayList<StreamSpec>();
+            List<Package> newStreams = new java.util.ArrayList<Package>();
             List<TypeStruct> newStructs = new java.util.ArrayList<TypeStruct>();
-            newStreams.addAll(prog.getStreams());
-            newStreams.addAll(pprog.getStreams());
+            newStreams.addAll(prog.getPagkages());
+            newStreams.addAll(pprog.getPagkages());
             pragmas.addAll(parser.getDirectives());
             prog = prog.creator().streams(newStreams).create();
         }

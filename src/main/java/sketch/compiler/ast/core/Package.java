@@ -38,7 +38,7 @@ import sketch.compiler.ast.core.typs.TypeStruct;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class StreamSpec extends FENode
+public class Package extends FENode
 {
 
     private String name;
@@ -71,7 +71,7 @@ public class StreamSpec extends FENode
      *            list of <code>Function</code> that are member functions of the stream
      *            object
      */
-    public StreamSpec(FENode context, String name,
+    public Package(FENode context, String name,
  List<TypeStruct> structs, List vars,
             List<Function> funcs)
     {
@@ -99,7 +99,7 @@ public class StreamSpec extends FENode
      *                 functions of the stream object
      * @deprecated
      */
-    public StreamSpec(FEContext context, String name,
+    public Package(FEContext context, String name,
  List<TypeStruct> structs,
             List vars, List<Function> funcs)
     {
@@ -172,12 +172,12 @@ public class StreamSpec extends FENode
         return v.visitStreamSpec(this);
     }
 
-    public StreamSpec newFromFcns(List<Function> fcns) {
-        return new StreamSpec(this, this.getName(),
+    public Package newFromFcns(List<Function> fcns) {
+        return new Package(this, this.getName(),
                 structs, this.getVars(), Collections.unmodifiableList(fcns));
     }
 
-    public StreamSpec merge(StreamSpec s2) {
+    public Package merge(Package s2) {
         assert this.getName().equals(s2.getName());
         List<TypeStruct> ns = new ArrayList<TypeStruct>(structs);
         ns.addAll(s2.structs);
@@ -185,11 +185,11 @@ public class StreamSpec extends FENode
         fd.addAll(s2.vars);
         List<Function> fs = new ArrayList<Function>(funcs);
         fs.addAll(s2.funcs);
-        return new StreamSpec(this, name, ns, fd, fs);
+        return new Package(this, name, ns, fd, fs);
     }
 
-    public StreamSpec newFromFcns(List<Function> fcns, List<TypeStruct> structs) {
-        return new StreamSpec(this, this.getName(),
+    public Package newFromFcns(List<Function> fcns, List<TypeStruct> structs) {
+        return new Package(this, this.getName(),
                 structs, this.getVars(),
                 Collections.unmodifiableList(fcns));
     }
