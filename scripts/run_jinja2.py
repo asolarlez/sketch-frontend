@@ -24,7 +24,7 @@ def main():
     import jinja2.ext
     mvnfile = Path("pom.xml")
     assert mvnfile.exists(), "please run in project root (with ./pom.xml)"
-    version = "1.4.0"
+    version = "1.6.0"
 
     paths = list(modpath.walk_files(["jinja2"]))
     dirs = frozenset(v.parent() for v in paths).union((includepath,))
