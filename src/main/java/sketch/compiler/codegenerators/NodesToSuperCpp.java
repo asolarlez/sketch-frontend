@@ -14,7 +14,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -557,7 +557,7 @@ public class NodesToSuperCpp extends NodesToJava {
         return res;
     }
 
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
 
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -750,7 +750,7 @@ public class NodesToSuperCpp extends NodesToJava {
             rmap.put(p.getName(), actual);
             String partxt = (String) actual.accept(this);
             if (parType instanceof TypeArray) {
-                if (!parType.equals(actType)) {
+                if (!parType.equals(actType) && !p.isParameterOutput()) {
                     TypeArray latype = (TypeArray) parType;
                     String lenString = (String) latype.getLength().accept(this);
                     String nvar = newTempArray(latype, lenString);

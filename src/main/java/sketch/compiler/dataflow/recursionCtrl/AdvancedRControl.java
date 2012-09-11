@@ -7,7 +7,7 @@ import java.util.Stack;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -88,7 +88,7 @@ public class AdvancedRControl extends RecursionControl {
 			funmap = new HashMap<String, FunInfo>();
 		}
 
-        public Object visitStreamSpec(StreamSpec spec) {
+        public Object visitStreamSpec(Package spec) {
 			 return super.visitStreamSpec(spec);
 		 }
 		public Object visitFunction(Function func){

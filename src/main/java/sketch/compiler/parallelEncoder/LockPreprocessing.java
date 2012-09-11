@@ -9,7 +9,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -48,9 +48,9 @@ public class LockPreprocessing extends SymbolTableVisitor {
 		return exp;
     }
 
-	public Object visitStreamSpec(StreamSpec spec)
+	public Object visitStreamSpec(Package spec)
     {
-		StreamSpec sspec = (StreamSpec)super.visitStreamSpec(spec);
+		Package sspec = (Package)super.visitStreamSpec(spec);
 
 		sspec.getVars().add(new FieldDecl(spec, TypePrimitive.inttype, NTYPES.getName(), new ExprConstInt(lockedTypes.size())));
         sspec.getFuncs().add(

@@ -9,7 +9,7 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -128,15 +128,15 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
             return new ExprBinary(exp, newOp, left, right, exp.getAlias());
     }
 	
-	public Object visitStreamSpec(StreamSpec spec)
+	public Object visitStreamSpec(Package spec)
     {
-        spec = (StreamSpec) super.visitStreamSpec(spec);
+        spec = (Package) super.visitStreamSpec(spec);
         if (floatConstants.size() == 0) {
             return spec;
         } else {
             List<Function> lf = new ArrayList<Function>(spec.getFuncs());
             lf.addAll(floatConstants.values());
-            return new StreamSpec(spec, spec.getName(), spec.getStructs(),
+            return new Package(spec, spec.getName(), spec.getStructs(),
                     spec.getVars(), lf);
         }
     }

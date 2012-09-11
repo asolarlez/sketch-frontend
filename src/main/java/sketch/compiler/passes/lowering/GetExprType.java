@@ -24,10 +24,16 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -290,7 +296,12 @@ public class GetExprType extends FENullVisitor
                 return new ExprField(fexp.getLeft(), ev.getName());
             }
         };
-        return (Type) ts.getType(exp.getName()).accept(repVars);
+        Type ttt = ts.getType(exp.getName());
+        if (ttt != null) {
+            return (Type) ttt.accept(repVars);
+        } else {
+            return null;
+        }
     }
 
     public Object visitExprFunCall(ExprFunCall exp)

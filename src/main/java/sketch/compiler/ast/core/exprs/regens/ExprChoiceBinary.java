@@ -1,7 +1,7 @@
 /**
  *
  */
-package sketch.compiler.ast.core.exprs;
+package sketch.compiler.ast.core.exprs.regens;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +9,8 @@ import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>

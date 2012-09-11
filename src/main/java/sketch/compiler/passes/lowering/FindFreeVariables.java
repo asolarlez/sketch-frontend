@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -60,7 +60,7 @@ public class FindFreeVariables extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
         // Skip all of this if the spec is named.
         if (spec.getName() != null)

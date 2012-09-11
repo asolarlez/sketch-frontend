@@ -4,7 +4,7 @@ import java.util.Vector;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.fcns.VectorMap.VectorMapFcn;
@@ -23,7 +23,7 @@ public class CleanupRemoveMinFcns extends FEReplacer {
     protected static boolean isMinFcn;
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         Vector<Function> newFcns =
                 vecmap_nonnull(spec.getFuncs(), new VectorMapFcn<Function, Function>() {
                     public Function map(Function fcn) {
@@ -32,7 +32,7 @@ public class CleanupRemoveMinFcns extends FEReplacer {
                         return (Function) ((isMinFcn) ? null : result);
                     }
                 });
-        return new StreamSpec(spec, spec.getName(),
+        return new Package(spec, spec.getName(),
                 spec.getStructs(), spec.getVars(), newFcns);
     }
 

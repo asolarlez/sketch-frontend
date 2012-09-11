@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 
@@ -20,7 +20,7 @@ public class EliminateDeadParallelCode extends EliminateDeadCode {
         super(varGen, true);
 	}
 
-	protected List<Function> functionsToAnalyze(StreamSpec spec){
+	protected List<Function> functionsToAnalyze(Package spec){
 		List<Function> fns = new LinkedList<Function> ();
 
 		for (Function f : spec.getFuncs ())

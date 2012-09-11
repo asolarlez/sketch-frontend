@@ -1,0 +1,18 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 4";
+
+struct Temp{
+    int n;
+    int[n/2] fa;
+}
+
+harness void main(int n){
+    int[n] x;
+    int[n/2] y;
+    Temp tt = new Temp(n=n);
+    void foo(){
+        for(int i=0; i<n/2; ++i){
+            y[i] = x[2*i];
+        }
+    }
+    foo();
+}

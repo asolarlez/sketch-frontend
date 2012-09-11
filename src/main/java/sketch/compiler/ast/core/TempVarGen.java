@@ -97,7 +97,7 @@ public class TempVarGen
                     return super.visitExprVar(expr);
                 }
 
-                public Object visitStreamSpec(StreamSpec ss)
+                public Object visitStreamSpec(Package ss)
                 {
                     String name = ss.getName();
                     if (name != null &&

@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
@@ -38,11 +39,12 @@ public class TypeStructRef extends Type
         this.name = name;
     }
 
-    public TypeStructRef addDefaultPkg(String pkg) {
+    public TypeStructRef addDefaultPkg(String pkg, NameResolver nres) {
         if (name.indexOf('@') >= 0) {
             return this;
         } else {
-            return new TypeStructRef(name + "@" + pkg);
+            String nname = nres.getStructName(name, pkg);
+            return new TypeStructRef(nname);
         }
     }
 

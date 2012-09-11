@@ -1,0 +1,16 @@
+include "miniTestb428.skh";
+
+struct Bar{
+    int aa;
+}
+
+harness void main(int i){
+    Moo m;
+    m = getMe(i);
+    assert m.x == i;
+}
+
+Moo getMe(int i){
+    Moo rv = new Moo(x=i);
+    return rv;
+}

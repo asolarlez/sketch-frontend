@@ -8,7 +8,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -62,17 +62,17 @@ public class AddPkgNameToNames extends FEReplacer {
     }
 
     public Object visitProgram(Program prog) {
-        if (prog.getStreams().size() > 1) {
+        if (prog.getPagkages().size() > 1) {
         assert prog != null : "FEReplacer.visitProgram: argument null!";
         nres = new NameResolver(prog);
         List<Function> lf = new ArrayList<Function>();
         List<TypeStruct> ts = new ArrayList<TypeStruct>();
-        for (StreamSpec ssOrig : prog.getStreams()) {
-            StreamSpec pkg = (StreamSpec) ssOrig.accept(this);
+        for (Package ssOrig : prog.getPagkages()) {
+            Package pkg = (Package) ssOrig.accept(this);
             lf.addAll(pkg.getFuncs());
             ts.addAll(pkg.getStructs());
         }
-        StreamSpec global = new StreamSpec(prog, "GLOBAL", ts, new ArrayList(), lf);
+        Package global = new Package(prog, "GLOBAL", ts, new ArrayList(), lf);
 
         return prog.creator().streams(Collections.singletonList(global)).create();
         } else {

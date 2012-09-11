@@ -7,7 +7,7 @@ import java.util.List;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -72,7 +72,7 @@ public class NodesToSuperCTest extends NodesToJava {
         return output.toString();
     }
 
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         nres.setPackage(spec);
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext();) {
             Function func = (Function) iter.next();

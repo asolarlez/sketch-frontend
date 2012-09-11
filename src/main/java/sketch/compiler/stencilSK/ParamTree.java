@@ -212,11 +212,11 @@ public class ParamTree{
 			treeNode curr = tn;
 			if( tn.nchildren() > 0 ){
 				tn = tn.child(0);
-			}else{
-                if( tn == root )
-                {
-                    tn = null;  
+            } else {
+                if (tn == root) {
+                    tn = null;
                     return;
+                }
                 }
                 int pos = tn.pos;
 				tn = tn.father;

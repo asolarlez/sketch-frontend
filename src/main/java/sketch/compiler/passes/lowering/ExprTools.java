@@ -5,10 +5,16 @@ package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectChain;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectField;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectOrr;
-import sketch.compiler.ast.core.exprs.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
 import sketch.util.ControlFlowException;
 
 /**

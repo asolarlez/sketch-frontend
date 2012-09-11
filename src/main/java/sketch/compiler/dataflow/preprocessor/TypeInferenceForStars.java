@@ -5,7 +5,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -243,7 +243,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	}
 	
 	@Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
 	    return super.visitStreamSpec(spec);
 	}
 

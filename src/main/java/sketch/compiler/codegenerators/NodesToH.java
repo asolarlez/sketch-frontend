@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStruct;
 
@@ -52,7 +52,7 @@ public class NodesToH extends NodesToC {
 		return ret;
 	}
 
-	public Object visitStreamSpec(StreamSpec spec){
+	public Object visitStreamSpec(Package spec){
 		String result = "";
         nres.setPackage(spec);
 

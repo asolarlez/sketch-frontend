@@ -1,0 +1,8 @@
+include "miniTestb429a.skh";
+include "miniTestb429b.skh";
+
+
+harness void main(int i){
+    Jar j = newJar(i);
+    assert j.x == i && j.b.x == i;
+}

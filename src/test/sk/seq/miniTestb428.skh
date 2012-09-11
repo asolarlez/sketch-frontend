@@ -1,0 +1,10 @@
+package Foo;
+
+struct Bar{
+    int bb;
+}
+
+
+struct Moo{
+    int x;
+}

@@ -13,7 +13,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -95,12 +95,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         oldProcFcns= new Vector<Function>();
         allProcFcns = new Vector<Function>();
         someProcFcns = new Vector<Function>();
 
-        spec = (StreamSpec) super.visitStreamSpec(spec);
+        spec = (Package) super.visitStreamSpec(spec);
         Vector<Function> allFcns = new Vector<Function>();
         allFcns.addAll(oldProcFcns);
         allFcns.addAll(allProcFcns);

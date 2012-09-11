@@ -12,10 +12,16 @@ import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -24,7 +30,6 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
-import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * FORTRAN 77 code generator.
@@ -149,12 +154,12 @@ public class SNodesToFortran extends FENullVisitor {
 		String ret=line("program "+filename);
 		ret+=line("end");
 		ret+=newline();
-        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
-            ret += (String)((StreamSpec)iter.next()).accept(this);
+        for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
+            ret += (String)((Package)iter.next()).accept(this);
 		return ret;
 	}
 
-	public Object visitStreamSpec(StreamSpec spec){
+	public Object visitStreamSpec(Package spec){
 		String ret = "";
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
@@ -623,23 +628,12 @@ public class SNodesToFortran extends FENullVisitor {
     }
 
 
-	public Object visitSCSimple(SCSimple creator) {
-	    throw new IllegalStateException();
-    }
-
-
-	public Object visitStmtAdd(StmtAdd stmt) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitStmtAssert(StmtAssert stmt) {
 		//TODO?
 	    return "";
     }
 
-	public Object visitStmtBody(StmtBody stmt) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitStmtBreak(StmtBreak stmt) {
 	    assert false;

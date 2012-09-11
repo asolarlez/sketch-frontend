@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -1572,7 +1572,7 @@ public class PartialEvaluator extends FEReplacer {
 
 
 
-    protected List<Function> functionsToAnalyze(StreamSpec spec){
+    protected List<Function> functionsToAnalyze(Package spec){
         SelectFunctionsToAnalyze funSelector = new SelectFunctionsToAnalyze();
         return funSelector.selectFunctions(spec, nres);
     }
@@ -1613,9 +1613,9 @@ public class PartialEvaluator extends FEReplacer {
         rcontrol.setNameRes(nres);
         funcsToAnalyze = new ArrayList<Function>();
         Map<Function, String> pkgForFun = new HashMap<Function, String>();
-        Map<String, StreamSpec> pkgs = new HashMap<String, StreamSpec>();
+        Map<String, Package> pkgs = new HashMap<String, Package>();
         Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
-        for (StreamSpec pkg : p.getStreams()) {
+        for (Package pkg : p.getPagkages()) {
             nres.setPackage(pkg);
             funcsToAnalyze.addAll(functionsToAnalyze(pkg));
             if (pkgs.containsKey(pkg.getName())) {
@@ -1653,12 +1653,12 @@ public class PartialEvaluator extends FEReplacer {
             assert tf == f;
         }
 
-        List<StreamSpec> newPkgs = new ArrayList<StreamSpec>();
-        for (StreamSpec pkg : p.getStreams()) {
-            StreamSpec newPkg = preprocPkg(pkg);
+        List<Package> newPkgs = new ArrayList<Package>();
+        for (Package pkg : p.getPagkages()) {
+            Package newPkg = preprocPkg(pkg);
             String pkgName = pkg.getName();
             newfuns.get(pkgName).addAll(newPkg.getFuncs());
-            newPkgs.add(new StreamSpec(newPkg, pkgName, newPkg.getStructs(),
+            newPkgs.add(new Package(newPkg, pkgName, newPkg.getStructs(),
                     newPkg.getVars(), newfuns.get(pkgName)));
         }
 
@@ -1666,7 +1666,7 @@ public class PartialEvaluator extends FEReplacer {
     }
 
 
-    public StreamSpec preprocPkg(StreamSpec spec)
+    public Package preprocPkg(Package spec)
  {
         Level lvl = state.pushLevel("visitStreamSpec");
 
@@ -1704,7 +1704,7 @@ public class PartialEvaluator extends FEReplacer {
 
         //assert preFil.size() == 0 : "This should never happen";
 
-        return isReplacer ? new StreamSpec(spec, spec.getName(), newStructs,
+        return isReplacer ? new Package(spec, spec.getName(), newStructs,
                 newVars, newFuncs) : spec;
     }
 

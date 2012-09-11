@@ -2,7 +2,7 @@
 
 SHELL = /bin/bash
 
-VERSION = 1.5.0
+VERSION = 1.6.0
 
 MVN_PATH = $(shell which mvn)
 
@@ -50,13 +50,13 @@ assemble-file: #HIDDEN
 assemble-noarch:
 	make assemble-file FILE=jar_assembly.xml
 	make assemble-file FILE=noarch_launchers_assembly.xml
-	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.5.0-noarch-launchers*)"
+	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.6.0-noarch-launchers*)"
 
 assemble-arch:
 	make assemble-file FILE=platform_jar_assembly.xml
 	make assemble-file FILE=launchers_assembly.xml
 	make assemble-file FILE=tar_src_assembly.xml
-	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.5.0-launchers*)"
+	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.6.0-launchers*)"
 
 win-installer: assemble-arch
 	basedir=$$(pwd); cd target/*-launchers-windows.dir; mv COPYING *jar installer; cd installer; /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensis sketch-installer.nsi; cp *exe "$$basedir"
@@ -121,7 +121,7 @@ run-local-sten:
 	export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx2300m -ea -server"; mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.sten.StencilSketchMain" "-Dexec.args=$(EXEC_ARGS)"
 
 light-distr:
-	rm -rf ../sketch-1.5.0
+	rm -rf ../sketch-$(VERSION)
 	rm -rf ../sketch-distr
 	mkdir ../sketch-distr
 	mkdir ../sketch-distr/src
@@ -132,14 +132,14 @@ light-distr:
 	cp -r src/test  ../sketch-distr
 	cp src/testrunner.mk ../sketch-distr
 	make assemble-noarch
-	cp target/sketch-1.5.0-noarch-launchers/*.jar ../sketch-distr/.
+	cp $$(ls -d target/sketch-1.6.0-noarch-launchers*)/*.jar ../sketch-distr/.
 	cp -r scripts ../sketch-distr
 	cp docs/SketchManual/manual.pdf ../sketch-distr/LanguageReference.pdf
 	cp scripts/windows/final/sketch ../sketch-distr/.
 	chmod +x ../sketch-distr/sketch
-	mkdir ../sketch-1.5.0 
-	mv ../sketch-distr ../sketch-1.5.0/sketch-frontend
-	cp -r ../sketch-backend ../sketch-1.5.0/.
-	cp LIGHT_README ../sketch-1.5.0/README
-	rm -rf ../sketch-1.5.0/sketch-backend/.hg
-	cd ../sketch-1.5.0/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend
+	mkdir ../sketch-$(VERSION) 
+	mv ../sketch-distr ../sketch-$(VERSION)/sketch-frontend
+	cp -r ../sketch-backend ../sketch-$(VERSION)/.
+	cp LIGHT_README ../sketch-$(VERSION)/README
+	rm -rf ../sketch-$(VERSION)/sketch-backend/.hg
+	cd ../sketch-$(VERSION)/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend

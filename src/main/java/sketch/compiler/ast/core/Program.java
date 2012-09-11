@@ -19,8 +19,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import sketch.compiler.Directive;
@@ -31,7 +35,7 @@ import static sketch.util.DebugOut.printWarning;
 /**
  * An entire StreamIt program.  This includes all of the program's
  * declared streams and structure types.  It consequently has Lists of
- * streams (as {@link sketch.compiler.nodes.StreamSpec} objects) and
+ * streams (as {@link sketch.compiler.Package.StreamSpec} objects) and
  * of structures (as {@link sketch.compiler.nodes.TypeStruct} objects).
  *
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
@@ -39,13 +43,13 @@ import static sketch.util.DebugOut.printWarning;
  */
 public class Program extends FENode
 {
-    private List<StreamSpec> streams;
+    private List<Package> packages;
 
     protected final Set<Directive> directives;
 
     public String toString() {
         String res = "";
-        for (StreamSpec pkg : streams) {
+        for (Package pkg : packages) {
             res += pkg.toString();
         }
         return res;
@@ -53,10 +57,10 @@ public class Program extends FENode
 
     public static class ProgramCreator {
         private Program base;
-        private List<StreamSpec> streams;
+        private List<Package> streams;
         private Set<Directive> directives;
 
-        public ProgramCreator(Program base, List<StreamSpec> streams,
+        public ProgramCreator(Program base, List<Package> streams,
                 Set<Directive> directives)
         {
             this.base = base;
@@ -64,7 +68,7 @@ public class Program extends FENode
             this.directives = directives;
         }
 
-        public ProgramCreator streams(List<StreamSpec> streams) {
+        public ProgramCreator streams(List<Package> streams) {
             this.streams = streams;
             return this;
         }
@@ -77,18 +81,32 @@ public class Program extends FENode
         }
 
         public Program create() {
+            Map<String, Package> namedStreams = new HashMap<String, Package>();
+            for (Package pkg : streams) {
+                String name = pkg.getName();
+                if (namedStreams.containsKey(name)) {
+                    Package prevpkg = namedStreams.get(name);
+                    namedStreams.put(name, prevpkg.merge(pkg));
+                } else {
+                    namedStreams.put(name, pkg);
+                }
+            }
+            streams = new ArrayList<Package>();
+            for (Entry<String, Package> ns : namedStreams.entrySet()) {
+                streams.add(ns.getValue());
+            }
             return new Program(this.base, this.streams, this.directives);
         }
     }
 
     public static Program emptyProgram() {
-        List<StreamSpec> streams = new java.util.ArrayList<StreamSpec>();
+        List<Package> streams = new java.util.ArrayList<Package>();
         Set<Directive> directives = new HashSet<Directive>();
         return new Program(null, streams, directives);
     }
 
     public boolean hasFunctions() {
-        for (StreamSpec s : streams) {
+        for (Package s : packages) {
             if (s.getFuncs().size() > 0) {
                 return true;
             }
@@ -98,23 +116,23 @@ public class Program extends FENode
 
     /** Creates a new StreamIt program, given lists of streams and
      * structures. */
-    protected Program(FENode context, List<StreamSpec> streams,
+    protected Program(FENode context, List<Package> streams,
             Set<Directive> directives)
     {
         super(context);
-        this.streams = streams;
+        this.packages = streams;
 
         this.directives = directives;
     }
 
     public ProgramCreator creator() {
-        return new ProgramCreator(this, streams, directives);
+        return new ProgramCreator(this, packages, directives);
     }
 
     /** Returns the list of streams declared in this. */
-    public List<StreamSpec> getStreams()
+    public List<Package> getPagkages()
     {
-        return streams;
+        return packages;
     }
 
 

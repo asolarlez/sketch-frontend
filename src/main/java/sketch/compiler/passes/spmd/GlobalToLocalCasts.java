@@ -8,7 +8,7 @@ import java.util.Vector;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
@@ -41,7 +41,7 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
     }
 
      @Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         super.visitStreamSpec(spec);
         
 //        final CodePrinterVisitor pr1 = new CodePrinterVisitor();
@@ -51,7 +51,7 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
-        StreamSpec result = (StreamSpec) cr.visitStreamSpec(spec);
+        Package result = (Package) cr.visitStreamSpec(spec);
         
         // System.out.println("after global to local casts:");
         // final CodePrinterVisitor pr2 = new CodePrinterVisitor();

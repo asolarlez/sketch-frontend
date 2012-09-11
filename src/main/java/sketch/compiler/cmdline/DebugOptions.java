@@ -29,11 +29,18 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Show a trace of the symbolic execution.")
     public boolean trace = false;
     @CliParameter(shortname = "V", help = "Sets the level of verbosity for the output. 0 is "
-            + "quiet mode 5 is the most verbose.")
+            + "quiet mode 10 is the most verbose.")
     public int verbosity = 1;
 
     @CliParameter(help = "Dump debug output to a file")
     public boolean dumpToFile = false;
+
+    @CliParameter(help = "Print IR for the synthesis problem to the console.")
+    public boolean showDag;
+
+    @CliParameter(help = "Write the IR to the given file in an easy to parse format.")
+    public String outputDag = null;
+
     @CliParameter(help = "Print names of stages and visitors as they execute")
     public boolean printPasses = false;
     @CliParameter(shortname = "p", help = "Stages / visitors to dump the program after (comma-sep)", hide_default = true, inlinesep = ",")

@@ -8,7 +8,7 @@ import java.util.Vector;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
@@ -42,7 +42,7 @@ import static sketch.util.DebugOut.assertFalse;
  */
 @CompilerPassDeps(runsBefore = {}, runsAfter = { GenerateAllOrSomeThreadsFunctions.class })
 public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
-    protected StreamSpec spec;
+    protected Package spec;
     protected CudaThreadBlockDim cudaBlockDim;
     protected CallGraph cg;
     protected final TempVarGen varGen;
@@ -62,7 +62,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitStreamSpec(StreamSpec spec) {
+    public Object visitStreamSpec(Package spec) {
         super.visitStreamSpec(spec);
 
         final CallReplacer cr = new CallReplacer(symtab);

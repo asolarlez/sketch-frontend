@@ -21,6 +21,12 @@ import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -38,7 +44,6 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.compiler.passes.streamit_old.SCSimple;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 
@@ -393,9 +398,9 @@ public class FEReplacer implements FEVisitor
     public Object visitProgram(Program prog) {
         assert prog != null : "FEReplacer.visitProgram: argument null!";
         nres = new NameResolver(prog);
-        List<StreamSpec> newStreams = new ArrayList<StreamSpec>();
-        for (StreamSpec ssOrig : prog.getStreams()) {
-            newStreams.add((StreamSpec) ssOrig.accept(this));
+        List<Package> newStreams = new ArrayList<Package>();
+        for (Package ssOrig : prog.getPagkages()) {
+            newStreams.add((Package) ssOrig.accept(this));
         }
 
 
@@ -403,41 +408,8 @@ public class FEReplacer implements FEVisitor
     }
 
 
-    public Object visitSCSimple(SCSimple creator)
-    {
-        List<Expression> newParams = new ArrayList<Expression>();
-        List<Expression> newPortals = new ArrayList<Expression>();
-        boolean hasChanged = false;
-        for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
-            Expression newParam = doExpression(param);
-            newParams.add(newParam);
-            if (newParam != param) hasChanged = true;
-        }
-        for (Iterator iter = creator.getPortals().iterator(); iter.hasNext(); )
-        {
-            Expression portal = (Expression)iter.next();
-            Expression newPortal = doExpression(portal);
-            newPortals.add(newPortal);
-            if (newPortal != portal) hasChanged = true;
-        }
-        if (!hasChanged)
-            return creator;
-        return new SCSimple(creator, creator.getName(),
-                            creator.getTypes(), newParams, newPortals);
-    }
 
 
-
-
-    public Object visitStmtAdd(StmtAdd stmt)
-    {
-        StreamCreator newCreator =
-            (StreamCreator)stmt.getCreator().accept(this);
-        if (newCreator == stmt.getCreator()) return stmt;
-        return new StmtAdd(stmt, newCreator);
-    }
 
     public Object visitStmtAssign(StmtAssign stmt)
     {
@@ -573,13 +545,6 @@ public class FEReplacer implements FEVisitor
     	}
     }
 
-    public Object visitStmtBody(StmtBody stmt)
-    {
-        StreamCreator newCreator =
-            (StreamCreator)stmt.getCreator().accept(this);
-        if (newCreator == stmt.getCreator()) return stmt;
-        return new StmtBody(stmt, newCreator);
-    }
 
     public Object visitStmtBreak(StmtBreak stmt) { return stmt; }
     public Object visitStmtContinue(StmtContinue stmt) { return stmt; }
@@ -725,7 +690,7 @@ public class FEReplacer implements FEVisitor
      * variable declarations. spec.getStructs() gets you the structure declarations.
      * spec.getFuncs() gets you all the function declarations.
      */
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
 
         if (nres != null)
@@ -776,7 +741,7 @@ public class FEReplacer implements FEVisitor
         // newFuncs = oldNewFuncs;
         if (!changed)
             return spec;
-        return new StreamSpec(spec, spec.getName(), newStructs, newVars, nf);
+        return new Package(spec, spec.getName(), newStructs, newVars, nf);
 
     }
 

@@ -514,7 +514,6 @@ public class SequentialSketchMain extends CommonSketchMain
     public void run() {
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = parseProgram();
-
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
         prog = this.preprocAndSemanticCheck(prog, true);
 

@@ -20,7 +20,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -33,7 +41,6 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
-import sketch.compiler.passes.streamit_old.SCSimple;
 
 /**
  * Traverse a front-end tree and produce Java code.  This uses {@link
@@ -500,75 +507,13 @@ public class NodesToJava extends SymbolTableVisitor
         // structures and streams.
         String result = "";
         nres = new NameResolver(prog);
-        for (Iterator iter = prog.getStreams().iterator(); iter.hasNext(); )
-            result += (String)((StreamSpec)iter.next()).accept(this);
-        return result;
-    }
-
-
-    public Object visitSCSimple(SCSimple creator)
-    {
-        String result;
-        if (libraryFormat)
-        {
-            // Magic for builtins.
-            if (creator.getName().equals("Identity") ||
-                creator.getName().equals("FileReader") ||
-                creator.getName().equals("FileWriter"))
-                result = "new " + creator.getName() + "(";
-            else
-                result = creator.getName() + ".__construct(";
-        }
-        else
-            result = "new " + creator.getName() + "(";
-        boolean first = true;
-        for (Iterator iter = creator.getParams().iterator(); iter.hasNext(); )
-        {
-            Expression param = (Expression)iter.next();
-            if (!first) result += ", ";
-            result += (String)param.accept(this);
-            first = false;
-        }
-        for (Iterator iter = creator.getTypes().iterator(); iter.hasNext(); )
-        {
-            Type type = (Type)iter.next();
-            if (!first) result += ", ";
-            result += typeToClass(type);
-            first = false;
-        }
-        result += ")";
+        for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
+            result += (String)((Package)iter.next()).accept(this);
         return result;
     }
 
 
 
-    public Object doStreamCreator(String how, StreamCreator sc)
-    {
-        // If the stream creator involves registering with a portal,
-        // we need a temporary variable.
-        List portals = sc.getPortals();
-        if (portals.isEmpty())
-            return how + "(" + (String)sc.accept(this) + ")";
-        String tempVar = varGen.nextVar();
-        // Need run-time type of the creator.  Assert that only
-        // named streams can be added to portals.
-        SCSimple scsimple = (SCSimple)sc;
-        String result = scsimple.getName() + " " + tempVar + " = " +
-            (String)sc.accept(this);
-        result += ";\n" + indent + how + "(" + tempVar + ")";
-        for (Iterator iter = portals.iterator(); iter.hasNext(); )
-        {
-            Expression portal = (Expression)iter.next();
-            result += ";\n" + indent + (String)portal.accept(this) +
-                ".regReceiver(" + tempVar + ")";
-        }
-        return result;
-    }
-
-    public Object visitStmtAdd(StmtAdd stmt)
-    {
-        return doStreamCreator("add", stmt.getCreator());
-    }
 
     public Object visitStmtAssign(StmtAssign stmt)
     {
@@ -620,10 +565,6 @@ public class NodesToJava extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitStmtBody(StmtBody stmt)
-    {
-        return doStreamCreator("setBody", stmt.getCreator());
-    }
 
     public Object visitStmtBreak(StmtBreak stmt)
     {
@@ -753,7 +694,7 @@ public class NodesToJava extends SymbolTableVisitor
             ") " + (String)stmt.getBody().accept(this);
     }
 
-    public Object visitStreamSpec(StreamSpec spec)
+    public Object visitStreamSpec(Package spec)
     {
 
         String result = "";

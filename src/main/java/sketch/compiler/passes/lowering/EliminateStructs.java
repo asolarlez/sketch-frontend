@@ -19,7 +19,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -294,7 +294,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         calledFunctions.clear();
         nres = new NameResolver(p);
         final NameResolver lnres = nres;
-        for (StreamSpec pkg : p.getStreams()) {
+        for (Package pkg : p.getPagkages()) {
             nres.setPackage(pkg);
             for (Function func : pkg.getFuncs()) {
                 if (func.getSpecification() != null) {

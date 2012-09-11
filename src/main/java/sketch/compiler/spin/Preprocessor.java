@@ -13,7 +13,7 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -220,7 +220,7 @@ public class Preprocessor extends FEReplacer {
 
 
 
-	public Object visitStreamSpec(StreamSpec spec){
+	public Object visitStreamSpec(Package spec){
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
         nres.setPackage(spec);
@@ -262,7 +262,7 @@ public class Preprocessor extends FEReplacer {
 
         if (!changed)
             return spec;
-        return new StreamSpec(spec, spec.getName(), spec.getStructs(), newVars, newFuncs);
+        return new Package(spec, spec.getName(), spec.getStructs(), newVars, newFuncs);
 
     }
 

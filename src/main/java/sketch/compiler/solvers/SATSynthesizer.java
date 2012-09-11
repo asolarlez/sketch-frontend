@@ -9,7 +9,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -821,8 +821,8 @@ public class SATSynthesizer implements Synthesizer {
 		funcs.add(spec);
 		funcs.add(sketch);
 
-		List<StreamSpec> streams = Collections.singletonList(
-new StreamSpec(current, "MAIN",
+		List<Package> streams = Collections.singletonList(
+new Package(current, "MAIN",
                         Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs));
         current =
  current.creator().streams(streams).create();

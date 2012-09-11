@@ -7,7 +7,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.StreamSpec;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
@@ -96,7 +96,7 @@ public class EliminateDeadCode extends BackwardDataflow {
         }
     }
 
-	protected List<Function> functionsToAnalyze(StreamSpec spec){
+	protected List<Function> functionsToAnalyze(Package spec){
 		return new LinkedList<Function>(spec.getFuncs());
 	}
 

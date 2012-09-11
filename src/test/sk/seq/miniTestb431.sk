@@ -1,0 +1,13 @@
+
+stencil int test(int i, int j){
+    int t = i + j;
+    int q = t + 1;
+    return q;
+}
+
+stencil int sk(int i, int j) implements test{
+    int t = i + j;
+    int f = t +??;
+    t = f - 1;
+    return (t+f)-f;
+}
