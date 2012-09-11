@@ -25,11 +25,10 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
 import sketch.util.datastructures.HashmapList;
 
-import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.StreamSpec;
 
 
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.*;
 import sketch.compiler.ast.cuda.exprs.*;
@@ -112,7 +111,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 		super.reportError(s);
 	}
 
-    public void handleInclude(String name, List<Package> namespace)
+    public void handleInclude(String name, List<StreamSpec> namespace)
     {
         try {
             List<String> incList = Arrays.asList(
@@ -144,7 +143,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
         Program p = parser.parse ();
 		assert p != null;		
 		
-		namespace.addAll(p.getPagkages());		
+		namespace.addAll(p.getStreams());		
         directives.addAll (parser.getDirectives ());
     }
 
@@ -184,7 +183,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		Token  id = null;
 		p = null; List vars = new ArrayList();  
 			List<Function> funcs=new ArrayList(); Function f;
-			List<Package> namespaces = new ArrayList<Package>();
+			List<StreamSpec> namespaces = new ArrayList<StreamSpec>();
 		FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
 		String file = null;
 		String pkgName = null;
@@ -350,7 +349,7 @@ inputState.guessing--;
 								for(Function fun : funcs){
 									fun.setPkg(pkgName);	
 								}
-								 Package ss=new Package(pkgCtxt, 
+								 StreamSpec ss=new StreamSpec(pkgCtxt, 
 									pkgName,
 									structs, vars, funcs);
 									namespaces.add(ss);
