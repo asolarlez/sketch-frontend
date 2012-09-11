@@ -1,0 +1,26 @@
+/*
+ * triggers a bug? in frontend
+ * If we set "bnd-arr-size" to be less than 2^inbits, will trigger "simulate: This should not happen" bug
+ */
+pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+void movein(ref int x) {
+	x = x * ??;
+}
+
+int spec(int N, int[N] a) {
+	if (N>1) {
+		return a[1]+a[1];
+	} else {
+		return 0;
+	}
+}
+
+int sk(int N, int[N] a) implements spec {
+	if (N>1) {
+		movein(a[1]);
+		return a[1];
+	} else {
+		return 0;
+	}
+}
