@@ -8,19 +8,14 @@ void movein(ref int x) {
 	x = x * ??;
 }
 
-int spec(int N, int[N] a) {
+void spec(int N, ref int[N] a) {
 	if (N>1) {
-		return a[1]+a[1];
-	} else {
-		return 0;
+		a[1] = a[1]+a[1];
 	}
 }
 
-int sk(int N, int[N] a) implements spec {
+void sk(int N, ref int[N] a) implements spec {
 	if (N>1) {
 		movein(a[1]);
-		return a[1];
-	} else {
-		return 0;
 	}
 }

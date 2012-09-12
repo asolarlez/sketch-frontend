@@ -217,7 +217,6 @@ public class ParamTree{
                     tn = null;
                     return;
                 }
-                }
                 int pos = tn.pos;
 				tn = tn.father;
                 while (tn.nchildren() <= pos + 1) {

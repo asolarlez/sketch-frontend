@@ -7,26 +7,18 @@ void movein(ref int x) {
 	x = x * ??;
 }
 
-stencil int spec(int t, int N, int[N] a) {
+stencil int[N] spec(int N, int[N] a) {
 	if (N>1) {
 		a[1] = a[1]+a[1];
 	}
 	
-	if (t>=0 && t<N) {
-		return a[t];
-	} else {
-		return 0;
-	}
+	return a;
 }
 
-stencil int sk(int t, int N, int[N] a) implements spec {
+stencil int[N] sk(int N, int[N] a) implements spec {
 	if (N>1) {
 		movein(a[1]);
 	}
 	
-	if (t>=0 && t<N) {
-		return a[t];
-	} else {
-		return 0;
-	}
+	return a;
 }
