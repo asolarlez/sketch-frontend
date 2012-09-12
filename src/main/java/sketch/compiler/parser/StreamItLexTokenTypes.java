@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (20060906): "StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR 2.7.7 (2006-11-01): "StreamItLex.g" -> "StreamItLex.java"$
 
 	package sketch.compiler.parser;
 	
