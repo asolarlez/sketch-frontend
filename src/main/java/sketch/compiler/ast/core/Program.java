@@ -130,7 +130,7 @@ public class Program extends FENode
     }
 
     /** Returns the list of streams declared in this. */
-    public List<Package> getPagkages()
+    public List<Package> getPackages()
     {
         return packages;
     }

@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): "StreamItParserFE.g" -> "StreamItParserFE.java"$
+// $ANTLR 2.7.7 (20060906): "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
 package sketch.compiler.parser;
 
@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.Package;
 
 
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.*;
 import sketch.compiler.ast.cuda.exprs.*;

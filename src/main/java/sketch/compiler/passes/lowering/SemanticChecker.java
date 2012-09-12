@@ -173,7 +173,7 @@ public class SemanticChecker
 		names.put("FileReader", ctx);
 		names.put("FileWriter", ctx);
 
-		for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
+		for (Iterator iter = prog.getPackages().iterator(); iter.hasNext(); )
 		{
 			Package spec = (Package)iter.next();
 			checkAStreamName(names, spec.getName(), spec.getCx ());
@@ -216,7 +216,7 @@ public class SemanticChecker
 	{
 		//System.out.println("checkDupFieldNames");
 
-		for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
+		for (Iterator iter = prog.getPackages().iterator(); iter.hasNext(); )
 		{
 			Package spec = (Package)iter.next();
 			Map localNames = new HashMap();

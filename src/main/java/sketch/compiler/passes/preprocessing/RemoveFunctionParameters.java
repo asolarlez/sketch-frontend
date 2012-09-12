@@ -442,7 +442,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         p = (Program) p.accept(new InnerFunReplacer());
         nres = new NameResolver(p);
 
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             Set<String> nameChk = new HashSet<String>();
             for (Function fun : pkg.getFuncs()) {
@@ -468,7 +468,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
         Map<String, Package> pkges = new HashMap<String, Package>();
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             nflistMap.put(pkg.getName(), new ArrayList<Function>());
             pkges.put(pkg.getName(), pkg);
         }
@@ -485,7 +485,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         }
         List<Package> newPkges = new ArrayList<Package>();
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
                     pkg.getVars(), nflistMap.get(pkg.getName())));
         }

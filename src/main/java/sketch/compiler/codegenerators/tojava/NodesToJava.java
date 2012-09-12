@@ -507,7 +507,7 @@ public class NodesToJava extends SymbolTableVisitor
         // structures and streams.
         String result = "";
         nres = new NameResolver(prog);
-        for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
+        for (Iterator iter = prog.getPackages().iterator(); iter.hasNext(); )
             result += (String)((Package)iter.next()).accept(this);
         return result;
     }

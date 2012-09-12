@@ -1615,7 +1615,7 @@ public class PartialEvaluator extends FEReplacer {
         Map<Function, String> pkgForFun = new HashMap<Function, String>();
         Map<String, Package> pkgs = new HashMap<String, Package>();
         Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             funcsToAnalyze.addAll(functionsToAnalyze(pkg));
             if (pkgs.containsKey(pkg.getName())) {
@@ -1654,7 +1654,7 @@ public class PartialEvaluator extends FEReplacer {
         }
 
         List<Package> newPkgs = new ArrayList<Package>();
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             Package newPkg = preprocPkg(pkg);
             String pkgName = pkg.getName();
             newfuns.get(pkgName).addAll(newPkg.getFuncs());

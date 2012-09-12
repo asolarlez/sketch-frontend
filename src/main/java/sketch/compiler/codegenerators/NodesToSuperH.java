@@ -152,7 +152,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         ret += "#include <cstring>\n\n";
         ret += "#include \"vops.h\"\n\n";
 
-        for (Package pkg : prog.getPagkages()) {
+        for (Package pkg : prog.getPackages()) {
             ret += "namespace " + pkg.getName() + "{\n";
             for (TypeStruct ts : pkg.getStructs()) {
                 ret += "  class " + ts.getName() + ";\n";

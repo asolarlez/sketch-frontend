@@ -277,7 +277,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
         nres = new NameResolver();
 
         List<Package> oldStreams = new ArrayList<Package>();
-        for (Package spec : prog.getPagkages()) {
+        for (Package spec : prog.getPackages()) {
             List<Function> funs = new ArrayList<Function>();
             for (Function fun : (List<Function>) spec.getFuncs()) {
                 Type retType = fun.getReturnType();
