@@ -143,7 +143,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
         Program p = parser.parse ();
 		assert p != null;		
 		
-		namespace.addAll(p.getStreams());		
+		namespace.addAll(p.getPackages());		
         directives.addAll (parser.getDirectives ());
     }
 
