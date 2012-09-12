@@ -399,7 +399,7 @@ public class FEReplacer implements FEVisitor
         assert prog != null : "FEReplacer.visitProgram: argument null!";
         nres = new NameResolver(prog);
         List<Package> newStreams = new ArrayList<Package>();
-        for (Package ssOrig : prog.getPagkages()) {
+        for (Package ssOrig : prog.getPackages()) {
             newStreams.add((Package) ssOrig.accept(this));
         }
 

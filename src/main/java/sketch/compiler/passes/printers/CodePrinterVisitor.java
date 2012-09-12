@@ -351,7 +351,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		symtab = new SymbolTable (symtab);
 
 
-		for (Package s : (List<Package>) p.getPagkages ())
+		for (Package s : (List<Package>) p.getPackages ())
 			s.accept (this);
 
 		symtab = oldSymtab;

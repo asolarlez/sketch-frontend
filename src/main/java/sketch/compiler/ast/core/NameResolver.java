@@ -154,7 +154,7 @@ public class NameResolver {
     }
 
     public void populate(Program p) {
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             populate(pkg);
         }
     }

@@ -250,7 +250,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	    if(funmap.isEmpty()){ return prog; }
         NameResolver nres = new NameResolver(prog);
         // StreamSpec strs=(StreamSpec)prog.getStreams().get(0);
-        for (Package strs : prog.getPagkages()) {
+        for (Package strs : prog.getPackages()) {
             strs.getVars().clear();
             List<Function> functions = strs.getFuncs();
             // TODO xzl: is this correct? can we just clear all old functions?
@@ -263,7 +263,7 @@ public class FunctionalizeStencils extends FEReplacer {
             // }
             // }
         }
-        Package strs = (Package) prog.getPagkages().get(0);
+        Package strs = (Package) prog.getPackages().get(0);
         List<Function> functions = strs.getFuncs();
         // add the functions generated from ArrFunction objects to the program
         for (Iterator<ArrFunction> it = funmap.values().iterator(); it.hasNext();) {
@@ -287,7 +287,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		//convert all functions to procedures, translating calls and returns appropriately
 		prog = (Program) prog.accept(new MakeBodiesBlocks());
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-		strs=(Package)prog.getPagkages().get(0);
+		strs=(Package)prog.getPackages().get(0);
 		functions=strs.getFuncs();
 
         NameResolver lnres = new NameResolver(prog);

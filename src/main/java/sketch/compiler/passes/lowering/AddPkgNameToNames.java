@@ -62,12 +62,12 @@ public class AddPkgNameToNames extends FEReplacer {
     }
 
     public Object visitProgram(Program prog) {
-        if (prog.getPagkages().size() > 1) {
+        if (prog.getPackages().size() > 1) {
         assert prog != null : "FEReplacer.visitProgram: argument null!";
         nres = new NameResolver(prog);
         List<Function> lf = new ArrayList<Function>();
         List<TypeStruct> ts = new ArrayList<TypeStruct>();
-        for (Package ssOrig : prog.getPagkages()) {
+        for (Package ssOrig : prog.getPackages()) {
             Package pkg = (Package) ssOrig.accept(this);
             lf.addAll(pkg.getFuncs());
             ts.addAll(pkg.getStructs());

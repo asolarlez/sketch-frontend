@@ -157,7 +157,7 @@ options {
         Program p = parser.parse ();
 		assert p != null;		
 		
-		namespace.addAll(p.getStreams());		
+		namespace.addAll(p.getPackages());		
         directives.addAll (parser.getDirectives ());
     }
 

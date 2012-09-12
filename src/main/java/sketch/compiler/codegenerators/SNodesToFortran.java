@@ -154,7 +154,7 @@ public class SNodesToFortran extends FENullVisitor {
 		String ret=line("program "+filename);
 		ret+=line("end");
 		ret+=newline();
-        for (Iterator iter = prog.getPagkages().iterator(); iter.hasNext(); )
+        for (Iterator iter = prog.getPackages().iterator(); iter.hasNext(); )
             ret += (String)((Package)iter.next()).accept(this);
 		return ret;
 	}

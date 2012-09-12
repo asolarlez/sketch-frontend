@@ -26,7 +26,7 @@ public class SimplifyVarNames extends FEReplacer {
 	
     public Object visitProgram(Program prog) {
         nres = new NameResolver(prog);
-        for (Package ssOrig : prog.getPagkages()) {
+        for (Package ssOrig : prog.getPackages()) {
             for (TypeStruct ts : ssOrig.getStructs()) {
                 String name;
             }

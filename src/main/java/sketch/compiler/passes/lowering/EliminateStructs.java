@@ -294,7 +294,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         calledFunctions.clear();
         nres = new NameResolver(p);
         final NameResolver lnres = nres;
-        for (Package pkg : p.getPagkages()) {
+        for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             for (Function func : pkg.getFuncs()) {
                 if (func.getSpecification() != null) {

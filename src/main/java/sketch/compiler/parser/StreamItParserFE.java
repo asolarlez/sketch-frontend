@@ -5,56 +5,49 @@ package sketch.compiler.parser;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map;
-import java.util.HashMap;
 
 import sketch.compiler.Directive;
+import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Annotation;
-import sketch.util.datastructures.HashmapList;
-
-import sketch.compiler.ast.core.StreamSpec;
-
-
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
-import sketch.compiler.ast.core.typs.*;
-import sketch.compiler.ast.cuda.exprs.*;
-import sketch.compiler.ast.cuda.stmts.*;
-import sketch.compiler.ast.cuda.typs.*;
-
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.main.cmdline.SketchOptions;
-
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.datastructures.HashmapList;
+import antlr.NoViableAltException;
+import antlr.ParserSharedInputState;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.Token;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
+import antlr.collections.impl.BitSet;
 
 import static sketch.util.DebugOut.assertFalse;
-
-import antlr.TokenBuffer;
-import antlr.TokenStreamException;
-import antlr.TokenStreamIOException;
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
-import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
-import antlr.ParserSharedInputState;
-import antlr.collections.impl.BitSet;
 @SuppressWarnings("deprecation")
 public class StreamItParserFE extends antlr.LLkParser       implements StreamItParserFETokenTypes
  {
@@ -111,7 +104,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 		super.reportError(s);
 	}
 
-    public void handleInclude(String name, List<StreamSpec> namespace)
+    public void handleInclude(String name, List<Package> namespace)
     {
         try {
             List<String> incList = Arrays.asList(
@@ -143,7 +136,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
         Program p = parser.parse ();
 		assert p != null;		
 		
-		namespace.addAll(p.getStreams());		
+        namespace.addAll(p.getPackages());
         directives.addAll (parser.getDirectives ());
     }
 
@@ -183,7 +176,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 		Token  id = null;
 		p = null; List vars = new ArrayList();  
 			List<Function> funcs=new ArrayList(); Function f;
-			List<StreamSpec> namespaces = new ArrayList<StreamSpec>();
+			List<Package> namespaces = new ArrayList<Package>();
 		FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
 		String file = null;
 		String pkgName = null;
@@ -349,7 +342,7 @@ inputState.guessing--;
 								for(Function fun : funcs){
 									fun.setPkg(pkgName);	
 								}
-								 StreamSpec ss=new StreamSpec(pkgCtxt, 
+								 Package ss=new Package(pkgCtxt, 
 									pkgName,
 									structs, vars, funcs);
 									namespaces.add(ss);
