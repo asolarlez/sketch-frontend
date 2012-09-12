@@ -9,7 +9,7 @@ void movein(ref int x) {
 
 stencil void spec(int N, ref int[N] a) {
 	if (N>1) {
-		a[1] = a[1]+a[1];
+		a[1] = a[1]+a[1]*2;
 	}
 }
 

@@ -455,6 +455,8 @@ public class FunctionalizeStencils extends FEReplacer {
         v23.setNres(nres);
         FEReplacer v24 = new EliminateDeadCode(varGen, true);
         v24.setNres(nres);
+        FEReplacer erp = new EliminateReferenceParameters(varGen);
+        erp.setNres(nres);
 	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
 	        	Function f = iter.next();
 	        	f = ((Function)f.accept(v0));
@@ -463,7 +465,7 @@ public class FunctionalizeStencils extends FEReplacer {
             elr.setNres(nres);
             f = (Function) f.accept(elr);
 
-            EliminateFinalStructs efs = new EliminateFinalStructs(varGen, null);
+            EliminateFinalStructs efs = new EliminateFinalStructs(varGen);
             efs.setNres(nres);
 
             f = (Function) f.accept(v01);
@@ -478,6 +480,8 @@ public class FunctionalizeStencils extends FEReplacer {
             f =
                     ((Function) f.accept(new ProtectDangerousExprsAndShortCircuit(
                             FailurePolicy.ASSERTION, varGen)));
+
+            f = (Function) f.accept(erp);
 
             f = ((Function) f.accept(v1));
 
@@ -506,6 +510,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	            }
         };
         v3.setNres(nres);
+
 	        for (Iterator<Function> iter = nfuns.iterator(); iter.hasNext(); ){
                 Function f = iter.next();                                
                 f = ((Function)f.accept(v3));
