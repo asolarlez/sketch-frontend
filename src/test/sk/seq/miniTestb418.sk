@@ -1,5 +1,16 @@
 pragma options "--bnd-inbits 4 --bnd-arr-size 16 --bnd-unroll-amnt 16 --be:showDAG";
 
+/**
+
+def everyOther(list):
+    t=[]
+    for x in range(list):
+            if x%2==0:
+                    t.append(x)
+    return t
+
+ */
+
 struct MultiType{
   MTArray lst;
   int val;

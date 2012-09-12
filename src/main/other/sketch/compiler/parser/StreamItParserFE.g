@@ -49,6 +49,7 @@ import sketch.compiler.ast.core.Package;
 
 
 import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.*;
 import sketch.compiler.ast.cuda.exprs.*;
