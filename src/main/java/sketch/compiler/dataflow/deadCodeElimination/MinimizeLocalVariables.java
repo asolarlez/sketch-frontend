@@ -17,9 +17,8 @@ import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.util.ControlFlowException;
 import sketch.util.UndirectedColoredGraph;
-import sketch.util.UndirectedGraph;
 import sketch.util.UndirectedColoredGraph.ColoredVertex;
-import sketch.util.UndirectedGraph.Vertex;
+import sketch.util.UndirectedColoredGraph.Vertex;
 
 /**
  * A pass to minimize (well, reduce) the number of local variables used in the
@@ -84,7 +83,8 @@ public class MinimizeLocalVariables {
 	}
 
 	static class BuildInterferenceGraph extends BackwardDataflow {
-		private UndirectedGraph<String> interferers = new UndirectedGraph<String> ();
+        private UndirectedColoredGraph<String> interferers =
+                new UndirectedColoredGraph<String>();
 		private Set<String> localInts = new HashSet<String> ();
 
 		public BuildInterferenceGraph () {

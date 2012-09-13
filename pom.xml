@@ -162,7 +162,7 @@
                             launchers_assembly    same as above but with scripts
                             tar_src_assembly.xml    both frontend and backend source only. -->
                     </descriptors>
-                    <finalName>sketch-${version}</finalName>
+                    <finalName>sketch-${project.version}</finalName>
                 </configuration>
             </plugin>
 
