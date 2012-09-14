@@ -24,12 +24,7 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
@@ -283,7 +278,7 @@ public class GetExprType extends FENullVisitor
         {
             String name = ((TypeStructRef)base).getName();
             ts = nres.getStruct(name);
-            assert ts != null : base;
+            assert ts != null : "GetExprType: missing struct information" + base;
         }
         else
         {

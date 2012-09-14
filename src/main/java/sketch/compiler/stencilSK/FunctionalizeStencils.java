@@ -523,7 +523,7 @@ public class FunctionalizeStencils extends FEReplacer {
 	        	        
 
 	        ss = oldSS;
-        spec.getStructs().clear();
+        // spec.getStructs().clear();
 	        return spec;
 	    }
 
