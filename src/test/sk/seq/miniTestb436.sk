@@ -1,0 +1,25 @@
+pragma options "--bnd-unroll-amnt 32";
+
+void foo(int n, ref int[n] x);
+
+harness void main(int n, int[n] x1, int q, int[q] y1){
+    int[{| n | q |}] x = x1;
+    int[{| n | q |}] y = y1;
+        foo(n, x);
+        foo(q, y);
+    
+    if({| x1 (== | !=) y1 | false|}){
+        return;
+    }
+    
+    if(n==q){
+        assert x == y;
+    }
+    
+    if(n>3 && q > 3){
+        if({| true | x[1] == y[1] | n (== | !=) q |}){
+            assert x[2] == y[2];
+        }
+    }
+}
+
