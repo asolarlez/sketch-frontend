@@ -469,9 +469,7 @@ One important aspect of closures in Sketch is that because functions cannot be r
 \begin{lstlisting}
 $ret\_type$ $name$($args$);
 \end{lstlisting}
-An uninterpreted function is a function whose body is unknown, so from the point of view of the synthesis and verification engine; there is nothing known about this function other than the fact that it is a pure function, so when fed with the same inputs it will produce the same outputs.
-
-The main restriction on uninterpreted functions is that their return value can only be a scalar, so uninterpreted functions that return arrays or references are disallowed. 
+An uninterpreted function is a function whose body is unknown, so from the point of view of the synthesis and verification engine; there is nothing known about this function other than the fact that it is a pure function, so when fed with the same inputs it will produce the same outputs. Importantly, if you are using an uninterpreted function to model some complex routine in the program, you need to make sure that routine behaves as a mathematical function; i.e. it should not access the heap or global variables. For this reason, we restrict uninterpreted functions so they can not involve structures.
 
 
 \subsection{Packages}
