@@ -12,9 +12,9 @@ import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -1063,6 +1063,8 @@ public class NodesToSuperCpp extends NodesToJava {
 
             return getCppName((TypeStructRef) type) + "*";
 
+        } else if (type instanceof TypeStruct) {
+            return procName(((TypeStruct) type).getFullName()) + "*";
         } else if (type instanceof TypePrimitive) {
             switch (((TypePrimitive) type).getType()) {
                 case TypePrimitive.TYPE_INT8:
