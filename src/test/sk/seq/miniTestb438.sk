@@ -1,0 +1,14 @@
+
+int f(int i){
+    return i;
+}
+int g(int i){
+    return i;
+}
+int h(int i){
+    return i;
+}
+
+harness void main(int i){
+    assert f(g(h(f(g(h(f(g(h(f(g(h(f(g(h(i+??))))))))))))))) == i+1;
+}

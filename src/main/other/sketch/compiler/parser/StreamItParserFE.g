@@ -859,7 +859,7 @@ minic_value_exprnofo returns [Expression x] { x = null; Vector<ExprArrayRange.Ra
 
 uminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
-	|	(func_call) => x=func_call
+//	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
 	|	x=var_expr	
     |   r:REGEN
