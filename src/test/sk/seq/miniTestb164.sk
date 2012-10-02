@@ -1,5 +1,5 @@
 
-int test(int x) implements spec{
+int test(int x) {
 	
 	while(x < 6){
 		x = x-1;
@@ -9,7 +9,7 @@ int test(int x) implements spec{
 	return x;	
 }
 
-int spec(int x){
+int spec(int x)implements test{
 	if({| x (> | <) ?? |}) return {| x (+|-) ??  | ??|};
 	if({| x (> | <) ?? |}) return {| x (+|-) ??  | ??|};	
 	return {| x (+|-) ??  | ??|};	

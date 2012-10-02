@@ -43,6 +43,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
         exponential, quadratic
     }
 
+
     public enum SynthSolvers {
         NOT_SET, ABC, MINI
     }

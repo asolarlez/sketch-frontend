@@ -199,6 +199,8 @@ public class TypePrimitive extends Type
                         t2 == TYPE_DOUBLE;
         case TYPE_FLOAT:
                 return t2 == TYPE_FLOAT || t2 == TYPE_DOUBLE;
+            case TYPE_DOUBLE:
+                return t2 == TYPE_FLOAT || t2 == TYPE_DOUBLE;
 
         case TYPE_INT16:
         case TYPE_INT8:

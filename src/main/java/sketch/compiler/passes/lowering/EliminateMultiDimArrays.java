@@ -101,7 +101,9 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	    Type ta = getType(eai);
 	    if(!(ta instanceof TypeArray )){ return eai; }
 	    TypeArray taar = (TypeArray)ta;
-	    if(!(taar.getBase() instanceof TypeArray )){ return eai; }
+        if (!(taar.getBase() instanceof TypeArray)) {
+            return super.visitExprArrayInit(eai);
+        }
 	    String nv = varGen.nextVar();
 	    addStatement((Statement)new StmtVarDecl(eai, ta, nv, null).accept(this));
 	    int i=0; 

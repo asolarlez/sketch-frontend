@@ -38,6 +38,12 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public String output = null;
     @CliParameter(help = "Use this flag if you want the compiler to produce C code.")
     public boolean outputCode;
+
+    @CliParameter(help = "Determine which encoding to use for floats/doubles. \n"
+            + "With AS_BIT, it will encode floats with a single bit. \n"
+            + "With AS_FFIELD, it will encode them using the field of integers mod 7.")
+    public FloatEncoding fencoding = FloatEncoding.AS_BIT;
+
     @CliParameter(help = "Set the name of the output C files. By default it is the "
             + "name of the first input file.")
     public String outputProgName;
@@ -55,4 +61,8 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public boolean noOutputPrint = false;
     @CliParameter(shortname = "y", help = "Print Python code from tprint statements to file")
     public String tprintPython = null;
+
+    public enum FloatEncoding {
+        AS_BIT, AS_FFIELD
+    }
 }

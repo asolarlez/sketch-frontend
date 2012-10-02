@@ -8,8 +8,8 @@ import java.util.Map;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -28,6 +28,7 @@ import static sketch.util.DebugOut.printDebug;
 public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	public static final Type FLOAT = TypePrimitive.floattype;
+    public static final Type DOUBLE = TypePrimitive.doubletype;
 	
 	TempVarGen varGen;
 	
@@ -77,7 +78,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	
 	public Object visitTypePrimitive(TypePrimitive t) {
-		if(t.equals(FLOAT)){
+        if (isFloat(t)) {
 			return TypePrimitive.bittype;
 		}
     	return t; 
@@ -103,12 +104,16 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	}
 	
 	
+    boolean isFloat(Type t) {
+        return t.equals(FLOAT) || t.equals(DOUBLE);
+    }
+
 	public Object visitExprBinary(ExprBinary exp)
     {
 		Type ltype = getType(exp.getLeft());
 		Type rtype = getType(exp.getRight());
 		
-		if(!ltype.equals(FLOAT) && !rtype.equals(FLOAT)){
+        if (!isFloat(ltype) && !isFloat(rtype)) {
 			return super.visitExprBinary(exp);
 		}		 
         Expression left = doExpression(exp.getLeft());
