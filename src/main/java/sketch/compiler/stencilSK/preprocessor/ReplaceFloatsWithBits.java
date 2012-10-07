@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtExpr;
@@ -22,6 +23,7 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.exceptions.ExceptionAtNode;
 
 import static sketch.util.DebugOut.printDebug;
 
@@ -42,7 +44,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
     Function newFloatFunction(String flName) {
         printDebug("newFloatFunction", flName);
         List<Parameter> pl = new ArrayList<Parameter>(1);
-        pl.add(new Parameter(TypePrimitive.bittype, "_out", Parameter.OUT));
+        pl.add(new Parameter(replType(), "_out", Parameter.OUT));
         return Function.creator((FEContext) null, flName, FcnType.Uninterp).returnType(
                 TypePrimitive.bittype).params(pl).pkg(nres.curPkg().getName()).create();
     }
@@ -68,18 +70,41 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 		List<Expression> pl = new ArrayList<Expression>(1);
 		ExprVar ev = new ExprVar(fexp, varGen.nextVar());
 		pl.add(ev);
-		addStatement(new StmtVarDecl(fexp, TypePrimitive.bittype, ev.getName(), null));
+        addStatement(new StmtVarDecl(fexp, replType(), ev.getName(), null));
 		addStatement(new StmtExpr( new ExprFunCall(fexp, name, pl ) ));
 		return ev;
 	}
+
+    public Object visitExprTypeCast(ExprTypeCast exp) {
+        Expression expr = doExpression(exp.getExpr());
+        Type told = getType(exp);
+        Type tnew = (Type) exp.getType().accept(this);
+        if (told.equals(TypePrimitive.inttype) && isFloat(tnew)) {
+            throw new ExceptionAtNode(
+                    "You can't cast from ints to doubles/floats if you are using --fe-fencoding TO_BIT." +
+                            exp, exp);
+        }
+        if (tnew.equals(TypePrimitive.inttype) && isFloat(told)) {
+            throw new ExceptionAtNode(
+                    "You can't cast from doubles/floats to int if you are using --fe-fencoding TO_BIT." +
+                            exp, exp);
+        }
+        if (expr == exp.getExpr() && tnew == exp.getType())
+            return exp;
+        else
+            return new ExprTypeCast(exp, tnew, expr);
+    }
 	
 	
+    public Type replType() {
+        return TypePrimitive.bittype;
+    }
 	
 	
 	
 	public Object visitTypePrimitive(TypePrimitive t) {
         if (isFloat(t)) {
-			return TypePrimitive.bittype;
+            return replType();
 		}
     	return t; 
     }
@@ -125,7 +150,9 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
         	case ExprBinary.BINOP_MUL: newOp = ExprBinary.BINOP_BAND; break;
                 case ExprBinary.BINOP_EQ: newOp = ExprBinary.BINOP_EQ; break;
         	default:
-        		assert false : "You can't apply this floating point operation if you are doing floating-point to boolean replacement." + exp + " " + exp.getOp();
+                throw new ExceptionAtNode(
+                        "You can't apply this floating point operation if you are using --fe-fencoding TO_BIT." +
+                                exp + " " + exp.getOp(), exp);
         }        
         if (left == exp.getLeft() && right == exp.getRight() && newOp == exp.getOp())
             return exp;

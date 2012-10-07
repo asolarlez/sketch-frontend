@@ -1396,7 +1396,7 @@ public class SemanticChecker
                                     ct);
                 }
             case ExprBinary.BINOP_ADD:
-                if (!(ct.promotesTo(TypePrimitive.doubletype)))
+                if (!(ct.promotesTo(TypePrimitive.doubletype) || ct.promotesTo(TypePrimitive.inttype)))
 				report(expr,
 						"cannot perform arithmetic on " + ct);
 			break;
