@@ -2,7 +2,7 @@ pragma options "--bnd-inbits 2  --bnd-arr-size 4 --bnd-unroll-amnt 16";
 
 
 float[N][N] sten13(int N, float[N][N]  in, int a){
-   float[N][N] out=0;
+   float[N][N] out=0.0;
    for(int i=a; i<N; ++i){
      for(int j=a; j<N; ++j){
       out[i][j] = in[i][j];
@@ -13,7 +13,7 @@ float[N][N] sten13(int N, float[N][N]  in, int a){
 
 
 float[N][N] stenSK13(int N, float[N][N]  in, int a) implements sten13{
-   float[N][N] out=0;   
+   float[N][N] out=0.0;   
    for(int i=a; i<N; ++i){
 	float t = in[i][a];
      for(int j=a; j<N; ++j){
