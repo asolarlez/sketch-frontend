@@ -1,0 +1,7 @@
+
+harness void main(double i, double j){
+    double a = i*j;
+    double b = j*i;
+        
+    assert a + b == b + a;
+}

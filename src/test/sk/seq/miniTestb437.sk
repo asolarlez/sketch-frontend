@@ -1,0 +1,12 @@
+include "miniTestb437.skh";
+
+harness void checkMTIndex(){
+
+MultiType one = new MultiType(val=1,flag=INTEGER);
+MultiType oneList = new MultiType(flag=LIST, lst=new MTList(len=1, listValues={one}));
+
+MultiType zeroIndex = new MultiType(val=0, flag=INTEGER);
+
+MultiType oneListCopy = new MultiType(flag = LIST, lst = new MTList(len=1, listValues={subscriptMTi(oneList,zeroIndex)}));
+//MultiType oneListCopy = new MultiType(flag = LIST, lst = new MTList(len=1, listValues={oneList.lst.listValues[zeroIndex.val]}));
+}

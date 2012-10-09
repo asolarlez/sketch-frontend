@@ -27,20 +27,20 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -402,13 +402,20 @@ public class SemanticChecker
 
                 if (func.isUninterp()) {
                     Type rt = func.getReturnType();
-                    if (rt instanceof TypeArray || rt instanceof TypeStructRef ||
-                            rt instanceof TypeStruct)
+                    if ((rt instanceof TypeArray && !(((TypeArray) rt).getAbsoluteBase() instanceof TypePrimitive)) ||
+                            rt instanceof TypeStructRef || rt instanceof TypeStruct)
                     {
                         report(func,
-                                "Uninterpreted functions can only return scalar types. The type " +
-                                        rt + " is not a scalar.");
+                                "Uninterpreted functions can not return structs. The type " +
+                                        rt + " is a struct.");
                     }
+                    // if (rt instanceof TypeArray || rt instanceof TypeStructRef ||
+                    // rt instanceof TypeStruct)
+                    // {
+                    // report(func,
+                    // "Uninterpreted functions can only return scalar types. The type " +
+                    // rt + " is not a scalar.");
+                    // }
                 }
 
                 if (func.isSketchHarness()) {
@@ -1389,7 +1396,7 @@ public class SemanticChecker
                                     ct);
                 }
             case ExprBinary.BINOP_ADD:
-                if (!(ct.promotesTo(TypePrimitive.doubletype)))
+                if (!(ct.promotesTo(TypePrimitive.doubletype) || ct.promotesTo(TypePrimitive.inttype)))
 				report(expr,
 						"cannot perform arithmetic on " + ct);
 			break;

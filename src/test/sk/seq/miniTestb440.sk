@@ -1,0 +1,9 @@
+struct M{
+    int[2][2] x;
+}
+
+harness void main(int i){
+    M x = new M();
+    int[2] t = {x.x[0][0], x.x[0][1]};
+    assert t[0] == 0;
+}

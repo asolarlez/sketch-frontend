@@ -1,0 +1,17 @@
+pragma options "--bnd-unroll-amnt 32  --debug-show-dag ";
+
+int[n] foo(int n);
+
+harness void main(int n, int q){
+    int[n] x = foo(n);
+    int[q] y = foo(q);
+    if(n==q){
+        assert x == y;
+    }
+    if(n>3 && q > 3){
+        if({| true | x[1] == y[1] | n (== | !=) q |}){
+            assert x[2] == y[2];
+        }
+    }
+}
+

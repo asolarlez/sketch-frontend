@@ -1,0 +1,24 @@
+pragma options "--bnd-unroll-amnt 32  --debug-show-dag ";
+
+int[n] foo(int n, int[n] x);
+
+harness void main(int n, int[n] x1, int q, int[q] y1){
+    int[{| n | q |}] x = foo(n, x1);
+    int[{| n | q |}] y = foo(q, y1);
+    
+    if({| x1 (== | !=) y1 | false|}){
+        return;
+    }
+    
+    if(n==q){
+        assert x == y;
+    }
+   
+    
+    if(n>3 && q > 3){
+        if({| true | x[1] == y[1] | n (== | !=) q |}){
+            assert x[2] == y[2];
+        }
+    }
+}
+

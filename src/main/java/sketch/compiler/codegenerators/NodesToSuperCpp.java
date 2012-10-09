@@ -1061,6 +1061,8 @@ public class NodesToSuperCpp extends NodesToJava {
 
             return getCppName((TypeStructRef) type) + "*";
 
+        } else if (type instanceof TypeStruct) {
+            return procName(((TypeStruct) type).getFullName()) + "*";
         } else if (type instanceof TypePrimitive) {
             switch (((TypePrimitive) type).getType()) {
                 case TypePrimitive.TYPE_INT8:

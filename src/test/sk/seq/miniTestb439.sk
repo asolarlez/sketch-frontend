@@ -1,0 +1,21 @@
+bit foo(int i){
+    return i==0;
+}
+bit moo(int i){
+    return i==0;
+}
+
+harness void main(int i, int j){
+    bit t = 0;
+    if(j==0 || i==0){
+        t = foo(i);
+    }
+    int x = 0;
+    if(t && moo(i)){
+        x = foo(i) + j;
+    }
+    if(i==0){
+        assert j+1==x;
+    }
+    
+}

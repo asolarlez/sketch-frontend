@@ -1,0 +1,304 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 16 --bnd-arr-size 16";
+
+int INTEGER = 0;
+int LIST = 1;
+
+int ADD_OP = 0;
+int SUB_OP = 1;
+int MUL_OP = 2;
+int DIV_OP = 3;
+int POW_OP = 4;
+int MOD_OP = 5;
+
+int EQ_COMP = 0;
+int NEQ_COMP = 1;
+int LT_COMP = 2;
+int LTE_COMP = 3;
+int GT_COMP = 4;
+int GTE_COMP = 5;
+
+
+struct MultiType{
+  int val;
+  int flag;
+  MTList lst;
+  MTDict dict;
+}
+
+  struct MTDict{
+    KeyValuePair[len] kvpairs;
+    int len;
+  }
+
+    struct KeyValuePair{
+      MultiType Key;
+      MultiType Value;
+    }
+
+struct MTList{
+  int len;
+  MultiType[len] listValues;
+}
+
+void foreach(fun body, MultiType lst){
+  assert lst.flag == LIST;
+  MTList ma = lst.lst;
+  for(int i=0; i<ma.len; ++i){
+    body(ma.listValues[i]);
+  }
+}
+
+MultiType range1(MultiType x){
+  assert x.flag == INTEGER;
+  int ub = x.val;
+  MultiType[ub] A;
+  for(int i=0; i<ub; ++i){
+    A[i] = new MultiType(val=i, flag=INTEGER);
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=ub), flag=LIST);
+  return m;
+}
+
+MultiType range2(MultiType x, MultiType y){
+  assert x.flag == INTEGER;
+  assert y.flag == INTEGER;
+  int lb = x.val;
+  int ub = y.val;
+  MultiType[ub-lb] A;
+  for(int i=lb; i<ub-lb; ++i){
+    A[i-lb] = new MultiType(val=i, flag=INTEGER);
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=ub), flag=LIST);
+  return m;
+}
+
+MultiType range3(MultiType x, MultiType y, MultiType step){
+  assert x.flag == INTEGER;
+  assert y.flag == INTEGER;
+  assert step.flag == INTEGER;
+  int lb = x.val;
+  int ub = y.val;
+  int stepdiff = step.val;
+  MultiType[ub-lb] A;
+  for(int i=lb; i<ub-lb; i=i+stepdiff){
+    A[i-lb] = new MultiType(val=i, flag=INTEGER);
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=ub), flag=LIST);
+  return m;
+}
+
+MultiType len(MultiType x){
+    assert x.flag == LIST;
+    return new MultiType(val = x.lst.len, flag=INTEGER);
+}
+
+
+// x[i]
+MultiType subscriptMTi(MultiType list, MultiType index){
+  assert list.flag == LIST;
+  assert index.flag == INTEGER;
+  assert index.val < list.lst.len;
+  return list.lst.listValues[index.val];
+}
+
+// x[:]
+MultiType subscriptMT(MultiType list, MultiType index){
+  assert list.flag == LIST;
+  assert index.flag == INTEGER;
+  return list;
+}
+
+// x[:4]
+MultiType subscriptMTu(MultiType list, MultiType rightIndex){
+  assert list.flag == LIST;
+  assert rightIndex.flag == INTEGER;
+  return new MultiType(lst= new MTList(listValues = list.listValues[0:rightIndex.val], len=rightIndex.val), flag = LIST);
+}
+
+
+// x[1:]
+MultiType subscriptMTl(MultiType list, MultiType leftIndex){
+  assert list.flag == LIST;
+  assert leftIndex.flag == INTEGER;
+  return new MultiType(lst= new MTList(listValues=list.listValues[leftIndex.val:list.lst.len], len=list.lst.len-leftIndex.val), flag = LIST);
+}
+
+// x[i:j]
+MultiType subscriptMTul(MultiType list, MultiType leftIndex, MultiType rightIndex){
+  assert list.flag == LIST;
+  assert leftIndex.flag == INTEGER;
+  assert rightIndex.flag == INTEGER;
+  return new MultiType(lst= new MTList(listValues=list.listValues[leftIndex.val:rightIndex.val], len=rightIndex.val-leftIndex.val), flag = LIST);
+}
+
+
+// x < y, applyCompOp(x,y, LT_COMP)
+
+bit applyCompOp(MultiType left, MultiType right, int compop){
+  assert left.flag == INTEGER; //check: only support comparisions for INTEGERs for the time being.
+  assert right.flag == INTEGER;
+  if(compop == EQ_COMP)
+    return left.val == right.val;
+  else if(compop == NEQ_COMP)
+    return left.val != right.val;
+  else if(compop == LT_COMP)
+    return left.val < right.val;
+  else if(compop == LTE_COMP)
+    return left.val <= right.val;
+  else if(compop == GT_COMP)
+    return left.val > right.val;
+  else if(compop == GTE_COMP)
+    return left.val >= right.val;
+}
+
+
+// x + y, x -y
+
+MultiType applyBinOp(MultiType left, MultiType right, int op){
+  if(op == ADD_OP) return applyAddBinOp(left, right);
+  else if(op == SUB_OP) return applySubBinOp(left,right);
+  else if(op == MUL_OP) return applyMulBinOp(left,right);
+  else if(op == DIV_OP) return applyDivBinOp(left,right);
+  else if(op == POW_OP) return applyPowBinOp(left,right);
+  else if(op == MOD_OP) return applyModBinOp(left,right);
+ 
+}
+
+
+
+MultiType applyAddBinOp(MultiType left, MultiType right){
+    assert left.flag == right.flag; // can add same types only
+    if(left.flag == INTEGER){
+      return new MultiType(val = left.val + right.val, flag = INTEGER);
+    }
+    else if(left.flag == LIST){
+      int newLen = left.lst.len + right.lst.len;
+      MultiType[newLen] newListValues = left.lst.listValues;
+      for(int i=0; i<right.lst.len; i++)
+    newListValues[i+left.lst.len] = right.lst.listValues[i];
+      return new MultiType(flag=LIST,lst = new MTList(len = newLen, listValues = newListValues));
+    }
+}
+
+
+MultiType applySubBinOp(MultiType left, MultiType right){
+    assert left.flag == INTEGER; // python supports subtraction for only integers and floats
+    assert right.flag == INTEGER;
+    return new MultiType(val = left.val - right.val, flag = INTEGER);
+}
+
+MultiType applyMulBinOp(MultiType left, MultiType right){
+    assert left.flag == INTEGER && right.flag == INTEGER;
+    return new MultiType(val=intMul(left.val, right.val), flag = INTEGER);
+}
+
+MultiType applyDivBinOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER; // python supports division for only integers and floats
+  assert right.flag == INTEGER;
+  return new MultiType(val = intDiv(left.val,right.val), flag = INTEGER);
+}
+
+MultiType applyPowBinOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER; // python supports division for only integers and floats
+  assert right.flag == INTEGER;
+  return new MultiType(val = intPow(left.val,right.val), flag = INTEGER);
+}
+
+MultiType applyModBinOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER; // python supports division for only integers and floats
+  assert right.flag == INTEGER;
+  return new MultiType(val = intMod(left.val,right.val), flag = INTEGER);
+}
+
+bit applyEQCompOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER;
+  assert right.flag == INTEGER;
+  return left.val == right.val;
+}
+
+bit applyNEQCompOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER;
+  assert right.flag == INTEGER;
+  return left.val != right.val;
+}
+
+bit applyLTCompOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER;
+  assert right.flag == INTEGER;
+  return left.val < right.val;
+}
+
+bit applyLTECompOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER;
+  assert right.flag == INTEGER;
+  return left.val <= right.val;
+}
+
+bit applyGTCompOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER;
+  assert right.flag == INTEGER;
+  return left.val > right.val;
+}
+
+bit applyGTECompOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER;
+  assert right.flag == INTEGER;
+  return left.val >= right.val;
+}
+
+MultiType incrementOne(MultiType x){
+  assert x.flag == INTEGER;
+  x.val = x.val + 1;
+  return x;
+  // return new MultiType(val=x.val+1, flag = INTEGER);
+}
+
+MultiType incrementTwo(MultiType x){
+  assert x.flag == INTEGER;
+  x.val = x.val + 2;
+  return x;
+  // return new MultiType(val=x.val+2, flag = INTEGER);
+}
+
+MultiType decrementOne(MultiType x){
+  assert x.flag == INTEGER;
+  x.val = x.val - 1;
+  return x;
+  // return new MultiType(val=x.val-1, flag = INTEGER);
+}
+
+MultiType decrementTwo(MultiType x){
+  assert x.flag == INTEGER;
+  x.val = x.val - 2;
+  return x;
+  // return new MultiType(val=x.val-2, flag = INTEGER);
+}
+
+MultiType setOne(MultiType x){
+  assert x.flag == INTEGER;
+  x.val = 1;
+  return x;
+  // return new MultiType(val=1, flag = INTEGER);
+}
+
+MultiType setZero(MultiType x){
+  assert x.flag == INTEGER;
+  x.val = 0;
+  return x;
+  // return new MultiType(val=0, flag = INTEGER);
+}
+
+int intMul(int x, int y);
+int intDiv(int x, int y);
+int intPow(int x, int y);
+int intMod(int x, int y);
+
+void assignMT(ref MultiType lhs, MultiType rhs){
+  lhs = rhs;
+}
+
+void assignMTArray(MultiType arrayName, MultiType index, MultiType rhs){
+  assert arrayName.flag == LIST;
+  assert index.flag == INTEGER;
+  arrayName.lst.listValues[index.val] = rhs;
+}

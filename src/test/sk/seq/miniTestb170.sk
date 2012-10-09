@@ -5,7 +5,7 @@ struct Node{
 	int next;	
 }
 
-int test(int i){
+int test(int i) implements rest{
 	int t = ??;
 	assert t == 0;
 	Node n = new Node();
@@ -17,7 +17,7 @@ int test(int i){
 	return {|  n.val | i | n.val + i  |};
 }
 
-int rest(int i) implements test{
+int rest(int i){
 	
 	return i;
 }
